@@ -1,0 +1,24 @@
+{
+  "builtin_tools": [
+    {
+      "iconData": "earth",
+      "iconType": "library",
+      "text": "搜索",
+      "name": "search",
+      "bgColor": "#4F39F6"
+    }
+  ],
+  "extra_tools": [
+    {
+      "type": "label",
+      "text": "基础功能"
+    },
+    {
+      "type": "toggle",
+      "name": "autoTranslate",
+      "text": "自动翻译",
+      "iconType": "library",
+      "iconData": "earth"
+    }
+  ]
+}
