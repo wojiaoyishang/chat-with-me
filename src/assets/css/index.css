@@ -26,7 +26,10 @@
 /* Firefox 支持（有限） */
 .pretty-scrollbar {
     scrollbar-color: #cbd5e1 transparent;
+    transition: height 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
+
+
 
 /*:root {*/
 /*  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;*/

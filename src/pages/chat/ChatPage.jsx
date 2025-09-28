@@ -3,16 +3,14 @@ import ChatBox from "@/components/chat/chatbox.jsx";
 
 function ChatPage() {
 
-    const [message, setMessage] = useState("");
-    const [toolsStatus, setToolsStatus] = useState({});
 
-    const handleSendMessage = (message, t) => {
-        console.log('发送消息:', message, t);
+    const handleSendMessage = (message, toolsStatus, sendButtonState) => {
+        console.log('发送消息:', message, toolsStatus, sendButtonState);
     };
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-end pb-8">
-            < ChatBox messageState={[message, setMessage]} toolsStatusState={[toolsStatus, setToolsStatus]} onSendMessage={handleSendMessage} />
+            < ChatBox onSendMessage={handleSendMessage}/>
         </div>
     );
 }

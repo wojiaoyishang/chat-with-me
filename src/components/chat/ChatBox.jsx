@@ -1,4 +1,5 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, useMemo} from 'react';
+import {useTranslation, Trans} from 'react-i18next';
 import {Transition} from '@headlessui/react';
 import {Fragment} from 'react';
 import {IoMdAdd} from "react-icons/io";
@@ -22,42 +23,110 @@ import {
 import point3Loading from "@/components/loading/point3.jsx";
 import SimpleMDEditor from "@/components/editor/SimpleMDEditor.jsx";
 import ToggleSearchButton from "@/components/chat/ChatButton.jsx";
+import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
 
 
-function ChatBox({messageState, toolsStatusState, onSendMessage}) {
+function ChatBox({onSendMessage, readOnly = false}) {
     /*
     * 全局变量定义
     */
-    const [message, setMessage] = messageState;
-    const [toolsStatus, setToolsStatus] = toolsStatusState;
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const {t} = useTranslation();
+    const [message, setMessage] = useState("");
+    const [toolsStatus, setToolsStatus] = useState({});
+    const [isModalOpen, setIsModalOpen] = useState(false);  // MD 编辑器打开
+    const [isReadOnly, setIsReadOnly] = useState(readOnly || false);  // 是否只读
     const [tools, setTools] = useState([]);  // 内置工具
     const [extraTools, setExtraTools] = useState([]); // 额外工具菜单
 
-    // 0 -- 发起请求等待响应 1 -- 已收到响应 2 -- 加载动画结束  3 -- 加载失败  4 -- 失败动画 5 -- 正在重试
+    // -1 -- 没有工具或者正在切换工具 0 -- 发起请求等待响应 1 -- 已收到响应 2 -- 加载动画结束  3 -- 加载失败  4 -- 失败动画  5 -- 正在重试
     const [toolsLoadedStatus, setToolsLoadedStatus] = useState(0);
-    const textareaRef = useRef(null);
     const [open, setOpen] = useState(false);  // 控制 DropdownMenu 的打开和关闭
 
+    // 发送按钮状态：'disabled', 'normal', 'loading', 'generating'
+    const [sendButtonState, setSendButtonState] = useState('normal');
+
+    const messageRef = useRef(message);
+    const textareaRef = useRef(null);
+    const cloneTextareaRef = useRef(null);  // 克隆用于计算高度的输入框
+    const sendButtonStateRef = useRef(sendButtonState);
+
+    useEffect(() => {
+        sendButtonStateRef.current = sendButtonState;
+        messageRef.current = message;
+    }, [sendButtonState, message]);
+
     /*
-    * 函数事件绑定
+    * 函数的定义
     */
-    const adjustTextareaHeight = () => {
+    const initTextareaClone = () => {
+        if (cloneTextareaRef.current) return;
+
         const textarea = textareaRef.current;
-        if (textarea) {
-            // 重置高度，避免"只增不减"
-            textarea.style.height = 'auto';
-            // 设置新高度（最小为 1 行，最大由 CSS max-height 限制）
-            textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px';
+        if (!textarea) return;
+
+        const clone = textarea.cloneNode();
+        Object.assign(clone.style, {
+            position: 'absolute',
+            top: '-9999px',
+            left: '-9999px',
+            visibility: 'hidden',
+            height: 'auto',
+            resize: 'none',
+            overflow: 'hidden',
+            // 确保不会影响页面布局
+            pointerEvents: 'none',
+            zIndex: '-1'
+        });
+        document.body.appendChild(clone);
+        cloneTextareaRef.current = clone;
+    };
+
+    const cleanupTextareaClone = () => {
+        if (cloneTextareaRef.current) {
+            document.body.removeChild(cloneTextareaRef.current);
+            cloneTextareaRef.current = null;
         }
     };
 
-    const handleSendMessage = () => {
-        if (message.trim()) {
-            setMessage('');
-            onSendMessage(message, toolsStatus);
-            textareaRef.current?.focus();
+    const adjustTextareaHeight = () => {
+        const textarea = textareaRef.current;
+        const clone = cloneTextareaRef.current;
+
+        if (!textarea || !clone) return;
+
+        // 同步 textarea 的关键属性到克隆元素
+        clone.value = textarea.value;
+        clone.style.width = textarea.offsetWidth + 'px';
+
+        // 同步关键样式（如果 textarea 样式可能动态变化）
+        const computedStyle = getComputedStyle(textarea);
+        clone.style.fontFamily = computedStyle.fontFamily;
+        clone.style.fontSize = computedStyle.fontSize;
+        clone.style.lineHeight = computedStyle.lineHeight;
+        clone.style.padding = computedStyle.padding;
+        clone.style.border = computedStyle.border;
+        clone.style.boxSizing = computedStyle.boxSizing;
+
+        const height = Math.min(clone.scrollHeight, 128);
+        textarea.style.height = height + 'px';
+
+        const contentHeight = clone.scrollHeight;
+        const cappedHeight = Math.min(contentHeight, 128);
+
+        textarea.style.height = cappedHeight + 'px';
+
+        if (contentHeight > 48) {
+            textarea.style.overflowY = 'scroll';
+        } else {
+            textarea.style.overflowY = 'auto';
         }
+
+    };
+
+    const handleSendMessage = () => {
+        // 只有在正常状态且消息不为空时才发送
+        onSendMessage(message, toolsStatus, sendButtonState);
+        textareaRef.current?.focus();
     };
 
     const handleKeyDown = (e) => {
@@ -73,9 +142,6 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
         }
     };
 
-    /*
-    * 新增：图标渲染组件
-    */
     const renderIcon = (iconType, iconData) => {
         if (!iconData) return null;
 
@@ -109,16 +175,13 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
         return null;
     };
 
-    /*
-    * 修复：递归渲染菜单项 - 正确处理分组嵌套
-    */
     const renderMenuItems = (items) => {
         return items.map((item, index) => {
             // 标记型：仅标题
             if (item.type === 'label') {
                 return (
                     <DropdownMenuLabel key={`label-${index}`} className="px-2 py-1.5 text-sm font-semibold">
-                        {item.text}
+                        {t(item.text)}
                     </DropdownMenuLabel>
                 );
             }
@@ -134,7 +197,7 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                     <DropdownMenuSub key={`group-${item.name || index}`}>
                         <DropdownMenuSubTrigger className="flex items-center cursor-pointer">
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
-                            <span>{item.text}</span>
+                            <span>{t(item.text)}</span>
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
                             {renderMenuItems(item.children)}
@@ -160,7 +223,7 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                         className="flex items-center cursor-pointer"
                     >
                         {item.iconData && renderIcon(item.iconType, item.iconData)}
-                        <span>{item.text}</span>
+                        <span>{t(item.text)}</span>
                         {toolsStatus.extra_tools[item.name] && (
                             <CheckIcon className="ml-auto w-4 h-4 text-blue-500"/>
                         )}
@@ -174,7 +237,7 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                     <DropdownMenuSub key={`radio-${item.name}`}>
                         <DropdownMenuSubTrigger className="flex items-center cursor-pointer">
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
-                            <span>{item.text}</span>
+                            <span>{t(item.text)}</span>
                             {/* 显示当前选中项 */}
                             {/*{toolsStatus.extra_tools[item.name] && (*/}
                             {/*    <span className="ml-auto text-xs text-gray-500">*/}
@@ -198,7 +261,7 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                                     className="flex items-center cursor-pointer"
                                 >
                                     {child.iconData && renderIcon(child.iconType, child.iconData)}
-                                    <span>{child.text}</span>
+                                    <span>{t(child.text)}</span>
                                     {toolsStatus.extra_tools[item.name] === child.name && (
                                         <CheckIcon className="ml-auto w-4 h-4 text-blue-500"/>
                                     )}
@@ -213,9 +276,6 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
         });
     };
 
-    /*
-    * 新增：初始化 extra_tools 状态
-    */
     const initializeExtraTools = (toolsConfig) => {
         const status = {};
 
@@ -236,9 +296,6 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
         return status;
     };
 
-    /*
-    * 渲染内置工具按钮
-    */
     const renderToolButtons = () => {
         return tools.map((tool) => {
             const isActive = tool.isActive ?? false;
@@ -256,7 +313,7 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                                             newStatus.builtin_tools[tool.name] = isActive;
                                             setToolsStatus(newStatus);
                                         }}
-                                        text={tool.text}
+                                        text={t(tool.text)}
                                         isActive={isActive}
                                         disabled={disabled}
                                         bgColor={tool.bgColor}></ToggleSearchButton>
@@ -269,7 +326,7 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                                             newStatus.builtin_tools[tool.name] = isActive;
                                             setToolsStatus(newStatus);
                                         }}
-                                        text={tool.text}
+                                        text={t(tool.text)}
                                         isActive={isActive}
                                         disabled={disabled}
                                         bgColor={tool.bgColor}></ToggleSearchButton>
@@ -283,7 +340,7 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                                             newStatus.builtin_tools[tool.name] = isActive;
                                             setToolsStatus(newStatus);
                                         }}
-                                        text={tool.text}
+                                        text={t(tool.text)}
                                         isActive={isActive}
                                         disabled={disabled}
                                         bgColor={tool.bgColor}></ToggleSearchButton>
@@ -292,6 +349,140 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
             return null;
         });
     };
+
+    const sendButtonStyle = useMemo(() => {
+        // 消息为空时强制禁用
+        if (!message.trim() && sendButtonState === 'normal') {
+            return {
+                state: 'disabled',
+                className: 'text-gray-400 bg-gray-200 cursor-not-allowed',
+                icon: (
+                    <svg t="1758800079268" className="icon" viewBox="0 0 1024 1024" version="1.1"
+                         xmlns="http://www.w3.org/2000/svg" p-id="6097" width="24" height="24">
+                        <path
+                            d="M512 85.333333a42.666667 42.666667 0 0 1 38.144 23.594667l384 768a42.666667 42.666667 0 0 1-47.36 60.714667L512 854.357333l-374.741333 83.285334a42.666667 42.666667 0 0 1-47.402667-60.714667l384-768A42.666667 42.666667 0 0 1 512 85.333333z m42.666667 691.114667l263.082666 58.453333L554.666667 308.736v467.712zM469.333333 308.736L206.250667 834.901333 469.333333 776.448V308.736z"
+                            fill="#9ca3af" // 灰色
+                            p-id="6098"
+                        ></path>
+                    </svg>
+                ),
+                disabled: true
+            };
+        }
+
+        // 根据当前状态返回样式
+        switch (sendButtonState) {
+            case 'disabled':
+                return {
+                    state: 'disabled',
+                    className: 'text-gray-400 bg-gray-200 cursor-not-allowed',
+                    icon: (
+                        <svg t="1758800079268" className="icon" viewBox="0 0 1024 1024" version="1.1"
+                             xmlns="http://www.w3.org/2000/svg" p-id="6097" width="24" height="24">
+                            <path
+                                d="M512 85.333333a42.666667 42.666667 0 0 1 38.144 23.594667l384 768a42.666667 42.666667 0 0 1-47.36 60.714667L512 854.357333l-374.741333 83.285334a42.666667 42.666667 0 0 1-47.402667-60.714667l384-768A42.666667 42.666667 0 0 1 512 85.333333z m42.666667 691.114667l263.082666 58.453333L554.666667 308.736v467.712zM469.333333 308.736L206.250667 834.901333 469.333333 776.448V308.736z"
+                                fill="#9ca3af" // 灰色
+                                p-id="6098"
+                            ></path>
+                        </svg>
+                    ),
+                    disabled: true
+                };
+            case 'loading':
+                return {
+                    state: 'loading',
+                    className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
+                    icon: (
+                        <div className="relative w-6 h-6">
+                            {/* 旋转的环 */}
+                            <div
+                                className="absolute inset-[-9px] border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+
+                            {/* 中间的正方形 */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-4 h-4 bg-white rounded"></div>
+                            </div>
+                        </div>
+                    ),
+                    disabled: false
+                };
+            case 'generating':
+                return {
+                    state: 'generating',
+                    className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
+                    icon: (
+                        <div className="relative w-6 h-6">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-4 h-4 bg-white rounded"></div>
+                            </div>
+                        </div>
+                    ),
+                    disabled: false
+                };
+            case 'normal':
+            default:
+                return {
+                    state: 'normal',
+                    className: 'text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 cursor-pointer',
+                    icon: (
+                        <svg
+                            t="1758800079268"
+                            className="icon"
+                            viewBox="0 0 1024 1024"
+                            version="1.1"
+                            xmlns="http://www.w3.org/2000/svg"
+                            p-id="6097"
+                            width="24"
+                            height="24"
+                        >
+                            <path
+                                d="M512 85.333333a42.666667 42.666667 0 0 1 38.144 23.594667l384 768a42.666667 42.666667 0 0 1-47.36 60.714667L512 854.357333l-374.741333 83.285334a42.666667 42.666667 0 0 1-47.402667-60.714667l384-768A42.666667 42.666667 0 0 1 512 85.333333z m42.666667 691.114667l263.082666 58.453333L554.666667 308.736v467.712zM469.333333 308.736L206.250667 834.901333 469.333333 776.448V308.736z"
+                                fill="#ffffff"
+                                p-id="6098"
+                            ></path>
+                        </svg>
+                    ),
+                    disabled: false
+                };
+        }
+    }, [message, sendButtonState]);
+
+    const chatboxSetup = (data) => {
+
+        // 为每个内置工具的启用状态设置
+        const newBuiltinStatus = {};
+
+        // 初始化额外工具状态
+        const newExtraStatus = initializeExtraTools(data.extra_tools || []);
+
+        // 工具设置部分
+
+        if (data.builtin_tools) {
+
+            data.builtin_tools.forEach((tool) => {
+                newBuiltinStatus[tool.name] = false;
+            });
+            setTools(data.builtin_tools);
+        }
+
+        if (data.extra_tools) {
+
+            // 更新状态
+            setToolsStatus(prev => ({
+                ...prev,
+                builtin_tools: {...prev.builtin_tools, ...newBuiltinStatus},
+                extra_tools: {...prev.extra_tools, ...newExtraStatus}
+            }));
+
+            setExtraTools(data.extra_tools || []); // 存储配置
+        }
+
+        // 聊天框属性设置部分
+        if (data.readOnly) {
+            setIsReadOnly(Boolean(data.readOnly));
+        }
+
+    }
 
     /*
     * 初始事件与回调
@@ -303,34 +494,77 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
     // 加载 JSON 配置
     useEffect(() => {
         if (toolsLoadedStatus === 0) {
+
+            if (CHATBOX_API.trim() === '') {  // 留空则没有多余的工具
+                setToolsLoadedStatus(-1);
+                return;
+            }
+
             fetch(CHATBOX_API)
                 .then((response) => response.json())
                 .then((data) => {
-                    // 为每个内置工具的启用状态设置
-                    const newBuiltinStatus = {};
-                    data.builtin_tools.forEach((tool) => {
-                        newBuiltinStatus[tool.name] = false;
-                    });
-
-                    // 初始化额外工具状态
-                    const newExtraStatus = initializeExtraTools(data.extra_tools || []);
-
-                    // 更新状态
-                    setToolsStatus(prev => ({
-                        ...prev,
-                        builtin_tools: {...prev.builtin_tools, ...newBuiltinStatus},
-                        extra_tools: {...prev.extra_tools, ...newExtraStatus}
-                    }));
-
-                    setTools(data.builtin_tools);
-                    setExtraTools(data.extra_tools || []); // 存储配置
+                    chatboxSetup(data);
                     setToolsLoadedStatus(1);
                 })
                 .catch((error) => {
                     setToolsLoadedStatus(3);
                 });
+
         }
     }, [toolsLoadedStatus]);
+
+
+    /*
+     * 广播事件 - 使用单一状态变量
+     */
+    useEffect(() => {
+        const unsubscribe = onEvent("widget", "ChatBox").then((payload, markId, isReply, id, reply) => {
+
+            switch (payload.command) {
+                case "SendButton-State":
+                    const validStates = ['disabled', 'normal', 'loading', 'generating'];
+
+                    if (validStates.includes(payload.value)) {
+                        setSendButtonState(payload.value);
+                        reply({command: 'SendButton-State', value: payload.value});
+                    } else {
+                        reply({command: 'SendButton-State', value: sendButtonStateRef.current});
+                    }
+
+                    break;
+
+                case "Set-Message":
+                    setMessage(payload.value);
+                    reply({command: 'Set-Message', success: true});
+                    break;
+
+                case "Get-Message":
+                    reply({command: 'Get-Message', value: messageRef.current});
+                    break;
+
+                case "Setup-ChatBox":
+                    setToolsLoadedStatus(-1);
+
+                    reply({command: 'Setup-ChatBox', success: true});
+
+                    setTimeout(() => {
+                        chatboxSetup(payload.value);
+                        setToolsLoadedStatus(2);
+                    }, 500)
+                    break;
+            }
+
+        });
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
+
+    useEffect(() => {
+        initTextareaClone();
+        return cleanupTextareaClone;
+    }, []);
 
     return (
         <div className="w-full max-w-2xl px-4">
@@ -342,11 +576,17 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                     <textarea
                         ref={textareaRef}
                         value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="输入你的消息..."
+                        onChange={(e) => !isReadOnly && setMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (isReadOnly) return; // 只读时不响应按键
+                            handleKeyDown(e);
+                        }}
+                        placeholder={t("输入你的消息...")}
                         className="w-full min-h-[48px] max-h-[132px] p-4 pt-4 pb-2 pr-4 text-gray-800 bg-transparent border-none resize-none outline-none pretty-scrollbar"
                         rows={1}
+                        style={{
+                            transition: 'height 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                        }}
                     />
                 </div>
 
@@ -361,7 +601,7 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                                 <button
                                     type="button"
                                     className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
-                                    aria-label="拓展工具"
+                                    aria-label={t("拓展工具")}
                                 >
                                     <IoMdAdd/>
                                 </button>
@@ -412,7 +652,7 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                                         <button
                                             onClick={() => setToolsLoadedStatus(5)}
                                             className="text-blue-500 hover:text-blue-700 text-sm flex items-center cursor-pointer"
-                                            aria-label="重试加载工具"
+                                            aria-label={t("重试加载工具")}
                                         >
                                             <FaRedo className="w-4 h-4 mr-1"/>
                                             重试
@@ -452,7 +692,7 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                     <div className="flex items-center space-x-2">
                         <button
                             type="button"
-                            aria-label="放大输入框"
+                            aria-label={t("放大输入框")}
                             className="p-2.5 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-offset-2 transition-colors cursor-pointer"
                             onClick={() => setIsModalOpen(true)}
                         >
@@ -467,30 +707,13 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                         <button
                             type="button"
                             onClick={handleSendMessage}
-                            disabled={!message.trim()}
-                            aria-label="发送消息"
-                            className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors
-                            ${!message.trim()
-                                ? 'text-gray-400 bg-gray-200 cursor-not-allowed'
-                                : 'text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 cursor-pointer'}
+                            disabled={sendButtonStyle.disabled}
+                            aria-label={t("发送消息")}
+                            className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors 
+                            ${sendButtonStyle.className}
                             `}
                         >
-                            <svg
-                                t="1758800079268"
-                                className="icon"
-                                viewBox="0 0 1024 1024"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                                p-id="6097"
-                                width="24"
-                                height="24"
-                            >
-                                <path
-                                    d="M512 85.333333a42.666667 42.666667 0 0 1 38.144 23.594667l384 768a42.666667 42.666667 0 0 1-47.36 60.714667L512 854.357333l-374.741333 83.285334a42.666667 42.666667 0 0 1-47.402667-60.714667l384-768A42.666667 42.666667 0 0 1 512 85.333333z m42.666667 691.114667l263.082666 58.453333L554.666667 308.736v467.712zM469.333333 308.736L206.250667 834.901333 469.333333 776.448V308.736z"
-                                    fill="#ffffff"
-                                    p-id="6098"
-                                ></path>
-                            </svg>
+                            {sendButtonStyle.icon}
                         </button>
                     </div>
                 </div>
@@ -520,7 +743,7 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                             <button
                                 onClick={() => setIsModalOpen(false)}
                                 className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
-                                aria-label="关闭"
+                                aria-label={t("关闭")}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
                                      viewBox="0 0 24 24" stroke="currentColor">
@@ -531,8 +754,6 @@ function ChatBox({messageState, toolsStatusState, onSendMessage}) {
                             <div className="h-full w-full">
 
                                 <div className="h-full p-5">
-
-                                    {/* 只有弹窗打开且动画结束后才渲染 MDEditor */}
 
                                     <SimpleMDEditor
                                         text={message}

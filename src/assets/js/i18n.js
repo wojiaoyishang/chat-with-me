@@ -11,20 +11,22 @@ i18n
     // 初始化 i18next
     // 配置参数的文档: https://www.i18next.com/overview/configuration-options
     .init({
-        debug: true,
-        fallbackLng: 'en',
+        debug: false,
         interpolation: {
             escapeValue: false,
         },
         resources: {
             en: {
                 translation: {
-                    'count is': 'count is'
-                }
-            },
-            zh: {
-                translation: {
-                    'count is': '计数是'
+                    "拓展工具": "Extra Tools",
+                    "重试加载工具": "Reload Tools",
+                    "放大输入框": "Zoom in Input Box",
+                    "发送消息": "Send Message",
+                    "关闭": "Close",
+                    "输入你的消息...": "Input your message...",
+                    "搜索": "Search",
+                    "基础功能": "Basic Functions",
+                    "自动翻译": "Auto Translate"
                 }
             }
         }
