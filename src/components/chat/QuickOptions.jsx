@@ -22,7 +22,7 @@ export default function QuickOptions({
         <>
             <div
                 ref={quickOptionsRef}
-                className="flex flex-nowrap gap-2 px-1 overflow-x-hidden scroll-smooth"
+                className="flex flex-nowrap gap-3 px-1 overflow-x-hidden scroll-smooth"
                 style={{scrollBehavior: 'smooth'}}
             >
                 {quickOptions.map((option) => (
@@ -32,7 +32,7 @@ export default function QuickOptions({
                         onClick={() => onOptionClick(option)}
                         className={`w-[102px] flex-shrink-0 px-2.5 py-2 text-sm rounded-lg transition-all duration-150 ease-in-out
              shadow-sm hover:shadow-md focus:outline-none focus:ring-1 focus:ring-gray-300
-             whitespace-nowrap overflow-hidden text-ellipsis
+             whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer
              ${
                             selectedOption === option.id
                                 ? 'bg-purple-100 text-purple-800 transform -translate-y-0.5'

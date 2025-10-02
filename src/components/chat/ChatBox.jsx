@@ -23,7 +23,7 @@ import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
 import ChatBoxHeader from './ChatBoxHeader';
 import ToolButtons from './ToolButtons';
 
-function ChatBox({onSendMessage, readOnly = false}) {
+function ChatBox({onSendMessage, readOnly = false, FilePickerCallback, PicPickerCallback}) {
     /*
      * 状态和引用定义
      */
@@ -47,6 +47,8 @@ function ChatBox({onSendMessage, readOnly = false}) {
         {id: 6, label: "解释21量子力22学", value: "用通俗语言解释一下量子力学的基本概念。"},
     ]);
     const quickOptionsRef = useRef(null);
+    const [displayedQuickOptions, setDisplayedQuickOptions] = useState(quickOptions);
+    const [isTransitioning, setIsTransitioning] = useState(false);
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
     // -1 -- 没有工具 0 -- 加载中 1 -- 已加载 2 -- 动画结束 3 -- 加载失败 4 -- 错误动画 5 -- 重试
     const [toolsLoadedStatus, setToolsLoadedStatus] = useState(0);
@@ -288,6 +290,21 @@ function ChatBox({onSendMessage, readOnly = false}) {
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
                 );
+            } else if (item.type === 'button') {
+                return (
+                    <DropdownMenuItem
+                        key={`button-${item.text || index}`}
+                        onClick={(e) => {
+                            if (item.onClick) {
+                                item.onClick();
+                            }
+                        }}
+                        className="flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100"
+                    >
+                        {item.iconData && renderIcon(item.iconType, item.iconData)}
+                        <span>{t(item.text)}</span>
+                    </DropdownMenuItem>
+                );
             }
             return null;
         });
@@ -409,7 +426,8 @@ function ChatBox({onSendMessage, readOnly = false}) {
                     className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
                     icon: (
                         <div className="relative w-6 h-6">
-                            <div className="absolute inset-[-9px] border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                            <div
+                                className="absolute inset-[-9px] border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <div className="w-4 h-4 bg-white rounded"></div>
                             </div>
@@ -462,6 +480,32 @@ function ChatBox({onSendMessage, readOnly = false}) {
         const newBuiltinStatus = {};
         const newExtraStatus = initializeExtraTools(data.extra_tools || []);
 
+        const defaultAttachmentTools = [
+            {
+                type: 'label',
+                text: '附件选项'
+            },
+            {
+                type: 'button',
+                text: '添加图片',
+                iconType: 'svg',
+                iconData: '<svg t="1759404220982" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4746" width="20" height="20"><path d="M247.04 373.333333a74.666667 74.666667 0 1 1 149.333333 0 74.666667 74.666667 0 0 1-149.333333 0zM321.706667 384a10.666667 10.666667 0 1 0 0-21.333333 10.666667 10.666667 0 0 0 0 21.333333z" fill="#666666" p-id="4747"></path><path d="M938.666667 796.074667c0 43.050667-33.834667 72.106667-70.4 77.653333a83.925333 83.925333 0 0 1-12.672 0.938667H168.405333a83.072 83.072 0 0 1-12.672-0.981334c-36.565333-5.546667-70.4-34.56-70.4-77.653333V232.021333C85.333333 185.898667 122.965333 149.333333 168.405333 149.333333h687.189334C901.034667 149.333333 938.666667 185.941333 938.666667 232.021333v564.053334zM170.666667 743.381333V789.333333h682.666666v-42.538666l-252.885333-250.666667-138.581333 149.930667a42.666667 42.666667 0 0 1-55.466667 5.12L333.098667 599.04 170.666667 743.424z m682.666666-99.754666V234.666667H170.666667v394.538666l131.072-116.522666a42.666667 42.666667 0 0 1 53.077333-2.901334l71.125333 50.56 138.026667-149.333333A42.666667 42.666667 0 0 1 618.666667 405.333333l234.666666 238.293334z" fill="#666666" p-id="4748"></path></svg>',
+                onClick: PicPickerCallback
+            },
+            {
+                type: 'button',
+                text: '添加文件',
+                iconType: 'svg',
+                iconData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>',
+                onClick: FilePickerCallback
+            }
+
+        ];
+
+        const allExtraTools = data.extra_tools
+            ? [...data.extra_tools, ...defaultAttachmentTools]
+            : defaultAttachmentTools;
+
         if (data.builtin_tools) {
             data.builtin_tools.forEach((tool) => {
                 newBuiltinStatus[tool.name] = false;
@@ -469,14 +513,15 @@ function ChatBox({onSendMessage, readOnly = false}) {
             setTools(data.builtin_tools);
         }
 
-        if (data.extra_tools) {
-            setToolsStatus(prev => ({
-                ...prev,
-                builtin_tools: {...prev.builtin_tools, ...newBuiltinStatus},
-                extra_tools: {...prev.extra_tools, ...newExtraStatus}
-            }));
-            setExtraTools(data.extra_tools || []);
-        }
+
+        // 更新状态
+        setToolsStatus(prev => ({
+            ...prev,
+            builtin_tools: {...prev.builtin_tools, ...newBuiltinStatus},
+            extra_tools: {...prev.extra_tools, ...newExtraStatus}
+        }));
+        setExtraTools(allExtraTools); // 存储配置
+
 
         if (data.readOnly !== undefined) {
             setIsReadOnly(Boolean(data.readOnly));
@@ -633,6 +678,16 @@ function ChatBox({onSendMessage, readOnly = false}) {
                         setToolsLoadedStatus(2);
                     }, 500)
                     break;
+                case "Set-QuickOptions":
+                    setIsTransitioning(true);
+
+                    setTimeout(()=>{
+                        setQuickOptions(payload.value);
+                        setIsTransitioning(false);
+                    }, 500)
+
+                    reply({command: 'Setup-QuickOptions', success: true});
+                    break;
             }
         });
         return () => {
@@ -662,6 +717,7 @@ function ChatBox({onSendMessage, readOnly = false}) {
         return cleanupTextareaClone;
     }, []);
 
+
     return (
         <div className="w-full max-w-2xl px-4">
             <ChatBoxHeader
@@ -676,9 +732,11 @@ function ChatBox({onSendMessage, readOnly = false}) {
                 setCurrentPageIndex={setCurrentPageIndex}
                 quickOptionsRef={quickOptionsRef}
                 selectedOption={selectedQuickOption}
+                isTransitioning={isTransitioning}
             />
 
-            <div className="bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-md focus-within:shadow-lg">
+            <div
+                className="bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-md focus-within:shadow-lg">
                 <div className="pt-2 pl-2 pr-2">
                     <textarea
                         ref={textareaRef}
@@ -750,7 +808,8 @@ function ChatBox({onSendMessage, readOnly = false}) {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 bg-black/40">
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 bg-black/40">
                         <div
                             className="bg-white rounded-2xl w-full max-w-3xl h-[80vh] p-6 relative
                             transition-all duration-200 ease-out transform"
