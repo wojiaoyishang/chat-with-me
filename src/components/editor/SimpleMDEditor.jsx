@@ -2,7 +2,7 @@ import MDEditor from '@uiw/react-md-editor';
 import styles from './SimpleMDEditor.module.css';
 import React, { useRef, useEffect } from 'react';
 
-function SimpleMDEditor({ text, setText }) {
+function SimpleMDEditor({ text, setText, readOnly=false }) {
     const editorRef = useRef(null);
 
 
@@ -11,7 +11,7 @@ function SimpleMDEditor({ text, setText }) {
             <MDEditor
                 value={text}
                 onChange={setText}
-                preview="edit"
+                preview={readOnly ? "preview" : "edit"}
                 visibleDragbar={false}
                 height="100%"
                 textareaProps={{

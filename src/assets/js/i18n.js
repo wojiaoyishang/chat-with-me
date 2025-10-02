@@ -26,7 +26,11 @@ i18n
                     "输入你的消息...": "Input your message...",
                     "搜索": "Search",
                     "基础功能": "Basic Functions",
-                    "自动翻译": "Auto Translate"
+                    "自动翻译": "Auto Translate",
+                    "只读": "Read Only",
+                    "按下 Shift + Enter 换行": "Shift + Enter for New Line",
+                    "上一页": "Prev Page",
+                    "下一页": "Next Page",
                 }
             }
         }

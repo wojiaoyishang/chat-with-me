@@ -1,13 +1,10 @@
-import React, {useState, useRef, useEffect, useMemo} from 'react';
-import {useTranslation, Trans} from 'react-i18next';
+import React, {useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Transition} from '@headlessui/react';
-import {Fragment} from 'react';
 import {IoMdAdd} from "react-icons/io";
 import {FaRedo, FaSearch} from "react-icons/fa";
 import {FaEarthAmericas} from 'react-icons/fa6';
-
 import {CheckIcon} from "lucide-react";
-
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -19,51 +16,57 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
 import point3Loading from "@/components/loading/point3.jsx";
 import SimpleMDEditor from "@/components/editor/SimpleMDEditor.jsx";
 import ToggleSearchButton from "@/components/chat/ChatButton.jsx";
 import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
-
+import ChatBoxHeader from './ChatBoxHeader';
+import ToolButtons from './ToolButtons';
 
 function ChatBox({onSendMessage, readOnly = false}) {
     /*
-    * 全局变量定义
-    */
+     * 状态和引用定义
+     */
     const {t} = useTranslation();
     const [message, setMessage] = useState("");
     const [toolsStatus, setToolsStatus] = useState({});
-    const [isModalOpen, setIsModalOpen] = useState(false);  // MD 编辑器打开
-    const [isReadOnly, setIsReadOnly] = useState(readOnly || false);  // 是否只读
-    const [tools, setTools] = useState([]);  // 内置工具
-    const [extraTools, setExtraTools] = useState([]); // 额外工具菜单
-
-    // -1 -- 没有工具或者正在切换工具 0 -- 发起请求等待响应 1 -- 已收到响应 2 -- 加载动画结束  3 -- 加载失败  4 -- 失败动画  5 -- 正在重试
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isReadOnly, setIsReadOnly] = useState(readOnly || false);
+    const [showTipMessage, setShowTipMessage] = useState(true);
+    const [tipMessage, setTipMessage] = useState("按下 Shift + Enter 换行");
+    const [tipMessageIsForNewLine, setTipMessageIsForNewLine] = useState(true);
+    const [tools, setTools] = useState([]);
+    const [extraTools, setExtraTools] = useState([]);
+    const [isSmallScreen, setIsSmallScreen] = useState(false);
+    const [quickOptions, setQuickOptions] = useState([
+        {id: 1, label: "今天天气怎么样？", value: "今天天气怎么样？"},
+        {id: 2, label: "帮我写一封邮件", value: "请帮我写一封正式的邮件，主题是项目进度汇报。"},
+        {id: 3, label: "解释量子力学", value: "用通俗语言解释一下量子力学的基本概念。"},
+        {id: 4, label: "23213", value: "用通俗语言解释一下量子力学的基本概念。"},
+        {id: 5, label: "解释21量子力学", value: "用通俗语言解释一下量子力学的基本概念。"},
+        {id: 6, label: "解释21量子力22学", value: "用通俗语言解释一下量子力学的基本概念。"},
+    ]);
+    const quickOptionsRef = useRef(null);
+    const [currentPageIndex, setCurrentPageIndex] = useState(0);
+    // -1 -- 没有工具 0 -- 加载中 1 -- 已加载 2 -- 动画结束 3 -- 加载失败 4 -- 错误动画 5 -- 重试
     const [toolsLoadedStatus, setToolsLoadedStatus] = useState(0);
-    const [open, setOpen] = useState(false);  // 控制 DropdownMenu 的打开和关闭
-
-    // 发送按钮状态：'disabled', 'normal', 'loading', 'generating'
     const [sendButtonState, setSendButtonState] = useState('normal');
-
     const messageRef = useRef(message);
     const textareaRef = useRef(null);
-    const cloneTextareaRef = useRef(null);  // 克隆用于计算高度的输入框
+    const cloneTextareaRef = useRef(null);
     const sendButtonStateRef = useRef(sendButtonState);
-
-    useEffect(() => {
-        sendButtonStateRef.current = sendButtonState;
-        messageRef.current = message;
-    }, [sendButtonState, message]);
+    // 新增状态：跟踪当前选中的快捷选项
+    const [selectedQuickOption, setSelectedQuickOption] = useState(null);
 
     /*
-    * 函数的定义
-    */
+     * 工具函数定义
+     */
+
+    /** 初始化用于计算高度的克隆文本区域 */
     const initTextareaClone = () => {
         if (cloneTextareaRef.current) return;
-
         const textarea = textareaRef.current;
         if (!textarea) return;
-
         const clone = textarea.cloneNode();
         Object.assign(clone.style, {
             position: 'absolute',
@@ -73,7 +76,6 @@ function ChatBox({onSendMessage, readOnly = false}) {
             height: 'auto',
             resize: 'none',
             overflow: 'hidden',
-            // 确保不会影响页面布局
             pointerEvents: 'none',
             zIndex: '-1'
         });
@@ -81,6 +83,7 @@ function ChatBox({onSendMessage, readOnly = false}) {
         cloneTextareaRef.current = clone;
     };
 
+    /** 清理克隆文本区域 */
     const cleanupTextareaClone = () => {
         if (cloneTextareaRef.current) {
             document.body.removeChild(cloneTextareaRef.current);
@@ -88,17 +91,15 @@ function ChatBox({onSendMessage, readOnly = false}) {
         }
     };
 
+    /** 调整文本区域高度 */
     const adjustTextareaHeight = () => {
         const textarea = textareaRef.current;
         const clone = cloneTextareaRef.current;
-
         if (!textarea || !clone) return;
 
-        // 同步 textarea 的关键属性到克隆元素
         clone.value = textarea.value;
         clone.style.width = textarea.offsetWidth + 'px';
 
-        // 同步关键样式（如果 textarea 样式可能动态变化）
         const computedStyle = getComputedStyle(textarea);
         clone.style.fontFamily = computedStyle.fontFamily;
         clone.style.fontSize = computedStyle.fontSize;
@@ -107,12 +108,8 @@ function ChatBox({onSendMessage, readOnly = false}) {
         clone.style.border = computedStyle.border;
         clone.style.boxSizing = computedStyle.boxSizing;
 
-        const height = Math.min(clone.scrollHeight, 128);
-        textarea.style.height = height + 'px';
-
         const contentHeight = clone.scrollHeight;
         const cappedHeight = Math.min(contentHeight, 128);
-
         textarea.style.height = cappedHeight + 'px';
 
         if (contentHeight > 48) {
@@ -120,182 +117,201 @@ function ChatBox({onSendMessage, readOnly = false}) {
         } else {
             textarea.style.overflowY = 'auto';
         }
-
     };
 
+    /** 处理发送消息 */
     const handleSendMessage = () => {
-        // 只有在正常状态且消息不为空时才发送
         onSendMessage(message, toolsStatus, sendButtonState);
         textareaRef.current?.focus();
     };
 
+    /** 处理键盘事件 */
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             if (e.shiftKey) {
-                // Shift + Enter：允许换行（不阻止默认行为）
-                return false;
+                if (tipMessageIsForNewLine) {
+                    chatboxSetup({tipMessage: null})
+                }
+                return;
             } else {
-                // 普通 Enter：发送消息
-                e.preventDefault(); // 阻止换行
+                e.preventDefault();
                 handleSendMessage();
             }
         }
     };
 
+    /** 渲染图标 */
     const renderIcon = (iconType, iconData) => {
         if (!iconData) return null;
-
-        // 图标库类型 (react-icons)
         if (iconType === 'library') {
             const iconMap = {
                 search: FaSearch,
                 refresh: FaRedo,
                 earth: FaEarthAmericas,
-                // 可在此扩展更多图标
             };
             const IconComponent = iconMap[iconData];
             return IconComponent ? <IconComponent className="w-4 h-4 mr-2"/> : null;
-        }
-
-        // SVG 类型
-        else if (iconType === 'svg') {
+        } else if (iconType === 'svg') {
             return (
                 <span
                     className="inline-block w-4 h-4 mr-2"
                     dangerouslySetInnerHTML={{__html: iconData}}
                 />
             );
-        }
-
-        // 图片类型
-        else if (iconType === 'image') {
+        } else if (iconType === 'image') {
             return <img src={iconData} alt="" className="w-4 h-4 mr-2"/>;
         }
-
         return null;
     };
 
+    /** 渲染菜单项 */
     const renderMenuItems = (items) => {
         return items.map((item, index) => {
-            // 标记型：仅标题
             if (item.type === 'label') {
                 return (
-                    <DropdownMenuLabel key={`label-${index}`} className="px-2 py-1.5 text-sm font-semibold">
+                    <DropdownMenuLabel
+                        key={`label-${index}`}
+                        className={`px-2 py-1.5 text-sm font-semibold ${
+                            item.disabled ? 'text-gray-400 cursor-not-allowed' : ''
+                        }`}
+                    >
                         {t(item.text)}
                     </DropdownMenuLabel>
                 );
-            }
-
-            // 分隔线
-            else if (item.type === 'separator') {
+            } else if (item.type === 'separator') {
                 return <DropdownMenuSeparator key={`sep-${index}`}/>;
-            }
-
-            // 修复：分组型 - 使用 DropdownMenuSub 而不是 DropdownMenuGroup
-            else if (item.type === 'group') {
+            } else if (item.type === 'group') {
+                const isDisabled = item.disabled;
                 return (
                     <DropdownMenuSub key={`group-${item.name || index}`}>
-                        <DropdownMenuSubTrigger className="flex items-center cursor-pointer">
+                        <DropdownMenuSubTrigger
+                            disabled={isDisabled}
+                            className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
+                                isDisabled
+                                    ? 'text-gray-400 pointer-events-none opacity-70'
+                                    : 'hover:bg-gray-100'
+                            }`}
+                        >
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
                             <span>{t(item.text)}</span>
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                            {renderMenuItems(item.children)}
+                            {isDisabled ? null : renderMenuItems(item.children)}
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
                 );
-            }
-
-            // 按钮型：切换状态
-            else if (item.type === 'toggle') {
+            } else if (item.type === 'toggle') {
+                const isDisabled = item.disabled;
+                const isChecked = toolsStatus.extra_tools[item.name];
                 return (
                     <DropdownMenuItem
                         key={`toggle-${item.name}`}
-                        onClick={() => {
-                            setToolsStatus(prev => ({
+                        onClick={(e) => {
+                            if (isDisabled) {
+                                e.preventDefault();
+                                return;
+                            }
+                            setToolsStatus((prev) => ({
                                 ...prev,
                                 extra_tools: {
                                     ...prev.extra_tools,
-                                    [item.name]: !prev.extra_tools[item.name]
-                                }
+                                    [item.name]: !prev.extra_tools[item.name],
+                                },
                             }));
                         }}
-                        className="flex items-center cursor-pointer"
+                        className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
+                            isDisabled
+                                ? 'text-gray-400 pointer-events-none opacity-70'
+                                : 'hover:bg-gray-100'
+                        }`}
+                        disabled={isDisabled}
                     >
                         {item.iconData && renderIcon(item.iconType, item.iconData)}
                         <span>{t(item.text)}</span>
-                        {toolsStatus.extra_tools[item.name] && (
+                        {!isDisabled && isChecked && (
                             <CheckIcon className="ml-auto w-4 h-4 text-blue-500"/>
                         )}
                     </DropdownMenuItem>
                 );
-            }
-
-            // 单选型：组内单选
-            else if (item.type === 'radio') {
+            } else if (item.type === 'radio') {
+                const isDisabled = item.disabled;
                 return (
                     <DropdownMenuSub key={`radio-${item.name}`}>
-                        <DropdownMenuSubTrigger className="flex items-center cursor-pointer">
+                        <DropdownMenuSubTrigger
+                            disabled={isDisabled}
+                            className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
+                                isDisabled
+                                    ? 'text-gray-400 pointer-events-none opacity-70'
+                                    : 'hover:bg-gray-100'
+                            }`}
+                        >
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
                             <span>{t(item.text)}</span>
-                            {/* 显示当前选中项 */}
-                            {/*{toolsStatus.extra_tools[item.name] && (*/}
-                            {/*    <span className="ml-auto text-xs text-gray-500">*/}
-                            {/*        {item.children.find(c => c.name === toolsStatus.extra_tools[item.name])?.text || '未选择'}*/}
-                            {/*    </span>*/}
-                            {/*)}*/}
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                            {item.children.map(child => (
-                                <DropdownMenuItem
-                                    key={`radio-${item.name}-${child.name}`}
-                                    onClick={() => {
-                                        setToolsStatus(prev => ({
-                                            ...prev,
-                                            extra_tools: {
-                                                ...prev.extra_tools,
-                                                [item.name]: child.name
+                            {item.children.map((child) => {
+                                const childIsDisabled = child.disabled || false;
+                                const isSelected =
+                                    toolsStatus.extra_tools[item.name] === child.name;
+                                return (
+                                    <DropdownMenuItem
+                                        key={`radio-${item.name}-${child.name}`}
+                                        onClick={(e) => {
+                                            if (isDisabled || childIsDisabled) {
+                                                e.preventDefault();
+                                                return;
                                             }
-                                        }));
-                                    }}
-                                    className="flex items-center cursor-pointer"
-                                >
-                                    {child.iconData && renderIcon(child.iconType, child.iconData)}
-                                    <span>{t(child.text)}</span>
-                                    {toolsStatus.extra_tools[item.name] === child.name && (
-                                        <CheckIcon className="ml-auto w-4 h-4 text-blue-500"/>
-                                    )}
-                                </DropdownMenuItem>
-                            ))}
+                                            setToolsStatus((prev) => ({
+                                                ...prev,
+                                                extra_tools: {
+                                                    ...prev.extra_tools,
+                                                    [item.name]: child.name,
+                                                },
+                                            }));
+                                        }}
+                                        className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
+                                            childIsDisabled || isDisabled
+                                                ? 'text-gray-400 pointer-events-none opacity-70'
+                                                : 'hover:bg-gray-100'
+                                        }`}
+                                        disabled={isDisabled || childIsDisabled}
+                                    >
+                                        {child.iconData &&
+                                            renderIcon(child.iconType, child.iconData)}
+                                        <span>{t(child.text)}</span>
+                                        {isSelected && !isDisabled && !childIsDisabled && (
+                                            <CheckIcon className="ml-auto w-4 h-4 text-blue-500"/>
+                                        )}
+                                    </DropdownMenuItem>
+                                );
+                            })}
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
                 );
             }
-
             return null;
         });
     };
 
+    /** 初始化额外工具状态 */
     const initializeExtraTools = (toolsConfig) => {
         const status = {};
-
         const processItems = (items) => {
             items.forEach(item => {
                 if (item.type === 'toggle') {
                     status[item.name] = false;
                 } else if (item.type === 'radio' && item.children?.length > 0) {
-                    // 默认选中第一个选项
                     status[item.name] = item.children[0].name;
                 } else if (item.type === 'group') {
                     processItems(item.children);
                 }
             });
         };
-
         processItems(toolsConfig);
         return status;
     };
 
+    /** 渲染工具按钮 */
     const renderToolButtons = () => {
         return tools.map((tool) => {
             const isActive = tool.isActive ?? false;
@@ -350,8 +366,8 @@ function ChatBox({onSendMessage, readOnly = false}) {
         });
     };
 
+    /** 发送按钮样式 */
     const sendButtonStyle = useMemo(() => {
-        // 消息为空时强制禁用
         if (!message.trim() && sendButtonState === 'normal') {
             return {
                 state: 'disabled',
@@ -361,7 +377,7 @@ function ChatBox({onSendMessage, readOnly = false}) {
                          xmlns="http://www.w3.org/2000/svg" p-id="6097" width="24" height="24">
                         <path
                             d="M512 85.333333a42.666667 42.666667 0 0 1 38.144 23.594667l384 768a42.666667 42.666667 0 0 1-47.36 60.714667L512 854.357333l-374.741333 83.285334a42.666667 42.666667 0 0 1-47.402667-60.714667l384-768A42.666667 42.666667 0 0 1 512 85.333333z m42.666667 691.114667l263.082666 58.453333L554.666667 308.736v467.712zM469.333333 308.736L206.250667 834.901333 469.333333 776.448V308.736z"
-                            fill="#9ca3af" // 灰色
+                            fill="#9ca3af"
                             p-id="6098"
                         ></path>
                     </svg>
@@ -370,7 +386,6 @@ function ChatBox({onSendMessage, readOnly = false}) {
             };
         }
 
-        // 根据当前状态返回样式
         switch (sendButtonState) {
             case 'disabled':
                 return {
@@ -381,7 +396,7 @@ function ChatBox({onSendMessage, readOnly = false}) {
                              xmlns="http://www.w3.org/2000/svg" p-id="6097" width="24" height="24">
                             <path
                                 d="M512 85.333333a42.666667 42.666667 0 0 1 38.144 23.594667l384 768a42.666667 42.666667 0 0 1-47.36 60.714667L512 854.357333l-374.741333 83.285334a42.666667 42.666667 0 0 1-47.402667-60.714667l384-768A42.666667 42.666667 0 0 1 512 85.333333z m42.666667 691.114667l263.082666 58.453333L554.666667 308.736v467.712zM469.333333 308.736L206.250667 834.901333 469.333333 776.448V308.736z"
-                                fill="#9ca3af" // 灰色
+                                fill="#9ca3af"
                                 p-id="6098"
                             ></path>
                         </svg>
@@ -394,11 +409,7 @@ function ChatBox({onSendMessage, readOnly = false}) {
                     className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
                     icon: (
                         <div className="relative w-6 h-6">
-                            {/* 旋转的环 */}
-                            <div
-                                className="absolute inset-[-9px] border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
-
-                            {/* 中间的正方形 */}
+                            <div className="absolute inset-[-9px] border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <div className="w-4 h-4 bg-white rounded"></div>
                             </div>
@@ -428,8 +439,7 @@ function ChatBox({onSendMessage, readOnly = false}) {
                         <svg
                             t="1758800079268"
                             className="icon"
-                            viewBox="0 0 1024 1024"
-                            version="1.1"
+                            viewBox="0 0 1024 1024" version="1.1"
                             xmlns="http://www.w3.org/2000/svg"
                             p-id="6097"
                             width="24"
@@ -447,18 +457,12 @@ function ChatBox({onSendMessage, readOnly = false}) {
         }
     }, [message, sendButtonState]);
 
+    /** 配置聊天框 */
     const chatboxSetup = (data) => {
-
-        // 为每个内置工具的启用状态设置
         const newBuiltinStatus = {};
-
-        // 初始化额外工具状态
         const newExtraStatus = initializeExtraTools(data.extra_tools || []);
 
-        // 工具设置部分
-
         if (data.builtin_tools) {
-
             data.builtin_tools.forEach((tool) => {
                 newBuiltinStatus[tool.name] = false;
             });
@@ -466,40 +470,127 @@ function ChatBox({onSendMessage, readOnly = false}) {
         }
 
         if (data.extra_tools) {
-
-            // 更新状态
             setToolsStatus(prev => ({
                 ...prev,
                 builtin_tools: {...prev.builtin_tools, ...newBuiltinStatus},
                 extra_tools: {...prev.extra_tools, ...newExtraStatus}
             }));
-
-            setExtraTools(data.extra_tools || []); // 存储配置
+            setExtraTools(data.extra_tools || []);
         }
 
-        // 聊天框属性设置部分
-        if (data.readOnly) {
+        if (data.readOnly !== undefined) {
             setIsReadOnly(Boolean(data.readOnly));
         }
 
+        if (data.tipMessage !== undefined) {
+            setTipMessageIsForNewLine(false);
+            if (data.tipMessage === null) {
+                setShowTipMessage(false);
+            } else {
+                setShowTipMessage(false);
+                setTimeout(() => {
+                    setTipMessage(data.tipMessage || '');
+                    setShowTipMessage(true);
+                    if (data.tipMessageFadeOutDelay) {
+                        setTimeout(() => {
+                            setShowTipMessage(false);
+                        }, parseInt(data.tipMessageFadeOutDelay))
+                    }
+                }, 300)
+            }
+        }
     }
 
+    /**
+     * 处理快捷选项点击
+     * 逻辑：
+     * 1. 如果点击的是已选中的选项：
+     *    - 如果输入框内容未改变（仍是该选项的值），则清空输入框并取消选中
+     *    - 如果输入框内容已改变，则只取消选中
+     * 2. 如果点击的是未选中的选项，则选中该选项并设置输入框内容
+     */
+    const handleOptionClick = (option) => {
+        if (selectedQuickOption === option.id) {
+            // 再次点击已选中的选项
+            if (message === option.value) {
+                // 输入框内容未改变，清空输入框
+                setMessage('');
+                setSelectedQuickOption(null);
+            } else {
+                // 输入框内容已改变，只取消选中
+                setSelectedQuickOption(null);
+            }
+        } else {
+            // 点击新的选项
+            setMessage(option.value);
+            setSelectedQuickOption(option.id);
+            textareaRef.current?.focus();
+        }
+    };
+
+    /**
+     * 处理输入框内容变化
+     * 当输入框内容改变时，如果当前有选中的快捷选项且输入内容与选项值不同，则取消选中
+     */
+    const handleInputChange = (e) => {
+        if (isReadOnly) return;
+
+        const newValue = e.target.value;
+        setMessage(newValue);
+
+        // 如果当前有选中的快捷选项
+        if (selectedQuickOption !== null) {
+            const selectedOption = quickOptions.find(opt => opt.id === selectedQuickOption);
+            // 如果选中选项存在且输入内容与选项值不同，则取消选中
+            if (selectedOption && newValue !== selectedOption.value) {
+                setSelectedQuickOption(null);
+            }
+        }
+    };
+
     /*
-    * 初始事件与回调
-    */
+     * 生命周期和副作用
+     */
+
+    /** 初始化快捷选项宽度计算 */
+    useLayoutEffect(() => {
+        const updateWidth = () => {
+            if (quickOptions.length > 0 && quickOptionsRef.current?.firstElementChild) {
+                const firstBtn = quickOptionsRef.current.firstElementChild;
+                const width = firstBtn.offsetWidth + 8;
+                // 宽度计算仅用于内部，不需要存储
+            }
+        };
+
+        const timeoutId = setTimeout(() => {
+            updateWidth();
+        }, 100);
+
+        window.addEventListener('resize', updateWidth);
+        return () => {
+            clearTimeout(timeoutId);
+            window.removeEventListener('resize', updateWidth);
+        };
+    }, [quickOptions]);
+
+    /** 同步状态到引用 */
+    useEffect(() => {
+        sendButtonStateRef.current = sendButtonState;
+        messageRef.current = message;
+    }, [sendButtonState, message]);
+
+    /** 调整文本区域高度 */
     useEffect(() => {
         adjustTextareaHeight();
     }, [message]);
 
-    // 加载 JSON 配置
+    /** 加载工具配置 */
     useEffect(() => {
         if (toolsLoadedStatus === 0) {
-
-            if (CHATBOX_API.trim() === '') {  // 留空则没有多余的工具
+            if (CHATBOX_API.trim() === '') {
                 setToolsLoadedStatus(-1);
                 return;
             }
-
             fetch(CHATBOX_API)
                 .then((response) => response.json())
                 .then((data) => {
@@ -509,58 +600,63 @@ function ChatBox({onSendMessage, readOnly = false}) {
                 .catch((error) => {
                     setToolsLoadedStatus(3);
                 });
-
         }
     }, [toolsLoadedStatus]);
 
-
-    /*
-     * 广播事件 - 使用单一状态变量
-     */
+    /** 处理外部事件 */
     useEffect(() => {
         const unsubscribe = onEvent("widget", "ChatBox").then((payload, markId, isReply, id, reply) => {
-
             switch (payload.command) {
                 case "SendButton-State":
                     const validStates = ['disabled', 'normal', 'loading', 'generating'];
-
                     if (validStates.includes(payload.value)) {
                         setSendButtonState(payload.value);
                         reply({command: 'SendButton-State', value: payload.value});
                     } else {
                         reply({command: 'SendButton-State', value: sendButtonStateRef.current});
                     }
-
                     break;
-
                 case "Set-Message":
                     setMessage(payload.value);
                     reply({command: 'Set-Message', success: true});
                     break;
-
                 case "Get-Message":
                     reply({command: 'Get-Message', value: messageRef.current});
                     break;
-
                 case "Setup-ChatBox":
-                    setToolsLoadedStatus(-1);
-
+                    if (payload.value.builtin_tools || payload.value.extra_tools) {
+                        setToolsLoadedStatus(-1);
+                    }
                     reply({command: 'Setup-ChatBox', success: true});
-
                     setTimeout(() => {
                         chatboxSetup(payload.value);
                         setToolsLoadedStatus(2);
                     }, 500)
                     break;
             }
-
         });
         return () => {
             unsubscribe();
         };
     }, []);
 
+    /** 检测屏幕大小变化 */
+    useEffect(() => {
+        const checkScreenSize = () => {
+            setIsSmallScreen(window.innerWidth < 500);
+            if (window.innerWidth < 500 && tipMessageIsForNewLine) {
+                setTipMessage(null);
+                setTipMessageIsForNewLine(false);
+                setShowTipMessage(false);
+            }
+        };
 
+        checkScreenSize();
+        window.addEventListener('resize', checkScreenSize);
+        return () => window.removeEventListener('resize', checkScreenSize);
+    }, []);
+
+    /** 初始化和清理克隆文本区域 */
     useEffect(() => {
         initTextareaClone();
         return cleanupTextareaClone;
@@ -568,17 +664,28 @@ function ChatBox({onSendMessage, readOnly = false}) {
 
     return (
         <div className="w-full max-w-2xl px-4">
+            <ChatBoxHeader
+                quickOptions={quickOptions}
+                isSmallScreen={isSmallScreen}
+                showTipMessage={showTipMessage}
+                tipMessage={tipMessage}
+                isReadOnly={isReadOnly}
+                onOptionClick={handleOptionClick}
+                t={t}
+                currentPageIndex={currentPageIndex}
+                setCurrentPageIndex={setCurrentPageIndex}
+                quickOptionsRef={quickOptionsRef}
+                selectedOption={selectedQuickOption}
+            />
 
-            <div
-                className="bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-md focus-within:shadow-lg"
-            >
+            <div className="bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-md focus-within:shadow-lg">
                 <div className="pt-2 pl-2 pr-2">
                     <textarea
                         ref={textareaRef}
                         value={message}
-                        onChange={(e) => !isReadOnly && setMessage(e.target.value)}
+                        onChange={handleInputChange}  // 使用新的处理函数
                         onKeyDown={(e) => {
-                            if (isReadOnly) return; // 只读时不响应按键
+                            if (isReadOnly) return;
                             handleKeyDown(e);
                         }}
                         placeholder={t("输入你的消息...")}
@@ -589,106 +696,20 @@ function ChatBox({onSendMessage, readOnly = false}) {
                         }}
                     />
                 </div>
-
-
                 <div className="flex items-center justify-between px-4 pb-3">
-
-                    <div className="flex items-center space-x-1">  {/* 修改 space-x-2 为 space-x-1 */}
-
-                        {/* 圆形 "+" 按钮 */}
-                        <DropdownMenu open={open} onOpenChange={setOpen}>
-                            <DropdownMenuTrigger>
-                                <button
-                                    type="button"
-                                    className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
-                                    aria-label={t("拓展工具")}
-                                >
-                                    <IoMdAdd/>
-                                </button>
-                            </DropdownMenuTrigger>
-
-                            <DropdownMenuContent align="start" className="bg-white p-1 shadow-lg rounded-md">
-                                {extraTools.length > 0 ? (
-                                    renderMenuItems(extraTools)
-                                ) : (
-                                    <div className="px-2 py-1.5 text-sm text-gray-500">无可用工具</div>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        {/* 其他左侧按钮（例如搜索按钮） */}
-                        <div className="relative">
-                            <Transition
-                                show={toolsLoadedStatus === 2}
-                                enter="transition-opacity duration-500"
-                                enterFrom="opacity-0"
-                                enterTo="opacity-100"
-                                leave="transition-opacity duration-500"
-                                leaveFrom="opacity-100"
-                                leaveTo="opacity-0"
-                            >
-                                {/* 使用 Transition.Child 渲染一个 div */}
-                                <Transition.Child as="div">
-                                    {() => renderToolButtons()}
-                                </Transition.Child>
-                            </Transition>
-
-                            <Transition
-                                show={toolsLoadedStatus === 4}
-                                enter="transition-opacity duration-500"
-                                enterFrom="opacity-0"
-                                enterTo="opacity-100"
-                                leave="transition-opacity duration-500"
-                                leaveFrom="opacity-100"
-                                leaveTo="opacity-0"
-                                afterLeave={() => {
-                                    setToolsLoadedStatus(0);
-                                }}
-                            >
-                                {/* 使用 Transition.Child 渲染一个 div */}
-                                <Transition.Child as="div">
-                                    <div className="flex items-center space-x-2 p-1">
-                                        <span className="text-red-500 text-sm mb-0.5">加载工具失败</span>
-                                        <button
-                                            onClick={() => setToolsLoadedStatus(5)}
-                                            className="text-blue-500 hover:text-blue-700 text-sm flex items-center cursor-pointer"
-                                            aria-label={t("重试加载工具")}
-                                        >
-                                            <FaRedo className="w-4 h-4 mr-1"/>
-                                            重试
-                                        </button>
-                                    </div>
-                                </Transition.Child>
-                            </Transition>
-
-                            <Transition
-                                show={toolsLoadedStatus === 0}
-                                enter="transition-opacity duration-500"
-                                enterFrom="opacity-0"
-                                enterTo="opacity-100"
-                                leave="transition-opacity duration-500"
-                                leaveFrom="opacity-100"
-                                leaveTo="opacity-0"
-                                afterLeave={() => {
-                                    if (toolsLoadedStatus === 3) {
-                                        setToolsLoadedStatus(4);
-                                    } else {
-                                        setToolsLoadedStatus(2);
-                                    }
-                                }}
-                            >
-                                {/* 同样，使用 Transition.Child 渲染一个 div */}
-                                <Transition.Child as="div">
-                                    {() => point3Loading()}
-                                </Transition.Child>
-                            </Transition>
-                        </div>
-
-
-                    </div>
-
-
-                    {/* 右侧：原有按钮（放大 + 发送） */}
+                    <ToolButtons
+                        toolsLoadedStatus={toolsLoadedStatus}
+                        extraTools={extraTools}
+                        tools={tools}
+                        toolsStatus={toolsStatus}
+                        setToolsStatus={setToolsStatus}
+                        point3Loading={point3Loading}
+                        renderToolButtons={renderToolButtons}
+                        renderMenuItems={renderMenuItems}
+                        setToolsLoadedStatus={setToolsLoadedStatus}
+                        t={t}
+                    />
+                    {/* 发送区域 */}
                     <div className="flex items-center space-x-2">
                         <button
                             type="button"
@@ -703,7 +724,6 @@ function ChatBox({onSendMessage, readOnly = false}) {
                                     fill="#000000" fill-opacity=".45" p-id="18775"></path>
                             </svg>
                         </button>
-
                         <button
                             type="button"
                             onClick={handleSendMessage}
@@ -717,12 +737,10 @@ function ChatBox({onSendMessage, readOnly = false}) {
                         </button>
                     </div>
                 </div>
-
             </div>
 
-            {/* 弹窗遮罩层 */}
+            {/* MD编辑器模态框 */}
             <Transition appear show={isModalOpen} as={Fragment}>
-                {/* 遮罩层 - 淡入淡出 */}
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-200"
@@ -732,12 +750,10 @@ function ChatBox({onSendMessage, readOnly = false}) {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div
-                        className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 bg-black/40`}
-                    >
+                    <div className="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 bg-black/40">
                         <div
-                            className={`bg-white rounded-2xl w-full max-w-3xl h-[80vh] p-6 relative
-                        transition-all duration-200 ease-out transform`}
+                            className="bg-white rounded-2xl w-full max-w-3xl h-[80vh] p-6 relative
+                            transition-all duration-200 ease-out transform"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <button
@@ -752,22 +768,18 @@ function ChatBox({onSendMessage, readOnly = false}) {
                                 </svg>
                             </button>
                             <div className="h-full w-full">
-
                                 <div className="h-full p-5">
-
                                     <SimpleMDEditor
                                         text={message}
                                         setText={setMessage}
+                                        readOnly={isReadOnly}
                                     />
-
                                 </div>
-
                             </div>
                         </div>
                     </div>
                 </Transition.Child>
             </Transition>
-
         </div>
     );
 }
