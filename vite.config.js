@@ -13,7 +13,7 @@ export default defineConfig({
     },
     define: {
         DEBUG_MODE: true,
-        CHATBOX_API: JSON.stringify('./src/assets/api/chatbox.json'),
+        CHATBOX_API: JSON.stringify('/src/assets/api/chatbox.json'),
     },
 })
 

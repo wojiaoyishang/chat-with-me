@@ -19,7 +19,11 @@ const router = createBrowserRouter([
     //     element: <StrictMode>< App/></StrictMode>,
     // },
     {
-        path: "/chat/",
+        path: "/chat",
+        element: <StrictMode>< ChatPage/></StrictMode>,
+    },
+    {
+        path: "/chat/:markId",
         element: <StrictMode>< ChatPage/></StrictMode>,
     }
 ]);

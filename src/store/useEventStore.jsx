@@ -1,11 +1,11 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 
 const createDebugLogger = () => {
     if (typeof DEBUG_MODE === 'undefined' || !DEBUG_MODE) return null;
 
     return {
         logEmit: (event, stack) => {
-            const {type, target, payload, markId, isReply, id} = event;
+            const { type, target, payload, markId, isReply, id } = event;
 
             const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
@@ -48,7 +48,7 @@ const createDebugLogger = () => {
         },
 
         logReceive: (event, listenerStack) => {
-            const {type, target, payload, markId, isReply, id} = event;
+            const { type, target, payload, markId, isReply, id } = event;
 
             const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
@@ -101,36 +101,40 @@ export const useEventStore = create((set, get) => {
     return {
         listeners: {},
 
-        addListener: (type, target, callback) => {
+        addListener: (type, target, callback, listenerMarkId) => {
             const registrationStack = debugLogger
                 ? new Error('Listener registered at:').stack.split('\n').slice(2).join('\n')
                 : null;
 
             set(state => {
-                const newListeners = {...state.listeners};
+                const newListeners = { ...state.listeners };
                 if (!newListeners[type]) newListeners[type] = {};
                 if (!newListeners[type][target]) newListeners[type][target] = [];
 
-                if (!newListeners[type][target].some(l => l.callback === callback)) {
+                // 避免重复注册相同 callback
+                const exists = newListeners[type][target].some(l => l.callback === callback);
+                if (!exists) {
                     newListeners[type][target] = [
                         ...newListeners[type][target],
                         {
                             callback,
                             active: true,
+                            markId: listenerMarkId, // 保存监听器的 markId
                             registrationStack
                         }
                     ];
                 }
 
-                return {listeners: newListeners};
+                return { listeners: newListeners };
             });
 
+            // 返回取消函数
             return () => {
                 set(state => {
-                    const newListeners = {...state.listeners};
+                    const newListeners = { ...state.listeners };
                     if (newListeners[type]?.[target]) {
                         newListeners[type][target] = newListeners[type][target]
-                            .map(l => l.callback === callback ? {...l, active: false} : l)
+                            .map(l => l.callback === callback ? { ...l, active: false } : l)
                             .filter(l => l.active);
 
                         if (newListeners[type][target].length === 0) {
@@ -140,16 +144,16 @@ export const useEventStore = create((set, get) => {
                             }
                         }
                     }
-                    return {listeners: newListeners};
+                    return { listeners: newListeners };
                 });
             };
         },
 
         _emit: (event, emitStack = null) => {
-            const {listeners} = get();
-            const {type, target, markId = null, isReply = false, payload, id = null} = event;
+            const { listeners } = get();
+            const { type, target, markId: eventMarkId = null, isReply = false, payload, id = null } = event;
 
-            // 调试日志 - 只记录非回复事件的发送
+            // 调试日志
             if (debugLogger) {
                 if (!isReply) {
                     debugLogger.logEmit(event, emitStack);
@@ -158,29 +162,34 @@ export const useEventStore = create((set, get) => {
                 }
             }
 
-            // 获取匹配的监听器（复制快照）
+            // 获取监听器快照
             const targetListeners = [...(listeners[type]?.[target] || [])];
 
-            // 处理每个监听器
             targetListeners.forEach(listener => {
                 if (!listener.active || isReply) return;
+
+                const listenerMarkId = listener.markId;
+                // 如果 eventMarkId 为未定义则忽略匹配
+                if (eventMarkId !== null  && listenerMarkId !== eventMarkId) {
+                    return; // 不匹配，跳过
+                }
 
                 const reply = (data) => {
                     get()._emit({
                         type,
                         target,
                         payload: data,
-                        markId,
+                        markId: listenerMarkId,  // 监听器的 markId
                         isReply: true,
                         id: id
                     }, new Error('Reply initiated at:').stack);
                 };
 
-                // 异步处理确保消息不被覆盖
                 Promise.resolve().then(() => {
                     if (!listener.active || isReply) return;
                     try {
-                        listener.callback(payload, markId, isReply, id, reply);
+                        // 传入 listener 自己的 markId 作为第5个参数（或你可调整顺序）
+                        listener.callback(payload, eventMarkId, isReply, id, reply, listenerMarkId);
                     } catch (error) {
                         console.groupCollapsed(
                             `%c[EVENT ERROR] %c${type}/${target}`,
@@ -189,6 +198,8 @@ export const useEventStore = create((set, get) => {
                         );
                         console.error(`Error in event listener:`, error);
                         console.log('Event payload:', payload);
+                        console.log('Event markId:', eventMarkId);
+                        console.log('Listener markId:', listenerMarkId);
                         console.log('Is Reply:', isReply);
                         console.log('Listener registered at:');
                         console.log(listener.registrationStack || 'N/A');
@@ -215,21 +226,21 @@ export let emitEvent = ({
         ? new Error('Event emitted at:').stack
         : null;
 
-    useEventStore.getState()._emit({type, target, payload, markId, isReply, id}, emitStack);
+    useEventStore.getState()._emit({ type, target, payload, markId, isReply, id }, emitStack);
 };
 
-// 开发环境挂载到 window
 if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
     window.emitEvent = emitEvent;
 }
 
 // =======================
-// 监听事件函数
+// 监听事件函数（支持 markId）
 // =======================
-export let onEvent = (type, target) => {
+export let onEvent = (type, target, markId) => {
     return {
         then: (callback) => {
-            return useEventStore.getState().addListener(type, target, callback);
+            // 注意：markId 可以是 undefined（表示通配），也可以是具体值
+            return useEventStore.getState().addListener(type, target, callback, markId);
         }
     };
 };

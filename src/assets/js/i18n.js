@@ -31,6 +31,7 @@ i18n
                     "按下 Shift + Enter 换行": "Shift + Enter for New Line",
                     "上一页": "Prev Page",
                     "下一页": "Next Page",
+                    "暂不支持整个文件夹上传": "The entire folder upload is not supported for the time being"
                 }
             }
         }
