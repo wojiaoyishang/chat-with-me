@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import ChatBox from "@/components/chat/chatbox.jsx";
-import { getMarkId } from "@/lib/utils";
+import { getMarkId } from "@/lib/tools";
 import { onEvent } from "@/store/useEventStore.jsx";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -9,7 +9,7 @@ import {
     processSelectedFiles,
     simulateUpload,
     createFilePicker,
-} from "@/lib/utils";
+} from "@/lib/tools";
 import { useDropZone } from "@/hooks/useDropZone";
 import { useTranslation } from "react-i18next";
 
