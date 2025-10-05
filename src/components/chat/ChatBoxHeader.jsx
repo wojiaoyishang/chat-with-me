@@ -1,6 +1,7 @@
-import React, { Fragment } from 'react';
-import { Transition } from '@headlessui/react';
+import React, {Fragment} from 'react';
+import {Transition} from '@headlessui/react';
 import QuickOptions from './QuickOptions';
+import {useTranslation} from "react-i18next";
 
 /**
  * 聊天框头部组件
@@ -16,13 +17,13 @@ export default function ChatBoxHeader({
                                           tipMessage,
                                           isReadOnly,
                                           onOptionClick,
-                                          t,
                                           currentPageIndex,
                                           setCurrentPageIndex,
                                           quickOptionsRef,
                                           selectedOption,  // 接收选中状态
                                           isTransitioning // 是否处于切换动画
                                       }) {
+    const {t} = useTranslation();
     return (
         <>
             {isSmallScreen ? (

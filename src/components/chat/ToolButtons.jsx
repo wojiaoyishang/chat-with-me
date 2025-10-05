@@ -16,9 +16,6 @@ import {
 export default function ToolButtons({
                                         toolsLoadedStatus,
                                         extraTools,
-                                        tools,
-                                        toolsStatus,
-                                        setToolsStatus,
                                         point3Loading,
                                         renderToolButtons,
                                         renderMenuItems,

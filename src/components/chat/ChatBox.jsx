@@ -97,13 +97,13 @@ function ChatBox({
     const [extraTools, setExtraTools] = useState([]);
     const [isSmallScreen, setIsSmallScreen] = useState(false);
     const [quickOptions, setQuickOptions] = useState([]);
-    const [displayedQuickOptions, setDisplayedQuickOptions] = useState(quickOptions);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
     const [toolsLoadedStatus, setToolsLoadedStatus] = useState(0);
     const [sendButtonState, setSendButtonState] = useState('normal');
     const [selectedQuickOption, setSelectedQuickOption] = useState(null);
     const [attachmentHeight, setAttachmentHeight] = useState(0);
+    const [ignoreAttachmentTools, setIgnoreAttachmentTools] = useState(false);
 
     const quickOptionsRef = useRef(null);
     const messageRef = useRef(message);
@@ -197,7 +197,7 @@ function ChatBox({
                 const file = items[i].getAsFile();
                 if (onImagePaste && typeof onImagePaste === 'function') {
                     e.preventDefault();
-                    onImagePaste(file);
+                    if (!ignoreAttachmentTools && !isReadOnly) onImagePaste(file);
                 }
                 return;
             }
@@ -486,6 +486,8 @@ function ChatBox({
                 onClick: FilePickerCallback
             }
         ];
+
+        setIgnoreAttachmentTools(Boolean(data.ignoreAttachmentTools))
 
         const allExtraTools = data.extra_tools ? [...data.extra_tools, ...defaultAttachmentTools] : defaultAttachmentTools;
 
