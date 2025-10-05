@@ -112,7 +112,7 @@ export default function ChatBoxHeader({
                                     >
                                         <div
                                             className="px-3 py-1.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full whitespace-nowrap">
-                                            {t('read_only')} {/* ✅ 规范化 key */}
+                                            {t('read_only')} {/*  规范化 key */}
                                         </div>
                                     </Transition>
                                 </div>
@@ -177,7 +177,7 @@ export default function ChatBoxHeader({
                         >
                             <div
                                 className="px-3 py-1.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full whitespace-nowrap">
-                                {t('read_only')} {/* ✅ 规范化 key */}
+                                {t('read_only')} {/*  规范化 key */}
                             </div>
                         </Transition>
                     </div>

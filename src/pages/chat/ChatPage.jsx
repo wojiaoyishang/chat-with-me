@@ -1,17 +1,17 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
 import ChatBox from "@/components/chat/chatbox.jsx";
-import { getMarkId } from "@/lib/tools";
-import { onEvent } from "@/store/useEventStore.jsx";
-import { toast } from "sonner";
-import { Toaster } from "@/components/ui/sonner";
-import { Transition } from '@headlessui/react';
+import {generateUUID, getMarkId} from "@/lib/tools";
+import {onEvent} from "@/store/useEventStore.jsx";
+import {toast} from "sonner";
+import {Transition} from '@headlessui/react';
 import {
     processSelectedFiles,
     fileUpload,
     createFilePicker,
 } from "@/lib/tools";
-import { useDropZone } from "@/hooks/useDropZone";
-import { useTranslation } from "react-i18next";
+import {useDropZone} from "@/hooks/useDropZone";
+import {useTranslation} from "react-i18next";
+import { useNavigate } from 'react-router-dom';
 
 /**
  * 聊天主页面组件
@@ -20,12 +20,13 @@ import { useTranslation } from "react-i18next";
  * - 使用事件总线监听外部附件元数据请求
  */
 function ChatPage() {
-    const { t } = useTranslation(); // 国际化支持
+    const {t} = useTranslation(); // 国际化支持
+    const navigate = useNavigate();
 
     // DOM 引用与状态管理
     const pageContainerRef = useRef(null);
+    const [selfMarkId, setSelfMarkId] = useState(getMarkId());
     const uploadIntervals = useRef(new Map()); // 用于清理模拟上传的定时器
-    const selfMarkId = getMarkId(); // 当前页面唯一标识，用于事件通信
     const [uploadFiles, setUploadFiles] = useState([]); // 正在上传的文件列表
     const [attachments, setAttachments] = useState([]); // 已成功上传的附件列表
 
@@ -40,7 +41,7 @@ function ChatPage() {
     };
 
     // 使用自定义 Hook 管理拖拽状态和事件
-    const { isDraggingOver, dragEvents } = useDropZone(
+    const {isDraggingOver, dragEvents} = useDropZone(
         handleDropFiles,
         handleFolderDetected
     );
@@ -121,7 +122,7 @@ function ChatPage() {
                 (error) => {
                     toast.error(t("FileUpload.error") + (error?.message || 'Upload failed'));
                     setUploadFiles(prev =>
-                        prev.map(f => f.id === uploadFile.id ? { ...f, error: error.message || true } : f)
+                        prev.map(f => f.id === uploadFile.id ? {...f, error: error.message || true} : f)
                     );
                 }
             );
@@ -144,7 +145,9 @@ function ChatPage() {
             0: file,
             length: 1,
             item: (index) => (index === 0 ? file : null),
-            [Symbol.iterator]: function* () { yield file; }
+            [Symbol.iterator]: function* () {
+                yield file;
+            }
         };
         handleSelectedFiles(fileList);
     };
@@ -163,15 +166,15 @@ function ChatPage() {
 
             // 启动上传
             const handleProgressUpdate = (id, progress) => {
-                setUploadFiles(p => p.map(f => f.id === id ? { ...f, progress } : f));
+                setUploadFiles(p => p.map(f => f.id === id ? {...f, progress} : f));
             };
             const handleComplete = (id, attachment) => {
                 setUploadFiles(p => p.filter(f => f.id !== id));
                 setAttachments(p => [...p, attachment]);
             };
             const handleError = (error) => {
-                toast.error(t("file_upload.error", { message: error?.message || t("unknown_error") }));
-                setUploadFiles(p => p.map(f => f.id === uploadId ? { ...f, error: error.message || true } : f));
+                toast.error(t("file_upload.error", {message: error?.message || t("unknown_error")}));
+                setUploadFiles(p => p.map(f => f.id === uploadId ? {...f, error: error.message || true} : f));
             };
 
             const cleanup = fileUpload(
@@ -209,7 +212,7 @@ function ChatPage() {
         const container = pageContainerRef.current;
         if (!container) return;
 
-        const { onDragEnter, onDragOver, onDragLeave, onDrop } = dragEvents;
+        const {onDragEnter, onDragOver, onDragLeave, onDrop} = dragEvents;
 
         container.addEventListener('dragenter', onDragEnter);
         container.addEventListener('dragover', onDragOver);
@@ -224,9 +227,57 @@ function ChatPage() {
         };
     }, [dragEvents]);
 
+    /*
+     * 页面初始化逻辑，如果没有 markId 就向服务器请求一个
+     */
+
+    const [randomUUid, setRandomUUID] = useState(generateUUID());
+
+    useEffect(() => {
+
+        // 监听 websocket 打开
+        const unsubscribe1 = onEvent("websocket", "onopen", null).then((payload, markId, isReply, id, reply) => {
+
+            if (!selfMarkId) {  // 自己没有 markId 时
+                emitEvent({
+                    type: "page",
+                    target: "ChatPage",
+                    payload: {
+                        command: "Get-MarkId"
+                    },
+                    markId: randomUUid,
+                    isReply: false
+                });
+            }
+        });
+
+        // 设置广播事件回调
+        const unsubscribe2 = onEvent("page", "ChatPage", randomUUid, true).then((payload, markId, isReply, id, reply) => {
+
+            switch (payload.command) {
+                case "Get-MarkId":
+                    setSelfMarkId(payload.markId);
+                    navigate(`/chat/${payload.markId}`, { replace: true });
+                    break;
+            }
+        });
+
+        return () => {
+            unsubscribe1();
+            unsubscribe2();
+        };
+    }, []);
+
+
+    /*
+     * 广播事件
+     */
+    useEffect(() => {
+
+    }, []);
+
     return (
         <>
-            <Toaster richColors position="top-center" />
             <div
                 ref={pageContainerRef}
                 className="min-h-screen bg-gray-100 flex flex-col items-center justify-end pb-8"

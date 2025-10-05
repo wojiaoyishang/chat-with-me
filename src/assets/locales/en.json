@@ -3,6 +3,8 @@
   "zoom_in_input_box": "Zoom in Input Box",
   "send_message": "Send Message",
   "close": "Close",
+  "retry": "Retry",
+  "cancel": "Cancel",
   "shift_enter_newline": "Shift + Enter for New Line",
   "folder_upload_not_supported": "The entire folder upload is not supported for the time being",
   "file_upload": {
@@ -24,5 +26,14 @@
   "scroll_attachments_left": "Scroll attachments left",
   "scroll_attachments_right": "Scroll attachments right",
   "no_tools_available": "No tools available",
-  "tool_load_failed": "Failed to load tools"
+  "tool_load_failed": "Failed to load tools",
+  "websocket": {
+    "error": "WebSocket connection error: {{message}}",
+    "popover_title": "Connection failed",
+    "popover_content": "If the conversation service cannot be accessed, the conversation function will not be available.",
+    "reconnecting": "Reconnecting......",
+    "reconnect_success": "Reconnected.",
+    "reconnect_failed": "Fail on reconnect.",
+    "disconnect_from_server": "The server actively disconnected the link"
+  }
 }

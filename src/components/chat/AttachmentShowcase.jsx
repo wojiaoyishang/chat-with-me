@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Transition } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
+import {X} from "lucide-react";
 
 /**
  * 附件展示组件
@@ -108,10 +109,10 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
                                         onRemove(attachment);
                                     }}
                                     className="absolute top-1 right-1 z-20 w-4 h-4 bg-gray-600/30 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 focus:outline-none cursor-pointer"
-                                    aria-label={t("remove_attachment")} // ✅ 国际化
+                                    aria-label={t("remove_attachment")} //  国际化
                                     style={{ transform: 'translate(50%, -50%)' }}
                                 >
-                                    ×
+                                    <X className="w-3.5 h-3.5" />
                                 </button>
 
                                 <div
@@ -139,7 +140,7 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
                                         ) : (
                                             <img
                                                 src={attachment.preview}
-                                                alt={t("attachment_preview")} // ✅ 可选：也可国际化 alt 文本
+                                                alt={t("attachment_preview")}
                                                 className="w-full h-full object-cover"
                                                 style={{
                                                     objectFit: 'cover',
@@ -171,7 +172,7 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
                             type="button"
                             onClick={() => scrollAttachments('right')}
                             className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center z-20 opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110"
-                            aria-label={t("scroll_attachments_right")} // ✅ 国际化
+                            aria-label={t("scroll_attachments_right")}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -184,7 +185,7 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
                             type="button"
                             onClick={() => scrollAttachments('left')}
                             className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center z-20 opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110"
-                            aria-label={t("scroll_attachments_left")} // ✅ 国际化
+                            aria-label={t("scroll_attachments_left")}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

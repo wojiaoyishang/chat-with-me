@@ -77,14 +77,14 @@ function ToggleSearchButton({
                     className={`w-5 h-5 ${iconColor}`}
                     width="20"
                     height="20"
-                    alt={t(textKey)} // ✅ 国际化 alt 文本
+                    alt={t(textKey)} //  国际化 alt 文本
                 />
             );
         }
         return null;
     }
 
-    const buttonText = t(textKey); // ✅ 获取翻译文本
+    const buttonText = t(textKey); //  获取翻译文本
 
     return (
         <button
@@ -92,7 +92,7 @@ function ToggleSearchButton({
             onClick={handleClick}
             disabled={disabled}
             aria-pressed={currentIsActive}
-            aria-label={buttonText} // ✅ 使用翻译后的文本
+            aria-label={buttonText} //  使用翻译后的文本
             className={`${baseClasses} ${stateClasses}`}
             style={{ backgroundColor: buttonBgColor }}
         >

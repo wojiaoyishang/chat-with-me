@@ -32,7 +32,7 @@ export default function ToolButtons({
                     <button
                         type="button"
                         className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
-                        aria-label={t("extra_tools")} // ✅ 规范化 key
+                        aria-label={t("extra_tools")} //  规范化 key
                     >
                         <IoMdAdd />
                     </button>
@@ -42,7 +42,7 @@ export default function ToolButtons({
                         renderMenuItems(extraTools)
                     ) : (
                         <div className="px-2 py-1.5 text-sm text-gray-500">
-                            {t("no_tools_available")} {/* ✅ 国际化 */}
+                            {t("no_tools_available")} {/*  国际化 */}
                         </div>
                     )}
                 </DropdownMenuContent>
@@ -78,15 +78,15 @@ export default function ToolButtons({
                     <Transition.Child as="div">
                         <div className="flex items-center space-x-2 p-1">
                             <span className="text-red-500 text-sm mb-0.5">
-                                {t("tool_load_failed")} {/* ✅ 国际化 */}
+                                {t("tool_load_failed")} {/*  国际化 */}
                             </span>
                             <button
                                 onClick={() => setToolsLoadedStatus(5)}
                                 className="text-blue-500 hover:text-blue-700 text-sm flex items-center cursor-pointer"
-                                aria-label={t("reload_tools")} // ✅ 已规范
+                                aria-label={t("reload_tools")} //  已规范
                             >
                                 <FaRedo className="w-4 h-4 mr-1" />
-                                {t("reload_tools")} {/* ✅ 按钮内文本也国际化 */}
+                                {t("reload_tools")} {/*  按钮内文本也国际化 */}
                             </button>
                         </div>
                     </Transition.Child>

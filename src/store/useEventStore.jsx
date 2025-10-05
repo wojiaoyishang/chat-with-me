@@ -1,11 +1,14 @@
-import { create } from 'zustand';
+import {create} from 'zustand';
+
+import {sendWebSocketMessage} from "@/context/WebSocketContext.jsx";
+import {generateUUID} from '@/lib/tools.js'
 
 const createDebugLogger = () => {
     if (typeof DEBUG_MODE === 'undefined' || !DEBUG_MODE) return null;
 
     return {
         logEmit: (event, stack) => {
-            const { type, target, payload, markId, isReply, id } = event;
+            const {type, target, payload, markId, isReply, id} = event;
 
             const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
@@ -48,7 +51,7 @@ const createDebugLogger = () => {
         },
 
         logReceive: (event, listenerStack) => {
-            const { type, target, payload, markId, isReply, id } = event;
+            const {type, target, payload, markId, isReply, id} = event;
 
             const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
@@ -101,7 +104,7 @@ export const useEventStore = create((set, get) => {
     return {
         listeners: {},
 
-        addListener: (type, target, callback, listenerMarkId) => {
+        addListener: (type, target, callback, listenerMarkId, acceptReply = false) => {
             const registrationStack = debugLogger
                 ? new Error('Listener registered at:').stack.split('\n').slice(2).join('\n')
                 : null;
@@ -111,7 +114,6 @@ export const useEventStore = create((set, get) => {
                 if (!newListeners[type]) newListeners[type] = {};
                 if (!newListeners[type][target]) newListeners[type][target] = [];
 
-                // 避免重复注册相同 callback
                 const exists = newListeners[type][target].some(l => l.callback === callback);
                 if (!exists) {
                     newListeners[type][target] = [
@@ -119,7 +121,8 @@ export const useEventStore = create((set, get) => {
                         {
                             callback,
                             active: true,
-                            markId: listenerMarkId, // 保存监听器的 markId
+                            markId: listenerMarkId,
+                            acceptReply,
                             registrationStack
                         }
                     ];
@@ -128,7 +131,6 @@ export const useEventStore = create((set, get) => {
                 return { listeners: newListeners };
             });
 
-            // 返回取消函数
             return () => {
                 set(state => {
                     const newListeners = { ...state.listeners };
@@ -153,7 +155,6 @@ export const useEventStore = create((set, get) => {
             const { listeners } = get();
             const { type, target, markId: eventMarkId = null, isReply = false, payload, id = null } = event;
 
-            // 调试日志
             if (debugLogger) {
                 if (!isReply) {
                     debugLogger.logEmit(event, emitStack);
@@ -162,16 +163,18 @@ export const useEventStore = create((set, get) => {
                 }
             }
 
-            // 获取监听器快照
             const targetListeners = [...(listeners[type]?.[target] || [])];
 
             targetListeners.forEach(listener => {
-                if (!listener.active || isReply) return;
+                if (!listener.active) return;
+
+                if (listener.acceptReply !== isReply) {
+                    return;
+                }
 
                 const listenerMarkId = listener.markId;
-                // 如果 eventMarkId 为未定义则忽略匹配
-                if (eventMarkId !== null  && listenerMarkId !== eventMarkId) {
-                    return; // 不匹配，跳过
+                if (eventMarkId !== null && listenerMarkId !== eventMarkId) {
+                    return;
                 }
 
                 const reply = (data) => {
@@ -179,16 +182,15 @@ export const useEventStore = create((set, get) => {
                         type,
                         target,
                         payload: data,
-                        markId: listenerMarkId,  // 监听器的 markId
+                        markId: listenerMarkId,
                         isReply: true,
                         id: id
                     }, new Error('Reply initiated at:').stack);
                 };
 
                 Promise.resolve().then(() => {
-                    if (!listener.active || isReply) return;
+                    if (!listener.active || (isReply && !listener.acceptReply)) return;
                     try {
-                        // 传入 listener 自己的 markId 作为第5个参数（或你可调整顺序）
                         listener.callback(payload, eventMarkId, isReply, id, reply, listenerMarkId);
                     } catch (error) {
                         console.groupCollapsed(
@@ -220,13 +222,30 @@ export let emitEvent = ({
                             payload,
                             markId = null,
                             isReply = false,
-                            id = null
+                            id = null,
+                            fromWebsocket = false
                         }) => {
     const emitStack = typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE
         ? new Error('Event emitted at:').stack
         : null;
 
-    useEventStore.getState()._emit({ type, target, payload, markId, isReply, id }, emitStack);
+    if (!id) {
+        id = generateUUID();
+    }
+
+    if (type !== 'websocket' && !fromWebsocket) {  // 不是 websocket 事件不发送，是从 websocket 来的事件也不发送
+        sendWebSocketMessage({
+            type: type,
+            target: target,
+            payload: payload,
+            markId: markId,
+            isReply: isReply,
+            id: id,
+        });
+    }
+
+
+    useEventStore.getState()._emit({type, target, payload, markId, isReply, id}, emitStack);
 };
 
 if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
@@ -234,13 +253,14 @@ if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
 }
 
 // =======================
-// 监听事件函数（支持 markId）
+// 监听事件函数（支持 markId 和 acceptReply）
+// acceptReply = true 时只接受 reply = true 的消息
 // =======================
-export let onEvent = (type, target, markId) => {
+export let onEvent = (type, target, markId, acceptReply=false) => {
+
     return {
         then: (callback) => {
-            // 注意：markId 可以是 undefined（表示通配），也可以是具体值
-            return useEventStore.getState().addListener(type, target, callback, markId);
+            return useEventStore.getState().addListener(type, target, callback, markId, acceptReply);
         }
     };
 };

@@ -3,6 +3,8 @@
   "zoom_in_input_box": "放大输入框",
   "send_message": "发送消息",
   "close": "关闭",
+  "retry": "重试",
+  "cancel": "取消",
   "shift_enter_newline": "按下 Shift + Enter 换行",
   "folder_upload_not_supported": "暂不支持整个文件夹上传",
   "file_upload": {
@@ -24,5 +26,14 @@
   "scroll_attachments_left": "向左滚动附件",
   "scroll_attachments_right": "向右滚动附件",
   "no_tools_available": "无可用工具",
-  "tool_load_failed": "加载工具失败"
+  "tool_load_failed": "加载工具失败",
+  "websocket": {
+    "error": "WebSocket 连接错误：{{message}}",
+    "popover_title": "连接失败",
+    "popover_content": "无法接入对话服务，对话功能将不能使用",
+    "reconnecting": "重新连接中",
+    "reconnect_success": "重新连接成功",
+    "reconnect_failed": "重新链接失败",
+    "disconnect_from_server": "服务器主动断开链接"
+  }
 }
