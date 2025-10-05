@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { Transition } from '@headlessui/react';
+import {useTranslation} from "react-i18next";
 
 /**
  * 快捷选项组件
@@ -15,15 +15,16 @@ export default function QuickOptions({
                                          currentPageIndex,
                                          setCurrentPageIndex,
                                          onOptionClick,
-                                         t,
                                          selectedOption
                                      }) {
+    const { t } = useTranslation();
+
     return (
         <>
             <div
                 ref={quickOptionsRef}
                 className="flex flex-nowrap gap-3 px-1 overflow-x-hidden scroll-smooth"
-                style={{scrollBehavior: 'smooth'}}
+                style={{ scrollBehavior: 'smooth' }}
             >
                 {quickOptions.map((option) => (
                     <button
@@ -60,7 +61,7 @@ export default function QuickOptions({
                         }}
                         disabled={currentPageIndex === 0}
                         className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                        aria-label={t("上一页")}
+                        aria-label={t("prev_page")}
                     >
                         ◀
                     </button>
@@ -79,7 +80,7 @@ export default function QuickOptions({
                         }}
                         disabled={currentPageIndex >= Math.ceil(quickOptions.length / 3) - 1}
                         className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                        aria-label={t("下一页")}
+                        aria-label={t("next_page")}
                     >
                         ▶
                     </button>

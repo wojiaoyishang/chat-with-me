@@ -1,5 +1,5 @@
-import React, {Fragment} from 'react';
-import {Transition} from '@headlessui/react';
+import React, { Fragment } from 'react';
+import { Transition } from '@headlessui/react';
 import QuickOptions from './QuickOptions';
 
 /**
@@ -21,7 +21,7 @@ export default function ChatBoxHeader({
                                           setCurrentPageIndex,
                                           quickOptionsRef,
                                           selectedOption,  // 接收选中状态
-                                          isTransitioning // 是否处于 切换动画
+                                          isTransitioning // 是否处于切换动画
                                       }) {
     return (
         <>
@@ -111,7 +111,7 @@ export default function ChatBoxHeader({
                                     >
                                         <div
                                             className="px-3 py-1.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full whitespace-nowrap">
-                                            {t('只读')}
+                                            {t('read_only')} {/* ✅ 规范化 key */}
                                         </div>
                                     </Transition>
                                 </div>
@@ -139,7 +139,6 @@ export default function ChatBoxHeader({
                                 currentPageIndex={currentPageIndex}
                                 setCurrentPageIndex={setCurrentPageIndex}
                                 onOptionClick={onOptionClick}
-                                t={t}
                                 selectedOption={selectedOption}
                             />
                         </div>
@@ -177,7 +176,7 @@ export default function ChatBoxHeader({
                         >
                             <div
                                 className="px-3 py-1.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full whitespace-nowrap">
-                                {t('只读')}
+                                {t('read_only')} {/* ✅ 规范化 key */}
                             </div>
                         </Transition>
                     </div>

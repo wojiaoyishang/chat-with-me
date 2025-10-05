@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Transition } from '@headlessui/react';
 import {
     processSelectedFiles,
-    simulateUpload,
+    fileUpload,
     createFilePicker,
 } from "@/lib/tools";
 import { useDropZone } from "@/hooks/useDropZone";
@@ -45,18 +45,6 @@ function ChatPage() {
         handleFolderDetected
     );
 
-    /**
-     * 辅助函数：尝试从 FileList 中判断是否可能来自文件夹（仅作兜底）
-     * 注意：File API 无法直接识别文件夹，此方法依赖路径中是否含 '/'，可靠性有限
-     */
-    function hasFolderInDragItemsFromFiles(files) {
-        for (let i = 0; i < files.length; i++) {
-            if (files[i].webkitRelativePath?.includes('/') || files[i].path?.includes('/')) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     // 处理用户发送消息（当前仅打印日志）
     const handleSendMessage = (message, toolsStatus, sendButtonState) => {
@@ -126,11 +114,16 @@ function ChatPage() {
                 setAttachments(prev => [...prev, attachment]);
             };
 
-            const cleanup = simulateUpload(
+            const cleanup = fileUpload(
                 uploadFile,
                 handleProgressUpdate,
                 handleComplete,
-                (error) => console.error('Upload error:', error)
+                (error) => {
+                    toast.error(t("FileUpload.error") + (error?.message || 'Upload failed'));
+                    setUploadFiles(prev =>
+                        prev.map(f => f.id === uploadFile.id ? { ...f, error: error.message || true } : f)
+                    );
+                }
             );
 
             uploadIntervals.current.set(uploadFile.id, cleanup);
@@ -154,6 +147,53 @@ function ChatPage() {
             [Symbol.iterator]: function* () { yield file; }
         };
         handleSelectedFiles(fileList);
+    };
+
+    const handleRetryUpload = (uploadId) => {
+        setUploadFiles(prev => {
+            const fileToRetry = prev.find(f => f.id === uploadId);
+            if (!fileToRetry || !fileToRetry.file) return prev;
+
+            // 清除错误状态，重置进度
+            const updatedFile = {
+                ...fileToRetry,
+                progress: 0,
+                error: null
+            };
+
+            // 启动上传
+            const handleProgressUpdate = (id, progress) => {
+                setUploadFiles(p => p.map(f => f.id === id ? { ...f, progress } : f));
+            };
+            const handleComplete = (id, attachment) => {
+                setUploadFiles(p => p.filter(f => f.id !== id));
+                setAttachments(p => [...p, attachment]);
+            };
+            const handleError = (error) => {
+                toast.error(t("file_upload.error", { message: error?.message || t("unknown_error") }));
+                setUploadFiles(p => p.map(f => f.id === uploadId ? { ...f, error: error.message || true } : f));
+            };
+
+            const cleanup = fileUpload(
+                updatedFile,
+                handleProgressUpdate,
+                handleComplete,
+                handleError
+            );
+            uploadIntervals.current.set(uploadId, cleanup);
+
+            return prev.map(f => f.id === uploadId ? updatedFile : f);
+        });
+    };
+
+    const handleCancelUpload = (uploadId) => {
+        // 中止上传
+        if (uploadIntervals.current.has(uploadId)) {
+            uploadIntervals.current.get(uploadId)();
+            uploadIntervals.current.delete(uploadId);
+        }
+        // 从状态中移除
+        setUploadFiles(prev => prev.filter(f => f.id !== uploadId));
     };
 
     // 创建通用文件选择器和图片专用选择器
@@ -232,6 +272,8 @@ function ChatPage() {
                     FilePickerCallback={handleFilePicker}
                     PicPickerCallback={handlePicPicker}
                     onImagePaste={handleImagePaste}
+                    onRetryUpload={handleRetryUpload}
+                    onCancelUpload={handleCancelUpload}
                 />
             </div>
         </>

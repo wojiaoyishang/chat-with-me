@@ -2,6 +2,9 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
+import enTranslations from '/src/assets/locales/en.json';
+import zhTranslations from '/src/assets/locales/zh.json';
+
 i18n
     // 检测用户当前使用的语言
     // 文档: https://github.com/i18next/i18next-browser-languageDetector
@@ -15,24 +18,13 @@ i18n
         interpolation: {
             escapeValue: false,
         },
+        fallbackLng: 'zh',
         resources: {
             en: {
-                translation: {
-                    "拓展工具": "Extra Tools",
-                    "重试加载工具": "Reload Tools",
-                    "放大输入框": "Zoom in Input Box",
-                    "发送消息": "Send Message",
-                    "关闭": "Close",
-                    "输入你的消息...": "Input your message...",
-                    "搜索": "Search",
-                    "基础功能": "Basic Functions",
-                    "自动翻译": "Auto Translate",
-                    "只读": "Read Only",
-                    "按下 Shift + Enter 换行": "Shift + Enter for New Line",
-                    "上一页": "Prev Page",
-                    "下一页": "Next Page",
-                    "暂不支持整个文件夹上传": "The entire folder upload is not supported for the time being"
-                }
+                translation: enTranslations
+            },
+            zh: {
+                translation: zhTranslations
             }
         }
     });

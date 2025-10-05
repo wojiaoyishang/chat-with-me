@@ -25,51 +25,86 @@ export function processSelectedFiles(files) {
 }
 
 /**
- * 模拟文件上传过程
- * @param {Object} uploadFile - 上传文件对象
- * @param {Function} onProgressUpdate - 进度更新回调
- * @param {Function} onComplete - 完成回调
- * @param {Function} onError - 错误回调
- * @returns {Function} 清理函数
+ * 真实文件上传函数（调用 FastAPI /upload 接口）
+ * @param {Object} uploadFile - 上传文件对象，包含 { id, file, name }
+ * @param {Function} onProgressUpdate - 进度更新回调 (uploadId, progress: 0-100)
+ * @param {Function} onComplete - 完成回调 (uploadId, attachment)
+ * @param {Function} onError - 错误回调 (error)
+ * @returns {Function} 取消上传的清理函数
  */
-export function simulateUpload(uploadFile, onProgressUpdate, onComplete, onError) {
-    // 验证参数
-    if (!uploadFile || !onProgressUpdate || !onComplete) {
+export function fileUpload(uploadFile, onProgressUpdate, onComplete, onError) {
+    if (!uploadFile || !uploadFile.file || !onProgressUpdate || !onComplete) {
         console.error('Missing required parameters for simulateUpload');
+        onError?.(new Error('Invalid parameters'));
         return () => {};
     }
 
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-        // 随机增加进度（模拟网络波动）
-        const increment = Math.floor(Math.random() * 3) + 2;
-        currentProgress = Math.min(currentProgress + increment, 100);
+    const xhr = new XMLHttpRequest();
+    const formData = new FormData();
+    formData.append('file', uploadFile.file);
 
-        // 调用进度更新回调
-        onProgressUpdate(uploadFile.id, currentProgress);
+    // 假设 UPLOAD_ENDPOINT 已在项目中定义，例如：
+    // const UPLOAD_ENDPOINT = 'http://127.0.0.1:8000/upload';
+    const UPLOAD_ENDPOINT = window.UPLOAD_ENDPOINT || 'http://127.0.0.1:8000/upload';
 
-        if (currentProgress >= 100) {
-            clearInterval(interval);
+    xhr.open('POST', UPLOAD_ENDPOINT);
 
-            // 创建附件对象
-            const attachment = {
-                preview: uploadFile.file.type.startsWith('image/') ?
-                    URL.createObjectURL(uploadFile.file) :
-                    '/src/assets/icon/TXT.png',
-                previewType: uploadFile.file.type.startsWith('image/') ? 'image' : 'svg',
-                name: uploadFile.name,
-                size: uploadFile.file.size,
-                serverId: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                downloadUrl: `https://example.com/files/${Date.now()}`
-            };
-
-            // 调用完成回调
-            onComplete(uploadFile.id, attachment);
+    // 监听上传进度
+    xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            onProgressUpdate(uploadFile.id, progress);
         }
-    }, 100 + Math.random() * 200); // 随机间隔，模拟不同网速
+    };
 
-    // 返回清理函数
-    return () => clearInterval(interval);
+    // 上传完成
+    xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            let response;
+            try {
+                response = JSON.parse(xhr.responseText);
+            } catch (e) {
+                onError?.(new Error('Invalid JSON response'));
+                return;
+            }
+
+            if (response.success) {
+                const data = response.data;
+                const attachment = {
+                    // preview: uploadFile.file.type.startsWith('image/')
+                    //     ? URL.createObjectURL(uploadFile.file)
+                    //     : '/src/assets/icon/TXT.png', // 或根据 MIME 类型动态选择图标
+                    preview: data.preview,
+                    // previewType: uploadFile.file.type.startsWith('image/') ? 'image' : 'svg',
+                    previewType: data.previewType,
+                    name: uploadFile.name,
+                    size: uploadFile.file.size,
+                    serverId: data.serverId,      // 来自后端
+                    downloadUrl: data.downloadUrl // 来自后端
+                };
+                onComplete(uploadFile.id, attachment);
+            } else {
+                onError?.(new Error(response.msg || 'Upload failed'));
+            }
+        } else {
+            onError?.(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+        }
+    };
+
+    // 网络错误
+    xhr.onerror = () => {
+        onError?.(new Error('Network error during upload'));
+    };
+
+    // 发送请求
+    xhr.send(formData);
+
+    // 返回取消函数（可中止上传）
+    return () => {
+        if (xhr.readyState !== XMLHttpRequest.DONE) {
+            xhr.abort();
+        }
+    };
 }
 
 /**

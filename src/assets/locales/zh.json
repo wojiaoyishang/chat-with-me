@@ -1,0 +1,28 @@
+{
+  "input_placeholder": "输入你的消息...",
+  "zoom_in_input_box": "放大输入框",
+  "send_message": "发送消息",
+  "close": "关闭",
+  "shift_enter_newline": "按下 Shift + Enter 换行",
+  "folder_upload_not_supported": "暂不支持整个文件夹上传",
+  "file_upload": {
+    "error": "糟糕！文件上传失败了：{{message}}"
+  },
+  "unknown_error": "未知错误",
+  "attachment_options": "附件选项",
+  "add_image": "添加图片",
+  "add_file": "添加文件",
+  "basic_functions": "基础功能",
+  "extra_tools": "拓展工具",
+  "reload_tools": "重试加载工具",
+  "auto_translate": "自动翻译",
+  "read_only": "只读",
+  "search": "搜索",
+  "prev_page": "上一页",
+  "next_page": "下一页",
+  "remove_attachment": "移除附件",
+  "scroll_attachments_left": "向左滚动附件",
+  "scroll_attachments_right": "向右滚动附件",
+  "no_tools_available": "无可用工具",
+  "tool_load_failed": "加载工具失败"
+}

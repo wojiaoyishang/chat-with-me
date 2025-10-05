@@ -1,4 +1,3 @@
-// src/components/chat/ChatBox.jsx
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Transition } from '@headlessui/react';
@@ -27,9 +26,50 @@ import AttachmentShowcase from './AttachmentShowcase';
 import FileUploadProgress from './FileUploadProgress';
 
 /**
- * 聊天输入框组件
- * - 支持消息输入、快捷选项、附件展示、工具按钮、外部事件控制
- * - 可通过事件总线动态配置（如设置消息、工具状态、快捷选项等）
+ * ChatBox - 一个功能丰富的聊天输入区域组件
+ *
+ * 该组件提供了一个完整的聊天输入界面，支持：
+ * - 多行文本输入（自动高度调整）
+ * - 快捷选项（Quick Options）供用户快速选择预设消息
+ * - 工具按钮（内置工具 + 额外工具菜单），支持 toggle、radio、group、button 等类型
+ * - 附件展示与上传进度条（图片/文件）
+ * - 粘贴图片自动上传
+ * - 全屏编辑模式（Modal）
+ * - 国际化（i18n）
+ * - 动态配置（通过事件系统接收外部指令）
+ * - 响应式设计（小屏适配）
+ * - 发送按钮状态管理（normal / disabled / loading / generating）
+ *
+ * Props:
+ * @param {Function} onSendMessage - 发送消息回调 (message, toolsStatus, sendButtonState)
+ * @param {boolean} [readOnly=false] - 是否只读模式
+ * @param {Function} FilePickerCallback - 触发文件选择器的回调
+ * @param {Function} PicPickerCallback - 触发图片选择器的回调
+ * @param {string} markId - 组件唯一标识，用于事件通信
+ * @param {Array} [attachmentsMeta=[]] - 已上传附件元数据列表
+ * @param {Array} [uploadFiles=[]] - 正在上传的文件列表
+ * @param {Function} onAttachmentRemove - 移除附件回调
+ * @param {Function} onImagePaste - 粘贴图片时的处理回调
+ * @param {Function} onRetryUpload - 重试上传回调
+ * @param {Function} onCancelUpload - 取消上传回调
+ *
+ * 内部状态说明：
+ * - message: 当前输入框内容
+ * - toolsStatus: 工具启用状态（builtin_tools + extra_tools）
+ * - isModalOpen: 是否打开全屏编辑器
+ * - isReadOnly: 是否只读（可动态更新）
+ * - showTipMessage / tipMessage: 提示信息（如“Shift+Enter 换行”）
+ * - quickOptions: 快捷选项列表（动态更新）
+ * - tools / extraTools: 工具配置（从 API 或事件加载）
+ * - sendButtonState: 发送按钮状态（normal/disabled/loading/generating）
+ * - attachmentHeight: 附件区域高度（用于父容器动态调整）
+ *
+ * 事件系统：
+ * 通过 `useEventStore` 监听 "widget:ChatBox:{markId}" 事件，支持以下指令：
+ * - "SendButton-State": 设置/获取发送按钮状态
+ * - "Set-Message" / "Get-Message": 设置/获取输入框内容
+ * - "Setup-ChatBox": 动态初始化工具栏和配置
+ * - "Set-QuickOptions": 更新快捷选项
  */
 function ChatBox({
                      onSendMessage,
@@ -40,17 +80,18 @@ function ChatBox({
                      attachmentsMeta = [],
                      uploadFiles = [],
                      onAttachmentRemove,
-                     onImagePaste
+                     onImagePaste,
+                     onRetryUpload,
+                     onCancelUpload
                  }) {
     const { t } = useTranslation();
 
-    // ========== 状态管理 ==========
     const [message, setMessage] = useState("");
     const [toolsStatus, setToolsStatus] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(readOnly);
     const [showTipMessage, setShowTipMessage] = useState(true);
-    const [tipMessage, setTipMessage] = useState("按下 Shift + Enter 换行");
+    const [tipMessage, setTipMessage] = useState(t("shift_enter_newline"));
     const [tipMessageIsForNewLine, setTipMessageIsForNewLine] = useState(true);
     const [tools, setTools] = useState([]);
     const [extraTools, setExtraTools] = useState([]);
@@ -59,12 +100,11 @@ function ChatBox({
     const [displayedQuickOptions, setDisplayedQuickOptions] = useState(quickOptions);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
-    const [toolsLoadedStatus, setToolsLoadedStatus] = useState(0); // -1: 无工具, 0: 加载中, 1: 已加载, 3: 失败...
+    const [toolsLoadedStatus, setToolsLoadedStatus] = useState(0);
     const [sendButtonState, setSendButtonState] = useState('normal');
     const [selectedQuickOption, setSelectedQuickOption] = useState(null);
     const [attachmentHeight, setAttachmentHeight] = useState(0);
 
-    // ========== 引用 ==========
     const quickOptionsRef = useRef(null);
     const messageRef = useRef(message);
     const textareaRef = useRef(null);
@@ -72,7 +112,7 @@ function ChatBox({
     const sendButtonStateRef = useRef(sendButtonState);
     const attachmentRef = useRef(null);
 
-    // ========== 文本区域高度自适应逻辑 ==========
+    // ========== Textarea height logic ==========
     const initTextareaClone = () => {
         if (cloneTextareaRef.current) return;
         const textarea = textareaRef.current;
@@ -119,7 +159,7 @@ function ChatBox({
         textarea.style.overflowY = contentHeight > 48 ? 'scroll' : 'auto';
     };
 
-    // ========== 消息与输入处理 ==========
+    // ========== Message handling ==========
     const handleSendMessage = () => {
         onSendMessage(message, toolsStatus, sendButtonState);
         textareaRef.current?.focus();
@@ -141,7 +181,6 @@ function ChatBox({
         if (isReadOnly) return;
         const newValue = e.target.value;
         setMessage(newValue);
-        // 若当前选中快捷选项但内容已变，则取消选中
         if (selectedQuickOption !== null) {
             const selectedOption = quickOptions.find(opt => opt.id === selectedQuickOption);
             if (selectedOption && newValue !== selectedOption.value) {
@@ -165,7 +204,7 @@ function ChatBox({
         }
     };
 
-    // ========== 快捷选项交互逻辑 ==========
+    // ========== Quick options ==========
     const handleOptionClick = (option) => {
         if (selectedQuickOption === option.id) {
             if (message === option.value) {
@@ -181,7 +220,7 @@ function ChatBox({
         }
     };
 
-    // ========== 图标与菜单渲染 ==========
+    // ========== Icon rendering ==========
     const renderIcon = (iconType, iconData) => {
         if (!iconData) return null;
         if (iconType === 'library') {
@@ -307,7 +346,7 @@ function ChatBox({
         });
     };
 
-    // ========== 工具状态初始化 ==========
+    // ========== Tool initialization ==========
     const initializeExtraTools = (toolsConfig) => {
         const status = {};
         const processItems = (items) => {
@@ -325,7 +364,7 @@ function ChatBox({
         return status;
     };
 
-    // ========== 工具按钮渲染 ==========
+    // ========== Tool buttons ==========
     const renderToolButtons = () => {
         return tools.map((tool) => {
             const isActive = tool.isActive ?? false;
@@ -359,7 +398,7 @@ function ChatBox({
         });
     };
 
-    // ========== 发送按钮样式 ==========
+    // ========== Send button ==========
     const sendButtonStyle = useMemo(() => {
         const isEmpty = !message.trim() && sendButtonState === 'normal';
         const baseIcon = (
@@ -425,24 +464,23 @@ function ChatBox({
         }
     }, [message, sendButtonState]);
 
-    // ========== 动态配置聊天框（由外部事件触发） ==========
+    // ========== Dynamic setup ==========
     const chatboxSetup = (data) => {
         const newBuiltinStatus = {};
         const newExtraStatus = initializeExtraTools(data.extra_tools || []);
 
-        // 默认附件工具（可被忽略）
         let defaultAttachmentTools = data.ignoreAttachmentTools ? [] : [
-            { type: 'label', text: '附件选项' },
+            { type: 'label', text: 'attachment_options' },
             {
                 type: 'button',
-                text: '添加图片',
+                text: 'add_image',
                 iconType: 'svg',
                 iconData: '<svg t="1759404220982" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4746" width="20" height="20"><path d="M247.04 373.333333a74.666667 74.666667 0 1 1 149.333333 0 74.666667 74.666667 0 0 1-149.333333 0zM321.706667 384a10.666667 10.666667 0 1 0 0-21.333333 10.666667 10.666667 0 0 0 0 21.333333z" fill="#666666" p-id="4747"></path><path d="M938.666667 796.074667c0 43.050667-33.834667 72.106667-70.4 77.653333a83.925333 83.925333 0 0 1-12.672 0.938667H168.405333a83.072 83.072 0 0 1-12.672-0.981334c-36.565333-5.546667-70.4-34.56-70.4-77.653333V232.021333C85.333333 185.898667 122.965333 149.333333 168.405333 149.333333h687.189334C901.034667 149.333333 938.666667 185.941333 938.666667 232.021333v564.053334zM170.666667 743.381333V789.333333h682.666666v-42.538666l-252.885333-250.666667-138.581333 149.930667a42.666667 42.666667 0 0 1-55.466667 5.12L333.098667 599.04 170.666667 743.424z m682.666666-99.754666V234.666667H170.666667v394.538666l131.072-116.522666a42.666667 42.666667 0 0 1 53.077333-2.901334l71.125333 50.56 138.026667-149.333333A42.666667 42.666667 0 0 1 618.666667 405.333333l234.666666 238.293334z" fill="#666666" p-id="4748"></path></svg>',
                 onClick: PicPickerCallback
             },
             {
                 type: 'button',
-                text: '添加文件',
+                text: 'add_file',
                 iconType: 'svg',
                 iconData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>',
                 onClick: FilePickerCallback
@@ -483,25 +521,21 @@ function ChatBox({
         }
     };
 
-    // ========== 副作用与生命周期 ==========
-    // 同步 ref
+    // ========== Effects ==========
     useEffect(() => {
         sendButtonStateRef.current = sendButtonState;
         messageRef.current = message;
     }, [sendButtonState, message]);
 
-    // 自适应文本区域高度
     useEffect(() => {
         adjustTextareaHeight();
     }, [message]);
 
-    // 初始化/清理克隆 textarea
     useEffect(() => {
         initTextareaClone();
         return cleanupTextareaClone;
     }, []);
 
-    // 监听窗口大小，适配小屏
     useEffect(() => {
         const checkScreenSize = () => {
             const isSmall = window.innerWidth < 500;
@@ -517,7 +551,6 @@ function ChatBox({
         return () => window.removeEventListener('resize', checkScreenSize);
     }, []);
 
-    // 动态加载工具配置（通过 CHATBOX_API）
     useEffect(() => {
         if (toolsLoadedStatus === 0) {
             if (typeof CHATBOX_API === 'undefined' || CHATBOX_API.trim() === '') {
@@ -534,7 +567,6 @@ function ChatBox({
         }
     }, [toolsLoadedStatus]);
 
-    // 监听外部事件（widget 控制）
     useEffect(() => {
         const unsubscribe = onEvent("widget", "ChatBox", markId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
@@ -577,7 +609,6 @@ function ChatBox({
         return () => unsubscribe();
     }, []);
 
-    // 测量附件区域高度（用于容器动画）
     useEffect(() => {
         const updateHeight = () => {
             if (attachmentRef.current) {
@@ -591,11 +622,10 @@ function ChatBox({
         return () => window.removeEventListener('resize', updateHeight);
     }, [attachmentsMeta]);
 
-    // 快捷选项宽度计算（布局相关）
     useLayoutEffect(() => {
         const updateWidth = () => {
             if (quickOptions.length > 0 && quickOptionsRef.current?.firstElementChild) {
-                // 实际未使用宽度值，仅触发重排（保留原逻辑）
+                // trigger layout
             }
         };
         const timeoutId = setTimeout(updateWidth, 100);
@@ -606,7 +636,6 @@ function ChatBox({
         };
     }, [quickOptions]);
 
-    // ========== 渲染 ==========
     return (
         <div
             className="w-full max-w-2xl px-4 overflow-hidden"
@@ -632,15 +661,13 @@ function ChatBox({
             />
 
             <div className="bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-md focus-within:shadow-lg">
-                {/* 上传进度 */}
                 <div
                     className="overflow-hidden transition-all duration-300 ease-in-out"
                     style={{ height: uploadFiles.length > 0 ? 'auto' : 0, minHeight: 0 }}
                 >
-                    <FileUploadProgress uploadFiles={uploadFiles} />
+                    <FileUploadProgress uploadFiles={uploadFiles} onRetry={onRetryUpload} onCancel={onCancelUpload} />
                 </div>
 
-                {/* 附件展示 */}
                 <div
                     ref={attachmentRef}
                     className="overflow-hidden transition-all duration-300 ease-in-out"
@@ -657,7 +684,6 @@ function ChatBox({
                     />
                 </div>
 
-                {/* 输入框 */}
                 <div className="pt-2 pl-2 pr-2">
                     <textarea
                         ref={textareaRef}
@@ -665,14 +691,13 @@ function ChatBox({
                         onChange={handleInputChange}
                         onPaste={handlePaste}
                         onKeyDown={(e) => !isReadOnly && handleKeyDown(e)}
-                        placeholder={t("输入你的消息...")}
+                        placeholder={t("input_placeholder")}
                         className="w-full min-h-[48px] max-h-[132px] p-4 pt-4 pb-2 pr-4 text-gray-800 bg-transparent border-none resize-none outline-none pretty-scrollbar"
                         rows={1}
                         style={{ transition: 'height 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
                     />
                 </div>
 
-                {/* 底部工具栏 */}
                 <div className="flex items-center justify-between px-4 pb-3">
                     <ToolButtons
                         toolsLoadedStatus={toolsLoadedStatus}
@@ -688,10 +713,9 @@ function ChatBox({
                     />
 
                     <div className="flex items-center space-x-2">
-                        {/* 全屏编辑按钮 */}
                         <button
                             type="button"
-                            aria-label={t("放大输入框")}
+                            aria-label={t("zoom_in_input_box")}
                             className="p-2.5 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-offset-2 transition-colors cursor-pointer"
                             onClick={() => setIsModalOpen(true)}
                         >
@@ -703,12 +727,11 @@ function ChatBox({
                             </svg>
                         </button>
 
-                        {/* 发送按钮 */}
                         <button
                             type="button"
                             onClick={handleSendMessage}
                             disabled={sendButtonStyle.disabled}
-                            aria-label={t("发送消息")}
+                            aria-label={t("send_message")}
                             className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${sendButtonStyle.className}`}
                         >
                             {sendButtonStyle.icon}
@@ -717,7 +740,6 @@ function ChatBox({
                 </div>
             </div>
 
-            {/* Markdown 编辑器模态框 */}
             <Transition appear show={isModalOpen} as={Fragment}>
                 <Transition.Child
                     as={Fragment}
@@ -736,7 +758,7 @@ function ChatBox({
                             <button
                                 onClick={() => setIsModalOpen(false)}
                                 className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
-                                aria-label={t("关闭")}
+                                aria-label={t("close")}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
                                      viewBox="0 0 24 24" stroke="currentColor">

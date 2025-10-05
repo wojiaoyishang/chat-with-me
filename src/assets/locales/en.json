@@ -1,0 +1,28 @@
+{
+  "input_placeholder": "Input your message...",
+  "zoom_in_input_box": "Zoom in Input Box",
+  "send_message": "Send Message",
+  "close": "Close",
+  "shift_enter_newline": "Shift + Enter for New Line",
+  "folder_upload_not_supported": "The entire folder upload is not supported for the time being",
+  "file_upload": {
+    "error": "Oops! File upload failed: {{message}}"
+  },
+  "unknown_error": "Unknown error",
+  "attachment_options": "Attachment Options",
+  "add_image": "Add Image",
+  "add_file": "Add File",
+  "basic_functions": "Basic Functions",
+  "extra_tools": "Extra Tools",
+  "reload_tools": "Reload Tools",
+  "auto_translate": "Auto Translate",
+  "read_only": "Read Only",
+  "search": "Search",
+  "prev_page": "Prev Page",
+  "next_page": "Next Page",
+  "remove_attachment": "Remove attachment",
+  "scroll_attachments_left": "Scroll attachments left",
+  "scroll_attachments_right": "Scroll attachments right",
+  "no_tools_available": "No tools available",
+  "tool_load_failed": "Failed to load tools"
+}
