@@ -1,5 +1,4 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
-import ChatBox from "@/components/chat/chatbox.jsx";
 import {generateUUID, getMarkId} from "@/lib/tools";
 import {onEvent} from "@/store/useEventStore.jsx";
 import {toast} from "sonner";
@@ -11,7 +10,11 @@ import {
 } from "@/lib/tools";
 import {useDropZone} from "@/hooks/useDropZone";
 import {useTranslation} from "react-i18next";
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
+
+import ChatBox from "@/components/chat/chatbox.jsx";
+import DropFileLayer from '@/components/chat/DropFileLayer.jsx'
+import ChatContainer from "@/components/chat/ChatContainer.jsx";
 
 /**
  * 聊天主页面组件
@@ -40,13 +43,6 @@ function ChatPage() {
         handleSelectedFiles(files);
     };
 
-    // 使用自定义 Hook 管理拖拽状态和事件
-    const {isDraggingOver, dragEvents} = useDropZone(
-        handleDropFiles,
-        handleFolderDetected
-    );
-
-
     // 处理用户发送消息（当前仅打印日志）
     const handleSendMessage = (message, toolsStatus, sendButtonState) => {
         console.log('发送消息:', message, toolsStatus, sendButtonState);
@@ -57,26 +53,6 @@ function ChatPage() {
         setAttachments(prev => prev.filter(att => att.serverId !== attachment.serverId));
         console.log('移除附件:', attachment);
     };
-
-    /**
-     * 监听外部事件（如 widget 请求当前附件列表）
-     * - 当收到 "Attachment-Meta" 命令时，返回当前附件或更新状态
-     */
-    useEffect(() => {
-        const unsubscribe = onEvent("widget", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
-            switch (payload.command) {
-                case "Attachment-Meta":
-                    if (payload.value) {
-                        setAttachments(payload.value);
-                        reply(payload.value);
-                    } else {
-                        reply(attachments);
-                    }
-                    break;
-            }
-        });
-        return () => unsubscribe();
-    }, [attachments, selfMarkId]);
 
     // 防止重复处理文件选择
     const isProcessingRef = useRef(false);
@@ -203,117 +179,120 @@ function ChatPage() {
     const handleFilePicker = createFilePicker('*', handleSelectedFiles);
     const handlePicPicker = createFilePicker('image/*', handleSelectedFiles);
 
-    /**
-     * 将拖拽事件绑定到页面容器
-     * - 在组件挂载时添加事件监听器
-     * - 在卸载时移除，防止内存泄漏
-     */
-    useEffect(() => {
-        const container = pageContainerRef.current;
-        if (!container) return;
-
-        const {onDragEnter, onDragOver, onDragLeave, onDrop} = dragEvents;
-
-        container.addEventListener('dragenter', onDragEnter);
-        container.addEventListener('dragover', onDragOver);
-        container.addEventListener('dragleave', onDragLeave);
-        container.addEventListener('drop', onDrop);
-
-        return () => {
-            container.removeEventListener('dragenter', onDragEnter);
-            container.removeEventListener('dragover', onDragOver);
-            container.removeEventListener('dragleave', onDragLeave);
-            container.removeEventListener('drop', onDrop);
-        };
-    }, [dragEvents]);
-
     /*
      * 页面初始化逻辑，如果没有 markId 就向服务器请求一个
      */
 
     const [randomUUid, setRandomUUID] = useState(generateUUID());
 
-    useEffect(() => {
+    // 暂时不获取 markId
+    // useEffect(() => {
+    //
+    //     // 监听 websocket 打开
+    //     const unsubscribe1 = onEvent("websocket", "onopen", null).then((payload, markId, isReply, id, reply) => {
+    //
+    //         if (!selfMarkId) {  // 自己没有 markId 时
+    //             emitEvent({
+    //                 type: "page",
+    //                 target: "ChatPage",
+    //                 payload: {
+    //                     command: "Get-MarkId"
+    //                 },
+    //                 markId: randomUUid,
+    //                 isReply: false
+    //             });
+    //         }
+    //     });
+    //
+    //     // 设置广播事件回调
+    //     const unsubscribe2 = onEvent("page", "ChatPage", randomUUid, true).then((payload, markId, isReply, id, reply) => {
+    //
+    //         switch (payload.command) {
+    //             case "Get-MarkId":
+    //                 setSelfMarkId(payload.markId);
+    //                 navigate(`/chat/${payload.markId}`, { replace: true });
+    //                 break;
+    //         }
+    //     });
+    //
+    //     return () => {
+    //         unsubscribe1();
+    //         unsubscribe2();
+    //     };
+    // }, []);
 
-        // 监听 websocket 打开
-        const unsubscribe1 = onEvent("websocket", "onopen", null).then((payload, markId, isReply, id, reply) => {
+    const [messages, setMessages] = useState([
+        {
+            position: 'left',
+            content: '# 你好！我是 AI 助手。\n\n你是谁\n\n```python\nprint(123)\n```\n这是代码块当然可以！以下是一些常见的数学公式，使用 LaTeX 编写，适用于 Markdown 中的数学渲染（如支持 MathJax 或 KaTeX 的环境）：\n' +
+                '\n' +
+                '行内公式示例：  \n' +
+                '欧拉公式：$e^{i\\pi} + 1 = 0$\n' +
+                '\n' +
+                '独立公式（块级）示例：\n' +
+                '\n' +
+                '$$\n' +
+                '\\int_{-\\infty}^{\\infty} e^{-x^2} \\, dx = \\sqrt{\\pi}\n' +
+                '$$\n' +
+                '\n' +
+                '二次方程求根公式：\n' +
+                '\n' +
+                '$$\n' +
+                'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\n' +
+                '$$\n' +
+                '\n' +
+                '矩阵示例：\n' +
+                '\n' +
+                '$$\n' +
+                '\\begin{bmatrix}\n' +
+                'a & b \\\\\n' +
+                'c & d\n' +
+                '\\end{bmatrix}\n' +
+                '$$\n' +
+                '\n' +
+                '微分方程：\n' +
+                '\n' +
+                '$$\n' +
+                '\\frac{d^2y}{dx^2} + p(x)\\frac{dy}{dx} + q(x)y = f(x)\n' +
+                '$$\n' +
+                '\n' +
+                '希望这些能帮你测试 Markdown 的公式渲染效果！',
+            name: 'AI Assistant',
+            avatar: '/src/assets/AI.png'
+        },
+        {
+            position: 'right',
+            content: '你好，我想问一个问题。',
+            avatar: '/src/assets/human.jpg'
+        }
+    ]);
 
-            if (!selfMarkId) {  // 自己没有 markId 时
-                emitEvent({
-                    type: "page",
-                    target: "ChatPage",
-                    payload: {
-                        command: "Get-MarkId"
-                    },
-                    markId: randomUUid,
-                    isReply: false
-                });
-            }
-        });
-
-        // 设置广播事件回调
-        const unsubscribe2 = onEvent("page", "ChatPage", randomUUid, true).then((payload, markId, isReply, id, reply) => {
-
-            switch (payload.command) {
-                case "Get-MarkId":
-                    setSelfMarkId(payload.markId);
-                    navigate(`/chat/${payload.markId}`, { replace: true });
-                    break;
-            }
-        });
-
-        return () => {
-            unsubscribe1();
-            unsubscribe2();
-        };
-    }, []);
 
 
-    /*
+    /**
      * 广播事件
      */
     useEffect(() => {
-
-    }, []);
-
+        const unsubscribe = onEvent("widget", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
+            switch (payload.command) {
+                case "Attachment-Meta":
+                    if (payload.value) {
+                        setAttachments(payload.value);
+                        reply(payload.value);
+                    } else {
+                        reply(attachments);
+                    }
+                    break;
+            }
+        });
+        return () => unsubscribe();
+    }, [attachments, selfMarkId]);
     return (
         <>
-            <div
-                ref={pageContainerRef}
-                className="min-h-screen bg-gray-100 flex flex-col items-center justify-end pb-8"
-            >
-                {/* 拖拽上传时的视觉提示层 */}
-                <Transition
-                    show={isDraggingOver}
-                    enter="transition-opacity duration-200"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="transition-opacity duration-150"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                    <div className="fixed inset-0 bg-white/70 z-50 pointer-events-none">
-                        <div className="flex flex-col items-center justify-center h-full">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                className="w-16 h-16 text-gray-600 mb-4"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                                />
-                            </svg>
-                            <h3 className="text-2xl font-medium text-gray-700">松开上传文件</h3>
-                        </div>
-                    </div>
-                </Transition>
+            <div className="min-h-screen bg-white flex flex-col items-center justify-end pb-8">
 
-                {/* 聊天框组件，传递所有必要回调和状态 */}
+                <ChatContainer messages={messages} />
+
                 <ChatBox
                     onSendMessage={handleSendMessage}
                     markId={selfMarkId}
@@ -325,7 +304,10 @@ function ChatPage() {
                     onImagePaste={handleImagePaste}
                     onRetryUpload={handleRetryUpload}
                     onCancelUpload={handleCancelUpload}
+                    onDropFiles={handleSelectedFiles}
+                    onFolderDetected={handleFolderDetected}
                 />
+
             </div>
         </>
     );

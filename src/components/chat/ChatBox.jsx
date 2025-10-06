@@ -20,6 +20,7 @@ import ChatBoxHeader from './ChatBoxHeader';
 import ToolButtons from './ToolButtons';
 import AttachmentShowcase from './AttachmentShowcase';
 import FileUploadProgress from './FileUploadProgress';
+import DropFileLayer from "@/components/chat/DropFileLayer.jsx";
 
 /**
  * ChatBox - 一个功能丰富的聊天输入区域组件
@@ -48,24 +49,8 @@ import FileUploadProgress from './FileUploadProgress';
  * @param {Function} onImagePaste - 粘贴图片时的处理回调
  * @param {Function} onRetryUpload - 重试上传回调
  * @param {Function} onCancelUpload - 取消上传回调
- *
- * 内部状态说明：
- * - message: 当前输入框内容
- * - toolsStatus: 工具启用状态（builtin_tools + extra_tools）
- * - isModalOpen: 是否打开全屏编辑器
- * - isReadOnly: 是否只读（可动态更新）
- * - showTipMessage / tipMessage: 提示信息（如“Shift+Enter 换行”）
- * - quickOptions: 快捷选项列表（动态更新）
- * - tools / extraTools: 工具配置（从 API 或事件加载）
- * - sendButtonState: 发送按钮状态（normal/disabled/loading/generating）
- * - attachmentHeight: 附件区域高度（用于父容器动态调整）
- *
- * 事件系统：
- * 通过 `useEventStore` 监听 "widget:ChatBox:{markId}" 事件，支持以下指令：
- * - "SendButton-State": 设置/获取发送按钮状态
- * - "Set-Message" / "Get-Message": 设置/获取输入框内容
- * - "Setup-ChatBox": 动态初始化工具栏和配置
- * - "Set-QuickOptions": 更新快捷选项
+ * @param {Function} onDropFiles - 拖拽文件回调
+ * @param {Function} onFolderDetected - 拖拽文件夹上传检测
  */
 function ChatBox({
                      onSendMessage,
@@ -78,7 +63,9 @@ function ChatBox({
                      onAttachmentRemove,
                      onImagePaste,
                      onRetryUpload,
-                     onCancelUpload
+                     onCancelUpload,
+                     onDropFiles,
+                     onFolderDetected
                  }) {
     const { t } = useTranslation();
 
@@ -635,54 +622,59 @@ function ChatBox({
     }, [quickOptions]);
 
     return (
-        <div
-            className="w-full max-w-2xl px-4 overflow-hidden"
-            style={{
-                transition: 'height 0.3s ease-in-out, max-height 0.3s ease-in-out',
-                height: 'auto',
-                maxHeight: attachmentHeight > 0 ? `calc(100% + ${attachmentHeight}px)` : '100%'
-            }}
-        >
-            <ChatBoxHeader
-                quickOptions={quickOptions}
-                isSmallScreen={isSmallScreen}
-                showTipMessage={showTipMessage}
-                tipMessage={tipMessage}
-                isReadOnly={isReadOnly}
-                onOptionClick={handleOptionClick}
-                t={t}
-                currentPageIndex={currentPageIndex}
-                setCurrentPageIndex={setCurrentPageIndex}
-                quickOptionsRef={quickOptionsRef}
-                selectedOption={selectedQuickOption}
-                isTransitioning={isTransitioning}
+        <>
+            <DropFileLayer
+                onDropFiles={onDropFiles}
+                onFolderDetected={onFolderDetected}
             />
+            <div
+                className="fixed bottom-10 left-0 right-0 z-50 w-full max-w-220 px-4 overflow-hidden mx-auto"
+                style={{
+                    transition: 'height 0.3s ease-in-out, max-height 0.3s ease-in-out',
+                    height: 'auto',
+                    maxHeight: attachmentHeight > 0 ? `calc(100% + ${attachmentHeight}px)` : '100%'
+                }}
+            >
+                <ChatBoxHeader
+                    quickOptions={quickOptions}
+                    isSmallScreen={isSmallScreen}
+                    showTipMessage={showTipMessage}
+                    tipMessage={tipMessage}
+                    isReadOnly={isReadOnly}
+                    onOptionClick={handleOptionClick}
+                    t={t}
+                    currentPageIndex={currentPageIndex}
+                    setCurrentPageIndex={setCurrentPageIndex}
+                    quickOptionsRef={quickOptionsRef}
+                    selectedOption={selectedQuickOption}
+                    isTransitioning={isTransitioning}
+                />
 
-            <div className="bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-md focus-within:shadow-lg">
-                <div
-                    className="overflow-hidden transition-all duration-300 ease-in-out"
-                    style={{ height: uploadFiles.length > 0 ? 'auto' : 0, minHeight: 0 }}
-                >
-                    <FileUploadProgress uploadFiles={uploadFiles} onRetry={onRetryUpload} onCancel={onCancelUpload} />
-                </div>
+                <div className="border-1 bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-md focus-within:shadow-lg">
+                    <div
+                        className="overflow-hidden transition-all duration-300 ease-in-out"
+                        style={{ height: uploadFiles.length > 0 ? 'auto' : 0, minHeight: 0 }}
+                    >
+                        <FileUploadProgress uploadFiles={uploadFiles} onRetry={onRetryUpload} onCancel={onCancelUpload} />
+                    </div>
 
-                <div
-                    ref={attachmentRef}
-                    className="overflow-hidden transition-all duration-300 ease-in-out"
-                    style={{
-                        height: attachmentsMeta.length > 0 ? 'auto' : 0,
-                        opacity: attachmentsMeta.length > 0 ? 1 : 0,
-                        paddingTop: attachmentsMeta.length > 0 ? '0.375rem' : 0,
-                        paddingBottom: attachmentsMeta.length > 0 ? '0.375rem' : 0
-                    }}
-                >
-                    <AttachmentShowcase
-                        attachmentsMeta={attachmentsMeta}
-                        onRemove={onAttachmentRemove}
-                    />
-                </div>
+                    <div
+                        ref={attachmentRef}
+                        className="overflow-hidden transition-all duration-300 ease-in-out"
+                        style={{
+                            height: attachmentsMeta.length > 0 ? 'auto' : 0,
+                            opacity: attachmentsMeta.length > 0 ? 1 : 0,
+                            paddingTop: attachmentsMeta.length > 0 ? '0.375rem' : 0,
+                            paddingBottom: attachmentsMeta.length > 0 ? '0.375rem' : 0
+                        }}
+                    >
+                        <AttachmentShowcase
+                            attachmentsMeta={attachmentsMeta}
+                            onRemove={onAttachmentRemove}
+                        />
+                    </div>
 
-                <div className="pt-2 pl-2 pr-2">
+                    <div className="pt-2 pl-2 pr-2">
                     <textarea
                         ref={textareaRef}
                         value={message}
@@ -694,88 +686,90 @@ function ChatBox({
                         rows={1}
                         style={{ transition: 'height 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
                     />
-                </div>
-
-                <div className="flex items-center justify-between px-4 pb-3">
-                    <ToolButtons
-                        toolsLoadedStatus={toolsLoadedStatus}
-                        extraTools={extraTools}
-                        tools={tools}
-                        toolsStatus={toolsStatus}
-                        setToolsStatus={setToolsStatus}
-                        point3Loading={point3Loading}
-                        renderToolButtons={renderToolButtons}
-                        renderMenuItems={renderMenuItems}
-                        setToolsLoadedStatus={setToolsLoadedStatus}
-                        t={t}
-                    />
-
-                    <div className="flex items-center space-x-2">
-                        <button
-                            type="button"
-                            aria-label={t("zoom_in_input_box")}
-                            className="p-2.5 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-offset-2 transition-colors cursor-pointer"
-                            onClick={() => setIsModalOpen(true)}
-                        >
-                            <svg t="1758849161791" className="icon" viewBox="0 0 1024 1024" version="1.1"
-                                 xmlns="http://www.w3.org/2000/svg" p-id="18774" width="26" height="26">
-                                <path
-                                    d="M463.04 896H169.152A41.152 41.152 0 0 1 128 854.848V560.96a41.152 41.152 0 1 1 82.304 0v252.8h252.736a41.152 41.152 0 1 1 0 82.24z m391.808-391.808a41.152 41.152 0 0 1-41.152-41.152v-252.8H560.96a41.152 41.152 0 1 1 0-82.24h293.888c22.72 0 41.152 18.432 41.152 41.152v293.888a41.152 41.152 0 0 1-41.152 41.152z"
-                                    fill="#000000" fill-opacity=".45" p-id="18775"></path>
-                            </svg>
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={handleSendMessage}
-                            disabled={sendButtonStyle.disabled}
-                            aria-label={t("send_message")}
-                            className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${sendButtonStyle.className}`}
-                        >
-                            {sendButtonStyle.icon}
-                        </button>
                     </div>
-                </div>
-            </div>
 
-            <Transition appear show={isModalOpen} as={Fragment}>
-                <Transition.Child
-                    as={Fragment}
-                    enter="ease-out duration-200"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-150"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                    <div className="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 bg-black/40">
-                        <div
-                            className="bg-white rounded-2xl w-full max-w-3xl h-[80vh] p-6 relative transition-all duration-200 ease-out transform"
-                            onClick={(e) => e.stopPropagation()}
-                        >
+                    <div className="flex items-center justify-between px-4 pb-3">
+                        <ToolButtons
+                            toolsLoadedStatus={toolsLoadedStatus}
+                            extraTools={extraTools}
+                            tools={tools}
+                            toolsStatus={toolsStatus}
+                            setToolsStatus={setToolsStatus}
+                            point3Loading={point3Loading}
+                            renderToolButtons={renderToolButtons}
+                            renderMenuItems={renderMenuItems}
+                            setToolsLoadedStatus={setToolsLoadedStatus}
+                            t={t}
+                        />
+
+                        <div className="flex items-center space-x-2">
                             <button
-                                onClick={() => setIsModalOpen(false)}
-                                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
-                                aria-label={t("close")}
+                                type="button"
+                                aria-label={t("zoom_in_input_box")}
+                                className="p-2.5 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-offset-2 transition-colors cursor-pointer"
+                                onClick={() => setIsModalOpen(true)}
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
-                                     viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M6 18L18 6M6 6l12 12"/>
+                                <svg t="1758849161791" className="icon" viewBox="0 0 1024 1024" version="1.1"
+                                     xmlns="http://www.w3.org/2000/svg" p-id="18774" width="26" height="26">
+                                    <path
+                                        d="M463.04 896H169.152A41.152 41.152 0 0 1 128 854.848V560.96a41.152 41.152 0 1 1 82.304 0v252.8h252.736a41.152 41.152 0 1 1 0 82.24z m391.808-391.808a41.152 41.152 0 0 1-41.152-41.152v-252.8H560.96a41.152 41.152 0 1 1 0-82.24h293.888c22.72 0 41.152 18.432 41.152 41.152v293.888a41.152 41.152 0 0 1-41.152 41.152z"
+                                        fill="#000000" fill-opacity=".45" p-id="18775"></path>
                                 </svg>
                             </button>
-                            <div className="h-full p-5">
-                                <SimpleMDEditor
-                                    text={message}
-                                    setText={setMessage}
-                                    readOnly={isReadOnly}
-                                />
-                            </div>
+
+                            <button
+                                type="button"
+                                onClick={handleSendMessage}
+                                disabled={sendButtonStyle.disabled}
+                                aria-label={t("send_message")}
+                                className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${sendButtonStyle.className}`}
+                            >
+                                {sendButtonStyle.icon}
+                            </button>
                         </div>
                     </div>
-                </Transition.Child>
-            </Transition>
-        </div>
+                </div>
+
+                <Transition appear show={isModalOpen} as={Fragment}>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-200"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-150"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 bg-black/40">
+                            <div
+                                className="bg-white rounded-2xl w-full max-w-3xl h-[80vh] p-6 relative transition-all duration-200 ease-out transform"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <button
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
+                                    aria-label={t("close")}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
+                                         viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                              d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                                <div className="h-full p-5">
+                                    <SimpleMDEditor
+                                        text={message}
+                                        setText={setMessage}
+                                        readOnly={isReadOnly}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </Transition.Child>
+                </Transition>
+            </div>
+        </>
+
     );
 }
 
