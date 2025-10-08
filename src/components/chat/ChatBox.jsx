@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Transition } from '@headlessui/react';
-import { FaRedo, FaSearch } from "react-icons/fa";
+import { FaRedo, FaSearch, FaArrowDown } from "react-icons/fa";
 import { FaEarthAmericas } from 'react-icons/fa6';
 import { CheckIcon } from "lucide-react";
 import {
@@ -12,7 +12,6 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
-import point3Loading from "@/components/loading/point3.jsx";
 import SimpleMDEditor from "@/components/editor/SimpleMDEditor.jsx";
 import ToggleSearchButton from "@/components/chat/ChatButton.jsx";
 import { emitEvent, onEvent } from "@/store/useEventStore.jsx";
@@ -598,7 +597,7 @@ function ChatBox({
         const updateHeight = () => {
             if (attachmentRef.current) {
                 requestAnimationFrame(() => {
-                    setAttachmentHeight(attachmentRef.current.scrollHeight);
+                    setAttachmentHeight(attachmentRef.current?.scrollHeight);
                 });
             }
         };
@@ -628,7 +627,7 @@ function ChatBox({
                 onFolderDetected={onFolderDetected}
             />
             <div
-                className="fixed bottom-10 left-0 right-0 z-50 w-full max-w-220 px-4 overflow-hidden mx-auto"
+                className="w-full max-w-220 px-4 overflow-hidden mx-auto"
                 style={{
                     transition: 'height 0.3s ease-in-out, max-height 0.3s ease-in-out',
                     height: 'auto',
@@ -695,7 +694,6 @@ function ChatBox({
                             tools={tools}
                             toolsStatus={toolsStatus}
                             setToolsStatus={setToolsStatus}
-                            point3Loading={point3Loading}
                             renderToolButtons={renderToolButtons}
                             renderMenuItems={renderMenuItems}
                             setToolsLoadedStatus={setToolsLoadedStatus}

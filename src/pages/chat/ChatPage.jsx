@@ -8,12 +8,11 @@ import {
     fileUpload,
     createFilePicker,
 } from "@/lib/tools";
-import {useDropZone} from "@/hooks/useDropZone";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from 'react-router-dom';
+import { FaArrowDown } from "react-icons/fa";
 
 import ChatBox from "@/components/chat/chatbox.jsx";
-import DropFileLayer from '@/components/chat/DropFileLayer.jsx'
 import ChatContainer from "@/components/chat/ChatContainer.jsx";
 
 /**
@@ -26,12 +25,14 @@ function ChatPage() {
     const {t} = useTranslation(); // 国际化支持
     const navigate = useNavigate();
 
-    // DOM 引用与状态管理
-    const pageContainerRef = useRef(null);
+
+    const isProcessingRef = useRef(false);
+    const messagesContainerRef = useRef(null);
     const [selfMarkId, setSelfMarkId] = useState(getMarkId());
     const uploadIntervals = useRef(new Map()); // 用于清理模拟上传的定时器
     const [uploadFiles, setUploadFiles] = useState([]); // 正在上传的文件列表
     const [attachments, setAttachments] = useState([]); // 已成功上传的附件列表
+    const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
 
     // 拖拽区域逻辑：检测是否拖入了文件夹（不支持）
     const handleFolderDetected = () => {
@@ -54,8 +55,6 @@ function ChatPage() {
         console.log('移除附件:', attachment);
     };
 
-    // 防止重复处理文件选择
-    const isProcessingRef = useRef(false);
 
     /**
      * 处理用户选择的文件（来自拖拽、粘贴或文件选择器）
@@ -179,6 +178,17 @@ function ChatPage() {
     const handleFilePicker = createFilePicker('*', handleSelectedFiles);
     const handlePicPicker = createFilePicker('image/*', handleSelectedFiles);
 
+
+    // 滚动到底部的函数
+    const scrollToBottom = useCallback(() => {
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollIntoView({
+                behavior: 'smooth', // 平滑滚动
+                block: 'end'        // 滚动到容器底部
+            });
+        }
+    }, []);
+
     /*
      * 页面初始化逻辑，如果没有 markId 就向服务器请求一个
      */
@@ -224,7 +234,7 @@ function ChatPage() {
     const [messages, setMessages] = useState([
         {
             position: 'left',
-            content: '# 你好！我是 AI 助手。\n\n你是谁\n\n```python\nprint(123)\n```\n这是代码块当然可以！以下是一些常见的数学公式，使用 LaTeX 编写，适用于 Markdown 中的数学渲染（如支持 MathJax 或 KaTeX 的环境）：\n' +
+            content: '# 你好！我是 AI 助手。\n\n你是谁\n\n```python\nprint(123)print(123)print(123)print(123)print(123)\nprint(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)\n```\n这是代码块当然可以！以下是一些常见的数学公式，使用 LaTeX 编写，适用于 Markdown 中的数学渲染（如支持 MathJax 或 KaTeX 的环境）：\n' +
                 '\n' +
                 '行内公式示例：  \n' +
                 '欧拉公式：$e^{i\\pi} + 1 = 0$\n' +
@@ -264,9 +274,26 @@ function ChatPage() {
             position: 'right',
             content: '你好，我想问一个问题。',
             avatar: '/src/assets/human.jpg'
-        }
+        },
+        {
+            position: 'left',
+            content: '这是一个普通段落。\n' +
+                '\n\n' +
+                '```custom:processing\n' +
+                '正在加载用户数据，请稍候...\nasdad\n正在上网搜索资料\n[DONE]\n```\n\n122',
+            name: 'AI Assistant',
+            avatar: '/src/assets/AI.png'
+        },
     ]);
 
+
+
+    // 页面加载或消息更新后自动滚动到底部
+    useEffect(() => {
+        // 使用 setTimeout 确保 DOM 已渲染（尤其对 Markdown 渲染、代码块等异步内容更可靠）
+        const timer = setTimeout(scrollToBottom, 100);
+        return () => clearTimeout(timer);
+    }, [messages, scrollToBottom]); // 依赖 messages，确保新消息也能触发滚动
 
 
     /**
@@ -287,26 +314,74 @@ function ChatPage() {
         });
         return () => unsubscribe();
     }, [attachments, selfMarkId]);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!messagesContainerRef.current) return;
+
+            const { scrollTop, scrollHeight, clientHeight } = document.documentElement || document.body;
+            // 判断是否接近底部（允许 100px 误差）
+            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+            setShowScrollToBottomButton(!isNearBottom);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll(); // 初始化状态
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
         <>
-            <div className="min-h-screen bg-white flex flex-col items-center justify-end pb-8">
+            <div className="min-h-screen bg-white flex flex-col items-center pb-8">
 
-                <ChatContainer messages={messages} />
+                <div className="flex-1 w-full overflow-y-auto px-4 pt-4">
+                    <ChatContainer messages={messages} ref={messagesContainerRef}/>
+                </div>
 
-                <ChatBox
-                    onSendMessage={handleSendMessage}
-                    markId={selfMarkId}
-                    attachmentsMeta={attachments}
-                    onAttachmentRemove={onAttachmentRemove}
-                    uploadFiles={uploadFiles}
-                    FilePickerCallback={handleFilePicker}
-                    PicPickerCallback={handlePicPicker}
-                    onImagePaste={handleImagePaste}
-                    onRetryUpload={handleRetryUpload}
-                    onCancelUpload={handleCancelUpload}
-                    onDropFiles={handleSelectedFiles}
-                    onFolderDetected={handleFolderDetected}
-                />
+                {/* 滚动到底部按钮 */}
+                <Transition
+                    show={showScrollToBottomButton}
+                    enter="transition-opacity duration-200"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="transition-opacity duration-150"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                >
+                    <button
+                        onClick={scrollToBottom}
+                        className="cursor-pointer fixed bottom-45 align-middle z-99 w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg  focus:outline-none transition-colors"
+                        aria-label="Scroll to bottom"
+                    >
+                        <FaArrowDown className="text-gray-500" />
+                    </button>
+                </Transition>
+
+                <div className="fixed z-50 bottom-10 left-0 right-0">
+                    <ChatBox
+                        onSendMessage={handleSendMessage}
+                        markId={selfMarkId}
+                        attachmentsMeta={attachments}
+                        onAttachmentRemove={onAttachmentRemove}
+                        uploadFiles={uploadFiles}
+                        FilePickerCallback={handleFilePicker}
+                        PicPickerCallback={handlePicPicker}
+                        onImagePaste={handleImagePaste}
+                        onRetryUpload={handleRetryUpload}
+                        onCancelUpload={handleCancelUpload}
+                        onDropFiles={handleSelectedFiles}
+                        onFolderDetected={handleFolderDetected}
+                    />
+                </div>
+
+                <footer
+                    className="fixed bottom-0 left-0 right-0 h-12 bg-white flex items-center justify-center">
+                      <span className="text-xs text-gray-500">
+                        © {new Date().getFullYear()} lovePikachu. All rights reserved.
+                      </span>
+                </footer>
+
 
             </div>
         </>

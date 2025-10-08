@@ -1,12 +1,14 @@
-import React, { useState, Fragment } from 'react';
-import { Transition } from '@headlessui/react';
-import { IoMdAdd } from "react-icons/io";
-import { FaRedo } from "react-icons/fa";
+import React, {useState, Fragment} from 'react';
+import {Transition} from '@headlessui/react';
+import {IoMdAdd} from "react-icons/io";
+import {FaRedo} from "react-icons/fa";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 
 /**
  * 工具按钮组件
@@ -15,9 +17,8 @@ import {
  */
 export default function ToolButtons({
                                         toolsLoadedStatus,
-                                        extraTools,
-                                        point3Loading,
                                         renderToolButtons,
+                                        extraTools,
                                         renderMenuItems,
                                         setToolsLoadedStatus,
                                         t
@@ -27,14 +28,14 @@ export default function ToolButtons({
     return (
         <div className="flex items-center space-x-1">
             {/* "+" 按钮触发工具菜单 */}
-            <DropdownMenu open={open} onOpenChange={setOpen}>
+            <DropdownMenu modal={false} open={open} onOpenChange={setOpen}>
                 <DropdownMenuTrigger>
                     <button
                         type="button"
-                        className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
                         aria-label={t("extra_tools")} //  规范化 key
                     >
-                        <IoMdAdd />
+                        <IoMdAdd/>
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="bg-white p-1 shadow-lg rounded-md">
@@ -85,7 +86,7 @@ export default function ToolButtons({
                                 className="text-blue-500 hover:text-blue-700 text-sm flex items-center cursor-pointer"
                                 aria-label={t("reload_tools")} //  已规范
                             >
-                                <FaRedo className="w-4 h-4 mr-1" />
+                                <FaRedo className="w-4 h-4 mr-1"/>
                                 {t("reload_tools")} {/*  按钮内文本也国际化 */}
                             </button>
                         </div>
@@ -106,7 +107,7 @@ export default function ToolButtons({
                     }}
                 >
                     <Transition.Child as="div">
-                        {() => point3Loading()}
+                        <ThreeDotLoading/>
                     </Transition.Child>
                 </Transition>
             </div>

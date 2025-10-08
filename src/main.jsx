@@ -1,6 +1,7 @@
 import {StrictMode} from 'react';
 import './assets/js/i18n.js';
 import './assets/css/index.css';
+import './assets/css/code-block.css';
 import ChatPage from './pages/chat/ChatPage.jsx';
 import {
     createBrowserRouter,

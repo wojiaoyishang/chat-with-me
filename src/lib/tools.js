@@ -36,7 +36,8 @@ export function fileUpload(uploadFile, onProgressUpdate, onComplete, onError) {
     if (!uploadFile || !uploadFile.file || !onProgressUpdate || !onComplete) {
         console.error('Missing required parameters for simulateUpload');
         onError?.(new Error('Invalid parameters'));
-        return () => {};
+        return () => {
+        };
     }
 
     const xhr = new XMLHttpRequest();
@@ -190,4 +191,9 @@ export function generateUUID() {
         hex.slice(16, 20),
         hex.slice(20)
     ].join('-');
+}
+
+export function getLastLine(str) {
+    const idx = str.lastIndexOf('\n');
+    return idx === -1 ? str : str.slice(idx + 1);
 }
