@@ -27,6 +27,7 @@
   "scroll_attachments_right": "Scroll attachments right",
   "no_tools_available": "No tools available",
   "tool_load_failed": "Failed to load tools",
+  "upload_files_disable": "Currently, the input box does not support file upload.",
   "websocket": {
     "error": "WebSocket connection error: {{message}}",
     "popover_title": "Connection failed",

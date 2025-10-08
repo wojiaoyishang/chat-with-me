@@ -20,6 +20,7 @@ import ToolButtons from './ToolButtons';
 import AttachmentShowcase from './AttachmentShowcase';
 import FileUploadProgress from './FileUploadProgress';
 import DropFileLayer from "@/components/chat/DropFileLayer.jsx";
+import {toast} from "sonner";
 
 /**
  * ChatBox - 一个功能丰富的聊天输入区域组件
@@ -623,7 +624,14 @@ function ChatBox({
     return (
         <>
             <DropFileLayer
-                onDropFiles={onDropFiles}
+                onDropFiles={() => {
+                    if (ignoreAttachmentTools) {
+                        toast.error(t("upload_files_disable"));
+                        return;
+                    }
+                    onDropFiles();
+                }
+            }
                 onFolderDetected={onFolderDetected}
             />
             <div
