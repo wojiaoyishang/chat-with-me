@@ -1,6 +1,5 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {generateUUID, getMarkId} from "@/lib/tools";
-import {onEvent} from "@/store/useEventStore.jsx";
 import {toast} from "sonner";
 import {Transition} from '@headlessui/react';
 import {
@@ -10,58 +9,158 @@ import {
 } from "@/lib/tools";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from 'react-router-dom';
-import { FaArrowDown } from "react-icons/fa";
+import {FaArrowDown} from "react-icons/fa";
 
+import {onEvent} from "@/store/useEventStore.jsx";
 import ChatBox from "@/components/chat/chatbox.jsx";
 import ChatContainer from "@/components/chat/ChatContainer.jsx";
 
-/**
- * 聊天主页面组件
- * - 支持文件拖拽上传、粘贴图片、手动选择文件
- * - 管理附件状态并与 ChatBox 组件通信
- * - 使用事件总线监听外部附件元数据请求
- */
 function ChatPage() {
-    const {t} = useTranslation(); // 国际化支持
+    const {t} = useTranslation();
     const navigate = useNavigate();
-
 
     const isProcessingRef = useRef(false);
     const messagesContainerRef = useRef(null);
     const [selfMarkId, setSelfMarkId] = useState(getMarkId());
-    const uploadIntervals = useRef(new Map()); // 用于清理模拟上传的定时器
-    const [uploadFiles, setUploadFiles] = useState([]); // 正在上传的文件列表
-    const [attachments, setAttachments] = useState([]); // 已成功上传的附件列表
+    const uploadIntervals = useRef(new Map());
+    const [uploadFiles, setUploadFiles] = useState([]);
+    const [attachments, setAttachments] = useState([]);
+    const [isAtBottom, setIsAtBottom] = useState(true); // 新增状态：是否在底部
     const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
 
-    // 拖拽区域逻辑：检测是否拖入了文件夹（不支持）
+    // 新消息存储结构
+    const [messagesOrder, setMessagesOrder] = useState([]);
+    const [messages, setMessages] = useState({});
+    const messagesOrderRef = useRef([]);
+
+    // 手动转化初始消息
+    useEffect(() => {
+        const initialMessages = [
+            {
+                position: 'left',
+                content: '# 你好！我是 AI 助手。\n\n你是谁\n\n```python\nprint(123)print(123)print(123)print(123)print(123)\nprint(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)\n```\n这是代码块当然可以！以下是一些常见的数学公式，使用 LaTeX 编写，适用于 Markdown 中的数学渲染（如支持 MathJax 或 KaTeX 的环境）：\n' +
+                    '\n' +
+                    '行内公式示例：  \n' +
+                    '欧拉公式：$e^{i\\pi} + 1 = 0$\n' +
+                    '\n' +
+                    '独立公式（块级）示例：\n' +
+                    '\n' +
+                    '$$\n' +
+                    '\\int_{-\\infty}^{\\infty} e^{-x^2} \\, dx = \\sqrt{\\pi}\n' +
+                    '$$\n' +
+                    '\n' +
+                    '二次方程求根公式：\n' +
+                    '\n' +
+                    '$$\n' +
+                    'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\n' +
+                    '$$\n' +
+                    '\n' +
+                    '矩阵示例：\n' +
+                    '\n' +
+                    '$$\n' +
+                    '\\begin{bmatrix}\n' +
+                    'a & b \\\\\n' +
+                    'c & d\n' +
+                    '\\end{bmatrix}\n' +
+                    '$$\n' +
+                    '\n' +
+                    '微分方程：\n' +
+                    '\n' +
+                    '$$\n' +
+                    '\\frac{d^2y}{dx^2} + p(x)\\frac{dy}{dx} + q(x)y = f(x)\n' +
+                    '$$\n' +
+                    '\n' +
+                    '希望这些能帮你测试 Markdown 的公式渲染效果！',
+                name: 'AI Assistant',
+                avatar: '/src/assets/AI.png'
+            },
+            {
+                position: 'right',
+                content: '你好，我想问一个问题。',
+                avatar: '/src/assets/human.jpg'
+            },
+            {
+                position: 'left',
+                content: '这是一个普通段落。\n' +
+                    '\n\n' +
+                    ':::card{type=processing id=123}\n' +
+                    '正在加载用户数据，请稍候...\nasdad\n\n正在上网搜索资料\n[DONE]\n:::\n\n122',
+                name: 'AI Assistant',
+                avatar: '/src/assets/AI.png'
+            },
+        ];
+
+        const order = [];
+        const detail = {};
+        initialMessages.forEach(msg => {
+            const id = generateUUID();
+            order.push(id);
+            detail[id] = msg;
+        });
+
+        setMessagesOrder(["<PREV_MORE>", ...order]);
+        setMessages(detail);
+    }, []);
+
+    // 滚动到底部函数 - 直接操作容器 scrollTop
+    const scrollToBottom = useCallback(() => {
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTo({
+                top: messagesContainerRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+            setIsAtBottom(true);
+        }
+    }, []);
+
+    // 消息更新时自动滚动逻辑
+    useEffect(() => {
+        // 只有当用户当前在底部时才自动滚动
+        if (isAtBottom && messagesContainerRef.current) {
+            scrollToBottom();
+        }
+    }, [messagesOrder, isAtBottom, scrollToBottom]);
+
+    // 监听消息容器的滚动事件
+    useEffect(() => {
+        const container = messagesContainerRef.current;
+        if (!container) return;
+
+        const handleScroll = () => {
+            const {scrollTop, scrollHeight, clientHeight} = container;
+            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+
+            setIsAtBottom(isNearBottom);
+            setShowScrollToBottomButton(!isNearBottom);
+        };
+
+        // 初始化检查
+        handleScroll();
+
+        container.addEventListener('scroll', handleScroll, {passive: true});
+
+        return () => {
+            container.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
     const handleFolderDetected = () => {
         toast.error(t("暂不支持整个文件夹上传"));
     };
 
-    // 处理拖拽释放的文件
     const handleDropFiles = (files) => {
         handleSelectedFiles(files);
     };
 
-    // 处理用户发送消息（当前仅打印日志）
     const handleSendMessage = (message, toolsStatus, sendButtonState) => {
         console.log('发送消息:', message, toolsStatus, sendButtonState);
     };
 
-    // 移除附件：从状态中过滤掉指定附件
     const onAttachmentRemove = (attachment) => {
         setAttachments(prev => prev.filter(att => att.serverId !== attachment.serverId));
         console.log('移除附件:', attachment);
     };
 
-
-    /**
-     * 处理用户选择的文件（来自拖拽、粘贴或文件选择器）
-     * - 过滤无效文件
-     * - 启动模拟上传流程（含进度更新和完成回调）
-     * - 自动清理上传任务
-     */
     const handleSelectedFiles = (files) => {
         if (isProcessingRef.current) return;
         isProcessingRef.current = true;
@@ -105,16 +204,11 @@ function ChatPage() {
             uploadIntervals.current.set(uploadFile.id, cleanup);
         });
 
-        // 短暂延迟后允许再次处理文件，避免快速连续触发
         setTimeout(() => {
             isProcessingRef.current = false;
         }, 500);
     };
 
-    /**
-     * 处理从剪贴板粘贴的图片
-     * - 将单个 File 对象包装成类 FileList 结构，复用 handleSelectedFiles
-     */
     const handleImagePaste = (file) => {
         const fileList = {
             0: file,
@@ -132,14 +226,12 @@ function ChatPage() {
             const fileToRetry = prev.find(f => f.id === uploadId);
             if (!fileToRetry || !fileToRetry.file) return prev;
 
-            // 清除错误状态，重置进度
             const updatedFile = {
                 ...fileToRetry,
                 progress: 0,
                 error: null
             };
 
-            // 启动上传
             const handleProgressUpdate = (id, progress) => {
                 setUploadFiles(p => p.map(f => f.id === id ? {...f, progress} : f));
             };
@@ -165,181 +257,121 @@ function ChatPage() {
     };
 
     const handleCancelUpload = (uploadId) => {
-        // 中止上传
         if (uploadIntervals.current.has(uploadId)) {
             uploadIntervals.current.get(uploadId)();
             uploadIntervals.current.delete(uploadId);
         }
-        // 从状态中移除
         setUploadFiles(prev => prev.filter(f => f.id !== uploadId));
     };
 
-    // 创建通用文件选择器和图片专用选择器
     const handleFilePicker = createFilePicker('*', handleSelectedFiles);
     const handlePicPicker = createFilePicker('image/*', handleSelectedFiles);
 
+    const loadMoreHistory = async () => {
+        try {
 
-    // 滚动到底部的函数
-    const scrollToBottom = useCallback(() => {
-        if (messagesContainerRef.current) {
-            messagesContainerRef.current.scrollIntoView({
-                behavior: 'smooth', // 平滑滚动
-                block: 'end'        // 滚动到容器底部
-            });
+            return new Promise((resolve, reject) => {
+
+                setTimeout(() => {
+                    resolve(true);
+                }, 1500);
+
+            })
+
+        } catch (err) {
+            // 如果你 throw，会被 catch
+            throw err;
         }
-    }, []);
+    };
 
-    /*
-     * 页面初始化逻辑，如果没有 markId 就向服务器请求一个
-     */
-
-    const [randomUUid, setRandomUUID] = useState(generateUUID());
-
-    // 暂时不获取 markId
-    // useEffect(() => {
-    //
-    //     // 监听 websocket 打开
-    //     const unsubscribe1 = onEvent("websocket", "onopen", null).then((payload, markId, isReply, id, reply) => {
-    //
-    //         if (!selfMarkId) {  // 自己没有 markId 时
-    //             emitEvent({
-    //                 type: "page",
-    //                 target: "ChatPage",
-    //                 payload: {
-    //                     command: "Get-MarkId"
-    //                 },
-    //                 markId: randomUUid,
-    //                 isReply: false
-    //             });
-    //         }
-    //     });
-    //
-    //     // 设置广播事件回调
-    //     const unsubscribe2 = onEvent("page", "ChatPage", randomUUid, true).then((payload, markId, isReply, id, reply) => {
-    //
-    //         switch (payload.command) {
-    //             case "Get-MarkId":
-    //                 setSelfMarkId(payload.markId);
-    //                 navigate(`/chat/${payload.markId}`, { replace: true });
-    //                 break;
-    //         }
-    //     });
-    //
-    //     return () => {
-    //         unsubscribe1();
-    //         unsubscribe2();
-    //     };
-    // }, []);
-
-    const [messages, setMessages] = useState([
-        {
-            position: 'left',
-            content: '# 你好！我是 AI 助手。\n\n你是谁\n\n```python\nprint(123)print(123)print(123)print(123)print(123)\nprint(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)\n```\n这是代码块当然可以！以下是一些常见的数学公式，使用 LaTeX 编写，适用于 Markdown 中的数学渲染（如支持 MathJax 或 KaTeX 的环境）：\n' +
-                '\n' +
-                '行内公式示例：  \n' +
-                '欧拉公式：$e^{i\\pi} + 1 = 0$\n' +
-                '\n' +
-                '独立公式（块级）示例：\n' +
-                '\n' +
-                '$$\n' +
-                '\\int_{-\\infty}^{\\infty} e^{-x^2} \\, dx = \\sqrt{\\pi}\n' +
-                '$$\n' +
-                '\n' +
-                '二次方程求根公式：\n' +
-                '\n' +
-                '$$\n' +
-                'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\n' +
-                '$$\n' +
-                '\n' +
-                '矩阵示例：\n' +
-                '\n' +
-                '$$\n' +
-                '\\begin{bmatrix}\n' +
-                'a & b \\\\\n' +
-                'c & d\n' +
-                '\\end{bmatrix}\n' +
-                '$$\n' +
-                '\n' +
-                '微分方程：\n' +
-                '\n' +
-                '$$\n' +
-                '\\frac{d^2y}{dx^2} + p(x)\\frac{dy}{dx} + q(x)y = f(x)\n' +
-                '$$\n' +
-                '\n' +
-                '希望这些能帮你测试 Markdown 的公式渲染效果！',
-            name: 'AI Assistant',
-            avatar: '/src/assets/AI.png'
-        },
-        {
-            position: 'right',
-            content: '你好，我想问一个问题。',
-            avatar: '/src/assets/human.jpg'
-        },
-        {
-            position: 'left',
-            content: '这是一个普通段落。\n' +
-                '\n\n' +
-                '```custom:processing\n' +
-                '正在加载用户数据，请稍候...\nasdad\n正在上网搜索资料\n[DONE]\n```\n\n122',
-            name: 'AI Assistant',
-            avatar: '/src/assets/AI.png'
-        },
-    ]);
-
-
-
-    // 页面加载或消息更新后自动滚动到底部
+    /* 状态同步 */
     useEffect(() => {
-        // 使用 setTimeout 确保 DOM 已渲染（尤其对 Markdown 渲染、代码块等异步内容更可靠）
-        const timer = setTimeout(scrollToBottom, 100);
-        return () => clearTimeout(timer);
-    }, [messages, scrollToBottom]); // 依赖 messages，确保新消息也能触发滚动
+        messagesOrderRef.current = messagesOrder;
+    }, [messagesOrder]);
 
-
-    /**
-     * 广播事件
-     */
     useEffect(() => {
-        const unsubscribe = onEvent("widget", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
+        const unsubscribe1 = onEvent("widget", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
                 case "Attachment-Meta":
                     if (payload.value) {
                         setAttachments(payload.value);
-                        reply(payload.value);
+                        reply({command: 'Setup-QuickOptions', value: payload.value});
                     } else {
                         reply(attachments);
                     }
                     break;
             }
         });
-        return () => unsubscribe();
-    }, [attachments, selfMarkId]);
 
-    useEffect(() => {
-        const handleScroll = () => {
-            if (!messagesContainerRef.current) return;
+        const unsubscribe2 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
+            switch (payload.command) {
+                case "Add-Message": // 添加消息源数据
+                    if (payload.value && typeof payload.value === 'object' && !Array.isArray(payload.value)) {
 
-            const { scrollTop, scrollHeight, clientHeight } = document.documentElement || document.body;
-            // 判断是否接近底部（允许 100px 误差）
-            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-            setShowScrollToBottomButton(!isNearBottom);
+                        setMessages(prev => ({...prev, ...payload.value}));
+                        reply({command: 'Add-Message', success: true});
+
+                    }
+                    break;
+
+                case "MessagesOrder-Meta":  // 设置消息链条
+                    if (Array.isArray(payload.value) && payload.value.length > 0) {
+                        setMessagesOrder(payload.value);
+                        reply({command: 'MessagesOrder-Meta', value: payload.value});
+                    } else {
+                        reply({command: 'MessagesOrder-Meta', value: messagesOrderRef.current});
+                    }
+                    break;
+
+                case "Add-MessageContent":  // 添加内容
+                    if (payload.value && typeof payload.value === 'object' && !Array.isArray(payload.value)) {
+                        setMessages(prev => {
+                            const updated = {...prev};
+                            let hasUpdate = false;
+                            for (const [msgId, newContent] of Object.entries(payload.value)) {
+                                if (updated[msgId]) {
+                                    updated[msgId] = {
+                                        ...updated[msgId],
+                                        content: (updated[msgId].content || '') + (newContent || '')
+                                    };
+                                    hasUpdate = true;
+                                }
+                            }
+                            return hasUpdate ? updated : prev;
+                        });
+                        if (payload.reply) reply({command: 'Add-MessageContent', success: true});
+                    } else {
+                        reply({command: 'Add-MessageContent', success: false});
+                    }
+                    break;
+
+            }
+        });
+
+        return () => {
+            unsubscribe1();
+            unsubscribe2();
         };
 
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        handleScroll(); // 初始化状态
-
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [attachments, selfMarkId]);
 
     return (
         <>
             <div className="min-h-screen bg-white flex flex-col items-center pb-8">
-
                 <div className="flex-1 w-full overflow-y-auto px-4 pt-4">
-                    <ChatContainer messages={messages} ref={messagesContainerRef}/>
+                    <div
+                        ref={messagesContainerRef}
+                        className="h-full overflow-y-auto pb-20 scroll-smooth"
+                        style={{maxHeight: 'calc(100vh - 200px)'}}
+                    >
+                        <ChatContainer
+                            messagesOrder={messagesOrder}
+                            messages={messages}
+                            onLoadMore={loadMoreHistory}
+                        />
+                    </div>
                 </div>
 
-                {/* 滚动到底部按钮 */}
                 <Transition
                     show={showScrollToBottomButton}
                     enter="transition-opacity duration-200"
@@ -351,10 +383,10 @@ function ChatPage() {
                 >
                     <button
                         onClick={scrollToBottom}
-                        className="cursor-pointer fixed bottom-45 align-middle z-99 w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg  focus:outline-none transition-colors"
+                        className="cursor-pointer fixed bottom-45 align-middle z-99 w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors"
                         aria-label="Scroll to bottom"
                     >
-                        <FaArrowDown className="text-gray-500" />
+                        <FaArrowDown className="text-gray-500"/>
                     </button>
                 </Transition>
 
@@ -375,14 +407,11 @@ function ChatPage() {
                     />
                 </div>
 
-                <footer
-                    className="fixed bottom-0 left-0 right-0 h-12 bg-white flex items-center justify-center">
-                      <span className="text-xs text-gray-500">
+                <footer className="fixed bottom-0 left-0 right-0 h-12 bg-white flex items-center justify-center">
+                    <span className="text-xs text-gray-500">
                         © {new Date().getFullYear()} lovePikachu. All rights reserved.
-                      </span>
+                    </span>
                 </footer>
-
-
             </div>
         </>
     );

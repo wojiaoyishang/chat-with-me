@@ -152,8 +152,24 @@ export const useEventStore = create((set, get) => {
         },
 
         _emit: (event, emitStack = null) => {
+            let { type, target, markId: eventMarkId = null, isReply = false, payload, id = null , fromWebsocket = false} = event;
+
             const { listeners } = get();
-            const { type, target, markId: eventMarkId = null, isReply = false, payload, id = null } = event;
+
+            if (!id) {
+                id = generateUUID();
+            }
+
+            if (type !== 'websocket' && !fromWebsocket) {  // 不是 websocket 事件不发送，是从 websocket 来的事件也不发送
+                sendWebSocketMessage({
+                    type: type,
+                    target: target,
+                    payload: payload,
+                    markId: eventMarkId,
+                    isReply: isReply,
+                    id: id,
+                });
+            }
 
             if (debugLogger) {
                 if (!isReply) {
@@ -229,23 +245,8 @@ export let emitEvent = ({
         ? new Error('Event emitted at:').stack
         : null;
 
-    if (!id) {
-        id = generateUUID();
-    }
 
-    if (type !== 'websocket' && !fromWebsocket) {  // 不是 websocket 事件不发送，是从 websocket 来的事件也不发送
-        sendWebSocketMessage({
-            type: type,
-            target: target,
-            payload: payload,
-            markId: markId,
-            isReply: isReply,
-            id: id,
-        });
-    }
-
-
-    useEventStore.getState()._emit({type, target, payload, markId, isReply, id}, emitStack);
+    useEventStore.getState()._emit({type, target, payload, markId, isReply, id, fromWebsocket}, emitStack);
 };
 
 if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {

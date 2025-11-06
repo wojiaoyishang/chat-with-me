@@ -28,6 +28,8 @@
   "no_tools_available": "无可用工具",
   "tool_load_failed": "加载工具失败",
   "upload_files_disable": "目前输入框不支持上传文件",
+  "load_more": "加载更多",
+  "load_more_error": "加载更多失败： {{message}}",
   "websocket": {
     "error": "WebSocket 连接错误：{{message}}",
     "popover_title": "连接失败",

@@ -12,9 +12,7 @@ export default defineConfig({
         },
     },
     define: {
-        DEBUG_MODE: true,
-        CHATBOX_API: JSON.stringify('/api/chatbox.json'),
-        UPLOAD_ENDPOINT: JSON.stringify("http://127.0.0.1:8000/upload"),
+        DEBUG_MODE: true
     },
 })
 

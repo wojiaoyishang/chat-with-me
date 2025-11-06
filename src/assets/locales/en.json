@@ -28,6 +28,8 @@
   "no_tools_available": "No tools available",
   "tool_load_failed": "Failed to load tools",
   "upload_files_disable": "Currently, the input box does not support file upload.",
+  "load_more": "Load More",
+  "load_more_error": "Failed to fetch more: {{message}}",
   "websocket": {
     "error": "WebSocket connection error: {{message}}",
     "popover_title": "Connection failed",

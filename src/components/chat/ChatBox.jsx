@@ -22,6 +22,10 @@ import FileUploadProgress from './FileUploadProgress';
 import DropFileLayer from "@/components/chat/DropFileLayer.jsx";
 import {toast} from "sonner";
 
+import {apiEndpoint} from "@/config.js"
+import apiClient from '@/lib/apiClient';
+
+
 /**
  * ChatBox - 一个功能丰富的聊天输入区域组件
  *
@@ -538,17 +542,20 @@ function ChatBox({
 
     useEffect(() => {
         if (toolsLoadedStatus === 0) {
-            if (typeof CHATBOX_API === 'undefined' || CHATBOX_API.trim() === '') {
+            if (apiEndpoint.CHATBOX_ENDPOINT.trim() === '') {
                 setToolsLoadedStatus(-1);
                 return;
             }
-            fetch(CHATBOX_API)
-                .then(res => res.json())
+
+            apiClient.get(apiEndpoint.CHATBOX_ENDPOINT)
                 .then(data => {
                     chatboxSetup(data);
                     setToolsLoadedStatus(1);
                 })
-                .catch(() => setToolsLoadedStatus(3));
+                .catch(() => {
+                    setToolsLoadedStatus(3);
+                });
+
         }
     }, [toolsLoadedStatus]);
 

@@ -1,20 +1,16 @@
-import React, {useState} from 'react';
-import {getLastLine} from "@/lib/tools.js";
+import React from 'react';
+import { getLastLine } from "@/lib/tools.js";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 
-const ComponentBlock = ({type, content}) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-
+const ComponentBlock = ({ type, content, id, isExpanded, onToggleExpand }) => {
     switch (type) {
         case 'processing':
             const rawLastLine = getLastLine(content);
             const lastLine = rawLastLine.trim();
             const isDone = lastLine === '[DONE]';
 
-            // 获取所有非空行（用于判断是否显示展开按钮）
             const allLines = content.split('\n').filter(line => line.trim());
 
-            // 如果已完成，移除 [DONE] 行用于日志显示
             const displayContent = isDone
                 ? content
                 .split('\n')
@@ -23,14 +19,12 @@ const ComponentBlock = ({type, content}) => {
                 .trim() || ''
                 : content;
 
-            // 判断是否有“可展示的日志内容”（用于决定是否显示展开按钮）
             const hasLogContent = isDone
                 ? displayContent.length > 0
-                : allLines.length > 1; // 加载中时，多行才显示按钮
+                : allLines.length > 1;
 
             return (
                 <div className="w-full relative">
-                    {/* 完成状态 */}
                     {isDone ? (
                         <div className="bg-green-50/30 border border-green-100 rounded p-2">
                             <div className="flex items-center gap-2">
@@ -48,10 +42,9 @@ const ComponentBlock = ({type, content}) => {
                                     Processing completed
                                 </span>
 
-                                {/* 展开按钮（仅当有日志内容时显示） */}
                                 {hasLogContent && (
                                     <button
-                                        onClick={() => setIsExpanded(!isExpanded)}
+                                        onClick={() => onToggleExpand(id)}
                                         className="ml-auto cursor-pointer text-[0.75rem] text-green-600 hover:text-green-800 px-1.5 py-0.5 rounded border border-green-100 hover:border-green-200 bg-white/50 transition-colors whitespace-nowrap flex items-center gap-1"
                                         aria-label={isExpanded ? "Collapse logs" : "Expand logs"}
                                     >
@@ -74,7 +67,6 @@ const ComponentBlock = ({type, content}) => {
                             </div>
                         </div>
                     ) : (
-                        /* 加载状态 */
                         <div className="bg-blue-50/30 border border-blue-100 rounded p-2">
                             <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0 text-[0.75rem] leading-none">
@@ -97,7 +89,7 @@ const ComponentBlock = ({type, content}) => {
 
                                 {hasLogContent && (
                                     <button
-                                        onClick={() => setIsExpanded(!isExpanded)}
+                                        onClick={() => onToggleExpand(id)}
                                         className="cursor-pointer text-[0.75rem] text-blue-500 hover:text-blue-700 px-1.5 py-0.5 rounded border border-blue-100 hover:border-blue-200 bg-white/50 transition-colors whitespace-nowrap flex items-center gap-1"
                                         aria-label={isExpanded ? "Collapse logs" : "Expand logs"}
                                     >
@@ -121,7 +113,6 @@ const ComponentBlock = ({type, content}) => {
                         </div>
                     )}
 
-                    {/* 日志面板：仅当 isExpanded 为 true 时显示 */}
                     {isExpanded && (
                         <div
                             className="mt-2 ml-0 bg-white border border-gray-200 rounded-lg p-3 shadow-sm transition-all duration-200 ease-in-out animate-fade-in">
@@ -130,7 +121,7 @@ const ComponentBlock = ({type, content}) => {
                                     logs
                                 </span>
                                 <button
-                                    onClick={() => setIsExpanded(false)}
+                                    onClick={() => onToggleExpand(id)}
                                     className="cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-1 transition-colors duration-150"
                                     aria-label="Close logs"
                                     title="Close logs"
@@ -206,7 +197,7 @@ const ComponentBlock = ({type, content}) => {
 
                                 {thinkingHasLogContent && (
                                     <button
-                                        onClick={() => setIsExpanded(!isExpanded)}
+                                        onClick={() => onToggleExpand(id)}
                                         className="ml-auto cursor-pointer text-[0.75rem] text-gray-600 hover:text-gray-800 px-1.5 py-0.5 rounded border border-gray-200 hover:border-gray-300 bg-white transition-colors whitespace-nowrap flex items-center gap-1"
                                         aria-label={isExpanded ? "Collapse logs" : "Expand logs"}
                                     >
@@ -250,7 +241,7 @@ const ComponentBlock = ({type, content}) => {
 
                                 {thinkingHasLogContent && (
                                     <button
-                                        onClick={() => setIsExpanded(!isExpanded)}
+                                        onClick={() => onToggleExpand(id)}
                                         className="cursor-pointer text-[0.75rem] text-gray-600 hover:text-gray-800 px-1.5 py-0.5 rounded border border-gray-200 hover:border-gray-300 bg-white transition-colors whitespace-nowrap flex items-center gap-1"
                                         aria-label={isExpanded ? "Collapse logs" : "Expand logs"}
                                     >
@@ -282,7 +273,7 @@ const ComponentBlock = ({type, content}) => {
                                     mind
                                 </span>
                                 <button
-                                    onClick={() => setIsExpanded(false)}
+                                    onClick={() => onToggleExpand(id)}
                                     className="cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-1 transition-colors duration-150"
                                     aria-label="Close logs"
                                     title="Close logs"

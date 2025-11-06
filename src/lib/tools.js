@@ -1,4 +1,5 @@
 import {useParams} from 'react-router-dom';
+import {apiEndpoint} from '@/config.js';
 
 export function getMarkId() {
     const {markId} = useParams();
@@ -46,7 +47,7 @@ export function fileUpload(uploadFile, onProgressUpdate, onComplete, onError) {
 
     // 假设 UPLOAD_ENDPOINT 已在项目中定义，例如：
     // const UPLOAD_ENDPOINT = 'http://127.0.0.1:8000/upload';
-    const UPLOAD_ENDPOINT = window.UPLOAD_ENDPOINT || 'http://127.0.0.1:8000/upload';
+    const UPLOAD_ENDPOINT = apiUrl.UPLOAD_ENDPOINT;
 
     xhr.open('POST', UPLOAD_ENDPOINT);
 
