@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
-import {generateUUID, getMarkId} from "@/lib/tools";
+import {useImmer} from 'use-immer';
+import {generateUUID, getMarkId, getLocalSetting} from "@/lib/tools";
 import {toast} from "sonner";
 import {Transition} from '@headlessui/react';
 import {
@@ -14,6 +15,8 @@ import {FaArrowDown} from "react-icons/fa";
 import {onEvent} from "@/store/useEventStore.jsx";
 import ChatBox from "@/components/chat/chatbox.jsx";
 import ChatContainer from "@/components/chat/ChatContainer.jsx";
+import apiClient from "@/lib/apiClient.js";
+import {apiEndpoint} from "@/config.js";
 
 function ChatPage() {
     const {t} = useTranslation();
@@ -30,76 +33,66 @@ function ChatPage() {
 
     // 新消息存储结构
     const [messagesOrder, setMessagesOrder] = useState([]);
-    const [messages, setMessages] = useState({});
+    const [messages, setMessages] = useImmer({});
     const messagesOrderRef = useRef([]);
 
     // 手动转化初始消息
     useEffect(() => {
-        const initialMessages = [
-            {
-                position: 'left',
-                content: '# 你好！我是 AI 助手。\n\n你是谁\n\n```python\nprint(123)print(123)print(123)print(123)print(123)\nprint(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)print(123)\n```\n这是代码块当然可以！以下是一些常见的数学公式，使用 LaTeX 编写，适用于 Markdown 中的数学渲染（如支持 MathJax 或 KaTeX 的环境）：\n' +
-                    '\n' +
-                    '行内公式示例：  \n' +
-                    '欧拉公式：$e^{i\\pi} + 1 = 0$\n' +
-                    '\n' +
-                    '独立公式（块级）示例：\n' +
-                    '\n' +
-                    '$$\n' +
-                    '\\int_{-\\infty}^{\\infty} e^{-x^2} \\, dx = \\sqrt{\\pi}\n' +
-                    '$$\n' +
-                    '\n' +
-                    '二次方程求根公式：\n' +
-                    '\n' +
-                    '$$\n' +
-                    'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\n' +
-                    '$$\n' +
-                    '\n' +
-                    '矩阵示例：\n' +
-                    '\n' +
-                    '$$\n' +
-                    '\\begin{bmatrix}\n' +
-                    'a & b \\\\\n' +
-                    'c & d\n' +
-                    '\\end{bmatrix}\n' +
-                    '$$\n' +
-                    '\n' +
-                    '微分方程：\n' +
-                    '\n' +
-                    '$$\n' +
-                    '\\frac{d^2y}{dx^2} + p(x)\\frac{dy}{dx} + q(x)y = f(x)\n' +
-                    '$$\n' +
-                    '\n' +
-                    '希望这些能帮你测试 Markdown 的公式渲染效果！',
-                name: 'AI Assistant',
-                avatar: '/src/assets/AI.png'
-            },
-            {
-                position: 'right',
-                content: '你好，我想问一个问题。',
-                avatar: '/src/assets/human.jpg'
-            },
-            {
-                position: 'left',
-                content: '这是一个普通段落。\n' +
-                    '\n\n' +
-                    ':::card{type=processing id=123}\n' +
-                    '正在加载用户数据，请稍候...\nasdad\n\n正在上网搜索资料\n[DONE]\n:::\n\n122',
-                name: 'AI Assistant',
-                avatar: '/src/assets/AI.png'
-            },
-        ];
+        setMessagesOrder(["ID1", "ID2"]);
+        setMessages({
+                "ID0": {
+                    position: null,  // 隐藏消息
+                    messages: ["ID1", "ID4"],
+                    nextMessage: "ID1"
+                },
+                "ID4": {
+                    prevMessage: "ID0",  // 上一条对话的ID，如果没有是 null
+                    position: 'right',   // 属于左边还是右边，右边默认为气泡
+                    content: '这个是测试消息',  // 内容
+                    name: 'AI Assistant',  // 昵称
+                    avatar: '/src/assets/human.jpg',  // 头像
+                    messages: [],  // 如果没有是空列表
+                    nextMessage: null  // 目前选择的 下一条对话的ID，如果没有是 null
+                },
+                "ID1": {
+                    prevMessage: "ID0",  // 上一条对话的ID，如果没有是 null
+                    position: 'right',   // 属于左边还是右边，右边默认为气泡
+                    content: '这个是第一条消息',  // 内容
+                    name: 'AI Assistant',  // 昵称
+                    avatar: '/src/assets/human.jpg',  // 头像
+                    messages: ['ID2', 'ID3', 'ID5'],  // 如果没有是空列表
+                    nextMessage: 'ID2'  // 目前选择的 下一条对话的ID，如果没有是 null
+                },
+                "ID2": {
+                    prevMessage: "ID1",  // 上一条对话的ID，如果没有是 null
+                    position: 'left',   // 属于左边还是右边，右边默认为气泡
+                    content: '这个是第二条消息',  // 内容
+                    name: 'AI Assistant',  // 昵称
+                    avatar: '/src/assets/AI.png',  // 头像
+                    messages: [],  // 如果没有是空列表
+                    nextMessage: null  // 目前选择的 下一条对话的ID，如果没有是 null
+                },
+                "ID3": {
+                    prevMessage: "ID1",  // 上一条对话的ID，如果没有是 null
+                    position: 'left',   // 属于左边还是右边，右边默认为气泡
+                    content: '这个是第三条消息',  // 内容
+                    name: 'AI Assistant',  // 昵称
+                    avatar: '/src/assets/AI.png',  // 头像
+                    messages: ['ID6'],  // 如果没有是空列表
+                    nextMessage: 'ID6'  // 目前选择的 下一条对话的ID，如果没有是 null
+                },
+                "ID6": {
+                    prevMessage: "ID3",  // 上一条对话的ID，如果没有是 null
+                    position: 'left',   // 属于左边还是右边，右边默认为气泡
+                    content: '这个????',  // 内容
+                    name: 'AI Assistant',  // 昵称
+                    avatar: '/src/assets/AI.png',  // 头像
+                    messages: [],  // 如果没有是空列表
+                    nextMessage: null  // 目前选择的 下一条对话的ID，如果没有是 null
+                }
 
-        const order = [];
-        const detail = {};
-        initialMessages.forEach(msg => {
-            const id = generateUUID();
-            order.push(id);
-            detail[id] = msg;
-        });
-
-        setMessagesOrder(["<PREV_MORE>", ...order]);
-        setMessages(detail);
+            }
+        );
     }, []);
 
     // 滚动到底部函数 - 直接操作容器 scrollTop
@@ -272,15 +265,98 @@ function ChatPage() {
 
             return new Promise((resolve, reject) => {
 
-                setTimeout(() => {
-                    resolve(true);
-                }, 1500);
+                apiClient
+                    .get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
+                        params: {
+                            markId: selfMarkId,
+                            prevId: messagesOrder[1]  // 第一项是占位的
+                        }
+                    })
+                    .then(data => {
+
+                        if (data.haveMore) {
+                            setMessagesOrder(['<PREV_MORE>', ...data.messagesOrder, ...messagesOrder.slice(1)]);
+                        } else {
+                            setMessagesOrder([...data.messagesOrder, ...messagesOrder.slice(1)]);
+                        }
+                        setMessages(prev => ({...prev, ...data.messages}));
+
+                        resolve(true);
+                    })
+                    .catch(error => reject(error));
 
             })
 
         } catch (err) {
-            // 如果你 throw，会被 catch
             throw err;
+        }
+    };
+
+    const switchMessage = async (msg, msgId, isNext) => {
+        // msg: 消息原数据  isNext: 是否切换到下一个
+        const msgId_index = msg.messages.indexOf(msg.nextMessage);
+        const newMsgId = msg.messages[msgId_index + (isNext ? 1 : -1)];
+
+        let missMsg = !messages.hasOwnProperty(newMsgId);
+        let newOrders = [];  // 后面消息的新链顺序
+        let msg_cursor = messages[newMsgId];
+
+        // 寻找链中是否存在所有消息
+        if (!missMsg) {
+            newOrders.push(newMsgId);
+
+            while (msg_cursor.nextMessage) {
+                newOrders.push(msg_cursor.nextMessage);
+
+                if (messages.hasOwnProperty(msg_cursor.nextMessage)) {
+                    msg_cursor = messages[msg_cursor.nextMessage];
+                } else {
+                    missMsg = true;
+                    break;
+                }
+            }
+        }
+
+        const sendSwitchRequest = async () => {
+            if (getLocalSetting('SyncMessageSwitch', true)) {
+                await apiClient.put(apiEndpoint.CHAT_MESSAGES_ENDPOINT,
+                    {
+                        markId: selfMarkId,
+                        msgId: msgId,
+                        nextMessage: newMsgId
+                    }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    }
+                );
+            }
+        }
+
+
+        if (missMsg) {
+            try {
+                const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
+                    params: {
+                        markId: selfMarkId,
+                        nextId: missMsg ? newMsgId : msg_cursor.nextMessage,  // 这个是目前开始缺失的ID
+                    }
+                });
+                setMessages(prev => ({...prev, ...data.messages}));
+                setMessagesOrder([...messagesOrder.slice(0, messagesOrder.indexOf(msgId) + 1), ...data.messagesOrder]);
+                setMessages(draft => {
+                    draft[msgId].nextMessage = newMsgId;
+                });
+                await sendSwitchRequest();
+            } catch (error) {
+                toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));
+            }
+        } else {
+            setMessagesOrder([...messagesOrder.slice(0, messagesOrder.indexOf(msgId) + 1), ...newOrders]);
+            setMessages(draft => {
+                draft[msgId].nextMessage = newMsgId;
+            });
+            await sendSwitchRequest();
         }
     };
 
@@ -325,20 +401,14 @@ function ChatPage() {
 
                 case "Add-MessageContent":  // 添加内容
                     if (payload.value && typeof payload.value === 'object' && !Array.isArray(payload.value)) {
-                        setMessages(prev => {
-                            const updated = {...prev};
-                            let hasUpdate = false;
+                        setMessages(draft => {
                             for (const [msgId, newContent] of Object.entries(payload.value)) {
-                                if (updated[msgId]) {
-                                    updated[msgId] = {
-                                        ...updated[msgId],
-                                        content: (updated[msgId].content || '') + (newContent || '')
-                                    };
-                                    hasUpdate = true;
+                                if (draft[msgId]) {
+                                    draft[msgId].content = (draft[msgId].content || '') + (newContent || '');
                                 }
                             }
-                            return hasUpdate ? updated : prev;
                         });
+
                         if (payload.reply) reply({command: 'Add-MessageContent', success: true});
                     } else {
                         reply({command: 'Add-MessageContent', success: false});
@@ -368,6 +438,7 @@ function ChatPage() {
                             messagesOrder={messagesOrder}
                             messages={messages}
                             onLoadMore={loadMoreHistory}
+                            onSwitchMessage={switchMessage}
                         />
                     </div>
                 </div>

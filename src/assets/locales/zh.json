@@ -30,6 +30,7 @@
   "upload_files_disable": "目前输入框不支持上传文件",
   "load_more": "加载更多",
   "load_more_error": "加载更多失败： {{message}}",
+  "loading_new_message": "正在获取新对话分支...",
   "websocket": {
     "error": "WebSocket 连接错误：{{message}}",
     "popover_title": "连接失败",

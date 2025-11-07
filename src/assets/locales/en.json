@@ -30,6 +30,7 @@
   "upload_files_disable": "Currently, the input box does not support file upload.",
   "load_more": "Load More",
   "load_more_error": "Failed to fetch more: {{message}}",
+  "loading_new_message": "Loading New Branch...",
   "websocket": {
     "error": "WebSocket connection error: {{message}}",
     "popover_title": "Connection failed",

@@ -186,3 +186,53 @@ export function getLastLine(str) {
     const idx = str.lastIndexOf('\n');
     return idx === -1 ? str : str.slice(idx + 1);
 }
+
+// 从 localStorage 保存设置
+function setLocalSetting(key, value) {
+    try {
+        // 将值转换为 JSON 字符串
+        const valueJSON = JSON.stringify(value);
+
+        // 获取当前的 LocalSetting 对象
+        let currentSettings = {};
+        const existingSettings = localStorage.getItem('LocalSetting');
+        if (existingSettings) {
+            currentSettings = JSON.parse(existingSettings);
+        }
+
+        // 更新指定的键值
+        currentSettings[key] = valueJSON;
+
+        // 保存回 localStorage
+        localStorage.setItem('LocalSetting', JSON.stringify(currentSettings));
+
+        console.log(`Setting ${key} saved successfully`);
+    } catch (error) {
+        console.error('Error saving setting:', error);
+        throw error;
+    }
+}
+
+// 从 localStorage 获取设置，如果不存在则返回默认值
+function getLocalSetting(key, defaultValue = null) {
+    try {
+        // 获取当前的 LocalSetting 对象
+        const existingSettings = localStorage.getItem('LocalSetting');
+        if (!existingSettings) {
+            return defaultValue;
+        }
+
+        const currentSettings = JSON.parse(existingSettings);
+        const valueJSON = currentSettings[key];
+
+        if (valueJSON === undefined) {
+            return defaultValue;
+        }
+
+        // 解析 JSON 字符串并返回
+        return JSON.parse(valueJSON);
+    } catch (error) {
+        console.error('Error getting setting:', error);
+        return defaultValue;
+    }
+}
