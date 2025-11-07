@@ -188,7 +188,7 @@ export function getLastLine(str) {
 }
 
 // 从 localStorage 保存设置
-function setLocalSetting(key, value) {
+export function setLocalSetting(key, value) {
     try {
         // 将值转换为 JSON 字符串
         const valueJSON = JSON.stringify(value);
@@ -214,7 +214,7 @@ function setLocalSetting(key, value) {
 }
 
 // 从 localStorage 获取设置，如果不存在则返回默认值
-function getLocalSetting(key, defaultValue = null) {
+export function getLocalSetting(key, defaultValue = null) {
     try {
         // 获取当前的 LocalSetting 对象
         const existingSettings = localStorage.getItem('LocalSetting');
