@@ -194,9 +194,9 @@ function ChatPage() {
                 handleProgressUpdate,
                 handleComplete,
                 (error) => {
-                    toast.error(t("FileUpload.error") + (error?.message || 'Upload failed'));
+                    toast.error(t("file_upload.error", {message: error?.message || 'Upload failed'}));
                     setUploadFiles(prev =>
-                        prev.map(f => f.id === uploadFile.id ? {...f, error: error.message || true} : f)
+                        prev.map(f => f.id === uploadFile.id ? {...f, error: true, progress: 0} : f)
                     );
                 }
             );
@@ -241,7 +241,7 @@ function ChatPage() {
             };
             const handleError = (error) => {
                 toast.error(t("file_upload.error", {message: error?.message || t("unknown_error")}));
-                setUploadFiles(p => p.map(f => f.id === uploadId ? {...f, error: error.message || true} : f));
+                setUploadFiles(p => p.map(f => f.id === uploadId ? {...f, error: true, progress: 0} : f));
             };
 
             const cleanup = fileUpload(

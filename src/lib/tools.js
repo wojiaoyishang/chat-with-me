@@ -1,5 +1,6 @@
 import {useParams} from 'react-router-dom';
 import {apiEndpoint} from '@/config.js';
+import apiClient from '@/lib/apiClient';
 
 export function getMarkId() {
     const {markId} = useParams();
@@ -7,7 +8,14 @@ export function getMarkId() {
 }
 
 export function processSelectedFiles(files) {
-    // 转换为数组并过滤空文件
+    if (!files) {
+        return [];
+    }
+
+    if (typeof files[Symbol.iterator] !== 'function' && !Array.isArray(files)) {
+        return [];
+    }
+
     const fileArray = Array.from(files).filter(file =>
         file && file.name && file.size > 0
     );
@@ -35,77 +43,57 @@ export function processSelectedFiles(files) {
  */
 export function fileUpload(uploadFile, onProgressUpdate, onComplete, onError) {
     if (!uploadFile || !uploadFile.file || !onProgressUpdate || !onComplete) {
-        console.error('Missing required parameters for simulateUpload');
+        console.error('Missing required parameters for fileUpload');
         onError?.(new Error('Invalid parameters'));
-        return () => {
-        };
+        return () => {};
     }
 
-    const xhr = new XMLHttpRequest();
     const formData = new FormData();
     formData.append('file', uploadFile.file);
 
-    // 假设 UPLOAD_ENDPOINT 已在项目中定义，例如：
-    // const UPLOAD_ENDPOINT = 'http://127.0.0.1:8000/upload';
-    const UPLOAD_ENDPOINT = apiUrl.UPLOAD_ENDPOINT;
+    // 使用 AbortController 替代 CancelToken
+    const abortController = new AbortController();
 
-    xhr.open('POST', UPLOAD_ENDPOINT);
+    apiClient
+        .post(apiEndpoint.UPLOAD_ENDPOINT, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            signal: abortController.signal, // 传入 signal 用于取消请求
+            onUploadProgress: (progressEvent) => {
+                if (progressEvent.total > 0) {
+                    const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                    onProgressUpdate(uploadFile.id, progress);
+                }
+            },
+        })
+        .then((response) => {
+            const data = response; // 假设 apiClient 拦截器已处理并返回业务数据
 
-    // 监听上传进度
-    xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-            const progress = Math.round((event.loaded / event.total) * 100);
-            onProgressUpdate(uploadFile.id, progress);
-        }
-    };
+            const attachment = {
+                preview: data.preview,
+                previewType: data.previewType,
+                name: uploadFile.name,
+                size: uploadFile.file.size,
+                serverId: data.serverId,
+                downloadUrl: data.downloadUrl,
+            };
 
-    // 上传完成
-    xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            let response;
-            try {
-                response = JSON.parse(xhr.responseText);
-            } catch (e) {
-                onError?.(new Error('Invalid JSON response'));
-                return;
-            }
-
-            if (response.success) {
-                const data = response.data;
-                const attachment = {
-                    // preview: uploadFile.file.type.startsWith('image/')
-                    //     ? URL.createObjectURL(uploadFile.file)
-                    //     : '/src/assets/icon/TXT.png', // 或根据 MIME 类型动态选择图标
-                    preview: data.preview,
-                    // previewType: uploadFile.file.type.startsWith('image/') ? 'image' : 'svg',
-                    previewType: data.previewType,
-                    name: uploadFile.name,
-                    size: uploadFile.file.size,
-                    serverId: data.serverId,      // 来自后端
-                    downloadUrl: data.downloadUrl // 来自后端
-                };
-                onComplete(uploadFile.id, attachment);
+            onComplete(uploadFile.id, attachment);
+        })
+        .catch((error) => {
+            if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+                // 请求被取消，不触发 onError
+                console.log('Upload cancelled');
             } else {
-                onError?.(new Error(response.msg || 'Upload failed'));
+                const errorMsg = error.response?.data?.msg || error.message || 'Upload failed';
+                onError?.(new Error(errorMsg));
             }
-        } else {
-            onError?.(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
-        }
-    };
+        });
 
-    // 网络错误
-    xhr.onerror = () => {
-        onError?.(new Error('Network error during upload'));
-    };
-
-    // 发送请求
-    xhr.send(formData);
-
-    // 返回取消函数（可中止上传）
+    // 返回取消函数
     return () => {
-        if (xhr.readyState !== XMLHttpRequest.DONE) {
-            xhr.abort();
-        }
+        abortController.abort(); // 取消请求
     };
 }
 

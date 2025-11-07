@@ -631,12 +631,12 @@ function ChatBox({
     return (
         <>
             <DropFileLayer
-                onDropFiles={() => {
+                onDropFiles={(files) => {
                     if (ignoreAttachmentTools) {
                         toast.error(t("upload_files_disable"));
                         return;
                     }
-                    onDropFiles();
+                    onDropFiles(files);
                 }
             }
                 onFolderDetected={onFolderDetected}
