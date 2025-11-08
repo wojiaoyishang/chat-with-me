@@ -40,12 +40,13 @@
     "error": "WebSocket 连接错误：{{message}}",
     "popover_title": "连接失败",
     "popover_content": "无法连接 Websocket，对话功能将不能使用",
-    "reconnecting": "重新连接中",
-    "reconnect_success": "重新连接成功",
-    "reconnect_failed": "重新链接失败",
+    "connecting": "连接 Websocket 中......",
+    "connect_success": "成功连接 Websocket。",
+    "connect_failed": "连接 Websocket 失败。",
     "disconnect_from_server": "服务器主动断开链接",
     "disconnect": "Websocket 断开连接",
-    "reconnect_tip": "目前未连接到 Websocket 将无法使用对话功能，点击右边按钮重试。"
+    "reconnect_tip": "目前未连接到 Websocket 将无法使用对话功能，点击右边按钮重试。",
+    "not_connected": "Websocket 没有连接"
   },
   "edit_message": "编辑消息"
 }

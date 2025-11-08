@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
+import React, {createContext, useContext, useEffect, useRef, useState} from 'react';
+import {toast} from 'sonner';
+import {useTranslation} from 'react-i18next';
 import FatalErrorPopoverElement from '@/context/FatalErrorPopover.jsx';
 import globalMessageCallback from '@/hooks/messageCallback.jsx';
-import { emitEvent } from "@/store/useEventStore.jsx";
+import {emitEvent} from "@/store/useEventStore.jsx";
 
 // ====== 全局状态管理 ======
 let globalWsRef = null;
@@ -73,8 +73,8 @@ const initializeWebSocket = ({
     }
 };
 
-export const WebSocketProvider = ({ children }) => {
-    const { t } = useTranslation();
+export const WebSocketProvider = ({children}) => {
+    const {t} = useTranslation();
     const wsRef = useRef(null);
     const [isConnected, setIsConnected] = useState(false);
     const [messages, setMessages] = useState([]);
@@ -98,7 +98,7 @@ export const WebSocketProvider = ({ children }) => {
                         isReply: false
                     });
                     setIsConnected(true);
-                    resolve({ name: 'WebSocket' });
+                    resolve({name: 'WebSocket'});
                 },
                 onMessage: (message) => {
                     globalMessageCallback(message);
@@ -112,6 +112,7 @@ export const WebSocketProvider = ({ children }) => {
                         isReply: false
                     });
                     setIsConnected(false);
+
                     FatalErrorPopoverElement.show({
                         title: t('websocket.disconnect'),
                         message: t('websocket.disconnect_from_server'),
@@ -124,6 +125,7 @@ export const WebSocketProvider = ({ children }) => {
 
                         }
                     });
+
                 },
                 onError: (error) => {
                     emitEvent({
@@ -174,103 +176,118 @@ export const WebSocketProvider = ({ children }) => {
     // ====== 初始连接 ======
     useEffect(() => {
         const connect = () => {
-            const ws = initializeWebSocket({
-                onOpen: (event) => {
-                    emitEvent({
-                        type: "websocket",
-                        target: "onopen",
-                        payload: null,
-                        isReply: false
-                    });
-                    setIsConnected(true);
-                },
-                onMessage: (message) => {
-                    globalMessageCallback(message);
-                    setMessages(prev => [...prev, message]);
-                },
-                onClose: (event) => {
-                    emitEvent({
-                        type: "websocket",
-                        target: "onclose",
-                        payload: null,
-                        isReply: false
-                    });
-                    setIsConnected(false);
-                    FatalErrorPopoverElement.show({
-                        title: t('websocket.popover_title'),
-                        message: t('websocket.popover_content'),
-                        showCloseButton: true,
-                        showCancelButton: false,
-                        onRetry: () => {
-                            connect();
-                        },
-                        onClose: () => {
-                            toast(t("websocket.reconnect_tip"), {
-                                action: {
-                                    label: t("retry"),
-                                    onClick: () => connect(),
-                                },
-                                position: 'bottom-right',
-                                closeButton: false,
-                                dismissible: false,
-                                duration: Infinity,
-                            });
-                        }
-                    });
-                },
-                onError: (error) => {
-                    emitEvent({
-                        type: "websocket",
-                        target: "onerror",
-                        payload: error?.message || 'Unknown error',
-                        isReply: false
-                    });
-
-                    toast.error(t('websocket.error', {
-                        message: error?.message || t('unknown_error')
-                    }));
-
-                    FatalErrorPopoverElement.show({
-                        title: t('websocket.popover_title'),
-                        message: t('websocket.popover_content'),
-                        showCloseButton: true,
-                        showCancelButton: false,
-                        onRetry: () => {
-                            toast.promise(retryConnection(), {
-                                loading: t('websocket.reconnecting'),
-                                success: (data) => t('websocket.reconnect_success', { name: data.name }),
-                                error: (err) => t('websocket.reconnect_failed', {
-                                    message: err.message || t('unknown_error')
-                                }),
-                            });
-                        },
-                        onClose: () => {
-
-                        },
-                    });
-                },
-                setGlobalRef: (wsInstance) => {
-                    globalWsRef = wsInstance;
-                    wsRef.current = wsInstance;
-                }
-            });
-
-            if (!ws) {
-                FatalErrorPopoverElement.show({
-                    title: t('websocket.init_failed_title'),
-                    message: t('websocket.init_failed_content'),
-                    showCloseButton: true,
-                    showCancelButton: false,
-                    onRetry: () => {
-                        connect();
+            return new Promise((resolve, reject) => {
+                const ws = initializeWebSocket({
+                    onOpen: (event) => {
+                        emitEvent({
+                            type: "websocket",
+                            target: "onopen",
+                            payload: null,
+                            isReply: false
+                        });
+                        setIsConnected(true);
+                        resolve({name: 'WebSocket'});
                     },
-                    onClose: () => {
+                    onMessage: (message) => {
+                        globalMessageCallback(message);
+                        setMessages(prev => [...prev, message]);
+                    },
+                    onClose: (event) => {
+                        emitEvent({
+                            type: "websocket",
+                            target: "onclose",
+                            payload: null,
+                            isReply: false
+                        });
+                        setIsConnected(false);
+                        FatalErrorPopoverElement.show({
+                            title: t('websocket.popover_title'),
+                            message: t('websocket.popover_content'),
+                            showCloseButton: true,
+                            showCancelButton: false,
+                            onRetry: () => {
+                                toast.promise(connect(), {
+                                    loading: t('websocket.connecting'),
+                                    success: (data) => t('websocket.connect_success', {name: data.name}),
+                                    error: (error) => t('websocket.connect_failed', {message: error.message || t('unknown_error')}),
+                                });
+                            },
+                            onClose: () => {
+                                toast(t("websocket.reconnect_tip"), {
+                                    action: {
+                                        label: t("retry"),
+                                        onClick: () => {
+                                            toast.promise(connect(), {
+                                                loading: t('websocket.connecting'),
+                                                success: (data) => t('websocket.connect_success', {name: data.name}),
+                                                error: (error) => t('websocket.connect_failed', {message: error.message || t('unknown_error')}),
+                                            });
+                                        },
+                                    },
+                                    position: 'bottom-right',
+                                    closeButton: false,
+                                    dismissible: false,
+                                    duration: Infinity,
+                                });
+                            }
+                        });
+                    },
+                    onError: (error) => {
+                        emitEvent({
+                            type: "websocket",
+                            target: "onerror",
+                            payload: error?.message || 'Unknown error',
+                            isReply: false
+                        });
 
+                        toast.error(t('websocket.error', {
+                            message: error?.message || t('unknown_error')
+                        }));
+
+                        FatalErrorPopoverElement.show({
+                            title: t('websocket.popover_title'),
+                            message: t('websocket.popover_content'),
+                            showCloseButton: true,
+                            showCancelButton: false,
+                            onRetry: () => {
+                                toast.promise(retryConnection(), {
+                                    loading: t('websocket.reconnecting'),
+                                    success: (data) => t('websocket.reconnect_success', {name: data.name}),
+                                    error: (err) => t('websocket.reconnect_failed', {
+                                        message: err.message || t('unknown_error')
+                                    }),
+                                });
+                            },
+                            onClose: () => {
+
+                            },
+                        });
+                    },
+                    setGlobalRef: (wsInstance) => {
+                        globalWsRef = wsInstance;
+                        wsRef.current = wsInstance;
                     }
                 });
-            }
+
+                if (!ws) {
+                    // reject(new Error(t('websocket.initialization_failed')));
+                    // FatalErrorPopoverElement.show({
+                    //     title: t('websocket.init_failed_title'),
+                    //     message: t('websocket.init_failed_content'),
+                    //     showCloseButton: true,
+                    //     showCancelButton: false,
+                    //     onRetry: () => {
+                    //         connect();
+                    //     },
+                    //     onClose: () => {
+                    //
+                    //     }
+                    // });
+                }
+            });
         };
 
+        // 使用 toast.promise 包装初始连接
         connect();
 
         return () => {

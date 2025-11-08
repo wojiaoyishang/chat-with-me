@@ -40,12 +40,13 @@
     "error": "WebSocket connection error: {{message}}",
     "popover_title": "Connection failed",
     "popover_content": "The Websocket cannot be connected, and the conversation function will not be available.",
-    "reconnecting": "Reconnecting......",
-    "reconnect_success": "Reconnected.",
-    "reconnect_failed": "Fail on reconnect.",
+    "connecting": "Connecting Websocket......",
+    "connect_success": "Connected Websocket.",
+    "connect_failed": "Fail on connect Websocket.",
     "disconnect_from_server": "The server actively disconnected the link",
     "disconnect": "Websocket is disconnected",
-    "reconnect_tip": "Currently, if you are not connected to Websocket, you will not be able to use the conversation function. Click \"Retry\"."
+    "reconnect_tip": "Currently, if you are not connected to Websocket, you will not be able to use the conversation function. Click \"Retry\".",
+    "not_connected": "Websocket Not Connected"
   },
   "edit_message": "Edit Message"
 }
