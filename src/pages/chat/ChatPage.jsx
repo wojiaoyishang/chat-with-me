@@ -19,7 +19,7 @@ import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 
-function ChatContainer() {
+function ChatPage() {
     const {t} = useTranslation();
     const navigate = useNavigate();
 
@@ -411,6 +411,18 @@ function ChatContainer() {
                 setMessages(data.messages);
                 setMessagesOrder(data.messagesOrder);
                 setIsLoading(false);
+
+                // 发一个请求给服务器告知已经加载好 markId 的历史对话
+                emitEvent(
+                    {
+                        type: "message",
+                        target: "ChatPage",
+                        payload: {
+                            command: "Message-Loaded",
+                            value: selfMarkId
+                        }
+                    }
+                )
             }).catch(error => {
                 toast(t("load_messages_error", {message: error?.message || t("unknown_error")}), {
                     action: {
@@ -503,4 +515,4 @@ function ChatContainer() {
     );
 }
 
-export default ChatContainer;
+export default ChatPage;
