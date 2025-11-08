@@ -33,6 +33,7 @@ function ChatPage() {
     const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
     const [isLoading, setIsLoading] = useState(false);  // 是否处于页面加载阶段
     const [isLoadingError, setIsLoadingError] = useState(false);   // 加载失败
+    const [isMessageLoaded, setIsMessageLoaded] = useState(false);
 
     // 新消息存储结构
     const [messagesOrder, setMessagesOrder] = useState([]);
@@ -90,12 +91,23 @@ function ChatPage() {
     };
 
     const handleSendMessage = (message, toolsStatus, sendButtonState) => {
-        console.log('发送消息:', message, toolsStatus, sendButtonState);
+        emitEvent(
+            {
+                type: "message",
+                target: "ChatPage",
+                payload: {
+                    command: "Message-Send",
+                    message: message,
+                    toolsStatus: toolsStatus,
+                    sendButtonState: sendButtonState
+                },
+                markId: selfMarkId
+            }
+        )
     };
 
     const onAttachmentRemove = (attachment) => {
         setAttachments(prev => prev.filter(att => att.serverId !== attachment.serverId));
-        console.log('移除附件:', attachment);
     };
 
     const handleSelectedFiles = (files) => {
@@ -323,7 +335,8 @@ function ChatPage() {
                 <div className="flex flex-col items-center">
                     <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
                         <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                  d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     </div>
                     <p className="text-gray-700 text-base font-medium">{t("load_error")}</p>
@@ -387,16 +400,32 @@ function ChatPage() {
                         reply({command: 'Add-MessageContent', success: false});
                     }
                     break;
+            }
+        });
 
+        // WebSocket 的事件监听
+        const unsubscribe3 = onEvent("websocket", "onopen", selfMarkId).then((payload, markId, isReply, id, reply) => {
+            if (isMessageLoaded) {
+                emitEvent(
+                    {
+                        type: "message",
+                        target: "ChatPage",
+                        payload: {
+                            command: "Messages-Loaded"
+                        },
+                        markId: selfMarkId
+                    }
+                )
             }
         });
 
         return () => {
             unsubscribe1();
             unsubscribe2();
+            unsubscribe3();
         };
 
-    }, [attachments, selfMarkId]);
+    }, [attachments, selfMarkId, isMessageLoaded]);
 
     // 页面初始化逻辑
     useEffect(() => {
@@ -411,6 +440,7 @@ function ChatPage() {
                 setMessages(data.messages);
                 setMessagesOrder(data.messagesOrder);
                 setIsLoading(false);
+                setIsMessageLoaded(true);
 
                 // 发一个请求给服务器告知已经加载好 markId 的历史对话
                 emitEvent(
@@ -418,9 +448,9 @@ function ChatPage() {
                         type: "message",
                         target: "ChatPage",
                         payload: {
-                            command: "Message-Loaded",
-                            value: selfMarkId
-                        }
+                            command: "Messages-Loaded"
+                        },
+                        markId: selfMarkId
                     }
                 )
             }).catch(error => {
