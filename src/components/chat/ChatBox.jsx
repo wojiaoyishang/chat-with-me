@@ -387,7 +387,8 @@ function ChatBox({
 
     // ========== Send button ==========
     const sendButtonStyle = useMemo(() => {
-        const isEmpty = !message.trim() && sendButtonState === 'normal';
+        const isEmpty = !message.trim() && attachmentsMeta.length === 0 && sendButtonState === 'normal';
+
         const baseIcon = (
             <svg t="1758800079268" className="icon" viewBox="0 0 1024 1024" version="1.1"
                  xmlns="http://www.w3.org/2000/svg" p-id="6097" width="24" height="24">
@@ -449,7 +450,7 @@ function ChatBox({
                     disabled: false
                 };
         }
-    }, [message, sendButtonState]);
+    }, [message, sendButtonState, attachmentsMeta]);
 
     // ========== Dynamic setup ==========
     const chatboxSetup = (data) => {

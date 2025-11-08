@@ -60,7 +60,7 @@ export default function AttachmentShowcase({attachmentsMeta, onRemove, msgMode})
             container.removeEventListener('scroll', checkScrollShadows);
             window.removeEventListener('resize', checkScrollShadows);
         };
-    }, []);
+    }, [attachmentsMeta]);
 
     if (!attachmentsMeta || attachmentsMeta.length === 0) {
         return (
@@ -84,7 +84,7 @@ export default function AttachmentShowcase({attachmentsMeta, onRemove, msgMode})
         >
             <div
                 ref={containerRef}
-                className={"px-2 py-1 border-b " + msgMode ? '' : 'border-gray-200'}
+                className={"px-2 py-1 " + (msgMode ? '' : 'border-b border-gray-200')}
             >
                 <div className="relative">
                     {showLeftShadow && (
@@ -94,7 +94,7 @@ export default function AttachmentShowcase({attachmentsMeta, onRemove, msgMode})
 
                     <div
                         ref={scrollContainerRef}
-                        className="flex flex-nowrap gap-2 overflow-x-auto scrollbar-hide overscroll-x-contain p-1"
+                        className={"flex flex-nowrap gap-2 overflow-x-auto scrollbar-hide overscroll-x-contain p-1"}
                         style={{
                             WebkitOverflowScrolling: 'touch',
                             scrollbarWidth: 'none',
@@ -155,7 +155,6 @@ export default function AttachmentShowcase({attachmentsMeta, onRemove, msgMode})
                                             />
                                         )}
                                     </div>
-
 
                                     <div className="ml-2 pr-2 min-w-[120px]">
                                         <div className="text-sm font-medium text-gray-800 truncate max-w-[180px]">

@@ -99,7 +99,8 @@ function ChatPage() {
                     command: "Message-Send",
                     message: message,
                     toolsStatus: toolsStatus,
-                    sendButtonState: sendButtonState
+                    sendButtonState: sendButtonState,
+                    attachments: attachments
                 },
                 markId: selfMarkId
             }

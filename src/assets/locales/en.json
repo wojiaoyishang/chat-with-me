@@ -46,5 +46,6 @@
     "disconnect_from_server": "The server actively disconnected the link",
     "disconnect": "Websocket is disconnected",
     "reconnect_tip": "Currently, if you are not connected to Websocket, you will not be able to use the conversation function. Click \"Retry\"."
-  }
+  },
+  "edit_message": "Edit Message"
 }
