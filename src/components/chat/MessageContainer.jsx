@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
+import AttachmentShowcase from './AttachmentShowcase'; // 假设您有这个组件
 
 const MessageContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoadMore, onSwitchMessage }, ref) => {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -21,24 +22,20 @@ const MessageContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoad
     useEffect(() => {
         const prevOrder = prevMessagesOrderRef.current;
         const newOrder = messagesOrder;
-
         // 找出新加入的消息（排除分页切换的消息）
         const normalNewMessages = newOrder.filter(id =>
             !prevOrder.includes(id) &&
             id !== "<PREV_MORE>" &&
             !fadeMessages.has(id) // 排除分页切换带来的消息
         );
-
         normalNewMessages.forEach(id => {
             setEnteringMessages(prev => new Set([...prev, id]));
         });
-
         // 找出离开的消息
         const removedMessages = prevOrder.filter(id => !newOrder.includes(id));
         removedMessages.forEach(id => {
             setLeavingMessages(prev => new Set([...prev, id]));
         });
-
         // 设置定时器移除动画状态
         if (normalNewMessages.length > 0 || removedMessages.length > 0 || fadeMessages.size > 0) {
             animationFrameRef.current = requestAnimationFrame(() => {
@@ -49,9 +46,7 @@ const MessageContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoad
                 }, 300);
             });
         }
-
         prevMessagesOrderRef.current = newOrder;
-
         return () => {
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
@@ -61,7 +56,6 @@ const MessageContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoad
 
     const handleLoadMore = async () => {
         if (isLoadingMore || !onLoadMore) return;
-
         setIsLoadingMore(true);
         try {
             const result = await onLoadMore();
@@ -80,7 +74,6 @@ const MessageContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoad
         const msgId_index = msgPrev.messages.indexOf(msgPrev.nextMessage);
         const disabledNext = msgId_index === msgPrev.messages.length - 1;
         const disabledPrev = msgId_index === 0;
-
         return (
             <div className={`flex items-center gap-1 mt-1 text-sm transition-opacity duration-300 ${
                 isRight ? 'justify-end pr-12 pt-1' : 'justify-start pl-10'
@@ -145,11 +138,9 @@ const MessageContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoad
                 const hasSwitchingMessageBefore = messagesOrder
                     .slice(0, index)
                     .some(msgId => switchingMessageId === msgId);
-
                 if (hasSwitchingMessageBefore) {
                     return null;
                 }
-
                 // 处理加载更多
                 if (id === "<PREV_MORE>") {
                     return (
@@ -176,14 +167,12 @@ const MessageContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoad
                         </div>
                     );
                 }
-
                 const msg = messages[id];
                 if (!msg) return null;
                 if (msg.position === null || msg.position === undefined) return null;
 
                 // 处理切换中的消息
                 if (switchingMessageId === id) {
-
                     return (
                         <div
                             key={`loading-${id}`}
@@ -209,81 +198,189 @@ const MessageContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoad
                 const isLeaving = leavingMessages.has(id);
                 const isFading = fadeMessages.has(id) && !isEntering; // 优先使用分页切换的淡入效果
 
-                return (
-                    <div
-                        key={id}
-                        className={`flex flex-col w-full transition-all duration-300 ease-in-out ${
-                            isRight ? 'items-end' : 'items-start'
-                        } ${
-                            isLeaving
-                                ? 'opacity-0 -translate-y-2 pointer-events-none'
-                                : isFading
-                                    ? 'opacity-100 animate-fade-in' // 分页切换使用纯淡入
-                                    : isEntering
-                                        ? 'opacity-100 translate-y-0 animate-fade-in-up' // 普通新消息使用上浮
-                                        : 'opacity-100'
-                        }`}
-                    >
-                        {isRight ? (
-                            <>
-                                <div className="flex items-start gap-3 max-w-[80%]">
-                                    <div
-                                        className={`bg-white rounded-2xl px-4 py-2.5 shadow-sm text-gray-800 break-words whitespace-pre-wrap border border-gray-100 transition-opacity duration-300 ${
-                                            isLeaving ? 'opacity-0' : 'opacity-100'
-                                        }`}
-                                    >
-                                        {msg.content}
-                                    </div>
-                                    <img
-                                        src={avatar}
-                                        alt="Left"
-                                        className={`w-8 h-8 rounded-full flex-shrink-0 transition-opacity duration-300 ${
-                                            isLeaving ? 'opacity-0' : 'opacity-100'
-                                        }`}
-                                    />
-                                </div>
-                                {showPaginator && (
-                                    <MessagePaginator
-                                        isRight={true}
-                                        msgId={msg?.prevMessage}
-                                        msgPrev={messages[msg?.prevMessage]}
-                                    />
-                                )}
-                            </>
-                        ) : (
-                            <div className="flex flex-col items-start w-full">
-                                <div className={`flex items-center gap-2 mb-1 transition-opacity duration-300 ${
+                // 检查是否存在 attachments
+                const hasAttachments = msg.attachments && Array.isArray(msg.attachments) && msg.attachments.length > 0;
+                const hasContent = msg.content && msg.content.trim() !== '';
+
+                const attachmentElement = hasAttachments ? (
+                    <div className={`${isRight ? 'max-w-[55%] ml-auto pr-10' : 'max-w-[95%] pl-9'} mb-2`}>
+                        <AttachmentShowcase
+                            attachmentsMeta={msg.attachments}
+                            onRemove={() => {}} // 留空的回调
+                            msgMode={true}
+                        />
+                    </div>
+                ) : null;
+
+                const messageContentElement = hasContent ? (
+                    isRight ? (
+                        <div className="flex items-start gap-3 max-w-[80%] ml-auto">
+                            <div
+                                className={`bg-white rounded-2xl px-4 py-2.5 shadow-sm text-gray-800 break-words whitespace-pre-wrap border border-gray-100 transition-opacity duration-300 ${
                                     isLeaving ? 'opacity-0' : 'opacity-100'
-                                }`}>
-                                    <img
-                                        src={avatar}
-                                        alt="Right"
-                                        className="w-8 h-8 rounded-full"
-                                    />
-                                    {displayName && (
-                                        <span className="text-sm font-semibold text-gray-700">
-                                            {displayName}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className={`w-full pl-10 pr-10 transition-opacity duration-300 ${
-                                    isLeaving ? 'opacity-0' : 'opacity-100'
-                                }`}>
-                                    <div className="text-gray-800 break-words max-w-none">
-                                        <MarkdownRenderer content={msg.content} index={id} />
-                                    </div>
-                                </div>
-                                {showPaginator && (
-                                    <MessagePaginator
-                                        isRight={false}
-                                        msgId={msg?.prevMessage}
-                                        msgPrev={messages[msg?.prevMessage]}
-                                    />
-                                )}
+                                }`}
+                            >
+                                {msg.content}
                             </div>
+                            <img
+                                src={avatar}
+                                alt="Right User"
+                                className="w-8 h-8 rounded-full flex-shrink-0"
+                            />
+                        </div>
+                    ) : (
+                        <div className="w-full pl-10 pr-10">
+                            <div className="text-gray-800 break-words max-w-none">
+                                <MarkdownRenderer content={msg.content} index={id} />
+                            </div>
+                        </div>
+                    )
+                ) : null;
+
+                // --- 渲染头像和名称 (仅左侧) ---
+                const avatarAndNameElement = !isRight ? (
+                    <div className={`flex items-center gap-2 mb-1 transition-opacity duration-300 ${
+                        isLeaving ? 'opacity-0' : 'opacity-100'
+                    }`}>
+                        <img
+                            src={avatar}
+                            alt="Left Assistant"
+                            className="w-8 h-8 rounded-full"
+                        />
+                        {displayName && (
+                            <span className="text-sm font-semibold text-gray-700">
+                                {displayName}
+                            </span>
                         )}
                     </div>
-                );
+                ) : null;
+
+                // --- 组合最终的消息元素 ---
+                let finalMessageElement = null;
+                if (hasAttachments && !hasContent) {
+                    // 情况1: 只有附件，没有内容
+                    finalMessageElement = (
+                        <div
+                            key={id}
+                            className={`flex flex-col w-full transition-all duration-300 ease-in-out ${
+                                isRight ? 'items-end' : 'items-start'
+                            } ${
+                                isLeaving
+                                    ? 'opacity-0 -translate-y-2 pointer-events-none'
+                                    : isFading
+                                        ? 'opacity-100 animate-fade-in' // 分页切换使用纯淡入
+                                        : isEntering
+                                            ? 'opacity-100 translate-y-0 animate-fade-in-up' // 普通新消息使用上浮
+                                            : 'opacity-100'
+                            }`}
+                        >
+                            {attachmentElement}
+                            {avatarAndNameElement} {/* Avatar/name for left, only if no content */}
+                            {showPaginator && (
+                                <MessagePaginator
+                                    isRight={isRight}
+                                    msgId={msg?.prevMessage}
+                                    msgPrev={messages[msg?.prevMessage]}
+                                />
+                            )}
+                        </div>
+                    );
+                } else if (hasAttachments && hasContent) {
+                    // 情况2: 既有附件又有内容
+                    finalMessageElement = (
+                        <div
+                            key={id}
+                            className={`flex flex-col w-full transition-all duration-300 ease-in-out ${
+                                isRight ? 'items-end' : 'items-start'
+                            } ${
+                                isLeaving
+                                    ? 'opacity-0 -translate-y-2 pointer-events-none'
+                                    : isFading
+                                        ? 'opacity-100 animate-fade-in' // 分页切换使用纯淡入
+                                        : isEntering
+                                            ? 'opacity-100 translate-y-0 animate-fade-in-up' // 普通新消息使用上浮
+                                            : 'opacity-100'
+                            }`}
+                        >
+                            {isRight ? (
+                                // Right: Attachments -> Content -> Paginator
+                                <>
+                                    {attachmentElement}
+                                    {messageContentElement}
+                                    {showPaginator && (
+                                        <MessagePaginator
+                                            isRight={true}
+                                            msgId={msg?.prevMessage}
+                                            msgPrev={messages[msg?.prevMessage]}
+                                        />
+                                    )}
+                                </>
+                            ) : (
+                                // Left: Avatar/Name -> Attachments -> Content -> Paginator
+                                <div className="flex flex-col items-start w-full">
+                                    {avatarAndNameElement}
+                                    {attachmentElement}
+                                    {messageContentElement}
+                                    {showPaginator && (
+                                        <MessagePaginator
+                                            isRight={false}
+                                            msgId={msg?.prevMessage}
+                                            msgPrev={messages[msg?.prevMessage]}
+                                        />
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    );
+                } else if (!hasAttachments && hasContent) {
+                    // 情况3: 只有内容，没有附件
+                    finalMessageElement = (
+                        <div
+                            key={id}
+                            className={`flex flex-col w-full transition-all duration-300 ease-in-out ${
+                                isRight ? 'items-end' : 'items-start'
+                            } ${
+                                isLeaving
+                                    ? 'opacity-0 -translate-y-2 pointer-events-none'
+                                    : isFading
+                                        ? 'opacity-100 animate-fade-in' // 分页切换使用纯淡入
+                                        : isEntering
+                                            ? 'opacity-100 translate-y-0 animate-fade-in-up' // 普通新消息使用上浮
+                                            : 'opacity-100'
+                            }`}
+                        >
+                            {isRight ? (
+                                // Right: Content -> Paginator
+                                <>
+                                    {messageContentElement}
+                                    {showPaginator && (
+                                        <MessagePaginator
+                                            isRight={true}
+                                            msgId={msg?.prevMessage}
+                                            msgPrev={messages[msg?.prevMessage]}
+                                        />
+                                    )}
+                                </>
+                            ) : (
+                                // Left: Avatar/Name -> Content -> Paginator
+                                <div className="flex flex-col items-start w-full">
+                                    {avatarAndNameElement}
+                                    {messageContentElement}
+                                    {showPaginator && (
+                                        <MessagePaginator
+                                            isRight={false}
+                                            msgId={msg?.prevMessage}
+                                            msgPrev={messages[msg?.prevMessage]}
+                                        />
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    );
+                }
+                // If neither attachments nor content, do not render anything for this message
+
+                return finalMessageElement;
             })}
         </div>
     );

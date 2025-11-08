@@ -276,17 +276,16 @@ function ChatPage() {
 
         const sendSwitchRequest = () => {
             if (getLocalSetting('SyncMessageSwitch', true)) {
-                apiClient.put(apiEndpoint.CHAT_MESSAGES_ENDPOINT,
-                    {
-                        markId: selfMarkId,
+                emitEvent({
+                    type: "message",
+                    target: "ChatPage",
+                    payload:  {
+                        command: "Switch-Message",
                         msgId: msgId,
                         nextMessage: newMsgId
-                    }, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                        },
-                    }
-                );
+                    },
+                    markId: selfMarkId
+                });
             }
         }
 
@@ -303,7 +302,7 @@ function ChatPage() {
                 setMessages(draft => {
                     draft[msgId].nextMessage = newMsgId;
                 });
-                // sendSwitchRequest();  服务器已经知道需要选择什么分支了
+                sendSwitchRequest();
                 return true;
             } catch (error) {
                 toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));

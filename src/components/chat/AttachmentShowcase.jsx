@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Transition } from '@headlessui/react';
-import { useTranslation } from 'react-i18next';
+import React, {useState, useEffect, useRef} from 'react';
+import {Transition} from '@headlessui/react';
+import {useTranslation} from 'react-i18next';
 import {X} from "lucide-react";
 
 /**
  * 附件展示组件
  * 显示已上传的附件列表，支持水平滑动查看多个附件
- * 移除按钮现在位于卡片容器外部，避免被圆角遮挡
+ * msgMode 决定是否处于消息上方
  */
-export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
-    const { t } = useTranslation();
+export default function AttachmentShowcase({attachmentsMeta, onRemove, msgMode}) {
+    const {t} = useTranslation();
 
     const containerRef = useRef(null);
     const scrollContainerRef = useRef(null);
@@ -29,7 +29,7 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
     const checkScrollShadows = () => {
         if (!scrollContainerRef.current) return;
 
-        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+        const {scrollLeft, scrollWidth, clientWidth} = scrollContainerRef.current;
         const maxScrollLeft = scrollWidth - clientWidth;
 
         setShowLeftShadow(scrollLeft > 0);
@@ -66,7 +66,7 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
         return (
             <div
                 className="overflow-hidden transition-all duration-300 ease-in-out"
-                style={{ height: 0 }}
+                style={{height: 0}}
             />
         );
     }
@@ -84,11 +84,12 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
         >
             <div
                 ref={containerRef}
-                className="px-2 py-1 border-b border-gray-200"
+                className={"px-2 py-1 border-b " + msgMode ? '' : 'border-gray-200'}
             >
                 <div className="relative">
                     {showLeftShadow && (
-                        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+                        <div
+                            className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"/>
                     )}
 
                     <div
@@ -102,18 +103,22 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
                     >
                         {attachmentsMeta.map((attachment, index) => (
                             <div key={index} className="relative flex-shrink-0">
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onRemove(attachment);
-                                    }}
-                                    className="absolute top-1 right-1 z-20 w-4 h-4 bg-gray-600/30 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 focus:outline-none cursor-pointer"
-                                    aria-label={t("remove_attachment")} //  国际化
-                                    style={{ transform: 'translate(50%, -50%)' }}
-                                >
-                                    <X className="w-3.5 h-3.5" />
-                                </button>
+
+                                {msgMode ? null : (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onRemove(attachment);
+                                        }}
+                                        className="absolute top-1 right-1 z-20 w-4 h-4 bg-gray-600/30 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 focus:outline-none cursor-pointer"
+                                        aria-label={t("remove_attachment")} //  国际化
+                                        style={{transform: 'translate(50%, -50%)'}}
+                                    >
+                                        <X className="w-3.5 h-3.5"/>
+                                    </button>
+                                )}
+
 
                                 <div
                                     className={`flex items-center bg-gray-100 rounded-lg overflow-hidden ${
@@ -125,7 +130,8 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
                                         }
                                     }}
                                 >
-                                    <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center overflow-hidden bg-white">
+                                    <div
+                                        className="w-10 h-10 flex-shrink-0 flex items-center justify-center overflow-hidden bg-white">
                                         {attachment.previewType === 'svg' ? (
                                             <div className="w-full h-full flex items-center justify-center">
                                                 <span
@@ -134,7 +140,7 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
                                                         transform: 'scale(1.2)',
                                                         transformOrigin: 'center center'
                                                     }}
-                                                    dangerouslySetInnerHTML={{ __html: attachment.preview }}
+                                                    dangerouslySetInnerHTML={{__html: attachment.preview}}
                                                 />
                                             </div>
                                         ) : (
@@ -150,6 +156,7 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
                                         )}
                                     </div>
 
+
                                     <div className="ml-2 pr-2 min-w-[120px]">
                                         <div className="text-sm font-medium text-gray-800 truncate max-w-[180px]">
                                             {attachment.name}
@@ -158,13 +165,15 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
                                             {formatFileSize(attachment.size)}
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         ))}
                     </div>
 
                     {showRightShadow && (
-                        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+                        <div
+                            className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"/>
                     )}
 
                     {showRightShadow && (
@@ -174,8 +183,9 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
                             className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center z-20 opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110"
                             aria-label={t("scroll_attachments_right")}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
                             </svg>
                         </button>
                     )}
@@ -187,8 +197,9 @@ export default function AttachmentShowcase({ attachmentsMeta, onRemove }) {
                             className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center z-20 opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110"
                             aria-label={t("scroll_attachments_left")}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none"
+                                 viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
                             </svg>
                         </button>
                     )}
