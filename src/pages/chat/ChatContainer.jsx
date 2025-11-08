@@ -14,11 +14,12 @@ import {FaArrowDown} from "react-icons/fa";
 
 import {onEvent} from "@/store/useEventStore.jsx";
 import ChatBox from "@/components/chat/chatbox.jsx";
-import ChatContainer from "@/components/chat/ChatContainer.jsx";
+import MessageContainer from "@/components/chat/MessageContainer.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
+import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 
-function ChatPage() {
+function ChatContainer() {
     const {t} = useTranslation();
     const navigate = useNavigate();
 
@@ -30,70 +31,13 @@ function ChatPage() {
     const [attachments, setAttachments] = useState([]);
     const [isAtBottom, setIsAtBottom] = useState(true); // 新增状态：是否在底部
     const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);  // 是否处于页面加载阶段
+    const [isLoadingError, setIsLoadingError] = useState(false);   // 加载失败
 
     // 新消息存储结构
     const [messagesOrder, setMessagesOrder] = useState([]);
     const [messages, setMessages] = useImmer({});
     const messagesOrderRef = useRef([]);
-
-    // 手动转化初始消息
-    useEffect(() => {
-        setMessagesOrder(["ID1", "ID2"]);
-        setMessages({
-                "ID0": {
-                    position: null,  // 隐藏消息
-                    messages: ["ID1", "ID4"],
-                    nextMessage: "ID1"
-                },
-                "ID4": {
-                    prevMessage: "ID0",  // 上一条对话的ID，如果没有是 null
-                    position: 'right',   // 属于左边还是右边，右边默认为气泡
-                    content: '这个是测试消息',  // 内容
-                    name: 'AI Assistant',  // 昵称
-                    avatar: '/src/assets/human.jpg',  // 头像
-                    messages: [],  // 如果没有是空列表
-                    nextMessage: null  // 目前选择的 下一条对话的ID，如果没有是 null
-                },
-                "ID1": {
-                    prevMessage: "ID0",  // 上一条对话的ID，如果没有是 null
-                    position: 'right',   // 属于左边还是右边，右边默认为气泡
-                    content: '这个是第一条消息',  // 内容
-                    name: 'AI Assistant',  // 昵称
-                    avatar: '/src/assets/human.jpg',  // 头像
-                    messages: ['ID2', 'ID3', 'ID5'],  // 如果没有是空列表
-                    nextMessage: 'ID2'  // 目前选择的 下一条对话的ID，如果没有是 null
-                },
-                "ID2": {
-                    prevMessage: "ID1",  // 上一条对话的ID，如果没有是 null
-                    position: 'left',   // 属于左边还是右边，右边默认为气泡
-                    content: '这个是第二条消息',  // 内容
-                    name: 'AI Assistant',  // 昵称
-                    avatar: '/src/assets/AI.png',  // 头像
-                    messages: [],  // 如果没有是空列表
-                    nextMessage: null  // 目前选择的 下一条对话的ID，如果没有是 null
-                },
-                "ID3": {
-                    prevMessage: "ID1",  // 上一条对话的ID，如果没有是 null
-                    position: 'left',   // 属于左边还是右边，右边默认为气泡
-                    content: '这个是第三条消息',  // 内容
-                    name: 'AI Assistant',  // 昵称
-                    avatar: '/src/assets/AI.png',  // 头像
-                    messages: ['ID6'],  // 如果没有是空列表
-                    nextMessage: 'ID6'  // 目前选择的 下一条对话的ID，如果没有是 null
-                },
-                "ID6": {
-                    prevMessage: "ID3",  // 上一条对话的ID，如果没有是 null
-                    position: 'left',   // 属于左边还是右边，右边默认为气泡
-                    content: '这个????',  // 内容
-                    name: 'AI Assistant',  // 昵称
-                    avatar: '/src/assets/AI.png',  // 头像
-                    messages: [],  // 如果没有是空列表
-                    nextMessage: null  // 目前选择的 下一条对话的ID，如果没有是 null
-                }
-
-            }
-        );
-    }, []);
 
     // 滚动到底部函数 - 直接操作容器 scrollTop
     const scrollToBottom = useCallback(() => {
@@ -138,7 +82,7 @@ function ChatPage() {
     }, []);
 
     const handleFolderDetected = () => {
-        toast.error(t("暂不支持整个文件夹上传"));
+        toast.error(t("folder_upload_not_supported"));
     };
 
     const handleDropFiles = (files) => {
@@ -334,7 +278,6 @@ function ChatPage() {
             }
         }
 
-
         if (missMsg) {
             try {
                 const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
@@ -349,6 +292,7 @@ function ChatPage() {
                     draft[msgId].nextMessage = newMsgId;
                 });
                 // sendSwitchRequest();  服务器已经知道需要选择什么分支了
+                return true;
             } catch (error) {
                 toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));
             }
@@ -358,7 +302,35 @@ function ChatPage() {
                 draft[msgId].nextMessage = newMsgId;
             });
             sendSwitchRequest();
+            return true;
         }
+    };
+
+    const LoadingScreen = () => {
+        return (
+            <div className="fixed inset-0 bg-white flex items-center justify-center">
+                <div className="flex flex-col items-center">
+                    <ThreeDotLoading/>
+                    <span className="mt-2 text-sm text-gray-500">{t("loading_messages")}</span>
+                </div>
+            </div>
+        );
+    };
+
+    const LoadingFailedScreen = () => {
+        return (
+            <div className="fixed inset-0 bg-white flex items-center justify-center">
+                <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                        <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </div>
+                    <p className="text-gray-700 text-base font-medium">{t("load_error")}</p>
+                    <p className="text-gray-500 text-sm mt-1">{t("retry_after_network")}</p>
+                </div>
+            </div>
+        );
     };
 
     /* 状态同步 */
@@ -426,58 +398,100 @@ function ChatPage() {
 
     }, [attachments, selfMarkId]);
 
+    // 页面初始化逻辑
+    useEffect(() => {
+
+        const requestMessage = () => {
+            setIsLoading(true);
+            apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
+                params: {
+                    markId: selfMarkId  // 不提供其余其他内容默认获取消息链上的消息
+                }
+            }).then(data => {
+                setMessages(data.messages);
+                setMessagesOrder(data.messagesOrder);
+                setIsLoading(false);
+            }).catch(error => {
+                toast(t("load_messages_error", {message: error?.message || t("unknown_error")}), {
+                    action: {
+                        label: t("retry"),
+                        onClick: () => {
+                            setIsLoading(true);
+                            setIsLoadingError(false);
+                            requestMessage();
+                        },
+                    },
+                    closeButton: false,
+                    dismissible: false,
+                    duration: Infinity,
+                });
+                setIsLoading(false);
+                setIsLoadingError(true);
+            })
+        }
+
+        if (selfMarkId) {  // 如果有 markId 说明在一个旧的对话中，应该请求服务器去拿数据
+            requestMessage();
+        }
+
+    }, []);
+
     return (
         <>
             <div className="min-h-screen bg-white flex flex-col items-center pb-8">
-                <div className="flex-1 w-full overflow-y-auto px-4 pt-4">
-                    <div
-                        ref={messagesContainerRef}
-                        className="h-full overflow-y-auto pb-20 scroll-smooth"
-                        style={{maxHeight: 'calc(100vh - 200px)'}}
-                    >
-                        <ChatContainer
-                            messagesOrder={messagesOrder}
-                            messages={messages}
-                            onLoadMore={loadMoreHistory}
-                            onSwitchMessage={switchMessage}
-                        />
-                    </div>
-                </div>
 
-                <Transition
-                    show={showScrollToBottomButton}
-                    enter="transition-opacity duration-200"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="transition-opacity duration-150"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                    <button
-                        onClick={scrollToBottom}
-                        className="cursor-pointer fixed bottom-45 align-middle z-99 w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors"
-                        aria-label="Scroll to bottom"
-                    >
-                        <FaArrowDown className="text-gray-500"/>
-                    </button>
-                </Transition>
+                {isLoadingError ? LoadingFailedScreen() : (!isLoading ? (
+                    <>
+                        <div className="flex-1 w-full overflow-y-auto px-4 pt-4">
+                            <div
+                                ref={messagesContainerRef}
+                                className="h-full overflow-y-auto pb-20 scroll-smooth"
+                                style={{maxHeight: 'calc(100vh - 200px)'}}
+                            >
+                                <MessageContainer
+                                    messagesOrder={messagesOrder}
+                                    messages={messages}
+                                    onLoadMore={loadMoreHistory}
+                                    onSwitchMessage={switchMessage}
+                                />
+                            </div>
+                        </div>
 
-                <div className="fixed z-50 bottom-10 left-0 right-0">
-                    <ChatBox
-                        onSendMessage={handleSendMessage}
-                        markId={selfMarkId}
-                        attachmentsMeta={attachments}
-                        onAttachmentRemove={onAttachmentRemove}
-                        uploadFiles={uploadFiles}
-                        FilePickerCallback={handleFilePicker}
-                        PicPickerCallback={handlePicPicker}
-                        onImagePaste={handleImagePaste}
-                        onRetryUpload={handleRetryUpload}
-                        onCancelUpload={handleCancelUpload}
-                        onDropFiles={handleSelectedFiles}
-                        onFolderDetected={handleFolderDetected}
-                    />
-                </div>
+                        <Transition
+                            show={showScrollToBottomButton}
+                            enter="transition-opacity duration-200"
+                            enterFrom="opacity-0"
+                            enterTo="opacity-100"
+                            leave="transition-opacity duration-150"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                        >
+                            <button
+                                onClick={scrollToBottom}
+                                className="cursor-pointer fixed bottom-45 align-middle z-99 w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors"
+                                aria-label="Scroll to bottom"
+                            >
+                                <FaArrowDown className="text-gray-500"/>
+                            </button>
+                        </Transition>
+
+                        <div className="fixed z-50 bottom-10 left-0 right-0">
+                            <ChatBox
+                                onSendMessage={handleSendMessage}
+                                markId={selfMarkId}
+                                attachmentsMeta={attachments}
+                                onAttachmentRemove={onAttachmentRemove}
+                                uploadFiles={uploadFiles}
+                                FilePickerCallback={handleFilePicker}
+                                PicPickerCallback={handlePicPicker}
+                                onImagePaste={handleImagePaste}
+                                onRetryUpload={handleRetryUpload}
+                                onCancelUpload={handleCancelUpload}
+                                onDropFiles={handleSelectedFiles}
+                                onFolderDetected={handleFolderDetected}
+                            />
+                        </div>
+                    </>) : LoadingScreen())}
 
                 <footer className="fixed bottom-0 left-0 right-0 h-12 bg-white flex items-center justify-center">
                     <span className="text-xs text-gray-500">
@@ -489,4 +503,4 @@ function ChatPage() {
     );
 }
 
-export default ChatPage;
+export default ChatContainer;

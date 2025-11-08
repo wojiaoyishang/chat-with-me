@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 
-const ChatContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoadMore, onSwitchMessage }, ref) => {
+const MessageContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoadMore, onSwitchMessage }, ref) => {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [switchingMessageId, setSwitchingMessageId] = useState(null);
     const [enteringMessages, setEnteringMessages] = useState(new Set());
@@ -88,10 +88,9 @@ const ChatContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoadMor
                 <button
                     onClick={async () => {
                         if (!disabledPrev && onSwitchMessage) {
-                            const targetMsgId = msgPrev.messages[msgId_index - 1];
-                            setSwitchingMessageId(targetMsgId);
+                            setSwitchingMessageId(msgPrev.nextMessage);
                             // 标记这条消息使用淡入动画
-                            setFadeMessages(prev => new Set([...prev, targetMsgId]));
+                            setFadeMessages(prev => new Set([...prev, msgPrev.messages[msgId_index - 1]]));
                             try {
                                 await onSwitchMessage(msgPrev, msgId, false);
                             } finally {
@@ -113,10 +112,9 @@ const ChatContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoadMor
                 <button
                     onClick={async () => {
                         if (!disabledNext && onSwitchMessage) {
-                            const targetMsgId = msgPrev.messages[msgId_index + 1];
-                            setSwitchingMessageId(targetMsgId);
+                            setSwitchingMessageId(msgPrev.nextMessage);
                             // 标记这条消息使用淡入动画
-                            setFadeMessages(prev => new Set([...prev, targetMsgId]));
+                            setFadeMessages(prev => new Set([...prev, msgPrev.messages[msgId_index + 1]]));
                             try {
                                 await onSwitchMessage(msgPrev, msgId, true);
                             } finally {
@@ -185,6 +183,7 @@ const ChatContainer = forwardRef(({ messagesOrder = [], messages = {}, onLoadMor
 
                 // 处理切换中的消息
                 if (switchingMessageId === id) {
+
                     return (
                         <div
                             key={`loading-${id}`}
@@ -320,4 +319,4 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-export default ChatContainer;
+export default MessageContainer;

@@ -31,6 +31,11 @@
   "load_more": "Load More",
   "load_more_error": "Failed to fetch more: {{message}}",
   "loading_new_message": "Loading New Branch...",
+  "load_messages_error": "Message loading failed: {{message}}",
+  "loading_messages": "Loading Messages...",
+  "load_error": "Loading Failed",
+  "retry_after_network": "Please confirm the network before trying",
+  "retry_get_messages": "Try to retrieve the message again",
   "websocket": {
     "error": "WebSocket connection error: {{message}}",
     "popover_title": "Connection failed",

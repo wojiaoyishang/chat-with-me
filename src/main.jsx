@@ -2,7 +2,7 @@ import {StrictMode} from 'react';
 import './assets/js/i18n.js';
 import './assets/css/index.css';
 import './assets/css/code-block.css';
-import ChatPage from './pages/chat/ChatPage.jsx';
+import ChatContainer from './pages/chat/ChatContainer.jsx';
 import {
     createBrowserRouter,
     RouterProvider,
@@ -17,11 +17,11 @@ import FatalErrorPopoverElement from "@/context/FatalErrorPopover.jsx";
 const router = createBrowserRouter([
     {
         path: "/chat",
-        element: <ChatPage/>,
+        element: <ChatContainer/>,
     },
     {
         path: "/chat/:markId",
-        element: <ChatPage/>,
+        element: <ChatContainer/>,
     },
     {
         path: "/",

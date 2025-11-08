@@ -31,6 +31,11 @@
   "load_more": "加载更多",
   "load_more_error": "加载更多失败： {{message}}",
   "loading_new_message": "正在获取新对话分支...",
+  "load_messages_error": "加载历史对话失败: {{message}}",
+  "loading_messages": "正在加载对话...",
+  "load_error": "加载失败",
+  "retry_after_network": "请检查网络之后再试",
+  "retry_get_messages": "尝试重试获取消息",
   "websocket": {
     "error": "WebSocket 连接错误：{{message}}",
     "popover_title": "连接失败",
