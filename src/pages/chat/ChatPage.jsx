@@ -299,6 +299,7 @@ function ChatPage() {
 
         let missMsg = !messages.hasOwnProperty(newMsgId);
         let newOrders = [];  // 后面消息的新链顺序
+
         let msg_cursor = messages[newMsgId];
 
         // 寻找链中是否存在所有消息
@@ -317,9 +318,9 @@ function ChatPage() {
             }
         }
 
-        const sendSwitchRequest = async () => {
+        const sendSwitchRequest = () => {
             if (getLocalSetting('SyncMessageSwitch', true)) {
-                await apiClient.put(apiEndpoint.CHAT_MESSAGES_ENDPOINT,
+                apiClient.put(apiEndpoint.CHAT_MESSAGES_ENDPOINT,
                     {
                         markId: selfMarkId,
                         msgId: msgId,
@@ -347,7 +348,7 @@ function ChatPage() {
                 setMessages(draft => {
                     draft[msgId].nextMessage = newMsgId;
                 });
-                await sendSwitchRequest();
+                // sendSwitchRequest();  服务器已经知道需要选择什么分支了
             } catch (error) {
                 toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));
             }
@@ -356,7 +357,7 @@ function ChatPage() {
             setMessages(draft => {
                 draft[msgId].nextMessage = newMsgId;
             });
-            await sendSwitchRequest();
+            sendSwitchRequest();
         }
     };
 
