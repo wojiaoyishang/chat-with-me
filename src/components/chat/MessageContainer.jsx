@@ -4,10 +4,11 @@ import HumanIcon from '@/assets/human.jpg';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import {toast} from 'sonner';
 import {useTranslation} from 'react-i18next';
-import {FaChevronLeft, FaChevronRight, FaEdit} from 'react-icons/fa';
+import {FaChevronLeft, FaChevronRight} from 'react-icons/fa';
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import AttachmentShowcase from './AttachmentShowcase';
-import {Menu, PenLine} from "lucide-react";
+import {Menu, PenLine, Copy, RotateCw, Info} from "lucide-react";
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,7 +17,17 @@ import {
     DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 
-const MessageToolsFunction = (action, msg, markId, msgId) => {
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+import {copyTextToClipboard} from "@/lib/tools.js";
+import {onEvent} from "@/store/useEventStore.jsx";
+
+const MessageToolsFunction = (action, msg, markId, msgId, t) => {
+
     switch (action) {
         case "edit":
             emitEvent({
@@ -27,6 +38,24 @@ const MessageToolsFunction = (action, msg, markId, msgId) => {
                     isEdit: true,
                     attachments: msg.attachments,
                     content: msg.content,
+                    msgId: msgId
+                },
+                markId: markId
+            });
+            break;
+        case "copy":
+            copyTextToClipboard(msg.content).then(() => {
+                toast.success(t("message_copied"));
+            }).catch(err => {
+                toast.error(t("message_not_copied", {message: err}));
+            });
+            break;
+        case "regenerate":
+            emitEvent({
+                type: "message",
+                target: "ChatPage",
+                payload: {
+                    command: "Message-Regenerate",
                     msgId: msgId
                 },
                 markId: markId
@@ -45,17 +74,33 @@ const MessageMenuButton = ({msg, markId, msgId}) => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer lg:hidden"
+                <button className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer md:hidden"
                         aria-label={t("menu_function")}
                 >
                     <Menu size={16} className="text-gray-600 hover:text-gray-800"/>
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                <DropdownMenuItem className="flex items-center gap-2" onSelect={() => MessageToolsFunction("edit", msg, markId, msgId)}>
+
+                <DropdownMenuItem className="flex items-center gap-2"
+                                  onSelect={() => MessageToolsFunction("edit", msg, markId, msgId, t)}>
                     <PenLine size={16}/>
                     {t('edit_message')}
                 </DropdownMenuItem>
+
+                <DropdownMenuItem className="flex items-center gap-2"
+                                  onSelect={() => MessageToolsFunction("copy", msg, markId, msgId, t)}>
+                    <Copy size={16}/>
+                    {t('copy_message')}
+                </DropdownMenuItem>
+
+                {msg.allowRegenerate || msg.allowRegenerate === undefined ? (
+                    <DropdownMenuItem className="flex items-center gap-2"
+                                      onSelect={() => MessageToolsFunction("regenerate", msg, markId, msgId, t)}>
+                        <RotateCw size={16}/>
+                        {t('regenerate_message')}
+                    </DropdownMenuItem>
+                ) : null}
             </DropdownMenuContent>
         </DropdownMenu>
     );
@@ -73,13 +118,53 @@ const MessageTools = ({msg, markId, msgId}) => {
 
             <button
                 onClick={() => {
-                    MessageToolsFunction("edit", msg, markId, msgId)
+                    MessageToolsFunction("edit", msg, markId, msgId, t)
                 }}
-                className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden sm:block"
+                className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
                 aria-label={t("edit_message")}
             >
                 <PenLine size={16} className="text-gray-600 hover:text-gray-800"/>
             </button>
+
+            <button
+                onClick={() => {
+                    MessageToolsFunction("copy", msg, markId, msgId, t)
+                }}
+                className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                aria-label={t("copy_message")}
+            >
+                <Copy size={16} className="text-gray-600 hover:text-gray-800"/>
+            </button>
+
+            {msg.allowRegenerate || msg.allowRegenerate === undefined ? (
+                <button
+                    onClick={() => {
+                        MessageToolsFunction("regenerate", msg, markId, msgId, t)
+                    }}
+                    className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                    aria-label={t("regenerate_message")}
+                >
+                    <RotateCw size={16} className="text-gray-600 hover:text-gray-800"/>
+                </button>
+            ) : null}
+
+            {msg.tip && (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <button
+                            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                            aria-label={t("message_info")}
+                        >
+                            <Info size={16} className="text-gray-600 hover:text-gray-800"/>
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <div style={{ whiteSpace: 'pre-line' }}>
+                            {msg.tip}
+                        </div>
+                    </TooltipContent>
+                </Tooltip>
+            )}
 
             <MessageMenuButton msg={msg} markId={markId} id={msgId}/>
         </div>
@@ -225,6 +310,22 @@ const MessageContainer = forwardRef(({
     const prevMessagesOrderRef = useRef([]);
     const animationFrameRef = useRef(null);
     const {t} = useTranslation();
+
+    useEffect(() => {
+
+        const unsubscribe = onEvent("widget", "ChatPage", markId).then((payload, markId, isReply, id, reply) => {
+            switch (payload.command) {
+                case "Set-SwitchingMessage":
+                    setSwitchingMessageId(payload.value);
+                    reply({ command: 'Set-SwitchingMessage', success: true });
+                    break;
+            }
+        });
+
+        return () => {
+            unsubscribe();
+        };
+    }, []);
 
     // 动画管理效果
     useEffect(() => {
@@ -412,11 +513,11 @@ const MessageContainer = forwardRef(({
                                         showRightTools ? 'opacity-100' : 'opacity-0 pointer-events-none'
                                     }`}
                                 >
-                                    <MessageTools msg={msg} markId={markId} msgId={id} />
+                                    <MessageTools msg={msg} markId={markId} msgId={id}/>
                                 </div>
                                 {/* 占位元素，保持空间一致性 */}
                                 <div className="flex items-center justify-center invisible">
-                                    <MessageTools msg={msg} markId={markId} msgId={id} />
+                                    <MessageTools msg={msg} markId={markId} msgId={id}/>
                                 </div>
                             </div>
                         </div>
@@ -431,7 +532,7 @@ const MessageContainer = forwardRef(({
                     {!isRight && (
                         <div
                             className={"text-right flex-shrink-0 " + (showPaginator ? 'pl-1' : 'translate-x-[-0.4em]')}>
-                            <MessageTools msg={msg} markId={markId} msgId={id} />
+                            <MessageTools msg={msg} markId={markId} msgId={id}/>
                         </div>
                     )}
 

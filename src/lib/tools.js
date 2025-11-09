@@ -236,3 +236,35 @@ export function getLocalSetting(key, defaultValue = null) {
         return defaultValue;
     }
 }
+
+export function copyTextToClipboard(text) {
+    return new Promise((resolve, reject) => {
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text)
+                    .then(resolve)
+                    .catch(reject);
+            } else {
+                // 降级处理
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textarea);
+
+                if (successful) {
+                    resolve();
+                } else {
+                    reject(new Error('document.execCommand("copy") failed'));
+                }
+            }
+        } catch (err) {
+            reject(err);
+        }
+    });
+}

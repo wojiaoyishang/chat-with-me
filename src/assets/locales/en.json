@@ -51,5 +51,10 @@
   "edit_message": "Edit Message",
   "menu_function": "Menu Message",
   "file_upload_not_complete": "Please wait patiently for the file upload to complete ~",
-  "editing_message": "Now you are editing message"
+  "editing_message": "Now you are editing message",
+  "copy_message": "Copy Message",
+  "message_copied": "Message Copied!",
+  "message_not_copied": "Message not Copied: {{message}}",
+  "regenerate_message": "Regenerate",
+  "message_info": "Message's Info"
 }
