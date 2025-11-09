@@ -24,7 +24,6 @@ function ChatPage() {
 
     const isProcessingRef = useRef(false);
     const messagesContainerRef = useRef(null);
-    const chatBoxRef = useRef(null); // 新增：用于测量 ChatBox 高度
     const [selfMarkId, setSelfMarkId] = useState(getMarkId());
     const uploadIntervals = useRef(new Map());
     const [uploadFiles, setUploadFiles] = useState([]);
@@ -42,8 +41,6 @@ function ChatPage() {
     const wasAtBottomRef = useRef(true);
 
     const [scrollButtonBottom, setScrollButtonBottom] = useState(200);
-    const [boxHeight, setBoxHeight] = useState(48);
-
 
     const calculateIsNearBottom = () => {
         if (!messagesContainerRef.current) return true;
@@ -97,24 +94,31 @@ function ChatPage() {
         handleSelectedFiles(files);
     };
 
-    const handleSendMessage = (message, toolsStatus, sendButtonState) => {
+    const handleSendMessage = (messageContent, toolsStatus, isEditMessage, editMessageId) => {
         if (uploadFiles.length !== 0) {
             toast.error(t("file_upload_not_complete"));
             return;
         }
 
-        emitEvent({
+        const eventPayload = {
             type: "message",
             target: "ChatPage",
             payload: {
                 command: "Message-Send",
-                message,
-                toolsStatus,
-                sendButtonState,
-                attachments
+                message: messageContent,
+                toolsStatus: toolsStatus,
+                attachments: attachments,
+                isEdit: isEditMessage,
             },
             markId: selfMarkId
-        });
+        };
+
+        // 编辑消息发送 editMessageId
+        if (isEditMessage) {
+            eventPayload.payload.msgId = editMessageId;
+        }
+
+        emitEvent(eventPayload);
     };
 
     const onAttachmentRemove = (attachment) => {
@@ -355,20 +359,8 @@ function ChatPage() {
     // }, [attachments, uploadFiles]);
 
     useEffect(() => {
-        const unsubscribe1 = onEvent("widget", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
-            switch (payload.command) {
-                case "Attachment-Meta":
-                    if (payload.value) {
-                        setAttachments(payload.value);
-                        reply({ command: 'Setup-QuickOptions', value: payload.value });
-                    } else {
-                        reply(attachments);
-                    }
-                    break;
-            }
-        });
 
-        const unsubscribe2 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
+        const unsubscribe1 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
                 case "Add-Message":
                     if (payload.value && typeof payload.value === 'object') {
@@ -406,7 +398,7 @@ function ChatPage() {
             }
         });
 
-        const unsubscribe3 = onEvent("websocket", "onopen", selfMarkId).then(() => {
+        const unsubscribe2 = onEvent("websocket", "onopen", selfMarkId).then(() => {
             if (isMessageLoaded) {
                 emitEvent({
                     type: "message",
@@ -420,7 +412,6 @@ function ChatPage() {
         return () => {
             unsubscribe1();
             unsubscribe2();
-            unsubscribe3();
         };
     }, [attachments, selfMarkId, isMessageLoaded]);
 
@@ -489,6 +480,7 @@ function ChatPage() {
                                     messages={messages}
                                     onLoadMore={loadMoreHistory}
                                     onSwitchMessage={switchMessage}
+                                    markId={selfMarkId}
                                 />
                             </div>
                         </div>
@@ -504,7 +496,7 @@ function ChatPage() {
                         >
                             <button
                                 onClick={scrollToBottom}
-                                className="cursor-pointer fixed z-99 align-middle w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors"
+                                className="cursor-pointer fixed z-50 align-middle w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors"
                                 aria-label="Scroll to bottom"
                                 style={{
                                     bottom: `${scrollButtonBottom}px`,
@@ -522,6 +514,7 @@ function ChatPage() {
                                 onSendMessage={handleSendMessage}
                                 markId={selfMarkId}
                                 attachmentsMeta={attachments}
+                                setAttachments={setAttachments}
                                 onAttachmentRemove={onAttachmentRemove}
                                 uploadFiles={uploadFiles}
                                 FilePickerCallback={handleFilePicker}

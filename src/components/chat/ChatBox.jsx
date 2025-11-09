@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {Transition} from '@headlessui/react';
 import {FaRedo, FaSearch, FaArrowDown} from "react-icons/fa";
 import {FaEarthAmericas} from 'react-icons/fa6';
-import {CheckIcon, X, PenLine} from "lucide-react";
+import {CheckIcon, X, PenLine, Trash2} from "lucide-react";
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
@@ -47,6 +47,7 @@ import apiClient from '@/lib/apiClient';
  * @param {Function} PicPickerCallback - 触发图片选择器的回调
  * @param {string} markId - 组件唯一标识，用于事件通信
  * @param {Array} [attachmentsMeta=[]] - 已上传附件元数据列表
+ * @param {Function} setAttachments - 设置附件数据
  * @param {Array} [uploadFiles=[]] - 正在上传的文件列表
  * @param {Function} onAttachmentRemove - 移除附件回调
  * @param {Function} onImagePaste - 粘贴图片时的处理回调
@@ -63,6 +64,7 @@ function ChatBox({
                      PicPickerCallback,
                      markId,
                      attachmentsMeta = [],
+                     setAttachments,
                      uploadFiles = [],
                      onAttachmentRemove,
                      onImagePaste,
@@ -74,7 +76,7 @@ function ChatBox({
                  }) {
     const {t} = useTranslation();
 
-    const [message, setMessage] = useState("");
+    const [messageContent, setMessageContent] = useState("");
     const [toolsStatus, setToolsStatus] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(readOnly);
@@ -93,10 +95,11 @@ function ChatBox({
     const [attachmentHeight, setAttachmentHeight] = useState(0);
     const [ignoreAttachmentTools, setIgnoreAttachmentTools] = useState(false);
 
-    const [isEditMessage, setIsEditMessage] = useState(true);
+    const [isEditMessage, setIsEditMessage] = useState(false);
+    const [editMessageId, setEditMessageId] = useState(null);
 
     const quickOptionsRef = useRef(null);
-    const messageRef = useRef(message);
+    const messageContentRef = useRef(messageContent);
     const textareaRef = useRef(null);
     const cloneTextareaRef = useRef(null);
     const sendButtonStateRef = useRef(sendButtonState);
@@ -153,7 +156,7 @@ function ChatBox({
 
     // ========== Message handling ==========
     const handleSendMessage = () => {
-        onSendMessage(message, toolsStatus, sendButtonState);
+        onSendMessage(messageContent, toolsStatus, isEditMessage, editMessageId);
         textareaRef.current?.focus();
     };
 
@@ -172,7 +175,7 @@ function ChatBox({
     const handleInputChange = (e) => {
         if (isReadOnly) return;
         const newValue = e.target.value;
-        setMessage(newValue);
+        setMessageContent(newValue);
         if (selectedQuickOption !== null) {
             const selectedOption = quickOptions.find(opt => opt.id === selectedQuickOption);
             if (selectedOption && newValue !== selectedOption.value) {
@@ -199,14 +202,14 @@ function ChatBox({
     // ========== Quick options ==========
     const handleOptionClick = (option) => {
         if (selectedQuickOption === option.id) {
-            if (message === option.value) {
-                setMessage('');
+            if (messageContent === option.value) {
+                setMessageContent('');
                 setSelectedQuickOption(null);
             } else {
                 setSelectedQuickOption(null);
             }
         } else {
-            setMessage(option.value);
+            setMessageContent(option.value);
             setSelectedQuickOption(option.id);
             textareaRef.current?.focus();
         }
@@ -398,7 +401,7 @@ function ChatBox({
 
     // ========== Send button ==========
     const sendButtonStyle = useMemo(() => {
-        const isEmpty = !message.trim() && attachmentsMeta.length === 0 && sendButtonState === 'normal';
+        const isEmpty = !messageContent.trim() && attachmentsMeta.length === 0 && sendButtonState === 'normal';
 
         const baseIcon = (
             <svg t="1758800079268" className="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -462,7 +465,7 @@ function ChatBox({
                     disabled: false
                 };
         }
-    }, [message, sendButtonState, attachmentsMeta]);
+    }, [messageContent, sendButtonState, attachmentsMeta]);
 
     // ========== Dynamic setup ==========
     const chatboxSetup = (data) => {
@@ -530,12 +533,12 @@ function ChatBox({
     // ========== Effects ==========
     useEffect(() => {
         sendButtonStateRef.current = sendButtonState;
-        messageRef.current = message;
-    }, [sendButtonState, message]);
+        messageContentRef.current = messageContent;
+    }, [sendButtonState, messageContent]);
 
     useEffect(() => {
         adjustTextareaHeight();
-    }, [message, isEditMessage]);
+    }, [messageContent, isEditMessage]);
 
     useEffect(() => {
         initTextareaClone();
@@ -589,11 +592,11 @@ function ChatBox({
                     }
                     break;
                 case "Set-Message":
-                    setMessage(payload.value);
+                    setMessageContent(payload.value);
                     reply({command: 'Set-Message', success: true});
                     break;
                 case "Get-Message":
-                    reply({command: 'Get-Message', value: messageRef.current});
+                    reply({command: 'Get-Message', value: messageContentRef.current});
                     break;
                 case "Setup-ChatBox":
                     if (payload.value.builtin_tools || payload.value.extra_tools) {
@@ -613,13 +616,22 @@ function ChatBox({
                     }, 500);
                     reply({command: 'Setup-QuickOptions', success: true});
                     break;
-                // Add new event listener for setting edit message state
-                case "Set-EditMessage":
-                    setIsEditMessage(Boolean(payload.value));
-                    reply({command: 'Set-EditMessage', success: true});
+                case "Attachment-Meta":
+                    if (payload.value) {
+                        setAttachments(payload.value);
+                        reply({command: 'Attachment-Meta', value: payload.value});
+                    } else {
+                        reply(attachments);
+                    }
                     break;
-                case "Get-EditMessage":
-                    reply({command: 'Get-EditMessage', value: isEditMessage});
+                case "Set-EditMessage":
+
+                    setIsEditMessage(Boolean(payload.isEdit));
+                    if (payload.attachments) setAttachments(payload.attachments);
+                    if (payload.content) setMessageContent(payload.content);
+                    if (payload.msgId) setEditMessageId(payload.msgId);
+
+                    reply({command: 'Set-EditMessage', success: true});
                     break;
             }
         });
@@ -657,8 +669,7 @@ function ChatBox({
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
                 const newHeight = entry.contentRect.height;
-                console.log('ChatBox root height changed to:', newHeight);
-                // If parent callback needed:
+
                 if (onHeightChange) {
                     onHeightChange(newHeight);
                 }
@@ -757,20 +768,36 @@ function ChatBox({
                                     <span>{t("editing_message")}</span>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={() => setIsEditMessage(false)}
-                                    className="ml-4 text-gray-600 hover:text-gray-800  focus:rounded-full p-0.5 cursor-pointer"
-                                    aria-label={t("cancel_editing")}
-                                >
-                                    <X className="w-4 h-4"/>
-                                </button>
+
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsEditMessage(false)}
+                                        className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
+                                        aria-label={t("cancel_editing")}
+                                    >
+                                        <X className="w-4 h-4"/>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setIsEditMessage(false);
+                                            setAttachments([]);
+                                            setMessageContent("");
+                                        }}
+                                        className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
+                                        aria-label={t("cancel_editing")}
+                                    >
+                                        <Trash2 className="w-4 h-4"/>
+                                    </button>
+                                </div>
+
                             </div>
                         </Transition>
 
                         <textarea
                             ref={textareaRef}
-                            value={message}
+                            value={messageContent}
                             onChange={handleInputChange}
                             onPaste={handlePaste}
                             onKeyDown={(e) => !isReadOnly && handleKeyDown(e)}
@@ -835,24 +862,20 @@ function ChatBox({
                         <div
                             className="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 bg-black/40">
                             <div
-                                className="bg-white rounded-2xl w-full max-w-3xl h-[80vh] p-6 relative transition-all duration-200 ease-out transform"
+                                className="bg-white rounded-2xl w-full max-w-3xl h-[85vh] p-0.5 relative transition-all duration-200 ease-out transform"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <button
                                     onClick={() => setIsModalOpen(false)}
-                                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
+                                    className="absolute z-50 top-3 right-3 rounded-full bg-gray-200 text-gray-500 hover:text-gray-700 cursor-pointer"
                                     aria-label={t("close")}
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
-                                         viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                              d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
+                                    <X className="w-5 h-5"/>
                                 </button>
                                 <div className="h-full p-5">
                                     <SimpleMDEditor
-                                        text={message}
-                                        setText={setMessage}
+                                        text={messageContent}
+                                        setText={setMessageContent}
                                         readOnly={isReadOnly}
                                     />
                                 </div>

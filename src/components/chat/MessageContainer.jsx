@@ -16,24 +16,44 @@ import {
     DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 
+const MessageToolsFunction = (action, msg, markId, msgId) => {
+    switch (action) {
+        case "edit":
+            emitEvent({
+                type: "widget",
+                target: "ChatBox",
+                payload: {
+                    command: "Set-EditMessage",
+                    isEdit: true,
+                    attachments: msg.attachments,
+                    content: msg.content,
+                    msgId: msgId
+                },
+                markId: markId
+            });
+            break;
+    }
+
+}
+
 /**
  * 消息菜单组件
  */
-const MessageMenuButton = () => {
+const MessageMenuButton = ({msg, markId, msgId}) => {
     const {t} = useTranslation();
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <button className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer lg:hidden"
-                    aria-label={t("menu_function")}
+                        aria-label={t("menu_function")}
                 >
                     <Menu size={16} className="text-gray-600 hover:text-gray-800"/>
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                <DropdownMenuItem className="flex items-center gap-2">
-                    <PenLine size={16} />
+                <DropdownMenuItem className="flex items-center gap-2" onSelect={() => MessageToolsFunction("edit", msg, markId, msgId)}>
+                    <PenLine size={16}/>
                     {t('edit_message')}
                 </DropdownMenuItem>
             </DropdownMenuContent>
@@ -45,20 +65,23 @@ const MessageMenuButton = () => {
  * 消息工具栏组件 - 显示编辑按钮
  * 独立于分页选择器，与分页选择器平齐显示
  */
-const MessageTools = ({}) => {
+const MessageTools = ({msg, markId, msgId}) => {
     const {t} = useTranslation();
 
     return (
         <div className="flex gap-1">
 
             <button
+                onClick={() => {
+                    MessageToolsFunction("edit", msg, markId, msgId)
+                }}
                 className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden sm:block"
                 aria-label={t("edit_message")}
             >
                 <PenLine size={16} className="text-gray-600 hover:text-gray-800"/>
             </button>
 
-            <MessageMenuButton />
+            <MessageMenuButton msg={msg} markId={markId} id={msgId}/>
         </div>
     );
 };
@@ -190,7 +213,8 @@ const MessageContainer = forwardRef(({
                                          messagesOrder = [],
                                          messages = {},
                                          onLoadMore,
-                                         onSwitchMessage
+                                         onSwitchMessage,
+                                         markId
                                      }, ref) => {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [switchingMessageId, setSwitchingMessageId] = useState(null);
@@ -388,11 +412,11 @@ const MessageContainer = forwardRef(({
                                         showRightTools ? 'opacity-100' : 'opacity-0 pointer-events-none'
                                     }`}
                                 >
-                                    <MessageTools/>
+                                    <MessageTools msg={msg} markId={markId} msgId={id} />
                                 </div>
                                 {/* 占位元素，保持空间一致性 */}
                                 <div className="flex items-center justify-center invisible">
-                                    <MessageTools/>
+                                    <MessageTools msg={msg} markId={markId} msgId={id} />
                                 </div>
                             </div>
                         </div>
@@ -405,8 +429,9 @@ const MessageContainer = forwardRef(({
                     )}
 
                     {!isRight && (
-                        <div className={"text-right flex-shrink-0 " + (showPaginator ? 'pl-1' : 'translate-x-[-0.4em]')}>
-                            <MessageTools/>
+                        <div
+                            className={"text-right flex-shrink-0 " + (showPaginator ? 'pl-1' : 'translate-x-[-0.4em]')}>
+                            <MessageTools msg={msg} markId={markId} msgId={id} />
                         </div>
                     )}
 
