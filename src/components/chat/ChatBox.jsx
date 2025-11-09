@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Transition } from '@headlessui/react';
-import { FaRedo, FaSearch, FaArrowDown } from "react-icons/fa";
-import { FaEarthAmericas } from 'react-icons/fa6';
-import { CheckIcon } from "lucide-react";
+import React, {useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Transition} from '@headlessui/react';
+import {FaRedo, FaSearch, FaArrowDown} from "react-icons/fa";
+import {FaEarthAmericas} from 'react-icons/fa6';
+import {CheckIcon, X, PenLine} from "lucide-react";
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import SimpleMDEditor from "@/components/editor/SimpleMDEditor.jsx";
 import ToggleSearchButton from "@/components/chat/ChatButton.jsx";
-import { emitEvent, onEvent } from "@/store/useEventStore.jsx";
+import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
 import ChatBoxHeader from './ChatBoxHeader';
 import ToolButtons from './ToolButtons';
 import AttachmentShowcase from './AttachmentShowcase';
@@ -24,7 +24,6 @@ import {toast} from "sonner";
 
 import {apiEndpoint} from "@/config.js"
 import apiClient from '@/lib/apiClient';
-
 
 /**
  * ChatBox - 一个功能丰富的聊天输入区域组件
@@ -55,6 +54,7 @@ import apiClient from '@/lib/apiClient';
  * @param {Function} onCancelUpload - 取消上传回调
  * @param {Function} onDropFiles - 拖拽文件回调
  * @param {Function} onFolderDetected - 拖拽文件夹上传检测
+ * @param {Function} onHeightChange - 输入框高度改变
  */
 function ChatBox({
                      onSendMessage,
@@ -69,9 +69,10 @@ function ChatBox({
                      onRetryUpload,
                      onCancelUpload,
                      onDropFiles,
-                     onFolderDetected
+                     onFolderDetected,
+                     onHeightChange,
                  }) {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     const [message, setMessage] = useState("");
     const [toolsStatus, setToolsStatus] = useState({});
@@ -91,6 +92,8 @@ function ChatBox({
     const [selectedQuickOption, setSelectedQuickOption] = useState(null);
     const [attachmentHeight, setAttachmentHeight] = useState(0);
     const [ignoreAttachmentTools, setIgnoreAttachmentTools] = useState(false);
+
+    const [isEditMessage, setIsEditMessage] = useState(true);
 
     const quickOptionsRef = useRef(null);
     const messageRef = useRef(message);
@@ -144,6 +147,8 @@ function ChatBox({
         const cappedHeight = Math.min(contentHeight, 128);
         textarea.style.height = cappedHeight + 'px';
         textarea.style.overflowY = contentHeight > 48 ? 'scroll' : 'auto';
+
+        onHeightChange(cappedHeight);
     };
 
     // ========== Message handling ==========
@@ -155,7 +160,7 @@ function ChatBox({
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             if (e.shiftKey) {
-                if (tipMessageIsForNewLine) chatboxSetup({ tipMessage: null });
+                if (tipMessageIsForNewLine) chatboxSetup({tipMessage: null});
                 return;
             } else {
                 e.preventDefault();
@@ -211,13 +216,13 @@ function ChatBox({
     const renderIcon = (iconType, iconData) => {
         if (!iconData) return null;
         if (iconType === 'library') {
-            const iconMap = { search: FaSearch, refresh: FaRedo, earth: FaEarthAmericas };
+            const iconMap = {search: FaSearch, refresh: FaRedo, earth: FaEarthAmericas};
             const IconComponent = iconMap[iconData];
-            return IconComponent ? <IconComponent className="w-4 h-4 mr-2" /> : null;
+            return IconComponent ? <IconComponent className="w-4 h-4 mr-2"/> : null;
         } else if (iconType === 'svg') {
-            return <span className="inline-block w-4 h-4 mr-2" dangerouslySetInnerHTML={{ __html: iconData }} />;
+            return <span className="inline-block w-4 h-4 mr-2" dangerouslySetInnerHTML={{__html: iconData}}/>;
         } else if (iconType === 'image') {
-            return <img src={iconData} alt="" className="w-4 h-4 mr-2" />;
+            return <img src={iconData} alt="" className="w-4 h-4 mr-2"/>;
         }
         return null;
     };
@@ -234,7 +239,7 @@ function ChatBox({
                     </DropdownMenuLabel>
                 );
             } else if (item.type === 'separator') {
-                return <DropdownMenuSeparator key={`sep-${index}`} />;
+                return <DropdownMenuSeparator key={`sep-${index}`}/>;
             } else if (item.type === 'group') {
                 const isDisabled = item.disabled;
                 return (
@@ -258,7 +263,10 @@ function ChatBox({
                     <DropdownMenuItem
                         key={`toggle-${item.name}`}
                         onClick={(e) => {
-                            if (isDisabled) { e.preventDefault(); return; }
+                            if (isDisabled) {
+                                e.preventDefault();
+                                return;
+                            }
                             setToolsStatus(prev => ({
                                 ...prev,
                                 extra_tools: {
@@ -272,7 +280,7 @@ function ChatBox({
                     >
                         {item.iconData && renderIcon(item.iconType, item.iconData)}
                         <span>{t(item.text)}</span>
-                        {!isDisabled && isChecked && <CheckIcon className="ml-auto w-4 h-4 text-blue-500" />}
+                        {!isDisabled && isChecked && <CheckIcon className="ml-auto w-4 h-4 text-blue-500"/>}
                     </DropdownMenuItem>
                 );
             } else if (item.type === 'radio') {
@@ -294,7 +302,10 @@ function ChatBox({
                                     <DropdownMenuItem
                                         key={`radio-${item.name}-${child.name}`}
                                         onClick={(e) => {
-                                            if (isDisabled || childIsDisabled) { e.preventDefault(); return; }
+                                            if (isDisabled || childIsDisabled) {
+                                                e.preventDefault();
+                                                return;
+                                            }
                                             setToolsStatus(prev => ({
                                                 ...prev,
                                                 extra_tools: {
@@ -309,7 +320,7 @@ function ChatBox({
                                         {child.iconData && renderIcon(child.iconType, child.iconData)}
                                         <span>{t(child.text)}</span>
                                         {isSelected && !isDisabled && !childIsDisabled && (
-                                            <CheckIcon className="ml-auto w-4 h-4 text-blue-500" />
+                                            <CheckIcon className="ml-auto w-4 h-4 text-blue-500"/>
                                         )}
                                     </DropdownMenuItem>
                                 );
@@ -356,7 +367,7 @@ function ChatBox({
         return tools.map((tool) => {
             const isActive = tool.isActive ?? false;
             const disabled = tool.disabled ?? false;
-            const iconMap = { search: FaSearch, refresh: FaRedo, earth: FaEarthAmericas };
+            const iconMap = {search: FaSearch, refresh: FaRedo, earth: FaEarthAmericas};
             let iconData = null;
             if (tool.iconType === 'library') {
                 iconData = iconMap[tool.iconData];
@@ -373,7 +384,7 @@ function ChatBox({
                     onClick={(e, isActive) => {
                         setToolsStatus(prev => ({
                             ...prev,
-                            builtin_tools: { ...prev.builtin_tools, [tool.name]: isActive }
+                            builtin_tools: {...prev.builtin_tools, [tool.name]: isActive}
                         }));
                     }}
                     text={t(tool.text)}
@@ -423,7 +434,8 @@ function ChatBox({
                     className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
                     icon: (
                         <div className="relative w-6 h-6">
-                            <div className="absolute inset-[-9px] border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                            <div
+                                className="absolute inset-[-9px] border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <div className="w-4 h-4 bg-white rounded"></div>
                             </div>
@@ -458,7 +470,7 @@ function ChatBox({
         const newExtraStatus = initializeExtraTools(data.extra_tools || []);
 
         let defaultAttachmentTools = data.ignoreAttachmentTools ? [] : [
-            { type: 'label', text: 'attachment_options' },
+            {type: 'label', text: 'attachment_options'},
             {
                 type: 'button',
                 text: 'add_image',
@@ -488,8 +500,8 @@ function ChatBox({
 
         setToolsStatus(prev => ({
             ...prev,
-            builtin_tools: { ...prev.builtin_tools, ...newBuiltinStatus },
-            extra_tools: { ...prev.extra_tools, ...newExtraStatus }
+            builtin_tools: {...prev.builtin_tools, ...newBuiltinStatus},
+            extra_tools: {...prev.extra_tools, ...newExtraStatus}
         }));
         setExtraTools(allExtraTools);
 
@@ -508,6 +520,10 @@ function ChatBox({
                     }
                 }, 300);
             }
+        }
+        // Add logic to set isEditMessage if provided in data
+        if (data.isEditMessage !== undefined) {
+            setIsEditMessage(Boolean(data.isEditMessage));
         }
     };
 
@@ -567,23 +583,23 @@ function ChatBox({
                     const validStates = ['disabled', 'normal', 'loading', 'generating'];
                     if (validStates.includes(payload.value)) {
                         setSendButtonState(payload.value);
-                        reply({ command: 'SendButton-State', value: payload.value });
+                        reply({command: 'SendButton-State', value: payload.value});
                     } else {
-                        reply({ command: 'SendButton-State', value: sendButtonStateRef.current });
+                        reply({command: 'SendButton-State', value: sendButtonStateRef.current});
                     }
                     break;
                 case "Set-Message":
                     setMessage(payload.value);
-                    reply({ command: 'Set-Message', success: true });
+                    reply({command: 'Set-Message', success: true});
                     break;
                 case "Get-Message":
-                    reply({ command: 'Get-Message', value: messageRef.current });
+                    reply({command: 'Get-Message', value: messageRef.current});
                     break;
                 case "Setup-ChatBox":
                     if (payload.value.builtin_tools || payload.value.extra_tools) {
                         setToolsLoadedStatus(-1);
                     }
-                    reply({ command: 'Setup-ChatBox', success: true });
+                    reply({command: 'Setup-ChatBox', success: true});
                     setTimeout(() => {
                         chatboxSetup(payload.value);
                         setToolsLoadedStatus(2);
@@ -595,7 +611,15 @@ function ChatBox({
                         setQuickOptions(payload.value);
                         setIsTransitioning(false);
                     }, 500);
-                    reply({ command: 'Setup-QuickOptions', success: true });
+                    reply({command: 'Setup-QuickOptions', success: true});
+                    break;
+                // Add new event listener for setting edit message state
+                case "Set-EditMessage":
+                    setIsEditMessage(Boolean(payload.value));
+                    reply({command: 'Set-EditMessage', success: true});
+                    break;
+                case "Get-EditMessage":
+                    reply({command: 'Get-EditMessage', value: isEditMessage});
                     break;
             }
         });
@@ -638,8 +662,7 @@ function ChatBox({
                         return;
                     }
                     onDropFiles(files);
-                }
-            }
+                }}
                 onFolderDetected={onFolderDetected}
             />
             <div
@@ -665,12 +688,14 @@ function ChatBox({
                     isTransitioning={isTransitioning}
                 />
 
-                <div className="border-1 bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-md focus-within:shadow-lg">
+                <div
+                    className="border-1 bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-md focus-within:shadow-lg">
                     <div
                         className="overflow-hidden transition-all duration-300 ease-in-out"
-                        style={{ height: uploadFiles.length > 0 ? 'auto' : 0, minHeight: 0 }}
+                        style={{height: uploadFiles.length > 0 ? 'auto' : 0, minHeight: 0}}
                     >
-                        <FileUploadProgress uploadFiles={uploadFiles} onRetry={onRetryUpload} onCancel={onCancelUpload} />
+                        <FileUploadProgress uploadFiles={uploadFiles} onRetry={onRetryUpload}
+                                            onCancel={onCancelUpload}/>
                     </div>
 
                     <div
@@ -690,17 +715,45 @@ function ChatBox({
                     </div>
 
                     <div className="pt-2 pl-2 pr-2">
-                    <textarea
-                        ref={textareaRef}
-                        value={message}
-                        onChange={handleInputChange}
-                        onPaste={handlePaste}
-                        onKeyDown={(e) => !isReadOnly && handleKeyDown(e)}
-                        placeholder={t("input_placeholder")}
-                        className="w-full min-h-[48px] max-h-[132px] p-4 pt-4 pb-2 pr-4 text-gray-800 bg-transparent border-none resize-none outline-none pretty-scrollbar"
-                        rows={1}
-                        style={{ transition: 'height 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
-                    />
+
+                        <Transition
+                            show={isEditMessage}
+                            enter="transition-opacity duration-200"
+                            enterFrom="opacity-0"
+                            enterTo="opacity-100"
+                            leave="transition-opacity duration-150"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                        >
+                            <div
+                                className="bg-gray-100 text-gray-800 text-sm font-medium py-3 px-4 rounded-t-2xl flex items-center justify-between">
+                                <div className="flex items-center">
+                                    <PenLine className="w-4 h-4 mr-2"/>
+                                    <span>{t("editing_message")}</span>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditMessage(false)}
+                                    className="ml-4 text-gray-600 hover:text-gray-800  focus:rounded-full p-0.5 cursor-pointer"
+                                    aria-label={t("cancel_editing")}
+                                >
+                                    <X className="w-4 h-4"/>
+                                </button>
+                            </div>
+                        </Transition>
+
+                        <textarea
+                            ref={textareaRef}
+                            value={message}
+                            onChange={handleInputChange}
+                            onPaste={handlePaste}
+                            onKeyDown={(e) => !isReadOnly && handleKeyDown(e)}
+                            placeholder={t("input_placeholder")}
+                            className="w-full min-h-[48px] max-h-[132px] p-4 pt-4 pb-2 pr-4 text-gray-800 bg-transparent border-none resize-none outline-none pretty-scrollbar"
+                            rows={1}
+                            style={{transition: 'height 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)'}}
+                        />
                     </div>
 
                     <div className="flex items-center justify-between px-4 pb-3">
@@ -754,7 +807,8 @@ function ChatBox({
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <div className="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 bg-black/40">
+                        <div
+                            className="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 bg-black/40">
                             <div
                                 className="bg-white rounded-2xl w-full max-w-3xl h-[80vh] p-6 relative transition-all duration-200 ease-out transform"
                                 onClick={(e) => e.stopPropagation()}
@@ -783,7 +837,6 @@ function ChatBox({
                 </Transition>
             </div>
         </>
-
     );
 }
 

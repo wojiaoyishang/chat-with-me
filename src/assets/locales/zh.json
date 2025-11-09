@@ -49,5 +49,7 @@
     "not_connected": "Websocket 没有连接"
   },
   "edit_message": "编辑消息",
-  "menu_function": "菜单功能"
+  "menu_function": "菜单功能",
+  "file_upload_not_complete": "请耐心等待文件上传完成 ~",
+  "editing_message": "正在修改消息"
 }

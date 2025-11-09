@@ -1,46 +1,55 @@
-import React, {useEffect, useState, useRef, useCallback} from 'react';
-import {useImmer} from 'use-immer';
-import {generateUUID, getMarkId, getLocalSetting} from "@/lib/tools";
-import {toast} from "sonner";
-import {Transition} from '@headlessui/react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useImmer } from 'use-immer';
+import { generateUUID, getMarkId, getLocalSetting } from "@/lib/tools";
+import { toast } from "sonner";
+import { Transition } from '@headlessui/react';
 import {
     processSelectedFiles,
     fileUpload,
     createFilePicker,
 } from "@/lib/tools";
-import {useTranslation} from "react-i18next";
-import {useNavigate} from 'react-router-dom';
-import {FaArrowDown} from "react-icons/fa";
-
-import {onEvent} from "@/store/useEventStore.jsx";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from 'react-router-dom';
+import { FaArrowDown } from "react-icons/fa";
+import { onEvent } from "@/store/useEventStore.jsx";
 import ChatBox from "@/components/chat/chatbox.jsx";
 import MessageContainer from "@/components/chat/MessageContainer.jsx";
 import apiClient from "@/lib/apiClient.js";
-import {apiEndpoint} from "@/config.js";
+import { apiEndpoint } from "@/config.js";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 
 function ChatPage() {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
     const isProcessingRef = useRef(false);
     const messagesContainerRef = useRef(null);
+    const chatBoxRef = useRef(null); // 新增：用于测量 ChatBox 高度
     const [selfMarkId, setSelfMarkId] = useState(getMarkId());
     const uploadIntervals = useRef(new Map());
     const [uploadFiles, setUploadFiles] = useState([]);
     const [attachments, setAttachments] = useState([]);
-    const [isAtBottom, setIsAtBottom] = useState(true); // 新增状态：是否在底部
+    const [isAtBottom, setIsAtBottom] = useState(true);
     const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);  // 是否处于页面加载阶段
-    const [isLoadingError, setIsLoadingError] = useState(false);   // 加载失败
+    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingError, setIsLoadingError] = useState(false);
     const [isMessageLoaded, setIsMessageLoaded] = useState(false);
 
-    // 新消息存储结构
+    // 消息状态
     const [messagesOrder, setMessagesOrder] = useState([]);
     const [messages, setMessages] = useImmer({});
     const messagesOrderRef = useRef([]);
+    const wasAtBottomRef = useRef(true);
 
-    // 滚动到底部函数 - 直接操作容器 scrollTop
+    const [scrollButtonBottom, setScrollButtonBottom] = useState(200);
+    const [boxHeight, setBoxHeight] = useState(48);
+
+    const calculateIsNearBottom = () => {
+        if (!messagesContainerRef.current) return true;
+        const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+        return scrollHeight - scrollTop - clientHeight < 100;
+    };
+
     const scrollToBottom = useCallback(() => {
         if (messagesContainerRef.current) {
             messagesContainerRef.current.scrollTo({
@@ -51,36 +60,33 @@ function ChatPage() {
         }
     }, []);
 
-    // 消息更新时自动滚动逻辑
+    // 自动滚动逻辑
     useEffect(() => {
-        // 只有当用户当前在底部时才自动滚动
-        if (isAtBottom && messagesContainerRef.current) {
+        if (wasAtBottomRef.current) {
             scrollToBottom();
         }
-    }, [messagesOrder, isAtBottom, scrollToBottom]);
+    }, [messagesOrder, scrollToBottom]);
 
-    // 监听消息容器的滚动事件
+    // 监听滚动事件
     useEffect(() => {
         const container = messagesContainerRef.current;
         if (!container) return;
 
         const handleScroll = () => {
-            const {scrollTop, scrollHeight, clientHeight} = container;
+            const { scrollTop, scrollHeight, clientHeight } = container;
             const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
 
             setIsAtBottom(isNearBottom);
             setShowScrollToBottomButton(!isNearBottom);
         };
 
-        // 初始化检查
         handleScroll();
-
-        container.addEventListener('scroll', handleScroll, {passive: true});
+        container.addEventListener('scroll', handleScroll, { passive: true });
 
         return () => {
             container.removeEventListener('scroll', handleScroll);
         };
-    }, []);
+    }, [messagesOrder]);
 
     const handleFolderDetected = () => {
         toast.error(t("folder_upload_not_supported"));
@@ -91,20 +97,23 @@ function ChatPage() {
     };
 
     const handleSendMessage = (message, toolsStatus, sendButtonState) => {
-        emitEvent(
-            {
-                type: "message",
-                target: "ChatPage",
-                payload: {
-                    command: "Message-Send",
-                    message: message,
-                    toolsStatus: toolsStatus,
-                    sendButtonState: sendButtonState,
-                    attachments: attachments
-                },
-                markId: selfMarkId
-            }
-        )
+        if (uploadFiles.length !== 0) {
+            toast.error(t("file_upload_not_complete"));
+            return;
+        }
+
+        emitEvent({
+            type: "message",
+            target: "ChatPage",
+            payload: {
+                command: "Message-Send",
+                message,
+                toolsStatus,
+                sendButtonState,
+                attachments
+            },
+            markId: selfMarkId
+        });
     };
 
     const onAttachmentRemove = (attachment) => {
@@ -144,9 +153,9 @@ function ChatPage() {
                 handleProgressUpdate,
                 handleComplete,
                 (error) => {
-                    toast.error(t("file_upload.error", {message: error?.message || 'Upload failed'}));
+                    toast.error(t("file_upload.error", { message: error?.message || 'Upload failed' }));
                     setUploadFiles(prev =>
-                        prev.map(f => f.id === uploadFile.id ? {...f, error: true, progress: 0} : f)
+                        prev.map(f => f.id === uploadFile.id ? { ...f, error: true, progress: 0 } : f)
                     );
                 }
             );
@@ -183,15 +192,15 @@ function ChatPage() {
             };
 
             const handleProgressUpdate = (id, progress) => {
-                setUploadFiles(p => p.map(f => f.id === id ? {...f, progress} : f));
+                setUploadFiles(p => p.map(f => f.id === id ? { ...f, progress } : f));
             };
             const handleComplete = (id, attachment) => {
                 setUploadFiles(p => p.filter(f => f.id !== id));
                 setAttachments(p => [...p, attachment]);
             };
             const handleError = (error) => {
-                toast.error(t("file_upload.error", {message: error?.message || t("unknown_error")}));
-                setUploadFiles(p => p.map(f => f.id === uploadId ? {...f, error: true, progress: 0} : f));
+                toast.error(t("file_upload.error", { message: error?.message || t("unknown_error") }));
+                setUploadFiles(p => p.map(f => f.id === uploadId ? { ...f, error: true, progress: 0 } : f));
             };
 
             const cleanup = fileUpload(
@@ -219,53 +228,43 @@ function ChatPage() {
 
     const loadMoreHistory = async () => {
         try {
-
             return new Promise((resolve, reject) => {
-
                 apiClient
                     .get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                         params: {
                             markId: selfMarkId,
-                            prevId: messagesOrder[1]  // 第一项是占位的
+                            prevId: messagesOrder[1]
                         }
                     })
                     .then(data => {
-
+                        wasAtBottomRef.current = calculateIsNearBottom();
                         if (data.haveMore) {
                             setMessagesOrder(['<PREV_MORE>', ...data.messagesOrder, ...messagesOrder.slice(1)]);
                         } else {
                             setMessagesOrder([...data.messagesOrder, ...messagesOrder.slice(1)]);
                         }
-                        setMessages(prev => ({...prev, ...data.messages}));
-
+                        setMessages(prev => ({ ...prev, ...data.messages }));
                         resolve(true);
                     })
                     .catch(error => reject(error));
-
-            })
-
+            });
         } catch (err) {
             throw err;
         }
     };
 
     const switchMessage = async (msg, msgId, isNext) => {
-        // msg: 消息原数据  isNext: 是否切换到下一个
         const msgId_index = msg.messages.indexOf(msg.nextMessage);
         const newMsgId = msg.messages[msgId_index + (isNext ? 1 : -1)];
 
         let missMsg = !messages.hasOwnProperty(newMsgId);
-        let newOrders = [];  // 后面消息的新链顺序
-
+        let newOrders = [];
         let msg_cursor = messages[newMsgId];
 
-        // 寻找链中是否存在所有消息
         if (!missMsg) {
             newOrders.push(newMsgId);
-
             while (msg_cursor.nextMessage) {
                 newOrders.push(msg_cursor.nextMessage);
-
                 if (messages.hasOwnProperty(msg_cursor.nextMessage)) {
                     msg_cursor = messages[msg_cursor.nextMessage];
                 } else {
@@ -280,25 +279,26 @@ function ChatPage() {
                 emitEvent({
                     type: "message",
                     target: "ChatPage",
-                    payload:  {
+                    payload: {
                         command: "Switch-Message",
-                        msgId: msgId,
+                        msgId,
                         nextMessage: newMsgId
                     },
                     markId: selfMarkId
                 });
             }
-        }
+        };
 
         if (missMsg) {
             try {
                 const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                     params: {
                         markId: selfMarkId,
-                        nextId: missMsg ? newMsgId : msg_cursor.nextMessage,  // 这个是目前开始缺失的ID
+                        nextId: missMsg ? newMsgId : msg_cursor.nextMessage,
                     }
                 });
-                setMessages(prev => ({...prev, ...data.messages}));
+                wasAtBottomRef.current = calculateIsNearBottom();
+                setMessages(prev => ({ ...prev, ...data.messages }));
                 setMessagesOrder([...messagesOrder.slice(0, messagesOrder.indexOf(msgId) + 1), ...data.messagesOrder]);
                 setMessages(draft => {
                     draft[msgId].nextMessage = newMsgId;
@@ -306,9 +306,10 @@ function ChatPage() {
                 sendSwitchRequest();
                 return true;
             } catch (error) {
-                toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));
+                toast.error(t("load_more_error", { message: error?.message || t("unknown_error") }));
             }
         } else {
+            wasAtBottomRef.current = calculateIsNearBottom();
             setMessagesOrder([...messagesOrder.slice(0, messagesOrder.indexOf(msgId) + 1), ...newOrders]);
             setMessages(draft => {
                 draft[msgId].nextMessage = newMsgId;
@@ -318,38 +319,55 @@ function ChatPage() {
         }
     };
 
-    const LoadingScreen = () => {
-        return (
-            <div className="fixed inset-0 bg-white flex items-center justify-center">
-                <div className="flex flex-col items-center">
-                    <ThreeDotLoading/>
-                    <span className="mt-2 text-sm text-gray-500">{t("loading_messages")}</span>
-                </div>
+    const LoadingScreen = () => (
+        <div className="fixed inset-0 bg-white flex items-center justify-center">
+            <div className="flex flex-col items-center">
+                <ThreeDotLoading />
+                <span className="mt-2 text-sm text-gray-500">{t("loading_messages")}</span>
             </div>
-        );
+        </div>
+    );
+
+    const LoadingFailedScreen = () => (
+        <div className="fixed inset-0 bg-white flex items-center justify-center">
+            <div className="flex flex-col items-center">
+                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                              d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </div>
+                <p className="text-gray-700 text-base font-medium">{t("load_error")}</p>
+                <p className="text-gray-500 text-sm mt-1">{t("retry_after_network")}</p>
+            </div>
+        </div>
+    );
+
+    const updateChatBoxHeight = (bheight) => {
+        // 不想努力计算了
+        let height = bheight ? bheight : boxHeight;
+        if (attachments.length > 0) height = height + 100;
+        if (uploadFiles.length > 0) {
+            if (uploadFiles.length < 4) {
+                height = height + 10 + 50 * uploadFiles.length;
+            } else {
+                height = height + 210;
+            }
+        }
+
+        setScrollButtonBottom(height + 200);
     };
 
-    const LoadingFailedScreen = () => {
-        return (
-            <div className="fixed inset-0 bg-white flex items-center justify-center">
-                <div className="flex flex-col items-center">
-                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
-                        <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                  d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </div>
-                    <p className="text-gray-700 text-base font-medium">{t("load_error")}</p>
-                    <p className="text-gray-500 text-sm mt-1">{t("retry_after_network")}</p>
-                </div>
-            </div>
-        );
-    };
 
     /* 状态同步 */
     useEffect(() => {
         messagesOrderRef.current = messagesOrder;
     }, [messagesOrder]);
+
+    /* 组件位置更新 */
+    useEffect(() => {
+        updateChatBoxHeight();
+    }, [attachments, uploadFiles]);
 
     useEffect(() => {
         const unsubscribe1 = onEvent("widget", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
@@ -357,7 +375,7 @@ function ChatPage() {
                 case "Attachment-Meta":
                     if (payload.value) {
                         setAttachments(payload.value);
-                        reply({command: 'Setup-QuickOptions', value: payload.value});
+                        reply({ command: 'Setup-QuickOptions', value: payload.value });
                     } else {
                         reply(attachments);
                     }
@@ -367,26 +385,27 @@ function ChatPage() {
 
         const unsubscribe2 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
-                case "Add-Message": // 添加消息源数据
-                    if (payload.value && typeof payload.value === 'object' && !Array.isArray(payload.value)) {
-
-                        setMessages(prev => ({...prev, ...payload.value}));
-                        reply({command: 'Add-Message', success: true});
-
+                case "Add-Message":
+                    if (payload.value && typeof payload.value === 'object') {
+                        wasAtBottomRef.current = calculateIsNearBottom();
+                        setMessages(prev => ({ ...prev, ...payload.value }));
+                        reply({ command: 'Add-Message', success: true });
                     }
                     break;
 
-                case "MessagesOrder-Meta":  // 设置消息链条
+                case "MessagesOrder-Meta":
                     if (Array.isArray(payload.value) && payload.value.length > 0) {
+                        wasAtBottomRef.current = calculateIsNearBottom();
                         setMessagesOrder(payload.value);
-                        reply({command: 'MessagesOrder-Meta', value: payload.value});
+                        reply({ command: 'MessagesOrder-Meta', value: payload.value });
                     } else {
-                        reply({command: 'MessagesOrder-Meta', value: messagesOrderRef.current});
+                        reply({ command: 'MessagesOrder-Meta', value: messagesOrderRef.current });
                     }
                     break;
 
-                case "Add-MessageContent":  // 添加内容
-                    if (payload.value && typeof payload.value === 'object' && !Array.isArray(payload.value)) {
+                case "Add-MessageContent":
+                    if (payload.value && typeof payload.value === 'object') {
+                        wasAtBottomRef.current = calculateIsNearBottom();
                         setMessages(draft => {
                             for (const [msgId, newContent] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
@@ -394,28 +413,22 @@ function ChatPage() {
                                 }
                             }
                         });
-
-                        if (payload.reply) reply({command: 'Add-MessageContent', success: true});
+                        if (payload.reply) reply({ command: 'Add-MessageContent', success: true });
                     } else {
-                        reply({command: 'Add-MessageContent', success: false});
+                        reply({ command: 'Add-MessageContent', success: false });
                     }
                     break;
             }
         });
 
-        // WebSocket 的事件监听
-        const unsubscribe3 = onEvent("websocket", "onopen", selfMarkId).then((payload, markId, isReply, id, reply) => {
+        const unsubscribe3 = onEvent("websocket", "onopen", selfMarkId).then(() => {
             if (isMessageLoaded) {
-                emitEvent(
-                    {
-                        type: "message",
-                        target: "ChatPage",
-                        payload: {
-                            command: "Messages-Loaded"
-                        },
-                        markId: selfMarkId
-                    }
-                )
+                emitEvent({
+                    type: "message",
+                    target: "ChatPage",
+                    payload: { command: "Messages-Loaded" },
+                    markId: selfMarkId
+                });
             }
         });
 
@@ -424,71 +437,66 @@ function ChatPage() {
             unsubscribe2();
             unsubscribe3();
         };
-
     }, [attachments, selfMarkId, isMessageLoaded]);
 
-    // 页面初始化逻辑
+    // 页面初始化加载消息
     useEffect(() => {
-
         const requestMessage = () => {
             setIsLoading(true);
             apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                params: {
-                    markId: selfMarkId  // 不提供其余其他内容默认获取消息链上的消息
-                }
-            }).then(data => {
-                setMessages(data.messages);
-                setMessagesOrder(data.messagesOrder);
-                setIsLoading(false);
-                setIsMessageLoaded(true);
+                params: { markId: selfMarkId }
+            })
+                .then(data => {
+                    wasAtBottomRef.current = calculateIsNearBottom();
+                    setMessages(data.messages);
+                    setMessagesOrder(data.messagesOrder);
+                    setIsLoading(false);
+                    setIsMessageLoaded(true);
 
-                // 发一个请求给服务器告知已经加载好 markId 的历史对话
-                emitEvent(
-                    {
+                    emitEvent({
                         type: "message",
                         target: "ChatPage",
-                        payload: {
-                            command: "Messages-Loaded"
-                        },
+                        payload: { command: "Messages-Loaded" },
                         markId: selfMarkId
-                    }
-                )
-            }).catch(error => {
-                toast(t("load_messages_error", {message: error?.message || t("unknown_error")}), {
-                    action: {
-                        label: t("retry"),
-                        onClick: () => {
-                            setIsLoading(true);
-                            setIsLoadingError(false);
-                            requestMessage();
+                    });
+                })
+                .catch(error => {
+                    toast(t("load_messages_error", { message: error?.message || t("unknown_error") }), {
+                        action: {
+                            label: t("retry"),
+                            onClick: () => {
+                                setIsLoading(true);
+                                setIsLoadingError(false);
+                                requestMessage();
+                            },
                         },
-                    },
-                    closeButton: false,
-                    dismissible: false,
-                    duration: Infinity,
+                        closeButton: false,
+                        dismissible: false,
+                        duration: Infinity,
+                    });
+                    setIsLoading(false);
+                    setIsLoadingError(true);
                 });
-                setIsLoading(false);
-                setIsLoadingError(true);
-            })
-        }
+        };
 
-        if (selfMarkId) {  // 如果有 markId 说明在一个旧的对话中，应该请求服务器去拿数据
+        if (selfMarkId) {
             requestMessage();
         }
-
-    }, []);
+    }, [selfMarkId]);
 
     return (
         <>
             <div className="min-h-screen bg-white flex flex-col items-center pb-8">
 
-                {isLoadingError ? LoadingFailedScreen() : (!isLoading ? (
+                {isLoadingError ? (
+                    LoadingFailedScreen()
+                ) : !isLoading ? (
                     <>
                         <div className="flex-1 w-full overflow-y-auto px-4 pt-4">
                             <div
                                 ref={messagesContainerRef}
                                 className="h-full overflow-y-auto pb-20 scroll-smooth"
-                                style={{maxHeight: 'calc(100vh - 200px)'}}
+                                style={{ maxHeight: 'calc(100vh - 200px)' }}
                             >
                                 <MessageContainer
                                     messagesOrder={messagesOrder}
@@ -510,14 +518,21 @@ function ChatPage() {
                         >
                             <button
                                 onClick={scrollToBottom}
-                                className="cursor-pointer fixed bottom-45 align-middle z-99 w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors"
+                                className="cursor-pointer fixed z-99 align-middle w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors"
                                 aria-label="Scroll to bottom"
+                                style={{
+                                    bottom: `${scrollButtonBottom}px`,
+                                    left: 'calc(50% - 1rem)', // 居中
+                                }}
                             >
-                                <FaArrowDown className="text-gray-500"/>
+                                <FaArrowDown className="text-gray-500 w-3 h-3" />
                             </button>
                         </Transition>
 
-                        <div className="fixed z-50 bottom-10 left-0 right-0">
+                        <div
+                            ref={chatBoxRef}
+                            className="fixed z-50 bottom-10 left-0 right-0"
+                        >
                             <ChatBox
                                 onSendMessage={handleSendMessage}
                                 markId={selfMarkId}
@@ -531,9 +546,16 @@ function ChatPage() {
                                 onCancelUpload={handleCancelUpload}
                                 onDropFiles={handleSelectedFiles}
                                 onFolderDetected={handleFolderDetected}
+                                onHeightChange={(height) => {
+                                    setBoxHeight(height);
+                                    updateChatBoxHeight(height);
+                                }}
                             />
                         </div>
-                    </>) : LoadingScreen())}
+                    </>
+                ) : (
+                    LoadingScreen()
+                )}
 
                 <footer className="fixed bottom-0 left-0 right-0 h-12 bg-white flex items-center justify-center">
                     <span className="text-xs text-gray-500">

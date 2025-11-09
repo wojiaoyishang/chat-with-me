@@ -49,5 +49,7 @@
     "not_connected": "Websocket Not Connected"
   },
   "edit_message": "Edit Message",
-  "menu_function": "Menu Message"
+  "menu_function": "Menu Message",
+  "file_upload_not_complete": "Please wait patiently for the file upload to complete ~",
+  "editing_message": "Now you are editing message"
 }
