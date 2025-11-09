@@ -54,7 +54,7 @@ import apiClient from '@/lib/apiClient';
  * @param {Function} onCancelUpload - 取消上传回调
  * @param {Function} onDropFiles - 拖拽文件回调
  * @param {Function} onFolderDetected - 拖拽文件夹上传检测
- * @param {Function} onHeightChange - 输入框高度改变
+ * @param {Function} onHeightChange - 高度改变
  */
 function ChatBox({
                      onSendMessage,
@@ -70,7 +70,7 @@ function ChatBox({
                      onCancelUpload,
                      onDropFiles,
                      onFolderDetected,
-                     onHeightChange,
+                     onHeightChange
                  }) {
     const {t} = useTranslation();
 
@@ -101,6 +101,8 @@ function ChatBox({
     const cloneTextareaRef = useRef(null);
     const sendButtonStateRef = useRef(sendButtonState);
     const attachmentRef = useRef(null);
+
+    const rootRef = useRef(null);
 
     // ========== Textarea height logic ==========
     const initTextareaClone = () => {
@@ -147,8 +149,6 @@ function ChatBox({
         const cappedHeight = Math.min(contentHeight, 128);
         textarea.style.height = cappedHeight + 'px';
         textarea.style.overflowY = contentHeight > 48 ? 'scroll' : 'auto';
-
-        onHeightChange(cappedHeight);
     };
 
     // ========== Message handling ==========
@@ -535,7 +535,7 @@ function ChatBox({
 
     useEffect(() => {
         adjustTextareaHeight();
-    }, [message]);
+    }, [message, isEditMessage]);
 
     useEffect(() => {
         initTextareaClone();
@@ -653,6 +653,30 @@ function ChatBox({
         };
     }, [quickOptions]);
 
+    useEffect(() => {
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                const newHeight = entry.contentRect.height;
+                console.log('ChatBox root height changed to:', newHeight);
+                // If parent callback needed:
+                if (onHeightChange) {
+                    onHeightChange(newHeight);
+                }
+            }
+        });
+
+        const currentRoot = rootRef.current;
+        if (currentRoot) {
+            resizeObserver.observe(currentRoot);
+        }
+
+        return () => {
+            if (currentRoot) {
+                resizeObserver.unobserve(currentRoot);
+            }
+        };
+    }, [onHeightChange]);
+
     return (
         <>
             <DropFileLayer
@@ -666,6 +690,7 @@ function ChatBox({
                 onFolderDetected={onFolderDetected}
             />
             <div
+                ref={rootRef}
                 className="w-full max-w-220 px-4 overflow-hidden mx-auto"
                 style={{
                     transition: 'height 0.3s ease-in-out, max-height 0.3s ease-in-out',

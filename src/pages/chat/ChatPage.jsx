@@ -44,6 +44,7 @@ function ChatPage() {
     const [scrollButtonBottom, setScrollButtonBottom] = useState(200);
     const [boxHeight, setBoxHeight] = useState(48);
 
+
     const calculateIsNearBottom = () => {
         if (!messagesContainerRef.current) return true;
         const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
@@ -343,31 +344,15 @@ function ChatPage() {
         </div>
     );
 
-    const updateChatBoxHeight = (bheight) => {
-        // 不想努力计算了
-        let height = bheight ? bheight : boxHeight;
-        if (attachments.length > 0) height = height + 100;
-        if (uploadFiles.length > 0) {
-            if (uploadFiles.length < 4) {
-                height = height + 10 + 50 * uploadFiles.length;
-            } else {
-                height = height + 210;
-            }
-        }
-
-        setScrollButtonBottom(height + 200);
-    };
-
-
     /* 状态同步 */
     useEffect(() => {
         messagesOrderRef.current = messagesOrder;
     }, [messagesOrder]);
 
-    /* 组件位置更新 */
-    useEffect(() => {
-        updateChatBoxHeight();
-    }, [attachments, uploadFiles]);
+    // /* 组件位置更新 */
+    // useEffect(() => {
+    //     updateChatBoxHeight();
+    // }, [attachments, uploadFiles]);
 
     useEffect(() => {
         const unsubscribe1 = onEvent("widget", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
@@ -484,6 +469,7 @@ function ChatPage() {
         }
     }, [selfMarkId]);
 
+
     return (
         <>
             <div className="min-h-screen bg-white flex flex-col items-center pb-8">
@@ -530,7 +516,6 @@ function ChatPage() {
                         </Transition>
 
                         <div
-                            ref={chatBoxRef}
                             className="fixed z-50 bottom-10 left-0 right-0"
                         >
                             <ChatBox
@@ -546,9 +531,8 @@ function ChatPage() {
                                 onCancelUpload={handleCancelUpload}
                                 onDropFiles={handleSelectedFiles}
                                 onFolderDetected={handleFolderDetected}
-                                onHeightChange={(height) => {
-                                    setBoxHeight(height);
-                                    updateChatBoxHeight(height);
+                                onHeightChange={(newHeight) => {
+                                    setScrollButtonBottom(newHeight + 45);
                                 }}
                             />
                         </div>
