@@ -38,7 +38,7 @@
   "retry_get_messages": "尝试重试获取消息",
   "websocket": {
     "error": "WebSocket 连接错误：{{message}}",
-    "popover_title": "连接失败",
+    "popover_title": "Websocket 断开连接",
     "popover_content": "无法连接 Websocket，对话功能将不能使用",
     "connecting": "连接 Websocket 中......",
     "connect_success": "成功连接 Websocket。",
@@ -48,5 +48,6 @@
     "reconnect_tip": "目前未连接到 Websocket 将无法使用对话功能，点击右边按钮重试。",
     "not_connected": "Websocket 没有连接"
   },
-  "edit_message": "编辑消息"
+  "edit_message": "编辑消息",
+  "menu_function": "菜单功能"
 }

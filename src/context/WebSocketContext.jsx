@@ -4,6 +4,7 @@ import {useTranslation} from 'react-i18next';
 import FatalErrorPopoverElement from '@/context/FatalErrorPopover.jsx';
 import globalMessageCallback from '@/hooks/messageCallback.jsx';
 import {emitEvent} from "@/store/useEventStore.jsx";
+import {WEBSOCKET_URL} from "@/config.js";
 
 // ====== 全局状态管理 ======
 let globalWsRef = null;
@@ -39,7 +40,7 @@ const initializeWebSocket = ({
                                  setGlobalRef
                              }) => {
     try {
-        const ws = new WebSocket('ws://127.0.0.1:8000/ws');
+        const ws = new WebSocket(WEBSOCKET_URL);
 
         ws.onopen = (event) => {
             setGlobalRef(ws);

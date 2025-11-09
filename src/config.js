@@ -1,5 +1,6 @@
 
-export const BASE_BACKEND_URL = 'http://127.0.0.1:8000'
+export const BASE_BACKEND_URL = 'http://191.168.1.1:8000'
+export const WEBSOCKET_URL = 'ws://191.168.1.1:8000/ws'
 
 export const apiEndpoint = {
     CHATBOX_ENDPOINT: '/chatbox',

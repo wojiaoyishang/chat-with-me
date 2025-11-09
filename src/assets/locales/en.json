@@ -38,7 +38,7 @@
   "retry_get_messages": "Try to retrieve the message again",
   "websocket": {
     "error": "WebSocket connection error: {{message}}",
-    "popover_title": "Connection failed",
+    "popover_title": "Websocket Disconnected",
     "popover_content": "The Websocket cannot be connected, and the conversation function will not be available.",
     "connecting": "Connecting Websocket......",
     "connect_success": "Connected Websocket.",
@@ -48,5 +48,6 @@
     "reconnect_tip": "Currently, if you are not connected to Websocket, you will not be able to use the conversation function. Click \"Retry\".",
     "not_connected": "Websocket Not Connected"
   },
-  "edit_message": "Edit Message"
+  "edit_message": "Edit Message",
+  "menu_function": "Menu Message"
 }

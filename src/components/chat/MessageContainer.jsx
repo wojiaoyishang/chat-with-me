@@ -7,7 +7,39 @@ import {useTranslation} from 'react-i18next';
 import {FaChevronLeft, FaChevronRight, FaEdit} from 'react-icons/fa';
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import AttachmentShowcase from './AttachmentShowcase';
-import {PenLine} from "lucide-react";
+import {Menu, PenLine} from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+    DropdownMenuItem,
+    DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+
+/**
+ * 消息菜单组件
+ */
+const MessageMenuButton = () => {
+    const {t} = useTranslation();
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer lg:hidden"
+                    aria-label={t("menu_function")}
+                >
+                    <Menu size={16} className="text-gray-600 hover:text-gray-800"/>
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuItem className="flex items-center gap-2">
+                    <PenLine size={16} />
+                    {t('edit_message')}
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+};
 
 /**
  * 消息工具栏组件 - 显示编辑按钮
@@ -17,12 +49,17 @@ const MessageTools = ({}) => {
     const {t} = useTranslation();
 
     return (
-        <button
-            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
-            aria-label={t("edit_message")}
-        >
-            <PenLine size={16} className="text-gray-600 hover:text-gray-800"/>
-        </button>
+        <div className="flex gap-1">
+
+            <button
+                className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden sm:block"
+                aria-label={t("edit_message")}
+            >
+                <PenLine size={16} className="text-gray-600 hover:text-gray-800"/>
+            </button>
+
+            <MessageMenuButton />
+        </div>
     );
 };
 
@@ -345,7 +382,7 @@ const MessageContainer = forwardRef(({
                     {isRight && (
                         <div className={"ml-2 flex items-center " + (showPaginator ? 'pr-1' : '')}>
                             {/* 为右侧消息的编辑按钮保留占位空间 */}
-                            <div className="relative w-8 h-8 flex items-center justify-center">
+                            <div className="relative flex items-center justify-center flex-shrink-0">
                                 <div
                                     className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${
                                         showRightTools ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -354,11 +391,9 @@ const MessageContainer = forwardRef(({
                                     <MessageTools/>
                                 </div>
                                 {/* 占位元素，保持空间一致性 */}
-                                {!showRightTools && (
-                                    <div className="w-8 h-8 flex items-center justify-center invisible">
-                                        <MessageTools/>
-                                    </div>
-                                )}
+                                <div className="flex items-center justify-center invisible">
+                                    <MessageTools/>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -370,7 +405,7 @@ const MessageContainer = forwardRef(({
                     )}
 
                     {!isRight && (
-                        <div className={"text-right " + (showPaginator ? 'pl-1' : 'translate-x-[-0.5em]')}>
+                        <div className={"text-right flex-shrink-0 " + (showPaginator ? 'pl-1' : 'translate-x-[-0.4em]')}>
                             <MessageTools/>
                         </div>
                     )}
@@ -401,7 +436,7 @@ const MessageContainer = forwardRef(({
 
                     {isRight ? (
                         <div className="flex items-center justify-end gap-2">
-                            <div className="max-w-[55%]">
+                            <div className="max-w-[20.8%] md:max-w-[56.8%] lg:max-w-[70.2%]">
                                 <AttachmentShowcase
                                     attachmentsMeta={msg.attachments}
                                     msgMode={true}
@@ -442,7 +477,7 @@ const MessageContainer = forwardRef(({
                 >
                     {isRight ? (
                         <>
-                            <div className="max-w-[55%] ml-auto pr-10 mb-2">
+                            <div className="max-w-[90%] lg:max-w-[55%] ml-auto pr-10 mb-2">
                                 <AttachmentShowcase
                                     attachmentsMeta={msg.attachments}
                                     msgMode={true}
