@@ -56,5 +56,6 @@
   "message_copied": "消息复制成功！",
   "message_not_copied": "消息复制失败： {{message}}",
   "regenerate_message": "重新生成",
-  "message_info": "详细信息"
+  "message_info": "详细信息",
+  "select_all": "选择全部"
 }

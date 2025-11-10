@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {Transition} from '@headlessui/react';
 import {FaRedo, FaSearch, FaArrowDown} from "react-icons/fa";
 import {FaEarthAmericas} from 'react-icons/fa6';
-import {CheckIcon, X, PenLine, Trash2} from "lucide-react";
+import {Check, X, PenLine, Trash2, Minus, Square} from "lucide-react";
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
@@ -97,6 +97,41 @@ const deepMerge = (target, source) => {
         }
     }
     return output;
+};
+
+// ========== New helpers for group toggle all ==========
+const collectTogglePaths = (items, parentPath = []) => {
+    let paths = [];
+    items.forEach(item => {
+        if (!item.name) return;
+        const currentPath = [...parentPath, item.name];
+        if (item.type === 'toggle') {
+            paths.push(currentPath);
+        } else if (item.type === 'group' && item.children) {
+            paths = [...paths, ...collectTogglePaths(item.children, currentPath)];
+        }
+        // Ignore radio and other types
+    });
+    return paths;
+};
+
+const getGroupCheckState = (extraTools, togglePaths) => {
+    if (togglePaths.length === 0) return 'unchecked';
+    let checkedCount = 0;
+    togglePaths.forEach(path => {
+        if (getNestedValue(extraTools, path)) checkedCount++;
+    });
+    if (checkedCount === togglePaths.length) return 'checked';
+    if (checkedCount > 0) return 'indeterminate';
+    return 'unchecked';
+};
+
+const toggleAllInGroup = (extraTools, togglePaths, toChecked) => {
+    let newExtraTools = { ...extraTools };
+    togglePaths.forEach(path => {
+        newExtraTools = setNestedValue(newExtraTools, path, toChecked);
+    });
+    return newExtraTools;
 };
 
 /**
@@ -305,6 +340,16 @@ function ChatBox({
                 return <DropdownMenuSeparator key={`sep-${index}`}/>;
             } else if (item.type === 'group') {
                 const isDisabled = item.disabled;
+                const currentPath = [...parentPath, item.name];
+                const togglePaths = collectTogglePaths(item.children, []);
+                const checkState = getGroupCheckState(toolsStatus.extra_tools, togglePaths.map(path => [...currentPath, ...path]));
+                const handleToggleAll = (e) => {
+                    const toChecked = checkState === 'unchecked';
+                    setToolsStatus(prev => ({
+                        ...prev,
+                        extra_tools: toggleAllInGroup(prev.extra_tools, togglePaths.map(path => [...currentPath, ...path]), toChecked)
+                    }));
+                };
                 return (
                     <DropdownMenuSub key={`group-${item.name || index}`}>
                         <DropdownMenuSubTrigger
@@ -315,7 +360,20 @@ function ChatBox({
                             <span>{t(item.text)}</span>
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                            {isDisabled ? null : renderMenuItems(item.children, [...parentPath, item.name])}
+                            {!isDisabled && (
+                                <DropdownMenuItem
+                                    onSelect={(e) => e.preventDefault()}
+                                    onClick={handleToggleAll}
+                                    className="flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100"
+                                >
+                                    <span>{t('select_all')}</span>
+                                    {checkState === 'checked' && <Check className="ml-auto w-4 h-4 text-blue-500"/>}
+                                    {checkState === 'indeterminate' && <Minus className="ml-auto w-4 h-4 text-blue-500"/>}
+                                    {checkState === 'unchecked' && <Square className="ml-auto w-4 h-4 text-gray-500"/>}
+                                </DropdownMenuItem>
+                            )}
+                            {!isDisabled && <DropdownMenuSeparator />}
+                            {isDisabled ? null : renderMenuItems(item.children, currentPath)}
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
                 );
@@ -349,7 +407,7 @@ function ChatBox({
                     >
                         {item.iconData && renderIcon(item.iconType, item.iconData)}
                         <span>{t(item.text)}</span>
-                        {!isDisabled && isChecked && <CheckIcon className="ml-auto w-4 h-4 text-blue-500"/>}
+                        {!isDisabled && isChecked && <Check className="ml-auto w-4 h-4 text-blue-500"/>}
                     </DropdownMenuItem>
                 );
             } else if (item.type === 'radio') {
@@ -390,7 +448,7 @@ function ChatBox({
                                         {child.iconData && renderIcon(child.iconType, child.iconData)}
                                         <span>{t(child.text)}</span>
                                         {isSelected && !isDisabled && !childIsDisabled && (
-                                            <CheckIcon className="ml-auto w-4 h-4 text-blue-500"/>
+                                            <Check className="ml-auto w-4 h-4 text-blue-500"/>
                                         )}
                                     </DropdownMenuItem>
                                 );
