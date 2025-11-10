@@ -152,20 +152,21 @@ export const useEventStore = create((set, get) => {
         },
 
         _emit: (event, emitStack = null) => {
-            let { type, target, markId: eventMarkId = null, isReply = false, payload, id = null , fromWebsocket = false} = event;
+            let { type = null, target = null, markId: eventMarkId = null, isReply = false, payload, id = null , fromWebsocket = false} = event;
 
             const { listeners } = get();
 
             if (!id) {
                 id = generateUUID();
+                event.id = id;
             }
 
             if (type !== 'websocket' && !fromWebsocket) {  // 不是 websocket 事件不发送，是从 websocket 来的事件也不发送
                 sendWebSocketMessage({
-                    type: type,
-                    target: target,
+                    ...(type && { type: type }),
+                    ...(target && { target: target }),
                     payload: payload,
-                    markId: eventMarkId,
+                    ...(eventMarkId && { markId: eventMarkId }),
                     isReply: isReply,
                     id: id,
                 });
@@ -195,10 +196,10 @@ export const useEventStore = create((set, get) => {
 
                 const reply = (data) => {
                     get()._emit({
-                        type,
-                        target,
+                        // type,
+                        // target,
                         payload: data,
-                        markId: listenerMarkId,
+                        // markId: listenerMarkId,
                         isReply: true,
                         id: id
                     }, new Error('Reply initiated at:').stack);

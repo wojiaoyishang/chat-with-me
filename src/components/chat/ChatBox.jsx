@@ -21,9 +21,83 @@ import AttachmentShowcase from './AttachmentShowcase';
 import FileUploadProgress from './FileUploadProgress';
 import DropFileLayer from "@/components/chat/DropFileLayer.jsx";
 import {toast} from "sonner";
-
 import {apiEndpoint} from "@/config.js"
 import apiClient from '@/lib/apiClient';
+
+// ========== Helper functions for nested objects ==========
+const getNestedValue = (obj, path) => {
+    if (!obj || !path || path.length === 0) return undefined;
+    let current = obj;
+    for (const key of path) {
+        if (current[key] === undefined) return undefined;
+        current = current[key];
+    }
+    return current;
+};
+
+const setNestedValue = (obj, path, value) => {
+    if (!path || path.length === 0) return obj;
+
+    const result = {...obj};
+    let current = result;
+
+    for (let i = 0; i < path.length - 1; i++) {
+        const key = path[i];
+        if (!current[key] || typeof current[key] !== 'object') {
+            current[key] = {};
+        }
+        current = current[key];
+    }
+
+    current[path[path.length - 1]] = value;
+    return result;
+};
+
+const deleteNestedValue = (obj, path) => {
+    if (!path || path.length === 0) return obj;
+
+    // If it's a top-level property
+    if (path.length === 1) {
+        const result = {...obj};
+        delete result[path[0]];
+        return result;
+    }
+
+    // For nested properties
+    const parentPath = path.slice(0, -1);
+    const key = path[path.length - 1];
+    const parent = getNestedValue(obj, parentPath);
+
+    if (parent && typeof parent === 'object') {
+        const newParent = {...parent};
+        delete newParent[key];
+
+        // Remove empty parent objects
+        if (Object.keys(newParent).length === 0) {
+            return deleteNestedValue(obj, parentPath);
+        }
+
+        return setNestedValue(obj, parentPath, newParent);
+    }
+
+    return obj;
+};
+
+// Deep merge function for overriding defaults with saved values
+const deepMerge = (target, source) => {
+    if (typeof source !== 'object' || source === null) return target;
+    const output = { ...target };
+    for (const key in source) {
+        if (source.hasOwnProperty(key)) {
+            if (typeof source[key] === 'object' && source[key] !== null && typeof output[key] === 'object') {
+                output[key] = deepMerge(output[key], source[key]);
+            } else {
+                output[key] = source[key];
+            }
+        }
+    }
+    return output;
+};
 
 /**
  * ChatBox - 一个功能丰富的聊天输入区域组件
@@ -75,7 +149,6 @@ function ChatBox({
                      onHeightChange
                  }) {
     const {t} = useTranslation();
-
     const [messageContent, setMessageContent] = useState("");
     const [toolsStatus, setToolsStatus] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,19 +167,15 @@ function ChatBox({
     const [selectedQuickOption, setSelectedQuickOption] = useState(null);
     const [attachmentHeight, setAttachmentHeight] = useState(0);
     const [ignoreAttachmentTools, setIgnoreAttachmentTools] = useState(false);
-
     const [isEditMessage, setIsEditMessage] = useState(false);
     const [editMessageId, setEditMessageId] = useState(null);
-
     const quickOptionsRef = useRef(null);
     const messageContentRef = useRef(messageContent);
     const textareaRef = useRef(null);
     const cloneTextareaRef = useRef(null);
     const sendButtonStateRef = useRef(sendButtonState);
     const attachmentRef = useRef(null);
-
     const rootRef = useRef(null);
-
     // ========== Textarea height logic ==========
     const initTextareaClone = () => {
         if (cloneTextareaRef.current) return;
@@ -127,14 +196,12 @@ function ChatBox({
         document.body.appendChild(clone);
         cloneTextareaRef.current = clone;
     };
-
     const cleanupTextareaClone = () => {
         if (cloneTextareaRef.current) {
             document.body.removeChild(cloneTextareaRef.current);
             cloneTextareaRef.current = null;
         }
     };
-
     const adjustTextareaHeight = () => {
         const textarea = textareaRef.current;
         const clone = cloneTextareaRef.current;
@@ -153,13 +220,11 @@ function ChatBox({
         textarea.style.height = cappedHeight + 'px';
         textarea.style.overflowY = contentHeight > 48 ? 'scroll' : 'auto';
     };
-
     // ========== Message handling ==========
     const handleSendMessage = () => {
         onSendMessage(messageContent, toolsStatus, isEditMessage, editMessageId);
         textareaRef.current?.focus();
     };
-
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             if (e.shiftKey) {
@@ -171,7 +236,6 @@ function ChatBox({
             }
         }
     };
-
     const handleInputChange = (e) => {
         if (isReadOnly) return;
         const newValue = e.target.value;
@@ -183,7 +247,6 @@ function ChatBox({
             }
         }
     };
-
     const handlePaste = (e) => {
         const clipboardData = e.clipboardData || window.clipboardData;
         const items = clipboardData.items;
@@ -198,7 +261,6 @@ function ChatBox({
             }
         }
     };
-
     // ========== Quick options ==========
     const handleOptionClick = (option) => {
         if (selectedQuickOption === option.id) {
@@ -214,7 +276,6 @@ function ChatBox({
             textareaRef.current?.focus();
         }
     };
-
     // ========== Icon rendering ==========
     const renderIcon = (iconType, iconData) => {
         if (!iconData) return null;
@@ -229,8 +290,7 @@ function ChatBox({
         }
         return null;
     };
-
-    const renderMenuItems = (items) => {
+    const renderMenuItems = (items, parentPath = []) => {
         return items.map((item, index) => {
             if (item.type === 'label') {
                 return (
@@ -255,28 +315,34 @@ function ChatBox({
                             <span>{t(item.text)}</span>
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                            {isDisabled ? null : renderMenuItems(item.children)}
+                            {isDisabled ? null : renderMenuItems(item.children, [...parentPath, item.name])}
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
                 );
             } else if (item.type === 'toggle') {
                 const isDisabled = item.disabled;
-                const isChecked = toolsStatus.extra_tools?.[item.name];
+                const currentPath = [...parentPath, item.name];
+                const isChecked = getNestedValue(toolsStatus.extra_tools, currentPath) ?? false;
                 return (
                     <DropdownMenuItem
                         key={`toggle-${item.name}`}
+                        onSelect={(e) => e.preventDefault()}
                         onClick={(e) => {
                             if (isDisabled) {
                                 e.preventDefault();
                                 return;
                             }
-                            setToolsStatus(prev => ({
-                                ...prev,
-                                extra_tools: {
-                                    ...prev.extra_tools,
-                                    [item.name]: !prev.extra_tools[item.name],
-                                },
-                            }));
+                            setToolsStatus(prev => {
+                                const newValue = !isChecked;
+                                let newExtraTools = {...prev.extra_tools};
+
+                                newExtraTools = setNestedValue(newExtraTools, currentPath, newValue);
+
+                                return {
+                                    ...prev,
+                                    extra_tools: newExtraTools
+                                };
+                            });
                         }}
                         className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'}`}
                         disabled={isDisabled}
@@ -288,6 +354,9 @@ function ChatBox({
                 );
             } else if (item.type === 'radio') {
                 const isDisabled = item.disabled;
+                const currentPath = [...parentPath, item.name];
+                const currentValue = getNestedValue(toolsStatus.extra_tools, currentPath);
+
                 return (
                     <DropdownMenuSub key={`radio-${item.name}`}>
                         <DropdownMenuSubTrigger
@@ -300,10 +369,11 @@ function ChatBox({
                         <DropdownMenuSubContent>
                             {item.children.map(child => {
                                 const childIsDisabled = child.disabled || false;
-                                const isSelected = toolsStatus.extra_tools?.[item.name] === child.name;
+                                const isSelected = currentValue === child.name;
                                 return (
                                     <DropdownMenuItem
                                         key={`radio-${item.name}-${child.name}`}
+                                        onSelect={(e) => e.preventDefault()}
                                         onClick={(e) => {
                                             if (isDisabled || childIsDisabled) {
                                                 e.preventDefault();
@@ -311,10 +381,7 @@ function ChatBox({
                                             }
                                             setToolsStatus(prev => ({
                                                 ...prev,
-                                                extra_tools: {
-                                                    ...prev.extra_tools,
-                                                    [item.name]: child.name,
-                                                },
+                                                extra_tools: setNestedValue({...prev.extra_tools}, currentPath, child.name)
                                             }));
                                         }}
                                         className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${childIsDisabled || isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'}`}
@@ -332,9 +399,11 @@ function ChatBox({
                     </DropdownMenuSub>
                 );
             } else if (item.type === 'button') {
+                const onSelectHandler = item.autoClose ? undefined : (e) => e.preventDefault();
                 return (
                     <DropdownMenuItem
                         key={`button-${item.text || index}`}
+                        onSelect={onSelectHandler}
                         onClick={() => item.onClick?.()}
                         className="flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100"
                     >
@@ -346,25 +415,38 @@ function ChatBox({
             return null;
         });
     };
-
     // ========== Tool initialization ==========
     const initializeExtraTools = (toolsConfig) => {
-        const status = {};
         const processItems = (items) => {
+            const status = {};
+
             items.forEach(item => {
+                if (!item.name) return;
+
                 if (item.type === 'toggle') {
-                    status[item.name] = false;
+                    status[item.name] = !!item.default;
                 } else if (item.type === 'radio' && item.children?.length > 0) {
-                    status[item.name] = item.children[0].name;
-                } else if (item.type === 'group') {
-                    processItems(item.children);
+                    let defaultValue;
+                    if (item.default) {
+                        const defaultChild = item.children.find(child => child.name === item.default);
+                        defaultValue = defaultChild ? defaultChild.name : (item.children[0]?.name || undefined);
+                    } else {
+                        defaultValue = item.children[0]?.name || undefined;
+                    }
+                    if (defaultValue !== undefined) {
+                        status[item.name] = defaultValue;
+                    }
+                } else if (item.type === 'group' && item.children) {
+                    const childStatus = processItems(item.children);
+                    status[item.name] = Object.keys(childStatus).length > 0 ? childStatus : {};
                 }
             });
-        };
-        processItems(toolsConfig);
-        return status;
-    };
 
+            return status;
+        };
+
+        return processItems(toolsConfig);
+    };
     // ========== Tool buttons ==========
     const renderToolButtons = () => {
         return tools.map((tool) => {
@@ -378,7 +460,6 @@ function ChatBox({
                 iconData = tool.iconData;
             }
             if (!iconData) return null;
-
             return (
                 <ToggleSearchButton
                     key={'ToggleSearchButton-' + tool.name}
@@ -398,11 +479,9 @@ function ChatBox({
             );
         });
     };
-
     // ========== Send button ==========
     const sendButtonStyle = useMemo(() => {
         const isEmpty = !messageContent.trim() && attachmentsMeta.length === 0 && sendButtonState === 'normal';
-
         const baseIcon = (
             <svg t="1758800079268" className="icon" viewBox="0 0 1024 1024" version="1.1"
                  xmlns="http://www.w3.org/2000/svg" p-id="6097" width="24" height="24">
@@ -413,7 +492,6 @@ function ChatBox({
                 ></path>
             </svg>
         );
-
         if (isEmpty) {
             return {
                 state: 'disabled',
@@ -422,7 +500,6 @@ function ChatBox({
                 disabled: true
             };
         }
-
         switch (sendButtonState) {
             case 'disabled':
                 return {
@@ -466,12 +543,10 @@ function ChatBox({
                 };
         }
     }, [messageContent, sendButtonState, attachmentsMeta]);
-
     // ========== Dynamic setup ==========
     const chatboxSetup = (data) => {
         const newBuiltinStatus = {};
-        const newExtraStatus = initializeExtraTools(data.extra_tools || []);
-
+        let defaultExtraStatus = initializeExtraTools(data.extra_tools || []);
         let defaultAttachmentTools = data.ignoreAttachmentTools ? [] : [
             {type: 'label', text: 'attachment_options'},
             {
@@ -479,35 +554,44 @@ function ChatBox({
                 text: 'add_image',
                 iconType: 'svg',
                 iconData: '<svg t="1759404220982" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4746" width="20" height="20"><path d="M247.04 373.333333a74.666667 74.666667 0 1 1 149.333333 0 74.666667 74.666667 0 0 1-149.333333 0zM321.706667 384a10.666667 10.666667 0 1 0 0-21.333333 10.666667 10.666667 0 0 0 0 21.333333z" fill="#666666" p-id="4747"></path><path d="M938.666667 796.074667c0 43.050667-33.834667 72.106667-70.4 77.653333a83.925333 83.925333 0 0 1-12.672 0.938667H168.405333a83.072 83.072 0 0 1-12.672-0.981334c-36.565333-5.546667-70.4-34.56-70.4-77.653333V232.021333C85.333333 185.898667 122.965333 149.333333 168.405333 149.333333h687.189334C901.034667 149.333333 938.666667 185.941333 938.666667 232.021333v564.053334zM170.666667 743.381333V789.333333h682.666666v-42.538666l-252.885333-250.666667-138.581333 149.930667a42.666667 42.666667 0 0 1-55.466667 5.12L333.098667 599.04 170.666667 743.424z m682.666666-99.754666V234.666667H170.666667v394.538666l131.072-116.522666a42.666667 42.666667 0 0 1 53.077333-2.901334l71.125333 50.56 138.026667-149.333333A42.666667 42.666667 0 0 1 618.666667 405.333333l234.666666 238.293334z" fill="#666666" p-id="4748"></path></svg>',
-                onClick: PicPickerCallback
+                onClick: PicPickerCallback,
+                autoClose: true
             },
             {
                 type: 'button',
                 text: 'add_file',
                 iconType: 'svg',
                 iconData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>',
-                onClick: FilePickerCallback
+                onClick: FilePickerCallback,
+                autoClose: true
             }
         ];
-
         setIgnoreAttachmentTools(Boolean(data.ignoreAttachmentTools))
-
         const allExtraTools = data.extra_tools ? [...data.extra_tools, ...defaultAttachmentTools] : defaultAttachmentTools;
-
+        // Load saved extra_tools status from localStorage
+        let savedExtraStatus = {};
+        try {
+            const saved = localStorage.getItem('extraToolsConfig');
+            if (saved) {
+                savedExtraStatus = JSON.parse(saved);
+            }
+        } catch (error) {
+            console.error('Failed to parse saved extra_tools status:', error);
+        }
+        // Merge: use default as base, override with saved
+        const mergedExtraStatus = deepMerge(defaultExtraStatus, savedExtraStatus);
         if (data.builtin_tools) {
             data.builtin_tools.forEach(tool => {
                 newBuiltinStatus[tool.name] = false;
             });
             setTools(data.builtin_tools);
         }
-
         setToolsStatus(prev => ({
             ...prev,
             builtin_tools: {...prev.builtin_tools, ...newBuiltinStatus},
-            extra_tools: {...prev.extra_tools, ...newExtraStatus}
+            extra_tools: mergedExtraStatus
         }));
         setExtraTools(allExtraTools);
-
         if (data.readOnly !== undefined) setIsReadOnly(Boolean(data.readOnly));
         if (data.tipMessage !== undefined) {
             setTipMessageIsForNewLine(false);
@@ -529,22 +613,18 @@ function ChatBox({
             setIsEditMessage(Boolean(data.isEditMessage));
         }
     };
-
     // ========== Effects ==========
     useEffect(() => {
         sendButtonStateRef.current = sendButtonState;
         messageContentRef.current = messageContent;
     }, [sendButtonState, messageContent]);
-
     useEffect(() => {
         adjustTextareaHeight();
     }, [messageContent, isEditMessage]);
-
     useEffect(() => {
         initTextareaClone();
         return cleanupTextareaClone;
     }, []);
-
     useEffect(() => {
         const checkScreenSize = () => {
             const isSmall = window.innerWidth < 500;
@@ -559,14 +639,12 @@ function ChatBox({
         window.addEventListener('resize', checkScreenSize);
         return () => window.removeEventListener('resize', checkScreenSize);
     }, []);
-
     useEffect(() => {
         if (toolsLoadedStatus === 0) {
             if (apiEndpoint.CHATBOX_ENDPOINT.trim() === '') {
                 setToolsLoadedStatus(-1);
                 return;
             }
-
             apiClient.get(apiEndpoint.CHATBOX_ENDPOINT)
                 .then(data => {
                     chatboxSetup(data);
@@ -575,10 +653,8 @@ function ChatBox({
                 .catch(() => {
                     setToolsLoadedStatus(3);
                 });
-
         }
     }, [toolsLoadedStatus]);
-
     useEffect(() => {
         const unsubscribe = onEvent("widget", "ChatBox", markId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
@@ -625,19 +701,16 @@ function ChatBox({
                     }
                     break;
                 case "Set-EditMessage":
-
                     setIsEditMessage(Boolean(payload.isEdit));
                     if (payload.attachments) setAttachments(payload.attachments);
                     if (payload.content) setMessageContent(payload.content);
                     if (payload.msgId) setEditMessageId(payload.msgId);
-
                     reply({command: 'Set-EditMessage', success: true});
                     break;
             }
         });
         return () => unsubscribe();
     }, []);
-
     useEffect(() => {
         const updateHeight = () => {
             if (attachmentRef.current) {
@@ -650,7 +723,6 @@ function ChatBox({
         window.addEventListener('resize', updateHeight);
         return () => window.removeEventListener('resize', updateHeight);
     }, [attachmentsMeta]);
-
     useLayoutEffect(() => {
         const updateWidth = () => {
             if (quickOptions.length > 0 && quickOptionsRef.current?.firstElementChild) {
@@ -659,35 +731,37 @@ function ChatBox({
         };
         const timeoutId = setTimeout(updateWidth, 100);
         window.addEventListener('resize', updateWidth);
-        return () => {
-            clearTimeout(timeoutId);
-            window.removeEventListener('resize', updateWidth);
-        };
+        return () => window.removeEventListener('resize', updateWidth);
     }, [quickOptions]);
-
     useEffect(() => {
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
                 const newHeight = entry.contentRect.height;
-
                 if (onHeightChange) {
                     onHeightChange(newHeight);
                 }
             }
         });
-
         const currentRoot = rootRef.current;
         if (currentRoot) {
             resizeObserver.observe(currentRoot);
         }
-
         return () => {
             if (currentRoot) {
                 resizeObserver.unobserve(currentRoot);
             }
         };
     }, [onHeightChange]);
-
+    // Save extra_tools status to localStorage when it changes
+    useEffect(() => {
+        if (Object.keys(toolsStatus.extra_tools || {}).length > 0) {
+            try {
+                localStorage.setItem('extraToolsConfig', JSON.stringify(toolsStatus.extra_tools));
+            } catch (error) {
+                console.error('Failed to save extra_tools status to localStorage:', error);
+            }
+        }
+    }, [toolsStatus.extra_tools]);
     return (
         <>
             <DropFileLayer
@@ -723,7 +797,6 @@ function ChatBox({
                     selectedOption={selectedQuickOption}
                     isTransitioning={isTransitioning}
                 />
-
                 <div
                     className="border-1 bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-md focus-within:shadow-lg">
                     <div
@@ -733,7 +806,6 @@ function ChatBox({
                         <FileUploadProgress uploadFiles={uploadFiles} onRetry={onRetryUpload}
                                             onCancel={onCancelUpload}/>
                     </div>
-
                     <div
                         ref={attachmentRef}
                         className="overflow-hidden transition-all duration-300 ease-in-out"
@@ -749,9 +821,7 @@ function ChatBox({
                             onRemove={onAttachmentRemove}
                         />
                     </div>
-
                     <div className="pt-2 pl-2 pr-2">
-
                         <Transition
                             show={isEditMessage}
                             enter="transition-opacity duration-200"
@@ -767,8 +837,6 @@ function ChatBox({
                                     <PenLine className="w-4 h-4 mr-2"/>
                                     <span>{t("editing_message")}</span>
                                 </div>
-
-
                                 <div className="flex items-center space-x-2">
                                     <button
                                         type="button"
@@ -791,10 +859,8 @@ function ChatBox({
                                         <Trash2 className="w-4 h-4"/>
                                     </button>
                                 </div>
-
                             </div>
                         </Transition>
-
                         <textarea
                             ref={textareaRef}
                             value={messageContent}
@@ -807,7 +873,6 @@ function ChatBox({
                             style={{transition: 'height 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)'}}
                         />
                     </div>
-
                     <div className="flex items-center justify-between px-4 pb-3">
                         <ToolButtons
                             toolsLoadedStatus={toolsLoadedStatus}
@@ -816,11 +881,10 @@ function ChatBox({
                             toolsStatus={toolsStatus}
                             setToolsStatus={setToolsStatus}
                             renderToolButtons={renderToolButtons}
-                            renderMenuItems={renderMenuItems}
+                            renderMenuItems={() => renderMenuItems(extraTools)}
                             setToolsLoadedStatus={setToolsLoadedStatus}
                             t={t}
                         />
-
                         <div className="flex items-center space-x-2">
                             <button
                                 type="button"
@@ -835,7 +899,6 @@ function ChatBox({
                                         fill="#000000" fill-opacity=".45" p-id="18775"></path>
                                 </svg>
                             </button>
-
                             <button
                                 type="button"
                                 onClick={handleSendMessage}
@@ -848,7 +911,6 @@ function ChatBox({
                         </div>
                     </div>
                 </div>
-
                 <Transition appear show={isModalOpen} as={Fragment}>
                     <Transition.Child
                         as={Fragment}
@@ -887,5 +949,4 @@ function ChatBox({
         </>
     );
 }
-
 export default ChatBox;
