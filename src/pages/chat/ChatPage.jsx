@@ -94,7 +94,7 @@ function ChatPage() {
         handleSelectedFiles(files);
     };
 
-    const handleSendMessage = (messageContent, toolsStatus, isEditMessage, editMessageId) => {
+    const handleSendMessage = (messageContent, toolsStatus, isEditMessage, editMessageId, attachments) => {
         if (uploadFiles.length !== 0) {
             toast.error(t("file_upload_not_complete"));
             return;

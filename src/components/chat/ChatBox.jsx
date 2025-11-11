@@ -257,7 +257,7 @@ function ChatBox({
     };
     // ========== Message handling ==========
     const handleSendMessage = () => {
-        onSendMessage(messageContent, toolsStatus, isEditMessage, editMessageId);
+        onSendMessage(messageContent, toolsStatus, isEditMessage, editMessageId, attachmentsMeta);
         textareaRef.current?.focus();
     };
     const handleKeyDown = (e) => {
@@ -727,7 +727,6 @@ function ChatBox({
                     break;
                 case "Set-Message":
                     setMessageContent(payload.value);
-                    reply({command: 'Set-Message', success: true});
                     break;
                 case "Get-Message":
                     reply({command: 'Get-Message', value: messageContentRef.current});
@@ -736,7 +735,6 @@ function ChatBox({
                     if (payload.value.builtin_tools || payload.value.extra_tools) {
                         setToolsLoadedStatus(-1);
                     }
-                    reply({command: 'Setup-ChatBox', success: true});
                     setTimeout(() => {
                         chatboxSetup(payload.value);
                         setToolsLoadedStatus(2);
@@ -748,7 +746,6 @@ function ChatBox({
                         setQuickOptions(payload.value);
                         setIsTransitioning(false);
                     }, 500);
-                    reply({command: 'Setup-QuickOptions', success: true});
                     break;
                 case "Attachment-Meta":
                     if (payload.value) {
@@ -759,16 +756,21 @@ function ChatBox({
                     }
                     break;
                 case "Set-EditMessage":
-                    setIsEditMessage(Boolean(payload.isEdit));
-                    if (payload.attachments) setAttachments(payload.attachments);
-                    if (payload.content) setMessageContent(payload.content);
-                    if (payload.msgId) setEditMessageId(payload.msgId);
-                    reply({command: 'Set-EditMessage', success: true});
+                    if (payload.immediate) {
+                        onSendMessage(payload.content, toolsStatus, true, payload.msgId, payload.attachments);
+                    } else {
+                        setIsEditMessage(Boolean(payload.isEdit));
+                        if (payload.attachments) setAttachments(payload.attachments);
+                        if (payload.content) setMessageContent(payload.content);
+                        if (payload.msgId) setEditMessageId(payload.msgId);
+                    }
+
                     break;
             }
         });
         return () => unsubscribe();
-    }, []);
+    }, [toolsStatus]);
+
     useEffect(() => {
         const updateHeight = () => {
             if (attachmentRef.current) {

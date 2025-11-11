@@ -40,7 +40,8 @@ const MessageToolsFunction = (action, msg, markId, msgId, t) => {
                     content: msg.content,
                     msgId: msgId
                 },
-                markId: markId
+                markId: markId,
+                fromWebsocket: true  // 确保中间数据不要发送到 websocket
             });
             break;
         case "copy":
@@ -52,13 +53,18 @@ const MessageToolsFunction = (action, msg, markId, msgId, t) => {
             break;
         case "regenerate":
             emitEvent({
-                type: "message",
-                target: "ChatPage",
+                type: "widget",
+                target: "ChatBox",
                 payload: {
-                    command: "Message-Regenerate",
+                    command: "Set-EditMessage",
+                    isEdit: true,
+                    immediate: true,   // 马上发送
+                    attachments: msg.attachments,
+                    content: msg.content,
                     msgId: msgId
                 },
-                markId: markId
+                markId: markId,
+                fromWebsocket: true  // 确保中间数据不要发送到 websocket
             });
             break;
     }

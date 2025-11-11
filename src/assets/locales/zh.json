@@ -40,6 +40,7 @@
     "error": "WebSocket 连接错误：{{message}}",
     "popover_title": "Websocket 断开连接",
     "popover_content": "无法连接 Websocket，对话功能将不能使用",
+    "reconnecting": "Websocket 断开，尝试重连中......",
     "connecting": "连接 Websocket 中......",
     "connect_success": "成功连接 Websocket。",
     "connect_failed": "连接 Websocket 失败。",
