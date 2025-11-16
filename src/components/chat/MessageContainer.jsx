@@ -323,7 +323,7 @@ const MessageContainer = forwardRef(({
             switch (payload.command) {
                 case "Set-SwitchingMessage":
                     setSwitchingMessageId(payload.value);
-                    reply({ command: 'Set-SwitchingMessage', success: true });
+                    reply({success: true });
                     break;
             }
         });

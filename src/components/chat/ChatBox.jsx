@@ -86,7 +86,7 @@ const deleteNestedValue = (obj, path) => {
 // Deep merge function for overriding defaults with saved values
 const deepMerge = (target, source) => {
     if (typeof source !== 'object' || source === null) return target;
-    const output = { ...target };
+    const output = {...target};
     for (const key in source) {
         if (source.hasOwnProperty(key)) {
             if (typeof source[key] === 'object' && source[key] !== null && typeof output[key] === 'object') {
@@ -127,7 +127,7 @@ const getGroupCheckState = (extraTools, togglePaths) => {
 };
 
 const toggleAllInGroup = (extraTools, togglePaths, toChecked) => {
-    let newExtraTools = { ...extraTools };
+    let newExtraTools = {...extraTools};
     togglePaths.forEach(path => {
         newExtraTools = setNestedValue(newExtraTools, path, toChecked);
     });
@@ -368,11 +368,12 @@ function ChatBox({
                                 >
                                     <span>{t('select_all')}</span>
                                     {checkState === 'checked' && <Check className="ml-auto w-4 h-4 text-blue-500"/>}
-                                    {checkState === 'indeterminate' && <Minus className="ml-auto w-4 h-4 text-blue-500"/>}
+                                    {checkState === 'indeterminate' &&
+                                        <Minus className="ml-auto w-4 h-4 text-blue-500"/>}
                                     {checkState === 'unchecked' && <Square className="ml-auto w-4 h-4 text-gray-500"/>}
                                 </DropdownMenuItem>
                             )}
-                            {!isDisabled && <DropdownMenuSeparator />}
+                            {!isDisabled && <DropdownMenuSeparator/>}
                             {isDisabled ? null : renderMenuItems(item.children, currentPath)}
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
@@ -720,16 +721,16 @@ function ChatBox({
                     const validStates = ['disabled', 'normal', 'loading', 'generating'];
                     if (validStates.includes(payload.value)) {
                         setSendButtonState(payload.value);
-                        reply({command: 'SendButton-State', value: payload.value});
+                        reply({value: payload.value});
                     } else {
-                        reply({command: 'SendButton-State', value: sendButtonStateRef.current});
+                        reply({value: sendButtonStateRef.current});
                     }
                     break;
                 case "Set-Message":
                     setMessageContent(payload.value);
                     break;
                 case "Get-Message":
-                    reply({command: 'Get-Message', value: messageContentRef.current});
+                    reply({value: messageContentRef.current});
                     break;
                 case "Setup-ChatBox":
                     if (payload.value.builtin_tools || payload.value.extra_tools) {
@@ -750,9 +751,9 @@ function ChatBox({
                 case "Attachment-Meta":
                     if (payload.value) {
                         setAttachments(payload.value);
-                        reply({command: 'Attachment-Meta', value: payload.value});
+                        reply({value: payload.value});
                     } else {
-                        reply(attachments);
+                        reply({value: attachments});
                     }
                     break;
                 case "Set-EditMessage":
@@ -1009,4 +1010,5 @@ function ChatBox({
         </>
     );
 }
+
 export default ChatBox;

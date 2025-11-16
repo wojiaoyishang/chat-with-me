@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useImmer } from 'use-immer';
-import { generateUUID, getMarkId, getLocalSetting } from "@/lib/tools";
+import {generateUUID, getMarkId, getLocalSetting, updateURL} from "@/lib/tools";
 import { toast } from "sonner";
 import { Transition } from '@headlessui/react';
 import {
@@ -95,30 +95,59 @@ function ChatPage() {
     };
 
     const handleSendMessage = (messageContent, toolsStatus, isEditMessage, editMessageId, attachments) => {
+
         if (uploadFiles.length !== 0) {
             toast.error(t("file_upload_not_complete"));
             return;
         }
 
-        const eventPayload = {
-            type: "message",
-            target: "ChatPage",
-            payload: {
-                command: "Message-Send",
-                message: messageContent,
-                toolsStatus: toolsStatus,
-                attachments: attachments,
-                isEdit: isEditMessage,
-            },
-            markId: selfMarkId
-        };
+        const sendMessage = (markId) => {
+            const eventPayload = {
+                type: "message",
+                target: "ChatPage",
+                payload: {
+                    command: "Message-Send",
+                    message: messageContent,
+                    toolsStatus: toolsStatus,
+                    attachments: attachments,
+                    isEdit: isEditMessage,
+                },
+                markId: markId
+            };
 
-        // 编辑消息发送 editMessageId
-        if (isEditMessage) {
-            eventPayload.payload.msgId = editMessageId;
+            if (isEditMessage) {
+                eventPayload.payload.msgId = editMessageId;
+            }
+
+            emitEvent(eventPayload);
         }
 
-        emitEvent(eventPayload);
+        if (!selfMarkId) {  // 如果没有 MarkId 就要去请求一个
+            emitEvent(
+                {
+                    type: "page",
+                    target: "ChatPage",
+                    payload: {
+                        command: "Get-MarkId"
+                    }
+                }
+            ).then((payload, markId, isReply, id, reply) => {
+                if (payload.success) {
+                    setSelfMarkId(payload.value);
+                    updateURL("/chat/" + payload.value);
+                    sendMessage(payload.value);
+                } else {
+                    throw payload.value;
+                }
+            }).catch(error => {
+                toast.error(t("get_markid_error", {message: error?.message}))
+            });
+        } else {
+            sendMessage(selfMarkId);
+        }
+
+
+
     };
 
     const onAttachmentRemove = (attachment) => {
@@ -366,7 +395,7 @@ function ChatPage() {
                     if (payload.value && typeof payload.value === 'object') {
                         wasAtBottomRef.current = calculateIsNearBottom();
                         setMessages(prev => ({ ...prev, ...payload.value }));
-                        reply({ command: 'Add-Message', success: true });
+                        reply({ success: true });
                     }
                     break;
 
@@ -374,9 +403,9 @@ function ChatPage() {
                     if (Array.isArray(payload.value) && payload.value.length > 0) {
                         wasAtBottomRef.current = calculateIsNearBottom();
                         setMessagesOrder(payload.value);
-                        reply({ command: 'MessagesOrder-Meta', value: payload.value });
+                        reply({ value: payload.value });
                     } else {
-                        reply({ command: 'MessagesOrder-Meta', value: messagesOrderRef.current });
+                        reply({ value: messagesOrderRef.current });
                     }
                     break;
 
@@ -390,9 +419,9 @@ function ChatPage() {
                                 }
                             }
                         });
-                        if (payload.reply) reply({ command: 'Add-MessageContent', success: true });
+                        if (payload.reply) reply({ success: true });
                     } else {
-                        reply({ command: 'Add-MessageContent', success: false });
+                        reply({ success: false });
                     }
                     break;
             }
@@ -458,7 +487,7 @@ function ChatPage() {
         if (selfMarkId) {
             requestMessage();
         }
-    }, [selfMarkId]);
+    }, []);
 
 
     return (

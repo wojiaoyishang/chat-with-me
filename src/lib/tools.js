@@ -268,3 +268,36 @@ export function copyTextToClipboard(text) {
         }
     });
 }
+
+export function updateURL(path) {
+
+    // 获取 Vite 的 base 配置
+    const base = import.meta.env.BASE_URL || '/';
+
+    // 标准化 base 路径
+    const normalizedBase = base === '/' ? '/' : base.replace(/\/$/, '') + '/';
+
+    let fullPath;
+
+    if (path.startsWith('/')) {
+        // 绝对路径处理
+        if (normalizedBase === '/') {
+            fullPath = path;
+        } else {
+            // 移除路径开头的 /，然后拼接 base
+            fullPath = normalizedBase + path.substring(1);
+        }
+    } else {
+        // 相对路径处理
+        const currentPath = window.location.pathname;
+        const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+        fullPath = currentDir + path;
+    }
+
+    // 确保路径格式正确
+    if (!fullPath.startsWith('/')) {
+        fullPath = '/' + fullPath;
+    }
+
+    window.history.pushState({}, '', fullPath);
+}

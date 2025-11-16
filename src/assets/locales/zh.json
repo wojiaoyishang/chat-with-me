@@ -58,5 +58,6 @@
   "message_not_copied": "消息复制失败： {{message}}",
   "regenerate_message": "重新生成",
   "message_info": "详细信息",
-  "select_all": "选择全部"
+  "select_all": "选择全部",
+  "get_markid_error": "获取 MarkID 失败：{{message}}"
 }

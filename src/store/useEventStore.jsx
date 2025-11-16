@@ -100,9 +100,21 @@ const createDebugLogger = () => {
 // =======================
 export const useEventStore = create((set, get) => {
     const debugLogger = createDebugLogger();
+    // 存储回复监听器 { [eventId]: resolveFunction }
+    const replyListeners = new Map();
 
     return {
         listeners: {},
+
+        // 内部方法：注册回复监听器
+        _registerReplyListener: (id, resolve) => {
+            replyListeners.set(id, resolve);
+        },
+
+        // 内部方法：移除回复监听器
+        _removeReplyListener: (id) => {
+            replyListeners.delete(id);
+        },
 
         addListener: (type, target, callback, listenerMarkId, acceptReply = false) => {
             const registrationStack = debugLogger
@@ -152,23 +164,33 @@ export const useEventStore = create((set, get) => {
         },
 
         _emit: (event, emitStack = null) => {
-            let { type = null, target = null, markId: eventMarkId = null, isReply = false, payload, id = null , fromWebsocket = false} = event;
+            let {
+                type = null,
+                target = null,
+                markId: eventMarkId = null,
+                isReply = false,
+                payload,
+                id = null,
+                fromWebsocket = false
+            } = event;
 
             const { listeners } = get();
 
+            // 生成唯一ID（如果未提供）
             if (!id) {
                 id = generateUUID();
                 event.id = id;
             }
 
-            if (type !== 'websocket' && !fromWebsocket) {  // 不是 websocket 事件不发送，是从 websocket 来的事件也不发送
+            // 非WebSocket事件且不是来自WebSocket的事件才发送
+            if (type !== 'websocket' && !fromWebsocket) {
                 sendWebSocketMessage({
-                    ...(type && { type: type }),
-                    ...(target && { target: target }),
-                    payload: payload,
+                    ...(type && { type }),
+                    ...(target && { target }),
+                    payload,
                     ...(eventMarkId && { markId: eventMarkId }),
-                    isReply: isReply,
-                    id: id,
+                    isReply,
+                    id
                 });
             }
 
@@ -180,26 +202,33 @@ export const useEventStore = create((set, get) => {
                 }
             }
 
-            const targetListeners = [...(listeners[type]?.[target] || [])];
+            // 处理回复事件：检查是否有等待此ID的回复监听器
+            if (isReply) {
+                const resolveFn = replyListeners.get(id);
+                if (resolveFn) {
+                    // 提供安全的reply函数（回复事件不能再回复）
+                    const safeReply = () => {
+                        console.warn('Cannot reply to a reply event');
+                    };
 
+                    // 调用resolve函数，传入标准参数
+                    resolveFn(payload, eventMarkId, true, id, safeReply, undefined);
+
+                    // 移除监听器（只处理一次）
+                    replyListeners.delete(id);
+                }
+            }
+
+            // 标准事件分发
+            const targetListeners = [...(listeners[type]?.[target] || [])];
             targetListeners.forEach(listener => {
                 if (!listener.active) return;
-
-                if (listener.acceptReply !== isReply) {
-                    return;
-                }
-
-                const listenerMarkId = listener.markId;
-                if (eventMarkId !== null && listenerMarkId !== eventMarkId) {
-                    return;
-                }
+                if (listener.acceptReply !== isReply) return;
+                if (eventMarkId !== null && listener.markId !== eventMarkId) return;
 
                 const reply = (data) => {
                     get()._emit({
-                        // type,
-                        // target,
                         payload: data,
-                        // markId: listenerMarkId,
                         isReply: true,
                         id: id
                     }, new Error('Reply initiated at:').stack);
@@ -208,7 +237,7 @@ export const useEventStore = create((set, get) => {
                 Promise.resolve().then(() => {
                     if (!listener.active || (isReply && !listener.acceptReply)) return;
                     try {
-                        listener.callback(payload, eventMarkId, isReply, id, reply, listenerMarkId);
+                        listener.callback(payload, eventMarkId, isReply, id, reply, listener.markId);
                     } catch (error) {
                         console.groupCollapsed(
                             `%c[EVENT ERROR] %c${type}/${target}`,
@@ -218,7 +247,7 @@ export const useEventStore = create((set, get) => {
                         console.error(`Error in event listener:`, error);
                         console.log('Event payload:', payload);
                         console.log('Event markId:', eventMarkId);
-                        console.log('Listener markId:', listenerMarkId);
+                        console.log('Listener markId:', listener.markId);
                         console.log('Is Reply:', isReply);
                         console.log('Listener registered at:');
                         console.log(listener.registrationStack || 'N/A');
@@ -231,7 +260,7 @@ export const useEventStore = create((set, get) => {
 });
 
 // =======================
-// 发送事件函数
+// 增强的事件发射函数
 // =======================
 export let emitEvent = ({
                             type,
@@ -246,8 +275,44 @@ export let emitEvent = ({
         ? new Error('Event emitted at:').stack
         : null;
 
+    // 创建事件对象
+    const event = { type, target, payload, markId, isReply, id, fromWebsocket };
 
-    useEventStore.getState()._emit({type, target, payload, markId, isReply, id, fromWebsocket}, emitStack);
+    // 获取store状态
+    const state = useEventStore.getState();
+
+    // 发射事件（会生成ID）
+    state._emit(event, emitStack);
+
+    // 保存生成的ID（_emit会填充id）
+    const eventId = event.id;
+
+    // 创建thenable对象
+    const thenable = {
+        then: (callback) => {
+            // 不能对回复事件使用then
+            if (isReply) {
+                return Promise.reject(new Error('Cannot wait for reply on a reply event'));
+            }
+
+            return new Promise((resolve, reject) => {
+                // 包装resolve函数
+                const wrappedResolve = (payload, markId, isReply, id, reply, listenerMarkId) => {
+                    try {
+                        const result = callback(payload, markId, isReply, id, reply, listenerMarkId);
+                        resolve(result);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+
+                // 注册回复监听器
+                state._registerReplyListener(eventId, wrappedResolve);
+            });
+        }
+    };
+
+    return thenable;
 };
 
 if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
@@ -255,11 +320,9 @@ if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
 }
 
 // =======================
-// 监听事件函数（支持 markId 和 acceptReply）
-// acceptReply = true 时只接受 reply = true 的消息
+// 事件监听函数
 // =======================
 export let onEvent = (type, target, markId, acceptReply=false) => {
-
     return {
         then: (callback) => {
             return useEventStore.getState().addListener(type, target, callback, markId, acceptReply);
