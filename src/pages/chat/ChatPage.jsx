@@ -18,13 +18,14 @@ import apiClient from "@/lib/apiClient.js";
 import { apiEndpoint } from "@/config.js";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 
-function ChatPage() {
+function ChatPage({markId}) {
     const { t } = useTranslation();
     const navigate = useNavigate();
 
     const isProcessingRef = useRef(false);
     const messagesContainerRef = useRef(null);
-    const [selfMarkId, setSelfMarkId] = useState(getMarkId());
+
+    const [selfMarkId, setSelfMarkId] = useState(markId || getMarkId());
     const uploadIntervals = useRef(new Map());
     const [uploadFiles, setUploadFiles] = useState([]);
     const [attachments, setAttachments] = useState([]);
@@ -354,7 +355,7 @@ function ChatPage() {
     };
 
     const LoadingScreen = () => (
-        <div className="fixed inset-0 bg-white flex items-center justify-center">
+        <div className="absolute inset-0 bg-white flex items-center justify-center"> {/* Changed fixed to absolute */}
             <div className="flex flex-col items-center">
                 <ThreeDotLoading />
                 <span className="mt-2 text-sm text-gray-500">{t("loading_messages")}</span>
@@ -363,7 +364,7 @@ function ChatPage() {
     );
 
     const LoadingFailedScreen = () => (
-        <div className="fixed inset-0 bg-white flex items-center justify-center">
+        <div className="absolute inset-0 bg-white flex items-center justify-center"> {/* Changed fixed to absolute */}
             <div className="flex flex-col items-center">
                 <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
                     <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -525,11 +526,11 @@ function ChatPage() {
                         >
                             <button
                                 onClick={scrollToBottom}
-                                className="cursor-pointer fixed z-50 align-middle w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors"
+                                className="cursor-pointer absolute z-50 align-middle w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors -translate-x-1/2"
                                 aria-label="Scroll to bottom"
                                 style={{
                                     bottom: `${scrollButtonBottom}px`,
-                                    left: 'calc(50% - 1rem)', // 居中
+                                    left: '50%',
                                 }}
                             >
                                 <FaArrowDown className="text-gray-500 w-3 h-3" />
@@ -537,7 +538,7 @@ function ChatPage() {
                         </Transition>
 
                         <div
-                            className="fixed z-50 bottom-10 left-0 right-0"
+                            className="absolute z-10 inset-x-0 bottom-10"
                         >
                             <ChatBox
                                 onSendMessage={handleSendMessage}
@@ -563,7 +564,7 @@ function ChatPage() {
                     LoadingScreen()
                 )}
 
-                <footer className="fixed bottom-0 left-0 right-0 h-12 bg-white flex items-center justify-center">
+                <footer className="absolute inset-x-0 bottom-0 h-12 bg-white flex items-center justify-center"> {/* Changed fixed to absolute; left-0 right-0 to inset-x-0 */}
                     <span className="text-xs text-gray-500">
                         © {new Date().getFullYear()} lovePikachu. All rights reserved.
                     </span>

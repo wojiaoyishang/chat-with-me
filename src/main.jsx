@@ -13,19 +13,21 @@ import ReactDOM from "react-dom/client";
 import {WebSocketProvider} from './context/WebSocketContext.jsx';
 import MyToaster from "@/context/MyToaster.jsx";
 import FatalErrorPopoverElement from "@/context/FatalErrorPopover.jsx";
+import ContextEvent from "@/context/ContextEvent.jsx";
+import DashboardPage from "@/pages/dashboard/DashboardPage.jsx";
 
 const router = createBrowserRouter([
     {
         path: "/chat",
-        element: <ChatPage/>,
+        element: <DashboardPage/>,
     },
     {
         path: "/chat/:markId",
-        element: <ChatPage/>,
+        element: <DashboardPage/>,
     },
     {
         path: "/",
-        element: <Navigate to="/chat" replace/>,
+        element: <Navigate to="/chat" replace/>
     }
 ]);
 
@@ -33,6 +35,7 @@ const root = document.getElementById("root");
 
 ReactDOM.createRoot(root).render(
     <StrictMode>
+        <ContextEvent />  {/* 跨页面事件 */}
         <MyToaster/>  {/* 跨页面的吐司组件 */}
         <FatalErrorPopoverElement/>  {/* 错误提示 */}
         <WebSocketProvider>

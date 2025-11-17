@@ -301,3 +301,31 @@ export function updateURL(path) {
 
     window.history.pushState({}, '', fullPath);
 }
+
+// 合并类名的实用函数
+export function cn(...classes) {
+    return classes.filter(Boolean).join(' ');
+}
+
+// 日期格式化辅助函数
+export function getRelativeDate(date) {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (isSameDay(date, today)) return 'today';
+    if (isSameDay(date, yesterday)) return 'yesterday';
+
+    const diffDays = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 7) return 'last7Days';
+    if (diffDays <= 30) return 'last30Days';
+    return 'earlier';
+}
+
+// 检查是否为同一天
+function isSameDay(date1, date2) {
+    return date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate();
+}
