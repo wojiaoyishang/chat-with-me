@@ -12,7 +12,7 @@ apiClient.interceptors.response.use(
         // 如果你的 API 总是返回 { success, code, msg, data }
         if (!success) {
             // 如果业务逻辑失败（如 success: false），抛出错误，可在 catch 捕获
-            const error = new Error(msg || '请求失败');
+            const error = new Error(msg || "Request failed.");
             error.code = code;
             throw error;
         }
@@ -20,8 +20,6 @@ apiClient.interceptors.response.use(
         return data; // ← 关键：这里返回的是 response.data.data
     },
     (error) => {
-        // 网络错误或 HTTP 状态码非 2xx
-        console.error('请求异常:', error);
         return Promise.reject(error);
     }
 );

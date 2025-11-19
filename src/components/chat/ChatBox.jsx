@@ -630,9 +630,11 @@ function ChatBox({
                 autoClose: true
             }
         ];
-        setIgnoreAttachmentTools(Boolean(data.ignoreAttachmentTools))
+
+        if (data.ignoreAttachmentTools !== null && data.ignoreAttachmentTools !== undefined) setIgnoreAttachmentTools(Boolean(data.ignoreAttachmentTools));
+
         const allExtraTools = data.extra_tools ? [...data.extra_tools, ...defaultAttachmentTools] : defaultAttachmentTools;
-        // Load saved extra_tools status from localStorage
+
         let savedExtraStatus = {};
         try {
             const saved = localStorage.getItem('extraToolsConfig');
@@ -655,7 +657,7 @@ function ChatBox({
             builtin_tools: {...prev.builtin_tools, ...newBuiltinStatus},
             extra_tools: mergedExtraStatus
         }));
-        setExtraTools(allExtraTools);
+        if (data.extra_tools) setExtraTools(allExtraTools);
         if (data.readOnly !== undefined) setIsReadOnly(Boolean(data.readOnly));
         if (data.tipMessage !== undefined) {
             setTipMessageIsForNewLine(false);
