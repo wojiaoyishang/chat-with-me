@@ -60,10 +60,15 @@ export default function ToolButtons({
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <Transition.Child as="div">
-                        {() => renderToolButtons()}
+                    {/* 修改这里：使用 as="div" 并应用 flex 样式 */}
+                    <Transition.Child
+                        as="div" // 渲染一个实际的 div 元素
+                        className="flex flex-wrap gap-1" // 应用 flex 布局样式到这个 div
+                    >
+                        {renderToolButtons()} {/* renderToolButtons 返回的 ToggleButton 将是这个 div 的子元素 */}
                     </Transition.Child>
                 </Transition>
+
 
                 {/* 工具加载失败提示 */}
                 <Transition

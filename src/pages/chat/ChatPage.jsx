@@ -147,6 +147,7 @@ function ChatPage({markId, setMarkId}) {
                     toolsStatus: toolsStatus,
                     attachments: attachments,
                     isEdit: isEditMessage,
+                    model: selectedModel.id
                 },
                 markId: markId
             };
@@ -505,7 +506,9 @@ function ChatPage({markId, setMarkId}) {
         const requestModels = async () => {
             try {
                 // 先请求模型
-                modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT);
+                modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
+                    params: markId ? { markId: selfMarkId } : {}
+                });
                 setModels(modelsData);
                 setSelectedModel(modelsData[0]);
             } catch (error) {
@@ -598,7 +601,7 @@ function ChatPage({markId, setMarkId}) {
 
     return (
         <>
-            <div className="full-screen-min-height bg-white flex flex-col items-center pb-8">
+            <div className="full-screen-min-height bg-white flex flex-col items-center pb-8 pretty-scrollbar">
                 <header className="w-full bg-white flex items-center justify-start p-4 h-14">
                     <Popover
                         open={isModelPopoverOpen}

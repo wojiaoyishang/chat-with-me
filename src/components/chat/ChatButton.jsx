@@ -17,7 +17,7 @@ import {useTranslation} from "react-i18next";
  * @param {Object|string} [props.iconData=null] - 图标数据
  * @returns {JSX.Element} 返回一个按钮组件
  */
-function ToggleSearchButton({
+function ToggleButton({
                                 isActive = false,
                                 disabled = false,
                                 onClick,
@@ -102,4 +102,4 @@ function ToggleSearchButton({
     );
 }
 
-export default ToggleSearchButton;
+export default ToggleButton;

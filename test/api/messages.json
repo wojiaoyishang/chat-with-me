@@ -1,0 +1,127 @@
+{
+  "0": {
+    "position": null,
+    "messages": [
+      "1",
+      "4"
+    ],
+    "nextMessage": "1"
+  },
+  "1": {
+    "prevMessage": "0",
+    "position": "right",
+    "content": "我是人类",
+    "name": "AI Assistant",
+    "avatar": "/src/assets/human.jpg",
+    "allowRegenerate": false,
+    "messages": [
+      "2",
+      "3",
+      "5"
+    ],
+    "nextMessage": "2",
+    "attachments": [
+      {
+        "preview": "http://191.168.1.11:8000/uploads/2505依頼（裁剪）.png",
+        "previewType": "image",
+        "name": "2505依頼（裁剪）.png",
+        "size": 1378001,
+        "serverId": "2505依頼（裁剪）.png",
+        "downloadUrl": "http://191.168.1.11:8000/uploads/2505依頼（裁剪）.png"
+      },
+      {
+        "preview": "http://191.168.1.11:8000/uploads/68d3b32c97898.png",
+        "previewType": "image",
+        "name": "2505依頼（裁剪）.png",
+        "size": 1378001,
+        "serverId": "2505依頼（裁剪）.png",
+        "downloadUrl": "http://191.168.1.11:8000/uploads/68d3b32c97898.png"
+      },
+      {
+        "preview": "http://191.168.1.11:8000/uploads/68d3b32c97898.png",
+        "previewType": "image",
+        "name": "2505依頼（裁剪）.png",
+        "size": 1378001,
+        "serverId": "2505依頼（裁剪）.png",
+        "downloadUrl": "http://191.168.1.11:8000/uploads/68d3b32c97898.png"
+      },
+      {
+        "preview": "http://191.168.1.11:8000/uploads/68d3b32c97898.png",
+        "previewType": "image",
+        "name": "2505依頼（裁剪）.png",
+        "size": 1378001,
+        "serverId": "2505依頼（裁剪）.png",
+        "downloadUrl": "http://191.168.1.11:8000/uploads/68d3b32c97898.png"
+      },
+      {
+        "preview": "http://191.168.1.11:8000/uploads/68d3b32c97898.png",
+        "previewType": "image",
+        "name": "2505依頼（裁剪）.png",
+        "size": 1378001,
+        "serverId": "2505依頼（裁剪）.png",
+        "downloadUrl": "http://191.168.1.11:8000/uploads/68d3b32c97898.png"
+      }
+    ]
+  },
+  "2": {
+    "prevMessage": "1",
+    "position": "left",
+    "content": "我是AI",
+    "name": "AI Assistant",
+    "avatar": "/src/assets/AI.png",
+    "messages": [],
+    "nextMessage": null,
+    "tip": "这是超级逆天的信息\n对对对",
+    "attachments": [
+      {
+        "preview": "http://191.168.1.11:8000/uploads/2505依頼（裁剪）.png",
+        "previewType": "image",
+        "name": "2505依頼（裁剪）.png",
+        "size": 1378001,
+        "serverId": "2505依頼（裁剪）.png",
+        "downloadUrl": "http://191.168.1.11:8000/uploads/2505依頼（裁剪）.png"
+      },
+      {
+        "preview": "http://191.168.1.11:8000/uploads/68d3b32c97898.png",
+        "previewType": "image",
+        "name": "2505依頼（裁剪）.png",
+        "size": 1378001,
+        "serverId": "2505依頼（裁剪）.png",
+        "downloadUrl": "http://191.168.1.11:8000/uploads/68d3b32c97898.png"
+      },
+      {
+        "preview": "http://191.168.1.11:8000/uploads/68d3b32c97898.png",
+        "previewType": "image",
+        "name": "2505依頼（裁剪）.png",
+        "size": 1378001,
+        "serverId": "2505依頼（裁剪）.png",
+        "downloadUrl": "http://191.168.1.11:8000/uploads/68d3b32c97898.png"
+      },
+      {
+        "preview": "http://191.168.1.11:8000/uploads/68d3b32c97898.png",
+        "previewType": "image",
+        "name": "2505依頼（裁剪）.png",
+        "size": 1378001,
+        "serverId": "2505依頼（裁剪）.png",
+        "downloadUrl": "http://191.168.1.11:8000/uploads/68d3b32c97898.png"
+      },
+      {
+        "preview": "http://191.168.1.11:8000/uploads/68d3b32c97898.png",
+        "previewType": "image",
+        "name": "2505依頼（裁剪）.png",
+        "size": 1378001,
+        "serverId": "2505依頼（裁剪）.png",
+        "downloadUrl": "http://191.168.1.11:8000/uploads/68d3b32c97898.png"
+      }
+    ]
+  },
+  "6": {
+    "prevMessage": "3",
+    "position": "left",
+    "content": "这个????",
+    "name": "AI Assistant",
+    "avatar": "/src/assets/AI.png",
+    "messages": [],
+    "nextMessage": null
+  }
+}

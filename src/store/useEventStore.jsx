@@ -122,7 +122,7 @@ export const useEventStore = create((set, get) => {
                 : null;
 
             set(state => {
-                const newListeners = { ...state.listeners };
+                const newListeners = {...state.listeners};
                 if (!newListeners[type]) newListeners[type] = {};
                 if (!newListeners[type][target]) newListeners[type][target] = [];
 
@@ -140,15 +140,15 @@ export const useEventStore = create((set, get) => {
                     ];
                 }
 
-                return { listeners: newListeners };
+                return {listeners: newListeners};
             });
 
             return () => {
                 set(state => {
-                    const newListeners = { ...state.listeners };
+                    const newListeners = {...state.listeners};
                     if (newListeners[type]?.[target]) {
                         newListeners[type][target] = newListeners[type][target]
-                            .map(l => l.callback === callback ? { ...l, active: false } : l)
+                            .map(l => l.callback === callback ? {...l, active: false} : l)
                             .filter(l => l.active);
 
                         if (newListeners[type][target].length === 0) {
@@ -158,7 +158,7 @@ export const useEventStore = create((set, get) => {
                             }
                         }
                     }
-                    return { listeners: newListeners };
+                    return {listeners: newListeners};
                 });
             };
         },
@@ -174,7 +174,7 @@ export const useEventStore = create((set, get) => {
                 fromWebsocket = false
             } = event;
 
-            const { listeners } = get();
+            const {listeners} = get();
 
             // 生成唯一ID（如果未提供）
             if (!id) {
@@ -185,10 +185,10 @@ export const useEventStore = create((set, get) => {
             // 非WebSocket事件且不是来自WebSocket的事件才发送
             if (type !== 'websocket' && !fromWebsocket) {
                 sendWebSocketMessage({
-                    ...(type && { type }),
-                    ...(target && { target }),
+                    ...(type && {type}),
+                    ...(target && {target}),
                     payload,
-                    ...(eventMarkId && { markId: eventMarkId }),
+                    ...(eventMarkId && {markId: eventMarkId}),
                     isReply,
                     id
                 });
@@ -262,6 +262,39 @@ export const useEventStore = create((set, get) => {
 // =======================
 // 增强的事件发射函数
 // =======================
+/**
+ * 发射事件函数
+ *
+ * @param {Object} options - 事件配置对象
+ * @param {string} options.type - 事件类型
+ * @param {string} options.target - 事件目标
+ * @param {any} options.payload - 事件载荷数据
+ * @param {string|null} [options.markId=null] - 事件标记ID，用于精确匹配监听器
+ * @param {boolean} [options.isReply=false] - 是否为回复事件
+ * @param {string|null} [options.id=null] - 事件唯一ID（如未提供会自动生成）
+ * @param {boolean} [options.fromWebsocket=false] - 是否来自WebSocket的消息
+ *
+ * @returns {Object} 返回一个thenable对象，支持链式调用.then()等待回复
+ *
+ * 使用示例：
+ * // 普通事件发射
+ * emitEvent({ type: 'user', target: 'login', payload: { username: 'test' } });
+ *
+ * // 等待回复的事件发射
+ * emitEvent({ type: 'api', target: 'request', payload: { url: '/data' } })
+ *   .then((replyPayload) => {
+ *     console.log('收到回复:', replyPayload);
+ *   });
+ *
+ * // 发射回复事件
+ * emitEvent({
+ *   type: 'api',
+ *   target: 'response',
+ *   payload: { data: 'result' },
+ *   isReply: true,
+ *   id: 'original-event-id'
+ * });
+ */
 export let emitEvent = ({
                             type,
                             target,
@@ -276,7 +309,7 @@ export let emitEvent = ({
         : null;
 
     // 创建事件对象
-    const event = { type, target, payload, markId, isReply, id, fromWebsocket };
+    const event = {type, target, payload, markId, isReply, id, fromWebsocket};
 
     // 获取store状态
     const state = useEventStore.getState();
@@ -322,7 +355,38 @@ if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
 // =======================
 // 事件监听函数
 // =======================
-export let onEvent = (type, target, markId, acceptReply=false) => {
+/**
+ * 事件监听函数 - 用于订阅特定类型的事件
+ *
+ * @param {string} type - 监听的事件类型
+ * @param {string} target - 监听的事件目标
+ * @param {string|null} markId - 监听器标记ID，用于精确匹配带有相同markId的事件
+ * @param {boolean} [acceptReply=false] - 是否接受回复事件（默认只处理非回复事件）
+ *
+ * @returns {Object} 返回一个thenable对象，调用.then(callback)来设置事件回调函数
+ *                   .then(callback) 返回取消监听的函数
+ *
+ * 使用示例：
+ * // 监听普通事件
+ * onEvent('user', 'login', null).then((payload, markId, isReply, id, reply) => {
+ *   console.log('用户登录:', payload);
+ * });
+ *
+ * // 监听带标记的事件
+ * onEvent('api', 'response', 'request-123').then((payload) => {
+ *   console.log('收到API响应:', payload);
+ * });
+ *
+ * // 监听回复事件
+ * onEvent('api', 'response', null, true).then((payload) => {
+ *   console.log('收到回复:', payload);
+ * });
+ *
+ * // 取消监听
+ * const unsubscribe = onEvent('user', 'logout', null).then(() => { ... });
+ * // 之后可以调用 unsubscribe() 来取消监听
+ */
+export let onEvent = (type, target, markId, acceptReply = false) => {
     return {
         then: (callback) => {
             return useEventStore.getState().addListener(type, target, callback, markId, acceptReply);

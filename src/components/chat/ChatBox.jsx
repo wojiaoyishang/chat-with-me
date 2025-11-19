@@ -13,7 +13,7 @@ import {
     DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import SimpleMDEditor from "@/components/editor/SimpleMDEditor.jsx";
-import ToggleSearchButton from "@/components/chat/ChatButton.jsx";
+import ToggleButton from "@/components/chat/ChatButton.jsx";
 import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
 import ChatBoxHeader from './ChatBoxHeader';
 import ToolButtons from './ToolButtons';
@@ -525,8 +525,8 @@ function ChatBox({
             }
             if (!iconData) return null;
             return (
-                <ToggleSearchButton
-                    key={'ToggleSearchButton-' + tool.name}
+                <ToggleButton
+                    key={'ToggleButton-' + tool.name}
                     iconType={tool.iconType}
                     iconData={iconData}
                     onClick={(e, isActive) => {

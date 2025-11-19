@@ -1,0 +1,128 @@
+{
+    "builtin_tools": [
+        {
+            "name": "search",
+            "text": "搜索",
+            "iconType": "library",
+            "iconData": "search",
+            "bgColor": "#4F39F6"
+        },
+        {
+            "name": "refresh",
+            "text": "刷新",
+            "iconType": "library",
+            "iconData": "refresh",
+            "bgColor": "#6C757D"
+        },
+        {
+            "name": "translate",
+            "text": "翻译",
+            "iconType": "library",
+            "iconData": "earth",
+            "bgColor": "#198754"
+        }
+    ],
+    "extra_tools": [
+        {
+            "type": "label",
+            "text": "基础功能"
+        },
+        {
+            "type": "toggle",
+            "name": "autoTranslate",
+            "text": "自动翻译",
+            "iconType": "library",
+            "iconData": "earth"
+        },
+        {
+            "type": "separator"
+        },
+        {
+            "type": "label",
+            "text": "高级设置"
+        },
+        {
+            "type": "group",
+            "text": "主题设置",
+            "children": [
+                {
+                    "type": "radio",
+                    "name": "theme",
+                    "text": "主题模式",
+                    "children": [
+                        {
+                            "name": "light",
+                            "text": "浅色模式",
+                            "iconType": "svg",
+                            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8h4z'/></svg>"
+                        },
+                        {
+                            "name": "dark",
+                            "text": "深色模式",
+                            "iconType": "svg",
+                            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zm-10 5.31a4 4 0 1 1 0-8 4 4 0 0 1 0 8z'/></svg>"
+                        }
+                    ]
+                },
+                {
+                    "type": "toggle",
+                    "name": "highContrast",
+                    "text": "高对比度",
+                    "iconType": "image",
+                    "iconData": "/icons/contrast.svg"
+                }
+            ]
+        },
+        {
+            "type": "radio",
+            "name": "language",
+            "text": "语言设置",
+            "iconType": "library",
+            "iconData": "earth",
+            "default": "en",
+            "children": [
+                {
+                    "name": "zh",
+                    "text": "中文",
+                    "iconType": "image",
+                    "iconData": "/flags/cn.svg"
+                },
+                {
+                    "name": "en",
+                    "text": "English",
+                    "iconType": "image",
+                    "iconData": "/flags/us.svg"
+                },
+                {
+                    "name": "ja",
+                    "text": "日本語",
+                    "iconType": "image",
+                    "iconData": "/flags/jp.svg"
+                }
+            ]
+        },
+        {
+            "type": "separator"
+        },
+        {
+            "type": "group",
+            "text": "更多设置",
+            "children": [
+                {
+                    "type": "toggle",
+                    "name": "notifications",
+                    "text": "消息通知"
+                },
+                {
+                    "type": "toggle",
+                    "name": "sound",
+                    "text": "声音提示"
+                }
+            ]
+        }
+    ],
+    "readOnly": false,
+    "tipMessage": "请输入您的问题，支持文件上传和智能搜索",
+    "tipMessageFadeOutDelay": 5000,
+    "ignoreAttachmentTools": false
+}
