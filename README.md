@@ -42,7 +42,7 @@ Chat With Me 是一个简单的大语言模型文本对话的前端，其设计�
 
 ## 接口配置
 
-请求接口配置文件在 `src/config.js` ，其中定义了 HTTP 的请求接口和 WebSocket 的连接接口，其中 **HTTP 请求** 主要用于 **配置数据的获取** 和 **内容的获取** （例如历史对话、历史消息等），对于 **WebSocket** 主要用于 **实时对话生成** 、 **命令控制** （通过广播控制前端行为）。
+请求接口配置文件在 `src/config.js` ，其中定义了 HTTP 的请求接口和 WebSocket 的连接接口，其中 **HTTP 请求** 主要用于 **配置数据的获取** 和 **内容的获取** （例如历史对话、历史消息等），对于 **WebSocket** 主要用于 **实时对话生成** 、 **命令控制** （通过广播控制前端行为），需要配置如下所有接口前端才能工作（只要不是404就行）。
 
 ## 服务器响应
 
@@ -864,6 +864,54 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
     "attachments": [],  // 附件数据
     "content": "",  // 输入框文本
     "msgId": "",  // 目标消息ID
+}
+```
+
+## Sidebar 事件 (target=Sidebar)
+
+### type=widget
+
+#### 重载 Sidebar Conservations
+
+```python
+{
+    "type": "widget",
+    "target": "Sidebar",
+    "payload": {
+        "command": "Reload-Conversations"
+    }
+}
+```
+
+#### 将该指定 MarkId 的 Conversions 的对话更改为新值
+
+默认在 ChatPage 第一次发送新消息时发出，不会发送到 websocket
+
+```python
+{
+    "type": "widget",
+    "target": "Sidebar",
+    "payload": {
+        "command": "Update-ConversationDate",
+        "value": ""   # 要设置的新值, 2025-03-18T20:46:00+08:00，为空为目前最新时间
+    },
+    "markId": ""  # 目标 markId
+}
+```
+
+## Context 事件 (target=Context)
+
+### type=widget
+
+```python
+{
+    "type": "widget",
+    "target": "Context",
+    "payload": {
+        "command": "Show-Toast",
+        "name": "error",  # 吐司类型查看 sonner
+        "args": "错误"    # 如果是一个列表则传递参数，否则就默认把其当成第一个参数传递
+    }
 }
 ```
 
