@@ -28,7 +28,7 @@
 
 # 项目简介
 
-> **⚠️注意** 该项目的代码大部分由 AI 生成，而界面中的小细节与功能设计是由我撰写的，所以开发中若遇到一些不必要的代码、可优化的代码欢迎提交 Issue 匹配和提交 PR 优化。
+> **⚠️注意** 该项目的代码大部分由 AI 生成，而界面中的小细节与功能设计是由我撰写的，所以开发中若遇到一些不必要的代码、可优化的代码欢迎提交 Issue 批评和提交 PR 优化。
 
 Chat With Me 是一个简单的大语言模型文本对话的前端，其设计理念为 “少写前端，一切由后端控制” ，非常适合个人项目搭建和学校毕设。
 
@@ -46,7 +46,7 @@ Chat With Me 是一个简单的大语言模型文本对话的前端，其设计�
 
 ## 服务器响应
 
-服务器应该按照如下的 Rest API 响应数据：
+服务器应该按照如下的 Rest API 响应数据，接口定义可在 `src/lib/apiClient.js` 修改：
 
 ```python
 {
@@ -489,5 +489,82 @@ Chat With Me 是一个简单的大语言模型文本对话的前端，其设计�
 
 ## CHAT_CONVERSATIONS_ENDPOINT - 历史对话获取接口
 
-## CHAT_MESSAGES_ENDPOINT - 消息获取接口
+前端默认 GET 请求该接口，该接口需要将返回数据的 data 字段设置为一个列表：
 
+```python
+[
+    {
+            "updateDate": "2025-03-18T20:46:00+08:00",  # 更新时间（ISO 8601 格式，带时区 +08:00）前端基于此排序
+            "title": "Legacy System Update",  # 对话标题
+            "markId": "mark23"  # 对话ID
+    },
+    # ...
+]
+```
+
+## CHAT_MODELS_ENDPOINT - 模型获取接口 （模型信息源数据）
+
+前端默认 GET 请求该接口，请求时会携带 `markId` 的 参数，如果没有 markId 就不携带。后端需要响应一个列表，每个项目是模型信息源数据：
+
+```python
+{
+    'id': 'qwen',  # 模型ID，消息发送时会携带这个模型ID
+    'name': 'Qwen',  # 显示的名字
+    'description': 'Built by qwen',  # 介绍
+    'avatar': '/src/assets/AI.png',  # 模型头像
+    'tags': ["Code", "Chat"]  # 模型标签
+}
+```
+
+## CHAT_MESSAGES_ENDPOINT - 消息获取接口 （消息源数据）
+
+前端默认 GET，提供表单：
+
+- markId 目前的对话ID
+- prevId 目前最早的一条消息的ID，如果没有提供则目前没有消息（可选，默认）
+- nextId 前端没有的消息Id，要向后端请求 nextId 消息以及其之后的所有消息（可选）
+
+后端提供的数据字段：
+
+```python
+{
+    "messages": {
+        "test1": { ... }
+    },  # 所有对话元数据 ID:消息内容 完整元数据请参考消息源数据格式
+    "messagesOrder": ['test1'],  # 之前的对话顺序，不包含 prevId
+    "model": "qwen3",  # 之前对话使用的模型id
+    "haveMore": True  # 是否还有数据没有被加载，如果只有 nextId 这个选项是不提供的
+}
+```
+
+消息源数据格式：
+
+```python
+{
+    "prevMessage": "ID0",  # 上一条对话的ID，如果没有是 None
+    "position": "left",    # 属于左边还是右边(right)，右边默认为气泡，还有一个 None 如果为空或者没有就是隐藏消息，隐藏消息不会被渲染
+    "content": "",         # 内容
+    "name": "AI Assistant", # 昵称
+    "avatar": "/src/assets/AI.png",  # 头像
+    "messages": ["ID1", "ID2", "ID3"],  # 如果没有是空列表
+    "nextMessage": "ID1",  # 目前选择的 下一条对话的ID，如果没有是 None
+    "attachments": [],     # 附件内容，可选
+    "allowRegenerate": True,  # 是否允许重新生成，默认为 True，可选
+    "tip": ""              # 如果存在，下方将会显示一个信息提示，可选
+}
+```
+
+消息设置理念， **messages** 是一个字典，这个字典中理论上包含了所有对话的数据，键名是消息的id，键值是消息源数据，而 **messagesOrder** 是用于前端请求和前端渲染的消息顺序数组，每一个项都是消息的id。
+
+## DASHBOARD_ENDPOINT - 仪表盘配置（主页配置）
+
+默认 GET 请求这个接口，后端需要返回：
+
+```python
+{
+    "sidebar": {  # 侧边栏配置
+        "logoType": "image",  # LOGO类型，支持 image 和 text
+        "logo": "/public/logo.png"  # 如果是 image 展示这个地址的图片，否则展示该字段的文字
+    }
+}
+```
