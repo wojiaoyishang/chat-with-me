@@ -81,10 +81,10 @@ Chat With Me 是一个简单的大语言模型文本对话的前端，其设计�
 
 用于配置 ChatBox 对话界面的工具栏、提示行为及附件功能等基本属性。该接口通过一个结构化字典定义用户交互工具的布局与行为，支持内置工具按钮、扩展菜单项、提示信息、只读模式等配置。
 
-### 接口结构（Python 字典格式）
+### 接口结构
 
 ```python
-config = {
+{
     "builtin_tools": [
         # 内置工具按钮配置列表（推荐不超过3个）
     ],
@@ -305,37 +305,6 @@ config = {
 > - `radio` 的 `children` 只能是普通项（`toggle`/`label`/`separator`），**不能嵌套 `group`**
 > - `label` 和 `separator` 不能作为 `radio` 或 `group` 的子项（仅用于顶层或同级）
 
-
-### 3. 状态结构说明（toolsStatus）
-
-工具状态由系统自动管理，通过 `onSendMessage` 回调返回，结构如下：
-
-```python
-toolsStatus = {
-    # 内置工具状态：每个 name 对应布尔值
-    "builtin_tools": {
-        "search": True,
-        "refresh": False,
-        "translate": True
-    },
-
-    # 扩展工具状态
-    "extra_tools": {
-        # toggle 类型：布尔值
-        "autoTranslate": True,
-
-        # radio 类型：选中项的 name 字符串
-        "language": "zh",
-
-        # 嵌套在 group 中的 radio
-        "theme": "dark",
-
-        # 嵌套在 group 中的 toggle
-        "highContrast": False
-    }
-}
-```
-
 ##### 状态初始化默认规则
 
 | 类型       | 默认值 |
@@ -348,7 +317,7 @@ toolsStatus = {
 ### 4. 完整配置示例
 
 ```python
-config = {
+{
     "builtin_tools": [
         {
             "name": "search",
@@ -478,4 +447,47 @@ config = {
 }
 ```
 
+#### 5. 返回格式说明
+
+上述测试配置在点击之后，发送消息的广播的 payload 的 `toolsStatus` 字段为如下格式（具体内容查看广播的发送消息事件）：
+
+```python
+{
+    "builtin_tools": {
+        "search": False,
+        "refresh": True,
+        "translate": True
+    },
+    "extra_tools": {
+        "autoTranslate": True,
+        "language": "ja",
+        "themeSetting": {
+            "language": "en",
+            "highContrast": False,
+            "test": False,
+            "highContrast2": True,
+            "test2": False
+        }
+    }
+}
+```
+
+## UPLOAD_ENDPOINT - 文件上传接口（附件格式说明）
+
+前端默认会 `POST` 表单的 `file` 字段，服务器需要响应如下格式的内容：
+
+```python
+{
+    "preview": "/src/assets/test.png",  # 预留图
+    "previewType": "image",  # 展示格式，如果为 svg ，preview 为 svg 代码
+    "name": "示例图片.jpg",  # 展示的名称
+    "size": 2048000,  # 文件大小
+    "serverId": "img_67890",  # 服务器中的文件ID，前端删除附件时需要用到这个
+    "downloadUrl": "https://example.com/images/img_67890"  # 点击之后文件的下载链接
+}
+```
+
+## CHAT_CONVERSATIONS_ENDPOINT - 历史对话获取接口
+
+## CHAT_MESSAGES_ENDPOINT - 消息获取接口
 
