@@ -981,21 +981,26 @@ function ChatBox({
                     <Transition.Child
                         as={Fragment}
                         enter="ease-out duration-200"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
+                        enterFrom="opacity-0 bg-transparent"
+                        enterTo="opacity-100 bg-black/40"
                         leave="ease-in duration-150"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
+                        leaveFrom="opacity-100 bg-black/40"
+                        leaveTo="opacity-0 bg-transparent"
                     >
                         <div
-                            className="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 bg-black/40">
+                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+                            style={{
+                                marginLeft: !isMobile() ? 'var(--sidebar-width)' : '0',
+                                transition: 'margin-left 0.3s ease-in-out'
+                            }}
+                        >
                             <div
-                                className="bg-white rounded-2xl w-full max-w-3xl h-[85vh] p-0.5 relative transition-all duration-200 ease-out transform"
+                                className="bg-white z-50 rounded-2xl w-full max-w-3xl h-[85vh] p-0.5 relative" // 移除 transition-all duration-200 ease-out transform
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <button
                                     onClick={() => setIsModalOpen(false)}
-                                    className="absolute z-50 top-3 right-3 rounded-full bg-gray-200 text-gray-500 hover:text-gray-700 cursor-pointer"
+                                    className="absolute z-50 top-0 right-0 m-2 rounded-full bg-gray-200 text-gray-500 hover:text-gray-700 cursor-pointer"
                                     aria-label={t("close")}
                                 >
                                     <X className="w-5 h-5"/>

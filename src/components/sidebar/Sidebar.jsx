@@ -10,16 +10,18 @@ import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import {onEvent} from "@/store/useEventStore.jsx";
+
 const Sidebar = ({
-                     markId, setMarkId
+                     markId, setMarkId,
+                     settings
                  }) => {
     const [isOpen, setIsOpen] = useState(false);
     const isMobile = useIsMobile();
     const {t, i18n} = useTranslation();
-    // Loading states
+
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
-    // Determine date-fns locale based on current language
+
     const dateLocale = i18n.language === 'zh-CN' ? zhCN : enUS;
     useEffect(() => {
         const mql = window.matchMedia('(min-width: 768px)');
@@ -28,7 +30,11 @@ const Sidebar = ({
         mql.addEventListener('change', handler);
         return () => mql.removeEventListener('change', handler);
     }, []);
-    // Add swipe gestures only on mobile devices
+
+    useEffect(() => {
+        document.documentElement.style.setProperty('--sidebar-width', isOpen ? '16rem' : '0px');
+    }, [isOpen]);
+
     useEffect(() => {
         if (!isMobile) return;
         let startX = 0;
@@ -58,6 +64,7 @@ const Sidebar = ({
             window.removeEventListener('touchend', handleTouchEnd);
         };
     }, [isOpen, isMobile]);
+
     const [conversations, setConversations] = useState([]);
     const [oldPositions, setOldPositions] = useState(null);
     const listRef = useRef(null);
@@ -103,7 +110,7 @@ const Sidebar = ({
                 groups.Earlier.push(conv);
             }
         });
-        // Sort within each group (though overall sort should preserve order)
+
         Object.keys(groups).forEach(key => {
             groups[key].sort((a, b) => b.updateDate - a.updateDate);
         });
@@ -209,16 +216,24 @@ const Sidebar = ({
         }, 500);
         return () => clearTimeout(timer);
     }, [conversations, oldPositions]);
+
+    let logoElement;
+    if (settings?.logoType === 'image' && settings?.logo) {
+        logoElement = <img src={settings.logo} alt="Logo" className="h-8 w-auto" />;
+    } else {
+        const text = (settings?.logoType === 'text' && settings?.logo) ? settings.logo : 'Logo';
+        logoElement = <h1 className="text-xl font-bold text-gray-800">{text}</h1>;
+    }
+
     return (
         <>
             <div
-                className={`fixed md:relative top-0 left-0 h-full bg-white shadow-lg z-40 flex flex-col overflow-y-auto transition-all duration-300 ease-in-out ${
-                    isOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full overflow-hidden'
-                }`}
+                className={`fixed md:relative top-0 left-0 h-full bg-white shadow-lg z-40 flex flex-col overflow-y-auto transition-all duration-300 ease-in-out`}
+                style={{ width: 'var(--sidebar-width)' }}
             >
                 {/* Logo */}
                 <div className="flex items-center justify-between p-4 border-b">
-                    <h1 className="text-xl font-bold text-gray-800">{t('logo')}</h1>
+                    {logoElement}
                     <button
                         onClick={() => setIsOpen(false)}
                         className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"

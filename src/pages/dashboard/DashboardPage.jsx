@@ -2,7 +2,7 @@ import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {useParams,} from 'react-router-dom';
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
 import ChatPage from '@/pages/chat/ChatPage.jsx';
-import {getMarkId} from "@/lib/tools.js";
+import {getMarkId, useIsMobile} from "@/lib/tools.js";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
@@ -13,7 +13,11 @@ const DashboardPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
 
+    const [sidebarSettings, setSidebarSettings] = useState({});
+
     const {t} = useTranslation();
+
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         const loadDashboard = async () => {
@@ -22,7 +26,9 @@ const DashboardPage = () => {
 
             try {
                 const settings = await apiClient.get(apiEndpoint.DASHBOARD_ENDPOINT);
-
+                if (settings.sidebar) {
+                    setSidebarSettings(settings.sidebar);
+                }
             } catch (error) {
                 setIsLoadingError(true);
             } finally {
@@ -71,8 +77,8 @@ const DashboardPage = () => {
                 <LoadingScreen />
             ) : (
                 <>
-                    <Sidebar markId={markId} setMarkId={setMarkId}/>
-                    <main className="flex-1 overflow-hidden relative">
+                    <Sidebar markId={markId} setMarkId={setMarkId} settings={sidebarSettings}/>
+                    <main className="flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
                         <ChatPage markId={markId} setMarkId={setMarkId}/>
                     </main>
                 </>

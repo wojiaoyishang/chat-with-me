@@ -179,7 +179,7 @@ export default function AttachmentShowcase({attachmentsMeta, onRemove, msgMode})
                         <button
                             type="button"
                             onClick={() => scrollAttachments('right')}
-                            className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center z-20 opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110"
+                            className="cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center z-10 justify-center opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110"
                             aria-label={t("scroll_attachments_right")}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none"
@@ -193,7 +193,7 @@ export default function AttachmentShowcase({attachmentsMeta, onRemove, msgMode})
                         <button
                             type="button"
                             onClick={() => scrollAttachments('left')}
-                            className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center z-20 opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110"
+                            className="cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center z-10 justify-center opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110"
                             aria-label={t("scroll_attachments_left")}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none"
