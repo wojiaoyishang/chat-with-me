@@ -1,6 +1,7 @@
 import {useParams} from 'react-router-dom';
 import {apiEndpoint} from '@/config.js';
 import apiClient from '@/lib/apiClient';
+import {useEffect, useState} from "react";
 
 export function getMarkId() {
     const {markId} = useParams();
@@ -45,7 +46,8 @@ export function fileUpload(uploadFile, onProgressUpdate, onComplete, onError) {
     if (!uploadFile || !uploadFile.file || !onProgressUpdate || !onComplete) {
         console.error('Missing required parameters for fileUpload');
         onError?.(new Error('Invalid parameters'));
-        return () => {};
+        return () => {
+        };
     }
 
     const formData = new FormData();
@@ -328,4 +330,21 @@ function isSameDay(date1, date2) {
     return date1.getFullYear() === date2.getFullYear() &&
         date1.getMonth() === date2.getMonth() &&
         date1.getDate() === date2.getDate();
+}
+
+export function isMobile() {
+    return window.innerWidth < 768;
+}
+
+// 是不是手机设备
+export function useIsMobile() {
+    const [isMobile_, setIsMobile] = useState(isMobile()); // Assuming md breakpoint is 768px, adjust if needed
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(isMobile());
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    return isMobile_;
 }

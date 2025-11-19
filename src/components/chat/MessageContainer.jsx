@@ -8,6 +8,7 @@ import {FaChevronLeft, FaChevronRight} from 'react-icons/fa';
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import AttachmentShowcase from './AttachmentShowcase';
 import {Menu, PenLine, Copy, RotateCw, Info} from "lucide-react";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 import {
     DropdownMenu,
@@ -23,7 +24,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import {copyTextToClipboard} from "@/lib/tools.js";
+import {copyTextToClipboard, useIsMobile} from "@/lib/tools.js";
 import {onEvent} from "@/store/useEventStore.jsx";
 
 const MessageToolsFunction = (action, msg, markId, msgId, t) => {
@@ -119,6 +120,8 @@ const MessageMenuButton = ({msg, markId, msgId}) => {
 const MessageTools = ({msg, markId, msgId}) => {
     const {t} = useTranslation();
 
+    const isMobile = useIsMobile();
+
     return (
         <div className="flex gap-1">
 
@@ -155,21 +158,41 @@ const MessageTools = ({msg, markId, msgId}) => {
             ) : null}
 
             {msg.tip && (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <button
-                            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
-                            aria-label={t("message_info")}
-                        >
-                            <Info size={16} className="text-gray-600 hover:text-gray-800"/>
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <div style={{ whiteSpace: 'pre-line' }}>
-                            {msg.tip}
-                        </div>
-                    </TooltipContent>
-                </Tooltip>
+                <>
+                    {isMobile ? (
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <button
+                                    className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                                    aria-label={t("message_info")}
+                                >
+                                    <Info size={16} className="text-gray-600 hover:text-gray-800"/>
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="p-3">
+                                <div style={{ whiteSpace: 'pre-line' }} className="text-sm">
+                                    {msg.tip}
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    ) : (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                                    aria-label={t("message_info")}
+                                >
+                                    <Info size={16} className="text-gray-600 hover:text-gray-800"/>
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <div style={{ whiteSpace: 'pre-line' }}>
+                                    {msg.tip}
+                                </div>
+                            </TooltipContent>
+                        </Tooltip>
+                    )}
+                </>
             )}
 
             <MessageMenuButton msg={msg} markId={markId} id={msgId}/>

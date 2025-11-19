@@ -1,31 +1,37 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { useImmer } from 'use-immer';
-import {generateUUID, getMarkId, getLocalSetting, updateURL} from "@/lib/tools";
-import { toast } from "sonner";
-import { Transition } from '@headlessui/react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
+import {useImmer} from 'use-immer';
+import {generateUUID, getMarkId, getLocalSetting, updateURL, useIsMobile} from "@/lib/tools";
+import {toast} from "sonner";
+import {Transition} from '@headlessui/react';
 import {
     processSelectedFiles,
     fileUpload,
     createFilePicker,
 } from "@/lib/tools";
-import { useTranslation } from "react-i18next";
-import { useNavigate } from 'react-router-dom';
-import { FaArrowDown } from "react-icons/fa";
-import { onEvent } from "@/store/useEventStore.jsx";
+import {useTranslation} from "react-i18next";
+import {useNavigate} from 'react-router-dom';
+import {FaArrowDown, FaChevronDown, FaCheckCircle} from "react-icons/fa";
+import {onEvent} from "@/store/useEventStore.jsx";
 import ChatBox from "@/components/chat/chatbox.jsx";
 import MessageContainer from "@/components/chat/MessageContainer.jsx";
 import apiClient from "@/lib/apiClient.js";
-import { apiEndpoint } from "@/config.js";
+import {apiEndpoint} from "@/config.js";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Button} from "@/components/ui/button";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import {Badge} from "@/components/ui/badge";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 
-function ChatPage({markId}) {
-    const { t } = useTranslation();
-    const navigate = useNavigate();
+function ChatPage({markId, setMarkId}) {
+    const {t} = useTranslation();
 
     const isProcessingRef = useRef(false);
     const messagesContainerRef = useRef(null);
 
-    const [selfMarkId, setSelfMarkId] = useState(markId || getMarkId());
+    const [selfMarkId, setSelfMarkId] = [markId, setMarkId];
+    const selfMarkIdRef = useRef(null);
+
     const uploadIntervals = useRef(new Map());
     const [uploadFiles, setUploadFiles] = useState([]);
     const [attachments, setAttachments] = useState([]);
@@ -34,6 +40,7 @@ function ChatPage({markId}) {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [isMessageLoaded, setIsMessageLoaded] = useState(false);
+    const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
 
     // 消息状态
     const [messagesOrder, setMessagesOrder] = useState([]);
@@ -43,9 +50,22 @@ function ChatPage({markId}) {
 
     const [scrollButtonBottom, setScrollButtonBottom] = useState(200);
 
+    const isMobile = useIsMobile();
+
+    const [models, setModels] = useState([]);
+    const [selectedModel, setSelectedModel] = useState(models.length === 0 ? {name: t("no_models")} : models[0]);
+    const [previewModel, setPreviewModel] = useState(null);
+
+    const [isNewMarkId, setIsNewMarkId] = useState(false);  // 用于判断是不是请求新请求的 MarkId ，防止页面刷新
+    const isNewMarkIdRef = useRef(false);
+
+    const modelListRef = useRef(null);
+
+    const [isFirstMessageSend, setIsFirstMessageSend] = useState(false);
+
     const calculateIsNearBottom = () => {
         if (!messagesContainerRef.current) return true;
-        const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+        const {scrollTop, scrollHeight, clientHeight} = messagesContainerRef.current;
         return scrollHeight - scrollTop - clientHeight < 100;
     };
 
@@ -72,7 +92,7 @@ function ChatPage({markId}) {
         if (!container) return;
 
         const handleScroll = () => {
-            const { scrollTop, scrollHeight, clientHeight } = container;
+            const {scrollTop, scrollHeight, clientHeight} = container;
             const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
 
             setIsAtBottom(isNearBottom);
@@ -80,7 +100,7 @@ function ChatPage({markId}) {
         };
 
         handleScroll();
-        container.addEventListener('scroll', handleScroll, { passive: true });
+        container.addEventListener('scroll', handleScroll, {passive: true});
 
         return () => {
             container.removeEventListener('scroll', handleScroll);
@@ -103,6 +123,21 @@ function ChatPage({markId}) {
         }
 
         const sendMessage = (markId) => {
+
+            if (isFirstMessageSend) {
+                emitEvent(
+                    {
+                        type: "widget",
+                        target: "Sidebar",
+                        payload: {
+                            command: "Update-ConversationDate"
+                        },
+                        markId: markId
+                    }
+                )
+                setIsFirstMessageSend(false);
+            }
+
             const eventPayload = {
                 type: "message",
                 target: "ChatPage",
@@ -124,6 +159,7 @@ function ChatPage({markId}) {
         }
 
         if (!selfMarkId) {  // 如果没有 MarkId 就要去请求一个
+
             emitEvent(
                 {
                     type: "page",
@@ -134,6 +170,7 @@ function ChatPage({markId}) {
                 }
             ).then((payload, markId, isReply, id, reply) => {
                 if (payload.success) {
+                    setIsNewMarkId(true);
                     setSelfMarkId(payload.value);
                     updateURL("/chat/" + payload.value);
                     sendMessage(payload.value);
@@ -146,7 +183,6 @@ function ChatPage({markId}) {
         } else {
             sendMessage(selfMarkId);
         }
-
 
 
     };
@@ -188,9 +224,9 @@ function ChatPage({markId}) {
                 handleProgressUpdate,
                 handleComplete,
                 (error) => {
-                    toast.error(t("file_upload.error", { message: error?.message || 'Upload failed' }));
+                    toast.error(t("file_upload.error", {message: error?.message || 'Upload failed'}));
                     setUploadFiles(prev =>
-                        prev.map(f => f.id === uploadFile.id ? { ...f, error: true, progress: 0 } : f)
+                        prev.map(f => f.id === uploadFile.id ? {...f, error: true, progress: 0} : f)
                     );
                 }
             );
@@ -227,15 +263,15 @@ function ChatPage({markId}) {
             };
 
             const handleProgressUpdate = (id, progress) => {
-                setUploadFiles(p => p.map(f => f.id === id ? { ...f, progress } : f));
+                setUploadFiles(p => p.map(f => f.id === id ? {...f, progress} : f));
             };
             const handleComplete = (id, attachment) => {
                 setUploadFiles(p => p.filter(f => f.id !== id));
                 setAttachments(p => [...p, attachment]);
             };
             const handleError = (error) => {
-                toast.error(t("file_upload.error", { message: error?.message || t("unknown_error") }));
-                setUploadFiles(p => p.map(f => f.id === uploadId ? { ...f, error: true, progress: 0 } : f));
+                toast.error(t("file_upload.error", {message: error?.message || t("unknown_error")}));
+                setUploadFiles(p => p.map(f => f.id === uploadId ? {...f, error: true, progress: 0} : f));
             };
 
             const cleanup = fileUpload(
@@ -278,7 +314,7 @@ function ChatPage({markId}) {
                         } else {
                             setMessagesOrder([...data.messagesOrder, ...messagesOrder.slice(1)]);
                         }
-                        setMessages(prev => ({ ...prev, ...data.messages }));
+                        setMessages(prev => ({...prev, ...data.messages}));
                         resolve(true);
                     })
                     .catch(error => reject(error));
@@ -333,7 +369,7 @@ function ChatPage({markId}) {
                     }
                 });
                 wasAtBottomRef.current = calculateIsNearBottom();
-                setMessages(prev => ({ ...prev, ...data.messages }));
+                setMessages(prev => ({...prev, ...data.messages}));
                 setMessagesOrder([...messagesOrder.slice(0, messagesOrder.indexOf(msgId) + 1), ...data.messagesOrder]);
                 setMessages(draft => {
                     draft[msgId].nextMessage = newMsgId;
@@ -341,7 +377,7 @@ function ChatPage({markId}) {
                 sendSwitchRequest();
                 return true;
             } catch (error) {
-                toast.error(t("load_more_error", { message: error?.message || t("unknown_error") }));
+                toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));
             }
         } else {
             wasAtBottomRef.current = calculateIsNearBottom();
@@ -355,16 +391,18 @@ function ChatPage({markId}) {
     };
 
     const LoadingScreen = () => (
-        <div className="absolute inset-0 bg-white flex items-center justify-center"> {/* Changed fixed to absolute */}
+        <div
+            className="absolute z-51 inset-0 bg-white flex items-center justify-center"> {/* Changed fixed to absolute */}
             <div className="flex flex-col items-center">
-                <ThreeDotLoading />
+                <ThreeDotLoading/>
                 <span className="mt-2 text-sm text-gray-500">{t("loading_messages")}</span>
             </div>
         </div>
     );
 
     const LoadingFailedScreen = () => (
-        <div className="absolute inset-0 bg-white flex items-center justify-center"> {/* Changed fixed to absolute */}
+        <div
+            className="absolute z-51 inset-0 bg-white flex items-center justify-center"> {/* Changed fixed to absolute */}
             <div className="flex flex-col items-center">
                 <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
                     <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -383,11 +421,6 @@ function ChatPage({markId}) {
         messagesOrderRef.current = messagesOrder;
     }, [messagesOrder]);
 
-    // /* 组件位置更新 */
-    // useEffect(() => {
-    //     updateChatBoxHeight();
-    // }, [attachments, uploadFiles]);
-
     useEffect(() => {
 
         const unsubscribe1 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
@@ -395,8 +428,8 @@ function ChatPage({markId}) {
                 case "Add-Message":
                     if (payload.value && typeof payload.value === 'object') {
                         wasAtBottomRef.current = calculateIsNearBottom();
-                        setMessages(prev => ({ ...prev, ...payload.value }));
-                        reply({ success: true });
+                        setMessages(prev => ({...prev, ...payload.value}));
+                        reply({success: true});
                     }
                     break;
 
@@ -404,9 +437,9 @@ function ChatPage({markId}) {
                     if (Array.isArray(payload.value) && payload.value.length > 0) {
                         wasAtBottomRef.current = calculateIsNearBottom();
                         setMessagesOrder(payload.value);
-                        reply({ value: payload.value });
+                        reply({value: payload.value});
                     } else {
-                        reply({ value: messagesOrderRef.current });
+                        reply({value: messagesOrderRef.current});
                     }
                     break;
 
@@ -420,9 +453,9 @@ function ChatPage({markId}) {
                                 }
                             }
                         });
-                        if (payload.reply) reply({ success: true });
+                        if (payload.reply) reply({success: true});
                     } else {
-                        reply({ success: false });
+                        reply({success: false});
                     }
                     break;
             }
@@ -433,7 +466,7 @@ function ChatPage({markId}) {
                 emitEvent({
                     type: "message",
                     target: "ChatPage",
-                    payload: { command: "Messages-Loaded" },
+                    payload: {command: "Messages-Loaded"},
                     markId: selfMarkId
                 });
             }
@@ -445,126 +478,338 @@ function ChatPage({markId}) {
         };
     }, [attachments, selfMarkId, isMessageLoaded]);
 
+    useEffect(() => {
+        isNewMarkIdRef.current = isNewMarkId;
+    }, [isNewMarkId]);
+
+    useEffect(() => {
+        selfMarkIdRef.current = selfMarkId;
+
+        if (selfMarkId === null || selfMarkId === undefined) {
+            setMessages({});
+            setMessagesOrder([]);
+        }
+
+    }, [selfMarkId])
+
     // 页面初始化加载消息
     useEffect(() => {
-        const requestMessage = () => {
-            setIsLoading(true);
-            apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                params: { markId: selfMarkId }
-            })
-                .then(data => {
-                    wasAtBottomRef.current = calculateIsNearBottom();
-                    setMessages(data.messages);
-                    setMessagesOrder(data.messagesOrder);
-                    setIsLoading(false);
-                    setIsMessageLoaded(true);
 
-                    emitEvent({
-                        type: "message",
-                        target: "ChatPage",
-                        payload: { command: "Messages-Loaded" },
-                        markId: selfMarkId
-                    });
-                })
-                .catch(error => {
-                    toast(t("load_messages_error", { message: error?.message || t("unknown_error") }), {
-                        action: {
-                            label: t("retry"),
-                            onClick: () => {
-                                setIsLoading(true);
-                                setIsLoadingError(false);
-                                requestMessage();
-                            },
-                        },
-                        closeButton: false,
-                        dismissible: false,
-                        duration: Infinity,
-                    });
-                    setIsLoading(false);
-                    setIsLoadingError(true);
+        if (isNewMarkIdRef.current) {
+            setIsNewMarkId(false);  // 如果是新获得 MarkId 的跳过一次加载
+            return;
+        }
+
+        let modelsData = [];
+
+        const requestModels = async () => {
+            try {
+                // 先请求模型
+                modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT);
+                setModels(modelsData);
+                setSelectedModel(modelsData[0]);
+            } catch (error) {
+                toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
+            }
+        };
+
+        const requestMessages = async () => {
+
+            try {
+                const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
+                    params: {markId: selfMarkId}
                 });
+                wasAtBottomRef.current = calculateIsNearBottom();
+                setMessages(messagesData.messages);
+                setMessagesOrder(messagesData.messagesOrder);
+                setIsMessageLoaded(true);
+
+                // 确定该对话使用的模型
+                const foundModel = modelsData.find(item => item.id === messagesData.model)
+                if (foundModel) setSelectedModel(foundModel);
+
+                emitEvent({
+                    type: "message",
+                    target: "ChatPage",
+                    payload: {command: "Messages-Loaded"},
+                    markId: selfMarkId
+                });
+            } catch (error) {
+                toast(t("load_messages_error", {message: error?.message || t("unknown_error")}), {
+                    action: {
+                        label: t("retry"),
+                        onClick: () => {
+                            setIsLoading(true);
+                            setIsLoadingError(false);
+                            loadData();
+                        },
+                    },
+                    closeButton: false,
+                    dismissible: false,
+                    duration: Infinity,
+                });
+                setIsLoadingError(true);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const loadData = async () => {
+            setIsLoading(true);
+            await requestModels();
+            await requestMessages();
         };
 
         if (selfMarkId) {
-            requestMessage();
+            loadData();
+        } else {
+            requestModels();
         }
-    }, []);
 
+        setIsFirstMessageSend(true);
+
+    }, [selfMarkId]);
+
+    useEffect(() => {
+        const scrollToSelectedItem = () => {
+            if (modelListRef.current) {
+                const selectedItem = modelListRef.current.querySelector('[data-selected="true"]');
+                if (selectedItem) {
+                    // 使用 setTimeout 确保 DOM 已经更新
+                    setTimeout(() => {
+                        selectedItem.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'nearest',
+                            // 如果元素已经在可视区域内，强制滚动到顶部
+                            // block: 'center' // 或者使用 'center' 来居中显示
+                        });
+                    }, 0);
+                }
+            }
+        };
+
+        // 在弹窗打开时滚动
+        if (isModelPopoverOpen) {
+            scrollToSelectedItem();
+        }
+
+        // 同时在模型列表变化时也滚动（添加 models 依赖）
+    }, [isModelPopoverOpen, models, selectedModel]);
 
     return (
         <>
-            <div className="min-h-screen bg-white flex flex-col items-center pb-8">
+            <div className="full-screen-min-height bg-white flex flex-col items-center pb-8">
+                <header className="w-full bg-white flex items-center justify-start p-4 h-14">
+                    <Popover
+                        open={isModelPopoverOpen}
+                        onOpenChange={(open) => {
+                            setIsModelPopoverOpen(open);
+                            if (!open) {
+                                setPreviewModel(null);
+                            } else {
+                                // 展开时设置当前选中的模型为预览模型
+                                setPreviewModel(selectedModel);
+                                // 添加延迟确保 DOM 更新后再滚动
+                                setTimeout(() => {
+                                    const selectedItem = modelListRef.current?.querySelector('[data-selected="true"]');
+                                    if (selectedItem) {
+                                        selectedItem.scrollIntoView({
+                                            behavior: 'smooth',
+                                            block: 'nearest',
+                                        });
+                                    }
+                                }, 100);
+                            }
+                        }}
+                    >
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost"
+                                    className="justify-start px-0 hover:bg-transparent text-lg cursor-pointer">
+                                {selectedModel.name}
+                                <FaChevronDown
+                                    className={`ml-2 h-4 w-4 transition-transform duration-200 ${isModelPopoverOpen ? 'rotate-180' : ''}`}/>
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                            align="start"
+                            className={isMobile ? "w-[90vw] max-w-md p-4" : "w-72"}
+                        >
+                            <div className="flex flex-col space-y-4">
+                                {/* 模型列表容器 - 添加滚动 */}
+                                <div
+                                    ref={modelListRef}  // Add this ref
+                                    className="space-y-1 max-h-[200px] overflow-y-auto pr-1 pretty-scrollbar"
+                                >
+                                    {models.length === 0 ? (
+                                        <p className="text-center text-gray-500 py-4">{t("no_models")}</p>
+                                    ) : (
+                                        models.map((model) => {
+                                            const isSelected = model.id === selectedModel.id;
+                                            const handleClick = () => {
+                                                setSelectedModel(model);
+                                                if (!isMobile) {
+                                                    // 桌面端点击后关闭popover
+                                                    setIsModelPopoverOpen(false);
+                                                } else {
+                                                    // 移动端点击后只设置预览模型，不关闭popover
+                                                    setPreviewModel(model);
+                                                }
+                                            };
 
-                {isLoadingError ? (
-                    LoadingFailedScreen()
-                ) : !isLoading ? (
-                    <>
-                        <div className="flex-1 w-full overflow-y-auto px-4 pt-4">
-                            <div
-                                ref={messagesContainerRef}
-                                className="h-full overflow-y-auto pb-20 scroll-smooth"
-                                style={{ maxHeight: 'calc(100vh - 200px)' }}
-                            >
-                                <MessageContainer
-                                    messagesOrder={messagesOrder}
-                                    messages={messages}
-                                    onLoadMore={loadMoreHistory}
-                                    onSwitchMessage={switchMessage}
-                                    markId={selfMarkId}
-                                />
+                                            const handleMouseEnter = () => {
+                                                if (!isMobile) {
+                                                    setPreviewModel(model); // 桌面端悬停时更新预览
+                                                }
+                                            };
+
+                                            const itemContent = (
+                                                <>
+                                                    <Avatar className="h-6 w-6">
+                                                        <AvatarImage src={model.avatar} alt={model.name}/>
+                                                        <AvatarFallback>{model.name[0]}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="ml-2 text-left">
+                                                        <p className="font-medium text-sm text-gray-800">{model.name}</p>
+                                                        <p className="text-xs text-gray-500 truncate w-40">{model.description}</p>
+                                                    </div>
+                                                    {isSelected && (
+                                                        <FaCheckCircle className="ml-auto text-[#615CED] h-4 w-4"/>
+                                                    )}
+                                                </>
+                                            );
+
+                                            if (!isMobile) {
+                                                return (
+                                                    <div key={model.id} onMouseEnter={handleMouseEnter}>
+                                                        <button
+                                                            data-selected={isSelected ? 'true' : 'false'}  // Add this for querying
+                                                            onClick={handleClick}
+                                                            className={`cursor-pointer w-full flex items-center pl-2 pr-4 py-1.5 rounded-md transition-colors ${
+                                                                isSelected ? 'bg-[#F0F0FD]' : 'hover:bg-gray-100'
+                                                            }`}
+                                                        >
+                                                            {itemContent}
+                                                        </button>
+                                                    </div>
+                                                );
+                                            } else {
+                                                return (
+                                                    <button
+                                                        key={model.id}
+                                                        data-selected={isSelected ? 'true' : 'false'}  // Add this for querying
+                                                        onClick={handleClick}
+                                                        className={`cursor-pointer w-full flex items-center pl-2 pr-4 py-1.5 rounded-md transition-colors ${
+                                                            isSelected ? 'bg-[#F0F0FD]' : 'hover:bg-gray-100'
+                                                        }`}
+                                                    >
+                                                        {itemContent}
+                                                    </button>
+                                                );
+                                            }
+                                        })
+                                    )}
+                                </div>
+
+                                {/* 名片部分 - 不在滚动区域内 */}
+                                {(!isMobile || (isMobile && previewModel)) && previewModel && (
+                                    <div className="p-4 bg-gray-50 border rounded-md">
+                                        <div className="flex flex-col space-y-2">
+                                            <div className="flex items-center space-x-3">
+                                                <Avatar className="h-10 w-10">
+                                                    <AvatarImage src={previewModel.avatar} alt={previewModel.name}/>
+                                                    <AvatarFallback>{previewModel.name[0]}</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-semibold text-lg text-gray-800">{previewModel.name}</p>
+                                                    <p className="text-sm text-gray-500">{previewModel.description}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1">
+                                                {previewModel.tags.map((tag, index) => (
+                                                    <Badge key={index} variant="secondary" className="text-xs">
+                                                        {tag}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        </div>
+                        </PopoverContent>
+                    </Popover>
+                </header>
 
-                        <Transition
-                            show={showScrollToBottomButton}
-                            enter="transition-opacity duration-200"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="transition-opacity duration-150"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <button
-                                onClick={scrollToBottom}
-                                className="cursor-pointer absolute z-50 align-middle w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors -translate-x-1/2"
-                                aria-label="Scroll to bottom"
-                                style={{
-                                    bottom: `${scrollButtonBottom}px`,
-                                    left: '50%',
-                                }}
-                            >
-                                <FaArrowDown className="text-gray-500 w-3 h-3" />
-                            </button>
-                        </Transition>
-
+                <>
+                    <div
+                        className="flex-1 w-full overflow-y-auto relative">  {/* 添加 relative 以作为叠加层的定位参考 */}
                         <div
-                            className="absolute z-10 inset-x-0 bottom-10"
+                            ref={messagesContainerRef}
+                            className="h-full overflow-y-auto pb-20 scroll-smooth"
+                            style={{maxHeight: 'calc(120vh - 256px)'}}
                         >
-                            <ChatBox
-                                onSendMessage={handleSendMessage}
+                            <MessageContainer
+                                key={selfMarkId}
+                                messagesOrder={messagesOrder}
+                                messages={messages}
+                                onLoadMore={loadMoreHistory}
+                                onSwitchMessage={switchMessage}
                                 markId={selfMarkId}
-                                attachmentsMeta={attachments}
-                                setAttachments={setAttachments}
-                                onAttachmentRemove={onAttachmentRemove}
-                                uploadFiles={uploadFiles}
-                                FilePickerCallback={handleFilePicker}
-                                PicPickerCallback={handlePicPicker}
-                                onImagePaste={handleImagePaste}
-                                onRetryUpload={handleRetryUpload}
-                                onCancelUpload={handleCancelUpload}
-                                onDropFiles={handleSelectedFiles}
-                                onFolderDetected={handleFolderDetected}
-                                onHeightChange={(newHeight) => {
-                                    setScrollButtonBottom(newHeight + 45);
-                                }}
                             />
                         </div>
-                    </>
-                ) : (
-                    LoadingScreen()
-                )}
 
-                <footer className="absolute inset-x-0 bottom-0 h-12 bg-white flex items-center justify-center"> {/* Changed fixed to absolute; left-0 right-0 to inset-x-0 */}
+                        {/* 叠加 loading 屏幕 */}
+                        {isLoading && <LoadingScreen/>}
+
+                        {/* 叠加 error 屏幕 */}
+                        {isLoadingError && <LoadingFailedScreen/>}
+                    </div>
+
+                    <Transition
+                        show={showScrollToBottomButton}
+                        enter="transition-opacity duration-200"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="transition-opacity duration-150"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <button
+                            onClick={scrollToBottom}
+                            className="cursor-pointer absolute z-50 align-middle w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors -translate-x-1/2"
+                            aria-label="Scroll to bottom"
+                            style={{
+                                bottom: `${scrollButtonBottom}px`,
+                                left: '50%',
+                            }}
+                        >
+                            <FaArrowDown className="text-gray-500 w-3 h-3"/>
+                        </button>
+                    </Transition>
+
+                    <div className="absolute z-10 inset-x-0 bottom-10">
+                        <ChatBox
+                            onSendMessage={handleSendMessage}
+                            markIdRef={selfMarkIdRef}
+                            attachmentsMeta={attachments}
+                            setAttachments={setAttachments}
+                            onAttachmentRemove={onAttachmentRemove}
+                            uploadFiles={uploadFiles}
+                            FilePickerCallback={handleFilePicker}
+                            PicPickerCallback={handlePicPicker}
+                            onImagePaste={handleImagePaste}
+                            onRetryUpload={handleRetryUpload}
+                            onCancelUpload={handleCancelUpload}
+                            onDropFiles={handleSelectedFiles}
+                            onFolderDetected={handleFolderDetected}
+                            onHeightChange={(newHeight) => {
+                                setScrollButtonBottom(newHeight + 45);
+                            }}
+                        />
+                    </div>
+                </>
+
+                <footer
+                    className="absolute inset-x-0 bottom-0 h-12 bg-white flex items-center justify-center"> {/* Changed fixed to absolute; left-0 right-0 to inset-x-0 */}
                     <span className="text-xs text-gray-500">
                         © {new Date().getFullYear()} lovePikachu. All rights reserved.
                     </span>

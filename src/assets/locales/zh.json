@@ -59,5 +59,20 @@
   "regenerate_message": "重新生成",
   "message_info": "详细信息",
   "select_all": "选择全部",
-  "get_markid_error": "获取 MarkID 失败：{{message}}"
+  "get_markid_error": "获取 MarkID 失败：{{message}}",
+  "close_sidebar": "关闭侧边栏",
+  "open_sidebar": "打开侧边栏",
+  "no_models": "暂无可用模型",
+  "load_models_error": "加载模型失败：{{message}}",
+  "logo": "标志",
+  "home": "主页",
+  "settings": "设置",
+  "today": "今天",
+  "yesterday": "昨天",
+  "past_7_days": "过去 7 天",
+  "past_month": "过去一个月",
+  "earlier": "更早",
+  "load_history_error": "加载历史对话失败",
+  "load_dashboard_error": "加载仪表盘失败",
+  "new_conversation": "新建对话"
 }

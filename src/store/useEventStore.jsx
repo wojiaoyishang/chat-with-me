@@ -224,7 +224,7 @@ export const useEventStore = create((set, get) => {
             targetListeners.forEach(listener => {
                 if (!listener.active) return;
                 if (listener.acceptReply !== isReply) return;
-                if (eventMarkId !== null && listener.markId !== eventMarkId) return;
+                if (listener.markId != null && eventMarkId != null && listener.markId !== eventMarkId) return;
 
                 const reply = (data) => {
                     get()._emit({

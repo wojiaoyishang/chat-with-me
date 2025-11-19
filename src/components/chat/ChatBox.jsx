@@ -23,6 +23,7 @@ import DropFileLayer from "@/components/chat/DropFileLayer.jsx";
 import {toast} from "sonner";
 import {apiEndpoint} from "@/config.js"
 import apiClient from '@/lib/apiClient';
+import {getLocalSetting, isMobile, setLocalSetting} from "@/lib/tools.js";
 
 // ========== Helper functions for nested objects ==========
 const getNestedValue = (obj, path) => {
@@ -154,7 +155,7 @@ const toggleAllInGroup = (extraTools, togglePaths, toChecked) => {
  * @param {boolean} [readOnly=false] - 是否只读模式
  * @param {Function} FilePickerCallback - 触发文件选择器的回调
  * @param {Function} PicPickerCallback - 触发图片选择器的回调
- * @param {string} markId - 组件唯一标识，用于事件通信
+ * @param {ref} markIdRef - 组件唯一标识的引用，用于标识与跨页面不更新
  * @param {Array} [attachmentsMeta=[]] - 已上传附件元数据列表
  * @param {Function} setAttachments - 设置附件数据
  * @param {Array} [uploadFiles=[]] - 正在上传的文件列表
@@ -171,7 +172,7 @@ function ChatBox({
                      readOnly = false,
                      FilePickerCallback,
                      PicPickerCallback,
-                     markId,
+                     markIdRef,
                      attachmentsMeta = [],
                      setAttachments,
                      uploadFiles = [],
@@ -191,6 +192,7 @@ function ChatBox({
     const [showTipMessage, setShowTipMessage] = useState(true);
     const [tipMessage, setTipMessage] = useState(t("shift_enter_newline"));
     const [tipMessageIsForNewLine, setTipMessageIsForNewLine] = useState(true);
+
     const [tools, setTools] = useState([]);
     const [extraTools, setExtraTools] = useState([]);
     const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -263,7 +265,10 @@ function ChatBox({
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             if (e.shiftKey) {
-                if (tipMessageIsForNewLine) chatboxSetup({tipMessage: null});
+                if (tipMessageIsForNewLine) {
+                    chatboxSetup({tipMessage: null});
+                    setLocalSetting("ShowShiftEnterNewlineTip", false);
+                };
                 return;
             } else {
                 e.preventDefault();
@@ -686,9 +691,9 @@ function ChatBox({
     }, []);
     useEffect(() => {
         const checkScreenSize = () => {
-            const isSmall = window.innerWidth < 500;
+            const isSmall = isMobile();
             setIsSmallScreen(isSmall);
-            if (isSmall && tipMessageIsForNewLine) {
+            if (isSmall && tipMessageIsForNewLine || !getLocalSetting("ShowShiftEnterNewlineTip", true)) {
                 setTipMessage(null);
                 setTipMessageIsForNewLine(false);
                 setShowTipMessage(false);
@@ -715,7 +720,7 @@ function ChatBox({
         }
     }, [toolsLoadedStatus]);
     useEffect(() => {
-        const unsubscribe = onEvent("widget", "ChatBox", markId).then((payload, markId, isReply, id, reply) => {
+        const unsubscribe = onEvent("widget", "ChatBox", markIdRef.current).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
                 case "SendButton-State":
                     const validStates = ['disabled', 'normal', 'loading', 'generating'];
@@ -837,7 +842,7 @@ function ChatBox({
             />
             <div
                 ref={rootRef}
-                className="w-full max-w-220 px-4 overflow-hidden mx-auto"
+                className="w-full max-w-225 px-4 overflow-hidden mx-auto"
                 style={{
                     transition: 'height 0.3s ease-in-out, max-height 0.3s ease-in-out',
                     height: 'auto',

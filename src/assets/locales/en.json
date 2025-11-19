@@ -59,5 +59,20 @@
   "regenerate_message": "Regenerate",
   "message_info": "Message's Info",
   "select_all": "Select All",
-  "get_markid_error": "Can't request MarkID: {{message}}"
+  "get_markid_error": "Can't request MarkID: {{message}}",
+  "close_sidebar": "Close Sidebar",
+  "open_sidebar": "Open Sidebar",
+  "no_models": "No available Models",
+  "load_models_error": "Load Models Error: {{message}}",
+  "logo": "Logo",
+  "home": "Home",
+  "settings": "Settings",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "past_7_days": "Past 7 Days",
+  "past_month": "Past Month",
+  "earlier": "Earlier",
+  "load_history_error": "Load Conversation History Error",
+  "load_dashboard_error": "Load Dashboard Error",
+  "new_conversion": "New Conversation"
 }
