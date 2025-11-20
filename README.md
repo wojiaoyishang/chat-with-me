@@ -923,3 +923,7 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 }
 ```
 
+# 默认前端 LocalStorage 配置
+
+- SyncMessageSwitch 布尔值，是否实时同步消息选择分支给前端，如果为真每次切换分支时都会发送一个事件给服务器
+- ShowShiftEnterNewlineTip 布尔值，是否在桌面端第一次显示按下 Shift + Enter 提示，默认为 true
