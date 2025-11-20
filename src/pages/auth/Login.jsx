@@ -9,6 +9,7 @@ import {motion, AnimatePresence} from 'framer-motion';
 import {toast} from "sonner";
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
+import CryptoJS from 'crypto-js';
 
 const Login = () => {
     const {t} = useTranslation();
@@ -23,7 +24,10 @@ const Login = () => {
         setIsLoading(true);
         try {
             // 使用 apiClient 发送 POST 请求，跳过 401 的自动重定向处理
-            await apiClient.post(apiEndpoint.LOGIN_ENDPOINT, {username, password}, {
+            await apiClient.post(apiEndpoint.LOGIN_ENDPOINT, {
+                username,
+                password: CryptoJS.SHA256(password).toString()
+            }, {
                 skipAuthCheck: true,
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',

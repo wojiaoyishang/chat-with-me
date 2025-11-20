@@ -42,9 +42,11 @@ apiClient.interceptors.response.use(
     (error) => {
         error.code = error.response?.data?.code || error.code;
         error.message = error.response?.data?.msg || error.message;
-        if (error.response && error.response.status === 401 && !error.config.skipAuthCheck) {
+        if (error?.code === 401 && !error.config.skipAuthCheck) {
             const currentUrl = window.location.href;
-            window.location.href = `/login?redirect=${encodeURIComponent(currentUrl)}`;
+            setTimeout(() => {
+                window.location.href = `/login?redirect=${encodeURIComponent(currentUrl)}`;
+            }, 1000)
             return Promise.reject(new Error("Unauthorized - Redirecting to login"));
         }
         return Promise.reject(error);
