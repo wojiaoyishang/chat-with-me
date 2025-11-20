@@ -74,5 +74,16 @@
   "earlier": "Earlier",
   "load_history_error": "Load Conversation History Error",
   "load_dashboard_error": "Load Dashboard Error",
-  "new_conversion": "New Conversation"
+  "new_conversion": "New Conversation",
+  "login": "Login",
+  "enter_credentials": "Enter your credentials to access your account.",
+  "email": "Email",
+  "enter_email": "Enter your email",
+  "password": "Password",
+  "enter_password": "Enter your password",
+  "login_button": "Login",
+  "username": "Username",
+  "enter_username": "Enter your username",
+  "login_error": "Login error: {{message}}",
+  "loading_dashboard": "Loading dashboard"
 }

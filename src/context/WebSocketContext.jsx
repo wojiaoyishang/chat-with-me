@@ -164,41 +164,6 @@ export const WebSocketProvider = ({children}) => {
                         isReply: false
                     });
 
-                    // 如果是初始连接失败，弹出错误窗口
-                    if (isInitialConnectionRef.current) {
-                        FatalErrorPopoverElement.show({
-                            title: t('websocket.popover_title'),
-                            message: t('websocket.popover_content'),
-                            showCloseButton: true,
-                            showCancelButton: false,
-                            onRetry: () => {
-                                toast.promise(retryConnection(), {
-                                    loading: t('websocket.connecting'),
-                                    success: (data) => t('websocket.connect_success'),
-                                    error: (error) => t('websocket.connect_failed', {message: error.message || t('unknown_error')}),
-                                });
-                            },
-                            onClose: () => {
-                                toast(t("websocket.reconnect_tip"), {
-                                    action: {
-                                        label: t("retry"),
-                                        onClick: () => {
-                                            toast.promise(retryConnection(), {
-                                                loading: t('websocket.connecting'),
-                                                success: (data) => t('websocket.connect_success'),
-                                                error: (error) => t('websocket.connect_failed', {message: error.message || t('unknown_error')}),
-                                            });
-                                        },
-                                    },
-                                    position: 'bottom-right',
-                                    closeButton: false,
-                                    dismissible: false,
-                                    duration: Infinity,
-                                });
-                            }
-                        });
-                    }
-
                     reject(error);
                 };
 
@@ -291,6 +256,11 @@ export const WebSocketProvider = ({children}) => {
                         isReply: false
                     });
 
+                    if (event.code === 401) {  // 没有登录
+                        isInitialConnectionRef.current = false;
+                        return;
+                    }
+
                     // 如果不是正常关闭，且不是初始连接失败，尝试重连
                     if (event.code !== 1000 && !isInitialConnectionRef.current) {
                         // 服务器主动断开连接，自动重连
@@ -352,40 +322,6 @@ export const WebSocketProvider = ({children}) => {
                         isReply: false
                     });
 
-                    // 如果是初始连接失败，弹出错误窗口
-                    if (isInitialConnectionRef.current) {
-                        FatalErrorPopoverElement.show({
-                            title: t('websocket.popover_title'),
-                            message: t('websocket.popover_content'),
-                            showCloseButton: true,
-                            showCancelButton: false,
-                            onRetry: () => {
-                                toast.promise(retryConnection(), {
-                                    loading: t('websocket.connecting'),
-                                    success: (data) => t('websocket.connect_success'),
-                                    error: (error) => t('websocket.connect_failed', {message: error.message || t('unknown_error')}),
-                                });
-                            },
-                            onClose: () => {
-                                toast(t("websocket.reconnect_tip"), {
-                                    action: {
-                                        label: t("retry"),
-                                        onClick: () => {
-                                            toast.promise(retryConnection(), {
-                                                loading: t('websocket.connecting'),
-                                                success: (data) => t('websocket.connect_success'),
-                                                error: (error) => t('websocket.connect_failed', {message: error.message || t('unknown_error')}),
-                                            });
-                                        },
-                                    },
-                                    position: 'bottom-right',
-                                    closeButton: false,
-                                    dismissible: false,
-                                    duration: Infinity,
-                                });
-                            }
-                        });
-                    }
                 };
 
                 // 超时处理（10秒）

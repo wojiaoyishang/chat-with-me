@@ -7,17 +7,10 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import FileResponse
 from utils.api import JSONResponseSuccess, JSONResponseFail
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, WebSocket, Form, Query
+from fastapi import FastAPI, WebSocket, Form, Query, Response, Request
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # 允许所有来源（生产环境建议指定具体域名）
-    allow_credentials=True,
-    allow_methods=["*"],  # 允许所有 HTTP 方法（GET, POST, PUT, DELETE 等）
-    allow_headers=["*"],  # 允许所有请求头
-)
 
 # 上传目录
 UPLOAD_DIR = Path("uploads")
@@ -25,6 +18,27 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 with open('./api/messages.json', 'r', encoding='utf-8') as f:
     messages = json.load(f)
+
+@app.middleware("http")
+async def check_login_middleware(request: Request, call_next):
+    # 排除不需要验证的路由（如登录接口）
+    if request.url.path not in ["/login"]:
+        login_cookie = request.cookies.get("login")
+        if login_cookie != "yes":
+            return JSONResponseFail(code=401, status_code=401, msg='未登录')
+
+    response = await call_next(request)
+    return response
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['http://localhost:5173'],
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许所有 HTTP 方法（GET, POST, PUT, DELETE 等）
+    allow_headers=["*"],  # 允许所有请求头
+)
+
 
 
 @app.get("/uploads/{filename}")
@@ -345,8 +359,8 @@ async def upload_file(file: UploadFile = File(...)):
             msg="上传成功",
             data={
                 "serverId": filename,  # 文件编号 = 文件名
-                "downloadUrl": "http://191.168.1.11:8000" + download_url,  # 下载地址
-                "preview": "http://191.168.1.11:8000" + download_url,
+                "downloadUrl": "http://127.0.0.1:8000" + download_url,  # 下载地址
+                "preview": "http://127.0.0.1:8000" + download_url,
                 "previewType": 'image',
             }
         )
@@ -354,9 +368,31 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponseFail(msg=f"上传失败: {str(e)}")
 
+@app.post("/login")
+async def login( username: str=Form(), password: str=Form()):
+    if username == 'admin':
+        r = JSONResponseSuccess(msg="登录成功")
+        r.set_cookie(
+            key="login",
+            value="yes",
+            max_age=3600,
+            httponly=True,
+            secure=True,
+            samesite="none"
+        )
+        return r
+    else:
+        return JSONResponseFail(msg="登录失败", code=401, status_code=401)
+
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+
+    login_cookie = websocket.cookies.get("login")
+    if login_cookie != "yes":
+        await websocket.close(code=401, reason="Unauthorized: Login required")
+        return
+
     await websocket.accept()
     while True:
         data = await websocket.receive_text()

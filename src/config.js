@@ -1,6 +1,6 @@
 
-export const BASE_BACKEND_URL = 'http://191.168.1.11:8000'
-export const WEBSOCKET_URL = 'ws://191.168.1.11:8000/ws'
+export const BASE_BACKEND_URL = 'http://127.0.0.1:8000'
+export const WEBSOCKET_URL = 'ws://127.0.0.1:8000/ws'
 
 export const apiEndpoint = {
     CHATBOX_ENDPOINT: '/chatbox',
@@ -8,6 +8,7 @@ export const apiEndpoint = {
     CHAT_MESSAGES_ENDPOINT: '/chat/messages',
     CHAT_MODELS_ENDPOINT: '/chat/models',
     CHAT_CONVERSATIONS_ENDPOINT: '/chat/history',
-    DASHBOARD_ENDPOINT: '/dashboard'
+    DASHBOARD_ENDPOINT: '/dashboard',
+    LOGIN_ENDPOINT: '/login'
 };
 

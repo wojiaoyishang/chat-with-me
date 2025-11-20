@@ -10,11 +10,13 @@ import {
 } from "react-router-dom";
 import React from "react";
 import ReactDOM from "react-dom/client";
+
 import {WebSocketProvider} from './context/WebSocketContext.jsx';
 import MyToaster from "@/context/MyToaster.jsx";
 import FatalErrorPopoverElement from "@/context/FatalErrorPopover.jsx";
 import ContextEvent from "@/context/ContextEvent.jsx";
 import DashboardPage from "@/pages/dashboard/DashboardPage.jsx";
+import Login from "./pages/auth/Login.jsx";
 
 const router = createBrowserRouter([
     {
@@ -28,6 +30,10 @@ const router = createBrowserRouter([
     {
         path: "/",
         element: <Navigate to="/chat" replace/>
+    },
+    {
+        path: "/login",
+        element: <Login />
     }
 ]);
 
