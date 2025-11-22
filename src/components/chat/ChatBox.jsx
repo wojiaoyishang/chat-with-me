@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment} 
 import {useTranslation} from 'react-i18next';
 import {Transition} from '@headlessui/react';
 import {FaRedo, FaSearch, FaArrowDown} from "react-icons/fa";
-import {FaEarthAmericas} from 'react-icons/fa6';
+import {FaEarthAmericas, FaXing} from 'react-icons/fa6';
 import {Check, X, PenLine, Trash2, Minus, Square} from "lucide-react";
 import {
     DropdownMenuItem,
@@ -516,7 +516,7 @@ function ChatBox({
         return tools.map((tool) => {
             const isActive = tool.isActive ?? false;
             const disabled = tool.disabled ?? false;
-            const iconMap = {search: FaSearch, refresh: FaRedo, earth: FaEarthAmericas};
+            const iconMap = {search: FaSearch, refresh: FaRedo, earth: FaEarthAmericas, xing: FaXing};
             let iconData = null;
             if (tool.iconType === 'library') {
                 iconData = iconMap[tool.iconData];
@@ -535,7 +535,7 @@ function ChatBox({
                             builtin_tools: {...prev.builtin_tools, [tool.name]: isActive}
                         }));
                     }}
-                    text={t(tool.text)}
+                    textKey={t(tool.text)}
                     isActive={isActive}
                     disabled={disabled}
                     bgColor={tool.bgColor}

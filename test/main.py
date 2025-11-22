@@ -49,7 +49,7 @@ async def download_file(filename: str):
     return FileResponse(file_path)
 
 
-@app.get("/chatbox")
+@app.get("/chat/chatbox")
 async def chatbox_api():
     with open('./api/chatbox.json', 'r', encoding='utf-8') as f:
         return JSONResponseSuccess(data=json.load(f))
@@ -215,7 +215,7 @@ async def get_chat_models():
     ])
 
 
-@app.get("/chat/history")
+@app.get("/chat/conversations")
 async def get_chat_history():
     return JSONResponseSuccess(data=[
         {
