@@ -635,7 +635,7 @@ function ChatPage({markId, setMarkId}) {
                         </PopoverTrigger>
                         <PopoverContent
                             align="start"
-                            className={isMobile ? "w-[90vw] max-w-md p-4" : "w-72"}
+                            className={isMobile ? "w-[90vw] max-w-md p-4" : "w-85"}
                         >
                             <div className="flex flex-col space-y-4">
                                 {/* 模型列表容器 - 添加滚动 */}
@@ -723,8 +723,8 @@ function ChatPage({markId, setMarkId}) {
                                                     <AvatarFallback>{previewModel.name[0]}</AvatarFallback>
                                                 </Avatar>
                                                 <div>
-                                                    <p className="font-semibold text-lg text-gray-800">{previewModel.name}</p>
-                                                    <p className="text-sm text-gray-500">{previewModel.description}</p>
+                                                    <p className="font-semibold text-sm text-gray-800">{previewModel.name}</p>
+                                                    <p className="text-xs text-gray-500">{previewModel.description}</p>
                                                 </div>
                                             </div>
                                             <div className="flex flex-wrap gap-1">

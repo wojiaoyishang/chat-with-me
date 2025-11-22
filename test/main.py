@@ -22,7 +22,7 @@ with open('./api/messages.json', 'r', encoding='utf-8') as f:
 @app.middleware("http")
 async def check_login_middleware(request: Request, call_next):
     # 排除不需要验证的路由（如登录接口）
-    if request.url.path not in ["/login"]:
+    if request.url.path not in ["/user/login"]:
         login_cookie = request.cookies.get("login")
         if login_cookie != "yes":
             return JSONResponseFail(code=401, status_code=401, msg='未登录')
@@ -368,7 +368,7 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponseFail(msg=f"上传失败: {str(e)}")
 
-@app.post("/login")
+@app.post("/user/login")
 async def login( username: str=Form(), password: str=Form()):
     if username == 'admin':
         r = JSONResponseSuccess(msg="登录成功")

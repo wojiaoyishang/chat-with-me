@@ -9,6 +9,6 @@ export const apiEndpoint = {
     CHAT_MODELS_ENDPOINT: '/chat/models',
     CHAT_CONVERSATIONS_ENDPOINT: '/chat/history',
     DASHBOARD_ENDPOINT: '/dashboard',
-    LOGIN_ENDPOINT: '/login'
+    LOGIN_ENDPOINT: '/user/login'
 };
 

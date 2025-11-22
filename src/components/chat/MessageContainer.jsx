@@ -26,6 +26,7 @@ import {
 
 import {copyTextToClipboard, useIsMobile} from "@/lib/tools.js";
 import {onEvent} from "@/store/useEventStore.jsx";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const MessageToolsFunction = (action, msg, markId, msgId, t) => {
 
@@ -207,11 +208,10 @@ const LeftAvatarName = ({avatar, displayName, isLeaving}) => (
     <div className={`flex items-center gap-2 mb-1 transition-opacity duration-300 ${
         isLeaving ? 'opacity-0' : 'opacity-100'
     }`}>
-        <img
-            src={avatar}
-            alt="Assistant Avatar"
-            className="w-8 h-8 rounded-full"
-        />
+        <Avatar className="h-10 w-10">
+            <AvatarImage src={avatar} alt={displayName}/>
+            <AvatarFallback>{displayName[0]}</AvatarFallback>
+        </Avatar>
         {displayName && (
             <span className="text-sm font-semibold text-gray-700">
         {displayName}
@@ -297,7 +297,7 @@ const MessageContent = ({
                         }) => {
     if (isRight) {
         return (
-            <div className="flex items-start gap-3 max-w-[80%] ml-auto">
+            <div className="flex items-center gap-3 max-w-[80%] ml-auto">
                 <div
                     className={`bg-white rounded-2xl px-4 py-2.5 shadow-sm text-gray-800 break-words whitespace-pre-wrap border border-gray-100 transition-opacity duration-300 ${
                         isLeaving ? 'opacity-0' : 'opacity-100'
@@ -305,11 +305,10 @@ const MessageContent = ({
                 >
                     {content}
                 </div>
-                <img
-                    src={avatar}
-                    alt="User Avatar"
-                    className="w-8 h-8 rounded-full flex-shrink-0"
-                />
+                <Avatar className="h-10 w-10">
+                    <AvatarImage src={avatar} alt="User"/>
+                    <AvatarFallback>U</AvatarFallback>
+                </Avatar>
             </div>
         );
     }
@@ -597,11 +596,10 @@ const MessageContainer = forwardRef(({
                                     msgMode={true}
                                 />
                             </div>
-                            <img
-                                src={avatar}
-                                alt="User Avatar"
-                                className="w-8 h-8 rounded-full flex-shrink-0"
-                            />
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src={avatar} alt="User"/>
+                                <AvatarFallback>U</AvatarFallback>
+                            </Avatar>
                         </div>
                     ) : (
                         <div className="max-w-[95%] pl-7 mb-2">
