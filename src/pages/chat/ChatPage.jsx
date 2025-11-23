@@ -143,7 +143,7 @@ function ChatPage({markId, setMarkId}) {
                 target: "ChatPage",
                 payload: {
                     command: "Message-Send",
-                    message: messageContent,
+                    content: messageContent,
                     toolsStatus: toolsStatus,
                     attachments: attachments,
                     isEdit: isEditMessage,
