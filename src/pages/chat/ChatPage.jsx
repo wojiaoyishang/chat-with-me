@@ -115,7 +115,7 @@ function ChatPage({markId, setMarkId}) {
         handleSelectedFiles(files);
     };
 
-    const handleSendMessage = (messageContent, toolsStatus, isEditMessage, editMessageId, attachments) => {
+    const handleSendMessage = (messageContent, toolsStatus, isEditMessage, editMessageId, attachments, sendButtonStatus) => {
 
         if (uploadFiles.length !== 0) {
             toast.error(t("file_upload_not_complete"));
@@ -147,7 +147,8 @@ function ChatPage({markId, setMarkId}) {
                     toolsStatus: toolsStatus,
                     attachments: attachments,
                     isEdit: isEditMessage,
-                    model: selectedModel.id
+                    model: selectedModel.id,
+                    sendButtonStatus: sendButtonStatus
                 },
                 markId: markId
             };
@@ -429,7 +430,23 @@ function ChatPage({markId, setMarkId}) {
                 case "Add-Message":
                     if (payload.value && typeof payload.value === 'object') {
                         wasAtBottomRef.current = calculateIsNearBottom();
-                        setMessages(prev => ({...prev, ...payload.value}));
+
+                        setMessages(prev => {
+                            const updated = {...prev};
+                            for (const [key, newValue] of Object.entries(payload.value)) {
+                                if (newValue !== null && typeof newValue === 'object') {
+                                    if (updated[key] && typeof updated[key] === 'object' && updated[key] !== null) {
+                                        updated[key] = {...updated[key], ...newValue};
+                                    } else {
+                                        updated[key] = newValue;
+                                    }
+                                } else {
+                                    updated[key] = newValue;
+                                }
+                            }
+                            return updated;
+                        });
+
                         reply({success: true});
                     }
                     break;
@@ -459,6 +476,19 @@ function ChatPage({markId, setMarkId}) {
                         reply({success: false});
                     }
                     break;
+
+                case "Add-Message-Messages":
+                    if (payload.msgId && payload.value) {
+                        setMessages(draft => {
+                            draft[payload.msgId].messages = [...draft[payload.msgId].messages, payload.value];
+                            if (payload.switch) {
+                                draft[payload.msgId].nextMessage = payload.value;
+                            }
+                        });
+
+                    }
+                    break;
+
             }
         });
 
@@ -507,7 +537,7 @@ function ChatPage({markId, setMarkId}) {
             try {
                 // 先请求模型
                 modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
-                    params: markId ? { markId: selfMarkId } : {}
+                    params: markId ? {markId: selfMarkId} : {}
                 });
                 setModels(modelsData);
                 setSelectedModel(modelsData[0]);

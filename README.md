@@ -640,7 +640,7 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 #### 添加一个完整的 message 消息
 
-添加消息不会使页面中的消息展示增加，需要另外设置消息顺序
+此命令允许消息覆盖，如果 msgid 已经存在会遵循消息源数据覆盖规则，覆盖提供的字段的内容，添加消息不会使页面中的消息展示增加，需要另外设置消息顺序
 
 ```python
 {
@@ -685,8 +685,19 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 回复（如果有）：
 
 ```python
-{ 
+{
     "success": True
+}
+```
+
+#### 为消息插入新分支数据
+
+```python
+{
+    "command": "Add-Message-Messages",
+    "msgId": "msgId",  # 目标 msgid
+    "value": "msgId",  # 新分支 msgId
+    "switch": True # 是否立刻切换
 }
 ```
 
@@ -722,7 +733,8 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 	"immediate": True,  # 是否立即发送，重生成消息依赖于此
 	"isEdit": True,  # 是否为编辑消息模式
 	"msgId": "",  # 如果为编辑消息模式才会附带
-	"model": "qwen"  # 目前选中的模型
+	"model": "qwen",  # 目前选中的模型
+    "sendButtonStatus": "normal/disabled/loading/generating"  # 按钮状态
 }
 ```
 
@@ -874,6 +886,24 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
     "msgId": "",  // 目标消息ID
 }
 ```
+
+#### 将输入框中的内容直接作为用户发言发送到页面上
+
+大部分情况下，用户按下发送按钮的时候都是将自己的发言发送到网页上，这个消息可以方便将输入框的内容作为要发送的内容转移到页面上，不需要服务器二次传输用户的正文内容
+
+```python
+{
+	"command": "Shot-Message",
+    "msgId": "消息ID",  # 如果消息id是重复的旧直接替换
+    "value": {
+        "name": "名称"
+        ...  # 消息的结构，上述三个必须要有，缺省默认按照 position: right, allowRegenerate: false，prevMessage 默认为已有页面消息的最后一条
+    },
+    "autoAddOrder": True  # 默认为 true 是否将消息直接添加到最末尾，并且自动修改消息链接
+}
+```
+
+实际上这个实现的原理也是依靠内部的广播，只不过节约了后端手动操作的时间和步骤
 
 ## Sidebar 事件 (target=Sidebar)
 

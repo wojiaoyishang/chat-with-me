@@ -86,5 +86,6 @@
   "enter_username": "Enter your username",
   "login_error": "Login error: {{message}}",
   "loading_dashboard": "Loading dashboard",
-  "logging_in": "Logging..."
+  "logging_in": "Logging...",
+  "loading_history": "Loading History..."
 }

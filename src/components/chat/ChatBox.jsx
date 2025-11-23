@@ -200,7 +200,7 @@ function ChatBox({
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
     const [toolsLoadedStatus, setToolsLoadedStatus] = useState(0);
-    const [sendButtonState, setSendButtonState] = useState('normal');
+    const [sendButtonStatus, setSendButtonStatus] = useState('normal');
     const [selectedQuickOption, setSelectedQuickOption] = useState(null);
     const [attachmentHeight, setAttachmentHeight] = useState(0);
     const [ignoreAttachmentTools, setIgnoreAttachmentTools] = useState(false);
@@ -210,7 +210,7 @@ function ChatBox({
     const messageContentRef = useRef(messageContent);
     const textareaRef = useRef(null);
     const cloneTextareaRef = useRef(null);
-    const sendButtonStateRef = useRef(sendButtonState);
+    const sendButtonStatusRef = useRef(sendButtonStatus);
     const attachmentRef = useRef(null);
     const rootRef = useRef(null);
     // ========== Textarea height logic ==========
@@ -259,7 +259,7 @@ function ChatBox({
     };
     // ========== Message handling ==========
     const handleSendMessage = () => {
-        onSendMessage(messageContent, toolsStatus, isEditMessage, editMessageId, attachmentsMeta);
+        onSendMessage(messageContent, toolsStatus, isEditMessage, editMessageId, attachmentsMeta, sendButtonStatusRef.current);
         textareaRef.current?.focus();
     };
     const handleKeyDown = (e) => {
@@ -268,7 +268,8 @@ function ChatBox({
                 if (tipMessageIsForNewLine) {
                     chatboxSetup({tipMessage: null});
                     setLocalSetting("ShowShiftEnterNewlineTip", false);
-                };
+                }
+                ;
                 return;
             } else {
                 e.preventDefault();
@@ -545,7 +546,7 @@ function ChatBox({
     };
     // ========== Send button ==========
     const sendButtonStyle = useMemo(() => {
-        const isEmpty = !messageContent.trim() && attachmentsMeta.length === 0 && sendButtonState === 'normal';
+        const isEmpty = !messageContent.trim() && attachmentsMeta.length === 0 && sendButtonStatus === 'normal';
         const baseIcon = (
             <svg t="1758800079268" className="icon" viewBox="0 0 1024 1024" version="1.1"
                  xmlns="http://www.w3.org/2000/svg" p-id="6097" width="24" height="24">
@@ -564,7 +565,7 @@ function ChatBox({
                 disabled: true
             };
         }
-        switch (sendButtonState) {
+        switch (sendButtonStatus) {
             case 'disabled':
                 return {
                     state: 'disabled',
@@ -606,7 +607,7 @@ function ChatBox({
                     disabled: false
                 };
         }
-    }, [messageContent, sendButtonState, attachmentsMeta]);
+    }, [messageContent, sendButtonStatus, attachmentsMeta]);
     // ========== Dynamic setup ==========
     const chatboxSetup = (data) => {
         const newBuiltinStatus = {};
@@ -681,9 +682,9 @@ function ChatBox({
     };
     // ========== Effects ==========
     useEffect(() => {
-        sendButtonStateRef.current = sendButtonState;
+        sendButtonStatusRef.current = sendButtonStatus;
         messageContentRef.current = messageContent;
-    }, [sendButtonState, messageContent]);
+    }, [sendButtonStatus, messageContent]);
     useEffect(() => {
         adjustTextareaHeight();
     }, [messageContent, isEditMessage]);
@@ -727,10 +728,10 @@ function ChatBox({
                 case "SendButton-State":
                     const validStates = ['disabled', 'normal', 'loading', 'generating'];
                     if (validStates.includes(payload.value)) {
-                        setSendButtonState(payload.value);
+                        setSendButtonStatus(payload.value);
                         reply({value: payload.value});
                     } else {
-                        reply({value: sendButtonStateRef.current});
+                        reply({value: sendButtonStatusRef.current});
                     }
                     break;
                 case "Set-Message":
@@ -765,12 +766,78 @@ function ChatBox({
                     break;
                 case "Set-EditMessage":
                     if (payload.immediate) {
-                        onSendMessage(payload.content, toolsStatus, true, payload.msgId, payload.attachments);
+                        onSendMessage(payload.content, toolsStatus, true, payload.msgId, payload.attachments, sendButtonStatusRef.current);
                     } else {
                         setIsEditMessage(Boolean(payload.isEdit));
                         if (payload.attachments) setAttachments(payload.attachments);
                         if (payload.content) setMessageContent(payload.content);
                         if (payload.msgId) setEditMessageId(payload.msgId);
+                    }
+
+                    break;
+                case "Shot-Message":  // 原地发送消息
+                    if (payload.msgId && payload.value && payload.value.name) {
+
+                        emitEvent({
+                            type: "message",
+                            target: "ChatPage",
+                            payload: {
+                                command: "MessagesOrder-Meta"
+                            },
+                            markId: markIdRef.current,
+                            fromWebsocket: true  // 不要发到 ws 去
+                        }).then((messagesOrder) => {
+                            messagesOrder = messagesOrder.value;
+
+                            if (!payload.value.content) payload.value.content = messageContentRef.current;
+                            if (!payload.value.attachments) payload.value.attachments = attachmentsMeta;
+                            if (!payload.value.allowRegenerate) payload.value.allowRegenerate = false;
+                            if (!payload.value.prevMessage) payload.value.prevMessage = messagesOrder[messagesOrder.length - 1];
+                            if (!payload.value.position) payload.value.position = "right";
+
+                            emitEvent({
+                                type: "message",
+                                target: "ChatPage",
+                                payload: {
+                                    command: "Add-Message",
+                                    "value": {
+                                        [payload.msgId]: payload.value
+                                    }
+                                },
+                                markId: markIdRef.current,
+                                fromWebsocket: true  // 不要发到 ws 去
+                            })
+
+                            if (payload.autoAddOrder === undefined || payload.autoAddOrder) {
+
+                                emitEvent({
+                                    type: "message",
+                                    target: "ChatPage",
+                                    payload: {
+                                        command: "MessagesOrder-Meta",
+                                        value: [...messagesOrder, payload.msgId]
+                                    },
+                                    markId: markIdRef.current,
+                                    fromWebsocket: true  // 不要发到 ws 去
+                                })
+
+                                // 修改消息链
+                                emitEvent({
+                                    type: "message",
+                                    target: "ChatPage",
+                                    payload: {
+                                        command: "Add-Message-Messages",
+                                        msgId: messagesOrder[messagesOrder.length - 2],
+                                        value: payload.msgId,
+                                        switch: true
+                                    },
+                                    markId: markIdRef.current,
+                                    fromWebsocket: true  // 不要发到 ws 去
+                                })
+
+                            }
+
+                        })
                     }
 
                     break;

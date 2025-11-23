@@ -86,5 +86,6 @@
   "enter_username": "输入您的用户名",
   "login_error": "登录错误：{{message}}",
   "loading_dashboard": "加载仪表盘中",
-  "logging_in": "登录中..."
+  "logging_in": "登录中...",
+  "loading_history": "加载历史对话中"
 }
