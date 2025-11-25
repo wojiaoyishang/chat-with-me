@@ -28,21 +28,26 @@
 
 # 项目简介
 
-> **⚠️注意** 该项目的代码大部分由 AI 生成，而界面中的小细节与功能设计是由我撰写的，所以开发中若遇到一些不必要的代码、可优化的代码欢迎提交 Issue 批评和提交 PR 优化。
+> **⚠️注意** 该项目的代码大部分由 AI 生成，而界面中的小细节与功能设计是由我撰写的，所以开发中若遇到一些不必要的代码、可优化的代码欢迎提交
+> Issue 批评和提交 PR 优化。
 
 Chat With Me 是一个简单的大语言模型文本对话的前端，其设计理念为 “少写前端，一切由后端控制” ，非常适合个人项目搭建和学校毕设。
 
-项目基于 React 19 的现代化前端项目，采用 Vite 作为构建工具，Tailwind CSS 配合 Radix UI 和 Headless UI 构建可访问、高颜值的 UI 组件，结合 Zustand 进行状态管理，支持 Markdown 富文本编辑与渲染（含数学公式和代码高亮），并集成 i18next 实现国际化。
+项目基于 React 19 的现代化前端项目，采用 Vite 作为构建工具，Tailwind CSS 配合 Radix UI 和 Headless UI 构建可访问、高颜值的
+UI 组件，结合 Zustand 进行状态管理，支持 Markdown 富文本编辑与渲染（含数学公式和代码高亮），并集成 i18next 实现国际化。
 
 # 设计说明
 
 ## 宏定义说明
 
-在配置文件 `vite.config.js` 中，存在一个宏定义 `DEBUG_MODE` ，该宏定义用于设置是否为调试模式，在调试模式下，前端将会暴露 `emitEvent` 函数用于测试广播。
+在配置文件 `vite.config.js` 中，存在一个宏定义 `DEBUG_MODE` ，该宏定义用于设置是否为调试模式，在调试模式下，前端将会暴露
+`emitEvent` 函数用于测试广播。
 
 ## 接口配置
 
-请求接口配置文件在 `src/config.js` ，其中定义了 HTTP 的请求接口和 WebSocket 的连接接口，其中 **HTTP 请求** 主要用于 **配置数据的获取** 和 **内容的获取** （例如历史对话、历史消息等），对于 **WebSocket** 主要用于 **实时对话生成** 、 **命令控制** （通过广播控制前端行为），需要配置如下所有接口前端才能工作（只要不是404就行）。
+请求接口配置文件在 `src/config.js` ，其中定义了 HTTP 的请求接口和 WebSocket 的连接接口，其中 **HTTP 请求** 主要用于 *
+*配置数据的获取** 和 **内容的获取** （例如历史对话、历史消息等），对于 **WebSocket** 主要用于 **实时对话生成** 、 **命令控制
+** （通过广播控制前端行为），需要配置如下所有接口前端才能工作（只要不是404就行）。
 
 在项目 test 文件夹下我使用 fastapi 搭建了一个非常潦草的接口示例。
 
@@ -67,13 +72,14 @@ Chat With Me 是一个简单的大语言模型文本对话的前端，其设计�
 
 ```python
 {
-    "type": "",           # string: message/widget/page/websocket
-    "target": "",         # string: 目标接收者
-    "payload": {},        # object: 参数，具体查看相关事件的说明
-    "markId": None,       # string: 会话标记，空则广播到所有会话
-    "id": "",             # string: 事件 ID（发出方生成），部分事件需要等待回复，回复时需要携带与发出方一样
-    "isReply": False,     # boolean: 是否为回复
-    "fromWebsocket": False # boolean: 是否来自 WebSocket（防止回传）
+    "type": "",  # string: message/widget/page/websocket
+    "target": "",  # string: 目标接收者
+    "payload": {},  # object: 参数，具体查看相关事件的说明
+    "markId": None,  # string: 会话标记，空则广播到所有会话
+    "id": "",  # string: 事件 ID（发出方生成），部分事件需要等待回复，回复时需要携带与发出方一样
+    "isReply": False,  # boolean: 是否为回复
+    "fromWebsocket": False,  # boolean: 是否来自 WebSocket（防止回传）
+    "notReplyToWebsocket": False  # boolean: 回复信息是否要发送到 ws
 }
 ```
 
@@ -125,15 +131,15 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 #### 按钮配置项（每个元素为字典）
 
-| 字段         | 类型     | 必填 | 说明 |
-|--------------|----------|------|------|
-| `name`       | `str`    | 是   | 按钮唯一标识符，发送消息时会携带此字段用于标识工具启用状态 |
-| `text`       | `str`    | 是   | 按钮上显示的文本标签 |
-| `iconType`   | `str`    | 是   | 图标类型，支持：`"library"`、`"svg"`、`"image"` |
-| `iconData`   | `str`    | 是   | 图标数据，根据 `iconType` 不同含义不同 |
-| `bgColor`    | `str`    | 否   | 按钮背景颜色，默认为 `"#4F39F6"`（十六进制颜色码） |
-| `isActive`   | `bool`   | 否   | 是否默认处于激活状态（高亮），默认 `False` |
-| `disabled`   | `bool`   | 否   | 是否禁用该按钮（灰色不可点击），默认 `False` |
+| 字段         | 类型     | 必填 | 说明                                    |
+|------------|--------|----|---------------------------------------|
+| `name`     | `str`  | 是  | 按钮唯一标识符，发送消息时会携带此字段用于标识工具启用状态         |
+| `text`     | `str`  | 是  | 按钮上显示的文本标签                            |
+| `iconType` | `str`  | 是  | 图标类型，支持：`"library"`、`"svg"`、`"image"` |
+| `iconData` | `str`  | 是  | 图标数据，根据 `iconType` 不同含义不同             |
+| `bgColor`  | `str`  | 否  | 按钮背景颜色，默认为 `"#4F39F6"`（十六进制颜色码）       |
+| `isActive` | `bool` | 否  | 是否默认处于激活状态（高亮），默认 `False`             |
+| `disabled` | `bool` | 否  | 是否禁用该按钮（灰色不可点击），默认 `False`            |
 
 #### iconType 说明
 
@@ -193,14 +199,14 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-    "type": "toggle",           # 必须，菜单类型
-    "name": "autoTranslate",    # 除 label/separator 外必须
-    "text": "自动翻译",         # 显示文本
-    "iconType": "library",      # 可选，图标类型
-    "iconData": "earth",        # 可选，图标数据
-    "disabled": True,           # 可选，是否禁用
-    "default": True,            # toggle/radio 可选，默认值
-    "autoClose": False          # 可选，点击后是否自动关闭菜单
+    "type": "toggle",  # 必须，菜单类型
+    "name": "autoTranslate",  # 除 label/separator 外必须
+    "text": "自动翻译",  # 显示文本
+    "iconType": "library",  # 可选，图标类型
+    "iconData": "earth",  # 可选，图标数据
+    "disabled": True,  # 可选，是否禁用
+    "default": True,  # toggle/radio 可选，默认值
+    "autoClose": False  # 可选，点击后是否自动关闭菜单
 }
 ```
 
@@ -328,12 +334,11 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ##### 状态初始化默认规则
 
-| 类型       | 默认值 |
-|------------|--------|
-| `toggle`   | `False` |
-| `radio`    | `children` 中**第一个**项的 `name` |
-| `group`    | 不存储状态，状态由子项决定 |
-
+| 类型       | 默认值                          |
+|----------|------------------------------|
+| `toggle` | `False`                      |
+| `radio`  | `children` 中**第一个**项的 `name` |
+| `group`  | 不存储状态，状态由子项决定                |
 
 ### 4. 完整配置示例
 
@@ -515,9 +520,9 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 ```python
 [
     {
-            "updateDate": "2025-03-18T20:46:00+08:00",  # 更新时间（ISO 8601 格式，带时区 +08:00）前端基于此排序
-            "title": "Legacy System Update",  # 对话标题
-            "markId": "mark23"  # 对话ID
+        "updateDate": "2025-03-18T20:46:00+08:00",  # 更新时间（ISO 8601 格式，带时区 +08:00）前端基于此排序
+        "title": "Legacy System Update",  # 对话标题
+        "markId": "mark23"  # 对话ID
     },
     # ...
 ]
@@ -550,7 +555,7 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 ```python
 {
     "messages": {
-        "test1": { ... }
+        "test1": {...}
     },  # 所有对话元数据 ID:消息内容 完整元数据请参考消息源数据格式
     "messagesOrder": ['test1'],  # 之前的对话顺序，不包含 prevId
     "model": "qwen3",  # 之前对话使用的模型id
@@ -563,19 +568,20 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 ```python
 {
     "prevMessage": "ID0",  # 上一条对话的ID，如果没有是 None
-    "position": "left",    # 属于左边还是右边(right)，右边默认为气泡，还有一个 None 如果为空或者没有就是隐藏消息，隐藏消息不会被渲染
-    "content": "",         # 内容
-    "name": "AI Assistant", # 昵称
+    "position": "left",  # 属于左边还是右边(right)，右边默认为气泡，还有一个 None 如果为空或者没有就是隐藏消息，隐藏消息不会被渲染
+    "content": "",  # 内容
+    "name": "AI Assistant",  # 昵称
     "avatar": "/src/assets/AI.png",  # 头像
     "messages": ["ID1", "ID2", "ID3"],  # 如果没有是空列表
     "nextMessage": "ID1",  # 目前选择的 下一条对话的ID，如果没有是 None
-    "attachments": [],     # 附件内容，可选
+    "attachments": [],  # 附件内容，可选
     "allowRegenerate": True,  # 是否允许重新生成，默认为 True，可选
-    "tip": ""              # 如果存在，下方将会显示一个信息提示，可选
+    "tip": ""  # 如果存在，下方将会显示一个信息提示，可选
 }
 ```
 
-消息设置理念， **messages** 是一个字典，这个字典中理论上包含了所有对话的数据，键名是消息的id，键值是消息源数据，而 **messagesOrder** 是用于前端请求和前端渲染的消息顺序数组，每一个项都是消息的id。
+消息设置理念， **messages** 是一个字典，这个字典中理论上包含了所有对话的数据，键名是消息的id，键值是消息源数据，而 *
+*messagesOrder** 是用于前端请求和前端渲染的消息顺序数组，每一个项都是消息的id。
 
 ## DASHBOARD_ENDPOINT - 仪表盘配置（主页配置）
 
@@ -592,9 +598,11 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ## LOGIN_ENDPOINT - 登录接口
 
-前端默认 POST 并提交表单数据，表单数据有 username 和 password（hash256） ，后端需要提供 200 状态码和 200 code 响应，如果提供 401 则表示登录失败。
+前端默认 POST 并提交表单数据，表单数据有 username 和 password（hash256） ，后端需要提供 200 状态码和 200 code 响应，如果提供
+401 则表示登录失败。
 
-注意，任何接口（除该接口外），如果存在 code 401 ，前端会自动跳转到登录页面，对于 Websocket 如果是因为账户验证失败而拒绝连接，请将 code 设置为 401 。
+注意，任何接口（除该接口外），如果存在 code 401 ，前端会自动跳转到登录页面，对于 Websocket 如果是因为账户验证失败而拒绝连接，请将
+code 设置为 401 。
 
 # 广播事件
 
@@ -631,7 +639,7 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-    "success": True,      # 如果为 True 就是获取成功，False 则是失败，提示下面的 value
+    "success": True,  # 如果为 True 就是获取成功，False 则是失败，提示下面的 value
     "value": "566f8a77-3c9d-112a-8b1a-2453c92e434b"  # 服务器生成的 markid
 }
 ```
@@ -644,10 +652,10 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-	"command": "Add-Message",
-	"value": {
-		"msgId": { ... }  # 消息ID：消息源数据
-	}
+    "command": "Add-Message",
+    "value": {
+        "msgId": {...}  # 消息ID：消息源数据
+    }
 }
 ```
 
@@ -657,16 +665,16 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-	"command": "MessagesOrder-Meta",
-	"value": ["c6113dac-22c4-4a54-a1f1-957022fbde71"]  # 如果不提供，则不修改消息链
+    "command": "MessagesOrder-Meta",
+    "value": ["c6113dac-22c4-4a54-a1f1-957022fbde71"]  # 如果不提供，则不修改消息链
 }
 ```
 
 回复：
 
 ```python
-{ 
-    "value": ["c6113dac-22c4-4a54-a1f1-957022fbde71"] 
+{
+    "value": ["c6113dac-22c4-4a54-a1f1-957022fbde71"]
 }
 ```
 
@@ -676,9 +684,9 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-	"command": "Add-MessageContent",
-	"value": {"02fa133e-e7d0-4bb0-89e2-b35656b442e9": "测试"},  # 消息ID：要追加内容
-	"reply": True  # 默认为 False，如果为 True 则会触发响应是否成功
+    "command": "Add-MessageContent",
+    "value": {"02fa133e-e7d0-4bb0-89e2-b35656b442e9": "测试"},  # 消息ID：要追加内容
+    "reply": True  # 默认为 False，如果为 True 则会触发响应是否成功
 }
 ```
 
@@ -697,7 +705,15 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
     "command": "Add-Message-Messages",
     "msgId": "msgId",  # 目标 msgid
     "value": "msgId",  # 新分支 msgId
-    "switch": True # 是否立刻切换
+    "switch": True  # 是否立刻切换
+}
+```
+
+返回
+
+```python
+{
+    "success": True  # 如果 msgid 不存在会返回 False
 }
 ```
 
@@ -707,7 +723,7 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-	"command": "Messages-Loaded"
+    "command": "Messages-Loaded"
 }
 ```
 
@@ -719,21 +735,21 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-	"command": "Message-Send",
-	"message": "Text",
-	"toolsStatus": {
-		"builtin_tools": {
-			"search": False
-		},
-		"extra_tools": {
-			"autoTranslate": False
-		}
-	},  # 前文有说明该字段
-	"attachments": [], 
-	"immediate": True,  # 是否立即发送，重生成消息依赖于此
-	"isEdit": True,  # 是否为编辑消息模式
-	"msgId": "",  # 如果为编辑消息模式才会附带
-	"model": "qwen",  # 目前选中的模型
+    "command": "Message-Send",
+    "message": "Text",
+    "toolsStatus": {
+        "builtin_tools": {
+            "search": False
+        },
+        "extra_tools": {
+            "autoTranslate": False
+        }
+    },  # 前文有说明该字段
+    "attachments": [],
+    "immediate": True,  # 是否立即发送，重生成消息依赖于此
+    "isEdit": True,  # 是否为编辑消息模式
+    "msgId": "",  # 如果为编辑消息模式才会附带
+    "model": "qwen",  # 目前选中的模型
     "sendButtonStatus": "normal/disabled/loading/generating"  # 按钮状态
 }
 ```
@@ -744,9 +760,9 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-	"command": "Switch-Message", 
-	"msgId": "ID",   # 哪一条消息
-	"nextMessage": "ID" # 接下来的消息
+    "command": "Switch-Message",
+    "msgId": "ID",  # 哪一条消息
+    "nextMessage": "ID"  # 接下来的消息
 }
 ```
 
@@ -760,8 +776,12 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```javascript
 {
-    "command": "Set-SwitchingMessage",
-    "value": "msgId"
+    "command"
+:
+    "Set-SwitchingMessage",
+        "value"
+:
+    "msgId"
 }
 ```
 
@@ -769,14 +789,13 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ### type=widget
 
-
 #### 获取或者设置发送按钮的状态
 
 输入
 
 ```python
 {
-    "command": "SendButton-State",  # 控制发送按钮状态
+    "command": "SendButton-Status",  # 控制发送按钮状态
     "value": ['disabled', 'normal', 'loading', 'generating']  # 任选一，如果是其他的就是默认获取按钮状态（为空也许）
 }
 ```
@@ -785,29 +804,22 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-    "command": "SendButton-State",  # 返回发送按钮状态
-    "value": ['disabled', 'normal', 'loading', 'generating'] #  任选一
+    "value": ['disabled', 'normal', 'loading', 'generating']  # 任选一
 }
 ```
 
-
-
 #### 设置输入框内容
-
 
 输入
 
 ```python
 {
     "command": "Set-Message",
-    "value": "要设置的内容" # 内容
+    "value": "要设置的内容"  # 内容
 }
 ```
 
-
-
 #### 获取输入框内容
-
 
 输入
 
@@ -821,13 +833,9 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-    "command": "Set-Message", 
-    "value": "内容"  
+    "value": "内容"
 }
 ```
-
-
-
 
 #### 设置聊天输入框属性
 
@@ -840,7 +848,6 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 }
 ```
 
-
 #### 设置备选项目
 
 输入
@@ -851,7 +858,6 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
     "value": [{id: 1, label: "今天天气怎么样？", value: "今天天气怎么样？"}, ...]
 }
 ```
-
 
 #### 设置/获取附件数据
 
@@ -868,8 +874,7 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-    "command": "Attachment-Meta", 
-    "value": []   # 附件数据
+    "value": []  # 附件数据
 }
 ```
 
@@ -880,10 +885,10 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 ```python
 {
     "command": "Set-EditMessage",
-    "isEdit": True,  // 是否编辑模式
-    "attachments": [],  // 附件数据
-    "content": "",  // 输入框文本
-    "msgId": "",  // 目标消息ID
+    "isEdit": True, // 是否编辑模式
+"attachments": [], // 附件数据
+"content": "", // 输入框文本
+"msgId": "", // 目标消息ID
 }
 ```
 
@@ -893,7 +898,7 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 ```python
 {
-	"command": "Shot-Message",
+    "command": "Shot-Message",
     "msgId": "消息ID",  # 如果消息id是重复的旧直接替换
     "value": {
         "name": "名称"
@@ -903,7 +908,15 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 }
 ```
 
-实际上这个实现的原理也是依靠内部的广播，只不过节约了后端手动操作的时间和步骤
+实际上这个实现的原理也是依靠内部的广播，只不过节约了后端手动操作的时间和步骤，
+
+返回：
+
+```python
+{
+    "success": True,  # 如果没有第一条消息则会添加失败
+}
+```
 
 ## Sidebar 事件 (target=Sidebar)
 
@@ -931,7 +944,7 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
     "target": "Sidebar",
     "payload": {
         "command": "Update-ConversationDate",
-        "value": ""   # 要设置的新值, 2025-03-18T20:46:00+08:00，为空为目前最新时间
+        "value": ""  # 要设置的新值, 2025-03-18T20:46:00+08:00，为空为目前最新时间
     },
     "markId": ""  # 目标 markId
 }
@@ -948,7 +961,7 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
     "payload": {
         "command": "Show-Toast",
         "name": "error",  # 吐司类型查看 sonner
-        "args": "错误"    # 如果是一个列表则传递参数，否则就默认把其当成第一个参数传递
+        "args": "错误"  # 如果是一个列表则传递参数，否则就默认把其当成第一个参数传递
     }
 }
 ```

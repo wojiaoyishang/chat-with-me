@@ -171,7 +171,8 @@ export const useEventStore = create((set, get) => {
                 isReply = false,
                 payload,
                 id = null,
-                fromWebsocket = false
+                fromWebsocket = false,
+                notReplyToWebsocket = false
             } = event;
 
             const {listeners} = get();
@@ -230,7 +231,8 @@ export const useEventStore = create((set, get) => {
                     get()._emit({
                         payload: data,
                         isReply: true,
-                        id: id
+                        id: id,
+                        ...(notReplyToWebsocket && {fromWebsocket: notReplyToWebsocket})
                     }, new Error('Reply initiated at:').stack);
                 };
 
@@ -302,14 +304,15 @@ export let emitEvent = ({
                             markId = null,
                             isReply = false,
                             id = null,
-                            fromWebsocket = false
+                            fromWebsocket = false,
+                            notReplyToWebsocket = false
                         }) => {
     const emitStack = typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE
         ? new Error('Event emitted at:').stack
         : null;
 
     // 创建事件对象
-    const event = {type, target, payload, markId, isReply, id, fromWebsocket};
+    const event = {type, target, payload, markId, isReply, id, fromWebsocket, notReplyToWebsocket};
 
     // 获取store状态
     const state = useEventStore.getState();

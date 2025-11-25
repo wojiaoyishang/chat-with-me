@@ -725,7 +725,7 @@ function ChatBox({
     useEffect(() => {
         const unsubscribe = onEvent("widget", "ChatBox", markIdRef.current).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
-                case "SendButton-State":
+                case "SendButton-Status":
                     const validStates = ['disabled', 'normal', 'loading', 'generating'];
                     if (validStates.includes(payload.value)) {
                         setSendButtonStatus(payload.value);
@@ -785,7 +785,8 @@ function ChatBox({
                                 command: "MessagesOrder-Meta"
                             },
                             markId: markIdRef.current,
-                            fromWebsocket: true  // 不要发到 ws 去
+                            fromWebsocket: true,  // 不要发到 ws 去
+                            notReplyToWebsocket: true
                         }).then((messagesOrder) => {
                             messagesOrder = messagesOrder.value;
 
@@ -805,7 +806,8 @@ function ChatBox({
                                     }
                                 },
                                 markId: markIdRef.current,
-                                fromWebsocket: true  // 不要发到 ws 去
+                                fromWebsocket: true,  // 不要发到 ws 去
+                                notReplyToWebsocket: true
                             })
 
                             if (payload.autoAddOrder === undefined || payload.autoAddOrder) {
@@ -818,21 +820,25 @@ function ChatBox({
                                         value: [...messagesOrder, payload.msgId]
                                     },
                                     markId: markIdRef.current,
-                                    fromWebsocket: true  // 不要发到 ws 去
-                                })
-
-                                // 修改消息链
-                                emitEvent({
-                                    type: "message",
-                                    target: "ChatPage",
-                                    payload: {
-                                        command: "Add-Message-Messages",
-                                        msgId: messagesOrder[messagesOrder.length - 2],
-                                        value: payload.msgId,
-                                        switch: true
-                                    },
-                                    markId: markIdRef.current,
-                                    fromWebsocket: true  // 不要发到 ws 去
+                                    fromWebsocket: true,  // 不要发到 ws 去
+                                    notReplyToWebsocket: true
+                                }).then(data => {
+                                    // 修改消息链
+                                    emitEvent({
+                                        type: "message",
+                                        target: "ChatPage",
+                                        payload: {
+                                            command: "Add-Message-Messages",
+                                            msgId: messagesOrder[messagesOrder.length - 1],
+                                            value: payload.msgId,
+                                            switch: true
+                                        },
+                                        markId: markIdRef.current,
+                                        fromWebsocket: true,  // 不要发到 ws 去
+                                        notReplyToWebsocket: true
+                                    }).then(data => {
+                                        reply(data);
+                                    })
                                 })
 
                             }

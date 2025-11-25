@@ -434,7 +434,8 @@ function ChatPage({markId, setMarkId}) {
                         setMessages(prev => {
                             const updated = {...prev};
                             for (const [key, newValue] of Object.entries(payload.value)) {
-                                if (newValue !== null && typeof newValue === 'object') {
+                                if (newValue.messages === undefined) { newValue.messages = []; }
+                                if (typeof newValue === 'object') {
                                     if (updated[key] && typeof updated[key] === 'object' && updated[key] !== null) {
                                         updated[key] = {...updated[key], ...newValue};
                                     } else {
@@ -455,6 +456,7 @@ function ChatPage({markId, setMarkId}) {
                     if (Array.isArray(payload.value) && payload.value.length > 0) {
                         wasAtBottomRef.current = calculateIsNearBottom();
                         setMessagesOrder(payload.value);
+                        messagesOrderRef.current = payload.value;
                         reply({value: payload.value});
                     } else {
                         reply({value: messagesOrderRef.current});
@@ -480,10 +482,15 @@ function ChatPage({markId, setMarkId}) {
                 case "Add-Message-Messages":
                     if (payload.msgId && payload.value) {
                         setMessages(draft => {
+                            if (draft[payload.msgId] === undefined) {
+                                reply({success: false});
+                                return;
+                            }
                             draft[payload.msgId].messages = [...draft[payload.msgId].messages, payload.value];
                             if (payload.switch) {
                                 draft[payload.msgId].nextMessage = payload.value;
                             }
+                            reply({success: true});
                         });
 
                     }
