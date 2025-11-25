@@ -593,8 +593,10 @@ function ChatBox({
                     state: 'generating',
                     className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
                     icon: (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-4 h-4 bg-white rounded"></div>
+                        <div className="relative w-6 h-6">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-4 h-4 bg-white rounded"></div>
+                            </div>
                         </div>
                     ),
                     disabled: false
@@ -764,6 +766,7 @@ function ChatBox({
                         reply({value: attachments});
                     }
                     break;
+
                 case "Set-EditMessage":
                     if (payload.immediate) {
                         onSendMessage(payload.content, toolsStatus, true, payload.msgId, payload.attachments, sendButtonStatusRef.current);
@@ -775,6 +778,12 @@ function ChatBox({
                     }
 
                     break;
+
+                case "Clear":
+                    setAttachments([]);
+                    setMessageContent("");
+                    break;
+
                 case "Shot-Message":  // 原地发送消息
                     if (payload.msgId && payload.value && payload.value.name) {
 

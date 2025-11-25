@@ -445,10 +445,12 @@ function ChatPage({markId, setMarkId}) {
                                     updated[key] = newValue;
                                 }
                             }
+
+                            reply({success: true});
+
                             return updated;
                         });
 
-                        reply({success: true});
                     }
                     break;
 

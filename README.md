@@ -886,9 +886,18 @@ code 设置为 401 。
 {
     "command": "Set-EditMessage",
     "isEdit": True, // 是否编辑模式
-"attachments": [], // 附件数据
-"content": "", // 输入框文本
-"msgId": "", // 目标消息ID
+    "attachments": [], // 附件数据
+    "content": "", // 输入框文本
+    "msgId": "", // 目标消息ID
+}
+```
+
+
+#### 清空输入和附件
+
+```python
+{
+    "command": "Clear",
 }
 ```
 
