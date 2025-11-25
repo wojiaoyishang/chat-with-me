@@ -796,7 +796,7 @@ code 设置为 401 。
 ```python
 {
     "command": "SendButton-Status",  # 控制发送按钮状态
-    "value": ['disabled', 'normal', 'loading', 'generating']  # 任选一，如果是其他的就是默认获取按钮状态（为空也许）
+    "value": "disabled" # 任选一，如果是其他的就是默认获取按钮状态（为空也许） 'disabled' , 'normal', 'loading', 'generating' 
 }
 ```
 
@@ -804,7 +804,7 @@ code 设置为 401 。
 
 ```python
 {
-    "value": ['disabled', 'normal', 'loading', 'generating']  # 任选一
+    "value": "disabled", # 任选一，如果是其他的就是默认获取按钮状态（为空也许） 'disabled' , 'normal', 'loading', 'generating' 
 }
 ```
 
