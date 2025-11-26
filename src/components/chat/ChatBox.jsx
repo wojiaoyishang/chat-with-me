@@ -838,7 +838,7 @@ function ChatBox({
                                         target: "ChatPage",
                                         payload: {
                                             command: "Add-Message-Messages",
-                                            msgId: messagesOrder[messagesOrder.length - 1],
+                                            msgId: payload.value.prevMessage,
                                             value: payload.msgId,
                                             switch: true
                                         },
@@ -859,7 +859,7 @@ function ChatBox({
             }
         });
         return () => unsubscribe();
-    }, [toolsStatus]);
+    }, [toolsStatus, attachmentsMeta]);
 
     useEffect(() => {
         const updateHeight = () => {

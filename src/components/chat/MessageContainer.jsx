@@ -568,7 +568,7 @@ const MessageContainer = forwardRef(({
             );
         };
 
-        // 情况1: 只有附件
+        // 情况1: 只有附件 (优化版)
         if (hasAttachments && !hasContent) {
             return (
                 <div
@@ -576,7 +576,6 @@ const MessageContainer = forwardRef(({
                     className={`flex flex-col w-full transition-all duration-300 ease-in-out ${
                         isRight ? 'items-end' : 'items-start'
                     } ${getMessageAnimationClass(id, isFading)}`}
-                    // 为整个消息容器添加鼠标事件，以确保悬停状态的准确性
                     onMouseEnter={() => isRight && setHoveredMessageId(id)}
                     onMouseLeave={() => isRight && setHoveredMessageId(null)}
                 >
@@ -589,14 +588,14 @@ const MessageContainer = forwardRef(({
                     )}
 
                     {isRight ? (
-                        <div className="flex items-center justify-end gap-2">
-                            <div className="max-w-[20.8%] md:max-w-[56.8%] lg:max-w-[70.2%]">
+                        <div className="flex items-start gap-2 max-w-full mt-1">
+                            <div className="flex-1 min-w-[150px] max-w-[calc(100%-3rem)] sm:pl-0 pl-7">
                                 <AttachmentShowcase
                                     attachmentsMeta={msg.attachments}
                                     msgMode={true}
                                 />
                             </div>
-                            <Avatar className="h-10 w-10">
+                            <Avatar className="h-10 w-10 flex-shrink-0 mt-1">
                                 <AvatarImage src={avatar} alt="User"/>
                                 <AvatarFallback>U</AvatarFallback>
                             </Avatar>
