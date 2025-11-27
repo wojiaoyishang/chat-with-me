@@ -754,9 +754,19 @@ code 设置为 401 。
 }
 ```
 
+#### 手动切换分支
+
+```python
+{
+    "command": "Load-Switch-Message",
+    "msgId": "ID",  # 哪一条消息
+    "nextMessage": "ID" # 接下来的消息
+}
+```
+
 #### 切换分支事件
 
-由前端发出（如果没有手动配置关闭），
+由前端发出（如果没有手动配置关闭），该消息后端发出无效（要使用参考手动切换分支）
 
 ```python
 {
@@ -796,7 +806,8 @@ code 设置为 401 。
 ```python
 {
     "command": "SendButton-Status",  # 控制发送按钮状态
-    "value": "disabled" # 任选一，如果是其他的就是默认获取按钮状态（为空也许） 'disabled' , 'normal', 'loading', 'generating' 
+    "value": "disabled", # 任选一，如果是其他的就是默认获取按钮状态（为空也许） 'disabled' , 'normal', 'loading', 'generating'
+    "readOnly": False  # 是否设置编辑框只读状态
 }
 ```
 
@@ -814,7 +825,7 @@ code 设置为 401 。
 
 ```python
 {
-    "command": "Set-Message",
+    "command": "Set-MessageContent",
     "value": "要设置的内容"  # 内容
 }
 ```
@@ -825,7 +836,7 @@ code 设置为 401 。
 
 ```python
 {
-    "command": "Get-Message",
+    "command": "Get-MessageContent",
 }
 ```
 
@@ -913,7 +924,8 @@ code 设置为 401 。
         "name": "名称"
         ...  # 消息的结构，上述三个必须要有，缺省默认按照 position: right, allowRegenerate: false，prevMessage 默认为已有页面消息的最后一条
     },
-    "autoAddOrder": True  # 默认为 true 是否将消息直接添加到最末尾，并且自动修改消息链接
+    "autoAddOrder": True,  # 默认为 true 是否将消息直接添加到最末尾，并且自动修改消息链接
+    "noClear": False  # 是否不要自动清空输入框
 }
 ```
 

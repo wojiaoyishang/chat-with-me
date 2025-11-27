@@ -155,7 +155,7 @@ const toggleAllInGroup = (extraTools, togglePaths, toChecked) => {
  * @param {boolean} [readOnly=false] - 是否只读模式
  * @param {Function} FilePickerCallback - 触发文件选择器的回调
  * @param {Function} PicPickerCallback - 触发图片选择器的回调
- * @param {ref} markIdRef - 组件唯一标识的引用，用于标识与跨页面不更新
+ * @param {ref} markId - 组件唯一标识的引用
  * @param {Array} [attachmentsMeta=[]] - 已上传附件元数据列表
  * @param {Function} setAttachments - 设置附件数据
  * @param {Array} [uploadFiles=[]] - 正在上传的文件列表
@@ -172,7 +172,7 @@ function ChatBox({
                      readOnly = false,
                      FilePickerCallback,
                      PicPickerCallback,
-                     markIdRef,
+                     markId,
                      attachmentsMeta = [],
                      setAttachments,
                      uploadFiles = [],
@@ -687,13 +687,16 @@ function ChatBox({
         sendButtonStatusRef.current = sendButtonStatus;
         messageContentRef.current = messageContent;
     }, [sendButtonStatus, messageContent]);
+
     useEffect(() => {
         adjustTextareaHeight();
     }, [messageContent, isEditMessage]);
+
     useEffect(() => {
         initTextareaClone();
         return cleanupTextareaClone;
     }, []);
+
     useEffect(() => {
         const checkScreenSize = () => {
             const isSmall = isMobile();
@@ -708,6 +711,7 @@ function ChatBox({
         window.addEventListener('resize', checkScreenSize);
         return () => window.removeEventListener('resize', checkScreenSize);
     }, []);
+
     useEffect(() => {
         if (toolsLoadedStatus === 0) {
             if (apiEndpoint.CHATBOX_ENDPOINT.trim() === '') {
@@ -724,8 +728,11 @@ function ChatBox({
                 });
         }
     }, [toolsLoadedStatus]);
+
+    // 广播
     useEffect(() => {
-        const unsubscribe = onEvent("widget", "ChatBox", markIdRef.current).then((payload, markId, isReply, id, reply) => {
+        const unsubscribe = onEvent("widget", "ChatBox", markId).then((payload, markId, isReply, id, reply) => {
+
             switch (payload.command) {
                 case "SendButton-Status":
                     const validStates = ['disabled', 'normal', 'loading', 'generating'];
@@ -735,11 +742,14 @@ function ChatBox({
                     } else {
                         reply({value: sendButtonStatusRef.current});
                     }
+                    if (payload.readOnly !== undefined) {
+                        setIsReadOnly(Boolean(payload.readOnly));
+                    }
                     break;
-                case "Set-Message":
+                case "Set-MessageContent":
                     setMessageContent(payload.value);
                     break;
-                case "Get-Message":
+                case "Get-MessageContent":
                     reply({value: messageContentRef.current});
                     break;
                 case "Setup-ChatBox":
@@ -793,13 +803,13 @@ function ChatBox({
                             payload: {
                                 command: "MessagesOrder-Meta"
                             },
-                            markId: markIdRef.current,
+                            markId: markId,
                             fromWebsocket: true,  // 不要发到 ws 去
                             notReplyToWebsocket: true
                         }).then((messagesOrder) => {
                             messagesOrder = messagesOrder.value;
 
-                            if (!payload.value.content) payload.value.content = messageContentRef.current;
+                            if (payload.value.content === undefined) payload.value.content = messageContentRef.current;
                             if (!payload.value.attachments) payload.value.attachments = attachmentsMeta;
                             if (!payload.value.allowRegenerate) payload.value.allowRegenerate = false;
                             if (!payload.value.prevMessage) payload.value.prevMessage = messagesOrder[messagesOrder.length - 1];
@@ -814,23 +824,34 @@ function ChatBox({
                                         [payload.msgId]: payload.value
                                     }
                                 },
-                                markId: markIdRef.current,
+                                markId: markId,
                                 fromWebsocket: true,  // 不要发到 ws 去
                                 notReplyToWebsocket: true
                             })
 
                             if (payload.autoAddOrder === undefined || payload.autoAddOrder) {
 
+                                const prevIndex = messagesOrder.indexOf(payload.value.prevMessage);
+
+                                let newMessagesOrder = [];
+
+                                if (prevIndex !== -1) {
+                                    newMessagesOrder = [...messagesOrder.slice(0, prevIndex + 1), payload.msgId];
+                                } else {
+                                    newMessagesOrder = [...messagesOrder, payload.msgId];
+                                }
+
                                 emitEvent({
                                     type: "message",
                                     target: "ChatPage",
                                     payload: {
                                         command: "MessagesOrder-Meta",
-                                        value: [...messagesOrder, payload.msgId]
+                                        value: newMessagesOrder
                                     },
-                                    markId: markIdRef.current,
+                                    markId: markId,
                                     fromWebsocket: true,  // 不要发到 ws 去
                                     notReplyToWebsocket: true
+
                                 }).then(data => {
                                     // 修改消息链
                                     emitEvent({
@@ -842,10 +863,15 @@ function ChatBox({
                                             value: payload.msgId,
                                             switch: true
                                         },
-                                        markId: markIdRef.current,
+                                        markId: markId,
                                         fromWebsocket: true,  // 不要发到 ws 去
                                         notReplyToWebsocket: true
                                     }).then(data => {
+                                        if (!payload.noClear) {
+                                            setIsEditMessage(false);
+                                            setMessageContent("");
+                                            setAttachments([]);
+                                        }
                                         reply(data);
                                     })
                                 })
@@ -859,7 +885,13 @@ function ChatBox({
             }
         });
         return () => unsubscribe();
-    }, [toolsStatus, attachmentsMeta]);
+
+    }, [toolsStatus, attachmentsMeta, markId]);
+
+    // 页面切换时候的清理
+    useEffect(() => {
+        setIsEditMessage(false);
+    }, [markId])
 
     useEffect(() => {
         const updateHeight = () => {
@@ -915,12 +947,12 @@ function ChatBox({
     return (
         <>
             <DropFileLayer
-                onDropFiles={(files) => {
+                onDropFiles={(files, items) => {
                     if (ignoreAttachmentTools) {
                         toast.error(t("upload_files_disable"));
                         return;
                     }
-                    onDropFiles(files);
+                    onDropFiles(files, items);
                 }}
                 onFolderDetected={onFolderDetected}
             />

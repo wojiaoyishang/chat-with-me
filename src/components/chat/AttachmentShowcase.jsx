@@ -156,7 +156,7 @@ export default function AttachmentShowcase({attachmentsMeta, onRemove, msgMode})
                                         )}
                                     </div>
 
-                                    <div className="ml-2 pr-2 min-w-[120px]">
+                                    <div className="ml-2 pr-2 min-w-[120px] max-w-[155px]">
                                         <div className="text-sm font-medium text-gray-800 truncate max-w-[180px]">
                                             {attachment.name}
                                         </div>

@@ -339,13 +339,14 @@ const MessageContainer = forwardRef(({
     const animationFrameRef = useRef(null);
     const {t} = useTranslation();
 
+
     useEffect(() => {
 
         const unsubscribe = onEvent("widget", "ChatPage", markId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
                 case "Set-SwitchingMessage":
                     setSwitchingMessageId(payload.value);
-                    reply({success: true });
+                    reply({ success: true });
                     break;
             }
         });

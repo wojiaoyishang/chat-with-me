@@ -19,9 +19,9 @@ function DropFileLayer({ onDropFiles, onFolderDetected }) {
 
     // 使用自定义 hook 获取拖拽事件处理器
     const { dragEvents } = useDropZone(
-        (files) => {
+        (files, items) => {
             setIsDraggingOver(false);
-            onDropFiles(files);
+            onDropFiles(files, items);
         },
         () => {
             setIsDraggingOver(false);

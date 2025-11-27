@@ -45,7 +45,10 @@ function ChatPage({markId, setMarkId}) {
     // 消息状态
     const [messagesOrder, setMessagesOrder] = useState([]);
     const [messages, setMessages] = useImmer({});
+
+    const messagesRef = useRef({});
     const messagesOrderRef = useRef([]);
+
     const wasAtBottomRef = useRef(true);
 
     const [scrollButtonBottom, setScrollButtonBottom] = useState(200);
@@ -193,7 +196,44 @@ function ChatPage({markId, setMarkId}) {
         setAttachments(prev => prev.filter(att => att.serverId !== attachment.serverId));
     };
 
-    const handleSelectedFiles = (files) => {
+    const handleSelectedFiles = (files, items) => {
+
+
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+
+            // 处理文本拖拽
+            if (item.kind === 'string' && item.type === 'text/plain') {
+                item.getAsString(function(text) {
+                    emitEvent({
+                        type: "widget",
+                        target: "ChatBox",
+                        payload: {
+                            command: "Get-MessageContent"
+                        },
+                        markId: selfMarkId,
+                        fromWebsocket: true,
+                        notReplyToWebsocket: true
+                    }).then(payload => {
+                        emitEvent({
+                            type: "widget",
+                            target: "ChatBox",
+                            payload: {
+                                command: "Set-MessageContent",
+                                value: payload.value + text
+                            },
+                            markId: selfMarkId,
+                            fromWebsocket: true
+                        })
+                    })
+                });
+            }
+        }
+
+        if (!(files && files.length > 0)) {
+            return;
+        }
+
         if (isProcessingRef.current) return;
         isProcessingRef.current = true;
 
@@ -326,26 +366,59 @@ function ChatPage({markId, setMarkId}) {
         }
     };
 
-    const switchMessage = async (msg, msgId, isNext) => {
-        const msgId_index = msg.messages.indexOf(msg.nextMessage);
-        const newMsgId = msg.messages[msgId_index + (isNext ? 1 : -1)];
+    const loadSwitchMessage = async (msgId, newMsgId) => {
 
-        let missMsg = !messages.hasOwnProperty(newMsgId);
+        if (!messagesRef.current.hasOwnProperty(msgId)) return;
+
+        let missMsg = !messagesRef.current.hasOwnProperty(newMsgId);
         let newOrders = [];
-        let msg_cursor = messages[newMsgId];
+        let msg_cursor = messagesRef.current[newMsgId];
 
         if (!missMsg) {
             newOrders.push(newMsgId);
             while (msg_cursor.nextMessage) {
                 newOrders.push(msg_cursor.nextMessage);
-                if (messages.hasOwnProperty(msg_cursor.nextMessage)) {
-                    msg_cursor = messages[msg_cursor.nextMessage];
+                if (messagesRef.current.hasOwnProperty(msg_cursor.nextMessage)) {
+                    msg_cursor = messagesRef.current[msg_cursor.nextMessage];
                 } else {
                     missMsg = true;
                     break;
                 }
             }
         }
+
+        if (missMsg) {
+            try {
+                const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
+                    params: {
+                        markId: selfMarkId,
+                        nextId: missMsg ? newMsgId : msg_cursor.nextMessage,
+                    }
+                });
+                wasAtBottomRef.current = calculateIsNearBottom();
+                setMessages(prev => ({...prev, ...data.messages}));
+                setMessagesOrder([...messagesOrderRef.current.slice(0, messagesOrderRef.current.indexOf(msgId) + 1), ...data.messagesOrder]);
+                setMessages(draft => {
+                    draft[msgId].nextMessage = newMsgId;
+                });
+                return true;
+            } catch (error) {
+                toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));
+            }
+        } else {
+            wasAtBottomRef.current = calculateIsNearBottom();
+            setMessagesOrder([...messagesOrderRef.current.slice(0, messagesOrderRef.current.indexOf(msgId) + 1), ...newOrders]);
+            setMessages(draft => {
+                draft[msgId].nextMessage = newMsgId;
+            });
+            return true;
+        }
+
+    }
+
+    const switchMessage = async (msg, msgId, isNext) => {
+        const msgId_index = msg.messages.indexOf(msg.nextMessage);
+        const newMsgId = msg.messages[msgId_index + (isNext ? 1 : -1)];
 
         const sendSwitchRequest = () => {
             if (getLocalSetting('SyncMessageSwitch', true)) {
@@ -362,34 +435,9 @@ function ChatPage({markId, setMarkId}) {
             }
         };
 
-        if (missMsg) {
-            try {
-                const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                    params: {
-                        markId: selfMarkId,
-                        nextId: missMsg ? newMsgId : msg_cursor.nextMessage,
-                    }
-                });
-                wasAtBottomRef.current = calculateIsNearBottom();
-                setMessages(prev => ({...prev, ...data.messages}));
-                setMessagesOrder([...messagesOrder.slice(0, messagesOrder.indexOf(msgId) + 1), ...data.messagesOrder]);
-                setMessages(draft => {
-                    draft[msgId].nextMessage = newMsgId;
-                });
-                sendSwitchRequest();
-                return true;
-            } catch (error) {
-                toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));
-            }
-        } else {
-            wasAtBottomRef.current = calculateIsNearBottom();
-            setMessagesOrder([...messagesOrder.slice(0, messagesOrder.indexOf(msgId) + 1), ...newOrders]);
-            setMessages(draft => {
-                draft[msgId].nextMessage = newMsgId;
-            });
-            sendSwitchRequest();
-            return true;
-        }
+        await loadSwitchMessage(msgId, newMsgId);
+        sendSwitchRequest();
+
     };
 
     const LoadingScreen = () => (
@@ -418,11 +466,6 @@ function ChatPage({markId, setMarkId}) {
         </div>
     );
 
-    /* 状态同步 */
-    useEffect(() => {
-        messagesOrderRef.current = messagesOrder;
-    }, [messagesOrder]);
-
     useEffect(() => {
 
         const unsubscribe1 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
@@ -434,7 +477,9 @@ function ChatPage({markId, setMarkId}) {
                         setMessages(prev => {
                             const updated = {...prev};
                             for (const [key, newValue] of Object.entries(payload.value)) {
-                                if (newValue.messages === undefined) { newValue.messages = []; }
+                                if (newValue.messages === undefined) {
+                                    newValue.messages = [];
+                                }
                                 if (typeof newValue === 'object') {
                                     if (updated[key] && typeof updated[key] === 'object' && updated[key] !== null) {
                                         updated[key] = {...updated[key], ...newValue};
@@ -484,11 +529,19 @@ function ChatPage({markId, setMarkId}) {
                 case "Add-Message-Messages":
                     if (payload.msgId && payload.value) {
                         setMessages(draft => {
-                            if (draft[payload.msgId] === undefined) {
+
+                            if (draft[payload.msgId] === undefined) {  // 如果根本没有父消息
                                 reply({success: false});
                                 return;
                             }
+
+                            if (draft[payload.msgId].messages.includes(payload.value)) {  // 如果已经添加
+                                reply({success: false});
+                                return;
+                            }
+
                             draft[payload.msgId].messages = [...draft[payload.msgId].messages, payload.value];
+
                             if (payload.switch) {
                                 draft[payload.msgId].nextMessage = payload.value;
                             }
@@ -496,6 +549,10 @@ function ChatPage({markId, setMarkId}) {
                         });
 
                     }
+                    break;
+
+                case "Load-Switch-Message":
+                    loadSwitchMessage(payload.msgId, payload.nextMessage);
                     break;
 
             }
@@ -523,14 +580,23 @@ function ChatPage({markId, setMarkId}) {
     }, [isNewMarkId]);
 
     useEffect(() => {
-        selfMarkIdRef.current = selfMarkId;
+
+        messagesRef.current = messages;
+        messagesOrderRef.current = messagesOrder;
 
         if (selfMarkId === null || selfMarkId === undefined) {
+            setIsLoadingError(false);
             setMessages({});
             setMessagesOrder([]);
         }
 
     }, [selfMarkId])
+
+    /* 状态同步 */
+    useEffect(() => {
+        messagesRef.current = messages;
+        messagesOrderRef.current = messagesOrder;
+    }, [messagesOrder, messages])
 
     // 页面初始化加载消息
     useEffect(() => {
@@ -563,6 +629,8 @@ function ChatPage({markId, setMarkId}) {
                 });
                 wasAtBottomRef.current = calculateIsNearBottom();
                 setMessages(messagesData.messages);
+
+                if (messagesData.haveMore) messagesData.messagesOrder = ["<PREV_MORE>", ...messagesData.messagesOrder]
                 setMessagesOrder(messagesData.messagesOrder);
                 setIsMessageLoaded(true);
 
@@ -831,7 +899,7 @@ function ChatPage({markId, setMarkId}) {
                     <div className="absolute z-10 inset-x-0 bottom-10">
                         <ChatBox
                             onSendMessage={handleSendMessage}
-                            markIdRef={selfMarkIdRef}
+                            markId={selfMarkId}
                             attachmentsMeta={attachments}
                             setAttachments={setAttachments}
                             onAttachmentRemove={onAttachmentRemove}

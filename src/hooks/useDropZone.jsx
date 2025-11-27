@@ -53,10 +53,8 @@ export function useDropZone(onDrop, onFolderDetected) {
                 return;
             }
 
-            const files = e.dataTransfer.files;
-            if (files && files.length > 0) {
-                onDrop(files);
-            }
+            onDrop(e.dataTransfer.files, e.dataTransfer.items);
+
         },
         [preventDefault, onDrop, onFolderDetected]
     );

@@ -134,7 +134,7 @@ export const WebSocketProvider = ({children}) => {
                                             label: t("retry"),
                                             onClick: () => {
                                                 toast.promise(retryConnection(), {
-                                                    loading: t('websocket.connecting'),
+                                                    loading: t('websocket.reconnecting'),
                                                     success: (data) => t('websocket.connect_success'),
                                                     error: (error) => t('websocket.connect_failed', {message: error.message || t('unknown_error')}),
                                                 });
@@ -215,6 +215,13 @@ export const WebSocketProvider = ({children}) => {
 
         // 初始化连接
         const initConnection = () => {
+            // 添加检查：如果 globalWsRef 已存在且处于连接中，则不重复创建
+            if (globalWsRef && (globalWsRef.readyState === WebSocket.OPEN || globalWsRef.readyState === WebSocket.CONNECTING)) {
+                wsRef.current = globalWsRef;
+                setIsConnected(true);
+                return;
+            }
+
             try {
                 const ws = new WebSocket(WEBSOCKET_URL);
 
