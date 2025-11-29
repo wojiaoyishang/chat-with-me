@@ -655,7 +655,8 @@ code 设置为 401 。
     "command": "Add-Message",
     "value": {
         "msgId": {...}  # 消息ID：消息源数据
-    }
+    },
+    "isEdit": False  # 如果不提供这个选项，无论消息是否存在与否都会进行覆盖或者添加，如果提供这个选项，msgId对应的消息不存在就会触发 Messages-Loaded 事件（并不会执行消息的添加）
 }
 ```
 
@@ -719,11 +720,14 @@ code 设置为 401 。
 
 #### 响应历史消息加载完成
 
-由前端发出，表示历史消息已经加载完成，当 ws 重连并且已经加载历史对话界面时也会触发，通过读取广播的 markId 可以知道是哪个对话
+由前端发出，表示历史消息已经加载完成，当 ws 重连并且已经加载历史对话界面时也会触发，通过读取广播的 markId 可以知道是哪个对话。
+
+这个消息用于与服务器对账，看看消息顺序是否一致，或者处理是否存在正在生成的对话的消息。
 
 ```python
 {
-    "command": "Messages-Loaded"
+    "command": "Messages-Loaded",
+    "messagesOrder": []  # 页面上已有的消息链
 }
 ```
 
@@ -784,14 +788,18 @@ code 设置为 401 。
 
 真正的执行者在 MessageContainer ，这个操作会使从提供ID的消息下方（包括该消息）用加载元素占位
 
-```javascript
+```python
 {
-    "command"
-:
-    "Set-SwitchingMessage",
-        "value"
-:
-    "msgId"
+    "command": "Set-SwitchingMessage",
+    "value": "msgId"
+}
+```
+
+### 重载消息内容
+
+```python
+{
+    "command": "Reload-Messages"
 }
 ```
 
@@ -925,8 +933,9 @@ code 设置为 401 。
         ...  # 消息的结构，上述三个必须要有，缺省默认按照 position: right, allowRegenerate: false，prevMessage 默认为已有页面消息的最后一条
     },
     "autoAddOrder": True,  # 默认为 true 是否将消息直接添加到最末尾，并且自动修改消息链接
-    "noClear": False  # 是否不要自动清空输入框
-}
+    "noClear": False,  # 是否不要自动清空输入框
+    "isEdit": False  # 指定是编辑模式则会进行消息是否存在检测，如果不存在会触发 Messages-Loaded 事件
+}  
 ```
 
 实际上这个实现的原理也是依靠内部的广播，只不过节约了后端手动操作的时间和步骤，

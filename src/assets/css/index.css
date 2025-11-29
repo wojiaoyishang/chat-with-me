@@ -56,7 +56,7 @@
 }
 
 
-.full-scree-height {
+.full-screen-height {
     height: 100vh;
     height: -webkit-fill-available; /* Safari 回退 */
     height: 100dvh;

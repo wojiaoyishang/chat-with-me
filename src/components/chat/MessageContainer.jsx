@@ -196,7 +196,7 @@ const MessageTools = ({msg, markId, msgId}) => {
                 </>
             )}
 
-            <MessageMenuButton msg={msg} markId={markId} id={msgId}/>
+            <MessageMenuButton msg={msg} markId={markId} msgId={msgId}/>
         </div>
     );
 };
@@ -297,9 +297,9 @@ const MessageContent = ({
                         }) => {
     if (isRight) {
         return (
-            <div className="flex items-center gap-3 max-w-[80%] ml-auto">
+            <div className="flex justify-end sitems-center gap-3 max-w-[80%] ml-auto">
                 <div
-                    className={`bg-white rounded-2xl px-4 py-2.5 shadow-sm text-gray-800 break-words whitespace-pre-wrap border border-gray-100 transition-opacity duration-300 ${
+                    className={`max-w-[100%] bg-white rounded-2xl px-4 py-2.5 shadow-sm text-gray-800 break-words whitespace-pre-wrap border border-gray-100 transition-opacity duration-300 ${
                         isLeaving ? 'opacity-0' : 'opacity-100'
                     }`}
                 >
@@ -345,6 +345,7 @@ const MessageContainer = forwardRef(({
         const unsubscribe = onEvent("widget", "ChatPage", markId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
                 case "Set-SwitchingMessage":
+                    renderSwitchingLoader()
                     setSwitchingMessageId(payload.value);
                     reply({ success: true });
                     break;
@@ -569,7 +570,7 @@ const MessageContainer = forwardRef(({
             );
         };
 
-        // 情况1: 只有附件 (优化版)
+        // 情况1: 只有附件
         if (hasAttachments && !hasContent) {
             return (
                 <div

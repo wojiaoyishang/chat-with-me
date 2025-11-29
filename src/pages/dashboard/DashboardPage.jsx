@@ -70,7 +70,7 @@ const DashboardPage = () => {
     );
 
     return (
-        <div className="flex full-scree-height bg-white relative">
+        <div className="flex full-screen-height bg-white relative">
             {isLoadingError ? (
                 <LoadingFailedScreen />
             ) : isLoading ? (

@@ -42,6 +42,8 @@ function ChatPage({markId, setMarkId}) {
     const [isMessageLoaded, setIsMessageLoaded] = useState(false);
     const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
 
+    const [randomMark, setRandomMark] = useState(null);  // 用于重载页面
+
     // 消息状态
     const [messagesOrder, setMessagesOrder] = useState([]);
     const [messages, setMessages] = useImmer({});
@@ -204,7 +206,7 @@ function ChatPage({markId, setMarkId}) {
 
             // 处理文本拖拽
             if (item.kind === 'string' && item.type === 'text/plain') {
-                item.getAsString(function(text) {
+                item.getAsString(function (text) {
                     emitEvent({
                         type: "widget",
                         target: "ChatBox",
@@ -442,7 +444,7 @@ function ChatPage({markId, setMarkId}) {
 
     const LoadingScreen = () => (
         <div
-            className="absolute z-51 inset-0 bg-white flex items-center justify-center"> {/* Changed fixed to absolute */}
+            className="absolute z-20 inset-0 bg-white flex items-center justify-center"> {/* Changed fixed to absolute */}
             <div className="flex flex-col items-center">
                 <ThreeDotLoading/>
                 <span className="mt-2 text-sm text-gray-500">{t("loading_messages")}</span>
@@ -475,11 +477,22 @@ function ChatPage({markId, setMarkId}) {
                         wasAtBottomRef.current = calculateIsNearBottom();
 
                         setMessages(prev => {
+
                             const updated = {...prev};
+
                             for (const [key, newValue] of Object.entries(payload.value)) {
+
+                                if (payload.isEdit && !updated.includes(key)) {
+                                    debugger
+                                    reply({success: false});
+
+                                    return prev;
+                                }
+
                                 if (newValue.messages === undefined) {
                                     newValue.messages = [];
                                 }
+
                                 if (typeof newValue === 'object') {
                                     if (updated[key] && typeof updated[key] === 'object' && updated[key] !== null) {
                                         updated[key] = {...updated[key], ...newValue};
@@ -552,7 +565,37 @@ function ChatPage({markId, setMarkId}) {
                     break;
 
                 case "Load-Switch-Message":
-                    loadSwitchMessage(payload.msgId, payload.nextMessage);
+
+                    emitEvent({
+                        type: "widget",
+                        target: "ChatPage",
+                        payload: {
+                            command: "Set-SwitchingMessage",
+                            value: payload.nextMessage
+                        },
+                        markId: selfMarkId,
+                        fromWebsocket: true,
+                        notReplyToWebsocket: true
+                    }).then(() => {
+                        loadSwitchMessage(payload.msgId, payload.nextMessage).then(() => {
+                            emitEvent({
+                                type: "widget",
+                                target: "ChatPage",
+                                payload: {
+                                    command: "Set-SwitchingMessage",
+                                    value: null
+                                },
+                                markId: selfMarkId,
+                                fromWebsocket: true,
+                                notReplyToWebsocket: true
+                            })
+                        });
+                    });
+
+                    break;
+
+                case "Reload-Messages":
+                    setRandomMark(generateUUID());
                     break;
 
             }
@@ -563,7 +606,10 @@ function ChatPage({markId, setMarkId}) {
                 emitEvent({
                     type: "message",
                     target: "ChatPage",
-                    payload: {command: "Messages-Loaded"},
+                    payload: {
+                        command: "Messages-Loaded",
+                        messagesOrder: messagesOrderRef.current[0] === '<PREV_MORE>' ? messagesOrderRef.current.slice(1) : messagesOrderRef.current
+                    },
                     markId: selfMarkId
                 });
             }
@@ -573,7 +619,7 @@ function ChatPage({markId, setMarkId}) {
             unsubscribe1();
             unsubscribe2();
         };
-    }, [attachments, selfMarkId, isMessageLoaded]);
+    }, [selfMarkId, isMessageLoaded]);
 
     useEffect(() => {
         isNewMarkIdRef.current = isNewMarkId;
@@ -629,9 +675,11 @@ function ChatPage({markId, setMarkId}) {
                 });
                 wasAtBottomRef.current = calculateIsNearBottom();
                 setMessages(messagesData.messages);
+                messagesRef.current = messagesData.messages;
 
                 if (messagesData.haveMore) messagesData.messagesOrder = ["<PREV_MORE>", ...messagesData.messagesOrder]
                 setMessagesOrder(messagesData.messagesOrder);
+                messagesOrderRef.current = messagesData.messagesOrder;
                 setIsMessageLoaded(true);
 
                 // 确定该对话使用的模型
@@ -641,7 +689,10 @@ function ChatPage({markId, setMarkId}) {
                 emitEvent({
                     type: "message",
                     target: "ChatPage",
-                    payload: {command: "Messages-Loaded"},
+                    payload: {
+                        command: "Messages-Loaded",
+                        messagesOrder: messagesOrderRef.current[0] === '<PREV_MORE>' ? messagesOrderRef.current.slice(1) : messagesOrderRef.current
+                    },
                     markId: selfMarkId
                 });
             } catch (error) {
@@ -678,7 +729,7 @@ function ChatPage({markId, setMarkId}) {
 
         setIsFirstMessageSend(true);
 
-    }, [selfMarkId]);
+    }, [selfMarkId, randomMark]);
 
     useEffect(() => {
         const scrollToSelectedItem = () => {
@@ -689,9 +740,7 @@ function ChatPage({markId, setMarkId}) {
                     setTimeout(() => {
                         selectedItem.scrollIntoView({
                             behavior: 'smooth',
-                            block: 'nearest',
-                            // 如果元素已经在可视区域内，强制滚动到顶部
-                            // block: 'center' // 或者使用 'center' 来居中显示
+                            block: 'nearest'
                         });
                     }, 0);
                 }
@@ -885,7 +934,7 @@ function ChatPage({markId, setMarkId}) {
                     >
                         <button
                             onClick={scrollToBottom}
-                            className="cursor-pointer absolute z-50 align-middle w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors -translate-x-1/2"
+                            className="cursor-pointer absolute z-10 align-middle w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors -translate-x-1/2"
                             aria-label="Scroll to bottom"
                             style={{
                                 bottom: `${scrollButtonBottom}px`,

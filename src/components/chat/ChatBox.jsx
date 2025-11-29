@@ -820,63 +820,72 @@ function ChatBox({
                                 target: "ChatPage",
                                 payload: {
                                     command: "Add-Message",
-                                    "value": {
+                                    value: {
                                         [payload.msgId]: payload.value
-                                    }
+                                    },
+                                    isEdit: payload.isEdit
                                 },
                                 markId: markId,
                                 fromWebsocket: true,  // 不要发到 ws 去
                                 notReplyToWebsocket: true
-                            })
+                            }).then((data) => {
 
-                            if (payload.autoAddOrder === undefined || payload.autoAddOrder) {
-
-                                const prevIndex = messagesOrder.indexOf(payload.value.prevMessage);
-
-                                let newMessagesOrder = [];
-
-                                if (prevIndex !== -1) {
-                                    newMessagesOrder = [...messagesOrder.slice(0, prevIndex + 1), payload.msgId];
-                                } else {
-                                    newMessagesOrder = [...messagesOrder, payload.msgId];
+                                if (!data.success) {
+                                    reply({success: false});
+                                    return;
                                 }
 
-                                emitEvent({
-                                    type: "message",
-                                    target: "ChatPage",
-                                    payload: {
-                                        command: "MessagesOrder-Meta",
-                                        value: newMessagesOrder
-                                    },
-                                    markId: markId,
-                                    fromWebsocket: true,  // 不要发到 ws 去
-                                    notReplyToWebsocket: true
+                                if (payload.autoAddOrder === undefined || payload.autoAddOrder) {
 
-                                }).then(data => {
-                                    // 修改消息链
+                                    const prevIndex = messagesOrder.indexOf(payload.value.prevMessage);
+
+                                    let newMessagesOrder = [];
+
+                                    if (prevIndex !== -1) {
+                                        newMessagesOrder = [...messagesOrder.slice(0, prevIndex + 1), payload.msgId];
+                                    } else {
+                                        newMessagesOrder = [...messagesOrder, payload.msgId];
+                                    }
+
                                     emitEvent({
                                         type: "message",
                                         target: "ChatPage",
                                         payload: {
-                                            command: "Add-Message-Messages",
-                                            msgId: payload.value.prevMessage,
-                                            value: payload.msgId,
-                                            switch: true
+                                            command: "MessagesOrder-Meta",
+                                            value: newMessagesOrder
                                         },
                                         markId: markId,
                                         fromWebsocket: true,  // 不要发到 ws 去
                                         notReplyToWebsocket: true
-                                    }).then(data => {
-                                        if (!payload.noClear) {
-                                            setIsEditMessage(false);
-                                            setMessageContent("");
-                                            setAttachments([]);
-                                        }
-                                        reply(data);
-                                    })
-                                })
 
-                            }
+                                    }).then(data => {
+                                        // 修改消息链
+                                        emitEvent({
+                                            type: "message",
+                                            target: "ChatPage",
+                                            payload: {
+                                                command: "Add-Message-Messages",
+                                                msgId: payload.value.prevMessage,
+                                                value: payload.msgId,
+                                                switch: true
+                                            },
+                                            markId: markId,
+                                            fromWebsocket: true,  // 不要发到 ws 去
+                                            notReplyToWebsocket: true
+                                        }).then(data => {
+                                            if (!payload.noClear) {
+                                                setIsEditMessage(false);
+                                                setMessageContent("");
+                                                setAttachments([]);
+                                            }
+                                            reply(data);
+                                        })
+                                    })
+
+                                }
+                            })
+
+
 
                         })
                     }

@@ -56,7 +56,7 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <div className="full-screen-min-height flex items-center justify-center bg-gray-100 p-4">
             <motion.div
                 initial={{opacity: 0, y: 50}} // 初始状态：透明，从下方50px位置
                 animate={{opacity: 1, y: 0}} // 动画到：不透明，正常位置
