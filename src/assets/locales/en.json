@@ -8,7 +8,10 @@
   "shift_enter_newline": "Shift + Enter for New Line",
   "folder_upload_not_supported": "The entire folder upload is not supported for the time being",
   "file_upload": {
-    "error": "Oops! File upload failed: {{message}}"
+    "error": "Oops! File upload failed: {{message}}",
+    "status": {
+      "processing": "Processing"
+    }
   },
   "unknown_error": "Unknown error",
   "attachment_options": "Attachment Options",
@@ -87,5 +90,14 @@
   "login_error": "Login error: {{message}}",
   "loading_dashboard": "Loading dashboard",
   "logging_in": "Logging...",
-  "loading_history": "Loading History..."
+  "loading_history": "Loading History...",
+  "loading_editor": "Loading Editor",
+  "doc_copilot": "Doc Copilot",
+  "title_writing": "Document Drafting",
+  "title_web_capture": "Captured Web Pages",
+  "view_more": "View More",
+  "new_document": "Blank Document",
+  "import": "Import",
+  "empty_state_message": "There are no files to display yet",
+  "empty_section_message": "Nothing More"
 }

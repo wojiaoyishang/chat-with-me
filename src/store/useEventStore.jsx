@@ -1,7 +1,7 @@
 import {create} from 'zustand';
 
 import {sendWebSocketMessage} from "@/context/WebSocketContext.jsx";
-import {generateUUID} from '@/lib/tools.js'
+import {generateUUID} from '@/lib/tools.jsx'
 
 const createDebugLogger = () => {
     if (typeof DEBUG_MODE === 'undefined' || !DEBUG_MODE) return null;

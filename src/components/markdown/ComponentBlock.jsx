@@ -1,5 +1,5 @@
 import React from 'react';
-import { getLastLine } from "@/lib/tools.js";
+import { getLastLine } from "@/lib/tools.jsx";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 
 const ComponentBlock = ({ type, content, id, isExpanded, onToggleExpand }) => {

@@ -7,17 +7,19 @@ import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import {useTranslation} from "react-i18next";
+import EditorHome from "@/pages/editor/EditorHome.jsx";
+import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
 
-const DashboardPage = () => {
+const DashboardPage = ({type = "chat"}) => {
     const [markId, setMarkId] = useState(getMarkId());
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
-
     const [sidebarSettings, setSidebarSettings] = useState({});
+    const [randomUUID, setRandomUUID] = useState();
+
+    const [pageType, setPageType] = useState(type);
 
     const {t} = useTranslation();
-
-    const isMobile = useIsMobile();
 
     useEffect(() => {
         const loadDashboard = async () => {
@@ -42,7 +44,6 @@ const DashboardPage = () => {
     const LoadingScreen = () => (
         <UnifiedLoadingScreen
             text={t("loading_dashboard")}
-            // 没有 z-index，故省略 zIndex 属性
         />
     );
 
@@ -51,23 +52,23 @@ const DashboardPage = () => {
             title={t("load_dashboard_error")}
             subtitle={t("retry_after_network")}
             retryText={t("retry")}
-            // 重试逻辑是刷新页面
             onRetry={() => window.location.reload()}
-            // 没有 z-index，故省略 zIndex 属性
         />
     );
 
     return (
         <div className="flex full-screen-height bg-white relative">
             {isLoadingError ? (
-                <LoadingFailedScreen />
+                <LoadingFailedScreen/>
             ) : isLoading ? (
-                <LoadingScreen />
+                <LoadingScreen/>
             ) : (
                 <>
-                    <Sidebar markId={markId} setMarkId={setMarkId} settings={sidebarSettings}/>
-                    <main className="flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
-                        <ChatPage markId={markId} setMarkId={setMarkId}/>
+                    <Sidebar markId={markId} setMarkId={setMarkId} settings={sidebarSettings}
+                             setPageType={setPageType} setRandomUUID={setRandomUUID} />
+                    <main className="flex-1 overflow-y-auto overflow-hidden relative transition-all duration-300 ease-in-out">
+                        {pageType === "chat" && <ChatPage markId={markId} setMarkId={setMarkId}/>}
+                        {pageType === "doc" && <EditorHome key={randomUUID}/>}
                     </main>
                 </>
             )}

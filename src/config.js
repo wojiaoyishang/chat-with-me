@@ -9,6 +9,7 @@ export const apiEndpoint = {
     CHAT_MODELS_ENDPOINT: '/chat/models',
     CHAT_CONVERSATIONS_ENDPOINT: '/chat/conversations',
     DASHBOARD_ENDPOINT: '/dashboard/',
-    LOGIN_ENDPOINT: '/user/login'
+    LOGIN_ENDPOINT: '/user/login',
+    REDIRECT_VIEW_ENDPOINT: '/wopi/redirect',
 };
 

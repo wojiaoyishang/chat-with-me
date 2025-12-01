@@ -8,7 +8,10 @@
   "shift_enter_newline": "按下 Shift + Enter 换行",
   "folder_upload_not_supported": "暂不支持整个文件夹上传",
   "file_upload": {
-    "error": "糟糕！文件上传失败了：{{message}}"
+    "error": "糟糕！文件上传失败了：{{message}}",
+    "status": {
+      "processing": "处理中......"
+    }
   },
   "unknown_error": "未知错误",
   "attachment_options": "附件选项",
@@ -87,5 +90,14 @@
   "login_error": "登录错误：{{message}}",
   "loading_dashboard": "加载仪表盘中",
   "logging_in": "登录中...",
-  "loading_history": "加载历史对话中"
+  "loading_history": "加载历史对话中",
+  "loading_editor": "加载编辑器中",
+  "doc_copilot": "公文编辑器",
+  "title_writing": "撰写公文",
+  "title_web_capture": "已抓取的网页",
+  "view_more": "查看更多",
+  "new_document": "空白文字",
+  "import": "导入",
+  "empty_state_message": "暂时还没有可以展示的文件",
+  "empty_section_message": "没有更多内容了"
 }

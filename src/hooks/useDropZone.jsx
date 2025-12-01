@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { hasFolderInDragItems } from '@/lib/tools';
+import { hasFolderInDragItems } from '@/lib/tools.jsx';
 
 export function useDropZone(onDrop, onFolderDetected) {
     const [isDraggingOver, setIsDraggingOver] = useState(false);

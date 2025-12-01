@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {format, isToday, isYesterday, subDays, subMonths, isWithinInterval} from 'date-fns';
 import {enUS, zhCN} from 'date-fns/locale';
-import {FaChevronRight, FaTimes, FaHome, FaCog, FaSearch, FaPlus} from 'react-icons/fa';
-import {UnifiedErrorScreen, UnifiedLoadingScreen, updateURL} from "@/lib/tools.jsx";
+import {FaChevronRight, FaTimes, FaHome, FaCog, FaSearch, FaPlus, FaBookOpen} from 'react-icons/fa';
+import {generateUUID, UnifiedErrorScreen, UnifiedLoadingScreen, updateURL} from "@/lib/tools.jsx";
 import {Transition} from '@headlessui/react';
 import {useTranslation} from "react-i18next";
 import {useIsMobile} from "@/lib/tools.jsx";
@@ -12,8 +12,8 @@ import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import {onEvent} from "@/store/useEventStore.jsx";
 
 const Sidebar = ({
-                     markId, setMarkId,
-                     settings
+                     markId, setMarkId, setPageType,
+                     settings, setRandomUUID
                  }) => {
     const [isOpen, setIsOpen] = useState(false);
     const isMobile = useIsMobile();
@@ -118,6 +118,7 @@ const Sidebar = ({
     };
     const groupedConvs = groupConversations();
     const handleSelectConversation = (markId) => {
+        setPageType('chat');
         updateURL(`/chat/${markId}`);
         setMarkId(markId);
     };
@@ -239,10 +240,22 @@ const Sidebar = ({
                             onClick={() => {
                                 setMarkId(null);
                                 updateURL(`/chat`);
+                                setPageType('chat');
                             }}
                             className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
                             <FaPlus className="w-5 h-5 mr-2"/>
                             {t('new_conversation')}
+                        </button>
+                        <button
+                            onClick={() => {
+                                updateURL(`/doc`);
+                                setPageType('doc');
+                                setMarkId(null);
+                                setRandomUUID(generateUUID());
+                            }}
+                            className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
+                            <FaBookOpen className="w-5 h-5 mr-2"/>
+                            {t('doc_copilot')}
                         </button>
                     </div>
                 </div>
