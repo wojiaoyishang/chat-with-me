@@ -3,21 +3,32 @@ import { Transition } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
 import { useDropZone } from "@/hooks/useDropZone";
 
-/**
- * 全局拖拽文件上传层组件
- * - 自动监听整个页面的拖拽事件
- * - 显示拖拽提示 UI
- * - 调用回调处理文件或文件夹
- *
- * @param {Function} onDropFiles - (files: FileList) => void
- * @param {Function} onFolderDetected - () => void
- */
-function DropFileLayer({ onDropFiles, onFolderDetected }) {
+function DropFileLayer({ onDropFiles, onFolderDetected, targetRef }) {
     const { t } = useTranslation();
-    const containerRef = useRef(null);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
+    const [targetBounds, setTargetBounds] = useState(null);
+    const overlayRef = useRef(null);
+    const isGlobalListener = !targetRef;
 
-    // 使用自定义 hook 获取拖拽事件处理器
+    // 1. 移除立即清除边界 - 改为在动画结束后清除
+    const handleAnimationComplete = () => {
+        if (!isDraggingOver) {
+            setTargetBounds(null);
+        }
+    };
+
+    const calculateBounds = () => {
+        if (!isGlobalListener && targetRef?.current) {
+            const rect = targetRef.current.getBoundingClientRect();
+            setTargetBounds({
+                top: rect.top + window.scrollY,
+                left: rect.left + window.scrollX,
+                width: rect.width,
+                height: rect.height,
+            });
+        }
+    };
+
     const { dragEvents } = useDropZone(
         (files, items) => {
             setIsDraggingOver(false);
@@ -29,23 +40,31 @@ function DropFileLayer({ onDropFiles, onFolderDetected }) {
         }
     );
 
-    // 重写 dragEvents 中的处理函数，以控制 isDraggingOver 状态
     const enhancedDragEvents = {
         onDragEnter: (e) => {
             e.preventDefault();
+            calculateBounds();
             setIsDraggingOver(true);
             dragEvents.onDragEnter(e);
         },
         onDragOver: (e) => {
             e.preventDefault();
-            // 确保 isDraggingOver 保持 true（防止因子元素触发 leave）
+            if (!isGlobalListener) calculateBounds();
             setIsDraggingOver(true);
             dragEvents.onDragOver(e);
         },
         onDragLeave: (e) => {
             e.preventDefault();
-            // 只有当鼠标真正离开整个窗口时才关闭
-            if (e.relatedTarget === null) {
+            const target = isGlobalListener ? window : targetRef.current;
+
+            // 2. 修复离开检测逻辑 - 检查是否真正离开监听区域
+            const isLeavingWindow = isGlobalListener && !e.relatedTarget;
+            const isLeavingTarget = !isGlobalListener &&
+                target &&
+                !target.contains(e.relatedTarget) &&
+                !overlayRef.current?.contains(e.relatedTarget); // 排除浮层自身
+
+            if (isLeavingWindow || isLeavingTarget) {
                 setIsDraggingOver(false);
             }
             dragEvents.onDragLeave(e);
@@ -57,23 +76,36 @@ function DropFileLayer({ onDropFiles, onFolderDetected }) {
         }
     };
 
-    // 绑定事件到 document 或 window（全局监听）
     useEffect(() => {
-        const { onDragEnter, onDragOver, onDragLeave, onDrop } = enhancedDragEvents;
+        const target = isGlobalListener ? window : targetRef?.current;
+        if (!target) return;
 
-        // 使用 capture 阶段确保优先捕获
-        window.addEventListener('dragenter', onDragEnter, { capture: true });
-        window.addEventListener('dragover', onDragOver, { capture: true });
-        window.addEventListener('dragleave', onDragLeave, { capture: true });
-        window.addEventListener('drop', onDrop, { capture: true });
+        const { onDragEnter, onDragOver, onDragLeave, onDrop } = enhancedDragEvents;
+        const options = isGlobalListener ? { capture: true } : {};
+
+        target.addEventListener('dragenter', onDragEnter, options);
+        target.addEventListener('dragover', onDragOver, options);
+        target.addEventListener('dragleave', onDragLeave, options);
+        target.addEventListener('drop', onDrop, options);
 
         return () => {
-            window.removeEventListener('dragenter', onDragEnter, { capture: true });
-            window.removeEventListener('dragover', onDragOver, { capture: true });
-            window.removeEventListener('dragleave', onDragLeave, { capture: true });
-            window.removeEventListener('drop', onDrop, { capture: true });
+            target.removeEventListener('dragenter', onDragEnter, options);
+            target.removeEventListener('dragover', onDragOver, options);
+            target.removeEventListener('dragleave', onDragLeave, options);
+            target.removeEventListener('drop', onDrop, options);
         };
-    }, [enhancedDragEvents]);
+    }, [isGlobalListener, targetRef, enhancedDragEvents]);
+
+    // 3. 统一设置 pointer-events: none 避免事件拦截
+    const dynamicStyle = isGlobalListener
+        ? {
+            inset: 0,
+            pointerEvents: 'none'
+        }
+        : {
+            ...targetBounds,
+            pointerEvents: 'none', // 关键：允许事件穿透到下方元素
+        };
 
     return (
         <Transition
@@ -84,9 +116,14 @@ function DropFileLayer({ onDropFiles, onFolderDetected }) {
             leave="transition-opacity duration-150"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
+            afterLeave={handleAnimationComplete} // 4. 动画结束后清除边界
         >
-            <div className="fixed inset-0 bg-white/70 z-50 pointer-events-none">
-                <div className="flex flex-col items-center justify-center h-full">
+            <div
+                ref={overlayRef}
+                className="fixed bg-white/70 z-50"
+                style={dynamicStyle}
+            >
+                <div className="flex flex-col items-center justify-center h-full w-full">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"

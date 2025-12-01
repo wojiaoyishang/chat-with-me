@@ -155,7 +155,7 @@ const toggleAllInGroup = (extraTools, togglePaths, toChecked) => {
  * @param {boolean} [readOnly=false] - 是否只读模式
  * @param {Function} FilePickerCallback - 触发文件选择器的回调
  * @param {Function} PicPickerCallback - 触发图片选择器的回调
- * @param {ref} markId - 组件唯一标识的引用
+ * @param {String} markId - 组件唯一标识的引用
  * @param {Array} [attachmentsMeta=[]] - 已上传附件元数据列表
  * @param {Function} setAttachments - 设置附件数据
  * @param {Array} [uploadFiles=[]] - 正在上传的文件列表
@@ -166,6 +166,7 @@ const toggleAllInGroup = (extraTools, togglePaths, toChecked) => {
  * @param {Function} onDropFiles - 拖拽文件回调
  * @param {Function} onFolderDetected - 拖拽文件夹上传检测
  * @param {Function} onHeightChange - 高度改变
+ * @param {Object} dropTargetRef - 拖拽接受区域
  */
 function ChatBox({
                      onSendMessage,
@@ -182,7 +183,8 @@ function ChatBox({
                      onCancelUpload,
                      onDropFiles,
                      onFolderDetected,
-                     onHeightChange
+                     onHeightChange,
+                     dropTargetRef
                  }) {
     const {t} = useTranslation();
     const [messageContent, setMessageContent] = useState("");
@@ -964,6 +966,7 @@ function ChatBox({
                     onDropFiles(files, items);
                 }}
                 onFolderDetected={onFolderDetected}
+                targetRef={dropTargetRef}
             />
             <div
                 ref={rootRef}

@@ -26,6 +26,7 @@ import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 function ChatPage({markId, setMarkId}) {
     const {t} = useTranslation();
 
+    const chatPageRef = useRef(null);
     const isProcessingRef = useRef(false);
     const messagesContainerRef = useRef(null);
 
@@ -757,7 +758,7 @@ function ChatPage({markId, setMarkId}) {
 
     return (
         <>
-            <div className="full-screen-min-height bg-white flex flex-col items-center pb-8 pretty-scrollbar">
+            <div className="full-screen-min-height bg-white flex flex-col items-center pb-8 pretty-scrollbar" ref={chatPageRef}>
                 <header className="w-full bg-white flex items-center justify-start p-4 h-14">
                     <Popover
                         open={isModelPopoverOpen}
@@ -963,6 +964,7 @@ function ChatPage({markId, setMarkId}) {
                             onHeightChange={(newHeight) => {
                                 setScrollButtonBottom(newHeight + 45);
                             }}
+                            dropTargetRef={chatPageRef}
                         />
                     </div>
                 </>
