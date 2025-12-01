@@ -99,5 +99,8 @@
   "new_document": "空白文字",
   "import": "导入",
   "empty_state_message": "暂时还没有可以展示的文件",
-  "empty_section_message": "没有更多内容了"
+  "empty_section_message": "没有更多内容了",
+  "loading_dashboard_data": "加载面板中",
+  "processing_file_title": "正在处理文件",
+  "processing_file_warning": "请不要关闭浏览器或刷新页面"
 }

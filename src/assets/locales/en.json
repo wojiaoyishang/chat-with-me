@@ -99,5 +99,8 @@
   "new_document": "Blank Document",
   "import": "Import",
   "empty_state_message": "There are no files to display yet",
-  "empty_section_message": "Nothing More"
+  "empty_section_message": "Nothing More",
+  "loading_dashboard_data": "Loading Dashboard",
+  "processing_file_title": "Processing the File",
+  "processing_file_warning": "Don't refresh your page"
 }
