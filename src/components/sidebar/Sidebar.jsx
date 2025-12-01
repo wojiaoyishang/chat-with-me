@@ -2,10 +2,10 @@ import React, {useState, useEffect, useRef} from 'react';
 import {format, isToday, isYesterday, subDays, subMonths, isWithinInterval} from 'date-fns';
 import {enUS, zhCN} from 'date-fns/locale';
 import {FaChevronRight, FaTimes, FaHome, FaCog, FaSearch, FaPlus} from 'react-icons/fa';
-import {updateURL} from "@/lib/tools.js";
+import {UnifiedErrorScreen, UnifiedLoadingScreen, updateURL} from "@/lib/tools.jsx";
 import {Transition} from '@headlessui/react';
 import {useTranslation} from "react-i18next";
-import {useIsMobile} from "@/lib/tools.js";
+import {useIsMobile} from "@/lib/tools.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
@@ -121,33 +121,22 @@ const Sidebar = ({
         updateURL(`/chat/${markId}`);
         setMarkId(markId);
     };
+
     const LoadingScreen = () => (
-        <div className="absolute inset-0 bg-white flex items-center justify-center">
-            <div className="flex flex-col items-center">
-                <ThreeDotLoading/>
-                <span className="mt-2 text-sm text-gray-500">{t("loading_history")}</span>
-            </div>
-        </div>
+        <UnifiedLoadingScreen
+            text={t("loading_history")}
+            // 不传 zIndex，默认为空，符合原代码
+        />
     );
+
     const LoadingFailedScreen = () => (
-        <div className="absolute inset-0 bg-white flex items-center justify-center">
-            <div className="flex flex-col items-center">
-                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
-                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                              d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </div>
-                <p className="text-gray-700 text-base font-medium">{t("load_history_error")}</p>
-                <p className="text-gray-500 text-sm mt-1">{t("retry_after_network")}</p>
-                <button
-                    onClick={loadConversations}
-                    className="mt-4 text-sm text-blue-600 rounded-md transition-colors cursor-pointer"
-                >
-                    {t("retry")}
-                </button>
-            </div>
-        </div>
+        <UnifiedErrorScreen
+            title={t("load_history_error")}
+            subtitle={t("retry_after_network")}
+            retryText={t("retry")}
+            onRetry={loadConversations} // 直接传入具体的重试函数
+            // 不传 zIndex，默认为空，符合原代码
+        />
     );
     useEffect(() => {
         const unsubscribe1 = onEvent("widget", "Sidebar").then((payload, markId, isReply, id, reply) => {
