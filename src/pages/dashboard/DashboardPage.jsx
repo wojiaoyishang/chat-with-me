@@ -2,7 +2,7 @@ import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {useParams,} from 'react-router-dom';
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
 import ChatPage from '@/pages/chat/ChatPage.jsx';
-import {getMarkId, useIsMobile} from "@/lib/tools.js";
+import {getMarkId, useIsMobile} from "@/lib/tools.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";

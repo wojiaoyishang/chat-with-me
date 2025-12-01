@@ -1,13 +1,21 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {useImmer} from 'use-immer';
-import {generateUUID, getMarkId, getLocalSetting, updateURL, useIsMobile} from "@/lib/tools";
+import {
+    generateUUID,
+    getMarkId,
+    getLocalSetting,
+    updateURL,
+    useIsMobile,
+    UnifiedErrorScreen,
+    UnifiedLoadingScreen
+} from "@/lib/tools.jsx";
 import {toast} from "sonner";
 import {Transition} from '@headlessui/react';
 import {
     processSelectedFiles,
     fileUpload,
     createFilePicker,
-} from "@/lib/tools";
+} from "@/lib/tools.jsx";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from 'react-router-dom';
 import {FaArrowDown, FaChevronDown, FaCheckCircle} from "react-icons/fa";
@@ -444,29 +452,19 @@ function ChatPage({markId, setMarkId}) {
     };
 
     const LoadingScreen = () => (
-        <div
-            className="absolute z-20 inset-0 bg-white flex items-center justify-center"> {/* Changed fixed to absolute */}
-            <div className="flex flex-col items-center">
-                <ThreeDotLoading/>
-                <span className="mt-2 text-sm text-gray-500">{t("loading_messages")}</span>
-            </div>
-        </div>
+        <UnifiedLoadingScreen
+            text={t("loading_messages")}
+            zIndex="z-20"
+        />
     );
 
     const LoadingFailedScreen = () => (
-        <div
-            className="absolute z-51 inset-0 bg-white flex items-center justify-center"> {/* Changed fixed to absolute */}
-            <div className="flex flex-col items-center">
-                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
-                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                              d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </div>
-                <p className="text-gray-700 text-base font-medium">{t("load_error")}</p>
-                <p className="text-gray-500 text-sm mt-1">{t("retry_after_network")}</p>
-            </div>
-        </div>
+        <UnifiedErrorScreen
+            title={t("load_error")}
+            subtitle={t("retry_after_network")}
+            zIndex="z-51"
+            // 不传 onRetry，按钮会自动隐藏
+        />
     );
 
     useEffect(() => {

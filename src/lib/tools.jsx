@@ -2,6 +2,7 @@ import {useParams} from 'react-router-dom';
 import {apiEndpoint} from '@/config.js';
 import apiClient from '@/lib/apiClient';
 import {useEffect, useState} from "react";
+import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 
 export function getMarkId() {
     const {markId} = useParams();
@@ -348,3 +349,57 @@ export function useIsMobile() {
 
     return isMobile_;
 }
+
+
+/**
+ * 通用加载组件
+ * @param {string} text - 加载时的提示文字
+ * @param {string} zIndex - Tailwind z-index 类名 (如 "z-20"), 默认为空
+ */
+export const UnifiedLoadingScreen = ({ text, zIndex = "" }) => (
+    <div className={`absolute ${zIndex} inset-0 bg-white flex items-center justify-center`}>
+        <div className="flex flex-col items-center">
+            {/* 这里的 ThreeDotLoading 需确保在上下文中可用 */}
+            <ThreeDotLoading/>
+            <span className="mt-2 text-sm text-gray-500">{text}</span>
+        </div>
+    </div>
+);
+
+/**
+ * 通用错误/重试组件
+ * @param {string} title - 错误标题
+ * @param {string} subtitle - 错误副标题
+ * @param {function} onRetry - 重试点击事件 (如果不传，则不显示按钮)
+ * @param {string} retryText - 重试按钮文字
+ * @param {string} zIndex - Tailwind z-index 类名 (如 "z-51"), 默认为空
+ */
+export const UnifiedErrorScreen = ({
+                                       title,
+                                       subtitle,
+                                       onRetry,
+                                       retryText,
+                                       zIndex = ""
+                                   }) => (
+    <div className={`absolute ${zIndex} inset-0 bg-white flex items-center justify-center`}>
+        <div className="flex flex-col items-center">
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+            <p className="text-gray-700 text-base font-medium">{title}</p>
+            <p className="text-gray-500 text-sm mt-1">{subtitle}</p>
+
+            {/* 只有传入了 onRetry 函数时才渲染按钮 */}
+            {onRetry && (
+                <button
+                    onClick={onRetry}
+                    className="mt-4 text-sm text-blue-600 rounded-md transition-colors cursor-pointer"
+                >
+                    {retryText}
+                </button>
+            )}
+        </div>
+    </div>
+);

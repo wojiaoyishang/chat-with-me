@@ -23,7 +23,7 @@ import DropFileLayer from "@/components/chat/DropFileLayer.jsx";
 import {toast} from "sonner";
 import {apiEndpoint} from "@/config.js"
 import apiClient from '@/lib/apiClient';
-import {getLocalSetting, isMobile, setLocalSetting} from "@/lib/tools.js";
+import {getLocalSetting, isMobile, setLocalSetting} from "@/lib/tools.jsx";
 
 // ========== Helper functions for nested objects ==========
 const getNestedValue = (obj, path) => {

@@ -24,7 +24,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import {copyTextToClipboard, useIsMobile} from "@/lib/tools.js";
+import {copyTextToClipboard, useIsMobile} from "@/lib/tools.jsx";
 import {onEvent} from "@/store/useEventStore.jsx";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
