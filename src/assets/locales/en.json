@@ -102,5 +102,17 @@
   "empty_section_message": "Nothing More",
   "loading_dashboard_data": "Loading Dashboard",
   "processing_file_title": "Processing the File",
-  "processing_file_warning": "Don't refresh your page"
+  "processing_file_warning": "Don't refresh your page",
+  "edit_file_settings": "Edit Document Settings",
+  "file_name": "Document Name",
+  "created_at": "Created At",
+  "updated_at": "Updated At",
+  "delete": "Delete",
+  "submit": "Save Changes",
+  "confirm_delete_file": "Are you sure you want to delete this document? This action cannot be undone.",
+  "file_update_success": "Document updated successfully.",
+  "file_update_error": "Failed to update document: {{message}}",
+  "file_delete_success": "Document deleted successfully.",
+  "file_delete_error": "Failed to delete document: {{message}}",
+  "load_templates_error": "Load templates Error"
 }

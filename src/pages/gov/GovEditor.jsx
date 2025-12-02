@@ -167,7 +167,7 @@ const GovEditor = ({ fileId, markId }) => {
 
         return (
             <div
-                className={`relative z-30 flex-shrink-0 flex items-center justify-center transition-all duration-200 border-gray-300
+                className={`relative z-10 flex-shrink-0 flex items-center justify-center transition-all duration-200 border-gray-300
                     ${showWideBar
                     ? 'w-8 bg-gray-100 hover:bg-gray-200 cursor-pointer'
                     : 'w-2 bg-gray-400 hover:bg-blue-600 cursor-col-resize'
@@ -213,7 +213,7 @@ const GovEditor = ({ fileId, markId }) => {
             {/* 幽灵层：仅桌面端拖拽时显示 */}
             {!isMobile && isResizing && (
                 <div
-                    className="fixed inset-0 z-50 cursor-col-resize bg-transparent"
+                    className="fixed inset-0 z-10 cursor-col-resize bg-transparent"
                     style={{ userSelect: 'none' }}
                 >
                     <div
