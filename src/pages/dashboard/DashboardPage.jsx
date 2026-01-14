@@ -66,7 +66,7 @@ const DashboardPage = ({type = "chat"}) => {
                 <>
                     <Sidebar markId={markId} setMarkId={setMarkId} settings={sidebarSettings}
                              setPageType={setPageType} setRandomUUID={setRandomUUID} />
-                    <main className="flex-1 overflow-y-auto overflow-hidden relative transition-all duration-300 ease-in-out">
+                    <main className="flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
                         {pageType === "chat" && <ChatPage markId={markId} setMarkId={setMarkId}/>}
                         {pageType === "doc" && <EditorHome key={randomUUID}/>}
                     </main>

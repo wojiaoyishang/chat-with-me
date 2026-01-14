@@ -570,13 +570,15 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
     "prevMessage": "ID0",  # 上一条对话的ID，如果没有是 None
     "position": "left",  # 属于左边还是右边(right)，右边默认为气泡，还有一个 None 如果为空或者没有就是隐藏消息，隐藏消息不会被渲染
     "content": "",  # 内容
+    "role": "", # 角色信息，后端多用 system/user/assistant
     "name": "AI Assistant",  # 昵称
     "avatar": "/src/assets/AI.png",  # 头像
     "messages": ["ID1", "ID2", "ID3"],  # 如果没有是空列表
     "nextMessage": "ID1",  # 目前选择的 下一条对话的ID，如果没有是 None
     "attachments": [],  # 附件内容，可选
     "allowRegenerate": True,  # 是否允许重新生成，默认为 True，可选
-    "tip": ""  # 如果存在，下方将会显示一个信息提示，可选
+    "tip": "",  # 如果存在，下方将会显示一个信息提示，可选
+    "readonly": False  # 消失是否不允许编辑（不显示工具条）
 }
 ```
 
@@ -929,7 +931,7 @@ code 设置为 401 。
     "command": "Shot-Message",
     "msgId": "消息ID",  # 如果消息id是重复的旧直接替换
     "value": {
-        "name": "名称"
+        "name": "名称",  # 必要内容
         ...  # 消息的结构，上述三个必须要有，缺省默认按照 position: right, allowRegenerate: false，prevMessage 默认为已有页面消息的最后一条
     },
     "autoAddOrder": True,  # 默认为 true 是否将消息直接添加到最末尾，并且自动修改消息链接

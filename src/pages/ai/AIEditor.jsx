@@ -1,9 +1,9 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import ChatPage from '@/pages/chat/ChatPage';
-import DocEditor from '@/components/editor/DocEditor';
+import CollaboraOnlineEditor from '@/components/editor/CollaboraOnlineEditor.jsx';
 import { useIsMobile } from "@/lib/tools.jsx"; // 引入工具函数
 
-const GovEditor = ({ fileId, markId }) => {
+const AIEditor = ({ fileId, markId }) => {
     const isMobile = useIsMobile(); // 获取移动端状态
     const [isMounted, setIsMounted] = useState(false);
 
@@ -234,7 +234,7 @@ const GovEditor = ({ fileId, markId }) => {
                 style={isMobile ? { flex: 1, width: '100%' } : desktopDocStyle}
             >
                 <div className="flex-1 overflow-y-auto">
-                    <DocEditor config={docConfig} />
+                    <CollaboraOnlineEditor config={docConfig} />
                 </div>
             </main>
 
@@ -256,4 +256,4 @@ const GovEditor = ({ fileId, markId }) => {
     );
 };
 
-export default GovEditor;
+export default AIEditor;

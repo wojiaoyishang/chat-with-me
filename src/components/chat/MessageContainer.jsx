@@ -503,6 +503,7 @@ const MessageContainer = forwardRef(({
         const displayName = isRight ? null : msg.name;
         const showPaginator = messages[msg?.prevMessage]?.messages?.length > 1;
         const isFading = fadeMessages.has(id) && !enteringMessages.has(id);
+        const readonly = msg.readonly
 
         // 检查内容类型
         const hasAttachments = msg.attachments?.length > 0;
@@ -543,11 +544,11 @@ const MessageContainer = forwardRef(({
                                         showRightTools ? 'opacity-100' : 'opacity-0 pointer-events-none'
                                     }`}
                                 >
-                                    <MessageTools msg={msg} markId={markId} msgId={id}/>
+                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id}/>)}
                                 </div>
                                 {/* 占位元素，保持空间一致性 */}
                                 <div className="flex items-center justify-center invisible">
-                                    <MessageTools msg={msg} markId={markId} msgId={id}/>
+                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id}/>)}
                                 </div>
                             </div>
                         </div>
@@ -555,14 +556,14 @@ const MessageContainer = forwardRef(({
 
                     {showPaginator && (
                         <div className={isRight ? '' : 'flex-1'}>
-                            <MessagePaginator {...paginatorProps} />
+                            {!readonly && (<MessagePaginator {...paginatorProps} />)}
                         </div>
                     )}
 
                     {!isRight && (
                         <div
                             className={"text-right flex-shrink-0 " + (showPaginator ? 'pl-1' : 'translate-x-[-0.4em]')}>
-                            <MessageTools msg={msg} markId={markId} msgId={id}/>
+                            {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id}/>)}
                         </div>
                     )}
 

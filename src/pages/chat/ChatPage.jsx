@@ -191,7 +191,7 @@ function ChatPage({markId, setMarkId}) {
                     updateURL("/chat/" + payload.value);
                     sendMessage(payload.value);
                 } else {
-                    throw payload.value;
+                    throw new Error(payload.value);
                 }
             }).catch(error => {
                 toast.error(t("get_markid_error", {message: error?.message}))
@@ -513,7 +513,12 @@ function ChatPage({markId, setMarkId}) {
 
                 case "MessagesOrder-Meta":
                     if (Array.isArray(payload.value) && payload.value.length > 0) {
-                        wasAtBottomRef.current = calculateIsNearBottom();
+
+                        // 更新页面滚动条位置
+                        setTimeout(()=>{
+                            wasAtBottomRef.current = calculateIsNearBottom();
+                        }, 0)
+
                         setMessagesOrder(payload.value);
                         messagesOrderRef.current = payload.value;
                         reply({value: payload.value});
@@ -524,7 +529,12 @@ function ChatPage({markId, setMarkId}) {
 
                 case "Add-MessageContent":
                     if (payload.value && typeof payload.value === 'object') {
-                        wasAtBottomRef.current = calculateIsNearBottom();
+
+                        // 更新页面滚动条位置
+                        setTimeout(()=>{
+                            wasAtBottomRef.current = calculateIsNearBottom();
+                        }, 0)
+
                         setMessages(draft => {
                             for (const [msgId, newContent] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
@@ -540,6 +550,7 @@ function ChatPage({markId, setMarkId}) {
 
                 case "Add-Message-Messages":
                     if (payload.msgId && payload.value) {
+
                         setMessages(draft => {
 
                             if (draft[payload.msgId] === undefined) {  // 如果根本没有父消息
@@ -557,6 +568,7 @@ function ChatPage({markId, setMarkId}) {
                             if (payload.switch) {
                                 draft[payload.msgId].nextMessage = payload.value;
                             }
+
                             reply({success: true});
                         });
 

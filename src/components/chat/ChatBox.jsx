@@ -890,6 +890,9 @@ function ChatBox({
 
 
                         })
+                    } else {
+                        console.error('Shot-Message Failed. Need msgId, value, value.name in payload at least.');
+                        reply({ success: false });
                     }
 
                     break;

@@ -17,7 +17,7 @@ import FatalErrorPopoverElement from "@/context/FatalErrorPopover.jsx";
 import ContextEvent from "@/context/ContextEvent.jsx";
 import DashboardPage from "@/pages/dashboard/DashboardPage.jsx";
 import Login from "./pages/auth/Login.jsx";
-import GovEditor from "@/pages/gov/GovEditor.jsx";
+import AIEditor from "@/pages/ai/AIEditor.jsx";
 
 const router = createBrowserRouter([
     {

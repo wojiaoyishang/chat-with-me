@@ -15,7 +15,7 @@ import {format} from 'date-fns';
 
 // 导入项目依赖 (假设这些文件和模块都存在)
 import {fileUpload, processSelectedFiles, UnifiedLoadingScreen} from "@/lib/tools.jsx";
-import GovEditor from "@/pages/gov/GovEditor.jsx";
+import AIEditor from "@/pages/ai/AIEditor.jsx";
 import {emitEvent} from "@/store/useEventStore.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
@@ -61,6 +61,7 @@ const TemplateCard = ({onSettingsClick, onCardClick, item}) => {
                     <img
                         src={previewImage}
                         alt={`${title} Preview`}
+                        style={{ objectPosition: 'top' }}
                         className="w-full h-full object-cover absolute inset-0"
                     />
                 ) : (
@@ -539,7 +540,7 @@ const EditorHome = () => {
 
     // 条件渲染 1：打开编辑器
     if (openEditor) {
-        return <GovEditor fileId={fileId} markId={chatMarkId}/>;
+        return <AIEditor fileId={fileId} markId={chatMarkId}/>;
     }
 
     // 条件渲染 2：加载中

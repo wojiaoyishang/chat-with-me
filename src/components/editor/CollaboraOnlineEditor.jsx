@@ -5,7 +5,7 @@ import {useTranslation} from "react-i18next";
 import {UnifiedErrorScreen, UnifiedLoadingScreen} from "@/lib/tools.jsx";
 
 // --- Main DocEditor Component ---
-const DocEditor = forwardRef(({config = {}}, ref) => {
+const CollaboraOnlineEditor = forwardRef(({config = {}}, ref) => {
     const [iframeUrl, setIframeUrl] = useState('');
     const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
     const {t} = useTranslation();
@@ -82,4 +82,4 @@ const DocEditor = forwardRef(({config = {}}, ref) => {
     );
 });
 
-export default DocEditor;
+export default CollaboraOnlineEditor;

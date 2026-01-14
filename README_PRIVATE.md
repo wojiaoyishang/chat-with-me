@@ -2,10 +2,11 @@
 
 ```python
 {
+        "createDate": "2025-03-18T20:46:00+08:00",   # 对话创建时间
         "updateDate": "2025-03-18T20:46:00+08:00",  # 更新时间（ISO 8601 格式，带时区 +08:00）前端基于此排序
         "title": "Legacy System Update",  # 对话标题
         "markId": "mark23",  # 对话ID
-        "type": 0   # Type 这个后面加的
+        "type": 0   # Type 这个后面加的, 1代表是AI编辑器对话
 }
 ```
 
