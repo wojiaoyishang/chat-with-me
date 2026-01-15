@@ -563,19 +563,19 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 }
 ```
 
-消息源数据格式：
+消息源数据格式，标注必须的一定要有内容，否则无法显示信息：
 
 ```python
 {
-    "prevMessage": "ID0",  # 上一条对话的ID，如果没有是 None
-    "position": "left",  # 属于左边还是右边(right)，右边默认为气泡，还有一个 None 如果为空或者没有就是隐藏消息，隐藏消息不会被渲染
-    "content": "",  # 内容
+    "prevMessage": "ID0",  # 上一条对话的ID，如果没有是 None（必须）
+    "position": "left",  # 属于左边还是右边(right)，右边默认为气泡，还有一个 None 如果为空或者没有就是隐藏消息，隐藏消息不会被渲染（必须）
+    "content": "",  # 内容（必须，在有附件的情况下可以没有）
     "role": "", # 角色信息，后端多用 system/user/assistant
-    "name": "AI Assistant",  # 昵称
+    "name": "AI Assistant",  # 昵称（必须）
     "avatar": "/src/assets/AI.png",  # 头像
-    "messages": ["ID1", "ID2", "ID3"],  # 如果没有是空列表
-    "nextMessage": "ID1",  # 目前选择的 下一条对话的ID，如果没有是 None
-    "attachments": [],  # 附件内容，可选
+    "messages": ["ID1", "ID2", "ID3"],  # 如果没有是空列表（必须）
+    "nextMessage": "ID1",  # 目前选择的 下一条对话的ID，如果没有是 None（必须）
+    "attachments": [],  # 附件内容，可选，如果和 content 两个都没有前端将无法渲染出消息占位
     "allowRegenerate": True,  # 是否允许重新生成，默认为 True，可选
     "tip": "",  # 如果存在，下方将会显示一个信息提示，可选
     "readonly": False  # 消失是否不允许编辑（不显示工具条）

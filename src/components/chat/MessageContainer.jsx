@@ -719,7 +719,44 @@ const MessageContainer = forwardRef(({
         }
 
         // 没有内容可显示
-        return null;
+        return (
+            <div
+                key={id}
+                className={`flex flex-col w-full transition-all duration-300 ease-in-out ${
+                    isRight ? 'items-end' : 'items-start'
+                } ${getMessageAnimationClass(id, isFading)}`}
+                onMouseEnter={() => isRight && setHoveredMessageId(id)}
+                onMouseLeave={() => isRight && setHoveredMessageId(null)}
+            >
+                {isRight ? (
+                    <>
+                        {/* 右侧消息：只显示头像（靠右），无内容 */}
+                        <div className="flex justify-end items-start gap-3 max-w-[80%] ml-auto">
+                            <div className="h-10 w-10"></div> {/* 占位，保持布局一致 */}
+                            <Avatar className="h-10 w-10 flex-shrink-0">
+                                <AvatarImage src={avatar} alt="User"/>
+                                <AvatarFallback>U</AvatarFallback>
+                            </Avatar>
+                        </div>
+                        {/* 渲染消息底部操作区域 */}
+                        {renderMessageActions()}
+                    </>
+                ) : (
+                    <div className="flex flex-col items-start w-full">
+                        {/* 左侧消息：显示头像和名称 */}
+                        <LeftAvatarName
+                            avatar={avatar}
+                            displayName={displayName}
+                            isLeaving={leavingMessages.has(id)}
+                        />
+                        {/* 空内容区域（可选：加一个极小高度占位，避免布局跳动） */}
+                        <div className="pl-7 min-h-[1.25rem]"></div>
+                        {/* 渲染消息底部操作区域 */}
+                        {renderMessageActions()}
+                    </div>
+                )}
+            </div>
+        );
     };
 
     return (
