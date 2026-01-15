@@ -21,6 +21,7 @@ const DashboardPage = ({type = "chat"}) => {
 
     const {t} = useTranslation();
 
+    // 页面加载动画层
     useEffect(() => {
         const loadDashboard = async () => {
             setIsLoading(true);
@@ -56,6 +57,18 @@ const DashboardPage = ({type = "chat"}) => {
         />
     );
 
+    useEffect(() => {
+        emitEvent({
+            type: "page",
+            target: "Dashboard",
+            payload: {
+                command: "Dashboard-Change",
+                pageType: pageType,
+            },
+            markId: markId
+        })
+    }, [pageType, markId]);
+
     return (
         <div className="flex full-screen-height bg-white relative">
             {isLoadingError ? (
@@ -64,12 +77,15 @@ const DashboardPage = ({type = "chat"}) => {
                 <LoadingScreen/>
             ) : (
                 <>
+
                     <Sidebar markId={markId} setMarkId={setMarkId} settings={sidebarSettings}
                              setPageType={setPageType} setRandomUUID={setRandomUUID} />
+
                     <main className="flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
                         {pageType === "chat" && <ChatPage markId={markId} setMarkId={setMarkId}/>}
                         {pageType === "doc" && <EditorHome key={randomUUID}/>}
                     </main>
+
                 </>
             )}
         </div>

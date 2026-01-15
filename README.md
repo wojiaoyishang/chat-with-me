@@ -805,7 +805,7 @@ code 设置为 401 。
 }
 ```
 
-## ChatBox 事件（target=ChatBox)
+## ChatBox 事件 (target=ChatBox)
 
 ### type=widget
 
@@ -980,6 +980,21 @@ code 设置为 401 。
     },
     "markId": ""  # 目标 markId
 }
+```
+
+## DashboardPage 事件 (target=Dashboard)
+
+### type=page
+
+#### 页面切换事件
+
+由用户切换页面时自动发出，注意 markId 可能为空
+
+```python
+{
+    "command": "Dashboard-Change",
+    "pageType": "pageType",  # 页面的类型，chat
+}  
 ```
 
 ## Context 事件 (target=Context)

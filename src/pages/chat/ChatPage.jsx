@@ -60,6 +60,7 @@ function ChatPage({markId, setMarkId}) {
     const messagesRef = useRef({});
     const messagesOrderRef = useRef([]);
 
+    const isAtBottomRef = useRef(isAtBottom);
     const wasAtBottomRef = useRef(true);
 
     const [scrollButtonBottom, setScrollButtonBottom] = useState(200);
@@ -99,6 +100,11 @@ function ChatPage({markId, setMarkId}) {
             scrollToBottom();
         }
     }, [messagesOrder, scrollToBottom]);
+
+
+    useEffect(() => {
+        isAtBottomRef.current = isAtBottom;
+    }, [isAtBottom]);
 
     // 监听滚动事件
     useEffect(() => {
@@ -530,11 +536,6 @@ function ChatPage({markId, setMarkId}) {
                 case "Add-MessageContent":
                     if (payload.value && typeof payload.value === 'object') {
 
-                        // 更新页面滚动条位置
-                        setTimeout(()=>{
-                            wasAtBottomRef.current = calculateIsNearBottom();
-                        }, 0)
-
                         setMessages(draft => {
                             for (const [msgId, newContent] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
@@ -542,6 +543,13 @@ function ChatPage({markId, setMarkId}) {
                                 }
                             }
                         });
+
+                        setTimeout(() => {
+                            if (isAtBottomRef.current) {
+                                scrollToBottom();
+                            }
+                        }, 0);
+
                         if (payload.reply) reply({success: true});
                     } else {
                         reply({success: false});
@@ -549,6 +557,7 @@ function ChatPage({markId, setMarkId}) {
                     break;
 
                 case "Add-Message-Messages":
+
                     if (payload.msgId && payload.value) {
 
                         setMessages(draft => {
@@ -570,8 +579,12 @@ function ChatPage({markId, setMarkId}) {
                             }
 
                             reply({success: true});
+
                         });
 
+                    }
+                    else {
+                        console.error('Add-Message-Messages Failed. msgId, value is need at least.');
                     }
                     break;
 
