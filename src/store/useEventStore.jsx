@@ -344,6 +344,15 @@ export let emitEvent = ({
 
                 // 注册回复监听器
                 state._registerReplyListener(eventId, wrappedResolve);
+
+                // 添加10秒超时
+                setTimeout(() => {
+                    if (replyListeners.has(eventId)) {
+                        state._removeReplyListener(eventId);
+                        console.warn(`Timeout: No reply received for event ID ${eventId} after 10 seconds`);
+                        reject(new Error('Timeout waiting for reply'));
+                    }
+                }, 10000);
             });
         }
     };

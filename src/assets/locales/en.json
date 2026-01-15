@@ -114,5 +114,6 @@
   "file_update_error": "Failed to update document: {{message}}",
   "file_delete_success": "Document deleted successfully.",
   "file_delete_error": "Failed to delete document: {{message}}",
-  "load_templates_error": "Load templates Error"
+  "load_templates_error": "Load templates Error",
+  "send_message_error": "Failed to send a message：{{message}}"
 }

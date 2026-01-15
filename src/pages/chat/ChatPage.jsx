@@ -31,7 +31,7 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Badge} from "@/components/ui/badge";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 
-function ChatPage({markId, setMarkId}) {
+function ChatPage({markId, setMarkId, requestIdRef}) {
     const {t} = useTranslation();
 
     const chatPageRef = useRef(null);
@@ -40,6 +40,8 @@ function ChatPage({markId, setMarkId}) {
 
     const [selfMarkId, setSelfMarkId] = [markId, setMarkId];
     const selfMarkIdRef = useRef(null);
+
+    const currentRequestIDRef = useRef(generateUUID());  // 用于请求防抖
 
     const uploadIntervals = useRef(new Map());
     const [uploadFiles, setUploadFiles] = useState([]);
@@ -135,8 +137,14 @@ function ChatPage({markId, setMarkId}) {
         handleSelectedFiles(files);
     };
 
-    const handleSendMessage = (messageContent, toolsStatus, isEditMessage, editMessageId, attachments, sendButtonStatus) => {
-
+    const handleSendMessage = (
+        messageContent,
+        toolsStatus,
+        isEditMessage,
+        editMessageId,
+        attachments,
+        sendButtonStatus
+    ) => {
         if (uploadFiles.length !== 0) {
             toast.error(t("file_upload_not_complete"));
             return;
@@ -145,16 +153,14 @@ function ChatPage({markId, setMarkId}) {
         const sendMessage = (markId) => {
 
             if (isFirstMessageSend) {
-                emitEvent(
-                    {
-                        type: "widget",
-                        target: "Sidebar",
-                        payload: {
-                            command: "Update-ConversationDate"
-                        },
-                        markId: markId
-                    }
-                )
+                emitEvent({
+                    type: "widget",
+                    target: "Sidebar",
+                    payload: {
+                        command: "Update-ConversationDate"
+                    },
+                    markId: markId,
+                });
                 setIsFirstMessageSend(false);
             }
 
@@ -168,7 +174,8 @@ function ChatPage({markId, setMarkId}) {
                     attachments: attachments,
                     isEdit: isEditMessage,
                     model: selectedModel.id,
-                    sendButtonStatus: sendButtonStatus
+                    sendButtonStatus: sendButtonStatus,
+                    requestId: currentRequestIDRef.current  // 携带 RequestID
                 },
                 markId: markId
             };
@@ -177,36 +184,43 @@ function ChatPage({markId, setMarkId}) {
                 eventPayload.payload.msgId = editMessageId;
             }
 
-            emitEvent(eventPayload);
-        }
-
-        if (!selfMarkId) {  // 如果没有 MarkId 就要去请求一个
-
-            emitEvent(
-                {
-                    type: "page",
-                    target: "ChatPage",
-                    payload: {
-                        command: "Get-MarkId"
-                    }
-                }
-            ).then((payload, markId, isReply, id, reply) => {
+            emitEvent(eventPayload).then((payload, markId, isReply, id, reply) => {
                 if (payload.success) {
-                    setIsNewMarkId(true);
-                    setSelfMarkId(payload.value);
-                    updateURL("/chat/" + payload.value);
-                    sendMessage(payload.value);
+                    currentRequestIDRef.current = generateUUID();
                 } else {
-                    throw new Error(payload.value);
+                    toast.error(t("send_message_error", {message: payload.value}));
                 }
-            }).catch(error => {
-                toast.error(t("get_markid_error", {message: error?.message}))
             });
+
+
+        };
+
+        if (!selfMarkId) {
+            // 发起 Get-MarkId 请求，也带上当前 RequestID
+            emitEvent({
+                type: "page",
+                target: "ChatPage",
+                payload: {
+                    command: "Get-MarkId",
+                    requestId: currentRequestIDRef.current
+                }
+            })
+                .then((payload, markId, isReply, id, reply) => {
+                    if (payload.success) {
+                        setIsNewMarkId(true);
+                        setSelfMarkId(payload.value);
+                        updateURL("/chat/" + payload.value);
+                        sendMessage(payload.value);
+                    } else {
+                        throw new Error(payload.value);
+                    }
+                })
+                .catch((error) => {
+                    toast.error(t("get_markid_error", {message: error?.message}));
+                });
         } else {
             sendMessage(selfMarkId);
         }
-
-
     };
 
     const onAttachmentRemove = (attachment) => {
@@ -521,7 +535,7 @@ function ChatPage({markId, setMarkId}) {
                     if (Array.isArray(payload.value) && payload.value.length > 0) {
 
                         // 更新页面滚动条位置
-                        setTimeout(()=>{
+                        setTimeout(() => {
                             wasAtBottomRef.current = calculateIsNearBottom();
                         }, 0)
 
@@ -582,8 +596,7 @@ function ChatPage({markId, setMarkId}) {
 
                         });
 
-                    }
-                    else {
+                    } else {
                         console.error('Add-Message-Messages Failed. msgId, value is need at least.');
                     }
                     break;
@@ -781,7 +794,8 @@ function ChatPage({markId, setMarkId}) {
 
     return (
         <>
-            <div className="full-screen-min-height bg-white flex flex-col items-center pb-8 pretty-scrollbar" ref={chatPageRef}>
+            <div className="full-screen-min-height bg-white flex flex-col items-center pb-8 pretty-scrollbar"
+                 ref={chatPageRef}>
                 <header className="w-full bg-white flex items-center justify-start p-4 h-14">
                     <Popover
                         open={isModelPopoverOpen}

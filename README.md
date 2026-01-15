@@ -629,11 +629,12 @@ code 设置为 401 。
 
 #### 获取 markId
 
-如果是新对话页面，此时并没有markId，就会通过广播事件向服务器请求一个markId：
+如果是新对话页面，此时并没有markId，就会通过广播事件向服务器请求一个markId，这个事件只能是前端发送给后端的：
 
 ```python
 {
-    "command": "Get-MarkId"
+    "command": "Get-MarkId",
+    "requestId": ""  # 请求的ID，用于防抖
 }
 ```
 
@@ -742,7 +743,8 @@ code 设置为 401 。
 ```python
 {
     "command": "Message-Send",
-    "message": "Text",
+    "requestId": "",  # 请求的ID，用于防抖
+    "content": "Text",
     "toolsStatus": {
         "builtin_tools": {
             "search": False
@@ -757,6 +759,15 @@ code 设置为 401 。
     "msgId": "",  # 如果为编辑消息模式才会附带
     "model": "qwen",  # 目前选中的模型
     "sendButtonStatus": "normal/disabled/loading/generating"  # 按钮状态
+}
+```
+
+后端可选回复
+
+```python
+{
+    "success": True,  # 成功前端将会生成新的 requestId
+    "value": ""  # 如果失败这里会显示原因
 }
 ```
 
@@ -988,7 +999,7 @@ code 设置为 401 。
 
 #### 页面切换事件
 
-由用户切换页面时自动发出，注意 markId 可能为空
+由用户切换页面时自动发出，注意 markId 可能为空，这个事件只能是前端发给后端
 
 ```python
 {

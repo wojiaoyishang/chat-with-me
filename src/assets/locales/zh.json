@@ -114,5 +114,6 @@
   "file_update_error": "文件更新失败：{{message}}",
   "file_delete_success": "文件删除成功。",
   "file_delete_error": "文件删除失败：{{message}}",
-  "load_templates_error": "加载模板失败"
+  "load_templates_error": "加载模板失败",
+  "send_message_error": "发送消息失败：{{message}}"
 }
