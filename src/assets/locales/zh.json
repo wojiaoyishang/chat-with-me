@@ -115,5 +115,6 @@
   "file_delete_success": "文件删除成功。",
   "file_delete_error": "文件删除失败：{{message}}",
   "load_templates_error": "加载模板失败",
-  "send_message_error": "发送消息失败：{{message}}"
+  "send_message_error": "发送消息失败：{{message}}",
+  "cannot_load_tasks": "不能加载流式任务，可能是与服务器断开链接，请刷新重试。"
 }

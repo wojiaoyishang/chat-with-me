@@ -733,6 +733,8 @@ function ChatBox({
 
     // 广播
     useEffect(() => {
+        if (!markId) return;
+
         const unsubscribe = onEvent("widget", "ChatBox", markId).then((payload, markId, isReply, id, reply) => {
 
             switch (payload.command) {

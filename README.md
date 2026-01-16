@@ -730,11 +730,29 @@ code 设置为 401 。
 ```python
 {
     "command": "Messages-Loaded",
+    "requestId": "", # 用于防抖
     "messagesOrder": []  # 页面上已有的消息链
 }
 ```
 
-响应不需要回复
+需要回复
+
+```python
+{
+    "success": True,
+    "value": None  # 如果失败将会在控制台打印该日志
+}
+```
+
+#### 手动触发响应历史消息加载完成
+
+后端发出这个事件。当前端接收到时，会手动触发 Messages-Loaded 再次发给前端（不是回复），这个情况用于多个 websocket 同步生成内容。
+
+```python
+{
+    "command": "Re-Messages-Loaded"
+}
+```
 
 #### 当用户发送消息
 

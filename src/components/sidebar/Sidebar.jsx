@@ -117,6 +117,7 @@ const Sidebar = ({
         return groups;
     };
     const groupedConvs = groupConversations();
+
     const handleSelectConversation = (markId) => {
         setPageType('chat');
         updateURL(`/chat/${markId}`);

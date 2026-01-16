@@ -115,5 +115,6 @@
   "file_delete_success": "Document deleted successfully.",
   "file_delete_error": "Failed to delete document: {{message}}",
   "load_templates_error": "Load templates Error",
-  "send_message_error": "Failed to send a message：{{message}}"
+  "send_message_error": "Failed to send a message：{{message}}",
+  "cannot_load_tasks": "The streaming task cannot be loaded. It might be disconnected from the server. Please refresh and try again."
 }

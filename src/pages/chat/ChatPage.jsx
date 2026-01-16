@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {useImmer} from 'use-immer';
+import {produce} from 'immer';
 import {
     generateUUID,
     getMarkId,
@@ -16,10 +17,10 @@ import {
     fileUpload,
     createFilePicker,
 } from "@/lib/tools.jsx";
+import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
 import {useTranslation} from "react-i18next";
 import {useNavigate} from 'react-router-dom';
 import {FaArrowDown, FaChevronDown, FaCheckCircle} from "react-icons/fa";
-import {onEvent} from "@/store/useEventStore.jsx";
 import ChatBox from "@/components/chat/chatbox.jsx";
 import MessageContainer from "@/components/chat/MessageContainer.jsx";
 import apiClient from "@/lib/apiClient.js";
@@ -31,17 +32,16 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Badge} from "@/components/ui/badge";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 
-function ChatPage({markId, setMarkId, requestIdRef}) {
+function ChatPage({markId, setMarkId}) {
     const {t} = useTranslation();
-
     const chatPageRef = useRef(null);
     const isProcessingRef = useRef(false);
     const messagesContainerRef = useRef(null);
-
     const [selfMarkId, setSelfMarkId] = [markId, setMarkId];
     const selfMarkIdRef = useRef(null);
 
-    const currentRequestIDRef = useRef(generateUUID());  // 用于请求防抖
+    const currentMessageSendRequestIDRef = useRef(generateUUID()); // 用于请求防抖，用于 markId 获取 和 消息发送
+    const currentMessagesLoadedRequestIDRef = useRef(generateUUID()); // 用于请求防抖，用于 消息已加载
 
     const uploadIntervals = useRef(new Map());
     const [uploadFiles, setUploadFiles] = useState([]);
@@ -52,34 +52,24 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [isMessageLoaded, setIsMessageLoaded] = useState(false);
     const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
-
-    const [randomMark, setRandomMark] = useState(null);  // 用于重载页面
+    const [randomMark, setRandomMark] = useState(null); // 用于重载页面
 
     // 消息状态
     const [messagesOrder, setMessagesOrder] = useState([]);
     const [messages, setMessages] = useImmer({});
-
     const messagesRef = useRef({});
     const messagesOrderRef = useRef([]);
-
     const isAtBottomRef = useRef(isAtBottom);
     const wasAtBottomRef = useRef(true);
-
     const [scrollButtonBottom, setScrollButtonBottom] = useState(200);
-
     const isMobile = useIsMobile();
-
     const [models, setModels] = useState([]);
     const [selectedModel, setSelectedModel] = useState(models.length === 0 ? {name: t("no_models")} : models[0]);
     const [previewModel, setPreviewModel] = useState(null);
-
-    const [isNewMarkId, setIsNewMarkId] = useState(false);  // 用于判断是不是请求新请求的 MarkId ，防止页面刷新
+    const [isNewMarkId, setIsNewMarkId] = useState(false); // 用于判断是不是请求新请求的 MarkId ，防止页面刷新
     const isNewMarkIdRef = useRef(false);
-
     const modelListRef = useRef(null);
-
     const [isFirstMessageSend, setIsFirstMessageSend] = useState(false);
-
     const calculateIsNearBottom = () => {
         if (!messagesContainerRef.current) return true;
         const {scrollTop, scrollHeight, clientHeight} = messagesContainerRef.current;
@@ -103,7 +93,6 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
         }
     }, [messagesOrder, scrollToBottom]);
 
-
     useEffect(() => {
         isAtBottomRef.current = isAtBottom;
     }, [isAtBottom]);
@@ -112,18 +101,14 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
     useEffect(() => {
         const container = messagesContainerRef.current;
         if (!container) return;
-
         const handleScroll = () => {
             const {scrollTop, scrollHeight, clientHeight} = container;
             const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-
             setIsAtBottom(isNearBottom);
             setShowScrollToBottomButton(!isNearBottom);
         };
-
         handleScroll();
         container.addEventListener('scroll', handleScroll, {passive: true});
-
         return () => {
             container.removeEventListener('scroll', handleScroll);
         };
@@ -149,9 +134,7 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
             toast.error(t("file_upload_not_complete"));
             return;
         }
-
         const sendMessage = (markId) => {
-
             if (isFirstMessageSend) {
                 emitEvent({
                     type: "widget",
@@ -163,7 +146,6 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                 });
                 setIsFirstMessageSend(false);
             }
-
             const eventPayload = {
                 type: "message",
                 target: "ChatPage",
@@ -175,24 +157,20 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                     isEdit: isEditMessage,
                     model: selectedModel.id,
                     sendButtonStatus: sendButtonStatus,
-                    requestId: currentRequestIDRef.current  // 携带 RequestID
+                    requestId: currentMessageSendRequestIDRef.current // 携带 RequestID
                 },
                 markId: markId
             };
-
             if (isEditMessage) {
                 eventPayload.payload.msgId = editMessageId;
             }
-
             emitEvent(eventPayload).then((payload, markId, isReply, id, reply) => {
                 if (payload.success) {
-                    currentRequestIDRef.current = generateUUID();
+                    currentMessageSendRequestIDRef.current = generateUUID();
                 } else {
                     toast.error(t("send_message_error", {message: payload.value}));
                 }
             });
-
-
         };
 
         if (!selfMarkId) {
@@ -202,7 +180,7 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                 target: "ChatPage",
                 payload: {
                     command: "Get-MarkId",
-                    requestId: currentRequestIDRef.current
+                    requestId: currentMessageSendRequestIDRef.current
                 }
             })
                 .then((payload, markId, isReply, id, reply) => {
@@ -228,11 +206,8 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
     };
 
     const handleSelectedFiles = (files, items) => {
-
-
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
-
             // 处理文本拖拽
             if (item.kind === 'string' && item.type === 'text/plain') {
                 item.getAsString(function (text) {
@@ -260,22 +235,17 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                 });
             }
         }
-
         if (!(files && files.length > 0)) {
             return;
         }
-
         if (isProcessingRef.current) return;
         isProcessingRef.current = true;
-
         const newUploadFiles = processSelectedFiles(files);
         if (newUploadFiles.length === 0) {
             isProcessingRef.current = false;
             return;
         }
-
         setUploadFiles(prev => [...prev, ...newUploadFiles]);
-
         newUploadFiles.forEach(uploadFile => {
             const handleProgressUpdate = (uploadId, progress) => {
                 setUploadFiles(prev => {
@@ -286,12 +256,10 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                     return updated;
                 });
             };
-
             const handleComplete = (uploadId, attachment) => {
                 setUploadFiles(prev => prev.filter(f => f.id !== uploadId));
                 setAttachments(prev => [...prev, attachment]);
             };
-
             const cleanup = fileUpload(
                 uploadFile,
                 handleProgressUpdate,
@@ -303,10 +271,8 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                     );
                 }
             );
-
             uploadIntervals.current.set(uploadFile.id, cleanup);
         });
-
         setTimeout(() => {
             isProcessingRef.current = false;
         }, 500);
@@ -328,13 +294,11 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
         setUploadFiles(prev => {
             const fileToRetry = prev.find(f => f.id === uploadId);
             if (!fileToRetry || !fileToRetry.file) return prev;
-
             const updatedFile = {
                 ...fileToRetry,
                 progress: 0,
                 error: null
             };
-
             const handleProgressUpdate = (id, progress) => {
                 setUploadFiles(p => p.map(f => f.id === id ? {...f, progress} : f));
             };
@@ -346,7 +310,6 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                 toast.error(t("file_upload.error", {message: error?.message || t("unknown_error")}));
                 setUploadFiles(p => p.map(f => f.id === uploadId ? {...f, error: true, progress: 0} : f));
             };
-
             const cleanup = fileUpload(
                 updatedFile,
                 handleProgressUpdate,
@@ -354,7 +317,6 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                 handleError
             );
             uploadIntervals.current.set(uploadId, cleanup);
-
             return prev.map(f => f.id === uploadId ? updatedFile : f);
         });
     };
@@ -368,6 +330,7 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
     };
 
     const handleFilePicker = createFilePicker('*', handleSelectedFiles);
+
     const handlePicPicker = createFilePicker('image/*', handleSelectedFiles);
 
     const loadMoreHistory = async () => {
@@ -382,12 +345,24 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                     })
                     .then(data => {
                         wasAtBottomRef.current = calculateIsNearBottom();
+
+                        // 设置 messages
+
+                        const newMessages = {...messagesRef.current, ...data.messages};
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+
+                        // 设置 messagesOrder
+
+                        let newOrder;
                         if (data.haveMore) {
-                            setMessagesOrder(['<PREV_MORE>', ...data.messagesOrder, ...messagesOrder.slice(1)]);
+                            newOrder = ['<PREV_MORE>', ...data.messagesOrder, ...messagesOrder.slice(1)];
                         } else {
-                            setMessagesOrder([...data.messagesOrder, ...messagesOrder.slice(1)]);
+                            newOrder = [...data.messagesOrder, ...messagesOrder.slice(1)];
                         }
-                        setMessages(prev => ({...prev, ...data.messages}));
+                        setMessagesOrder(newOrder);
+                        messagesOrderRef.current = newOrder;
+
                         resolve(true);
                     })
                     .catch(error => reject(error));
@@ -398,13 +373,10 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
     };
 
     const loadSwitchMessage = async (msgId, newMsgId) => {
-
         if (!messagesRef.current.hasOwnProperty(msgId)) return;
-
         let missMsg = !messagesRef.current.hasOwnProperty(newMsgId);
         let newOrders = [];
         let msg_cursor = messagesRef.current[newMsgId];
-
         if (!missMsg) {
             newOrders.push(newMsgId);
             while (msg_cursor.nextMessage) {
@@ -417,7 +389,6 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                 }
             }
         }
-
         if (missMsg) {
             try {
                 const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
@@ -427,30 +398,53 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                     }
                 });
                 wasAtBottomRef.current = calculateIsNearBottom();
-                setMessages(prev => ({...prev, ...data.messages}));
-                setMessagesOrder([...messagesOrderRef.current.slice(0, messagesOrderRef.current.indexOf(msgId) + 1), ...data.messagesOrder]);
-                setMessages(draft => {
+
+                // 设置 messages
+
+                const newMessagesFromData = {...messagesRef.current, ...data.messages};
+                setMessages(newMessagesFromData);
+                messagesRef.current = newMessagesFromData;
+
+                // 设置 messagesOrder
+
+                const newOrderFromData = [...messagesOrderRef.current.slice(0, messagesOrderRef.current.indexOf(msgId) + 1), ...data.messagesOrder];
+                setMessagesOrder(newOrderFromData);
+                messagesOrderRef.current = newOrderFromData;
+
+                // 设置 messages (nextMessage 更新)
+
+                const newMessagesWithNext = produce(messagesRef.current, draft => {
                     draft[msgId].nextMessage = newMsgId;
                 });
+                setMessages(newMessagesWithNext);
+                messagesRef.current = newMessagesWithNext;
+
                 return true;
             } catch (error) {
                 toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));
             }
         } else {
             wasAtBottomRef.current = calculateIsNearBottom();
-            setMessagesOrder([...messagesOrderRef.current.slice(0, messagesOrderRef.current.indexOf(msgId) + 1), ...newOrders]);
-            setMessages(draft => {
+
+            // 设置 messagesOrder
+            const newOrder = [...messagesOrderRef.current.slice(0, messagesOrderRef.current.indexOf(msgId) + 1), ...newOrders];
+            setMessagesOrder(newOrder);
+            messagesOrderRef.current = newOrder;
+
+            // 设置 messages (nextMessage 更新)
+            const newMessages = produce(messagesRef.current, draft => {
                 draft[msgId].nextMessage = newMsgId;
             });
+            setMessages(newMessages);
+            messagesRef.current = newMessages;
+
             return true;
         }
-
     }
 
     const switchMessage = async (msg, msgId, isNext) => {
         const msgId_index = msg.messages.indexOf(msg.nextMessage);
         const newMsgId = msg.messages[msgId_index + (isNext ? 1 : -1)];
-
         const sendSwitchRequest = () => {
             if (getLocalSetting('SyncMessageSwitch', true)) {
                 emitEvent({
@@ -465,10 +459,8 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                 });
             }
         };
-
         await loadSwitchMessage(msgId, newMsgId);
         sendSwitchRequest();
-
     };
 
     const LoadingScreen = () => (
@@ -477,7 +469,6 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
             zIndex="z-20"
         />
     );
-
     const LoadingFailedScreen = () => (
         <UnifiedErrorScreen
             title={t("load_error")}
@@ -487,7 +478,36 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
         />
     );
 
+    const emitMessagesLoaded = () => {
+
+        setTimeout(() => {
+            setIsMessageLoaded(true);
+            emitEvent({
+                type: "message",
+                target: "ChatPage",
+                payload: {
+                    command: "Messages-Loaded",
+                    requestId: currentMessagesLoadedRequestIDRef.current,
+                    messagesOrder: messagesOrderRef.current[0] === '<PREV_MORE>' ? messagesOrderRef.current.slice(1) : messagesOrderRef.current
+                },
+                markId: selfMarkId,
+                onTimeout: () => {
+                    toast.warning(t("cannot_load_tasks"));
+                }
+            }).then((payload) => {
+                if (payload.success) {
+                    currentMessagesLoadedRequestIDRef.current = generateUUID();
+                } else {
+                    console.error("Cannot to load the tasks,", payload.value);
+                }
+            });
+        }, 0)
+
+    }
+
+
     useEffect(() => {
+        if (!selfMarkId) return;
 
         const unsubscribe1 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
@@ -495,42 +515,34 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                     if (payload.value && typeof payload.value === 'object') {
                         wasAtBottomRef.current = calculateIsNearBottom();
 
-                        setMessages(prev => {
+                        // 设置 messages
 
-                            const updated = {...prev};
-
-                            for (const [key, newValue] of Object.entries(payload.value)) {
-
-                                if (payload.isEdit && !updated.includes(key)) {
-                                    debugger
-                                    reply({success: false});
-
-                                    return prev;
-                                }
-
-                                if (newValue.messages === undefined) {
-                                    newValue.messages = [];
-                                }
-
-                                if (typeof newValue === 'object') {
-                                    if (updated[key] && typeof updated[key] === 'object' && updated[key] !== null) {
-                                        updated[key] = {...updated[key], ...newValue};
-                                    } else {
-                                        updated[key] = newValue;
-                                    }
-                                } else {
-                                    updated[key] = newValue;
-                                }
+                        let newMessages = {...messagesRef.current};
+                        for (const [key, newValue] of Object.entries(payload.value)) {
+                            if (payload.isEdit && !newMessages[key]) {
+                                debugger
+                                reply({success: false});
+                                return;
                             }
+                            if (newValue.messages === undefined) {
+                                newValue.messages = [];
+                            }
+                            if (typeof newValue === 'object') {
+                                if (newMessages[key] && typeof newMessages[key] === 'object' && newMessages[key] !== null) {
+                                    newMessages[key] = {...newMessages[key], ...newValue};
+                                } else {
+                                    newMessages[key] = newValue;
+                                }
+                            } else {
+                                newMessages[key] = newValue;
+                            }
+                        }
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
 
-                            reply({success: true});
-
-                            return updated;
-                        });
-
+                        reply({success: true});
                     }
                     break;
-
                 case "MessagesOrder-Meta":
                     if (Array.isArray(payload.value) && payload.value.length > 0) {
 
@@ -539,70 +551,67 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                             wasAtBottomRef.current = calculateIsNearBottom();
                         }, 0)
 
+                        // 设置 messagesOrder
                         setMessagesOrder(payload.value);
                         messagesOrderRef.current = payload.value;
+
                         reply({value: payload.value});
                     } else {
                         reply({value: messagesOrderRef.current});
                     }
                     break;
-
                 case "Add-MessageContent":
                     if (payload.value && typeof payload.value === 'object') {
 
-                        setMessages(draft => {
+                        const newMessages = produce(messagesRef.current, draft => {
                             for (const [msgId, newContent] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
                                     draft[msgId].content = (draft[msgId].content || '') + (newContent || '');
                                 }
                             }
                         });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
 
                         setTimeout(() => {
                             if (isAtBottomRef.current) {
                                 scrollToBottom();
                             }
                         }, 0);
-
                         if (payload.reply) reply({success: true});
                     } else {
                         reply({success: false});
                     }
                     break;
-
                 case "Add-Message-Messages":
-
                     if (payload.msgId && payload.value) {
 
-                        setMessages(draft => {
+                        if (!messagesRef.current[payload.msgId]) { // 如果根本没有父消息
+                            reply({success: false});
+                            return;
+                        }
+                        if (messagesRef.current[payload.msgId].messages.includes(payload.value)) { // 如果已经添加
+                            reply({success: false});
+                            return;
+                        }
 
-                            if (draft[payload.msgId] === undefined) {  // 如果根本没有父消息
-                                reply({success: false});
-                                return;
-                            }
-
-                            if (draft[payload.msgId].messages.includes(payload.value)) {  // 如果已经添加
-                                reply({success: false});
-                                return;
-                            }
-
+                        // 设置 messages
+                        const newMessages = produce(messagesRef.current, draft => {
                             draft[payload.msgId].messages = [...draft[payload.msgId].messages, payload.value];
-
                             if (payload.switch) {
                                 draft[payload.msgId].nextMessage = payload.value;
                             }
-
-                            reply({success: true});
-
                         });
 
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+
+                        reply({success: true});
                     } else {
                         console.error('Add-Message-Messages Failed. msgId, value is need at least.');
                     }
                     break;
-
                 case "Load-Switch-Message":
-
                     emitEvent({
                         type: "widget",
                         target: "ChatPage",
@@ -628,34 +637,24 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                             })
                         });
                     });
-
                     break;
-
                 case "Reload-Messages":
                     setRandomMark(generateUUID());
                     break;
-
+                case "Re-Messages-Loaded":
+                    emitMessagesLoaded();
+                    break;
             }
         });
-
         const unsubscribe2 = onEvent("websocket", "onopen", selfMarkId).then(() => {
-            if (isMessageLoaded) {
-                emitEvent({
-                    type: "message",
-                    target: "ChatPage",
-                    payload: {
-                        command: "Messages-Loaded",
-                        messagesOrder: messagesOrderRef.current[0] === '<PREV_MORE>' ? messagesOrderRef.current.slice(1) : messagesOrderRef.current
-                    },
-                    markId: selfMarkId
-                });
-            }
+            if (isMessageLoaded) emitMessagesLoaded();
         });
 
         return () => {
             unsubscribe1();
             unsubscribe2();
         };
+
     }, [selfMarkId, isMessageLoaded]);
 
     useEffect(() => {
@@ -663,34 +662,26 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
     }, [isNewMarkId]);
 
     useEffect(() => {
-
-        messagesRef.current = messages;
-        messagesOrderRef.current = messagesOrder;
-
         if (selfMarkId === null || selfMarkId === undefined) {
-            setIsLoadingError(false);
-            setMessages({});
-            setMessagesOrder([]);
+            // 设置 messages
+            const emptyMessages = {};
+            setMessages(emptyMessages);
+            messagesRef.current = emptyMessages;
+
+            // 设置 messagesOrder
+            const emptyOrder = [];
+            setMessagesOrder(emptyOrder);
+            messagesOrderRef.current = emptyOrder;
         }
-
     }, [selfMarkId])
-
-    /* 状态同步 */
-    useEffect(() => {
-        messagesRef.current = messages;
-        messagesOrderRef.current = messagesOrder;
-    }, [messagesOrder, messages])
 
     // 页面初始化加载消息
     useEffect(() => {
-
         if (isNewMarkIdRef.current) {
-            setIsNewMarkId(false);  // 如果是新获得 MarkId 的跳过一次加载
+            setIsNewMarkId(false); // 如果是新获得 MarkId 的跳过一次加载
             return;
         }
-
         let modelsData = [];
-
         const requestModels = async () => {
             try {
                 // 先请求模型
@@ -703,35 +694,30 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                 toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
             }
         };
-
         const requestMessages = async () => {
-
             try {
                 const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                     params: {markId: selfMarkId}
                 });
                 wasAtBottomRef.current = calculateIsNearBottom();
+
+                // 设置 messages
                 setMessages(messagesData.messages);
                 messagesRef.current = messagesData.messages;
 
-                if (messagesData.haveMore) messagesData.messagesOrder = ["<PREV_MORE>", ...messagesData.messagesOrder]
-                setMessagesOrder(messagesData.messagesOrder);
-                messagesOrderRef.current = messagesData.messagesOrder;
-                setIsMessageLoaded(true);
+                // 设置 messagesOrder
+                let initOrder = messagesData.messagesOrder;
+                if (messagesData.haveMore) initOrder = ["<PREV_MORE>", ...messagesData.messagesOrder];
+                setMessagesOrder(initOrder);
+                messagesOrderRef.current = initOrder;
 
                 // 确定该对话使用的模型
                 const foundModel = modelsData.find(item => item.id === messagesData.model)
                 if (foundModel) setSelectedModel(foundModel);
 
-                emitEvent({
-                    type: "message",
-                    target: "ChatPage",
-                    payload: {
-                        command: "Messages-Loaded",
-                        messagesOrder: messagesOrderRef.current[0] === '<PREV_MORE>' ? messagesOrderRef.current.slice(1) : messagesOrderRef.current
-                    },
-                    markId: selfMarkId
-                });
+
+                emitMessagesLoaded();
+
             } catch (error) {
                 toast(t("load_messages_error", {message: error?.message || t("unknown_error")}), {
                     action: {
@@ -751,21 +737,17 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                 setIsLoading(false);
             }
         };
-
         const loadData = async () => {
             setIsLoading(true);
             await requestModels();
             await requestMessages();
         };
-
         if (selfMarkId) {
             loadData();
         } else {
             requestModels();
         }
-
         setIsFirstMessageSend(true);
-
     }, [selfMarkId, randomMark]);
 
     useEffect(() => {
@@ -783,12 +765,10 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                 }
             }
         };
-
         // 在弹窗打开时滚动
         if (isModelPopoverOpen) {
             scrollToSelectedItem();
         }
-
         // 同时在模型列表变化时也滚动（添加 models 依赖）
     }, [isModelPopoverOpen, models, selectedModel]);
 
@@ -834,7 +814,7 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                             <div className="flex flex-col space-y-4">
                                 {/* 模型列表容器 - 添加滚动 */}
                                 <div
-                                    ref={modelListRef}  // Add this ref
+                                    ref={modelListRef} // Add this ref
                                     className="space-y-1 max-h-[200px] overflow-y-auto pr-1 pretty-scrollbar"
                                 >
                                     {models.length === 0 ? (
@@ -852,13 +832,11 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                                                     setPreviewModel(model);
                                                 }
                                             };
-
                                             const handleMouseEnter = () => {
                                                 if (!isMobile) {
                                                     setPreviewModel(model); // 桌面端悬停时更新预览
                                                 }
                                             };
-
                                             const itemContent = (
                                                 <>
                                                     <Avatar className="h-6 w-6">
@@ -874,12 +852,11 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                                                     )}
                                                 </>
                                             );
-
                                             if (!isMobile) {
                                                 return (
                                                     <div key={model.id} onMouseEnter={handleMouseEnter}>
                                                         <button
-                                                            data-selected={isSelected ? 'true' : 'false'}  // Add this for querying
+                                                            data-selected={isSelected ? 'true' : 'false'} // Add this for querying
                                                             onClick={handleClick}
                                                             className={`cursor-pointer w-full flex items-center pl-2 pr-4 py-1.5 rounded-md transition-colors ${
                                                                 isSelected ? 'bg-[#F0F0FD]' : 'hover:bg-gray-100'
@@ -893,7 +870,7 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                                                 return (
                                                     <button
                                                         key={model.id}
-                                                        data-selected={isSelected ? 'true' : 'false'}  // Add this for querying
+                                                        data-selected={isSelected ? 'true' : 'false'} // Add this for querying
                                                         onClick={handleClick}
                                                         className={`cursor-pointer w-full flex items-center pl-2 pr-4 py-1.5 rounded-md transition-colors ${
                                                             isSelected ? 'bg-[#F0F0FD]' : 'hover:bg-gray-100'
@@ -906,7 +883,6 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                                         })
                                     )}
                                 </div>
-
                                 {/* 名片部分 - 不在滚动区域内 */}
                                 {(!isMobile || (isMobile && previewModel)) && previewModel && (
                                     <div className="p-4 bg-gray-50 border rounded-md">
@@ -935,10 +911,9 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                         </PopoverContent>
                     </Popover>
                 </header>
-
                 <>
                     <div
-                        className="flex-1 w-full overflow-y-auto relative">  {/* 添加 relative 以作为叠加层的定位参考 */}
+                        className="flex-1 w-full overflow-y-auto relative"> {/* 添加 relative 以作为叠加层的定位参考 */}
                         <div
                             ref={messagesContainerRef}
                             className="h-full overflow-y-auto pb-20 scroll-smooth"
@@ -953,14 +928,11 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                                 markId={selfMarkId}
                             />
                         </div>
-
                         {/* 叠加 loading 屏幕 */}
                         {isLoading && <LoadingScreen/>}
-
                         {/* 叠加 error 屏幕 */}
                         {isLoadingError && <LoadingFailedScreen/>}
                     </div>
-
                     <Transition
                         show={showScrollToBottomButton}
                         enter="transition-opacity duration-200"
@@ -982,7 +954,6 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                             <FaArrowDown className="text-gray-500 w-3 h-3"/>
                         </button>
                     </Transition>
-
                     <div className="absolute z-10 inset-x-0 bottom-10">
                         <ChatBox
                             onSendMessage={handleSendMessage}
@@ -1005,7 +976,6 @@ function ChatPage({markId, setMarkId, requestIdRef}) {
                         />
                     </div>
                 </>
-
                 <footer
                     className="absolute inset-x-0 bottom-0 h-12 bg-white flex items-center justify-center"> {/* Changed fixed to absolute; left-0 right-0 to inset-x-0 */}
                     <span className="text-xs text-gray-500">

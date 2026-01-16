@@ -12,7 +12,7 @@ import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
 
 const DashboardPage = ({type = "chat"}) => {
     const [markId, setMarkId] = useState(getMarkId());
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [sidebarSettings, setSidebarSettings] = useState({});
     const [randomUUID, setRandomUUID] = useState();

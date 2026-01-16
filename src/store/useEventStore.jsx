@@ -116,6 +116,11 @@ export const useEventStore = create((set, get) => {
             replyListeners.delete(id);
         },
 
+        // 内部方法：检查回复监听器是否存在
+        _hasReplyListener: (id) => {
+            return replyListeners.has(id);
+        },
+
         addListener: (type, target, callback, listenerMarkId, acceptReply = false) => {
             const registrationStack = debugLogger
                 ? new Error('Listener registered at:').stack.split('\n').slice(2).join('\n')
@@ -275,6 +280,7 @@ export const useEventStore = create((set, get) => {
  * @param {boolean} [options.isReply=false] - 是否为回复事件
  * @param {string|null} [options.id=null] - 事件唯一ID（如未提供会自动生成）
  * @param {boolean} [options.fromWebsocket=false] - 是否来自WebSocket的消息
+ * @param {Function|null} [options.onTimeout=null] - 超时时的回调函数
  *
  * @returns {Object} 返回一个thenable对象，支持链式调用.then()等待回复
  *
@@ -296,6 +302,19 @@ export const useEventStore = create((set, get) => {
  *   isReply: true,
  *   id: 'original-event-id'
  * });
+ *
+ * // 使用超时回调
+ * emitEvent({
+ *   type: 'api',
+ *   target: 'request',
+ *   payload: { url: '/data' },
+ *   onTimeout: () => {
+ *     console.log('事件超时了');
+ *   }
+ * })
+ *   .then((replyPayload) => {
+ *     console.log('收到回复:', replyPayload);
+ *   });
  */
 export let emitEvent = ({
                             type,
@@ -305,7 +324,8 @@ export let emitEvent = ({
                             isReply = false,
                             id = null,
                             fromWebsocket = false,
-                            notReplyToWebsocket = false
+                            notReplyToWebsocket = false,
+                            onTimeout = null
                         }) => {
     const emitStack = typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE
         ? new Error('Event emitted at:').stack
@@ -347,9 +367,16 @@ export let emitEvent = ({
 
                 // 添加10秒超时
                 setTimeout(() => {
-                    if (replyListeners.has(eventId)) {
+                    if (state._hasReplyListener(eventId)) {
                         state._removeReplyListener(eventId);
                         console.warn(`Timeout: No reply received for event ID ${eventId} after 10 seconds`);
+                        if (onTimeout) {
+                            try {
+                                onTimeout();
+                            } catch (error) {
+                                console.error('Error in onTimeout callback:', error);
+                            }
+                        }
                         reject(new Error('Timeout waiting for reply'));
                     }
                 }, 10000);
