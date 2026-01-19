@@ -116,5 +116,6 @@
   "file_delete_error": "文件删除失败：{{message}}",
   "load_templates_error": "加载模板失败",
   "send_message_error": "发送消息失败：{{message}}",
-  "cannot_load_tasks": "不能加载流式任务，可能是与服务器断开链接，请刷新重试。"
+  "cannot_load_tasks": "不能加载流式任务，可能是与服务器断开链接，请刷新重试。",
+  "is_generating_try_later": "正在进行生成任务，请耐心等待完成。"
 }

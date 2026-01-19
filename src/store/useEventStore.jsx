@@ -121,7 +121,7 @@ export const useEventStore = create((set, get) => {
             return replyListeners.has(id);
         },
 
-        addListener: (type, target, callback, listenerMarkId, acceptReply = false) => {
+        addListener: (type, target, callback, listenerMarkId, acceptReply = false, onlyEmpty = false) => {
             const registrationStack = debugLogger
                 ? new Error('Listener registered at:').stack.split('\n').slice(2).join('\n')
                 : null;
@@ -140,6 +140,7 @@ export const useEventStore = create((set, get) => {
                             active: true,
                             markId: listenerMarkId,
                             acceptReply,
+                            onlyEmpty,
                             registrationStack
                         }
                     ];
@@ -231,6 +232,7 @@ export const useEventStore = create((set, get) => {
                 if (!listener.active) return;
                 if (listener.acceptReply !== isReply) return;
                 if (listener.markId != null && eventMarkId != null && listener.markId !== eventMarkId) return;
+                if (listener.markId == null && listener.onlyEmpty && eventMarkId != null) return;
 
                 const reply = (data) => {
                     get()._emit({
@@ -401,6 +403,7 @@ if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
  * @param {string} target - 监听的事件目标
  * @param {string|null} markId - 监听器标记ID，用于精确匹配带有相同markId的事件
  * @param {boolean} [acceptReply=false] - 是否接受回复事件（默认只处理非回复事件）
+ * @param {boolean} [onlyEmpty=false] - 当markId为空时，是否只监听markId为空的事件（默认接收所有事件）
  *
  * @returns {Object} 返回一个thenable对象，调用.then(callback)来设置事件回调函数
  *                   .then(callback) 返回取消监听的函数
@@ -421,14 +424,19 @@ if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
  *   console.log('收到回复:', payload);
  * });
  *
+ * // 只监听markId为空的事件
+ * onEvent('api', 'response', null, false, true).then((payload) => {
+ *   console.log('收到无markId事件:', payload);
+ * });
+ *
  * // 取消监听
  * const unsubscribe = onEvent('user', 'logout', null).then(() => { ... });
  * // 之后可以调用 unsubscribe() 来取消监听
  */
-export let onEvent = (type, target, markId, acceptReply = false) => {
+export let onEvent = (type, target, markId, acceptReply = false, onlyEmpty = false) => {
     return {
         then: (callback) => {
-            return useEventStore.getState().addListener(type, target, callback, markId, acceptReply);
+            return useEventStore.getState().addListener(type, target, callback, markId, acceptReply, onlyEmpty);
         }
     };
 };

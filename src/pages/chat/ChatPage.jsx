@@ -134,6 +134,7 @@ function ChatPage({markId, setMarkId}) {
             toast.error(t("file_upload_not_complete"));
             return;
         }
+
         const sendMessage = (markId) => {
             if (isFirstMessageSend) {
                 emitEvent({
@@ -507,7 +508,6 @@ function ChatPage({markId, setMarkId}) {
 
 
     useEffect(() => {
-        if (!selfMarkId) return;
 
         const unsubscribe1 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
@@ -560,6 +560,31 @@ function ChatPage({markId, setMarkId}) {
                         reply({value: messagesOrderRef.current});
                     }
                     break;
+                case "Set-MessageContent":
+                    if (payload.value && typeof payload.value === 'object') {
+
+                        const newMessages = produce(messagesRef.current, draft => {
+                            for (const [msgId, newContent] of Object.entries(payload.value)) {
+                                if (draft[msgId]) {
+                                    draft[msgId].content = newContent || '';
+                                }
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+
+                        setTimeout(() => {
+                            if (isAtBottomRef.current) {
+                                scrollToBottom();
+                            }
+                        }, 0);
+
+                        if (payload.reply) reply({success: true});
+                    } else {
+                        console.error("Set-MessageContent Failed. msgId, value is need at least.")
+                        reply({success: false});
+                    }
+                    break;
                 case "Add-MessageContent":
                     if (payload.value && typeof payload.value === 'object') {
 
@@ -580,6 +605,7 @@ function ChatPage({markId, setMarkId}) {
                         }, 0);
                         if (payload.reply) reply({success: true});
                     } else {
+                        console.error("Add-MessageContent Failed. msgId, value is need at least.")
                         reply({success: false});
                     }
                     break;

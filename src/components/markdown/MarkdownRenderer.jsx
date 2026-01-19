@@ -92,11 +92,6 @@ const MarkdownRenderer = ({content, index}) => {
                             .map(child => child.props?.children || '')
                             .join('');
 
-                        if (id === undefined) {
-                            type = 'error';
-                            content = 'Undefined ID.'
-                        }
-
                         return (
                             <ComponentBlock
                                 key={id}

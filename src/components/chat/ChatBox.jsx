@@ -275,6 +275,10 @@ function ChatBox({
                 return;
             } else {
                 e.preventDefault();
+                if (sendButtonStatusRef.current !== "normal") {
+                    toast.warning(t("is_generating_try_later"))
+                    return;
+                }
                 handleSendMessage();
             }
         }
@@ -733,9 +737,7 @@ function ChatBox({
 
     // 广播
     useEffect(() => {
-        if (!markId) return;
-
-        const unsubscribe = onEvent("widget", "ChatBox", markId).then((payload, markId, isReply, id, reply) => {
+        const unsubscribe = onEvent("widget", "ChatBox", markId, false, !markId).then((payload, markId, isReply, id, reply) => {
 
             switch (payload.command) {
                 case "SendButton-Status":
