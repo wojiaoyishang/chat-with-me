@@ -555,7 +555,6 @@ function ChatPage({markId, setMarkId}) {
                         // 更新页面滚动条位置
                         setTimeout(() => {
                             wasAtBottomRef.current = calculateIsNearBottom();
-                            debugger
                             if (isAtBottomRef.current) {
                                 scrollToBottom();
                             }

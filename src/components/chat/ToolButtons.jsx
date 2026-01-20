@@ -29,7 +29,7 @@ export default function ToolButtons({
         <div className="flex items-center space-x-1">
             {/* "+" 按钮触发工具菜单 */}
             <DropdownMenu modal={false} open={open} onOpenChange={setOpen}>
-                <DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild>
                     <button
                         type="button"
                         className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"

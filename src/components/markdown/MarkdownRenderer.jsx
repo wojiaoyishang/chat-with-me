@@ -16,8 +16,18 @@ import 'highlight.js/styles/github-dark.css';
 const MarkdownRenderer = ({content, index}) => {
     const [expandedMap, setExpandedMap] = useState(new Map());
 
+    // 预处理函数
+    const preprocessContent = (text) => {
+        if (typeof text !== 'string') return text;
+        return text
+            .replace(/\\\[/g, '$$$')  // 将 \[ 替换为 $$
+            .replace(/\\\]/g, '$$$')  // 将 \] 替换为 $$
+            .replace(/\\\(/g, '$')    // 将 \( 替换为 $
+            .replace(/\\\)/g, '$');   // 将 \) 替换为 $
+    };
+
     const handleToggleExpand = useCallback((id) => {
-        console.log(id);
+
         setExpandedMap(prev => {
             const next = new Map(prev);
             if (next.has(id)) {
@@ -108,7 +118,7 @@ const MarkdownRenderer = ({content, index}) => {
 
             }}
         >
-            {content}
+            {preprocessContent(content)}
         </ReactMarkdown>
     );
 };
