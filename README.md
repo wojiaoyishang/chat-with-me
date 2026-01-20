@@ -794,6 +794,7 @@ code 设置为 401 。
     "attachments": [],
     "immediate": True,  # 是否立即发送，重生成消息依赖于此
     "isEdit": True,  # 是否为编辑消息模式
+    "isRegenerate": False,  # 是否作为重生成请求，重生成一定是 isEdit 为 True
     "msgId": "",  # 如果为编辑消息模式才会附带
     "model": "qwen",  # 目前选中的模型
     "sendButtonStatus": "normal/disabled/loading/generating"  # 按钮状态，normal 才会启用回车键发送

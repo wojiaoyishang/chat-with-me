@@ -785,7 +785,7 @@ function ChatBox({
 
                 case "Set-EditMessage":
                     if (payload.immediate) {
-                        onSendMessage(payload.content, toolsStatus, true, payload.msgId, payload.attachments, sendButtonStatusRef.current);
+                        onSendMessage(payload.content, toolsStatus, true, payload.msgId, payload.attachments, sendButtonStatusRef.current, payload.isRegenerate);
                     } else {
                         setIsEditMessage(Boolean(payload.isEdit));
                         if (payload.attachments) setAttachments(payload.attachments);

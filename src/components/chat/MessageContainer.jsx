@@ -9,6 +9,7 @@ import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import AttachmentShowcase from './AttachmentShowcase';
 import {Menu, PenLine, Copy, RotateCw, Info} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
 
 import {
     DropdownMenu,
@@ -25,8 +26,7 @@ import {
 } from "@/components/ui/tooltip"
 
 import {copyTextToClipboard, useIsMobile} from "@/lib/tools.jsx";
-import {onEvent} from "@/store/useEventStore.jsx";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 
 const MessageToolsFunction = (action, msg, markId, msgId, t) => {
 
@@ -61,6 +61,7 @@ const MessageToolsFunction = (action, msg, markId, msgId, t) => {
                     command: "Set-EditMessage",
                     isEdit: true,
                     immediate: true,   // 马上发送
+                    isRegenerate: true,  // 这是重生成请求
                     attachments: msg.attachments,
                     content: msg.content,
                     msgId: msgId
@@ -171,7 +172,7 @@ const MessageTools = ({msg, markId, msgId}) => {
                                 </button>
                             </PopoverTrigger>
                             <PopoverContent className="p-3">
-                                <div style={{ whiteSpace: 'pre-line' }} className="text-sm">
+                                <div style={{whiteSpace: 'pre-line'}} className="text-sm">
                                     {msg.tip}
                                 </div>
                             </PopoverContent>
@@ -187,7 +188,7 @@ const MessageTools = ({msg, markId, msgId}) => {
                                 </button>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <div style={{ whiteSpace: 'pre-line' }}>
+                                <div style={{whiteSpace: 'pre-line'}}>
                                     {msg.tip}
                                 </div>
                             </TooltipContent>
@@ -347,7 +348,7 @@ const MessageContainer = forwardRef(({
                 case "Set-SwitchingMessage":
                     renderSwitchingLoader()
                     setSwitchingMessageId(payload.value);
-                    reply({ success: true });
+                    reply({success: true});
                     break;
             }
         });
@@ -732,7 +733,8 @@ const MessageContainer = forwardRef(({
                     <>
                         {/* 右侧消息：只显示头像（靠右），无内容 */}
                         <div className="flex justify-end items-start gap-3 max-w-[80%] ml-auto">
-                            <div className="h-10 w-10"></div> {/* 占位，保持布局一致 */}
+                            <div className="h-10 w-10"></div>
+                            {/* 占位，保持布局一致 */}
                             <Avatar className="h-10 w-10 flex-shrink-0">
                                 <AvatarImage src={avatar} alt="User"/>
                                 <AvatarFallback>U</AvatarFallback>

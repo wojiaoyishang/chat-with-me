@@ -64,7 +64,7 @@ function ChatPage({markId, setMarkId}) {
     const [scrollButtonBottom, setScrollButtonBottom] = useState(200);
     const isMobile = useIsMobile();
     const [models, setModels] = useState([]);
-    const [selectedModel, setSelectedModel] = useState(models.length === 0 ? {name: t("no_models")} : models[0]);
+    const selectedModelRef = useRef({name: t("no_models")});
     const [previewModel, setPreviewModel] = useState(null);
     const [isNewMarkId, setIsNewMarkId] = useState(false); // 用于判断是不是请求新请求的 MarkId ，防止页面刷新
     const isNewMarkIdRef = useRef(false);
@@ -125,10 +125,11 @@ function ChatPage({markId, setMarkId}) {
     const handleSendMessage = (
         messageContent,
         toolsStatus,
-        isEditMessage,
+        isEditMessage = false,
         editMessageId,
         attachments,
-        sendButtonStatus
+        sendButtonStatus,
+        isRegenerate = false
     ) => {
         if (uploadFiles.length !== 0) {
             toast.error(t("file_upload_not_complete"));
@@ -156,8 +157,9 @@ function ChatPage({markId, setMarkId}) {
                     toolsStatus: toolsStatus,
                     attachments: attachments,
                     isEdit: isEditMessage,
-                    model: selectedModel.id,
+                    model: selectedModelRef.current.id,
                     sendButtonStatus: sendButtonStatus,
+                    isRegenerate: isRegenerate,
                     requestId: currentMessageSendRequestIDRef.current // 携带 RequestID
                 },
                 markId: markId
@@ -516,11 +518,9 @@ function ChatPage({markId, setMarkId}) {
                         wasAtBottomRef.current = calculateIsNearBottom();
 
                         // 设置 messages
-
                         let newMessages = {...messagesRef.current};
                         for (const [key, newValue] of Object.entries(payload.value)) {
                             if (payload.isEdit && !newMessages[key]) {
-                                debugger
                                 reply({success: false});
                                 return;
                             }
@@ -540,6 +540,12 @@ function ChatPage({markId, setMarkId}) {
                         setMessages(newMessages);
                         messagesRef.current = newMessages;
 
+                        setTimeout(() => {
+                            if (isAtBottomRef.current) {
+                                scrollToBottom();
+                            }
+                        }, 0);
+
                         reply({success: true});
                     }
                     break;
@@ -549,7 +555,12 @@ function ChatPage({markId, setMarkId}) {
                         // 更新页面滚动条位置
                         setTimeout(() => {
                             wasAtBottomRef.current = calculateIsNearBottom();
+                            debugger
+                            if (isAtBottomRef.current) {
+                                scrollToBottom();
+                            }
                         }, 0)
+
 
                         // 设置 messagesOrder
                         setMessagesOrder(payload.value);
@@ -603,6 +614,7 @@ function ChatPage({markId, setMarkId}) {
                                 scrollToBottom();
                             }
                         }, 0);
+
                         if (payload.reply) reply({success: true});
                     } else {
                         console.error("Add-MessageContent Failed. msgId, value is need at least.")
@@ -631,6 +643,12 @@ function ChatPage({markId, setMarkId}) {
 
                         setMessages(newMessages);
                         messagesRef.current = newMessages;
+
+                        setTimeout(() => {
+                            if (isAtBottomRef.current) {
+                                scrollToBottom();
+                            }
+                        }, 0);
 
                         reply({success: true});
                     } else {
@@ -715,7 +733,7 @@ function ChatPage({markId, setMarkId}) {
                     params: markId ? {markId: selfMarkId} : {}
                 });
                 setModels(modelsData);
-                setSelectedModel(modelsData[0]);
+                selectedModelRef.current = modelsData[0];
             } catch (error) {
                 toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
             }
@@ -739,7 +757,7 @@ function ChatPage({markId, setMarkId}) {
 
                 // 确定该对话使用的模型
                 const foundModel = modelsData.find(item => item.id === messagesData.model)
-                if (foundModel) setSelectedModel(foundModel);
+                if (foundModel) selectedModelRef.current = foundModel;
 
 
                 emitMessagesLoaded();
@@ -796,7 +814,7 @@ function ChatPage({markId, setMarkId}) {
             scrollToSelectedItem();
         }
         // 同时在模型列表变化时也滚动（添加 models 依赖）
-    }, [isModelPopoverOpen, models, selectedModel]);
+    }, [isModelPopoverOpen, models]);
 
     return (
         <>
@@ -811,7 +829,7 @@ function ChatPage({markId, setMarkId}) {
                                 setPreviewModel(null);
                             } else {
                                 // 展开时设置当前选中的模型为预览模型
-                                setPreviewModel(selectedModel);
+                                setPreviewModel(selectedModelRef.current);
                                 // 添加延迟确保 DOM 更新后再滚动
                                 setTimeout(() => {
                                     const selectedItem = modelListRef.current?.querySelector('[data-selected="true"]');
@@ -828,7 +846,7 @@ function ChatPage({markId, setMarkId}) {
                         <PopoverTrigger asChild>
                             <Button variant="ghost"
                                     className="justify-start px-0 hover:bg-transparent text-lg cursor-pointer">
-                                {selectedModel.name}
+                                {selectedModelRef.current.name}
                                 <FaChevronDown
                                     className={`ml-2 h-4 w-4 transition-transform duration-200 ${isModelPopoverOpen ? 'rotate-180' : ''}`}/>
                             </Button>
@@ -847,9 +865,9 @@ function ChatPage({markId, setMarkId}) {
                                         <p className="text-center text-gray-500 py-4">{t("no_models")}</p>
                                     ) : (
                                         models.map((model) => {
-                                            const isSelected = model.id === selectedModel.id;
+                                            const isSelected = model.id === selectedModelRef.current.id;
                                             const handleClick = () => {
-                                                setSelectedModel(model);
+                                                selectedModelRef.current = model;
                                                 if (!isMobile) {
                                                     // 桌面端点击后关闭popover
                                                     setIsModelPopoverOpen(false);
