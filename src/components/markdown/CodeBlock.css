@@ -1,0 +1,69 @@
+/* CodeBlock.css */
+.code-container {
+    font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 16px 0;
+}
+.code-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 12px;
+    background-color: #f6f8fa;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px 6px 0 0;
+}
+.language-badge {
+    color: #24292f;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+.copy-button {
+    background: none;
+    border: none;
+    color: #586069;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.copy-button:hover { color: #24292f; }
+.copy-button.copied { color: #22863a; }
+.code-area {
+    display: flex;
+    background-color: #ffffff;
+    border: 1px solid #e1e4e8;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    overflow: hidden;
+}
+.line-numbers {
+    text-align: right;
+    padding: 12px 8px;
+    user-select: none;
+    color: #959da5;
+    background-color: #fbfbfb;
+    min-width: 40px;
+    flex-shrink: 0;
+    border-right: 1px solid #eaecef;
+}
+.line-number {
+    display: block;
+    height: 1.5em;
+    font-size: 14px;
+}
+.code-preview {
+    margin: 0;
+    padding: 12px;
+    background: transparent !important;
+    overflow-x: auto;
+    flex: 1;
+}
+.code-preview code {
+    display: block;
+    white-space: pre;
+    color: #24292f;
+}

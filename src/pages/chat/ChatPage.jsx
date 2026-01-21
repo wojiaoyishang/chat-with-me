@@ -956,7 +956,7 @@ function ChatPage({markId, setMarkId}) {
                 </header>
                 <>
                     <div
-                        className="flex-1 w-full overflow-y-auto relative"> {/* 添加 relative 以作为叠加层的定位参考 */}
+                        className="flex-1 w-full relative">
                         <div
                             ref={messagesContainerRef}
                             className="h-full overflow-y-auto pb-20 scroll-smooth"
