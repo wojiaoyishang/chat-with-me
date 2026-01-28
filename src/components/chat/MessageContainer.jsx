@@ -28,7 +28,7 @@ import {
 import {copyTextToClipboard, useIsMobile} from "@/lib/tools.jsx";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 
-const MessageToolsFunction = (action, msg, markId, msgId, t) => {
+const MessageToolsFunction = (action, msg, markId, msgId, displayContent, t) => {
 
     switch (action) {
         case "edit":
@@ -47,7 +47,7 @@ const MessageToolsFunction = (action, msg, markId, msgId, t) => {
             });
             break;
         case "copy":
-            copyTextToClipboard(msg.content).then(() => {
+            copyTextToClipboard(displayContent).then(() => {
                 toast.success(t("message_copied"));
             }).catch(err => {
                 toast.error(t("message_not_copied", {message: err}));
@@ -77,7 +77,7 @@ const MessageToolsFunction = (action, msg, markId, msgId, t) => {
 /**
  * 消息菜单组件
  */
-const MessageMenuButton = ({msg, markId, msgId}) => {
+const MessageMenuButton = ({msg, markId, msgId, displayContent}) => {
     const {t} = useTranslation();
 
     return (
@@ -92,20 +92,20 @@ const MessageMenuButton = ({msg, markId, msgId}) => {
             <DropdownMenuContent>
 
                 <DropdownMenuItem className="flex items-center gap-2"
-                                  onSelect={() => MessageToolsFunction("edit", msg, markId, msgId, t)}>
+                                  onSelect={() => MessageToolsFunction("edit", msg, markId, msgId, displayContent, t)}>
                     <PenLine size={16}/>
                     {t('edit_message')}
                 </DropdownMenuItem>
 
                 <DropdownMenuItem className="flex items-center gap-2"
-                                  onSelect={() => MessageToolsFunction("copy", msg, markId, msgId, t)}>
+                                  onSelect={() => MessageToolsFunction("copy", msg, markId, msgId, displayContent, t)}>
                     <Copy size={16}/>
                     {t('copy_message')}
                 </DropdownMenuItem>
 
                 {msg.allowRegenerate || msg.allowRegenerate === undefined ? (
                     <DropdownMenuItem className="flex items-center gap-2"
-                                      onSelect={() => MessageToolsFunction("regenerate", msg, markId, msgId, t)}>
+                                      onSelect={() => MessageToolsFunction("regenerate", msg, markId, msgId, displayContent, t)}>
                         <RotateCw size={16}/>
                         {t('regenerate_message')}
                     </DropdownMenuItem>
@@ -119,7 +119,7 @@ const MessageMenuButton = ({msg, markId, msgId}) => {
  * 消息工具栏组件 - 显示编辑按钮
  * 独立于分页选择器，与分页选择器平齐显示
  */
-const MessageTools = ({msg, markId, msgId}) => {
+const MessageTools = ({msg, markId, msgId, displayContent}) => {
     const {t} = useTranslation();
 
     const isMobile = useIsMobile();
@@ -129,7 +129,7 @@ const MessageTools = ({msg, markId, msgId}) => {
 
             <button
                 onClick={() => {
-                    MessageToolsFunction("edit", msg, markId, msgId, t)
+                    MessageToolsFunction("edit", msg, markId, msgId, displayContent, t)
                 }}
                 className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
                 aria-label={t("edit_message")}
@@ -139,7 +139,7 @@ const MessageTools = ({msg, markId, msgId}) => {
 
             <button
                 onClick={() => {
-                    MessageToolsFunction("copy", msg, markId, msgId, t)
+                    MessageToolsFunction("copy", msg, markId, msgId, displayContent, t)
                 }}
                 className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
                 aria-label={t("copy_message")}
@@ -150,7 +150,7 @@ const MessageTools = ({msg, markId, msgId}) => {
             {msg.allowRegenerate || msg.allowRegenerate === undefined ? (
                 <button
                     onClick={() => {
-                        MessageToolsFunction("regenerate", msg, markId, msgId, t)
+                        MessageToolsFunction("regenerate", msg, markId, msgId, displayContent, t)
                     }}
                     className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
                     aria-label={t("regenerate_message")}
@@ -197,7 +197,7 @@ const MessageTools = ({msg, markId, msgId}) => {
                 </>
             )}
 
-            <MessageMenuButton msg={msg} markId={markId} msgId={msgId}/>
+            <MessageMenuButton msg={msg} markId={markId} msgId={msgId} displayContent={displayContent}/>
         </div>
     );
 };
@@ -348,6 +348,20 @@ const MessageContainer = forwardRef(({
                 case "Set-SwitchingMessage":
                     renderSwitchingLoader()
                     setSwitchingMessageId(payload.value);
+
+                    // 设置不要编辑消息
+                    emitEvent({
+                        type: "widget",
+                        target: "ChatBox",
+                        payload: {
+                            command: "Set-EditMessage",
+                            isEdit: false
+                        },
+                        markId: markId,
+                        fromWebsocket: true,  // 不要发到 ws 去
+                        notReplyToWebsocket: true
+                    })
+
                     reply({success: true});
                     break;
             }
@@ -499,16 +513,51 @@ const MessageContainer = forwardRef(({
             return renderSwitchingLoader(id);
         }
 
+        // 判断消息是否正确
+        const requiredFields = ['prevMessage', 'messages', 'nextMessage'];
+        for (const field of requiredFields) {
+            if (msg[field] === undefined) {
+                console.error(`message ${id} is invalid, missing ${field}.`);
+                return null;
+            }
+        }
+
+        // 额外确保 messages 是一个数组
+        if (!Array.isArray(msg.messages)) {
+            console.error(`message ${id} is invalid, messages is not an array.`);
+            return null;
+        }
+
         const isRight = msg.position === 'right';
         const avatar = msg.avatar || (isRight ? HumanIcon : AIIcon);
         const displayName = isRight ? null : msg.name;
         const showPaginator = messages[msg?.prevMessage]?.messages?.length > 1;
         const isFading = fadeMessages.has(id) && !enteringMessages.has(id);
-        const readonly = msg.readonly
+        const readonly = msg.readonly;
 
         // 检查内容类型
         const hasAttachments = msg.attachments?.length > 0;
         const hasContent = msg.content?.trim();
+
+        let displayContent = ""
+
+        // 替换内容
+        if (hasContent) {
+            if (msg.extraInfo?.replace) {
+                displayContent = msg.content;
+
+                // 定义匹配 :::card{type=replace id=...}::: 的正则
+                const cardRegex = /:::card\{type=replace\s+id=([^}\s]+)\}:::/g;
+
+                displayContent = displayContent.replace(cardRegex, (match, id) => {
+                    // 如果 extraInfo.replace 中有该 id，返回对应内容；否则保留原标记或返回空
+                    return msg.extraInfo.replace[id] ?? match; // 或者用 '' 替代 match 表示删除未匹配项
+                });
+
+            } else {
+                displayContent = msg.content;
+            }
+        }
 
         // 分页选择器和工具栏的公共属性
         const paginatorProps = {
@@ -545,11 +594,11 @@ const MessageContainer = forwardRef(({
                                         showRightTools ? 'opacity-100' : 'opacity-0 pointer-events-none'
                                     }`}
                                 >
-                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id}/>)}
+                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id} displayContent={displayContent}/>)}
                                 </div>
                                 {/* 占位元素，保持空间一致性 */}
                                 <div className="flex items-center justify-center invisible">
-                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id}/>)}
+                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id} displayContent={displayContent}/>)}
                                 </div>
                             </div>
                         </div>
@@ -564,7 +613,7 @@ const MessageContainer = forwardRef(({
                     {!isRight && (
                         <div
                             className={"text-right flex-shrink-0 " + (showPaginator ? 'pl-1' : 'translate-x-[-0.4em]')}>
-                            {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id}/>)}
+                            {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id} displayContent={displayContent}/>)}
                         </div>
                     )}
 
@@ -641,7 +690,7 @@ const MessageContainer = forwardRef(({
                             </div>
                             <MessageContent
                                 isRight={true}
-                                content={msg.content}
+                                content={displayContent}
                                 avatar={avatar}
                                 isLeaving={leavingMessages.has(id)}
                             />
@@ -663,7 +712,7 @@ const MessageContainer = forwardRef(({
                             </div>
                             <MessageContent
                                 isRight={false}
-                                content={msg.content}
+                                content={displayContent}
                                 avatar={avatar}
                                 isLeaving={leavingMessages.has(id)}
                             />
@@ -691,7 +740,7 @@ const MessageContainer = forwardRef(({
                         <>
                             <MessageContent
                                 isRight={true}
-                                content={msg.content}
+                                content={displayContent}
                                 avatar={avatar}
                                 isLeaving={leavingMessages.has(id)}
                             />
@@ -707,7 +756,7 @@ const MessageContainer = forwardRef(({
                             />
                             <MessageContent
                                 isRight={false}
-                                content={msg.content}
+                                content={displayContent}
                                 avatar={avatar}
                                 isLeaving={leavingMessages.has(id)}
                             />

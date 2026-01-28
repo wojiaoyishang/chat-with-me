@@ -1,38 +1,24 @@
 import React, { useCallback, useMemo, useRef, useEffect } from 'react';
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
-import { Check, Lightbulb, ChevronDown, Loader2 } from "lucide-react";
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import rehypeKatex from 'rehype-katex';
-import 'katex/dist/katex.min.css';
-import CodeBlock from './CodeBlock.jsx';
+// 新增引入 X 图标
+import { Check, Lightbulb, ChevronDown, Loader2, Wrench, X } from "lucide-react";
 
-const preprocessContent = (text) => {
-    if (typeof text !== 'string') return text;
-    return text
-        .replace(/\\\[/g, '$$$')
-        .replace(/\\\]/g, '$$$')
-        .replace(/\\\(/g, '$')
-        .replace(/\\\)/g, '$');
-};
+import MarkdownRenderer from "./MarkdownRenderer.jsx"
 
 const StepsButton = React.memo(({ linesLength, isExpanded, onToggleExpand, id }) => {
         const clickTimeoutRef = useRef(null);
         const handleInteraction = useCallback((e) => {
             e.preventDefault();
             e.stopPropagation();
-            // 清除之前的延迟
             if (clickTimeoutRef.current) {
                 clearTimeout(clickTimeoutRef.current);
             }
-            // 立即执行切换
             onToggleExpand(id);
-            // 防止短时间内重复触发
             clickTimeoutRef.current = setTimeout(() => {
                 clickTimeoutRef.current = null;
             }, 200);
         }, [id, onToggleExpand]);
+
         useEffect(() => {
             return () => {
                 if (clickTimeoutRef.current) {
@@ -40,13 +26,14 @@ const StepsButton = React.memo(({ linesLength, isExpanded, onToggleExpand, id })
                 }
             };
         }, []);
+
         return (
             <button
                 onMouseDown={handleInteraction}
                 onTouchStart={handleInteraction}
                 style={{
                     position: 'relative',
-                    zIndex: 50,
+                    zIndex: 10,
                     WebkitTapHighlightColor: 'transparent'
                 }}
                 className="cursor-pointer flex items-center gap-1.5 px-2 py-0.5 rounded hover:opacity-80 text-xs text-gray-600 border border-transparent hover:border-gray-300 whitespace-nowrap flex-shrink-0 ml-2 pointer-events-auto select-none touch-manipulation"
@@ -74,82 +61,68 @@ const StatusWidget = React.memo(({
                                      Icon,
                                      isProcessing = false,
                                  }) => {
-    // 用 useMemo 缓存计算结果
-    const { isDone, cleanContent, lines, lastLine } = useMemo(() => {
-        const isDone = content.trim().endsWith('[DONE]');
-        const cleanContent = isDone ? content.trim().replace(/\[DONE\]$/, '').trim() : content;
+    // 逻辑更新：同时检测 DONE 和 FAILED
+    const { isDone, isFailed, cleanContent, lines, lastLine } = useMemo(() => {
+        const trimmedContent = content.trim();
+        const isDone = trimmedContent.endsWith('[DONE]');
+        const isFailed = trimmedContent.endsWith('[FAILED]'); // 新增失败检测
+
+        let cleanContent = content;
+        if (isDone) {
+            cleanContent = content.replace(/\n\[DONE\]\s*$/, '').trimEnd();
+        } else if (isFailed) {
+            cleanContent = content.replace(/\n\[FAILED\]\s*$/, '').trimEnd();
+        }
+
         const lines = cleanContent.split('\n').filter(l => l.trim());
         const lastLine = lines[lines.length - 1] || '';
-        return { isDone, cleanContent, lines, lastLine };
+        return { isDone, isFailed, cleanContent, lines, lastLine };
     }, [content]);
-    // 自定义截断：优先显示末尾80个字符
+
     const getTruncatedLastLine = useCallback((str) => {
         if (!str) return '';
         const maxLen = 80;
         if (str.length <= maxLen) return str;
         return '...' + str.slice(-maxLen);
     }, []);
+
     const truncatedLastLine = useMemo(() =>
             getTruncatedLastLine(lastLine),
         [lastLine, getTruncatedLastLine]
     );
-    const displayTitle = isDone ? `${title} Finished` : title;
 
-    // 缓存 Markdown 组件
-    const markdownComponents = useMemo(() => ({
-        p: ({ children }) => <p className="my-1 text-sm text-gray-600">{children}</p>,
-        ul: ({ children }) => <ul className="list-disc pl-5 my-1 text-sm text-gray-600">{children}</ul>,
-        ol: ({ children }) => <ol className="list-decimal pl-5 my-1 text-sm text-gray-600">{children}</ol>,
-        li: ({ children }) => <li className="my-0.5">{children}</li>,
-        h1: ({ children }) => <h1 className="text-lg font-bold my-2 text-gray-600">{children}</h1>,
-        h2: ({ children }) => <h2 className="text-md font-semibold my-1.5 text-gray-600">{children}</h2>,
-        hr: () => <hr className="my-2 border-t border-gray-200" />,
-        blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-gray-200 pl-3 italic my-1 text-gray-500 text-sm">
-                {children}
-            </blockquote>
-        ),
-        a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline text-sm">
-                {children}
-            </a>
-        ),
-        code({ inline, className, children, ...props }) {
-            const match = /language-(.+)/.exec(className || '');
-            const language = match ? match[1] : '';
-            const isInline = !className || inline;
-            if (isInline) {
-                return (
-                    <code className="bg-gray-100 px-1 py-0.5 rounded-md text-xs font-mono text-gray-800" {...props}>
-                        {children}
-                    </code>
-                );
-            }
-            return (
-                <CodeBlock
-                    codeString={String(children).replace(/\n$/, '')}
-                    language={language}
-                />
-            );
-        },
-    }), []);
+    // 动态计算显示状态
+    const isFinished = isDone || isFailed;
+
+    // 计算当前应该显示的标题
+    let displayTitle = title;
+    if (isDone) displayTitle = `${title} Finished`;
+    if (isFailed) displayTitle = `${title} Failed`;
+
+    // 计算当前颜色
+    let currentColor = activeColor;
+    if (isDone) currentColor = doneColor;
+    if (isFailed) currentColor = "text-red-600"; // 失败强制显示红色
 
     return (
         <div className="w-full py-1.5">
             <div className="flex items-center justify-between group">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden">
-                    <div className={`${isDone ? doneColor : activeColor} flex-shrink-0`}>
-                        {isDone ? (
+                    <div className={`${currentColor} flex-shrink-0`}>
+                        {/* 图标显示逻辑：失败显示 X，成功显示勾，进行中显示原图标 */}
+                        {isFailed ? (
+                            <X className="w-4 h-4 stroke-[3]" />
+                        ) : isDone ? (
                             <Check className="w-4 h-4 stroke-[3]" />
                         ) : (
                             <Icon className={`w-4 h-4 ${isProcessing ? 'animate-spin' : 'animate-pulse'}`} />
                         )}
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className={`text-sm font-medium ${isDone ? 'text-gray-500' : 'text-gray-800'}`}>
+                        <span className={`text-sm font-medium ${isFinished ? 'text-gray-500' : 'text-gray-800'}`}>
                             {displayTitle}
                         </span>
-                        {!isDone && (
+                        {!isFinished && (
                             <div className={`flex items-center gap-1 ${activeColor}`}>
                                 <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.4s]"></div>
                                 <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.2s]"></div>
@@ -157,7 +130,7 @@ const StatusWidget = React.memo(({
                             </div>
                         )}
                     </div>
-                    {!isDone && truncatedLastLine && (
+                    {!isFinished && truncatedLastLine && (
                         <span className="text-xs font-mono text-gray-500 border-l border-gray-200 ml-3 pl-3 hidden sm:block flex-grow min-w-[200px] overflow-hidden whitespace-nowrap">
                             {truncatedLastLine}
                         </span>
@@ -174,22 +147,15 @@ const StatusWidget = React.memo(({
             </div>
             {isExpanded && (
                 <div className="mt-2 ml-2 pl-4 border-l border-gray-200">
-                    <ReactMarkdown
-                        remarkPlugins={[
-                            remarkGfm,
-                            remarkMath,
-                        ]}
-                        rehypePlugins={[rehypeKatex]}
-                        components={markdownComponents}
-                    >
-                        {preprocessContent(cleanContent)}
-                    </ReactMarkdown>
+                    <MarkdownRenderer
+                        content={cleanContent}
+                        withCustomComponent={false}
+                    />
                 </div>
             )}
         </div>
     );
 }, (prev, next) => {
-    // 优化的比较逻辑：只在关键属性变化时重新渲染
     return (
         prev.id === next.id &&
         prev.isExpanded === next.isExpanded &&
@@ -228,6 +194,20 @@ const ComponentBlock = React.memo(({ type, content, id, isExpanded, onToggleExpa
                     Icon={Lightbulb}
                 />
             );
+        case 'toolCalling':
+            return (
+                <StatusWidget
+                    title="Using Tool"
+                    content={content}
+                    id={id}
+                    isExpanded={isExpanded}
+                    onToggleExpand={onToggleExpand}
+                    activeColor="text-amber-600"
+                    // 修改：成功时改为绿色 (emerald-600 或 green-600)
+                    doneColor="text-emerald-600"
+                    Icon={Wrench}
+                />
+            );
         case 'queuing':
             return (
                 <div className="w-full flex justify-start items-center py-2">
@@ -248,7 +228,6 @@ const ComponentBlock = React.memo(({ type, content, id, isExpanded, onToggleExpa
             );
     }
 }, (prev, next) => {
-    // 自定义比较：只在这些属性变化时才重新渲染
     return (
         prev.type === next.type &&
         prev.id === next.id &&

@@ -94,7 +94,10 @@ content
 id 用于确保在前端可以正常展开卡片，一定要传入 id
 
 语言名称：card{type=processing}
-用于展示加载卡片，，当单独一行为 `[DONE]` 时，表示处理完成，加载卡片会把最新的一行展示在卡片上。
+用于展示加载卡片，当单独一行为 `[DONE]` 时，表示处理完成，加载卡片会把最新的一行展示在卡片上。
+
+语言名称：card{type=toolCalling}
+用于展示思考卡片，当单独一行为 `[DONE]` 时，表示工具调用完成。
 
 语言名称：card{type=thinking}
 用于展示思考卡片，当单独一行为 `[DONE]` 时，表示思考完成。
@@ -578,7 +581,12 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
     "attachments": [],  # 附件内容，可选，如果和 content 两个都没有前端将无法渲染出消息占位
     "allowRegenerate": True,  # 是否允许重新生成，默认为 True，可选
     "tip": "",  # 如果存在，下方将会显示一个信息提示，可选
-    "readonly": False  # 消失是否不允许编辑（不显示工具条）
+    "readonly": False,  # 消失是否不允许编辑（不显示工具条）
+    "extraInfo": {   # 额外信息
+        "replace": {
+            "123": "xxx"  # 如果存在将会替换 :::card{type=replace id=123}::: 重点内容为 xxx
+        }
+    }
 }
 ```
 
@@ -710,6 +718,26 @@ code 设置为 401 。
 {
     "command": "Set-MessageContent",
     "value": {"02fa133e-e7d0-4bb0-89e2-b35656b442e9": "测试"},  # 消息ID：要追加内容
+    "reply": True  # 默认为 False，如果为 True 则会触发响应是否成功
+}
+```
+
+回复（如果有）：
+
+```python
+{
+    "success": True
+}
+```
+
+#### 设置消息替换字段
+
+消息替换字段，程序会自动替换 :::card{type=replace id=替换字段ID}::: 标记为下方提供的“内容”。
+
+```python
+{
+    "command": "Set-MessageReplace",
+    "value": {"02fa133e-e7d0-4bb0-89e2-b35656b442e9": {"替换字段ID": "内容"}},  # 消息ID：要追加内容
     "reply": True  # 默认为 False，如果为 True 则会触发响应是否成功
 }
 ```

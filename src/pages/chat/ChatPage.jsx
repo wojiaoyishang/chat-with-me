@@ -565,6 +565,8 @@ function ChatPage({markId, setMarkId}) {
                         setMessagesOrder(payload.value);
                         messagesOrderRef.current = payload.value;
 
+                        console.log(payload.value);
+
                         reply({value: payload.value});
                     } else {
                         reply({value: messagesOrderRef.current});
@@ -617,6 +619,37 @@ function ChatPage({markId, setMarkId}) {
                         if (payload.reply) reply({success: true});
                     } else {
                         console.error("Add-MessageContent Failed. msgId, value is need at least.")
+                        reply({success: false});
+                    }
+                    break;
+                case "Set-MessageReplace":
+                    if (payload.value && typeof payload.value === 'object') {
+
+                        const newMessages = produce(messagesRef.current, draft => {
+                            for (const [msgId, newReplaces] of Object.entries(payload.value)) {
+                                if (draft[msgId]) {
+                                    if (!draft[msgId].extraInfo) {
+                                        draft[msgId].extraInfo = {};
+                                    }
+                                    // 获取当前 replace 对象（如果没有则为空对象）
+                                    const currentReplace = draft[msgId].extraInfo.replace || {};
+                                    // 合并：newReplaces 覆盖 currentReplace
+                                    draft[msgId].extraInfo.replace = { ...currentReplace, ...newReplaces };
+                                }
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+
+                        setTimeout(() => {
+                            if (isAtBottomRef.current) {
+                                scrollToBottom();
+                            }
+                        }, 0);
+
+                        if (payload.reply) reply({success: true});
+                    } else {
+                        console.error("Add-MessageReplace Failed. msgId, value is need at least.")
                         reply({success: false});
                     }
                     break;

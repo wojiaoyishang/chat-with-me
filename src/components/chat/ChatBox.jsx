@@ -784,6 +784,7 @@ function ChatBox({
                     break;
 
                 case "Set-EditMessage":
+
                     if (payload.immediate) {
                         onSendMessage(payload.content, toolsStatus, true, payload.msgId, payload.attachments, sendButtonStatusRef.current, payload.isRegenerate);
                     } else {
@@ -820,6 +821,8 @@ function ChatBox({
                             if (!payload.value.allowRegenerate) payload.value.allowRegenerate = false;
                             if (!payload.value.prevMessage) payload.value.prevMessage = messagesOrder[messagesOrder.length - 1];
                             if (!payload.value.position) payload.value.position = "right";
+                            if (!payload.value.nextMessage) payload.value.nextMessage = null;
+                            if (!payload.value.messages) payload.value.messages = [];
 
                             emitEvent({
                                 type: "message",

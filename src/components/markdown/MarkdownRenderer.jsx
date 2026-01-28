@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkDirective from 'remark-directive';
-import remarkDirectiveToComponent from './remarkDirectiveToComponent.js';
+import {componentBlockDirective, rehypeInlineCodeProperty} from './remarkDirectiveToComponent.js';
 import CodeBlock from './CodeBlock.jsx';
 import ComponentBlock from './ComponentBlock.jsx';
 import 'katex/dist/katex.min.css';
@@ -20,53 +20,12 @@ const preprocessContent = (text) => {
         .replace(/\\\)/g, '$');
 };
 
-// 函数用于将 React 元素序列化为 Markdown 字符串
-const serializeToMarkdown = (node) => {
-    if (node == null) return '';
-    if (typeof node === 'string' || typeof node === 'number') return node.toString();
-    if (Array.isArray(node)) return node.map(serializeToMarkdown).join('');
-    const childrenText = serializeToMarkdown(node.props?.children);
-    const type = typeof node.type === 'string' ? node.type : (node.type?.name || '');
-    switch (type) {
-        case 'p':
-            return childrenText + '\n\n';
-        case 'h1':
-            return '# ' + childrenText + '\n\n';
-        case 'h2':
-            return '## ' + childrenText + '\n\n';
-        case 'ul':
-            return childrenText + '\n\n';
-        case 'ol':
-            return childrenText + '\n\n';
-        case 'li':
-            return '- ' + childrenText + '\n';
-        case 'blockquote':
-            return '> ' + childrenText.replace(/\n/g, '\n> ') + '\n\n';
-        case 'a':
-            return '[' + childrenText + '](' + (node.props.href || '') + ')';
-        case 'strong':
-            return '**' + childrenText + '**';
-        case 'em':
-            return '*' + childrenText + '*';
-        case 'code':
-            if (node.props.inline) {
-                return '`' + childrenText + '`';
-            }
-            return '```' + (node.props.className?.replace('language-', '') || '') + '\n' + childrenText + '\n```\n';
-        case 'CodeBlock':
-            return '```' + (node.props.language || '') + '\n' + (node.props.codeString || '') + '\n```\n';
-        case 'hr':
-            return '---\n\n';
-        default:
-            return childrenText;
-    }
-};
-
 const MarkdownRenderer = ({
                               content,
                               index,
                               expandedMap: externalExpandedMap,
-                              onToggleExpand: externalOnToggleExpand
+                              onToggleExpand: externalOnToggleExpand,
+                              withCustomComponent = true
                           }) => {
     // 内部状态作为后备，支持独立使用
     const [internalExpandedMap, setInternalExpandedMap] = useState(new Map());
@@ -86,65 +45,110 @@ const MarkdownRenderer = ({
     const expandedMap = externalExpandedMap || internalExpandedMap;
     const onToggleExpand = externalOnToggleExpand || internalToggleExpand;
     // 使用 useMemo 缓存 components，防止流式传输时节点闪烁
-    const components = useMemo(() => ({
-        p: ({children}) => <p className="my-2">{children}</p>,
-        ul: ({children}) => <ul className="list-disc pl-5 my-2">{children}</ul>,
-        ol: ({children}) => <ol className="list-decimal pl-5 my-2">{children}</ol>,
-        li: ({children}) => <li className="my-1">{children}</li>,
-        h1: ({children}) => <h1 className="text-xl font-bold my-3">{children}</h1>,
-        h2: ({children}) => <h2 className="text-lg font-semibold my-2">{children}</h2>,
-        hr: () => <hr className="my-4 border-t border-gray-300"/>,
-        blockquote: ({children}) => (
-            <blockquote className="border-l-4 border-gray-300 pl-4 italic my-2 text-gray-600">
-                {children}
-            </blockquote>
-        ),
-        a: ({href, children}) => (
-            <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                {children}
-            </a>
-        ),
-        code: ({children, ...props}) => {
+    const components = useMemo(() => {
+        const baseComponents = {
+            p: ({children}) => <p className="my-2">{children}</p>,
+            ul: ({children}) => <ul className="list-disc pl-5 my-2">{children}</ul>,
+            ol: ({children}) => <ol className="list-decimal pl-5 my-2">{children}</ol>,
+            li: ({children}) => <li className="my-1">{children}</li>,
+            h1: ({children}) => (
+                <h1 className="text-2xl font-bold mt-8 mb-4 pb-2 border-b border-gray-100 text-gray-900">
+                    {children}
+                </h1>
+            ),
+            h2: ({children}) => (
+                <h2 className="text-xl font-semibold mt-6 mb-3 text-gray-800">
+                    {children}
+                </h2>
+            ),
+            h3: ({children}) => (
+                <h3 className="text-lg font-medium mt-5 mb-2 text-gray-800">
+                    {children}
+                </h3>
+            ),
 
-            const firstLine = children.split('\n')[0];
-
-            const match = firstLine.match(/^```([a-zA-Z0-9_+-]+)$/);
-            const language = match ? match[1] : '';
-
-            if (match) {
+            hr: () => <hr className="my-4 border-t border-gray-300"/>,
+            blockquote: ({children}) => (
+                <blockquote className="border-l-4 border-gray-300 pl-4 italic my-2 text-gray-600">
+                    {children}
+                </blockquote>
+            ),
+            a: ({href, children}) => (
+                <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    {children}
+                </a>
+            ),
+            code({className, children, isCodeBlock, ...props}) {
+                const match = /language-(.+)/.exec(className || '');
+                const language = match ? match[1] : '';
+                if (!isCodeBlock) {
+                    return (
+                        <code className="bg-gray-100 px-1 py-0.5 rounded-md text-xs font-mono text-gray-800" {...props}>
+                            {children}
+                        </code>
+                    );
+                }
                 return (
                     <CodeBlock
-                        codeString={children.trim().split('\n').slice(1, -1).join('\n')}
+                        codeString={String(children).replace(/\n$/, '')}
                         language={language}
-                        index={index}
                     />
                 );
-            } else {
-                return (
-                    <code className="bg-gray-100 px-1.5 py-0.5 rounded-md text-sm font-mono" {...props}>
+            },
+            table: ({children}) => (
+                <div className="my-4 w-full overflow-hidden rounded-xl border border-gray-200">
+                    <table className="min-w-full divide-y divide-gray-200 text-sm">
                         {children}
-                    </code>
-                );
-            }
-        },
-        'component-block': (props) => {
-            const {type, id, component, children} = props;
-            if (component === 'card') {
-                const cardContent = serializeToMarkdown(children);
-                return (
-                    <ComponentBlock
-                        key={id}
-                        id={id}
-                        type={type}
-                        content={cardContent}
-                        isExpanded={expandedMap?.has(id) ?? false}
-                        onToggleExpand={onToggleExpand}
-                    />
-                );
-            }
-            return null;
-        },
-    }), [expandedMap, onToggleExpand, index]);
+                    </table>
+                </div>
+            ),
+            thead: ({children}) => (
+                <thead className="bg-gray-50">
+                {children}
+                </thead>
+            ),
+            tbody: ({children}) => (
+                <tbody className="divide-y divide-gray-200 bg-white">
+                {children}
+                </tbody>
+            ),
+            tr: ({children}) => (
+                <tr className="transition-colors hover:bg-gray-50/50">
+                    {children}
+                </tr>
+            ),
+            th: ({children}) => (
+                <th className="px-4 py-3 text-left font-bold text-gray-900 border-r border-gray-200 last:border-r-0 whitespace-nowrap">
+                    {children}
+                </th>
+            ),
+            td: ({children}) => (
+                <td className="px-4 py-3 text-gray-700 border-r border-gray-200 last:border-r-0">
+                    {children}
+                </td>
+            ),
+        };
+        if (withCustomComponent) {
+            baseComponents['component-block'] = (props) => {
+                const {type, id, component, rawContent, children} = props;
+                debugger
+                if (component === 'card') {
+                    return (
+                        <ComponentBlock
+                            key={id}
+                            id={id}
+                            type={type}
+                            content={rawContent}
+                            isExpanded={expandedMap?.has(id) ?? false}
+                            onToggleExpand={onToggleExpand}
+                        />
+                    );
+                }
+                return null;
+            };
+        }
+        return baseComponents;
+    }, [expandedMap, onToggleExpand, index, withCustomComponent]);
     const processedContent = useMemo(() =>
             preprocessContent(content),
         [content]
@@ -155,7 +159,8 @@ const MarkdownRenderer = ({
                 remarkGfm,
                 remarkMath,
                 remarkDirective,
-                remarkDirectiveToComponent,
+                ...(withCustomComponent ? [componentBlockDirective] : []),
+                rehypeInlineCodeProperty
             ]}
             rehypePlugins={[rehypeKatex]}
             components={components}
@@ -169,6 +174,7 @@ export default memo(MarkdownRenderer, (prev, next) => {
     return (
         prev.content === next.content &&
         prev.index === next.index &&
-        prev.expandedMap === next.expandedMap
+        prev.expandedMap === next.expandedMap &&
+        prev.withCustomComponent === next.withCustomComponent
     );
 });
