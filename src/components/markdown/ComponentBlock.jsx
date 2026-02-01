@@ -60,6 +60,7 @@ const StatusWidget = React.memo(({
                                      doneColor,
                                      Icon,
                                      isProcessing = false,
+                                     references
                                  }) => {
     // 逻辑更新：同时检测 DONE 和 FAILED
     const { isDone, isFailed, cleanContent, lines, lastLine } = useMemo(() => {
@@ -150,6 +151,7 @@ const StatusWidget = React.memo(({
                     <MarkdownRenderer
                         content={cleanContent}
                         withCustomComponent={false}
+                        references={references}
                     />
                 </div>
             )}
@@ -165,7 +167,7 @@ const StatusWidget = React.memo(({
 });
 StatusWidget.displayName = 'StatusWidget';
 
-const ComponentBlock = React.memo(({ type, content, id, isExpanded, onToggleExpand }) => {
+const ComponentBlock = React.memo(({ type, content, id, isExpanded, onToggleExpand, references }) => {
     switch (type) {
         case 'processing':
             return (
@@ -179,6 +181,7 @@ const ComponentBlock = React.memo(({ type, content, id, isExpanded, onToggleExpa
                     doneColor="text-green-600"
                     Icon={Loader2}
                     isProcessing={true}
+                    references={references}
                 />
             );
         case 'thinking':
@@ -192,6 +195,7 @@ const ComponentBlock = React.memo(({ type, content, id, isExpanded, onToggleExpa
                     activeColor="text-indigo-600"
                     doneColor="text-emerald-600"
                     Icon={Lightbulb}
+                    references={references}
                 />
             );
         case 'toolCalling':
@@ -206,6 +210,7 @@ const ComponentBlock = React.memo(({ type, content, id, isExpanded, onToggleExpa
                     // 修改：成功时改为绿色 (emerald-600 或 green-600)
                     doneColor="text-emerald-600"
                     Icon={Wrench}
+                    references={references}
                 />
             );
         case 'queuing':

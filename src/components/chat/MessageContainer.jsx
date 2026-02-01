@@ -294,6 +294,7 @@ const MessageContent = ({
                             isRight,
                             content,
                             avatar,
+                            references,
                             isLeaving
                         }) => {
     if (isRight) {
@@ -317,7 +318,7 @@ const MessageContent = ({
     return (
         <div className="w-full pl-10 pr-10">
             <div className="text-gray-800 break-words max-w-none">
-                <MarkdownRenderer content={content} index={content}/>
+                <MarkdownRenderer content={content} index={content} references={references}/>
             </div>
         </div>
     );
@@ -692,6 +693,7 @@ const MessageContainer = forwardRef(({
                                 isRight={true}
                                 content={displayContent}
                                 avatar={avatar}
+                                references={msg.attachments}
                                 isLeaving={leavingMessages.has(id)}
                             />
                             {/* 渲染消息底部操作区域 */}
@@ -714,6 +716,7 @@ const MessageContainer = forwardRef(({
                                 isRight={false}
                                 content={displayContent}
                                 avatar={avatar}
+                                references={msg.attachments}
                                 isLeaving={leavingMessages.has(id)}
                             />
                             {/* 渲染消息底部操作区域 */}
@@ -742,6 +745,7 @@ const MessageContainer = forwardRef(({
                                 isRight={true}
                                 content={displayContent}
                                 avatar={avatar}
+                                references={msg.attachments}
                                 isLeaving={leavingMessages.has(id)}
                             />
                             {/* 渲染消息底部操作区域 */}
@@ -758,6 +762,7 @@ const MessageContainer = forwardRef(({
                                 isRight={false}
                                 content={displayContent}
                                 avatar={avatar}
+                                references={msg.attachments}
                                 isLeaving={leavingMessages.has(id)}
                             />
                             {/* 渲染消息底部操作区域 */}

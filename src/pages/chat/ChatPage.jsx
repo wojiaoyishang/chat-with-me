@@ -653,6 +653,32 @@ function ChatPage({markId, setMarkId}) {
                         reply({success: false});
                     }
                     break;
+                case "Set-MessageAttachments":
+                    if (payload.value && typeof payload.value === 'object') {
+
+                        const newMessages = produce(messagesRef.current, draft => {
+                            for (const [msgId, newAttachments] of Object.entries(payload.value)) {
+                                if (draft[msgId]) {
+                                    draft[msgId].attachments = newAttachments;
+                                }
+                            }
+                        });
+
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+
+                        setTimeout(() => {
+                            if (isAtBottomRef.current) {
+                                scrollToBottom();
+                            }
+                        }, 0);
+
+                        if (payload.reply) reply({success: true});
+                    } else {
+                        console.error("Add-MessageReplace Failed. msgId, value is need at least.")
+                        reply({success: false});
+                    }
+                    break;
                 case "Add-Message-Messages":
                     if (payload.msgId && payload.value) {
 

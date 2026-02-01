@@ -1,5 +1,5 @@
 import React, {useState, useCallback, useMemo, memo} from 'react';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -9,6 +9,14 @@ import CodeBlock from './CodeBlock.jsx';
 import ComponentBlock from './ComponentBlock.jsx';
 import 'katex/dist/katex.min.css';
 import './CodeBlock.css';
+
+// 链接处理
+const createAllowCustomScheme = (references) => (uri, key, node) => {
+    if (uri.startsWith('ref://') && references) {
+        return resolveRefUrl(uri, references);
+    }
+    return defaultUrlTransform(uri, key, node);
+};
 
 // 预处理函数抽离
 const preprocessContent = (text) => {
@@ -20,13 +28,64 @@ const preprocessContent = (text) => {
         .replace(/\\\)/g, '$');
 };
 
+// 引用链接转化
+const resolveRefUrl = (refUrl, references) => {
+
+    // 测试 references
+    if (!Array.isArray(references)) {
+        console.error('resolveRefUrl: references must be an array');
+        return '';
+    }
+
+    // 检查是否带有 ?download=true
+    const hasDownloadParam = refUrl.includes('?download=true');
+    // 去掉查询参数，只保留基础 ref 路径
+    const cleanRefUrl = refUrl.split('?')[0];
+
+    // 处理 ref://index/xxx
+    if (cleanRefUrl.startsWith('ref://index/')) {
+        const match = cleanRefUrl.match(/^ref:\/\/index\/(\d+)$/);
+        if (match) {
+            const index = parseInt(match[1], 10);
+            const item = references[index];
+            if (!item) return '';
+
+            if (hasDownloadParam) {
+                return item.downloadUrl ?? '';
+            } else {
+                return item.preview ?? '';
+            }
+        }
+    }
+
+    // 处理 ref://serverId/xxxxx
+    if (cleanRefUrl.startsWith('ref://serverId/')) {
+        const serverId = cleanRefUrl.replace(/^ref:\/\/serverId\//, '');
+        if (serverId) {
+            const item = references.find(ref => ref.serverId === serverId);
+            if (!item) return '';
+
+            if (hasDownloadParam) {
+                return item.downloadUrl ?? '';
+            } else {
+                return item.preview ?? '';
+            }
+        }
+    }
+
+    // 其他情况：直接返回原 refUrl（不带逻辑处理）
+    return refUrl;
+};
+
 const MarkdownRenderer = ({
                               content,
                               index,
+                              references,  // references 是一个与列表，列表中的每一个项都和附件格式数据相似
                               expandedMap: externalExpandedMap,
                               onToggleExpand: externalOnToggleExpand,
                               withCustomComponent = true
                           }) => {
+
     // 内部状态作为后备，支持独立使用
     const [internalExpandedMap, setInternalExpandedMap] = useState(new Map());
     // 内部切换函数
@@ -78,6 +137,7 @@ const MarkdownRenderer = ({
                     {children}
                 </a>
             ),
+
             code({className, children, isCodeBlock, ...props}) {
                 const match = /language-(.+)/.exec(className || '');
                 const language = match ? match[1] : '';
@@ -127,11 +187,14 @@ const MarkdownRenderer = ({
                     {children}
                 </td>
             ),
+            img:({ src, alt, ...props }) => {
+                return <img src={src} alt={alt} {...props} />;
+            }
         };
         if (withCustomComponent) {
             baseComponents['component-block'] = (props) => {
                 const {type, id, component, rawContent, children} = props;
-                debugger
+
                 if (component === 'card') {
                     return (
                         <ComponentBlock
@@ -141,6 +204,7 @@ const MarkdownRenderer = ({
                             content={rawContent}
                             isExpanded={expandedMap?.has(id) ?? false}
                             onToggleExpand={onToggleExpand}
+                            references={references}
                         />
                     );
                 }
@@ -153,6 +217,8 @@ const MarkdownRenderer = ({
             preprocessContent(content),
         [content]
     );
+    const allowCustomScheme = useMemo(() => createAllowCustomScheme(references), [references]);
+
     return (
         <ReactMarkdown
             remarkPlugins={[
@@ -164,6 +230,7 @@ const MarkdownRenderer = ({
             ]}
             rehypePlugins={[rehypeKatex]}
             components={components}
+            urlTransform={allowCustomScheme}
         >
             {processedContent}
         </ReactMarkdown>

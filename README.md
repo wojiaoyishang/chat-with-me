@@ -509,12 +509,16 @@ id 用于确保在前端可以正常展开卡片，一定要传入 id
 {
     "preview": "/src/assets/test.png",  # 预留图
     "previewType": "image",  # 展示格式，如果为 svg ，preview 为 svg 代码
+    "type": "file",  # 标记文件类型，一般是文件，如果是 url 有不一样的展示效果
     "name": "示例图片.jpg",  # 展示的名称
     "size": 2048000,  # 文件大小
     "serverId": "img_67890",  # 服务器中的文件ID，前端删除附件时需要用到这个
     "downloadUrl": "https://example.com/images/img_67890"  # 点击之后文件的下载链接
 }
 ```
+
+**提示：** 如果含有附件，左侧消息渲染的 Markdown 中，可以使用 ref://index/0 或者 ref://serverId/img_67890 来引用其 preview 中的链接。
+如果需要引用下载链接，需要再链接末尾加上 ?download=true
 
 ## CHAT_CONVERSATIONS_ENDPOINT - 历史对话获取接口
 
@@ -747,6 +751,17 @@ code 设置为 401 。
 ```python
 {
     "success": True
+}
+```
+
+#### 设置消息附件
+
+
+```python
+{
+    "command": "Set-MessageAttachments",
+    "value": {"02fa133e-e7d0-4bb0-89e2-b35656b442e9": [...]},  # 消息ID：附件列表，列表项目查看附件格式数据
+    "reply": True  # 默认为 False，如果为 True 则会触发响应是否成功
 }
 ```
 
