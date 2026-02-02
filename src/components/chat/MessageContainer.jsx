@@ -1,13 +1,10 @@
 import React, {forwardRef, useState, useEffect, useRef} from 'react';
-import AIIcon from '@/assets/AI.png';
-import HumanIcon from '@/assets/human.jpg';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import {toast} from 'sonner';
 import {useTranslation} from 'react-i18next';
-import {FaChevronLeft, FaChevronRight} from 'react-icons/fa';
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import AttachmentShowcase from './AttachmentShowcase';
-import {Menu, PenLine, Copy, RotateCw, Info} from "lucide-react";
+import {Menu, PenLine, Copy, RotateCw, Info, ChevronLeft, ChevronRight} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
 
@@ -268,7 +265,7 @@ const MessagePaginator = ({
                 }`}
                 aria-label={t("prev_page")}
             >
-                <FaChevronLeft size={12}/>
+                <ChevronLeft size={12}/>
             </button>
             <span className="px-1.5 py-0.5 rounded-md">{msgId_index + 1} / {msgPrev.messages.length}</span>
             <button
@@ -281,7 +278,7 @@ const MessagePaginator = ({
                 }`}
                 aria-label={t("next_page")}
             >
-                <FaChevronRight size={12}/>
+                <ChevronRight size={12}/>
             </button>
         </div>
     );
@@ -530,7 +527,7 @@ const MessageContainer = forwardRef(({
         }
 
         const isRight = msg.position === 'right';
-        const avatar = msg.avatar || (isRight ? HumanIcon : AIIcon);
+        const avatar = msg.avatar;
         const displayName = isRight ? null : msg.name;
         const showPaginator = messages[msg?.prevMessage]?.messages?.length > 1;
         const isFading = fadeMessages.has(id) && !enteringMessages.has(id);

@@ -1,8 +1,7 @@
 import React, { useRef } from 'react';
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, Loader2, X } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, X, RotateCw } from "lucide-react";
 import { Transition } from '@headlessui/react';
-import { FaRedo } from "react-icons/fa";
 
 /**
  * 文件上传进度组件
@@ -68,7 +67,7 @@ export default function FileUploadProgress({ uploadFiles, onRetry, onCancel }) {
                                                 className="text-gray-500 hover:text-blue-600 transition-colors cursor-pointer"
                                                 aria-label="重试上传"
                                             >
-                                                <FaRedo className="w-3.5 h-3.5" />
+                                                <RotateCw className="w-3.5 h-3.5" />
                                             </button>
                                         )}
 

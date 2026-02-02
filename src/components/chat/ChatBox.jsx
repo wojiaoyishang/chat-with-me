@@ -1,9 +1,7 @@
 import React, {useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Transition} from '@headlessui/react';
-import {FaRedo, FaSearch, FaArrowDown} from "react-icons/fa";
-import {FaEarthAmericas, FaXing} from 'react-icons/fa6';
-import {Check, X, PenLine, Trash2, Minus, Square} from "lucide-react";
+import {Check, X, PenLine, Trash2, Minus, Square, RotateCw, Search, Earth} from "lucide-react";
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
@@ -327,7 +325,7 @@ function ChatBox({
     const renderIcon = (iconType, iconData) => {
         if (!iconData) return null;
         if (iconType === 'library') {
-            const iconMap = {search: FaSearch, refresh: FaRedo, earth: FaEarthAmericas};
+            const iconMap = {search: Search, refresh: RotateCw, earth: Earth};
             const IconComponent = iconMap[iconData];
             return IconComponent ? <IconComponent className="w-4 h-4 mr-2"/> : null;
         } else if (iconType === 'svg') {
@@ -523,7 +521,7 @@ function ChatBox({
         return tools.map((tool) => {
             const isActive = tool.isActive ?? false;
             const disabled = tool.disabled ?? false;
-            const iconMap = {search: FaSearch, refresh: FaRedo, earth: FaEarthAmericas, xing: FaXing};
+            const iconMap = {search: Search, refresh: RotateCw, earth: Earth};
             let iconData = null;
             if (tool.iconType === 'library') {
                 iconData = iconMap[tool.iconData];

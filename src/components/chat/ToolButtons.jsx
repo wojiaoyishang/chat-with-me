@@ -1,7 +1,7 @@
 import React, {useState, Fragment} from 'react';
 import {Transition} from '@headlessui/react';
 import {IoMdAdd} from "react-icons/io";
-import {FaRedo} from "react-icons/fa";
+import { RotateCw } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -91,7 +91,7 @@ export default function ToolButtons({
                                 className="text-blue-500 hover:text-blue-700 text-sm flex items-center cursor-pointer"
                                 aria-label={t("reload_tools")} //  已规范
                             >
-                                <FaRedo className="w-4 h-4 mr-1"/>
+                                <RotateCw className="w-4 h-4 mr-1"/>
                                 {t("reload_tools")} {/*  按钮内文本也国际化 */}
                             </button>
                         </div>

@@ -1,27 +1,77 @@
-import React, { useState, useMemo, memo } from 'react';
-import hljs from 'highlight.js';
+import React, { useState, useMemo, useEffect, memo } from 'react';
 import './CodeBlock.css';
+
+// 使用 import.meta.glob 静态收集所有语言模块（Vite 会将其转为实际 import）
+const languageModules = import.meta.glob('/node_modules/highlight.js/es/languages/*.js');
 
 const CodeBlock = memo(({ codeString, language }) => {
     const [copied, setCopied] = useState(false);
+    const [highlightedHtml, setHighlightedHtml] = useState(codeString);
+    const [hljsInstance, setHljsInstance] = useState(null);
 
-    // 1. 使用 useMemo 处理高亮，避免在渲染路径中进行昂贵的计算
-    // 同时也解决了流式传输时 innerHTML 频繁手动更新的问题
-    const highlightedHtml = useMemo(() => {
-        if (language && hljs.getLanguage(language)) {
-            try {
-                return hljs.highlight(codeString, {
-                    language,
-                    ignoreIllegals: true,
-                }).value;
-            } catch (e) {
-                return codeString;
+    // 加载 highlight.js 核心
+    useEffect(() => {
+        import('highlight.js/lib/core')
+            .then((module) => {
+                setHljsInstance(module.default);
+            })
+            .catch((err) => {
+                console.error('Failed to load highlight.js core:', err);
+            });
+    }, []);
+
+    // 高亮逻辑
+    useEffect(() => {
+        if (!hljsInstance || !codeString) return;
+
+        const highlightCode = async () => {
+            if (language) {
+                if (!hljsInstance.getLanguage(language)) {
+                    const langPath = `/node_modules/highlight.js/es/languages/${language}.js`;
+                    const loadModule = languageModules[langPath];
+
+                    if (loadModule) {
+                        try {
+                            const mod = await loadModule();
+                            hljsInstance.registerLanguage(language, mod.default);
+                        } catch (err) {
+                            console.error(`Failed to load language module for: ${language}`, err);
+                            setHighlightedHtml(codeString);
+                            return;
+                        }
+                    } else {
+                        console.warn(`Language not supported or not found in glob: ${language}`);
+                        setHighlightedHtml(codeString);
+                        return;
+                    }
+                }
+
+                try {
+                    const result = hljsInstance.highlight(codeString, {
+                        language,
+                        ignoreIllegals: true,
+                    });
+                    setHighlightedHtml(result.value);
+                } catch (err) {
+                    console.error('Highlighting failed:', err);
+                    setHighlightedHtml(codeString);
+                }
+            } else {
+                // 自动检测语言
+                try {
+                    const result = hljsInstance.highlightAuto(codeString);
+                    setHighlightedHtml(result.value);
+                } catch (err) {
+                    console.error('Auto-highlight failed:', err);
+                    setHighlightedHtml(codeString);
+                }
             }
-        }
-        return hljs.highlightAuto(codeString).value;
-    }, [codeString, language]);
+        };
 
-    // 2. 优化行号计算
+        highlightCode();
+    }, [hljsInstance, codeString, language]);
+
+    // 计算行数
     const lineCount = useMemo(() => {
         const lines = codeString.split('\n');
         if (lines.length > 1 && lines[lines.length - 1] === '') {
@@ -30,6 +80,7 @@ const CodeBlock = memo(({ codeString, language }) => {
         return lines.length;
     }, [codeString]);
 
+    // 复制逻辑
     const handleCopy = async () => {
         try {
             await navigator.clipboard.writeText(codeString);
@@ -59,7 +110,7 @@ const CodeBlock = memo(({ codeString, language }) => {
                 </div>
                 <pre className="code-preview">
                     <code
-                        className={`hljs language-${language}`}
+                        className={`hljs language-${language || ''}`}
                         dangerouslySetInnerHTML={{ __html: highlightedHtml }}
                     />
                 </pre>

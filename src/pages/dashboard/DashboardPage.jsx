@@ -1,11 +1,9 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
-import {useParams,} from 'react-router-dom';
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
 import ChatPage from '@/pages/chat/ChatPage.jsx';
 import {generateUUID, getMarkId, UnifiedErrorScreen, UnifiedLoadingScreen, useIsMobile} from "@/lib/tools.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
-import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import {useTranslation} from "react-i18next";
 import EditorHome from "@/pages/editor/EditorHome.jsx";
 import {emitEvent, onEvent} from "@/store/useEventStore.jsx";

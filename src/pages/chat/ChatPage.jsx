@@ -19,18 +19,15 @@ import {
 } from "@/lib/tools.jsx";
 import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
 import {useTranslation} from "react-i18next";
-import {useNavigate} from 'react-router-dom';
-import {FaArrowDown, FaChevronDown, FaCheckCircle} from "react-icons/fa";
+import {ArrowDown, ChevronDown, CircleCheck } from 'lucide-react';
 import ChatBox from "@/components/chat/chatbox.jsx";
 import MessageContainer from "@/components/chat/MessageContainer.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
-import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Button} from "@/components/ui/button";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Badge} from "@/components/ui/badge";
-import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 
 function ChatPage({markId, setMarkId}) {
     const {t} = useTranslation();
@@ -905,7 +902,7 @@ function ChatPage({markId, setMarkId}) {
                             <Button variant="ghost"
                                     className="justify-start px-0 hover:bg-transparent text-lg cursor-pointer">
                                 {selectedModelRef.current.name}
-                                <FaChevronDown
+                                <ChevronDown
                                     className={`ml-2 h-4 w-4 transition-transform duration-200 ${isModelPopoverOpen ? 'rotate-180' : ''}`}/>
                             </Button>
                         </PopoverTrigger>
@@ -950,7 +947,7 @@ function ChatPage({markId, setMarkId}) {
                                                         <p className="text-xs text-gray-500 truncate w-40">{model.description}</p>
                                                     </div>
                                                     {isSelected && (
-                                                        <FaCheckCircle className="ml-auto text-[#615CED] h-4 w-4"/>
+                                                        <CircleCheck className="ml-auto text-[#615CED] h-4 w-4"/>
                                                     )}
                                                 </>
                                             );
@@ -1053,7 +1050,7 @@ function ChatPage({markId, setMarkId}) {
                                 left: '50%',
                             }}
                         >
-                            <FaArrowDown className="text-gray-500 w-3 h-3"/>
+                            <ArrowDown className="text-gray-500 w-3 h-3"/>
                         </button>
                     </Transition>
                     <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">

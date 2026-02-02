@@ -1,14 +1,12 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {format, isToday, isYesterday, subDays, subMonths, isWithinInterval} from 'date-fns';
-import {enUS, zhCN} from 'date-fns/locale';
-import {FaChevronRight, FaTimes, FaHome, FaCog, FaSearch, FaPlus, FaBookOpen} from 'react-icons/fa';
+import { ChevronRight, X, Plus, BookOpen } from 'lucide-react';
 import {generateUUID, UnifiedErrorScreen, UnifiedLoadingScreen, updateURL} from "@/lib/tools.jsx";
 import {Transition} from '@headlessui/react';
 import {useTranslation} from "react-i18next";
 import {useIsMobile} from "@/lib/tools.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
-import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import {onEvent} from "@/store/useEventStore.jsx";
 
 const Sidebar = ({
@@ -22,7 +20,6 @@ const Sidebar = ({
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
 
-    const dateLocale = i18n.language === 'zh-CN' ? zhCN : enUS;
     useEffect(() => {
         const mql = window.matchMedia('(min-width: 768px)');
         setIsOpen(mql.matches);
@@ -50,10 +47,8 @@ const Sidebar = ({
             const deltaY = Math.abs(endY - startY);
             if (deltaY > 50) return;
             if (!isOpen && deltaX > 30 && startX < 150) {
-                // Swipe right from left edge to open (increased sensitivity)
                 setIsOpen(true);
             } else if (isOpen && deltaX < -30) {
-                // Swipe left to close (anywhere on screen when open, increased sensitivity)
                 setIsOpen(false);
             }
         };
@@ -68,6 +63,7 @@ const Sidebar = ({
     const [conversations, setConversations] = useState([]);
     const [oldPositions, setOldPositions] = useState(null);
     const listRef = useRef(null);
+
     const loadConversations = async () => {
         setIsLoading(true);
         setIsLoadingError(false);
@@ -84,10 +80,11 @@ const Sidebar = ({
             setIsLoading(false);
         }
     };
+
     useEffect(() => {
         loadConversations();
     }, []);
-    // Group conversations by date categories
+
     const groupConversations = () => {
         const groups = {
             Today: [],
@@ -116,6 +113,7 @@ const Sidebar = ({
         });
         return groups;
     };
+
     const groupedConvs = groupConversations();
 
     const handleSelectConversation = (markId) => {
@@ -125,10 +123,7 @@ const Sidebar = ({
     };
 
     const LoadingScreen = () => (
-        <UnifiedLoadingScreen
-            text={t("loading_history")}
-            // 不传 zIndex，默认为空，符合原代码
-        />
+        <UnifiedLoadingScreen text={t("loading_history")} />
     );
 
     const LoadingFailedScreen = () => (
@@ -136,28 +131,24 @@ const Sidebar = ({
             title={t("load_history_error")}
             subtitle={t("retry_after_network")}
             retryText={t("retry")}
-            onRetry={loadConversations} // 直接传入具体的重试函数
-            // 不传 zIndex，默认为空，符合原代码
+            onRetry={loadConversations}
         />
     );
+
     useEffect(() => {
-        const unsubscribe1 = onEvent("widget", "Sidebar").then((payload, markId, isReply, id, reply) => {
+        const unsubscribe1 = onEvent("widget", "Sidebar").then((payload, markId) => {
             switch (payload.command) {
                 case "Reload-Conversations":
                     loadConversations();
                     break;
                 case "Update-ConversationDate":
-                    // Capture old positions before updating
                     const currentPositions = {};
                     if (listRef.current) {
                         const elements = listRef.current.querySelectorAll('div[data-group], li[data-markid]');
                         elements.forEach(el => {
                             const rect = el.getBoundingClientRect();
                             const id = el.dataset.markid || el.dataset.group;
-                            currentPositions[id] = {
-                                top: rect.top,
-                                left: rect.left
-                            };
+                            currentPositions[id] = { top: rect.top, left: rect.left };
                         });
                     }
                     setOldPositions(currentPositions);
@@ -173,6 +164,7 @@ const Sidebar = ({
             unsubscribe1();
         };
     }, []);
+
     useEffect(() => {
         if (!oldPositions || !listRef.current) return;
         const container = listRef.current;
@@ -188,8 +180,7 @@ const Sidebar = ({
                 el.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
             }
         });
-        // Force reflow to apply the invert
-        container.offsetHeight;
+        container.offsetHeight; // force reflow
         elements.forEach(el => {
             const id = el.dataset.markid || el.dataset.group;
             if (oldPositions[id]) {
@@ -197,7 +188,6 @@ const Sidebar = ({
                 el.style.transform = 'translate(0, 0)';
             }
         });
-        // Cleanup after animation
         const timer = setTimeout(() => {
             elements.forEach(el => {
                 el.style.transition = '';
@@ -222,7 +212,7 @@ const Sidebar = ({
                 className={`fixed md:relative top-0 left-0 h-full bg-white shadow-lg z-40 flex flex-col overflow-y-auto transition-all duration-300 ease-in-out`}
                 style={{ width: 'var(--sidebar-width)' }}
             >
-                {/* Logo */}
+                {/* Logo Section */}
                 <div className="flex items-center justify-between p-4 border-b">
                     {logoElement}
                     <button
@@ -230,13 +220,13 @@ const Sidebar = ({
                         className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
                         aria-label={t("close_sidebar")}
                     >
-                        <FaTimes className="w-5 h-5"/>
+                        <X className="w-5 h-5"/>
                     </button>
                 </div>
-                {/* Functional Buttons (placeholders) - Separate container */}
+
+                {/* Navigation Buttons */}
                 <div className="p-4 border-b">
                     <div className="flex flex-col space-y-2">
-                        {/* 功能按钮 */}
                         <button
                             onClick={() => {
                                 setMarkId(null);
@@ -244,7 +234,7 @@ const Sidebar = ({
                                 setPageType('chat');
                             }}
                             className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
-                            <FaPlus className="w-5 h-5 mr-2"/>
+                            <Plus className="w-5 h-5 mr-2"/>
                             {t('new_conversation')}
                         </button>
                         <button
@@ -255,12 +245,13 @@ const Sidebar = ({
                                 setRandomUUID(generateUUID());
                             }}
                             className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
-                            <FaBookOpen className="w-5 h-5 mr-2"/>
+                            <BookOpen className="w-5 h-5 mr-2"/>
                             {t('doc_copilot')}
                         </button>
                     </div>
                 </div>
-                {/* Conversation List - Separate container with scroll */}
+
+                {/* History List */}
                 <div ref={listRef} className="flex-1 p-4 overflow-y-auto pretty-scrollbar relative">
                     {isLoadingError ? (
                         <LoadingFailedScreen/>
@@ -295,7 +286,7 @@ const Sidebar = ({
                                                                     isSelected ? 'text-gray-600' : 'text-gray-500'
                                                                 }`}
                                                             >
-                                                                {format(new Date(conv.updateDate), 'PPP', {locale: dateLocale})}
+                                                                {format(new Date(conv.updateDate), 'PPP')}
                                                             </span>
                                                         </button>
                                                     </li>
@@ -309,6 +300,8 @@ const Sidebar = ({
                     )}
                 </div>
             </div>
+
+            {/* Mobile Backdrop */}
             <Transition
                 show={isOpen}
                 enter="transition-opacity duration-300"
@@ -323,6 +316,8 @@ const Sidebar = ({
                     onClick={() => setIsOpen(false)}
                 />
             </Transition>
+
+            {/* Floating Open Button */}
             <Transition
                 show={!isOpen}
                 enter="transition-opacity duration-300"
@@ -340,10 +335,11 @@ const Sidebar = ({
                     }}
                     aria-label={t("open_sidebar")}
                 >
-                    <FaChevronRight className="w-3 h-3"/>
+                    <ChevronRight className="w-3 h-3"/>
                 </button>
             </Transition>
         </>
     );
 };
+
 export default Sidebar;

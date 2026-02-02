@@ -2,7 +2,7 @@ import {StrictMode} from 'react';
 import './assets/js/i18n.js';
 import './assets/css/index.css';
 import './assets/css/code-block.css';
-import ChatPage from './pages/chat/ChatPage.jsx';
+
 import {
     createBrowserRouter,
     RouterProvider,
@@ -17,7 +17,6 @@ import FatalErrorPopoverElement from "@/context/FatalErrorPopover.jsx";
 import ContextEvent from "@/context/ContextEvent.jsx";
 import DashboardPage from "@/pages/dashboard/DashboardPage.jsx";
 import Login from "./pages/auth/Login.jsx";
-import AIEditor from "@/pages/ai/AIEditor.jsx";
 
 const router = createBrowserRouter([
     {
