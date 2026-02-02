@@ -1,10 +1,10 @@
-import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react';
+import React, {useCallback, useMemo, useRef, useEffect, useState} from 'react';
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
-import { Check, Lightbulb, ChevronDown, Loader2, Wrench, X, Code } from "lucide-react";
+import {Check, Lightbulb, ChevronDown, Loader2, Wrench, X, Code, CircleX} from "lucide-react";
 
 import MarkdownRenderer from "./MarkdownRenderer.jsx"
 
-const StepsButton = React.memo(({ linesLength, isExpanded, onToggleExpand, id }) => {
+const StepsButton = React.memo(({linesLength, isExpanded, onToggleExpand, id}) => {
         const clickTimeoutRef = useRef(null);
         const handleInteraction = useCallback((e) => {
             e.preventDefault();
@@ -64,7 +64,7 @@ const StatusWidget = React.memo(({
                                  }) => {
 
     // 逻辑更新：处理段落统计
-    const { isDone, isFailed, cleanContent, paragraphs, lastLine } = useMemo(() => {
+    const {isDone, isFailed, cleanContent, paragraphs, lastLine} = useMemo(() => {
         const trimmedContent = content.trim();
         const isDone = trimmedContent.endsWith('[DONE]');
         const isFailed = trimmedContent.endsWith('[FAILED]');
@@ -87,7 +87,7 @@ const StatusWidget = React.memo(({
             .map(p => p.trim())
             .filter(p => p.length > 0);
 
-        return { isDone, isFailed, cleanContent, paragraphs, lastLine };
+        return {isDone, isFailed, cleanContent, paragraphs, lastLine};
     }, [content]);
 
     const handleToggleExpand = useCallback((widgetId) => {
@@ -124,11 +124,11 @@ const StatusWidget = React.memo(({
                 <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden">
                     <div className={`${currentColor} flex-shrink-0`}>
                         {isFailed ? (
-                            <X className="w-4 h-4 stroke-[3]" />
+                            <X className="w-4 h-4 stroke-[3]"/>
                         ) : isDone ? (
-                            <Check className="w-4 h-4 stroke-[3]" />
+                            <Check className="w-4 h-4 stroke-[3]"/>
                         ) : (
-                            <Icon className={`w-4 h-4 ${isProcessing ? 'animate-spin' : 'animate-pulse'}`} />
+                            <Icon className={`w-4 h-4 ${isProcessing ? 'animate-spin' : 'animate-pulse'}`}/>
                         )}
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -137,14 +137,17 @@ const StatusWidget = React.memo(({
                         </span>
                         {!isFinished && (
                             <div className={`flex items-center gap-1 ${activeColor}`}>
-                                <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.4s]"></div>
-                                <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.2s]"></div>
+                                <div
+                                    className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.4s]"></div>
+                                <div
+                                    className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.2s]"></div>
                                 <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></div>
                             </div>
                         )}
                     </div>
                     {!isFinished && truncatedLastLine && (
-                        <span className="text-xs font-mono text-gray-500 border-l border-gray-200 ml-3 pl-3 hidden sm:block flex-grow min-w-[200px] overflow-hidden whitespace-nowrap">
+                        <span
+                            className="text-xs font-mono text-gray-500 border-l border-gray-200 ml-3 pl-3 hidden sm:block flex-grow min-w-[200px] overflow-hidden whitespace-nowrap">
                             {truncatedLastLine}
                         </span>
                     )}
@@ -180,7 +183,7 @@ const StatusWidget = React.memo(({
 });
 StatusWidget.displayName = 'StatusWidget';
 
-const ComponentBlock = React.memo(({ type, content, id, isExpanded, onToggleExpand, references }) => {
+const ComponentBlock = React.memo(({type, content, id, isExpanded, onToggleExpand, references}) => {
     switch (type) {
         case 'processing':
             return (
@@ -242,9 +245,23 @@ const ComponentBlock = React.memo(({ type, content, id, isExpanded, onToggleExpa
         case 'queuing':
             return (
                 <div className="w-full flex justify-start items-center py-2">
-                    <ThreeDotLoading />
+                    <ThreeDotLoading/>
                 </div>
             );
+        case "error":
+            return (
+                <div className="group my-3 flex items-start gap-3 overflow-hidden rounded-xl border border-red-100 bg-red-50/40 p-4 transition-all hover:bg-red-50/60 shadow-sm">
+                    <div className="flex-shrink-0">
+                        <CircleX className="h-5 w-5 text-red-500/90 shadow-sm rounded-full" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                        <pre className="font-mono text-[13px] leading-relaxed text-red-800/90 whitespace-pre-wrap break-all selection:bg-red-200">
+                            {content}
+                        </pre>
+                    </div>
+                </div>
+            )
         default:
             return (
                 <div className="bg-red-50/40 border border-red-200 p-3 my-2 rounded-md">

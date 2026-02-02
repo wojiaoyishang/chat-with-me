@@ -1056,7 +1056,7 @@ function ChatPage({markId, setMarkId}) {
                             <FaArrowDown className="text-gray-500 w-3 h-3"/>
                         </button>
                     </Transition>
-                    <div className="absolute z-10 inset-x-0 bottom-10">
+                    <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
                         <ChatBox
                             onSendMessage={handleSendMessage}
                             markId={selfMarkId}
@@ -1079,7 +1079,7 @@ function ChatPage({markId, setMarkId}) {
                     </div>
                 </>
                 <footer
-                    className="absolute inset-x-0 bottom-0 h-12 bg-white flex items-center justify-center"> {/* Changed fixed to absolute; left-0 right-0 to inset-x-0 */}
+                    className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center"> {/* Changed fixed to absolute; left-0 right-0 to inset-x-0 */}
                     <span className="text-xs text-gray-500">
                         © {new Date().getFullYear()} lovePikachu. All rights reserved.
                     </span>

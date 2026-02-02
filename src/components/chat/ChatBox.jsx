@@ -980,7 +980,7 @@ function ChatBox({
             />
             <div
                 ref={rootRef}
-                className="w-full max-w-225 px-4 overflow-hidden mx-auto"
+                className="w-full max-w-225 px-4 py-4 overflow-hidden mx-auto"
                 style={{
                     transition: 'height 0.3s ease-in-out, max-height 0.3s ease-in-out',
                     height: 'auto',
@@ -1002,7 +1002,7 @@ function ChatBox({
                     isTransitioning={isTransitioning}
                 />
                 <div
-                    className="border-1 bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-md focus-within:shadow-lg">
+                    className="border-1 bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-lg focus-within:shadow-lg pointer-events-auto">
                     <div
                         className="overflow-hidden transition-all duration-300 ease-in-out"
                         style={{height: uploadFiles.length > 0 ? 'auto' : 0, minHeight: 0}}
@@ -1126,7 +1126,7 @@ function ChatBox({
                         leaveTo="opacity-0 bg-transparent"
                     >
                         <div
-                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 pointer-events-auto"
                             style={{
                                 marginLeft: !isMobile() ? 'var(--sidebar-width)' : '0',
                                 transition: 'margin-left 0.3s ease-in-out'
