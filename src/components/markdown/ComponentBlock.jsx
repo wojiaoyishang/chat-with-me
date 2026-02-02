@@ -1,7 +1,6 @@
-import React, { useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react';
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
-// 新增引入 X 图标
-import { Check, Lightbulb, ChevronDown, Loader2, Wrench, X } from "lucide-react";
+import { Check, Lightbulb, ChevronDown, Loader2, Wrench, X, Code } from "lucide-react";
 
 import MarkdownRenderer from "./MarkdownRenderer.jsx"
 
@@ -38,7 +37,8 @@ const StepsButton = React.memo(({ linesLength, isExpanded, onToggleExpand, id })
                 }}
                 className="cursor-pointer flex items-center gap-1.5 px-2 py-0.5 rounded hover:opacity-80 text-xs text-gray-600 border border-transparent hover:border-gray-300 whitespace-nowrap flex-shrink-0 ml-2 pointer-events-auto select-none touch-manipulation"
             >
-                <span className="font-mono opacity-80">{linesLength} Steps</span>
+                {/* 这里显示的是段落统计数量 */}
+                <span className="font-mono opacity-80">{linesLength} {linesLength <= 1 ? 'Step' : 'Steps'}</span>
                 <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform duration-150 ${isExpanded ? 'rotate-180' : ''}`}
                 />
@@ -62,11 +62,12 @@ const StatusWidget = React.memo(({
                                      isProcessing = false,
                                      references
                                  }) => {
-    // 逻辑更新：同时检测 DONE 和 FAILED
-    const { isDone, isFailed, cleanContent, lines, lastLine } = useMemo(() => {
+
+    // 逻辑更新：处理段落统计
+    const { isDone, isFailed, cleanContent, paragraphs, lastLine } = useMemo(() => {
         const trimmedContent = content.trim();
         const isDone = trimmedContent.endsWith('[DONE]');
-        const isFailed = trimmedContent.endsWith('[FAILED]'); // 新增失败检测
+        const isFailed = trimmedContent.endsWith('[FAILED]');
 
         let cleanContent = content;
         if (isDone) {
@@ -75,10 +76,25 @@ const StatusWidget = React.memo(({
             cleanContent = content.replace(/\n\[FAILED\]\s*$/, '').trimEnd();
         }
 
-        const lines = cleanContent.split('\n').filter(l => l.trim());
-        const lastLine = lines[lines.length - 1] || '';
-        return { isDone, isFailed, cleanContent, lines, lastLine };
+        // 1. 获取所有行用于显示最后一行的预览
+        const allLines = cleanContent.split('\n').filter(l => l.trim());
+        const lastLine = allLines[allLines.length - 1] || '';
+
+        // 2. 核心逻辑：统计段落
+        // 使用双换行符分割段落，并过滤掉空段落
+        const paragraphs = cleanContent
+            .split(/\n\s*\n/)
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
+
+        return { isDone, isFailed, cleanContent, paragraphs, lastLine };
     }, [content]);
+
+    const handleToggleExpand = useCallback((widgetId) => {
+        if (onToggleExpand) {
+            onToggleExpand(widgetId);
+        }
+    }, [onToggleExpand]);
 
     const getTruncatedLastLine = useCallback((str) => {
         if (!str) return '';
@@ -92,25 +108,21 @@ const StatusWidget = React.memo(({
         [lastLine, getTruncatedLastLine]
     );
 
-    // 动态计算显示状态
     const isFinished = isDone || isFailed;
 
-    // 计算当前应该显示的标题
     let displayTitle = title;
     if (isDone) displayTitle = `${title} Finished`;
     if (isFailed) displayTitle = `${title} Failed`;
 
-    // 计算当前颜色
     let currentColor = activeColor;
     if (isDone) currentColor = doneColor;
-    if (isFailed) currentColor = "text-red-600"; // 失败强制显示红色
+    if (isFailed) currentColor = "text-red-600";
 
     return (
         <div className="w-full py-1.5">
             <div className="flex items-center justify-between group">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden">
                     <div className={`${currentColor} flex-shrink-0`}>
-                        {/* 图标显示逻辑：失败显示 X，成功显示勾，进行中显示原图标 */}
                         {isFailed ? (
                             <X className="w-4 h-4 stroke-[3]" />
                         ) : isDone ? (
@@ -137,11 +149,12 @@ const StatusWidget = React.memo(({
                         </span>
                     )}
                 </div>
-                {lines.length > 0 && (
+                {/* 传入 paragraphs.length 作为段落统计 */}
+                {paragraphs.length > 0 && (
                     <StepsButton
-                        linesLength={lines.length}
+                        linesLength={paragraphs.length}
                         isExpanded={isExpanded}
-                        onToggleExpand={onToggleExpand}
+                        onToggleExpand={handleToggleExpand}
                         id={id}
                     />
                 )}
@@ -207,9 +220,22 @@ const ComponentBlock = React.memo(({ type, content, id, isExpanded, onToggleExpa
                     isExpanded={isExpanded}
                     onToggleExpand={onToggleExpand}
                     activeColor="text-amber-600"
-                    // 修改：成功时改为绿色 (emerald-600 或 green-600)
                     doneColor="text-emerald-600"
                     Icon={Wrench}
+                    references={references}
+                />
+            );
+        case 'coding':
+            return (
+                <StatusWidget
+                    title="Coding"
+                    content={content}
+                    id={id}
+                    isExpanded={!isExpanded}  // 默认展开
+                    onToggleExpand={onToggleExpand}
+                    activeColor="text-purple-600"
+                    doneColor="text-green-600"
+                    Icon={Code}
                     references={references}
                 />
             );
