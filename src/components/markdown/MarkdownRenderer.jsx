@@ -10,8 +10,13 @@ import ComponentBlock from './ComponentBlock.jsx';
 import 'katex/dist/katex.min.css';
 import './CodeBlock.css';
 
+import {BASE_BACKEND_URL} from '@/config';
+
 // 链接处理
 const createAllowCustomScheme = (references) => (uri, key, node) => {
+    if (uri.startsWith('backend://')) {
+        return  uri.replace('backend://', BASE_BACKEND_URL + '/');
+    }
     if (uri.startsWith('ref://') && references) {
         return resolveRefUrl(uri, references);
     }

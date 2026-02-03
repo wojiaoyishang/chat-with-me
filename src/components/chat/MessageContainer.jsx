@@ -291,6 +291,7 @@ const MessageContent = ({
                             isRight,
                             content,
                             avatar,
+                            displayName,
                             references,
                             isLeaving
                         }) => {
@@ -305,8 +306,8 @@ const MessageContent = ({
                     {content}
                 </div>
                 <Avatar className="h-10 w-10">
-                    <AvatarImage src={avatar} alt="User"/>
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarImage src={avatar} alt={displayName}/>
+                    <AvatarFallback>{displayName[0]}</AvatarFallback>
                 </Avatar>
             </div>
         );
@@ -528,7 +529,7 @@ const MessageContainer = forwardRef(({
 
         const isRight = msg.position === 'right';
         const avatar = msg.avatar;
-        const displayName = isRight ? null : msg.name;
+        const displayName = msg.name || "U";
         const showPaginator = messages[msg?.prevMessage]?.messages?.length > 1;
         const isFading = fadeMessages.has(id) && !enteringMessages.has(id);
         const readonly = msg.readonly;
@@ -647,8 +648,8 @@ const MessageContainer = forwardRef(({
                                 />
                             </div>
                             <Avatar className="h-10 w-10 flex-shrink-0 mt-1">
-                                <AvatarImage src={avatar} alt="User"/>
-                                <AvatarFallback>U</AvatarFallback>
+                                <AvatarImage src={avatar} alt={displayName}/>
+                                <AvatarFallback>{displayName[0]}</AvatarFallback>
                             </Avatar>
                         </div>
                     ) : (
@@ -690,6 +691,7 @@ const MessageContainer = forwardRef(({
                                 isRight={true}
                                 content={displayContent}
                                 avatar={avatar}
+                                displayName={displayName}
                                 references={msg.attachments}
                                 isLeaving={leavingMessages.has(id)}
                             />
@@ -712,6 +714,7 @@ const MessageContainer = forwardRef(({
                             <MessageContent
                                 isRight={false}
                                 content={displayContent}
+                                displayName={displayName}
                                 avatar={avatar}
                                 references={msg.attachments}
                                 isLeaving={leavingMessages.has(id)}
@@ -741,6 +744,7 @@ const MessageContainer = forwardRef(({
                             <MessageContent
                                 isRight={true}
                                 content={displayContent}
+                                displayName={displayName}
                                 avatar={avatar}
                                 references={msg.attachments}
                                 isLeaving={leavingMessages.has(id)}
@@ -758,6 +762,7 @@ const MessageContainer = forwardRef(({
                             <MessageContent
                                 isRight={false}
                                 content={displayContent}
+                                displayName={displayName}
                                 avatar={avatar}
                                 references={msg.attachments}
                                 isLeaving={leavingMessages.has(id)}
@@ -787,8 +792,8 @@ const MessageContainer = forwardRef(({
                             <div className="h-10 w-10"></div>
                             {/* 占位，保持布局一致 */}
                             <Avatar className="h-10 w-10 flex-shrink-0">
-                                <AvatarImage src={avatar} alt="User"/>
-                                <AvatarFallback>U</AvatarFallback>
+                                <AvatarImage src={avatar} alt={displayName}/>
+                                <AvatarFallback>{displayName[0]}</AvatarFallback>
                             </Avatar>
                         </div>
                         {/* 渲染消息底部操作区域 */}
