@@ -7,6 +7,7 @@ import {apiEndpoint} from "@/config.js";
 import {useTranslation} from "react-i18next";
 import EditorHome from "@/pages/editor/EditorHome.jsx";
 import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
+import {toast} from "sonner";
 
 const DashboardPage = ({type = "chat"}) => {
     const [markId, setMarkId] = useState(getMarkId());
@@ -31,6 +32,7 @@ const DashboardPage = ({type = "chat"}) => {
                     setSidebarSettings(settings.sidebar);
                 }
             } catch (error) {
+                toast.error(t("load_page_error", {message: error?.message || t("unknown_error")}))
                 setIsLoadingError(true);
             } finally {
                 setIsLoading(false);
