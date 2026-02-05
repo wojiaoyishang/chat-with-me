@@ -60,6 +60,7 @@ const StatusWidget = React.memo(({
                                      doneColor,
                                      Icon,
                                      isProcessing = false,
+                                     withCustomComponent = false,
                                      references
                                  }) => {
 
@@ -166,7 +167,7 @@ const StatusWidget = React.memo(({
                 <div className="mt-2 ml-2 pl-4 border-l border-gray-200">
                     <MarkdownRenderer
                         content={cleanContent}
-                        withCustomComponent={false}
+                        withCustomComponent={withCustomComponent}
                         references={references}
                     />
                 </div>

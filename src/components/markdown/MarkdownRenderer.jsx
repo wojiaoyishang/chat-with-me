@@ -155,7 +155,7 @@ const MarkdownRenderer = ({
                 }
                 return (
                     <CodeBlock
-                        codeString={String(children).replace(/\n$/, '')}
+                        codeString={String(children || '').replace(/\n$/, '')}
                         language={language}
                     />
                 );

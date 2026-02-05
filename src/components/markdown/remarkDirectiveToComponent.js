@@ -5,33 +5,30 @@ export function componentBlockDirective() {
     return (tree, file) => {
         visit(tree, (node) => {
             if (node.type === 'containerDirective') {
-
-                // 确保节点包含位置信息 (remark 默认会开启 position: true)
-                if (!node.position) {
-                    return;
-                }
+                if (!node.position) return;
 
                 const startOffset = node.position.start.offset;
                 const endOffset = node.position.end.offset;
-
-                // 从原始文件中截取整个 block 的字符串 (包含 ::: 标记)
-                // file.value 是原始文件的完整字符串
                 const blockSource = file.value.slice(startOffset, endOffset);
 
-                // 使用正则去除第一行和最后一行，保留中间所有内容的“原汁原味”
-                const rawContent = blockSource
-                    .replace(/^[^\n]*\n/, '')  // 去除第一行 (:::demo...)
-                    .replace(/\n[^\n]*$/, ''); // 去除最后一行 (:::)
+                // 1. 匹配第一行 (:::name{...})
+                // 2. 匹配最后一行 (:::)
+                // 使用非贪婪匹配，确保只去掉最外层的一对标记
+                const lines = blockSource.split('\n');
 
-                const data = node.data || (node.data = {});
+                if (lines.length >= 2) {
+                    // 移除第一行和最后一行
+                    const rawContent = lines.slice(1, -1).join('\n');
 
-                data.hName = 'component-block';
-                data.hProperties = {
-                    'component': node.name,
-                    'type': node.attributes?.type || '',
-                    'id': node.attributes?.id,
-                    'rawContent': rawContent // 这里的 rawContent 是字节级精确的源码
-                };
+                    const data = node.data || (node.data = {});
+                    data.hName = 'component-block';
+                    data.hProperties = {
+                        'component': node.name,
+                        'type': node.attributes?.type || '',
+                        'id': node.attributes?.id,
+                        'rawContent': rawContent
+                    };
+                }
             }
         });
     };
