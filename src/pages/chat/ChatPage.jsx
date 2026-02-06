@@ -650,6 +650,43 @@ function ChatPage({markId, setMarkId}) {
                         reply({success: false});
                     }
                     break;
+                case "Add-MessageReplaceContent":
+                    if (payload.value && typeof payload.value === 'object') {
+                        const newMessages = produce(messagesRef.current, draft => {
+                            for (const [msgId, appendFields] of Object.entries(payload. value)) {
+                                if (draft[msgId]) {
+                                    if (!draft[msgId].extraInfo) {
+                                        draft[msgId].extraInfo = {};
+                                    }
+                                    if (!draft[msgId].extraInfo.replace) {
+                                        draft[msgId].extraInfo.replace = {};
+                                    }
+
+                                    // 对每个要追加的字段进行 += 操作
+                                    for (const [key, appendString] of Object.entries(appendFields)) {
+                                        const currentValue = draft[msgId].extraInfo.replace[key] || '';
+                                        draft[msgId].extraInfo.replace[key] = currentValue + appendString;
+                                    }
+                                }
+                            }
+                        });
+
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+
+                        setTimeout(() => {
+                            if (isAtBottomRef.current) {
+                                scrollToBottom();
+                            }
+                        }, 0);
+
+                        if (payload.reply) reply({ success: true });
+                    } else {
+                        console.error("Add-MessageReplaceContent Failed. payload.value must be an object.");
+                        if (payload.reply) reply({ success: false });
+                    }
+                    break;
+
                 case "Set-MessageAttachments":
                     if (payload.value && typeof payload.value === 'object') {
 

@@ -755,7 +755,27 @@ code 设置为 401 。
 ```python
 {
     "command": "Set-MessageReplace",
-    "value": {"02fa133e-e7d0-4bb0-89e2-b35656b442e9": {"替换字段ID": "内容"}},  # 消息ID：要追加内容
+    "value": {"02fa133e-e7d0-4bb0-89e2-b35656b442e9": {"替换字段ID": "内容"}},  
+    "reply": True  # 默认为 False，如果为 True 则会触发响应是否成功
+}
+```
+
+回复（如果有）：
+
+```python
+{
+    "success": True
+}
+```
+
+#### 增加消息替换字段
+
+消息替换字段，程序会自动替换 :::card{type=replace id=替换字段ID}::: 标记为下方提供的“内容”。
+
+```python
+{
+    "command": "Add-MessageReplaceContent",
+    "value": {"02fa133e-e7d0-4bb0-89e2-b35656b442e9": {"替换字段ID": "内容"}}, 
     "reply": True  # 默认为 False，如果为 True 则会触发响应是否成功
 }
 ```

@@ -544,14 +544,24 @@ const MessageContainer = forwardRef(({
         if (hasContent) {
             if (msg.extraInfo?.replace) {
                 displayContent = msg.content;
-
-                // 定义匹配 :::card{type=replace id=...}::: 的正则
                 const cardRegex = /:::card\{type=replace\s+id=([^}\s]+)\}:::/g;
 
-                displayContent = displayContent.replace(cardRegex, (match, id) => {
-                    // 如果 extraInfo.replace 中有该 id，返回对应内容；否则保留原标记或返回空
-                    return msg.extraInfo.replace[id] ?? match; // 或者用 '' 替代 match 表示删除未匹配项
-                });
+                // 最大递归次数，防止无限循环
+                const MAX_ITERATIONS = 100;
+                let iterations = 0;
+
+                while (cardRegex.test(displayContent) && iterations < MAX_ITERATIONS) {
+                    cardRegex.lastIndex = 0; // 重置正则表达式
+                    displayContent = displayContent.replace(cardRegex, (match, id) => {
+                        return msg.extraInfo.replace[id] ?? match;
+                    });
+                    iterations++;
+                }
+
+                // 如果达到最大迭代次数，可以记录警告
+                if (iterations >= MAX_ITERATIONS) {
+                    console.warn('达到最大递归次数，可能存在问题');
+                }
 
             } else {
                 displayContent = msg.content;
