@@ -93,17 +93,22 @@ content
 
 ID 用于确保在前端可以正常展开卡片，一定要传入 ID，不传入 ID 将无法展开卡片。
 
-语言名称：card{type=processing}
-用于展示加载卡片，当单独一行为 `[DONE]` 时，表示处理完成，加载卡片会把最新的一行展示在卡片上。
+语言名称：card{type=processing id=123}
+用于展示加载卡片，表示处理完成，加载卡片会把最新的一行展示在卡片上。
 
-语言名称：card{type=toolCalling}
-用于展示思考卡片，当单独一行为 `[DONE]` 时，表示工具调用完成。
+语言名称：card{type=toolCalling id=123}
+用于展示思考卡片，表示工具调用完成。
 
-语言名称：card{type=thinking}
-用于展示思考卡片，当单独一行为 `[DONE]` 时，表示思考完成。
+语言名称：card{type=thinking id=123}
+用于展示思考卡片，表示思考完成。
 
-语言名称：card{type=coding}
-用于展示思考卡片，当单独一行为 `[DONE]` 时，表示编程完成。
+语言名称：card{type=coding id=123}
+用于展示思考卡片，表示编程完成。
+
+上述当最后一行出现 `[DONE]` 时表示成功，出现 `[FAILED]` 表示失败
+
+语言名称：card{type=agent id=123}
+用于展示子代理思考，出现 `[AGENT-DONE]` 表示成功，出现 `[AGENT-FAILED]` 表示失败
 
 语言名称：card{type=queuing}
 用于将会显示一个加载动画占位。

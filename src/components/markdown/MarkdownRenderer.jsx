@@ -207,7 +207,7 @@ const MarkdownRenderer = ({
                             id={id}
                             type={type}
                             content={rawContent}
-                            isExpanded={expandedMap?.has(id) ?? false}
+                            expandedMap={expandedMap}
                             onToggleExpand={onToggleExpand}
                             references={references}
                         />
