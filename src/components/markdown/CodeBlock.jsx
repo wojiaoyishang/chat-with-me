@@ -1,86 +1,78 @@
-import React, { useState, useMemo, useEffect, memo } from 'react';
+import React, { useState, useMemo, useEffect, useLayoutEffect, useRef, memo } from 'react';
 import './CodeBlock.css';
 
 // 使用 import.meta.glob 静态收集所有语言模块
 const languageModules = import.meta.glob('/node_modules/highlight.js/es/languages/*.js');
 
+// 全局失败语言缓存（使用 window 以确保跨组件共享）
+if (!window.hljsFailedLanguages) {
+    window.hljsFailedLanguages = new Set();
+}
+
+// 全局 hljs 实例和加载 promise
+let hljs = null;
+let loadingPromise = null;
+
+const loadHljs = () => {
+    if (hljs) {
+        return Promise.resolve(hljs);
+    }
+    if (!loadingPromise) {
+        loadingPromise = import('highlight.js/lib/core')
+            .then((module) => {
+                hljs = module.default;
+                return hljs;
+            })
+            .finally(() => {
+                loadingPromise = null;
+            });
+    }
+    return loadingPromise;
+};
+
 const CodeBlock = memo(({ codeString = '', language }) => {
     const [copied, setCopied] = useState(false);
+    const codeRef = useRef(null);
 
-    const [highlightedHtml, setHighlightedHtml] = useState(codeString || '');
-    const [hljsInstance, setHljsInstance] = useState(null);
-
-    // 加载 highlight.js 核心
-    useEffect(() => {
-        import('highlight.js/lib/core')
-            .then((module) => {
-                setHljsInstance(module.default);
-            })
-            .catch((err) => {
-                console.error('Failed to load highlight.js core:', err);
-            });
-    }, []);
-
-    // 高亮逻辑
-    useEffect(() => {
-        // 2. 如果 hljs 还没加载好，先同步显示原始内容（防止 undefined）
-        if (!hljsInstance) {
-            setHighlightedHtml(codeString || '');
+    // 高亮逻辑，使用 useLayoutEffect 以在绘制前尽可能同步高亮
+    useLayoutEffect(() => {
+        if (!codeString || !codeRef.current) {
             return;
         }
 
-        // 3. 如果内容为空，直接设置为空字符串并退出，避免后续逻辑报错
-        if (!codeString) {
-            setHighlightedHtml('');
-            return;
-        }
+        const doHighlight = async () => {
+            const hljsInst = await loadHljs();
 
-        const highlightCode = async () => {
-            if (language) {
-                if (!hljsInstance.getLanguage(language)) {
-                    const langPath = `/node_modules/highlight.js/es/languages/${language}.js`;
-                    const loadModule = languageModules[langPath];
+            if (language && !hljsInst.getLanguage(language) && !window.hljsFailedLanguages.has(language)) {
+                const langPath = `/node_modules/highlight.js/es/languages/${language}.js`;
+                const loadModule = languageModules[langPath];
 
-                    if (loadModule) {
-                        try {
-                            const mod = await loadModule();
-                            hljsInstance.registerLanguage(language, mod.default);
-                        } catch (err) {
-                            console.error(`Failed to load language module for: ${language}`, err);
-                            setHighlightedHtml(codeString);
-                            return;
-                        }
-                    } else {
-                        console.warn(`Language not supported: ${language}`);
-                        setHighlightedHtml(codeString);
-                        return;
+                if (loadModule) {
+                    try {
+                        const mod = await loadModule();
+                        hljsInst.registerLanguage(language, mod.default);
+                    } catch (err) {
+                        console.error(`Failed to load language module for: ${language}`, err);
+                        window.hljsFailedLanguages.add(language);
                     }
+                } else {
+                    console.warn(`Language not supported: ${language}`);
+                    window.hljsFailedLanguages.add(language);
                 }
+            }
 
-                try {
-                    const result = hljsInstance.highlight(codeString, {
-                        language,
-                        ignoreIllegals: true,
-                    });
-                    setHighlightedHtml(result.value);
-                } catch (err) {
-                    setHighlightedHtml(codeString);
-                }
-            } else {
-                // 自动检测
-                try {
-                    const result = hljsInstance.highlightAuto(codeString);
-                    setHighlightedHtml(result.value);
-                } catch (err) {
-                    setHighlightedHtml(codeString);
-                }
+            // 高亮元素
+            try {
+                hljsInst.highlightElement(codeRef.current);
+            } catch (err) {
+                console.error('Highlight failed:', err);
             }
         };
 
-        highlightCode();
-    }, [hljsInstance, codeString, language]);
+        doHighlight();
+    }, [codeString, language]);
 
-    // 4. 计算行数时增加空值保护
+    // 计算行数
     const lineCount = useMemo(() => {
         if (!codeString) return 0;
         const lines = codeString.split('\n');
@@ -108,7 +100,7 @@ const CodeBlock = memo(({ codeString = '', language }) => {
                 <button
                     className={`copy-button rounded-md ${copied ? 'copied' : ''}`}
                     onClick={handleCopy}
-                    disabled={!codeString} // 5. 无内容时禁用复制
+                    disabled={!codeString}
                 >
                     {copied ? '已复制' : '复制'}
                 </button>
@@ -123,9 +115,11 @@ const CodeBlock = memo(({ codeString = '', language }) => {
                 )}
                 <pre className="code-preview">
                     <code
-                        className={`hljs language-${language || ''}`}
-                        dangerouslySetInnerHTML={{ __html: highlightedHtml }}
-                    />
+                        ref={codeRef}
+                        className={`hljs ${language ? `language-${language}` : ''}`}
+                    >
+                        {codeString}
+                    </code>
                 </pre>
             </div>
         </div>

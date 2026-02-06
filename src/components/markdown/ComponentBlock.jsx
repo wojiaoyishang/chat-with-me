@@ -4,7 +4,7 @@ import {Check, ChevronDown, CircleX, Code, Lightbulb, Loader2, Wrench, X, Bot} f
 import MarkdownRenderer from "./MarkdownRenderer.jsx";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 
-const StepsButton = React.memo(({id, isExpanded, linesLength, onToggleExpand}) => {
+const StepsButton = React.memo(({ id, isExpanded, linesLength, onToggleExpand }) => {
         const clickTimeoutRef = useRef(null);
 
         const handleInteraction = useCallback((e) => {
@@ -13,10 +13,12 @@ const StepsButton = React.memo(({id, isExpanded, linesLength, onToggleExpand}) =
             if (clickTimeoutRef.current) {
                 clearTimeout(clickTimeoutRef.current);
             }
-            onToggleExpand(id);
-            clickTimeoutRef.current = setTimeout(() => {
-                clickTimeoutRef.current = null;
-            }, 200);
+            if (!clickTimeoutRef.current) {  // Only proceed if not already in debounce period
+                onToggleExpand(id);
+                clickTimeoutRef.current = setTimeout(() => {
+                    clickTimeoutRef.current = null;
+                }, 300);  // Increased to 300ms for mobile reliability
+            }
         }, [id, onToggleExpand]);
 
         useEffect(() => {
@@ -30,12 +32,14 @@ const StepsButton = React.memo(({id, isExpanded, linesLength, onToggleExpand}) =
         return (
             <button
                 className="cursor-pointer flex items-center gap-1.5 px-2 py-0.5 rounded hover:opacity-80 text-xs text-gray-600 border border-transparent hover:border-gray-300 whitespace-nowrap flex-shrink-0 ml-2 pointer-events-auto select-none touch-manipulation"
-                onMouseDown={handleInteraction}
-                onTouchStart={handleInteraction}
+                onClick={handleInteraction}
                 style={{
                     position: 'relative',
                     zIndex: 10,
                     WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',  // Improves touch handling
+                    minWidth: '44px',  // Ensures touch target size
+                    minHeight: '44px',
                 }}
             >
                 <span className="font-mono opacity-80">{linesLength} {linesLength <= 1 ? 'Step' : 'Steps'}</span>
@@ -50,6 +54,7 @@ const StepsButton = React.memo(({id, isExpanded, linesLength, onToggleExpand}) =
         prev.linesLength === next.linesLength &&
         prev.onToggleExpand === next.onToggleExpand
 );
+
 StepsButton.displayName = 'StepsButton';
 
 const StatusWidget = React.memo(({
@@ -67,7 +72,7 @@ const StatusWidget = React.memo(({
                                      defaultExpanded = false,
                                  }) => {
         // 从 map 中获取当前的展开状态
-        const isExpanded= Boolean(defaultExpanded ^ expandedMap?.has(id) ?? false);
+        const isExpanded= Boolean(defaultExpanded ^ expandedMap?.has(id));
 
         const {cleanContent, isDone, isFailed, lastLine, paragraphs} = useMemo(() => {
             const trimmedContent = content.trim();
@@ -201,7 +206,7 @@ const AgentWidget = React.memo(({
                                     title = "Sub-Agent",
                                     withCustomComponent = true,
                                 }) => {
-        const isExpanded = expandedMap?.has(id) ?? false;
+        const isExpanded = expandedMap?.has(id);
 
         // 解析内容逻辑
         const { cleanContent, isDone, isFailed, lastLine, paragraphs, hasContent } = useMemo(() => {
