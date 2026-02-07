@@ -553,7 +553,7 @@ const MessageContainer = forwardRef(({
                 while (cardRegex.test(displayContent) && iterations < MAX_ITERATIONS) {
                     cardRegex.lastIndex = 0; // 重置正则表达式
                     displayContent = displayContent.replace(cardRegex, (match, id) => {
-                        return msg.extraInfo.replace[id] ?? match;
+                        return msg.extraInfo.replace[id] ?? '';
                     });
                     iterations++;
                 }

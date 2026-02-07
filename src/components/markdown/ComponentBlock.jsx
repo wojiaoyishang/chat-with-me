@@ -38,8 +38,8 @@ const StepsButton = React.memo(({ id, isExpanded, linesLength, onToggleExpand })
                     zIndex: 10,
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: 'manipulation',  // Improves touch handling
-                    minWidth: '44px',  // Ensures touch target size
-                    minHeight: '44px',
+                    minWidth: '30px',  // Ensures touch target size
+                    minHeight: '30px',
                 }}
             >
                 <span className="font-mono opacity-80">{linesLength} {linesLength <= 1 ? 'Step' : 'Steps'}</span>
