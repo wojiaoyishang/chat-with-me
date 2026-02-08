@@ -1,5 +1,5 @@
 import React, {useState, useCallback, useMemo, memo} from 'react';
-import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
+import ReactMarkdown, {defaultUrlTransform} from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -11,11 +11,12 @@ import 'katex/dist/katex.min.css';
 import './CodeBlock.css';
 
 import {BASE_BACKEND_URL} from '@/config';
+import LazyVisibility from "@/components/markdown/LazyVisibility.jsx";
 
 // 链接处理
 const createAllowCustomScheme = (references) => (uri, key, node) => {
     if (uri.startsWith('backend://')) {
-        return  uri.replace('backend://', BASE_BACKEND_URL + '/');
+        return uri.replace('backend://', BASE_BACKEND_URL + '/');
     }
     if (uri.startsWith('ref://') && references) {
         return resolveRefUrl(uri, references);
@@ -192,7 +193,7 @@ const MarkdownRenderer = ({
                     {children}
                 </td>
             ),
-            img:({ src, alt, ...props }) => {
+            img: ({src, alt, ...props}) => {
                 return <img src={src} alt={alt} {...props} />;
             }
         };
@@ -201,16 +202,19 @@ const MarkdownRenderer = ({
                 const {type, id, component, rawContent, children} = props;
 
                 if (component === 'card') {
+
                     return (
-                        <ComponentBlock
-                            key={id}
-                            id={id}
-                            type={type}
-                            content={rawContent}
-                            expandedMap={expandedMap}
-                            onToggleExpand={onToggleExpand}
-                            references={references}
-                        />
+                        <LazyVisibility placeholder={<div className="text-gray-400">Loading...</div>}>
+                            <ComponentBlock
+                                key={id}
+                                id={id}
+                                type={type}
+                                content={rawContent}
+                                expandedMap={expandedMap}
+                                onToggleExpand={onToggleExpand}
+                                references={references}
+                            />
+                        </LazyVisibility>
                     );
                 }
                 return null;

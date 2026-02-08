@@ -3,8 +3,9 @@ import {Check, ChevronDown, CircleX, Code, Lightbulb, Loader2, Wrench, X, Bot} f
 
 import MarkdownRenderer from "./MarkdownRenderer.jsx";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
+import LazyVisibility from "@/components/markdown/LazyVisibility.jsx";
 
-const StepsButton = React.memo(({ id, isExpanded, linesLength, onToggleExpand }) => {
+const StepsButton = React.memo(({id, isExpanded, linesLength, onToggleExpand}) => {
         const clickTimeoutRef = useRef(null);
 
         const handleInteraction = useCallback((e) => {
@@ -39,7 +40,7 @@ const StepsButton = React.memo(({ id, isExpanded, linesLength, onToggleExpand })
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: 'manipulation',  // Improves touch handling
                     minWidth: '30px',  // Ensures touch target size
-                    minHeight: '30px',
+                    minHeight: '20px',
                 }}
             >
                 <span className="font-mono opacity-80">{linesLength} {linesLength <= 1 ? 'Step' : 'Steps'}</span>
@@ -72,7 +73,7 @@ const StatusWidget = React.memo(({
                                      defaultExpanded = false,
                                  }) => {
         // 从 map 中获取当前的展开状态
-        const isExpanded= Boolean(defaultExpanded ^ expandedMap?.has(id));
+        const isExpanded = Boolean(defaultExpanded ^ expandedMap?.has(id));
 
         const {cleanContent, isDone, isFailed, lastLine, paragraphs} = useMemo(() => {
             const trimmedContent = content.trim();
@@ -166,15 +167,17 @@ const StatusWidget = React.memo(({
                     )}
                 </div>
                 {isExpanded && (
-                    <div className="mt-2 ml-2 pl-4 border-l border-gray-200">
-                        <MarkdownRenderer
-                            content={cleanContent}
-                            references={references}
-                            withCustomComponent={withCustomComponent}
-                            expandedMap={expandedMap} // 向下传递
-                            onToggleExpand={onToggleExpand} // 向下传递
-                        />
-                    </div>
+                    <LazyVisibility placeholder={<div className="text-gray-400">Loading...</div>}>
+                        <div className="mt-2 ml-2 pl-4 border-l border-gray-200">
+                            <MarkdownRenderer
+                                content={cleanContent}
+                                references={references}
+                                withCustomComponent={withCustomComponent}
+                                expandedMap={expandedMap}
+                                onToggleExpand={onToggleExpand}
+                            />
+                        </div>
+                    </LazyVisibility>
                 )}
             </div>
         );
@@ -209,7 +212,7 @@ const AgentWidget = React.memo(({
         const isExpanded = expandedMap?.has(id);
 
         // 解析内容逻辑
-        const { cleanContent, isDone, isFailed, lastLine, paragraphs, hasContent } = useMemo(() => {
+        const {cleanContent, isDone, isFailed, lastLine, paragraphs, hasContent} = useMemo(() => {
             const trimmedRaw = content.trim();
             const isDone = trimmedRaw.endsWith('[AGENT-DONE]');
             const isFailed = trimmedRaw.endsWith('[AGENT-FAILED]');
@@ -234,7 +237,7 @@ const AgentWidget = React.memo(({
             // 判断是否有实际可展示的内容
             const hasContent = clean.length > 0;
 
-            return { cleanContent: clean, isDone, isFailed, lastLine, paragraphs, hasContent };
+            return {cleanContent: clean, isDone, isFailed, lastLine, paragraphs, hasContent};
         }, [content]);
 
         const handleToggleExpand = useCallback((widgetId) => {
@@ -280,9 +283,9 @@ const AgentWidget = React.memo(({
                         flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center
                         ${statusConfig.iconBg}
                     `}>
-                            {isFailed ? <X className="w-4 h-4 stroke-[2.5]" /> :
-                                isDone ? <Check className="w-4 h-4 stroke-[2.5]" /> :
-                                    <Icon className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} />}
+                            {isFailed ? <X className="w-4 h-4 stroke-[2.5]"/> :
+                                isDone ? <Check className="w-4 h-4 stroke-[2.5]"/> :
+                                    <Icon className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`}/>}
                         </div>
 
                         <div className="flex items-center gap-2 overflow-hidden flex-1">
@@ -291,8 +294,10 @@ const AgentWidget = React.memo(({
                         </span>
 
                             {/* 状态标签 */}
-                            <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-full bg-zinc-100/80 border border-zinc-200/50 flex-shrink-0">
-                                <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot} ${!isFinished ? 'animate-pulse' : ''}`} />
+                            <div
+                                className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-full bg-zinc-100/80 border border-zinc-200/50 flex-shrink-0">
+                                <span
+                                    className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot} ${!isFinished ? 'animate-pulse' : ''}`}/>
                                 <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-500">
                                 {statusConfig.label}
                             </span>
@@ -300,7 +305,8 @@ const AgentWidget = React.memo(({
 
                             {/* 实时状态预览 - 仅在运行时且没有展开时显示 */}
                             {!isFinished && lastLine && !isExpanded && (
-                                <span className="text-[11px] font-mono text-zinc-400 truncate hidden sm:block border-l border-zinc-200 ml-1 pl-2">
+                                <span
+                                    className="text-[11px] font-mono text-zinc-400 truncate hidden sm:block border-l border-zinc-200 ml-1 pl-2">
                                 {lastLine}
                             </span>
                             )}
@@ -320,8 +326,8 @@ const AgentWidget = React.memo(({
 
                 {/* 内容区 - 增加 hasContent 保护 */}
                 {isExpanded && hasContent && (
-                    <div className="border-t border-zinc-100 bg-white">
-                        <div className="p-4 overflow-x-auto">
+                    <LazyVisibility placeholder={<div className="text-gray-400">Loading...</div>}>
+                        <div className="border-t p-4 bg-white">
                             <MarkdownRenderer
                                 content={cleanContent}
                                 references={references}
@@ -330,7 +336,7 @@ const AgentWidget = React.memo(({
                                 onToggleExpand={onToggleExpand}
                             />
                         </div>
-                    </div>
+                    </LazyVisibility>
                 )}
             </div>
         );

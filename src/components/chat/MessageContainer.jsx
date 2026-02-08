@@ -291,6 +291,7 @@ const MessageContent = ({
                             isRight,
                             content,
                             avatar,
+                            msgId,
                             displayName,
                             references,
                             isLeaving
@@ -316,7 +317,7 @@ const MessageContent = ({
     return (
         <div className="w-full pl-10 pr-10">
             <div className="text-gray-800 break-words max-w-none">
-                <MarkdownRenderer content={content} index={content} references={references}/>
+                <MarkdownRenderer content={content} index={msgId} references={references}/>
             </div>
         </div>
     );
@@ -603,11 +604,13 @@ const MessageContainer = forwardRef(({
                                         showRightTools ? 'opacity-100' : 'opacity-0 pointer-events-none'
                                     }`}
                                 >
-                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id} displayContent={displayContent}/>)}
+                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id}
+                                                                 displayContent={displayContent}/>)}
                                 </div>
                                 {/* 占位元素，保持空间一致性 */}
                                 <div className="flex items-center justify-center invisible">
-                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id} displayContent={displayContent}/>)}
+                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id}
+                                                                 displayContent={displayContent}/>)}
                                 </div>
                             </div>
                         </div>
@@ -622,7 +625,8 @@ const MessageContainer = forwardRef(({
                     {!isRight && (
                         <div
                             className={"text-right flex-shrink-0 " + (showPaginator ? 'pl-1' : 'translate-x-[-0.4em]')}>
-                            {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id} displayContent={displayContent}/>)}
+                            {!readonly && (
+                                <MessageTools msg={msg} markId={markId} msgId={id} displayContent={displayContent}/>)}
                         </div>
                     )}
 
@@ -727,6 +731,7 @@ const MessageContainer = forwardRef(({
                                 displayName={displayName}
                                 avatar={avatar}
                                 references={msg.attachments}
+                                msgId={id}
                                 isLeaving={leavingMessages.has(id)}
                             />
                             {/* 渲染消息底部操作区域 */}
@@ -757,6 +762,7 @@ const MessageContainer = forwardRef(({
                                 displayName={displayName}
                                 avatar={avatar}
                                 references={msg.attachments}
+                                msgId={id}
                                 isLeaving={leavingMessages.has(id)}
                             />
                             {/* 渲染消息底部操作区域 */}
@@ -774,6 +780,7 @@ const MessageContainer = forwardRef(({
                                 content={displayContent}
                                 displayName={displayName}
                                 avatar={avatar}
+                                msgId={id}
                                 references={msg.attachments}
                                 isLeaving={leavingMessages.has(id)}
                             />
