@@ -11,7 +11,9 @@ import 'katex/dist/katex.min.css';
 import './CodeBlock.css';
 
 import {BASE_BACKEND_URL} from '@/config';
-import LazyVisibility from "@/components/markdown/LazyVisibility.jsx";
+
+import LazyVisibility from "./LazyVisibility.jsx";
+import ExpansionContext from './ExpansionContext';
 
 // 链接处理
 const createAllowCustomScheme = (references) => (uri, key, node) => {
@@ -92,23 +94,19 @@ const MarkdownRenderer = ({
                               withCustomComponent = true
                           }) => {
 
-    // 内部状态作为后备，支持独立使用
     const [internalExpandedMap, setInternalExpandedMap] = useState(new Map());
-    // 内部切换函数
+
     const internalToggleExpand = useCallback((id) => {
-        setInternalExpandedMap((prev) => {
+        setInternalExpandedMap(prev => {
             const next = new Map(prev);
-            if (next.has(id)) {
-                next.delete(id);
-            } else {
-                next.set(id, true);
-            }
+            next.has(id) ? next.delete(id) : next.set(id, true);
             return next;
         });
     }, []);
-    // 使用外部传入的或内部的状态
+
     const expandedMap = externalExpandedMap || internalExpandedMap;
     const onToggleExpand = externalOnToggleExpand || internalToggleExpand;
+
     // 使用 useMemo 缓存 components，防止流式传输时节点闪烁
     const components = useMemo(() => {
         const baseComponents = {
@@ -155,10 +153,12 @@ const MarkdownRenderer = ({
                     );
                 }
                 return (
-                    <CodeBlock
-                        codeString={String(children || '').replace(/\n$/, '')}
-                        language={language}
-                    />
+                    <LazyVisibility>
+                        <CodeBlock
+                            codeString={String(children || '').replace(/\n$/, '')}
+                            language={language}
+                        />
+                    </LazyVisibility>
                 );
             },
             table: ({children}) => (
@@ -202,16 +202,13 @@ const MarkdownRenderer = ({
                 const {type, id, component, rawContent, children} = props;
 
                 if (component === 'card') {
-
                     return (
-                        <LazyVisibility placeholder={<div className="text-gray-400">Loading...</div>}>
+                        <LazyVisibility>
                             <ComponentBlock
                                 key={id}
                                 id={id}
                                 type={type}
                                 content={rawContent}
-                                expandedMap={expandedMap}
-                                onToggleExpand={onToggleExpand}
                                 references={references}
                             />
                         </LazyVisibility>
@@ -221,32 +218,36 @@ const MarkdownRenderer = ({
             };
         }
         return baseComponents;
-    }, [expandedMap, onToggleExpand, index, withCustomComponent]);
+    }, [index, withCustomComponent, references]);
+
     const processedContent = useMemo(() =>
             preprocessContent(content),
         [content]
     );
     const allowCustomScheme = useMemo(() => createAllowCustomScheme(references), [references]);
 
+    const contextValue = useMemo(() => ({expandedMap, onToggleExpand}), [expandedMap, onToggleExpand]);
+
     return (
-        <ReactMarkdown
-            remarkPlugins={[
-                remarkGfm,
-                remarkMath,
-                remarkDirective,
-                ...(withCustomComponent ? [componentBlockDirective] : []),
-                rehypeInlineCodeProperty
-            ]}
-            rehypePlugins={[rehypeKatex]}
-            components={components}
-            urlTransform={allowCustomScheme}
-        >
-            {processedContent}
-        </ReactMarkdown>
+        <ExpansionContext.Provider value={contextValue}>
+            <ReactMarkdown
+                remarkPlugins={[
+                    remarkGfm,
+                    remarkMath,
+                    remarkDirective,
+                    ...(withCustomComponent ? [componentBlockDirective] : []),
+                    rehypeInlineCodeProperty
+                ]}
+                rehypePlugins={[rehypeKatex]}
+                components={components}
+                urlTransform={allowCustomScheme}
+            >
+                {processedContent}
+            </ReactMarkdown>
+        </ExpansionContext.Provider>
     );
 };
 export default memo(MarkdownRenderer, (prev, next) => {
-    // 只在 content 或 expandedMap 真正变化时才重新渲染
     return (
         prev.content === next.content &&
         prev.index === next.index &&

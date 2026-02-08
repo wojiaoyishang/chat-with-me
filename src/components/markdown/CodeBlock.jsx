@@ -61,6 +61,11 @@ const CodeBlock = memo(({ codeString = '', language }) => {
                 }
             }
 
+            // 在高亮前重置高亮状态，以允许重新高亮
+            if (codeRef.current.dataset.highlighted) {
+                delete codeRef.current.dataset.highlighted;
+            }
+
             // 高亮元素
             try {
                 hljsInst.highlightElement(codeRef.current);

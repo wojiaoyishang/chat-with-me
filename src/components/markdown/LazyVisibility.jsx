@@ -8,30 +8,22 @@ const LazyVisibility = ({ children, rootMargin = '100px', placeholder = null }) 
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        setIsVisible(true);
-                        observer.disconnect();
-                    }
-                });
-            },
-            { rootMargin }
-        );
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                setIsVisible(true);
+                observer.disconnect();
+            }
+        }, { rootMargin });
 
-        if (containerRef.current) {
-            observer.observe(containerRef.current);
-        }
-
-        return () => {
-            observer.disconnect();
-        };
+        if (containerRef.current) observer.observe(containerRef.current);
+        return () => observer.disconnect();
     }, [rootMargin]);
 
     return (
-        <div ref={containerRef} style={{ minHeight: '1px' }}>
-            {isVisible ? children : placeholder}
+        <div ref={containerRef} className="min-h-[1px]">
+            <div className={`transition-opacity duration-500 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+                {isVisible ? children : placeholder}
+            </div>
         </div>
     );
 };

@@ -3,7 +3,8 @@ import {Check, ChevronDown, CircleX, Code, Lightbulb, Loader2, Wrench, X, Bot} f
 
 import MarkdownRenderer from "./MarkdownRenderer.jsx";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
-import LazyVisibility from "@/components/markdown/LazyVisibility.jsx";
+import LazyVisibility from "./LazyVisibility.jsx";
+import {useExpansion} from "./ExpansionContext.js";
 
 const StepsButton = React.memo(({id, isExpanded, linesLength, onToggleExpand}) => {
         const clickTimeoutRef = useRef(null);
@@ -326,7 +327,7 @@ const AgentWidget = React.memo(({
 
                 {/* 内容区 - 增加 hasContent 保护 */}
                 {isExpanded && hasContent && (
-                    <LazyVisibility placeholder={<div className="text-gray-400">Loading...</div>}>
+                    <LazyVisibility>
                         <div className="border-t p-4 bg-white">
                             <MarkdownRenderer
                                 content={cleanContent}
@@ -351,7 +352,9 @@ const AgentWidget = React.memo(({
 );
 AgentWidget.displayName = 'AgentWidget';
 
-const ComponentBlock = React.memo(({content, id, expandedMap, onToggleExpand, references, type}) => {
+const ComponentBlock = React.memo(({content, id, references, type}) => {
+        const { expandedMap, onToggleExpand } = useExpansion();
+
         // 通用的 props
         const commonProps = {
             content,
@@ -447,8 +450,6 @@ const ComponentBlock = React.memo(({content, id, expandedMap, onToggleExpand, re
     }, (prev, next) =>
         prev.content === next.content &&
         prev.id === next.id &&
-        prev.expandedMap === next.expandedMap && // 确保 map 变化时触发重绘
-        prev.onToggleExpand === next.onToggleExpand &&
         prev.references === next.references &&
         prev.type === next.type
 );
