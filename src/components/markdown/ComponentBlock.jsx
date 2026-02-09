@@ -4,23 +4,29 @@ import {Check, ChevronDown, CircleX, Code, Lightbulb, Loader2, Wrench, X, Bot} f
 import MarkdownRenderer from "./MarkdownRenderer.jsx";
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import LazyVisibility from "./LazyVisibility.jsx";
-import {useExpansion} from "./ExpansionContext.js";
 
+// 记录已经展开的组件，用于在高频流式传输下保持展开
+const expandedMap = new Map();
+
+
+/**
+ * 展开按钮，用于在卡片旁边绘制一个展开按钮，独立提出来是因为需要独立渲染
+ */
 const StepsButton = React.memo(({id, isExpanded, linesLength, onToggleExpand}) => {
         const clickTimeoutRef = useRef(null);
 
         const handleInteraction = useCallback((e) => {
             e.preventDefault();
             e.stopPropagation();
+
             if (clickTimeoutRef.current) {
                 clearTimeout(clickTimeoutRef.current);
             }
-            if (!clickTimeoutRef.current) {  // Only proceed if not already in debounce period
+
+            clickTimeoutRef.current = setTimeout(() => {
                 onToggleExpand(id);
-                clickTimeoutRef.current = setTimeout(() => {
-                    clickTimeoutRef.current = null;
-                }, 300);  // Increased to 300ms for mobile reliability
-            }
+                clickTimeoutRef.current = null;
+            }, 100);
         }, [id, onToggleExpand]);
 
         useEffect(() => {
@@ -59,22 +65,21 @@ const StepsButton = React.memo(({id, isExpanded, linesLength, onToggleExpand}) =
 
 StepsButton.displayName = 'StepsButton';
 
+/**
+ * 自定义组件，用于展示不一样的阶段，比如工具调用、代码编程等。
+ */
 const StatusWidget = React.memo(({
                                      activeColor,
                                      content,
                                      doneColor,
                                      Icon,
                                      id,
-                                     expandedMap,
                                      isProcessing = false,
-                                     onToggleExpand,
-                                     references,
                                      title,
                                      withCustomComponent = false,
                                      defaultExpanded = false,
                                  }) => {
-        // 从 map 中获取当前的展开状态
-        const isExpanded = Boolean(defaultExpanded ^ expandedMap?.has(id));
+        const [isExpanded, setIsExpanded] = React.useState(expandedMap.has(id) || defaultExpanded);
 
         const {cleanContent, isDone, isFailed, lastLine, paragraphs} = useMemo(() => {
             const trimmedContent = content.trim();
@@ -99,9 +104,17 @@ const StatusWidget = React.memo(({
             return {cleanContent, isDone, isFailed, lastLine, paragraphs};
         }, [content]);
 
-        const handleToggleExpand = useCallback((widgetId) => {
-            onToggleExpand?.(widgetId);
-        }, [onToggleExpand]);
+        const handleToggleExpand = useCallback(() => {
+
+            if (!isExpanded) {
+                expandedMap.set(id, true);
+            } else {
+                expandedMap.delete(id);
+            }
+
+            setIsExpanded(!isExpanded);
+
+        }, [isExpanded]);
 
         const getTruncatedLastLine = useCallback((str) => {
             if (!str) return '';
@@ -172,10 +185,7 @@ const StatusWidget = React.memo(({
                         <div className="mt-2 ml-2 pl-4 border-l border-gray-200">
                             <MarkdownRenderer
                                 content={cleanContent}
-                                references={references}
                                 withCustomComponent={withCustomComponent}
-                                expandedMap={expandedMap}
-                                onToggleExpand={onToggleExpand}
                             />
                         </div>
                     </LazyVisibility>
@@ -188,29 +198,25 @@ const StatusWidget = React.memo(({
         prev.doneColor === next.doneColor &&
         prev.Icon === next.Icon &&
         prev.id === next.id &&
-        prev.expandedMap === next.expandedMap && // 比较 map 引用
         prev.isProcessing === next.isProcessing &&
-        prev.onToggleExpand === next.onToggleExpand &&
-        prev.references === next.references &&
         prev.title === next.title &&
         prev.withCustomComponent === next.withCustomComponent
 );
 StatusWidget.displayName = 'StatusWidget';
 
+/**
+ * 智能体自定义组件，用于展示子子智能体执行，与 StatusWidget 的主要区别是，这个组件运行内部再渲染 StatusWidget
+ */
 const AgentWidget = React.memo(({
-                                    activeColor = "text-blue-600",
                                     content = "",
-                                    doneColor = "text-emerald-600",
                                     Icon = Bot,
                                     id,
-                                    expandedMap,
                                     isProcessing = false,
-                                    onToggleExpand,
-                                    references,
                                     title = "Sub-Agent",
                                     withCustomComponent = true,
+                                    defaultExpanded = false
                                 }) => {
-        const isExpanded = expandedMap?.has(id);
+        const [isExpanded, setIsExpanded] = React.useState(expandedMap.has(id) || defaultExpanded);
 
         // 解析内容逻辑
         const {cleanContent, isDone, isFailed, lastLine, paragraphs, hasContent} = useMemo(() => {
@@ -241,9 +247,17 @@ const AgentWidget = React.memo(({
             return {cleanContent: clean, isDone, isFailed, lastLine, paragraphs, hasContent};
         }, [content]);
 
-        const handleToggleExpand = useCallback((widgetId) => {
-            onToggleExpand?.(widgetId);
-        }, [onToggleExpand]);
+        const handleToggleExpand = useCallback(() => {
+
+            if (!isExpanded) {
+                expandedMap.set(id, true);
+            } else {
+                expandedMap.delete(id);
+            }
+
+            setIsExpanded(!isExpanded);
+
+        }, [isExpanded]);
 
         const isFinished = isDone || isFailed;
 
@@ -331,10 +345,7 @@ const AgentWidget = React.memo(({
                         <div className="border-t p-4 bg-white">
                             <MarkdownRenderer
                                 content={cleanContent}
-                                references={references}
                                 withCustomComponent={withCustomComponent}
-                                expandedMap={expandedMap}
-                                onToggleExpand={onToggleExpand}
                             />
                         </div>
                     </LazyVisibility>
@@ -344,24 +355,17 @@ const AgentWidget = React.memo(({
     }, (prev, next) =>
         prev.content === next.content &&
         prev.id === next.id &&
-        prev.expandedMap === next.expandedMap &&
         prev.isProcessing === next.isProcessing &&
-        prev.onToggleExpand === next.onToggleExpand &&
-        prev.references === next.references &&
         prev.title === next.title
 );
 AgentWidget.displayName = 'AgentWidget';
 
-const ComponentBlock = React.memo(({content, id, references, type}) => {
-        const { expandedMap, onToggleExpand } = useExpansion();
+const ComponentBlock = React.memo(({content, id, type}) => {
 
         // 通用的 props
         const commonProps = {
             content,
-            id,
-            expandedMap,
-            onToggleExpand,
-            references,
+            id
         };
 
         switch (type) {
@@ -447,11 +451,13 @@ const ComponentBlock = React.memo(({content, id, references, type}) => {
                     </div>
                 );
         }
-    }, (prev, next) =>
-        prev.content === next.content &&
-        prev.id === next.id &&
-        prev.references === next.references &&
-        prev.type === next.type
+    }, (prev, next) => {
+
+        return (prev.content === next.content &&
+            prev.id === next.id &&
+            prev.type === next.type)
+    }
+
 );
 ComponentBlock.displayName = 'ComponentBlock';
 

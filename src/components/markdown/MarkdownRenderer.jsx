@@ -1,4 +1,4 @@
-import React, {useState, useCallback, useMemo, memo} from 'react';
+import React, {memo, useMemo} from 'react';
 import ReactMarkdown, {defaultUrlTransform} from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -13,15 +13,11 @@ import './CodeBlock.css';
 import {BASE_BACKEND_URL} from '@/config';
 
 import LazyVisibility from "./LazyVisibility.jsx";
-import ExpansionContext from './ExpansionContext';
 
 // 链接处理
-const createAllowCustomScheme = (references) => (uri, key, node) => {
+const allowCustomScheme = (uri, key, node) => {
     if (uri.startsWith('backend://')) {
         return uri.replace('backend://', BASE_BACKEND_URL + '/');
-    }
-    if (uri.startsWith('ref://') && references) {
-        return resolveRefUrl(uri, references);
     }
     return defaultUrlTransform(uri, key, node);
 };
@@ -36,80 +32,13 @@ const preprocessContent = (text) => {
         .replace(/\\\)/g, '$');
 };
 
-// 引用链接转化
-const resolveRefUrl = (refUrl, references) => {
-
-    // 测试 references
-    if (!Array.isArray(references)) {
-        console.error('resolveRefUrl: references must be an array');
-        return '';
-    }
-
-    // 检查是否带有 ?download=true
-    const hasDownloadParam = refUrl.includes('?download=true');
-    // 去掉查询参数，只保留基础 ref 路径
-    const cleanRefUrl = refUrl.split('?')[0];
-
-    // 处理 ref://index/xxx
-    if (cleanRefUrl.startsWith('ref://index/')) {
-        const match = cleanRefUrl.match(/^ref:\/\/index\/(\d+)$/);
-        if (match) {
-            const index = parseInt(match[1], 10);
-            const item = references[index];
-            if (!item) return '';
-
-            if (hasDownloadParam) {
-                return item.downloadUrl ?? '';
-            } else {
-                return item.preview ?? '';
-            }
-        }
-    }
-
-    // 处理 ref://serverId/xxxxx
-    if (cleanRefUrl.startsWith('ref://serverId/')) {
-        const serverId = cleanRefUrl.replace(/^ref:\/\/serverId\//, '');
-        if (serverId) {
-            const item = references.find(ref => ref.serverId === serverId);
-            if (!item) return '';
-
-            if (hasDownloadParam) {
-                return item.downloadUrl ?? '';
-            } else {
-                return item.preview ?? '';
-            }
-        }
-    }
-
-    // 其他情况：直接返回原 refUrl（不带逻辑处理）
-    return refUrl;
-};
-
 const MarkdownRenderer = ({
                               content,
-                              index,
-                              references,  // references 是一个与列表，列表中的每一个项都和附件格式数据相似
-                              expandedMap: externalExpandedMap,
-                              onToggleExpand: externalOnToggleExpand,
                               withCustomComponent = true
                           }) => {
-
-    const [internalExpandedMap, setInternalExpandedMap] = useState(new Map());
-
-    const internalToggleExpand = useCallback((id) => {
-        setInternalExpandedMap(prev => {
-            const next = new Map(prev);
-            next.has(id) ? next.delete(id) : next.set(id, true);
-            return next;
-        });
-    }, []);
-
-    const expandedMap = externalExpandedMap || internalExpandedMap;
-    const onToggleExpand = externalOnToggleExpand || internalToggleExpand;
-
     // 使用 useMemo 缓存 components，防止流式传输时节点闪烁
     const components = useMemo(() => {
-        const baseComponents = {
+        return {
             p: ({children}) => <p className="my-2">{children}</p>,
             ul: ({children}) => <ul className="list-disc pl-5 my-2">{children}</ul>,
             ol: ({children}) => <ol className="list-decimal pl-5 my-2">{children}</ol>,
@@ -195,63 +124,52 @@ const MarkdownRenderer = ({
             ),
             img: ({src, alt, ...props}) => {
                 return <img src={src} alt={alt} {...props} />;
-            }
-        };
-        if (withCustomComponent) {
-            baseComponents['component-block'] = (props) => {
+            },
+            'component-block': (props) => {
                 const {type, id, component, rawContent, children} = props;
 
-                if (component === 'card') {
+                if (withCustomComponent && component === 'card') {
+
                     return (
-                        <LazyVisibility>
-                            <ComponentBlock
-                                key={id}
-                                id={id}
-                                type={type}
-                                content={rawContent}
-                                references={references}
-                            />
-                        </LazyVisibility>
+                        <ComponentBlock
+                            key={id}
+                            id={id}
+                            type={type}
+                            content={rawContent}
+                        />
                     );
                 }
                 return null;
-            };
-        }
-        return baseComponents;
-    }, [index, withCustomComponent, references]);
+            }
+        };
+    }, [withCustomComponent]);
 
     const processedContent = useMemo(() =>
             preprocessContent(content),
         [content]
     );
-    const allowCustomScheme = useMemo(() => createAllowCustomScheme(references), [references]);
-
-    const contextValue = useMemo(() => ({expandedMap, onToggleExpand}), [expandedMap, onToggleExpand]);
 
     return (
-        <ExpansionContext.Provider value={contextValue}>
-            <ReactMarkdown
-                remarkPlugins={[
-                    remarkGfm,
-                    remarkMath,
-                    remarkDirective,
-                    ...(withCustomComponent ? [componentBlockDirective] : []),
-                    rehypeInlineCodeProperty
-                ]}
-                rehypePlugins={[rehypeKatex]}
-                components={components}
-                urlTransform={allowCustomScheme}
-            >
-                {processedContent}
-            </ReactMarkdown>
-        </ExpansionContext.Provider>
+        <ReactMarkdown
+            remarkPlugins={[
+                remarkGfm,
+                remarkMath,
+                remarkDirective,
+                ...(withCustomComponent ? [componentBlockDirective] : []),
+                rehypeInlineCodeProperty
+            ]}
+            rehypePlugins={[rehypeKatex]}
+            components={components}
+            urlTransform={allowCustomScheme}
+        >
+            {processedContent}
+        </ReactMarkdown>
     );
 };
 export default memo(MarkdownRenderer, (prev, next) => {
     return (
         prev.content === next.content &&
         prev.index === next.index &&
-        prev.expandedMap === next.expandedMap &&
         prev.withCustomComponent === next.withCustomComponent
     );
 });
