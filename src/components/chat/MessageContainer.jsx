@@ -1,12 +1,12 @@
-import React, {forwardRef, useState, useEffect, useRef} from 'react';
+import React, { forwardRef, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
-import {toast} from 'sonner';
-import {useTranslation} from 'react-i18next';
+import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import AttachmentShowcase from './AttachmentShowcase';
-import {Menu, PenLine, Copy, RotateCw, Info, ChevronLeft, ChevronRight} from "lucide-react";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
+import { Menu, PenLine, Copy, RotateCw, Info, ChevronLeft, ChevronRight } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { emitEvent, onEvent } from "@/store/useEventStore.jsx";
 
 import {
     DropdownMenu,
@@ -22,10 +22,17 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import {copyTextToClipboard, useIsMobile} from "@/lib/tools.jsx";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+import { copyTextToClipboard, useIsMobile } from "@/lib/tools.jsx";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-const MessageToolsFunction = (action, msg, markId, msgId, displayContent, t) => {
+/**
+ * 处理消息操作工具函数
+ * @param {string} action - 操作类型: "edit", "copy", "regenerate"
+ * @param {object} messageData - 消息数据对象
+ * @param {function} t - 翻译函数
+ */
+const handleMessageAction = (action, messageData, t) => {
+    const { msg, markId, msgId, displayContent } = messageData;
 
     switch (action) {
         case "edit":
@@ -40,14 +47,14 @@ const MessageToolsFunction = (action, msg, markId, msgId, displayContent, t) => 
                     msgId: msgId
                 },
                 markId: markId,
-                fromWebsocket: true  // 确保中间数据不要发送到 websocket
+                fromWebsocket: true
             });
             break;
         case "copy":
             copyTextToClipboard(displayContent).then(() => {
                 toast.success(t("message_copied"));
             }).catch(err => {
-                toast.error(t("message_not_copied", {message: err}));
+                toast.error(t("message_not_copied", { message: err }));
             });
             break;
         case "regenerate":
@@ -57,163 +64,170 @@ const MessageToolsFunction = (action, msg, markId, msgId, displayContent, t) => 
                 payload: {
                     command: "Set-EditMessage",
                     isEdit: true,
-                    immediate: true,   // 马上发送
-                    isRegenerate: true,  // 这是重生成请求
+                    immediate: true,
+                    isRegenerate: true,
                     attachments: msg.attachments,
                     content: msg.content,
                     msgId: msgId
                 },
                 markId: markId,
-                fromWebsocket: true  // 确保中间数据不要发送到 websocket
+                fromWebsocket: true
             });
             break;
+        default:
+            console.warn(`Unknown action: ${action}`);
     }
-
-}
+};
 
 /**
- * 消息菜单组件
+ * 消息菜单组件 - 移动端下拉菜单
  */
-const MessageMenuButton = ({msg, markId, msgId, displayContent}) => {
-    const {t} = useTranslation();
+const MessageMenuButton = ({ messageData }) => {
+    const { t } = useTranslation();
+    const { msg, markId, msgId, displayContent } = messageData;
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer md:hidden"
-                        aria-label={t("menu_function")}
+                <button
+                    className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer md:hidden"
+                    aria-label={t("menu_function")}
                 >
-                    <Menu size={16} className="text-gray-600 hover:text-gray-800"/>
+                    <Menu size={16} className="text-gray-600 hover:text-gray-800" />
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-
-                <DropdownMenuItem className="flex items-center gap-2"
-                                  onSelect={() => MessageToolsFunction("edit", msg, markId, msgId, displayContent, t)}>
-                    <PenLine size={16}/>
+                <DropdownMenuItem
+                    className="flex items-center gap-2"
+                    onSelect={() => handleMessageAction("edit", messageData, t)}
+                >
+                    <PenLine size={16} />
                     {t('edit_message')}
                 </DropdownMenuItem>
 
-                <DropdownMenuItem className="flex items-center gap-2"
-                                  onSelect={() => MessageToolsFunction("copy", msg, markId, msgId, displayContent, t)}>
-                    <Copy size={16}/>
+                <DropdownMenuItem
+                    className="flex items-center gap-2"
+                    onSelect={() => handleMessageAction("copy", messageData, t)}
+                >
+                    <Copy size={16} />
                     {t('copy_message')}
                 </DropdownMenuItem>
 
-                {msg.allowRegenerate || msg.allowRegenerate === undefined ? (
-                    <DropdownMenuItem className="flex items-center gap-2"
-                                      onSelect={() => MessageToolsFunction("regenerate", msg, markId, msgId, displayContent, t)}>
-                        <RotateCw size={16}/>
+                {(msg.allowRegenerate || msg.allowRegenerate === undefined) && (
+                    <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onSelect={() => handleMessageAction("regenerate", messageData, t)}
+                    >
+                        <RotateCw size={16} />
                         {t('regenerate_message')}
                     </DropdownMenuItem>
-                ) : null}
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     );
 };
 
 /**
- * 消息工具栏组件 - 显示编辑按钮
- * 独立于分页选择器，与分页选择器平齐显示
+ * 工具提示组件 - 根据设备类型显示不同的提示方式
  */
-const MessageTools = ({msg, markId, msgId, displayContent}) => {
-    const {t} = useTranslation();
-
+const TooltipInfo = ({ tip, t }) => {
     const isMobile = useIsMobile();
+
+    if (!tip) return null;
+
+    if (isMobile) {
+        return (
+            <Popover>
+                <PopoverTrigger asChild>
+                    <button
+                        className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                        aria-label={t("message_info")}
+                    >
+                        <Info size={16} className="text-gray-600 hover:text-gray-800" />
+                    </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-3">
+                    <div style={{ whiteSpace: 'pre-line' }} className="text-sm">
+                        {tip}
+                    </div>
+                </PopoverContent>
+            </Popover>
+        );
+    }
+
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <button
+                    className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                    aria-label={t("message_info")}
+                >
+                    <Info size={16} className="text-gray-600 hover:text-gray-800" />
+                </button>
+            </TooltipTrigger>
+            <TooltipContent>
+                <div style={{ whiteSpace: 'pre-line' }}>
+                    {tip}
+                </div>
+            </TooltipContent>
+        </Tooltip>
+    );
+};
+
+/**
+ * 消息工具栏组件 - 桌面端显示的工具按钮
+ */
+const MessageTools = ({ messageData }) => {
+    const { t } = useTranslation();
+    const { msg, markId, msgId, displayContent } = messageData;
 
     return (
         <div className="flex gap-1">
-
             <button
-                onClick={() => {
-                    MessageToolsFunction("edit", msg, markId, msgId, displayContent, t)
-                }}
+                onClick={() => handleMessageAction("edit", messageData, t)}
                 className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
                 aria-label={t("edit_message")}
             >
-                <PenLine size={16} className="text-gray-600 hover:text-gray-800"/>
+                <PenLine size={16} className="text-gray-600 hover:text-gray-800" />
             </button>
 
             <button
-                onClick={() => {
-                    MessageToolsFunction("copy", msg, markId, msgId, displayContent, t)
-                }}
+                onClick={() => handleMessageAction("copy", messageData, t)}
                 className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
                 aria-label={t("copy_message")}
             >
-                <Copy size={16} className="text-gray-600 hover:text-gray-800"/>
+                <Copy size={16} className="text-gray-600 hover:text-gray-800" />
             </button>
 
-            {msg.allowRegenerate || msg.allowRegenerate === undefined ? (
+            {(msg.allowRegenerate || msg.allowRegenerate === undefined) && (
                 <button
-                    onClick={() => {
-                        MessageToolsFunction("regenerate", msg, markId, msgId, displayContent, t)
-                    }}
+                    onClick={() => handleMessageAction("regenerate", messageData, t)}
                     className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
                     aria-label={t("regenerate_message")}
                 >
-                    <RotateCw size={16} className="text-gray-600 hover:text-gray-800"/>
+                    <RotateCw size={16} className="text-gray-600 hover:text-gray-800" />
                 </button>
-            ) : null}
-
-            {msg.tip && (
-                <>
-                    {isMobile ? (
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <button
-                                    className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
-                                    aria-label={t("message_info")}
-                                >
-                                    <Info size={16} className="text-gray-600 hover:text-gray-800"/>
-                                </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="p-3">
-                                <div style={{whiteSpace: 'pre-line'}} className="text-sm">
-                                    {msg.tip}
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                    ) : (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <button
-                                    className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
-                                    aria-label={t("message_info")}
-                                >
-                                    <Info size={16} className="text-gray-600 hover:text-gray-800"/>
-                                </button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <div style={{whiteSpace: 'pre-line'}}>
-                                    {msg.tip}
-                                </div>
-                            </TooltipContent>
-                        </Tooltip>
-                    )}
-                </>
             )}
 
-            <MessageMenuButton msg={msg} markId={markId} msgId={msgId} displayContent={displayContent}/>
+            <TooltipInfo tip={msg.tip} t={t} />
+            <MessageMenuButton messageData={messageData} />
         </div>
     );
 };
 
 /**
- * 左侧消息的头像和名称组件
+ * 左侧消息头像和名称组件
  */
-const LeftAvatarName = ({avatar, displayName, isLeaving}) => (
-    <div className={`flex items-center gap-2 mb-1 transition-opacity duration-300 ${
-        isLeaving ? 'opacity-0' : 'opacity-100'
-    }`}>
+const LeftAvatarName = ({ avatar, displayName, isLeaving }) => (
+    <div className={`flex items-center gap-2 mb-1 transition-opacity duration-300 ${isLeaving ? 'opacity-0' : 'opacity-100'}`}>
         <Avatar className="h-10 w-10">
-            <AvatarImage src={avatar} alt={displayName}/>
-            <AvatarFallback>{displayName[0]}</AvatarFallback>
+            <AvatarImage src={avatar} alt={displayName} />
+            <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
         </Avatar>
         {displayName && (
             <span className="text-sm font-semibold text-gray-700">
-        {displayName}
-      </span>
+                {displayName}
+            </span>
         )}
     </div>
 );
@@ -224,91 +238,81 @@ const LeftAvatarName = ({avatar, displayName, isLeaving}) => (
 const MessagePaginator = ({
                               isRight,
                               msgPrev,
-                              msgId,
+                              prevMsgId,
                               onSwitchMessage,
                               switchingMessageId,
                               setSwitchingMessageId,
                               setFadeMessages,
                               t
                           }) => {
-    const msgId_index = msgPrev.messages.indexOf(msgPrev.nextMessage);
-    const disabledNext = msgId_index === msgPrev.messages.length - 1;
-    const disabledPrev = msgId_index === 0;
+    const msgIdIndex = msgPrev.messages.indexOf(msgPrev.nextMessage);
+    const totalPages = msgPrev.messages.length;
+    const disabledNext = msgIdIndex === totalPages - 1;
+    const disabledPrev = msgIdIndex === 0;
 
-    const handleSwitch = async (direction) => {
+    const handleSwitch = useCallback(async (direction) => {
         if (!onSwitchMessage) return;
 
-        const nextIndex = direction === 'next' ? msgId_index + 1 : msgId_index - 1;
+        const nextIndex = direction === 'next' ? msgIdIndex + 1 : msgIdIndex - 1;
         const nextMessageId = msgPrev.messages[nextIndex];
 
         setSwitchingMessageId(msgPrev.nextMessage);
         setFadeMessages(prev => new Set([...prev, nextMessageId]));
 
         try {
-            await onSwitchMessage(msgPrev, msgId, direction === 'next');
+            await onSwitchMessage(msgPrev, prevMsgId, direction === 'next');
         } finally {
             setSwitchingMessageId(null);
         }
-    };
+    }, [msgIdIndex, msgPrev, prevMsgId, onSwitchMessage, setSwitchingMessageId, setFadeMessages]);
 
     return (
-        <div className={`flex items-center gap-1 text-sm transition-opacity duration-300 ${
-            isRight ? 'justify-end' : 'justify-start'
-        }`}>
+        <div className={`flex items-center gap-1 text-sm transition-opacity duration-300 ${isRight ? 'justify-end' : 'justify-start'}`}>
             <button
                 onClick={() => handleSwitch('prev')}
                 disabled={disabledPrev || switchingMessageId !== null}
-                className={`p-1 rounded-full transition-colors cursor-pointer ${
-                    disabledPrev || switchingMessageId !== null
-                        ? 'text-gray-400 hover:bg-transparent cursor-not-allowed'
-                        : 'hover:bg-gray-200'
+                className={`p-1 rounded-full transition-colors cursor-pointer ${disabledPrev || switchingMessageId !== null
+                    ? 'text-gray-400 hover:bg-transparent cursor-not-allowed'
+                    : 'hover:bg-gray-200'
                 }`}
                 aria-label={t("prev_page")}
             >
-                <ChevronLeft size={12}/>
+                <ChevronLeft size={12} />
             </button>
-            <span className="px-1.5 py-0.5 rounded-md">{msgId_index + 1} / {msgPrev.messages.length}</span>
+            <span className="px-1.5 py-0.5 rounded-md">
+                {msgIdIndex + 1} / {totalPages}
+            </span>
             <button
                 onClick={() => handleSwitch('next')}
                 disabled={disabledNext || switchingMessageId !== null}
-                className={`p-1 rounded-full transition-colors cursor-pointer ${
-                    disabledNext || switchingMessageId !== null
-                        ? 'text-gray-400 hover:bg-transparent cursor-not-allowed'
-                        : 'hover:bg-gray-200'
+                className={`p-1 rounded-full transition-colors cursor-pointer ${disabledNext || switchingMessageId !== null
+                    ? 'text-gray-400 hover:bg-transparent cursor-not-allowed'
+                    : 'hover:bg-gray-200'
                 }`}
                 aria-label={t("next_page")}
             >
-                <ChevronRight size={12}/>
+                <ChevronRight size={12} />
             </button>
         </div>
     );
 };
 
 /**
- * 消息内容组件
+ * 纯文本消息内容组件
  */
-const MessageContent = ({
-                            isRight,
-                            content,
-                            avatar,
-                            msgId,
-                            displayName,
-                            references,
-                            isLeaving
-                        }) => {
+const TextOnlyMessageContent = ({ isRight, content, avatar, displayName, isLeaving }) => {
     if (isRight) {
         return (
-            <div className="flex justify-end sitems-center gap-3 max-w-[80%] ml-auto">
+            <div className="flex justify-end items-center gap-3 max-w-[80%] ml-auto">
                 <div
-                    className={`max-w-[100%] bg-white rounded-2xl px-4 py-2.5 shadow-sm text-gray-800 break-words whitespace-pre-wrap border border-gray-100 transition-opacity duration-300 ${
-                        isLeaving ? 'opacity-0' : 'opacity-100'
+                    className={`max-w-[100%] bg-white rounded-2xl px-4 py-2.5 shadow-sm text-gray-800 break-words whitespace-pre-wrap border border-gray-100 transition-opacity duration-300 ${isLeaving ? 'opacity-0' : 'opacity-100'
                     }`}
                 >
                     {content}
                 </div>
                 <Avatar className="h-10 w-10">
-                    <AvatarImage src={avatar} alt={displayName}/>
-                    <AvatarFallback>{displayName[0]}</AvatarFallback>
+                    <AvatarImage src={avatar} alt={displayName} />
+                    <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
             </div>
         );
@@ -317,81 +321,110 @@ const MessageContent = ({
     return (
         <div className="w-full pl-10 pr-10">
             <div className="text-gray-800 break-words max-w-none">
-                <MarkdownRenderer content={content} index={msgId} references={references}/>
+                <MarkdownRenderer content={content} />
             </div>
         </div>
     );
 };
 
-const MessageContainer = forwardRef(({
-                                         messagesOrder = [],
-                                         messages = {},
-                                         onLoadMore,
-                                         onSwitchMessage,
-                                         markId
-                                     }, ref) => {
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [switchingMessageId, setSwitchingMessageId] = useState(null);
+/**
+ * 消息底部操作区域组件
+ */
+const MessageActions = ({
+                            isRight,
+                            showPaginator,
+                            msgPrev,
+                            prevMsgId,
+                            onSwitchMessage,
+                            switchingMessageId,
+                            setSwitchingMessageId,
+                            setFadeMessages,
+                            messageData,
+                            hoveredMessageId,
+                            currentMsgId,
+                            setHoveredMessageId,
+                            readonly,
+                            t
+                        }) => {
+    const showRightTools = isRight && hoveredMessageId === currentMsgId;
+
+    return (
+        <div
+            className={`flex items-center mt-1 transition-opacity duration-300 ${isRight ? 'justify-end pr-12' : 'justify-between pl-10 pr-10'}`}
+            onMouseEnter={() => isRight && setHoveredMessageId(currentMsgId)}
+            onMouseLeave={() => isRight && setHoveredMessageId(null)}
+        >
+            {isRight && (
+                <div className={"ml-2 flex items-center " + (showPaginator ? 'pr-1' : '')}>
+                    <div className="relative flex items-center justify-center flex-shrink-0">
+                        <div
+                            className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${showRightTools ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                            }`}
+                        >
+                            {!readonly && <MessageTools messageData={messageData} />}
+                        </div>
+                        <div className="flex items-center justify-center invisible">
+                            {!readonly && <MessageTools messageData={messageData} />}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showPaginator && (
+                <div className={isRight ? '' : 'flex-1'}>
+                    {!readonly && (
+                        <MessagePaginator
+                            isRight={isRight}
+                            msgPrev={msgPrev}
+                            prevMsgId={prevMsgId}
+                            onSwitchMessage={onSwitchMessage}
+                            switchingMessageId={switchingMessageId}
+                            setSwitchingMessageId={setSwitchingMessageId}
+                            setFadeMessages={setFadeMessages}
+                            t={t}
+                        />
+                    )}
+                </div>
+            )}
+
+            {!isRight && (
+                <div className={"text-right flex-shrink-0 " + (showPaginator ? 'pl-1' : 'translate-x-[-0.4em]')}>
+                    {!readonly && <MessageTools messageData={messageData} />}
+                </div>
+            )}
+        </div>
+    );
+};
+
+/**
+ * 自定义Hook：管理消息动画状态
+ */
+const useMessageAnimation = (messagesOrder) => {
     const [enteringMessages, setEnteringMessages] = useState(new Set());
     const [leavingMessages, setLeavingMessages] = useState(new Set());
     const [fadeMessages, setFadeMessages] = useState(new Set());
-    const [hoveredMessageId, setHoveredMessageId] = useState(null); // 新增：跟踪悬停的消息ID
     const prevMessagesOrderRef = useRef([]);
     const animationFrameRef = useRef(null);
-    const {t} = useTranslation();
 
-
-    useEffect(() => {
-
-        const unsubscribe = onEvent("widget", "ChatPage", markId).then((payload, markId, isReply, id, reply) => {
-            switch (payload.command) {
-                case "Set-SwitchingMessage":
-                    renderSwitchingLoader()
-                    setSwitchingMessageId(payload.value);
-
-                    // 设置不要编辑消息
-                    emitEvent({
-                        type: "widget",
-                        target: "ChatBox",
-                        payload: {
-                            command: "Set-EditMessage",
-                            isEdit: false
-                        },
-                        markId: markId,
-                        fromWebsocket: true,  // 不要发到 ws 去
-                        notReplyToWebsocket: true
-                    })
-
-                    reply({success: true});
-                    break;
-            }
-        });
-
-        return () => {
-            unsubscribe();
-        };
-    }, []);
-
-    // 动画管理效果
     useEffect(() => {
         const prevOrder = prevMessagesOrderRef.current;
         const newOrder = messagesOrder;
 
         // 识别新消息（排除分页占位符）
-        const normalNewMessages = newOrder.filter(id =>
-            !prevOrder.includes(id) &&
-            id !== "<PREV_MORE>" &&
-            !fadeMessages.has(id)
+        const normalNewMessages = newOrder.filter(msgId =>
+            !prevOrder.includes(msgId) &&
+            msgId !== "<PREV_MORE>" &&
+            !fadeMessages.has(msgId)
         );
 
-        normalNewMessages.forEach(id => {
-            setEnteringMessages(prev => new Set([...prev, id]));
+        normalNewMessages.forEach(msgId => {
+            setEnteringMessages(prev => new Set([...prev, msgId]));
         });
 
         // 识别移除的消息
-        const removedMessages = prevOrder.filter(id => !newOrder.includes(id));
-        removedMessages.forEach(id => {
-            setLeavingMessages(prev => new Set([...prev, id]));
+        const removedMessages = prevOrder.filter(msgId => !newOrder.includes(msgId));
+        removedMessages.forEach(msgId => {
+            setLeavingMessages(prev => new Set([...prev, msgId]));
         });
 
         // 清理动画状态
@@ -414,8 +447,332 @@ const MessageContainer = forwardRef(({
         };
     }, [messagesOrder, fadeMessages]);
 
-    // 处理加载更多请求
-    const handleLoadMore = async () => {
+    /**
+     * 获取消息动画类名
+     */
+    const getMessageAnimationClass = useCallback((msgId, isFading) => {
+        if (leavingMessages.has(msgId)) {
+            return 'opacity-0 -translate-y-2 pointer-events-none';
+        }
+        if (isFading) {
+            return 'opacity-100 animate-fade-in';
+        }
+        if (enteringMessages.has(msgId)) {
+            return 'opacity-100 translate-y-0 animate-fade-in-up';
+        }
+        return 'opacity-100';
+    }, [leavingMessages, enteringMessages]);
+
+    return {
+        enteringMessages,
+        leavingMessages,
+        fadeMessages,
+        setFadeMessages,
+        getMessageAnimationClass
+    };
+};
+
+/**
+ * 自定义Hook：处理消息事件监听
+ */
+const useMessageEvents = (markId, setSwitchingMessageId) => {
+    useEffect(() => {
+        const unsubscribe = onEvent("widget", "ChatPage", markId).then((payload, markId, isReply, id, reply) => {
+            switch (payload.command) {
+                case "Set-SwitchingMessage":
+                    setSwitchingMessageId(payload.value);
+
+                    // 设置不要编辑消息
+                    emitEvent({
+                        type: "widget",
+                        target: "ChatBox",
+                        payload: {
+                            command: "Set-EditMessage",
+                            isEdit: false
+                        },
+                        markId: markId,
+                        fromWebsocket: true,
+                        notReplyToWebsocket: true
+                    });
+
+                    reply({ success: true });
+                    break;
+            }
+        });
+
+        return () => {
+            unsubscribe();
+        };
+    }, [markId, setSwitchingMessageId]);
+};
+
+/**
+ * 处理内容替换逻辑
+ */
+const processContentReplacements = (content, extraInfo) => {
+    if (!content || !extraInfo?.replace) return content;
+
+    let processedContent = content;
+    const cardRegex = /:::card\{type=replace\s+id=([^}\s]+)\}:::/g;
+    const MAX_ITERATIONS = 100;
+    let iterations = 0;
+
+    while (cardRegex.test(processedContent) && iterations < MAX_ITERATIONS) {
+        cardRegex.lastIndex = 0;
+        processedContent = processedContent.replace(cardRegex, (match, id) => {
+            return extraInfo.replace[id] ?? '';
+        });
+        iterations++;
+    }
+
+    if (iterations >= MAX_ITERATIONS) {
+        console.warn('Content replacement reached maximum recursion limit');
+    }
+
+    return processedContent;
+};
+
+/**
+ * 单个消息渲染器
+ */
+const MessageItem = React.memo(({
+                                    msgId,
+                                    msg,
+                                    markId,
+                                    messages,
+                                    isFading,
+                                    animationClass,
+                                    hoveredMessageId,
+                                    setHoveredMessageId,
+                                    switchingMessageId,
+                                    setSwitchingMessageId,
+                                    setFadeMessages,
+                                    onSwitchMessage,
+                                    leavingMessages,
+                                    readonly,
+                                    t
+                                }) => {
+    const isRight = msg.position === 'right';
+    const avatar = msg.avatar;
+    const displayName = msg.name || "U";
+    const showPaginator = messages[msg?.prevMessage]?.messages?.length > 1;
+    const msgPrev = messages[msg?.prevMessage];
+
+    const hasAttachments = msg.attachments?.length > 0;
+    const hasContent = msg.content?.trim();
+    const displayContent = processContentReplacements(msg.content, msg.extraInfo);
+
+    // 准备消息数据对象
+    const messageData = useMemo(() => ({
+        msg,
+        markId,
+        msgId,
+        displayContent
+    }), [msg, markId, msgId, displayContent]);
+
+    // 渲染消息内容
+    const renderMessageContent = () => {
+        // 情况1: 只有附件
+        if (hasAttachments && !hasContent) {
+            return (
+                <>
+                    {!isRight && (
+                        <LeftAvatarName
+                            avatar={avatar}
+                            displayName={displayName}
+                            isLeaving={leavingMessages.has(msgId)}
+                        />
+                    )}
+
+                    {isRight ? (
+                        <div className="flex items-start gap-2 max-w-full mt-1">
+                            <div className="flex-1 min-w-[150px] max-w-[calc(100%-3rem)] sm:pl-0 pl-7">
+                                <AttachmentShowcase
+                                    attachmentsMeta={msg.attachments}
+                                    msgMode={true}
+                                />
+                            </div>
+                            <Avatar className="h-10 w-10 flex-shrink-0 mt-1">
+                                <AvatarImage src={avatar} alt={displayName} />
+                                <AvatarFallback>{displayName[0]}</AvatarFallback>
+                            </Avatar>
+                        </div>
+                    ) : (
+                        <div className="max-w-[95%] pl-7 mb-2">
+                            <AttachmentShowcase
+                                attachmentsMeta={msg.attachments}
+                                msgMode={true}
+                            />
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        // 情况2: 附件和内容都有
+        if (hasAttachments && hasContent) {
+            return (
+                <>
+                    {isRight ? (
+                        <>
+                            <div className="max-w-[90%] lg:max-w-[55%] ml-auto pr-10 mb-2">
+                                <AttachmentShowcase
+                                    attachmentsMeta={msg.attachments}
+                                    msgMode={true}
+                                />
+                            </div>
+                            <TextOnlyMessageContent
+                                key={msgId}
+                                isRight={true}
+                                content={displayContent}
+                                avatar={avatar}
+                                displayName={displayName}
+                                isLeaving={leavingMessages.has(msgId)}
+                            />
+                        </>
+                    ) : (
+                        <div className="flex flex-col items-start w-full">
+                            <LeftAvatarName
+                                avatar={avatar}
+                                displayName={displayName}
+                                isLeaving={leavingMessages.has(msgId)}
+                            />
+                            <div className="max-w-[95%] pl-7 mb-2">
+                                <AttachmentShowcase
+                                    attachmentsMeta={msg.attachments}
+                                    msgMode={true}
+                                />
+                            </div>
+                            <TextOnlyMessageContent
+                                key={msgId}
+                                isRight={false}
+                                content={displayContent}
+                                avatar={avatar}
+                                displayName={displayName}
+                                isLeaving={leavingMessages.has(msgId)}
+                            />
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        // 情况3: 只有内容
+        if (hasContent) {
+            return isRight ? (
+                <TextOnlyMessageContent
+                    key={msgId}
+                    isRight={true}
+                    content={displayContent}
+                    avatar={avatar}
+                    displayName={displayName}
+                    isLeaving={leavingMessages.has(msgId)}
+                />
+            ) : (
+                <div className="flex flex-col items-start w-full">
+                    <LeftAvatarName
+                        avatar={avatar}
+                        displayName={displayName}
+                        isLeaving={leavingMessages.has(msgId)}
+                    />
+                    <TextOnlyMessageContent
+                        key={msgId}
+                        isRight={false}
+                        content={displayContent}
+                        avatar={avatar}
+                        displayName={displayName}
+                        isLeaving={leavingMessages.has(msgId)}
+                    />
+                </div>
+            );
+        }
+
+        // 情况4: 无内容
+        return (
+            <>
+                {isRight ? (
+                    <div className="flex justify-end items-start gap-3 max-w-[80%] ml-auto">
+                        <div className="h-10 w-10"></div>
+                        <Avatar className="h-10 w-10 flex-shrink-0">
+                            <AvatarImage src={avatar} alt={displayName} />
+                            <AvatarFallback>{displayName[0]}</AvatarFallback>
+                        </Avatar>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-start w-full">
+                        <LeftAvatarName
+                            avatar={avatar}
+                            displayName={displayName}
+                            isLeaving={leavingMessages.has(msgId)}
+                        />
+                        <div className="pl-7 min-h-[1.25rem]"></div>
+                    </div>
+                )}
+            </>
+        );
+    };
+
+    return (
+        <div
+            key={msgId}
+            className={`flex flex-col w-full transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'
+            } ${animationClass}`}
+            onMouseEnter={() => isRight && setHoveredMessageId(msgId)}
+            onMouseLeave={() => isRight && setHoveredMessageId(null)}
+        >
+            {renderMessageContent()}
+            <MessageActions
+                isRight={isRight}
+                showPaginator={showPaginator}
+                msgPrev={msgPrev}
+                prevMsgId={msg?.prevMessage}
+                onSwitchMessage={onSwitchMessage}
+                switchingMessageId={switchingMessageId}
+                setSwitchingMessageId={setSwitchingMessageId}
+                setFadeMessages={setFadeMessages}
+                messageData={messageData}
+                hoveredMessageId={hoveredMessageId}
+                currentMsgId={msgId}
+                setHoveredMessageId={setHoveredMessageId}
+                readonly={readonly}
+                t={t}
+            />
+        </div>
+    );
+});
+
+MessageItem.displayName = 'MessageItem';
+
+/**
+ * 消息容器主组件
+ */
+const MessageContainer = forwardRef(({
+                                         messagesOrder = [],
+                                         messages = {},
+                                         onLoadMore,
+                                         onSwitchMessage,
+                                         markId
+                                     }, ref) => {
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [switchingMessageId, setSwitchingMessageId] = useState(null);
+    const [hoveredMessageId, setHoveredMessageId] = useState(null);
+    const { t } = useTranslation();
+
+    // 使用自定义Hooks管理状态
+    const {
+        enteringMessages,
+        leavingMessages,
+        fadeMessages,
+        setFadeMessages,
+        getMessageAnimationClass
+    } = useMessageAnimation(messagesOrder);
+
+    useMessageEvents(markId, setSwitchingMessageId);
+
+    /**
+     * 处理加载更多请求
+     */
+    const handleLoadMore = useCallback(async () => {
         if (isLoadingMore || !onLoadMore) return;
         setIsLoadingMore(true);
         try {
@@ -430,23 +787,24 @@ const MessageContainer = forwardRef(({
         } finally {
             setIsLoadingMore(false);
         }
-    };
+    }, [isLoadingMore, onLoadMore, t]);
 
-    // 渲染加载更多占位符
-    const renderLoadMore = (id) => (
+    /**
+     * 渲染加载更多占位符
+     */
+    const renderLoadMore = useCallback((msgId) => (
         <div
-            key={id}
-            className={`flex justify-center w-full py-4 transition-all duration-300 ease-in-out ${
-                leavingMessages.has(id)
-                    ? 'opacity-0 -translate-y-2'
-                    : enteringMessages.has(id)
-                        ? 'opacity-100 translate-y-0 animate-fade-in-up'
-                        : 'opacity-100'
+            key={msgId}
+            className={`flex justify-center w-full py-4 transition-all duration-300 ease-in-out ${leavingMessages.has(msgId)
+                ? 'opacity-0 -translate-y-2'
+                : enteringMessages.has(msgId)
+                    ? 'opacity-100 translate-y-0 animate-fade-in-up'
+                    : 'opacity-100'
             }`}
         >
             {isLoadingMore ? (
                 <div className="flex items-center justify-center">
-                    <div className="w-5 h-5 border-t-2 border-gray-400 border-solid rounded-full animate-spin"/>
+                    <div className="w-5 h-5 border-t-2 border-gray-400 border-solid rounded-full animate-spin" />
                 </div>
             ) : (
                 <button
@@ -457,394 +815,118 @@ const MessageContainer = forwardRef(({
                 </button>
             )}
         </div>
-    );
+    ), [isLoadingMore, leavingMessages, enteringMessages, handleLoadMore, t]);
 
-    // 渲染切换消息加载器
-    const renderSwitchingLoader = (id) => (
+    /**
+     * 渲染切换消息加载器
+     */
+    const renderSwitchingLoader = useCallback((msgId) => (
         <div
-            key={`loading-${id}`}
-            className={`flex justify-center w-full py-4 transition-all duration-300 ease-in-out ${
-                fadeMessages.has(id)
-                    ? 'animate-fade-in'
-                    : enteringMessages.has(id)
-                        ? 'animate-fade-in-up'
-                        : 'opacity-100'
+            key={`loading-${msgId}`}
+            className={`flex justify-center w-full py-4 transition-all duration-300 ease-in-out ${fadeMessages.has(msgId)
+                ? 'animate-fade-in'
+                : enteringMessages.has(msgId)
+                    ? 'animate-fade-in-up'
+                    : 'opacity-100'
             }`}
         >
             <div className="flex flex-col items-center justify-center">
-                <ThreeDotLoading/>
+                <ThreeDotLoading />
                 <span className="mt-2 text-sm text-gray-500">{t("loading_new_message")}</span>
             </div>
         </div>
-    );
+    ), [fadeMessages, enteringMessages, t]);
 
-    // 获取消息动画类
-    const getMessageAnimationClass = (id, isFading) => {
-        if (leavingMessages.has(id)) {
-            return 'opacity-0 -translate-y-2 pointer-events-none';
-        }
-        if (isFading) {
-            return 'opacity-100 animate-fade-in';
-        }
-        if (enteringMessages.has(id)) {
-            return 'opacity-100 translate-y-0 animate-fade-in-up';
-        }
-        return 'opacity-100';
-    };
-
-    // 渲染单条消息
-    const renderMessage = (id, index) => {
+    /**
+     * 渲染单条消息
+     */
+    const renderMessage = useCallback((msgId, index) => {
+        // 检查是否有切换消息在前
         const hasSwitchingMessageBefore = messagesOrder
             .slice(0, index)
-            .some(msgId => switchingMessageId === msgId);
+            .some(currentMsgId => switchingMessageId === currentMsgId);
 
         if (hasSwitchingMessageBefore) return null;
 
         // 处理加载更多占位符
-        if (id === "<PREV_MORE>") {
-            return renderLoadMore(id);
+        if (msgId === "<PREV_MORE>") {
+            return renderLoadMore(msgId);
         }
 
-        const msg = messages[id];
+        const msg = messages[msgId];
         if (!msg || msg.position === null || msg.position === undefined) return null;
 
         // 处理消息切换状态
-        if (switchingMessageId === id) {
-            return renderSwitchingLoader(id);
+        if (switchingMessageId === msgId) {
+            return renderSwitchingLoader(msgId);
         }
 
-        // 判断消息是否正确
+        // 验证消息数据完整性
         const requiredFields = ['prevMessage', 'messages', 'nextMessage'];
         for (const field of requiredFields) {
             if (msg[field] === undefined) {
-                console.error(`message ${id} is invalid, missing ${field}.`);
+                console.error(`Message ${msgId} is invalid, missing ${field}.`);
                 return null;
             }
         }
 
-        // 额外确保 messages 是一个数组
         if (!Array.isArray(msg.messages)) {
-            console.error(`message ${id} is invalid, messages is not an array.`);
+            console.error(`Message ${msgId} is invalid, messages is not an array.`);
             return null;
         }
 
-        const isRight = msg.position === 'right';
-        const avatar = msg.avatar;
-        const displayName = msg.name || "U";
-        const showPaginator = messages[msg?.prevMessage]?.messages?.length > 1;
-        const isFading = fadeMessages.has(id) && !enteringMessages.has(id);
+        const isFading = fadeMessages.has(msgId) && !enteringMessages.has(msgId);
+        const animationClass = getMessageAnimationClass(msgId, isFading);
         const readonly = msg.readonly;
 
-        // 检查内容类型
-        const hasAttachments = msg.attachments?.length > 0;
-        const hasContent = msg.content?.trim();
-
-        let displayContent = ""
-
-        // 替换内容
-        if (hasContent) {
-            if (msg.extraInfo?.replace) {
-                displayContent = msg.content;
-                const cardRegex = /:::card\{type=replace\s+id=([^}\s]+)\}:::/g;
-
-                // 最大递归次数，防止无限循环
-                const MAX_ITERATIONS = 100;
-                let iterations = 0;
-
-                while (cardRegex.test(displayContent) && iterations < MAX_ITERATIONS) {
-                    cardRegex.lastIndex = 0; // 重置正则表达式
-                    displayContent = displayContent.replace(cardRegex, (match, id) => {
-                        return msg.extraInfo.replace[id] ?? '';
-                    });
-                    iterations++;
-                }
-
-                // 如果达到最大迭代次数，可以记录警告
-                if (iterations >= MAX_ITERATIONS) {
-                    console.warn('达到最大递归次数，可能存在问题');
-                }
-
-            } else {
-                displayContent = msg.content;
-            }
-        }
-
-        // 分页选择器和工具栏的公共属性
-        const paginatorProps = {
-            isRight,
-            msgId: msg?.prevMessage,
-            msgPrev: messages[msg?.prevMessage],
-            onSwitchMessage,
-            switchingMessageId,
-            setSwitchingMessageId,
-            setFadeMessages,
-            t
-        };
-
-        // 消息底部操作区域（分页选择器 + 工具栏）
-        const renderMessageActions = () => {
-            // 只有右侧消息才需要条件显示 MessageTools
-            const showRightTools = isRight && hoveredMessageId === id;
-
-            return (
-                <div
-                    className={`flex items-center mt-1 transition-opacity duration-300 ${
-                        leavingMessages.has(id) ? 'opacity-0' : 'opacity-100'
-                    } ${isRight ? 'justify-end pr-12' : 'justify-between pl-10 pr-10'}`}
-                    // 为右侧消息添加鼠标事件
-                    onMouseEnter={() => isRight && setHoveredMessageId(id)}
-                    onMouseLeave={() => isRight && setHoveredMessageId(null)}
-                >
-                    {isRight && (
-                        <div className={"ml-2 flex items-center " + (showPaginator ? 'pr-1' : '')}>
-                            {/* 为右侧消息的编辑按钮保留占位空间 */}
-                            <div className="relative flex items-center justify-center flex-shrink-0">
-                                <div
-                                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${
-                                        showRightTools ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                                    }`}
-                                >
-                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id}
-                                                                 displayContent={displayContent}/>)}
-                                </div>
-                                {/* 占位元素，保持空间一致性 */}
-                                <div className="flex items-center justify-center invisible">
-                                    {!readonly && (<MessageTools msg={msg} markId={markId} msgId={id}
-                                                                 displayContent={displayContent}/>)}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {showPaginator && (
-                        <div className={isRight ? '' : 'flex-1'}>
-                            {!readonly && (<MessagePaginator {...paginatorProps} />)}
-                        </div>
-                    )}
-
-                    {!isRight && (
-                        <div
-                            className={"text-right flex-shrink-0 " + (showPaginator ? 'pl-1' : 'translate-x-[-0.4em]')}>
-                            {!readonly && (
-                                <MessageTools msg={msg} markId={markId} msgId={id} displayContent={displayContent}/>)}
-                        </div>
-                    )}
-
-                </div>
-            );
-        };
-
-        // 情况1: 只有附件
-        if (hasAttachments && !hasContent) {
-            return (
-                <div
-                    key={id}
-                    className={`flex flex-col w-full transition-all duration-300 ease-in-out ${
-                        isRight ? 'items-end' : 'items-start'
-                    } ${getMessageAnimationClass(id, isFading)}`}
-                    onMouseEnter={() => isRight && setHoveredMessageId(id)}
-                    onMouseLeave={() => isRight && setHoveredMessageId(null)}
-                >
-                    {!isRight && (
-                        <LeftAvatarName
-                            avatar={avatar}
-                            displayName={displayName}
-                            isLeaving={leavingMessages.has(id)}
-                        />
-                    )}
-
-                    {isRight ? (
-                        <div className="flex items-start gap-2 max-w-full mt-1">
-                            <div className="flex-1 min-w-[150px] max-w-[calc(100%-3rem)] sm:pl-0 pl-7">
-                                <AttachmentShowcase
-                                    attachmentsMeta={msg.attachments}
-                                    msgMode={true}
-                                />
-                            </div>
-                            <Avatar className="h-10 w-10 flex-shrink-0 mt-1">
-                                <AvatarImage src={avatar} alt={displayName}/>
-                                <AvatarFallback>{displayName[0]}</AvatarFallback>
-                            </Avatar>
-                        </div>
-                    ) : (
-                        <div className="max-w-[95%] pl-7 mb-2">
-                            <AttachmentShowcase
-                                attachmentsMeta={msg.attachments}
-                                msgMode={true}
-                            />
-                        </div>
-                    )}
-
-                    {/* 渲染消息底部操作区域 */}
-                    {renderMessageActions()}
-                </div>
-            );
-        }
-
-        // 情况2: 附件和内容都有
-        if (hasAttachments && hasContent) {
-            return (
-                <div
-                    key={id}
-                    className={`flex flex-col w-full transition-all duration-300 ease-in-out ${
-                        isRight ? 'items-end' : 'items-start'
-                    } ${getMessageAnimationClass(id, isFading)}`}
-                    // 为整个消息容器添加鼠标事件
-                    onMouseEnter={() => isRight && setHoveredMessageId(id)}
-                    onMouseLeave={() => isRight && setHoveredMessageId(null)}
-                >
-                    {isRight ? (
-                        <>
-                            <div className="max-w-[90%] lg:max-w-[55%] ml-auto pr-10 mb-2">
-                                <AttachmentShowcase
-                                    attachmentsMeta={msg.attachments}
-                                    msgMode={true}
-                                />
-                            </div>
-                            <MessageContent
-                                isRight={true}
-                                content={displayContent}
-                                avatar={avatar}
-                                displayName={displayName}
-                                references={msg.attachments}
-                                isLeaving={leavingMessages.has(id)}
-                            />
-                            {/* 渲染消息底部操作区域 */}
-                            {renderMessageActions()}
-                        </>
-                    ) : (
-                        <div className="flex flex-col items-start w-full">
-                            <LeftAvatarName
-                                avatar={avatar}
-                                displayName={displayName}
-                                isLeaving={leavingMessages.has(id)}
-                            />
-                            <div className="max-w-[95%] pl-7 mb-2">
-                                <AttachmentShowcase
-                                    attachmentsMeta={msg.attachments}
-                                    msgMode={true}
-                                />
-                            </div>
-                            <MessageContent
-                                isRight={false}
-                                content={displayContent}
-                                displayName={displayName}
-                                avatar={avatar}
-                                references={msg.attachments}
-                                msgId={id}
-                                isLeaving={leavingMessages.has(id)}
-                            />
-                            {/* 渲染消息底部操作区域 */}
-                            {renderMessageActions()}
-                        </div>
-                    )}
-                </div>
-            );
-        }
-
-        // 情况3: 只有内容
-        if (hasContent) {
-            return (
-                <div
-                    key={id}
-                    className={`flex flex-col w-full transition-all duration-300 ease-in-out ${
-                        isRight ? 'items-end' : 'items-start'
-                    } ${getMessageAnimationClass(id, isFading)}`}
-                    // 为整个消息容器添加鼠标事件
-                    onMouseEnter={() => isRight && setHoveredMessageId(id)}
-                    onMouseLeave={() => isRight && setHoveredMessageId(null)}
-                >
-                    {isRight ? (
-                        <>
-                            <MessageContent
-                                isRight={true}
-                                content={displayContent}
-                                displayName={displayName}
-                                avatar={avatar}
-                                references={msg.attachments}
-                                msgId={id}
-                                isLeaving={leavingMessages.has(id)}
-                            />
-                            {/* 渲染消息底部操作区域 */}
-                            {renderMessageActions()}
-                        </>
-                    ) : (
-                        <div className="flex flex-col items-start w-full">
-                            <LeftAvatarName
-                                avatar={avatar}
-                                displayName={displayName}
-                                isLeaving={leavingMessages.has(id)}
-                            />
-                            <MessageContent
-                                isRight={false}
-                                content={displayContent}
-                                displayName={displayName}
-                                avatar={avatar}
-                                msgId={id}
-                                references={msg.attachments}
-                                isLeaving={leavingMessages.has(id)}
-                            />
-                            {/* 渲染消息底部操作区域 */}
-                            {renderMessageActions()}
-                        </div>
-                    )}
-                </div>
-            );
-        }
-
-        // 没有内容可显示
         return (
-            <div
-                key={id}
-                className={`flex flex-col w-full transition-all duration-300 ease-in-out ${
-                    isRight ? 'items-end' : 'items-start'
-                } ${getMessageAnimationClass(id, isFading)}`}
-                onMouseEnter={() => isRight && setHoveredMessageId(id)}
-                onMouseLeave={() => isRight && setHoveredMessageId(null)}
-            >
-                {isRight ? (
-                    <>
-                        {/* 右侧消息：只显示头像（靠右），无内容 */}
-                        <div className="flex justify-end items-start gap-3 max-w-[80%] ml-auto">
-                            <div className="h-10 w-10"></div>
-                            {/* 占位，保持布局一致 */}
-                            <Avatar className="h-10 w-10 flex-shrink-0">
-                                <AvatarImage src={avatar} alt={displayName}/>
-                                <AvatarFallback>{displayName[0]}</AvatarFallback>
-                            </Avatar>
-                        </div>
-                        {/* 渲染消息底部操作区域 */}
-                        {renderMessageActions()}
-                    </>
-                ) : (
-                    <div className="flex flex-col items-start w-full">
-                        {/* 左侧消息：显示头像和名称 */}
-                        <LeftAvatarName
-                            avatar={avatar}
-                            displayName={displayName}
-                            isLeaving={leavingMessages.has(id)}
-                        />
-                        {/* 空内容区域（可选：加一个极小高度占位，避免布局跳动） */}
-                        <div className="pl-7 min-h-[1.25rem]"></div>
-                        {/* 渲染消息底部操作区域 */}
-                        {renderMessageActions()}
-                    </div>
-                )}
-            </div>
+            <MessageItem
+                key={msgId}
+                msgId={msgId}
+                msg={msg}
+                markId={markId}
+                messages={messages}
+                isFading={isFading}
+                animationClass={animationClass}
+                hoveredMessageId={hoveredMessageId}
+                setHoveredMessageId={setHoveredMessageId}
+                switchingMessageId={switchingMessageId}
+                setSwitchingMessageId={setSwitchingMessageId}
+                setFadeMessages={setFadeMessages}
+                onSwitchMessage={onSwitchMessage}
+                leavingMessages={leavingMessages}
+                readonly={readonly}
+                t={t}
+            />
         );
-    };
+    }, [
+        messagesOrder,
+        switchingMessageId,
+        messages,
+        renderLoadMore,
+        renderSwitchingLoader,
+        fadeMessages,
+        enteringMessages,
+        getMessageAnimationClass,
+        markId,
+        hoveredMessageId,
+        onSwitchMessage,
+        t
+    ]);
 
     return (
         <div
             ref={ref}
             className="w-full max-w-220 mx-auto px-4 py-6 flex flex-col gap-6 pb-60"
         >
-            {messagesOrder.map((id, index) => renderMessage(id, index))}
+            {messagesOrder.map((msgId, index) => renderMessage(msgId, index))}
         </div>
     );
 });
 
-// 添加动画样式（只在浏览器环境中注入）
+MessageContainer.displayName = 'MessageContainer';
+
+// 添加动画样式
 if (typeof document !== 'undefined') {
     const style = document.createElement('style');
     style.textContent = `
