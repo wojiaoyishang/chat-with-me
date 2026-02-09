@@ -1,4 +1,4 @@
-import React, { forwardRef, useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, {forwardRef, useState, useEffect, useRef, useCallback, useMemo, memo} from 'react';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -944,4 +944,4 @@ if (typeof document !== 'undefined') {
     document.head.appendChild(style);
 }
 
-export default MessageContainer;
+export default memo(MessageContainer);

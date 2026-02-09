@@ -1,7 +1,7 @@
-import React, {useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment} from 'react';
+import React, {useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment, useCallback, memo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Transition} from '@headlessui/react';
-import {Check, X, PenLine, Trash2, Minus, Square, RotateCw, Search, Earth} from "lucide-react";
+import {Check, X, PenLine, Trash2, Minus, Square, RotateCw, Search, Earth} from 'lucide-react';
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
@@ -9,21 +9,22 @@ import {
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
-} from "@/components/ui/dropdown-menu";
-import SimpleMDEditor from "@/components/editor/SimpleMDEditor.jsx";
-import ToggleButton from "@/components/chat/ChatButton.jsx";
-import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
+} from '@/components/ui/dropdown-menu';
+import SimpleMDEditor from '@/components/editor/SimpleMDEditor.jsx';
+import ToggleButton from '@/components/chat/ChatButton.jsx';
+import {emitEvent, onEvent} from '@/store/useEventStore.jsx';
 import ChatBoxHeader from './ChatBoxHeader';
 import ToolButtons from './ToolButtons';
 import AttachmentShowcase from './AttachmentShowcase';
 import FileUploadProgress from './FileUploadProgress';
-import DropFileLayer from "@/components/chat/DropFileLayer.jsx";
-import {toast} from "sonner";
-import {apiEndpoint} from "@/config.js"
+import DropFileLayer from '@/components/chat/DropFileLayer.jsx';
+import {toast} from 'sonner';
+import {apiEndpoint} from '@/config.js';
 import apiClient from '@/lib/apiClient';
-import {getLocalSetting, isMobile, setLocalSetting} from "@/lib/tools.jsx";
+import {getLocalSetting, isMobile, setLocalSetting} from '@/lib/tools.jsx';
 
-// ========== Helper functions for nested objects ==========
+// ========== 对象操作辅助函数（移到外部，避免每次渲染都创建）==========
+
 const getNestedValue = (obj, path) => {
     if (!obj || !path || path.length === 0) return undefined;
     let current = obj;
@@ -36,10 +37,8 @@ const getNestedValue = (obj, path) => {
 
 const setNestedValue = (obj, path, value) => {
     if (!path || path.length === 0) return obj;
-
     const result = {...obj};
     let current = result;
-
     for (let i = 0; i < path.length - 1; i++) {
         const key = path[i];
         if (!current[key] || typeof current[key] !== 'object') {
@@ -47,42 +46,31 @@ const setNestedValue = (obj, path, value) => {
         }
         current = current[key];
     }
-
     current[path[path.length - 1]] = value;
     return result;
 };
 
 const deleteNestedValue = (obj, path) => {
     if (!path || path.length === 0) return obj;
-
-    // If it's a top-level property
     if (path.length === 1) {
         const result = {...obj};
         delete result[path[0]];
         return result;
     }
-
-    // For nested properties
     const parentPath = path.slice(0, -1);
     const key = path[path.length - 1];
     const parent = getNestedValue(obj, parentPath);
-
     if (parent && typeof parent === 'object') {
         const newParent = {...parent};
         delete newParent[key];
-
-        // Remove empty parent objects
         if (Object.keys(newParent).length === 0) {
             return deleteNestedValue(obj, parentPath);
         }
-
         return setNestedValue(obj, parentPath, newParent);
     }
-
     return obj;
 };
 
-// Deep merge function for overriding defaults with saved values
 const deepMerge = (target, source) => {
     if (typeof source !== 'object' || source === null) return target;
     const output = {...target};
@@ -98,7 +86,6 @@ const deepMerge = (target, source) => {
     return output;
 };
 
-// ========== New helpers for group toggle all ==========
 const collectTogglePaths = (items, parentPath = []) => {
     let paths = [];
     items.forEach(item => {
@@ -109,7 +96,6 @@ const collectTogglePaths = (items, parentPath = []) => {
         } else if (item.type === 'group' && item.children) {
             paths = [...paths, ...collectTogglePaths(item.children, currentPath)];
         }
-        // Ignore radio and other types
     });
     return paths;
 };
@@ -133,39 +119,277 @@ const toggleAllInGroup = (extraTools, togglePaths, toChecked) => {
     return newExtraTools;
 };
 
-/**
- * ChatBox - 一个功能丰富的聊天输入区域组件
- *
- * 该组件提供了一个完整的聊天输入界面，支持：
- * - 多行文本输入（自动高度调整）
- * - 快捷选项（Quick Options）供用户快速选择预设消息
- * - 工具按钮（内置工具 + 额外工具菜单），支持 toggle、radio、group、button 等类型
- * - 附件展示与上传进度条（图片/文件）
- * - 粘贴图片自动上传
- * - 全屏编辑模式（Modal）
- * - 国际化（i18n）
- * - 动态配置（通过事件系统接收外部指令）
- * - 响应式设计（小屏适配）
- * - 发送按钮状态管理（normal / disabled / loading / generating）
- *
- * Props:
- * @param {Function} onSendMessage - 发送消息回调 (message, toolsStatus, sendButtonState)
- * @param {boolean} [readOnly=false] - 是否只读模式
- * @param {Function} FilePickerCallback - 触发文件选择器的回调
- * @param {Function} PicPickerCallback - 触发图片选择器的回调
- * @param {String} markId - 组件唯一标识的引用
- * @param {Array} [attachmentsMeta=[]] - 已上传附件元数据列表
- * @param {Function} setAttachments - 设置附件数据
- * @param {Array} [uploadFiles=[]] - 正在上传的文件列表
- * @param {Function} onAttachmentRemove - 移除附件回调
- * @param {Function} onImagePaste - 粘贴图片时的处理回调
- * @param {Function} onRetryUpload - 重试上传回调
- * @param {Function} onCancelUpload - 取消上传回调
- * @param {Function} onDropFiles - 拖拽文件回调
- * @param {Function} onFolderDetected - 拖拽文件夹上传检测
- * @param {Function} onHeightChange - 高度改变
- * @param {Object} dropTargetRef - 拖拽接受区域
- */
+// ========== 独立的消息输入组件（避免打字时触发整个ChatBox重新渲染）==========
+
+const MessageInput = memo(({
+                               value,
+                               onChange,
+                               onPaste,
+                               onKeyDown,
+                               isReadOnly,
+                               placeholder,
+                               textareaRef,
+                               isEditMessage,
+                           }) => {
+    const cloneTextareaRef = useRef(null);
+
+    // 高度调整逻辑
+    const initTextareaClone = useCallback(() => {
+        if (cloneTextareaRef.current) return;
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+        const clone = textarea.cloneNode();
+        Object.assign(clone.style, {
+            position: 'absolute',
+            top: '-9999px',
+            left: '-9999px',
+            visibility: 'hidden',
+            height: 'auto',
+            resize: 'none',
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            zIndex: '-1',
+        });
+        document.body.appendChild(clone);
+        cloneTextareaRef.current = clone;
+    }, [textareaRef]);
+
+    const cleanupTextareaClone = useCallback(() => {
+        if (cloneTextareaRef.current) {
+            document.body.removeChild(cloneTextareaRef.current);
+            cloneTextareaRef.current = null;
+        }
+    }, []);
+
+    const adjustTextareaHeight = useCallback(() => {
+        const textarea = textareaRef.current;
+        const clone = cloneTextareaRef.current;
+        if (!textarea || !clone) return;
+
+        clone.value = textarea.value;
+        clone.style.width = textarea.offsetWidth + 'px';
+        const computedStyle = getComputedStyle(textarea);
+        clone.style.fontFamily = computedStyle.fontFamily;
+        clone.style.fontSize = computedStyle.fontSize;
+        clone.style.lineHeight = computedStyle.lineHeight;
+        clone.style.padding = computedStyle.padding;
+        clone.style.border = computedStyle.border;
+        clone.style.boxSizing = computedStyle.boxSizing;
+
+        const contentHeight = clone.scrollHeight;
+        const cappedHeight = Math.min(contentHeight, 128);
+        textarea.style.height = cappedHeight + 'px';
+        textarea.style.overflowY = contentHeight > 48 ? 'scroll' : 'auto';
+    }, [textareaRef]);
+
+    useEffect(() => {
+        initTextareaClone();
+        return cleanupTextareaClone;
+    }, [initTextareaClone, cleanupTextareaClone]);
+
+    useEffect(() => {
+        adjustTextareaHeight();
+    }, [value, isEditMessage, adjustTextareaHeight]);
+
+    const handleChange = useCallback((e) => {
+        onChange(e.target.value);
+    }, [onChange]);
+
+    return (
+        <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={handleChange}
+            onPaste={onPaste}
+            onKeyDown={onKeyDown}
+            placeholder={placeholder}
+            className="w-full min-h-[48px] max-h-[132px] p-4 pt-4 pb-2 pr-4 text-gray-800 bg-transparent border-none resize-none outline-none pretty-scrollbar"
+            rows={1}
+            style={{transition: 'height 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)'}}
+        />
+    );
+}, (prevProps, nextProps) => {
+    // 只有当必要属性变化时才重新渲染
+    return (
+        prevProps.value === nextProps.value &&
+        prevProps.isReadOnly === nextProps.isReadOnly &&
+        prevProps.placeholder === nextProps.placeholder &&
+        prevProps.isEditMessage === nextProps.isEditMessage &&
+        prevProps.onChange === nextProps.onChange &&
+        prevProps.onPaste === nextProps.onPaste &&
+        prevProps.onKeyDown === nextProps.onKeyDown
+    );
+});
+
+MessageInput.displayName = 'MessageInput';
+
+// ========== 独立的编辑状态提示组件 ==========
+
+const EditMessageIndicator = memo(({isEditMessage, setIsEditMessage, setAttachments, setMessageContent, t}) => {
+    const handleCancel = useCallback(() => {
+        setIsEditMessage(false);
+    }, [setIsEditMessage]);
+
+    const handleClear = useCallback(() => {
+        setIsEditMessage(false);
+        setAttachments([]);
+        setMessageContent('');
+    }, [setIsEditMessage, setAttachments, setMessageContent]);
+
+    if (!isEditMessage) return null;
+
+    return (
+        <Transition
+            show={isEditMessage}
+            enter="transition-opacity duration-200"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="transition-opacity duration-150"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+        >
+            <div
+                className="bg-gray-100 text-gray-800 text-sm font-medium py-3 px-4 rounded-t-2xl flex items-center justify-between">
+                <div className="flex items-center">
+                    <PenLine className="w-4 h-4 mr-2"/>
+                    <span>{t('editing_message')}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <button
+                        type="button"
+                        onClick={handleCancel}
+                        className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
+                        aria-label={t('cancel_editing')}
+                    >
+                        <X className="w-4 h-4"/>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleClear}
+                        className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
+                        aria-label={t('cancel_editing')}
+                    >
+                        <Trash2 className="w-4 h-4"/>
+                    </button>
+                </div>
+            </div>
+        </Transition>
+    );
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.isEditMessage === nextProps.isEditMessage &&
+        prevProps.t === nextProps.t &&
+        prevProps.setIsEditMessage === nextProps.setIsEditMessage &&
+        prevProps.setAttachments === nextProps.setAttachments &&
+        prevProps.setMessageContent === nextProps.setMessageContent
+    );
+});
+
+EditMessageIndicator.displayName = 'EditMessageIndicator';
+
+// ========== 发送按钮组件 ==========
+
+const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, t}) => {
+    const sendButtonStyle = useMemo(() => {
+        const isEmpty = !messageContent.trim() && attachmentsMeta.length === 0 && status === 'normal';
+        const baseIcon = (
+            <svg
+                t="1758800079268"
+                className="icon"
+                viewBox="0 0 1024 1024"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                p-id="6097"
+                width="24"
+                height="24"
+            >
+                <path
+                    d="M512 85.333333a42.666667 42.666667 0 0 1 38.144 23.594667l384 768a42.666667 42.666667 0 0 1-47.36 60.714667L512 854.357333l-374.741333 83.285334a42.666667 42.666667 0 0 1-47.402667-60.714667l384-768A42.666667 42.666667 0 0 1 512 85.333333z m42.666667 691.114667l263.082666 58.453333L554.666667 308.736v467.712zM469.333333 308.736L206.250667 834.901333 469.333333 776.448V308.736z"
+                    fill={isEmpty ? '#9ca3af' : '#ffffff'}
+                    p-id="6098"
+                ></path>
+            </svg>
+        );
+
+        if (isEmpty) {
+            return {
+                state: 'disabled',
+                className: 'text-gray-400 bg-gray-200 cursor-not-allowed',
+                icon: baseIcon,
+                disabled: true,
+            };
+        }
+
+        switch (status) {
+            case 'disabled':
+                return {
+                    state: 'disabled',
+                    className: 'text-gray-400 bg-gray-200 cursor-not-allowed',
+                    icon: baseIcon,
+                    disabled: true,
+                };
+            case 'loading':
+                return {
+                    state: 'loading',
+                    className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
+                    icon: (
+                        <div className="relative w-6 h-6">
+                            <div
+                                className="absolute inset-[-9px] border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-4 h-4 bg-white rounded"></div>
+                            </div>
+                        </div>
+                    ),
+                    disabled: false,
+                };
+            case 'generating':
+                return {
+                    state: 'generating',
+                    className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
+                    icon: (
+                        <div className="relative w-6 h-6">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-4 h-4 bg-white rounded"></div>
+                            </div>
+                        </div>
+                    ),
+                    disabled: false,
+                };
+            default:
+                return {
+                    state: 'normal',
+                    className: 'text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 cursor-pointer',
+                    icon: baseIcon,
+                    disabled: false,
+                };
+        }
+    }, [status, messageContent, attachmentsMeta]);
+
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            disabled={sendButtonStyle.disabled}
+            aria-label={t('send_message')}
+            className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${sendButtonStyle.className}`}
+        >
+            {sendButtonStyle.icon}
+        </button>
+    );
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.status === nextProps.status &&
+        prevProps.messageContent === nextProps.messageContent &&
+        prevProps.attachmentsMeta === nextProps.attachmentsMeta &&
+        prevProps.onClick === nextProps.onClick
+    );
+});
+
+SendButton.displayName = 'SendButton';
+
+// ========== 主组件 ==========
+
 function ChatBox({
                      onSendMessage,
                      readOnly = false,
@@ -182,17 +406,18 @@ function ChatBox({
                      onDropFiles,
                      onFolderDetected,
                      onHeightChange,
-                     dropTargetRef
+                     dropTargetRef,
                  }) {
     const {t} = useTranslation();
-    const [messageContent, setMessageContent] = useState("");
+
+    // ========== 状态管理 ==========
+    const [messageContent, setMessageContent] = useState('');
     const [toolsStatus, setToolsStatus] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReadOnly, setIsReadOnly] = useState(readOnly);
     const [showTipMessage, setShowTipMessage] = useState(true);
-    const [tipMessage, setTipMessage] = useState(t("shift_enter_newline"));
+    const [tipMessage, setTipMessage] = useState(t('shift_enter_newline'));
     const [tipMessageIsForNewLine, setTipMessageIsForNewLine] = useState(true);
-
     const [tools, setTools] = useState([]);
     const [extraTools, setExtraTools] = useState([]);
     const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -206,93 +431,69 @@ function ChatBox({
     const [ignoreAttachmentTools, setIgnoreAttachmentTools] = useState(false);
     const [isEditMessage, setIsEditMessage] = useState(false);
     const [editMessageId, setEditMessageId] = useState(null);
+
+    // ========== 引用 ==========
     const quickOptionsRef = useRef(null);
-    const messageContentRef = useRef(messageContent);
     const textareaRef = useRef(null);
-    const cloneTextareaRef = useRef(null);
-    const sendButtonStatusRef = useRef(sendButtonStatus);
     const attachmentRef = useRef(null);
     const rootRef = useRef(null);
-    // ========== Textarea height logic ==========
-    const initTextareaClone = () => {
-        if (cloneTextareaRef.current) return;
-        const textarea = textareaRef.current;
-        if (!textarea) return;
-        const clone = textarea.cloneNode();
-        Object.assign(clone.style, {
-            position: 'absolute',
-            top: '-9999px',
-            left: '-9999px',
-            visibility: 'hidden',
-            height: 'auto',
-            resize: 'none',
-            overflow: 'hidden',
-            pointerEvents: 'none',
-            zIndex: '-1'
-        });
-        document.body.appendChild(clone);
-        cloneTextareaRef.current = clone;
-    };
-    const cleanupTextareaClone = () => {
-        if (cloneTextareaRef.current) {
-            document.body.removeChild(cloneTextareaRef.current);
-            cloneTextareaRef.current = null;
-        }
-    };
-    const adjustTextareaHeight = () => {
-        const textarea = textareaRef.current;
-        const clone = cloneTextareaRef.current;
-        if (!textarea || !clone) return;
-        clone.value = textarea.value;
-        clone.style.width = textarea.offsetWidth + 'px';
-        const computedStyle = getComputedStyle(textarea);
-        clone.style.fontFamily = computedStyle.fontFamily;
-        clone.style.fontSize = computedStyle.fontSize;
-        clone.style.lineHeight = computedStyle.lineHeight;
-        clone.style.padding = computedStyle.padding;
-        clone.style.border = computedStyle.border;
-        clone.style.boxSizing = computedStyle.boxSizing;
-        const contentHeight = clone.scrollHeight;
-        const cappedHeight = Math.min(contentHeight, 128);
-        textarea.style.height = cappedHeight + 'px';
-        textarea.style.overflowY = contentHeight > 48 ? 'scroll' : 'auto';
-    };
-    // ========== Message handling ==========
-    const handleSendMessage = () => {
-        onSendMessage(messageContent, toolsStatus, isEditMessage, editMessageId, attachmentsMeta, sendButtonStatusRef.current);
+
+    // 使用 useRef 缓存频繁变化的值，避免触发重新渲染
+    const messageContentRef = useRef(messageContent);
+    const sendButtonStatusRef = useRef(sendButtonStatus);
+
+    // ========== 回调函数（使用 useCallback 缓存）==========
+
+    const handleSendMessage = useCallback(() => {
+        onSendMessage(
+            messageContentRef.current,
+            toolsStatus,
+            isEditMessage,
+            editMessageId,
+            attachmentsMeta,
+            sendButtonStatusRef.current
+        );
         textareaRef.current?.focus();
-    };
-    const handleKeyDown = (e) => {
+    }, [onSendMessage, toolsStatus, isEditMessage, editMessageId, attachmentsMeta]);
+
+    const handleKeyDown = useCallback((e) => {
         if (e.key === 'Enter') {
             if (e.shiftKey) {
                 if (tipMessageIsForNewLine) {
                     chatboxSetup({tipMessage: null});
-                    setLocalSetting("ShowShiftEnterNewlineTip", false);
+                    setLocalSetting('ShowShiftEnterNewlineTip', false);
                 }
-                ;
                 return;
             } else {
                 e.preventDefault();
-                if (sendButtonStatusRef.current !== "normal") {
-                    toast.warning(t("is_generating_try_later"))
+                if (sendButtonStatusRef.current !== 'normal') {
+                    toast.warning(t('is_generating_try_later'));
                     return;
                 }
                 handleSendMessage();
             }
         }
-    };
-    const handleInputChange = (e) => {
+    }, [handleSendMessage, tipMessageIsForNewLine, t]);
+
+    const handleInputChange = useCallback((newValue) => {
         if (isReadOnly) return;
-        const newValue = e.target.value;
+
+        // 更新 ref 值，不触发重新渲染
+        messageContentRef.current = newValue;
+
+        // 更新状态，触发重新渲染
         setMessageContent(newValue);
+
+        // 防抖处理快捷选项状态更新
         if (selectedQuickOption !== null) {
             const selectedOption = quickOptions.find(opt => opt.id === selectedQuickOption);
             if (selectedOption && newValue !== selectedOption.value) {
                 setSelectedQuickOption(null);
             }
         }
-    };
-    const handlePaste = (e) => {
+    }, [isReadOnly, selectedQuickOption, quickOptions]);
+
+    const handlePaste = useCallback((e) => {
         const clipboardData = e.clipboardData || window.clipboardData;
         const items = clipboardData.items;
         for (let i = 0; i < items.length; i++) {
@@ -300,16 +501,18 @@ function ChatBox({
                 const file = items[i].getAsFile();
                 if (onImagePaste && typeof onImagePaste === 'function') {
                     e.preventDefault();
-                    if (!ignoreAttachmentTools && !isReadOnly) onImagePaste(file);
+                    if (!ignoreAttachmentTools && !isReadOnly) {
+                        onImagePaste(file);
+                    }
                 }
                 return;
             }
         }
-    };
-    // ========== Quick options ==========
-    const handleOptionClick = (option) => {
+    }, [onImagePaste, ignoreAttachmentTools, isReadOnly]);
+
+    const handleOptionClick = useCallback((option) => {
         if (selectedQuickOption === option.id) {
-            if (messageContent === option.value) {
+            if (messageContentRef.current === option.value) {
                 setMessageContent('');
                 setSelectedQuickOption(null);
             } else {
@@ -320,22 +523,301 @@ function ChatBox({
             setSelectedQuickOption(option.id);
             textareaRef.current?.focus();
         }
-    };
-    // ========== Icon rendering ==========
-    const renderIcon = (iconType, iconData) => {
-        if (!iconData) return null;
-        if (iconType === 'library') {
-            const iconMap = {search: Search, refresh: RotateCw, earth: Earth};
-            const IconComponent = iconMap[iconData];
-            return IconComponent ? <IconComponent className="w-4 h-4 mr-2"/> : null;
-        } else if (iconType === 'svg') {
-            return <span className="inline-block w-4 h-4 mr-2" dangerouslySetInnerHTML={{__html: iconData}}/>;
-        } else if (iconType === 'image') {
-            return <img src={iconData} alt="" className="w-4 h-4 mr-2"/>;
+    }, [selectedQuickOption]);
+
+    // ========== 工具初始化函数 ==========
+
+    const initializeExtraTools = useCallback((toolsConfig) => {
+        const processItems = (items) => {
+            const status = {};
+            items.forEach(item => {
+                if (!item.name) return;
+                if (item.type === 'toggle') {
+                    status[item.name] = !!item.default;
+                } else if (item.type === 'radio' && item.children?.length > 0) {
+                    let defaultValue;
+                    if (item.default) {
+                        const defaultChild = item.children.find(child => child.name === item.default);
+                        defaultValue = defaultChild ? defaultChild.name : (item.children[0]?.name || undefined);
+                    } else {
+                        defaultValue = item.children[0]?.name || undefined;
+                    }
+                    if (defaultValue !== undefined) {
+                        status[item.name] = defaultValue;
+                    }
+                } else if (item.type === 'group' && item.children) {
+                    const childStatus = processItems(item.children);
+                    status[item.name] = Object.keys(childStatus).length > 0 ? childStatus : {};
+                }
+            });
+            return status;
+        };
+        return processItems(toolsConfig);
+    }, []);
+
+    // ========== 聊天框配置函数 ==========
+
+    const chatboxSetup = useCallback((data) => {
+        const newBuiltinStatus = {};
+        let defaultExtraStatus = initializeExtraTools(data.extra_tools || []);
+
+        // 默认附件工具配置
+        let defaultAttachmentTools = data.ignoreAttachmentTools
+            ? []
+            : [
+                {type: 'label', text: 'attachment_options'},
+                {
+                    type: 'button',
+                    text: 'add_image',
+                    iconType: 'svg',
+                    iconData: '<svg t="1759404220982" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4746" width="20" height="20"><path d="M247.04 373.333333a74.666667 74.666667 0 1 1 149.333333 0 74.666667 74.666667 0 0 1-149.333333 0zM321.706667 384a10.666667 10.666667 0 1 0 0-21.333333 10.666667 10.666667 0 0 0 0 21.333333z" fill="#666666" p-id="4747"></path><path d="M938.666667 796.074667c0 43.050667-33.834667 72.106667-70.4 77.653333a83.925333 83.925333 0 0 1-12.672 0.938667H168.405333a83.072 83.072 0 0 1-12.672-0.981334c-36.565333-5.546667-70.4-34.56-70.4-77.653333V232.021333C85.333333 185.898667 122.965333 149.333333 168.405333 149.333333h687.189334C901.034667 149.333333 938.666667 185.941333 938.666667 232.021333v564.053334zM170.666667 743.381333V789.333333h682.666666v-42.538666l-252.885333-250.666667-138.581333 149.930667a42.666667 42.666667 0 0 1-55.466667 5.12L333.098667 599.04 170.666667 743.424z m682.666666-99.754666V234.666667H170.666667v394.538666l131.072-116.522666a42.666667 42.666667 0 0 1 53.077333-2.901334l71.125333 50.56 138.026667-149.333333A42.666667 42.666667 0 0 1 618.666667 405.333333l234.666666 238.293334z" fill="#666666" p-id="4748"></path></svg>',
+                    onClick: PicPickerCallback,
+                    autoClose: true,
+                },
+                {
+                    type: 'button',
+                    text: 'add_file',
+                    iconType: 'svg',
+                    iconData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>',
+                    onClick: FilePickerCallback,
+                    autoClose: true,
+                },
+            ];
+
+        if (data.ignoreAttachmentTools !== null && data.ignoreAttachmentTools !== undefined) {
+            setIgnoreAttachmentTools(Boolean(data.ignoreAttachmentTools));
         }
-        return null;
-    };
-    const renderMenuItems = (items, parentPath = []) => {
+
+        const allExtraTools = data.extra_tools
+            ? [...data.extra_tools, ...defaultAttachmentTools]
+            : defaultAttachmentTools;
+
+        let savedExtraStatus = {};
+        try {
+            const saved = localStorage.getItem('extraToolsConfig');
+            if (saved) {
+                savedExtraStatus = JSON.parse(saved);
+            }
+        } catch (error) {
+            console.error('Failed to parse saved extra_tools status:', error);
+        }
+
+        const mergedExtraStatus = deepMerge(defaultExtraStatus, savedExtraStatus);
+
+        if (data.builtin_tools) {
+            data.builtin_tools.forEach(tool => {
+                newBuiltinStatus[tool.name] = false;
+            });
+            setTools(data.builtin_tools);
+        }
+
+        setToolsStatus(prev => ({
+            ...prev,
+            builtin_tools: {...prev.builtin_tools, ...newBuiltinStatus},
+            extra_tools: mergedExtraStatus,
+        }));
+
+        if (data.extra_tools) {
+            setExtraTools(allExtraTools);
+        }
+
+        if (data.readOnly !== undefined) {
+            setIsReadOnly(Boolean(data.readOnly));
+        }
+
+        if (data.tipMessage !== undefined) {
+            setTipMessageIsForNewLine(false);
+            if (data.tipMessage === null) {
+                setShowTipMessage(false);
+            } else {
+                setShowTipMessage(false);
+                setTimeout(() => {
+                    setTipMessage(data.tipMessage || '');
+                    setShowTipMessage(true);
+                    if (data.tipMessageFadeOutDelay) {
+                        setTimeout(() => setShowTipMessage(false), parseInt(data.tipMessageFadeOutDelay));
+                    }
+                }, 300);
+            }
+        }
+
+        if (data.isEditMessage !== undefined) {
+            setIsEditMessage(Boolean(data.isEditMessage));
+        }
+    }, [FilePickerCallback, PicPickerCallback, initializeExtraTools]);
+
+    // ========== 事件处理函数 ==========
+
+    const handleEventBroadcast = useCallback((payload, markId, isReply, id, reply) => {
+        // 事件处理逻辑
+        switch (payload.command) {
+            case "SendButton-Status":
+                const validStates = ['disabled', 'normal', 'loading', 'generating'];
+                if (validStates.includes(payload.value)) {
+                    setSendButtonStatus(payload.value);
+                    reply({value: payload.value});
+                } else {
+                    reply({value: sendButtonStatusRef.current});
+                }
+                if (payload.readOnly !== undefined) {
+                    setIsReadOnly(Boolean(payload.readOnly));
+                }
+                break;
+            case "Set-MessageContent":
+                setMessageContent(payload.value);
+                break;
+            case "Get-MessageContent":
+                reply({value: messageContentRef.current});
+                break;
+            case "Setup-ChatBox":
+                if (payload.value.builtin_tools || payload.value.extra_tools) {
+                    setToolsLoadedStatus(-1);
+                }
+                setTimeout(() => {
+                    chatboxSetup(payload.value);
+                    setToolsLoadedStatus(2);
+                }, 500);
+                break;
+            case "Set-QuickOptions":
+                setIsTransitioning(true);
+                setTimeout(() => {
+                    setQuickOptions(payload.value);
+                    setIsTransitioning(false);
+                }, 500);
+                break;
+            case "Attachment-Meta":
+                if (payload.value) {
+                    setAttachments(payload.value);
+                    reply({value: payload.value});
+                } else {
+                    reply({value: attachments});
+                }
+                break;
+
+            case "Set-EditMessage":
+
+                if (payload.immediate) {
+                    onSendMessage(payload.content, toolsStatus, true, payload.msgId, payload.attachments, sendButtonStatusRef.current, payload.isRegenerate);
+                } else {
+                    setIsEditMessage(Boolean(payload.isEdit));
+                    if (payload.attachments) setAttachments(payload.attachments);
+                    if (payload.content) setMessageContent(payload.content);
+                    if (payload.msgId) setEditMessageId(payload.msgId);
+                }
+
+                break;
+
+            case "Clear":
+                setAttachments([]);
+                setMessageContent("");
+                break;
+
+            case "Shot-Message":  // 原地发送消息
+                if (payload.msgId && payload.value && payload.value.name) {
+
+                    emitEvent({
+                        type: "message",
+                        target: "ChatPage",
+                        payload: {
+                            command: "MessagesOrder-Meta"
+                        },
+                        markId: markId,
+                        fromWebsocket: true,  // 不要发到 ws 去
+                        notReplyToWebsocket: true
+                    }).then((messagesOrder) => {
+                        messagesOrder = messagesOrder.value;
+
+                        if (payload.value.content === undefined) payload.value.content = messageContentRef.current;
+                        if (!payload.value.attachments) payload.value.attachments = attachmentsMeta;
+                        if (!payload.value.allowRegenerate) payload.value.allowRegenerate = false;
+                        if (!payload.value.prevMessage) payload.value.prevMessage = messagesOrder[messagesOrder.length - 1];
+                        if (!payload.value.position) payload.value.position = "right";
+                        if (!payload.value.nextMessage) payload.value.nextMessage = null;
+                        if (!payload.value.messages) payload.value.messages = [];
+
+                        emitEvent({
+                            type: "message",
+                            target: "ChatPage",
+                            payload: {
+                                command: "Add-Message",
+                                value: {
+                                    [payload.msgId]: payload.value
+                                },
+                                isEdit: payload.isEdit
+                            },
+                            markId: markId,
+                            fromWebsocket: true,  // 不要发到 ws 去
+                            notReplyToWebsocket: true
+                        }).then((data) => {
+
+                            if (!data.success) {
+                                reply({success: false});
+                                return;
+                            }
+
+                            if (payload.autoAddOrder === undefined || payload.autoAddOrder) {
+
+                                const prevIndex = messagesOrder.indexOf(payload.value.prevMessage);
+
+                                let newMessagesOrder = [];
+
+                                if (prevIndex !== -1) {
+                                    newMessagesOrder = [...messagesOrder.slice(0, prevIndex + 1), payload.msgId];
+                                } else {
+                                    newMessagesOrder = [...messagesOrder, payload.msgId];
+                                }
+
+                                emitEvent({
+                                    type: "message",
+                                    target: "ChatPage",
+                                    payload: {
+                                        command: "MessagesOrder-Meta",
+                                        value: newMessagesOrder
+                                    },
+                                    markId: markId,
+                                    fromWebsocket: true,  // 不要发到 ws 去
+                                    notReplyToWebsocket: true
+
+                                }).then(data => {
+                                    // 修改消息链
+                                    emitEvent({
+                                        type: "message",
+                                        target: "ChatPage",
+                                        payload: {
+                                            command: "Add-Message-Messages",
+                                            msgId: payload.value.prevMessage,
+                                            value: payload.msgId,
+                                            switch: true
+                                        },
+                                        markId: markId,
+                                        fromWebsocket: true,  // 不要发到 ws 去
+                                        notReplyToWebsocket: true
+                                    }).then(data => {
+                                        if (!payload.noClear) {
+                                            setIsEditMessage(false);
+                                            setMessageContent("");
+                                            setAttachments([]);
+                                        }
+                                        reply(data);
+                                    })
+                                })
+
+                            }
+                        })
+
+
+                    })
+                } else {
+                    console.error('Shot-Message Failed. Need msgId, value, value.name in payload at least.');
+                    reply({success: false});
+                }
+
+                break;
+        }
+    }, [chatboxSetup, onSendMessage, setAttachments, toolsStatus]);
+
+    // 在 ChatBox 组件内部定义渲染菜单项的函数
+    const renderMenuItems = useCallback((items, parentPath = []) => {
         return items.map((item, index) => {
             if (item.type === 'label') {
                 return (
@@ -352,19 +834,28 @@ function ChatBox({
                 const isDisabled = item.disabled;
                 const currentPath = [...parentPath, item.name];
                 const togglePaths = collectTogglePaths(item.children, []);
-                const checkState = getGroupCheckState(toolsStatus.extra_tools, togglePaths.map(path => [...currentPath, ...path]));
+                const checkState = getGroupCheckState(
+                    toolsStatus.extra_tools,
+                    togglePaths.map(path => [...currentPath, ...path])
+                );
                 const handleToggleAll = (e) => {
                     const toChecked = checkState === 'unchecked';
                     setToolsStatus(prev => ({
                         ...prev,
-                        extra_tools: toggleAllInGroup(prev.extra_tools, togglePaths.map(path => [...currentPath, ...path]), toChecked)
+                        extra_tools: toggleAllInGroup(
+                            prev.extra_tools,
+                            togglePaths.map(path => [...currentPath, ...path]),
+                            toChecked
+                        ),
                     }));
                 };
                 return (
                     <DropdownMenuSub key={`group-${item.name || index}`}>
                         <DropdownMenuSubTrigger
                             disabled={isDisabled}
-                            className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'}`}
+                            className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
+                                isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'
+                            }`}
                         >
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
                             <span>{t(item.text)}</span>
@@ -404,16 +895,16 @@ function ChatBox({
                             setToolsStatus(prev => {
                                 const newValue = !isChecked;
                                 let newExtraTools = {...prev.extra_tools};
-
                                 newExtraTools = setNestedValue(newExtraTools, currentPath, newValue);
-
                                 return {
                                     ...prev,
-                                    extra_tools: newExtraTools
+                                    extra_tools: newExtraTools,
                                 };
                             });
                         }}
-                        className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'}`}
+                        className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
+                            isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'
+                        }`}
                         disabled={isDisabled}
                     >
                         {item.iconData && renderIcon(item.iconType, item.iconData)}
@@ -430,7 +921,9 @@ function ChatBox({
                     <DropdownMenuSub key={`radio-${item.name}`}>
                         <DropdownMenuSubTrigger
                             disabled={isDisabled}
-                            className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'}`}
+                            className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
+                                isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'
+                            }`}
                         >
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
                             <span>{t(item.text)}</span>
@@ -450,10 +943,18 @@ function ChatBox({
                                             }
                                             setToolsStatus(prev => ({
                                                 ...prev,
-                                                extra_tools: setNestedValue({...prev.extra_tools}, currentPath, child.name)
+                                                extra_tools: setNestedValue(
+                                                    {...prev.extra_tools},
+                                                    currentPath,
+                                                    child.name
+                                                ),
                                             }));
                                         }}
-                                        className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${childIsDisabled || isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'}`}
+                                        className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
+                                            childIsDisabled || isDisabled
+                                                ? 'text-gray-400 pointer-events-none opacity-70'
+                                                : 'hover:bg-gray-100'
+                                        }`}
                                         disabled={isDisabled || childIsDisabled}
                                     >
                                         {child.iconData && renderIcon(child.iconType, child.iconData)}
@@ -483,229 +984,42 @@ function ChatBox({
             }
             return null;
         });
-    };
-    // ========== Tool initialization ==========
-    const initializeExtraTools = (toolsConfig) => {
-        const processItems = (items) => {
-            const status = {};
+    }, [toolsStatus.extra_tools, setToolsStatus, t]);
 
-            items.forEach(item => {
-                if (!item.name) return;
-
-                if (item.type === 'toggle') {
-                    status[item.name] = !!item.default;
-                } else if (item.type === 'radio' && item.children?.length > 0) {
-                    let defaultValue;
-                    if (item.default) {
-                        const defaultChild = item.children.find(child => child.name === item.default);
-                        defaultValue = defaultChild ? defaultChild.name : (item.children[0]?.name || undefined);
-                    } else {
-                        defaultValue = item.children[0]?.name || undefined;
-                    }
-                    if (defaultValue !== undefined) {
-                        status[item.name] = defaultValue;
-                    }
-                } else if (item.type === 'group' && item.children) {
-                    const childStatus = processItems(item.children);
-                    status[item.name] = Object.keys(childStatus).length > 0 ? childStatus : {};
-                }
-            });
-
-            return status;
-        };
-
-        return processItems(toolsConfig);
-    };
-    // ========== Tool buttons ==========
-    const renderToolButtons = () => {
-        return tools.map((tool) => {
-            const isActive = tool.isActive ?? false;
-            const disabled = tool.disabled ?? false;
+    // 需要将 renderIcon 函数也定义在组件内部
+    const renderIcon = useCallback((iconType, iconData) => {
+        if (!iconData) return null;
+        if (iconType === 'library') {
             const iconMap = {search: Search, refresh: RotateCw, earth: Earth};
-            let iconData = null;
-            if (tool.iconType === 'library') {
-                iconData = iconMap[tool.iconData];
-            } else if (tool.iconType === 'svg' || tool.iconType === 'image') {
-                iconData = tool.iconData;
-            }
-            if (!iconData) return null;
+            const IconComponent = iconMap[iconData];
+            return IconComponent ? <IconComponent className="w-4 h-4 mr-2"/> : null;
+        } else if (iconType === 'svg') {
             return (
-                <ToggleButton
-                    key={'ToggleButton-' + tool.name}
-                    iconType={tool.iconType}
-                    iconData={iconData}
-                    onClick={(e, isActive) => {
-                        setToolsStatus(prev => ({
-                            ...prev,
-                            builtin_tools: {...prev.builtin_tools, [tool.name]: isActive}
-                        }));
-                    }}
-                    textKey={t(tool.text)}
-                    isActive={isActive}
-                    disabled={disabled}
-                    bgColor={tool.bgColor}
+                <span
+                    className="inline-block w-4 h-4 mr-2"
+                    dangerouslySetInnerHTML={{__html: iconData}}
                 />
             );
-        });
-    };
-    // ========== Send button ==========
-    const sendButtonStyle = useMemo(() => {
-        const isEmpty = !messageContent.trim() && attachmentsMeta.length === 0 && sendButtonStatus === 'normal';
-        const baseIcon = (
-            <svg t="1758800079268" className="icon" viewBox="0 0 1024 1024" version="1.1"
-                 xmlns="http://www.w3.org/2000/svg" p-id="6097" width="24" height="24">
-                <path
-                    d="M512 85.333333a42.666667 42.666667 0 0 1 38.144 23.594667l384 768a42.666667 42.666667 0 0 1-47.36 60.714667L512 854.357333l-374.741333 83.285334a42.666667 42.666667 0 0 1-47.402667-60.714667l384-768A42.666667 42.666667 0 0 1 512 85.333333z m42.666667 691.114667l263.082666 58.453333L554.666667 308.736v467.712zM469.333333 308.736L206.250667 834.901333 469.333333 776.448V308.736z"
-                    fill={isEmpty ? "#9ca3af" : "#ffffff"}
-                    p-id="6098"
-                ></path>
-            </svg>
-        );
-        if (isEmpty) {
-            return {
-                state: 'disabled',
-                className: 'text-gray-400 bg-gray-200 cursor-not-allowed',
-                icon: baseIcon,
-                disabled: true
-            };
+        } else if (iconType === 'image') {
+            return <img src={iconData} alt="" className="w-4 h-4 mr-2"/>;
         }
-        switch (sendButtonStatus) {
-            case 'disabled':
-                return {
-                    state: 'disabled',
-                    className: 'text-gray-400 bg-gray-200 cursor-not-allowed',
-                    icon: baseIcon,
-                    disabled: true
-                };
-            case 'loading':
-                return {
-                    state: 'loading',
-                    className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
-                    icon: (
-                        <div className="relative w-6 h-6">
-                            <div
-                                className="absolute inset-[-9px] border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-4 h-4 bg-white rounded"></div>
-                            </div>
-                        </div>
-                    ),
-                    disabled: false
-                };
-            case 'generating':
-                return {
-                    state: 'generating',
-                    className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
-                    icon: (
-                        <div className="relative w-6 h-6">
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-4 h-4 bg-white rounded"></div>
-                            </div>
-                        </div>
-                    ),
-                    disabled: false
-                };
-            default:
-                return {
-                    state: 'normal',
-                    className: 'text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 cursor-pointer',
-                    icon: baseIcon,
-                    disabled: false
-                };
-        }
-    }, [messageContent, sendButtonStatus, attachmentsMeta]);
-    // ========== Dynamic setup ==========
-    const chatboxSetup = (data) => {
-        const newBuiltinStatus = {};
-        let defaultExtraStatus = initializeExtraTools(data.extra_tools || []);
-        let defaultAttachmentTools = data.ignoreAttachmentTools ? [] : [
-            {type: 'label', text: 'attachment_options'},
-            {
-                type: 'button',
-                text: 'add_image',
-                iconType: 'svg',
-                iconData: '<svg t="1759404220982" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4746" width="20" height="20"><path d="M247.04 373.333333a74.666667 74.666667 0 1 1 149.333333 0 74.666667 74.666667 0 0 1-149.333333 0zM321.706667 384a10.666667 10.666667 0 1 0 0-21.333333 10.666667 10.666667 0 0 0 0 21.333333z" fill="#666666" p-id="4747"></path><path d="M938.666667 796.074667c0 43.050667-33.834667 72.106667-70.4 77.653333a83.925333 83.925333 0 0 1-12.672 0.938667H168.405333a83.072 83.072 0 0 1-12.672-0.981334c-36.565333-5.546667-70.4-34.56-70.4-77.653333V232.021333C85.333333 185.898667 122.965333 149.333333 168.405333 149.333333h687.189334C901.034667 149.333333 938.666667 185.941333 938.666667 232.021333v564.053334zM170.666667 743.381333V789.333333h682.666666v-42.538666l-252.885333-250.666667-138.581333 149.930667a42.666667 42.666667 0 0 1-55.466667 5.12L333.098667 599.04 170.666667 743.424z m682.666666-99.754666V234.666667H170.666667v394.538666l131.072-116.522666a42.666667 42.666667 0 0 1 53.077333-2.901334l71.125333 50.56 138.026667-149.333333A42.666667 42.666667 0 0 1 618.666667 405.333333l234.666666 238.293334z" fill="#666666" p-id="4748"></path></svg>',
-                onClick: PicPickerCallback,
-                autoClose: true
-            },
-            {
-                type: 'button',
-                text: 'add_file',
-                iconType: 'svg',
-                iconData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>',
-                onClick: FilePickerCallback,
-                autoClose: true
-            }
-        ];
+        return null;
+    }, []);
 
-        if (data.ignoreAttachmentTools !== null && data.ignoreAttachmentTools !== undefined) setIgnoreAttachmentTools(Boolean(data.ignoreAttachmentTools));
+    // ========== 副作用 ==========
 
-        const allExtraTools = data.extra_tools ? [...data.extra_tools, ...defaultAttachmentTools] : defaultAttachmentTools;
-
-        let savedExtraStatus = {};
-        try {
-            const saved = localStorage.getItem('extraToolsConfig');
-            if (saved) {
-                savedExtraStatus = JSON.parse(saved);
-            }
-        } catch (error) {
-            console.error('Failed to parse saved extra_tools status:', error);
-        }
-        // Merge: use default as base, override with saved
-        const mergedExtraStatus = deepMerge(defaultExtraStatus, savedExtraStatus);
-        if (data.builtin_tools) {
-            data.builtin_tools.forEach(tool => {
-                newBuiltinStatus[tool.name] = false;
-            });
-            setTools(data.builtin_tools);
-        }
-        setToolsStatus(prev => ({
-            ...prev,
-            builtin_tools: {...prev.builtin_tools, ...newBuiltinStatus},
-            extra_tools: mergedExtraStatus
-        }));
-        if (data.extra_tools) setExtraTools(allExtraTools);
-        if (data.readOnly !== undefined) setIsReadOnly(Boolean(data.readOnly));
-        if (data.tipMessage !== undefined) {
-            setTipMessageIsForNewLine(false);
-            if (data.tipMessage === null) {
-                setShowTipMessage(false);
-            } else {
-                setShowTipMessage(false);
-                setTimeout(() => {
-                    setTipMessage(data.tipMessage || '');
-                    setShowTipMessage(true);
-                    if (data.tipMessageFadeOutDelay) {
-                        setTimeout(() => setShowTipMessage(false), parseInt(data.tipMessageFadeOutDelay));
-                    }
-                }, 300);
-            }
-        }
-        // Add logic to set isEditMessage if provided in data
-        if (data.isEditMessage !== undefined) {
-            setIsEditMessage(Boolean(data.isEditMessage));
-        }
-    };
-    // ========== Effects ==========
+    // 更新引用值
     useEffect(() => {
         sendButtonStatusRef.current = sendButtonStatus;
         messageContentRef.current = messageContent;
     }, [sendButtonStatus, messageContent]);
 
-    useEffect(() => {
-        adjustTextareaHeight();
-    }, [messageContent, isEditMessage]);
-
-    useEffect(() => {
-        initTextareaClone();
-        return cleanupTextareaClone;
-    }, []);
-
+    // 响应式屏幕检测
     useEffect(() => {
         const checkScreenSize = () => {
             const isSmall = isMobile();
             setIsSmallScreen(isSmall);
-            if (isSmall && tipMessageIsForNewLine || !getLocalSetting("ShowShiftEnterNewlineTip", true)) {
+            if ((isSmall && tipMessageIsForNewLine) || !getLocalSetting('ShowShiftEnterNewlineTip', true)) {
                 setTipMessage(null);
                 setTipMessageIsForNewLine(false);
                 setShowTipMessage(false);
@@ -714,15 +1028,17 @@ function ChatBox({
         checkScreenSize();
         window.addEventListener('resize', checkScreenSize);
         return () => window.removeEventListener('resize', checkScreenSize);
-    }, []);
+    }, [tipMessageIsForNewLine]);
 
+    // 加载工具配置
     useEffect(() => {
         if (toolsLoadedStatus === 0) {
             if (apiEndpoint.CHATBOX_ENDPOINT.trim() === '') {
                 setToolsLoadedStatus(-1);
                 return;
             }
-            apiClient.get(apiEndpoint.CHATBOX_ENDPOINT)
+            apiClient
+                .get(apiEndpoint.CHATBOX_ENDPOINT)
                 .then(data => {
                     chatboxSetup(data);
                     setToolsLoadedStatus(1);
@@ -731,187 +1047,20 @@ function ChatBox({
                     setToolsLoadedStatus(3);
                 });
         }
-    }, [toolsLoadedStatus]);
+    }, [toolsLoadedStatus, chatboxSetup]);
 
-    // 广播
+    // 监听事件广播
     useEffect(() => {
-        const unsubscribe = onEvent("widget", "ChatBox", markId, false, !markId).then((payload, markId, isReply, id, reply) => {
-
-            switch (payload.command) {
-                case "SendButton-Status":
-                    const validStates = ['disabled', 'normal', 'loading', 'generating'];
-                    if (validStates.includes(payload.value)) {
-                        setSendButtonStatus(payload.value);
-                        reply({value: payload.value});
-                    } else {
-                        reply({value: sendButtonStatusRef.current});
-                    }
-                    if (payload.readOnly !== undefined) {
-                        setIsReadOnly(Boolean(payload.readOnly));
-                    }
-                    break;
-                case "Set-MessageContent":
-                    setMessageContent(payload.value);
-                    break;
-                case "Get-MessageContent":
-                    reply({value: messageContentRef.current});
-                    break;
-                case "Setup-ChatBox":
-                    if (payload.value.builtin_tools || payload.value.extra_tools) {
-                        setToolsLoadedStatus(-1);
-                    }
-                    setTimeout(() => {
-                        chatboxSetup(payload.value);
-                        setToolsLoadedStatus(2);
-                    }, 500);
-                    break;
-                case "Set-QuickOptions":
-                    setIsTransitioning(true);
-                    setTimeout(() => {
-                        setQuickOptions(payload.value);
-                        setIsTransitioning(false);
-                    }, 500);
-                    break;
-                case "Attachment-Meta":
-                    if (payload.value) {
-                        setAttachments(payload.value);
-                        reply({value: payload.value});
-                    } else {
-                        reply({value: attachments});
-                    }
-                    break;
-
-                case "Set-EditMessage":
-
-                    if (payload.immediate) {
-                        onSendMessage(payload.content, toolsStatus, true, payload.msgId, payload.attachments, sendButtonStatusRef.current, payload.isRegenerate);
-                    } else {
-                        setIsEditMessage(Boolean(payload.isEdit));
-                        if (payload.attachments) setAttachments(payload.attachments);
-                        if (payload.content) setMessageContent(payload.content);
-                        if (payload.msgId) setEditMessageId(payload.msgId);
-                    }
-
-                    break;
-
-                case "Clear":
-                    setAttachments([]);
-                    setMessageContent("");
-                    break;
-
-                case "Shot-Message":  // 原地发送消息
-                    if (payload.msgId && payload.value && payload.value.name) {
-
-                        emitEvent({
-                            type: "message",
-                            target: "ChatPage",
-                            payload: {
-                                command: "MessagesOrder-Meta"
-                            },
-                            markId: markId,
-                            fromWebsocket: true,  // 不要发到 ws 去
-                            notReplyToWebsocket: true
-                        }).then((messagesOrder) => {
-                            messagesOrder = messagesOrder.value;
-
-                            if (payload.value.content === undefined) payload.value.content = messageContentRef.current;
-                            if (!payload.value.attachments) payload.value.attachments = attachmentsMeta;
-                            if (!payload.value.allowRegenerate) payload.value.allowRegenerate = false;
-                            if (!payload.value.prevMessage) payload.value.prevMessage = messagesOrder[messagesOrder.length - 1];
-                            if (!payload.value.position) payload.value.position = "right";
-                            if (!payload.value.nextMessage) payload.value.nextMessage = null;
-                            if (!payload.value.messages) payload.value.messages = [];
-
-                            emitEvent({
-                                type: "message",
-                                target: "ChatPage",
-                                payload: {
-                                    command: "Add-Message",
-                                    value: {
-                                        [payload.msgId]: payload.value
-                                    },
-                                    isEdit: payload.isEdit
-                                },
-                                markId: markId,
-                                fromWebsocket: true,  // 不要发到 ws 去
-                                notReplyToWebsocket: true
-                            }).then((data) => {
-
-                                if (!data.success) {
-                                    reply({success: false});
-                                    return;
-                                }
-
-                                if (payload.autoAddOrder === undefined || payload.autoAddOrder) {
-
-                                    const prevIndex = messagesOrder.indexOf(payload.value.prevMessage);
-
-                                    let newMessagesOrder = [];
-
-                                    if (prevIndex !== -1) {
-                                        newMessagesOrder = [...messagesOrder.slice(0, prevIndex + 1), payload.msgId];
-                                    } else {
-                                        newMessagesOrder = [...messagesOrder, payload.msgId];
-                                    }
-
-                                    emitEvent({
-                                        type: "message",
-                                        target: "ChatPage",
-                                        payload: {
-                                            command: "MessagesOrder-Meta",
-                                            value: newMessagesOrder
-                                        },
-                                        markId: markId,
-                                        fromWebsocket: true,  // 不要发到 ws 去
-                                        notReplyToWebsocket: true
-
-                                    }).then(data => {
-                                        // 修改消息链
-                                        emitEvent({
-                                            type: "message",
-                                            target: "ChatPage",
-                                            payload: {
-                                                command: "Add-Message-Messages",
-                                                msgId: payload.value.prevMessage,
-                                                value: payload.msgId,
-                                                switch: true
-                                            },
-                                            markId: markId,
-                                            fromWebsocket: true,  // 不要发到 ws 去
-                                            notReplyToWebsocket: true
-                                        }).then(data => {
-                                            if (!payload.noClear) {
-                                                setIsEditMessage(false);
-                                                setMessageContent("");
-                                                setAttachments([]);
-                                            }
-                                            reply(data);
-                                        })
-                                    })
-
-                                }
-                            })
-
-
-
-                        })
-                    } else {
-                        console.error('Shot-Message Failed. Need msgId, value, value.name in payload at least.');
-                        reply({ success: false });
-                    }
-
-                    break;
-            }
-        });
+        const unsubscribe = onEvent('widget', 'ChatBox', markId, false, !markId).then(handleEventBroadcast);
         return () => unsubscribe();
+    }, [handleEventBroadcast, markId]);
 
-    }, [toolsStatus, attachmentsMeta, markId]);
-
-    // 页面切换时候的清理
+    // 页面切换清理
     useEffect(() => {
         setIsEditMessage(false);
-    }, [markId])
+    }, [markId]);
 
+    // 更新附件高度
     useEffect(() => {
         const updateHeight = () => {
             if (attachmentRef.current) {
@@ -924,16 +1073,23 @@ function ChatBox({
         window.addEventListener('resize', updateHeight);
         return () => window.removeEventListener('resize', updateHeight);
     }, [attachmentsMeta]);
+
+    // 响应式宽度更新
     useLayoutEffect(() => {
         const updateWidth = () => {
             if (quickOptions.length > 0 && quickOptionsRef.current?.firstElementChild) {
-                // trigger layout
+                // 触发布局更新
             }
         };
         const timeoutId = setTimeout(updateWidth, 100);
         window.addEventListener('resize', updateWidth);
-        return () => window.removeEventListener('resize', updateWidth);
+        return () => {
+            clearTimeout(timeoutId);
+            window.removeEventListener('resize', updateWidth);
+        };
     }, [quickOptions]);
+
+    // 根元素高度观察
     useEffect(() => {
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
@@ -953,7 +1109,8 @@ function ChatBox({
             }
         };
     }, [onHeightChange]);
-    // Save extra_tools status to localStorage when it changes
+
+    // 保存额外工具状态到本地存储
     useEffect(() => {
         if (Object.keys(toolsStatus.extra_tools || {}).length > 0) {
             try {
@@ -963,12 +1120,50 @@ function ChatBox({
             }
         }
     }, [toolsStatus.extra_tools]);
+
+    // ========== 使用 useMemo 缓存不需要频繁计算的 props ==========
+
+    const chatBoxHeaderProps = useMemo(() => ({
+        quickOptions,
+        isSmallScreen,
+        showTipMessage,
+        tipMessage,
+        isReadOnly,
+        onOptionClick: handleOptionClick,
+        currentPageIndex,
+        setCurrentPageIndex,
+        quickOptionsRef,
+        selectedOption: selectedQuickOption,
+        isTransitioning,
+    }), [
+        quickOptions,
+        isSmallScreen,
+        showTipMessage,
+        tipMessage,
+        isReadOnly,
+        handleOptionClick,
+        currentPageIndex,
+        selectedQuickOption,
+        isTransitioning,
+    ]);
+
+    const toolButtonsProps = useMemo(() => ({
+        toolsLoadedStatus,
+        extraTools,
+        tools,
+        toolsStatus,
+        setToolsStatus,
+        setToolsLoadedStatus,
+        renderMenuItems, // 传递函数
+        t,
+    }), [toolsLoadedStatus, extraTools, tools, toolsStatus, setToolsStatus, setToolsLoadedStatus, renderMenuItems, t]);
+
     return (
         <>
             <DropFileLayer
                 onDropFiles={(files, items) => {
                     if (ignoreAttachmentTools) {
-                        toast.error(t("upload_files_disable"));
+                        toast.error(t('upload_files_disable'));
                         return;
                     }
                     onDropFiles(files, items);
@@ -982,25 +1177,13 @@ function ChatBox({
                 style={{
                     transition: 'height 0.3s ease-in-out, max-height 0.3s ease-in-out',
                     height: 'auto',
-                    maxHeight: attachmentHeight > 0 ? `calc(100% + ${attachmentHeight}px)` : '100%'
+                    maxHeight: attachmentHeight > 0 ? `calc(100% + ${attachmentHeight}px)` : '100%',
                 }}
             >
-                <ChatBoxHeader
-                    quickOptions={quickOptions}
-                    isSmallScreen={isSmallScreen}
-                    showTipMessage={showTipMessage}
-                    tipMessage={tipMessage}
-                    isReadOnly={isReadOnly}
-                    onOptionClick={handleOptionClick}
-                    t={t}
-                    currentPageIndex={currentPageIndex}
-                    setCurrentPageIndex={setCurrentPageIndex}
-                    quickOptionsRef={quickOptionsRef}
-                    selectedOption={selectedQuickOption}
-                    isTransitioning={isTransitioning}
-                />
+                <ChatBoxHeader {...chatBoxHeaderProps} />
                 <div
                     className="border-1 bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-lg focus-within:shadow-lg pointer-events-auto">
+                    {/* 文件上传进度 */}
                     <div
                         className="overflow-hidden transition-all duration-300 ease-in-out"
                         style={{height: uploadFiles.length > 0 ? 'auto' : 0, minHeight: 0}}
@@ -1008,6 +1191,8 @@ function ChatBox({
                         <FileUploadProgress uploadFiles={uploadFiles} onRetry={onRetryUpload}
                                             onCancel={onCancelUpload}/>
                     </div>
+
+                    {/* 附件展示 */}
                     <div
                         ref={attachmentRef}
                         className="overflow-hidden transition-all duration-300 ease-in-out"
@@ -1015,104 +1200,77 @@ function ChatBox({
                             height: attachmentsMeta.length > 0 ? 'auto' : 0,
                             opacity: attachmentsMeta.length > 0 ? 1 : 0,
                             paddingTop: attachmentsMeta.length > 0 ? '0.375rem' : 0,
-                            paddingBottom: attachmentsMeta.length > 0 ? '0.375rem' : 0
+                            paddingBottom: attachmentsMeta.length > 0 ? '0.375rem' : 0,
                         }}
                     >
-                        <AttachmentShowcase
-                            attachmentsMeta={attachmentsMeta}
-                            onRemove={onAttachmentRemove}
-                        />
+                        <AttachmentShowcase attachmentsMeta={attachmentsMeta} onRemove={onAttachmentRemove}/>
                     </div>
+
+                    {/* 消息编辑状态提示 */}
                     <div className="pt-2 pl-2 pr-2">
-                        <Transition
-                            show={isEditMessage}
-                            enter="transition-opacity duration-200"
-                            enterFrom="opacity-0"
-                            enterTo="opacity-100"
-                            leave="transition-opacity duration-150"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                        >
-                            <div
-                                className="bg-gray-100 text-gray-800 text-sm font-medium py-3 px-4 rounded-t-2xl flex items-center justify-between">
-                                <div className="flex items-center">
-                                    <PenLine className="w-4 h-4 mr-2"/>
-                                    <span>{t("editing_message")}</span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsEditMessage(false)}
-                                        className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
-                                        aria-label={t("cancel_editing")}
-                                    >
-                                        <X className="w-4 h-4"/>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setIsEditMessage(false);
-                                            setAttachments([]);
-                                            setMessageContent("");
-                                        }}
-                                        className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
-                                        aria-label={t("cancel_editing")}
-                                    >
-                                        <Trash2 className="w-4 h-4"/>
-                                    </button>
-                                </div>
-                            </div>
-                        </Transition>
-                        <textarea
-                            ref={textareaRef}
+                        <EditMessageIndicator
+                            isEditMessage={isEditMessage}
+                            setIsEditMessage={setIsEditMessage}
+                            setAttachments={setAttachments}
+                            setMessageContent={setMessageContent}
+                            t={t}
+                        />
+
+                        {/* 消息输入组件 */}
+                        <MessageInput
                             value={messageContent}
                             onChange={handleInputChange}
                             onPaste={handlePaste}
-                            onKeyDown={(e) => !isReadOnly && handleKeyDown(e)}
-                            placeholder={t("input_placeholder")}
-                            className="w-full min-h-[48px] max-h-[132px] p-4 pt-4 pb-2 pr-4 text-gray-800 bg-transparent border-none resize-none outline-none pretty-scrollbar"
-                            rows={1}
-                            style={{transition: 'height 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)'}}
+                            onKeyDown={handleKeyDown}
+                            isReadOnly={isReadOnly}
+                            placeholder={t('input_placeholder')}
+                            textareaRef={textareaRef}
+                            isEditMessage={isEditMessage}
                         />
                     </div>
+
+                    {/* 工具按钮和发送按钮 */}
                     <div className="flex items-center justify-between px-4 pb-3">
-                        <ToolButtons
-                            toolsLoadedStatus={toolsLoadedStatus}
-                            extraTools={extraTools}
-                            tools={tools}
-                            toolsStatus={toolsStatus}
-                            setToolsStatus={setToolsStatus}
-                            renderToolButtons={renderToolButtons}
-                            renderMenuItems={() => renderMenuItems(extraTools)}
-                            setToolsLoadedStatus={setToolsLoadedStatus}
-                            t={t}
-                        />
+                        <ToolButtons {...toolButtonsProps}/>
                         <div className="flex items-center space-x-2">
+                            {/* 放大按钮 */}
                             <button
                                 type="button"
-                                aria-label={t("zoom_in_input_box")}
+                                aria-label={t('zoom_in_input_box')}
                                 className="p-2.5 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-offset-2 transition-colors cursor-pointer"
                                 onClick={() => setIsModalOpen(true)}
                             >
-                                <svg t="1758849161791" className="icon" viewBox="0 0 1024 1024" version="1.1"
-                                     xmlns="http://www.w3.org/2000/svg" p-id="18774" width="26" height="26">
+                                <svg
+                                    t="1758849161791"
+                                    className="icon"
+                                    viewBox="0 0 1024 1024"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    p-id="18774"
+                                    width="26"
+                                    height="26"
+                                >
                                     <path
                                         d="M463.04 896H169.152A41.152 41.152 0 0 1 128 854.848V560.96a41.152 41.152 0 1 1 82.304 0v252.8h252.736a41.152 41.152 0 1 1 0 82.24z m391.808-391.808a41.152 41.152 0 0 1-41.152-41.152v-252.8H560.96a41.152 41.152 0 1 1 0-82.24h293.888c22.72 0 41.152 18.432 41.152 41.152v293.888a41.152 41.152 0 0 1-41.152 41.152z"
-                                        fill="#000000" p-id="18775"></path>
+                                        fill="#000000"
+                                        p-id="18775"
+                                    ></path>
                                 </svg>
                             </button>
-                            <button
-                                type="button"
+
+                            {/* 发送按钮 */}
+                            <SendButton
+                                status={sendButtonStatus}
+                                messageContent={messageContent}
+                                attachmentsMeta={attachmentsMeta}
                                 onClick={handleSendMessage}
-                                disabled={sendButtonStyle.disabled}
-                                aria-label={t("send_message")}
-                                className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${sendButtonStyle.className}`}
-                            >
-                                {sendButtonStyle.icon}
-                            </button>
+                                t={t}
+                            />
                         </div>
                     </div>
                 </div>
+
+                {/* 全屏编辑模态框 */}
                 <Transition appear show={isModalOpen} as={Fragment}>
                     <Transition.Child
                         as={Fragment}
@@ -1127,17 +1285,17 @@ function ChatBox({
                             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 pointer-events-auto"
                             style={{
                                 marginLeft: !isMobile() ? 'var(--sidebar-width)' : '0',
-                                transition: 'margin-left 0.3s ease-in-out'
+                                transition: 'margin-left 0.3s ease-in-out',
                             }}
                         >
                             <div
-                                className="bg-white z-50 rounded-2xl w-full max-w-3xl h-[85vh] p-0.5 relative" // 移除 transition-all duration-200 ease-out transform
-                                onClick={(e) => e.stopPropagation()}
+                                className="bg-white z-50 rounded-2xl w-full max-w-3xl h-[85vh] p-0.5 relative"
+                                onClick={e => e.stopPropagation()}
                             >
                                 <button
                                     onClick={() => setIsModalOpen(false)}
                                     className="absolute z-50 top-0 right-0 m-2 rounded-full bg-gray-200 text-gray-500 hover:text-gray-700 cursor-pointer"
-                                    aria-label={t("close")}
+                                    aria-label={t('close')}
                                 >
                                     <X className="w-5 h-5"/>
                                 </button>
@@ -1157,4 +1315,44 @@ function ChatBox({
     );
 }
 
-export default ChatBox;
+// 使用 React.memo 包裹主组件，并提供自定义比较函数
+export default memo(ChatBox, (prevProps, nextProps) => {
+    // 自定义比较函数，排除频繁变化的 props
+    const prevAttachmentsMeta = prevProps.attachmentsMeta || [];
+    const nextAttachmentsMeta = nextProps.attachmentsMeta || [];
+
+    // 检查附件数组是否变化
+    if (prevAttachmentsMeta.length !== nextAttachmentsMeta.length) {
+        return false;
+    }
+
+    for (let i = 0; i < prevAttachmentsMeta.length; i++) {
+        const prevAttachment = prevAttachmentsMeta[i];
+        const nextAttachment = nextAttachmentsMeta[i];
+        if (
+            prevAttachment.id !== nextAttachment.id ||
+            prevAttachment.name !== nextAttachment.name ||
+            prevAttachment.preview !== nextAttachment.preview
+        ) {
+            return false;
+        }
+    }
+
+    // 检查其他 props
+    return (
+        prevProps.readOnly === nextProps.readOnly &&
+        prevProps.markId === nextProps.markId &&
+        prevProps.uploadFiles === nextProps.uploadFiles &&
+        prevProps.onSendMessage === nextProps.onSendMessage &&
+        prevProps.FilePickerCallback === nextProps.FilePickerCallback &&
+        prevProps.PicPickerCallback === nextProps.PicPickerCallback &&
+        prevProps.onAttachmentRemove === nextProps.onAttachmentRemove &&
+        prevProps.onImagePaste === nextProps.onImagePaste &&
+        prevProps.onRetryUpload === nextProps.onRetryUpload &&
+        prevProps.onCancelUpload === nextProps.onCancelUpload &&
+        prevProps.onDropFiles === nextProps.onDropFiles &&
+        prevProps.onFolderDetected === nextProps.onFolderDetected &&
+        prevProps.onHeightChange === nextProps.onHeightChange &&
+        prevProps.dropTargetRef === nextProps.dropTargetRef
+    );
+});

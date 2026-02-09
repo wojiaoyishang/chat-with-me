@@ -1,6 +1,6 @@
-import React, {useEffect, useState, useRef, useCallback} from 'react';
-import {useImmer} from 'use-immer';
-import {produce} from 'immer';
+import React, {useEffect, useState, useRef, useCallback, useMemo, memo} from 'react';
+import { useImmer } from 'use-immer';
+import { produce } from 'immer';
 import {
     generateUUID,
     getMarkId,
@@ -10,35 +10,245 @@ import {
     UnifiedErrorScreen,
     UnifiedLoadingScreen
 } from "@/lib/tools.jsx";
-import {toast} from "sonner";
-import {Transition} from '@headlessui/react';
+import { toast } from "sonner";
+import { Transition } from '@headlessui/react';
 import {
     processSelectedFiles,
     fileUpload,
     createFilePicker,
 } from "@/lib/tools.jsx";
-import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
-import {useTranslation} from "react-i18next";
-import {ArrowDown, ChevronDown, CircleCheck } from 'lucide-react';
+import { emitEvent, onEvent } from "@/store/useEventStore.jsx";
+import { useTranslation } from "react-i18next";
+import { ArrowDown, ChevronDown, CircleCheck } from 'lucide-react';
 import ChatBox from "@/components/chat/chatbox.jsx";
 import MessageContainer from "@/components/chat/MessageContainer.jsx";
 import apiClient from "@/lib/apiClient.js";
-import {apiEndpoint} from "@/config.js";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Button} from "@/components/ui/button";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {Badge} from "@/components/ui/badge";
+import { apiEndpoint } from "@/config.js";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
-function ChatPage({markId, setMarkId}) {
-    const {t} = useTranslation();
+// ========== 内部组件：模型项 ==========
+const ModelItem = memo(({
+                            model,
+                            isSelected,
+                            isMobile,
+                            onMouseEnter,
+                            onClick,
+                            dataSelected
+                        }) => {
+    const itemContent = useMemo(() => (
+        <>
+            <Avatar className="h-6 w-6">
+                <AvatarImage src={model.avatar} alt={model.name} />
+                <AvatarFallback>{model.name[0]}</AvatarFallback>
+            </Avatar>
+            <div className="ml-2 text-left">
+                <p className="font-medium text-sm text-gray-800">{model.name}</p>
+                <p className="text-xs text-gray-500 truncate w-40">{model.description}</p>
+            </div>
+            {isSelected && (
+                <CircleCheck className="ml-auto text-[#615CED] h-4 w-4" />
+            )}
+        </>
+    ), [model, isSelected]);
+
+    // 移动端和桌面端渲染方式不同
+    if (!isMobile) {
+        return (
+            <div key={model.id} onMouseEnter={onMouseEnter}>
+                <button
+                    data-selected={dataSelected}
+                    onClick={onClick}
+                    className={`cursor-pointer w-full flex items-center pl-2 pr-4 py-1.5 rounded-md transition-colors ${
+                        isSelected ? 'bg-[#F0F0FD]' : 'hover:bg-gray-100'
+                    }`}
+                >
+                    {itemContent}
+                </button>
+            </div>
+        );
+    } else {
+        return (
+            <button
+                key={model.id}
+                data-selected={dataSelected}
+                onClick={onClick}
+                className={`cursor-pointer w-full flex items-center pl-2 pr-4 py-1.5 rounded-md transition-colors ${
+                    isSelected ? 'bg-[#F0F0FD]' : 'hover:bg-gray-100'
+                }`}
+            >
+                {itemContent}
+            </button>
+        );
+    }
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.model.id === nextProps.model.id &&
+        prevProps.model.name === nextProps.model.name &&
+        prevProps.model.description === nextProps.model.description &&
+        prevProps.model.avatar === nextProps.model.avatar &&
+        prevProps.isSelected === nextProps.isSelected &&
+        prevProps.isMobile === nextProps.isMobile &&
+        prevProps.onMouseEnter === nextProps.onMouseEnter &&
+        prevProps.onClick === nextProps.onClick &&
+        prevProps.dataSelected === nextProps.dataSelected
+    );
+});
+
+ModelItem.displayName = 'ModelItem';
+
+// ========== 内部组件：模型预览卡片 ==========
+const ModelPreviewCard = React.memo(({ model, isMobile }) => {
+    if (!model) return null;
+
+    return (
+        <div className="p-4 bg-gray-50 border rounded-md">
+            <div className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-3">
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={model.avatar} alt={model.name} />
+                        <AvatarFallback>{model.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <p className="font-semibold text-sm text-gray-800">{model.name}</p>
+                        <p className="text-xs text-gray-500">{model.description}</p>
+                    </div>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                    {model.tags?.map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                            {tag}
+                        </Badge>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.model === nextProps.model &&
+        prevProps.isMobile === nextProps.isMobile
+    );
+});
+
+ModelPreviewCard.displayName = 'ModelPreviewCard';
+
+// ========== Header组件 ==========
+const ChatHeader = memo(({
+                             models,
+                             selectedModel,
+                             isModelPopoverOpen,
+                             previewModel,
+                             isMobile,
+                             t,
+                             handlePopoverOpenChange,
+                             handleModelItemClick,
+                             handleModelItemMouseEnter,
+                             scrollToSelectedItem
+                         }) => {
+    const modelListRef = useRef(null);
+
+    // 监听弹窗打开状态和模型列表变化，滚动到选中项
+    useEffect(() => {
+        if (isModelPopoverOpen) {
+            scrollToSelectedItem(modelListRef);
+        }
+    }, [isModelPopoverOpen, models, scrollToSelectedItem]);
+
+    // 使用useMemo缓存模型列表项的渲染
+    const modelItems = useMemo(() => {
+        if (!models || models.length === 0) {
+            return (
+                <p className="text-center text-gray-500 py-4">
+                    {t("no_models")}
+                </p>
+            );
+        }
+
+        return models.map((model) => {
+            const isSelected = model.id === selectedModel?.id;
+            const handleClick = () => handleModelItemClick(model);
+            const handleMouseEnter = () => handleModelItemMouseEnter(model);
+
+            return (
+                <ModelItem
+                    key={model.id}
+                    model={model}
+                    isSelected={isSelected}
+                    isMobile={isMobile}
+                    onMouseEnter={handleMouseEnter}
+                    onClick={handleClick}
+                    dataSelected={isSelected ? 'true' : 'false'}
+                />
+            );
+        });
+    }, [models, isMobile, t, handleModelItemClick, handleModelItemMouseEnter, selectedModel]);
+
+    return (
+        <header className="w-full bg-white flex items-center justify-start p-4 h-14">
+            {/* 优化后的 Popover 部分 */}
+            <Popover
+                open={isModelPopoverOpen}
+                onOpenChange={handlePopoverOpenChange}
+            >
+                <PopoverTrigger asChild>
+                    <Button variant="ghost"
+                            className="justify-start px-0 hover:bg-transparent text-lg cursor-pointer">
+                        {selectedModel?.name || t("no_models")}
+                        <ChevronDown
+                            className={`ml-2 h-4 w-4 transition-transform duration-200 ${isModelPopoverOpen ? 'rotate-180' : ''}`}/>
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                    align="start"
+                    className={isMobile ? "w-[90vw] max-w-md p-4" : "w-85"}
+                >
+                    <div className="flex flex-col space-y-4">
+                        {/* 模型列表容器 - 添加滚动 */}
+                        <div
+                            ref={modelListRef}
+                            className="space-y-1 max-h-[200px] overflow-y-auto pr-1 pretty-scrollbar"
+                        >
+                            {modelItems}
+                        </div>
+                        {/* 名片部分 - 不在滚动区域内 */}
+                        {(!isMobile || (isMobile && previewModel)) && (
+                            <ModelPreviewCard model={previewModel} isMobile={isMobile} />
+                        )}
+                    </div>
+                </PopoverContent>
+            </Popover>
+        </header>
+    );
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.models === nextProps.models &&
+        prevProps.selectedModel?.id === nextProps.selectedModel?.id &&
+        prevProps.isModelPopoverOpen === nextProps.isModelPopoverOpen &&
+        prevProps.previewModel?.id === nextProps.previewModel?.id &&
+        prevProps.isMobile === nextProps.isMobile &&
+        prevProps.t === nextProps.t &&
+        prevProps.handlePopoverOpenChange === nextProps.handlePopoverOpenChange &&
+        prevProps.handleModelItemClick === nextProps.handleModelItemClick &&
+        prevProps.handleModelItemMouseEnter === nextProps.handleModelItemMouseEnter &&
+        prevProps.scrollToSelectedItem === nextProps.scrollToSelectedItem
+    );
+});
+
+ChatHeader.displayName = 'ChatHeader';
+
+// ========== 主组件 ==========
+function ChatPage({ markId, setMarkId }) {
+    const { t } = useTranslation();
     const chatPageRef = useRef(null);
     const isProcessingRef = useRef(false);
     const messagesContainerRef = useRef(null);
     const [selfMarkId, setSelfMarkId] = [markId, setMarkId];
-    const selfMarkIdRef = useRef(null);
 
-    const currentMessageSendRequestIDRef = useRef(generateUUID()); // 用于请求防抖，用于 markId 获取 和 消息发送
-    const currentMessagesLoadedRequestIDRef = useRef(generateUUID()); // 用于请求防抖，用于 消息已加载
+    const currentMessageSendRequestIDRef = useRef(generateUUID());
+    const currentMessagesLoadedRequestIDRef = useRef(generateUUID());
 
     const uploadIntervals = useRef(new Map());
     const [uploadFiles, setUploadFiles] = useState([]);
@@ -49,7 +259,7 @@ function ChatPage({markId, setMarkId}) {
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [isMessageLoaded, setIsMessageLoaded] = useState(false);
     const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
-    const [randomMark, setRandomMark] = useState(null); // 用于重载页面
+    const [randomMark, setRandomMark] = useState(null);
 
     // 消息状态
     const [messagesOrder, setMessagesOrder] = useState([]);
@@ -61,15 +271,58 @@ function ChatPage({markId, setMarkId}) {
     const [scrollButtonBottom, setScrollButtonBottom] = useState(200);
     const isMobile = useIsMobile();
     const [models, setModels] = useState([]);
-    const selectedModelRef = useRef({name: t("no_models")});
+    const selectedModelRef = useRef({ name: t("no_models") });
     const [previewModel, setPreviewModel] = useState(null);
-    const [isNewMarkId, setIsNewMarkId] = useState(false); // 用于判断是不是请求新请求的 MarkId ，防止页面刷新
+    const [isNewMarkId, setIsNewMarkId] = useState(false);
     const isNewMarkIdRef = useRef(false);
-    const modelListRef = useRef(null);
     const [isFirstMessageSend, setIsFirstMessageSend] = useState(false);
+
+    // ========== Popover 相关函数 ==========
+
+    const scrollToSelectedItem = useCallback((modelListRef) => {
+        if (modelListRef?.current) {
+            const selectedItem = modelListRef.current.querySelector('[data-selected="true"]');
+            if (selectedItem) {
+                requestAnimationFrame(() => {
+                    selectedItem.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
+                });
+            }
+        }
+    }, []);
+
+    const handlePopoverOpenChange = useCallback((open) => {
+        setIsModelPopoverOpen(open);
+        if (!open) {
+            setPreviewModel(null);
+        } else {
+            // 展开时设置当前选中的模型为预览模型
+            setPreviewModel(selectedModelRef.current);
+        }
+    }, []);
+
+    const handleModelItemClick = useCallback((model) => {
+        selectedModelRef.current = model;
+        if (!isMobile) {
+            // 桌面端点击后关闭popover
+            setIsModelPopoverOpen(false);
+        } else {
+            // 移动端点击后只设置预览模型，不关闭popover
+            setPreviewModel(model);
+        }
+    }, [isMobile]);
+
+    const handleModelItemMouseEnter = useCallback((model) => {
+        if (!isMobile) {
+            setPreviewModel(model); // 桌面端悬停时更新预览
+        }
+    }, [isMobile]);
+
     const calculateIsNearBottom = () => {
         if (!messagesContainerRef.current) return true;
-        const {scrollTop, scrollHeight, clientHeight} = messagesContainerRef.current;
+        const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
         return scrollHeight - scrollTop - clientHeight < 100;
     };
 
@@ -99,13 +352,13 @@ function ChatPage({markId, setMarkId}) {
         const container = messagesContainerRef.current;
         if (!container) return;
         const handleScroll = () => {
-            const {scrollTop, scrollHeight, clientHeight} = container;
+            const { scrollTop, scrollHeight, clientHeight } = container;
             const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
             setIsAtBottom(isNearBottom);
             setShowScrollToBottomButton(!isNearBottom);
         };
         handleScroll();
-        container.addEventListener('scroll', handleScroll, {passive: true});
+        container.addEventListener('scroll', handleScroll, { passive: true });
         return () => {
             container.removeEventListener('scroll', handleScroll);
         };
@@ -157,7 +410,7 @@ function ChatPage({markId, setMarkId}) {
                     model: selectedModelRef.current.id,
                     sendButtonStatus: sendButtonStatus,
                     isRegenerate: isRegenerate,
-                    requestId: currentMessageSendRequestIDRef.current // 携带 RequestID
+                    requestId: currentMessageSendRequestIDRef.current
                 },
                 markId: markId
             };
@@ -174,7 +427,6 @@ function ChatPage({markId, setMarkId}) {
         };
 
         if (!selfMarkId) {
-            // 发起 Get-MarkId 请求，也带上当前 RequestID
             emitEvent({
                 type: "page",
                 target: "ChatPage",
@@ -330,10 +582,9 @@ function ChatPage({markId, setMarkId}) {
     };
 
     const handleFilePicker = createFilePicker('*', handleSelectedFiles);
-
     const handlePicPicker = createFilePicker('image/*', handleSelectedFiles);
 
-    const loadMoreHistory = async () => {
+    const loadMoreHistory = useCallback(async () => {
         try {
             return new Promise((resolve, reject) => {
                 apiClient
@@ -347,13 +598,11 @@ function ChatPage({markId, setMarkId}) {
                         wasAtBottomRef.current = calculateIsNearBottom();
 
                         // 设置 messages
-
                         const newMessages = {...messagesRef.current, ...data.messages};
                         setMessages(newMessages);
                         messagesRef.current = newMessages;
 
                         // 设置 messagesOrder
-
                         let newOrder;
                         if (data.haveMore) {
                             newOrder = ['<PREV_MORE>', ...data.messagesOrder, ...messagesOrder.slice(1)];
@@ -370,9 +619,9 @@ function ChatPage({markId, setMarkId}) {
         } catch (err) {
             throw err;
         }
-    };
+    }, [selfMarkId]);
 
-    const loadSwitchMessage = async (msgId, newMsgId) => {
+    const loadSwitchMessage = useCallback(async (msgId, newMsgId) => {
         if (!messagesRef.current.hasOwnProperty(msgId)) return;
         let missMsg = !messagesRef.current.hasOwnProperty(newMsgId);
         let newOrders = [];
@@ -400,19 +649,16 @@ function ChatPage({markId, setMarkId}) {
                 wasAtBottomRef.current = calculateIsNearBottom();
 
                 // 设置 messages
-
                 const newMessagesFromData = {...messagesRef.current, ...data.messages};
                 setMessages(newMessagesFromData);
                 messagesRef.current = newMessagesFromData;
 
                 // 设置 messagesOrder
-
                 const newOrderFromData = [...messagesOrderRef.current.slice(0, messagesOrderRef.current.indexOf(msgId) + 1), ...data.messagesOrder];
                 setMessagesOrder(newOrderFromData);
                 messagesOrderRef.current = newOrderFromData;
 
                 // 设置 messages (nextMessage 更新)
-
                 const newMessagesWithNext = produce(messagesRef.current, draft => {
                     draft[msgId].nextMessage = newMsgId;
                 });
@@ -440,7 +686,7 @@ function ChatPage({markId, setMarkId}) {
 
             return true;
         }
-    }
+    }, [selfMarkId]);
 
     const switchMessage = async (msg, msgId, isNext) => {
         const msgId_index = msg.messages.indexOf(msg.nextMessage);
@@ -469,17 +715,16 @@ function ChatPage({markId, setMarkId}) {
             zIndex="z-20"
         />
     );
+
     const LoadingFailedScreen = () => (
         <UnifiedErrorScreen
             title={t("load_error")}
             subtitle={t("retry_after_network")}
             zIndex="z-51"
-            // 不传 onRetry，按钮会自动隐藏
         />
     );
 
     const emitMessagesLoaded = () => {
-
         setTimeout(() => {
             setIsMessageLoaded(true);
             emitEvent({
@@ -502,12 +747,9 @@ function ChatPage({markId, setMarkId}) {
                 }
             });
         }, 0)
-
     }
 
-
     useEffect(() => {
-
         const unsubscribe1 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
                 case "Add-Message":
@@ -548,7 +790,6 @@ function ChatPage({markId, setMarkId}) {
                     break;
                 case "MessagesOrder-Meta":
                     if (Array.isArray(payload.value) && payload.value.length > 0) {
-
                         // 更新页面滚动条位置
                         setTimeout(() => {
                             wasAtBottomRef.current = calculateIsNearBottom();
@@ -556,7 +797,6 @@ function ChatPage({markId, setMarkId}) {
                                 scrollToBottom();
                             }
                         }, 0)
-
 
                         // 设置 messagesOrder
                         setMessagesOrder(payload.value);
@@ -571,7 +811,6 @@ function ChatPage({markId, setMarkId}) {
                     break;
                 case "Set-MessageContent":
                     if (payload.value && typeof payload.value === 'object') {
-
                         const newMessages = produce(messagesRef.current, draft => {
                             for (const [msgId, newContent] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
@@ -596,7 +835,6 @@ function ChatPage({markId, setMarkId}) {
                     break;
                 case "Add-MessageContent":
                     if (payload.value && typeof payload.value === 'object') {
-
                         const newMessages = produce(messagesRef.current, draft => {
                             for (const [msgId, newContent] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
@@ -621,7 +859,6 @@ function ChatPage({markId, setMarkId}) {
                     break;
                 case "Set-MessageReplace":
                     if (payload.value && typeof payload.value === 'object') {
-
                         const newMessages = produce(messagesRef.current, draft => {
                             for (const [msgId, newReplaces] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
@@ -689,7 +926,6 @@ function ChatPage({markId, setMarkId}) {
 
                 case "Set-MessageAttachments":
                     if (payload.value && typeof payload.value === 'object') {
-
                         const newMessages = produce(messagesRef.current, draft => {
                             for (const [msgId, newAttachments] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
@@ -715,12 +951,11 @@ function ChatPage({markId, setMarkId}) {
                     break;
                 case "Add-Message-Messages":
                     if (payload.msgId && payload.value) {
-
-                        if (!messagesRef.current[payload.msgId]) { // 如果根本没有父消息
+                        if (!messagesRef.current[payload.msgId]) {
                             reply({success: false});
                             return;
                         }
-                        if (messagesRef.current[payload.msgId].messages.includes(payload.value)) { // 如果已经添加
+                        if (messagesRef.current[payload.msgId].messages.includes(payload.value)) {
                             reply({success: false});
                             return;
                         }
@@ -790,7 +1025,6 @@ function ChatPage({markId, setMarkId}) {
             unsubscribe1();
             unsubscribe2();
         };
-
     }, [selfMarkId, isMessageLoaded]);
 
     useEffect(() => {
@@ -814,18 +1048,18 @@ function ChatPage({markId, setMarkId}) {
     // 页面初始化加载消息
     useEffect(() => {
         if (isNewMarkIdRef.current) {
-            setIsNewMarkId(false); // 如果是新获得 MarkId 的跳过一次加载
+            setIsNewMarkId(false);
             return;
         }
         let modelsData = [];
         const requestModels = async () => {
             try {
-                // 先请求模型
                 modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
                     params: markId ? {markId: selfMarkId} : {}
                 });
                 setModels(modelsData);
-                selectedModelRef.current = modelsData[0];
+
+                if (modelsData.length > 0) selectedModelRef.current = modelsData[0];
             } catch (error) {
                 toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
             }
@@ -850,7 +1084,6 @@ function ChatPage({markId, setMarkId}) {
                 // 确定该对话使用的模型
                 const foundModel = modelsData.find(item => item.id === messagesData.model)
                 if (foundModel) selectedModelRef.current = foundModel;
-
 
                 emitMessagesLoaded();
 
@@ -886,167 +1119,22 @@ function ChatPage({markId, setMarkId}) {
         setIsFirstMessageSend(true);
     }, [selfMarkId, randomMark]);
 
-    useEffect(() => {
-        const scrollToSelectedItem = () => {
-            if (modelListRef.current) {
-                const selectedItem = modelListRef.current.querySelector('[data-selected="true"]');
-                if (selectedItem) {
-                    // 使用 setTimeout 确保 DOM 已经更新
-                    setTimeout(() => {
-                        selectedItem.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'nearest'
-                        });
-                    }, 0);
-                }
-            }
-        };
-        // 在弹窗打开时滚动
-        if (isModelPopoverOpen) {
-            scrollToSelectedItem();
-        }
-        // 同时在模型列表变化时也滚动（添加 models 依赖）
-    }, [isModelPopoverOpen, models]);
-
     return (
         <>
             <div className="full-screen-min-height bg-white flex flex-col items-center pb-8 pretty-scrollbar"
                  ref={chatPageRef}>
-                <header className="w-full bg-white flex items-center justify-start p-4 h-14">
-                    <Popover
-                        open={isModelPopoverOpen}
-                        onOpenChange={(open) => {
-                            setIsModelPopoverOpen(open);
-                            if (!open) {
-                                setPreviewModel(null);
-                            } else {
-                                // 展开时设置当前选中的模型为预览模型
-                                setPreviewModel(selectedModelRef.current);
-                                // 添加延迟确保 DOM 更新后再滚动
-                                setTimeout(() => {
-                                    const selectedItem = modelListRef.current?.querySelector('[data-selected="true"]');
-                                    if (selectedItem) {
-                                        selectedItem.scrollIntoView({
-                                            behavior: 'smooth',
-                                            block: 'nearest',
-                                        });
-                                    }
-                                }, 100);
-                            }
-                        }}
-                    >
-                        <PopoverTrigger asChild>
-                            <Button variant="ghost"
-                                    className="justify-start px-0 hover:bg-transparent text-lg cursor-pointer">
-                                {selectedModelRef.current.name}
-                                <ChevronDown
-                                    className={`ml-2 h-4 w-4 transition-transform duration-200 ${isModelPopoverOpen ? 'rotate-180' : ''}`}/>
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                            align="start"
-                            className={isMobile ? "w-[90vw] max-w-md p-4" : "w-85"}
-                        >
-                            <div className="flex flex-col space-y-4">
-                                {/* 模型列表容器 - 添加滚动 */}
-                                <div
-                                    ref={modelListRef} // Add this ref
-                                    className="space-y-1 max-h-[200px] overflow-y-auto pr-1 pretty-scrollbar"
-                                >
-                                    {models.length === 0 ? (
-                                        <p className="text-center text-gray-500 py-4">{t("no_models")}</p>
-                                    ) : (
-                                        models.map((model) => {
-                                            const isSelected = model.id === selectedModelRef.current.id;
-                                            const handleClick = () => {
-                                                selectedModelRef.current = model;
-                                                if (!isMobile) {
-                                                    // 桌面端点击后关闭popover
-                                                    setIsModelPopoverOpen(false);
-                                                } else {
-                                                    // 移动端点击后只设置预览模型，不关闭popover
-                                                    setPreviewModel(model);
-                                                }
-                                            };
-                                            const handleMouseEnter = () => {
-                                                if (!isMobile) {
-                                                    setPreviewModel(model); // 桌面端悬停时更新预览
-                                                }
-                                            };
-                                            const itemContent = (
-                                                <>
-                                                    <Avatar className="h-6 w-6">
-                                                        <AvatarImage src={model.avatar} alt={model.name}/>
-                                                        <AvatarFallback>{model.name[0]}</AvatarFallback>
-                                                    </Avatar>
-                                                    <div className="ml-2 text-left">
-                                                        <p className="font-medium text-sm text-gray-800">{model.name}</p>
-                                                        <p className="text-xs text-gray-500 truncate w-40">{model.description}</p>
-                                                    </div>
-                                                    {isSelected && (
-                                                        <CircleCheck className="ml-auto text-[#615CED] h-4 w-4"/>
-                                                    )}
-                                                </>
-                                            );
-                                            if (!isMobile) {
-                                                return (
-                                                    <div key={model.id} onMouseEnter={handleMouseEnter}>
-                                                        <button
-                                                            data-selected={isSelected ? 'true' : 'false'} // Add this for querying
-                                                            onClick={handleClick}
-                                                            className={`cursor-pointer w-full flex items-center pl-2 pr-4 py-1.5 rounded-md transition-colors ${
-                                                                isSelected ? 'bg-[#F0F0FD]' : 'hover:bg-gray-100'
-                                                            }`}
-                                                        >
-                                                            {itemContent}
-                                                        </button>
-                                                    </div>
-                                                );
-                                            } else {
-                                                return (
-                                                    <button
-                                                        key={model.id}
-                                                        data-selected={isSelected ? 'true' : 'false'} // Add this for querying
-                                                        onClick={handleClick}
-                                                        className={`cursor-pointer w-full flex items-center pl-2 pr-4 py-1.5 rounded-md transition-colors ${
-                                                            isSelected ? 'bg-[#F0F0FD]' : 'hover:bg-gray-100'
-                                                        }`}
-                                                    >
-                                                        {itemContent}
-                                                    </button>
-                                                );
-                                            }
-                                        })
-                                    )}
-                                </div>
-                                {/* 名片部分 - 不在滚动区域内 */}
-                                {(!isMobile || (isMobile && previewModel)) && previewModel && (
-                                    <div className="p-4 bg-gray-50 border rounded-md">
-                                        <div className="flex flex-col space-y-2">
-                                            <div className="flex items-center space-x-3">
-                                                <Avatar className="h-10 w-10">
-                                                    <AvatarImage src={previewModel.avatar} alt={previewModel.name}/>
-                                                    <AvatarFallback>{previewModel.name[0]}</AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-semibold text-sm text-gray-800">{previewModel.name}</p>
-                                                    <p className="text-xs text-gray-500">{previewModel.description}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-wrap gap-1">
-                                                {previewModel.tags.map((tag, index) => (
-                                                    <Badge key={index} variant="secondary" className="text-xs">
-                                                        {tag}
-                                                    </Badge>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                </header>
+                <ChatHeader
+                    models={models}
+                    selectedModel={selectedModelRef.current}
+                    isModelPopoverOpen={isModelPopoverOpen}
+                    previewModel={previewModel}
+                    isMobile={isMobile}
+                    t={t}
+                    handlePopoverOpenChange={handlePopoverOpenChange}
+                    handleModelItemClick={handleModelItemClick}
+                    handleModelItemMouseEnter={handleModelItemMouseEnter}
+                    scrollToSelectedItem={scrollToSelectedItem}
+                />
                 <>
                     <div
                         className="flex-1 w-full relative">
@@ -1113,7 +1201,7 @@ function ChatPage({markId, setMarkId}) {
                     </div>
                 </>
                 <footer
-                    className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center"> {/* Changed fixed to absolute; left-0 right-0 to inset-x-0 */}
+                    className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center">
                     <span className="text-xs text-gray-500">
                         © {new Date().getFullYear()} lovePikachu. All rights reserved.
                     </span>
