@@ -1,12 +1,12 @@
 import React, {forwardRef, useState, useEffect, useRef, useCallback, useMemo, memo} from 'react';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
-import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
+import {toast} from 'sonner';
+import {useTranslation} from 'react-i18next';
 import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import AttachmentShowcase from './AttachmentShowcase';
-import { Menu, PenLine, Copy, RotateCw, Info, ChevronLeft, ChevronRight } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { emitEvent, onEvent } from "@/store/useEventStore.jsx";
+import {Menu, PenLine, Copy, RotateCw, Info, ChevronLeft, ChevronRight} from "lucide-react";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
 
 import {
     DropdownMenu,
@@ -22,8 +22,8 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import { copyTextToClipboard, useIsMobile } from "@/lib/tools.jsx";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {copyTextToClipboard, useIsMobile} from "@/lib/tools.jsx";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 
 /**
  * 处理消息操作工具函数
@@ -32,7 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
  * @param {function} t - 翻译函数
  */
 const handleMessageAction = (action, messageData, t) => {
-    const { msg, markId, msgId, displayContent } = messageData;
+    const {msg, markId, msgId, displayContent} = messageData;
 
     switch (action) {
         case "edit":
@@ -54,7 +54,7 @@ const handleMessageAction = (action, messageData, t) => {
             copyTextToClipboard(displayContent).then(() => {
                 toast.success(t("message_copied"));
             }).catch(err => {
-                toast.error(t("message_not_copied", { message: err }));
+                toast.error(t("message_not_copied", {message: err}));
             });
             break;
         case "regenerate":
@@ -82,9 +82,9 @@ const handleMessageAction = (action, messageData, t) => {
 /**
  * 消息菜单组件 - 移动端下拉菜单
  */
-const MessageMenuButton = ({ messageData }) => {
-    const { t } = useTranslation();
-    const { msg, markId, msgId, displayContent } = messageData;
+const MessageMenuButton = memo(({messageData}) => {
+    const {t} = useTranslation();
+    const {msg, markId, msgId, displayContent} = messageData;
 
     return (
         <DropdownMenu>
@@ -93,7 +93,7 @@ const MessageMenuButton = ({ messageData }) => {
                     className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer md:hidden"
                     aria-label={t("menu_function")}
                 >
-                    <Menu size={16} className="text-gray-600 hover:text-gray-800" />
+                    <Menu size={16} className="text-gray-600 hover:text-gray-800"/>
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -101,7 +101,7 @@ const MessageMenuButton = ({ messageData }) => {
                     className="flex items-center gap-2"
                     onSelect={() => handleMessageAction("edit", messageData, t)}
                 >
-                    <PenLine size={16} />
+                    <PenLine size={16}/>
                     {t('edit_message')}
                 </DropdownMenuItem>
 
@@ -109,7 +109,7 @@ const MessageMenuButton = ({ messageData }) => {
                     className="flex items-center gap-2"
                     onSelect={() => handleMessageAction("copy", messageData, t)}
                 >
-                    <Copy size={16} />
+                    <Copy size={16}/>
                     {t('copy_message')}
                 </DropdownMenuItem>
 
@@ -118,19 +118,19 @@ const MessageMenuButton = ({ messageData }) => {
                         className="flex items-center gap-2"
                         onSelect={() => handleMessageAction("regenerate", messageData, t)}
                     >
-                        <RotateCw size={16} />
+                        <RotateCw size={16}/>
                         {t('regenerate_message')}
                     </DropdownMenuItem>
                 )}
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+});
 
 /**
  * 工具提示组件 - 根据设备类型显示不同的提示方式
  */
-const TooltipInfo = ({ tip, t }) => {
+const TooltipInfo = memo(({tip, t}) => {
     const isMobile = useIsMobile();
 
     if (!tip) return null;
@@ -143,11 +143,11 @@ const TooltipInfo = ({ tip, t }) => {
                         className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
                         aria-label={t("message_info")}
                     >
-                        <Info size={16} className="text-gray-600 hover:text-gray-800" />
+                        <Info size={16} className="text-gray-600 hover:text-gray-800"/>
                     </button>
                 </PopoverTrigger>
                 <PopoverContent className="p-3">
-                    <div style={{ whiteSpace: 'pre-line' }} className="text-sm">
+                    <div style={{whiteSpace: 'pre-line'}} className="text-sm">
                         {tip}
                     </div>
                 </PopoverContent>
@@ -162,24 +162,24 @@ const TooltipInfo = ({ tip, t }) => {
                     className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
                     aria-label={t("message_info")}
                 >
-                    <Info size={16} className="text-gray-600 hover:text-gray-800" />
+                    <Info size={16} className="text-gray-600 hover:text-gray-800"/>
                 </button>
             </TooltipTrigger>
             <TooltipContent>
-                <div style={{ whiteSpace: 'pre-line' }}>
+                <div style={{whiteSpace: 'pre-line'}}>
                     {tip}
                 </div>
             </TooltipContent>
         </Tooltip>
     );
-};
+});
 
 /**
  * 消息工具栏组件 - 桌面端显示的工具按钮
  */
-const MessageTools = ({ messageData }) => {
-    const { t } = useTranslation();
-    const { msg, markId, msgId, displayContent } = messageData;
+const MessageTools = memo(({messageData}) => {
+    const {t} = useTranslation();
+    const {msg, markId, msgId, displayContent} = messageData;
 
     return (
         <div className="flex gap-1">
@@ -188,7 +188,7 @@ const MessageTools = ({ messageData }) => {
                 className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
                 aria-label={t("edit_message")}
             >
-                <PenLine size={16} className="text-gray-600 hover:text-gray-800" />
+                <PenLine size={16} className="text-gray-600 hover:text-gray-800"/>
             </button>
 
             <button
@@ -196,7 +196,7 @@ const MessageTools = ({ messageData }) => {
                 className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
                 aria-label={t("copy_message")}
             >
-                <Copy size={16} className="text-gray-600 hover:text-gray-800" />
+                <Copy size={16} className="text-gray-600 hover:text-gray-800"/>
             </button>
 
             {(msg.allowRegenerate || msg.allowRegenerate === undefined) && (
@@ -205,23 +205,24 @@ const MessageTools = ({ messageData }) => {
                     className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
                     aria-label={t("regenerate_message")}
                 >
-                    <RotateCw size={16} className="text-gray-600 hover:text-gray-800" />
+                    <RotateCw size={16} className="text-gray-600 hover:text-gray-800"/>
                 </button>
             )}
 
-            <TooltipInfo tip={msg.tip} t={t} />
-            <MessageMenuButton messageData={messageData} />
+            <TooltipInfo tip={msg.tip} t={t}/>
+            <MessageMenuButton messageData={messageData}/>
         </div>
     );
-};
+});
 
 /**
  * 左侧消息头像和名称组件
  */
-const LeftAvatarName = ({ avatar, displayName, isLeaving }) => (
-    <div className={`flex items-center gap-2 mb-1 transition-opacity duration-300 ${isLeaving ? 'opacity-0' : 'opacity-100'}`}>
+const LeftAvatarName = memo(({avatar, displayName, isLeaving}) => (
+    <div
+        className={`flex items-center gap-2 mb-1 transition-opacity duration-300 ${isLeaving ? 'opacity-0' : 'opacity-100'}`}>
         <Avatar className="h-10 w-10">
-            <AvatarImage src={avatar} alt={displayName} />
+            <AvatarImage src={avatar} alt={displayName}/>
             <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
         </Avatar>
         {displayName && (
@@ -230,21 +231,21 @@ const LeftAvatarName = ({ avatar, displayName, isLeaving }) => (
             </span>
         )}
     </div>
-);
+));
 
 /**
  * 消息分页选择器组件
  */
-const MessagePaginator = ({
-                              isRight,
-                              msgPrev,
-                              prevMsgId,
-                              onSwitchMessage,
-                              switchingMessageId,
-                              setSwitchingMessageId,
-                              setFadeMessages,
-                              t
-                          }) => {
+const MessagePaginator = memo(({
+                                   isRight,
+                                   msgPrev,
+                                   prevMsgId,
+                                   onSwitchMessage,
+                                   switchingMessageId,
+                                   setSwitchingMessageId,
+                                   setFadeMessages,
+                                   t
+                               }) => {
     const msgIdIndex = msgPrev.messages.indexOf(msgPrev.nextMessage);
     const totalPages = msgPrev.messages.length;
     const disabledNext = msgIdIndex === totalPages - 1;
@@ -267,7 +268,8 @@ const MessagePaginator = ({
     }, [msgIdIndex, msgPrev, prevMsgId, onSwitchMessage, setSwitchingMessageId, setFadeMessages]);
 
     return (
-        <div className={`flex items-center gap-1 text-sm transition-opacity duration-300 ${isRight ? 'justify-end' : 'justify-start'}`}>
+        <div
+            className={`flex items-center gap-1 text-sm transition-opacity duration-300 ${isRight ? 'justify-end' : 'justify-start'}`}>
             <button
                 onClick={() => handleSwitch('prev')}
                 disabled={disabledPrev || switchingMessageId !== null}
@@ -277,7 +279,7 @@ const MessagePaginator = ({
                 }`}
                 aria-label={t("prev_page")}
             >
-                <ChevronLeft size={12} />
+                <ChevronLeft size={12}/>
             </button>
             <span className="px-1.5 py-0.5 rounded-md">
                 {msgIdIndex + 1} / {totalPages}
@@ -291,16 +293,16 @@ const MessagePaginator = ({
                 }`}
                 aria-label={t("next_page")}
             >
-                <ChevronRight size={12} />
+                <ChevronRight size={12}/>
             </button>
         </div>
     );
-};
+});
 
 /**
  * 纯文本消息内容组件
  */
-const TextOnlyMessageContent = ({ isRight, content, avatar, displayName, isLeaving }) => {
+const TextOnlyMessageContent = memo(({isRight, content, avatar, displayName, isLeaving}) => {
     if (isRight) {
         return (
             <div className="flex justify-end items-center gap-3 max-w-[80%] ml-auto">
@@ -311,7 +313,7 @@ const TextOnlyMessageContent = ({ isRight, content, avatar, displayName, isLeavi
                     {content}
                 </div>
                 <Avatar className="h-10 w-10">
-                    <AvatarImage src={avatar} alt={displayName} />
+                    <AvatarImage src={avatar} alt={displayName}/>
                     <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
             </div>
@@ -321,38 +323,34 @@ const TextOnlyMessageContent = ({ isRight, content, avatar, displayName, isLeavi
     return (
         <div className="w-full pl-10 pr-10">
             <div className="text-gray-800 break-words max-w-none">
-                <MarkdownRenderer content={content} />
+                <MarkdownRenderer content={content}/>
             </div>
         </div>
     );
-};
+});
 
 /**
- * 消息底部操作区域组件
+ * 消息底部操作区域组件 - 现在使用来自父组件的 isHovered
  */
-const MessageActions = ({
-                            isRight,
-                            showPaginator,
-                            msgPrev,
-                            prevMsgId,
-                            onSwitchMessage,
-                            switchingMessageId,
-                            setSwitchingMessageId,
-                            setFadeMessages,
-                            messageData,
-                            hoveredMessageId,
-                            currentMsgId,
-                            setHoveredMessageId,
-                            readonly,
-                            t
-                        }) => {
-    const showRightTools = isRight && hoveredMessageId === currentMsgId;
+const MessageActions = memo(({
+                                 isRight,
+                                 showPaginator,
+                                 msgPrev,
+                                 prevMsgId,
+                                 onSwitchMessage,
+                                 switchingMessageId,
+                                 setSwitchingMessageId,
+                                 setFadeMessages,
+                                 messageData,
+                                 isHovered,
+                                 readonly,
+                                 t
+                             }) => {
+    const showRightTools = isRight && isHovered;
 
     return (
         <div
             className={`flex items-center mt-1 transition-opacity duration-300 ${isRight ? 'justify-end pr-12' : 'justify-between pl-10 pr-10'}`}
-            onMouseEnter={() => isRight && setHoveredMessageId(currentMsgId)}
-            onMouseLeave={() => isRight && setHoveredMessageId(null)}
         >
             {isRight && (
                 <div className={"ml-2 flex items-center " + (showPaginator ? 'pr-1' : '')}>
@@ -361,10 +359,10 @@ const MessageActions = ({
                             className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${showRightTools ? 'opacity-100' : 'opacity-0 pointer-events-none'
                             }`}
                         >
-                            {!readonly && <MessageTools messageData={messageData} />}
+                            {!readonly && <MessageTools messageData={messageData}/>}
                         </div>
                         <div className="flex items-center justify-center invisible">
-                            {!readonly && <MessageTools messageData={messageData} />}
+                            {!readonly && <MessageTools messageData={messageData}/>}
                         </div>
                     </div>
                 </div>
@@ -389,12 +387,12 @@ const MessageActions = ({
 
             {!isRight && (
                 <div className={"text-right flex-shrink-0 " + (showPaginator ? 'pl-1' : 'translate-x-[-0.4em]')}>
-                    {!readonly && <MessageTools messageData={messageData} />}
+                    {!readonly && <MessageTools messageData={messageData}/>}
                 </div>
             )}
         </div>
     );
-};
+});
 
 /**
  * 自定义Hook：管理消息动画状态
@@ -495,7 +493,7 @@ const useMessageEvents = (markId, setSwitchingMessageId) => {
                         notReplyToWebsocket: true
                     });
 
-                    reply({ success: true });
+                    reply({success: true});
                     break;
             }
         });
@@ -533,7 +531,7 @@ const processContentReplacements = (content, extraInfo) => {
 };
 
 /**
- * 单个消息渲染器
+ * 单个消息渲染器 - 现在在 MessageItem 级别管理 hover 状态
  */
 const MessageItem = React.memo(({
                                     msgId,
@@ -542,8 +540,6 @@ const MessageItem = React.memo(({
                                     messages,
                                     isFading,
                                     animationClass,
-                                    hoveredMessageId,
-                                    setHoveredMessageId,
                                     switchingMessageId,
                                     setSwitchingMessageId,
                                     setFadeMessages,
@@ -561,6 +557,13 @@ const MessageItem = React.memo(({
     const hasAttachments = msg.attachments?.length > 0;
     const hasContent = msg.content?.trim();
     const displayContent = processContentReplacements(msg.content, msg.extraInfo);
+
+    // 只在右侧消息上启用 hover 检测
+    const [isHovered, setIsHovered] = useState(false);
+    const hoverHandlers = isRight && !readonly ? {
+        onMouseEnter: () => setIsHovered(true),
+        onMouseLeave: () => setIsHovered(false),
+    } : {};
 
     // 准备消息数据对象
     const messageData = useMemo(() => ({
@@ -593,7 +596,7 @@ const MessageItem = React.memo(({
                                 />
                             </div>
                             <Avatar className="h-10 w-10 flex-shrink-0 mt-1">
-                                <AvatarImage src={avatar} alt={displayName} />
+                                <AvatarImage src={avatar} alt={displayName}/>
                                 <AvatarFallback>{displayName[0]}</AvatarFallback>
                             </Avatar>
                         </div>
@@ -694,7 +697,7 @@ const MessageItem = React.memo(({
                     <div className="flex justify-end items-start gap-3 max-w-[80%] ml-auto">
                         <div className="h-10 w-10"></div>
                         <Avatar className="h-10 w-10 flex-shrink-0">
-                            <AvatarImage src={avatar} alt={displayName} />
+                            <AvatarImage src={avatar} alt={displayName}/>
                             <AvatarFallback>{displayName[0]}</AvatarFallback>
                         </Avatar>
                     </div>
@@ -717,8 +720,7 @@ const MessageItem = React.memo(({
             key={msgId}
             className={`flex flex-col w-full transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'
             } ${animationClass}`}
-            onMouseEnter={() => isRight && setHoveredMessageId(msgId)}
-            onMouseLeave={() => isRight && setHoveredMessageId(null)}
+            {...hoverHandlers}
         >
             {renderMessageContent()}
             <MessageActions
@@ -731,14 +733,22 @@ const MessageItem = React.memo(({
                 setSwitchingMessageId={setSwitchingMessageId}
                 setFadeMessages={setFadeMessages}
                 messageData={messageData}
-                hoveredMessageId={hoveredMessageId}
-                currentMsgId={msgId}
-                setHoveredMessageId={setHoveredMessageId}
+                isHovered={isHovered}
                 readonly={readonly}
                 t={t}
             />
         </div>
     );
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.msgId === nextProps.msgId &&
+        prevProps.markId === nextProps.markId &&
+        prevProps.messages[prevProps.msgId] === nextProps.messages[nextProps.msgId] &&
+        prevProps.animationClass === nextProps.animationClass &&
+        prevProps.readonly === nextProps.readonly &&
+        prevProps.isFading === nextProps.isFading &&
+        prevProps.leavingMessages.has(prevProps.msgId) === nextProps.leavingMessages.has(nextProps.msgId)
+    )
 });
 
 MessageItem.displayName = 'MessageItem';
@@ -755,8 +765,7 @@ const MessageContainer = forwardRef(({
                                      }, ref) => {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [switchingMessageId, setSwitchingMessageId] = useState(null);
-    const [hoveredMessageId, setHoveredMessageId] = useState(null);
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     // 使用自定义Hooks管理状态
     const {
@@ -804,7 +813,7 @@ const MessageContainer = forwardRef(({
         >
             {isLoadingMore ? (
                 <div className="flex items-center justify-center">
-                    <div className="w-5 h-5 border-t-2 border-gray-400 border-solid rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-t-2 border-gray-400 border-solid rounded-full animate-spin"/>
                 </div>
             ) : (
                 <button
@@ -831,7 +840,7 @@ const MessageContainer = forwardRef(({
             }`}
         >
             <div className="flex flex-col items-center justify-center">
-                <ThreeDotLoading />
+                <ThreeDotLoading/>
                 <span className="mt-2 text-sm text-gray-500">{t("loading_new_message")}</span>
             </div>
         </div>
@@ -888,8 +897,6 @@ const MessageContainer = forwardRef(({
                 messages={messages}
                 isFading={isFading}
                 animationClass={animationClass}
-                hoveredMessageId={hoveredMessageId}
-                setHoveredMessageId={setHoveredMessageId}
                 switchingMessageId={switchingMessageId}
                 setSwitchingMessageId={setSwitchingMessageId}
                 setFadeMessages={setFadeMessages}
@@ -909,7 +916,6 @@ const MessageContainer = forwardRef(({
         enteringMessages,
         getMessageAnimationClass,
         markId,
-        hoveredMessageId,
         onSwitchMessage,
         t
     ]);

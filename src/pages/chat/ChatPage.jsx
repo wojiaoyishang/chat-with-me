@@ -54,7 +54,6 @@ const ModelItem = memo(({
         </>
     ), [model, isSelected]);
 
-    // 移动端和桌面端渲染方式不同
     if (!isMobile) {
         return (
             <div key={model.id} onMouseEnter={onMouseEnter}>
@@ -135,6 +134,63 @@ const ModelPreviewCard = React.memo(({ model, isMobile }) => {
 
 ModelPreviewCard.displayName = 'ModelPreviewCard';
 
+// ========== 内部组件：置底按钮 ==========
+const ScrollToBottomButton = memo(({
+                                       isVisible,
+                                       chatBoxHeight,
+                                       isMobile,
+                                       onClick
+                                   }) => {
+    // 移动端：在输入框右上角
+    // 桌面端：在网页右下角
+    const buttonStyle = useMemo(() => {
+        if (isMobile) {
+            return {
+                bottom: `${(chatBoxHeight || 60) + 60}px`,
+                right: '16px',
+            };
+        } else {
+            return {
+                bottom: '50px',
+                right: '20px',
+            };
+        }
+    }, [chatBoxHeight, isMobile]);
+
+    // 按钮尺寸：桌面端稍大一些
+    const buttonSize = isMobile ? "w-8 h-8" : "w-10 h-10";
+
+    return (
+        <Transition
+            show={isVisible}
+            enter="transition-all duration-200 ease-out"
+            enterFrom="opacity-0 scale-95 translate-y-2"
+            enterTo="opacity-100 scale-100 translate-y-0"
+            leave="transition-all duration-150 ease-in"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+        >
+            <button
+                onClick={onClick}
+                className={`cursor-pointer fixed z-40 ${buttonSize} rounded-full bg-white border border-gray-200 shadow-lg flex items-center justify-center hover:shadow-xl hover:bg-gray-50 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200`}
+                style={buttonStyle}
+                aria-label="Scroll to bottom"
+            >
+                <ArrowDown className="text-gray-600 w-5 h-5"/>
+            </button>
+        </Transition>
+    );
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.isVisible === nextProps.isVisible &&
+        prevProps.chatBoxHeight === nextProps.chatBoxHeight &&
+        prevProps.isMobile === nextProps.isMobile &&
+        prevProps.onClick === nextProps.onClick
+    );
+});
+
+ScrollToBottomButton.displayName = 'ScrollToBottomButton';
+
 // ========== Header组件 ==========
 const ChatHeader = memo(({
                              models,
@@ -150,14 +206,12 @@ const ChatHeader = memo(({
                          }) => {
     const modelListRef = useRef(null);
 
-    // 监听弹窗打开状态和模型列表变化，滚动到选中项
     useEffect(() => {
         if (isModelPopoverOpen) {
             scrollToSelectedItem(modelListRef);
         }
     }, [isModelPopoverOpen, models, scrollToSelectedItem]);
 
-    // 使用useMemo缓存模型列表项的渲染
     const modelItems = useMemo(() => {
         if (!models || models.length === 0) {
             return (
@@ -188,7 +242,6 @@ const ChatHeader = memo(({
 
     return (
         <header className="w-full bg-white flex items-center justify-start p-4 h-14">
-            {/* 优化后的 Popover 部分 */}
             <Popover
                 open={isModelPopoverOpen}
                 onOpenChange={handlePopoverOpenChange}
@@ -206,14 +259,12 @@ const ChatHeader = memo(({
                     className={isMobile ? "w-[90vw] max-w-md p-4" : "w-85"}
                 >
                     <div className="flex flex-col space-y-4">
-                        {/* 模型列表容器 - 添加滚动 */}
                         <div
                             ref={modelListRef}
                             className="space-y-1 max-h-[200px] overflow-y-auto pr-1 pretty-scrollbar"
                         >
                             {modelItems}
                         </div>
-                        {/* 名片部分 - 不在滚动区域内 */}
                         {(!isMobile || (isMobile && previewModel)) && (
                             <ModelPreviewCard model={previewModel} isMobile={isMobile} />
                         )}
@@ -253,7 +304,6 @@ function ChatPage({ markId, setMarkId }) {
     const uploadIntervals = useRef(new Map());
     const [uploadFiles, setUploadFiles] = useState([]);
     const [attachments, setAttachments] = useState([]);
-    const [isAtBottom, setIsAtBottom] = useState(true);
     const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
@@ -266,9 +316,21 @@ function ChatPage({ markId, setMarkId }) {
     const [messages, setMessages] = useImmer({});
     const messagesRef = useRef({});
     const messagesOrderRef = useRef([]);
-    const isAtBottomRef = useRef(isAtBottom);
-    const wasAtBottomRef = useRef(true);
-    const [scrollButtonBottom, setScrollButtonBottom] = useState(200);
+
+    // 滚动相关 refs
+    const isAutoScrollEnabledRef = useRef(true);
+    const scrollCheckTimeoutRef = useRef(null);
+    const pendingScrollRef = useRef(false);
+    const chatBoxHeightRef = useRef(0);
+    const lastScrollTopRef = useRef(0);
+    const scrollDirectionRef = useRef('down');
+
+    // 流式输出相关 refs
+    const isStreamingRef = useRef(false);
+    const streamingTimerRef = useRef(null);
+    const lastStreamingCheckRef = useRef(0);
+
+    const [chatBoxHeight, setChatBoxHeight] = useState(0);
     const isMobile = useIsMobile();
     const [models, setModels] = useState([]);
     const selectedModelRef = useRef({ name: t("no_models") });
@@ -276,6 +338,186 @@ function ChatPage({ markId, setMarkId }) {
     const [isNewMarkId, setIsNewMarkId] = useState(false);
     const isNewMarkIdRef = useRef(false);
     const [isFirstMessageSend, setIsFirstMessageSend] = useState(false);
+
+    // ========== 滚动控制逻辑 ==========
+
+    // 检查是否需要显示置底按钮
+    const checkScrollPosition = useCallback((immediate = false) => {
+        if (!messagesContainerRef.current) return;
+
+        const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+        const distanceToBottom = scrollHeight - scrollTop - clientHeight;
+
+        // 检测滚动方向
+        if (scrollTop < lastScrollTopRef.current) {
+            scrollDirectionRef.current = 'up';
+        } else if (scrollTop > lastScrollTopRef.current) {
+            scrollDirectionRef.current = 'down';
+        }
+        lastScrollTopRef.current = scrollTop;
+
+        // 增大阈值，确保在流式输出时更容易保持自动滚动
+        const THRESHOLD = 200;
+
+        // 更新自动滚动状态
+        isAutoScrollEnabledRef.current = distanceToBottom <= THRESHOLD;
+
+        // 是否需要显示置底按钮：不在底部且是向上滚动
+        const shouldShowButton = distanceToBottom > THRESHOLD && scrollDirectionRef.current === 'up';
+
+        if (immediate) {
+            setShowScrollToBottomButton(shouldShowButton);
+        } else {
+            // 防抖处理
+            if (scrollCheckTimeoutRef.current) {
+                clearTimeout(scrollCheckTimeoutRef.current);
+            }
+            scrollCheckTimeoutRef.current = setTimeout(() => {
+                setShowScrollToBottomButton(shouldShowButton);
+            }, 150);
+        }
+    }, []);
+
+    // 平滑滚动到底部
+    const smoothScrollToBottom = useCallback((isStreaming = false) => {
+        if (!messagesContainerRef.current) return;
+
+        const container = messagesContainerRef.current;
+        const targetScrollTop = container.scrollHeight - container.clientHeight;
+        const currentScrollTop = container.scrollTop;
+        const distance = targetScrollTop - currentScrollTop;
+
+        // 如果距离很近，直接滚动
+        if (Math.abs(distance) < 50) {
+            container.scrollTo({
+                top: targetScrollTop,
+                behavior: isStreaming ? 'auto' : 'smooth' // 流式输出时使用auto减少卡顿
+            });
+            return;
+        }
+
+        // 流式输出时使用更简单的滚动
+        if (isStreaming) {
+            container.scrollTo({
+                top: targetScrollTop,
+                behavior: 'auto'
+            });
+            return;
+        }
+
+        // 使用 requestAnimationFrame 实现平滑滚动
+        const duration = 300;
+        const startTime = performance.now();
+
+        const animateScroll = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // 使用缓动函数
+            const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+            const newScrollTop = currentScrollTop + distance * easeOutCubic;
+
+            container.scrollTop = newScrollTop;
+
+            if (progress < 1) {
+                requestAnimationFrame(animateScroll);
+            } else {
+                // 滚动完成后更新状态
+                isAutoScrollEnabledRef.current = true;
+                pendingScrollRef.current = false;
+                checkScrollPosition(true);
+            }
+        };
+
+        requestAnimationFrame(animateScroll);
+    }, [checkScrollPosition]);
+
+    // 执行延迟滚动（如果有待处理的滚动）
+    const executePendingScroll = useCallback(() => {
+        if (pendingScrollRef.current && isAutoScrollEnabledRef.current) {
+            pendingScrollRef.current = false;
+
+            // 延迟执行滚动，避免卡顿
+            setTimeout(() => {
+                smoothScrollToBottom(isStreamingRef.current);
+            }, isStreamingRef.current ? 50 : 100); // 流式输出时使用更短的延迟
+        }
+    }, [smoothScrollToBottom]);
+
+    // 请求滚动到底部（会被延迟执行）
+    const requestScrollToBottom = useCallback(() => {
+        if (isAutoScrollEnabledRef.current) {
+            pendingScrollRef.current = true;
+
+            // 如果是流式输出，立即执行滚动
+            if (isStreamingRef.current) {
+                executePendingScroll();
+            }
+        }
+    }, [executePendingScroll]);
+
+    // 立即滚动到底部（用户点击按钮时使用）
+    const handleScrollToBottomClick = useCallback(() => {
+        pendingScrollRef.current = false;
+        isAutoScrollEnabledRef.current = true;
+        smoothScrollToBottom();
+        setShowScrollToBottomButton(false);
+    }, [smoothScrollToBottom]);
+
+    // 更新流式输出状态
+    const updateStreamingStatus = useCallback(() => {
+        const now = Date.now();
+
+        // 如果最近500ms内有过更新，认为是流式输出
+        if (now - lastStreamingCheckRef.current < 500) {
+            isStreamingRef.current = true;
+
+            // 清除之前的计时器
+            if (streamingTimerRef.current) {
+                clearTimeout(streamingTimerRef.current);
+            }
+
+            // 设置计时器，500ms没有更新则认为流式输出结束
+            streamingTimerRef.current = setTimeout(() => {
+                isStreamingRef.current = false;
+            }, 500);
+        }
+
+        lastStreamingCheckRef.current = now;
+    }, []);
+
+    // 初始化滚动监听
+    useEffect(() => {
+        const container = messagesContainerRef.current;
+        if (!container) return;
+
+        const handleScroll = () => {
+            checkScrollPosition();
+        };
+
+        container.addEventListener('scroll', handleScroll, { passive: true });
+
+        // 初始化检查
+        checkScrollPosition(true);
+
+        return () => {
+            container.removeEventListener('scroll', handleScroll);
+            if (scrollCheckTimeoutRef.current) {
+                clearTimeout(scrollCheckTimeoutRef.current);
+            }
+        };
+    }, [checkScrollPosition]);
+
+    // 消息更新后检查是否需要滚动
+    useEffect(() => {
+        // 如果有待处理的滚动，执行滚动
+        executePendingScroll();
+
+        // 新消息到达时，如果用户在看最新消息，延迟滚动
+        if (isAutoScrollEnabledRef.current) {
+            requestScrollToBottom();
+        }
+    }, [messagesOrder, executePendingScroll, requestScrollToBottom]);
 
     // ========== Popover 相关函数 ==========
 
@@ -298,7 +540,6 @@ function ChatPage({ markId, setMarkId }) {
         if (!open) {
             setPreviewModel(null);
         } else {
-            // 展开时设置当前选中的模型为预览模型
             setPreviewModel(selectedModelRef.current);
         }
     }, []);
@@ -306,63 +547,17 @@ function ChatPage({ markId, setMarkId }) {
     const handleModelItemClick = useCallback((model) => {
         selectedModelRef.current = model;
         if (!isMobile) {
-            // 桌面端点击后关闭popover
             setIsModelPopoverOpen(false);
         } else {
-            // 移动端点击后只设置预览模型，不关闭popover
             setPreviewModel(model);
         }
     }, [isMobile]);
 
     const handleModelItemMouseEnter = useCallback((model) => {
         if (!isMobile) {
-            setPreviewModel(model); // 桌面端悬停时更新预览
+            setPreviewModel(model);
         }
     }, [isMobile]);
-
-    const calculateIsNearBottom = () => {
-        if (!messagesContainerRef.current) return true;
-        const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
-        return scrollHeight - scrollTop - clientHeight < 100;
-    };
-
-    const scrollToBottom = useCallback(() => {
-        if (messagesContainerRef.current) {
-            messagesContainerRef.current.scrollTo({
-                top: messagesContainerRef.current.scrollHeight,
-                behavior: 'smooth'
-            });
-            setIsAtBottom(true);
-        }
-    }, []);
-
-    // 自动滚动逻辑
-    useEffect(() => {
-        if (wasAtBottomRef.current) {
-            scrollToBottom();
-        }
-    }, [messagesOrder, scrollToBottom]);
-
-    useEffect(() => {
-        isAtBottomRef.current = isAtBottom;
-    }, [isAtBottom]);
-
-    // 监听滚动事件
-    useEffect(() => {
-        const container = messagesContainerRef.current;
-        if (!container) return;
-        const handleScroll = () => {
-            const { scrollTop, scrollHeight, clientHeight } = container;
-            const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-            setIsAtBottom(isNearBottom);
-            setShowScrollToBottomButton(!isNearBottom);
-        };
-        handleScroll();
-        container.addEventListener('scroll', handleScroll, { passive: true });
-        return () => {
-            container.removeEventListener('scroll', handleScroll);
-        };
-    }, [messagesOrder]);
 
     const handleFolderDetected = () => {
         toast.error(t("folder_upload_not_supported"));
@@ -460,7 +655,6 @@ function ChatPage({ markId, setMarkId }) {
     const handleSelectedFiles = (files, items) => {
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
-            // 处理文本拖拽
             if (item.kind === 'string' && item.type === 'text/plain') {
                 item.getAsString(function (text) {
                     emitEvent({
@@ -595,14 +789,13 @@ function ChatPage({ markId, setMarkId }) {
                         }
                     })
                     .then(data => {
-                        wasAtBottomRef.current = calculateIsNearBottom();
+                        // 保存当前的滚动状态
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
 
-                        // 设置 messages
                         const newMessages = {...messagesRef.current, ...data.messages};
                         setMessages(newMessages);
                         messagesRef.current = newMessages;
 
-                        // 设置 messagesOrder
                         let newOrder;
                         if (data.haveMore) {
                             newOrder = ['<PREV_MORE>', ...data.messagesOrder, ...messagesOrder.slice(1)];
@@ -612,6 +805,11 @@ function ChatPage({ markId, setMarkId }) {
                         setMessagesOrder(newOrder);
                         messagesOrderRef.current = newOrder;
 
+                        // 如果不是自动滚动状态，检查是否需要显示置底按钮
+                        if (!wasAutoScroll) {
+                            checkScrollPosition(true);
+                        }
+
                         resolve(true);
                     })
                     .catch(error => reject(error));
@@ -619,7 +817,7 @@ function ChatPage({ markId, setMarkId }) {
         } catch (err) {
             throw err;
         }
-    }, [selfMarkId]);
+    }, [selfMarkId, checkScrollPosition]);
 
     const loadSwitchMessage = useCallback(async (msgId, newMsgId) => {
         if (!messagesRef.current.hasOwnProperty(msgId)) return;
@@ -646,19 +844,15 @@ function ChatPage({ markId, setMarkId }) {
                         nextId: missMsg ? newMsgId : msg_cursor.nextMessage,
                     }
                 });
-                wasAtBottomRef.current = calculateIsNearBottom();
 
-                // 设置 messages
                 const newMessagesFromData = {...messagesRef.current, ...data.messages};
                 setMessages(newMessagesFromData);
                 messagesRef.current = newMessagesFromData;
 
-                // 设置 messagesOrder
                 const newOrderFromData = [...messagesOrderRef.current.slice(0, messagesOrderRef.current.indexOf(msgId) + 1), ...data.messagesOrder];
                 setMessagesOrder(newOrderFromData);
                 messagesOrderRef.current = newOrderFromData;
 
-                // 设置 messages (nextMessage 更新)
                 const newMessagesWithNext = produce(messagesRef.current, draft => {
                     draft[msgId].nextMessage = newMsgId;
                 });
@@ -670,14 +864,10 @@ function ChatPage({ markId, setMarkId }) {
                 toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));
             }
         } else {
-            wasAtBottomRef.current = calculateIsNearBottom();
-
-            // 设置 messagesOrder
             const newOrder = [...messagesOrderRef.current.slice(0, messagesOrderRef.current.indexOf(msgId) + 1), ...newOrders];
             setMessagesOrder(newOrder);
             messagesOrderRef.current = newOrder;
 
-            // 设置 messages (nextMessage 更新)
             const newMessages = produce(messagesRef.current, draft => {
                 draft[msgId].nextMessage = newMsgId;
             });
@@ -688,7 +878,7 @@ function ChatPage({ markId, setMarkId }) {
         }
     }, [selfMarkId]);
 
-    const switchMessage = async (msg, msgId, isNext) => {
+    const switchMessage = useCallback(async (msg, msgId, isNext) => {
         const msgId_index = msg.messages.indexOf(msg.nextMessage);
         const newMsgId = msg.messages[msgId_index + (isNext ? 1 : -1)];
         const sendSwitchRequest = () => {
@@ -707,7 +897,7 @@ function ChatPage({ markId, setMarkId }) {
         };
         await loadSwitchMessage(msgId, newMsgId);
         sendSwitchRequest();
-    };
+    }, [selfMarkId]);
 
     const LoadingScreen = () => (
         <UnifiedLoadingScreen
@@ -754,9 +944,9 @@ function ChatPage({ markId, setMarkId }) {
             switch (payload.command) {
                 case "Add-Message":
                     if (payload.value && typeof payload.value === 'object') {
-                        wasAtBottomRef.current = calculateIsNearBottom();
+                        // 保存当前的自动滚动状态
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
 
-                        // 设置 messages
                         let newMessages = {...messagesRef.current};
                         for (const [key, newValue] of Object.entries(payload.value)) {
                             if (payload.isEdit && !newMessages[key]) {
@@ -779,26 +969,26 @@ function ChatPage({ markId, setMarkId }) {
                         setMessages(newMessages);
                         messagesRef.current = newMessages;
 
+                        // 延迟检查滚动位置
                         setTimeout(() => {
-                            if (isAtBottomRef.current) {
-                                scrollToBottom();
+                            if (wasAutoScroll) {
+                                requestScrollToBottom();
                             }
-                        }, 0);
+                            checkScrollPosition(true);
+                        }, 50);
 
                         reply({success: true});
                     }
                     break;
                 case "MessagesOrder-Meta":
                     if (Array.isArray(payload.value) && payload.value.length > 0) {
-                        // 更新页面滚动条位置
                         setTimeout(() => {
-                            wasAtBottomRef.current = calculateIsNearBottom();
-                            if (isAtBottomRef.current) {
-                                scrollToBottom();
+                            checkScrollPosition(true);
+                            if (isAutoScrollEnabledRef.current) {
+                                requestScrollToBottom();
                             }
-                        }, 0)
+                        }, 50)
 
-                        // 设置 messagesOrder
                         setMessagesOrder(payload.value);
                         messagesOrderRef.current = payload.value;
 
@@ -811,6 +1001,9 @@ function ChatPage({ markId, setMarkId }) {
                     break;
                 case "Set-MessageContent":
                     if (payload.value && typeof payload.value === 'object') {
+                        // 更新流式输出状态
+                        updateStreamingStatus();
+
                         const newMessages = produce(messagesRef.current, draft => {
                             for (const [msgId, newContent] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
@@ -822,10 +1015,16 @@ function ChatPage({ markId, setMarkId }) {
                         messagesRef.current = newMessages;
 
                         setTimeout(() => {
-                            if (isAtBottomRef.current) {
-                                scrollToBottom();
+                            if (isAutoScrollEnabledRef.current) {
+                                // 流式输出时使用更积极的滚动
+                                if (isStreamingRef.current) {
+                                    smoothScrollToBottom(true);
+                                } else {
+                                    requestScrollToBottom();
+                                }
                             }
-                        }, 0);
+                            checkScrollPosition(true);
+                        }, 0); // 立即检查
 
                         if (payload.reply) reply({success: true});
                     } else {
@@ -835,6 +1034,9 @@ function ChatPage({ markId, setMarkId }) {
                     break;
                 case "Add-MessageContent":
                     if (payload.value && typeof payload.value === 'object') {
+                        // 更新流式输出状态
+                        updateStreamingStatus();
+
                         const newMessages = produce(messagesRef.current, draft => {
                             for (const [msgId, newContent] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
@@ -845,10 +1047,17 @@ function ChatPage({ markId, setMarkId }) {
                         setMessages(newMessages);
                         messagesRef.current = newMessages;
 
+                        // 流式输出时立即检查滚动，不使用延迟
                         setTimeout(() => {
-                            if (isAtBottomRef.current) {
-                                scrollToBottom();
+                            if (isAutoScrollEnabledRef.current) {
+                                // 如果是流式输出，立即滚动
+                                if (isStreamingRef.current) {
+                                    smoothScrollToBottom(true);
+                                } else {
+                                    requestScrollToBottom();
+                                }
                             }
+                            checkScrollPosition(true);
                         }, 0);
 
                         if (payload.reply) reply({success: true});
@@ -865,9 +1074,7 @@ function ChatPage({ markId, setMarkId }) {
                                     if (!draft[msgId].extraInfo) {
                                         draft[msgId].extraInfo = {};
                                     }
-                                    // 获取当前 replace 对象（如果没有则为空对象）
                                     const currentReplace = draft[msgId].extraInfo.replace || {};
-                                    // 合并：newReplaces 覆盖 currentReplace
                                     draft[msgId].extraInfo.replace = { ...currentReplace, ...newReplaces };
                                 }
                             }
@@ -876,10 +1083,11 @@ function ChatPage({ markId, setMarkId }) {
                         messagesRef.current = newMessages;
 
                         setTimeout(() => {
-                            if (isAtBottomRef.current) {
-                                scrollToBottom();
+                            if (isAutoScrollEnabledRef.current) {
+                                requestScrollToBottom();
                             }
-                        }, 0);
+                            checkScrollPosition(true);
+                        }, 50);
 
                         if (payload.reply) reply({success: true});
                     } else {
@@ -889,8 +1097,11 @@ function ChatPage({ markId, setMarkId }) {
                     break;
                 case "Add-MessageReplaceContent":
                     if (payload.value && typeof payload.value === 'object') {
+                        // 更新流式输出状态
+                        updateStreamingStatus();
+
                         const newMessages = produce(messagesRef.current, draft => {
-                            for (const [msgId, appendFields] of Object.entries(payload. value)) {
+                            for (const [msgId, appendFields] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
                                     if (!draft[msgId].extraInfo) {
                                         draft[msgId].extraInfo = {};
@@ -899,7 +1110,6 @@ function ChatPage({ markId, setMarkId }) {
                                         draft[msgId].extraInfo.replace = {};
                                     }
 
-                                    // 对每个要追加的字段进行 += 操作
                                     for (const [key, appendString] of Object.entries(appendFields)) {
                                         const currentValue = draft[msgId].extraInfo.replace[key] || '';
                                         draft[msgId].extraInfo.replace[key] = currentValue + appendString;
@@ -912,9 +1122,15 @@ function ChatPage({ markId, setMarkId }) {
                         messagesRef.current = newMessages;
 
                         setTimeout(() => {
-                            if (isAtBottomRef.current) {
-                                scrollToBottom();
+                            if (isAutoScrollEnabledRef.current) {
+                                // 如果是流式输出，立即滚动
+                                if (isStreamingRef.current) {
+                                    smoothScrollToBottom(true);
+                                } else {
+                                    requestScrollToBottom();
+                                }
                             }
+                            checkScrollPosition(true);
                         }, 0);
 
                         if (payload.reply) reply({ success: true });
@@ -938,10 +1154,11 @@ function ChatPage({ markId, setMarkId }) {
                         messagesRef.current = newMessages;
 
                         setTimeout(() => {
-                            if (isAtBottomRef.current) {
-                                scrollToBottom();
+                            if (isAutoScrollEnabledRef.current) {
+                                requestScrollToBottom();
                             }
-                        }, 0);
+                            checkScrollPosition(true);
+                        }, 50);
 
                         if (payload.reply) reply({success: true});
                     } else {
@@ -960,7 +1177,6 @@ function ChatPage({ markId, setMarkId }) {
                             return;
                         }
 
-                        // 设置 messages
                         const newMessages = produce(messagesRef.current, draft => {
                             draft[payload.msgId].messages = [...draft[payload.msgId].messages, payload.value];
                             if (payload.switch) {
@@ -972,10 +1188,11 @@ function ChatPage({ markId, setMarkId }) {
                         messagesRef.current = newMessages;
 
                         setTimeout(() => {
-                            if (isAtBottomRef.current) {
-                                scrollToBottom();
+                            if (isAutoScrollEnabledRef.current) {
+                                requestScrollToBottom();
                             }
-                        }, 0);
+                            checkScrollPosition(true);
+                        }, 50);
 
                         reply({success: true});
                     } else {
@@ -1025,7 +1242,7 @@ function ChatPage({ markId, setMarkId }) {
             unsubscribe1();
             unsubscribe2();
         };
-    }, [selfMarkId, isMessageLoaded]);
+    }, [selfMarkId, isMessageLoaded, checkScrollPosition, requestScrollToBottom, smoothScrollToBottom, updateStreamingStatus]);
 
     useEffect(() => {
         isNewMarkIdRef.current = isNewMarkId;
@@ -1033,12 +1250,10 @@ function ChatPage({ markId, setMarkId }) {
 
     useEffect(() => {
         if (selfMarkId === null || selfMarkId === undefined) {
-            // 设置 messages
             const emptyMessages = {};
             setMessages(emptyMessages);
             messagesRef.current = emptyMessages;
 
-            // 设置 messagesOrder
             const emptyOrder = [];
             setMessagesOrder(emptyOrder);
             messagesOrderRef.current = emptyOrder;
@@ -1069,21 +1284,26 @@ function ChatPage({ markId, setMarkId }) {
                 const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                     params: {markId: selfMarkId}
                 });
-                wasAtBottomRef.current = calculateIsNearBottom();
 
-                // 设置 messages
                 setMessages(messagesData.messages);
                 messagesRef.current = messagesData.messages;
 
-                // 设置 messagesOrder
                 let initOrder = messagesData.messagesOrder;
                 if (messagesData.haveMore) initOrder = ["<PREV_MORE>", ...messagesData.messagesOrder];
                 setMessagesOrder(initOrder);
                 messagesOrderRef.current = initOrder;
 
-                // 确定该对话使用的模型
                 const foundModel = modelsData.find(item => item.id === messagesData.model)
                 if (foundModel) selectedModelRef.current = foundModel;
+
+                // 初始化完成后检查滚动位置
+                setTimeout(() => {
+                    checkScrollPosition(true);
+                    // 如果是新对话，滚动到底部
+                    if (messagesData.messagesOrder.length > 0) {
+                        requestScrollToBottom();
+                    }
+                }, 100);
 
                 emitMessagesLoaded();
 
@@ -1119,6 +1339,11 @@ function ChatPage({ markId, setMarkId }) {
         setIsFirstMessageSend(true);
     }, [selfMarkId, randomMark]);
 
+    const handleChatBoxHeightChange = useCallback((newHeight) => {
+        setChatBoxHeight(newHeight);
+        chatBoxHeightRef.current = newHeight;
+    }, []);
+
     return (
         <>
             <div className="full-screen-min-height bg-white flex flex-col items-center pb-8 pretty-scrollbar"
@@ -1136,8 +1361,7 @@ function ChatPage({ markId, setMarkId }) {
                     scrollToSelectedItem={scrollToSelectedItem}
                 />
                 <>
-                    <div
-                        className="flex-1 w-full relative">
+                    <div className="flex-1 w-full relative">
                         <div
                             ref={messagesContainerRef}
                             className="h-full overflow-y-auto pb-20 scroll-smooth"
@@ -1152,32 +1376,18 @@ function ChatPage({ markId, setMarkId }) {
                                 markId={selfMarkId}
                             />
                         </div>
-                        {/* 叠加 loading 屏幕 */}
                         {isLoading && <LoadingScreen/>}
-                        {/* 叠加 error 屏幕 */}
                         {isLoadingError && <LoadingFailedScreen/>}
                     </div>
-                    <Transition
-                        show={showScrollToBottomButton}
-                        enter="transition-opacity duration-200"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="transition-opacity duration-150"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <button
-                            onClick={scrollToBottom}
-                            className="cursor-pointer absolute z-10 align-middle w-8 h-8 rounded-full bg-white border flex items-center justify-center shadow-lg focus:outline-none transition-colors -translate-x-1/2"
-                            aria-label="Scroll to bottom"
-                            style={{
-                                bottom: `${scrollButtonBottom}px`,
-                                left: '50%',
-                            }}
-                        >
-                            <ArrowDown className="text-gray-500 w-3 h-3"/>
-                        </button>
-                    </Transition>
+
+                    {/* 置底按钮 - 根据设备类型显示在不同位置 */}
+                    <ScrollToBottomButton
+                        isVisible={showScrollToBottomButton}
+                        chatBoxHeight={chatBoxHeight}
+                        isMobile={isMobile}
+                        onClick={handleScrollToBottomClick}
+                    />
+
                     <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
                         <ChatBox
                             onSendMessage={handleSendMessage}
@@ -1193,9 +1403,7 @@ function ChatPage({ markId, setMarkId }) {
                             onCancelUpload={handleCancelUpload}
                             onDropFiles={handleSelectedFiles}
                             onFolderDetected={handleFolderDetected}
-                            onHeightChange={(newHeight) => {
-                                setScrollButtonBottom(newHeight + 45);
-                            }}
+                            onHeightChange={handleChatBoxHeightChange}
                             dropTargetRef={chatPageRef}
                         />
                     </div>
