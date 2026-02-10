@@ -305,11 +305,14 @@ function ChatPage({markId, setMarkId}) {
     const [uploadFiles, setUploadFiles] = useState([]);
     const [attachments, setAttachments] = useState([]);
     const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
+
+    // 加载相关
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [isMessageLoaded, setIsMessageLoaded] = useState(false);
     const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
     const [randomMark, setRandomMark] = useState(null);
+    const errorToastsIds = useRef(new Map())
 
     // 消息状态
     const [messagesOrder, setMessagesOrder] = useState([]);
@@ -1320,6 +1323,13 @@ function ChatPage({markId, setMarkId}) {
             const emptyOrder = [];
             setMessagesOrder(emptyOrder);
             messagesOrderRef.current = emptyOrder;
+
+            setIsLoadingError(false);
+
+            // 关掉所有加载错误
+            errorToastsIds.current.forEach((id, _) => {
+                toast.dismiss(id);
+            });
         }
     }, [selfMarkId])
 
@@ -1387,7 +1397,7 @@ function ChatPage({markId, setMarkId}) {
                 emitMessagesLoaded();
 
             } catch (error) {
-                toast(t("load_messages_error", {message: error?.message || t("unknown_error")}), {
+                errorToastsIds.current.set(toast(t("load_messages_error", {message: error?.message || t("unknown_error")}), {
                     action: {
                         label: t("retry"),
                         onClick: () => {
@@ -1399,7 +1409,7 @@ function ChatPage({markId, setMarkId}) {
                     closeButton: false,
                     dismissible: false,
                     duration: Infinity,
-                });
+                }), true);
                 setIsLoadingError(true);
             } finally {
                 setIsLoading(false);
@@ -1508,7 +1518,7 @@ function ChatPage({markId, setMarkId}) {
                     </div>
                 </>
                 <footer
-                    className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center">
+                    className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center ml-5 mr-5">
                     <span className="text-xs text-gray-500">
                         © {new Date().getFullYear()} lovePikachu. All rights reserved.
                     </span>
