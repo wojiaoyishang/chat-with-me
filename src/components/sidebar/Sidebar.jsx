@@ -42,7 +42,7 @@ const Sidebar = ({
         };
         const handleTouchEnd = (e) => {
             const endX = e.changedTouches[0].clientX;
-            const endY = e.changedTouches[0].clientY;
+            const endY = Math.abs(e.changedTouches[0].clientY - startY);
             const deltaX = endX - startX;
             const deltaY = Math.abs(endY - startY);
             if (deltaY > 50) return;
@@ -62,6 +62,8 @@ const Sidebar = ({
 
     const [conversations, setConversations] = useState([]);
     const [oldPositions, setOldPositions] = useState(null);
+    const [titleTransitioning, setTitleTransitioning] = useState({});
+    const [titleCache, setTitleCache] = useState({}); // 缓存标题用于过渡
     const listRef = useRef(null);
 
     const loadConversations = async () => {
@@ -157,6 +159,60 @@ const Sidebar = ({
                         const updatedConvs = prev.map(c => c.markId === markId ? {...c, updateDate: newDate} : c);
                         return updatedConvs.sort((a, b) => b.updateDate - a.updateDate);
                     });
+                    break;
+                case "Update-ConversationTitle":
+                    if (!markId) return;
+
+                    // 记录当前布局位置
+                    const currentTitlePositions = {};
+                    if (listRef.current) {
+                        const elements = listRef.current.querySelectorAll('div[data-group], li[data-markid]');
+                        elements.forEach(el => {
+                            const rect = el.getBoundingClientRect();
+                            const id = el.dataset.markid || el.dataset.group;
+                            currentTitlePositions[id] = { top: rect.top, left: rect.left };
+                        });
+                    }
+                    setOldPositions(currentTitlePositions);
+
+                    // 先缓存旧标题，然后立即更新到新标题
+                    setConversations(prev => {
+                        const oldConv = prev.find(c => c.markId === markId);
+                        if (oldConv) {
+                            setTitleCache(prevCache => ({
+                                ...prevCache,
+                                [markId]: oldConv.title
+                            }));
+                        }
+
+                        // 直接更新为新标题
+                        const updatedConvs = prev.map(c =>
+                            c.markId === markId
+                                ? {...c, title: payload.value || c.title}
+                                : c
+                        );
+                        return updatedConvs.sort((a, b) => b.updateDate - a.updateDate);
+                    });
+
+                    // 设置过渡动画状态
+                    setTitleTransitioning(prev => ({
+                        ...prev,
+                        [markId]: true
+                    }));
+
+                    // 动画结束后清除缓存和过渡状态
+                    setTimeout(() => {
+                        setTitleTransitioning(prev => {
+                            const newState = {...prev};
+                            delete newState[markId];
+                            return newState;
+                        });
+                        setTitleCache(prevCache => {
+                            const newCache = {...prevCache};
+                            delete newCache[markId];
+                            return newCache;
+                        });
+                    }, 300); // 与动画持续时间匹配
                     break;
             }
         });
@@ -268,26 +324,49 @@ const Sidebar = ({
                                         <ul className="space-y-1">
                                             {convs.map((conv) => {
                                                 const isSelected = conv.markId === markId;
+                                                const isTitleTransitioning = titleTransitioning[conv.markId];
+                                                const oldTitle = titleCache[conv.markId];
+                                                const isFirstRender = !oldTitle;
+
                                                 return (
                                                     <li key={conv.markId} data-markid={conv.markId}>
                                                         <button
                                                             onClick={() => handleSelectConversation(conv.markId)}
-                                                            className={`w-full text-left px-3 py-1.5 rounded-lg transition-colors flex flex-col cursor-pointer ${
+                                                            className={`w-full text-left px-3.5 py-1.5 rounded-lg transition-colors flex cursor-pointer ${
                                                                 isSelected
                                                                     ? 'bg-gray-200 hover:bg-gray-200 text-gray-800'
                                                                     : 'hover:bg-gray-200 text-gray-800'
                                                             }`}
                                                         >
-                                                            <span className="font-medium truncate">
-                                                                {conv.title}
-                                                            </span>
-                                                            <span
-                                                                className={`text-xs transition-colors ${
-                                                                    isSelected ? 'text-gray-600' : 'text-gray-500'
-                                                                }`}
-                                                            >
-                                                                {format(new Date(conv.updateDate), 'PPP')}
-                                                            </span>
+                                                            <div className="relative overflow-hidden flex-1 text-base">
+                                                                {/* 新标题 - 使用绝对定位覆盖旧标题 */}
+                                                                <span
+                                                                    className={`font-medium truncate block transition-all duration-300 ease-in-out ${
+                                                                        isTitleTransitioning
+                                                                            ? 'absolute inset-0 opacity-100 transform translate-y-0'
+                                                                            : 'relative opacity-100 transform translate-y-0'
+                                                                    }`}
+                                                                    style={{
+                                                                        animation: isTitleTransitioning && !isFirstRender
+                                                                            ? 'slideUp 0.3s ease-in-out forwards'
+                                                                            : 'none'
+                                                                    }}
+                                                                >
+                                                                    {conv.title}
+                                                                </span>
+
+                                                                {/* 旧标题 - 只在过渡期间显示 */}
+                                                                {isTitleTransitioning && oldTitle && (
+                                                                    <span
+                                                                        className="font-medium truncate block absolute inset-0 opacity-0 transform translate-y-0"
+                                                                        style={{
+                                                                            animation: 'slideOut 0.3s ease-in-out forwards'
+                                                                        }}
+                                                                    >
+                                                                        {oldTitle}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </button>
                                                     </li>
                                                 );
@@ -338,6 +417,31 @@ const Sidebar = ({
                     <ChevronRight className="w-3 h-3"/>
                 </button>
             </Transition>
+
+            {/* CSS Animation for title transition */}
+            <style>{`
+                @keyframes slideUp {
+                    0% {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    100% {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                
+                @keyframes slideOut {
+                    0% {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                    100% {
+                        opacity: 0;
+                        transform: translateY(-10px);
+                    }
+                }
+            `}</style>
         </>
     );
 };

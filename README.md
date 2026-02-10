@@ -1090,6 +1090,31 @@ code 设置为 401 。
 }
 ```
 
+#### 更新日期
+
+```python
+{
+    "type": "widget",
+    "target": "Sidebar",
+    "payload": {
+        "command": "Update-ConversationDate"
+    }
+}
+```
+
+#### 更新标题
+
+```python
+{
+    "type": "widget",
+    "target": "Sidebar",
+    "payload": {
+        "command": "Update-ConversationTitle",
+        "value": "新的标题"
+    }
+}
+```
+
 #### 将该指定 MarkId 的 Conversions 的对话更改为新值
 
 默认在 ChatPage 第一次发送新消息时发出，不会发送到 websocket
