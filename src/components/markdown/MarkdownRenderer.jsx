@@ -77,12 +77,10 @@ const createComponents = (withCustomComponent) => {
                 );
             }
             return (
-                <LazyVisibility>
-                    <CodeBlock
-                        codeString={String(children || '').replace(/\n$/, '')}
-                        language={language}
-                    />
-                </LazyVisibility>
+                <CodeBlock
+                    codeString={String(children || '').replace(/\n$/, '')}
+                    language={language}
+                />
             );
         },
         table: ({children}) => (
