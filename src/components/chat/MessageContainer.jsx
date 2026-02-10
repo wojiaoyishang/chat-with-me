@@ -6,7 +6,7 @@ import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
 import AttachmentShowcase from './AttachmentShowcase';
 import {Menu, PenLine, Copy, RotateCw, Info, ChevronLeft, ChevronRight} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
+import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 
 import {
     DropdownMenu,

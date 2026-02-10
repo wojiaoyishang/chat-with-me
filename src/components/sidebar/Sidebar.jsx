@@ -1,13 +1,16 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {format, isToday, isYesterday, subDays, subMonths, isWithinInterval} from 'date-fns';
-import { ChevronRight, X, Plus, BookOpen } from 'lucide-react';
+import {ChevronRight, X, Plus, BookOpen, MoreHorizontal} from 'lucide-react';
 import {generateUUID, UnifiedErrorScreen, UnifiedLoadingScreen, updateURL} from "@/lib/tools.jsx";
 import {Transition} from '@headlessui/react';
 import {useTranslation} from "react-i18next";
 import {useIsMobile} from "@/lib/tools.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
-import {onEvent} from "@/store/useEventStore.jsx";
+import {onEvent} from "@/context/useEventStore.jsx";
+
+import {Avatar, AvatarImage, AvatarFallback} from "@/components/ui/avatar";
+import {useUserStore} from "@/context/userContext.jsx";
 
 const Sidebar = ({
                      markId, setMarkId, setPageType,
@@ -19,6 +22,12 @@ const Sidebar = ({
 
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
+
+    // 用户相关
+    const { user, setUser, clearUser } = useUserStore();
+    const [displayName, setDisplayName] = useState(user.nickname || "User");
+    const [avatarSrc, setAvatarSrc] = useState(user.avatar || null);
+    const [userRole, setUserRole] = useState(user.role || "Normal");
 
     useEffect(() => {
         const mql = window.matchMedia('(min-width: 768px)');
@@ -63,12 +72,10 @@ const Sidebar = ({
     const [conversations, setConversations] = useState([]);
     const [oldPositions, setOldPositions] = useState(null);
     const [titleTransitioning, setTitleTransitioning] = useState({});
-    const [titleCache, setTitleCache] = useState({}); // 缓存标题用于过渡
+    const [titleCache, setTitleCache] = useState({});
     const listRef = useRef(null);
 
     const loadConversations = async () => {
-        setIsLoading(true);
-        setIsLoadingError(false);
         try {
             const histories = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT);
             const formattedConversations = histories.map(conv => ({
@@ -84,6 +91,9 @@ const Sidebar = ({
     };
 
     useEffect(() => {
+        setIsLoading(true);
+        setIsLoadingError(false);
+
         loadConversations();
     }, []);
 
@@ -125,7 +135,7 @@ const Sidebar = ({
     };
 
     const LoadingScreen = () => (
-        <UnifiedLoadingScreen text={t("loading_history")} />
+        <UnifiedLoadingScreen text={t("loading_history")}/>
     );
 
     const LoadingFailedScreen = () => (
@@ -150,7 +160,7 @@ const Sidebar = ({
                         elements.forEach(el => {
                             const rect = el.getBoundingClientRect();
                             const id = el.dataset.markid || el.dataset.group;
-                            currentPositions[id] = { top: rect.top, left: rect.left };
+                            currentPositions[id] = {top: rect.top, left: rect.left};
                         });
                     }
                     setOldPositions(currentPositions);
@@ -163,19 +173,17 @@ const Sidebar = ({
                 case "Update-ConversationTitle":
                     if (!markId) return;
 
-                    // 记录当前布局位置
                     const currentTitlePositions = {};
                     if (listRef.current) {
                         const elements = listRef.current.querySelectorAll('div[data-group], li[data-markid]');
                         elements.forEach(el => {
                             const rect = el.getBoundingClientRect();
                             const id = el.dataset.markid || el.dataset.group;
-                            currentTitlePositions[id] = { top: rect.top, left: rect.left };
+                            currentTitlePositions[id] = {top: rect.top, left: rect.left};
                         });
                     }
                     setOldPositions(currentTitlePositions);
 
-                    // 先缓存旧标题，然后立即更新到新标题
                     setConversations(prev => {
                         const oldConv = prev.find(c => c.markId === markId);
                         if (oldConv) {
@@ -185,7 +193,6 @@ const Sidebar = ({
                             }));
                         }
 
-                        // 直接更新为新标题
                         const updatedConvs = prev.map(c =>
                             c.markId === markId
                                 ? {...c, title: payload.value || c.title}
@@ -194,13 +201,11 @@ const Sidebar = ({
                         return updatedConvs.sort((a, b) => b.updateDate - a.updateDate);
                     });
 
-                    // 设置过渡动画状态
                     setTitleTransitioning(prev => ({
                         ...prev,
                         [markId]: true
                     }));
 
-                    // 动画结束后清除缓存和过渡状态
                     setTimeout(() => {
                         setTitleTransitioning(prev => {
                             const newState = {...prev};
@@ -212,7 +217,7 @@ const Sidebar = ({
                             delete newCache[markId];
                             return newCache;
                         });
-                    }, 300); // 与动画持续时间匹配
+                    }, 300);
                     break;
             }
         });
@@ -236,7 +241,7 @@ const Sidebar = ({
                 el.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
             }
         });
-        container.offsetHeight; // force reflow
+        container.offsetHeight;
         elements.forEach(el => {
             const id = el.dataset.markid || el.dataset.group;
             if (oldPositions[id]) {
@@ -254,9 +259,10 @@ const Sidebar = ({
         return () => clearTimeout(timer);
     }, [conversations, oldPositions]);
 
+
     let logoElement;
     if (settings?.logoType === 'image' && settings?.logo) {
-        logoElement = <img src={settings.logo} alt="Logo" className="h-8 w-auto" />;
+        logoElement = <img src={settings.logo} alt="Logo" className="h-8 w-auto"/>;
     } else {
         const text = (settings?.logoType === 'text' && settings?.logo) ? settings.logo : 'Logo';
         logoElement = <h1 className="text-xl font-bold text-gray-800">{text}</h1>;
@@ -265,10 +271,10 @@ const Sidebar = ({
     return (
         <>
             <div
-                className={`fixed md:relative top-0 left-0 h-full bg-white shadow-lg z-40 flex flex-col overflow-y-auto transition-all duration-300 ease-in-out`}
-                style={{ width: 'var(--sidebar-width)' }}
+                className={`fixed md:relative top-0 left-0 h-full bg-white shadow-lg z-40 flex flex-col overflow-hidden transition-all duration-300 ease-in-out`}
+                style={{width: 'var(--sidebar-width)'}}
             >
-                {/* Logo Section */}
+                {/* ==================== LOGO ==================== */}
                 <div className="flex items-center justify-between p-4 border-b">
                     {logoElement}
                     <button
@@ -280,7 +286,7 @@ const Sidebar = ({
                     </button>
                 </div>
 
-                {/* Navigation Buttons */}
+                {/* ==================== 导航按钮 ==================== */}
                 <div className="p-4 border-b">
                     <div className="flex flex-col space-y-2">
                         <button
@@ -307,7 +313,7 @@ const Sidebar = ({
                     </div>
                 </div>
 
-                {/* History List */}
+                {/* ==================== 历史聊天列表 ==================== */}
                 <div ref={listRef} className="flex-1 p-4 overflow-y-auto pretty-scrollbar relative">
                     {isLoadingError ? (
                         <LoadingFailedScreen/>
@@ -339,7 +345,6 @@ const Sidebar = ({
                                                             }`}
                                                         >
                                                             <div className="relative overflow-hidden flex-1 text-base">
-                                                                {/* 新标题 - 使用绝对定位覆盖旧标题 */}
                                                                 <span
                                                                     className={`font-medium truncate block transition-all duration-300 ease-in-out ${
                                                                         isTitleTransitioning
@@ -355,7 +360,6 @@ const Sidebar = ({
                                                                     {conv.title}
                                                                 </span>
 
-                                                                {/* 旧标题 - 只在过渡期间显示 */}
                                                                 {isTitleTransitioning && oldTitle && (
                                                                     <span
                                                                         className="font-medium truncate block absolute inset-0 opacity-0 transform translate-y-0"
@@ -377,6 +381,31 @@ const Sidebar = ({
                             ))}
                         </>
                     )}
+                </div>
+
+                {/* ==================== 用户信息区域 ==================== */}
+                <div className="border-t p-4 bg-white">
+                    <div className="flex items-center gap-3 group">
+                        <Avatar className="h-10 w-10 flex-shrink-0">
+                            <AvatarImage src={avatarSrc} alt={displayName}/>
+                            <AvatarFallback className="bg-gray-200 text-gray-700 font-medium">
+                                {displayName[0]}
+                            </AvatarFallback>
+                        </Avatar>
+
+                        <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-800 truncate">
+                                {displayName}
+                            </p>
+                            <p className="text-xs text-gray-500">{userRole}</p>
+                        </div>
+
+                        <button
+                            className="cursor-pointer p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors opacity-60 group-hover:opacity-100"
+                        >
+                            <MoreHorizontal className="w-5 h-5"/>
+                        </button>
+                    </div>
                 </div>
             </div>
 

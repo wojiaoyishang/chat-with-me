@@ -6,8 +6,9 @@ import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {useTranslation} from "react-i18next";
 import EditorHome from "@/pages/editor/EditorHome.jsx";
-import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
+import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 import {toast} from "sonner";
+import {useUserStore} from "@/context/userContext.jsx";
 
 const DashboardPage = ({type = "chat"}) => {
     const [markId, setMarkId] = useState(getMarkId());
@@ -18,6 +19,8 @@ const DashboardPage = ({type = "chat"}) => {
 
     const [pageType, setPageType] = useState(type);
 
+    const { user, setUser, clearUser } = useUserStore();
+
     const {t} = useTranslation();
 
     // 页面加载动画层
@@ -25,21 +28,41 @@ const DashboardPage = ({type = "chat"}) => {
         const loadDashboard = async () => {
             setIsLoading(true);
             setIsLoadingError(false);
+            const settings = await apiClient.get(apiEndpoint.DASHBOARD_ENDPOINT);
+            if (settings.sidebar) {
+                setSidebarSettings(settings.sidebar);
+            }
+        };
 
+        const loadUserInfo = async () => {
+            const user = await apiClient.get(apiEndpoint.USER_INFO_ENDPOINT);
+
+            if (!user.username) {
+                user.username = "User";
+                console.warn("UserInfo is missing username.")
+            }
+
+            // 设置默认内容
+            if (!user.nickname) user.nickname = user.username;
+
+            // 全局共享
+            setUser(user);
+        }
+
+        const loadAll = async () => {
             try {
-                const settings = await apiClient.get(apiEndpoint.DASHBOARD_ENDPOINT);
-                if (settings.sidebar) {
-                    setSidebarSettings(settings.sidebar);
-                }
+                await loadDashboard();
+                await loadUserInfo();
             } catch (error) {
                 toast.error(t("load_page_error", {message: error?.message || t("unknown_error")}))
                 setIsLoadingError(true);
             } finally {
                 setIsLoading(false);
             }
-        };
+        }
 
-        loadDashboard();
+        loadAll();
+
     }, []);
 
     const LoadingScreen = () => (
@@ -79,7 +102,7 @@ const DashboardPage = ({type = "chat"}) => {
                 <>
 
                     <Sidebar markId={markId} setMarkId={setMarkId} settings={sidebarSettings}
-                             setPageType={setPageType} setRandomUUID={setRandomUUID} />
+                             setPageType={setPageType} setRandomUUID={setRandomUUID}/>
 
                     <main className="flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
                         {pageType === "chat" && <ChatPage key={randomUUID} markId={markId} setMarkId={setMarkId}/>}

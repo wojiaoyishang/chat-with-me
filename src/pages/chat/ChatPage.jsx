@@ -17,7 +17,7 @@ import {
     fileUpload,
     createFilePicker,
 } from "@/lib/tools.jsx";
-import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
+import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 import {useTranslation} from "react-i18next";
 import {ArrowDown, ChevronDown, CircleCheck} from 'lucide-react';
 import ChatBox from "@/components/chat/chatbox.jsx";

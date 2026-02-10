@@ -3,7 +3,7 @@ import {toast} from 'sonner';
 import {useTranslation} from 'react-i18next';
 import FatalErrorPopoverElement from '@/context/FatalErrorPopover.jsx';
 import globalMessageCallback from '@/hooks/messageCallback.jsx';
-import {emitEvent} from "@/store/useEventStore.jsx";
+import {emitEvent} from "@/context/useEventStore.jsx";
 import {WEBSOCKET_URL} from "@/config.js";
 
 // ====== 全局状态管理 ======

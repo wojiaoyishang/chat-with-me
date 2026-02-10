@@ -1,4 +1,4 @@
-import {onEvent} from "@/store/useEventStore.jsx";
+import {onEvent} from "@/context/useEventStore.jsx";
 import {useEffect} from "react";
 import {toast} from "sonner";
 

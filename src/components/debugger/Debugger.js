@@ -1,6 +1,6 @@
 // components/GlobalEventLogger.jsx
 import {useEffect} from 'react';
-import {emitEvent, useEventStore} from "@/store/useEventStore.jsx";
+import {emitEvent, useEventStore} from "@/context/useEventStore.jsx";
 
 // 全局事件监听器（仅用于调试/开发）
 function GlobalEventLogger() {

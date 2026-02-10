@@ -1,4 +1,4 @@
-import {emitEvent} from "@/store/useEventStore.jsx"
+import {emitEvent} from "@/context/useEventStore.jsx"
 /*
 * 全局 websocket 事件处理
 */

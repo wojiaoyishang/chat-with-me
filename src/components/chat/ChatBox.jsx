@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import SimpleMDEditor from '@/components/editor/SimpleMDEditor.jsx';
 import ToggleButton from '@/components/chat/ChatButton.jsx';
-import {emitEvent, onEvent} from '@/store/useEventStore.jsx';
+import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
 import ChatBoxHeader from './ChatBoxHeader';
 import ToolButtons from './ToolButtons';
 import AttachmentShowcase from './AttachmentShowcase';

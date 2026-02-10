@@ -16,7 +16,7 @@ import {format} from 'date-fns';
 // 导入项目依赖 (假设这些文件和模块都存在)
 import {fileUpload, processSelectedFiles, UnifiedLoadingScreen} from "@/lib/tools.jsx";
 import AIEditor from "@/pages/ai/AIEditor.jsx";
-import {emitEvent} from "@/store/useEventStore.jsx";
+import {emitEvent} from "@/context/useEventStore.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {toast} from "sonner";
