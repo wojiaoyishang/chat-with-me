@@ -56,7 +56,7 @@ const CodeBlock = memo(({ codeString = '', language }) => {
                         window.hljsFailedLanguages.add(language);
                     }
                 } else {
-                    console.warn(`Language not supported: ${language}`);
+                    // console.warn(`Language not supported: ${language}`);
                     window.hljsFailedLanguages.add(language);
                 }
             }

@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useRef, useCallback, useMemo, memo} from 'react';
-import { useImmer } from 'use-immer';
-import { produce } from 'immer';
+import {useImmer} from 'use-immer';
+import {produce} from 'immer';
 import {
     generateUUID,
     getMarkId,
@@ -10,24 +10,24 @@ import {
     UnifiedErrorScreen,
     UnifiedLoadingScreen
 } from "@/lib/tools.jsx";
-import { toast } from "sonner";
-import { Transition } from '@headlessui/react';
+import {toast} from "sonner";
+import {Transition} from '@headlessui/react';
 import {
     processSelectedFiles,
     fileUpload,
     createFilePicker,
 } from "@/lib/tools.jsx";
-import { emitEvent, onEvent } from "@/store/useEventStore.jsx";
-import { useTranslation } from "react-i18next";
-import { ArrowDown, ChevronDown, CircleCheck } from 'lucide-react';
+import {emitEvent, onEvent} from "@/store/useEventStore.jsx";
+import {useTranslation} from "react-i18next";
+import {ArrowDown, ChevronDown, CircleCheck} from 'lucide-react';
 import ChatBox from "@/components/chat/chatbox.jsx";
 import MessageContainer from "@/components/chat/MessageContainer.jsx";
 import apiClient from "@/lib/apiClient.js";
-import { apiEndpoint } from "@/config.js";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import {apiEndpoint} from "@/config.js";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Button} from "@/components/ui/button";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import {Badge} from "@/components/ui/badge";
 
 // ========== 内部组件：模型项 ==========
 const ModelItem = memo(({
@@ -41,7 +41,7 @@ const ModelItem = memo(({
     const itemContent = useMemo(() => (
         <>
             <Avatar className="h-6 w-6">
-                <AvatarImage src={model.avatar} alt={model.name} />
+                <AvatarImage src={model.avatar} alt={model.name}/>
                 <AvatarFallback>{model.name[0]}</AvatarFallback>
             </Avatar>
             <div className="ml-2 text-left">
@@ -49,7 +49,7 @@ const ModelItem = memo(({
                 <p className="text-xs text-gray-500 truncate w-40">{model.description}</p>
             </div>
             {isSelected && (
-                <CircleCheck className="ml-auto text-[#615CED] h-4 w-4" />
+                <CircleCheck className="ml-auto text-[#615CED] h-4 w-4"/>
             )}
         </>
     ), [model, isSelected]);
@@ -99,7 +99,7 @@ const ModelItem = memo(({
 ModelItem.displayName = 'ModelItem';
 
 // ========== 内部组件：模型预览卡片 ==========
-const ModelPreviewCard = React.memo(({ model, isMobile }) => {
+const ModelPreviewCard = React.memo(({model, isMobile}) => {
     if (!model) return null;
 
     return (
@@ -107,7 +107,7 @@ const ModelPreviewCard = React.memo(({ model, isMobile }) => {
             <div className="flex flex-col space-y-2">
                 <div className="flex items-center space-x-3">
                     <Avatar className="h-10 w-10">
-                        <AvatarImage src={model.avatar} alt={model.name} />
+                        <AvatarImage src={model.avatar} alt={model.name}/>
                         <AvatarFallback>{model.name[0]}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -238,7 +238,7 @@ const ChatHeader = memo(({
                 />
             );
         });
-    }, [models, isMobile, t, handleModelItemClick, handleModelItemMouseEnter, selectedModel]);
+    }, [models, isMobile, handleModelItemClick, handleModelItemMouseEnter, selectedModel]);
 
     return (
         <header className="w-full bg-white flex items-center justify-start p-4 h-14">
@@ -266,7 +266,7 @@ const ChatHeader = memo(({
                             {modelItems}
                         </div>
                         {(!isMobile || (isMobile && previewModel)) && (
-                            <ModelPreviewCard model={previewModel} isMobile={isMobile} />
+                            <ModelPreviewCard model={previewModel} isMobile={isMobile}/>
                         )}
                     </div>
                 </PopoverContent>
@@ -291,8 +291,8 @@ const ChatHeader = memo(({
 ChatHeader.displayName = 'ChatHeader';
 
 // ========== 主组件 ==========
-function ChatPage({ markId, setMarkId }) {
-    const { t } = useTranslation();
+function ChatPage({markId, setMarkId}) {
+    const {t} = useTranslation();
     const chatPageRef = useRef(null);
     const isProcessingRef = useRef(false);
     const messagesContainerRef = useRef(null);
@@ -333,7 +333,7 @@ function ChatPage({ markId, setMarkId }) {
     const [chatBoxHeight, setChatBoxHeight] = useState(0);
     const isMobile = useIsMobile();
     const [models, setModels] = useState([]);
-    const selectedModelRef = useRef({ name: t("no_models") });
+    const selectedModelRef = useRef({name: t("no_models")});
     const [previewModel, setPreviewModel] = useState(null);
     const [isNewMarkId, setIsNewMarkId] = useState(false);
     const isNewMarkIdRef = useRef(false);
@@ -345,7 +345,7 @@ function ChatPage({ markId, setMarkId }) {
     const checkScrollPosition = useCallback((immediate = false) => {
         if (!messagesContainerRef.current) return;
 
-        const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+        const {scrollTop, scrollHeight, clientHeight} = messagesContainerRef.current;
         const distanceToBottom = scrollHeight - scrollTop - clientHeight;
 
         // 检测滚动方向
@@ -356,14 +356,19 @@ function ChatPage({ markId, setMarkId }) {
         }
         lastScrollTopRef.current = scrollTop;
 
-        // 增大阈值，确保在流式输出时更容易保持自动滚动
-        const THRESHOLD = 200;
+        // 减小阈值，提高敏感度
+        const THRESHOLD = 100; // 从200减小到100
 
-        // 更新自动滚动状态
-        isAutoScrollEnabledRef.current = distanceToBottom <= THRESHOLD;
+        // 更新自动滚动状态 - 放宽条件
+        // 如果用户在底部100像素范围内，或者正在向下滚动且距离底部小于200像素，都认为是自动滚动状态
+        const isNearBottom = distanceToBottom <= THRESHOLD;
+        const isScrollingDownNearBottom = scrollDirectionRef.current === 'down' && distanceToBottom < 200;
+
+        isAutoScrollEnabledRef.current = isNearBottom || isScrollingDownNearBottom;
 
         // 是否需要显示置底按钮：不在底部且是向上滚动
-        const shouldShowButton = distanceToBottom > THRESHOLD && scrollDirectionRef.current === 'up';
+        // 增加显示按钮的条件：只要不在底部就显示，不限制滚动方向
+        const shouldShowButton = distanceToBottom > THRESHOLD;
 
         if (immediate) {
             setShowScrollToBottomButton(shouldShowButton);
@@ -384,15 +389,33 @@ function ChatPage({ markId, setMarkId }) {
 
         const container = messagesContainerRef.current;
         const targetScrollTop = container.scrollHeight - container.clientHeight;
+
+        // 如果已经在底部（相差小于1像素），不执行滚动
+        if (Math.abs(container.scrollTop - targetScrollTop) < 1) {
+            isAutoScrollEnabledRef.current = true;
+            pendingScrollRef.current = false;
+            return;
+        }
+
         const currentScrollTop = container.scrollTop;
         const distance = targetScrollTop - currentScrollTop;
+
+        // 增加最小滚动距离判断
+        if (Math.abs(distance) < 1) return;
 
         // 如果距离很近，直接滚动
         if (Math.abs(distance) < 50) {
             container.scrollTo({
                 top: targetScrollTop,
-                behavior: isStreaming ? 'auto' : 'smooth' // 流式输出时使用auto减少卡顿
+                behavior: isStreaming ? 'auto' : 'smooth'
             });
+
+            // 滚动完成后更新状态
+            setTimeout(() => {
+                isAutoScrollEnabledRef.current = true;
+                pendingScrollRef.current = false;
+                checkScrollPosition(true);
+            }, 100);
             return;
         }
 
@@ -495,7 +518,7 @@ function ChatPage({ markId, setMarkId }) {
             checkScrollPosition();
         };
 
-        container.addEventListener('scroll', handleScroll, { passive: true });
+        container.addEventListener('scroll', handleScroll, {passive: true});
 
         // 初始化检查
         checkScrollPosition(true);
@@ -559,15 +582,15 @@ function ChatPage({ markId, setMarkId }) {
         }
     }, [isMobile]);
 
-    const handleFolderDetected = () => {
+    const handleFolderDetected = useCallback(() => {
         toast.error(t("folder_upload_not_supported"));
-    };
+    });
 
     const handleDropFiles = (files) => {
         handleSelectedFiles(files);
     };
 
-    const handleSendMessage = (
+    const handleSendMessage = useCallback((
         messageContent,
         toolsStatus,
         isEditMessage = false,
@@ -646,13 +669,13 @@ function ChatPage({ markId, setMarkId }) {
         } else {
             sendMessage(selfMarkId);
         }
-    };
+    }, [selfMarkId, isFirstMessageSend]);
 
-    const onAttachmentRemove = (attachment) => {
+    const onAttachmentRemove = useCallback((attachment) => {
         setAttachments(prev => prev.filter(att => att.serverId !== attachment.serverId));
-    };
+    });
 
-    const handleSelectedFiles = (files, items) => {
+    const handleSelectedFiles = useCallback((files, items) => {
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
             if (item.kind === 'string' && item.type === 'text/plain') {
@@ -722,9 +745,9 @@ function ChatPage({ markId, setMarkId }) {
         setTimeout(() => {
             isProcessingRef.current = false;
         }, 500);
-    };
+    }, [selfMarkId]);
 
-    const handleImagePaste = (file) => {
+    const handleImagePaste = useCallback((file) => {
         const fileList = {
             0: file,
             length: 1,
@@ -734,9 +757,9 @@ function ChatPage({ markId, setMarkId }) {
             }
         };
         handleSelectedFiles(fileList);
-    };
+    }, [handleSelectedFiles]);
 
-    const handleRetryUpload = (uploadId) => {
+    const handleRetryUpload = useCallback((uploadId) => {
         setUploadFiles(prev => {
             const fileToRetry = prev.find(f => f.id === uploadId);
             if (!fileToRetry || !fileToRetry.file) return prev;
@@ -765,18 +788,23 @@ function ChatPage({ markId, setMarkId }) {
             uploadIntervals.current.set(uploadId, cleanup);
             return prev.map(f => f.id === uploadId ? updatedFile : f);
         });
-    };
+    },);
 
-    const handleCancelUpload = (uploadId) => {
+    const handleCancelUpload = useCallback((uploadId) => {
         if (uploadIntervals.current.has(uploadId)) {
             uploadIntervals.current.get(uploadId)();
             uploadIntervals.current.delete(uploadId);
         }
         setUploadFiles(prev => prev.filter(f => f.id !== uploadId));
-    };
+    }, []);
 
-    const handleFilePicker = createFilePicker('*', handleSelectedFiles);
-    const handlePicPicker = createFilePicker('image/*', handleSelectedFiles);
+    const handleFilePicker = useCallback(() => {
+        return createFilePicker('*', handleSelectedFiles);
+    }, [handleSelectedFiles]);
+
+    const handlePicPicker = useCallback(() => {
+        return createFilePicker('image/*', handleSelectedFiles);
+    }, [handleSelectedFiles]);
 
     const loadMoreHistory = useCallback(async () => {
         try {
@@ -939,6 +967,41 @@ function ChatPage({ markId, setMarkId }) {
         }, 0)
     }
 
+    // 添加一个ResizeObserver来监听内容高度变化
+    useEffect(() => {
+        if (!messagesContainerRef.current) return;
+
+        const observer = new ResizeObserver(() => {
+            // 如果自动滚动启用，立即滚动到底部
+            if (isAutoScrollEnabledRef.current) {
+                requestScrollToBottom();
+            }
+            // 总是检查滚动位置
+            checkScrollPosition(true);
+        });
+
+        observer.observe(messagesContainerRef.current);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [checkScrollPosition, requestScrollToBottom]);
+
+    // 监听消息内容的变化
+    useEffect(() => {
+        // 如果消息有变化且自动滚动启用，滚动到底部
+        if (isAutoScrollEnabledRef.current && messagesOrder.length > 0) {
+            // 使用requestAnimationFrame确保在下一帧执行
+            requestAnimationFrame(() => {
+                if (pendingScrollRef.current) {
+                    executePendingScroll();
+                } else {
+                    requestScrollToBottom();
+                }
+            });
+        }
+    }, [messagesOrder, executePendingScroll, requestScrollToBottom]);
+
     useEffect(() => {
         const unsubscribe1 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
@@ -1075,7 +1138,7 @@ function ChatPage({ markId, setMarkId }) {
                                         draft[msgId].extraInfo = {};
                                     }
                                     const currentReplace = draft[msgId].extraInfo.replace || {};
-                                    draft[msgId].extraInfo.replace = { ...currentReplace, ...newReplaces };
+                                    draft[msgId].extraInfo.replace = {...currentReplace, ...newReplaces};
                                 }
                             }
                         });
@@ -1133,10 +1196,10 @@ function ChatPage({ markId, setMarkId }) {
                             checkScrollPosition(true);
                         }, 0);
 
-                        if (payload.reply) reply({ success: true });
+                        if (payload.reply) reply({success: true});
                     } else {
                         console.error("Add-MessageReplaceContent Failed. payload.value must be an object.");
-                        if (payload.reply) reply({ success: false });
+                        if (payload.reply) reply({success: false});
                     }
                     break;
 
@@ -1296,13 +1359,29 @@ function ChatPage({ markId, setMarkId }) {
                 const foundModel = modelsData.find(item => item.id === messagesData.model)
                 if (foundModel) selectedModelRef.current = foundModel;
 
-                // 初始化完成后检查滚动位置
+                // 使用双重的setTimeout确保DOM完全更新
+                // 第一个setTimeout确保React状态更新
                 setTimeout(() => {
-                    checkScrollPosition(true);
-                    // 如果是新对话，滚动到底部
-                    if (messagesData.messagesOrder.length > 0) {
-                        requestScrollToBottom();
-                    }
+                    // 第二个setTimeout确保DOM渲染完成
+                    setTimeout(() => {
+                        // 强制启用自动滚动
+                        isAutoScrollEnabledRef.current = true;
+                        pendingScrollRef.current = true;
+
+                        // 立即检查滚动位置
+                        checkScrollPosition(true);
+
+                        // 执行滚动
+                        executePendingScroll();
+
+                        // 确保置底按钮正确显示
+                        const container = messagesContainerRef.current;
+                        if (container) {
+                            const {scrollHeight, clientHeight} = container;
+                            const shouldShowButton = scrollHeight > clientHeight + 100;
+                            setShowScrollToBottomButton(shouldShowButton);
+                        }
+                    }, 50);
                 }, 100);
 
                 emitMessagesLoaded();
@@ -1324,6 +1403,26 @@ function ChatPage({ markId, setMarkId }) {
                 setIsLoadingError(true);
             } finally {
                 setIsLoading(false);
+
+                // 确保滚动状态正确
+                setTimeout(() => {
+                    if (messagesContainerRef.current) {
+                        const container = messagesContainerRef.current;
+                        const {scrollTop, scrollHeight, clientHeight} = container;
+                        const distanceToBottom = scrollHeight - scrollTop - clientHeight;
+
+                        // 如果距离底部超过阈值，显示置底按钮
+                        if (distanceToBottom > 100) {
+                            setShowScrollToBottomButton(true);
+                        }
+
+                        // 强制滚动到底部
+                        container.scrollTo({
+                            top: scrollHeight,
+                            behavior: 'auto'
+                        });
+                    }
+                }, 200);
             }
         };
         const loadData = async () => {

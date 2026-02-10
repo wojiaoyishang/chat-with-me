@@ -473,7 +473,7 @@ function ChatBox({
                 handleSendMessage();
             }
         }
-    }, [handleSendMessage, tipMessageIsForNewLine, t]);
+    }, [handleSendMessage, tipMessageIsForNewLine]);
 
     const handleInputChange = useCallback((newValue) => {
         if (isReadOnly) return;
@@ -984,7 +984,7 @@ function ChatBox({
             }
             return null;
         });
-    }, [toolsStatus.extra_tools, setToolsStatus, t]);
+    }, [toolsStatus.extra_tools, setToolsStatus]);
 
     // 需要将 renderIcon 函数也定义在组件内部
     const renderIcon = useCallback((iconType, iconData) => {
@@ -1156,7 +1156,7 @@ function ChatBox({
         setToolsLoadedStatus,
         renderMenuItems, // 传递函数
         t,
-    }), [toolsLoadedStatus, extraTools, tools, toolsStatus, setToolsStatus, setToolsLoadedStatus, renderMenuItems, t]);
+    }), [toolsLoadedStatus, extraTools, tools, toolsStatus, setToolsStatus, setToolsLoadedStatus, renderMenuItems]);
 
     return (
         <>
