@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {Transition} from '@headlessui/react';
 import {motion, AnimatePresence} from 'framer-motion';
 import {Check, X, PenLine, Trash2, Minus, Square, RotateCw, Search, Earth} from 'lucide-react';
+
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
@@ -10,7 +11,17 @@ import {
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent
 } from '@/components/ui/dropdown-menu';
+
+import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage,
+} from '@/components/ui/avatar';
+
 import SimpleMDEditor from '@/components/editor/SimpleMDEditor.jsx';
 import ToggleButton from '@/components/chat/ChatButton.jsx';
 import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
@@ -397,6 +408,7 @@ function ChatBox({
                      FilePickerCallback,
                      PicPickerCallback,
                      markId,
+                     selectedModelRef,
                      attachmentsMeta = [],
                      setAttachments,
                      uploadFiles = [],
@@ -408,6 +420,7 @@ function ChatBox({
                      onFolderDetected,
                      onHeightChange,
                      dropTargetRef,
+                     selectedModel
                  }) {
     const {t} = useTranslation();
 
@@ -443,19 +456,25 @@ function ChatBox({
     const messageContentRef = useRef(messageContent);
     const sendButtonStatusRef = useRef(sendButtonStatus);
 
-    // ========== 回调函数（使用 useCallback 缓存）==========
+    // 发送消息角色身份相关
+    const [roles, setRoles] = useState([]);
+    const [currentRole, setCurrentRole] = useState(null);
 
+
+    // ========== 回调函数（使用 useCallback 缓存）==========
     const handleSendMessage = useCallback(() => {
-        onSendMessage(
-            messageContentRef.current,
-            toolsStatus,
-            isEditMessage,
-            editMessageId,
-            attachmentsMeta,
-            sendButtonStatusRef.current
-        );
+        onSendMessage({
+            messageContent: messageContentRef.current,
+            toolsStatus: toolsStatus,
+            isEditMessage: isEditMessage,
+            editMessageId: editMessageId,
+            attachments: attachmentsMeta,
+            sendButtonStatus: sendButtonStatusRef.curren,
+            isRegenerate: false,
+            role: currentRole.name
+        });
         textareaRef.current?.focus();
-    }, [onSendMessage, toolsStatus, isEditMessage, editMessageId, attachmentsMeta]);
+    }, [onSendMessage, toolsStatus, isEditMessage, editMessageId, attachmentsMeta, currentRole]);
 
     const handleKeyDown = useCallback((e) => {
         if (e.key === 'Enter') {
@@ -645,6 +664,20 @@ function ChatBox({
         if (data.isEditMessage !== undefined) {
             setIsEditMessage(Boolean(data.isEditMessage));
         }
+
+        if (data.roles) {
+            // 设置角色列表
+            setRoles(data.roles);
+
+            // 查找默认角色
+            const defaultRole = data.roles.find(role => role.default);
+            if (defaultRole) {
+                setCurrentRole(defaultRole);
+            } else if (data.roles.length > 0) {
+                setCurrentRole(data.roles[0]);
+            }
+        }
+
     }, [FilePickerCallback, PicPickerCallback, initializeExtraTools]);
 
     // ========== 事件处理函数 ==========
@@ -698,7 +731,18 @@ function ChatBox({
             case "Set-EditMessage":
 
                 if (payload.immediate) {
-                    onSendMessage(payload.content, toolsStatus, true, payload.msgId, payload.attachments, sendButtonStatusRef.current, payload.isRegenerate);
+                    onSendMessage(
+                        {
+                            messageContent: payload.content,
+                            toolsStatus: toolsStatus,
+                            isEditMessage: true,
+                            editMessageId: payload.msgId,
+                            attachments: payload.attachments,
+                            sendButtonStatus: sendButtonStatusRef.current,
+                            isRegenerate: payload.isRegenerate,
+                            role: currentRole,
+                        }
+                    );
                 } else {
                     setIsEditMessage(Boolean(payload.isEdit));
                     if (payload.attachments) setAttachments(payload.attachments);
@@ -1234,6 +1278,7 @@ function ChatBox({
                     <div className="flex items-center justify-between px-4 pb-3">
                         <ToolButtons {...toolButtonsProps}/>
                         <div className="flex items-center space-x-2">
+
                             {/* 放大按钮 */}
                             <button
                                 type="button"
@@ -1259,6 +1304,69 @@ function ChatBox({
                                 </svg>
                             </button>
 
+                            {/* 角色选择按钮 */}
+                            {roles.length > 0 && (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button
+                                            type="button"
+                                            className="rounded-full hover:bg-gray-200 focus:outline-none focus:ring-offset-2 transition-colors cursor-pointer"
+                                        >
+                                            {(() => {
+
+                                                let avatar = currentRole.avatar;
+                                                let text = currentRole.text;
+
+                                                if (currentRole.model) {
+                                                    avatar = avatar || selectedModel.avatar;
+                                                    text = text || selectedModel.text;
+                                                }
+
+                                                return (
+                                                    <Avatar className="h-11 w-11">  {/* 调整大小以匹配按钮 */}
+                                                        <AvatarImage src={avatar} alt={text}/>
+                                                        <AvatarFallback
+                                                            className="bg-gray-200 text-gray-700 font-medium">
+                                                            {text?.charAt(0).toUpperCase()} {/* 默认显示首字母 */}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                )
+                                            })()}
+
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent side="top" align="end" className="w-fit min-w-[140px]">
+                                        {roles.map((role) => {
+
+                                            let avatar = role.avatar;
+                                            let text = role.text;
+
+                                            if (role.model) {
+                                                avatar = avatar || selectedModel.avatar;
+                                                text = text || selectedModel.text;
+                                            }
+                                            // Todo: 中间消息
+                                            return (
+                                                <DropdownMenuItem
+                                                    key={role.name}
+                                                    onClick={() => setCurrentRole(role)}
+                                                    className={"cursor-pointer flex items-center px-2 py-1.5 text-sm hover:bg-gray-100"}
+                                                >
+                                                    <Avatar className="h-11 w-11 mr-2">
+                                                        <AvatarImage src={avatar} alt={text}/>
+                                                        <AvatarFallback
+                                                            className="bg-gray-200 text-gray-700 font-medium">
+                                                            {text?.charAt(0).toUpperCase() || 'S'}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <span>{text}</span>
+                                                </DropdownMenuItem>
+                                            )
+                                        })}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )}
+
                             {/* 发送按钮 */}
                             <SendButton
                                 status={sendButtonStatus}
@@ -1269,6 +1377,7 @@ function ChatBox({
                             />
                         </div>
                     </div>
+
                 </div>
 
                 {/* 全屏编辑模态框 */}
@@ -1353,6 +1462,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         prevProps.onDropFiles === nextProps.onDropFiles &&
         prevProps.onFolderDetected === nextProps.onFolderDetected &&
         prevProps.onHeightChange === nextProps.onHeightChange &&
-        prevProps.dropTargetRef === nextProps.dropTargetRef
+        prevProps.dropTargetRef === nextProps.dropTargetRef,
+        prevProps.selectedModel === nextProps.selectedModel
     );
 });

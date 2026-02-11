@@ -17,7 +17,7 @@ import LazyVisibility from "./LazyVisibility.jsx";
 // 链接处理
 const allowCustomScheme = (uri, key, node) => {
     if (uri.startsWith('backend://')) {
-        return uri.replace('backend://', BASE_BACKEND_URL + '/');
+        return uri.replace('backend://', BASE_BACKEND_URL);
     }
     return defaultUrlTransform(uri, key, node);
 };

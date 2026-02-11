@@ -350,12 +350,14 @@ function ChatPage({markId, setMarkId}) {
 
     const [chatBoxHeight, setChatBoxHeight] = useState(0);
     const isMobile = useIsMobile();
-    const [models, setModels] = useState([]);
-    const selectedModelRef = useRef({name: t("no_models")});
     const [previewModel, setPreviewModel] = useState(null);
     const [isNewMarkId, setIsNewMarkId] = useState(false);
     const isNewMarkIdRef = useRef(false);
     const [isFirstMessageSend, setIsFirstMessageSend] = useState(false);
+
+    // 模型控制相关
+    const [models, setModels] = useState([]);
+    const [selectedModel, setSelectedModel] = useState({name: t("no_models")});
 
     // ========== 滚动控制逻辑 ==========
 
@@ -581,12 +583,12 @@ function ChatPage({markId, setMarkId}) {
         if (!open) {
             setPreviewModel(null);
         } else {
-            setPreviewModel(selectedModelRef.current);
+            setPreviewModel(selectedModel);
         }
-    }, []);
+    }, [selectedModel]);
 
     const handleModelItemClick = useCallback((model) => {
-        selectedModelRef.current = model;
+        setSelectedModel(model)
         if (!isMobile) {
             setIsModelPopoverOpen(false);
         } else {
@@ -609,13 +611,16 @@ function ChatPage({markId, setMarkId}) {
     };
 
     const handleSendMessage = useCallback((
-        messageContent,
-        toolsStatus,
-        isEditMessage = false,
-        editMessageId,
-        attachments,
-        sendButtonStatus,
-        isRegenerate = false
+        {
+            messageContent,
+            toolsStatus,
+            isEditMessage = false,
+            editMessageId,
+            attachments,
+            sendButtonStatus,
+            isRegenerate = false,
+            role
+        }  // 发送的角色身份
     ) => {
         if (uploadFiles.length !== 0) {
             toast.error(t("file_upload_not_complete"));
@@ -643,9 +648,10 @@ function ChatPage({markId, setMarkId}) {
                     toolsStatus: toolsStatus,
                     attachments: attachments,
                     isEdit: isEditMessage,
-                    model: selectedModelRef.current.id,
+                    model: selectedModel.id,
                     sendButtonStatus: sendButtonStatus,
                     isRegenerate: isRegenerate,
+                    role: role,
                     requestId: currentMessageSendRequestIDRef.current
                 },
                 markId: markId
@@ -687,7 +693,7 @@ function ChatPage({markId, setMarkId}) {
         } else {
             sendMessage(selfMarkId);
         }
-    }, [selfMarkId, isFirstMessageSend]);
+    }, [selfMarkId, isFirstMessageSend, selectedModel]);
 
     const onAttachmentRemove = useCallback((attachment) => {
         setAttachments(prev => prev.filter(att => att.serverId !== attachment.serverId));
@@ -1362,7 +1368,7 @@ function ChatPage({markId, setMarkId}) {
                 });
                 setModels(modelsData);
 
-                if (modelsData.length > 0) selectedModelRef.current = modelsData[0];
+                if (modelsData.length > 0) setSelectedModel(modelsData[0]);
             } catch (error) {
                 toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
             }
@@ -1382,7 +1388,7 @@ function ChatPage({markId, setMarkId}) {
                 messagesOrderRef.current = initOrder;
 
                 const foundModel = modelsData.find(item => item.id === messagesData.model)
-                if (foundModel) selectedModelRef.current = foundModel;
+                if (foundModel) setSelectedModel(foundModel);
 
                 // 使用双重的setTimeout确保DOM完全更新
                 // 第一个setTimeout确保React状态更新
@@ -1474,7 +1480,7 @@ function ChatPage({markId, setMarkId}) {
                  ref={chatPageRef}>
                 <ChatHeader
                     models={models}
-                    selectedModel={selectedModelRef.current}
+                    selectedModel={selectedModel}
                     isModelPopoverOpen={isModelPopoverOpen}
                     previewModel={previewModel}
                     isMobile={isMobile}
@@ -1528,6 +1534,7 @@ function ChatPage({markId, setMarkId}) {
                             onFolderDetected={handleFolderDetected}
                             onHeightChange={handleChatBoxHeightChange}
                             dropTargetRef={chatPageRef}
+                            selectedModel={selectedModel}
                         />
                     </div>
                 </>
