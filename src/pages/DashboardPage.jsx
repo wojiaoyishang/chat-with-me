@@ -1,11 +1,11 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
-import ChatPage from '@/pages/chat/ChatPage.jsx';
+import ChatPage from '@/pages/ChatPage.jsx';
 import {generateUUID, getMarkId, UnifiedErrorScreen, UnifiedLoadingScreen, useIsMobile} from "@/lib/tools.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {useTranslation} from "react-i18next";
-import EditorHome from "@/pages/editor/EditorHome.jsx";
+import EditorHome from "@/pages/EditorHome.jsx";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 import {toast} from "sonner";
 import {useUserStore} from "@/context/userContext.jsx";

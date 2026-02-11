@@ -88,6 +88,8 @@
   "username": "用户名",
   "enter_username": "输入您的用户名",
   "login_error": "登录错误：{{message}}",
+  "logout_error": "登出错误：{{message}}",
+  "logout_success": "登出成功",
   "loading_dashboard": "加载仪表盘中",
   "logging_in": "登录中...",
   "loading_history": "加载历史对话中",
@@ -118,5 +120,6 @@
   "send_message_error": "发送消息失败：{{message}}",
   "cannot_load_tasks": "不能加载流式任务，可能是与服务器断开链接，请刷新重试。",
   "is_generating_try_later": "正在进行生成任务，请耐心等待完成。",
-  "load_page_error": "加载页面失败：{{message}}"
+  "load_page_error": "加载页面失败：{{message}}",
+  "logout": "登出"
 }

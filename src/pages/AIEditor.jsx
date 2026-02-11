@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import ChatPage from '@/pages/chat/ChatPage';
+import ChatPage from '@/pages/ChatPage.jsx';
 import CollaboraOnlineEditor from '@/components/editor/CollaboraOnlineEditor.jsx';
 import { useIsMobile } from "@/lib/tools.jsx"; // 引入工具函数
 

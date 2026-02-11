@@ -20,7 +20,7 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
     (response) => {
-        const { success, code, msg, data = null } = response.data;
+        const { success, code, msg, data = {} } = response.data;
         if (!success) {
             if (code === 401 && !response.config.skipAuthCheck) {
                 toast.error(msg);
@@ -36,6 +36,8 @@ apiClient.interceptors.response.use(
                 error.message = msg;
                 throw error;
             }
+        } else {
+            data.response = response;
         }
         return data;
     },

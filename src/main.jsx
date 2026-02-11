@@ -15,8 +15,8 @@ import {WebSocketProvider} from './context/WebSocketContext.jsx';
 import MyToaster from "@/context/MyToaster.jsx";
 import FatalErrorPopoverElement from "@/context/FatalErrorPopover.jsx";
 import ContextEvent from "@/context/ContextEvent.jsx";
-import DashboardPage from "@/pages/dashboard/DashboardPage.jsx";
-import Login from "./pages/auth/Login.jsx";
+import DashboardPage from "@/pages/DashboardPage.jsx";
+import Login from "./pages/Login.jsx";
 
 const router = createBrowserRouter([
     {

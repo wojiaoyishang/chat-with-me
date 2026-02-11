@@ -1,9 +1,9 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
+import {Button} from '@/components/ui/button.tsx';
+import {Input} from '@/components/ui/input.tsx';
+import {Label} from '@/components/ui/label.tsx';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card.tsx';
 import {Loader2, CheckCircle, XCircle} from 'lucide-react';
 import {motion, AnimatePresence} from 'framer-motion';
 import {toast} from "sonner";

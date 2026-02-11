@@ -88,6 +88,8 @@
   "username": "Username",
   "enter_username": "Enter your username",
   "login_error": "Login error: {{message}}",
+  "logout_error": "Logout error: {{message}}",
+  "logout_success": "Logout Success",
   "loading_dashboard": "Loading dashboard",
   "logging_in": "Logging...",
   "loading_history": "Loading History...",
@@ -118,5 +120,6 @@
   "send_message_error": "Failed to send a message：{{message}}",
   "cannot_load_tasks": "The streaming task cannot be loaded. It might be disconnected from the server. Please refresh and try again.",
   "is_generating_try_later": "The generation task is in progress. Please be patient and wait for it to complete.",
-  "load_page_error": "Load Page Failed: {{message}}"
+  "load_page_error": "Load Page Failed: {{message}}",
+  "logout": "logout"
 }

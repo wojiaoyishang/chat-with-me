@@ -20,14 +20,14 @@ import {
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 import {useTranslation} from "react-i18next";
 import {ArrowDown, ChevronDown, CircleCheck} from 'lucide-react';
-import ChatBox from "@/components/chat/chatbox.jsx";
+import ChatBox from "@/components/chat/ChatBox.jsx";
 import MessageContainer from "@/components/chat/MessageContainer.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Button} from "@/components/ui/button";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {Badge} from "@/components/ui/badge";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover.tsx";
+import {Button} from "@/components/ui/button.tsx";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
+import {Badge} from "@/components/ui/badge.tsx";
 
 // ========== 内部组件：模型项 ==========
 const ModelItem = memo(({
