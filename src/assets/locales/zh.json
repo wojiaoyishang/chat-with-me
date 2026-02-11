@@ -121,7 +121,13 @@
   "cannot_load_tasks": "不能加载流式任务，可能是与服务器断开链接，请刷新重试。",
   "is_generating_try_later": "正在进行生成任务，请耐心等待完成。",
   "load_page_error": "加载页面失败：{{message}}",
+  "delete_conversation": "删除会话",
   "logout": "登出",
+  "confirm_delete_title": "确认删除？",
+  "confirm_delete_description": "确认删除这个会话吗？之后你将无法复原。",
+  "confirm": "确认",
+  "delete_success": "删除成功",
+  "delete_error": "删除失败：{{message}}",
   "Settings": {
     "Settings": "设置",
     "Manage": "管理",

@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {isToday, isYesterday, subDays, subMonths, isWithinInterval} from 'date-fns';
-import {ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut} from 'lucide-react';
+import {ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut, Loader2, Trash, Save} from 'lucide-react';
 import {generateUUID, UnifiedErrorScreen, UnifiedLoadingScreen, updateURL} from "@/lib/tools.jsx";
 import {Transition} from '@headlessui/react';
 import {useTranslation} from "react-i18next";
@@ -19,9 +19,84 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import {Button} from "@/components/ui/button";
 import {toast} from "sonner";
 import {useNavigate} from 'react-router-dom';
 import SettingPage from "@/pages/SettingPage.jsx";
+import {ButtonContentWrapper} from "@/components/ui/ButtonContentWrapper.jsx";
+
+const ConversationMenu = ({ markId, onDelete }) => {
+    const { t } = useTranslation();
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDeleteClick = () => {
+        setShowConfirm(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        setIsDeleting(true);
+        try {
+            await apiClient.delete(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + markId);
+            onDelete(markId);
+            toast.success(t("delete_success"));
+        } catch (error) {
+            toast.error(t("delete_error", { message: error?.message || t("unknown_error") }));
+        } finally {
+            setIsDeleting(false);
+            setShowConfirm(false);
+        }
+    };
+
+    return (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <button
+                        className="cursor-pointer p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                    >
+                        <MoreHorizontal className="w-4 h-4" />
+                    </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-fit ">
+                    <DropdownMenuItem onClick={handleDeleteClick} className="text-red-600 focus:text-red-600 cursor-pointer">
+                        <Trash className="w-4 h-4 text-red-600 cursor-pointer" />
+                        {t('delete_conversation')}
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t('confirm_delete_title')}</DialogTitle>
+                        <DialogDescription>{t('confirm_delete_description')}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={isDeleting} className="cursor-pointer">
+                            {t('cancel')}
+                        </Button>
+                        <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting} className="cursor-pointer">
+                            <ButtonContentWrapper
+                                isLoading={isDeleting}
+                            >
+                                {t("confirm")}
+                            </ButtonContentWrapper>
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+};
 
 const Sidebar = ({
                      markId, setMarkId, setPageType,
@@ -147,6 +222,15 @@ const Sidebar = ({
         setPageType('chat');
         updateURL(`/chat/${markId}`);
         setMarkId(markId);
+    };
+
+    const handleDeleteConversation = (deletedMarkId) => {
+        setConversations(prev => prev.filter(c => c.markId !== deletedMarkId));
+        if (markId === deletedMarkId) {
+            setMarkId(null);
+            setPageType('chat');
+            updateURL('/chat');
+        }
     };
 
     // 会话更新事件监听（保持原有逻辑）
@@ -317,7 +401,7 @@ const Sidebar = ({
                     </div>
 
                     {/* 历史聊天列表 */}
-                    <div ref={listRef} className="flex-1 p-4 overflow-y-auto pretty-scrollbar relative">
+                    <div ref={listRef} className="flex-1 p-4 overflow-y-auto hide-scrollbar relative">
                         {isLoadingError ? (
                             <UnifiedErrorScreen
                                 title={t("load_history_error")}
@@ -343,31 +427,41 @@ const Sidebar = ({
 
                                                     return (
                                                         <li key={conv.markId} data-markid={conv.markId}>
-                                                            <button
-                                                                onClick={() => handleSelectConversation(conv.markId)}
-                                                                className={`w-full text-left px-3.5 py-1.5 rounded-lg transition-colors flex cursor-pointer ${
+                                                            <div
+                                                                className={`w-full flex items-center justify-between px-3.5 py-1.5 rounded-lg transition-colors ${
                                                                     isSelected
                                                                         ? 'bg-gray-200 text-gray-800'
                                                                         : 'hover:bg-gray-200 text-gray-800'
                                                                 }`}
                                                             >
-                                                                <div
-                                                                    className="relative overflow-hidden flex-1 text-base">
-                                                                    <span
-                                                                        className={`font-medium truncate block transition-all duration-300 ${
-                                                                            isTitleTransitioning ? 'opacity-0' : 'opacity-100'
-                                                                        }`}
-                                                                    >
-                                                                        {conv.title}
-                                                                    </span>
-                                                                    {isTitleTransitioning && oldTitle && (
+                                                                <button
+                                                                    onClick={() => handleSelectConversation(conv.markId)}
+                                                                    className="flex-1 text-left text-base cursor-pointer"
+                                                                >
+                                                                    <div
+                                                                        className="relative overflow-hidden flex-1 text-base">
                                                                         <span
-                                                                            className="font-medium truncate block absolute inset-0 opacity-0">
-                                                                            {oldTitle}
+                                                                            className={`font-medium truncate block transition-all duration-300 ${
+                                                                                isTitleTransitioning ? 'opacity-0' : 'opacity-100'
+                                                                            }`}
+                                                                        >
+                                                                            {conv.title}
                                                                         </span>
-                                                                    )}
-                                                                </div>
-                                                            </button>
+                                                                        {isTitleTransitioning && oldTitle && (
+                                                                            <span
+                                                                                className="font-medium truncate block absolute inset-0 opacity-0">
+                                                                                {oldTitle}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </button>
+                                                                {isSelected && (
+                                                                    <ConversationMenu
+                                                                        markId={conv.markId}
+                                                                        onDelete={handleDeleteConversation}
+                                                                    />
+                                                                )}
+                                                            </div>
                                                         </li>
                                                     );
                                                 })}
