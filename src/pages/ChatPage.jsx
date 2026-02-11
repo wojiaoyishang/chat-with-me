@@ -928,18 +928,18 @@ function ChatPage({markId, setMarkId}) {
         const msgId_index = msg.messages.indexOf(msg.nextMessage);
         const newMsgId = msg.messages[msgId_index + (isNext ? 1 : -1)];
         const sendSwitchRequest = () => {
-            if (getLocalSetting('SyncMessageSwitch', true)) {
-                emitEvent({
-                    type: "message",
-                    target: "ChatPage",
-                    payload: {
-                        command: "Switch-Message",
-                        msgId,
-                        nextMessage: newMsgId
-                    },
-                    markId: selfMarkId
-                });
-            }
+
+            emitEvent({
+                type: "message",
+                target: "ChatPage",
+                payload: {
+                    command: "Switch-Message",
+                    msgId,
+                    nextMessage: newMsgId
+                },
+                markId: selfMarkId
+            });
+
         };
         await loadSwitchMessage(msgId, newMsgId);
         sendSwitchRequest();

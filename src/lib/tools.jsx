@@ -2,7 +2,7 @@ import {useParams} from 'react-router-dom';
 import {apiEndpoint} from '@/config.js';
 import apiClient from '@/lib/apiClient';
 import {useEffect, useState} from "react";
-import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
+import ThreeDotLoading from "@/components/ui/ThreeDotLoading.jsx";
 
 export function getMarkId() {
     const {markId} = useParams();

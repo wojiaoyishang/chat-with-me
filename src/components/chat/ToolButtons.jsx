@@ -8,7 +8,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ToggleButton from '@/components/chat/ChatButton.jsx';
-import ThreeDotLoading from '@/components/loading/ThreeDotLoading.jsx';
+import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
 
 /**
  * 单个内置工具按钮组件

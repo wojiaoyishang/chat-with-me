@@ -2,7 +2,7 @@ import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {Check, ChevronDown, CircleX, Code, Lightbulb, Loader2, Wrench, X, Bot} from "lucide-react";
 
 import MarkdownRenderer from "./MarkdownRenderer.jsx";
-import ThreeDotLoading from "@/components/loading/ThreeDotLoading.jsx";
+import ThreeDotLoading from "@/components/ui/ThreeDotLoading.jsx";
 import LazyVisibility from "./LazyVisibility.jsx";
 
 // 记录已经展开的组件，用于在高频流式传输下保持展开

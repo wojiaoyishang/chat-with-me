@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { isToday, isYesterday, subDays, subMonths, isWithinInterval } from 'date-fns';
-import { ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut } from 'lucide-react';
-import { generateUUID, UnifiedErrorScreen, UnifiedLoadingScreen, updateURL } from "@/lib/tools.jsx";
-import { Transition } from '@headlessui/react';
-import { useTranslation } from "react-i18next";
-import { useIsMobile } from "@/lib/tools.jsx";
+import React, {useState, useEffect, useRef} from 'react';
+import {isToday, isYesterday, subDays, subMonths, isWithinInterval} from 'date-fns';
+import {ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut} from 'lucide-react';
+import {generateUUID, UnifiedErrorScreen, UnifiedLoadingScreen, updateURL} from "@/lib/tools.jsx";
+import {Transition} from '@headlessui/react';
+import {useTranslation} from "react-i18next";
+import {useIsMobile} from "@/lib/tools.jsx";
 import apiClient from "@/lib/apiClient.js";
-import { apiEndpoint } from "@/config.js";
-import { onEvent } from "@/context/useEventStore.jsx";
+import {apiEndpoint} from "@/config.js";
+import {onEvent} from "@/context/useEventStore.jsx";
 
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useUserStore } from "@/context/userContext.jsx";
+import {Avatar, AvatarImage, AvatarFallback} from "@/components/ui/avatar";
+import {useUserStore} from "@/context/userContext.jsx";
 
 import {
     DropdownMenu,
@@ -19,27 +19,32 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { toast } from "sonner";
-import { useNavigate } from 'react-router-dom';
+import {toast} from "sonner";
+import {useNavigate} from 'react-router-dom';
+import SettingPage from "@/pages/SettingPage.jsx";
 
 const Sidebar = ({
                      markId, setMarkId, setPageType,
                      settings, setRandomUUID
                  }) => {
+    // 组件
+    const {t} = useTranslation();
     const navigate = useNavigate();
 
+    // 侧边栏样式相关
     const [isOpen, setIsOpen] = useState(false);
     const isMobile = useIsMobile();
-    const { t } = useTranslation();
 
+
+    // 加载相关
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
 
     // 用户相关
-    const { user, clearUser } = useUserStore();
-    const [displayName] = useState(user.nickname || "User");
-    const [avatarSrc] = useState(user.avatar || null);
-    const [userRole] = useState(user.role || "Normal");
+    const {user, clearUser} = useUserStore();
+
+    // 设置
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     const listRef = useRef(null);
 
@@ -123,9 +128,9 @@ const Sidebar = ({
             const convDate = new Date(conv.updateDate);
             if (isToday(convDate)) groups.Today.push(conv);
             else if (isYesterday(convDate)) groups.Yesterday.push(conv);
-            else if (isWithinInterval(convDate, { start: subDays(new Date(), 7), end: subDays(new Date(), 1) }))
+            else if (isWithinInterval(convDate, {start: subDays(new Date(), 7), end: subDays(new Date(), 1)}))
                 groups['Past 7 Days'].push(conv);
-            else if (isWithinInterval(convDate, { start: subMonths(new Date(), 1), end: subDays(new Date(), 7) }))
+            else if (isWithinInterval(convDate, {start: subMonths(new Date(), 1), end: subDays(new Date(), 7)}))
                 groups['Past Month'].push(conv);
             else groups.Earlier.push(conv);
         });
@@ -152,9 +157,70 @@ const Sidebar = ({
                     loadConversations();
                     break;
                 case "Update-ConversationDate":
+                    const currentPositions = {};
+                    if (listRef.current) {
+                        const elements = listRef.current.querySelectorAll('div[data-group], li[data-markid]');
+                        elements.forEach(el => {
+                            const rect = el.getBoundingClientRect();
+                            const id = el.dataset.markid || el.dataset.group;
+                            currentPositions[id] = {top: rect.top, left: rect.left};
+                        });
+                    }
+                    setOldPositions(currentPositions);
+                    const newDate = payload.value ? new Date(payload.value) : new Date();
+                    setConversations(prev => {
+                        const updatedConvs = prev.map(c => c.markId === markId ? {...c, updateDate: newDate} : c);
+                        return updatedConvs.sort((a, b) => b.updateDate - a.updateDate);
+                    });
+                    break;
                 case "Update-ConversationTitle":
-                    // ... 你原来的完整处理逻辑保持不变
-                    // （为了代码简洁，这里省略了你原来的全部事件处理代码，请直接复制你原有的这部分 useEffect 内容）
+                    if (!markId) return;
+
+                    const currentTitlePositions = {};
+                    if (listRef.current) {
+                        const elements = listRef.current.querySelectorAll('div[data-group], li[data-markid]');
+                        elements.forEach(el => {
+                            const rect = el.getBoundingClientRect();
+                            const id = el.dataset.markid || el.dataset.group;
+                            currentTitlePositions[id] = {top: rect.top, left: rect.left};
+                        });
+                    }
+                    setOldPositions(currentTitlePositions);
+
+                    setConversations(prev => {
+                        const oldConv = prev.find(c => c.markId === markId);
+                        if (oldConv) {
+                            setTitleCache(prevCache => ({
+                                ...prevCache,
+                                [markId]: oldConv.title
+                            }));
+                        }
+
+                        const updatedConvs = prev.map(c =>
+                            c.markId === markId
+                                ? {...c, title: payload.value || c.title}
+                                : c
+                        );
+                        return updatedConvs.sort((a, b) => b.updateDate - a.updateDate);
+                    });
+
+                    setTitleTransitioning(prev => ({
+                        ...prev,
+                        [markId]: true
+                    }));
+
+                    setTimeout(() => {
+                        setTitleTransitioning(prev => {
+                            const newState = {...prev};
+                            delete newState[markId];
+                            return newState;
+                        });
+                        setTitleCache(prevCache => {
+                            const newCache = {...prevCache};
+                            delete newCache[markId];
+                            return newCache;
+                        });
+                    }, 300);
                     break;
             }
         });
@@ -170,7 +236,7 @@ const Sidebar = ({
     // ====================== Logo 处理 ======================
     let logoElement;
     if (settings?.logoType === 'image' && settings?.logo) {
-        logoElement = <img src={settings.logo} alt="Logo" className="h-8 w-auto" />;
+        logoElement = <img src={settings.logo} alt="Logo" className="h-8 w-auto"/>;
     } else {
         const text = (settings?.logoType === 'text' && settings?.logo) ? settings.logo : 'Logo';
         logoElement = <h1 className="text-xl font-bold text-gray-800">{text}</h1>;
@@ -183,17 +249,23 @@ const Sidebar = ({
             clearUser();
             navigate('/login');
         } catch (error) {
-            toast.error(t("logout_error", { message: error?.message || t("unknown_error") }));
+            toast.error(t("logout_error", {message: error?.message || t("unknown_error")}));
         }
     };
 
     // ====================== 渲染 ======================
     return (
         <>
+            {/* 设置 */}
+            <SettingPage
+                open={settingsOpen}
+                onClose={() => setSettingsOpen(false)}
+                handleLogout={handleLogout}
+            />
             {/* 外层：只控制宽度 */}
             <div
                 className="fixed md:relative top-0 left-0 h-full bg-white shadow-lg z-40 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
-                style={{ width: 'var(--sidebar-width)' }}
+                style={{width: 'var(--sidebar-width)'}}
             >
                 {/* 内层：负责内容优雅淡出 + 轻微左滑 */}
                 <div
@@ -211,7 +283,7 @@ const Sidebar = ({
                             className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
                             aria-label={t("close_sidebar")}
                         >
-                            <X className="w-5 h-5" />
+                            <X className="w-5 h-5"/>
                         </button>
                     </div>
 
@@ -226,7 +298,7 @@ const Sidebar = ({
                                 }}
                                 className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                             >
-                                <Plus className="w-5 h-5 mr-2" />
+                                <Plus className="w-5 h-5 mr-2"/>
                                 {t('new_conversation')}
                             </button>
                             <button
@@ -238,7 +310,7 @@ const Sidebar = ({
                                 }}
                                 className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                             >
-                                <BookOpen className="w-5 h-5 mr-2" />
+                                <BookOpen className="w-5 h-5 mr-2"/>
                                 {t('doc_copilot')}
                             </button>
                         </div>
@@ -254,7 +326,7 @@ const Sidebar = ({
                                 onRetry={loadConversations}
                             />
                         ) : isLoading ? (
-                            <UnifiedLoadingScreen text={t("loading_history")} />
+                            <UnifiedLoadingScreen text={t("loading_history")}/>
                         ) : (
                             <>
                                 {Object.entries(groupedConvs).map(([group, convs]) => (
@@ -279,7 +351,8 @@ const Sidebar = ({
                                                                         : 'hover:bg-gray-200 text-gray-800'
                                                                 }`}
                                                             >
-                                                                <div className="relative overflow-hidden flex-1 text-base">
+                                                                <div
+                                                                    className="relative overflow-hidden flex-1 text-base">
                                                                     <span
                                                                         className={`font-medium truncate block transition-all duration-300 ${
                                                                             isTitleTransitioning ? 'opacity-0' : 'opacity-100'
@@ -288,7 +361,8 @@ const Sidebar = ({
                                                                         {conv.title}
                                                                     </span>
                                                                     {isTitleTransitioning && oldTitle && (
-                                                                        <span className="font-medium truncate block absolute inset-0 opacity-0">
+                                                                        <span
+                                                                            className="font-medium truncate block absolute inset-0 opacity-0">
                                                                             {oldTitle}
                                                                         </span>
                                                                     )}
@@ -309,35 +383,36 @@ const Sidebar = ({
                     <div className="border-t p-4 bg-white">
                         <div className="flex items-center gap-3 group">
                             <Avatar className="h-10 w-10 flex-shrink-0">
-                                <AvatarImage src={avatarSrc} alt={displayName} />
+                                <AvatarImage src={user.avatar} alt={user.nickname}/>
                                 <AvatarFallback className="bg-gray-200 text-gray-700 font-medium">
-                                    {displayName[0]}
+                                    {user.nickname}
                                 </AvatarFallback>
                             </Avatar>
 
                             <div className="flex-1 min-w-0">
-                                <p className="font-medium text-gray-800 truncate">{displayName}</p>
-                                <p className="text-xs text-gray-500">{userRole}</p>
+                                <p className="font-medium text-gray-800 truncate">{user.nickname}</p>
+                                <p className="text-xs text-gray-500">{user.role}</p>
                             </div>
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="cursor-pointer p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors opacity-60 group-hover:opacity-100">
-                                        <MoreHorizontal className="w-5 h-5" />
+                                    <button
+                                        className="cursor-pointer p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors opacity-60 group-hover:opacity-100">
+                                        <MoreHorizontal className="w-5 h-5"/>
                                     </button>
                                 </DropdownMenuTrigger>
 
                                 <DropdownMenuContent align="end" className="w-fit min-w-[140px]">
-                                    <DropdownMenuItem className="cursor-pointer">
-                                        <Settings className="mr-2 h-4 w-4" />
+                                    <DropdownMenuItem className="cursor-pointer" onClick={() => setSettingsOpen(true)}>
+                                        <Settings className="mr-2 h-4 w-4"/>
                                         {t('settings') || '设置'}
                                     </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
+                                    <DropdownMenuSeparator/>
                                     <DropdownMenuItem
                                         onClick={handleLogout}
                                         className="text-red-600 focus:text-red-600 cursor-pointer"
                                     >
-                                        <LogOut className="mr-2 h-4 w-4 text-red-600" />
+                                        <LogOut className="mr-2 h-4 w-4 text-red-600"/>
                                         {t('logout') || '登出'}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -376,10 +451,10 @@ const Sidebar = ({
                 <button
                     onClick={() => setIsOpen(true)}
                     className="fixed left-0 top-1/2 -translate-y-1/2 z-50 w-4 h-32 bg-gray-100 shadow-lg flex items-center justify-center text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
-                    style={{ clipPath: 'polygon(0 0, 100% 20%, 100% 80%, 0 100%)' }}
+                    style={{clipPath: 'polygon(0 0, 100% 20%, 100% 80%, 0 100%)'}}
                     aria-label={t("open_sidebar")}
                 >
-                    <ChevronRight className="w-3 h-3" />
+                    <ChevronRight className="w-3 h-3"/>
                 </button>
             </Transition>
 

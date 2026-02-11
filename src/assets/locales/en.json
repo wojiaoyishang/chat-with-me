@@ -121,5 +121,19 @@
   "cannot_load_tasks": "The streaming task cannot be loaded. It might be disconnected from the server. Please refresh and try again.",
   "is_generating_try_later": "The generation task is in progress. Please be patient and wait for it to complete.",
   "load_page_error": "Load Page Failed: {{message}}",
-  "logout": "logout"
+  "logout": "logout",
+  "Settings": {
+    "Settings": "Settings",
+    "Manage": "Manage",
+    "Logout": "Logout",
+    "Edit": "Edit",
+    "Cancel": "Cancel",
+    "Save": "Save",
+    "Account": "Account",
+    "profile_update_success": "Profile updated successfully",
+    "update_info_error": "Update Failed: {{message}}",
+    "image_uploaded": "Image uploaded",
+    "upload_failed": "Upload failed",
+    "Interface": "Interface"
+  }
 }

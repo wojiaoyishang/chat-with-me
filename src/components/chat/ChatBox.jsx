@@ -1,6 +1,7 @@
 import React, {useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment, useCallback, memo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Transition} from '@headlessui/react';
+import {motion, AnimatePresence} from 'framer-motion';
 import {Check, X, PenLine, Trash2, Minus, Square, RotateCw, Search, Earth} from 'lucide-react';
 import {
     DropdownMenuItem,
@@ -177,7 +178,7 @@ const MessageInput = memo(({
         clone.style.boxSizing = computedStyle.boxSizing;
 
         const contentHeight = clone.scrollHeight;
-        const cappedHeight = Math.min(contentHeight, 128);
+        const cappedHeight = Math.min(contentHeight, 512);
         textarea.style.height = cappedHeight + 'px';
         textarea.style.overflowY = contentHeight > 48 ? 'scroll' : 'auto';
     }, [textareaRef]);
@@ -1271,25 +1272,22 @@ function ChatBox({
                 </div>
 
                 {/* 全屏编辑模态框 */}
-                <Transition appear show={isModalOpen} as={Fragment}>
-                    <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-200"
-                        enterFrom="opacity-0 bg-transparent"
-                        enterTo="opacity-100 bg-black/40"
-                        leave="ease-in duration-150"
-                        leaveFrom="opacity-100 bg-black/40"
-                        leaveTo="opacity-0 bg-transparent"
+                {isModalOpen && (
+
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center  pointer-events-auto"
+                        style={{
+                            marginLeft: !isMobile() ? 'var(--sidebar-width)' : '0',
+                            transition: 'margin-left 0.3s ease-in-out',
+                        }}
                     >
-                        <div
-                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 pointer-events-auto"
-                            style={{
-                                marginLeft: !isMobile() ? 'var(--sidebar-width)' : '0',
-                                transition: 'margin-left 0.3s ease-in-out',
-                            }}
+                        <motion.div
+                            initial={{opacity: 0, x: 10}}
+                            animate={{opacity: 1, x: 0}}
+                            className="h-full w-full mx-auto"
                         >
                             <div
-                                className="bg-white z-50 rounded-2xl w-full max-w-3xl h-[85vh] p-0.5 relative"
+                                className="bg-white z-50 w-full h-full p-0.5 relative"
                                 onClick={e => e.stopPropagation()}
                             >
                                 <button
@@ -1307,9 +1305,11 @@ function ChatBox({
                                     />
                                 </div>
                             </div>
-                        </div>
-                    </Transition.Child>
-                </Transition>
+                        </motion.div>
+
+                    </div>
+
+                )}
             </div>
         </>
     );

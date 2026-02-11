@@ -16,7 +16,7 @@ import MyToaster from "@/context/MyToaster.jsx";
 import FatalErrorPopoverElement from "@/context/FatalErrorPopover.jsx";
 import ContextEvent from "@/context/ContextEvent.jsx";
 import DashboardPage from "@/pages/DashboardPage.jsx";
-import Login from "./pages/Login.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
 
 const router = createBrowserRouter([
     {
@@ -33,7 +33,7 @@ const router = createBrowserRouter([
     },
     {
         path: "/login",
-        element: <Login />
+        element: <LoginPage />
     },
     {
         path: "/doc",

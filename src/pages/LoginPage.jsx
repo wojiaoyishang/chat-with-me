@@ -11,7 +11,7 @@ import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import CryptoJS from 'crypto-js';
 
-const Login = () => {
+const LoginPage = () => {
     const {t} = useTranslation();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -155,4 +155,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default LoginPage;
