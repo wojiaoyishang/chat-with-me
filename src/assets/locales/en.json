@@ -77,6 +77,7 @@
   "earlier": "Earlier",
   "load_history_error": "Load Conversation History Error",
   "load_dashboard_error": "Load Dashboard Error",
+  "load_conversation_error": "Load Conversation Error: {{message}}",
   "new_conversion": "New Conversation",
   "login": "Login",
   "enter_credentials": "Enter your credentials to access your account.",

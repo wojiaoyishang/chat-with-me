@@ -1345,7 +1345,9 @@ function ChatBox({
                                                 avatar = avatar || selectedModel.avatar;
                                                 text = text || selectedModel.text;
                                             }
-                                            // Todo: 中间消息
+
+                                            const isSelected = role.name === currentRole?.name;
+
                                             return (
                                                 <DropdownMenuItem
                                                     key={role.name}
@@ -1360,6 +1362,10 @@ function ChatBox({
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     <span>{text}</span>
+                                                    <div className={isSelected ? '' : 'invisible'}>
+                                                        <Check className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0" />
+                                                    </div>
+
                                                 </DropdownMenuItem>
                                             )
                                         })}

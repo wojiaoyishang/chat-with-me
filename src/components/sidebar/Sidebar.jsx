@@ -479,7 +479,7 @@ const Sidebar = ({
                             <Avatar className="h-10 w-10 flex-shrink-0">
                                 <AvatarImage src={user.avatar} alt={user.nickname}/>
                                 <AvatarFallback className="bg-gray-200 text-gray-700 font-medium">
-                                    {user.nickname}
+                                    {user.nickname[0]}
                                 </AvatarFallback>
                             </Avatar>
 

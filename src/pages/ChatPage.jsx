@@ -167,7 +167,7 @@ const ScrollToBottomButton = memo(({
                     style={buttonStyle}
                     aria-label="Scroll to bottom"
                 >
-                    <ArrowDown className="text-gray-600 w-5 h-5" />
+                    <ArrowDown className="text-gray-600 w-5 h-5"/>
                 </button>
             </Transition>
 
@@ -191,7 +191,7 @@ const ScrollToBottomButton = memo(({
                     }}
                     aria-label="Scroll to bottom"
                 >
-                    <ArrowDown className="text-gray-600 w-5 h-5 mx-auto" />
+                    <ArrowDown className="text-gray-600 w-5 h-5 mx-auto"/>
                 </button>
             </Transition>
         </>
@@ -1026,6 +1026,7 @@ function ChatPage({markId, setMarkId}) {
         }
     }, [messagesOrder, executePendingScroll, requestScrollToBottom]);
 
+    // === 广播事件 ===
     useEffect(() => {
         const unsubscribe1 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
             switch (payload.command) {
@@ -1331,10 +1332,12 @@ function ChatPage({markId, setMarkId}) {
         };
     }, [selfMarkId, isMessageLoaded, checkScrollPosition, requestScrollToBottom, smoothScrollToBottom, updateStreamingStatus]);
 
+    // 同步更新的 MarkID
     useEffect(() => {
         isNewMarkIdRef.current = isNewMarkId;
     }, [isNewMarkId]);
 
+    // 进入新会话的情况
     useEffect(() => {
         if (selfMarkId === null || selfMarkId === undefined) {
             const emptyMessages = {};
@@ -1360,7 +1363,20 @@ function ChatPage({markId, setMarkId}) {
             setIsNewMarkId(false);
             return;
         }
+
         let modelsData = [];
+
+        const requestConversation = async () => {
+            try {
+                let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + selfMarkId);
+
+                // 设置当前选中模型
+                const foundModel = modelsData.find(item => item.id === data.model)
+                if (foundModel) setSelectedModel(foundModel);
+            } catch (error) {
+                toast.error(t("load_conversation_error", {message: error?.message || t("unknown_error")}));
+            }
+        }
         const requestModels = async () => {
             try {
                 modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
@@ -1386,9 +1402,6 @@ function ChatPage({markId, setMarkId}) {
                 if (messagesData.haveMore) initOrder = ["<PREV_MORE>", ...messagesData.messagesOrder];
                 setMessagesOrder(initOrder);
                 messagesOrderRef.current = initOrder;
-
-                const foundModel = modelsData.find(item => item.id === messagesData.model)
-                if (foundModel) setSelectedModel(foundModel);
 
                 // 使用双重的setTimeout确保DOM完全更新
                 // 第一个setTimeout确保React状态更新
@@ -1456,11 +1469,14 @@ function ChatPage({markId, setMarkId}) {
                 }, 200);
             }
         };
+
         const loadData = async () => {
             setIsLoading(true);
             await requestModels();
+            await requestConversation();
             await requestMessages();
         };
+
         if (selfMarkId) {
             loadData();
         } else {

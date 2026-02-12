@@ -77,6 +77,7 @@
   "earlier": "更早",
   "load_history_error": "加载历史对话失败",
   "load_dashboard_error": "加载仪表盘失败",
+  "load_conversation_error": "加载对话数据失败：{{message}}",
   "new_conversation": "新建对话",
   "login": "登录",
   "enter_credentials": "输入您的凭据以访问网页。",
