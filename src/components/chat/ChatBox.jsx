@@ -872,7 +872,7 @@ function ChatBox({
 
                 break;
         }
-    }, [chatboxSetup, onSendMessage, setAttachments, toolsStatus]);
+    }, [chatboxSetup, onSendMessage, setAttachments, toolsStatus, markId]);
 
     // 在 ChatBox 组件内部定义渲染菜单项的函数
     const renderMenuItems = useCallback((items, parentPath = []) => {
@@ -1481,7 +1481,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         prevProps.onDropFiles === nextProps.onDropFiles &&
         prevProps.onFolderDetected === nextProps.onFolderDetected &&
         prevProps.onHeightChange === nextProps.onHeightChange &&
-        prevProps.dropTargetRef === nextProps.dropTargetRef,
+        prevProps.dropTargetRef === nextProps.dropTargetRef &&
         prevProps.selectedModel === nextProps.selectedModel
     );
 });

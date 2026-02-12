@@ -1080,8 +1080,6 @@ function ChatPage({markId, setMarkId}) {
                         setMessagesOrder(payload.value);
                         messagesOrderRef.current = payload.value;
 
-                        console.log(payload.value);
-
                         reply({value: payload.value});
                     } else {
                         reply({value: messagesOrderRef.current});
