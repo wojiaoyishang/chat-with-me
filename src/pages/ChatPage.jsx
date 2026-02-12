@@ -560,7 +560,7 @@ function ChatPage({markId, setMarkId}) {
         if (isAutoScrollEnabledRef.current) {
             requestScrollToBottom();
         }
-    }, [messagesOrder, executePendingScroll, requestScrollToBottom]);
+    }, [executePendingScroll, requestScrollToBottom]);
 
     // ========== Popover 相关函数 ==========
 

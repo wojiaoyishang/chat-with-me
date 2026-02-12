@@ -142,5 +142,7 @@
     "image_uploaded": "Image uploaded",
     "upload_failed": "Upload failed",
     "Interface": "Interface"
-  }
+  },
+  "expand": "Expand",
+  "collapse": "Collapse"
 }

@@ -4,7 +4,7 @@ import {toast} from 'sonner';
 import {useTranslation} from 'react-i18next';
 import ThreeDotLoading from "@/components/ui/ThreeDotLoading.jsx";
 import AttachmentShowcase from './AttachmentShowcase';
-import {Menu, PenLine, Copy, RotateCw, Info, ChevronLeft, ChevronRight} from "lucide-react";
+import {Menu, PenLine, Copy, RotateCw, Info, ChevronLeft, ChevronRight, ChevronDown, ChevronUp} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 
@@ -27,9 +27,6 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 
 /**
  * 处理消息操作工具函数
- * @param {string} action - 操作类型: "edit", "copy", "regenerate"
- * @param {object} messageData - 消息数据对象
- * @param {function} t - 翻译函数
  */
 const handleMessageAction = (action, messageData, t) => {
     const {msg, markId, msgId, displayContent} = messageData;
@@ -44,7 +41,8 @@ const handleMessageAction = (action, messageData, t) => {
                     isEdit: true,
                     attachments: msg.attachments,
                     content: msg.content,
-                    msgId: msgId
+                    msgId: msgId,
+                    role: msg.role
                 },
                 markId: markId,
                 fromWebsocket: true
@@ -128,7 +126,7 @@ const MessageMenuButton = memo(({messageData}) => {
 });
 
 /**
- * 工具提示组件 - 根据设备类型显示不同的提示方式
+ * 工具提示组件
  */
 const TooltipInfo = memo(({tip, t}) => {
     const isMobile = useIsMobile();
@@ -175,7 +173,7 @@ const TooltipInfo = memo(({tip, t}) => {
 });
 
 /**
- * 消息工具栏组件 - 桌面端显示的工具按钮
+ * 消息工具栏组件 - 桌面端
  */
 const MessageTools = memo(({messageData}) => {
     const {t} = useTranslation();
@@ -300,7 +298,7 @@ const MessagePaginator = memo(({
 });
 
 /**
- * 纯文本消息内容组件
+ * 纯文本消息内容组件（仅用于 right）
  */
 const TextOnlyMessageContent = memo(({isRight, content, avatar, displayName, isLeaving}) => {
     if (isRight) {
@@ -330,7 +328,7 @@ const TextOnlyMessageContent = memo(({isRight, content, avatar, displayName, isL
 });
 
 /**
- * 消息底部操作区域组件 - 现在使用来自父组件的 isHovered
+ * 消息底部操作区域组件
  */
 const MessageActions = memo(({
                                  isRight,
@@ -350,7 +348,7 @@ const MessageActions = memo(({
 
     return (
         <div
-            className={`flex items-center mt-1 transition-opacity duration-300 ${isRight ? 'justify-end pr-12' : 'justify-between pl-10 pr-10'}`}
+            className={`flex items-center mt-1 transition-opacity duration-300 ${isRight ? 'justify-end pr-12' : 'justify-between pl-10'}`}
         >
             {isRight && (
                 <div className={"ml-2 flex items-center " + (showPaginator ? 'pr-1' : '')}>
@@ -394,6 +392,7 @@ const MessageActions = memo(({
     );
 });
 
+/* ====================== 自定义 Hooks ====================== */
 /**
  * 自定义Hook：管理消息动画状态
  */
@@ -531,7 +530,7 @@ const processContentReplacements = (content, extraInfo) => {
 };
 
 /**
- * 单个消息渲染器 - 现在在 MessageItem 级别管理 hover 状态
+ * 单个消息渲染器 - 支持 left / right / mid
  */
 const MessageItem = React.memo(({
                                     msgId,
@@ -549,6 +548,7 @@ const MessageItem = React.memo(({
                                     t
                                 }) => {
     const isRight = msg.position === 'right';
+    const isMid = msg.position === 'mid';
     const avatar = msg.avatar;
     const displayName = msg.name || "U";
     const showPaginator = messages[msg?.prevMessage]?.messages?.length > 1;
@@ -558,6 +558,23 @@ const MessageItem = React.memo(({
     const hasContent = msg.content?.trim();
     const displayContent = processContentReplacements(msg.content, msg.extraInfo);
 
+    // ==================== mid 专属展开逻辑 ====================
+    const [isExpanded, setIsExpanded] = useState(false);
+    const contentRef = useRef(null);
+    const shouldShowExpand = isMid && displayContent.length > 650; // 可根据需要调整阈值
+    const [isMobileActive, setIsMobileActive] = useState(false);
+
+    useEffect(() => {
+        if (!isMid || !contentRef.current) return;
+        // 延迟检查，等待 Markdown 渲染完成
+        const timer = setTimeout(() => {
+            if (contentRef.current) {
+                // 也可以改成 scrollHeight 判断，更精确
+            }
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [isMid, displayContent]);
+
     // 只在右侧消息上启用 hover 检测
     const [isHovered, setIsHovered] = useState(false);
     const hoverHandlers = isRight && !readonly ? {
@@ -565,7 +582,6 @@ const MessageItem = React.memo(({
         onMouseLeave: () => setIsHovered(false),
     } : {};
 
-    // 准备消息数据对象
     const messageData = useMemo(() => ({
         msg,
         markId,
@@ -573,8 +589,105 @@ const MessageItem = React.memo(({
         displayContent
     }), [msg, markId, msgId, displayContent]);
 
-    // 渲染消息内容
+    // ====================== 渲染消息内容 ======================
     const renderMessageContent = () => {
+        // ==================== mid 类型 ===================
+        if (isMid) {
+            return (
+                <div className="w-full py-2 px-1">
+                    <div
+                        className="relative group bg-gray-50/40 border border-gray-100 rounded-2xl transition-all duration-300 hover:shadow-sm">
+                        <div className="flex flex-col items-start w-full px-5 py-5">
+
+                            {/* 1. 内容区域 */}
+                            <div
+                                // 添加 onClick 切换状态 (仅针对移动端逻辑)
+                                onClick={() => setIsMobileActive(!isMobileActive)}
+                                // 增加聚焦失去后的处理
+                                onBlur={() => setIsMobileActive(false)}
+                                tabIndex={0} // 使 div 可获焦以支持 onBlur
+                                className="relative group bg-gray-50/40 rounded-2xl transition-all duration-300 hover:shadow-sm outline-none"
+                            >
+                                <MarkdownRenderer content={displayContent}/>
+
+                                {/* 2. 附件区域 - 放在最顶上 */}
+                                {hasAttachments && (
+                                    <div className="w-full border rounded-md">
+                                        <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
+                                    </div>
+                                )}
+
+                                {/* 阴影遮罩 - 颜色与容器背景 gray-50 保持一致 */}
+                                {!isExpanded && shouldShowExpand && (
+                                    <div
+                                        className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#f9fafb] via-[#f9fafb]/95 to-transparent pointer-events-none"/>
+                                )}
+                            </div>
+
+                            {/* 3. 动态底部区域：处理工具栏扩展动画 */}
+                            <div className={`
+                                    w-full grid transition-all duration-300 ease-in-out
+                                    ${shouldShowExpand
+                                            ? 'grid-rows-[1fr] mt-3'
+                                            : (isMobileActive ? 'grid-rows-[1fr] mt-4' : 'grid-rows-[0fr] group-hover:grid-rows-[1fr] group-hover:mt-4')
+                                        }
+                                `}>
+                                <div className="overflow-hidden">
+                                    <div className="flex items-center justify-between w-full">
+                                        {shouldShowExpand ? (
+                                            <button
+                                                onClick={() => setIsExpanded(!isExpanded)}
+                                                className="cursor-pointer flex items-center gap-1 text-gray-400 hover:text-blue-500 text-sm font-medium transition-colors"
+                                            >
+                                                {isExpanded ? (
+                                                    <>
+                                                        <ChevronUp size={16}/>
+                                                        {t('collapse')}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ChevronDown size={16}/>
+                                                        {t('expand')}
+                                                    </>
+                                                )}
+                                            </button>
+                                        ) : (
+                                            <div/>
+                                        )}
+
+                                        {/* 工具栏显示逻辑 */}
+                                        <div className={`
+                                            transition-all duration-300
+                                            ${shouldShowExpand
+                                                    ? 'opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 delay-100' // 有展开按钮：淡入+位移
+                                                    : 'opacity-100' // 无按钮：随父级网格扩展直接出现
+                                                }
+                                        `}>
+                                            <MessageActions
+                                                showPaginator={showPaginator}
+                                                msgPrev={msgPrev}
+                                                prevMsgId={msg?.prevMessage}
+                                                onSwitchMessage={onSwitchMessage}
+                                                switchingMessageId={switchingMessageId}
+                                                setSwitchingMessageId={setSwitchingMessageId}
+                                                setFadeMessages={setFadeMessages}
+                                                messageData={messageData}
+                                                isHovered={isHovered}
+                                                readonly={readonly}
+                                                t={t}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ==================== left / right 逻辑 ====================
         // 情况1: 只有附件
         if (hasAttachments && !hasContent) {
             return (
@@ -612,17 +725,14 @@ const MessageItem = React.memo(({
             );
         }
 
-        // 情况2: 附件和内容都有
+        // 情况2: 附件 + 内容
         if (hasAttachments && hasContent) {
             return (
                 <>
                     {isRight ? (
                         <>
                             <div className="max-w-[90%] lg:max-w-[55%] ml-auto pr-10 mb-2">
-                                <AttachmentShowcase
-                                    attachmentsMeta={msg.attachments}
-                                    msgMode={true}
-                                />
+                                <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
                             </div>
                             <TextOnlyMessageContent
                                 key={msgId}
@@ -635,16 +745,10 @@ const MessageItem = React.memo(({
                         </>
                     ) : (
                         <div className="flex flex-col items-start w-full">
-                            <LeftAvatarName
-                                avatar={avatar}
-                                displayName={displayName}
-                                isLeaving={leavingMessages.has(msgId)}
-                            />
+                            <LeftAvatarName avatar={avatar} displayName={displayName}
+                                            isLeaving={leavingMessages.has(msgId)}/>
                             <div className="max-w-[95%] pl-7 mb-2">
-                                <AttachmentShowcase
-                                    attachmentsMeta={msg.attachments}
-                                    msgMode={true}
-                                />
+                                <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
                             </div>
                             <TextOnlyMessageContent
                                 key={msgId}
@@ -673,11 +777,7 @@ const MessageItem = React.memo(({
                 />
             ) : (
                 <div className="flex flex-col items-start w-full">
-                    <LeftAvatarName
-                        avatar={avatar}
-                        displayName={displayName}
-                        isLeaving={leavingMessages.has(msgId)}
-                    />
+                    <LeftAvatarName avatar={avatar} displayName={displayName} isLeaving={leavingMessages.has(msgId)}/>
                     <TextOnlyMessageContent
                         key={msgId}
                         isRight={false}
@@ -703,11 +803,8 @@ const MessageItem = React.memo(({
                     </div>
                 ) : (
                     <div className="flex flex-col items-start w-full">
-                        <LeftAvatarName
-                            avatar={avatar}
-                            displayName={displayName}
-                            isLeaving={leavingMessages.has(msgId)}
-                        />
+                        <LeftAvatarName avatar={avatar} displayName={displayName}
+                                        isLeaving={leavingMessages.has(msgId)}/>
                         <div className="pl-7 min-h-[1.25rem]"></div>
                     </div>
                 )}
@@ -718,25 +815,28 @@ const MessageItem = React.memo(({
     return (
         <div
             key={msgId}
-            className={`flex flex-col w-full transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'
-            } ${animationClass}`}
+            className={`flex flex-col w-full transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'} ${animationClass}`}
             {...hoverHandlers}
         >
             {renderMessageContent()}
-            <MessageActions
-                isRight={isRight}
-                showPaginator={showPaginator}
-                msgPrev={msgPrev}
-                prevMsgId={msg?.prevMessage}
-                onSwitchMessage={onSwitchMessage}
-                switchingMessageId={switchingMessageId}
-                setSwitchingMessageId={setSwitchingMessageId}
-                setFadeMessages={setFadeMessages}
-                messageData={messageData}
-                isHovered={isHovered}
-                readonly={readonly}
-                t={t}
-            />
+
+            {/* mid 类型已在内部渲染工具栏，这里只渲染 left/right 的 MessageActions */}
+            {!isMid && (
+                <MessageActions
+                    isRight={isRight}
+                    showPaginator={showPaginator}
+                    msgPrev={msgPrev}
+                    prevMsgId={msg?.prevMessage}
+                    onSwitchMessage={onSwitchMessage}
+                    switchingMessageId={switchingMessageId}
+                    setSwitchingMessageId={setSwitchingMessageId}
+                    setFadeMessages={setFadeMessages}
+                    messageData={messageData}
+                    isHovered={isHovered}
+                    readonly={readonly}
+                    t={t}
+                />
+            )}
         </div>
     );
 }, (prevProps, nextProps) => {
@@ -748,7 +848,7 @@ const MessageItem = React.memo(({
         prevProps.readonly === nextProps.readonly &&
         prevProps.isFading === nextProps.isFading &&
         prevProps.leavingMessages.has(prevProps.msgId) === nextProps.leavingMessages.has(nextProps.msgId)
-    )
+    );
 });
 
 MessageItem.displayName = 'MessageItem';
@@ -767,7 +867,6 @@ const MessageContainer = forwardRef(({
     const [switchingMessageId, setSwitchingMessageId] = useState(null);
     const {t} = useTranslation();
 
-    // 使用自定义Hooks管理状态
     const {
         enteringMessages,
         leavingMessages,
@@ -846,31 +945,16 @@ const MessageContainer = forwardRef(({
         </div>
     ), [fadeMessages, enteringMessages, t]);
 
-    /**
-     * 渲染单条消息
-     */
     const renderMessage = useCallback((msgId, index) => {
-        // 检查是否有切换消息在前
-        const hasSwitchingMessageBefore = messagesOrder
-            .slice(0, index)
-            .some(currentMsgId => switchingMessageId === currentMsgId);
+        if (messagesOrder.slice(0, index).some(id => switchingMessageId === id)) return null;
 
-        if (hasSwitchingMessageBefore) return null;
-
-        // 处理加载更多占位符
-        if (msgId === "<PREV_MORE>") {
-            return renderLoadMore(msgId);
-        }
+        if (msgId === "<PREV_MORE>") return renderLoadMore(msgId);
 
         const msg = messages[msgId];
         if (!msg || msg.position === null || msg.position === undefined) return null;
 
-        // 处理消息切换状态
-        if (switchingMessageId === msgId) {
-            return renderSwitchingLoader(msgId);
-        }
+        if (switchingMessageId === msgId) return renderSwitchingLoader(msgId);
 
-        // 验证消息数据完整性
         const requiredFields = ['prevMessage', 'messages', 'nextMessage'];
         for (const field of requiredFields) {
             if (msg[field] === undefined) {

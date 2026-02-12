@@ -1113,7 +1113,8 @@ code 设置为 401 。
         "name": "名称",  # 必要内容
         ...  # 消息的结构，上述三个必须要有，缺省默认按照 position: right, allowRegenerate: false，prevMessage 默认为已有页面消息的最后一条
     },
-    "autoAddOrder": True,  # 默认为 true 是否将消息直接添加到最末尾，并且自动修改消息链接
+    "autoAddOrder": True,  # 是否将消息直接添加到最末尾，并且自动修改消息链接，默认为 False
+    "orderReplace": False,  # 如果为 True 将为替换模式，直接替换掉原位的顺序，而不是插入之后直接去掉末尾
     "noClear": False,  # 是否不要自动清空输入框
     "isEdit": False  # 指定是编辑模式则会进行消息是否存在检测，如果不存在会触发 Messages-Loaded 事件
 }  

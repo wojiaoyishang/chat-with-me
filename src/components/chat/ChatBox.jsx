@@ -740,7 +740,7 @@ function ChatBox({
                             attachments: payload.attachments,
                             sendButtonStatus: sendButtonStatusRef.current,
                             isRegenerate: payload.isRegenerate,
-                            role: currentRole,
+                            role: payload.role,
                         }
                     );
                 } else {
@@ -748,6 +748,14 @@ function ChatBox({
                     if (payload.attachments) setAttachments(payload.attachments);
                     if (payload.content) setMessageContent(payload.content);
                     if (payload.msgId) setEditMessageId(payload.msgId);
+                    if (payload.role) {
+                        const foundRole = roles.find(item => item.name === payload.role)
+                        if (foundRole) {
+                            setCurrentRole(foundRole);
+                        } else {
+                            setCurrentRole({name: payload.role, text: "?"});
+                        }
+                    }
                 }
 
                 break;
@@ -800,15 +808,20 @@ function ChatBox({
                                 return;
                             }
 
-                            if (payload.autoAddOrder === undefined || payload.autoAddOrder) {
+                            if (payload.autoAddOrder) {
 
                                 const prevIndex = messagesOrder.indexOf(payload.value.prevMessage);
 
-                                let newMessagesOrder = [];
+                                let newMessagesOrder;
 
                                 if (prevIndex !== -1) {
-                                    newMessagesOrder = [...messagesOrder.slice(0, prevIndex + 1), payload.msgId];
+                                    if (payload.orderReplace) {  // 是否是替换模式
+                                        newMessagesOrder = [...messagesOrder.slice(0, prevIndex + 1), payload.msgId, ...messagesOrder.slice(prevIndex + 2)];
+                                    } else {
+                                        newMessagesOrder = [...messagesOrder.slice(0, prevIndex + 1), payload.msgId];
+                                    }
                                 } else {
+                                    // 找不到 prevMessage，直接追加
                                     newMessagesOrder = [...messagesOrder, payload.msgId];
                                 }
 
@@ -1363,7 +1376,7 @@ function ChatBox({
                                                     </Avatar>
                                                     <span>{text}</span>
                                                     <div className={isSelected ? '' : 'invisible'}>
-                                                        <Check className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0" />
+                                                        <Check className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0"/>
                                                     </div>
 
                                                 </DropdownMenuItem>

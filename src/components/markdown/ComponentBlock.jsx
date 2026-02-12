@@ -181,14 +181,12 @@ const StatusWidget = React.memo(({
                     )}
                 </div>
                 {isExpanded && (
-                    <LazyVisibility placeholder={<div className="text-gray-400">Loading...</div>}>
-                        <div className="mt-2 ml-2 pl-4 border-l border-gray-200">
-                            <MarkdownRenderer
-                                content={cleanContent}
-                                withCustomComponent={withCustomComponent}
-                            />
-                        </div>
-                    </LazyVisibility>
+                    <div className="mt-2 ml-2 pl-4 border-l border-gray-200">
+                        <MarkdownRenderer
+                            content={cleanContent}
+                            withCustomComponent={withCustomComponent}
+                        />
+                    </div>
                 )}
             </div>
         );

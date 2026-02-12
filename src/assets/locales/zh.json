@@ -142,5 +142,7 @@
     "image_uploaded": "图片上传成功",
     "upload_failed": "图片上传失败",
     "Interface": "界面设置"
-  }
+  },
+  "expand": "展开",
+  "collapse": "收起"
 }
