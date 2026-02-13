@@ -4,7 +4,7 @@ import {toast} from 'sonner';
 import {useTranslation} from 'react-i18next';
 import ThreeDotLoading from "@/components/ui/ThreeDotLoading.jsx";
 import AttachmentShowcase from './AttachmentShowcase';
-import {Menu, PenLine, Copy, RotateCw, Info, ChevronLeft, ChevronRight, ChevronDown, ChevronUp} from "lucide-react";
+import {Menu, PenLine, Copy, RotateCw, Info, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, GitBranch} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 
@@ -72,6 +72,23 @@ const handleMessageAction = (action, messageData, t) => {
                 fromWebsocket: true
             });
             break;
+        case "fork":
+            emitEvent({
+                type: "widget",
+                target: "ChatBox",
+                payload: {
+                    command: "Set-EditMessage",
+                    isEdit: true,
+                    isFork: true,
+                    isRegenerate: true,
+                    attachments: msg.attachments,
+                    content: msg.content,
+                    msgId: msgId
+                },
+                markId: markId,
+                fromWebsocket: true
+            });
+            break;
         default:
             console.warn(`Unknown action: ${action}`);
     }
@@ -103,6 +120,16 @@ const MessageMenuButton = memo(({messageData}) => {
                     {t('edit_message')}
                 </DropdownMenuItem>
 
+                {(msg.allowFork) && (
+                    <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onSelect={() => handleMessageAction("fork", messageData, t)}
+                    >
+                        <GitBranch size={16}/>
+                        {t('fork_message')}
+                    </DropdownMenuItem>
+                )}
+
                 <DropdownMenuItem
                     className="flex items-center gap-2"
                     onSelect={() => handleMessageAction("copy", messageData, t)}
@@ -111,7 +138,7 @@ const MessageMenuButton = memo(({messageData}) => {
                     {t('copy_message')}
                 </DropdownMenuItem>
 
-                {(msg.allowRegenerate || msg.allowRegenerate === undefined) && (
+                {(msg.allowRegenerate) && (
                     <DropdownMenuItem
                         className="flex items-center gap-2"
                         onSelect={() => handleMessageAction("regenerate", messageData, t)}
@@ -120,6 +147,7 @@ const MessageMenuButton = memo(({messageData}) => {
                         {t('regenerate_message')}
                     </DropdownMenuItem>
                 )}
+
             </DropdownMenuContent>
         </DropdownMenu>
     );
@@ -181,31 +209,75 @@ const MessageTools = memo(({messageData}) => {
 
     return (
         <div className="flex gap-1">
-            <button
-                onClick={() => handleMessageAction("edit", messageData, t)}
-                className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
-                aria-label={t("edit_message")}
-            >
-                <PenLine size={16} className="text-gray-600 hover:text-gray-800"/>
-            </button>
 
-            <button
-                onClick={() => handleMessageAction("copy", messageData, t)}
-                className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
-                aria-label={t("copy_message")}
-            >
-                <Copy size={16} className="text-gray-600 hover:text-gray-800"/>
-            </button>
+            {/* 编辑消息 */}
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        onClick={() => handleMessageAction("edit", messageData, t)}
+                        className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                        aria-label={t("edit_message")}
+                    >
+                        <PenLine size={16} className="text-gray-600 hover:text-gray-800"/>
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    {t("edit_message")}
+                </TooltipContent>
+            </Tooltip>
 
-            {(msg.allowRegenerate || msg.allowRegenerate === undefined) && (
-                <button
-                    onClick={() => handleMessageAction("regenerate", messageData, t)}
-                    className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
-                    aria-label={t("regenerate_message")}
-                >
-                    <RotateCw size={16} className="text-gray-600 hover:text-gray-800"/>
-                </button>
+            {/* Fork */}
+            {(msg.allowFork) && (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <button
+                            onClick={() => handleMessageAction("fork", messageData, t)}
+                            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                            aria-label={t("fork_message")}
+                        >
+                            <GitBranch size={16} className="text-gray-600 hover:text-gray-800"/>
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        {t("fork_message")}
+                    </TooltipContent>
+                </Tooltip>
             )}
+
+
+            {/* 复制 */}
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        onClick={() => handleMessageAction("copy", messageData, t)}
+                        className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                        aria-label={t("copy_message")}
+                    >
+                        <Copy size={16} className="text-gray-600 hover:text-gray-800"/>
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    {t("copy_message")}
+                </TooltipContent>
+            </Tooltip>
+
+            {/* 重生成 */}
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    {(msg.allowRegenerate) && (
+                        <button
+                            onClick={() => handleMessageAction("regenerate", messageData, t)}
+                            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                            aria-label={t("regenerate_message")}
+                        >
+                            <RotateCw size={16} className="text-gray-600 hover:text-gray-800"/>
+                        </button>
+                    )}
+                </TooltipTrigger>
+                <TooltipContent>
+                    {t("regenerate_message")}
+                </TooltipContent>
+            </Tooltip>
 
             <TooltipInfo tip={msg.tip} t={t}/>
             <MessageMenuButton messageData={messageData}/>

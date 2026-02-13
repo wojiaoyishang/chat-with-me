@@ -56,6 +56,7 @@
   "menu_function": "Menu Message",
   "file_upload_not_complete": "Please wait patiently for the file upload to complete ~",
   "editing_message": "Now you are editing message",
+  "forking_message": "Noe you are forking message",
   "copy_message": "Copy Message",
   "message_copied": "Message Copied!",
   "message_not_copied": "Message not Copied: {{message}}",
@@ -144,5 +145,6 @@
     "Interface": "Interface"
   },
   "expand": "Expand",
-  "collapse": "Collapse"
+  "collapse": "Collapse",
+  "fork_message": "Fork Message"
 }

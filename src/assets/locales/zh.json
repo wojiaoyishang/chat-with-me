@@ -56,6 +56,7 @@
   "menu_function": "菜单功能",
   "file_upload_not_complete": "请耐心等待文件上传完成 ~",
   "editing_message": "正在修改消息",
+  "forking_message": "正在为消息创建分支",
   "copy_message": "复制消息",
   "message_copied": "消息复制成功！",
   "message_not_copied": "消息复制失败： {{message}}",
@@ -144,5 +145,6 @@
     "Interface": "界面设置"
   },
   "expand": "展开",
-  "collapse": "收起"
+  "collapse": "收起",
+  "fork_message": "创建消息分支"
 }

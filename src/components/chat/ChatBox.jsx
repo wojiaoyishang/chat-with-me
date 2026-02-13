@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment, 
 import {useTranslation} from 'react-i18next';
 import {Transition} from '@headlessui/react';
 import {motion, AnimatePresence} from 'framer-motion';
-import {Check, X, PenLine, Trash2, Minus, Square, RotateCw, Search, Earth} from 'lucide-react';
+import {Check, X, PenLine, Trash2, Minus, Square, RotateCw, Search, Earth, GitBranch} from 'lucide-react';
 
 import {
     DropdownMenuItem,
@@ -237,13 +237,24 @@ MessageInput.displayName = 'MessageInput';
 
 // ========== 独立的编辑状态提示组件 ==========
 
-const EditMessageIndicator = memo(({isEditMessage, setIsEditMessage, setAttachments, setMessageContent, t}) => {
+const EditMessageIndicator = memo((
+    {
+        isEditMessage,
+        setIsEditMessage,
+        isForkMode,
+        setIsForkMode,
+        setAttachments,
+        setMessageContent,
+        t
+    }) => {
     const handleCancel = useCallback(() => {
         setIsEditMessage(false);
+        setIsForkMode(false);
     }, [setIsEditMessage]);
 
     const handleClear = useCallback(() => {
         setIsEditMessage(false);
+        setIsForkMode(false);
         setAttachments([]);
         setMessageContent('');
     }, [setIsEditMessage, setAttachments, setMessageContent]);
@@ -263,8 +274,18 @@ const EditMessageIndicator = memo(({isEditMessage, setIsEditMessage, setAttachme
             <div
                 className="bg-gray-100 text-gray-800 text-sm font-medium py-3 px-4 rounded-t-2xl flex items-center justify-between">
                 <div className="flex items-center">
-                    <PenLine className="w-4 h-4 mr-2"/>
-                    <span>{t('editing_message')}</span>
+                    {
+                        (isForkMode) ? (
+                            <>
+                                <GitBranch className="w-4 h-4 mr-2"/>
+                                <span>{t('forking_message')}</span>
+                            </>
+                        ) : (
+                            <>
+                                <PenLine className="w-4 h-4 mr-2"/>
+                                <span>{t('editing_message')}</span>
+                            </>)
+                    }
                 </div>
                 <div className="flex items-center space-x-2">
                     <button
@@ -290,6 +311,8 @@ const EditMessageIndicator = memo(({isEditMessage, setIsEditMessage, setAttachme
 }, (prevProps, nextProps) => {
     return (
         prevProps.isEditMessage === nextProps.isEditMessage &&
+        prevProps.isForkMode === nextProps.isForkMode &&
+        prevProps.setIsForkMode !== nextProps.setIsForkMode &&
         prevProps.t === nextProps.t &&
         prevProps.setIsEditMessage === nextProps.setIsEditMessage &&
         prevProps.setAttachments === nextProps.setAttachments &&
@@ -427,24 +450,45 @@ function ChatBox({
     // ========== 状态管理 ==========
     const [messageContent, setMessageContent] = useState('');
     const [toolsStatus, setToolsStatus] = useState({});
+
+    // 全屏编辑器
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // 是否只读
     const [isReadOnly, setIsReadOnly] = useState(readOnly);
+
+    // 提示相关
     const [showTipMessage, setShowTipMessage] = useState(true);
     const [tipMessage, setTipMessage] = useState(t('shift_enter_newline'));
     const [tipMessageIsForNewLine, setTipMessageIsForNewLine] = useState(true);
+
+    // 工具按钮相关
     const [tools, setTools] = useState([]);
     const [extraTools, setExtraTools] = useState([]);
+
+    // 是否为小屏幕
     const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+    // 快捷选项相关
     const [quickOptions, setQuickOptions] = useState([]);
-    const [isTransitioning, setIsTransitioning] = useState(false);
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
-    const [toolsLoadedStatus, setToolsLoadedStatus] = useState(0);
-    const [sendButtonStatus, setSendButtonStatus] = useState('normal');
     const [selectedQuickOption, setSelectedQuickOption] = useState(null);
+
+    // 动画/加载相关
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const [toolsLoadedStatus, setToolsLoadedStatus] = useState(0);
+
+    // 按钮
+    const [sendButtonStatus, setSendButtonStatus] = useState('normal');
+
+    // 固件相关
     const [attachmentHeight, setAttachmentHeight] = useState(0);
     const [ignoreAttachmentTools, setIgnoreAttachmentTools] = useState(false);
+
+    // 编辑消息和 Fork 消息
     const [isEditMessage, setIsEditMessage] = useState(false);
     const [editMessageId, setEditMessageId] = useState(null);
+    const [isForkMode, setIsForkMode] = useState(false);
 
     // ========== 引用 ==========
     const quickOptionsRef = useRef(null);
@@ -729,8 +773,7 @@ function ChatBox({
                 break;
 
             case "Set-EditMessage":
-
-                if (payload.immediate) {
+                if (payload.immediate) {  // 马上发送的逻辑
                     onSendMessage(
                         {
                             messageContent: payload.content,
@@ -741,10 +784,12 @@ function ChatBox({
                             sendButtonStatus: sendButtonStatusRef.current,
                             isRegenerate: payload.isRegenerate,
                             role: payload.role,
+                            isFork: payload.isFork
                         }
                     );
                 } else {
                     setIsEditMessage(Boolean(payload.isEdit));
+                    setIsForkMode(Boolean(payload.isFork));
                     if (payload.attachments) setAttachments(payload.attachments);
                     if (payload.content) setMessageContent(payload.content);
                     if (payload.msgId) setEditMessageId(payload.msgId);
@@ -1267,6 +1312,8 @@ function ChatBox({
                     {/* 消息编辑状态提示 */}
                     <div className="pt-2 pl-2 pr-2">
                         <EditMessageIndicator
+                            isForkMode={isForkMode}
+                            setIsForkMode={setIsForkMode}
                             isEditMessage={isEditMessage}
                             setIsEditMessage={setIsEditMessage}
                             setAttachments={setAttachments}
