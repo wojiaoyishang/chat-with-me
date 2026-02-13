@@ -146,5 +146,8 @@
   },
   "expand": "Expand",
   "collapse": "Collapse",
-  "fork_message": "Fork Message"
+  "fork_message": "Fork Message",
+  "forking": "Forking...",
+  "forking_success": "Forked!",
+  "forking_error": "Fork Failed: {{message}}"
 }

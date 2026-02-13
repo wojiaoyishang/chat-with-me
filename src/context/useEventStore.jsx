@@ -105,6 +105,8 @@ export const useEventStore = create((set, get) => {
 
     return {
         listeners: {},
+        processedReplyIds: [],
+        uniqueListeners: new Set(),
 
         // 内部方法：注册回复监听器
         _registerReplyListener: (id, resolve) => {
@@ -121,10 +123,18 @@ export const useEventStore = create((set, get) => {
             return replyListeners.has(id);
         },
 
-        addListener: (type, target, callback, listenerMarkId, acceptReply = false, onlyEmpty = false) => {
+        addListener: (type, target, callback, listenerMarkId, acceptReply = false, onlyEmpty = false, unique = null) => {
             const registrationStack = debugLogger
                 ? new Error('Listener registered at:').stack.split('\n').slice(2).join('\n')
                 : null;
+
+            if (unique !== null) {
+                const {uniqueListeners} = get();
+                if (uniqueListeners.has(unique)) {
+                    console.warn(`Unique listener for "${unique}" already registered. Registration skipped.`);
+                    return () => {}; // 返回空 unsubscribe 函数
+                }
+            }
 
             set(state => {
                 const newListeners = {...state.listeners};
@@ -146,7 +156,12 @@ export const useEventStore = create((set, get) => {
                     ];
                 }
 
-                return {listeners: newListeners};
+                let newState = {listeners: newListeners};
+                if (unique !== null) {
+                    newState.uniqueListeners = new Set([...state.uniqueListeners, unique]);
+                }
+
+                return newState;
             });
 
             return () => {
@@ -166,6 +181,14 @@ export const useEventStore = create((set, get) => {
                     }
                     return {listeners: newListeners};
                 });
+
+                if (unique !== null) {
+                    set(state => {
+                        const newUniqueListeners = new Set(state.uniqueListeners);
+                        newUniqueListeners.delete(unique);
+                        return {uniqueListeners: newUniqueListeners};
+                    });
+                }
             };
         },
 
@@ -181,7 +204,7 @@ export const useEventStore = create((set, get) => {
                 notReplyToWebsocket = false
             } = event;
 
-            const {listeners} = get();
+            const {listeners, processedReplyIds} = get();
 
             // 生成唯一ID（如果未提供）
             if (!id) {
@@ -226,6 +249,15 @@ export const useEventStore = create((set, get) => {
                 }
             }
 
+            if (processedReplyIds.includes(id)) {
+                console.warn(`Duplicate reply event ignored: ${id}`);
+                return;
+            }
+
+            set(state => ({
+                processedReplyIds: [...state.processedReplyIds, id].slice(-100)
+            }));
+
             // 标准事件分发
             const targetListeners = [...(listeners[type]?.[target] || [])];
             targetListeners.forEach(listener => {
@@ -264,6 +296,7 @@ export const useEventStore = create((set, get) => {
                     }
                 });
             });
+
         }
     };
 });
@@ -404,6 +437,7 @@ if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
  * @param {string|null} markId - 监听器标记ID，用于精确匹配带有相同markId的事件
  * @param {boolean} [acceptReply=false] - 是否接受回复事件（默认只处理非回复事件）
  * @param {boolean} [onlyEmpty=false] - 当markId为空时，是否只监听markId为空的事件（默认接收所有事件）
+ * @param {string|null} [unique=null] - 唯一标识符，如果提供，则确保该标识符的监听器唯一存在
  *
  * @returns {Object} 返回一个thenable对象，调用.then(callback)来设置事件回调函数
  *                   .then(callback) 返回取消监听的函数
@@ -432,11 +466,16 @@ if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
  * // 取消监听
  * const unsubscribe = onEvent('user', 'logout', null).then(() => { ... });
  * // 之后可以调用 unsubscribe() 来取消监听
+ *
+ * // 使用唯一标识符
+ * onEvent('api', 'response', null, false, false, 'unique-key').then((payload) => {
+ *   console.log('唯一监听器:', payload);
+ * });
  */
-export let onEvent = (type, target, markId, acceptReply = false, onlyEmpty = false) => {
+export let onEvent = (type, target, markId, acceptReply = false, onlyEmpty = false, unique = null) => {
     return {
         then: (callback) => {
-            return useEventStore.getState().addListener(type, target, callback, markId, acceptReply, onlyEmpty);
+            return useEventStore.getState().addListener(type, target, callback, markId, acceptReply, onlyEmpty, unique);
         }
     };
 };

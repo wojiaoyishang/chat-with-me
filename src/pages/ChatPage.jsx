@@ -324,10 +324,11 @@ function ChatPage({markId, setMarkId}) {
     // 加载相关
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
-    const [isMessageLoaded, setIsMessageLoaded] = useState(false);
     const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
     const [randomMark, setRandomMark] = useState(null);
     const errorToastsIds = useRef(new Map())
+    const isMessageLoadedRef = useRef(false);
+    const isLoadingDataRef = useRef(false);  // 是否正在初始化请求内容
 
     // 消息状态
     const [messagesOrder, setMessagesOrder] = useState([]);
@@ -874,67 +875,84 @@ function ChatPage({markId, setMarkId}) {
     }, [selfMarkId, checkScrollPosition]);
 
     const loadSwitchMessage = useCallback(async (msgId, newMsgId) => {
-        if (!messagesRef.current.hasOwnProperty(msgId)) return;
-        let missMsg = !messagesRef.current.hasOwnProperty(newMsgId);
+        if (!(msgId in messagesRef.current)) return false;
+
         let newOrders = [];
-        let msg_cursor = messagesRef.current[newMsgId];
-        if (!missMsg) {
+        let loadStartId = newMsgId;
+        let needsLoad = !(newMsgId in messagesRef.current);
+
+        // 1. 寻找本地断点 (保持原逻辑)
+        if (!needsLoad) {
+            let cursor = messagesRef.current[newMsgId];
             newOrders.push(newMsgId);
-            while (msg_cursor.nextMessage) {
-                newOrders.push(msg_cursor.nextMessage);
-                if (messagesRef.current.hasOwnProperty(msg_cursor.nextMessage)) {
-                    msg_cursor = messagesRef.current[msg_cursor.nextMessage];
+            while (cursor.nextMessage) {
+                const nextId = cursor.nextMessage;
+                if (nextId in messagesRef.current) {
+                    newOrders.push(nextId);
+                    cursor = messagesRef.current[nextId];
                 } else {
-                    missMsg = true;
+                    needsLoad = true;
+                    loadStartId = nextId;
                     break;
                 }
             }
         }
-        if (missMsg) {
+
+        let finalMessagesMap = messagesRef.current; // 临时变量持有最新内容
+
+        // 2. 如果需要从服务端加载
+        if (needsLoad) {
             try {
                 const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                    params: {
-                        markId: selfMarkId,
-                        nextId: missMsg ? newMsgId : msg_cursor.nextMessage,
-                    }
+                    params: {markId: selfMarkId, nextId: loadStartId},
                 });
 
-                const newMessagesFromData = {...messagesRef.current, ...data.messages};
-                setMessages(newMessagesFromData);
-                messagesRef.current = newMessagesFromData;
+                // 合并新加载的消息到临时对象
+                finalMessagesMap = {...finalMessagesMap, ...data.messages};
 
-                const newOrderFromData = [...messagesOrderRef.current.slice(0, messagesOrderRef.current.indexOf(msgId) + 1), ...data.messagesOrder];
-                setMessagesOrder(newOrderFromData);
-                messagesOrderRef.current = newOrderFromData;
+                // 更新 Order (只在需要时更新)
+                const insertPoint = messagesOrderRef.current.indexOf(msgId) + 1;
+                const newOrder = [
+                    ...messagesOrderRef.current.slice(0, insertPoint),
+                    ...newOrders,
+                    ...data.messagesOrder,
+                ];
 
-                const newMessagesWithNext = produce(messagesRef.current, draft => {
-                    draft[msgId].nextMessage = newMsgId;
-                });
-                setMessages(newMessagesWithNext);
-                messagesRef.current = newMessagesWithNext;
-
-                return true;
+                // 同步更新 Ref 和 State (Order)
+                messagesOrderRef.current = newOrder;
+                setMessagesOrder(newOrder);
             } catch (error) {
                 toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));
+                return false;
             }
         } else {
-            const newOrder = [...messagesOrderRef.current.slice(0, messagesOrderRef.current.indexOf(msgId) + 1), ...newOrders];
-            setMessagesOrder(newOrder);
+            // 3. 本地已存在，仅更新 Order
+            const insertPoint = messagesOrderRef.current.indexOf(msgId) + 1;
+            const newOrder = [...messagesOrderRef.current.slice(0, insertPoint), ...newOrders];
             messagesOrderRef.current = newOrder;
-
-            const newMessages = produce(messagesRef.current, draft => {
-                draft[msgId].nextMessage = newMsgId;
-            });
-            setMessages(newMessages);
-            messagesRef.current = newMessages;
-
-            return true;
+            setMessagesOrder(newOrder);
         }
+
+        // 4. 关键：统一更新指针并只调用一次 setMessages
+        // 使用 produce 确保基于最新的 finalMessagesMap 操作
+        const nextMessagesState = produce(finalMessagesMap, (draft) => {
+            if (draft[msgId]) {
+                draft[msgId].nextMessage = newMsgId;
+            }
+        });
+
+        // 最终同步
+        messagesRef.current = nextMessagesState;
+        setMessages(nextMessagesState);
+
+        return true;
     }, [selfMarkId]);
 
-    const switchMessage = useCallback(async (msg, msgId, isNext) => {
+    const switchMessage = useCallback(async (msg, msgId, delta) => {
+
         const msgId_index = msg.messages.indexOf(msg.nextMessage);
-        const newMsgId = msg.messages[msgId_index + (isNext ? 1 : -1)];
+        const newMsgId = msg.messages[msgId_index + delta];
+
         const sendSwitchRequest = () => {
 
             emitEvent({
@@ -970,7 +988,7 @@ function ChatPage({markId, setMarkId}) {
 
     const emitMessagesLoaded = () => {
         setTimeout(() => {
-            setIsMessageLoaded(true);
+            isMessageLoadedRef.current = true;
             emitEvent({
                 type: "message",
                 target: "ChatPage",
@@ -1030,307 +1048,349 @@ function ChatPage({markId, setMarkId}) {
 
     // === 广播事件 ===
     useEffect(() => {
-        const unsubscribe1 = onEvent("message", "ChatPage", selfMarkId).then((payload, markId, isReply, id, reply) => {
-            switch (payload.command) {
-                case "Add-Message":
-                    if (payload.value && typeof payload.value === 'object') {
-                        // 保存当前的自动滚动状态
-                        const wasAutoScroll = isAutoScrollEnabledRef.current;
+        const unsubscribe1 = onEvent("message", "ChatPage", selfMarkId)
+            .then((payload, markId, isReply, id, reply) => {
+                switch (payload.command) {
+                    case "Add-Message":
+                        if (payload.value && typeof payload.value === 'object') {
+                            // 保存当前的自动滚动状态
+                            const wasAutoScroll = isAutoScrollEnabledRef.current;
 
-                        let newMessages = {...messagesRef.current};
-                        for (const [key, newValue] of Object.entries(payload.value)) {
-                            if (payload.isEdit && !newMessages[key]) {
-                                reply({success: false});
-                                return;
-                            }
-                            if (newValue.messages === undefined) {
-                                newValue.messages = [];
-                            }
-                            if (typeof newValue === 'object') {
-                                if (newMessages[key] && typeof newMessages[key] === 'object' && newMessages[key] !== null) {
-                                    newMessages[key] = {...newMessages[key], ...newValue};
+                            let newMessages = {...messagesRef.current};
+                            for (const [key, newValue] of Object.entries(payload.value)) {
+                                if (payload.isEdit && !newMessages[key]) {
+                                    reply({success: false});
+                                    return;
+                                }
+                                if (newValue.messages === undefined) {
+                                    newValue.messages = [];
+                                }
+                                if (typeof newValue === 'object') {
+                                    if (newMessages[key] && typeof newMessages[key] === 'object' && newMessages[key] !== null) {
+                                        newMessages[key] = {...newMessages[key], ...newValue};
+                                    } else {
+                                        newMessages[key] = newValue;
+                                    }
                                 } else {
                                     newMessages[key] = newValue;
                                 }
+                            }
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+
+                            // 延迟检查滚动位置
+                            setTimeout(() => {
+                                if (wasAutoScroll) {
+                                    requestScrollToBottom();
+                                }
+                                checkScrollPosition(true);
+                            }, 50);
+
+                            reply({success: true});
+                        }
+                        break;
+                    case "MessagesOrder-Meta":
+                        if (Array.isArray(payload.value) && payload.value.length > 0) {
+                            setTimeout(() => {
+                                checkScrollPosition(true);
+                                if (isAutoScrollEnabledRef.current) {
+                                    requestScrollToBottom();
+                                }
+                            }, 50)
+
+                            setMessagesOrder(payload.value);
+                            messagesOrderRef.current = payload.value;
+
+                            reply({value: payload.value});
+                        } else {
+                            reply({value: messagesOrderRef.current});
+                        }
+                        break;
+                    case "Set-MessageContent":
+                        if (payload.value && typeof payload.value === 'object') {
+                            // 更新流式输出状态
+                            updateStreamingStatus();
+
+                            const newMessages = produce(messagesRef.current, draft => {
+                                for (const [msgId, newContent] of Object.entries(payload.value)) {
+                                    if (draft[msgId]) {
+                                        draft[msgId].content = newContent || '';
+                                    }
+                                }
+                            });
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+
+                            setTimeout(() => {
+                                if (isAutoScrollEnabledRef.current) {
+                                    // 流式输出时使用更积极的滚动
+                                    if (isStreamingRef.current) {
+                                        smoothScrollToBottom(true);
+                                    } else {
+                                        requestScrollToBottom();
+                                    }
+                                }
+                                checkScrollPosition(true);
+                            }, 0); // 立即检查
+
+                            if (payload.reply) reply({success: true});
+                        } else {
+                            console.error("Set-MessageContent Failed. msgId, value is need at least.")
+                            reply({success: false});
+                        }
+                        break;
+                    case "Add-MessageContent":
+                        if (payload.value && typeof payload.value === 'object') {
+                            // 更新流式输出状态
+                            updateStreamingStatus();
+
+                            const newMessages = produce(messagesRef.current, draft => {
+                                for (const [msgId, newContent] of Object.entries(payload.value)) {
+                                    if (draft[msgId]) {
+                                        draft[msgId].content = (draft[msgId].content || '') + (newContent || '');
+                                    }
+                                }
+                            });
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+
+                            // 流式输出时立即检查滚动，不使用延迟
+                            setTimeout(() => {
+                                if (isAutoScrollEnabledRef.current) {
+                                    // 如果是流式输出，立即滚动
+                                    if (isStreamingRef.current) {
+                                        smoothScrollToBottom(true);
+                                    } else {
+                                        requestScrollToBottom();
+                                    }
+                                }
+                                checkScrollPosition(true);
+                            }, 0);
+
+                            if (payload.reply) reply({success: true});
+                        } else {
+                            console.error("Add-MessageContent Failed. msgId, value is need at least.")
+                            reply({success: false});
+                        }
+                        break;
+                    case "Set-MessageReplace":
+                        if (payload.value && typeof payload.value === 'object') {
+                            const newMessages = produce(messagesRef.current, draft => {
+                                for (const [msgId, newReplaces] of Object.entries(payload.value)) {
+                                    if (draft[msgId]) {
+                                        if (!draft[msgId].extraInfo) {
+                                            draft[msgId].extraInfo = {};
+                                        }
+                                        const currentReplace = draft[msgId].extraInfo.replace || {};
+                                        draft[msgId].extraInfo.replace = {...currentReplace, ...newReplaces};
+                                    }
+                                }
+                            });
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+
+                            setTimeout(() => {
+                                if (isAutoScrollEnabledRef.current) {
+                                    requestScrollToBottom();
+                                }
+                                checkScrollPosition(true);
+                            }, 50);
+
+                            if (payload.reply) reply({success: true});
+                        } else {
+                            console.error("Add-MessageReplace Failed. msgId, value is need at least.")
+                            reply({success: false});
+                        }
+                        break;
+                    case "Add-MessageReplaceContent":
+                        if (payload.value && typeof payload.value === 'object') {
+                            // 更新流式输出状态
+                            updateStreamingStatus();
+
+                            const newMessages = produce(messagesRef.current, draft => {
+                                for (const [msgId, appendFields] of Object.entries(payload.value)) {
+                                    if (draft[msgId]) {
+                                        if (!draft[msgId].extraInfo) {
+                                            draft[msgId].extraInfo = {};
+                                        }
+                                        if (!draft[msgId].extraInfo.replace) {
+                                            draft[msgId].extraInfo.replace = {};
+                                        }
+
+                                        for (const [key, appendString] of Object.entries(appendFields)) {
+                                            const currentValue = draft[msgId].extraInfo.replace[key] || '';
+                                            draft[msgId].extraInfo.replace[key] = currentValue + appendString;
+                                        }
+                                    }
+                                }
+                            });
+
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+
+                            setTimeout(() => {
+                                if (isAutoScrollEnabledRef.current) {
+                                    // 如果是流式输出，立即滚动
+                                    if (isStreamingRef.current) {
+                                        smoothScrollToBottom(true);
+                                    } else {
+                                        requestScrollToBottom();
+                                    }
+                                }
+                                checkScrollPosition(true);
+                            }, 0);
+
+                            if (payload.reply) reply({success: true});
+                        } else {
+                            console.error("Add-MessageReplaceContent Failed. payload.value must be an object.");
+                            if (payload.reply) reply({success: false});
+                        }
+                        break;
+
+                    case "Set-MessageAttachments":
+                        if (payload.value && typeof payload.value === 'object') {
+                            const newMessages = produce(messagesRef.current, draft => {
+                                for (const [msgId, newAttachments] of Object.entries(payload.value)) {
+                                    if (draft[msgId]) {
+                                        draft[msgId].attachments = newAttachments;
+                                    }
+                                }
+                            });
+
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+
+                            setTimeout(() => {
+                                if (isAutoScrollEnabledRef.current) {
+                                    requestScrollToBottom();
+                                }
+                                checkScrollPosition(true);
+                            }, 50);
+
+                            if (payload.reply) reply({success: true});
+                        } else {
+                            console.error("Add-MessageReplace Failed. msgId, value is need at least.")
+                            reply({success: false});
+                        }
+                        break;
+                    case "Add-Message-Messages":
+                        if (payload.msgId && payload.value) {
+                            if (!messagesRef.current[payload.msgId]) {
+                                reply({success: false});
+                                return;
+                            }
+                            if (messagesRef.current[payload.msgId].messages.includes(payload.value)) {
+                                reply({success: false});
+                                return;
+                            }
+
+                            const newMessages = produce(messagesRef.current, draft => {
+                                draft[payload.msgId].messages = [...draft[payload.msgId].messages, payload.value];
+                                if (payload.switch) {
+                                    draft[payload.msgId].nextMessage = payload.value;
+                                }
+                            });
+
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+
+                            // 是否还有消息没加载完
+                            if (messagesRef.current[payload.value].nextMessage) {
+
+                                emitEvent({
+                                    type: "widget",
+                                    target: "ChatPage",
+                                    payload: {
+                                        command: "Set-SwitchingMessage",
+                                        value: payload.value
+                                    },
+                                    markId: selfMarkId,
+                                    fromWebsocket: true,
+                                    notReplyToWebsocket: true
+
+                                }).then(() => {
+                                    loadSwitchMessage(payload.msgId, payload.value).then(() => {
+
+                                        emitEvent({
+                                            type: "widget",
+                                            target: "ChatPage",
+                                            payload: {
+                                                command: "Set-SwitchingMessage",
+                                                value: null
+                                            },
+                                            markId: selfMarkId,
+                                            fromWebsocket: true,
+                                            notReplyToWebsocket: true
+                                        })
+
+                                        setTimeout(() => {
+                                            if (isAutoScrollEnabledRef.current) {
+                                                requestScrollToBottom();
+                                            }
+                                            checkScrollPosition(true);
+                                        }, 50);
+                                    });
+                                });
+
+
                             } else {
-                                newMessages[key] = newValue;
+                                setTimeout(() => {
+                                    if (isAutoScrollEnabledRef.current) {
+                                        requestScrollToBottom();
+                                    }
+                                    checkScrollPosition(true);
+                                }, 50);
                             }
+
+                            reply({success: true});
+                        } else {
+                            console.error('Add-Message-Messages Failed. msgId, value is need at least.');
                         }
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-
-                        // 延迟检查滚动位置
-                        setTimeout(() => {
-                            if (wasAutoScroll) {
-                                requestScrollToBottom();
-                            }
-                            checkScrollPosition(true);
-                        }, 50);
-
-                        reply({success: true});
-                    }
-                    break;
-                case "MessagesOrder-Meta":
-                    if (Array.isArray(payload.value) && payload.value.length > 0) {
-                        setTimeout(() => {
-                            checkScrollPosition(true);
-                            if (isAutoScrollEnabledRef.current) {
-                                requestScrollToBottom();
-                            }
-                        }, 50)
-
-                        setMessagesOrder(payload.value);
-                        messagesOrderRef.current = payload.value;
-
-                        reply({value: payload.value});
-                    } else {
-                        reply({value: messagesOrderRef.current});
-                    }
-                    break;
-                case "Set-MessageContent":
-                    if (payload.value && typeof payload.value === 'object') {
-                        // 更新流式输出状态
-                        updateStreamingStatus();
-
-                        const newMessages = produce(messagesRef.current, draft => {
-                            for (const [msgId, newContent] of Object.entries(payload.value)) {
-                                if (draft[msgId]) {
-                                    draft[msgId].content = newContent || '';
-                                }
-                            }
+                        break;
+                    case "Load-Switch-Message":
+                        emitEvent({
+                            type: "widget",
+                            target: "ChatPage",
+                            payload: {
+                                command: "Set-SwitchingMessage",
+                                value: payload.nextMessage
+                            },
+                            markId: selfMarkId,
+                            fromWebsocket: true,
+                            notReplyToWebsocket: true
+                        }).then(() => {
+                            loadSwitchMessage(payload.msgId, payload.nextMessage).then(() => {
+                                emitEvent({
+                                    type: "widget",
+                                    target: "ChatPage",
+                                    payload: {
+                                        command: "Set-SwitchingMessage",
+                                        value: null
+                                    },
+                                    markId: selfMarkId,
+                                    fromWebsocket: true,
+                                    notReplyToWebsocket: true
+                                })
+                            });
                         });
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-
-                        setTimeout(() => {
-                            if (isAutoScrollEnabledRef.current) {
-                                // 流式输出时使用更积极的滚动
-                                if (isStreamingRef.current) {
-                                    smoothScrollToBottom(true);
-                                } else {
-                                    requestScrollToBottom();
-                                }
-                            }
-                            checkScrollPosition(true);
-                        }, 0); // 立即检查
-
-                        if (payload.reply) reply({success: true});
-                    } else {
-                        console.error("Set-MessageContent Failed. msgId, value is need at least.")
-                        reply({success: false});
-                    }
-                    break;
-                case "Add-MessageContent":
-                    if (payload.value && typeof payload.value === 'object') {
-                        // 更新流式输出状态
-                        updateStreamingStatus();
-
-                        const newMessages = produce(messagesRef.current, draft => {
-                            for (const [msgId, newContent] of Object.entries(payload.value)) {
-                                if (draft[msgId]) {
-                                    draft[msgId].content = (draft[msgId].content || '') + (newContent || '');
-                                }
-                            }
-                        });
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-
-                        // 流式输出时立即检查滚动，不使用延迟
-                        setTimeout(() => {
-                            if (isAutoScrollEnabledRef.current) {
-                                // 如果是流式输出，立即滚动
-                                if (isStreamingRef.current) {
-                                    smoothScrollToBottom(true);
-                                } else {
-                                    requestScrollToBottom();
-                                }
-                            }
-                            checkScrollPosition(true);
-                        }, 0);
-
-                        if (payload.reply) reply({success: true});
-                    } else {
-                        console.error("Add-MessageContent Failed. msgId, value is need at least.")
-                        reply({success: false});
-                    }
-                    break;
-                case "Set-MessageReplace":
-                    if (payload.value && typeof payload.value === 'object') {
-                        const newMessages = produce(messagesRef.current, draft => {
-                            for (const [msgId, newReplaces] of Object.entries(payload.value)) {
-                                if (draft[msgId]) {
-                                    if (!draft[msgId].extraInfo) {
-                                        draft[msgId].extraInfo = {};
-                                    }
-                                    const currentReplace = draft[msgId].extraInfo.replace || {};
-                                    draft[msgId].extraInfo.replace = {...currentReplace, ...newReplaces};
-                                }
-                            }
-                        });
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-
-                        setTimeout(() => {
-                            if (isAutoScrollEnabledRef.current) {
-                                requestScrollToBottom();
-                            }
-                            checkScrollPosition(true);
-                        }, 50);
-
-                        if (payload.reply) reply({success: true});
-                    } else {
-                        console.error("Add-MessageReplace Failed. msgId, value is need at least.")
-                        reply({success: false});
-                    }
-                    break;
-                case "Add-MessageReplaceContent":
-                    if (payload.value && typeof payload.value === 'object') {
-                        // 更新流式输出状态
-                        updateStreamingStatus();
-
-                        const newMessages = produce(messagesRef.current, draft => {
-                            for (const [msgId, appendFields] of Object.entries(payload.value)) {
-                                if (draft[msgId]) {
-                                    if (!draft[msgId].extraInfo) {
-                                        draft[msgId].extraInfo = {};
-                                    }
-                                    if (!draft[msgId].extraInfo.replace) {
-                                        draft[msgId].extraInfo.replace = {};
-                                    }
-
-                                    for (const [key, appendString] of Object.entries(appendFields)) {
-                                        const currentValue = draft[msgId].extraInfo.replace[key] || '';
-                                        draft[msgId].extraInfo.replace[key] = currentValue + appendString;
-                                    }
-                                }
-                            }
-                        });
-
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-
-                        setTimeout(() => {
-                            if (isAutoScrollEnabledRef.current) {
-                                // 如果是流式输出，立即滚动
-                                if (isStreamingRef.current) {
-                                    smoothScrollToBottom(true);
-                                } else {
-                                    requestScrollToBottom();
-                                }
-                            }
-                            checkScrollPosition(true);
-                        }, 0);
-
-                        if (payload.reply) reply({success: true});
-                    } else {
-                        console.error("Add-MessageReplaceContent Failed. payload.value must be an object.");
-                        if (payload.reply) reply({success: false});
-                    }
-                    break;
-
-                case "Set-MessageAttachments":
-                    if (payload.value && typeof payload.value === 'object') {
-                        const newMessages = produce(messagesRef.current, draft => {
-                            for (const [msgId, newAttachments] of Object.entries(payload.value)) {
-                                if (draft[msgId]) {
-                                    draft[msgId].attachments = newAttachments;
-                                }
-                            }
-                        });
-
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-
-                        setTimeout(() => {
-                            if (isAutoScrollEnabledRef.current) {
-                                requestScrollToBottom();
-                            }
-                            checkScrollPosition(true);
-                        }, 50);
-
-                        if (payload.reply) reply({success: true});
-                    } else {
-                        console.error("Add-MessageReplace Failed. msgId, value is need at least.")
-                        reply({success: false});
-                    }
-                    break;
-                case "Add-Message-Messages":
-                    if (payload.msgId && payload.value) {
-                        if (!messagesRef.current[payload.msgId]) {
-                            reply({success: false});
-                            return;
-                        }
-                        if (messagesRef.current[payload.msgId].messages.includes(payload.value)) {
-                            reply({success: false});
-                            return;
-                        }
-
-                        const newMessages = produce(messagesRef.current, draft => {
-                            draft[payload.msgId].messages = [...draft[payload.msgId].messages, payload.value];
-                            if (payload.switch) {
-                                draft[payload.msgId].nextMessage = payload.value;
-                            }
-                        });
-
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-
-                        setTimeout(() => {
-                            if (isAutoScrollEnabledRef.current) {
-                                requestScrollToBottom();
-                            }
-                            checkScrollPosition(true);
-                        }, 50);
-
-                        reply({success: true});
-                    } else {
-                        console.error('Add-Message-Messages Failed. msgId, value is need at least.');
-                    }
-                    break;
-                case "Load-Switch-Message":
-                    emitEvent({
-                        type: "widget",
-                        target: "ChatPage",
-                        payload: {
-                            command: "Set-SwitchingMessage",
-                            value: payload.nextMessage
-                        },
-                        markId: selfMarkId,
-                        fromWebsocket: true,
-                        notReplyToWebsocket: true
-                    }).then(() => {
-                        loadSwitchMessage(payload.msgId, payload.nextMessage).then(() => {
-                            emitEvent({
-                                type: "widget",
-                                target: "ChatPage",
-                                payload: {
-                                    command: "Set-SwitchingMessage",
-                                    value: null
-                                },
-                                markId: selfMarkId,
-                                fromWebsocket: true,
-                                notReplyToWebsocket: true
-                            })
-                        });
-                    });
-                    break;
-                case "Reload-Messages":
-                    setRandomMark(generateUUID());
-                    break;
-                case "Re-Messages-Loaded":
-                    emitMessagesLoaded();
-                    break;
-            }
-        });
+                        break;
+                    case "Reload-Messages":
+                        setRandomMark(generateUUID());
+                        break;
+                    case "Re-Messages-Loaded":
+                        emitMessagesLoaded();
+                        break;
+                }
+            });
         const unsubscribe2 = onEvent("websocket", "onopen", selfMarkId).then(() => {
-            if (isMessageLoaded) emitMessagesLoaded();
+            if (isMessageLoadedRef.current) emitMessagesLoaded();
         });
 
         return () => {
             unsubscribe1();
             unsubscribe2();
         };
-    }, [selfMarkId, isMessageLoaded, checkScrollPosition, requestScrollToBottom, smoothScrollToBottom, updateStreamingStatus]);
+    }, [selfMarkId, checkScrollPosition, requestScrollToBottom, smoothScrollToBottom, updateStreamingStatus]);
 
     // 同步更新的 MarkID
     useEffect(() => {
@@ -1440,8 +1500,7 @@ function ChatPage({markId, setMarkId}) {
                             loadData();
                         },
                     },
-                    closeButton: false,
-                    dismissible: false,
+                    closeButton: true,
                     duration: Infinity,
                 }), true);
                 setIsLoadingError(true);
@@ -1471,17 +1530,20 @@ function ChatPage({markId, setMarkId}) {
         };
 
         const loadData = async () => {
+            isLoadingDataRef.current = true;
             setIsLoading(true);
             await requestModels();
             await requestConversation();
             await requestMessages();
+            isLoadingDataRef.current = false;
         };
 
-        if (selfMarkId) {
+        if (selfMarkId && !isLoadingDataRef.current) {
             loadData();
         } else {
             requestModels();
         }
+
         setIsFirstMessageSend(true);
     }, [selfMarkId, randomMark]);
 

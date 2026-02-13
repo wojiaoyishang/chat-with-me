@@ -146,5 +146,8 @@
   },
   "expand": "展开",
   "collapse": "收起",
-  "fork_message": "创建消息分支"
+  "fork_message": "创建消息分支",
+  "forking": "创建分支中...",
+  "forking_success": "创建分支成功！",
+  "forking_error": "创建分支失败：{{message}}"
 }

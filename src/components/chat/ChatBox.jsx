@@ -513,12 +513,14 @@ function ChatBox({
             isEditMessage: isEditMessage,
             editMessageId: editMessageId,
             attachments: attachmentsMeta,
-            sendButtonStatus: sendButtonStatusRef.curren,
+            sendButtonStatus: sendButtonStatusRef.current,
             isRegenerate: false,
             role: currentRole.name,
             isFork: isForkMode
         });
         textareaRef.current?.focus();
+        setIsForkMode(false);
+        setIsEditMessage(false);
     }, [onSendMessage, toolsStatus, isEditMessage, editMessageId, attachmentsMeta, currentRole]);
 
     const handleKeyDown = useCallback((e) => {

@@ -331,7 +331,7 @@ const MessagePaginator = memo(({
         setFadeMessages(prev => new Set([...prev, nextMessageId]));
 
         try {
-            await onSwitchMessage(msgPrev, prevMsgId, direction === 'next');
+            await onSwitchMessage(msgPrev, prevMsgId, direction === 'next' ? 1 : -1);
         } finally {
             setSwitchingMessageId(null);
         }
