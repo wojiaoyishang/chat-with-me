@@ -619,6 +619,7 @@ function ChatPage({markId, setMarkId}) {
             attachments,
             sendButtonStatus,
             isRegenerate = false,
+            isFork = false,
             role
         }  // 发送的角色身份
     ) => {
@@ -651,6 +652,7 @@ function ChatPage({markId, setMarkId}) {
                     model: selectedModel.id,
                     sendButtonStatus: sendButtonStatus,
                     isRegenerate: isRegenerate,
+                    isFork: isFork,
                     role: role,
                     requestId: currentMessageSendRequestIDRef.current
                 },

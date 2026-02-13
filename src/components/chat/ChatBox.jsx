@@ -515,7 +515,8 @@ function ChatBox({
             attachments: attachmentsMeta,
             sendButtonStatus: sendButtonStatusRef.curren,
             isRegenerate: false,
-            role: currentRole.name
+            role: currentRole.name,
+            isFork: isForkMode
         });
         textareaRef.current?.focus();
     }, [onSendMessage, toolsStatus, isEditMessage, editMessageId, attachmentsMeta, currentRole]);
