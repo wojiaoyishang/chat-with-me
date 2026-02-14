@@ -883,8 +883,8 @@ function ChatBox({
                                     markId: markId,
                                     fromWebsocket: true,  // 不要发到 ws 去
                                     notReplyToWebsocket: true
-
                                 }).then(data => {
+
                                     // 修改消息链
                                     emitEvent({
                                         type: "message",
