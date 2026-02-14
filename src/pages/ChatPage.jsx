@@ -1048,8 +1048,16 @@ function ChatPage({markId, setMarkId}) {
 
     // === 广播事件 ===
     useEffect(() => {
-        const unsubscribe1 = onEvent("message", "ChatPage", selfMarkId)
-            .then((payload, markId, isReply, id, reply) => {
+
+        const unsubscribe1 = onEvent({
+            type: "message",
+            target: "ChatPage",
+            markId: selfMarkId
+        })
+            .then(({
+                       payload: payload,
+                       reply: reply
+                   }) => {
                 switch (payload.command) {
                     case "Add-Message":
                         if (payload.value && typeof payload.value === 'object') {
@@ -1382,7 +1390,12 @@ function ChatPage({markId, setMarkId}) {
                         break;
                 }
             });
-        const unsubscribe2 = onEvent("websocket", "onopen", selfMarkId).then(() => {
+
+        const unsubscribe2 = onEvent({
+            type: "websocket",
+            target: "onopen",
+            markId: selfMarkId
+        }).then(() => {
             if (isMessageLoadedRef.current) emitMessagesLoaded();
         });
 

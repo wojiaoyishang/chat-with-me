@@ -1,14 +1,14 @@
-import { create } from 'zustand';
+import {create} from 'zustand';
 
-import { sendWebSocketMessage } from "@/context/WebSocketContext.jsx";
-import { generateUUID } from '@/lib/tools.jsx';
+import {sendWebSocketMessage} from "@/context/WebSocketContext.jsx";
+import {generateUUID} from '@/lib/tools.jsx';
 
 const createDebugLogger = () => {
     if (typeof DEBUG_MODE === 'undefined' || !DEBUG_MODE) return null;
 
     return {
         logEmit: (event, stack) => {
-            const { type, target, payload, markId, isReply, id } = event;
+            const {type, target, payload, markId, isReply, id} = event;
 
             const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
@@ -51,7 +51,7 @@ const createDebugLogger = () => {
         },
 
         logReceive: (event, listenerStack) => {
-            const { type, target, payload, markId, isReply, id } = event;
+            const {type, target, payload, markId, isReply, id} = event;
 
             const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
@@ -130,15 +130,16 @@ export const useEventStore = create((set, get) => {
                 : null;
 
             if (unique !== null) {
-                const { uniqueListeners } = get();
+                const {uniqueListeners} = get();
                 if (uniqueListeners.has(unique)) {
                     console.warn(`Unique listener for "${unique}" already registered. Registration skipped.`);
-                    return () => {};
+                    return () => {
+                    };
                 }
             }
 
             set(state => {
-                const newListeners = { ...state.listeners };
+                const newListeners = {...state.listeners};
                 if (!newListeners[type]) newListeners[type] = {};
                 if (!newListeners[type][target]) newListeners[type][target] = [];
 
@@ -157,7 +158,7 @@ export const useEventStore = create((set, get) => {
                     ];
                 }
 
-                let newState = { listeners: newListeners };
+                let newState = {listeners: newListeners};
                 if (unique !== null) {
                     newState.uniqueListeners = new Set([...state.uniqueListeners, unique]);
                 }
@@ -167,10 +168,10 @@ export const useEventStore = create((set, get) => {
 
             return () => {
                 set(state => {
-                    const newListeners = { ...state.listeners };
+                    const newListeners = {...state.listeners};
                     if (newListeners[type]?.[target]) {
                         newListeners[type][target] = newListeners[type][target]
-                            .map(l => l.callback === callback ? { ...l, active: false } : l)
+                            .map(l => l.callback === callback ? {...l, active: false} : l)
                             .filter(l => l.active);
 
                         if (newListeners[type][target].length === 0) {
@@ -180,14 +181,14 @@ export const useEventStore = create((set, get) => {
                             }
                         }
                     }
-                    return { listeners: newListeners };
+                    return {listeners: newListeners};
                 });
 
                 if (unique !== null) {
                     set(state => {
                         const newUniqueListeners = new Set(state.uniqueListeners);
                         newUniqueListeners.delete(unique);
-                        return { uniqueListeners: newUniqueListeners };
+                        return {uniqueListeners: newUniqueListeners};
                     });
                 }
             };
@@ -205,7 +206,7 @@ export const useEventStore = create((set, get) => {
                 notReplyToWebsocket = false
             } = event;
 
-            const { listeners, processedEventIds, processedReplyIds } = get();
+            const {listeners, processedEventIds, processedReplyIds} = get();
 
             // 生成唯一ID（如果未提供）
             if (!id) {
@@ -216,10 +217,10 @@ export const useEventStore = create((set, get) => {
             // 非WebSocket事件且不是来自WebSocket的事件才发送
             if (type !== 'websocket' && !fromWebsocket) {
                 sendWebSocketMessage({
-                    ...(type && { type }),
-                    ...(target && { target }),
+                    ...(type && {type}),
+                    ...(target && {target}),
                     payload,
-                    ...(eventMarkId && { markId: eventMarkId }),
+                    ...(eventMarkId && {markId: eventMarkId}),
                     isReply,
                     id
                 });
@@ -262,8 +263,8 @@ export const useEventStore = create((set, get) => {
             // 分别加入对应的已处理列表（防止内存无限增长）
             set(state => ({
                 ...(isReply
-                        ? { processedReplyIds: [...state.processedReplyIds, id].slice(-100) }
-                        : { processedEventIds: [...state.processedEventIds, id].slice(-100) }
+                        ? {processedReplyIds: [...state.processedReplyIds, id].slice(-100)}
+                        : {processedEventIds: [...state.processedEventIds, id].slice(-100)}
                 )
             }));
             // ====================================================
@@ -281,14 +282,21 @@ export const useEventStore = create((set, get) => {
                         payload: data,
                         isReply: true,
                         id: id,
-                        ...(notReplyToWebsocket && { fromWebsocket: notReplyToWebsocket })
+                        ...(notReplyToWebsocket && {fromWebsocket: notReplyToWebsocket})
                     }, new Error('Reply initiated at:').stack);
                 };
 
                 Promise.resolve().then(() => {
                     if (!listener.active || (isReply && !listener.acceptReply)) return;
                     try {
-                        listener.callback(payload, eventMarkId, isReply, id, reply, listener.markId);
+                        listener.callback({
+                            payload: payload,
+                            eventMarkId: eventMarkId,
+                            isReply: isReply,
+                            id: id,
+                            reply: reply,
+                            markId: listener.markId,
+                        });
                     } catch (error) {
                         console.groupCollapsed(
                             `%c[EVENT ERROR] %c${type}/${target}`,
@@ -328,7 +336,7 @@ export let emitEvent = ({
         ? new Error('Event emitted at:').stack
         : null;
 
-    const event = { type, target, payload, markId, isReply, id, fromWebsocket, notReplyToWebsocket };
+    const event = {type, target, payload, markId, isReply, id, fromWebsocket, notReplyToWebsocket};
 
     const state = useEventStore.getState();
     state._emit(event, emitStack);
@@ -375,7 +383,7 @@ if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
 // =======================
 // 事件监听函数
 // =======================
-export let onEvent = (type, target, markId, acceptReply = false, onlyEmpty = false, unique = null) => {
+export let onEvent = ({type, target, markId, acceptReply = false, onlyEmpty = false, unique = null}) => {
     return {
         then: (callback) => {
             return useEventStore.getState().addListener(type, target, callback, markId, acceptReply, onlyEmpty, unique);

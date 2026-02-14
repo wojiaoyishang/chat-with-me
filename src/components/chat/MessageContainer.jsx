@@ -4,7 +4,18 @@ import {toast} from 'sonner';
 import {useTranslation} from 'react-i18next';
 import ThreeDotLoading from "@/components/ui/ThreeDotLoading.jsx";
 import AttachmentShowcase from './AttachmentShowcase';
-import {Menu, PenLine, Copy, RotateCw, Info, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, GitBranch} from "lucide-react";
+import {
+    Menu,
+    PenLine,
+    Copy,
+    RotateCw,
+    Info,
+    ChevronLeft,
+    ChevronRight,
+    ChevronDown,
+    ChevronUp,
+    GitBranch
+} from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 
@@ -546,7 +557,14 @@ const useMessageAnimation = (messagesOrder) => {
  */
 const useMessageEvents = (markId, setSwitchingMessageId) => {
     useEffect(() => {
-        const unsubscribe = onEvent("widget", "ChatPage", markId).then((payload, markId, isReply, id, reply) => {
+        const unsubscribe = onEvent({
+            type: "widget",
+            target: "ChatPage",
+            markId: markId
+        }).then(({
+                     payload: payload,
+                     reply: reply
+                 }) => {
             switch (payload.command) {
                 case "Set-SwitchingMessage":
                     setSwitchingMessageId(payload.value);
@@ -700,9 +718,9 @@ const MessageItem = React.memo(({
                             <div className={`
                                     w-full grid transition-all duration-300 ease-in-out
                                     ${shouldShowExpand
-                                            ? 'grid-rows-[1fr] mt-3'
-                                            : (isMobileActive ? 'grid-rows-[1fr] mt-4' : 'grid-rows-[0fr] group-hover:grid-rows-[1fr] group-hover:mt-4')
-                                        }
+                                ? 'grid-rows-[1fr] mt-3'
+                                : (isMobileActive ? 'grid-rows-[1fr] mt-4' : 'grid-rows-[0fr] group-hover:grid-rows-[1fr] group-hover:mt-4')
+                            }
                                 `}>
                                 <div className="overflow-hidden">
                                     <div className="flex items-center justify-between w-full">
@@ -731,9 +749,9 @@ const MessageItem = React.memo(({
                                         <div className={`
                                             transition-all duration-300
                                             ${shouldShowExpand
-                                                    ? 'opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 delay-100' // 有展开按钮：淡入+位移
-                                                    : 'opacity-100' // 无按钮：随父级网格扩展直接出现
-                                                }
+                                            ? 'opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 delay-100' // 有展开按钮：淡入+位移
+                                            : 'opacity-100' // 无按钮：随父级网格扩展直接出现
+                                        }
                                         `}>
                                             <MessageActions
                                                 showPaginator={showPaginator}

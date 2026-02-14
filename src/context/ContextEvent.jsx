@@ -6,7 +6,10 @@ import {toast} from "sonner";
 const ContextEvent = () => {
     useEffect(() => {
 
-        const unsubscribe1 = onEvent("widget", "Context").then((payload, markId, isReply, id, reply) => {
+        const unsubscribe1 = onEvent({
+            type: "widget",
+            target: "Context",
+        }).then(({payload}) => {
             switch (payload.command) {
                 case "Show-Toast":  // 展示吐司
                     if (!Array.isArray(payload.args)) payload.args = [payload.args];

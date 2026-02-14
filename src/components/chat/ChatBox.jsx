@@ -729,7 +729,10 @@ function ChatBox({
 
     // ========== 事件处理函数 ==========
 
-    const handleEventBroadcast = useCallback((payload, markId, isReply, id, reply) => {
+    const handleEventBroadcast = useCallback(({
+                                                  payload: payload,
+                                                  reply: reply
+                                              }) => {
         // 事件处理逻辑
         switch (payload.command) {
             case "SendButton-Status":
@@ -1157,7 +1160,13 @@ function ChatBox({
 
     // 监听事件广播
     useEffect(() => {
-        const unsubscribe = onEvent('widget', 'ChatBox', markId, false, !markId).then(handleEventBroadcast);
+        const unsubscribe = onEvent({
+            type: "widget",
+            target: "ChatBox",
+            markId: markId,
+            acceptReply: false,
+            onlyEmpty: Boolean(!markId)
+        }).then(handleEventBroadcast);
         return () => unsubscribe();
     }, [handleEventBroadcast, markId]);
 

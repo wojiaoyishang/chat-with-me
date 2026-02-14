@@ -33,8 +33,8 @@ import {useNavigate} from 'react-router-dom';
 import SettingPage from "@/pages/SettingPage.jsx";
 import {ButtonContentWrapper} from "@/components/ui/ButtonContentWrapper.jsx";
 
-const ConversationMenu = ({ markId, onDelete }) => {
-    const { t } = useTranslation();
+const ConversationMenu = ({markId, onDelete}) => {
+    const {t} = useTranslation();
     const [showConfirm, setShowConfirm] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -49,7 +49,7 @@ const ConversationMenu = ({ markId, onDelete }) => {
             onDelete(markId);
             toast.success(t("delete_success"));
         } catch (error) {
-            toast.error(t("delete_error", { message: error?.message || t("unknown_error") }));
+            toast.error(t("delete_error", {message: error?.message || t("unknown_error")}));
         } finally {
             setIsDeleting(false);
             setShowConfirm(false);
@@ -63,12 +63,13 @@ const ConversationMenu = ({ markId, onDelete }) => {
                     <button
                         className="cursor-pointer p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
                     >
-                        <MoreHorizontal className="w-4 h-4" />
+                        <MoreHorizontal className="w-4 h-4"/>
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-fit ">
-                    <DropdownMenuItem onClick={handleDeleteClick} className="text-red-600 focus:text-red-600 cursor-pointer">
-                        <Trash className="w-4 h-4 text-red-600 cursor-pointer" />
+                    <DropdownMenuItem onClick={handleDeleteClick}
+                                      className="text-red-600 focus:text-red-600 cursor-pointer">
+                        <Trash className="w-4 h-4 text-red-600 cursor-pointer"/>
                         {t('delete_conversation')}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -81,10 +82,12 @@ const ConversationMenu = ({ markId, onDelete }) => {
                         <DialogDescription>{t('confirm_delete_description')}</DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={isDeleting} className="cursor-pointer">
+                        <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={isDeleting}
+                                className="cursor-pointer">
                             {t('cancel')}
                         </Button>
-                        <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting} className="cursor-pointer">
+                        <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting}
+                                className="cursor-pointer">
                             <ButtonContentWrapper
                                 isLoading={isDeleting}
                             >
@@ -235,7 +238,13 @@ const Sidebar = ({
 
     // 会话更新事件监听（保持原有逻辑）
     useEffect(() => {
-        const unsubscribe = onEvent("widget", "Sidebar").then((payload, markId) => {
+        const unsubscribe = onEvent({
+            type: "widget",
+            target: "Sidebar"
+        }).then(({
+                     payload: payload,
+                     eventMarkId: markId
+                 }) => {
             switch (payload.command) {
                 case "Reload-Conversations":
                     loadConversations();
