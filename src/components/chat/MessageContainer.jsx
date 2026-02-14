@@ -95,7 +95,8 @@ const handleMessageAction = (action, messageData, t) => {
                     isRegenerate: true,
                     attachments: msg.attachments,
                     content: msg.content,
-                    msgId: msgId
+                    msgId: msgId,
+                    role: msg.role
                 },
                 markId: markId,
                 fromWebsocket: true
