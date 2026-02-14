@@ -698,7 +698,7 @@ const MessageItem = React.memo(({
                                 // 增加聚焦失去后的处理
                                 onBlur={() => setIsMobileActive(false)}
                                 tabIndex={0} // 使 div 可获焦以支持 onBlur
-                                className="relative group bg-gray-50/40 rounded-2xl transition-all duration-300 hover:shadow-sm outline-none"
+                                className="relative group bg-gray-50/40 rounded-2xl transition-all duration-300 outline-none"
                             >
                                 <MarkdownRenderer content={displayContent}/>
 
