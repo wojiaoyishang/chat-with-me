@@ -161,5 +161,7 @@
     "key": "键",
     "value": "值",
     "addParam": "添加"
-  }
+  },
+  "advanced_conversation_settings": "高级对话设置",
+  "no_settings": "没有设置项以显示"
 }

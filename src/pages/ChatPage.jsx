@@ -19,7 +19,7 @@ import {
 } from "@/lib/tools.jsx";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 import {useTranslation} from "react-i18next";
-import {ArrowDown, ChevronDown, CircleCheck} from 'lucide-react';
+import {ArrowDown, ChevronDown, CircleCheck, PanelRight, X} from 'lucide-react';
 import ChatBox from "@/components/chat/ChatBox.jsx";
 import MessageContainer from "@/components/chat/MessageContainer.jsx";
 import apiClient from "@/lib/apiClient.js";
@@ -28,6 +28,7 @@ import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover.t
 import {Button} from "@/components/ui/button.tsx";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
+import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
 
 // ========== 内部组件：模型项 ==========
 const ModelItem = memo(({
@@ -206,7 +207,90 @@ const ScrollToBottomButton = memo(({
 
 ScrollToBottomButton.displayName = 'ScrollToBottomButton';
 
-// ========== Header组件 ==========
+// ========== RightSidebar 组件 ==========
+const RightSidebar = memo((
+    {isOpen, onClose, isMobile, advancedSettings, initialSettingValues, onSettingChange, t}) => {
+
+    const sidebarContent = useCallback(() => {
+        if (!advancedSettings || advancedSettings.length === 0) {
+            return (
+                <div className="p-4 text-gray-400 text-sm flex items-center justify-center">
+                    {t("no_settings")}
+                </div>
+            );
+        }
+
+        return (
+            <DynamicSettings
+                config={advancedSettings}
+                initialValues={initialSettingValues}
+                onChange={onSettingChange ? onSettingChange : null}
+            />
+        );
+    }, [advancedSettings, initialSettingValues]);
+
+    // 桌面端：参与文档流，通过宽度变化实现挤压效果
+    if (!isMobile) {
+        return (
+            <div
+                className={`h-full bg-white border-l transition-all duration-300 ease-in-out overflow-hidden ${
+                    isOpen ? 'w-[16rem]' : 'w-0'
+                }`}
+            >
+                {/* 内部内容容器，防止宽度为 0 时内容挤压变形 */}
+                <div className="w-[16rem] h-full flex flex-col">
+                    <div className="flex items-center justify-between pt-4 pl-4 pr-4 shrink-0">
+                        <span className="font-medium text-gray-700">{t("advanced_conversation_settings")}</span>
+                        <button
+                            onClick={onClose}
+                            className="p-1 rounded hover:bg-gray-100 cursor-pointer"
+                        >
+                            <X className="h-4 w-4 text-gray-500"/>
+                        </button>
+                    </div>
+                    <div className="p-1 flex-1 overflow-y-auto">
+                        {sidebarContent()}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // 移动端：固定定位，覆盖效果，带遮罩层
+    return (
+        <>
+            {/* 遮罩层 */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black/20 z-40"
+                    onClick={onClose}
+                />
+            )}
+            {/* 侧边栏 */}
+            <div
+                className={`fixed top-0 right-0 h-full w-[16rem] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+                    isOpen ? 'translate-x-0' : 'translate-x-full'
+                }`}
+            >
+                <div className="flex items-center justify-between pt-4 pl-4 pr-4 shrink-0">
+                    <span className="font-medium text-gray-700">{t("advanced_conversation_settings")}</span>
+                    <button
+                        onClick={onClose}
+                        className="p-1 rounded hover:bg-gray-100 cursor-pointer"
+                    >
+                        <X className="h-4 w-4 text-gray-500"/>
+                    </button>
+                </div>
+                <div className="p-1">
+                    {sidebarContent()}
+                </div>
+            </div>
+        </>
+    );
+});
+RightSidebar.displayName = 'RightSidebar';
+
+// ========== Header 组件 ==========
 const ChatHeader = memo(({
                              models,
                              selectedModel,
@@ -217,7 +301,8 @@ const ChatHeader = memo(({
                              handlePopoverOpenChange,
                              handleModelItemClick,
                              handleModelItemMouseEnter,
-                             scrollToSelectedItem
+                             scrollToSelectedItem,
+                             handleSidebarToggle,
                          }) => {
     const modelListRef = useRef(null);
 
@@ -256,37 +341,50 @@ const ChatHeader = memo(({
     }, [models, isMobile, handleModelItemClick, handleModelItemMouseEnter, selectedModel]);
 
     return (
-        <header className="w-full bg-white flex items-center justify-start p-4 h-14">
-            <Popover
-                open={isModelPopoverOpen}
-                onOpenChange={handlePopoverOpenChange}
-            >
-                <PopoverTrigger asChild>
-                    <Button variant="ghost"
-                            className="justify-start px-0 hover:bg-transparent text-lg cursor-pointer">
-                        {selectedModel?.name || t("no_models")}
-                        <ChevronDown
-                            className={`ml-2 h-4 w-4 transition-transform duration-200 ${isModelPopoverOpen ? 'rotate-180' : ''}`}/>
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                    align="start"
-                    className={isMobile ? "w-[90vw] max-w-md p-4" : "w-85"}
+        <>
+            <header className="w-full bg-white flex items-center justify-between p-4 h-14">
+                {/* 左侧：模型选择 */}
+                <Popover
+                    open={isModelPopoverOpen}
+                    onOpenChange={handlePopoverOpenChange}
                 >
-                    <div className="flex flex-col space-y-4">
-                        <div
-                            ref={modelListRef}
-                            className="space-y-1 max-h-[200px] overflow-y-auto pr-1 pretty-scrollbar"
-                        >
-                            {modelItems}
+                    <PopoverTrigger asChild>
+                        <Button variant="ghost"
+                                className="justify-start px-0 hover:bg-transparent text-lg cursor-pointer">
+                            {selectedModel?.name || t("no_models")}
+                            <ChevronDown
+                                className={`ml-2 h-4 w-4 transition-transform duration-200 ${isModelPopoverOpen ? 'rotate-180' : ''}`}/>
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                        align="start"
+                        className={isMobile ? "w-[90vw] max-w-md p-4" : "w-85"}
+                    >
+                        <div className="flex flex-col space-y-4">
+                            <div
+                                ref={modelListRef}
+                                className="space-y-1 max-h-[200px] overflow-y-auto pr-1 pretty-scrollbar"
+                            >
+                                {modelItems}
+                            </div>
+                            {(!isMobile || (isMobile && previewModel)) && (
+                                <ModelPreviewCard model={previewModel} isMobile={isMobile}/>
+                            )}
                         </div>
-                        {(!isMobile || (isMobile && previewModel)) && (
-                            <ModelPreviewCard model={previewModel} isMobile={isMobile}/>
-                        )}
-                    </div>
-                </PopoverContent>
-            </Popover>
-        </header>
+                    </PopoverContent>
+                </Popover>
+
+                {/* 右侧：侧边栏触发按钮 */}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleSidebarToggle}
+                    className="cursor-pointer hover:bg-gray-100"
+                >
+                    <PanelRight className="h-5 w-5 text-gray-600"/>
+                </Button>
+            </header>
+        </>
     );
 }, (prevProps, nextProps) => {
     return (
@@ -299,7 +397,9 @@ const ChatHeader = memo(({
         prevProps.handlePopoverOpenChange === nextProps.handlePopoverOpenChange &&
         prevProps.handleModelItemClick === nextProps.handleModelItemClick &&
         prevProps.handleModelItemMouseEnter === nextProps.handleModelItemMouseEnter &&
-        prevProps.scrollToSelectedItem === nextProps.scrollToSelectedItem
+        prevProps.scrollToSelectedItem === nextProps.scrollToSelectedItem &&
+        prevProps.isSidebarOpen === nextProps.isSidebarOpen &&       // 新增
+        prevProps.handleSidebarToggle === nextProps.handleSidebarToggle  // 新增
     );
 });
 
@@ -359,8 +459,13 @@ function ChatPage({markId, setMarkId}) {
     // 模型控制相关
     const [models, setModels] = useState([]);
     const [selectedModel, setSelectedModel] = useState({name: t("no_models")});
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);  // 右侧边设置栏
+    const [advancedSettings, setAdvancedSettings] = useState([]);  // 模型高级设置
+    const [initialSettingValues, setInitialSettingValues] = useState({});  // 初始化配置
+    const [advancedSettingsValues, setAdvancedSettingsValues] = useState({});  // 最终设置的结果
 
-    // ========== 滚动控制逻辑 ==========
+
+    // ========== 滚动控制逻辑 =========
 
     // 检查是否需要显示置底按钮
     const checkScrollPosition = useCallback((immediate = false) => {
@@ -564,7 +669,6 @@ function ChatPage({markId, setMarkId}) {
     }, [executePendingScroll, requestScrollToBottom]);
 
     // ========== Popover 相关函数 ==========
-
     const scrollToSelectedItem = useCallback((modelListRef) => {
         if (modelListRef?.current) {
             const selectedItem = modelListRef.current.querySelector('[data-selected="true"]');
@@ -603,103 +707,10 @@ function ChatPage({markId, setMarkId}) {
         }
     }, [isMobile]);
 
+    // ========= 上传相关 =========
+
     const handleFolderDetected = useCallback(() => {
         toast.error(t("folder_upload_not_supported"));
-    });
-
-    const handleDropFiles = (files) => {
-        handleSelectedFiles(files);
-    };
-
-    const handleSendMessage = useCallback((
-        {
-            messageContent,
-            toolsStatus,
-            isEditMessage = false,
-            editMessageId,
-            attachments,
-            sendButtonStatus,
-            isRegenerate = false,
-            isFork = false,
-            role
-        }  // 发送的角色身份
-    ) => {
-        if (uploadFiles.length !== 0) {
-            toast.error(t("file_upload_not_complete"));
-            return;
-        }
-
-        const sendMessage = (markId) => {
-            if (isFirstMessageSend) {
-                emitEvent({
-                    type: "widget",
-                    target: "Sidebar",
-                    payload: {
-                        command: "Update-ConversationDate"
-                    },
-                    markId: markId,
-                });
-                setIsFirstMessageSend(false);
-            }
-            const eventPayload = {
-                type: "message",
-                target: "ChatPage",
-                payload: {
-                    command: "Message-Send",
-                    content: messageContent,
-                    toolsStatus: toolsStatus,
-                    attachments: attachments,
-                    isEdit: isEditMessage,
-                    model: selectedModel.id,
-                    sendButtonStatus: sendButtonStatus,
-                    isRegenerate: isRegenerate,
-                    isFork: isFork,
-                    role: role,
-                    requestId: currentMessageSendRequestIDRef.current
-                },
-                markId: markId
-            };
-            if (isEditMessage) {
-                eventPayload.payload.msgId = editMessageId;
-            }
-            emitEvent(eventPayload).then((payload, markId, isReply, id, reply) => {
-                if (payload.success) {
-                    currentMessageSendRequestIDRef.current = generateUUID();
-                } else {
-                    toast.error(t("send_message_error", {message: payload.value}));
-                }
-            });
-        };
-
-        if (!selfMarkId) {
-            emitEvent({
-                type: "page",
-                target: "ChatPage",
-                payload: {
-                    command: "Get-MarkId",
-                    requestId: currentMessageSendRequestIDRef.current
-                }
-            })
-                .then((payload, markId, isReply, id, reply) => {
-                    if (payload.success) {
-                        setIsNewMarkId(true);
-                        setSelfMarkId(payload.value);
-                        updateURL("/chat/" + payload.value);
-                        sendMessage(payload.value);
-                    } else {
-                        throw new Error(payload.value);
-                    }
-                })
-                .catch((error) => {
-                    toast.error(t("get_markid_error", {message: error?.message}));
-                });
-        } else {
-            sendMessage(selfMarkId);
-        }
-    }, [selfMarkId, isFirstMessageSend, selectedModel]);
-
-    const onAttachmentRemove = useCallback((attachment) => {
-        setAttachments(prev => prev.filter(att => att.serverId !== attachment.serverId));
     });
 
     const handleSelectedFiles = useCallback((files, items) => {
@@ -774,6 +785,11 @@ function ChatPage({markId, setMarkId}) {
         }, 500);
     }, [selfMarkId]);
 
+    const onAttachmentRemove = useCallback((attachment) => {
+        setAttachments(prev => prev.filter(att => att.serverId !== attachment.serverId));
+    });
+
+
     const handleImagePaste = useCallback((file) => {
         const fileList = {
             0: file,
@@ -832,6 +848,98 @@ function ChatPage({markId, setMarkId}) {
     const handlePicPicker = useCallback(() => {
         return createFilePicker('image/*', handleSelectedFiles);
     }, [handleSelectedFiles]);
+
+
+    // ========= 消息相关 =========
+
+    const handleSendMessage = useCallback((
+        {
+            messageContent,
+            toolsStatus,
+            isEditMessage = false,
+            editMessageId,
+            attachments,
+            sendButtonStatus,
+            isRegenerate = false,
+            isFork = false,
+            role
+        }  // 发送的角色身份
+    ) => {
+        if (uploadFiles.length !== 0) {
+            toast.error(t("file_upload_not_complete"));
+            return;
+        }
+
+        const sendMessage = (markId) => {
+            if (isFirstMessageSend) {
+                emitEvent({
+                    type: "widget",
+                    target: "Sidebar",
+                    payload: {
+                        command: "Update-ConversationDate"
+                    },
+                    markId: markId,
+                });
+                setIsFirstMessageSend(false);
+            }
+            const eventPayload = {
+                type: "message",
+                target: "ChatPage",
+                payload: {
+                    command: "Message-Send",
+                    content: messageContent,
+                    toolsStatus: toolsStatus,
+                    attachments: attachments,
+                    isEdit: isEditMessage,
+                    model: selectedModel.id,
+                    sendButtonStatus: sendButtonStatus,
+                    isRegenerate: isRegenerate,
+                    isFork: isFork,
+                    role: role,
+                    options: advancedSettingsValues,
+                    requestId: currentMessageSendRequestIDRef.current
+                },
+                markId: markId
+            };
+            if (isEditMessage) {
+                eventPayload.payload.msgId = editMessageId;
+            }
+            emitEvent(eventPayload).then((payload, markId, isReply, id, reply) => {
+                if (payload.success) {
+                    currentMessageSendRequestIDRef.current = generateUUID();
+                } else {
+                    toast.error(t("send_message_error", {message: payload.value}));
+                }
+            });
+        };
+
+        if (!selfMarkId) {
+            emitEvent({
+                type: "page",
+                target: "ChatPage",
+                payload: {
+                    command: "Get-MarkId",
+                    requestId: currentMessageSendRequestIDRef.current
+                }
+            })
+                .then((payload, markId, isReply, id, reply) => {
+                    if (payload.success) {
+                        setIsNewMarkId(true);
+                        setSelfMarkId(payload.value);
+                        updateURL("/chat/" + payload.value);
+                        sendMessage(payload.value);
+                    } else {
+                        throw new Error(payload.value);
+                    }
+                })
+                .catch((error) => {
+                    toast.error(t("get_markid_error", {message: error?.message}));
+                });
+        } else {
+            sendMessage(selfMarkId);
+        }
+    }, [selfMarkId, isFirstMessageSend, selectedModel, advancedSettingsValues]);
+
 
     const loadMoreHistory = useCallback(async () => {
         try {
@@ -970,6 +1078,8 @@ function ChatPage({markId, setMarkId}) {
         await loadSwitchMessage(msgId, newMsgId);
         sendSwitchRequest();
     }, [selfMarkId]);
+
+    // // ========= 加载相关 =========
 
     const LoadingScreen = () => (
         <UnifiedLoadingScreen
@@ -1446,6 +1556,15 @@ function ChatPage({markId, setMarkId}) {
                 // 设置当前选中模型
                 const foundModel = modelsData.find(item => item.id === data.model)
                 if (foundModel) setSelectedModel(foundModel);
+
+                // 获取高级选项
+                if (data.options) {
+                    setAdvancedSettings(data.options);
+                    if (data.defaultOptions) {
+                        setAdvancedSettingsValues(data.defaultOptions);
+                        setInitialSettingValues(data.defaultOptions);
+                    }
+                }
             } catch (error) {
                 toast.error(t("load_conversation_error", {message: error?.message || t("unknown_error")}));
             }
@@ -1568,10 +1687,16 @@ function ChatPage({markId, setMarkId}) {
         chatBoxHeightRef.current = newHeight;
     }, []);
 
+    const handleSidebarToggle = useCallback(() => {
+        setIsSidebarOpen(prev => !prev);
+    }, []);
+
     return (
-        <>
-            <div className="full-screen-min-height bg-white flex flex-col items-center pb-8 pretty-scrollbar"
-                 ref={chatPageRef}>
+        // 1. 根容器改为 flex，支持横向排列（桌面端侧边栏）
+        <div className="flex h-screen overflow-hidden bg-white">
+
+            {/* 2. 主内容区域包裹层：占据剩余空间，保持原有纵向布局 */}
+            <div className="flex-1 flex flex-col relative h-full w-full overflow-hidden" ref={chatPageRef}>
                 <ChatHeader
                     models={models}
                     selectedModel={selectedModel}
@@ -1583,63 +1708,81 @@ function ChatPage({markId, setMarkId}) {
                     handleModelItemClick={handleModelItemClick}
                     handleModelItemMouseEnter={handleModelItemMouseEnter}
                     scrollToSelectedItem={scrollToSelectedItem}
+                    isSidebarOpen={isSidebarOpen}
+                    handleSidebarToggle={handleSidebarToggle}
                 />
-                <>
-                    <div className="flex-1 w-full relative">
-                        <div
-                            ref={messagesContainerRef}
-                            className="h-full overflow-y-auto pb-20 scroll-smooth"
-                            style={{maxHeight: 'calc(120vh - 256px)'}}
-                        >
-                            <MessageContainer
-                                key={selfMarkId}
-                                messagesOrder={messagesOrder}
-                                messages={messages}
-                                onLoadMore={loadMoreHistory}
-                                onSwitchMessage={switchMessage}
-                                markId={selfMarkId}
-                            />
-                        </div>
-                        {isLoading && <LoadingScreen/>}
-                        {isLoadingError && <LoadingFailedScreen/>}
-                    </div>
 
-                    {/* 置底按钮 - 根据设备类型显示在不同位置 */}
-                    <ScrollToBottomButton
-                        isVisible={showScrollToBottomButton}
-                        chatBoxHeight={chatBoxHeight}
-                        onClick={handleScrollToBottomClick}
-                    />
-
-                    <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
-                        <ChatBox
-                            onSendMessage={handleSendMessage}
+                {/* 消息容器区域 */}
+                <div className="flex-1 w-full relative overflow-hidden">
+                    <div
+                        ref={messagesContainerRef}
+                        className="h-full overflow-y-auto pb-20 scroll-smooth"
+                        style={{maxHeight: 'calc(120vh - 256px)'}}
+                    >
+                        <MessageContainer
+                            key={selfMarkId}
+                            messagesOrder={messagesOrder}
+                            messages={messages}
+                            onLoadMore={loadMoreHistory}
+                            onSwitchMessage={switchMessage}
                             markId={selfMarkId}
-                            attachmentsMeta={attachments}
-                            setAttachments={setAttachments}
-                            onAttachmentRemove={onAttachmentRemove}
-                            uploadFiles={uploadFiles}
-                            FilePickerCallback={handleFilePicker}
-                            PicPickerCallback={handlePicPicker}
-                            onImagePaste={handleImagePaste}
-                            onRetryUpload={handleRetryUpload}
-                            onCancelUpload={handleCancelUpload}
-                            onDropFiles={handleSelectedFiles}
-                            onFolderDetected={handleFolderDetected}
-                            onHeightChange={handleChatBoxHeightChange}
-                            dropTargetRef={chatPageRef}
-                            selectedModel={selectedModel}
                         />
                     </div>
-                </>
+                    {isLoading && <LoadingScreen/>}
+                    {isLoadingError && <LoadingFailedScreen/>}
+                </div>
+
+                {/* 置底按钮 */}
+                <ScrollToBottomButton
+                    isVisible={showScrollToBottomButton}
+                    chatBoxHeight={chatBoxHeight}
+                    onClick={handleScrollToBottomClick}
+                />
+
+                {/* 输入框区域 (保持绝对定位相对于父容器) */}
+                <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
+                    <ChatBox
+                        onSendMessage={handleSendMessage}
+                        markId={selfMarkId}
+                        attachmentsMeta={attachments}
+                        setAttachments={setAttachments}
+                        onAttachmentRemove={onAttachmentRemove}
+                        uploadFiles={uploadFiles}
+                        FilePickerCallback={handleFilePicker}
+                        PicPickerCallback={handlePicPicker}
+                        onImagePaste={handleImagePaste}
+                        onRetryUpload={handleRetryUpload}
+                        onCancelUpload={handleCancelUpload}
+                        onDropFiles={handleSelectedFiles}
+                        onFolderDetected={handleFolderDetected}
+                        onHeightChange={handleChatBoxHeightChange}
+                        dropTargetRef={chatPageRef}
+                        selectedModel={selectedModel}
+                    />
+                </div>
+
+                {/* Footer (保持绝对定位相对于父容器) */}
                 <footer
                     className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center ml-5 mr-5">
                     <span className="text-xs text-gray-500">
-                        © {new Date().getFullYear()} lovePikachu. All rights reserved.
+                      © {new Date().getFullYear()} lovePikachu. All rights reserved.
                     </span>
                 </footer>
             </div>
-        </>
+
+            {/* 3. 侧边栏组件：作为兄弟元素，根据 isMobile 决定是覆盖还是挤压 */}
+            <RightSidebar
+                isOpen={isSidebarOpen}
+                onClose={handleSidebarToggle}
+                isMobile={isMobile}
+                advancedSettings={advancedSettings}
+                initialSettingValues={initialSettingValues}
+                onSettingChange={(values) => {
+                    setAdvancedSettingsValues(values)
+                }}
+                t={t}
+            />
+        </div>
     );
 }
 

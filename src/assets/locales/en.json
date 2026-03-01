@@ -161,5 +161,7 @@
     "key": "Key",
     "value": "Value",
     "addParam": "Add"
-  }
+  },
+  "advanced_conversation_settings": "Advanced Conversation Settings",
+  "no_settings": "No settings to display"
 }

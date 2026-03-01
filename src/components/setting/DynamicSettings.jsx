@@ -70,9 +70,8 @@ function deepGet(obj, path) {
     return cur;
 }
 
-// ─── Tip Component ─────────────────────────────────────────────────
+// ─── Tip Component ───────────────────────────────────────────────────
 function TipWrapper({ tips, children }) {
-    const isMobile = useIsMobile();
     if (!tips) return children;
 
     const trigger = (
@@ -89,33 +88,22 @@ function TipWrapper({ tips, children }) {
     return (
         <>
             {children}
-            {isMobile ? (
-                <Popover>
-                    <PopoverTrigger asChild>
-                        {trigger}
-                    </PopoverTrigger>
-                    <PopoverContent className={tooltipClasses} sideOffset={6}>
-                        {tips}
-                    </PopoverContent>
-                </Popover>
-            ) : (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        {trigger}
-                    </TooltipTrigger>
-                    <TooltipContent className={tooltipClasses} sideOffset={6}>
-                        {tips}
-                    </TooltipContent>
-                </Tooltip>
-            )}
+            <Popover>
+                <PopoverTrigger asChild>
+                    {trigger}
+                </PopoverTrigger>
+                <PopoverContent className={tooltipClasses} sideOffset={6}>
+                    {tips}
+                </PopoverContent>
+            </Popover>
         </>
     );
 }
 
 // ─── Row Layout ────────────────────────────────────────────────────
-function SettingRow({ text, tips, children, expanded }) {
+function SettingRow({ text, tips, children, expanded, className, noTopPadding = false }) {
     return (
-        <div className={`flex items-center justify-between min-h-[48px] py-2.5 px-4 gap-3 last-of-type:border-b-0 ${expanded ? "flex-wrap" : ""}`}>
+        <div className={`${className} flex items-center justify-between min-h-[35px] py-2.5 px-4 gap-3 last-of-type:border-b-0 ${expanded ? "flex-wrap" : ""} ${noTopPadding ? "pt-0 -mt-2.5" : ""}`}>
             <div className="flex items-center gap-1.5 flex-shrink-0 min-w-0">
                 <TipWrapper tips={tips}>
                     <span className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">{text}</span>
@@ -133,6 +121,7 @@ function SwitchItem({ item, path }) {
     return (
         <SettingRow text={item.text} tips={item.tips}>
             <Switch
+                className={"cursor-pointer"}
                 checked={val}
                 onCheckedChange={(v) => update(path, v)}
             />
@@ -158,19 +147,117 @@ function NumberSliderItem({ item, path }) {
         [item, path, update]
     );
 
+    const containerRef = useRef(null);
+    const [isNarrow, setIsNarrow] = useState(false);
+
+    useEffect(() => {
+        const checkWidth = () => {
+            if (containerRef.current) {
+                const width = containerRef.current.offsetWidth;
+                setIsNarrow(width < 300); // Adjust threshold as needed, e.g., 300px
+            }
+        };
+
+        checkWidth();
+        window.addEventListener('resize', checkWidth);
+        return () => window.removeEventListener('resize', checkWidth);
+    }, []);
+
+    if (!hasRange) {
+        return (
+            <SettingRow text={item.text} tips={item.tips} expanded={false}>
+                <div className="flex items-center gap-2.5 flex-1 justify-end">
+                    <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md overflow-hidden flex-shrink-0">
+                        <button
+                            className="w-8 h-8 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-sm transition-colors border-none cursor-pointer"
+                            onClick={() => handleChange(val - upDownStep)}
+                        >
+                            −
+                        </button>
+                        <input
+                            className="w-[60px] h-8 text-center border-l border-r border-[#e1e4e8] dark:border-[#3a3f45] bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-[13px] font-sans outline-none
+                                       [&::-webkit-outer-spin-button]:appearance-none
+                                       [&::-webkit-inner-spin-button]:appearance-none
+                                       [-moz-appearance:textfield]"
+                            type="number"
+                            value={val}
+                            step={step}
+                            min={item.min}
+                            max={item.max}
+                            onChange={(e) => handleChange(e.target.value)}
+                        />
+                        <button
+                            className="w-8 h-8 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-sm transition-colors border-none cursor-pointer"
+                            onClick={() => handleChange(val + upDownStep)}
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
+            </SettingRow>
+        );
+    }
+
+    if (isNarrow) {
+        return (
+            <>
+                <SettingRow text={item.text} tips={item.tips} expanded={false}>
+                    <div ref={containerRef} className="flex items-center gap-2.5 flex-1 justify-end">
+                        <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md overflow-hidden flex-shrink-0">
+                            <button
+                                className="w-8 h-8 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-sm transition-colors border-none cursor-pointer"
+                                onClick={() => handleChange(val - upDownStep)}
+                            >
+                                −
+                            </button>
+                            <input
+                                className="w-[60px] h-8 text-center border-l border-r border-[#e1e4e8] dark:border-[#3a3f45] bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-[13px] font-sans outline-none
+                                           [&::-webkit-outer-spin-button]:appearance-none
+                                           [&::-webkit-inner-spin-button]:appearance-none
+                                           [-moz-appearance:textfield]"
+                                type="number"
+                                value={val}
+                                step={step}
+                                min={item.min}
+                                max={item.max}
+                                onChange={(e) => handleChange(e.target.value)}
+                            />
+                            <button
+                                className="w-8 h-8 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-sm transition-colors border-none cursor-pointer"
+                                onClick={() => handleChange(val + upDownStep)}
+                            >
+                                +
+                            </button>
+                        </div>
+                    </div>
+                </SettingRow>
+                <SettingRow expanded={true} noTopPadding={true}>
+                    <div className="flex-1">
+                        <Slider
+                            className="w-full"
+                            min={item.min}
+                            max={item.max}
+                            step={step}
+                            value={[val]}
+                            onValueChange={([v]) => handleChange(v)}
+                        />
+                    </div>
+                </SettingRow>
+            </>
+        );
+    }
+
     return (
-        <SettingRow text={item.text} tips={item.tips} expanded={hasRange}>
-            <div className="flex items-center gap-2.5 flex-1 justify-end">
-                {hasRange && (
-                    <Slider
-                        className="flex-1 max-w-[180px]"
-                        min={item.min}
-                        max={item.max}
-                        step={step}
-                        value={[val]}
-                        onValueChange={([v]) => handleChange(v)}
-                    />
-                )}
+        <SettingRow text={item.text} tips={item.tips} expanded={true}>
+            <div ref={containerRef} className="flex items-center gap-2.5 flex-1 justify-end">
+                <Slider
+                    className="flex-1 max-w-[180px]"
+                    min={item.min}
+                    max={item.max}
+                    step={step}
+                    value={[val]}
+                    onValueChange={([v]) => handleChange(v)}
+                />
                 <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md overflow-hidden flex-shrink-0">
                     <button
                         className="w-8 h-8 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-sm transition-colors border-none cursor-pointer"
@@ -587,7 +674,7 @@ export default function DynamicSettings({
     return (
         <SettingsContext.Provider value={ctx}>
             <TooltipProvider delayDuration={200}>
-                <div className={`font-sans text-[#1a1d21] dark:text-[#e4e7eb] bg-white dark:bg-[#1c1e21] rounded-lg border border-[#e1e4e8] dark:border-[#3a3f45] overflow-hidden ${className || ""}`}>
+                <div className={`font-sans text-[#1a1d21] dark:text-[#e4e7eb] rounded-lg overflow-hidden ${className || ""}`}>
                     {config.map((item, i) => {
                         const key = item.name || item.text || `item-${i}`;
                         const path = item.name ? [item.name] : [];
