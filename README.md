@@ -1220,6 +1220,271 @@ code 设置为 401 。
 }
 ```
 
+# 设置组件配置
+
+## 导入位置
+
+```jsx
+import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
+```
+
+**DynamicSettings 组件说明文档**
+
+---
+
+## 概述
+
+`DynamicSettings` 是一个高度可配置的 React 设置面板组件，支持通过 JSON 配置动态渲染多种 UI 控件（开关、滑块、文本框、复选框、单选、下拉、键值对分组等）。
+
+- 完全使用 **Tailwind CSS** 内联样式（已移除外部 CSS 文件）
+- 支持亮/暗模式自动适配
+- 移动端优化（Popover + Checkbox/Radio 点击防冲突）
+- 多行文本使用居中弹窗
+- 使用 `useSettings` Context 统一管理状态
+
+---
+
+## 主要特性
+
+- 支持嵌套分组（`group`）
+- 支持标题分隔线（`heading`）
+- 支持带提示的控件（`tips`）
+- 支持默认值自动生成
+- 支持实时 `onChange` 回调
+- 完全类型安全的路径更新（`deepSet` / `deepGet`）
+
+---
+
+## 使用方式
+
+```tsx
+import DynamicSettings from "./DynamicSettings";
+
+const config = [ /* 配置数组 */ ];
+
+function App() {
+  const handleChange = (newValues) => {
+    console.log("设置已更新:", newValues);
+  };
+
+  return (
+    <DynamicSettings
+      config={config}
+      onChange={handleChange}
+      initialValues={initialData}   // 可选
+      className="max-w-2xl"         // 可选
+    />
+  );
+}
+```
+
+---
+
+## 配置结构（config）
+
+`config` 是一个数组，每一项是一个对象，必须包含 `type`。
+
+| 字段          | 类型     | 说明                              |
+|---------------|----------|-----------------------------------|
+| `type`        | string   | 控件类型（必填）                  |
+| `name`        | string   | 字段名（用于生成路径）            |
+| `text`        | string   | 显示标题                          |
+| `tips`        | string   | 提示文字（支持 HTML）             |
+| `default`     | any      | 默认值                            |
+| `children`    | array    | 仅 `group` 使用                   |
+| `options`     | array    | 仅 `select` 使用                  |
+
+---
+
+## 支持的控件类型
+
+### Switch（开关）
+
+```js
+{ type: "switch", name: "autoSave", text: "自动保存", default: true, tips: "..." }
+```
+
+### Number（数字滑块 + 输入框）
+
+```js
+{
+  type: "number",
+  name: "volume",
+  text: "音量",
+  default: 50,
+  min: 0,
+  max: 100,
+  step: 5,
+  integer: true
+}
+```
+
+### Text（单行/多行文本）
+
+**单行：**
+```js
+{ type: "text", name: "apiKey", text: "API Key", placeholder: "sk-..." }
+```
+
+**多行（弹窗编辑）：**
+```js
+{ type: "text", name: "prompt", text: "系统提示词", multiline: true }
+```
+
+> 多行文本弹窗已修复为屏幕正中央显示。
+
+### Checkbox（复选框）
+
+```js
+{ type: "checkbox", name: "enableProxy", text: "启用代理", tips: "..." }
+```
+
+**移动端提示优化**：提示图标独立于 label，避免点击冲突。
+
+### Radio（单选）
+
+**独立单选（standalone）：**
+```js
+{ type: "radio", name: "theme", text: "深色模式" }   // path 会自动处理
+```
+
+**在 group 中使用：**
+见下方 Group 示例。
+
+### Select（下拉选择）
+
+```js
+{
+  type: "select",
+  name: "model",
+  text: "模型",
+  default: "gpt-4o",
+  options: [
+    { value: "gpt-4o", label: "GPT-4o" },
+    { value: "claude-3", label: "Claude 3" }
+  ]
+}
+```
+
+### Custom（自定义键值对）
+
+```js
+{
+  type: "custom",
+  name: "headers",
+  text: "自定义请求头",
+  tips: "用于 API 请求",
+  default: { "X-Custom": "value" }
+}
+```
+
+---
+
+## 复合组件
+
+### Group（分组）
+
+```js
+{
+  type: "group",
+  name: "advanced",
+  text: "高级设置",
+  children: [
+    // 可包含 switch、checkbox、radio、number 等
+  ]
+}
+```
+
+**带单选的 Group（互斥选项）：**
+
+```js
+{
+  type: "group",
+  name: "mode",
+  text: "运行模式",
+  children: [
+    { type: "radio", name: "fast", text: "快速模式", default: true },
+    { type: "radio", name: "quality", text: "高质量模式" },
+    { type: "switch", name: "debug", text: "调试信息" }
+  ]
+}
+```
+
+### Heading（标题分隔线）
+
+```js
+{ type: "heading", text: "通用设置" }
+// 或纯分隔线
+{ type: "heading" }
+```
+
+---
+
+## 内部工具组件
+
+### SettingRow
+统一布局行（标签 + 控件），支持 `expanded` 自动换行。
+
+### TipWrapper
+智能提示组件：
+- 桌面：`Tooltip`
+- 移动端：`Popover`
+- 已优化点击事件（`stopPropagation` + 独立渲染）
+
+### useSettings Context
+内部所有控件通过 `useSettings()` 获取 `values` 与 `update(path, value)`。
+
+---
+
+## 默认值自动生成
+
+组件内置 `buildDefaults(config)` 函数，会根据 `default` 字段和 `radio` 的 `default` 自动生成初始 `values`。
+
+## 参考配置
+
+```js
+const exampleConfig = [
+    { type: "heading", text: "General Settings" },
+    { type: "switch", name: "darkMode", text: "Dark Mode", tips: "Enable dark theme across the application", default: false },
+    { type: "switch", name: "notifications", text: "Notifications", tips: "Receive push notifications", default: true },
+    { type: "number", name: "volume", text: "Volume", tips: "System volume level (0-100)", min: 0, max: 100, step: 1, integer: true, default: 75 },
+    { type: "number", name: "timeout", text: "Timeout (ms)", tips: "Request timeout. No limit if blank.", integer: true, default: 3000 },
+    { type: "number", name: "opacity", text: "Opacity", min: 0, max: 1, step: 0.05, integer: false, default: 0.85 },
+    { type: "heading", text: "Content" },
+    { type: "text", name: "username", text: "Username", tips: "Your display name", default: "Claude", placeholder: "Enter name..." },
+    { type: "text", name: "bio", text: "Biography", tips: "Multi-line bio (click ••• to edit)", multiline: true, default: "Hello world!\nThis is a multi-line text." },
+    { type: "select", name: "language", text: "Language", tips: "Interface language", default: "en", options: [
+        { value: "en", label: "English" }, { value: "zh", label: "中文" },
+        { value: "ja", label: "日本語" }, { value: "ko", label: "한국어" },
+    ]},
+    { type: "select", name: "theme", text: "Color Theme", default: "system", options: [
+        { value: "light", label: "Light" }, { value: "dark", label: "Dark" }, { value: "system", label: "System" },
+    ]},
+    { type: "heading", text: "Layout Preferences" },
+    { type: "group", name: "features", text: "Features", children: [
+        { type: "checkbox", name: "sidebar", text: "Sidebar", default: true },
+        { type: "checkbox", name: "minimap", text: "Minimap", default: false },
+        { type: "checkbox", name: "breadcrumbs", text: "Breadcrumbs", default: true },
+        { type: "checkbox", name: "statusBar", text: "Status Bar", default: true },
+    ]},
+    { type: "group", name: "layout", text: "Layout Mode", children: [
+        { type: "radio", name: "compact", text: "Compact", tips: "Minimal spacing" },
+        { type: "radio", name: "comfortable", text: "Comfortable", tips: "Balanced spacing", default: true },
+        { type: "radio", name: "spacious", text: "Spacious", tips: "Maximum breathing room" },
+    ]},
+    { type: "group", name: "renderEngine", text: "Render Engine", children: [
+        { type: "radio", name: "canvas", text: "Canvas" },
+        { type: "radio", name: "webgl", text: "WebGL", default: true },
+        { type: "radio", name: "svg", text: "SVG" },
+    ]},
+    { type: "heading", text: "Advanced" },
+    { type: "custom", name: "envVars", text: "Environment Variables", tips: "Custom key-value pairs", default: {
+        NODE_ENV: "production", API_URL: "https://api.example.com",
+    }},
+];
+```
+
+
 # 默认前端 LocalStorage 配置
 
 - ShowShiftEnterNewlineTip 布尔值，是否在桌面端第一次显示按下 Shift + Enter 提示，默认为 true

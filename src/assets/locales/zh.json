@@ -149,5 +149,17 @@
   "fork_message": "创建消息分支",
   "forking": "创建分支中...",
   "forking_success": "创建分支成功！",
-  "forking_error": "创建分支失败：{{message}}"
+  "forking_error": "创建分支失败：{{message}}",
+  "addCustom": "添加自定义参数",
+  "save": "保存",
+  "selectPlaceholder": "请选择...",
+  "customKey": "键名",
+  "customValue": "键值",
+  "ds": {
+    "cancel": "取消",
+    "confirm": "确认",
+    "key": "键",
+    "value": "值",
+    "addParam": "添加"
+  }
 }

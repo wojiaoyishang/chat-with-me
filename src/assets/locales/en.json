@@ -149,5 +149,17 @@
   "fork_message": "Fork Message",
   "forking": "Forking...",
   "forking_success": "Forked!",
-  "forking_error": "Fork Failed: {{message}}"
+  "forking_error": "Fork Failed: {{message}}",
+  "addCustom": "Add Custom Parameter",
+  "save": "Save",
+  "selectPlaceholder": "Select...",
+  "customKey": "Key",
+  "customValue": "Value",
+  "ds": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "key": "Key",
+    "value": "Value",
+    "addParam": "Add"
+  }
 }

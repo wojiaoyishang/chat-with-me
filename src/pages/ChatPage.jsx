@@ -982,7 +982,7 @@ function ChatPage({markId, setMarkId}) {
         <UnifiedErrorScreen
             title={t("load_error")}
             subtitle={t("retry_after_network")}
-            zIndex="z-51"
+            zIndex="z-20"
         />
     );
 
@@ -1552,11 +1552,14 @@ function ChatPage({markId, setMarkId}) {
         };
 
         if (selfMarkId && !isLoadingDataRef.current) {
+            setIsLoading(true);
             loadData();
         } else {
+            setIsLoading(false);
             requestModels();
         }
 
+        setIsLoadingError(false);
         setIsFirstMessageSend(true);
     }, [selfMarkId, randomMark]);
 
