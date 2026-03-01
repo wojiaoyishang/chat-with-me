@@ -693,7 +693,7 @@ function ChatPage({markId, setMarkId}) {
     }, [selectedModel]);
 
     const handleModelItemClick = useCallback((model) => {
-        setSelectedModel(model)
+        setSelectedModel(model);
         if (!isMobile) {
             setIsModelPopoverOpen(false);
         } else {
@@ -1560,20 +1560,25 @@ function ChatPage({markId, setMarkId}) {
                 // 获取高级选项
                 if (data.options) {
                     setAdvancedSettings(data.options);
-                    if (data.defaultOptions) {
-                        setAdvancedSettingsValues(data.defaultOptions);
-                        setInitialSettingValues(data.defaultOptions);
-                    }
                 }
+
+                // 高级选项的高级配置项
+                if (data.defaultOptions) {
+                    setAdvancedSettingsValues(data.defaultOptions);
+                    setInitialSettingValues(data.defaultOptions);
+                }
+
             } catch (error) {
                 toast.error(t("load_conversation_error", {message: error?.message || t("unknown_error")}));
             }
         }
+
         const requestModels = async () => {
             try {
                 modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
                     params: markId ? {markId: selfMarkId} : {}
                 });
+
                 setModels(modelsData);
 
                 if (modelsData.length > 0) setSelectedModel(modelsData[0]);
@@ -1581,6 +1586,7 @@ function ChatPage({markId, setMarkId}) {
                 toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
             }
         };
+
         const requestMessages = async () => {
             try {
                 const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
@@ -1778,7 +1784,7 @@ function ChatPage({markId, setMarkId}) {
                 advancedSettings={advancedSettings}
                 initialSettingValues={initialSettingValues}
                 onSettingChange={(values) => {
-                    setAdvancedSettingsValues(values)
+                    setAdvancedSettingsValues(values);
                 }}
                 t={t}
             />
