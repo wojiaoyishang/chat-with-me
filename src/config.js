@@ -13,5 +13,6 @@ export const apiEndpoint = {
     LOGOUT_ENDPOINT: '/user/logout',
     USER_INFO_ENDPOINT: '/user/info',
     REDIRECT_VIEW_ENDPOINT: '/wopi/redirect',
+    DOCUMENT_ENDPOINT: '/document/',
 };
 

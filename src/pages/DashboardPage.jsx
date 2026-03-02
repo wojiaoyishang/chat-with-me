@@ -5,7 +5,7 @@ import {generateUUID, getMarkId, UnifiedErrorScreen, UnifiedLoadingScreen, useIs
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {useTranslation} from "react-i18next";
-import EditorHome from "@/pages/EditorHome.jsx";
+import DocEditorHome from "@/pages/DocEditorHome.jsx";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 import {toast} from "sonner";
 import {useUserStore} from "@/context/userContext.jsx";
@@ -106,7 +106,7 @@ const DashboardPage = ({type = "chat"}) => {
 
                     <main className="flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
                         {pageType === "chat" && <ChatPage key={randomUUID} markId={markId} setMarkId={setMarkId}/>}
-                        {pageType === "doc" && <EditorHome key={randomUUID}/>}
+                        {pageType === "doc" && <DocEditorHome key={randomUUID}/>}
                     </main>
 
                 </>
