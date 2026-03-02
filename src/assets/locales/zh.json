@@ -174,15 +174,17 @@
   "create_new_document": "创建新文档",
   "enter_document_name": "请输入文档名称",
   "create": "创建",
-  "file_upload.error": "文件上传失败：{message}",
+  "file_upload.error": "文件上传失败：{{message}}",
   "document_create_success": "文档创建成功",
-  "document_create_error": "创建文档失败：{message}",
+  "document_create_error": "创建文档失败：{{message}}",
   "document_update_success": "文档更新成功",
-  "document_update_error": "更新文档失败：{message}",
+  "document_update_error": "更新文档失败：{{message}}",
   "document_delete_success": "文档删除成功",
-  "document_delete_error": "删除文档失败：{message}",
+  "document_delete_error": "删除文档失败：{{message}}",
   "unknown": "未知",
   "document_type": "文档类型",
   "document_type_markdown_intro": "Markdown 格式的文档易于编写且结构简单。",
-  "document_type_collabora_intro": "使用 Collabora Online 在线编辑 Word 文档，支持丰富的格式。"
+  "document_type_collabora_intro": "使用 Collabora Online 在线编辑 Word 文档，支持丰富的格式。",
+  "confirm_delete_document_title": "删除文档",
+  "no_actions_available": "没有可用操作"
 }

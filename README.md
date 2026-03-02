@@ -702,17 +702,35 @@ code 设置为 401 。
         "createDate": "2025-03-18T20:46:00+08:00",
         "title": "文档标题",
         "markId": "文档ID",
-        ”preview": "http://..."  # 用于展示的图片
+        "preview": "http://..."  # 用于展示的图片
     },
     ...
 ]
 ```
 
-前端进行 POST 请求的时候将会被定义为新建文档，请求体（表单请求）需要携带：
+前端进行 POST 请求的时候将会被定义为新建文档，请求体（表单请求）携带：
 
 - title: 文档标题
 - type: 文档类型
-- server_id: 服务器上文件的 server_id 如果提供则被视为上传文件
+- serverId: 服务器上文件的 serverId 如果提供则被视为上传文件 (可选)
+
+响应需要包含:
+
+```python
+{
+    "updateDate": "2025-03-18T20:46:00+08:00",
+    "createDate": "2025-03-18T20:46:00+08:00",
+    "title": "文档标题",
+    "markId": "文档ID",
+    "preview": "http://..."  # 用于展示的图片
+}
+```
+
+前端会 POST 请求 DOCUMENT_ENDPOINT/<markId> 页面，用于修改目标文档的标题，请求表单携带：
+
+- title: 文档标题
+
+前端会 DELETE 请求 DOCUMENT_ENDPOINT/<markId> 页面，用于删除文档。
 
 
 # 广播事件

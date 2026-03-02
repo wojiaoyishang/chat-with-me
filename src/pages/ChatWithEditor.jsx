@@ -1,9 +1,13 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import ChatPage from '@/pages/ChatPage.jsx';
 import CollaboraOnlineEditor from '@/components/editor/CollaboraOnlineEditor.jsx';
-import { useIsMobile } from "@/lib/tools.jsx"; // 引入工具函数
+import {getMarkId, useIsMobile} from "@/lib/tools.jsx"; // 引入工具函数
 
-const AIEditor = ({ fileId, markId }) => {
+const ChatWithEditor = ({ }) => {
+
+    // 这个页面的 ID
+    const [markId, setMarkId] = useState(getMarkId());
+
     const isMobile = useIsMobile(); // 获取移动端状态
     const [isMounted, setIsMounted] = useState(false);
 
@@ -25,12 +29,6 @@ const AIEditor = ({ fileId, markId }) => {
     const AUTO_COLLAPSE_THRESHOLD_PX = 100;
     const CLICK_TOLERANCE_MS = 300;
     const DRAG_TOLERANCE_PX = 5;
-
-    const docConfig = { fileId };
-
-    // --- 移动端初始化副作用 ---
-    // 如果切换到移动端，默认初始状态可以是折叠的（只看文档），也可以保持现状
-    // 这里不做强制重置，保持用户当前操作状态的连贯性
 
     const getSidebarOffset = useCallback(() => {
         if (!containerRef.current) return 0;
@@ -234,7 +232,7 @@ const AIEditor = ({ fileId, markId }) => {
                 style={isMobile ? { flex: 1, width: '100%' } : desktopDocStyle}
             >
                 <div className="flex-1 overflow-y-auto">
-                    <CollaboraOnlineEditor config={docConfig} />
+                    {/*<CollaboraOnlineEditor iframeUrl={url} />*/}
                 </div>
             </main>
 
@@ -256,4 +254,4 @@ const AIEditor = ({ fileId, markId }) => {
     );
 };
 
-export default AIEditor;
+export default ChatWithEditor;

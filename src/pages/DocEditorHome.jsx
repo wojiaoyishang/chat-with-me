@@ -16,8 +16,6 @@ import {motion, AnimatePresence} from 'framer-motion';
 
 // 导入项目依赖
 import {fileUpload, processSelectedFiles, UnifiedLoadingScreen} from "@/lib/tools.jsx";
-import AIEditor from "@/pages/AIEditor.jsx";
-import {emitEvent} from "@/context/useEventStore.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {toast} from "sonner";
@@ -70,8 +68,8 @@ const createFilePicker = (onSelect) => {
     input.click();
 };
 
-// 模板卡片组件
-const TemplateCard = memo(({onSettingsClick, onCardClick, item}) => {
+// 文档卡片组件（原 TemplateCard）
+const DocumentCard = memo(({onSettingsClick, onCardClick, item}) => {
     const {t} = useTranslation();
 
     const title = item.title;
@@ -205,6 +203,7 @@ const ProcessingModal = memo(({show, t}) => {
 const EditDocumentModal = memo(({show, onClose, documentData, onSave, onDelete}) => {
     const {t} = useTranslation();
     const [documentName, setDocumentName] = useState(documentData?.title || '');
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
     useEffect(() => {
         setDocumentName(documentData?.title || '');
@@ -218,10 +217,7 @@ const EditDocumentModal = memo(({show, onClose, documentData, onSave, onDelete})
     };
 
     const handleDelete = () => {
-        if (window.confirm(t('confirm_delete_document'))) {
-            onDelete(documentData.markId);
-        }
-        onClose();
+        setIsDeleteConfirmOpen(true);
     };
 
     const updateDate = documentData?.updateDate ? format(new Date(documentData.updateDate), 'yyyy-MM-dd HH:mm') : t('unknown');
@@ -261,22 +257,41 @@ const EditDocumentModal = memo(({show, onClose, documentData, onSave, onDelete})
                     </div>
                 </div>
                 <DialogFooter className="flex justify-between">
-                    <Button variant="destructive" onClick={handleDelete} className="flex items-center gap-1">
+                    <Button variant="destructive" onClick={handleDelete}
+                            className="flex items-center gap-1 cursor-pointer">
                         <Trash2 size={16}/>
                         {t('delete')}
                     </Button>
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={onClose}>
+                        <Button variant="outline" onClick={onClose} className="cursor-pointer">
                             {t('cancel')}
                         </Button>
                         <Button onClick={handleSave} disabled={!documentName || documentName === documentData?.title}
-                                className="flex items-center gap-1">
+                                className="flex items-center gap-1 cursor-pointer">
                             <Save size={16}/>
                             {t('submit')}
                         </Button>
                     </div>
                 </DialogFooter>
             </DialogContent>
+
+            {/* 删除确认弹窗 */}
+            <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t('confirm_delete_document_title')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('confirm_delete_document')}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="cursor-pointer">{t('cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => {
+                            onDelete(documentData.markId);
+                            setIsDeleteConfirmOpen(false);
+                            onClose();
+                        }} className="cursor-pointer">{t('delete')}</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </Dialog>
     );
 });
@@ -286,7 +301,7 @@ const NewDocumentModal = memo(({show, onClose, onCreate}) => {
     const {t} = useTranslation();
 
     const [documentTitle, setDocumentTitle] = useState('');
-    const [documentType, setDocumentType] = useState('markdown');
+    const [documentType, setDocumentType] = useState('collabora');
 
     const handleCreate = () => {
         if (documentTitle) {
@@ -324,10 +339,8 @@ const NewDocumentModal = memo(({show, onClose, onCreate}) => {
                     <FieldLabel htmlFor="title">{t('document_type')}</FieldLabel>
                     <FieldContent>
                         <RadioGroup defaultValue="collabora" className="max-w-full">
-                            <FieldLabel htmlFor="markdown" className="cursor-pointer"
-                                        onClick={() => setDocumentType('markdown')}
-                            >
-                                <Field orientation="horizontal">
+                            <FieldLabel htmlFor="markdown" className="cursor-pointer">
+                                <Field orientation="horizontal" onClick={() => setDocumentType('markdown')}>
                                     <FieldContent>
                                         <FieldTitle>Markdown</FieldTitle>
                                         <FieldDescription>
@@ -337,10 +350,8 @@ const NewDocumentModal = memo(({show, onClose, onCreate}) => {
                                     <RadioGroupItem value="markdown" id="markdown"/>
                                 </Field>
                             </FieldLabel>
-                            <FieldLabel htmlFor="collabora" className="cursor-pointer"
-                                        onClick={() => setDocumentType('collabora')}
-                            >
-                                <Field orientation="horizontal">
+                            <FieldLabel htmlFor="collabora" className="cursor-pointer">
+                                <Field orientation="horizontal" onClick={() => setDocumentType('collabora')}>
                                     <FieldContent>
                                         <FieldTitle>Collabora Online Word</FieldTitle>
                                         <FieldDescription>
@@ -378,13 +389,9 @@ const DocEditorHome = () => {
     const {t} = useTranslation();
 
     // 所有状态和 refs 放在顶部
-    const [openEditor, setOpenEditor] = useState(false);
-    const [chatMarkId, setChatMarkId] = useState(null);
-    const [documentId, setDocumentId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [mainTemplates, setMainTemplates] = useState([]);
-    const [otherTemplates, setOtherTemplates] = useState([]);
+    const [documentCards, setDocumentCards] = useState([]); // 原 mainTemplates
     const [uploadFiles, setUploadFiles] = useState([]);
     const uploadIntervals = useRef(new Map());
 
@@ -407,10 +414,8 @@ const DocEditorHome = () => {
         setIsLoading(true);
         const requestInfo = async () => {
             try {
-                const response = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT, {
-                    params: {type: 1}
-                });
-                const newData = response.map(item => ({
+                const data = await apiClient.get(apiEndpoint.DOCUMENT_ENDPOINT);
+                const newData = data.map(item => ({
                     updateDate: item.updateDate,
                     createDate: item.createDate || item.updateDate,
                     title: item.title,
@@ -418,9 +423,9 @@ const DocEditorHome = () => {
                     type: 'document',
                     preview: item?.preview,
                 }));
-                setMainTemplates(newData);
+                setDocumentCards(newData); // 原 setMainTemplates
             } catch (error) {
-                console.error("Failed to load templates:", error);
+                console.error("Failed to load documents:", error); // 原 "Failed to load templates"
                 toast.error(t("load_templates_error"));
             } finally {
                 setIsLoading(false);
@@ -484,29 +489,28 @@ const DocEditorHome = () => {
     // 创建新文档处理函数
     const handleCreateNewDocument = async (documentTitle, documentType) => {
         try {
-            const currentDate = new Date().toISOString();
+            // 创建新文档
+            const data = await apiClient.post(apiEndpoint.DOCUMENT_ENDPOINT, {
+                title: documentTitle,
+                type: documentType,
+            }, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            });
 
-            console.log(documentTitle, documentType);
-
-            // TODO: 创建新文档
-            // // 假设存在一个 API 来创建新文档
-            // const response = await apiClient.post(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT, {
-            //     title: newTitle,
-            //     type: 1,
-            // });
-            //
-            // // 假设响应包含新创建的 markId 和其他信息
-            // const newItem = {
-            //     updateDate: currentDate,
-            //     createDate: currentDate,
-            //     title: newTitle,
-            //     markId: response.markId, // 假设 API 返回 markId
-            //     type: 'document',
-            //     preview: response?.preview || null,
-            // };
+            // 假设响应包含新创建的 markId 和其他信息
+            const newItem = {
+                updateDate: data.updateDate,
+                createDate: data.createDate,
+                title: data.title,
+                markId: data.markId, // 假设 API 返回 markId
+                type: 'document',
+                preview: data?.preview || null,
+            };
 
             // 更新本地状态
-            // setMainTemplates(prev => [...prev, newItem]);
+            setDocumentCards(prev => [...prev, newItem]); // 原 setMainTemplates
 
             toast.success(t("document_create_success"));
             setIsNewModalOpen(false);
@@ -524,12 +528,16 @@ const DocEditorHome = () => {
 
     const handleSaveDocumentEdit = async (markId, newTitle) => {
         try {
-            await apiClient.put(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT, {
-                markId,
-                title: newTitle,
-            });
+            await apiClient.post(`${apiEndpoint.DOCUMENT_ENDPOINT}/${markId}`, {
+                    title: newTitle,
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                });
 
-            setMainTemplates(prev =>
+            setDocumentCards(prev => // 原 setMainTemplates
                 prev.map(item =>
                     item.markId === markId ? {...item, title: newTitle, updateDate: new Date().toISOString()} : item
                 )
@@ -545,9 +553,9 @@ const DocEditorHome = () => {
 
     const handleDeleteDocument = async (markId) => {
         try {
-            await apiClient.delete(`${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/${markId}`);
+            await apiClient.delete(`${apiEndpoint.DOCUMENT_ENDPOINT}/${markId}`);
 
-            setMainTemplates(prev => prev.filter(item => item.markId !== markId));
+            setDocumentCards(prev => prev.filter(item => item.markId !== markId)); // 原 setMainTemplates
 
             toast.success(t("document_delete_success"));
             setIsEditModalOpen(false);
@@ -595,24 +603,18 @@ const DocEditorHome = () => {
         </div>
     );
 
-    const allTemplates = [
+    const allDocumentCards = [ // 原 allTemplates
         NewDocumentCard,
         ...uploadingFileCards,
-        ...mainTemplates.map(item => (
-            <TemplateCard
+        ...documentCards.map(item => ( // 原 mainTemplates.map
+            <DocumentCard // 原 TemplateCard
                 key={item.markId}
                 item={item}
-                onCardClick={(item) => {
-                }}
+                onCardClick={(item) => {}}
                 onSettingsClick={handleOpenEditModal}
             />
         ))
     ];
-
-    // 条件渲染 1：打开编辑器
-    if (openEditor) {
-        return <AIEditor documentId={documentId} markId={chatMarkId}/>;
-    }
 
     // 条件渲染 2：加载中
     if (isLoading) {
@@ -633,9 +635,9 @@ const DocEditorHome = () => {
                         <h3 className="text-lg font-bold text-gray-800">{t('title_writing')}</h3>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                        {allTemplates}
+                        {allDocumentCards} {/* 原 allTemplates */}
                     </div>
-                    {mainTemplates.length === 0 && uploadFiles.length === 0 && (
+                    {documentCards.length === 0 && uploadFiles.length === 0 && ( // 原 mainTemplates.length
                         <div className="mt-6 p-4 bg-white rounded-xl border border-dashed border-gray-300 text-center">
                             <p className="text-gray-500">{t('empty_section_message')}</p>
                         </div>

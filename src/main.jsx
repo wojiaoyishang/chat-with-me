@@ -17,6 +17,7 @@ import FatalErrorPopoverElement from "@/context/FatalErrorPopover.jsx";
 import ContextEvent from "@/context/ContextEvent.jsx";
 import DashboardPage from "@/pages/DashboardPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import ChatWithEditor from "@/pages/ChatWithEditor.jsx";
 
 const router = createBrowserRouter([
     {
@@ -38,7 +39,11 @@ const router = createBrowserRouter([
     {
         path: "/doc",
         element: <DashboardPage type={"doc"} />
-    }
+    },
+    {
+        path: "/doc/:markId",
+        element: <ChatWithEditor />
+    },
 ]);
 
 const root = document.getElementById("root");

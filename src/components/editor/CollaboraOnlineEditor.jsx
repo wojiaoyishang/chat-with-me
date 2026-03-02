@@ -1,33 +1,32 @@
 import React, {useEffect, useState, forwardRef, useImperativeHandle} from 'react';
-import apiClient from "@/lib/apiClient.js";
-import {apiEndpoint} from "@/config.js";
 import {useTranslation} from "react-i18next";
 import {UnifiedErrorScreen, UnifiedLoadingScreen} from "@/lib/tools.jsx";
 
 // --- Main DocEditor Component ---
-const CollaboraOnlineEditor = forwardRef(({config = {}}, ref) => {
-    const [iframeUrl, setIframeUrl] = useState('');
+const CollaboraOnlineEditor = forwardRef(({iframeUrliframeUrl}, ref) => {
     const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
+    const [iframeLoaded, setIframeLoaded] = useState(false);
     const {t} = useTranslation();
 
-    const fetchDocumentUrl = async () => {
-        if (!config.fileId) {
-            setStatus('error');
-            return;
-        }
+    // 处理 iframe 加载成功
+    const handleIframeLoad = () => {
+        setIframeLoaded(true);
+        setStatus('success');
+    };
 
+    // 处理 iframe 加载错误
+    const handleIframeError = () => {
+        setStatus('error');
+    };
+
+    // 重试加载
+    const handleRetry = () => {
         setStatus('loading');
-        try {
-            const data = await apiClient.get(`${apiEndpoint.REDIRECT_VIEW_ENDPOINT}/${config.fileId}`);
-            if (data?.url) {
-                setIframeUrl(data.url);
-                setStatus('success');
-            } else {
-                setStatus('error');
-            }
-        } catch (err) {
-            console.error('Failed to load document:', err);
-            setStatus('error');
+        setIframeLoaded(false);
+        // 强制重新加载 iframe
+        const iframe = document.getElementById('collabora-editor-iframe');
+        if (iframe) {
+            iframe.src = iframeUrl;
         }
     };
 
@@ -48,36 +47,30 @@ const CollaboraOnlineEditor = forwardRef(({config = {}}, ref) => {
         />
     );
 
-    // Expose reload method via ref
-    useImperativeHandle(ref, () => ({
-        reload: fetchDocumentUrl
-    }));
-
-    // Fetch on mount or when fileId changes
-    useEffect(() => {
-        fetchDocumentUrl();
-    }, [config.fileId]);
-
-    const handleRetry = () => {
-        fetchDocumentUrl();
-    };
-
     return (
         <div className="relative w-full h-full">
-            {/* Render iframe when ready */}
-            {status === 'success' && (
-                <iframe
-                    src={iframeUrl}
-                    title="Document Editor"
-                    width="100%"
-                    height="100%"
-                    style={{border: 'none', minHeight: '600px'}}
-                />
-            )}
+            {/* 加载中状态 */}
+            {status === 'loading' && !iframeLoaded && <LoadingScreen />}
 
-            {/* Overlay: Loading or Error */}
-            {status === 'loading' && <LoadingScreen/>}
-            {status === 'error' && <LoadingFailedScreen onRetry={handleRetry}/>}
+            {/* 加载失败状态 */}
+            {status === 'error' && <LoadingFailedScreen onRetry={handleRetry} />}
+
+            {/* 始终渲染 iframe，但只在加载完成后通过 CSS 显示 */}
+            <iframe
+                id="collabora-editor-iframe"
+                src={iframeUrl}
+                title="Document Editor"
+                width="100%"
+                height="100%"
+                style={{
+                    border: 'none',
+                    minHeight: '600px',
+                    opacity: iframeLoaded ? 1 : 0,
+                    transition: 'opacity 0.3s ease-in-out'
+                }}
+                onLoad={handleIframeLoad}
+                onError={handleIframeError}
+            />
         </div>
     );
 });

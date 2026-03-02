@@ -174,15 +174,17 @@
   "create_new_document": "Create New Document",
   "enter_document_name": "Enter document name",
   "create": "Create",
-  "file_upload.error": "File upload failed: {message}",
+  "file_upload.error": "File upload failed: {{message}}",
   "document_create_success": "Document created successfully",
-  "document_create_error": "Failed to create document: {message}",
+  "document_create_error": "Failed to create document: {{message}}",
   "document_update_success": "Document updated successfully",
-  "document_update_error": "Failed to update document: {message}",
+  "document_update_error": "Failed to update document: {{message}}",
   "document_delete_success": "Document deleted successfully",
-  "document_delete_error": "Failed to delete document: {message}",
+  "document_delete_error": "Failed to delete document: {{message}}",
   "unknown": "Unknown",
   "document_type": "Document Type",
   "document_type_markdown_intro": "Markdown format documents are easy to write and have a simple structure.",
-  "document_type_collabora_intro": "Use Collabora Online to edit Word documents online, with rich formatting."
+  "document_type_collabora_intro": "Use Collabora Online to edit Word documents online, with rich formatting.",
+  "confirm_delete_document_title": "Delete document",
+  "no_actions_available": "No Actions"
 }
