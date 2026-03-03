@@ -186,5 +186,11 @@
   "document_type_markdown_intro": "Markdown format documents are easy to write and have a simple structure.",
   "document_type_collabora_intro": "Use Collabora Online to edit Word documents online, with rich formatting.",
   "confirm_delete_document_title": "Delete document",
-  "no_actions_available": "No Actions"
+  "no_actions_available": "No Actions",
+  "agent_chat": "Agent Chat",
+  "back_document": "Back to Doc Home",
+  "document_home": {
+    "not_yet_open": "The document has not been opened yet. After opening the document, you can use the model for conversation.",
+    "open_error": "Open Document Failed: {{message}}"
+  }
 }

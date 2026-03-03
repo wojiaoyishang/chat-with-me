@@ -3,10 +3,7 @@ import ChatPage from '@/pages/ChatPage.jsx';
 import CollaboraOnlineEditor from '@/components/editor/CollaboraOnlineEditor.jsx';
 import {getMarkId, useIsMobile} from "@/lib/tools.jsx"; // 引入工具函数
 
-const ChatWithEditor = ({ }) => {
-
-    // 这个页面的 ID
-    const [markId, setMarkId] = useState(getMarkId());
+const ChatWithEditor = ({ url, markId }) => {
 
     const isMobile = useIsMobile(); // 获取移动端状态
     const [isMounted, setIsMounted] = useState(false);
@@ -211,7 +208,7 @@ const ChatWithEditor = ({ }) => {
             {/* 幽灵层：仅桌面端拖拽时显示 */}
             {!isMobile && isResizing && (
                 <div
-                    className="fixed inset-0 z-10 cursor-col-resize bg-transparent"
+                    className="fixed inset-0 z-999 cursor-col-resize bg-transparent"
                     style={{ userSelect: 'none' }}
                 >
                     <div
@@ -232,7 +229,7 @@ const ChatWithEditor = ({ }) => {
                 style={isMobile ? { flex: 1, width: '100%' } : desktopDocStyle}
             >
                 <div className="flex-1 overflow-y-auto">
-                    {/*<CollaboraOnlineEditor iframeUrl={url} />*/}
+                    <CollaboraOnlineEditor iframeUrl={url} />
                 </div>
             </main>
 

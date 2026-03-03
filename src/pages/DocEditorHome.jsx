@@ -8,7 +8,8 @@ import {
     Loader2,
     Settings,
     Trash2,
-    Save
+    Save,
+    ChevronLeft
 } from 'lucide-react';
 import {useTranslation} from "react-i18next";
 import {format} from 'date-fns';
@@ -51,6 +52,8 @@ import {
     FieldLabel, FieldTitle
 } from "@/components/ui/field";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group.tsx";
+import {registerButton} from "@/components/sidebar/sidebarRegistry.js";
+import ChatWithEditor from "@/pages/ChatWithEditor.jsx";
 
 // ====================================================================
 // 开始：模拟依赖和子组件
@@ -385,7 +388,7 @@ const NewDocumentModal = memo(({show, onClose, onCreate}) => {
 // ====================================================================
 
 // 编辑器主页组件
-const DocEditorHome = () => {
+const DocEditorHome = ({markId, setMarkId}) => {
     const {t} = useTranslation();
 
     // 所有状态和 refs 放在顶部
@@ -402,37 +405,9 @@ const DocEditorHome = () => {
     // 新建模态框状态
     const [isNewModalOpen, setIsNewModalOpen] = useState(false);
 
-    // 清理上传效果
-    useEffect(() => {
-        return () => {
-            uploadIntervals.current.forEach(cleanup => cleanup());
-        };
-    }, []);
-
-    // 数据加载效果
-    useEffect(() => {
-        setIsLoading(true);
-        const requestInfo = async () => {
-            try {
-                const data = await apiClient.get(apiEndpoint.DOCUMENT_ENDPOINT);
-                const newData = data.map(item => ({
-                    updateDate: item.updateDate,
-                    createDate: item.createDate || item.updateDate,
-                    title: item.title,
-                    markId: item.markId,
-                    type: 'document',
-                    preview: item?.preview,
-                }));
-                setDocumentCards(newData); // 原 setMainTemplates
-            } catch (error) {
-                console.error("Failed to load documents:", error); // 原 "Failed to load templates"
-                toast.error(t("load_templates_error"));
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        requestInfo();
-    }, []);
+    // 是否打开文档编辑
+    const [isOpenDocEditorOpen, setIsOpenDocEditorOpen] = useState(false);
+    const [docEditorUrl, setDocEditorUrl] = useState('');
 
     // 业务逻辑函数
     const handleFileUpload = (newUploadFiles) => {
@@ -565,6 +540,95 @@ const DocEditorHome = () => {
         }
     };
 
+    // 打开编辑器
+    const handleOpenDocEditor = useCallback((item) => {
+
+        apiClient.get(`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${item.markId}`)
+            .then((data) => {
+                setMarkId(null);
+                setTimeout(() => {
+                    setDocEditorUrl(data.url);
+                });
+            })
+            .catch((error) => {
+                toast.error(t("document_home.open_error", {message: error?.message || 'Failed to open document'}));
+            });
+
+        // 设置编辑器已经打开
+        setIsOpenDocEditorOpen(true);
+    }, [markId])
+
+    // 关闭编辑器
+    const handleCloseDocEditor = useCallback(() => {
+        setIsOpenDocEditorOpen(false);
+    })
+
+    // 清理上传效果
+    useEffect(() => {
+        return () => {
+            uploadIntervals.current.forEach(cleanup => cleanup());
+        };
+    }, []);
+
+    // 数据加载效果
+    useEffect(() => {
+        setIsLoading(true);
+        const requestInfo = async () => {
+            try {
+                const data = await apiClient.get(apiEndpoint.DOCUMENT_ENDPOINT);
+                const newData = data.map(item => ({
+                    updateDate: item.updateDate,
+                    createDate: item.createDate || item.updateDate,
+                    title: item.title,
+                    markId: item.markId,
+                    type: 'document',
+                    preview: item?.preview,
+                }));
+                setDocumentCards(newData); // 原 setMainTemplates
+            } catch (error) {
+                console.error("Failed to load documents:", error); // 原 "Failed to load templates"
+                toast.error(t("load_templates_error"));
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        requestInfo();
+    }, []);
+
+    // 监听 MarkId 变化
+    useEffect(() => {
+        if (!isOpenDocEditorOpen && markId) {
+            toast.warning(t("document_home.not_yet_open"))
+        }
+    }, [markId, isOpenDocEditorOpen]);
+
+    // 注册侧边栏按钮
+    useEffect(() => {
+
+        if (isOpenDocEditorOpen) {
+
+            // 创建一个自定义按钮组件
+            const BackButton = (
+                <button
+                    onClick={handleCloseDocEditor}
+                    className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer w-full justify-start"
+                >
+                    <ChevronLeft className="w-5 h-5 mr-2"/>
+                    {t("back_document")}
+                </button>
+            );
+
+            // 注册按钮
+            const unregister = registerButton(BackButton);
+
+            // 组件卸载时注销
+            return () => unregister();
+
+        }
+
+    }, [isOpenDocEditorOpen]);
+
+
     // 渲染元素
     const uploadingFileCards = uploadFiles.map(file => (
         <UploadFileCard
@@ -610,7 +674,9 @@ const DocEditorHome = () => {
             <DocumentCard // 原 TemplateCard
                 key={item.markId}
                 item={item}
-                onCardClick={(item) => {}}
+                onCardClick={(item) => {
+                    handleOpenDocEditor(item)
+                }}
                 onSettingsClick={handleOpenEditModal}
             />
         ))
@@ -626,24 +692,27 @@ const DocEditorHome = () => {
     }
 
     // 最终渲染
-    return (
+    return !isOpenDocEditorOpen ? (
         <div className="min-h-screen bg-[#F9FAFB] p-6 relative">
+
             <div className="max-w-7xl mx-auto space-y-8">
-                {/* AI 写作区域 */}
                 <div>
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-bold text-gray-800">{t('title_writing')}</h3>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                        {allDocumentCards} {/* 原 allTemplates */}
+                        {allDocumentCards}
                     </div>
-                    {documentCards.length === 0 && uploadFiles.length === 0 && ( // 原 mainTemplates.length
-                        <div className="mt-6 p-4 bg-white rounded-xl border border-dashed border-gray-300 text-center">
+                    {documentCards.length === 0 && uploadFiles.length === 0 && (
+                        <div
+                            className="mt-6 p-4 bg-white rounded-xl border border-dashed border-gray-300 text-center">
                             <p className="text-gray-500">{t('empty_section_message')}</p>
                         </div>
                     )}
                 </div>
             </div>
+
+
             {/* 模态框和加载组件 */}
             <ProcessingModal show={isProcessing} t={t}/>
             <EditDocumentModal
@@ -659,7 +728,10 @@ const DocEditorHome = () => {
                 onCreate={handleCreateNewDocument}
             />
         </div>
-    );
+
+    ) : (
+        <ChatWithEditor url={docEditorUrl} markId={markId}/>
+    )
 };
 
 export default DocEditorHome;

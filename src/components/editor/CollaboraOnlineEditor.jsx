@@ -3,7 +3,7 @@ import {useTranslation} from "react-i18next";
 import {UnifiedErrorScreen, UnifiedLoadingScreen} from "@/lib/tools.jsx";
 
 // --- Main DocEditor Component ---
-const CollaboraOnlineEditor = forwardRef(({iframeUrliframeUrl}, ref) => {
+const CollaboraOnlineEditor = forwardRef(({iframeUrl}, ref) => {
     const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
     const [iframeLoaded, setIframeLoaded] = useState(false);
     const {t} = useTranslation();

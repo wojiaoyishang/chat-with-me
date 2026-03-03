@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useCallback, useMemo, memo} from 'react';
+import React, {useEffect, useState, useRef, useCallback, useMemo, memo, useLayoutEffect} from 'react';
 import {useImmer} from 'use-immer';
 import {produce} from 'immer';
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/lib/tools.jsx";
 import {toast} from "sonner";
 import {Transition} from '@headlessui/react';
+import {motion, AnimatePresence} from 'framer-motion';
 import {
     processSelectedFiles,
     fileUpload,
@@ -208,9 +209,38 @@ const ScrollToBottomButton = memo(({
 ScrollToBottomButton.displayName = 'ScrollToBottomButton';
 
 // ========== RightSidebar 组件 ==========
-const RightSidebar = memo((
-    {isOpen, onClose, isMobile, advancedSettings, initialSettingValues, onSettingChange, t}) => {
+const RightSidebar = memo(({
+                               isOpen,
+                               onClose,
+                               advancedSettings,
+                               initialSettingValues,
+                               onSettingChange,
+                               t,
+                               containerRef
+                           }) => {
+    const [lockedMode, setLockedMode] = useState(null);
+    const sidebarRef = useRef(null);
 
+    useLayoutEffect(() => {
+        const container = containerRef?.current;
+        if (!container) return;
+
+        const BREAKPOINT = 920;
+
+        if (isOpen && lockedMode === null) {
+            // 首次打开：根据容器宽度锁定模式
+            const isDesktop = container.clientWidth > BREAKPOINT;
+            setLockedMode(isDesktop);
+        } else if (!isOpen && lockedMode !== null) {
+            // 关闭后延迟重置，避免闪烁，匹配 transition duration-300
+            const timer = setTimeout(() => {
+                setLockedMode(null);
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, containerRef, lockedMode]);
+
+    // 🎯 侧边栏内容渲染（抽离避免重复代码）
     const sidebarContent = useCallback(() => {
         if (!advancedSettings || advancedSettings.length === 0) {
             return (
@@ -219,75 +249,95 @@ const RightSidebar = memo((
                 </div>
             );
         }
-
         return (
             <DynamicSettings
                 config={advancedSettings}
                 initialValues={initialSettingValues}
-                onChange={onSettingChange ? onSettingChange : null}
+                onChange={onSettingChange ?? null}
             />
         );
-    }, [advancedSettings, initialSettingValues]);
+    }, [advancedSettings, initialSettingValues, onSettingChange, t]);
 
-    // 桌面端：参与文档流，通过宽度变化实现挤压效果
-    if (!isMobile) {
+    if (lockedMode === null) {
+        return null;
+    }
+
+    if (lockedMode) {
         return (
-            <div
-                className={`h-full bg-white border-l transition-all duration-300 ease-in-out overflow-hidden ${
-                    isOpen ? 'w-[16rem]' : 'w-0'
-                }`}
+            <motion.div
+                ref={sidebarRef}
+                initial={{ width: 0 }}
+                animate={{ width: isOpen ? '16rem' : 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="h-full bg-white border-l overflow-hidden flex-shrink-0"
             >
-                {/* 内部内容容器，防止宽度为 0 时内容挤压变形 */}
+                {/* 内部固定宽度容器，避免内容随动画缩放 */}
                 <div className="w-[16rem] h-full flex flex-col">
+                    {/* 标题栏 */}
                     <div className="flex items-center justify-between pt-4 pl-4 pr-4 shrink-0">
-                        <span className="font-medium text-gray-700">{t("advanced_conversation_settings")}</span>
+                        <span className="font-medium text-gray-700">
+                            {t("advanced_conversation_settings")}
+                        </span>
                         <button
                             onClick={onClose}
-                            className="p-1 rounded hover:bg-gray-100 cursor-pointer"
+                            className="p-1 rounded hover:bg-gray-100 cursor-pointer transition-colors"
+                            aria-label={t("close")}
                         >
-                            <X className="h-4 w-4 text-gray-500"/>
+                            <X className="h-4 w-4 text-gray-500" />
                         </button>
                     </div>
+                    {/* 内容区域 */}
                     <div className="p-1 flex-1 overflow-y-auto">
                         {sidebarContent()}
                     </div>
                 </div>
-            </div>
+            </motion.div>
         );
     }
 
-    // 移动端：固定定位，覆盖效果，带遮罩层
     return (
         <>
-            {/* 遮罩层 */}
             {isOpen && (
-                <div
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
                     className="fixed inset-0 bg-black/20 z-40"
                     onClick={onClose}
                 />
             )}
-            {/* 侧边栏 */}
-            <div
-                className={`fixed top-0 right-0 h-full w-[16rem] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
-                    isOpen ? 'translate-x-0' : 'translate-x-full'
-                }`}
+
+            {/* 🗄️ 侧边栏抽屉：从右侧滑入滑出 */}
+            <motion.div
+                ref={sidebarRef}
+                initial={{ x: '100%' }}
+                animate={{ x: isOpen ? 0 : '100%' }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="fixed top-0 right-0 h-full w-[16rem] bg-white shadow-xl z-50 flex flex-col"
             >
+                {/* 标题栏 */}
                 <div className="flex items-center justify-between pt-4 pl-4 pr-4 shrink-0">
-                    <span className="font-medium text-gray-700">{t("advanced_conversation_settings")}</span>
+                    <span className="font-medium text-gray-700">
+                        {t("advanced_conversation_settings")}
+                    </span>
                     <button
                         onClick={onClose}
-                        className="p-1 rounded hover:bg-gray-100 cursor-pointer"
+                        className="p-1 rounded hover:bg-gray-100 cursor-pointer transition-colors"
+                        aria-label={t("close")}
                     >
-                        <X className="h-4 w-4 text-gray-500"/>
+                        <X className="h-4 w-4 text-gray-500" />
                     </button>
                 </div>
-                <div className="p-1">
+                {/* 内容区域 */}
+                <div className="p-1 flex-1 overflow-y-auto">
                     {sidebarContent()}
                 </div>
-            </div>
+            </motion.div>
         </>
     );
 });
+
 RightSidebar.displayName = 'RightSidebar';
 
 // ========== Header 组件 ==========
@@ -406,7 +456,7 @@ const ChatHeader = memo(({
 ChatHeader.displayName = 'ChatHeader';
 
 // ========== 主组件 ==========
-function ChatPage({markId, setMarkId}) {
+function ChatPage({markId, setMarkId, pageType}) {
     const {t} = useTranslation();
     const chatPageRef = useRef(null);
     const isProcessingRef = useRef(false);
@@ -708,7 +758,6 @@ function ChatPage({markId, setMarkId}) {
     }, [isMobile]);
 
     // ========= 上传相关 =========
-
     const handleFolderDetected = useCallback(() => {
         toast.error(t("folder_upload_not_supported"));
     });
@@ -897,6 +946,7 @@ function ChatPage({markId, setMarkId}) {
                     isFork: isFork,
                     role: role,
                     options: advancedSettingsValues,
+                    pageType: pageType,
                     requestId: currentMessageSendRequestIDRef.current
                 },
                 markId: markId
@@ -1780,13 +1830,13 @@ function ChatPage({markId, setMarkId}) {
             <RightSidebar
                 isOpen={isSidebarOpen}
                 onClose={handleSidebarToggle}
-                isMobile={isMobile}
                 advancedSettings={advancedSettings}
                 initialSettingValues={initialSettingValues}
                 onSettingChange={(values) => {
                     setAdvancedSettingsValues(values);
                 }}
                 t={t}
+                containerRef={chatPageRef}
             />
         </div>
     );

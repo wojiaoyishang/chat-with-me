@@ -186,5 +186,11 @@
   "document_type_markdown_intro": "Markdown 格式的文档易于编写且结构简单。",
   "document_type_collabora_intro": "使用 Collabora Online 在线编辑 Word 文档，支持丰富的格式。",
   "confirm_delete_document_title": "删除文档",
-  "no_actions_available": "没有可用操作"
+  "no_actions_available": "没有可用操作",
+  "agent_chat": "智能体对话",
+  "back_document": "回到文档选择",
+  "document_home": {
+    "not_yet_open": "还尚未打开文档，打开文档之后可以使用模型对话。",
+    "open_error": "打开文档失败：{{message}}"
+  }
 }

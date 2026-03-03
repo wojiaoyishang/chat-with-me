@@ -9,6 +9,7 @@ import DocEditorHome from "@/pages/DocEditorHome.jsx";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 import {toast} from "sonner";
 import {useUserStore} from "@/context/userContext.jsx";
+import {motion, AnimatePresence} from 'framer-motion';
 
 const DashboardPage = ({type = "chat"}) => {
     const [markId, setMarkId] = useState(getMarkId());
@@ -102,11 +103,35 @@ const DashboardPage = ({type = "chat"}) => {
                 <>
 
                     <Sidebar markId={markId} setMarkId={setMarkId} settings={sidebarSettings}
-                             setPageType={setPageType} setRandomUUID={setRandomUUID}/>
+                             pageType={pageType} setPageType={setPageType} setRandomUUID={setRandomUUID}/>
 
                     <main className="flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
-                        {pageType === "chat" && <ChatPage key={randomUUID} markId={markId} setMarkId={setMarkId}/>}
-                        {pageType === "doc" && <DocEditorHome key={randomUUID}/>}
+                        <AnimatePresence mode="wait">
+                            {pageType === "chat" && (
+                                <motion.div
+                                    key="chat"
+                                    initial={{ opacity: 0, x: 50 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -50 }}
+                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                    className="absolute inset-0"
+                                >
+                                    <ChatPage key={randomUUID} markId={markId} setMarkId={setMarkId}/>
+                                </motion.div>
+                            )}
+                            {pageType === "doc" && (
+                                <motion.div
+                                    key="doc"
+                                    initial={{ opacity: 0, x: 50 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -50 }}
+                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                    className="absolute inset-0"
+                                >
+                                    <DocEditorHome key={randomUUID} markId={markId} setMarkId={setMarkId}/>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </main>
 
                 </>
