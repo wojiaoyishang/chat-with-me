@@ -1,10 +1,10 @@
 import React, {useRef, useState, useCallback, useEffect} from 'react';
 import ChatPage from '@/pages/ChatPage.jsx';
 import CollaboraOnlineEditor from '@/components/editor/CollaboraOnlineEditor.jsx';
-import {getMarkId, useIsMobile} from "@/lib/tools.jsx";
+import {useIsMobile} from "@/lib/tools.jsx";
 import {onEvent} from "@/context/useEventStore.jsx"; // 引入工具函数
 
-const ChatWithEditor = ({url, markId, setMarkId, setDocModifiedStatus}) => {
+const ChatWithEditor = ({url, chatMarkId, setDocModifiedStatus}) => {
 
     const isMobile = useIsMobile(); // 获取移动端状态
     const [isMounted, setIsMounted] = useState(false);
@@ -260,7 +260,7 @@ const ChatWithEditor = ({url, markId, setMarkId, setDocModifiedStatus}) => {
         const unsubscribe = onEvent({
             type: "page",
             target: "ChatWithEditor",
-            markId: markId  // 由于工具调用的时候是聊天界面，所以应该绑定的是聊天界面的 markId
+            markId: chatMarkId  // 由于工具调用的时候是聊天界面，所以应该绑定的是聊天界面的 markId
         }).then(({payload, id}) => {
 
             switch (payload.command) {
@@ -335,7 +335,7 @@ const ChatWithEditor = ({url, markId, setMarkId, setDocModifiedStatus}) => {
                 style={isMobile ? {flex: 1, width: '100%'} : desktopChatStyle}
             >
                 <div className="flex-1 overflow-hidden">
-                    <ChatPage markId={markId} setMarkId={setMarkId} pageType={"doc"}/>
+                    <ChatPage chatMarkId={chatMarkId} pageType={"doc"}/>
                 </div>
             </aside>
         </div>

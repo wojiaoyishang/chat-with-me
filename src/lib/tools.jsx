@@ -4,11 +4,6 @@ import apiClient from '@/lib/apiClient';
 import {useEffect, useState} from "react";
 import ThreeDotLoading from "@/components/ui/ThreeDotLoading.jsx";
 
-export function getMarkId() {
-    const {markId} = useParams();
-    return markId;
-}
-
 export function processSelectedFiles(files) {
     if (!files) {
         return [];

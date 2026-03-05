@@ -421,7 +421,12 @@ const DiscardChangesDialog = ({open, onOpenChange, onConfirm, t}) => {
 // ====================================================================
 
 // 编辑器主页组件
-const DocEditorHome = ({markId, setMarkId}) => {
+const DocEditorHome = ({
+                           chatMarkId,
+                           documentMarkId,
+                           onNewChatMarkId,
+                           onNewDocumentMarkId
+                       }) => {
     const {t} = useTranslation();
 
     // 所有状态和 refs 放在顶部
@@ -533,7 +538,7 @@ const DocEditorHome = ({markId, setMarkId}) => {
         }
     };
 
-    // 编辑文档操作
+    // 编辑文档属性操作
     const handleOpenEditModal = (documentItem) => {
         setSelectedDocumentForEdit(documentItem);
         setIsEditModalOpen(true);
@@ -579,11 +584,10 @@ const DocEditorHome = ({markId, setMarkId}) => {
     };
 
     // 打开编辑器
-    const handleOpenDocEditor = useCallback((item) => {
+    const handleOpenDocEditor = useCallback((newDocumentMarkId) => {
 
-        apiClient.get(`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${item.markId}`)
+        apiClient.get(`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentMarkId}`)
             .then((data) => {
-                setMarkId(null);
                 setTimeout(() => {
                     setDocEditorUrl(data.url);
                 });
@@ -592,17 +596,25 @@ const DocEditorHome = ({markId, setMarkId}) => {
                 toast.error(t("document_home.open_error", {message: error?.message || 'Failed to open document'}));
             });
 
-        // 设置编辑器已经打开
-        setIsOpenDocEditorOpen(true);
-    }, [markId])
+        // 设置 documentMarkId
+        onNewDocumentMarkId(newDocumentMarkId);
+
+    }, [])
 
     // 关闭编辑器
+    const handleCloseDocEditorConfirm = useCallback(() => {
+        setIsDiscardConfirmOpen(false);
+        setIsOpenDocEditorOpen(false);
+        onNewChatMarkId(null);
+        onNewDocumentMarkId(null);
+    }, [])
+
     const handleCloseDocEditor = useCallback(() => {
         if (docModifiedStatusRef.current === "Modified") {
             setIsDiscardConfirmOpen(true);
             return;
         }
-        setIsOpenDocEditorOpen(false);
+        handleCloseDocEditorConfirm();
     }, [])
 
     useEffect(() => {
@@ -626,11 +638,11 @@ const DocEditorHome = ({markId, setMarkId}) => {
                     updateDate: item.updateDate,
                     createDate: item.createDate || item.updateDate,
                     title: item.title,
-                    markId: item.markId,
+                    markId: item.markId,   // 这里的 markId 是 documentMarkId
                     type: 'document',
                     preview: item?.preview,
                 }));
-                setDocumentCards(newData); // 原 setMainTemplates
+                setDocumentCards(newData);
             } catch (error) {
                 console.error("Failed to load documents:", error); // 原 "Failed to load templates"
                 toast.error(t("load_templates_error"));
@@ -640,13 +652,6 @@ const DocEditorHome = ({markId, setMarkId}) => {
         };
         requestInfo();
     }, []);
-
-    // 监听 MarkId 变化
-    useEffect(() => {
-        if (!isOpenDocEditorOpen && markId) {
-            toast.warning(t("document_home.not_yet_open"))
-        }
-    }, [markId, isOpenDocEditorOpen]);
 
     // 注册侧边栏按钮
     useEffect(() => {
@@ -674,6 +679,14 @@ const DocEditorHome = ({markId, setMarkId}) => {
 
     }, [isOpenDocEditorOpen, handleCloseDocEditor]);
 
+    // 查一下有没有 documentId 如果有就打开编辑器
+    useEffect(() => {
+        if (documentMarkId && !docEditorUrl) {
+            handleOpenDocEditor(documentMarkId);
+        } else if (documentMarkId && docEditorUrl) {
+            setIsOpenDocEditorOpen(true);
+        }
+    }, [documentMarkId, docEditorUrl]);
 
     // 渲染元素
     const uploadingFileCards = uploadFiles.map(file => (
@@ -721,14 +734,14 @@ const DocEditorHome = ({markId, setMarkId}) => {
                 key={item.markId}
                 item={item}
                 onCardClick={(item) => {
-                    handleOpenDocEditor(item)
+                    handleOpenDocEditor(item.markId);
                 }}
                 onSettingsClick={handleOpenEditModal}
             />
         ))
     ];
 
-    // 条件渲染 2：加载中
+    // 加载中
     if (isLoading) {
         return (
             <div className="min-h-screen relative">
@@ -777,15 +790,12 @@ const DocEditorHome = ({markId, setMarkId}) => {
 
     ) : (
         <>
-            <ChatWithEditor url={docEditorUrl} markId={markId} setMarkId={setMarkId}
+            <ChatWithEditor url={docEditorUrl} chatMarkId={chatMarkId}
                             setDocModifiedStatus={setDocModifiedStatus}/>
             <DiscardChangesDialog
                 open={isDiscardConfirmOpen}
                 onOpenChange={setIsDiscardConfirmOpen}
-                onConfirm={() => {
-                    setIsDiscardConfirmOpen(false);
-                    setIsOpenDocEditorOpen(false);
-                }}
+                onConfirm={handleCloseDocEditorConfirm}
                 t={t}
             />
         </>

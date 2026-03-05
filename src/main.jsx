@@ -25,7 +25,7 @@ const router = createBrowserRouter([
         element: <DashboardPage/>,
     },
     {
-        path: "/chat/:markId",
+        path: "/chat/:chatMarkId",
         element: <DashboardPage type={"chat"}/>,
     },
     {
@@ -41,7 +41,11 @@ const router = createBrowserRouter([
         element: <DashboardPage type={"doc"} />
     },
     {
-        path: "/doc/:markId",
+        path: "/doc/:documentMarkId/:chatMarkId",
+        element: <DashboardPage type={"doc"}/>
+    },
+    {
+        path: "/doc/:documentMarkId",
         element: <DashboardPage type={"doc"}/>
     },
 ]);

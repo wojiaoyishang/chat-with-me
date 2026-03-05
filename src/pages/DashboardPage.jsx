@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
 import ChatPage from '@/pages/ChatPage.jsx';
-import {generateUUID, getMarkId, UnifiedErrorScreen, UnifiedLoadingScreen, useIsMobile} from "@/lib/tools.jsx";
+import {generateUUID, UnifiedErrorScreen, UnifiedLoadingScreen, updateURL, useIsMobile} from "@/lib/tools.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {useTranslation} from "react-i18next";
@@ -10,9 +10,15 @@ import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 import {toast} from "sonner";
 import {useUserStore} from "@/context/userContext.jsx";
 import {motion, AnimatePresence} from 'framer-motion';
+import {useParams} from "react-router-dom";
 
 const DashboardPage = ({type = "chat"}) => {
-    const [markId, setMarkId] = useState(getMarkId());
+
+    const urlParams = useParams();
+
+    const [chatMarkId, setChatMarkId] = useState(urlParams.chatMarkId);
+    const [documentMarkId, setDocumentMarkId] = useState(urlParams.documentMarkId);
+
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [sidebarSettings, setSidebarSettings] = useState({});
@@ -20,7 +26,7 @@ const DashboardPage = ({type = "chat"}) => {
 
     const [pageType, setPageType] = useState(type);
 
-    const { user, setUser, clearUser } = useUserStore();
+    const {user, setUser, clearUser} = useUserStore();
 
     const {t} = useTranslation();
 
@@ -89,9 +95,25 @@ const DashboardPage = ({type = "chat"}) => {
                 command: "Dashboard-Change",
                 pageType: pageType,
             },
-            markId: markId
+            markId: chatMarkId
         })
-    }, [pageType, markId]);
+    }, [pageType, chatMarkId]);
+
+    // 处理聊天 MarkId 变化，组件中不能直接call这个函数，不然不知道是设为空还是真的没有提供
+    const handleMarkIdSelect = useCallback(({newChatMarkId, newDocumentMarkId}) => {
+
+        const urlNewChatMarkId = newChatMarkId ? `/${newChatMarkId}` : "";
+        const urlNewDocumentMarkId = newDocumentMarkId ? `/${newDocumentMarkId}` : '';
+
+        setChatMarkId(newChatMarkId);
+        setDocumentMarkId(newDocumentMarkId);
+
+        if (pageType === "chat") {
+            updateURL(`/chat${urlNewChatMarkId}`);
+        } else if (pageType === "doc") {
+            updateURL(`/doc${urlNewDocumentMarkId}${urlNewChatMarkId}`);
+        }
+    }, [pageType])
 
     return (
         <div className="flex full-screen-height bg-white relative">
@@ -102,33 +124,61 @@ const DashboardPage = ({type = "chat"}) => {
             ) : (
                 <>
 
-                    <Sidebar markId={markId} setMarkId={setMarkId} settings={sidebarSettings}
-                             pageType={pageType} setPageType={setPageType} setRandomUUID={setRandomUUID}/>
+                    <Sidebar chatMarkId={chatMarkId} setChatMarkId={setChatMarkId} settings={sidebarSettings}
+                             pageType={pageType} setPageType={setPageType} setRandomUUID={setRandomUUID}
+                             onChatMarkIdSelect={(newChatMarkId) => {
+                                 handleMarkIdSelect({
+                                     newChatMarkId: newChatMarkId,
+                                     newDocumentMarkId: documentMarkId,
+                                 });
+                             }}/>
 
                     <main className="flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
                         <AnimatePresence mode="wait">
                             {pageType === "chat" && (
                                 <motion.div
                                     key="chat"
-                                    initial={{ opacity: 0, x: 50 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -50 }}
-                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                    initial={{opacity: 0, x: 50}}
+                                    animate={{opacity: 1, x: 0}}
+                                    exit={{opacity: 0, x: -50}}
+                                    transition={{duration: 0.3, ease: "easeInOut"}}
                                     className="absolute inset-0"
                                 >
-                                    <ChatPage key={randomUUID} markId={markId} setMarkId={setMarkId}/>
+                                    <ChatPage key={randomUUID}
+                                              chatMarkId={chatMarkId}
+                                              onNewChatMarkId={(newChatMarkId) => {
+                                                  handleMarkIdSelect({
+                                                      newChatMarkId: newChatMarkId,
+                                                      newDocumentMarkId: documentMarkId,
+                                                  });
+                                              }}/>
                                 </motion.div>
                             )}
                             {pageType === "doc" && (
                                 <motion.div
                                     key="doc"
-                                    initial={{ opacity: 0, x: 50 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -50 }}
-                                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                                    initial={{opacity: 0, x: 50}}
+                                    animate={{opacity: 1, x: 0}}
+                                    exit={{opacity: 0, x: -50}}
+                                    transition={{duration: 0.3, ease: "easeInOut"}}
                                     className="absolute inset-0"
                                 >
-                                    <DocEditorHome key={randomUUID} markId={markId} setMarkId={setMarkId}/>
+                                    <DocEditorHome key={randomUUID}
+                                                   documentMarkId={documentMarkId}
+                                                   chatMarkId={chatMarkId}
+                                                   onNewChatMarkId={(newChatMarkId) => {
+                                                       handleMarkIdSelect({
+                                                           newChatMarkId: newChatMarkId,
+                                                           newDocumentMarkId: documentMarkId,
+                                                       });
+                                                   }}
+                                                   onNewDocumentMarkId={(newDocumentMarkId) => {
+                                                       handleMarkIdSelect({
+                                                           newChatMarkId: chatMarkId,
+                                                           newDocumentMarkId: newDocumentMarkId,
+                                                       });
+                                                   }}
+                                    />
                                 </motion.div>
                             )}
                         </AnimatePresence>

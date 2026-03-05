@@ -24,7 +24,7 @@ import { setOnChange } from './sidebarRegistry';
 
 import ConversationsList from './ConversationsList.jsx'
 
-const Sidebar = ({markId, setMarkId, pageType, setPageType, settings, setRandomUUID}) => {
+const Sidebar = ({chatMarkId, setChatMarkId, pageType, setPageType, settings, setRandomUUID, onChatMarkIdSelect}) => {
     const {t} = useTranslation();
     const navigate = useNavigate();
     const isMobile = useIsMobile();
@@ -94,14 +94,9 @@ const Sidebar = ({markId, setMarkId, pageType, setPageType, settings, setRandomU
         return () => unsubscribe();
     }, []);
 
-    const handleSelectConversation = (convMarkId) => {
-        updateURL(`/chat/${convMarkId}`);
-        setMarkId(convMarkId);
-    };
-
     const handleDeleteConversation = (deletedMarkId) => {
-        if (markId === deletedMarkId) {
-            setMarkId(null);
+        if (chatMarkId === deletedMarkId) {
+            setChatMarkId(null);
             setPageType('chat');
             updateURL('/chat');
         }
@@ -150,9 +145,7 @@ const Sidebar = ({markId, setMarkId, pageType, setPageType, settings, setRandomU
                         <div className="flex flex-col gap-2">
                             <button
                                 onClick={() => {
-                                    setMarkId(null);
-                                    updateURL('/chat');
-                                    setPageType('chat');
+                                    onChatMarkIdSelect(null);
                                 }}
                                 className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer w-full justify-start"
                             >
@@ -196,7 +189,7 @@ const Sidebar = ({markId, setMarkId, pageType, setPageType, settings, setRandomU
                         <div className="flex flex-col gap-2">
                             <motion.button
                                 onClick={() => {
-                                    setMarkId(null);
+                                    setChatMarkId(null);
                                     updateURL('/chat');
                                     setPageType('chat');
                                 }}
@@ -213,7 +206,7 @@ const Sidebar = ({markId, setMarkId, pageType, setPageType, settings, setRandomU
                                 onClick={() => {
                                     updateURL('/doc');
                                     setPageType('doc');
-                                    setMarkId(null);
+                                    setChatMarkId(null);
                                 }}
                                 className={`flex items-center p-2 rounded-lg transition-colors cursor-pointer w-full justify-start ${
                                     pageType === 'doc' ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
@@ -231,8 +224,8 @@ const Sidebar = ({markId, setMarkId, pageType, setPageType, settings, setRandomU
                     <div className="flex-1 p-4 overflow-y-auto hide-scrollbar">
                         <ConversationsList
                             ref={conversationsListRef}
-                            selectedMarkId={markId}
-                            onSelect={handleSelectConversation}
+                            selectedMarkId={chatMarkId}
+                            onSelect={onChatMarkIdSelect}
                             onDelete={handleDeleteConversation}
                         />
                     </div>

@@ -3,9 +3,6 @@ import {useImmer} from 'use-immer';
 import {produce} from 'immer';
 import {
     generateUUID,
-    getMarkId,
-    getLocalSetting,
-    updateURL,
     useIsMobile,
     UnifiedErrorScreen,
     UnifiedLoadingScreen
@@ -266,9 +263,9 @@ const RightSidebar = memo(({
         return (
             <motion.div
                 ref={sidebarRef}
-                initial={{ width: 0 }}
-                animate={{ width: isOpen ? '16rem' : 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                initial={{width: 0}}
+                animate={{width: isOpen ? '16rem' : 0}}
+                transition={{duration: 0.3, ease: 'easeInOut'}}
                 className="h-full bg-white border-l overflow-hidden flex-shrink-0"
             >
                 {/* 内部固定宽度容器，避免内容随动画缩放 */}
@@ -283,7 +280,7 @@ const RightSidebar = memo(({
                             className="p-1 rounded hover:bg-gray-100 cursor-pointer transition-colors"
                             aria-label={t("close")}
                         >
-                            <X className="h-4 w-4 text-gray-500" />
+                            <X className="h-4 w-4 text-gray-500"/>
                         </button>
                     </div>
                     {/* 内容区域 */}
@@ -299,10 +296,10 @@ const RightSidebar = memo(({
         <>
             {isOpen && (
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    initial={{opacity: 0}}
+                    animate={{opacity: 1}}
+                    exit={{opacity: 0}}
+                    transition={{duration: 0.2}}
                     className="fixed inset-0 bg-black/20 z-40"
                     onClick={onClose}
                 />
@@ -311,9 +308,9 @@ const RightSidebar = memo(({
             {/* 🗄️ 侧边栏抽屉：从右侧滑入滑出 */}
             <motion.div
                 ref={sidebarRef}
-                initial={{ x: '100%' }}
-                animate={{ x: isOpen ? 0 : '100%' }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                initial={{x: '100%'}}
+                animate={{x: isOpen ? 0 : '100%'}}
+                transition={{duration: 0.3, ease: 'easeInOut'}}
                 className="fixed top-0 right-0 h-full w-[16rem] bg-white shadow-xl z-50 flex flex-col"
             >
                 {/* 标题栏 */}
@@ -326,7 +323,7 @@ const RightSidebar = memo(({
                         className="p-1 rounded hover:bg-gray-100 cursor-pointer transition-colors"
                         aria-label={t("close")}
                     >
-                        <X className="h-4 w-4 text-gray-500" />
+                        <X className="h-4 w-4 text-gray-500"/>
                     </button>
                 </div>
                 {/* 内容区域 */}
@@ -456,12 +453,11 @@ const ChatHeader = memo(({
 ChatHeader.displayName = 'ChatHeader';
 
 // ========== 主组件 ==========
-function ChatPage({markId, setMarkId, pageType}) {
+function ChatPage({chatMarkId, pageType, onNewChatMarkId}) {
     const {t} = useTranslation();
     const chatPageRef = useRef(null);
     const isProcessingRef = useRef(false);
     const messagesContainerRef = useRef(null);
-    const [selfMarkId, setSelfMarkId] = [markId, setMarkId];
 
     const currentMessageSendRequestIDRef = useRef(generateUUID());
     const currentMessagesLoadedRequestIDRef = useRef(generateUUID());
@@ -773,7 +769,7 @@ function ChatPage({markId, setMarkId, pageType}) {
                         payload: {
                             command: "Get-MessageContent"
                         },
-                        markId: selfMarkId,
+                        markId: chatMarkId,
                         fromWebsocket: true,
                         notReplyToWebsocket: true
                     }).then(payload => {
@@ -784,7 +780,7 @@ function ChatPage({markId, setMarkId, pageType}) {
                                 command: "Set-MessageContent",
                                 value: payload.value + text
                             },
-                            markId: selfMarkId,
+                            markId: chatMarkId,
                             fromWebsocket: true
                         })
                     })
@@ -832,7 +828,7 @@ function ChatPage({markId, setMarkId, pageType}) {
         setTimeout(() => {
             isProcessingRef.current = false;
         }, 500);
-    }, [selfMarkId]);
+    }, [chatMarkId]);
 
     const onAttachmentRemove = useCallback((attachment) => {
         setAttachments(prev => prev.filter(att => att.serverId !== attachment.serverId));
@@ -963,7 +959,7 @@ function ChatPage({markId, setMarkId, pageType}) {
             });
         };
 
-        if (!selfMarkId) {
+        if (!chatMarkId) {
             emitEvent({
                 type: "page",
                 target: "ChatPage",
@@ -975,8 +971,7 @@ function ChatPage({markId, setMarkId, pageType}) {
                 .then((payload, markId, isReply, id, reply) => {
                     if (payload.success) {
                         setIsNewMarkId(true);
-                        setSelfMarkId(payload.value);
-                        updateURL("/chat/" + payload.value);
+                        onNewChatMarkId(payload.value);
                         sendMessage(payload.value);
                     } else {
                         throw new Error(payload.value);
@@ -986,9 +981,9 @@ function ChatPage({markId, setMarkId, pageType}) {
                     toast.error(t("get_markid_error", {message: error?.message}));
                 });
         } else {
-            sendMessage(selfMarkId);
+            sendMessage(chatMarkId);
         }
-    }, [selfMarkId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType]);
+    }, [chatMarkId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType]);
 
 
     const loadMoreHistory = useCallback(async () => {
@@ -997,7 +992,7 @@ function ChatPage({markId, setMarkId, pageType}) {
                 apiClient
                     .get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                         params: {
-                            markId: selfMarkId,
+                            markId: chatMarkId,
                             prevId: messagesOrder[1]
                         }
                     })
@@ -1030,7 +1025,7 @@ function ChatPage({markId, setMarkId, pageType}) {
         } catch (err) {
             throw err;
         }
-    }, [selfMarkId, checkScrollPosition]);
+    }, [chatMarkId, checkScrollPosition]);
 
     const loadSwitchMessage = useCallback(async (msgId, newMsgId) => {
         if (!(msgId in messagesRef.current)) return false;
@@ -1062,7 +1057,7 @@ function ChatPage({markId, setMarkId, pageType}) {
         if (needsLoad) {
             try {
                 const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                    params: {markId: selfMarkId, nextId: loadStartId},
+                    params: {markId: chatMarkId, nextId: loadStartId},
                 });
 
                 // 合并新加载的消息到临时对象
@@ -1104,7 +1099,7 @@ function ChatPage({markId, setMarkId, pageType}) {
         setMessages(nextMessagesState);
 
         return true;
-    }, [selfMarkId]);
+    }, [chatMarkId]);
 
     const switchMessage = useCallback(async (msg, msgId, delta) => {
 
@@ -1121,13 +1116,13 @@ function ChatPage({markId, setMarkId, pageType}) {
                     msgId,
                     nextMessage: newMsgId
                 },
-                markId: selfMarkId
+                markId: chatMarkId
             });
 
         };
         await loadSwitchMessage(msgId, newMsgId);
         sendSwitchRequest();
-    }, [selfMarkId]);
+    }, [chatMarkId]);
 
     // // ========= 加载相关 =========
 
@@ -1157,7 +1152,7 @@ function ChatPage({markId, setMarkId, pageType}) {
                     requestId: currentMessagesLoadedRequestIDRef.current,
                     messagesOrder: messagesOrderRef.current[0] === '<PREV_MORE>' ? messagesOrderRef.current.slice(1) : messagesOrderRef.current
                 },
-                markId: selfMarkId,
+                markId: chatMarkId,
                 onTimeout: () => {
                     toast.warning(t("cannot_load_tasks"));
                 }
@@ -1212,7 +1207,7 @@ function ChatPage({markId, setMarkId, pageType}) {
         const unsubscribe1 = onEvent({
             type: "message",
             target: "ChatPage",
-            markId: selfMarkId
+            markId: chatMarkId
         })
             .then(({
                        payload: payload,
@@ -1472,7 +1467,7 @@ function ChatPage({markId, setMarkId, pageType}) {
                                         command: "Set-SwitchingMessage",
                                         value: payload.value
                                     },
-                                    markId: selfMarkId,
+                                    markId: chatMarkId,
                                     fromWebsocket: true,
                                     notReplyToWebsocket: true
 
@@ -1486,7 +1481,7 @@ function ChatPage({markId, setMarkId, pageType}) {
                                                 command: "Set-SwitchingMessage",
                                                 value: null
                                             },
-                                            markId: selfMarkId,
+                                            markId: chatMarkId,
                                             fromWebsocket: true,
                                             notReplyToWebsocket: true
                                         })
@@ -1523,7 +1518,7 @@ function ChatPage({markId, setMarkId, pageType}) {
                                 command: "Set-SwitchingMessage",
                                 value: payload.nextMessage
                             },
-                            markId: selfMarkId,
+                            markId: chatMarkId,
                             fromWebsocket: true,
                             notReplyToWebsocket: true
                         }).then(() => {
@@ -1535,7 +1530,7 @@ function ChatPage({markId, setMarkId, pageType}) {
                                         command: "Set-SwitchingMessage",
                                         value: null
                                     },
-                                    markId: selfMarkId,
+                                    markId: chatMarkId,
                                     fromWebsocket: true,
                                     notReplyToWebsocket: true
                                 })
@@ -1554,7 +1549,7 @@ function ChatPage({markId, setMarkId, pageType}) {
         const unsubscribe2 = onEvent({
             type: "websocket",
             target: "onopen",
-            markId: selfMarkId
+            markId: chatMarkId
         }).then(() => {
             if (isMessageLoadedRef.current) emitMessagesLoaded();
         });
@@ -1563,7 +1558,7 @@ function ChatPage({markId, setMarkId, pageType}) {
             unsubscribe1();
             unsubscribe2();
         };
-    }, [selfMarkId, checkScrollPosition, requestScrollToBottom, smoothScrollToBottom, updateStreamingStatus]);
+    }, [chatMarkId, checkScrollPosition, requestScrollToBottom, smoothScrollToBottom, updateStreamingStatus]);
 
     // 同步更新的 MarkID
     useEffect(() => {
@@ -1572,7 +1567,7 @@ function ChatPage({markId, setMarkId, pageType}) {
 
     // 进入新会话的情况
     useEffect(() => {
-        if (selfMarkId === null || selfMarkId === undefined) {
+        if (chatMarkId === null || chatMarkId === undefined) {
             const emptyMessages = {};
             setMessages(emptyMessages);
             messagesRef.current = emptyMessages;
@@ -1588,7 +1583,7 @@ function ChatPage({markId, setMarkId, pageType}) {
                 toast.dismiss(id);
             });
         }
-    }, [selfMarkId])
+    }, [chatMarkId])
 
     // 页面初始化加载消息
     useEffect(() => {
@@ -1601,7 +1596,7 @@ function ChatPage({markId, setMarkId, pageType}) {
 
         const requestConversation = async () => {
             try {
-                let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + selfMarkId);
+                let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + chatMarkId);
 
                 // 设置当前选中模型
                 const foundModel = modelsData.find(item => item.id === data.model)
@@ -1626,7 +1621,7 @@ function ChatPage({markId, setMarkId, pageType}) {
         const requestModels = async () => {
             try {
                 modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
-                    params: markId ? {markId: selfMarkId} : {}
+                    params: {markId: chatMarkId}
                 });
 
                 setModels(modelsData);
@@ -1640,7 +1635,7 @@ function ChatPage({markId, setMarkId, pageType}) {
         const requestMessages = async () => {
             try {
                 const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                    params: {markId: selfMarkId}
+                    params: {markId: chatMarkId}
                 });
 
                 setMessages(messagesData.messages);
@@ -1726,7 +1721,7 @@ function ChatPage({markId, setMarkId, pageType}) {
             isLoadingDataRef.current = false;
         };
 
-        if (selfMarkId && !isLoadingDataRef.current) {
+        if (chatMarkId && !isLoadingDataRef.current) {
             setIsLoading(true);
             loadData();
         } else {
@@ -1736,7 +1731,7 @@ function ChatPage({markId, setMarkId, pageType}) {
 
         setIsLoadingError(false);
         setIsFirstMessageSend(true);
-    }, [selfMarkId, randomMark]);
+    }, [chatMarkId, randomMark]);
 
     const handleChatBoxHeightChange = useCallback((newHeight) => {
         setChatBoxHeight(newHeight);
@@ -1776,12 +1771,12 @@ function ChatPage({markId, setMarkId, pageType}) {
                         style={{maxHeight: 'calc(120vh - 256px)'}}
                     >
                         <MessageContainer
-                            key={selfMarkId}
+                            key={chatMarkId}
                             messagesOrder={messagesOrder}
                             messages={messages}
                             onLoadMore={loadMoreHistory}
                             onSwitchMessage={switchMessage}
-                            markId={selfMarkId}
+                            markId={chatMarkId}
                         />
                     </div>
                     {isLoading && <LoadingScreen/>}
@@ -1799,7 +1794,7 @@ function ChatPage({markId, setMarkId, pageType}) {
                 <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
                     <ChatBox
                         onSendMessage={handleSendMessage}
-                        markId={selfMarkId}
+                        markId={chatMarkId}
                         attachmentsMeta={attachments}
                         setAttachments={setAttachments}
                         onAttachmentRemove={onAttachmentRemove}
