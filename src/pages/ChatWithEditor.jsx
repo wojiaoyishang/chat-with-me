@@ -4,13 +4,13 @@ import CollaboraOnlineEditor from '@/components/editor/CollaboraOnlineEditor.jsx
 import {useIsMobile} from "@/lib/tools.jsx";
 import {onEvent} from "@/context/useEventStore.jsx"; // 引入工具函数
 
-const ChatWithEditor = ({url, chatMarkId, setDocModifiedStatus}) => {
+const ChatWithEditor = ({url, chatMarkId, setDocModifiedStatus, onNewChatMarkId}) => {
 
     const isMobile = useIsMobile(); // 获取移动端状态
     const [isMounted, setIsMounted] = useState(false);
 
     // 状态定义
-    const [leftWidth, setLeftWidth] = useState(75);
+    const [leftWidth, setLeftWidth] = useState(70);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
     const [ghostPos, setGhostPos] = useState(0);
@@ -335,7 +335,7 @@ const ChatWithEditor = ({url, chatMarkId, setDocModifiedStatus}) => {
                 style={isMobile ? {flex: 1, width: '100%'} : desktopChatStyle}
             >
                 <div className="flex-1 overflow-hidden">
-                    <ChatPage chatMarkId={chatMarkId} pageType={"doc"}/>
+                    <ChatPage chatMarkId={chatMarkId} pageType={"doc"} onNewChatMarkId={onNewChatMarkId}/>
                 </div>
             </aside>
         </div>

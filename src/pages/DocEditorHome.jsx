@@ -791,7 +791,8 @@ const DocEditorHome = ({
     ) : (
         <>
             <ChatWithEditor url={docEditorUrl} chatMarkId={chatMarkId}
-                            setDocModifiedStatus={setDocModifiedStatus}/>
+                            setDocModifiedStatus={setDocModifiedStatus}
+                            onNewChatMarkId={onNewChatMarkId}/>
             <DiscardChangesDialog
                 open={isDiscardConfirmOpen}
                 onOpenChange={setIsDiscardConfirmOpen}
