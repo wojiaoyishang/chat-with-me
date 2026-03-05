@@ -191,6 +191,11 @@
   "back_document": "Back to Doc Home",
   "document_home": {
     "not_yet_open": "The document has not been opened yet. After opening the document, you can use the model for conversation.",
-    "open_error": "Open Document Failed: {{message}}"
-  }
+    "open_error": "Open Document Failed: {{message}}",
+    "not_save": "The file has not been saved yet. Is there a mandatory exit?",
+    "unsaved_changes_title": "You have unsaved changes",
+    "unsaved_changes_desc": "The current document has modifications that haven't been saved. If you leave now, these changes will be permanently lost.",
+    "discard_changes": "Discard Changes"
+  },
+  "yes": "Yes"
 }

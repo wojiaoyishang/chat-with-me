@@ -1,14 +1,15 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, {useRef, useState, useCallback, useEffect} from 'react';
 import ChatPage from '@/pages/ChatPage.jsx';
 import CollaboraOnlineEditor from '@/components/editor/CollaboraOnlineEditor.jsx';
-import {getMarkId, useIsMobile} from "@/lib/tools.jsx"; // 引入工具函数
+import {getMarkId, useIsMobile} from "@/lib/tools.jsx";
+import {onEvent} from "@/context/useEventStore.jsx"; // 引入工具函数
 
-const ChatWithEditor = ({ url, markId }) => {
+const ChatWithEditor = ({url, markId, setMarkId, setDocModifiedStatus}) => {
 
     const isMobile = useIsMobile(); // 获取移动端状态
     const [isMounted, setIsMounted] = useState(false);
 
-    // --- 状态定义 ---
+    // 状态定义
     const [leftWidth, setLeftWidth] = useState(75);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
@@ -18,7 +19,7 @@ const ChatWithEditor = ({ url, markId }) => {
     const dragStartTime = useRef(0);
     const startXPos = useRef(0);
 
-    // --- 常量定义 ---
+    // 常量定义
     const MIN_CHAT_PERCENT = 20;
     const MAX_CHAT_PERCENT = 50;
     const MIN_LEFT_PERCENT = 100 - MAX_CHAT_PERCENT;
@@ -27,6 +28,10 @@ const ChatWithEditor = ({ url, markId }) => {
     const CLICK_TOLERANCE_MS = 300;
     const DRAG_TOLERANCE_PX = 5;
 
+    // 编辑器相关
+    const editorRef = useRef(null);
+
+    // 界面相关
     const getSidebarOffset = useCallback(() => {
         if (!containerRef.current) return 0;
         const styles = getComputedStyle(containerRef.current);
@@ -34,7 +39,7 @@ const ChatWithEditor = ({ url, markId }) => {
         return parseFloat(sidebarWidth) || 0;
     }, []);
 
-    // 1. 开始拖拽 (onMouseDown) - 桌面端专用
+    // 开始拖拽 (onMouseDown) - 桌面端专用
     const startResizing = useCallback(
         (e) => {
             // 如果是移动端 或 已经折叠，禁止拖拽
@@ -56,7 +61,7 @@ const ChatWithEditor = ({ url, markId }) => {
         [isCollapsed, getSidebarOffset, isMobile]
     );
 
-    // 2. 拖拽中 (onMouseMove)
+    // 拖拽中 (onMouseMove)
     const onGhostResize = useCallback(
         (e) => {
             if (!isResizing || !containerRef.current) return;
@@ -72,7 +77,7 @@ const ChatWithEditor = ({ url, markId }) => {
         [isResizing, getSidebarOffset]
     );
 
-    // 3. 结束拖拽/点击 (window.onMouseUp)
+    // 结束拖拽/点击 (window.onMouseUp)
     const stopResizing = useCallback(() => {
         if (!isResizing || !containerRef.current) {
             setIsResizing(false);
@@ -111,7 +116,7 @@ const ChatWithEditor = ({ url, markId }) => {
         setIsResizing(false);
     }, [isResizing, ghostPos, getSidebarOffset]);
 
-    // 4. 处理点击逻辑 (兼容桌面和移动端)
+    // 处理点击逻辑 (兼容桌面和移动端)
     const handleDividerClick = useCallback(() => {
         if (isMobile) {
             // 移动端：简单切换状态
@@ -125,7 +130,7 @@ const ChatWithEditor = ({ url, markId }) => {
         }
     }, [isCollapsed, isMobile]);
 
-    // --- 监听全局鼠标事件 ---
+    // 监听全局鼠标事件
     useEffect(() => {
         if (isResizing) {
             window.addEventListener('mousemove', onGhostResize);
@@ -142,9 +147,9 @@ const ChatWithEditor = ({ url, markId }) => {
         return () => clearTimeout(timer);
     }, []);
 
-    // --- 内部组件：分隔条/操作条 ---
+    // 内部组件：分隔条/操作条
     // position: 'left' | 'middle' | 'right' (仅用于根据位置调整样式或文字)
-    const RenderDivider = ({ position }) => {
+    const RenderDivider = ({position}) => {
         // 移动端始终显示宽条(w-8)，桌面端未折叠时显示细条(w-2)
         // 注意：移动端打开AI时(isCollapsed=false)，条在左侧，此时也需要显示宽条方便点击
         const showWideBar = isMobile || isCollapsed;
@@ -174,12 +179,12 @@ const ChatWithEditor = ({ url, markId }) => {
                 // 移动端任何时候都允许点击，桌面端仅折叠时允许点击
                 onClick={(isMobile || isCollapsed) ? handleDividerClick : undefined}
                 title={isMobile ? (isCollapsed ? '打开AI' : '关闭AI') : (isCollapsed ? '展开' : '拖拽调整')}
-                style={{ userSelect: 'none' }}
+                style={{userSelect: 'none'}}
             >
                 {showWideBar && (
                     <div
                         className="writing-vertical-rl text-gray-500 text-xs tracking-widest whitespace-nowrap select-none pointer-events-none"
-                        style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+                        style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}
                     >
                         {labelText}
                     </div>
@@ -195,8 +200,94 @@ const ChatWithEditor = ({ url, markId }) => {
     const showChatPage = !isMobile ? !isCollapsed : !isCollapsed;
 
     // 桌面端宽度计算
-    const desktopDocStyle = { width: isCollapsed ? 'auto' : `${leftWidth}%`, flex: isCollapsed ? '1' : 'none' };
-    const desktopChatStyle = { width: isCollapsed ? '0px' : `${100 - leftWidth}%`, display: isCollapsed ? 'none' : 'flex' };
+    const desktopDocStyle = {width: isCollapsed ? 'auto' : `${leftWidth}%`, flex: isCollapsed ? '1' : 'none'};
+    const desktopChatStyle = {
+        width: isCollapsed ? '0px' : `${100 - leftWidth}%`,
+        display: isCollapsed ? 'none' : 'flex'
+    };
+
+    // 事件监听
+    const handleEditorMessage = useCallback((msg) => {
+        const post = editorRef.current?.post;
+
+        console.log(msg);
+
+        if (msg.MessageId === 'Doc_ModifiedStatus') {
+            if (msg.Values) {
+                if (msg.Values.Modified === true) {
+                    setDocModifiedStatus("Modified");
+                } else {
+                    setDocModifiedStatus("Saved");
+                }
+            }
+        } else if (msg.MessageId === 'Action_Save_Resp') {
+            if (msg.Values) {
+                if (msg.Values.success === true) {
+                    setDocModifiedStatus("Saved");
+                } else {
+                    setDocModifiedStatus("Modified");
+                }
+            }
+        } else if (msg.MessageId === 'CallPythonScript-Result') {  // 代码执行结果
+            // 判断一下是不是来自自定义脚本
+            const Values = msg.Values;
+
+            // 是自定义脚本
+            if (Values.commandName.startsWith("vnd.sun.star.script:chatwithme")) {
+                const result = JSON.parse(Values.result.value);  // 解析函数返回值
+                const msgId = result.msgId;
+                delete result.msgId;
+
+                emitEvent({
+                    "id": msgId,
+                    "payload": {
+                        "value": result.value,
+                        "success": Values.success
+                    },
+                    "isReply": true
+                })
+
+            }
+        }
+
+    }, [setDocModifiedStatus]);
+
+    // 广播事件监听
+    useEffect(() => {
+
+        const post = editorRef.current?.post;
+
+        const unsubscribe = onEvent({
+            type: "page",
+            target: "ChatWithEditor",
+            markId: markId  // 由于工具调用的时候是聊天界面，所以应该绑定的是聊天界面的 markId
+        }).then(({payload, id}) => {
+
+            switch (payload.command) {
+                case "Document-Extract-To-Text":  // 提取为纯文本命令
+
+                    const start = payload.start ? payload.start : 0;
+                    const end = payload.end ? payload.end : -1;
+
+                    post({
+                        'MessageId': 'CallPythonScript',
+                        'ScriptFile': 'chatwithme/operation.py',
+                        'Function': 'extract_to_text',
+                        'Values': {
+                            'start_para': {'type': 'long', 'value': start},
+                            'end_para': {'type': 'long', 'value': end},
+                            'msgId': {'type': 'string', 'value': id }  // 传递 ID，便于回复消息
+                        }
+                    });
+
+                    break;
+            }
+        });
+
+        return () => {
+            unsubscribe();
+        };
+    }, [])
 
     return (
         <div
@@ -209,42 +300,42 @@ const ChatWithEditor = ({ url, markId }) => {
             {!isMobile && isResizing && (
                 <div
                     className="fixed inset-0 z-999 cursor-col-resize bg-transparent"
-                    style={{ userSelect: 'none' }}
+                    style={{userSelect: 'none'}}
                 >
                     <div
                         className="absolute top-0 bottom-0 w-1 bg-blue-500 shadow-xl opacity-80 pointer-events-none"
-                        style={{ left: ghostPos + (containerRef.current?.getBoundingClientRect().left || 0) + getSidebarOffset() }}
+                        style={{left: ghostPos + (containerRef.current?.getBoundingClientRect().left || 0) + getSidebarOffset()}}
                     />
                 </div>
             )}
 
             {/* --- 移动端特殊逻辑：当AI打开时，左侧显示关闭条 --- */}
             {isMobile && !isCollapsed && (
-                <RenderDivider position="left" />
+                <RenderDivider position="left"/>
             )}
 
             {/* --- 左侧：文档编辑器 --- */}
             <main
                 className={`h-full flex flex-col bg-white shadow-lg relative min-w-0 ${!showDocEditor ? 'hidden' : ''}`}
-                style={isMobile ? { flex: 1, width: '100%' } : desktopDocStyle}
+                style={isMobile ? {flex: 1, width: '100%'} : desktopDocStyle}
             >
                 <div className="flex-1 overflow-y-auto">
-                    <CollaboraOnlineEditor iframeUrl={url} />
+                    <CollaboraOnlineEditor iframeUrl={url} onMessageReceived={handleEditorMessage} ref={editorRef}/>
                 </div>
             </main>
 
             {/* --- 中间：分隔条 (桌面端常驻 / 移动端仅在关闭AI时显示在右侧) --- */}
             {(!isMobile || (isMobile && isCollapsed)) && (
-                <RenderDivider position="middle" />
+                <RenderDivider position="middle"/>
             )}
 
             {/* --- 右侧：AI 聊天 --- */}
             <aside
                 className={`h-full border-l border-gray-200 bg-white flex flex-col relative min-w-0 ${!showChatPage ? 'hidden' : ''}`}
-                style={isMobile ? { flex: 1, width: '100%' } : desktopChatStyle}
+                style={isMobile ? {flex: 1, width: '100%'} : desktopChatStyle}
             >
                 <div className="flex-1 overflow-hidden">
-                    <ChatPage markId={markId} />
+                    <ChatPage markId={markId} setMarkId={setMarkId} pageType={"doc"}/>
                 </div>
             </aside>
         </div>

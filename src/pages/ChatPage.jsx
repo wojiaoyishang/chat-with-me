@@ -988,7 +988,7 @@ function ChatPage({markId, setMarkId, pageType}) {
         } else {
             sendMessage(selfMarkId);
         }
-    }, [selfMarkId, isFirstMessageSend, selectedModel, advancedSettingsValues]);
+    }, [selfMarkId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType]);
 
 
     const loadMoreHistory = useCallback(async () => {

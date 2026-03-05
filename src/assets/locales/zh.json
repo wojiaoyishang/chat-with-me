@@ -191,6 +191,11 @@
   "back_document": "回到文档选择",
   "document_home": {
     "not_yet_open": "还尚未打开文档，打开文档之后可以使用模型对话。",
-    "open_error": "打开文档失败：{{message}}"
-  }
+    "open_error": "打开文档失败：{{message}}",
+    "not_save": "文件尚未保存，是否强制退出？",
+    "unsaved_changes_title": "你有未保存的更改",
+    "unsaved_changes_desc": "当前文档尚有未保存的修改，如果现在离开，这些更改将会永久丢失。",
+    "discard_changes": "放弃修改"
+  },
+  "yes": "是的"
 }

@@ -1269,6 +1269,8 @@ code 设置为 401 。
 
 ### type=widget
 
+#### 展示吐司
+
 ```python
 {
     "type": "widget",
@@ -1280,6 +1282,23 @@ code 设置为 401 。
     }
 }
 ```
+
+## ChatWithEditor 事件 (target=ChatWithEditor)
+
+### type=page
+
+#### 获取编辑器文章纯文本内容
+
+```python
+{
+    "command": "Document-Extract-To-Text",
+    "start": 0, 
+    "end": -1  
+}
+```
+
+`start` 和 `end` 两个参数用于确定开始和最终获取的位置，在线编辑 Word 中为起始和结束段落。
+
 
 # 设置组件配置
 

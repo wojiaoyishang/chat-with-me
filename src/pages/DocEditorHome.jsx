@@ -9,7 +9,7 @@ import {
     Settings,
     Trash2,
     Save,
-    ChevronLeft
+    ChevronLeft, AlertTriangle
 } from 'lucide-react';
 import {useTranslation} from "react-i18next";
 import {format} from 'date-fns';
@@ -383,6 +383,39 @@ const NewDocumentModal = memo(({show, onClose, onCreate}) => {
     );
 });
 
+const DiscardChangesDialog = ({open, onOpenChange, onConfirm, t}) => {
+    return (
+        <AlertDialog open={open} onOpenChange={onOpenChange}>
+            <AlertDialogContent className="sm:max-w-md">
+                <AlertDialogHeader className="text-left">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-orange-100 rounded-full">
+                            <AlertTriangle className="w-6 h-6 text-orange-600"/>
+                        </div>
+                        <AlertDialogTitle className="text-lg font-bold text-gray-900">
+                            {t('document_home.unsaved_changes_title')}
+                        </AlertDialogTitle>
+                    </div>
+                    <AlertDialogDescription className="text-gray-600 pt-2">
+                        {t('document_home.unsaved_changes_desc')}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="sm:justify-end gap-2 mt-4">
+                    <AlertDialogCancel className="cursor-pointer min-w-[80px]">
+                        {t('cancel')}
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                        onClick={onConfirm}
+                        className="cursor-pointer min-w-[80px] bg-orange-600 hover:bg-orange-700 focus:ring-orange-500"
+                    >
+                        {t('document_home.discard_changes')}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+};
+
 // ====================================================================
 // 结束：模拟依赖和子组件
 // ====================================================================
@@ -408,6 +441,11 @@ const DocEditorHome = ({markId, setMarkId}) => {
     // 是否打开文档编辑
     const [isOpenDocEditorOpen, setIsOpenDocEditorOpen] = useState(false);
     const [docEditorUrl, setDocEditorUrl] = useState('');
+
+    // 保存状态相关
+    const [isDiscardConfirmOpen, setIsDiscardConfirmOpen] = useState(false);
+    const [docModifiedStatus, setDocModifiedStatus] = useState('Saved');
+    const docModifiedStatusRef = useRef(docModifiedStatus);
 
     // 业务逻辑函数
     const handleFileUpload = (newUploadFiles) => {
@@ -560,8 +598,16 @@ const DocEditorHome = ({markId, setMarkId}) => {
 
     // 关闭编辑器
     const handleCloseDocEditor = useCallback(() => {
+        if (docModifiedStatusRef.current === "Modified") {
+            setIsDiscardConfirmOpen(true);
+            return;
+        }
         setIsOpenDocEditorOpen(false);
-    })
+    }, [])
+
+    useEffect(() => {
+        docModifiedStatusRef.current = docModifiedStatus;
+    }, [docModifiedStatus]);
 
     // 清理上传效果
     useEffect(() => {
@@ -626,7 +672,7 @@ const DocEditorHome = ({markId, setMarkId}) => {
 
         }
 
-    }, [isOpenDocEditorOpen]);
+    }, [isOpenDocEditorOpen, handleCloseDocEditor]);
 
 
     // 渲染元素
@@ -730,7 +776,19 @@ const DocEditorHome = ({markId, setMarkId}) => {
         </div>
 
     ) : (
-        <ChatWithEditor url={docEditorUrl} markId={markId}/>
+        <>
+            <ChatWithEditor url={docEditorUrl} markId={markId} setMarkId={setMarkId}
+                            setDocModifiedStatus={setDocModifiedStatus}/>
+            <DiscardChangesDialog
+                open={isDiscardConfirmOpen}
+                onOpenChange={setIsDiscardConfirmOpen}
+                onConfirm={() => {
+                    setIsDiscardConfirmOpen(false);
+                    setIsOpenDocEditorOpen(false);
+                }}
+                t={t}
+            />
+        </>
     )
 };
 
