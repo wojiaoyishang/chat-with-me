@@ -233,7 +233,7 @@ const ChatWithEditor = ({url, chatMarkId, setDocModifiedStatus, onNewChatMarkId}
             const Values = msg.Values;
 
             // 是自定义脚本
-            if (Values.commandName.startsWith("vnd.sun.star.script:chatwithme")) {
+            if (Values.commandName.startsWith("vnd.sun.star.script:ChatWithMe")) {
                 const result = JSON.parse(Values.result.value);  // 解析函数返回值
                 const msgId = result.msgId;
                 delete result.msgId;
@@ -264,23 +264,85 @@ const ChatWithEditor = ({url, chatMarkId, setDocModifiedStatus, onNewChatMarkId}
         }).then(({payload, id}) => {
 
             switch (payload.command) {
-                case "Document-Extract-To-Text":  // 提取为纯文本命令
 
+                case "Document-Extract-To-Text": { // 提取为纯文本命令
                     const start = payload.start ? payload.start : 0;
                     const end = payload.end ? payload.end : -1;
 
                     post({
                         'MessageId': 'CallPythonScript',
-                        'ScriptFile': 'chatwithme/operation.py',
+                        'ScriptFile': 'ChatWithMe/extract.py',
                         'Function': 'extract_to_text',
                         'Values': {
                             'start_para': {'type': 'long', 'value': start},
                             'end_para': {'type': 'long', 'value': end},
-                            'msgId': {'type': 'string', 'value': id }  // 传递 ID，便于回复消息
+                            'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
                         }
                     });
 
                     break;
+                }
+
+
+                case "Document-Move-Cursor-And-Select": { // 移动光标并可选选中区域
+
+                    const whence = payload.whence ? payload.whence : 1;
+                    const offset = payload.offset ? payload.offset : 0;
+                    const selectLength = payload.selectLength ? payload.selectLength : 0;
+
+                    post({
+                        'MessageId': 'CallPythonScript',
+                        'ScriptFile': 'ChatWithMe/cursor.py',
+                        'Function': 'move_cursor_and_select',
+                        'Values': {
+                            'whence': {'type': 'long', 'value': whence},
+                            'offset': {'type': 'long', 'value': offset},
+                            'select_length': {'type': 'long', 'value': selectLength},
+                            'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
+                        }
+                    });
+
+                    break;
+                }
+
+                case "Document-Get-Cursor-Position": { // 获取光标位置
+
+                    post({
+                        'MessageId': 'CallPythonScript',
+                        'ScriptFile': 'ChatWithMe/cursor.py',
+                        'Function': 'get_cursor_position',
+                        'Values': {
+                            'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
+                        }
+                    });
+
+                    break;
+                }
+
+                case "Document-Find-And-Select-Smart": { // 智能定位与选中
+
+                    const pattern = payload.pattern ? payload.pattern : "";
+                    const group = payload.group !== undefined ? payload.group : 0;
+                    const position = payload.position ? payload.position : "end";
+                    const select = payload.select ? payload.select : false;
+
+                    post({
+                        'MessageId': 'CallPythonScript',
+                        'ScriptFile': 'ChatWithMe/cursor.py', // 假设脚本名为 search.py，可根据实际文件修改
+                        'Function': 'find_and_select_smart',
+                        'Values': {
+                            'pattern': {'type': 'string', 'value': pattern},
+                            'group': {'type': 'long', 'value': group},
+                            'position': {'type': 'string', 'value': position},
+                            'select': {'type': 'boolean', 'value': select},
+                            'msgId': {'type': 'string', 'value': id} // 传递 ID，便于回复消息
+                        }
+                    });
+
+                    break;
+                }
+
+
             }
         });
 

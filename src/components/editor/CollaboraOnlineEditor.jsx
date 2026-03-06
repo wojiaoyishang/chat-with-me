@@ -57,7 +57,7 @@ const CollaboraOnlineEditor = forwardRef(({
             return false;
         }
         try {
-            iframeRef.current.contentWindow.postMessage(
+            iframeRef.current?.contentWindow.postMessage(
                 JSON.stringify(data),
                 targetOrigin
             );
