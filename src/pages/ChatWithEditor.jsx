@@ -4,7 +4,7 @@ import CollaboraOnlineEditor from '@/components/editor/CollaboraOnlineEditor.jsx
 import {useIsMobile} from "@/lib/tools.jsx";
 import {onEvent} from "@/context/useEventStore.jsx"; // 引入工具函数
 
-const ChatWithEditor = ({url, chatMarkId, setDocModifiedStatus, onNewChatMarkId}) => {
+const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, onNewChatMarkId}) => {
 
     const isMobile = useIsMobile(); // 获取移动端状态
     const [isMounted, setIsMounted] = useState(false);
@@ -252,159 +252,159 @@ const ChatWithEditor = ({url, chatMarkId, setDocModifiedStatus, onNewChatMarkId}
 
     }, [setDocModifiedStatus]);
 
-    // 广播事件监听
-    useEffect(() => {
-
-        const post = editorRef.current?.post;
-
-        const unsubscribe = onEvent({
-            type: "page",
-            target: "ChatWithEditor",
-            markId: chatMarkId  // 由于工具调用的时候是聊天界面，所以应该绑定的是聊天界面的 markId
-        }).then(({payload, id, reply}) => {
-
-            switch (payload.command) {
-
-                case "Document-Extract-To-Text": { // 提取为纯文本命令
-                    const start = payload.start ? payload.start : 0;
-                    const end = payload.end ? payload.end : -1;
-
-                    post({
-                        'MessageId': 'CallPythonScript',
-                        'ScriptFile': 'ChatWithMe/extract.py',
-                        'Function': 'extract_to_text',
-                        'Values': {
-                            'start_para': {'type': 'long', 'value': start},
-                            'end_para': {'type': 'long', 'value': end},
-                            'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
-                        }
-                    });
-
-                    break;
-                }
-
-                case "Document-Extract-Selected-To-Html": { // 提取选中文本为 HTML
-
-                    post({
-                        'MessageId': 'CallPythonScript',
-                        'ScriptFile': 'ChatWithMe/extract.py',
-                        'Function': 'extract_selected_to_html',
-                        'Values': {
-                            'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
-                        }
-                    });
-
-                    break;
-                }
-
-
-                case "Document-Move-Cursor-And-Select": { // 移动光标并可选选中区域
-
-                    const whence = payload.whence ? payload.whence : 1;
-                    const offset = payload.offset ? payload.offset : 0;
-                    const selectLength = payload.selectLength ? payload.selectLength : 0;
-
-                    post({
-                        'MessageId': 'CallPythonScript',
-                        'ScriptFile': 'ChatWithMe/cursor.py',
-                        'Function': 'move_cursor_and_select',
-                        'Values': {
-                            'whence': {'type': 'long', 'value': whence},
-                            'offset': {'type': 'long', 'value': offset},
-                            'select_length': {'type': 'string', 'value': selectLength},
-                            'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
-                        }
-                    });
-
-                    break;
-                }
-
-                case "Document-Get-Cursor-Position": { // 获取光标位置
-
-                    post({
-                        'MessageId': 'CallPythonScript',
-                        'ScriptFile': 'ChatWithMe/cursor.py',
-                        'Function': 'get_cursor_position',
-                        'Values': {
-                            'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
-                        }
-                    });
-
-                    break;
-                }
-
-                case "Document-Find-And-Select-Smart": { // 智能定位与选中
-
-                    if (!payload.pattern) {
-                        reply({success: false, value: "The param pattern is missing."});
-                        break;
-                    }
-
-                    const pattern = payload.pattern ? payload.pattern : "";
-                    const group = payload.group !== undefined ? payload.group : 0;
-                    const position = payload.position ? payload.position : "end";
-                    const select = payload.select ? payload.select : false;
-
-                    post({
-                        'MessageId': 'CallPythonScript',
-                        'ScriptFile': 'ChatWithMe/cursor.py',
-                        'Function': 'find_and_select_smart',
-                        'Values': {
-                            'pattern': {'type': 'string', 'value': pattern},
-                            'group': {'type': 'long', 'value': group},
-                            'position': {'type': 'string', 'value': position},
-                            'select': {'type': 'boolean', 'value': select},
-                            'msgId': {'type': 'string', 'value': id} // 传递 ID，便于回复消息
-                        }
-                    });
-
-                    break;
-                }
-
-                case "Document-Insert-Html": { // 插入文本
-
-                    if (!payload.html) {
-                        reply({success: false, value: "The param html is missing."});
-                        break;
-                    }
-                    const mode = payload.mode ? payload.mode : 'merge';
-
-                    post({
-                        'MessageId': 'CallPythonScript',
-                        'ScriptFile': 'ChatWithMe/insert.py',
-                        'Function': 'insert_html',
-                        'Values': {
-                            'html': {'type': 'string', 'value': payload.html},
-                            'mode': {'type': 'string', 'value': mode},
-                            'msgId': {'type': 'string', 'value': id} // 传递 ID，便于回复消息
-                        }
-                    });
-
-                    break;
-                }
-
-                case "Document-Get-All-Available-Fonts": { // 插入文本
-
-                    post({
-                        'MessageId': 'CallPythonScript',
-                        'ScriptFile': 'ChatWithMe/get.py',
-                        'Function': 'get_all_available_fonts',
-                        'Values': {
-                            'msgId': {'type': 'string', 'value': id} // 传递 ID，便于回复消息
-                        }
-                    });
-
-                    break;
-                }
-
-
-            }
-        });
-
-        return () => {
-            unsubscribe();
-        };
-    }, [chatMarkId])
+    // // 广播事件监听，已经改用服务端添加
+    // useEffect(() => {
+    //
+    //     const post = editorRef.current?.post;
+    //
+    //     const unsubscribe = onEvent({
+    //         type: "page",
+    //         target: "ChatWithEditor",
+    //         markId: chatMarkId  // 由于工具调用的时候是聊天界面，所以应该绑定的是聊天界面的 markId
+    //     }).then(({payload, id, reply}) => {
+    //
+    //         switch (payload.command) {
+    //
+    //             case "Document-Extract-To-Text": { // 提取为纯文本命令
+    //                 const start = payload.start ? payload.start : 0;
+    //                 const end = payload.end ? payload.end : -1;
+    //
+    //                 post({
+    //                     'MessageId': 'CallPythonScript',
+    //                     'ScriptFile': 'ChatWithMe/extract.py',
+    //                     'Function': 'extract_to_text',
+    //                     'Values': {
+    //                         'start_para': {'type': 'long', 'value': start},
+    //                         'end_para': {'type': 'long', 'value': end},
+    //                         'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
+    //                     }
+    //                 });
+    //
+    //                 break;
+    //             }
+    //
+    //             case "Document-Extract-Selected-To-Html": { // 提取选中文本为 HTML
+    //
+    //                 post({
+    //                     'MessageId': 'CallPythonScript',
+    //                     'ScriptFile': 'ChatWithMe/extract.py',
+    //                     'Function': 'extract_selected_to_html',
+    //                     'Values': {
+    //                         'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
+    //                     }
+    //                 });
+    //
+    //                 break;
+    //             }
+    //
+    //
+    //             case "Document-Move-Cursor-And-Select": { // 移动光标并可选选中区域
+    //
+    //                 const whence = payload.whence ? payload.whence : 1;
+    //                 const offset = payload.offset ? payload.offset : 0;
+    //                 const selectLength = payload.selectLength ? payload.selectLength : 0;
+    //
+    //                 post({
+    //                     'MessageId': 'CallPythonScript',
+    //                     'ScriptFile': 'ChatWithMe/cursor.py',
+    //                     'Function': 'move_cursor_and_select',
+    //                     'Values': {
+    //                         'whence': {'type': 'long', 'value': whence},
+    //                         'offset': {'type': 'long', 'value': offset},
+    //                         'select_length': {'type': 'string', 'value': selectLength},
+    //                         'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
+    //                     }
+    //                 });
+    //
+    //                 break;
+    //             }
+    //
+    //             case "Document-Get-Cursor-Position": { // 获取光标位置
+    //
+    //                 post({
+    //                     'MessageId': 'CallPythonScript',
+    //                     'ScriptFile': 'ChatWithMe/cursor.py',
+    //                     'Function': 'get_cursor_position',
+    //                     'Values': {
+    //                         'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
+    //                     }
+    //                 });
+    //
+    //                 break;
+    //             }
+    //
+    //             case "Document-Find-And-Select-Smart": { // 智能定位与选中
+    //
+    //                 if (!payload.pattern) {
+    //                     reply({success: false, value: "The param pattern is missing."});
+    //                     break;
+    //                 }
+    //
+    //                 const pattern = payload.pattern ? payload.pattern : "";
+    //                 const group = payload.group !== undefined ? payload.group : 0;
+    //                 const position = payload.position ? payload.position : "end";
+    //                 const select = payload.select ? payload.select : false;
+    //
+    //                 post({
+    //                     'MessageId': 'CallPythonScript',
+    //                     'ScriptFile': 'ChatWithMe/cursor.py',
+    //                     'Function': 'find_and_select_smart',
+    //                     'Values': {
+    //                         'pattern': {'type': 'string', 'value': pattern},
+    //                         'group': {'type': 'long', 'value': group},
+    //                         'position': {'type': 'string', 'value': position},
+    //                         'select': {'type': 'boolean', 'value': select},
+    //                         'msgId': {'type': 'string', 'value': id} // 传递 ID，便于回复消息
+    //                     }
+    //                 });
+    //
+    //                 break;
+    //             }
+    //
+    //             case "Document-Insert-Html": { // 插入文本
+    //
+    //                 if (!payload.html) {
+    //                     reply({success: false, value: "The param html is missing."});
+    //                     break;
+    //                 }
+    //                 const mode = payload.mode ? payload.mode : 'merge';
+    //
+    //                 post({
+    //                     'MessageId': 'CallPythonScript',
+    //                     'ScriptFile': 'ChatWithMe/insert.py',
+    //                     'Function': 'insert_html',
+    //                     'Values': {
+    //                         'html': {'type': 'string', 'value': payload.html},
+    //                         'mode': {'type': 'string', 'value': mode},
+    //                         'msgId': {'type': 'string', 'value': id} // 传递 ID，便于回复消息
+    //                     }
+    //                 });
+    //
+    //                 break;
+    //             }
+    //
+    //             case "Document-Get-All-Available-Fonts": { // 插入文本
+    //
+    //                 post({
+    //                     'MessageId': 'CallPythonScript',
+    //                     'ScriptFile': 'ChatWithMe/get.py',
+    //                     'Function': 'get_all_available_fonts',
+    //                     'Values': {
+    //                         'msgId': {'type': 'string', 'value': id} // 传递 ID，便于回复消息
+    //                     }
+    //                 });
+    //
+    //                 break;
+    //             }
+    //
+    //
+    //         }
+    //     });
+    //
+    //     return () => {
+    //         unsubscribe();
+    //     };
+    // }, [chatMarkId])
 
     return (
         <div
@@ -452,7 +452,8 @@ const ChatWithEditor = ({url, chatMarkId, setDocModifiedStatus, onNewChatMarkId}
                 style={isMobile ? {flex: 1, width: '100%'} : desktopChatStyle}
             >
                 <div className="flex-1 overflow-hidden">
-                    <ChatPage chatMarkId={chatMarkId} pageType={"doc"} onNewChatMarkId={onNewChatMarkId}/>
+                    <ChatPage chatMarkId={chatMarkId} documentMarkId={documentMarkId}
+                              pageType={"doc"} onNewChatMarkId={onNewChatMarkId}/>
                 </div>
             </aside>
         </div>

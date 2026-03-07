@@ -453,7 +453,7 @@ const ChatHeader = memo(({
 ChatHeader.displayName = 'ChatHeader';
 
 // ========== 主组件 ==========
-function ChatPage({chatMarkId, pageType, onNewChatMarkId}) {
+function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
     const {t} = useTranslation();
     const chatPageRef = useRef(null);
     const isProcessingRef = useRef(false);
@@ -943,6 +943,7 @@ function ChatPage({chatMarkId, pageType, onNewChatMarkId}) {
                     role: role,
                     options: advancedSettingsValues,
                     pageType: pageType,
+                    documentMarkId: documentMarkId,
                     requestId: currentMessageSendRequestIDRef.current
                 },
                 markId: markId
@@ -983,7 +984,7 @@ function ChatPage({chatMarkId, pageType, onNewChatMarkId}) {
         } else {
             sendMessage(chatMarkId);
         }
-    }, [chatMarkId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType]);
+    }, [chatMarkId, documentMarkId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType]);
 
 
     const loadMoreHistory = useCallback(async () => {
