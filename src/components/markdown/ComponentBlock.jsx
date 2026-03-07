@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import {Check, ChevronDown, CircleX, Code, Lightbulb, Loader2, Wrench, X, Bot} from "lucide-react";
+import {Check, ChevronDown, CircleX, Code, Lightbulb, Loader2, Wrench, X, Bot, BookOpen} from "lucide-react";
 
 import MarkdownRenderer from "./MarkdownRenderer.jsx";
 import ThreeDotLoading from "@/components/ui/ThreeDotLoading.jsx";
@@ -409,6 +409,17 @@ const ComponentBlock = React.memo(({content, id, type}) => {
                         defaultExpanded={true}
                     />
                 );
+            case 'doc':
+                return (
+                    <StatusWidget
+                        {...commonProps}
+                        activeColor="text-cyan-600"
+                        doneColor="text-teal-600"
+                        Icon={BookOpen}
+                        title="Wirting"
+                        defaultExpanded={false}
+                    />
+                );
             case 'agent':
                 return (
                     <AgentWidget
@@ -455,7 +466,6 @@ const ComponentBlock = React.memo(({content, id, type}) => {
             prev.id === next.id &&
             prev.type === next.type)
     }
-
 );
 ComponentBlock.displayName = 'ComponentBlock';
 

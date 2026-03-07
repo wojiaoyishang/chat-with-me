@@ -44,7 +44,13 @@ const CodeBlock = memo(({ codeString = '', language }) => {
             const hljsInst = await loadHljs();
 
             if (language && !hljsInst.getLanguage(language) && !window.hljsFailedLanguages.has(language)) {
-                const langPath = `/node_modules/highlight.js/es/languages/${language}.js`;
+
+                // 映射语言表
+                const mapping_language = {
+                    html: 'xml'
+                }
+
+                const langPath = `/node_modules/highlight.js/es/languages/${mapping_language[language] || language}.js`;
                 const loadModule = languageModules[langPath];
 
                 if (loadModule) {

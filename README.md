@@ -1306,6 +1306,22 @@ code 设置为 401 。
 }
 ```
 
+#### 提取选中文本为 HTML
+
+```python
+{
+    "command": "Document-Extract-Selected-To-Html"
+}
+```
+返回响应：
+
+```python
+{
+    "success": True,
+    "value": "<html>..."
+}
+```
+
 #### 偏移鼠标并选择
 
 ```python
@@ -1313,7 +1329,7 @@ code 设置为 401 。
     "command": "Document-Move-Cursor-And-Select",
     "whence": 0,  # 位置基准（整数）：0=从开始 (SEEK_SET)，1=从当前 (SEEK_CUR)，2=从结尾 (SEEK_END)
     "offset": -1,  # 相对偏移（可为负数，向左移动）
-    "selectLength": 0  # 选中长度（>0 向右选中，<0 向左选中，0=不选中/折叠）
+    "selectLength": 0  # 选中长度（>0 向右选中，<0 向左选中，0=不选中/折叠）, 如果为 'back' 选到文档尾，如果为 'forward' 选到文档头
 }
 ```
 
@@ -1362,6 +1378,40 @@ code 设置为 401 。
         "pos": 105,  # 坐标
         "text": "匹配到的具体内容"  # 实际匹配到的文本内容
     }
+}
+```
+
+#### 插入文本
+
+在光标处插入文本，如果光标选中内容就覆盖选择处。
+
+```python
+{
+    "command": "Document-Insert-Html",
+    "html": "HTML内容",  # 字符串：用于搜索的正则模式
+    "mode": "merge"  # 模式
+}
+```
+
+mode参数参考：
+
+- 'merge' (默认): 合并模式。HTML 样式被保留，未定义的样式继承当前光标位置的上下文。
+- 'override': 覆盖模式。在插入前清除选区的所有硬格式（手动加粗、颜色等），确保 HTML 样式占据主导。
+- 'retain': 保留模式。剥离所有 HTML 标签，仅将纯文本按当前光标处的格式插入。
+
+
+#### 获取所有可用字体
+
+```python
+{
+    "command": "Document-Get-All-Available-Fonts",
+}
+```
+
+```python
+{
+    "success": True,
+    "value": []  # 可用字体名称
 }
 ```
 
