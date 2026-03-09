@@ -84,7 +84,7 @@ const createComponents = (withCustomComponent) => {
             );
         },
         table: ({children}) => (
-            <div className="my-4 w-full overflow-hidden rounded-xl border border-gray-200">
+            <div className="my-4 w-full overflow-x-auto rounded-xl border border-gray-200 pretty-scrollbar">
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
                     {children}
                 </table>

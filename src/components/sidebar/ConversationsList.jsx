@@ -291,9 +291,9 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                                             }`}>
                                             <button
                                                 onClick={() => handleSelectConversation(conv.markId)}
-                                                className="flex-1 text-left text-base cursor-pointer"
+                                                className="flex-1 min-w-0 text-left text-base cursor-pointer"
                                             >
-                                                <div className="relative overflow-hidden flex-1 text-base">
+                                                <div className="relative overflow-hidden flex-1 min-w-0">
                                                     <span
                                                         className={`font-medium truncate block transition-all duration-300 ${
                                                             isTitleTransitioning ? 'opacity-0' : 'opacity-100'
@@ -303,7 +303,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                                                     {isTitleTransitioning && oldTitle && (
                                                         <span
                                                             className="font-medium truncate block absolute inset-0 opacity-0">
-                                                            {oldTitle}
+                                                                {oldTitle}
                                                         </span>
                                                     )}
                                                 </div>

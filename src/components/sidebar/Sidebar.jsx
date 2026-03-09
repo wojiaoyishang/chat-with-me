@@ -1,6 +1,6 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut, Trash, MessageSquare} from 'lucide-react';
-import {generateUUID, UnifiedErrorScreen, UnifiedLoadingScreen, updateURL} from "@/lib/tools.jsx";
+import {getLocalSetting, setLocalSetting, updateURL} from "@/lib/tools.jsx";
 import {Transition} from '@headlessui/react';
 import {useTranslation} from "react-i18next";
 import {useIsMobile} from "@/lib/tools.jsx";
@@ -35,16 +35,33 @@ const Sidebar = ({chatMarkId, setChatMarkId, pageType, setPageType, settings, se
     const conversationsListRef = useRef();
     const [registeredButtons, setRegisteredButtons] = useState([]);
 
+    // 保存 SidebarOpen 状态（区分桌面端和移动端初始设置）
+    const handleSetIsOpen = useCallback((newValue) => {
+        setIsOpen(newValue);
+        const isDesktopMode = !isMobile;
+        const key = isDesktopMode ? 'sidebarOpenDesktop' : 'sidebarOpenMobile';
+        setLocalSetting(key, newValue);
+    }, [isMobile]);
+
     useEffect(() => {
         setOnChange(setRegisteredButtons);
         return () => setOnChange(null);
     }, []);
 
-    // 侧边栏宽度响应
+    // 侧边栏宽度响应（加载本地保存的状态，桌面默认 true，移动端默认 false）
     useEffect(() => {
         const mql = window.matchMedia('(min-width: 768px)');
-        setIsOpen(mql.matches);
-        const handler = (e) => setIsOpen(e.matches);
+
+        const updateSidebarState = () => {
+            const isDesktopMode = mql.matches;
+            const key = isDesktopMode ? 'sidebarOpenDesktop' : 'sidebarOpenMobile';
+            const defaultValue = isDesktopMode; // 桌面端默认打开，移动端默认关闭
+            const saved = getLocalSetting(key, defaultValue);
+            setIsOpen(saved);
+        };
+
+        updateSidebarState();
+        const handler = (e) => updateSidebarState();
         mql.addEventListener('change', handler);
         return () => mql.removeEventListener('change', handler);
     }, []);
@@ -53,7 +70,7 @@ const Sidebar = ({chatMarkId, setChatMarkId, pageType, setPageType, settings, se
         document.documentElement.style.setProperty('--sidebar-width', isOpen ? '16rem' : '0px');
     }, [isOpen]);
 
-    // 移动端滑动（保持不变）
+    // 移动端滑动
     useEffect(() => {
         if (!isMobile) return;
         let startX = 0, startY = 0;
@@ -63,8 +80,8 @@ const Sidebar = ({chatMarkId, setChatMarkId, pageType, setPageType, settings, se
             const deltaX = endX - startX;
             const deltaY = Math.abs(e.changedTouches[0].clientY - startY);
             if (deltaY > 50) return;
-            if (!isOpen && deltaX > 30 && startX < 150) setIsOpen(true);
-            else if (isOpen && deltaX < -30) setIsOpen(false);
+            if (!isOpen && deltaX > 30 && startX < 150) handleSetIsOpen(true);
+            else if (isOpen && deltaX < -30) handleSetIsOpen(false);
         };
         window.addEventListener('touchstart', handleTouchStart);
         window.addEventListener('touchend', handleTouchEnd);
@@ -133,7 +150,7 @@ const Sidebar = ({chatMarkId, setChatMarkId, pageType, setPageType, settings, se
                     {/* LOGO */}
                     <div className="flex items-center justify-between p-4 border-b">
                         {logoElement}
-                        <button onClick={() => setIsOpen(false)} className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer">
+                        <button onClick={() => handleSetIsOpen(false)} className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer">
                             <X className="w-5 h-5"/>
                         </button>
                     </div>
@@ -269,11 +286,11 @@ const Sidebar = ({chatMarkId, setChatMarkId, pageType, setPageType, settings, se
             {/* 移动端遮罩和按钮（保持不变） */}
             <Transition show={isOpen} enter="transition-opacity duration-300" enterFrom="opacity-0" enterTo="opacity-100"
                         leave="transition-opacity duration-300" leaveFrom="opacity-100" leaveTo="opacity-0">
-                <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setIsOpen(false)}/>
+                <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => handleSetIsOpen(false)}/>
             </Transition>
             <Transition show={!isOpen} enter="transition-opacity duration-300" enterFrom="opacity-0" enterTo="opacity-100"
                         leave="transition-opacity duration-300" leaveFrom="opacity-100" leaveTo="opacity-0">
-                <button onClick={() => setIsOpen(true)}
+                <button onClick={() => handleSetIsOpen(true)}
                         className="fixed left-0 top-1/2 -translate-y-1/2 z-50 w-4 h-32 bg-gray-100 shadow-lg flex items-center justify-center text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
                         style={{clipPath: 'polygon(0 0, 100% 20%, 100% 80%, 0 100%)'}}>
                     <ChevronRight className="w-3 h-3"/>

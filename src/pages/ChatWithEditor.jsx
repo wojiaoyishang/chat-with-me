@@ -233,21 +233,21 @@ const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, 
             const Values = msg.Values;
 
             // 是自定义脚本
-            if (Values.commandName.startsWith("vnd.sun.star.script:ChatWithMe")) {
-                const result = JSON.parse(Values.result.value);  // 解析函数返回值
-                const msgId = result.msgId;
-                delete result.msgId;
-
-                emitEvent({
-                    "id": msgId,
-                    "payload": {
-                        "value": result.value,
-                        "success": Values.success
-                    },
-                    "isReply": true
-                })
-
-            }
+            // if (Values.commandName.startsWith("vnd.sun.star.script:ChatWithMe")) {
+            //     const result = JSON.parse(Values.result.value);  // 解析函数返回值
+            //     const msgId = result.msgId;
+            //     delete result.msgId;
+            //
+            //     emitEvent({
+            //         "id": msgId,
+            //         "payload": {
+            //             "value": result.value,
+            //             "success": Values.success
+            //         },
+            //         "isReply": true
+            //     })
+            //
+            // }
         }
 
     }, [setDocModifiedStatus]);

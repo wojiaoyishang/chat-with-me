@@ -60,11 +60,11 @@ function ToggleButton({
     function renderIcon() {
         if (iconType === 'library' && iconData) {
             const Icon = iconData;
-            return <Icon className={iconColor} />;
+            return <Icon className={`w-4.5 h-4.5 ${iconColor}`} />;
         } else if (iconType === 'svg' && iconData) {
             return (
                 <span
-                    className={`w-5 h-5 ${iconColor}`}
+                    className={`w-4.5 h-4.5 ${iconColor}`}
                     dangerouslySetInnerHTML={{
                         __html: typeof iconData === 'string' ? iconData : ''
                     }}
@@ -74,7 +74,7 @@ function ToggleButton({
             return (
                 <img
                     src={iconData}
-                    className={`w-5 h-5 ${iconColor}`}
+                    className={`w-4.5 h-4.5 ${iconColor}`}
                     width="20"
                     height="20"
                     alt={t(textKey)} //  国际化 alt 文本

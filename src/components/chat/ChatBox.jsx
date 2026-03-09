@@ -23,7 +23,6 @@ import {
 } from '@/components/ui/avatar';
 
 import SimpleMDEditor from '@/components/editor/SimpleMDEditor.jsx';
-import ToggleButton from '@/components/chat/ChatButton.jsx';
 import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
 import ChatBoxHeader from './ChatBoxHeader';
 import ToolButtons from './ToolButtons';
@@ -673,7 +672,7 @@ function ChatBox({
 
         if (data.builtin_tools) {
             data.builtin_tools.forEach(tool => {
-                newBuiltinStatus[tool.name] = false;
+                newBuiltinStatus[tool.name] = tool?.isActive ?? false;
             });
             setTools(data.builtin_tools);
         }
@@ -925,7 +924,7 @@ function ChatBox({
         }
     }, [chatboxSetup, onSendMessage, setAttachments, toolsStatus, markId]);
 
-    // 在 ChatBox 组件内部定义渲染菜单项的函数
+// 在 ChatBox 组件内部定义渲染菜单项的函数
     const renderMenuItems = useCallback((items, parentPath = []) => {
         return items.map((item, index) => {
             if (item.type === 'label') {
@@ -969,21 +968,23 @@ function ChatBox({
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
                             <span>{t(item.text)}</span>
                         </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
+                        <DropdownMenuSubContent className="max-h-[50vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar-thumb-rounded-full scrollbar-track-rounded-full rounded-md">
                             {!isDisabled && (
-                                <DropdownMenuItem
-                                    onSelect={(e) => e.preventDefault()}
-                                    onClick={handleToggleAll}
-                                    className="flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100"
-                                >
-                                    <span>{t('select_all')}</span>
-                                    {checkState === 'checked' && <Check className="ml-auto w-4 h-4 text-blue-500"/>}
-                                    {checkState === 'indeterminate' &&
-                                        <Minus className="ml-auto w-4 h-4 text-blue-500"/>}
-                                    {checkState === 'unchecked' && <Square className="ml-auto w-4 h-4 text-gray-500"/>}
-                                </DropdownMenuItem>
+                                <div className="sticky top-0 bg-white z-10 rounded-t-md">
+                                    <DropdownMenuItem
+                                        onSelect={(e) => e.preventDefault()}
+                                        onClick={handleToggleAll}
+                                        className="flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100"
+                                    >
+                                        <span>{t('select_all')}</span>
+                                        {checkState === 'checked' && <Check className="ml-auto w-4 h-4 text-blue-500"/>}
+                                        {checkState === 'indeterminate' &&
+                                            <Minus className="ml-auto w-4 h-4 text-blue-500"/>}
+                                        {checkState === 'unchecked' && <Square className="ml-auto w-4 h-4 text-gray-500"/>}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                </div>
                             )}
-                            {!isDisabled && <DropdownMenuSeparator/>}
                             {isDisabled ? null : renderMenuItems(item.children, currentPath)}
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
@@ -1037,7 +1038,7 @@ function ChatBox({
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
                             <span>{t(item.text)}</span>
                         </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
+                        <DropdownMenuSubContent className="max-h-[50vh] rounded-md">
                             {item.children.map(child => {
                                 const childIsDisabled = child.disabled || false;
                                 const isSelected = currentValue === child.name;

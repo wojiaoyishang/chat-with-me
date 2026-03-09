@@ -1,7 +1,7 @@
-import React, { useState, Fragment, useMemo, useCallback, memo } from 'react';
-import { Transition } from '@headlessui/react';
-import { IoMdAdd } from 'react-icons/io';
-import { RotateCw, Search, Earth } from 'lucide-react';
+import React, {useState, Fragment, useMemo, useCallback, memo} from 'react';
+import {Transition} from '@headlessui/react';
+import {IoMdAdd} from 'react-icons/io';
+import {RotateCw, Search, Earth, Puzzle} from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,8 +14,8 @@ import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
  * 单个内置工具按钮组件
  * 使用memo包裹，避免不必要的重新渲染
  */
-const BuiltinToolButton = memo(({ tool, isActive, onToggle }) => {
-    const iconMap = { search: Search, refresh: RotateCw, earth: Earth };
+const BuiltinToolButton = memo(({tool, isActive, onToggle}) => {
+    const iconMap = {search: Search, refresh: RotateCw, earth: Earth, puzzle: Puzzle};
     let iconData = null;
 
     if (tool.iconType === 'library') {
@@ -65,37 +65,37 @@ const ToolButtons = memo(({
                               extraTools,
                               renderMenuItems,
                               setToolsLoadedStatus,
-                              tools,           // 新增：接收内置工具列表
-                              toolsStatus,     // 新增：接收工具状态
-                              setToolsStatus,  // 新增：接收设置工具状态的函数
+                              tools,
+                              toolsStatus,
+                              setToolsStatus,
                               t
                           }) => {
     const [open, setOpen] = useState(false);
 
-    // 使用useMemo缓存内置工具按钮
+    const handleToggle = useCallback((toolName, e, newIsActive) => {
+        setToolsStatus(prev => ({
+            ...prev,
+            builtin_tools: {...prev.builtin_tools, [toolName]: newIsActive}
+        }));
+    }, [setToolsStatus]);
+
     const builtinToolButtons = useMemo(() => {
         if (!tools || tools.length === 0) return null;
 
         return tools.map((tool) => {
-            const isActive = toolsStatus?.builtin_tools?.[tool.name] ?? false;
 
-            const handleToggle = useCallback((e, newIsActive) => {
-                setToolsStatus(prev => ({
-                    ...prev,
-                    builtin_tools: { ...prev.builtin_tools, [tool.name]: newIsActive }
-                }));
-            }, [tool.name, setToolsStatus]);
+            const isActive = toolsStatus?.builtin_tools?.[tool.name] ?? false;
 
             return (
                 <BuiltinToolButton
                     key={tool.name}
                     tool={tool}
                     isActive={isActive}
-                    onToggle={handleToggle}
+                    onToggle={(e, newIsActive) => handleToggle(tool.name, e, newIsActive)}
                 />
             );
         });
-    }, [tools, toolsStatus, setToolsStatus]);
+    }, [tools, toolsStatus, handleToggle]);
 
     return (
         <div className="flex items-center space-x-1">
@@ -107,7 +107,7 @@ const ToolButtons = memo(({
                         className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
                         aria-label={t('extra_tools')}
                     >
-                        <IoMdAdd />
+                        <IoMdAdd/>
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="bg-white p-1 shadow-lg rounded-md">
@@ -161,7 +161,7 @@ const ToolButtons = memo(({
                                 className="text-blue-500 hover:text-blue-700 text-sm flex items-center cursor-pointer"
                                 aria-label={t('reload_tools')}
                             >
-                                <RotateCw className="w-4 h-4 mr-1" />
+                                <RotateCw className="w-4 h-4 mr-1"/>
                                 {t('reload_tools')}
                             </button>
                         </div>
@@ -182,7 +182,7 @@ const ToolButtons = memo(({
                     }}
                 >
                     <Transition.Child as="div">
-                        <ThreeDotLoading />
+                        <ThreeDotLoading/>
                     </Transition.Child>
                 </Transition>
             </div>
