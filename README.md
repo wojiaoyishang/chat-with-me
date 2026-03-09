@@ -1826,3 +1826,5 @@ const exampleConfig = [
 # 默认前端 LocalStorage 配置
 
 - ShowShiftEnterNewlineTip 布尔值，是否在桌面端第一次显示按下 Shift + Enter 提示，默认为 true
+- sidebarOpenDesktop 布尔值，是否在桌面端打开 Sidebar
+- sidebarOpenMobile 布尔值，是否在移动端打开 Sidebar

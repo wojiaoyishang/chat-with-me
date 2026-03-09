@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/popover";
 import {Info} from "lucide-react";
 import {useIsMobile} from "@/lib/tools.jsx";
+import {createPortal} from "react-dom";
 
 // ─── Context ───────────────────────────────────────────────────────
 const SettingsContext = createContext(null);
@@ -134,10 +135,10 @@ function TipWrapper({tips, children}) {
 }
 
 // ─── Row Layout ────────────────────────────────────────────────────
-function SettingRow({text, tips, children, expanded, className, noTopPadding = false}) {
+function SettingRow({text, tips, children, expanded, className, noTopPadding = false, noLeftRightPadding = false}) {
     return (
         <div
-            className={`${className} flex items-center justify-between min-h-[35px] py-2.5 px-4 gap-3 last-of-type:border-b-0 ${expanded ? "flex-wrap" : ""} ${noTopPadding ? "pt-0 -mt-2.5" : ""}`}>
+            className={`${className} flex items-center justify-between min-h-[35px] gap-3 last-of-type:border-b-0 ${expanded ? "flex-wrap" : ""} ${noTopPadding ? "pt-0 -mt-2.5" : ""} ${noLeftRightPadding ? "" : "py-2.5 px-4"}`}>
             <div className="flex items-center gap-1.5 flex-shrink-0 min-w-0">
                 <TipWrapper tips={tips}>
                     <span className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">{text}</span>
@@ -467,52 +468,133 @@ function SelectItem({item, path}) {
     const options = item.options || [];
     const selected = options.find((o) => o.value === val) || options[0] || null;
 
-    return (
-        <SettingRow text={item.text} tips={item.tips}>
-            <Listbox value={val} onChange={(v) => update(path, v)}>
-                <div className="relative">
-                    <ListboxButton
-                        className="flex items-center gap-1.5 h-[34px] px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer text-sm font-sans min-w-[120px] text-left transition-colors hover:border-[#2563eb] dark:hover:border-[#3b82f6]">
-                        <span>{selected?.label ?? val}</span>
-                        <svg className="w-4 h-4 text-[#656d76] dark:text-[#9ca3af] ml-auto flex-shrink-0"
-                             viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd"
-                                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                                  clipRule="evenodd"/>
-                        </svg>
-                    </ListboxButton>
-                    <Transition
-                        leave="transition-opacity duration-100"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <ListboxOptions
-                            className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] min-w-[var(--button-width)] mt-1">
-                            {options.map((opt) => (
-                                <ListboxOption
-                                    key={opt.value}
-                                    value={opt.value}
-                                    className="flex items-center justify-between px-2.5 py-2 rounded cursor-pointer text-sm text-[#1a1d21] dark:text-[#e4e7eb] transition-colors hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] data-[selected]:text-[#2563eb] dark:data-[selected]:text-[#3b82f6] data-[selected]:font-medium"
+    const containerRef = useRef(null);
+    const buttonRef = useRef(null);
+    const [isNarrow, setIsNarrow] = useState(false);
+    const [optionsPosition, setOptionsPosition] = useState(null);
+
+    useEffect(() => {
+        const checkWidth = () => {
+            if (containerRef.current) {
+                const width = containerRef.current.offsetWidth;
+                setIsNarrow(width < 300); // Adjust threshold as needed, e.g., 300px
+            }
+        };
+
+        checkWidth();
+        window.addEventListener('resize', checkWidth);
+        return () => window.removeEventListener('resize', checkWidth);
+    }, []);
+
+    const selectComponent = (
+        <Listbox value={val} onChange={(v) => update(path, v)}>
+            {({ open }) => {
+                useEffect(() => {
+                    if (open) {
+                        const updatePos = () => {
+                            if (buttonRef.current) {
+                                const rect = buttonRef.current.getBoundingClientRect();
+                                setOptionsPosition({
+                                    top: rect.top + window.scrollY + rect.height + 2, // +2 for spacing
+                                    left: rect.left + window.scrollX,
+                                    minWidth: rect.width,
+                                });
+                            }
+                        };
+
+                        updatePos();
+                        window.addEventListener('resize', updatePos);
+                        window.addEventListener('scroll', updatePos, true);
+
+                        return () => {
+                            window.removeEventListener('resize', updatePos);
+                            window.removeEventListener('scroll', updatePos, true);
+                        };
+                    } else {
+                        setOptionsPosition(null);
+                    }
+                }, [open]);
+
+                return (
+                    <>
+                        <ListboxButton
+                            ref={buttonRef}
+                            className={`flex items-center gap-1.5 h-[34px] px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer text-sm font-sans ${isNarrow ? "w-full" : "min-w-[120px]"} text-left transition-colors hover:border-[#2563eb] dark:hover:border-[#3b82f6]`}
+                        >
+                            <span className="truncate">{selected?.label ?? val}</span>
+                            <svg className="w-4 h-4 text-[#656d76] dark:text-[#9ca3af] ml-auto flex-shrink-0"
+                                 viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd"
+                                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                      clipRule="evenodd"/>
+                            </svg>
+                        </ListboxButton>
+                        {open && optionsPosition && createPortal(
+                            <Transition
+                                leave="transition-opacity duration-100"
+                                leaveFrom="opacity-100"
+                                leaveTo="opacity-0"
+                            >
+                                <ListboxOptions
+                                    static
+                                    style={{
+                                        position: 'absolute',
+                                        top: `${optionsPosition.top}px`,
+                                        left: `${optionsPosition.left}px`,
+                                        minWidth: `${optionsPosition.minWidth}px`,
+                                        width: 'max-content',
+                                    }}
+                                    className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] max-w-[calc(100vw-2rem)]"
                                 >
-                                    {({selected: isSel}) => (
-                                        <>
-                                            <span>{opt.label}</span>
-                                            {isSel && (
-                                                <svg className="w-4 h-4 text-[#2563eb] dark:text-[#3b82f6]"
-                                                     viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd"
-                                                          d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                                                          clipRule="evenodd"/>
-                                                </svg>
+                                    {options.map((opt) => (
+                                        <ListboxOption
+                                            key={opt.value}
+                                            value={opt.value}
+                                            className="flex items-center justify-between px-2.5 py-2 rounded cursor-pointer text-sm text-[#1a1d21] dark:text-[#e4e7eb] transition-colors hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] data-[selected]:text-[#2563eb] dark:data-[selected]:text-[#3b82f6] data-[selected]:font-medium"
+                                        >
+                                            {({selected: isSel}) => (
+                                                <>
+                                                    <span className="truncate">{opt.label}</span>
+                                                    {isSel && (
+                                                        <svg className="w-4 h-4 text-[#2563eb] dark:text-[#3b82f6]"
+                                                             viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fillRule="evenodd"
+                                                                  d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                                                                  clipRule="evenodd"/>
+                                                        </svg>
+                                                    )}
+                                                </>
                                             )}
-                                        </>
-                                    )}
-                                </ListboxOption>
-                            ))}
-                        </ListboxOptions>
-                    </Transition>
-                </div>
-            </Listbox>
+                                        </ListboxOption>
+                                    ))}
+                                </ListboxOptions>
+                            </Transition>,
+                            document.body
+                        )}
+                    </>
+                );
+            }}
+        </Listbox>
+    );
+
+    if (isNarrow) {
+        return (
+            <>
+                <SettingRow text={item.text} tips={item.tips} expanded={false} />
+                <SettingRow expanded={true} noTopPadding={false} noLeftRightPadding={true} className="px-1 mb-1">
+                    <div className="flex-1" ref={containerRef}>
+                        {selectComponent}
+                    </div>
+                </SettingRow>
+            </>
+        );
+    }
+
+    return (
+        <SettingRow text={item.text} tips={item.tips} expanded={false}>
+            <div ref={containerRef}>
+                {selectComponent}
+            </div>
         </SettingRow>
     );
 }
