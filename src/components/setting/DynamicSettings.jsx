@@ -238,6 +238,25 @@ function NumberSliderItem({item, path}) {
 
     const toggleNull = () => setIsNull((prev) => !prev);
 
+    const sliderRef = useRef(null);
+
+    useEffect(() => {
+        const sliderElement = sliderRef.current;
+        if (!sliderElement || !hasRange || isNull) return;
+
+        const handleWheel = (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -upDownStep : upDownStep;
+            handleChange(val + delta);
+        };
+
+        sliderElement.addEventListener('wheel', handleWheel, { passive: false });
+
+        return () => {
+            sliderElement.removeEventListener('wheel', handleWheel);
+        };
+    }, [val, hasRange, isNull, upDownStep, handleChange]);
+
     // 紧凑版数字输入控件（text 类型 + 右侧垂直按钮 + 限制宽度）
     const renderCompactNumberInput = () => (
         <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md overflow-hidden bg-white dark:bg-[#1c1e21] w-[80px]">
@@ -332,14 +351,16 @@ function NumberSliderItem({item, path}) {
                         transition={{ duration: 0.3 }}
                     >
                         <SettingRow fullWidth={true}>
-                            <Slider
-                                className="w-full"
-                                min={item.min}
-                                max={item.max}
-                                step={step}
-                                value={[val]}
-                                onValueChange={([v]) => handleChange(v)}
-                            />
+                            <div ref={sliderRef} className="w-full">
+                                <Slider
+                                    className="w-full"
+                                    min={item.min}
+                                    max={item.max}
+                                    step={step}
+                                    value={[val]}
+                                    onValueChange={([v]) => handleChange(v)}
+                                />
+                            </div>
                         </SettingRow>
                     </motion.div>
                 </AnimatePresence>

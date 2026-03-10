@@ -1716,8 +1716,7 @@ default:
 
 智能提示组件：
 
-- 桌面：`Tooltip`
-- 移动端：`Popover`
+`Popover`
 - 已优化点击事件（`stopPropagation` + 独立渲染）
 
 ### useSettings Context
@@ -1762,7 +1761,7 @@ const exampleConfig = [
         integer: true,
         default: 3000
     },
-    {type: "number", name: "opacity", text: "Opacity", min: 0, max: 1, step: 0.05, integer: false, default: 0.85},
+    {type: "number", name: "opacity", text: "Opacity", min: 0, max: 1, step: 0.05, integer: false, default: 0.85, defaultNull: true, nullable: true},
     {type: "heading", text: "Content"},
     {
         type: "text",
