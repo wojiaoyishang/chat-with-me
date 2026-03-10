@@ -1628,6 +1628,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 setModels(modelsData);
 
                 if (modelsData.length > 0) {
+                    setSelectedModel(modelsData[0]);
                     if (modelsData[0].options) {
                         setAdvancedSettings(modelsData[0].options);
                     }
