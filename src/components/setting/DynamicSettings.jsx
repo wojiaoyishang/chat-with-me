@@ -190,14 +190,19 @@ function SwitchItem({item, path}) {
 // ─── Number Slider ─────────────────────────────────────────────────
 function NumberSliderItem({item, path}) {
     const {values, update} = useSettings();
-    let val = deepGet(values, path) ?? item.default ?? (item.min || 0);
+    let val = deepGet(values, path);
     const hasRange = item.min !== undefined && item.max !== undefined;
     const step = item.step || 1;
     const upDownStep = item.step || 1;
     const nullable = !!item.nullable;
 
-    // Nullable mode state
-    const [isNull, setIsNull] = useState(val === null);
+    // 如果 initialValues 没有设置，且 (item.default === null || item.defaultNull === true)，则默认 null
+    const defaultVal = (val === undefined)
+        ? (item.default ?? (item.nullable ? null : (item.min || 0)))
+        : val;
+
+    // Nullable mode state，默认根据 defaultVal 判断
+    const [isNull, setIsNull] = useState(defaultVal === null || !!item.defaultNull);
     useEffect(() => {
         if (isNull && val !== null) {
             update(path, null);
@@ -206,9 +211,7 @@ function NumberSliderItem({item, path}) {
         }
     }, [isNull, path, update, item.default, item.min]);
 
-    if (isNull) {
-        val = null;
-    }
+    val = isNull ? null : (val ?? item.default ?? (item.min || 0));
 
     // 计算小数位数（用于四舍五入）
     const decimals = item.integer
@@ -758,7 +761,7 @@ function buildDefaults(config, initialValues) {
                             groupResult[child.name] = initialValues[item.name][child.name];
                         } else if (child.default !== undefined) {
                             groupResult[child.name] = child.default;
-                        } else if (child.nullable) {
+                        } else if (child.nullable || child.defaultNull) {
                             groupResult[child.name] = null;
                         }
                     }
@@ -776,7 +779,7 @@ function buildDefaults(config, initialValues) {
                 result[item.name] = initialValues?.[item.name] !== undefined
                     ? initialValues[item.name]
                     : item.default;
-            } else if (item.nullable) {
+            } else if (item.nullable || item.defaultNull) {
                 result[item.name] = initialValues?.[item.name] ?? null;
             }
         }
