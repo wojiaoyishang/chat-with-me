@@ -1832,9 +1832,10 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 isOpen={isSidebarOpen}
                 onClose={handleSidebarToggle}
                 advancedSettings={advancedSettings}
-                initialSettingValues={initialSettingValues}
+                initialSettingValues={initialSettingValues || advancedSettingsValues}
                 onSettingChange={(values) => {
                     setAdvancedSettingsValues(values);
+                    setInitialSettingValues(null);
                 }}
                 t={t}
                 containerRef={chatPageRef}

@@ -196,20 +196,8 @@ function NumberSliderItem({item, path}) {
     const upDownStep = item.step || 1;
     const nullable = !!item.nullable;
 
-    // 如果 initialValues 没有设置，且 (item.default === null || item.defaultNull === true)，则默认 null
-    const defaultVal = (val === undefined)
-        ? (item.default ?? (item.nullable ? null : (item.min || 0)))
-        : val;
-
-    // Nullable mode state，默认根据 defaultVal 判断
-    const [isNull, setIsNull] = useState(defaultVal === null || !!item.defaultNull);
-    useEffect(() => {
-        if (isNull && val !== null) {
-            update(path, null);
-        } else if (!isNull && val === null) {
-            update(path, item.default ?? (item.min || 0));
-        }
-    }, [isNull, path, update, item.default, item.min]);
+    // Nullable mode state，默认根据 val 是否 null 判断
+    const [isNull, setIsNull] = useState(val === null);
 
     val = isNull ? null : (val ?? item.default ?? (item.min || 0));
 
@@ -236,7 +224,14 @@ function NumberSliderItem({item, path}) {
         ? Math.round(val)
         : val?.toFixed(decimals) ?? "";
 
-    const toggleNull = () => setIsNull((prev) => !prev);
+    const toggleNull = () => {
+        setIsNull((prev) => {
+            const newIsNull = !prev;
+            const newVal = newIsNull ? null : item.default ?? (item.min || 0);
+            update(path, newVal);
+            return newIsNull;
+        });
+    };
 
     const sliderRef = useRef(null);
 
@@ -778,12 +773,13 @@ function buildDefaults(config, initialValues) {
                 const groupResult = {};
                 for (const child of item.children) {
                     if (child.name) {
-                        if (initialValues && initialValues[item.name] && initialValues[item.name][child.name] !== undefined) {
-                            groupResult[child.name] = initialValues[item.name][child.name];
-                        } else if (child.default !== undefined) {
-                            groupResult[child.name] = child.default;
-                        } else if (child.nullable || child.defaultNull) {
+                        const initVal = initialValues?.[item.name]?.[child.name];
+                        if (initVal !== undefined) {
+                            groupResult[child.name] = initVal;
+                        } else if (child.defaultNull) {
                             groupResult[child.name] = null;
+                        } else {
+                            groupResult[child.name] = child.default ?? (child.nullable ? null : undefined);
                         }
                     }
                 }
@@ -796,12 +792,15 @@ function buildDefaults(config, initialValues) {
                 result[item.name] = override && typeof override === 'object'
                     ? deepMerge(base, override)
                     : base;
-            } else if (item.default !== undefined) {
-                result[item.name] = initialValues?.[item.name] !== undefined
-                    ? initialValues[item.name]
-                    : item.default;
-            } else if (item.nullable || item.defaultNull) {
-                result[item.name] = initialValues?.[item.name] ?? null;
+            } else {
+                const initVal = initialValues?.[item.name];
+                if (initVal !== undefined) {
+                    result[item.name] = initVal;
+                } else if (item.defaultNull) {
+                    result[item.name] = null;
+                } else {
+                    result[item.name] = item.default ?? (item.nullable ? null : undefined);
+                }
             }
         }
     }
