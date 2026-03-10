@@ -237,7 +237,7 @@ const RightSidebar = memo(({
         }
     }, [isOpen, containerRef, lockedMode]);
 
-    // 🎯 侧边栏内容渲染（抽离避免重复代码）
+    // 侧边栏内容渲染
     const sidebarContent = useCallback(() => {
         if (!advancedSettings || advancedSettings.length === 0) {
             return (
@@ -1627,7 +1627,11 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
 
                 setModels(modelsData);
 
-                if (modelsData.length > 0) setSelectedModel(modelsData[0]);
+                if (modelsData.length > 0) {
+                    if (modelsData[0].options) {
+                        setAdvancedSettings(modelsData[0].options);
+                    }
+                }
             } catch (error) {
                 toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
             }
