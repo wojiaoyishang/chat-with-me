@@ -17,7 +17,7 @@ import {
 } from "@/lib/tools.jsx";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 import {useTranslation} from "react-i18next";
-import {ArrowDown, ChevronDown, CircleCheck, PanelRight, X} from 'lucide-react';
+import {ArrowDown, ChevronDown, CircleCheck, PanelRight, X, Maximize2, Minimize2} from 'lucide-react';
 import ChatBox from "@/components/chat/ChatBox.jsx";
 import MessageContainer from "@/components/chat/MessageContainer.jsx";
 import apiClient from "@/lib/apiClient.js";
@@ -52,7 +52,6 @@ const ModelItem = memo(({
             )}
         </>
     ), [model, isSelected]);
-
     if (!isMobile) {
         return (
             <div key={model.id} onMouseEnter={onMouseEnter}>
@@ -94,13 +93,11 @@ const ModelItem = memo(({
         prevProps.dataSelected === nextProps.dataSelected
     );
 });
-
 ModelItem.displayName = 'ModelItem';
 
 // ========== 内部组件：模型预览卡片 ==========
 const ModelPreviewCard = React.memo(({model, isMobile}) => {
     if (!model) return null;
-
     return (
         <div className="p-4 bg-gray-50 border rounded-md">
             <div className="flex flex-col space-y-2">
@@ -130,7 +127,6 @@ const ModelPreviewCard = React.memo(({model, isMobile}) => {
         prevProps.isMobile === nextProps.isMobile
     );
 });
-
 ModelPreviewCard.displayName = 'ModelPreviewCard';
 
 // ========== 内部组件：置底按钮 ==========
@@ -139,14 +135,12 @@ const ScrollToBottomButton = memo(({
                                        chatBoxHeight,
                                        onClick
                                    }) => {
-
     const buttonStyle = useMemo(() => {
         return {
             bottom: `${(chatBoxHeight || 60) + 60}px`,
             right: '16px',
         };
     }, [chatBoxHeight]);
-
     return (
         <>
             {/* 移动端按钮 - 中屏及以下显示 (max-lg) */}
@@ -169,7 +163,6 @@ const ScrollToBottomButton = memo(({
                     <ArrowDown className="text-gray-600 w-5 h-5"/>
                 </button>
             </Transition>
-
             {/* 桌面端按钮 - 大屏显示 (lg+) */}
             <Transition
                 show={isVisible}
@@ -202,7 +195,6 @@ const ScrollToBottomButton = memo(({
         prevProps.onClick === nextProps.onClick
     );
 });
-
 ScrollToBottomButton.displayName = 'ScrollToBottomButton';
 
 // ========== RightSidebar 组件 ==========
@@ -213,23 +205,19 @@ const RightSidebar = memo(({
                                initialSettingValues,
                                onSettingChange,
                                t,
-                               containerRef
+                               containerRef,
+                               isWindowMode   // 新增：窗口化模式，用于控制叠层和定位（基于 ChatPage 层级）
                            }) => {
     const [lockedMode, setLockedMode] = useState(null);
     const sidebarRef = useRef(null);
-
     useLayoutEffect(() => {
         const container = containerRef?.current;
         if (!container) return;
-
         const BREAKPOINT = 920;
-
         if (isOpen && lockedMode === null) {
-            // 首次打开：根据容器宽度锁定模式
             const isDesktop = container.clientWidth > BREAKPOINT;
             setLockedMode(isDesktop);
         } else if (!isOpen && lockedMode !== null) {
-            // 关闭后延迟重置，避免闪烁，匹配 transition duration-300
             const timer = setTimeout(() => {
                 setLockedMode(null);
             }, 300);
@@ -237,7 +225,6 @@ const RightSidebar = memo(({
         }
     }, [isOpen, containerRef, lockedMode]);
 
-    // 侧边栏内容渲染
     const sidebarContent = useCallback(() => {
         if (!advancedSettings || advancedSettings.length === 0) {
             return (
@@ -255,9 +242,7 @@ const RightSidebar = memo(({
         );
     }, [advancedSettings, initialSettingValues, onSettingChange, t]);
 
-    if (lockedMode === null) {
-        return null;
-    }
+    if (lockedMode === null) return null;
 
     if (lockedMode) {
         return (
@@ -268,9 +253,7 @@ const RightSidebar = memo(({
                 transition={{duration: 0.3, ease: 'easeInOut'}}
                 className="h-full bg-white border-l overflow-hidden flex-shrink-0"
             >
-                {/* 内部固定宽度容器，避免内容随动画缩放 */}
                 <div className="w-[16rem] h-full flex flex-col">
-                    {/* 标题栏 */}
                     <div className="flex items-center justify-between pt-4 pl-4 pr-4 shrink-0">
                         <span className="font-medium text-gray-700">
                             {t("advanced_conversation_settings")}
@@ -283,7 +266,6 @@ const RightSidebar = memo(({
                             <X className="h-4 w-4 text-gray-500"/>
                         </button>
                     </div>
-                    {/* 内容区域 */}
                     <div className="p-1 flex-1 overflow-y-auto">
                         {sidebarContent()}
                     </div>
@@ -291,7 +273,6 @@ const RightSidebar = memo(({
             </motion.div>
         );
     }
-
     return (
         <>
             {isOpen && (
@@ -300,20 +281,23 @@ const RightSidebar = memo(({
                     animate={{opacity: 1}}
                     exit={{opacity: 0}}
                     transition={{duration: 0.2}}
-                    className="fixed inset-0 bg-black/20 z-40"
+                    className={isWindowMode
+                        ? "absolute inset-0 bg-black/20 z-[9998]"
+                        : "fixed inset-0 bg-black/20 z-40"
+                    }
                     onClick={onClose}
                 />
             )}
-
-            {/* 🗄️ 侧边栏抽屉：从右侧滑入滑出 */}
             <motion.div
                 ref={sidebarRef}
                 initial={{x: '100%'}}
                 animate={{x: isOpen ? 0 : '100%'}}
                 transition={{duration: 0.3, ease: 'easeInOut'}}
-                className="fixed top-0 right-0 h-full w-[16rem] bg-white shadow-xl z-50 flex flex-col"
+                className={isWindowMode
+                    ? "absolute top-0 right-0 h-full w-[16rem] bg-white shadow-xl z-[9999] flex flex-col"
+                    : "fixed top-0 right-0 h-full w-[16rem] bg-white shadow-xl z-50 flex flex-col"
+                }
             >
-                {/* 标题栏 */}
                 <div className="flex items-center justify-between pt-4 pl-4 pr-4 shrink-0">
                     <span className="font-medium text-gray-700">
                         {t("advanced_conversation_settings")}
@@ -326,7 +310,6 @@ const RightSidebar = memo(({
                         <X className="h-4 w-4 text-gray-500"/>
                     </button>
                 </div>
-                {/* 内容区域 */}
                 <div className="p-1 flex-1 overflow-y-auto">
                     {sidebarContent()}
                 </div>
@@ -334,7 +317,6 @@ const RightSidebar = memo(({
         </>
     );
 });
-
 RightSidebar.displayName = 'RightSidebar';
 
 // ========== Header 组件 ==========
@@ -349,16 +331,23 @@ const ChatHeader = memo(({
                              handleModelItemClick,
                              handleModelItemMouseEnter,
                              scrollToSelectedItem,
+                             isSidebarOpen,
                              handleSidebarToggle,
+                             isWindowMode,
+                             handleDragMouseDown,
+                             handleDragTouchStart,
+                             handleDragTouchMove,
+                             handleDragTouchEnd,
+                             isDragReady,
+                             showWindowButton,
+                             onToggleWindow,
                          }) => {
     const modelListRef = useRef(null);
-
     useEffect(() => {
         if (isModelPopoverOpen) {
             scrollToSelectedItem(modelListRef);
         }
     }, [isModelPopoverOpen, models, scrollToSelectedItem]);
-
     const modelItems = useMemo(() => {
         if (!models || models.length === 0) {
             return (
@@ -367,12 +356,10 @@ const ChatHeader = memo(({
                 </p>
             );
         }
-
         return models.map((model) => {
             const isSelected = model.id === selectedModel?.id;
             const handleClick = () => handleModelItemClick(model);
             const handleMouseEnter = () => handleModelItemMouseEnter(model);
-
             return (
                 <ModelItem
                     key={model.id}
@@ -406,6 +393,7 @@ const ChatHeader = memo(({
                     <PopoverContent
                         align="start"
                         className={isMobile ? "w-[90vw] max-w-md p-4" : "w-85"}
+                        style={{ zIndex: isWindowMode ? 100000 : undefined }}
                     >
                         <div className="flex flex-col space-y-4">
                             <div
@@ -421,15 +409,46 @@ const ChatHeader = memo(({
                     </PopoverContent>
                 </Popover>
 
-                {/* 右侧：侧边栏触发按钮 */}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleSidebarToggle}
-                    className="cursor-pointer hover:bg-gray-100"
-                >
-                    <PanelRight className="h-5 w-5 text-gray-600"/>
-                </Button>
+                {/* 中间拖动手柄 */}
+                {isWindowMode && (
+                    <div
+                        className={`flex-1 mx-4 h-full cursor-move active:cursor-grabbing transition-colors rounded-md flex flex-col justify-center items-center ${isDragReady ? 'bg-gray-100/50' : ''}`}
+                        onMouseDown={handleDragMouseDown}
+                        onTouchStart={handleDragTouchStart}
+                        onTouchMove={handleDragTouchMove}
+                        onTouchEnd={handleDragTouchEnd}
+                        onTouchCancel={handleDragTouchEnd}
+                        style={{ touchAction: 'none' }}
+                    >
+                        {isMobile && <div className="w-10 h-1 bg-gray-300 rounded-full" />}
+                    </div>
+                )}
+
+                {/* 右侧按钮组 */}
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleSidebarToggle}
+                        className="cursor-pointer hover:bg-gray-100"
+                    >
+                        <PanelRight className="h-5 w-5 text-gray-600"/>
+                    </Button>
+                    {showWindowButton && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onToggleWindow}
+                            className="cursor-pointer hover:bg-gray-100"
+                        >
+                            {isWindowMode ? (
+                                <Maximize2 className="h-5 w-5 text-gray-600"/>
+                            ) : (
+                                <Minimize2 className="h-5 w-5 text-gray-600"/>
+                            )}
+                        </Button>
+                    )}
+                </div>
             </header>
         </>
     );
@@ -445,23 +464,28 @@ const ChatHeader = memo(({
         prevProps.handleModelItemClick === nextProps.handleModelItemClick &&
         prevProps.handleModelItemMouseEnter === nextProps.handleModelItemMouseEnter &&
         prevProps.scrollToSelectedItem === nextProps.scrollToSelectedItem &&
-        prevProps.isSidebarOpen === nextProps.isSidebarOpen &&       // 新增
-        prevProps.handleSidebarToggle === nextProps.handleSidebarToggle  // 新增
+        prevProps.isSidebarOpen === nextProps.isSidebarOpen &&
+        prevProps.handleSidebarToggle === nextProps.handleSidebarToggle &&
+        prevProps.isWindowMode === nextProps.isWindowMode &&
+        prevProps.handleDragMouseDown === nextProps.handleDragMouseDown &&
+        prevProps.handleDragTouchStart === nextProps.handleDragTouchStart &&
+        prevProps.handleDragTouchMove === nextProps.handleDragTouchMove &&
+        prevProps.handleDragTouchEnd === nextProps.handleDragTouchEnd &&
+        prevProps.isDragReady === nextProps.isDragReady &&
+        prevProps.showWindowButton === nextProps.showWindowButton &&
+        prevProps.onToggleWindow === nextProps.onToggleWindow
     );
 });
-
 ChatHeader.displayName = 'ChatHeader';
 
 // ========== 主组件 ==========
-function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
+function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWindowButton = true}) {
     const {t} = useTranslation();
     const chatPageRef = useRef(null);
     const isProcessingRef = useRef(false);
     const messagesContainerRef = useRef(null);
-
     const currentMessageSendRequestIDRef = useRef(generateUUID());
     const currentMessagesLoadedRequestIDRef = useRef(generateUUID());
-
     const uploadIntervals = useRef(new Map());
     const [uploadFiles, setUploadFiles] = useState([]);
     const [attachments, setAttachments] = useState([]);
@@ -472,9 +496,9 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
     const [randomMark, setRandomMark] = useState(null);
-    const errorToastsIds = useRef(new Map())
+    const errorToastsIds = useRef(new Map());
     const isMessageLoadedRef = useRef(false);
-    const isLoadingDataRef = useRef(false);  // 是否正在初始化请求内容
+    const isLoadingDataRef = useRef(false);
 
     // 消息状态
     const [messagesOrder, setMessagesOrder] = useState([]);
@@ -494,7 +518,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
     const isStreamingRef = useRef(false);
     const streamingTimerRef = useRef(null);
     const lastStreamingCheckRef = useRef(0);
-
     const [chatBoxHeight, setChatBoxHeight] = useState(0);
     const isMobile = useIsMobile();
     const [previewModel, setPreviewModel] = useState(null);
@@ -505,22 +528,219 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
     // 模型控制相关
     const [models, setModels] = useState([]);
     const [selectedModel, setSelectedModel] = useState({name: t("no_models")});
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);  // 右侧边设置栏
-    const [advancedSettings, setAdvancedSettings] = useState([]);  // 模型高级设置
-    const [initialSettingValues, setInitialSettingValues] = useState({});  // 初始化配置
-    const [advancedSettingsValues, setAdvancedSettingsValues] = useState({});  // 最终设置的结果
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [advancedSettings, setAdvancedSettings] = useState([]);
+    const [initialSettingValues, setInitialSettingValues] = useState({});
+    const [advancedSettingsValues, setAdvancedSettingsValues] = useState({});
 
+    // ========== 窗口化模式状态与拖拽、缩放逻辑 ==========
+    const [isReady, setIsReady] = useState(false);
+    const [isWindowMode, setIsWindowMode] = useState(false);
+    const [windowPos, setWindowPos] = useState({ left: 0, top: 0 });
+    const [windowDimensions, setWindowDimensions] = useState({ width: 900, height: 700 });
+    const windowRef = useRef(null);
+
+    // 拖拽相关状态
+    const dragOffsetRef = useRef({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [isDragReady, setIsDragReady] = useState(false);
+    const longPressTimerRef = useRef(null);
+
+    // 缩放相关状态
+    const [isResizing, setIsResizing] = useState(false);
+    const resizeOffsetRef = useRef({ width: 0, height: 0, startX: 0, startY: 0, direction: '' });
+
+    // 计算允许的最大宽高
+    const getMaxDimensions = useCallback(() => {
+        return {
+            maxWidth: Math.min(920, window.innerWidth * 0.98),
+            maxHeight: Math.min(700, window.innerHeight * 0.98)
+        };
+    }, []);
+
+    // ==== 拖拽逻辑 ====
+    const handleDragMove = useCallback((clientX, clientY) => {
+        if (!windowRef.current) return;
+        let newLeft = clientX - dragOffsetRef.current.x;
+        let newTop = clientY - dragOffsetRef.current.y;
+        const maxLeft = window.innerWidth - windowDimensions.width;
+        const maxTop = window.innerHeight - windowDimensions.height;
+        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+        newTop = Math.max(0, Math.min(newTop, maxTop));
+        setWindowPos({ left: newLeft, top: newTop });
+    }, [windowDimensions]);
+
+    const startDragging = useCallback((clientX, clientY) => {
+        if (!windowRef.current || !isWindowMode) return;
+        const rect = windowRef.current.getBoundingClientRect();
+        dragOffsetRef.current = {
+            x: clientX - rect.left,
+            y: clientY - rect.top,
+        };
+        setIsDragging(true);
+    }, [isWindowMode]);
+
+    const handleDragMouseDown = useCallback((e) => {
+        e.preventDefault();
+        setIsDragReady(true);
+        startDragging(e.clientX, e.clientY);
+
+        const handleMouseMove = (ev) => handleDragMove(ev.clientX, ev.clientY);
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            setIsDragging(false);
+            setIsDragReady(false);
+        };
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    }, [startDragging, handleDragMove]);
+
+    const handleDragTouchStart = useCallback((e) => {
+        if (!isWindowMode) return;
+        const touch = e.touches[0];
+        const startX = touch.clientX;
+        const startY = touch.clientY;
+
+        if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+
+        longPressTimerRef.current = setTimeout(() => {
+            setIsDragReady(true);
+            if (navigator.vibrate) navigator.vibrate(50);
+            startDragging(startX, startY);
+        }, 500);
+    }, [isWindowMode, startDragging]);
+
+    const handleDragTouchMove = useCallback((e) => {
+        if (!isDragging) {
+            if (longPressTimerRef.current) {
+                clearTimeout(longPressTimerRef.current);
+                longPressTimerRef.current = null;
+            }
+            return;
+        }
+        if (e.cancelable) e.preventDefault();
+        handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
+    }, [isDragging, handleDragMove]);
+
+    const handleDragTouchEnd = useCallback(() => {
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
+        setIsDragging(false);
+        setIsDragReady(false);
+    }, []);
+
+    // ==== 八向缩放逻辑 ====
+    const handleResizeMove = useCallback((clientX, clientY) => {
+        const deltaX = clientX - resizeOffsetRef.current.startX;
+        const deltaY = clientY - resizeOffsetRef.current.startY;
+        const dir = resizeOffsetRef.current.direction;
+
+        const { maxWidth, maxHeight } = getMaxDimensions();
+        const minWidth = 320;
+        const minHeight = 400;
+
+        let newWidth = resizeOffsetRef.current.startWidth;
+        let newHeight = resizeOffsetRef.current.startHeight;
+        let newLeft = resizeOffsetRef.current.startLeft;
+        let newTop = resizeOffsetRef.current.startTop;
+
+        // 处理水平方向 (East / West)
+        if (dir.includes('e')) {
+            newWidth = Math.max(minWidth, Math.min(resizeOffsetRef.current.startWidth + deltaX, maxWidth, window.innerWidth - newLeft));
+        } else if (dir.includes('w')) {
+            let tempWidth = resizeOffsetRef.current.startWidth - deltaX;
+            // 防止往左拉伸超过屏幕边界
+            let clampedWidth = Math.max(minWidth, Math.min(tempWidth, maxWidth, resizeOffsetRef.current.startLeft + resizeOffsetRef.current.startWidth));
+            newLeft = resizeOffsetRef.current.startLeft + (resizeOffsetRef.current.startWidth - clampedWidth);
+            newWidth = clampedWidth;
+        }
+
+        // 处理垂直方向 (North / South)
+        if (dir.includes('s')) {
+            newHeight = Math.max(minHeight, Math.min(resizeOffsetRef.current.startHeight + deltaY, maxHeight, window.innerHeight - newTop));
+        } else if (dir.includes('n')) {
+            let tempHeight = resizeOffsetRef.current.startHeight - deltaY;
+            // 防止往上拉伸超过屏幕边界
+            let clampedHeight = Math.max(minHeight, Math.min(tempHeight, maxHeight, resizeOffsetRef.current.startTop + resizeOffsetRef.current.startHeight));
+            newTop = resizeOffsetRef.current.startTop + (resizeOffsetRef.current.startHeight - clampedHeight);
+            newHeight = clampedHeight;
+        }
+
+        setWindowDimensions({ width: newWidth, height: newHeight });
+        setWindowPos({ left: newLeft, top: newTop });
+    }, [getMaxDimensions]);
+
+    const startResizing = useCallback((clientX, clientY, direction) => {
+        if (!isWindowMode) return;
+        resizeOffsetRef.current = {
+            startX: clientX,
+            startY: clientY,
+            startWidth: windowDimensions.width,
+            startHeight: windowDimensions.height,
+            startLeft: windowPos.left,
+            startTop: windowPos.top,
+            direction: direction
+        };
+        setIsResizing(true);
+    }, [isWindowMode, windowDimensions, windowPos]);
+
+    const handleResizeMouseDown = useCallback((e, direction) => {
+        e.preventDefault();
+        e.stopPropagation();
+        startResizing(e.clientX, e.clientY, direction);
+
+        const handleMove = (ev) => handleResizeMove(ev.clientX, ev.clientY);
+        const handleUp = () => {
+            document.removeEventListener('mousemove', handleMove);
+            document.removeEventListener('mouseup', handleUp);
+            setIsResizing(false);
+        };
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('mouseup', handleUp);
+    }, [startResizing, handleResizeMove]);
+
+    const handleResizeTouchStart = useCallback((e, direction) => {
+        e.stopPropagation();
+        const touch = e.touches[0];
+        startResizing(touch.clientX, touch.clientY, direction);
+
+        const handleTouchMoveLocal = (ev) => {
+            if (ev.cancelable) ev.preventDefault();
+            handleResizeMove(ev.touches[0].clientX, ev.touches[0].clientY);
+        };
+        const handleTouchEndLocal = () => {
+            document.removeEventListener('touchmove', handleTouchMoveLocal);
+            document.removeEventListener('touchend', handleTouchEndLocal);
+            setIsResizing(false);
+        };
+
+        document.addEventListener('touchmove', handleTouchMoveLocal, { passive: false });
+        document.addEventListener('touchend', handleTouchEndLocal);
+    }, [startResizing, handleResizeMove]);
+
+    // 切换窗口化 / 全屏
+    const toggleWindowMode = useCallback(() => {
+        if (isWindowMode) {
+            setIsWindowMode(false);
+        } else {
+            const { maxWidth, maxHeight } = getMaxDimensions();
+            const l = (window.innerWidth - maxWidth) / 2;
+            const t = Math.max(40, (window.innerHeight - maxHeight) / 2);
+            setWindowDimensions({ width: maxWidth, height: maxHeight });
+            setWindowPos({ left: l, top: t });
+            setIsWindowMode(true);
+        }
+    }, [isWindowMode, getMaxDimensions]);
 
     // ========== 滚动控制逻辑 =========
-
-    // 检查是否需要显示置底按钮
     const checkScrollPosition = useCallback((immediate = false) => {
         if (!messagesContainerRef.current) return;
-
         const {scrollTop, scrollHeight, clientHeight} = messagesContainerRef.current;
         const distanceToBottom = scrollHeight - scrollTop - clientHeight;
 
-        // 检测滚动方向
         if (scrollTop < lastScrollTopRef.current) {
             scrollDirectionRef.current = 'up';
         } else if (scrollTop > lastScrollTopRef.current) {
@@ -528,24 +748,15 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
         }
         lastScrollTopRef.current = scrollTop;
 
-        // 减小阈值，提高敏感度
-        const THRESHOLD = 100; // 从200减小到100
-
-        // 更新自动滚动状态 - 放宽条件
-        // 如果用户在底部100像素范围内，或者正在向下滚动且距离底部小于200像素，都认为是自动滚动状态
+        const THRESHOLD = 100;
         const isNearBottom = distanceToBottom <= THRESHOLD;
         const isScrollingDownNearBottom = scrollDirectionRef.current === 'down' && distanceToBottom < 200;
-
         isAutoScrollEnabledRef.current = isNearBottom || isScrollingDownNearBottom;
 
-        // 是否需要显示置底按钮：不在底部且是向上滚动
-        // 增加显示按钮的条件：只要不在底部就显示，不限制滚动方向
         const shouldShowButton = distanceToBottom > THRESHOLD;
-
         if (immediate) {
             setShowScrollToBottomButton(shouldShowButton);
         } else {
-            // 防抖处理
             if (scrollCheckTimeoutRef.current) {
                 clearTimeout(scrollCheckTimeoutRef.current);
             }
@@ -555,34 +766,26 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
         }
     }, []);
 
-    // 平滑滚动到底部
     const smoothScrollToBottom = useCallback((isStreaming = false) => {
         if (!messagesContainerRef.current) return;
-
         const container = messagesContainerRef.current;
         const targetScrollTop = container.scrollHeight - container.clientHeight;
 
-        // 如果已经在底部（相差小于1像素），不执行滚动
         if (Math.abs(container.scrollTop - targetScrollTop) < 1) {
             isAutoScrollEnabledRef.current = true;
             pendingScrollRef.current = false;
             return;
         }
-
         const currentScrollTop = container.scrollTop;
         const distance = targetScrollTop - currentScrollTop;
 
-        // 增加最小滚动距离判断
         if (Math.abs(distance) < 1) return;
 
-        // 如果距离很近，直接滚动
         if (Math.abs(distance) < 50) {
             container.scrollTo({
                 top: targetScrollTop,
                 behavior: isStreaming ? 'auto' : 'smooth'
             });
-
-            // 滚动完成后更新状态
             setTimeout(() => {
                 isAutoScrollEnabledRef.current = true;
                 pendingScrollRef.current = false;
@@ -591,7 +794,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
             return;
         }
 
-        // 流式输出时使用更简单的滚动
         if (isStreaming) {
             container.scrollTo({
                 top: targetScrollTop,
@@ -600,58 +802,43 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
             return;
         }
 
-        // 使用 requestAnimationFrame 实现平滑滚动
         const duration = 300;
         const startTime = performance.now();
-
         const animateScroll = (currentTime) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-
-            // 使用缓动函数
             const easeOutCubic = 1 - Math.pow(1 - progress, 3);
             const newScrollTop = currentScrollTop + distance * easeOutCubic;
-
             container.scrollTop = newScrollTop;
-
             if (progress < 1) {
                 requestAnimationFrame(animateScroll);
             } else {
-                // 滚动完成后更新状态
                 isAutoScrollEnabledRef.current = true;
                 pendingScrollRef.current = false;
                 checkScrollPosition(true);
             }
         };
-
         requestAnimationFrame(animateScroll);
     }, [checkScrollPosition]);
 
-    // 执行延迟滚动（如果有待处理的滚动）
     const executePendingScroll = useCallback(() => {
         if (pendingScrollRef.current && isAutoScrollEnabledRef.current) {
             pendingScrollRef.current = false;
-
-            // 延迟执行滚动，避免卡顿
             setTimeout(() => {
                 smoothScrollToBottom(isStreamingRef.current);
-            }, isStreamingRef.current ? 50 : 100); // 流式输出时使用更短的延迟
+            }, isStreamingRef.current ? 50 : 100);
         }
     }, [smoothScrollToBottom]);
 
-    // 请求滚动到底部（会被延迟执行）
     const requestScrollToBottom = useCallback(() => {
         if (isAutoScrollEnabledRef.current) {
             pendingScrollRef.current = true;
-
-            // 如果是流式输出，立即执行滚动
             if (isStreamingRef.current) {
                 executePendingScroll();
             }
         }
     }, [executePendingScroll]);
 
-    // 立即滚动到底部（用户点击按钮时使用）
     const handleScrollToBottomClick = useCallback(() => {
         pendingScrollRef.current = false;
         isAutoScrollEnabledRef.current = true;
@@ -659,42 +846,28 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
         setShowScrollToBottomButton(false);
     }, [smoothScrollToBottom]);
 
-    // 更新流式输出状态
     const updateStreamingStatus = useCallback(() => {
         const now = Date.now();
-
-        // 如果最近500ms内有过更新，认为是流式输出
         if (now - lastStreamingCheckRef.current < 500) {
             isStreamingRef.current = true;
-
-            // 清除之前的计时器
             if (streamingTimerRef.current) {
                 clearTimeout(streamingTimerRef.current);
             }
-
-            // 设置计时器，500ms没有更新则认为流式输出结束
             streamingTimerRef.current = setTimeout(() => {
                 isStreamingRef.current = false;
             }, 500);
         }
-
         lastStreamingCheckRef.current = now;
     }, []);
 
-    // 初始化滚动监听
     useEffect(() => {
         const container = messagesContainerRef.current;
         if (!container) return;
-
         const handleScroll = () => {
             checkScrollPosition();
         };
-
         container.addEventListener('scroll', handleScroll, {passive: true});
-
-        // 初始化检查
         checkScrollPosition(true);
-
         return () => {
             container.removeEventListener('scroll', handleScroll);
             if (scrollCheckTimeoutRef.current) {
@@ -703,12 +876,8 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
         };
     }, [checkScrollPosition]);
 
-    // 消息更新后检查是否需要滚动
     useEffect(() => {
-        // 如果有待处理的滚动，执行滚动
         executePendingScroll();
-
-        // 新消息到达时，如果用户在看最新消息，延迟滚动
         if (isAutoScrollEnabledRef.current) {
             requestScrollToBottom();
         }
@@ -728,7 +897,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
             }
         }
     }, []);
-
     const handlePopoverOpenChange = useCallback((open) => {
         setIsModelPopoverOpen(open);
         if (!open) {
@@ -737,7 +905,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
             setPreviewModel(selectedModel);
         }
     }, [selectedModel]);
-
     const handleModelItemClick = useCallback((model) => {
         setSelectedModel(model);
         if (!isMobile) {
@@ -746,7 +913,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
             setPreviewModel(model);
         }
     }, [isMobile]);
-
     const handleModelItemMouseEnter = useCallback((model) => {
         if (!isMobile) {
             setPreviewModel(model);
@@ -756,7 +922,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
     // ========= 上传相关 =========
     const handleFolderDetected = useCallback(() => {
         toast.error(t("folder_upload_not_supported"));
-    });
+    }, [t]);
 
     const handleSelectedFiles = useCallback((files, items) => {
         for (let i = 0; i < items.length; i++) {
@@ -828,12 +994,11 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
         setTimeout(() => {
             isProcessingRef.current = false;
         }, 500);
-    }, [chatMarkId]);
+    }, [chatMarkId, t]);
 
     const onAttachmentRemove = useCallback((attachment) => {
         setAttachments(prev => prev.filter(att => att.serverId !== attachment.serverId));
-    });
-
+    }, []);
 
     const handleImagePaste = useCallback((file) => {
         const fileList = {
@@ -844,7 +1009,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 yield file;
             }
         };
-        handleSelectedFiles(fileList);
+        handleSelectedFiles(fileList, fileList);
     }, [handleSelectedFiles]);
 
     const handleRetryUpload = useCallback((uploadId) => {
@@ -876,7 +1041,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
             uploadIntervals.current.set(uploadId, cleanup);
             return prev.map(f => f.id === uploadId ? updatedFile : f);
         });
-    },);
+    }, [t]);
 
     const handleCancelUpload = useCallback((uploadId) => {
         if (uploadIntervals.current.has(uploadId)) {
@@ -894,9 +1059,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
         return createFilePicker('image/*', handleSelectedFiles);
     }, [handleSelectedFiles]);
 
-
     // ========= 消息相关 =========
-
     const handleSendMessage = useCallback((
         {
             messageContent,
@@ -908,13 +1071,12 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
             isRegenerate = false,
             isFork = false,
             role
-        }  // 发送的角色身份
+        }
     ) => {
         if (uploadFiles.length !== 0) {
             toast.error(t("file_upload_not_complete"));
             return;
         }
-
         const sendMessage = (markId) => {
             if (isFirstMessageSend) {
                 emitEvent({
@@ -959,7 +1121,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 }
             });
         };
-
         if (!chatMarkId) {
             emitEvent({
                 type: "page",
@@ -984,8 +1145,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
         } else {
             sendMessage(chatMarkId);
         }
-    }, [chatMarkId, documentMarkId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType]);
-
+    }, [chatMarkId, documentMarkId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType, t, uploadFiles, onNewChatMarkId]);
 
     const loadMoreHistory = useCallback(async () => {
         try {
@@ -998,13 +1158,10 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                         }
                     })
                     .then(data => {
-                        // 保存当前的滚动状态
                         const wasAutoScroll = isAutoScrollEnabledRef.current;
-
                         const newMessages = {...messagesRef.current, ...data.messages};
                         setMessages(newMessages);
                         messagesRef.current = newMessages;
-
                         let newOrder;
                         if (data.haveMore) {
                             newOrder = ['<PREV_MORE>', ...data.messagesOrder, ...messagesOrder.slice(1)];
@@ -1013,12 +1170,9 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                         }
                         setMessagesOrder(newOrder);
                         messagesOrderRef.current = newOrder;
-
-                        // 如果不是自动滚动状态，检查是否需要显示置底按钮
                         if (!wasAutoScroll) {
                             checkScrollPosition(true);
                         }
-
                         resolve(true);
                     })
                     .catch(error => reject(error));
@@ -1026,16 +1180,14 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
         } catch (err) {
             throw err;
         }
-    }, [chatMarkId, checkScrollPosition]);
+    }, [chatMarkId, checkScrollPosition, messagesOrder, setMessages]);
 
     const loadSwitchMessage = useCallback(async (msgId, newMsgId) => {
         if (!(msgId in messagesRef.current)) return false;
-
         let newOrders = [];
         let loadStartId = newMsgId;
         let needsLoad = !(newMsgId in messagesRef.current);
 
-        // 1. 寻找本地断点 (保持原逻辑)
         if (!needsLoad) {
             let cursor = messagesRef.current[newMsgId];
             newOrders.push(newMsgId);
@@ -1051,28 +1203,20 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 }
             }
         }
+        let finalMessagesMap = messagesRef.current;
 
-        let finalMessagesMap = messagesRef.current; // 临时变量持有最新内容
-
-        // 2. 如果需要从服务端加载
         if (needsLoad) {
             try {
                 const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                     params: {markId: chatMarkId, nextId: loadStartId},
                 });
-
-                // 合并新加载的消息到临时对象
                 finalMessagesMap = {...finalMessagesMap, ...data.messages};
-
-                // 更新 Order (只在需要时更新)
                 const insertPoint = messagesOrderRef.current.indexOf(msgId) + 1;
                 const newOrder = [
                     ...messagesOrderRef.current.slice(0, insertPoint),
                     ...newOrders,
                     ...data.messagesOrder,
                 ];
-
-                // 同步更新 Ref 和 State (Order)
                 messagesOrderRef.current = newOrder;
                 setMessagesOrder(newOrder);
             } catch (error) {
@@ -1080,35 +1224,26 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 return false;
             }
         } else {
-            // 3. 本地已存在，仅更新 Order
             const insertPoint = messagesOrderRef.current.indexOf(msgId) + 1;
             const newOrder = [...messagesOrderRef.current.slice(0, insertPoint), ...newOrders];
             messagesOrderRef.current = newOrder;
             setMessagesOrder(newOrder);
         }
 
-        // 4. 关键：统一更新指针并只调用一次 setMessages
-        // 使用 produce 确保基于最新的 finalMessagesMap 操作
         const nextMessagesState = produce(finalMessagesMap, (draft) => {
             if (draft[msgId]) {
                 draft[msgId].nextMessage = newMsgId;
             }
         });
-
-        // 最终同步
         messagesRef.current = nextMessagesState;
         setMessages(nextMessagesState);
-
         return true;
-    }, [chatMarkId]);
+    }, [chatMarkId, t, setMessages]);
 
     const switchMessage = useCallback(async (msg, msgId, delta) => {
-
         const msgId_index = msg.messages.indexOf(msg.nextMessage);
         const newMsgId = msg.messages[msgId_index + delta];
-
         const sendSwitchRequest = () => {
-
             emitEvent({
                 type: "message",
                 target: "ChatPage",
@@ -1119,13 +1254,10 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 },
                 markId: chatMarkId
             });
-
         };
         await loadSwitchMessage(msgId, newMsgId);
         sendSwitchRequest();
-    }, [chatMarkId]);
-
-    // // ========= 加载相关 =========
+    }, [chatMarkId, loadSwitchMessage]);
 
     const LoadingScreen = () => (
         <UnifiedLoadingScreen
@@ -1133,7 +1265,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
             zIndex="z-20"
         />
     );
-
     const LoadingFailedScreen = () => (
         <UnifiedErrorScreen
             title={t("load_error")}
@@ -1141,7 +1272,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
             zIndex="z-20"
         />
     );
-
     const emitMessagesLoaded = () => {
         setTimeout(() => {
             isMessageLoadedRef.current = true;
@@ -1167,31 +1297,27 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
         }, 0)
     }
 
-    // 添加一个ResizeObserver来监听内容高度变化
+    useLayoutEffect(() => {
+        const timer = setTimeout(() => setIsReady(true), 100);
+        return () => clearTimeout(timer);
+    }, []);
+
     useEffect(() => {
         if (!messagesContainerRef.current) return;
-
         const observer = new ResizeObserver(() => {
-            // 如果自动滚动启用，立即滚动到底部
             if (isAutoScrollEnabledRef.current) {
                 requestScrollToBottom();
             }
-            // 总是检查滚动位置
             checkScrollPosition(true);
         });
-
         observer.observe(messagesContainerRef.current);
-
         return () => {
             observer.disconnect();
         };
     }, [checkScrollPosition, requestScrollToBottom]);
 
-    // 监听消息内容的变化
     useEffect(() => {
-        // 如果消息有变化且自动滚动启用，滚动到底部
         if (isAutoScrollEnabledRef.current && messagesOrder.length > 0) {
-            // 使用requestAnimationFrame确保在下一帧执行
             requestAnimationFrame(() => {
                 if (pendingScrollRef.current) {
                     executePendingScroll();
@@ -1204,7 +1330,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
 
     // === 广播事件 ===
     useEffect(() => {
-
         const unsubscribe1 = onEvent({
             type: "message",
             target: "ChatPage",
@@ -1217,9 +1342,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 switch (payload.command) {
                     case "Add-Message":
                         if (payload.value && typeof payload.value === 'object') {
-                            // 保存当前的自动滚动状态
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
-
                             let newMessages = {...messagesRef.current};
                             for (const [key, newValue] of Object.entries(payload.value)) {
                                 if (payload.isEdit && !newMessages[key]) {
@@ -1241,15 +1364,12 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                             }
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-
-                            // 延迟检查滚动位置
                             setTimeout(() => {
                                 if (wasAutoScroll) {
                                     requestScrollToBottom();
                                 }
                                 checkScrollPosition(true);
                             }, 50);
-
                             reply({success: true});
                         }
                         break;
@@ -1261,10 +1381,8 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                     requestScrollToBottom();
                                 }
                             }, 50)
-
                             setMessagesOrder(payload.value);
                             messagesOrderRef.current = payload.value;
-
                             reply({value: payload.value});
                         } else {
                             reply({value: messagesOrderRef.current});
@@ -1272,9 +1390,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                         break;
                     case "Set-MessageContent":
                         if (payload.value && typeof payload.value === 'object') {
-                            // 更新流式输出状态
                             updateStreamingStatus();
-
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, newContent] of Object.entries(payload.value)) {
                                     if (draft[msgId]) {
@@ -1284,10 +1400,8 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-
                             setTimeout(() => {
                                 if (isAutoScrollEnabledRef.current) {
-                                    // 流式输出时使用更积极的滚动
                                     if (isStreamingRef.current) {
                                         smoothScrollToBottom(true);
                                     } else {
@@ -1295,19 +1409,15 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                     }
                                 }
                                 checkScrollPosition(true);
-                            }, 0); // 立即检查
-
+                            }, 0);
                             if (payload.reply) reply({success: true});
                         } else {
-                            console.error("Set-MessageContent Failed. msgId, value is need at least.")
                             reply({success: false});
                         }
                         break;
                     case "Add-MessageContent":
                         if (payload.value && typeof payload.value === 'object') {
-                            // 更新流式输出状态
                             updateStreamingStatus();
-
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, newContent] of Object.entries(payload.value)) {
                                     if (draft[msgId]) {
@@ -1317,11 +1427,8 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-
-                            // 流式输出时立即检查滚动，不使用延迟
                             setTimeout(() => {
                                 if (isAutoScrollEnabledRef.current) {
-                                    // 如果是流式输出，立即滚动
                                     if (isStreamingRef.current) {
                                         smoothScrollToBottom(true);
                                     } else {
@@ -1330,10 +1437,8 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                 }
                                 checkScrollPosition(true);
                             }, 0);
-
                             if (payload.reply) reply({success: true});
                         } else {
-                            console.error("Add-MessageContent Failed. msgId, value is need at least.")
                             reply({success: false});
                         }
                         break;
@@ -1352,25 +1457,20 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-
                             setTimeout(() => {
                                 if (isAutoScrollEnabledRef.current) {
                                     requestScrollToBottom();
                                 }
                                 checkScrollPosition(true);
                             }, 50);
-
                             if (payload.reply) reply({success: true});
                         } else {
-                            console.error("Add-MessageReplace Failed. msgId, value is need at least.")
                             reply({success: false});
                         }
                         break;
                     case "Add-MessageReplaceContent":
                         if (payload.value && typeof payload.value === 'object') {
-                            // 更新流式输出状态
                             updateStreamingStatus();
-
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, appendFields] of Object.entries(payload.value)) {
                                     if (draft[msgId]) {
@@ -1380,7 +1480,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                         if (!draft[msgId].extraInfo.replace) {
                                             draft[msgId].extraInfo.replace = {};
                                         }
-
                                         for (const [key, appendString] of Object.entries(appendFields)) {
                                             const currentValue = draft[msgId].extraInfo.replace[key] || '';
                                             draft[msgId].extraInfo.replace[key] = currentValue + appendString;
@@ -1388,13 +1487,10 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                     }
                                 }
                             });
-
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-
                             setTimeout(() => {
                                 if (isAutoScrollEnabledRef.current) {
-                                    // 如果是流式输出，立即滚动
                                     if (isStreamingRef.current) {
                                         smoothScrollToBottom(true);
                                     } else {
@@ -1403,14 +1499,11 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                 }
                                 checkScrollPosition(true);
                             }, 0);
-
                             if (payload.reply) reply({success: true});
                         } else {
-                            console.error("Add-MessageReplaceContent Failed. payload.value must be an object.");
                             if (payload.reply) reply({success: false});
                         }
                         break;
-
                     case "Set-MessageAttachments":
                         if (payload.value && typeof payload.value === 'object') {
                             const newMessages = produce(messagesRef.current, draft => {
@@ -1420,20 +1513,16 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                     }
                                 }
                             });
-
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-
                             setTimeout(() => {
                                 if (isAutoScrollEnabledRef.current) {
                                     requestScrollToBottom();
                                 }
                                 checkScrollPosition(true);
                             }, 50);
-
                             if (payload.reply) reply({success: true});
                         } else {
-                            console.error("Add-MessageReplace Failed. msgId, value is need at least.")
                             reply({success: false});
                         }
                         break;
@@ -1447,20 +1536,15 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                 reply({success: false});
                                 return;
                             }
-
                             const newMessages = produce(messagesRef.current, draft => {
                                 draft[payload.msgId].messages = [...draft[payload.msgId].messages, payload.value];
                                 if (payload.switch) {
                                     draft[payload.msgId].nextMessage = payload.value;
                                 }
                             });
-
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-
-                            // 是否还有消息没加载完
                             if (messagesRef.current[payload.value].nextMessage) {
-
                                 emitEvent({
                                     type: "widget",
                                     target: "ChatPage",
@@ -1471,10 +1555,8 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                     markId: chatMarkId,
                                     fromWebsocket: true,
                                     notReplyToWebsocket: true
-
                                 }).then(() => {
                                     loadSwitchMessage(payload.msgId, payload.value).then(() => {
-
                                         emitEvent({
                                             type: "widget",
                                             target: "ChatPage",
@@ -1486,7 +1568,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                             fromWebsocket: true,
                                             notReplyToWebsocket: true
                                         })
-
                                         setTimeout(() => {
                                             if (isAutoScrollEnabledRef.current) {
                                                 requestScrollToBottom();
@@ -1495,8 +1576,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                         }, 50);
                                     });
                                 });
-
-
                             } else {
                                 setTimeout(() => {
                                     if (isAutoScrollEnabledRef.current) {
@@ -1505,10 +1584,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                                     checkScrollPosition(true);
                                 }, 50);
                             }
-
                             reply({success: true});
-                        } else {
-                            console.error('Add-Message-Messages Failed. msgId, value is need at least.');
                         }
                         break;
                     case "Load-Switch-Message":
@@ -1546,7 +1622,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                         break;
                 }
             });
-
         const unsubscribe2 = onEvent({
             type: "websocket",
             target: "onopen",
@@ -1554,79 +1629,59 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
         }).then(() => {
             if (isMessageLoadedRef.current) emitMessagesLoaded();
         });
-
         return () => {
             unsubscribe1();
             unsubscribe2();
         };
-    }, [chatMarkId, checkScrollPosition, requestScrollToBottom, smoothScrollToBottom, updateStreamingStatus]);
+    }, [chatMarkId, checkScrollPosition, requestScrollToBottom, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage]);
 
-    // 同步更新的 MarkID
     useEffect(() => {
         isNewMarkIdRef.current = isNewMarkId;
     }, [isNewMarkId]);
 
-    // 进入新会话的情况
     useEffect(() => {
         if (chatMarkId === null || chatMarkId === undefined) {
             const emptyMessages = {};
             setMessages(emptyMessages);
             messagesRef.current = emptyMessages;
-
             const emptyOrder = [];
             setMessagesOrder(emptyOrder);
             messagesOrderRef.current = emptyOrder;
-
             setIsLoadingError(false);
-
-            // 关掉所有加载错误
             errorToastsIds.current.forEach((id, _) => {
                 toast.dismiss(id);
             });
         }
-    }, [chatMarkId])
+    }, [chatMarkId, setMessages]);
 
-    // 页面初始化加载消息
     useEffect(() => {
         if (isNewMarkIdRef.current) {
             setIsNewMarkId(false);
             return;
         }
-
         let modelsData = [];
-
         const requestConversation = async () => {
             try {
                 let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + chatMarkId);
-
-                // 设置当前选中模型
                 const foundModel = modelsData.find(item => item.id === data.model)
                 if (foundModel) setSelectedModel(foundModel);
-
-                // 获取高级选项
                 if (data.options) {
                     setAdvancedSettings(data.options);
                 }
-
-                // 高级选项的高级配置项
                 if (data.defaultOptions) {
                     setAdvancedSettingsValues(data.defaultOptions);
                     setInitialSettingValues(data.defaultOptions);
                 }
-
             } catch (error) {
                 toast.error(t("load_conversation_error", {message: error?.message || t("unknown_error")}));
             }
         }
-
         const requestModels = async () => {
             try {
                 modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
                     params: {markId: chatMarkId}
                 });
-
                 setModels(modelsData);
-
                 if (modelsData.length > 0) {
                     setSelectedModel(modelsData[0]);
                     if (modelsData[0].options) {
@@ -1637,37 +1692,24 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
             }
         };
-
         const requestMessages = async () => {
             try {
                 const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                     params: {markId: chatMarkId}
                 });
-
                 setMessages(messagesData.messages);
                 messagesRef.current = messagesData.messages;
-
                 let initOrder = messagesData.messagesOrder;
                 if (messagesData.haveMore) initOrder = ["<PREV_MORE>", ...messagesData.messagesOrder];
                 setMessagesOrder(initOrder);
                 messagesOrderRef.current = initOrder;
 
-                // 使用双重的setTimeout确保DOM完全更新
-                // 第一个setTimeout确保React状态更新
                 setTimeout(() => {
-                    // 第二个setTimeout确保DOM渲染完成
                     setTimeout(() => {
-                        // 强制启用自动滚动
                         isAutoScrollEnabledRef.current = true;
                         pendingScrollRef.current = true;
-
-                        // 立即检查滚动位置
                         checkScrollPosition(true);
-
-                        // 执行滚动
                         executePendingScroll();
-
-                        // 确保置底按钮正确显示
                         const container = messagesContainerRef.current;
                         if (container) {
                             const {scrollHeight, clientHeight} = container;
@@ -1676,9 +1718,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                         }
                     }, 50);
                 }, 100);
-
                 emitMessagesLoaded();
-
             } catch (error) {
                 errorToastsIds.current.set(toast(t("load_messages_error", {message: error?.message || t("unknown_error")}), {
                     action: {
@@ -1695,20 +1735,14 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 setIsLoadingError(true);
             } finally {
                 setIsLoading(false);
-
-                // 确保滚动状态正确
                 setTimeout(() => {
                     if (messagesContainerRef.current) {
                         const container = messagesContainerRef.current;
                         const {scrollTop, scrollHeight, clientHeight} = container;
                         const distanceToBottom = scrollHeight - scrollTop - clientHeight;
-
-                        // 如果距离底部超过阈值，显示置底按钮
                         if (distanceToBottom > 100) {
                             setShowScrollToBottomButton(true);
                         }
-
-                        // 强制滚动到底部
                         container.scrollTo({
                             top: scrollHeight,
                             behavior: 'auto'
@@ -1717,7 +1751,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 }, 200);
             }
         };
-
         const loadData = async () => {
             isLoadingDataRef.current = true;
             setIsLoading(true);
@@ -1726,7 +1759,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
             await requestMessages();
             isLoadingDataRef.current = false;
         };
-
         if (chatMarkId && !isLoadingDataRef.current) {
             setIsLoading(true);
             loadData();
@@ -1734,10 +1766,10 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
             setIsLoading(false);
             requestModels();
         }
-
         setIsLoadingError(false);
         setIsFirstMessageSend(true);
-    }, [chatMarkId, randomMark]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [chatMarkId, randomMark, setMessages]);
 
     const handleChatBoxHeightChange = useCallback((newHeight) => {
         setChatBoxHeight(newHeight);
@@ -1749,10 +1781,46 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
     }, []);
 
     return (
-        // 1. 根容器改为 flex，支持横向排列（桌面端侧边栏）
-        <div className="flex h-screen overflow-hidden bg-white">
-
-            {/* 2. 主内容区域包裹层：占据剩余空间，保持原有纵向布局 */}
+        // 根容器：支持全屏 / 窗口化切换 + motion 动画
+        <motion.div
+            ref={windowRef}
+            className={`flex overflow-hidden bg-white ${
+                isWindowMode ? 'shadow-2xl border-2 border-gray-300' : ''
+            }`}
+            animate={{
+                left: isWindowMode ? windowPos.left : 0,
+                top: isWindowMode ? windowPos.top : 0,
+                width: isWindowMode
+                    ? windowDimensions.width
+                    : (isReady ? 'calc(100vw - var(--sidebar-width))' : '100%'),
+                height: isWindowMode ? windowDimensions.height : '100%',
+                borderRadius: isWindowMode ? 16 : 0,
+                scale: isWindowMode && isDragReady ? 1.02 : 1, // 拖动准备动画反馈
+                boxShadow: isWindowMode
+                    ? (isDragReady ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' : '0 10px 30px -5px rgba(0, 0, 0, 0.2)')
+                    : 'none'
+            }}
+            style={{
+                position: isWindowMode ? 'fixed' : 'relative',
+                zIndex: isWindowMode ? 9999 : 0,
+            }}
+            initial={false}
+            layout={isReady}
+            transition={{
+                duration: (isDragging || isResizing) ? 0 : 0.35, // 拖拽和缩放时取消动画避免迟滞
+                ease: [0.25, 0.1, 0.25, 1],
+                layout: {
+                    duration: (isDragging || isResizing) ? 0 : 0.35
+                },
+                width: {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                    restDelta: 0.5
+                }
+            }}
+        >
+            {/* 主内容区域 */}
             <div className="flex-1 flex flex-col relative h-full w-full overflow-hidden" ref={chatPageRef}>
                 <ChatHeader
                     models={models}
@@ -1767,6 +1835,15 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                     scrollToSelectedItem={scrollToSelectedItem}
                     isSidebarOpen={isSidebarOpen}
                     handleSidebarToggle={handleSidebarToggle}
+                    // 窗口化参数
+                    isWindowMode={isWindowMode}
+                    handleDragMouseDown={handleDragMouseDown}
+                    handleDragTouchStart={handleDragTouchStart}
+                    handleDragTouchMove={handleDragTouchMove}
+                    handleDragTouchEnd={handleDragTouchEnd}
+                    isDragReady={isDragReady}
+                    showWindowButton={showWindowButton}
+                    onToggleWindow={toggleWindowMode}
                 />
 
                 {/* 消息容器区域 */}
@@ -1796,7 +1873,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                     onClick={handleScrollToBottomClick}
                 />
 
-                {/* 输入框区域 (保持绝对定位相对于父容器) */}
+                {/* 输入框区域 */}
                 <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
                     <ChatBox
                         onSendMessage={handleSendMessage}
@@ -1815,10 +1892,11 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                         onHeightChange={handleChatBoxHeightChange}
                         dropTargetRef={chatPageRef}
                         selectedModel={selectedModel}
+                        isWindowMode={isWindowMode}
                     />
                 </div>
 
-                {/* Footer (保持绝对定位相对于父容器) */}
+                {/* Footer */}
                 <footer
                     className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center ml-5 mr-5">
                     <span className="text-xs text-gray-500">
@@ -1827,7 +1905,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 </footer>
             </div>
 
-            {/* 3. 侧边栏组件：作为兄弟元素，根据 isMobile 决定是覆盖还是挤压 */}
+            {/* 侧边栏组件 */}
             <RightSidebar
                 isOpen={isSidebarOpen}
                 onClose={handleSidebarToggle}
@@ -1839,9 +1917,38 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId}) {
                 }}
                 t={t}
                 containerRef={chatPageRef}
+                isWindowMode={isWindowMode}
             />
-        </div>
+
+            {/* ========== 缩放手柄热区 (八个方位) ========== */}
+            {isWindowMode && (
+                <>
+                    {/* 边缘 */}
+                    <div className="absolute top-0 left-0 w-full h-2 cursor-n-resize z-[10000]"
+                         onMouseDown={(e) => handleResizeMouseDown(e, 'n')} onTouchStart={(e) => handleResizeTouchStart(e, 'n')} style={{ touchAction: 'none' }}/>
+                    <div className="absolute bottom-0 left-0 w-full h-2 cursor-s-resize z-[10000]"
+                         onMouseDown={(e) => handleResizeMouseDown(e, 's')} onTouchStart={(e) => handleResizeTouchStart(e, 's')} style={{ touchAction: 'none' }}/>
+                    <div className="absolute top-0 left-0 w-2 h-full cursor-w-resize z-[10000]"
+                         onMouseDown={(e) => handleResizeMouseDown(e, 'w')} onTouchStart={(e) => handleResizeTouchStart(e, 'w')} style={{ touchAction: 'none' }}/>
+                    <div className="absolute top-0 right-0 w-2 h-full cursor-e-resize z-[10000]"
+                         onMouseDown={(e) => handleResizeMouseDown(e, 'e')} onTouchStart={(e) => handleResizeTouchStart(e, 'e')} style={{ touchAction: 'none' }}/>
+
+                    {/* 角落 */}
+                    <div className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize z-[10001]"
+                         onMouseDown={(e) => handleResizeMouseDown(e, 'nw')} onTouchStart={(e) => handleResizeTouchStart(e, 'nw')} style={{ touchAction: 'none' }}/>
+                    <div className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize z-[10001]"
+                         onMouseDown={(e) => handleResizeMouseDown(e, 'ne')} onTouchStart={(e) => handleResizeTouchStart(e, 'ne')} style={{ touchAction: 'none' }}/>
+                    <div className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize z-[10001]"
+                         onMouseDown={(e) => handleResizeMouseDown(e, 'sw')} onTouchStart={(e) => handleResizeTouchStart(e, 'sw')} style={{ touchAction: 'none' }}/>
+                    <div className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize z-[10001] flex items-end justify-end p-1"
+                         onMouseDown={(e) => handleResizeMouseDown(e, 'se')} onTouchStart={(e) => handleResizeTouchStart(e, 'se')} style={{ touchAction: 'none' }}>
+                        <svg className="w-3 h-3 text-gray-400 opacity-60 hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <path d="M21 15l-6 6 M21 9l-12 12 M21 3l-18 18" />
+                        </svg>
+                    </div>
+                </>
+            )}
+        </motion.div>
     );
 }
-
 export default ChatPage;

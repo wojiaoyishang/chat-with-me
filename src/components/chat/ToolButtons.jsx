@@ -68,9 +68,11 @@ const ToolButtons = memo(({
                               tools,
                               toolsStatus,
                               setToolsStatus,
-                              t
+                              t,
+                              isWindowMode = false
                           }) => {
     const [open, setOpen] = useState(false);
+    const highZClass = isWindowMode ? 'z-[100000]' : '';
 
     const handleToggle = useCallback((toolName, e, newIsActive) => {
         setToolsStatus(prev => ({
@@ -110,7 +112,7 @@ const ToolButtons = memo(({
                         <IoMdAdd/>
                     </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-white p-1 shadow-lg rounded-md">
+                <DropdownMenuContent align="start" className={`bg-white p-1 shadow-lg rounded-md ${highZClass}`}>
                     {extraTools.length > 0 ? (
                         renderMenuItems(extraTools)
                     ) : (
@@ -232,7 +234,8 @@ const ToolButtons = memo(({
         prevProps.renderMenuItems === nextProps.renderMenuItems &&
         prevProps.setToolsLoadedStatus === nextProps.setToolsLoadedStatus &&
         prevProps.t === nextProps.t &&
-        prevProps.setToolsStatus === nextProps.setToolsStatus
+        prevProps.setToolsStatus === nextProps.setToolsStatus &&
+        prevProps.isWindowMode === nextProps.isWindowMode
     );
 });
 

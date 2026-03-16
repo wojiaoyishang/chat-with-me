@@ -442,9 +442,11 @@ function ChatBox({
                      onFolderDetected,
                      onHeightChange,
                      dropTargetRef,
-                     selectedModel
+                     selectedModel,
+                     isWindowMode = false,
                  }) {
     const {t} = useTranslation();
+    const highZClass = isWindowMode ? 'z-[100000]' : '';
 
     // ========== 状态管理 ==========
     const [messageContent, setMessageContent] = useState('');
@@ -968,7 +970,8 @@ function ChatBox({
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
                             <span>{t(item.text)}</span>
                         </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent className="max-h-[50vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar-thumb-rounded-full scrollbar-track-rounded-full rounded-md">
+                        <DropdownMenuSubContent
+                            className={`${highZClass} max-h-[50vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar-thumb-rounded-full scrollbar-track-rounded-full rounded-md`}>
                             {!isDisabled && (
                                 <div className="sticky top-0 bg-white z-10 rounded-t-md">
                                     <DropdownMenuItem
@@ -980,9 +983,10 @@ function ChatBox({
                                         {checkState === 'checked' && <Check className="ml-auto w-4 h-4 text-blue-500"/>}
                                         {checkState === 'indeterminate' &&
                                             <Minus className="ml-auto w-4 h-4 text-blue-500"/>}
-                                        {checkState === 'unchecked' && <Square className="ml-auto w-4 h-4 text-gray-500"/>}
+                                        {checkState === 'unchecked' &&
+                                            <Square className="ml-auto w-4 h-4 text-gray-500"/>}
                                     </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
+                                    <DropdownMenuSeparator/>
                                 </div>
                             )}
                             {isDisabled ? null : renderMenuItems(item.children, currentPath)}
@@ -1038,7 +1042,7 @@ function ChatBox({
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
                             <span>{t(item.text)}</span>
                         </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent className="max-h-[50vh] rounded-md">
+                        <DropdownMenuSubContent className={`max-h-[50vh] rounded-md ${highZClass}`}>
                             {item.children.map(child => {
                                 const childIsDisabled = child.disabled || false;
                                 const isSelected = currentValue === child.name;
@@ -1094,7 +1098,7 @@ function ChatBox({
             }
             return null;
         });
-    }, [toolsStatus.extra_tools, setToolsStatus]);
+    }, [toolsStatus.extra_tools, setToolsStatus, isWindowMode]);
 
     // 需要将 renderIcon 函数也定义在组件内部
     const renderIcon = useCallback((iconType, iconData) => {
@@ -1272,7 +1276,8 @@ function ChatBox({
         setToolsLoadedStatus,
         renderMenuItems, // 传递函数
         t,
-    }), [toolsLoadedStatus, extraTools, tools, toolsStatus, setToolsStatus, setToolsLoadedStatus, renderMenuItems]);
+        isWindowMode
+    }), [toolsLoadedStatus, extraTools, tools, toolsStatus, setToolsStatus, setToolsLoadedStatus, renderMenuItems, isWindowMode]);
 
     return (
         <>
@@ -1408,7 +1413,7 @@ function ChatBox({
 
                                         </button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent side="top" align="end" className="w-fit min-w-[140px]">
+                                    <DropdownMenuContent side="top" align="end" className={`w-fit min-w-[140px] ${highZClass}`}>
                                         {roles.map((role) => {
 
                                             let avatar = role.avatar;
@@ -1465,6 +1470,7 @@ function ChatBox({
                     <div
                         className="fixed inset-0 z-50 flex items-center justify-center  pointer-events-auto"
                         style={{
+                            zIndex: isWindowMode ? 100001 : 50,
                             marginLeft: !isMobile() ? 'var(--sidebar-width)' : '0',
                             transition: 'margin-left 0.3s ease-in-out',
                         }}
@@ -1542,6 +1548,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         prevProps.onFolderDetected === nextProps.onFolderDetected &&
         prevProps.onHeightChange === nextProps.onHeightChange &&
         prevProps.dropTargetRef === nextProps.dropTargetRef &&
-        prevProps.selectedModel === nextProps.selectedModel
+        prevProps.selectedModel === nextProps.selectedModel &&
+        prevProps.isWindowMode === nextProps.isWindowMode
     );
 });

@@ -141,6 +141,7 @@ const CollaboraOnlineEditor = forwardRef(({
                 }}
                 onLoad={handleIframeLoad}
                 onError={handleIframeError}
+                allow="clipboard-read; clipboard-write"
             />
         </div>
     );

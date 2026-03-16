@@ -121,7 +121,7 @@ const ScrollArrow = memo(({ direction, onClick, t, show }) => {
         <button
             type="button"
             onClick={onClick}
-            className={`cursor-pointer absolute ${direction === 'left' ? 'left-0' : 'right-0'} top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center z-10 justify-center opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110`}
+            className={`cursor-pointer absolute ${direction === 'left' ? 'left-0' : 'right-0'} top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center z-10000 justify-center opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110`}
             aria-label={ariaLabel}
         >
             <svg
