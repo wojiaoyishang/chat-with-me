@@ -143,7 +143,6 @@ const ScrollToBottomButton = memo(({
     }, [chatBoxHeight]);
     return (
         <>
-            {/* 移动端按钮 - 中屏及以下显示 (max-lg) */}
             <Transition
                 show={isVisible}
                 enter="transition-all duration-200 ease-out"
@@ -152,7 +151,7 @@ const ScrollToBottomButton = memo(({
                 leave="transition-all duration-150 ease-in"
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
-                className="xl:hidden" // 大屏时隐藏
+                className="xl:hidden"
             >
                 <button
                     onClick={onClick}
@@ -163,7 +162,6 @@ const ScrollToBottomButton = memo(({
                     <ArrowDown className="text-gray-600 w-5 h-5"/>
                 </button>
             </Transition>
-            {/* 桌面端按钮 - 大屏显示 (lg+) */}
             <Transition
                 show={isVisible}
                 enter="transition-all duration-200 ease-out"
@@ -172,7 +170,7 @@ const ScrollToBottomButton = memo(({
                 leave="transition-all duration-150 ease-in"
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
-                className="hidden xl:block" // 仅大屏显示
+                className="hidden xl:block"
             >
                 <button
                     onClick={onClick}
@@ -206,7 +204,7 @@ const RightSidebar = memo(({
                                onSettingChange,
                                t,
                                containerRef,
-                               isWindowMode   // 新增：窗口化模式，用于控制叠层和定位（基于 ChatPage 层级）
+                               isWindowMode
                            }) => {
     const [lockedMode, setLockedMode] = useState(null);
     const sidebarRef = useRef(null);
@@ -377,7 +375,6 @@ const ChatHeader = memo(({
     return (
         <>
             <header className="w-full bg-white flex items-center justify-between p-4 h-14">
-                {/* 左侧：模型选择 */}
                 <Popover
                     open={isModelPopoverOpen}
                     onOpenChange={handlePopoverOpenChange}
@@ -409,7 +406,6 @@ const ChatHeader = memo(({
                     </PopoverContent>
                 </Popover>
 
-                {/* 中间拖动手柄 */}
                 {isWindowMode && (
                     <div
                         className={`flex-1 mx-4 h-full cursor-move active:cursor-grabbing transition-colors rounded-md flex flex-col justify-center items-center ${isDragReady ? 'bg-gray-100/50' : ''}`}
@@ -424,7 +420,6 @@ const ChatHeader = memo(({
                     </div>
                 )}
 
-                {/* 右侧按钮组 */}
                 <div className="flex items-center gap-2">
                     <Button
                         variant="ghost"
@@ -452,29 +447,6 @@ const ChatHeader = memo(({
             </header>
         </>
     );
-}, (prevProps, nextProps) => {
-    return (
-        prevProps.models === nextProps.models &&
-        prevProps.selectedModel?.id === nextProps.selectedModel?.id &&
-        prevProps.isModelPopoverOpen === nextProps.isModelPopoverOpen &&
-        prevProps.previewModel?.id === nextProps.previewModel?.id &&
-        prevProps.isMobile === nextProps.isMobile &&
-        prevProps.t === nextProps.t &&
-        prevProps.handlePopoverOpenChange === nextProps.handlePopoverOpenChange &&
-        prevProps.handleModelItemClick === nextProps.handleModelItemClick &&
-        prevProps.handleModelItemMouseEnter === nextProps.handleModelItemMouseEnter &&
-        prevProps.scrollToSelectedItem === nextProps.scrollToSelectedItem &&
-        prevProps.isSidebarOpen === nextProps.isSidebarOpen &&
-        prevProps.handleSidebarToggle === nextProps.handleSidebarToggle &&
-        prevProps.isWindowMode === nextProps.isWindowMode &&
-        prevProps.handleDragMouseDown === nextProps.handleDragMouseDown &&
-        prevProps.handleDragTouchStart === nextProps.handleDragTouchStart &&
-        prevProps.handleDragTouchMove === nextProps.handleDragTouchMove &&
-        prevProps.handleDragTouchEnd === nextProps.handleDragTouchEnd &&
-        prevProps.isDragReady === nextProps.isDragReady &&
-        prevProps.showWindowButton === nextProps.showWindowButton &&
-        prevProps.onToggleWindow === nextProps.onToggleWindow
-    );
 });
 ChatHeader.displayName = 'ChatHeader';
 
@@ -491,7 +463,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
     const [attachments, setAttachments] = useState([]);
     const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
 
-    // 加载相关
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
@@ -500,13 +471,11 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
     const isMessageLoadedRef = useRef(false);
     const isLoadingDataRef = useRef(false);
 
-    // 消息状态
     const [messagesOrder, setMessagesOrder] = useState([]);
     const [messages, setMessages] = useImmer({});
     const messagesRef = useRef({});
     const messagesOrderRef = useRef([]);
 
-    // 滚动相关 refs
     const isAutoScrollEnabledRef = useRef(true);
     const scrollCheckTimeoutRef = useRef(null);
     const pendingScrollRef = useRef(false);
@@ -514,7 +483,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
     const lastScrollTopRef = useRef(0);
     const scrollDirectionRef = useRef('down');
 
-    // 流式输出相关 refs
     const isStreamingRef = useRef(false);
     const streamingTimerRef = useRef(null);
     const lastStreamingCheckRef = useRef(0);
@@ -525,7 +493,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
     const isNewMarkIdRef = useRef(false);
     const [isFirstMessageSend, setIsFirstMessageSend] = useState(false);
 
-    // 模型控制相关
     const [models, setModels] = useState([]);
     const [selectedModel, setSelectedModel] = useState({name: t("no_models")});
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -540,25 +507,22 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
     const [windowDimensions, setWindowDimensions] = useState({ width: 900, height: 700 });
     const windowRef = useRef(null);
 
-    // 拖拽相关状态
     const dragOffsetRef = useRef({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [isDragReady, setIsDragReady] = useState(false);
     const longPressTimerRef = useRef(null);
 
-    // 缩放相关状态
     const [isResizing, setIsResizing] = useState(false);
     const resizeOffsetRef = useRef({ width: 0, height: 0, startX: 0, startY: 0, direction: '' });
 
-    // 计算允许的最大宽高
+    // 计算允许的最大宽高，设置为网页大小的 0.98
     const getMaxDimensions = useCallback(() => {
         return {
-            maxWidth: Math.min(920, window.innerWidth * 0.98),
-            maxHeight: Math.min(700, window.innerHeight * 0.98)
+            maxWidth: window.innerWidth * 0.98,
+            maxHeight: window.innerHeight * 0.98
         };
     }, []);
 
-    // ==== 拖拽逻辑 ====
     const handleDragMove = useCallback((clientX, clientY) => {
         if (!windowRef.current) return;
         let newLeft = clientX - dragOffsetRef.current.x;
@@ -632,7 +596,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
         setIsDragReady(false);
     }, []);
 
-    // ==== 八向缩放逻辑 ====
     const handleResizeMove = useCallback((clientX, clientY) => {
         const deltaX = clientX - resizeOffsetRef.current.startX;
         const deltaY = clientY - resizeOffsetRef.current.startY;
@@ -647,23 +610,19 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
         let newLeft = resizeOffsetRef.current.startLeft;
         let newTop = resizeOffsetRef.current.startTop;
 
-        // 处理水平方向 (East / West)
         if (dir.includes('e')) {
             newWidth = Math.max(minWidth, Math.min(resizeOffsetRef.current.startWidth + deltaX, maxWidth, window.innerWidth - newLeft));
         } else if (dir.includes('w')) {
             let tempWidth = resizeOffsetRef.current.startWidth - deltaX;
-            // 防止往左拉伸超过屏幕边界
             let clampedWidth = Math.max(minWidth, Math.min(tempWidth, maxWidth, resizeOffsetRef.current.startLeft + resizeOffsetRef.current.startWidth));
             newLeft = resizeOffsetRef.current.startLeft + (resizeOffsetRef.current.startWidth - clampedWidth);
             newWidth = clampedWidth;
         }
 
-        // 处理垂直方向 (North / South)
         if (dir.includes('s')) {
             newHeight = Math.max(minHeight, Math.min(resizeOffsetRef.current.startHeight + deltaY, maxHeight, window.innerHeight - newTop));
         } else if (dir.includes('n')) {
             let tempHeight = resizeOffsetRef.current.startHeight - deltaY;
-            // 防止往上拉伸超过屏幕边界
             let clampedHeight = Math.max(minHeight, Math.min(tempHeight, maxHeight, resizeOffsetRef.current.startTop + resizeOffsetRef.current.startHeight));
             newTop = resizeOffsetRef.current.startTop + (resizeOffsetRef.current.startHeight - clampedHeight);
             newHeight = clampedHeight;
@@ -721,15 +680,17 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
         document.addEventListener('touchend', handleTouchEndLocal);
     }, [startResizing, handleResizeMove]);
 
-    // 切换窗口化 / 全屏
     const toggleWindowMode = useCallback(() => {
         if (isWindowMode) {
             setIsWindowMode(false);
         } else {
             const { maxWidth, maxHeight } = getMaxDimensions();
-            const l = (window.innerWidth - maxWidth) / 2;
-            const t = Math.max(40, (window.innerHeight - maxHeight) / 2);
-            setWindowDimensions({ width: maxWidth, height: maxHeight });
+            // 默认打开时使用 0.85 倍大小以便居中，但允许用户缩放到 0.98
+            const initialW = window.innerWidth * 0.85;
+            const initialH = window.innerHeight * 0.85;
+            const l = (window.innerWidth - initialW) / 2;
+            const t = (window.innerHeight - initialH) / 2;
+            setWindowDimensions({ width: initialW, height: initialH });
             setWindowPos({ left: l, top: t });
             setIsWindowMode(true);
         }
@@ -932,9 +893,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                     emitEvent({
                         type: "widget",
                         target: "ChatBox",
-                        payload: {
-                            command: "Get-MessageContent"
-                        },
+                        payload: { command: "Get-MessageContent" },
                         markId: chatMarkId,
                         fromWebsocket: true,
                         notReplyToWebsocket: true
@@ -1082,9 +1041,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                 emitEvent({
                     type: "widget",
                     target: "Sidebar",
-                    payload: {
-                        command: "Update-ConversationDate"
-                    },
+                    payload: { command: "Update-ConversationDate" },
                     markId: markId,
                 });
                 setIsFirstMessageSend(false);
@@ -1113,7 +1070,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
             if (isEditMessage) {
                 eventPayload.payload.msgId = editMessageId;
             }
-            emitEvent(eventPayload).then((payload, markId, isReply, id, reply) => {
+            emitEvent(eventPayload).then((payload) => {
                 if (payload.success) {
                     currentMessageSendRequestIDRef.current = generateUUID();
                 } else {
@@ -1130,7 +1087,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                     requestId: currentMessageSendRequestIDRef.current
                 }
             })
-                .then((payload, markId, isReply, id, reply) => {
+                .then((payload) => {
                     if (payload.success) {
                         setIsNewMarkId(true);
                         onNewChatMarkId(payload.value);
@@ -1328,17 +1285,13 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
         }
     }, [messagesOrder, executePendingScroll, requestScrollToBottom]);
 
-    // === 广播事件 ===
     useEffect(() => {
         const unsubscribe1 = onEvent({
             type: "message",
             target: "ChatPage",
             markId: chatMarkId
         })
-            .then(({
-                       payload: payload,
-                       reply: reply
-                   }) => {
+            .then(({ payload, reply }) => {
                 switch (payload.command) {
                     case "Add-Message":
                         if (payload.value && typeof payload.value === 'object') {
@@ -1648,7 +1601,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
             setMessagesOrder(emptyOrder);
             messagesOrderRef.current = emptyOrder;
             setIsLoadingError(false);
-            errorToastsIds.current.forEach((id, _) => {
+            errorToastsIds.current.forEach((id) => {
                 toast.dismiss(id);
             });
         }
@@ -1738,11 +1691,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                 setTimeout(() => {
                     if (messagesContainerRef.current) {
                         const container = messagesContainerRef.current;
-                        const {scrollTop, scrollHeight, clientHeight} = container;
-                        const distanceToBottom = scrollHeight - scrollTop - clientHeight;
-                        if (distanceToBottom > 100) {
-                            setShowScrollToBottomButton(true);
-                        }
+                        const {scrollHeight} = container;
                         container.scrollTo({
                             top: scrollHeight,
                             behavior: 'auto'
@@ -1768,8 +1717,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
         }
         setIsLoadingError(false);
         setIsFirstMessageSend(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [chatMarkId, randomMark, setMessages]);
+    }, [chatMarkId, randomMark, setMessages, t]);
 
     const handleChatBoxHeightChange = useCallback((newHeight) => {
         setChatBoxHeight(newHeight);
@@ -1781,7 +1729,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
     }, []);
 
     return (
-        // 根容器：支持全屏 / 窗口化切换 + motion 动画
         <motion.div
             ref={windowRef}
             className={`flex overflow-hidden bg-white ${
@@ -1795,7 +1742,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                     : (isReady ? 'calc(100vw - var(--sidebar-width))' : '100%'),
                 height: isWindowMode ? windowDimensions.height : '100%',
                 borderRadius: isWindowMode ? 16 : 0,
-                scale: isWindowMode && isDragReady ? 1.02 : 1, // 拖动准备动画反馈
+                scale: isWindowMode && isDragReady ? 1.02 : 1,
                 boxShadow: isWindowMode
                     ? (isDragReady ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' : '0 10px 30px -5px rgba(0, 0, 0, 0.2)')
                     : 'none'
@@ -1807,7 +1754,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
             initial={false}
             layout={isReady}
             transition={{
-                duration: (isDragging || isResizing) ? 0 : 0.35, // 拖拽和缩放时取消动画避免迟滞
+                duration: (isDragging || isResizing) ? 0 : 0.35,
                 ease: [0.25, 0.1, 0.25, 1],
                 layout: {
                     duration: (isDragging || isResizing) ? 0 : 0.35
@@ -1820,7 +1767,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                 }
             }}
         >
-            {/* 主内容区域 */}
             <div className="flex-1 flex flex-col relative h-full w-full overflow-hidden" ref={chatPageRef}>
                 <ChatHeader
                     models={models}
@@ -1835,7 +1781,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                     scrollToSelectedItem={scrollToSelectedItem}
                     isSidebarOpen={isSidebarOpen}
                     handleSidebarToggle={handleSidebarToggle}
-                    // 窗口化参数
                     isWindowMode={isWindowMode}
                     handleDragMouseDown={handleDragMouseDown}
                     handleDragTouchStart={handleDragTouchStart}
@@ -1846,7 +1791,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                     onToggleWindow={toggleWindowMode}
                 />
 
-                {/* 消息容器区域 */}
                 <div className="flex-1 w-full relative overflow-hidden">
                     <div
                         ref={messagesContainerRef}
@@ -1866,14 +1810,12 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                     {isLoadingError && <LoadingFailedScreen/>}
                 </div>
 
-                {/* 置底按钮 */}
                 <ScrollToBottomButton
                     isVisible={showScrollToBottomButton}
                     chatBoxHeight={chatBoxHeight}
                     onClick={handleScrollToBottomClick}
                 />
 
-                {/* 输入框区域 */}
                 <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
                     <ChatBox
                         onSendMessage={handleSendMessage}
@@ -1896,7 +1838,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                     />
                 </div>
 
-                {/* Footer */}
                 <footer
                     className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center ml-5 mr-5">
                     <span className="text-xs text-gray-500">
@@ -1905,7 +1846,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                 </footer>
             </div>
 
-            {/* 侧边栏组件 */}
             <RightSidebar
                 isOpen={isSidebarOpen}
                 onClose={handleSidebarToggle}
@@ -1920,10 +1860,8 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                 isWindowMode={isWindowMode}
             />
 
-            {/* ========== 缩放手柄热区 (八个方位) ========== */}
             {isWindowMode && (
                 <>
-                    {/* 边缘 */}
                     <div className="absolute top-0 left-0 w-full h-2 cursor-n-resize z-[10000]"
                          onMouseDown={(e) => handleResizeMouseDown(e, 'n')} onTouchStart={(e) => handleResizeTouchStart(e, 'n')} style={{ touchAction: 'none' }}/>
                     <div className="absolute bottom-0 left-0 w-full h-2 cursor-s-resize z-[10000]"
@@ -1933,7 +1871,6 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                     <div className="absolute top-0 right-0 w-2 h-full cursor-e-resize z-[10000]"
                          onMouseDown={(e) => handleResizeMouseDown(e, 'e')} onTouchStart={(e) => handleResizeTouchStart(e, 'e')} style={{ touchAction: 'none' }}/>
 
-                    {/* 角落 */}
                     <div className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize z-[10001]"
                          onMouseDown={(e) => handleResizeMouseDown(e, 'nw')} onTouchStart={(e) => handleResizeTouchStart(e, 'nw')} style={{ touchAction: 'none' }}/>
                     <div className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize z-[10001]"
