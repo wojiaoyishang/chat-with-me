@@ -452,8 +452,11 @@ const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, 
                 style={isMobile ? {flex: 1, width: '100%'} : desktopChatStyle}
             >
                 <div className="flex-1 overflow-hidden">
+                    {/* TOdo: 修改拖动时出现幽灵层 */}
                     <ChatPage chatMarkId={chatMarkId} documentMarkId={documentMarkId}
-                              pageType={"doc"} onNewChatMarkId={onNewChatMarkId}/>
+                              pageType={"doc"} onNewChatMarkId={onNewChatMarkId}
+                              showWindowButton={true}
+                    />
                 </div>
             </aside>
         </div>

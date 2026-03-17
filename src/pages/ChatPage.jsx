@@ -680,6 +680,28 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
         document.addEventListener('touchend', handleTouchEndLocal);
     }, [startResizing, handleResizeMove]);
 
+    // ========== 新增：幽灵层光标计算（用于拖拽/缩放期间保持正确鼠标样式） ==========
+    const ghostCursor = useMemo(() => {
+        if (isDragging) {
+            return 'grabbing';
+        }
+        if (isResizing) {
+            const dir = resizeOffsetRef.current.direction;
+            const cursorMap = {
+                'n': 'n-resize',
+                's': 's-resize',
+                'w': 'w-resize',
+                'e': 'e-resize',
+                'nw': 'nw-resize',
+                'ne': 'ne-resize',
+                'sw': 'sw-resize',
+                'se': 'se-resize',
+            };
+            return cursorMap[dir] || 'move';
+        }
+        return 'default';
+    }, [isDragging, isResizing]);
+
     const toggleWindowMode = useCallback(() => {
         if (isWindowMode) {
             setIsWindowMode(false);
@@ -1729,163 +1751,183 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
     }, []);
 
     return (
-        <motion.div
-            ref={windowRef}
-            className={`flex overflow-hidden bg-white ${
-                isWindowMode ? 'shadow-2xl border-2 border-gray-300' : ''
-            }`}
-            animate={{
-                left: isWindowMode ? windowPos.left : 0,
-                top: isWindowMode ? windowPos.top : 0,
-                width: isWindowMode
-                    ? windowDimensions.width
-                    : (isReady ? 'calc(100vw - var(--sidebar-width))' : '100%'),
-                height: isWindowMode ? windowDimensions.height : '100%',
-                borderRadius: isWindowMode ? 16 : 0,
-                scale: isWindowMode && isDragReady ? 1.02 : 1,
-                boxShadow: isWindowMode
-                    ? (isDragReady ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' : '0 10px 30px -5px rgba(0, 0, 0, 0.2)')
-                    : 'none'
-            }}
-            style={{
-                position: isWindowMode ? 'fixed' : 'relative',
-                zIndex: isWindowMode ? 9999 : 0,
-            }}
-            initial={false}
-            layout={isReady}
-            transition={{
-                duration: (isDragging || isResizing) ? 0 : 0.35,
-                ease: [0.25, 0.1, 0.25, 1],
-                layout: {
-                    duration: (isDragging || isResizing) ? 0 : 0.35
-                },
-                width: {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                    restDelta: 0.5
+        <>
+            <motion.div
+                ref={windowRef}
+                className={`flex overflow-hidden bg-white ${
+                    isWindowMode ? 'shadow-2xl border-2 border-gray-300' : ''
+                }`}
+                animate={{
+                    left: isWindowMode ? windowPos.left : 0,
+                    top: isWindowMode ? windowPos.top : 0,
+                    // 核心修改：非窗口模式下，直接使用 '100%' 让其撑满父级 aside
+                    width: isWindowMode ? windowDimensions.width : '100%',
+                    height: isWindowMode ? windowDimensions.height : '100%',
+                    borderRadius: isWindowMode ? 16 : 0,
+                    scale: isWindowMode && isDragReady ? 1.02 : 1,
+                    boxShadow: isWindowMode
+                        ? (isDragReady ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' : '0 10px 30px -5px rgba(0, 0, 0, 0.2)')
+                        : 'none'
+                }}
+                style={{
+                    position: isWindowMode ? 'fixed' : 'relative',
+                    zIndex: isWindowMode ? 9999 : 0,
+                    // 添加这两行作为底层兜底，防止动画初始化闪烁，确保 100% 充满父级
+                    width: isWindowMode ? undefined : '100%',
+                    height: isWindowMode ? undefined : '100%',
+                }}
+                initial={false}
+                layout={isReady}
+                transition={
+                    (isResizing || isDragging)
+                        ? { duration: 0 }
+                        : {
+                            duration: 0.35,
+                            ease: [0.25, 0.1, 0.25, 1],
+                            layout: {
+                                duration: 0.35
+                            },
+                            width: {
+                                type: "spring",
+                                stiffness: 300,
+                                damping: 30,
+                                restDelta: 0.5
+                            },
+                            // 确保 left 和 top 在缩放时也没有延迟
+                            left: { type: "tween", duration: isResizing || isDragging ? 0 : 0.35 },
+                            top: { type: "tween", duration: isResizing || isDragging ? 0 : 0.35 }
+                        }
                 }
-            }}
-        >
-            <div className="flex-1 flex flex-col relative h-full w-full overflow-hidden" ref={chatPageRef}>
-                <ChatHeader
-                    models={models}
-                    selectedModel={selectedModel}
-                    isModelPopoverOpen={isModelPopoverOpen}
-                    previewModel={previewModel}
-                    isMobile={isMobile}
-                    t={t}
-                    handlePopoverOpenChange={handlePopoverOpenChange}
-                    handleModelItemClick={handleModelItemClick}
-                    handleModelItemMouseEnter={handleModelItemMouseEnter}
-                    scrollToSelectedItem={scrollToSelectedItem}
-                    isSidebarOpen={isSidebarOpen}
-                    handleSidebarToggle={handleSidebarToggle}
-                    isWindowMode={isWindowMode}
-                    handleDragMouseDown={handleDragMouseDown}
-                    handleDragTouchStart={handleDragTouchStart}
-                    handleDragTouchMove={handleDragTouchMove}
-                    handleDragTouchEnd={handleDragTouchEnd}
-                    isDragReady={isDragReady}
-                    showWindowButton={showWindowButton}
-                    onToggleWindow={toggleWindowMode}
-                />
+            >
+                <div className="flex-1 flex flex-col relative h-full w-full overflow-hidden" ref={chatPageRef}>
+                    <ChatHeader
+                        models={models}
+                        selectedModel={selectedModel}
+                        isModelPopoverOpen={isModelPopoverOpen}
+                        previewModel={previewModel}
+                        isMobile={isMobile}
+                        t={t}
+                        handlePopoverOpenChange={handlePopoverOpenChange}
+                        handleModelItemClick={handleModelItemClick}
+                        handleModelItemMouseEnter={handleModelItemMouseEnter}
+                        scrollToSelectedItem={scrollToSelectedItem}
+                        isSidebarOpen={isSidebarOpen}
+                        handleSidebarToggle={handleSidebarToggle}
+                        isWindowMode={isWindowMode}
+                        handleDragMouseDown={handleDragMouseDown}
+                        handleDragTouchStart={handleDragTouchStart}
+                        handleDragTouchMove={handleDragTouchMove}
+                        handleDragTouchEnd={handleDragTouchEnd}
+                        isDragReady={isDragReady}
+                        showWindowButton={showWindowButton}
+                        onToggleWindow={toggleWindowMode}
+                    />
 
-                <div className="flex-1 w-full relative overflow-hidden">
-                    <div
-                        ref={messagesContainerRef}
-                        className="h-full overflow-y-auto pb-20 scroll-smooth"
-                        style={{maxHeight: 'calc(120vh - 256px)'}}
-                    >
-                        <MessageContainer
-                            key={chatMarkId}
-                            messagesOrder={messagesOrder}
-                            messages={messages}
-                            onLoadMore={loadMoreHistory}
-                            onSwitchMessage={switchMessage}
+                    <div className="flex-1 w-full relative overflow-hidden">
+                        <div
+                            ref={messagesContainerRef}
+                            className="h-full overflow-y-auto pb-20 scroll-smooth"
+                            style={{maxHeight: 'calc(120vh - 256px)'}}
+                        >
+                            <MessageContainer
+                                key={chatMarkId}
+                                messagesOrder={messagesOrder}
+                                messages={messages}
+                                onLoadMore={loadMoreHistory}
+                                onSwitchMessage={switchMessage}
+                                markId={chatMarkId}
+                            />
+                        </div>
+                        {isLoading && <LoadingScreen/>}
+                        {isLoadingError && <LoadingFailedScreen/>}
+                    </div>
+
+                    <ScrollToBottomButton
+                        isVisible={showScrollToBottomButton}
+                        chatBoxHeight={chatBoxHeight}
+                        onClick={handleScrollToBottomClick}
+                    />
+
+                    <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
+                        <ChatBox
+                            onSendMessage={handleSendMessage}
                             markId={chatMarkId}
+                            attachmentsMeta={attachments}
+                            setAttachments={setAttachments}
+                            onAttachmentRemove={onAttachmentRemove}
+                            uploadFiles={uploadFiles}
+                            FilePickerCallback={handleFilePicker}
+                            PicPickerCallback={handlePicPicker}
+                            onImagePaste={handleImagePaste}
+                            onRetryUpload={handleRetryUpload}
+                            onCancelUpload={handleCancelUpload}
+                            onDropFiles={handleSelectedFiles}
+                            onFolderDetected={handleFolderDetected}
+                            onHeightChange={handleChatBoxHeightChange}
+                            dropTargetRef={chatPageRef}
+                            selectedModel={selectedModel}
+                            isWindowMode={isWindowMode}
                         />
                     </div>
-                    {isLoading && <LoadingScreen/>}
-                    {isLoadingError && <LoadingFailedScreen/>}
+
+                    <footer
+                        className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center ml-5 mr-5">
+                        <span className="text-xs text-gray-500">
+                          © {new Date().getFullYear()} lovePikachu. All rights reserved.
+                        </span>
+                    </footer>
                 </div>
 
-                <ScrollToBottomButton
-                    isVisible={showScrollToBottomButton}
-                    chatBoxHeight={chatBoxHeight}
-                    onClick={handleScrollToBottomClick}
+                <RightSidebar
+                    isOpen={isSidebarOpen}
+                    onClose={handleSidebarToggle}
+                    advancedSettings={advancedSettings}
+                    initialSettingValues={initialSettingValues || advancedSettingsValues}
+                    onSettingChange={(values) => {
+                        setAdvancedSettingsValues(values);
+                        setInitialSettingValues(null);
+                    }}
+                    t={t}
+                    containerRef={chatPageRef}
+                    isWindowMode={isWindowMode}
                 />
 
-                <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
-                    <ChatBox
-                        onSendMessage={handleSendMessage}
-                        markId={chatMarkId}
-                        attachmentsMeta={attachments}
-                        setAttachments={setAttachments}
-                        onAttachmentRemove={onAttachmentRemove}
-                        uploadFiles={uploadFiles}
-                        FilePickerCallback={handleFilePicker}
-                        PicPickerCallback={handlePicPicker}
-                        onImagePaste={handleImagePaste}
-                        onRetryUpload={handleRetryUpload}
-                        onCancelUpload={handleCancelUpload}
-                        onDropFiles={handleSelectedFiles}
-                        onFolderDetected={handleFolderDetected}
-                        onHeightChange={handleChatBoxHeightChange}
-                        dropTargetRef={chatPageRef}
-                        selectedModel={selectedModel}
-                        isWindowMode={isWindowMode}
-                    />
-                </div>
+                {isWindowMode && (
+                    <>
+                        <div className="absolute top-0 left-0 w-full h-2 cursor-n-resize z-[10000]"
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'n')} onTouchStart={(e) => handleResizeTouchStart(e, 'n')} style={{ touchAction: 'none' }}/>
+                        <div className="absolute bottom-0 left-0 w-full h-2 cursor-s-resize z-[10000]"
+                             onMouseDown={(e) => handleResizeMouseDown(e, 's')} onTouchStart={(e) => handleResizeTouchStart(e, 's')} style={{ touchAction: 'none' }}/>
+                        <div className="absolute top-0 left-0 w-2 h-full cursor-w-resize z-[10000]"
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'w')} onTouchStart={(e) => handleResizeTouchStart(e, 'w')} style={{ touchAction: 'none' }}/>
+                        <div className="absolute top-0 right-0 w-2 h-full cursor-e-resize z-[10000]"
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'e')} onTouchStart={(e) => handleResizeTouchStart(e, 'e')} style={{ touchAction: 'none' }}/>
 
-                <footer
-                    className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center ml-5 mr-5">
-                    <span className="text-xs text-gray-500">
-                      © {new Date().getFullYear()} lovePikachu. All rights reserved.
-                    </span>
-                </footer>
-            </div>
+                        <div className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize z-[10001]"
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'nw')} onTouchStart={(e) => handleResizeTouchStart(e, 'nw')} style={{ touchAction: 'none' }}/>
+                        <div className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize z-[10001]"
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'ne')} onTouchStart={(e) => handleResizeTouchStart(e, 'ne')} style={{ touchAction: 'none' }}/>
+                        <div className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize z-[10001]"
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'sw')} onTouchStart={(e) => handleResizeTouchStart(e, 'sw')} style={{ touchAction: 'none' }}/>
+                        <div className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize z-[10001] flex items-end justify-end p-1"
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'se')} onTouchStart={(e) => handleResizeTouchStart(e, 'se')} style={{ touchAction: 'none' }}>
+                            <svg className="w-3 h-3 text-gray-400 opacity-60 hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                <path d="M21 15l-6 6 M21 9l-12 12 M21 3l-18 18" />
+                            </svg>
+                        </div>
+                    </>
+                )}
+            </motion.div>
 
-            <RightSidebar
-                isOpen={isSidebarOpen}
-                onClose={handleSidebarToggle}
-                advancedSettings={advancedSettings}
-                initialSettingValues={initialSettingValues || advancedSettingsValues}
-                onSettingChange={(values) => {
-                    setAdvancedSettingsValues(values);
-                    setInitialSettingValues(null);
-                }}
-                t={t}
-                containerRef={chatPageRef}
-                isWindowMode={isWindowMode}
-            />
-
-            {isWindowMode && (
-                <>
-                    <div className="absolute top-0 left-0 w-full h-2 cursor-n-resize z-[10000]"
-                         onMouseDown={(e) => handleResizeMouseDown(e, 'n')} onTouchStart={(e) => handleResizeTouchStart(e, 'n')} style={{ touchAction: 'none' }}/>
-                    <div className="absolute bottom-0 left-0 w-full h-2 cursor-s-resize z-[10000]"
-                         onMouseDown={(e) => handleResizeMouseDown(e, 's')} onTouchStart={(e) => handleResizeTouchStart(e, 's')} style={{ touchAction: 'none' }}/>
-                    <div className="absolute top-0 left-0 w-2 h-full cursor-w-resize z-[10000]"
-                         onMouseDown={(e) => handleResizeMouseDown(e, 'w')} onTouchStart={(e) => handleResizeTouchStart(e, 'w')} style={{ touchAction: 'none' }}/>
-                    <div className="absolute top-0 right-0 w-2 h-full cursor-e-resize z-[10000]"
-                         onMouseDown={(e) => handleResizeMouseDown(e, 'e')} onTouchStart={(e) => handleResizeTouchStart(e, 'e')} style={{ touchAction: 'none' }}/>
-
-                    <div className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize z-[10001]"
-                         onMouseDown={(e) => handleResizeMouseDown(e, 'nw')} onTouchStart={(e) => handleResizeTouchStart(e, 'nw')} style={{ touchAction: 'none' }}/>
-                    <div className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize z-[10001]"
-                         onMouseDown={(e) => handleResizeMouseDown(e, 'ne')} onTouchStart={(e) => handleResizeTouchStart(e, 'ne')} style={{ touchAction: 'none' }}/>
-                    <div className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize z-[10001]"
-                         onMouseDown={(e) => handleResizeMouseDown(e, 'sw')} onTouchStart={(e) => handleResizeTouchStart(e, 'sw')} style={{ touchAction: 'none' }}/>
-                    <div className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize z-[10001] flex items-end justify-end p-1"
-                         onMouseDown={(e) => handleResizeMouseDown(e, 'se')} onTouchStart={(e) => handleResizeTouchStart(e, 'se')} style={{ touchAction: 'none' }}>
-                        <svg className="w-3 h-3 text-gray-400 opacity-60 hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                            <path d="M21 15l-6 6 M21 9l-12 12 M21 3l-18 18" />
-                        </svg>
-                    </div>
-                </>
+            {isWindowMode && (isDragging || isResizing) && (
+                <div
+                    className="fixed inset-0 bg-transparent pointer-events-auto z-[9998]"
+                    style={{
+                        cursor: ghostCursor,
+                    }}
+                />
             )}
-        </motion.div>
+        </>
     );
 }
 export default ChatPage;

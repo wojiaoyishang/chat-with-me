@@ -151,7 +151,9 @@ const DashboardPage = ({type = "chat"}) => {
                                                       newChatMarkId: newChatMarkId,
                                                       newDocumentMarkId: documentMarkId,
                                                   });
-                                              }}/>
+                                              }}
+                                              showWindowButton={false}
+                                    />
                                 </motion.div>
                             )}
                             {pageType === "doc" && (
