@@ -496,6 +496,8 @@ function ChatBox({
     const textareaRef = useRef(null);
     const attachmentRef = useRef(null);
     const rootRef = useRef(null);
+    const [containerWidth, setContainerWidth] = useState(0);
+
 
     // 使用 useRef 缓存频繁变化的值，避免触发重新渲染
     const messageContentRef = useRef(messageContent);
@@ -1194,6 +1196,21 @@ function ChatBox({
         return () => window.removeEventListener('resize', updateHeight);
     }, [attachmentsMeta]);
 
+    // ChatBox 宽
+    useLayoutEffect(() => {
+        const el = rootRef.current;
+        if (!el) return;
+
+        const observer = new ResizeObserver((entries) => {
+            setContainerWidth(entries[0]?.contentRect?.width ?? 0);
+        });
+
+        observer.observe(el);
+        setContainerWidth(el.getBoundingClientRect().width); // 立即设置初始宽度
+
+        return () => observer.disconnect();
+    }, []);
+
     // 响应式宽度更新
     useLayoutEffect(() => {
         const updateWidth = () => {
@@ -1276,8 +1293,10 @@ function ChatBox({
         setToolsLoadedStatus,
         renderMenuItems, // 传递函数
         t,
-        isWindowMode
-    }), [toolsLoadedStatus, extraTools, tools, toolsStatus, setToolsStatus, setToolsLoadedStatus, renderMenuItems, isWindowMode]);
+        isWindowMode,
+        containerWidth
+    }), [toolsLoadedStatus, extraTools, tools, toolsStatus,
+        setToolsStatus, setToolsLoadedStatus, renderMenuItems, isWindowMode, containerWidth]);
 
     return (
         <>
@@ -1413,7 +1432,8 @@ function ChatBox({
 
                                         </button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent side="top" align="end" className={`w-fit min-w-[140px] ${highZClass}`}>
+                                    <DropdownMenuContent side="top" align="end"
+                                                         className={`w-fit min-w-[140px] ${highZClass}`}>
                                         {roles.map((role) => {
 
                                             let avatar = role.avatar;
