@@ -430,7 +430,6 @@ function ChatBox({
                      FilePickerCallback,
                      PicPickerCallback,
                      markId,
-                     selectedModelRef,
                      attachmentsMeta = [],
                      setAttachments,
                      uploadFiles = [],
@@ -442,6 +441,7 @@ function ChatBox({
                      onFolderDetected,
                      onHeightChange,
                      dropTargetRef,
+                     windowRef,
                      selectedModel,
                      isWindowMode = false,
                  }) {
@@ -454,6 +454,9 @@ function ChatBox({
 
     // 全屏编辑器
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // 窗口模式下全屏编辑器填满 windowRef 的位置/尺寸
+    const [modalPosition, setModalPosition] = useState({});
 
     // 是否只读
     const [isReadOnly, setIsReadOnly] = useState(readOnly);
@@ -1130,6 +1133,40 @@ function ChatBox({
         messageContentRef.current = messageContent;
     }, [sendButtonStatus, messageContent]);
 
+    // 窗口模式下全屏编辑器填满 windowRef（位置 + 大小）
+    useLayoutEffect(() => {
+        if (!isModalOpen || !isWindowMode || !windowRef?.current) {
+            setModalPosition({});
+            return;
+        }
+
+        const updatePosition = () => {
+            const rect = windowRef.current.getBoundingClientRect();
+            setModalPosition({
+                position: 'fixed',
+                top: `${rect.top}px`,
+                left: `${rect.left}px`,
+                width: `${rect.width}px`,
+                height: `${rect.height}px`,
+                zIndex: 100001,
+            });
+        };
+
+        updatePosition();
+
+        const observer = new ResizeObserver(updatePosition);
+        observer.observe(windowRef.current);
+
+        // 滚动时也要更新位置（防止窗口滚动导致偏移）
+        const handleScroll = () => updatePosition();
+        window.addEventListener('scroll', handleScroll, true);
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, [isModalOpen, isWindowMode, windowRef]);
+
     // 响应式屏幕检测
     useEffect(() => {
         const checkScreenSize = () => {
@@ -1484,16 +1521,21 @@ function ChatBox({
 
                 </div>
 
-                {/* 全屏编辑模态框 */}
+                {/* 全屏编辑模态框（修改后支持 windowMode 填满 windowRef） */}
                 {isModalOpen && (
-
                     <div
-                        className="fixed inset-0 z-50 flex items-center justify-center  pointer-events-auto"
-                        style={{
-                            zIndex: isWindowMode ? 100001 : 50,
-                            marginLeft: !isMobile() ? 'var(--sidebar-width)' : '0',
-                            transition: 'margin-left 0.3s ease-in-out',
-                        }}
+                        className={isWindowMode
+                            ? "pointer-events-auto"
+                            : "fixed inset-0 flex items-center justify-center pointer-events-auto"
+                        }
+                        style={isWindowMode
+                            ? modalPosition
+                            : {
+                                zIndex: 50,
+                                marginLeft: !isMobile() ? 'var(--sidebar-width)' : '0',
+                                transition: 'margin-left 0.3s ease-in-out',
+                            }
+                        }
                     >
                         <motion.div
                             initial={{opacity: 0, x: 10}}
@@ -1501,7 +1543,7 @@ function ChatBox({
                             className="h-full w-full mx-auto"
                         >
                             <div
-                                className="bg-white z-50 w-full h-full p-0.5 relative"
+                                className="bg-white z-10001 w-full h-full p-0.5 relative"
                                 onClick={e => e.stopPropagation()}
                             >
                                 <button
@@ -1520,9 +1562,7 @@ function ChatBox({
                                 </div>
                             </div>
                         </motion.div>
-
                     </div>
-
                 )}
             </div>
         </>

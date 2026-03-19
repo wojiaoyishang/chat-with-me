@@ -1897,6 +1897,7 @@ function ChatPage({
                             onHeightChange={handleChatBoxHeightChange}
                             dropTargetRef={chatPageRef}
                             selectedModel={selectedModel}
+                            windowRef={windowRef}
                             isWindowMode={isWindowMode}
                         />
                     </div>

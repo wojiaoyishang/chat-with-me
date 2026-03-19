@@ -158,7 +158,7 @@ const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, 
 
         return (
             <div
-                className={`relative z-10 flex-shrink-0 flex items-center justify-center transition-all duration-200 border-gray-300
+                className={`relative flex-shrink-0 flex items-center justify-center transition-all duration-200 border-gray-300
                     ${showWideBar ? 'w-8 bg-gray-100 hover:bg-gray-200 cursor-pointer' : 'w-2 bg-gray-400 hover:bg-blue-600 cursor-col-resize'}
                     ${position === 'left' ? 'border-r' : 'border-l'} 
                 `}
