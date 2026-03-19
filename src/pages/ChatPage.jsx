@@ -17,7 +17,7 @@ import {
 } from "@/lib/tools.jsx";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
 import {useTranslation} from "react-i18next";
-import {ArrowDown, ChevronDown, CircleCheck, PanelRight, X, Maximize2, Minimize2} from 'lucide-react';
+import {ArrowDown, ChevronDown, CircleCheck, PanelRight, X, Maximize2, Minimize2, Minus} from 'lucide-react';
 import ChatBox from "@/components/chat/ChatBox.jsx";
 import MessageContainer from "@/components/chat/MessageContainer.jsx";
 import apiClient from "@/lib/apiClient.js";
@@ -339,6 +339,8 @@ const ChatHeader = memo(({
                              isDragReady,
                              showWindowButton,
                              onToggleWindow,
+                             showMinimizeButton = false,
+                             onMinimize,
                          }) => {
     const modelListRef = useRef(null);
     useEffect(() => {
@@ -429,6 +431,7 @@ const ChatHeader = memo(({
                     >
                         <PanelRight className="h-5 w-5 text-gray-600"/>
                     </Button>
+
                     {showWindowButton && (
                         <Button
                             variant="ghost"
@@ -443,6 +446,18 @@ const ChatHeader = memo(({
                             )}
                         </Button>
                     )}
+
+                    {showMinimizeButton && onMinimize && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onMinimize}
+                            className="cursor-pointer hover:bg-gray-100"
+                        >
+                            <Minus className="h-5 w-5 text-gray-600"/>
+                        </Button>
+                    )}
+
                 </div>
             </header>
         </>
@@ -451,7 +466,17 @@ const ChatHeader = memo(({
 ChatHeader.displayName = 'ChatHeader';
 
 // ========== 主组件 ==========
-function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWindowButton = true}) {
+function ChatPage({
+                      chatMarkId,
+                      documentMarkId,
+                      pageType,
+                      onNewChatMarkId,
+                      showWindowButton = true,
+                      showMinimizeButton = false,   // 是否显示最小化按钮（默认为 false）
+                      onMinimize,                   // 最小化按钮点击回调
+                      visible = true,               // 是否显示整个 ChatPage（默认为 true，变化时带动画）
+                      onWindowModeChange,           // 窗口化模式变化回调
+                  }) {
     const {t} = useTranslation();
     const chatPageRef = useRef(null);
     const isProcessingRef = useRef(false);
@@ -680,7 +705,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
         document.addEventListener('touchend', handleTouchEndLocal);
     }, [startResizing, handleResizeMove]);
 
-    // ========== 新增：幽灵层光标计算（用于拖拽/缩放期间保持正确鼠标样式） ==========
+    // ========== 幽灵层光标计算（用于拖拽/缩放期间保持正确鼠标样式） ==========
     const ghostCursor = useMemo(() => {
         if (isDragging) {
             return 'grabbing';
@@ -702,12 +727,15 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
         return 'default';
     }, [isDragging, isResizing]);
 
+    // ========== 更新 toggleWindowMode（支持 onWindowModeChange 回调） ==========
     const toggleWindowMode = useCallback(() => {
+        const newMode = !isWindowMode;
+        onWindowModeChange?.(newMode);
+
         if (isWindowMode) {
             setIsWindowMode(false);
         } else {
             const { maxWidth, maxHeight } = getMaxDimensions();
-            // 默认打开时使用 0.85 倍大小以便居中，但允许用户缩放到 0.98
             const initialW = window.innerWidth * 0.85;
             const initialH = window.innerHeight * 0.85;
             const l = (window.innerWidth - initialW) / 2;
@@ -716,7 +744,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
             setWindowPos({ left: l, top: t });
             setIsWindowMode(true);
         }
-    }, [isWindowMode, getMaxDimensions]);
+    }, [isWindowMode, onWindowModeChange, getMaxDimensions]);
 
     // ========== 滚动控制逻辑 =========
     const checkScrollPosition = useCallback((immediate = false) => {
@@ -1760,11 +1788,11 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                 animate={{
                     left: isWindowMode ? windowPos.left : 0,
                     top: isWindowMode ? windowPos.top : 0,
-                    // 核心修改：非窗口模式下，直接使用 '100%' 让其撑满父级 aside
                     width: isWindowMode ? windowDimensions.width : '100%',
                     height: isWindowMode ? windowDimensions.height : '100%',
                     borderRadius: isWindowMode ? 16 : 0,
-                    scale: isWindowMode && isDragReady ? 1.02 : 1,
+                    scale: isWindowMode && isDragReady ? 1.02 : (visible ? 1 : 0.95),
+                    opacity: visible ? 1 : 0,
                     boxShadow: isWindowMode
                         ? (isDragReady ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' : '0 10px 30px -5px rgba(0, 0, 0, 0.2)')
                         : 'none'
@@ -1772,7 +1800,7 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                 style={{
                     position: isWindowMode ? 'fixed' : 'relative',
                     zIndex: isWindowMode ? 9999 : 0,
-                    // 添加这两行作为底层兜底，防止动画初始化闪烁，确保 100% 充满父级
+                    pointerEvents: visible ? 'auto' : 'none',
                     width: isWindowMode ? undefined : '100%',
                     height: isWindowMode ? undefined : '100%',
                 }}
@@ -1793,9 +1821,10 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                                 damping: 30,
                                 restDelta: 0.5
                             },
-                            // 确保 left 和 top 在缩放时也没有延迟
                             left: { type: "tween", duration: isResizing || isDragging ? 0 : 0.35 },
-                            top: { type: "tween", duration: isResizing || isDragging ? 0 : 0.35 }
+                            top: { type: "tween", duration: isResizing || isDragging ? 0 : 0.35 },
+                            opacity: { duration: 0.25 },
+                            scale: { duration: 0.25 }
                         }
                 }
             >
@@ -1821,6 +1850,8 @@ function ChatPage({chatMarkId, documentMarkId, pageType, onNewChatMarkId, showWi
                         isDragReady={isDragReady}
                         showWindowButton={showWindowButton}
                         onToggleWindow={toggleWindowMode}
+                        showMinimizeButton={showMinimizeButton}
+                        onMinimize={onMinimize}
                     />
 
                     <div className="flex-1 w-full relative overflow-hidden">

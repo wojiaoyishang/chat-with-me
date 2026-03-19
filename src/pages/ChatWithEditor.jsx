@@ -2,16 +2,19 @@ import React, {useRef, useState, useCallback, useEffect} from 'react';
 import ChatPage from '@/pages/ChatPage.jsx';
 import CollaboraOnlineEditor from '@/components/editor/CollaboraOnlineEditor.jsx';
 import {useIsMobile} from "@/lib/tools.jsx";
-import {onEvent} from "@/context/useEventStore.jsx"; // 引入工具函数
 
 const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, onNewChatMarkId}) => {
 
-    const isMobile = useIsMobile(); // 获取移动端状态
+    const isMobile = useIsMobile();
     const [isMounted, setIsMounted] = useState(false);
 
-    // 状态定义
+    // ==================== 核心状态 ====================
     const [leftWidth, setLeftWidth] = useState(70);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isChatMinimized, setIsChatMinimized] = useState(false);   // 仅最小化按钮触发
+    const [isWindowMode, setIsWindowMode] = useState(false);         // ChatPage 窗口化状态
+    const lastLeftWidthRef = useRef(70);
+
     const [isResizing, setIsResizing] = useState(false);
     const [ghostPos, setGhostPos] = useState(0);
 
@@ -19,7 +22,7 @@ const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, 
     const dragStartTime = useRef(0);
     const startXPos = useRef(0);
 
-    // 常量定义
+    // 常量
     const MIN_CHAT_PERCENT = 20;
     const MAX_CHAT_PERCENT = 50;
     const MIN_LEFT_PERCENT = 100 - MAX_CHAT_PERCENT;
@@ -28,10 +31,8 @@ const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, 
     const CLICK_TOLERANCE_MS = 300;
     const DRAG_TOLERANCE_PX = 5;
 
-    // 编辑器相关
     const editorRef = useRef(null);
 
-    // 界面相关
     const getSidebarOffset = useCallback(() => {
         if (!containerRef.current) return 0;
         const styles = getComputedStyle(containerRef.current);
@@ -39,45 +40,32 @@ const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, 
         return parseFloat(sidebarWidth) || 0;
     }, []);
 
-    // 开始拖拽 (onMouseDown) - 桌面端专用
-    const startResizing = useCallback(
-        (e) => {
-            // 如果是移动端 或 已经折叠，禁止拖拽
-            if (isMobile || isCollapsed) return;
+    // ==================== 拖拽逻辑 ====================
+    const startResizing = useCallback((e) => {
+        if (isMobile || isCollapsed || isChatMinimized || isWindowMode) return;
+        e.preventDefault();
+        dragStartTime.current = Date.now();
 
-            e.preventDefault();
-            dragStartTime.current = Date.now();
-
-            if (containerRef.current) {
-                const containerRect = containerRef.current.getBoundingClientRect();
-                const sidebarOffset = getSidebarOffset();
-                const startX = e.clientX - containerRect.left - sidebarOffset;
-
-                setGhostPos(startX);
-                startXPos.current = e.clientX;
-                setIsResizing(true);
-            }
-        },
-        [isCollapsed, getSidebarOffset, isMobile]
-    );
-
-    // 拖拽中 (onMouseMove)
-    const onGhostResize = useCallback(
-        (e) => {
-            if (!isResizing || !containerRef.current) return;
-
+        if (containerRef.current) {
             const containerRect = containerRef.current.getBoundingClientRect();
-            const containerWidth = containerRect.width;
             const sidebarOffset = getSidebarOffset();
-            let newX = e.clientX - containerRect.left - sidebarOffset;
+            const startX = e.clientX - containerRect.left - sidebarOffset;
+            setGhostPos(startX);
+            startXPos.current = e.clientX;
+            setIsResizing(true);
+        }
+    }, [isCollapsed, isChatMinimized, isWindowMode, getSidebarOffset, isMobile]);
 
-            newX = Math.max(0, Math.min(newX, containerWidth));
-            setGhostPos(newX);
-        },
-        [isResizing, getSidebarOffset]
-    );
+    const onGhostResize = useCallback((e) => {
+        if (!isResizing || !containerRef.current) return;
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const containerWidth = containerRect.width;
+        const sidebarOffset = getSidebarOffset();
+        let newX = e.clientX - containerRect.left - sidebarOffset;
+        newX = Math.max(0, Math.min(newX, containerWidth));
+        setGhostPos(newX);
+    }, [isResizing, getSidebarOffset]);
 
-    // 结束拖拽/点击 (window.onMouseUp)
     const stopResizing = useCallback(() => {
         if (!isResizing || !containerRef.current) {
             setIsResizing(false);
@@ -90,14 +78,12 @@ const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, 
         const currentX = ghostPos + containerRect.left + getSidebarOffset();
         const deltaX = Math.abs(currentX - startXPos.current);
 
-        // 如果是点击事件（位移小且时间短）
         if (dragDuration < CLICK_TOLERANCE_MS && deltaX < DRAG_TOLERANCE_PX) {
             setIsResizing(false);
             return;
         }
 
         const distanceToRight = containerWidth - ghostPos;
-
         if (distanceToRight < AUTO_COLLAPSE_THRESHOLD_PX) {
             setIsCollapsed(true);
             setLeftWidth(100);
@@ -106,31 +92,40 @@ const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, 
         }
 
         let newLeftWidthPercent = (ghostPos / containerWidth) * 100;
-        newLeftWidthPercent = Math.min(
-            Math.max(newLeftWidthPercent, MIN_LEFT_PERCENT),
-            MAX_LEFT_PERCENT
-        );
+        newLeftWidthPercent = Math.min(Math.max(newLeftWidthPercent, MIN_LEFT_PERCENT), MAX_LEFT_PERCENT);
 
         setIsCollapsed(false);
         setLeftWidth(newLeftWidthPercent);
+        lastLeftWidthRef.current = newLeftWidthPercent;
         setIsResizing(false);
     }, [isResizing, ghostPos, getSidebarOffset]);
 
-    // 处理点击逻辑 (兼容桌面和移动端)
+    // ==================== 分隔条点击 ====================
     const handleDividerClick = useCallback(() => {
-        if (isMobile) {
-            // 移动端：简单切换状态
+        if (isChatMinimized) {
+            setIsChatMinimized(false);
+            setIsCollapsed(false);
+            setLeftWidth(lastLeftWidthRef.current);
+        } else if (isMobile) {
             setIsCollapsed(prev => !prev);
-        } else {
-            // 桌面端：只有在折叠状态下点击才展开
-            if (isCollapsed) {
-                setIsCollapsed(false);
-                setLeftWidth(75);
-            }
+        } else if (isCollapsed) {
+            setIsCollapsed(false);
+            setLeftWidth(75);
+            lastLeftWidthRef.current = 75;
         }
-    }, [isCollapsed, isMobile]);
+    }, [isChatMinimized, isCollapsed, isMobile]);
 
-    // 监听全局鼠标事件
+    // ==================== ChatPage 回调 ====================
+    const handleMinimizeChat = useCallback(() => {
+        setIsChatMinimized(true);
+    }, []);
+
+    const handleWindowModeChange = useCallback((newIsWindowMode) => {
+        setIsWindowMode(newIsWindowMode);
+        // 窗口化时只隐藏 aside 占位（不影响 fixed 浮窗）
+    }, []);
+
+    // ==================== 鼠标事件 ====================
     useEffect(() => {
         if (isResizing) {
             window.addEventListener('mousemove', onGhostResize);
@@ -147,45 +142,34 @@ const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, 
         return () => clearTimeout(timer);
     }, []);
 
-    // 内部组件：分隔条/操作条
-    // position: 'left' | 'middle' | 'right' (仅用于根据位置调整样式或文字)
-    const RenderDivider = ({position}) => {
-        // 移动端始终显示宽条(w-8)，桌面端未折叠时显示细条(w-2)
-        // 注意：移动端打开AI时(isCollapsed=false)，条在左侧，此时也需要显示宽条方便点击
-        const showWideBar = isMobile || isCollapsed;
+    // ==================== 显示控制 ====================
+    const showChatPanel = !isChatMinimized && !isWindowMode;   // aside 是否显示占位
+    const chatVisible = !isChatMinimized;                      // ChatPage 内部浮窗是否可见
 
-        let labelText = '';
-        if (isMobile) {
-            // 移动端逻辑：
-            // 如果 isCollapsed=true (只有文档)，条在右边，提示"打开AI"
-            // 如果 isCollapsed=false (只有AI)，条在左边，提示"关闭AI"
-            labelText = isCollapsed ? '点击这里打开AI面板' : '点击这里关闭AI面板';
-        } else {
-            // 桌面端逻辑
-            labelText = '点击这里打开AI面板';
-        }
+    // ==================== RenderDivider ====================
+    const RenderDivider = ({position}) => {
+        const showWideBar = isMobile || isCollapsed || isChatMinimized;
+
+        let labelText = isChatMinimized
+            ? '点击这里打开AI对话'
+            : isMobile
+                ? (isCollapsed ? '点击这里打开AI面板' : '点击这里关闭AI面板')
+                : '点击这里打开AI面板';
 
         return (
             <div
                 className={`relative z-10 flex-shrink-0 flex items-center justify-center transition-all duration-200 border-gray-300
-                    ${showWideBar
-                    ? 'w-8 bg-gray-100 hover:bg-gray-200 cursor-pointer'
-                    : 'w-2 bg-gray-400 hover:bg-blue-600 cursor-col-resize'
-                }
+                    ${showWideBar ? 'w-8 bg-gray-100 hover:bg-gray-200 cursor-pointer' : 'w-2 bg-gray-400 hover:bg-blue-600 cursor-col-resize'}
                     ${position === 'left' ? 'border-r' : 'border-l'} 
                 `}
-                // 仅桌面端且未折叠时允许拖拽
-                onMouseDown={(!isMobile && !isCollapsed) ? startResizing : undefined}
-                // 移动端任何时候都允许点击，桌面端仅折叠时允许点击
-                onClick={(isMobile || isCollapsed) ? handleDividerClick : undefined}
-                title={isMobile ? (isCollapsed ? '打开AI' : '关闭AI') : (isCollapsed ? '展开' : '拖拽调整')}
+                onMouseDown={(!isMobile && !isCollapsed && !isChatMinimized && !isWindowMode) ? startResizing : undefined}
+                onClick={handleDividerClick}
+                title={isChatMinimized ? '打开AI对话' : (isMobile ? (isCollapsed ? '打开AI' : '关闭AI') : (isCollapsed ? '展开' : '拖拽调整'))}
                 style={{userSelect: 'none'}}
             >
                 {showWideBar && (
-                    <div
-                        className="writing-vertical-rl text-gray-500 text-xs tracking-widest whitespace-nowrap select-none pointer-events-none"
-                        style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}
-                    >
+                    <div className="writing-vertical-rl text-gray-500 text-xs tracking-widest whitespace-nowrap select-none pointer-events-none"
+                         style={{writingMode: 'vertical-rl', textOrientation: 'mixed'}}>
                         {labelText}
                     </div>
                 )}
@@ -193,269 +177,71 @@ const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, 
         );
     };
 
-    // --- 动态计算样式 ---
-    // 移动端：如果 isCollapsed 为 false，意味着 AI 面板打开，此时 DocEditor 应该隐藏
-    const showDocEditor = !isMobile || (isMobile && isCollapsed);
-    // 移动端：如果 isCollapsed 为 true，意味着只看文档，此时 ChatPage 应该隐藏
-    const showChatPage = !isMobile ? !isCollapsed : !isCollapsed;
-
-    // 桌面端宽度计算
-    const desktopDocStyle = {width: isCollapsed ? 'auto' : `${leftWidth}%`, flex: isCollapsed ? '1' : 'none'};
-    const desktopChatStyle = {
-        width: isCollapsed ? '0px' : `${100 - leftWidth}%`,
-        display: isCollapsed ? 'none' : 'flex'
+    // ==================== 样式 ====================
+    const desktopDocStyle = {
+        width: (isCollapsed || isChatMinimized || isWindowMode) ? '100%' : `${leftWidth}%`,
+        flex: (isCollapsed || isChatMinimized || isWindowMode) ? '1' : 'none'
     };
 
-    // 事件监听
+    const desktopChatStyle = {
+        width: showChatPanel ? `${100 - leftWidth}%` : '0px',
+        overflow: 'hidden',
+        transition: 'width 0.3s ease'
+    };
+
+    // ==================== 编辑器消息 ====================
     const handleEditorMessage = useCallback((msg) => {
-        const post = editorRef.current?.post;
-
-        console.log(msg);
-
         if (msg.MessageId === 'Doc_ModifiedStatus') {
-            if (msg.Values) {
-                if (msg.Values.Modified === true) {
-                    setDocModifiedStatus("Modified");
-                } else {
-                    setDocModifiedStatus("Saved");
-                }
-            }
+            if (msg.Values) setDocModifiedStatus(msg.Values.Modified === true ? "Modified" : "Saved");
         } else if (msg.MessageId === 'Action_Save_Resp') {
-            if (msg.Values) {
-                if (msg.Values.success === true) {
-                    setDocModifiedStatus("Saved");
-                } else {
-                    setDocModifiedStatus("Modified");
-                }
-            }
-        } else if (msg.MessageId === 'CallPythonScript-Result') {  // 代码执行结果
-            // 判断一下是不是来自自定义脚本
-            const Values = msg.Values;
-
-            // 是自定义脚本
-            // if (Values.commandName.startsWith("vnd.sun.star.script:ChatWithMe")) {
-            //     const result = JSON.parse(Values.result.value);  // 解析函数返回值
-            //     const msgId = result.msgId;
-            //     delete result.msgId;
-            //
-            //     emitEvent({
-            //         "id": msgId,
-            //         "payload": {
-            //             "value": result.value,
-            //             "success": Values.success
-            //         },
-            //         "isReply": true
-            //     })
-            //
-            // }
+            if (msg.Values) setDocModifiedStatus(msg.Values.success === true ? "Saved" : "Modified");
         }
-
     }, [setDocModifiedStatus]);
 
-    // // 广播事件监听，已经改用服务端添加
-    // useEffect(() => {
-    //
-    //     const post = editorRef.current?.post;
-    //
-    //     const unsubscribe = onEvent({
-    //         type: "page",
-    //         target: "ChatWithEditor",
-    //         markId: chatMarkId  // 由于工具调用的时候是聊天界面，所以应该绑定的是聊天界面的 markId
-    //     }).then(({payload, id, reply}) => {
-    //
-    //         switch (payload.command) {
-    //
-    //             case "Document-Extract-To-Text": { // 提取为纯文本命令
-    //                 const start = payload.start ? payload.start : 0;
-    //                 const end = payload.end ? payload.end : -1;
-    //
-    //                 post({
-    //                     'MessageId': 'CallPythonScript',
-    //                     'ScriptFile': 'ChatWithMe/extract.py',
-    //                     'Function': 'extract_to_text',
-    //                     'Values': {
-    //                         'start_para': {'type': 'long', 'value': start},
-    //                         'end_para': {'type': 'long', 'value': end},
-    //                         'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
-    //                     }
-    //                 });
-    //
-    //                 break;
-    //             }
-    //
-    //             case "Document-Extract-Selected-To-Html": { // 提取选中文本为 HTML
-    //
-    //                 post({
-    //                     'MessageId': 'CallPythonScript',
-    //                     'ScriptFile': 'ChatWithMe/extract.py',
-    //                     'Function': 'extract_selected_to_html',
-    //                     'Values': {
-    //                         'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
-    //                     }
-    //                 });
-    //
-    //                 break;
-    //             }
-    //
-    //
-    //             case "Document-Move-Cursor-And-Select": { // 移动光标并可选选中区域
-    //
-    //                 const whence = payload.whence ? payload.whence : 1;
-    //                 const offset = payload.offset ? payload.offset : 0;
-    //                 const selectLength = payload.selectLength ? payload.selectLength : 0;
-    //
-    //                 post({
-    //                     'MessageId': 'CallPythonScript',
-    //                     'ScriptFile': 'ChatWithMe/cursor.py',
-    //                     'Function': 'move_cursor_and_select',
-    //                     'Values': {
-    //                         'whence': {'type': 'long', 'value': whence},
-    //                         'offset': {'type': 'long', 'value': offset},
-    //                         'select_length': {'type': 'string', 'value': selectLength},
-    //                         'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
-    //                     }
-    //                 });
-    //
-    //                 break;
-    //             }
-    //
-    //             case "Document-Get-Cursor-Position": { // 获取光标位置
-    //
-    //                 post({
-    //                     'MessageId': 'CallPythonScript',
-    //                     'ScriptFile': 'ChatWithMe/cursor.py',
-    //                     'Function': 'get_cursor_position',
-    //                     'Values': {
-    //                         'msgId': {'type': 'string', 'value': id}  // 传递 ID，便于回复消息
-    //                     }
-    //                 });
-    //
-    //                 break;
-    //             }
-    //
-    //             case "Document-Find-And-Select-Smart": { // 智能定位与选中
-    //
-    //                 if (!payload.pattern) {
-    //                     reply({success: false, value: "The param pattern is missing."});
-    //                     break;
-    //                 }
-    //
-    //                 const pattern = payload.pattern ? payload.pattern : "";
-    //                 const group = payload.group !== undefined ? payload.group : 0;
-    //                 const position = payload.position ? payload.position : "end";
-    //                 const select = payload.select ? payload.select : false;
-    //
-    //                 post({
-    //                     'MessageId': 'CallPythonScript',
-    //                     'ScriptFile': 'ChatWithMe/cursor.py',
-    //                     'Function': 'find_and_select_smart',
-    //                     'Values': {
-    //                         'pattern': {'type': 'string', 'value': pattern},
-    //                         'group': {'type': 'long', 'value': group},
-    //                         'position': {'type': 'string', 'value': position},
-    //                         'select': {'type': 'boolean', 'value': select},
-    //                         'msgId': {'type': 'string', 'value': id} // 传递 ID，便于回复消息
-    //                     }
-    //                 });
-    //
-    //                 break;
-    //             }
-    //
-    //             case "Document-Insert-Html": { // 插入文本
-    //
-    //                 if (!payload.html) {
-    //                     reply({success: false, value: "The param html is missing."});
-    //                     break;
-    //                 }
-    //                 const mode = payload.mode ? payload.mode : 'merge';
-    //
-    //                 post({
-    //                     'MessageId': 'CallPythonScript',
-    //                     'ScriptFile': 'ChatWithMe/insert.py',
-    //                     'Function': 'insert_html',
-    //                     'Values': {
-    //                         'html': {'type': 'string', 'value': payload.html},
-    //                         'mode': {'type': 'string', 'value': mode},
-    //                         'msgId': {'type': 'string', 'value': id} // 传递 ID，便于回复消息
-    //                     }
-    //                 });
-    //
-    //                 break;
-    //             }
-    //
-    //             case "Document-Get-All-Available-Fonts": { // 插入文本
-    //
-    //                 post({
-    //                     'MessageId': 'CallPythonScript',
-    //                     'ScriptFile': 'ChatWithMe/get.py',
-    //                     'Function': 'get_all_available_fonts',
-    //                     'Values': {
-    //                         'msgId': {'type': 'string', 'value': id} // 传递 ID，便于回复消息
-    //                     }
-    //                 });
-    //
-    //                 break;
-    //             }
-    //
-    //
-    //         }
-    //     });
-    //
-    //     return () => {
-    //         unsubscribe();
-    //     };
-    // }, [chatMarkId])
-
     return (
-        <div
-            ref={containerRef}
-            className={`flex h-screen w-full bg-gray-50 overflow-hidden relative transition-opacity duration-700 ease-in ${
-                isMounted ? 'opacity-100' : 'opacity-0'
-            }`}
-        >
-            {/* 幽灵层：仅桌面端拖拽时显示 */}
+        <div ref={containerRef}
+             className={`flex h-screen w-full bg-gray-50 overflow-hidden relative transition-opacity duration-700 ease-in ${isMounted ? 'opacity-100' : 'opacity-0'}`}>
+
+            {/* 幽灵拖拽层 */}
             {!isMobile && isResizing && (
-                <div
-                    className="fixed inset-0 z-999 cursor-col-resize bg-transparent"
-                    style={{userSelect: 'none'}}
-                >
-                    <div
-                        className="absolute top-0 bottom-0 w-1 bg-blue-500 shadow-xl opacity-80 pointer-events-none"
-                        style={{left: ghostPos + (containerRef.current?.getBoundingClientRect().left || 0) + getSidebarOffset()}}
-                    />
+                <div className="fixed inset-0 z-[999] cursor-col-resize bg-transparent" style={{userSelect: 'none'}}>
+                    <div className="absolute top-0 bottom-0 w-1 bg-blue-500 shadow-xl opacity-80 pointer-events-none"
+                         style={{left: `${ghostPos + (containerRef.current?.getBoundingClientRect().left || 0) + getSidebarOffset()}px`}}/>
                 </div>
             )}
 
-            {/* --- 移动端特殊逻辑：当AI打开时，左侧显示关闭条 --- */}
-            {isMobile && !isCollapsed && (
-                <RenderDivider position="left"/>
-            )}
+            {/* 移动端左侧分隔条 */}
+            {isMobile && !isCollapsed && !isChatMinimized && <RenderDivider position="left"/>}
 
-            {/* --- 左侧：文档编辑器 --- */}
-            <main
-                className={`h-full flex flex-col bg-white shadow-lg relative min-w-0 ${!showDocEditor ? 'hidden' : ''}`}
-                style={isMobile ? {flex: 1, width: '100%'} : desktopDocStyle}
-            >
+            {/* 左侧：文档编辑器 */}
+            <main className="h-full flex flex-col bg-white shadow-lg relative min-w-0"
+                  style={isMobile ? {flex: 1, width: '100%'} : desktopDocStyle}>
                 <div className="flex-1 overflow-y-auto">
                     <CollaboraOnlineEditor iframeUrl={url} onMessageReceived={handleEditorMessage} ref={editorRef}/>
                 </div>
             </main>
 
-            {/* --- 中间：分隔条 (桌面端常驻 / 移动端仅在关闭AI时显示在右侧) --- */}
-            {(!isMobile || (isMobile && isCollapsed)) && (
+            {/* 分隔条 */}
+            {(!isMobile || (isMobile && (isCollapsed || isChatMinimized))) && (
                 <RenderDivider position="middle"/>
             )}
 
-            {/* --- 右侧：AI 聊天 --- */}
+            {/* 右侧：AI 聊天面板 */}
             <aside
-                className={`h-full border-l border-gray-200 bg-white flex flex-col relative min-w-0 ${!showChatPage ? 'hidden' : ''}`}
+                className={`h-full border-l border-gray-200 bg-white flex flex-col relative min-w-0 transition-all duration-300 ${isWindowMode ? 'border-none' : ''}`}
                 style={isMobile ? {flex: 1, width: '100%'} : desktopChatStyle}
             >
                 <div className="flex-1 overflow-hidden">
-                    {/* TOdo: 修改拖动时出现幽灵层 */}
-                    <ChatPage chatMarkId={chatMarkId} documentMarkId={documentMarkId}
-                              pageType={"doc"} onNewChatMarkId={onNewChatMarkId}
-                              showWindowButton={true}
+                    <ChatPage
+                        chatMarkId={chatMarkId}
+                        documentMarkId={documentMarkId}
+                        pageType="doc"
+                        onNewChatMarkId={onNewChatMarkId}
+                        showWindowButton={true}
+                        showMinimizeButton={true}
+                        onMinimize={handleMinimizeChat}
+                        visible={chatVisible}
+                        onWindowModeChange={handleWindowModeChange}
                     />
                 </div>
             </aside>

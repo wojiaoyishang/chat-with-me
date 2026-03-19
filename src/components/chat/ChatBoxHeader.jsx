@@ -78,8 +78,6 @@ StatusBadge.displayName = 'StatusBadge';
  * 根据屏幕大小自动调整布局：
  * - 小屏幕：垂直排列的快捷选项和提示信息
  * - 大屏幕：水平排列的快捷选项和提示信息
- * 新增功能：支持快捷选项的选中状态（单选）和二次点击逻辑
- * 使用React.memo优化性能
  */
 const ChatBoxHeader = memo(({
                                 quickOptions,

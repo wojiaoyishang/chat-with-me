@@ -143,7 +143,6 @@ PaginationButtons.displayName = 'PaginationButtons';
  * 根据屏幕大小显示不同的布局：
  * - 小屏幕：已集成到ChatBoxHeader中
  * - 大屏幕：显示最多3个选项+翻页按钮
- * 新增功能：支持选项的选中状态（单选），选中时有紫色背景和轻微上移效果
  * 二次点击逻辑：再次点击已选中选项时，如果输入框内容未改变则清空，否则取消选中
  * 使用React.memo优化性能
  */

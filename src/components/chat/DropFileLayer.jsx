@@ -57,7 +57,7 @@ function DropFileLayer({ onDropFiles, onFolderDetected, targetRef }) {
             e.preventDefault();
             const target = isGlobalListener ? window : targetRef.current;
 
-            // 2. 修复离开检测逻辑 - 检查是否真正离开监听区域
+            // 检查是否真正离开监听区域
             const isLeavingWindow = isGlobalListener && !e.relatedTarget;
             const isLeavingTarget = !isGlobalListener &&
                 target &&

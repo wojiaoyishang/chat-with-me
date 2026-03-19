@@ -106,7 +106,7 @@ export const useEventStore = create((set, get) => {
     return {
         listeners: {},
         processedEventIds: [],   // 普通事件（非回复）的已处理 ID
-        processedReplyIds: [],   // 回复事件的已处理 ID（关键修复）
+        processedReplyIds: [],   // 回复事件的已处理 ID
         uniqueListeners: new Set(),
 
         // 内部方法：注册回复监听器
