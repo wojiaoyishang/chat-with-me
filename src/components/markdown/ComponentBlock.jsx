@@ -186,6 +186,7 @@ const StatusWidget = React.memo(({
                 {isExpanded && (
                     <div className="mt-2 ml-2 pl-4 border-l border-gray-200">
                         <MarkdownRenderer
+                            contextId={contextId}
                             content={cleanContent}
                             withCustomComponent={withCustomComponent}
                         />
@@ -194,6 +195,7 @@ const StatusWidget = React.memo(({
             </div>
         );
     }, (prev, next) =>
+        prev.contextId === next.contextId &&
         prev.activeColor === next.activeColor &&
         prev.content === next.content &&
         prev.doneColor === next.doneColor &&
@@ -349,6 +351,7 @@ const AgentWidget = React.memo(({
                     <LazyVisibility>
                         <div className="border-t p-4 bg-white">
                             <MarkdownRenderer
+                                contextId={contextId}
                                 content={cleanContent}
                                 withCustomComponent={withCustomComponent}
                             />
@@ -358,6 +361,7 @@ const AgentWidget = React.memo(({
             </div>
         );
     }, (prev, next) =>
+        prev.contextId === next.contextId &&
         prev.content === next.content &&
         prev.id === next.id &&
         prev.isProcessing === next.isProcessing &&

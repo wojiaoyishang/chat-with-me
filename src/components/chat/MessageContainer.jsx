@@ -385,7 +385,7 @@ const MessagePaginator = memo(({
 /**
  * 纯文本消息内容组件（仅用于 right）
  */
-const TextOnlyMessageContent = memo(({isRight, content, avatar, displayName, isLeaving}) => {
+const TextOnlyMessageContent = memo(({msgId, key, isRight, content, avatar, displayName, isLeaving}) => {
     if (isRight) {
         return (
             <div className="flex justify-end items-center gap-3 max-w-[80%] ml-auto">
@@ -406,7 +406,10 @@ const TextOnlyMessageContent = memo(({isRight, content, avatar, displayName, isL
     return (
         <div className="w-full pl-10 pr-10">
             <div className="text-gray-800 break-words max-w-none">
-                <MarkdownRenderer content={content}/>
+                <MarkdownRenderer
+                    contextId={msgId}
+                    content={content}
+                />
             </div>
         </div>
     );
@@ -831,6 +834,7 @@ const MessageItem = React.memo(({
                             </div>
                             <TextOnlyMessageContent
                                 key={msgId}
+                                msgId={msgId}
                                 isRight={true}
                                 content={displayContent}
                                 avatar={avatar}
@@ -847,6 +851,7 @@ const MessageItem = React.memo(({
                             </div>
                             <TextOnlyMessageContent
                                 key={msgId}
+                                msgId={msgId}
                                 isRight={false}
                                 content={displayContent}
                                 avatar={avatar}
@@ -864,6 +869,7 @@ const MessageItem = React.memo(({
             return isRight ? (
                 <TextOnlyMessageContent
                     key={msgId}
+                    msgId={msgId}
                     isRight={true}
                     content={displayContent}
                     avatar={avatar}
@@ -875,6 +881,7 @@ const MessageItem = React.memo(({
                     <LeftAvatarName avatar={avatar} displayName={displayName} isLeaving={leavingMessages.has(msgId)}/>
                     <TextOnlyMessageContent
                         key={msgId}
+                        msgId={msgId}
                         isRight={false}
                         content={displayContent}
                         avatar={avatar}
