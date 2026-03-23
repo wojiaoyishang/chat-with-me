@@ -8,6 +8,8 @@ import LazyVisibility from "./LazyVisibility.jsx";
 // 记录已经展开的组件，用于在高频流式传输下保持展开
 const expandedMap = new Map();
 
+const getExpandedKey = (contextId, id) =>
+    contextId ? `${contextId}::${id}` : id;
 
 /**
  * 展开按钮，用于在卡片旁边绘制一个展开按钮，独立提出来是因为需要独立渲染
@@ -78,7 +80,11 @@ const StatusWidget = React.memo(({
                                      title,
                                      withCustomComponent = false,
                                      defaultExpanded = false,
+                                     contextId = ''
                                  }) => {
+        const expandedKey = React.useMemo(() =>
+            getExpandedKey(contextId, id), [contextId, id]);
+
         const [isExpanded, setIsExpanded] = React.useState(expandedMap.has(id) || defaultExpanded);
 
         const {cleanContent, isDone, isFailed, lastLine, paragraphs} = useMemo(() => {
@@ -105,16 +111,13 @@ const StatusWidget = React.memo(({
         }, [content]);
 
         const handleToggleExpand = useCallback(() => {
-
             if (!isExpanded) {
-                expandedMap.set(id, true);
+                expandedMap.set(expandedKey, true);
             } else {
-                expandedMap.delete(id);
+                expandedMap.delete(expandedKey);
             }
-
             setIsExpanded(!isExpanded);
-
-        }, [isExpanded]);
+        }, [isExpanded, expandedKey]);
 
         const getTruncatedLastLine = useCallback((str) => {
             if (!str) return '';
@@ -212,8 +215,13 @@ const AgentWidget = React.memo(({
                                     isProcessing = false,
                                     title = "Sub-Agent",
                                     withCustomComponent = true,
-                                    defaultExpanded = false
+                                    defaultExpanded = false,
+                                    contextId = ''
                                 }) => {
+        const expandedKey = React.useMemo(() =>
+            getExpandedKey(contextId, id), [contextId, id]);
+
+
         const [isExpanded, setIsExpanded] = React.useState(expandedMap.has(id) || defaultExpanded);
 
         // 解析内容逻辑
@@ -248,14 +256,13 @@ const AgentWidget = React.memo(({
         const handleToggleExpand = useCallback(() => {
 
             if (!isExpanded) {
-                expandedMap.set(id, true);
+                expandedMap.set(expandedKey, true);
             } else {
-                expandedMap.delete(id);
+                expandedMap.delete(expandedKey);
             }
-
             setIsExpanded(!isExpanded);
 
-        }, [isExpanded]);
+        }, [isExpanded, expandedKey]);
 
         const isFinished = isDone || isFailed;
 
@@ -358,12 +365,13 @@ const AgentWidget = React.memo(({
 );
 AgentWidget.displayName = 'AgentWidget';
 
-const ComponentBlock = React.memo(({content, id, type}) => {
+const ComponentBlock = React.memo(({content, id, type, contextId = ''}) => {
 
         // 通用的 props
         const commonProps = {
             content,
-            id
+            id,
+            contextId
         };
 
         switch (type) {
@@ -462,9 +470,12 @@ const ComponentBlock = React.memo(({content, id, type}) => {
         }
     }, (prev, next) => {
 
-        return (prev.content === next.content &&
+        return (
+            prev.contextId === next.contextId &&
+            prev.content === next.content &&
             prev.id === next.id &&
-            prev.type === next.type)
+            prev.type === next.type
+        )
     }
 );
 ComponentBlock.displayName = 'ComponentBlock';

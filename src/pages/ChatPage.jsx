@@ -1127,6 +1127,7 @@ function ChatPage({
                     toast.error(t("send_message_error", {message: payload.value}));
                 }
             });
+            setAttachments([]);
         };
         if (!chatMarkId) {
             emitEvent({

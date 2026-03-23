@@ -700,7 +700,10 @@ const MessageItem = React.memo(({
                                 tabIndex={0} // 使 div 可获焦以支持 onBlur
                                 className="relative group bg-gray-50/40 rounded-2xl transition-all duration-300 outline-none"
                             >
-                                <MarkdownRenderer content={displayContent}/>
+                                <MarkdownRenderer
+                                    contextId={msgId}
+                                    content={displayContent}
+                                />
 
                                 {/* 2. 附件区域 - 放在最顶上 */}
                                 {hasAttachments && (

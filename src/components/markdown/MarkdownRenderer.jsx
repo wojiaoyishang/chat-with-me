@@ -34,7 +34,7 @@ const preprocessContent = (text) => {
 
 
 // 提取组件创建逻辑到外部，避免每次渲染都重新创建
-const createComponents = (withCustomComponent) => {
+const createComponents = (withCustomComponent, contextId = '') => {
     const baseComponents = {
         p: ({children}) => <p className="my-2">{children}</p>,
         ul: ({children}) => <ul className="list-disc pl-5 my-2">{children}</ul>,
@@ -131,12 +131,12 @@ const createComponents = (withCustomComponent) => {
                     id={id}
                     type={type}
                     content={rawContent}
+                    contextId={contextId}
                 />
             );
         }
         return null;
     }, (prev, next) => {
-        // 只有当 id、type、rawContent 或 component 变化时才重新渲染
         return (
             prev.id === next.id &&
             prev.type === next.type &&
@@ -157,6 +157,7 @@ const createComponents = (withCustomComponent) => {
 const componentCache = new Map();
 
 const MarkdownRenderer = ({
+                              contextId = '',
                               content,
                               withCustomComponent = true
                           }) => {
@@ -165,10 +166,10 @@ const MarkdownRenderer = ({
     const components = useMemo(() => {
         const cacheKey = `components_${withCustomComponent}`;
         if (!componentCache.has(cacheKey)) {
-            componentCache.set(cacheKey, createComponents(withCustomComponent));
+            componentCache.set(cacheKey, createComponents(withCustomComponent, contextId));
         }
         return componentCache.get(cacheKey);
-    }, [withCustomComponent]);
+    }, [withCustomComponent, contextId]);
 
     const processedContent = useMemo(() =>
             preprocessContent(content),
@@ -194,6 +195,7 @@ const MarkdownRenderer = ({
 };
 export default memo(MarkdownRenderer, (prev, next) => {
     return (
+        prev.contextId === next.contextId &&
         prev.content === next.content &&
         prev.withCustomComponent === next.withCustomComponent
     );
