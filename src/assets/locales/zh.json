@@ -197,5 +197,8 @@
     "unsaved_changes_desc": "当前文档尚有未保存的修改，如果现在离开，这些更改将会永久丢失。",
     "discard_changes": "放弃修改"
   },
-  "yes": "是的"
+  "yes": "是的",
+  "load_tabs_error": "加载设置标签失败",
+  "coming_soon": "此功能正在开发中",
+  "coming_soon_sub": "即将上线：{{name}}"
 }

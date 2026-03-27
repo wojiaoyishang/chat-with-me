@@ -743,6 +743,20 @@ code 设置为 401 。
 }
 ```
 
+# SETTING_TABS_ENDPOINT - 获取设置 tabs 
+
+前端会 GET 请求这个接口，用于获取所有设置项的 tags ，接口需要返回：
+
+```python
+[
+    {
+        "id": "models",   # Tab ID
+        "name": "模型设置",   # Tab 的名称
+        "preview": "/public/model.svg"  # Tab 的图标
+    }  
+]
+```
+
 # 广播事件
 
 ## Websocket 事件 （type=websocket)

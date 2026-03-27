@@ -368,33 +368,61 @@ export const UnifiedLoadingScreen = ({ text, zIndex = "" }) => (
  * @param {function} onRetry - 重试点击事件 (如果不传，则不显示按钮)
  * @param {string} retryText - 重试按钮文字
  * @param {string} zIndex - Tailwind z-index 类名 (如 "z-51"), 默认为空
+ * @param {boolean} compact - 是否使用紧凑模式（侧边栏专用）
  */
 export const UnifiedErrorScreen = ({
                                        title,
                                        subtitle,
                                        onRetry,
                                        retryText,
-                                       zIndex = ""
-                                   }) => (
-    <div className={`absolute ${zIndex} inset-0 bg-white flex items-center justify-center`}>
-        <div className="flex flex-col items-center">
-            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
-                <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </div>
-            <p className="text-gray-700 text-base font-medium">{title}</p>
-            <p className="text-gray-500 text-sm mt-1">{subtitle}</p>
+                                       zIndex = "",
+                                       compact = false
+                                   }) => {
+    if (compact) {
+        // 紧凑模式 - 专为侧边栏设计（内联、无覆盖）
+        return (
+            <div className="flex flex-col items-center px-2 py-4 text-center">
+                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </div>
+                <p className="text-gray-700 text-sm font-medium">{title}</p>
+                <p className="text-gray-500 text-xs mt-1 leading-tight">{subtitle}</p>
 
-            {/* 只有传入了 onRetry 函数时才渲染按钮 */}
-            {onRetry && (
-                <button
-                    onClick={onRetry}
-                    className="mt-4 text-sm text-blue-600 rounded-md transition-colors cursor-pointer"
-                >
-                    {retryText}
-                </button>
-            )}
+                {onRetry && (
+                    <button
+                        onClick={onRetry}
+                        className="cursor-pointer mt-4 px-4 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all active:scale-95"
+                    >
+                        {retryText}
+                    </button>
+                )}
+            </div>
+        );
+    }
+
+    // 默认全屏覆盖模式（保持原有行为）
+    return (
+        <div className={`absolute ${zIndex} inset-0 bg-white flex items-center justify-center`}>
+            <div className="flex flex-col items-center">
+                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </div>
+                <p className="text-gray-700 text-base font-medium">{title}</p>
+                <p className="text-gray-500 text-sm mt-1">{subtitle}</p>
+
+                {onRetry && (
+                    <button
+                        onClick={onRetry}
+                        className="mt-4 px-5 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all active:scale-95"
+                    >
+                        {retryText}
+                    </button>
+                )}
+            </div>
         </div>
-    </div>
-);
+    );
+};

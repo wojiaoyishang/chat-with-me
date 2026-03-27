@@ -197,5 +197,8 @@
     "unsaved_changes_desc": "The current document has modifications that haven't been saved. If you leave now, these changes will be permanently lost.",
     "discard_changes": "Discard Changes"
   },
-  "yes": "Yes"
+  "yes": "Yes",
+  "load_tabs_error": "Failed to load settings tabs",
+  "coming_soon": "This feature is under development",
+  "coming_soon_sub": "Coming soon: {{name}}"
 }
