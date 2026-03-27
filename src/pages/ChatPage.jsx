@@ -111,13 +111,17 @@ const ModelPreviewCard = React.memo(({model, isMobile}) => {
                         <p className="text-xs text-gray-500">{model.description}</p>
                     </div>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                    {model.tags?.map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                            {tag}
-                        </Badge>
-                    ))}
-                </div>
+
+                {model.tags && (
+                    <div className="flex flex-wrap gap-1">
+                        {model.tags?.map((tag, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                                {tag}
+                            </Badge>
+                        ))}
+                    </div>
+                )}
+
             </div>
         </div>
     );
