@@ -212,13 +212,13 @@ const SettingPage = ({
         if (!isDynamicTab) return;
         try {
             await apiClient.post(`${apiEndpoint.SETTING_TABS_ENDPOINT}/${activeTab}`, dynamicValues);
-            toast.success(t("save_success") || "保存成功");
+            toast.success(t("save_success"));
 
             const savedClone = JSON.parse(JSON.stringify(dynamicValues));
             setOriginalDynamicValues(savedClone);
             setIsConfigPristine(true);
         } catch (error) {
-            toast.error(t("save_error") || "保存失败");
+            toast.error(t("save_error", {"message": error?.message}));
         }
     }, [isDynamicTab, activeTab, dynamicValues, t]);
 

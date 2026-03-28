@@ -211,7 +211,7 @@
   "coming_soon": "This feature is under development",
   "coming_soon_sub": "Coming soon: {{name}}",
   "save_success": "Saved.",
-  "save_error": "Save Failed.",
+  "save_error": "Save Failed: {{message}}",
   "loading_config": "Loading Config",
   "load_config_error": "Load Config Error",
   "unsaved_changes_confirm": "Unsaved modifications",

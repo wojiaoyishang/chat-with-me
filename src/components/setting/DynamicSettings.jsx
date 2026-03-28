@@ -159,17 +159,13 @@ function ImageItem({item, path}) {
     const handleUpload = async () => {
         if (!onImageUpload) return;
         try {
-            // 上传逻辑完全由外部组件实现（包括 loading toast）
             const url = await Promise.resolve(onImageUpload());
-
-            // 如果外部返回有效 URL 才更新
             if (url && typeof url === 'string' && url.trim() !== '') {
                 update(path, url);
             }
         } catch (err) {
             console.error("Image upload failed", err);
         }
-        // 注意：不再需要 setUploading，因为加载动画已交给外部 toast
     };
 
     return (
@@ -178,7 +174,6 @@ function ImageItem({item, path}) {
                 className="relative w-12 h-12 cursor-pointer group"
                 onClick={handleUpload}
             >
-                {/* 预览区域（点击触发上传） */}
                 <div className="w-full h-full rounded-2xl border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] flex items-center justify-center overflow-hidden transition-all group-hover:border-[#2563eb] dark:group-hover:border-[#3b82f6]">
                     {val ? (
                         <img
@@ -191,7 +186,6 @@ function ImageItem({item, path}) {
                     )}
                 </div>
 
-                {/* 删除按钮（仅在有图片时显示） */}
                 {val && (
                     <button
                         onClick={(e) => {
@@ -217,10 +211,8 @@ function ListItem({item, path}) {
     const [openIndices, setOpenIndices] = useState(new Set());
     const [deleteConfirmIndex, setDeleteConfirmIndex] = useState(null);
 
-    // 新增：唯一性字段配置（设计方式与 itemTitleKey 完全一致）
     const uniqueKey = item.uniqueKey;
 
-    // 计算重复项索引
     const duplicateIndices = useMemo(() => {
         if (!uniqueKey || !list.length) return new Set();
         const valueMap = new Map();
@@ -327,7 +319,6 @@ function ListItem({item, path}) {
                                     : "border-[#e1e4e8] dark:border-[#3a3f45]"
                             }`}
                         >
-                            {/* 卡片头部 */}
                             <div
                                 className={`flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#f8f9fa] dark:hover:bg-[#25282c] transition-colors ${
                                     duplicate ? "bg-red-50 dark:bg-red-950/30" : ""
@@ -371,7 +362,6 @@ function ListItem({item, path}) {
                                 </div>
                             </div>
 
-                            {/* 展开内容 */}
                             <AnimatePresence>
                                 {isOpen && (
                                     <motion.div
@@ -398,7 +388,6 @@ function ListItem({item, path}) {
                 })}
             </AnimatePresence>
 
-            {/* 删除二次确认对话框 */}
             <Dialog open={deleteConfirmIndex !== null} onOpenChange={() => setDeleteConfirmIndex(null)}>
                 <DialogContent className="sm:max-w-[380px]">
                     <DialogHeader>
@@ -903,8 +892,33 @@ function HeadingItem({item}) {
     );
 }
 
-// ─── Item Renderer ─────────────────────────────────────────────────
+// ─── Item Renderer（核心修复点） ─────────────────────────────────────
 function SettingItemRenderer({item, path}) {
+    const { values } = useSettings();
+
+    // ────────────────────────────────────────────────────────────────
+    // 升级后的 showWhen 逻辑：支持 list / group 内部同级字段依赖
+    // ────────────────────────────────────────────────────────────────
+    if (item.showWhen && typeof item.showWhen === "object" && !Array.isArray(item.showWhen)) {
+        let shouldShow = true;
+        const parentPath = path.slice(0, -1);   // 当前字段的父路径（同级）
+
+        for (const [depField, expected] of Object.entries(item.showWhen)) {
+            const depFullPath = [...parentPath, depField];
+            const actual = deepGet(values, depFullPath);
+
+            if (Array.isArray(expected)) {
+                if (!expected.includes(actual)) shouldShow = false;
+            } else if (actual !== expected) {
+                shouldShow = false;
+            }
+
+            if (!shouldShow) break;
+        }
+
+        if (!shouldShow) return null;
+    }
+
     switch (item.type) {
         case "list": return <ListItem item={item} path={path} />;
         case "image": return <ImageItem item={item} path={path} />;

@@ -1436,7 +1436,6 @@ mode参数参考：
 }
 ```
 
-```markdown
 # 设置组件配置
 
 ## 导入位置
@@ -1445,31 +1444,32 @@ mode参数参考：
 import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
 ```
 
-**DynamicSettings 组件说明文档**
+**已更新**：以下是**完整、专业的 `DynamicSettings` 组件说明文档**（已新增 `showWhen` 相关说明）：
 
 ---
 
 ## 概述
 
-`DynamicSettings` 是一个高度可配置的 React 设置面板组件，支持通过 JSON 配置动态渲染多种 UI 控件（开关、滑块、文本框、复选框、单选、下拉、键值对分组、图片上传、可折叠列表等）。
+`DynamicSettings` 是一个高度可配置的 React 设置面板组件，支持通过 JSON 配置动态渲染多种 UI 控件。
 
-- 完全使用 **Tailwind CSS** 内联样式（已移除外部 CSS 文件）
+- 完全使用 **Tailwind CSS** 内联样式
 - 支持亮/暗模式自动适配
-- 移动端优化（Popover + Checkbox/Radio 点击防冲突）
-- 多行文本使用居中弹窗
-- 使用 `useSettings` Context 统一管理状态
+- 支持条件显示（`showWhen`）
+- 支持移动端优化与无障碍交互
+- 使用 Context 统一管理表单状态
 
 ---
 
 ## 主要特性
 
 - 支持嵌套分组（`group`）
-- 支持标题分隔线（`heading`）
-- 支持带提示的控件（`tips`）
-- 支持必填字段标记（`required`）
+- 支持可动态增删的列表（`list`）
+- 支持图片上传预览
+- 支持条件可见性（`showWhen`）
+- 支持提示信息（`tips`）与必填标记（`required`）
 - 支持默认值自动生成
-- 支持实时 `onChange` 回调
-- 完全类型安全的路径更新（`deepSet` / `deepGet`）
+- 实时 `onChange` 回调
+- 深层路径状态管理（`deepGet` / `deepSet`）
 
 ---
 
@@ -1489,8 +1489,9 @@ function App() {
         <DynamicSettings
             config={config}
             onChange={handleChange}
-            initialValues={initialData}   # 可选
-            className="max-w-2xl"         # 可选
+            initialValues={initialData}
+            className="max-w-2xl"
+            onImageUpload={handleImageUpload}   // 可选，用于图片上传
         />
     );
 }
@@ -1502,406 +1503,253 @@ function App() {
 
 `config` 是一个数组，每一项是一个对象，必须包含 `type`。
 
-| 字段             | 类型     | 说明                          |
-|------------------|----------|-------------------------------|
-| `type`           | string   | 控件类型（必填）              |
-| `name`           | string   | 字段名（用于生成路径）        |
-| `text`           | string   | 显示标题                      |
-| `tips`           | string   | 提示文字（支持 HTML）         |
-| `default`        | any      | 默认值                        |
-| `required`       | bool     | 是否必填（显示 * 标记）       |
-| `children`       | array    | 仅 `group`、`list` 使用       |
-| `options`        | array    | 仅 `select` 使用              |
-| `itemTitleKey`   | string   | 仅 `list` 使用，卡片标题动态字段 |
-| `uniqueKey`      | string   | 仅 `list` 使用，防止重复字段  |
+### 通用字段
+
+| 字段             | 类型                  | 说明                                      | 是否必填 |
+|------------------|-----------------------|-------------------------------------------|----------|
+| `type`           | string                | 控件类型                                  | 是       |
+| `name`           | string                | 字段名称（用于数据路径）                  | 多数情况是 |
+| `text`           | string                | 显示标题                                  | 是       |
+| `tips`           | string                | 提示文字（支持简单 HTML）                 | 否       |
+| `default`        | any                   | 默认值                                    | 否       |
+| `required`       | boolean               | 是否必填（显示红色 *）                    | 否       |
+| `showWhen`       | object                | **条件显示规则**（新增）                  | 否       |
+
+---
+
+## 新增特性：`showWhen` 条件可见性
+
+用于实现**根据其他字段的值动态显示或隐藏当前控件**。
+
+### 使用规则
+
+- `showWhen` 是一个对象，键为依赖的字段名（`name`），值为期望的值。
+- 支持**精确匹配**、**多值 OR**、**多条件 AND**。
+- 仅当所有条件同时满足时，当前字段才会显示。
+- 目前支持**同级字段**（与当前控件处于同一层级）。
+
+### 配置示例
+
+```json
+{
+  "type": "select",
+  "name": "avatar_type",
+  "text": "头像类型",
+  "options": [
+    { "value": "builtin", "label": "使用内置头像" },
+    { "value": "upload", "label": "自定义上传" }
+  ],
+  "default": "builtin"
+},
+{
+  "type": "select",
+  "name": "avatar_builtin",
+  "text": "选择内置头像",
+  "options": [ /* ... */ ],
+  "showWhen": { "avatar_type": "builtin" }
+},
+{
+  "type": "image",
+  "name": "avatar",
+  "text": "上传自定义头像",
+  "tips": "推荐尺寸 128×128",
+  "showWhen": { "avatar_type": "upload" }
+}
+```
+
+### 更多 `showWhen` 用法
+
+```json
+// 1. 精确匹配
+"showWhen": { "mode": "advanced" }
+
+// 2. 多值匹配（OR）
+"showWhen": { "avatar_type": ["builtin", "preset"] }
+
+// 3. 多条件同时满足（AND）
+"showWhen": { 
+  "model_type": "chat", 
+  "enable_vision": true 
+}
+```
 
 ---
 
 ## 支持的控件类型
 
-### Switch（开关）
+### 1. Switch（开关）
 
-```python
+```json
 {
-    "type": "switch",
-    "name": "autoSave",
-    "text": "自动保存",
-    "default": True,
-    "tips": "..."
+  "type": "switch",
+  "name": "autoSave",
+  "text": "自动保存",
+  "default": true,
+  "tips": "每次修改后自动保存设置"
 }
 ```
 
-### Number（数字滑块 + 输入框）
+### 2. Number（数值 + 滑块）
 
-```python
+```json
 {
-    "type": "number",
-    "name": "volume",
-    "text": "音量",
-    "default": 50,
-    "min": 0,
-    "max": 100,
-    "step": 5,
-    "integer": True
+  "type": "number",
+  "name": "volume",
+  "text": "音量",
+  "min": 0,
+  "max": 100,
+  "step": 5,
+  "integer": true,
+  "default": 50,
+  "nullable": true
 }
 ```
 
-### Text（单行/多行文本）
+### 3. Text（文本输入）
 
-**单行：**
-
-```python
+**单行文本：**
+```json
 {
-    "type": "text",
-    "name": "apiKey",
-    "text": "API Key",
-    "placeholder": "sk-..."
+  "type": "text",
+  "name": "apiKey",
+  "text": "API Key",
+  "placeholder": "sk-..."
 }
 ```
 
-**多行（弹窗编辑）：**
-
-```python
+**多行文本（弹窗编辑）：**
+```json
 {
-    "type": "text",
-    "name": "prompt",
-    "text": "系统提示词",
-    "multiline": True
+  "type": "text",
+  "name": "prompt",
+  "text": "系统提示词",
+  "multiline": true
 }
 ```
 
-> 多行文本弹窗已优化为屏幕正中央显示。
+### 4. Checkbox（复选框）
 
-### Checkbox（复选框）
-
-```python
+```json
 {
-    "type": "checkbox",
-    "name": "enableProxy",
-    "text": "启用代理",
-    "tips": "..."
+  "type": "checkbox",
+  "name": "enableProxy",
+  "text": "启用代理"
 }
 ```
 
-**移动端提示优化**：提示图标独立于 label，避免点击冲突。
+### 5. Select（下拉选择）
 
-### Radio（单选）
-
-**独立单选（standalone）：**
-
-```python
+```json
 {
-    "type": "radio",
-    "name": "theme",
-    "text": "深色模式"
+  "type": "select",
+  "name": "model",
+  "text": "模型",
+  "default": "gpt-4o",
+  "options": [
+    { "value": "gpt-4o", "label": "GPT-4o" },
+    { "value": "claude-3", "label": "Claude 3" }
+  ]
 }
 ```
 
-**在 group 中使用：**  
-见下方 Group 示例。
+### 6. Image（图片上传）
 
-### Select（下拉选择）
-
-```python
+```json
 {
+  "type": "image",
+  "name": "avatar",
+  "text": "模型头像",
+  "tips": "推荐 128×128 尺寸"
+}
+```
+
+### 7. Custom（自定义键值对）
+
+```json
+{
+  "type": "custom",
+  "name": "headers",
+  "text": "自定义请求头"
+}
+```
+
+### 8. Group（分组）
+
+```json
+{
+  "type": "group",
+  "name": "advanced",
+  "text": "高级设置",
+  "children": [ /* 子控件 */ ]
+}
+```
+
+### 9. List（动态列表）
+
+```json
+{
+  "type": "list",
+  "name": "models",
+  "text": "模型管理",
+  "itemTitleKey": "name",
+  "uniqueKey": "id",
+  "children": [ /* 子控件 */ ]
+}
+```
+
+### 10. Heading（标题/分隔线）
+
+```json
+{ "type": "heading", "text": "通用设置" }
+```
+
+---
+
+## 参考配置示例（包含 `showWhen`）
+
+```json
+[
+  { "type": "heading", "text": "头像设置" },
+  {
     "type": "select",
-    "name": "model",
-    "text": "模型",
-    "default": "gpt-4o",
+    "name": "avatar_type",
+    "text": "头像类型",
     "options": [
-        {"value": "gpt-4o", "label": "GPT-4o"},
-        {"value": "claude-3", "label": "Claude 3"}
-    ]
-}
-```
-
-### Image（图片上传）
-
-```python
-{
+      { "value": "builtin", "label": "内置头像" },
+      { "value": "upload", "label": "自定义上传" }
+    ],
+    "default": "builtin"
+  },
+  {
+    "type": "select",
+    "name": "avatar_builtin",
+    "text": "选择内置头像",
+    "showWhen": { "avatar_type": "builtin" }
+  },
+  {
     "type": "image",
     "name": "avatar",
-    "text": "模型头像",
-    "tips": "推荐 128×128 尺寸"
-}
-```
-
-### Custom（自定义键值对）
-
-```python
-{
-    "type": "custom",
-    "name": "headers",
-    "text": "自定义请求头",
-    "tips": "用于 API 请求",
-    "default": {
-        "X-Custom": "value"
-    }
-}
-```
-
----
-
-## 复合组件
-
-### Group（分组）
-
-```python
-{
-    "type": "group",
-    "name": "advanced",
-    "text": "高级设置",
-    "children": [
-        # 可包含 switch、checkbox、radio、number 等
-    ]
-}
-```
-
-**带单选的 Group（互斥选项）：**
-
-```python
-{
-    "type": "group",
-    "name": "mode",
-    "text": "运行模式",
-    "children": [
-        {"type": "radio", "name": "fast", "text": "快速模式", "default": True},
-        {"type": "radio", "name": "quality", "text": "高质量模式"},
-        {"type": "switch", "name": "debug", "text": "调试信息"}
-    ]
-}
-```
-
-### List（可折叠列表管理）
-
-```python
-{
-    "type": "list",
-    "name": "models",
-    "text": "模型管理",
-    "tips": "支持动态添加、删除、编辑多个 AI 模型",
-    "itemTitleKey": "name",
-    "uniqueKey": "id",
-    "children": [
-        # 可包含 image、text、select、number、group 等任意控件
-    ]
-}
-```
-
-列表项支持卡片式折叠显示，卡片标题可通过 `itemTitleKey` 实时同步内部字段内容；`uniqueKey` 可自动检测并高亮重复值；支持添加、复制、删除（带二次确认）操作。
-
-### Heading（标题分隔线）
-
-```python
-{
-    "type": "heading",
-    "text": "通用设置"
-}
-# 或纯分隔线
-{
-    "type": "heading"
-}
-```
-
----
-
-## 内部工具组件
-
-### SettingRow
-
-统一布局行（标签 + 控件），支持 `expanded` 自动换行。
-
-### TipWrapper
-
-智能提示组件：
-
-`Popover`
-- 已优化点击事件（`stopPropagation` + 独立渲染）
-
-### useSettings Context
-
-内部所有控件通过 `useSettings()` 获取 `values` 与 `update(path, value)`。
-
----
-
-## 默认值自动生成
-
-组件内置 `buildDefaults(config)` 函数，会根据 `default` 字段和 `radio` 的 `default` 自动生成初始 `values`。
-
-## 参考配置
-
-```python
-example_config = [
-    {"type": "heading", "text": "General Settings"},
-    {
-        "type": "switch",
-        "name": "darkMode",
-        "text": "Dark Mode",
-        "tips": "Enable dark theme across the application",
-        "default": False
-    },
-    {
-        "type": "switch",
-        "name": "notifications",
-        "text": "Notifications",
-        "tips": "Receive push notifications",
-        "default": True
-    },
-    {
-        "type": "number",
-        "name": "volume",
-        "text": "Volume",
-        "tips": "System volume level (0-100)",
-        "min": 0,
-        "max": 100,
-        "step": 1,
-        "integer": True,
-        "default": 75
-    },
-    {
-        "type": "number",
-        "name": "timeout",
-        "text": "Timeout (ms)",
-        "tips": "Request timeout. No limit if blank.",
-        "integer": True,
-        "default": 3000
-    },
-    {
-        "type": "number",
-        "name": "opacity",
-        "text": "Opacity",
-        "min": 0,
-        "max": 1,
-        "step": 0.05,
-        "integer": False,
-        "default": 0.85,
-        "defaultNull": True,
-        "nullable": True
-    },
-    {"type": "heading", "text": "Content"},
-    {
-        "type": "text",
-        "name": "username",
-        "text": "Username",
-        "tips": "Your display name",
-        "default": "Claude",
-        "placeholder": "Enter name..."
-    },
-    {
-        "type": "text",
-        "name": "bio",
-        "text": "Biography",
-        "tips": "Multi-line bio (click ••• to edit)",
-        "multiline": True,
-        "default": "Hello world!\nThis is a multi-line text."
-    },
-    {
-        "type": "select",
-        "name": "language",
-        "text": "Language",
-        "tips": "Interface language",
-        "default": "en",
-        "options": [
-            {"value": "en", "label": "English"},
-            {"value": "zh", "label": "中文"},
-            {"value": "ja", "label": "日本語"},
-            {"value": "ko", "label": "한국어"}
-        ]
-    },
-    {
-        "type": "select",
-        "name": "theme",
-        "text": "Color Theme",
-        "default": "system",
-        "options": [
-            {"value": "light", "label": "Light"},
-            {"value": "dark", "label": "Dark"},
-            {"value": "system", "label": "System"}
-        ]
-    },
-    {"type": "heading", "text": "Layout Preferences"},
-    {
-        "type": "group",
-        "name": "features",
-        "text": "Features",
-        "children": [
-            {"type": "checkbox", "name": "sidebar", "text": "Sidebar", "default": True},
-            {"type": "checkbox", "name": "minimap", "text": "Minimap", "default": False},
-            {"type": "checkbox", "name": "breadcrumbs", "text": "Breadcrumbs", "default": True},
-            {"type": "checkbox", "name": "statusBar", "text": "Status Bar", "default": True}
-        ]
-    },
-    {
-        "type": "group",
-        "name": "layout",
-        "text": "Layout Mode",
-        "children": [
-            {"type": "radio", "name": "compact", "text": "Compact", "tips": "Minimal spacing"},
-            {"type": "radio", "name": "comfortable", "text": "Comfortable", "tips": "Balanced spacing", "default": True},
-            {"type": "radio", "name": "spacious", "text": "Spacious", "tips": "Maximum breathing room"}
-        ]
-    },
-    {
-        "type": "group",
-        "name": "renderEngine",
-        "text": "Render Engine",
-        "children": [
-            {"type": "radio", "name": "canvas", "text": "Canvas"},
-            {"type": "radio", "name": "webgl", "text": "WebGL", "default": True},
-            {"type": "radio", "name": "svg", "text": "SVG"}
-        ]
-    },
-    {"type": "heading", "text": "Advanced"},
-    {
-        "type": "custom",
-        "name": "envVars",
-        "text": "Environment Variables",
-        "tips": "Custom key-value pairs",
-        "default": {
-            "NODE_ENV": "production",
-            "API_URL": "https://api.example.com"
-        }
-    },
-    {
-        "type": "list",
-        "name": "models",
-        "text": "模型管理",
-        "tips": "支持动态添加、删除、编辑多个 AI 模型",
-        "itemTitleKey": "name",
-        "uniqueKey": "id",
-        "children": [
-            {
-                "type": "image",
-                "name": "avatar",
-                "text": "模型头像",
-                "tips": "推荐 128×128 尺寸"
-            },
-            {
-                "type": "text",
-                "name": "id",
-                "text": "唯一标志ID",
-                "placeholder": "gpt-4o",
-                "required": True
-            },
-            {
-                "type": "text",
-                "name": "name",
-                "text": "模型名称",
-                "required": True
-            },
-            {
-                "type": "select",
-                "name": "type",
-                "text": "模型类型",
-                "options": [
-                    {"value": "chat", "label": "对话模型"},
-                    {"value": "embedding", "label": "嵌入模型"}
-                ]
-            }
-        ]
-    }
+    "text": "上传自定义头像",
+    "tips": "支持 JPG、PNG 格式",
+    "showWhen": { "avatar_type": "upload" }
+  }
 ]
 ```
+
+---
+
+## 注意事项
+
+- `showWhen` 目前仅支持**同级字段**的条件判断。
+- 当依赖字段的值发生变化时，相关控件会实时显示/隐藏。
+- `showWhen` 不影响默认值生成逻辑，仅控制渲染。
+- 列表（`list`）内部的子字段暂不支持跨层级 `showWhen`（如需可后续扩展）。
+
+---
+
+如需进一步扩展 `showWhen` 支持功能（例如跨层级路径、函数式条件、隐藏逻辑 `hideWhen` 等），请随时告知，我将立即更新文档与代码。
+
+此文档已完整、清晰，可直接用于团队内部使用或开发者参考。
 
 # 默认前端 LocalStorage 配置
 
