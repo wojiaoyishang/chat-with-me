@@ -25,13 +25,14 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import {Info, Slash} from "lucide-react";
+import {Info, Slash, Plus, Copy, Trash2, ChevronDown, Upload, X} from "lucide-react";
 import {createPortal} from "react-dom";
 import {motion, AnimatePresence} from "framer-motion";
 
@@ -50,12 +51,15 @@ function clamp(val, min, max) {
 }
 
 function deepSet(obj, path, value) {
-    const result = {...obj};
+    if (path.length === 0) return obj;
+    const isArray = Array.isArray(obj);
+    const result = isArray ? [...(obj || [])] : { ...(obj || {}) };
+    const key = path[0];
     if (path.length === 1) {
-        result[path[0]] = value;
+        result[key] = value;
         return result;
     }
-    result[path[0]] = deepSet(result[path[0]] || {}, path.slice(1), value);
+    result[key] = deepSet(result[key], path.slice(1), value);
     return result;
 }
 
@@ -68,34 +72,9 @@ function deepGet(obj, path) {
     return cur;
 }
 
-function deepMerge(base, overrides) {
-    if (!overrides || typeof overrides !== 'object') return base;
-    const result = { ...base };
-    for (const key in overrides) {
-        if (Object.prototype.hasOwnProperty.call(overrides, key)) {
-            const baseVal = result[key];
-            const overrideVal = overrides[key];
-            if (
-                baseVal !== null &&
-                overrideVal !== null &&
-                typeof baseVal === 'object' &&
-                typeof overrideVal === 'object' &&
-                !Array.isArray(baseVal) &&
-                !Array.isArray(overrideVal)
-            ) {
-                result[key] = deepMerge(baseVal, overrideVal);
-            } else {
-                result[key] = overrideVal;
-            }
-        }
-    }
-    return result;
-}
-
 // ─── Tip Component ───────────────────────────────────────────────────
 function TipWrapper({tips, children, nullable, isNull, onToggleNull}) {
     if (!tips && !nullable) return children;
-
     const trigger = (
         <span
             className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#f1f3f5] dark:bg-[#2d3136] text-[#656d76] dark:text-[#9ca3af] text-[10px] font-bold flex-shrink-0 cursor-help"
@@ -105,7 +84,6 @@ function TipWrapper({tips, children, nullable, isNull, onToggleNull}) {
         </span>
     );
     const tooltipClasses = "bg-[#1a1d21] text-white text-xs leading-relaxed px-2.5 py-1.5 rounded-md max-w-[260px] z-[9999] dark:bg-[#e4e7eb] dark:text-[#1c1e21]";
-
     return (
         <>
             {children}
@@ -124,7 +102,6 @@ function TipWrapper({tips, children, nullable, isNull, onToggleNull}) {
                     className={`ml-1.5 w-4 h-4 rounded-full flex items-center justify-center cursor-pointer transition-colors ${isNull ? "bg-[#dc2626] text-white" : "bg-[#f1f3f5] dark:bg-[#2d3136] text-[#656d76] dark:text-[#9ca3af]"}`}
                     onClick={onToggleNull}
                     whileTap={{ scale: 0.95 }}
-                    title={isNull ? "Switch to Set Mode" : "Switch to Null Mode"}
                 >
                     <Slash size={12} />
                 </motion.button>
@@ -145,7 +122,8 @@ function SettingRow({
                         fullWidth = false,
                         nullable = false,
                         isNull = false,
-                        onToggleNull = () => {}
+                        onToggleNull = () => {},
+                        required = false
                     }) {
     if (fullWidth) {
         return (
@@ -154,14 +132,14 @@ function SettingRow({
             </div>
         );
     }
-
     return (
         <div
             className={`${className} flex items-center justify-between min-h-[35px] gap-3 last-of-type:border-b-0 ${expanded ? "flex-wrap" : "flex-nowrap"} ${noTopPadding ? "pt-0 -mt-2.5" : ""} ${noLeftRightPadding ? "" : "py-2.5 px-4"}`}>
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
                 <TipWrapper tips={tips} nullable={nullable} isNull={isNull} onToggleNull={onToggleNull}>
-                    <span className="text-sm font-medium truncate" title={text}>
+                    <span className="text-sm font-medium truncate flex items-center" title={text}>
                         {text}
+                        {required && <span className="text-red-500 ml-0.5 text-base leading-none">*</span>}
                     </span>
                 </TipWrapper>
             </div>
@@ -172,14 +150,300 @@ function SettingRow({
     );
 }
 
-// ─── Switch ────────────────────────────────────────────────────────
+// ─── Image Upload Item ─────────────────────────────────────────────
+function ImageItem({item, path}) {
+    const {t} = useTranslation();
+    const {values, update, onImageUpload} = useSettings();
+    const val = deepGet(values, path) ?? item.default ?? "";
+    const [uploading, setUploading] = useState(false);
+
+    const handleFile = async (file) => {
+        if (!onImageUpload || !file) return;
+        setUploading(true);
+        try {
+            const url = await Promise.resolve(onImageUpload(file));
+            update(path, url);
+        } catch (err) {
+            console.error("Image upload failed", err);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    return (
+        <SettingRow text={item.text} tips={item.tips} required={item.required}>
+            <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {val ? (
+                        <img src={val} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                        <Upload className="w-5 h-5 text-[#9ca3af]" />
+                    )}
+                </div>
+                <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => {
+                                const input = document.createElement("input");
+                                input.type = "file";
+                                input.accept = "image/*";
+                                input.onchange = (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleFile(file);
+                                };
+                                input.click();
+                            }}
+                            disabled={uploading}
+                            className="h-8 px-3 text-sm font-medium border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                            {uploading ? t("ds.uploading") : t("ds.uploadImage")}
+                        </button>
+                        {val && (
+                            <button
+                                onClick={() => update(path, "")}
+                                className="h-8 w-8 flex items-center justify-center text-[#dc2626] hover:bg-red-100 dark:hover:bg-red-900/30 rounded-md transition-colors cursor-pointer"
+                            >
+                                <X size={16} />
+                            </button>
+                        )}
+                    </div>
+                    <span className="text-xs text-[#9ca3af]">{t("ds.clickToUpload")}</span>
+                </div>
+            </div>
+        </SettingRow>
+    );
+}
+
+// ─── List Item ─────────────────────────────────────────────────────
+function ListItem({item, path}) {
+    const {t} = useTranslation();
+    const {values, update} = useSettings();
+    const listPath = path;
+    const list = Array.isArray(deepGet(values, listPath)) ? deepGet(values, listPath) : [];
+    const [openIndices, setOpenIndices] = useState(new Set());
+    const [deleteConfirmIndex, setDeleteConfirmIndex] = useState(null);
+
+    // 新增：唯一性字段配置（设计方式与 itemTitleKey 完全一致）
+    const uniqueKey = item.uniqueKey;
+
+    // 计算重复项索引
+    const duplicateIndices = useMemo(() => {
+        if (!uniqueKey || !list.length) return new Set();
+        const valueMap = new Map();
+        list.forEach((entry, index) => {
+            const val = entry?.[uniqueKey];
+            if (val !== undefined && val !== null && val !== "") {
+                if (!valueMap.has(val)) valueMap.set(val, []);
+                valueMap.get(val).push(index);
+            }
+        });
+        const dups = new Set();
+        for (const indices of valueMap.values()) {
+            if (indices.length > 1) {
+                indices.forEach(i => dups.add(i));
+            }
+        }
+        return dups;
+    }, [list, uniqueKey]);
+
+    const toggleOpen = (index) => {
+        setOpenIndices((prev) => {
+            const next = new Set(prev);
+            if (next.has(index)) next.delete(index);
+            else next.add(index);
+            return next;
+        });
+    };
+
+    const addItem = () => {
+        const defaultItem = {};
+        if (item.children) {
+            item.children.forEach((child) => {
+                if (child.name) {
+                    defaultItem[child.name] = child.default ?? (child.nullable ? null : undefined);
+                }
+            });
+        }
+        update(listPath, [...list, defaultItem]);
+        setOpenIndices((prev) => new Set([...prev, list.length]));
+    };
+
+    const removeItem = (index) => {
+        update(listPath, list.filter((_, i) => i !== index));
+        setOpenIndices((prev) => {
+            const next = new Set(prev);
+            next.delete(index);
+            return next;
+        });
+    };
+
+    const duplicateItem = (index) => {
+        const copy = {...list[index]};
+        update(listPath, [...list, copy]);
+    };
+
+    const getCardTitle = (index) => {
+        if (item.itemTitleKey && list[index]?.[item.itemTitleKey]) {
+            return list[index][item.itemTitleKey];
+        }
+        if (item.itemTitle) {
+            return item.itemTitle.replace("{{index}}", index + 1);
+        }
+        return `${t("ds.model")} ${index + 1}`;
+    };
+
+    const isDuplicate = (index) => duplicateIndices.has(index);
+
+    return (
+        <div className="px-4 py-3 border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
+            <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-semibold">{item.text}</span>
+                    <TipWrapper tips={item.tips} />
+                </div>
+                <button
+                    onClick={addItem}
+                    className="flex items-center gap-1 text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8] transition-colors cursor-pointer"
+                >
+                    <Plus size={16} /> {t("ds.add")}
+                </button>
+            </div>
+
+            {list.length === 0 && (
+                <div className="text-center py-6 text-[#9ca3af] text-sm">
+                    {t("ds.noData")}
+                </div>
+            )}
+
+            <AnimatePresence>
+                {list.map((_, index) => {
+                    const itemPath = [...listPath, index];
+                    const isOpen = openIndices.has(index);
+                    const duplicate = isDuplicate(index);
+
+                    return (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className={`mb-4 border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] transition-colors ${
+                                duplicate
+                                    ? "border-red-500 dark:border-red-500 shadow-sm"
+                                    : "border-[#e1e4e8] dark:border-[#3a3f45]"
+                            }`}
+                        >
+                            {/* 卡片头部 */}
+                            <div
+                                className={`flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#f8f9fa] dark:hover:bg-[#25282c] transition-colors ${
+                                    duplicate ? "bg-red-50 dark:bg-red-950/30" : ""
+                                }`}
+                                onClick={() => toggleOpen(index)}
+                            >
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <span className="text-sm font-medium truncate">
+                                        {getCardTitle(index)}
+                                    </span>
+                                    {duplicate && (
+                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 dark:bg-red-900 text-red-600 text-[10px] font-bold flex-shrink-0">
+                                            !
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            duplicateItem(index);
+                                        }}
+                                        className="p-1 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
+                                        title={t("ds.duplicate")}
+                                    >
+                                        <Copy size={16} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDeleteConfirmIndex(index);
+                                        }}
+                                        className="p-1 text-[#dc2626] hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded cursor-pointer transition-colors"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                    <ChevronDown
+                                        size={18}
+                                        className={`text-[#656d76] transition-transform ${isOpen ? "rotate-180" : ""}`}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* 展开内容 */}
+                            <AnimatePresence>
+                                {isOpen && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.25 }}
+                                        className="border-t border-[#e1e4e8] dark:border-[#3a3f45]"
+                                    >
+                                        <div className="p-4">
+                                            {item.children?.map((child, i) => (
+                                                <SettingItemRenderer
+                                                    key={child.name || i}
+                                                    item={child}
+                                                    path={[...itemPath, child.name]}
+                                                />
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+                    );
+                })}
+            </AnimatePresence>
+
+            {/* 删除二次确认对话框 */}
+            <Dialog open={deleteConfirmIndex !== null} onOpenChange={() => setDeleteConfirmIndex(null)}>
+                <DialogContent className="sm:max-w-[380px]">
+                    <DialogHeader>
+                        <DialogTitle>{t("ds.confirmDelete")}</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 text-sm text-[#1a1d21] dark:text-[#e4e7eb]">
+                        {t("ds.deleteConfirmMsg")}
+                    </div>
+                    <DialogFooter>
+                        <button
+                            onClick={() => setDeleteConfirmIndex(null)}
+                            className="px-4 py-2 text-sm font-medium border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136]"
+                        >
+                            {t("ds.cancel")}
+                        </button>
+                        <button
+                            onClick={() => {
+                                removeItem(deleteConfirmIndex);
+                                setDeleteConfirmIndex(null);
+                            }}
+                            className="px-4 py-2 text-sm font-medium bg-[#dc2626] hover:bg-red-600 text-white rounded-lg cursor-pointer"
+                        >
+                            {t("ds.confirm")}
+                        </button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+}
+
+// ─── Switch Item ───────────────────────────────────────────────────
 function SwitchItem({item, path}) {
     const {values, update} = useSettings();
     const val = deepGet(values, path) ?? item.default ?? false;
     return (
-        <SettingRow text={item.text} tips={item.tips}>
+        <SettingRow text={item.text} tips={item.tips} required={item.required}>
             <Switch
-                className={"cursor-pointer"}
+                className="cursor-pointer"
                 checked={val}
                 onCheckedChange={(v) => update(path, v)}
             />
@@ -187,39 +451,29 @@ function SwitchItem({item, path}) {
     );
 }
 
-// ─── Number Slider ─────────────────────────────────────────────────
+// ─── Number Slider Item ─────────────────────────────────────────────
 function NumberSliderItem({item, path}) {
+    const {t} = useTranslation();
     const {values, update} = useSettings();
     let val = deepGet(values, path);
     const hasRange = item.min !== undefined && item.max !== undefined;
     const step = item.step || 1;
     const upDownStep = item.step || 1;
     const nullable = !!item.nullable;
-
     const [isNull, setIsNull] = useState(val === null);
-
     val = isNull ? null : (val ?? item.default ?? (item.min || 0));
+    const decimals = item.integer ? 0 : (step.toString().split('.')[1]?.length || 0);
 
-    const decimals = item.integer
-        ? 0
-        : (step.toString().split('.')[1]?.length || 0);
+    const handleChange = useCallback((raw) => {
+        if (isNull) return;
+        let v = typeof raw === 'number' ? raw : parseFloat(raw);
+        if (isNaN(v)) v = item.min ?? 0;
+        v = parseFloat(v.toFixed(decimals));
+        v = clamp(v, item.min, item.max);
+        update(path, v);
+    }, [item, path, update, decimals, isNull]);
 
-    const handleChange = useCallback(
-        (raw) => {
-            if (isNull) return;
-            let v = typeof raw === 'number' ? raw : parseFloat(raw);
-            if (isNaN(v)) v = item.min ?? 0;
-            v = parseFloat(v.toFixed(decimals));
-            v = clamp(v, item.min, item.max);
-            update(path, v);
-        },
-        [item, path, update, decimals, isNull]
-    );
-
-    const displayVal = item.integer
-        ? Math.round(val)
-        : val?.toFixed(decimals) ?? "";
-
+    const displayVal = item.integer ? Math.round(val) : val?.toFixed(decimals) ?? "";
     const toggleNull = () => {
         setIsNull((prev) => {
             const newIsNull = !prev;
@@ -230,49 +484,17 @@ function NumberSliderItem({item, path}) {
     };
 
     const sliderRef = useRef(null);
-
     useEffect(() => {
         const sliderElement = sliderRef.current;
         if (!sliderElement || !hasRange || isNull) return;
-
         const handleWheel = (e) => {
             e.preventDefault();
             const delta = e.deltaY > 0 ? -upDownStep : upDownStep;
             handleChange(val + delta);
         };
-
         sliderElement.addEventListener('wheel', handleWheel, { passive: false });
-
-        return () => {
-            sliderElement.removeEventListener('wheel', handleWheel);
-        };
+        return () => sliderElement.removeEventListener('wheel', handleWheel);
     }, [val, hasRange, isNull, upDownStep, handleChange]);
-
-    const renderCompactNumberInput = () => (
-        <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md overflow-hidden bg-white dark:bg-[#1c1e21] w-[80px]">
-            <input
-                className="w-full h-8 px-2.5 text-center text-sm font-sans outline-none bg-transparent text-[#1a1d21] dark:text-[#e4e7eb]"
-                type="text"
-                inputMode={item.integer ? "numeric" : "decimal"}
-                value={displayVal}
-                onChange={(e) => handleChange(e.target.value)}
-            />
-            <div className="flex flex-col border-l border-[#e1e4e8] dark:border-[#3a3f45]">
-                <button
-                    className="w-6 h-4 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-[10px] leading-none transition-colors cursor-pointer active:bg-[#e5e7eb]"
-                    onClick={() => handleChange(val + upDownStep)}
-                >
-                    ＋
-                </button>
-                <button
-                    className="w-6 h-4 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-[10px] leading-none transition-colors cursor-pointer active:bg-[#e5e7eb]"
-                    onClick={() => handleChange(val - upDownStep)}
-                >
-                    −
-                </button>
-            </div>
-        </div>
-    );
 
     const nullModeContent = (
         <motion.button
@@ -283,7 +505,7 @@ function NumberSliderItem({item, path}) {
             className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
             onClick={toggleNull}
         >
-            默认
+            {t("ds.default")}
         </motion.button>
     );
 
@@ -295,19 +517,35 @@ function NumberSliderItem({item, path}) {
             transition={{ duration: 0.2 }}
             className="flex-shrink-0"
         >
-            {renderCompactNumberInput()}
+            <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md overflow-hidden bg-white dark:bg-[#1c1e21] w-[80px]">
+                <input
+                    className="w-full h-8 px-2.5 text-center text-sm font-sans outline-none bg-transparent text-[#1a1d21] dark:text-[#e4e7eb]"
+                    type="text"
+                    inputMode={item.integer ? "numeric" : "decimal"}
+                    value={displayVal}
+                    onChange={(e) => handleChange(e.target.value)}
+                />
+                <div className="flex flex-col border-l border-[#e1e4e8] dark:border-[#3a3f45]">
+                    <button
+                        className="w-6 h-4 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-[10px] leading-none transition-colors cursor-pointer active:bg-[#e5e7eb]"
+                        onClick={() => handleChange(val + upDownStep)}
+                    >
+                        ＋
+                    </button>
+                    <button
+                        className="w-6 h-4 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-[10px] leading-none transition-colors cursor-pointer active:bg-[#e5e7eb]"
+                        onClick={() => handleChange(val - upDownStep)}
+                    >
+                        −
+                    </button>
+                </div>
+            </div>
         </motion.div>
     );
 
     if (!hasRange) {
         return (
-            <SettingRow
-                text={item.text}
-                tips={item.tips}
-                nullable={nullable}
-                isNull={isNull}
-                onToggleNull={toggleNull}
-            >
+            <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
                 <AnimatePresence mode="wait">
                     {isNull ? nullModeContent : setModeContent}
                 </AnimatePresence>
@@ -317,37 +555,17 @@ function NumberSliderItem({item, path}) {
 
     return (
         <>
-            <SettingRow
-                text={item.text}
-                tips={item.tips}
-                nullable={nullable}
-                isNull={isNull}
-                onToggleNull={toggleNull}
-                expanded={false}
-            >
+            <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
                 <AnimatePresence mode="wait">
                     {isNull ? nullModeContent : setModeContent}
                 </AnimatePresence>
             </SettingRow>
-
             {!isNull && (
                 <AnimatePresence>
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        <SettingRow fullWidth={true}>
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }}>
+                        <SettingRow fullWidth>
                             <div ref={sliderRef} className="w-full">
-                                <Slider
-                                    className="w-full"
-                                    min={item.min}
-                                    max={item.max}
-                                    step={step}
-                                    value={[val]}
-                                    onValueChange={([v]) => handleChange(v)}
-                                />
+                                <Slider min={item.min} max={item.max} step={step} value={[val]} onValueChange={([v]) => handleChange(v)} />
                             </div>
                         </SettingRow>
                     </motion.div>
@@ -357,7 +575,7 @@ function NumberSliderItem({item, path}) {
     );
 }
 
-// ─── Text Input ────────────────────────────────────────────────────
+// ─── Text Input Item ─────────────────────────────────────────────────
 function TextInputItem({item, path}) {
     const {t} = useTranslation();
     const {values, update} = useSettings();
@@ -368,7 +586,7 @@ function TextInputItem({item, path}) {
 
     if (item.multiline) {
         return (
-            <SettingRow text={item.text} tips={item.tips}>
+            <SettingRow text={item.text} tips={item.tips} required={item.required}>
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild>
                         <button className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors">
@@ -402,9 +620,8 @@ function TextInputItem({item, path}) {
             </SettingRow>
         );
     }
-
     return (
-        <SettingRow text={item.text} tips={item.tips}>
+        <SettingRow text={item.text} tips={item.tips} required={item.required}>
             <input
                 className="h-8 px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none max-w-[220px] w-full transition-colors focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
                 type="text"
@@ -416,7 +633,7 @@ function TextInputItem({item, path}) {
     );
 }
 
-// ─── Checkbox ──────────────────────────────────────────────────────
+// ─── Checkbox Item ─────────────────────────────────────────────────
 function CheckboxItem({item, path}) {
     const {values, update} = useSettings();
     const val = deepGet(values, path) ?? item.default ?? false;
@@ -426,21 +643,21 @@ function CheckboxItem({item, path}) {
                 <Checkbox checked={val} onCheckedChange={(v) => update(path, !!v)} />
                 <span className="text-sm truncate" title={item.text}>{item.text}</span>
             </label>
-            <TipWrapper tips={item.tips}/>
+            <TipWrapper tips={item.tips} />
         </div>
     );
 }
 
-// ─── Radio ─────────────────────────────────────────────────────────
+// ─── Radio Item ─────────────────────────────────────────────────────
 function RadioItem({item, path, groupPath}) {
     if (groupPath) {
         return (
             <div className="flex items-center gap-2 py-1.5">
                 <label className="flex items-center gap-2 cursor-pointer flex-1">
-                    <RadioGroupItem value={item.name}/>
+                    <RadioGroupItem value={item.name} />
                     <span className="text-sm">{item.text}</span>
                 </label>
-                <TipWrapper tips={item.tips}/>
+                <TipWrapper tips={item.tips} />
             </div>
         );
     }
@@ -449,24 +666,24 @@ function RadioItem({item, path, groupPath}) {
     const myName = path[path.length - 1];
     const isSelected = val === myName;
     return (
-        <SettingRow text={item.text} tips={item.tips}>
+        <SettingRow text={item.text} tips={item.tips} required={item.required}>
             <button
                 className={`w-5 h-5 border-2 border-[#e1e4e8] dark:border-[#3a3f45] rounded-full bg-white dark:bg-[#1c1e21] flex items-center justify-center cursor-pointer transition-colors ${isSelected ? "border-[#2563eb] dark:border-[#3b82f6]" : ""}`}
                 onClick={() => update(path.slice(0, -1), myName)}
             >
-                <span className={`w-2 h-2 rounded-full bg-[#2563eb] dark:bg-[#3b82f6] transition-all ${isSelected ? "scale-100" : "scale-0"}`}/>
+                <span className={`w-2 h-2 rounded-full bg-[#2563eb] dark:bg-[#3b82f6] transition-all ${isSelected ? "scale-100" : "scale-0"}`} />
             </button>
         </SettingRow>
     );
 }
 
-// ─── Select ────────────────────────────────────────────────────────
+// ─── Select Item ───────────────────────────────────────────────────
 function SelectItem({item, path}) {
+    const {t} = useTranslation();
     const {values, update} = useSettings();
     const val = deepGet(values, path) ?? item.default ?? "";
     const options = item.options || [];
     const selected = options.find((o) => o.value === val) || options[0] || null;
-
     const buttonRef = useRef(null);
     const [optionsPosition, setOptionsPosition] = useState(null);
 
@@ -497,7 +714,6 @@ function SelectItem({item, path}) {
                         setOptionsPosition(null);
                     }
                 }, [open]);
-
                 return (
                     <>
                         <ListboxButton
@@ -509,7 +725,6 @@ function SelectItem({item, path}) {
                                 <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd"/>
                             </svg>
                         </ListboxButton>
-
                         {open && optionsPosition && createPortal(
                             <Transition leave="transition-opacity duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
                                 <ListboxOptions
@@ -552,7 +767,7 @@ function SelectItem({item, path}) {
     );
 
     return (
-        <SettingRow text={item.text} tips={item.tips} expanded={false}>
+        <SettingRow text={item.text} tips={item.tips} required={item.required}>
             <div ref={buttonRef}>
                 {selectComponent}
             </div>
@@ -560,7 +775,7 @@ function SelectItem({item, path}) {
     );
 }
 
-// ─── Custom ────────────────────────────────────────────────────────
+// ─── Custom Item ───────────────────────────────────────────────────
 function CustomItem({item, path}) {
     const {t} = useTranslation();
     const {values, update} = useSettings();
@@ -571,20 +786,20 @@ function CustomItem({item, path}) {
 
     const addEntry = () => {
         if (!newKey.trim()) return;
-        const next = {...val, [newKey.trim()]: newVal};
+        const next = { ...val, [newKey.trim()]: newVal };
         update(path, next);
         setNewKey("");
         setNewVal("");
     };
 
     const removeEntry = (key) => {
-        const next = {...val};
+        const next = { ...val };
         delete next[key];
         update(path, next);
     };
 
     const updateEntry = (key, v) => {
-        update(path, {...val, [key]: v});
+        update(path, { ...val, [key]: v });
     };
 
     return (
@@ -628,8 +843,9 @@ function CustomItem({item, path}) {
                     onChange={(e) => setNewVal(e.target.value)}
                 />
                 <button
-                    className="h-8 px-3 text-xs font-medium bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-md transition-colors"
-                    onClick={addEntry}>
+                    className="h-8 px-3 text-xs font-medium bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-md transition-colors cursor-pointer"
+                    onClick={addEntry}
+                >
                     {t("ds.addParam")}
                 </button>
             </div>
@@ -637,50 +853,31 @@ function CustomItem({item, path}) {
     );
 }
 
-// ─── Group ─────────────────────────────────────────────────────────
+// ─── Group Item ─────────────────────────────────────────────────────
 function GroupItem({item, path}) {
     const {values, update} = useSettings();
     const groupValues = deepGet(values, path) ?? {};
     const hasRadios = item.children?.some((c) => c.type === "radio");
-
     if (hasRadios) {
         const radioChildren = item.children.filter((c) => c.type === "radio");
         const nonRadioChildren = item.children.filter((c) => c.type !== "radio");
-        const selectedRadio =
-            typeof groupValues === "string"
-                ? groupValues
-                : radioChildren.find((c) => groupValues[c.name])?.name || radioChildren[0]?.name;
-
+        const selectedRadio = typeof groupValues === "string" ? groupValues : radioChildren.find((c) => groupValues[c.name])?.name || radioChildren[0]?.name;
         return (
             <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
                 <div className="text-xs font-semibold uppercase tracking-[0.5px] text-[#656d76] dark:text-[#9ca3af] px-4 pt-3 pb-1">
                     {item.text || item.name}
                 </div>
-                <RadioGroup
-                    className="flex flex-wrap gap-x-4 gap-y-1 px-4 pb-2.5"
-                    value={selectedRadio}
-                    onValueChange={(v) => update(path, v)}
-                >
+                <RadioGroup className="flex flex-wrap gap-x-4 gap-y-1 px-4 pb-2.5" value={selectedRadio} onValueChange={(v) => update(path, v)}>
                     {radioChildren.map((child) => (
-                        <RadioItem
-                            key={child.name}
-                            item={child}
-                            path={[...path, child.name]}
-                            groupPath={path}
-                        />
+                        <RadioItem key={child.name} item={child} path={[...path, child.name]} groupPath={path} />
                     ))}
                 </RadioGroup>
                 {nonRadioChildren.map((child) => (
-                    <SettingItemRenderer
-                        key={child.name || child.text}
-                        item={child}
-                        path={[...path]}
-                    />
+                    <SettingItemRenderer key={child.name || child.text} item={child} path={[...path]} />
                 ))}
             </div>
         );
     }
-
     const hasCheckboxes = item.children?.some((c) => c.type === "checkbox");
     return (
         <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
@@ -689,29 +886,25 @@ function GroupItem({item, path}) {
             </div>
             <div className={hasCheckboxes ? "flex flex-wrap gap-x-4 gap-y-1 px-4 pb-2.5" : "px-4 pb-2.5"}>
                 {item.children?.map((child) => (
-                    <SettingItemRenderer
-                        key={child.name || child.text}
-                        item={child}
-                        path={[...path, child.name]}
-                    />
+                    <SettingItemRenderer key={child.name || child.text} item={child} path={[...path, child.name]} />
                 ))}
             </div>
         </div>
     );
 }
 
-// ─── Heading ───────────────────────────────────────────────────────
+// ─── Heading Item ───────────────────────────────────────────────────
 function HeadingItem({item}) {
     const hasText = item.text && item.text.trim() !== "";
     if (!hasText) {
-        return <div className="h-px bg-[#e1e4e8] dark:bg-[#3a3f45] mx-4 my-2"/>;
+        return <div className="h-px bg-[#e1e4e8] dark:bg-[#3a3f45] mx-4 my-2" />;
     }
     return (
         <div className="flex items-center gap-3 px-4 py-4 pb-2">
             <span className="text-xs font-bold uppercase tracking-[0.8px] text-[#656d76] dark:text-[#9ca3af] whitespace-nowrap">
                 {item.text}
             </span>
-            <div className="flex-1 h-px bg-[#e1e4e8] dark:bg-[#3a3f45]"/>
+            <div className="flex-1 h-px bg-[#e1e4e8] dark:bg-[#3a3f45]" />
         </div>
     );
 }
@@ -719,15 +912,17 @@ function HeadingItem({item}) {
 // ─── Item Renderer ─────────────────────────────────────────────────
 function SettingItemRenderer({item, path}) {
     switch (item.type) {
-        case "group": return <GroupItem item={item} path={path}/>;
-        case "heading": return <HeadingItem item={item}/>;
-        case "switch": return <SwitchItem item={item} path={path}/>;
-        case "number": return <NumberSliderItem item={item} path={path}/>;
-        case "text": return <TextInputItem item={item} path={path}/>;
-        case "checkbox": return <CheckboxItem item={item} path={path}/>;
-        case "radio": return <RadioItem item={item} path={path}/>;
-        case "select": return <SelectItem item={item} path={path}/>;
-        case "custom": return <CustomItem item={item} path={path}/>;
+        case "list": return <ListItem item={item} path={path} />;
+        case "image": return <ImageItem item={item} path={path} />;
+        case "group": return <GroupItem item={item} path={path} />;
+        case "heading": return <HeadingItem item={item} />;
+        case "switch": return <SwitchItem item={item} path={path} />;
+        case "number": return <NumberSliderItem item={item} path={path} />;
+        case "text": return <TextInputItem item={item} path={path} />;
+        case "checkbox": return <CheckboxItem item={item} path={path} />;
+        case "radio": return <RadioItem item={item} path={path} />;
+        case "select": return <SelectItem item={item} path={path} />;
+        case "custom": return <CustomItem item={item} path={path} />;
         default: return null;
     }
 }
@@ -738,15 +933,11 @@ export default function DynamicSettings({
                                             onChange,
                                             initialValues,
                                             className,
+                                            onImageUpload,
                                         }) {
-    const [values, setValues] = useState(() => {
-        return buildDefaults(config, initialValues);
-    });
-
+    const [values, setValues] = useState(() => buildDefaults(config, initialValues));
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
-
-    // ==================== 关键修复：防止 React Strict Mode 下初始 onChange 被调用两次 ====================
     const hasInitialCalledRef = useRef(false);
 
     const update = useCallback((path, value) => {
@@ -757,19 +948,15 @@ export default function DynamicSettings({
         });
     }, []);
 
-    // 初始值变更时只触发一次 onChange（兼容 Strict Mode）
     useEffect(() => {
         if (hasInitialCalledRef.current) {
-            // 用户后续真实修改
             setTimeout(() => onChangeRef.current?.(values), 0);
             return;
         }
-
-        // 首次初始化
         hasInitialCalledRef.current = true;
     }, [values]);
 
-    const ctx = useMemo(() => ({ values, update }), [values, update]);
+    const ctx = useMemo(() => ({ values, update, onImageUpload }), [values, update, onImageUpload]);
 
     return (
         <SettingsContext.Provider value={ctx}>
@@ -777,7 +964,7 @@ export default function DynamicSettings({
                 {config.map((item, i) => {
                     const key = item.name || item.text || `item-${i}`;
                     const path = item.name ? [item.name] : [];
-                    return <SettingItemRenderer key={key} item={item} path={path}/>;
+                    return <SettingItemRenderer key={key} item={item} path={path} />;
                 })}
             </div>
         </SettingsContext.Provider>
@@ -789,7 +976,11 @@ function buildDefaults(config, initialValues) {
     const result = {};
     for (const item of config) {
         if (item.type === "heading") continue;
-
+        if (item.type === "list" && item.name) {
+            const initList = initialValues?.[item.name];
+            result[item.name] = Array.isArray(initList) ? initList : [];
+            continue;
+        }
         if (item.type === "group" && item.name && item.children) {
             const hasRadios = item.children.some((c) => c.type === "radio");
             if (hasRadios) {
@@ -820,9 +1011,7 @@ function buildDefaults(config, initialValues) {
             if (item.type === "custom") {
                 const base = item.default ?? {};
                 const override = initialValues?.[item.name];
-                result[item.name] = override && typeof override === 'object'
-                    ? deepMerge(base, override)
-                    : base;
+                result[item.name] = override && typeof override === 'object' ? deepMerge(base, override) : base;
             } else {
                 const initVal = initialValues?.[item.name];
                 if (initVal !== undefined) {
@@ -832,6 +1021,23 @@ function buildDefaults(config, initialValues) {
                 } else {
                     result[item.name] = item.default ?? (item.nullable ? null : undefined);
                 }
+            }
+        }
+    }
+    return result;
+}
+
+function deepMerge(base, overrides) {
+    if (!overrides || typeof overrides !== 'object') return base;
+    const result = { ...base };
+    for (const key in overrides) {
+        if (Object.prototype.hasOwnProperty.call(overrides, key)) {
+            const baseVal = result[key];
+            const overrideVal = overrides[key];
+            if (baseVal !== null && overrideVal !== null && typeof baseVal === 'object' && typeof overrideVal === 'object' && !Array.isArray(baseVal) && !Array.isArray(overrideVal)) {
+                result[key] = deepMerge(baseVal, overrideVal);
+            } else {
+                result[key] = overrideVal;
             }
         }
     }

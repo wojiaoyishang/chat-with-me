@@ -1436,6 +1436,7 @@ mode参数参考：
 }
 ```
 
+```markdown
 # 设置组件配置
 
 ## 导入位置
@@ -1450,8 +1451,7 @@ import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
 
 ## 概述
 
-`DynamicSettings` 是一个高度可配置的 React 设置面板组件，支持通过 JSON 配置动态渲染多种 UI
-控件（开关、滑块、文本框、复选框、单选、下拉、键值对分组等）。
+`DynamicSettings` 是一个高度可配置的 React 设置面板组件，支持通过 JSON 配置动态渲染多种 UI 控件（开关、滑块、文本框、复选框、单选、下拉、键值对分组、图片上传、可折叠列表等）。
 
 - 完全使用 **Tailwind CSS** 内联样式（已移除外部 CSS 文件）
 - 支持亮/暗模式自动适配
@@ -1466,6 +1466,7 @@ import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
 - 支持嵌套分组（`group`）
 - 支持标题分隔线（`heading`）
 - 支持带提示的控件（`tips`）
+- 支持必填字段标记（`required`）
 - 支持默认值自动生成
 - 支持实时 `onChange` 回调
 - 完全类型安全的路径更新（`deepSet` / `deepGet`）
@@ -1477,7 +1478,7 @@ import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
 ```tsx
 import DynamicSettings from "./DynamicSettings";
 
-const config = [ /* 配置数组 */];
+const config = [ /* 配置数组 */ ];
 
 function App() {
     const handleChange = (newValues) => {
@@ -1488,8 +1489,8 @@ function App() {
         <DynamicSettings
             config={config}
             onChange={handleChange}
-            initialValues={initialData}   // 可选
-            className="max-w-2xl"         // 可选
+            initialValues={initialData}   # 可选
+            className="max-w-2xl"         # 可选
         />
     );
 }
@@ -1501,15 +1502,18 @@ function App() {
 
 `config` 是一个数组，每一项是一个对象，必须包含 `type`。
 
-| 字段         | 类型     | 说明            |
-|------------|--------|---------------|
-| `type`     | string | 控件类型（必填）      |
-| `name`     | string | 字段名（用于生成路径）   |
-| `text`     | string | 显示标题          |
-| `tips`     | string | 提示文字（支持 HTML） |
-| `default`  | any    | 默认值           |
-| `children` | array  | 仅 `group` 使用  |
-| `options`  | array  | 仅 `select` 使用 |
+| 字段             | 类型     | 说明                          |
+|------------------|----------|-------------------------------|
+| `type`           | string   | 控件类型（必填）              |
+| `name`           | string   | 字段名（用于生成路径）        |
+| `text`           | string   | 显示标题                      |
+| `tips`           | string   | 提示文字（支持 HTML）         |
+| `default`        | any      | 默认值                        |
+| `required`       | bool     | 是否必填（显示 * 标记）       |
+| `children`       | array    | 仅 `group`、`list` 使用       |
+| `options`        | array    | 仅 `select` 使用              |
+| `itemTitleKey`   | string   | 仅 `list` 使用，卡片标题动态字段 |
+| `uniqueKey`      | string   | 仅 `list` 使用，防止重复字段  |
 
 ---
 
@@ -1517,45 +1521,28 @@ function App() {
 
 ### Switch（开关）
 
-```js
+```python
 {
-    type: "switch", name
-:
-    "autoSave", text
-:
-    "自动保存",
-default:
-    true, tips
-:
-    "..."
+    "type": "switch",
+    "name": "autoSave",
+    "text": "自动保存",
+    "default": True,
+    "tips": "..."
 }
 ```
 
 ### Number（数字滑块 + 输入框）
 
-```js
+```python
 {
-    type: "number",
-        name
-:
-    "volume",
-        text
-:
-    "音量",
-default:
-    50,
-        min
-:
-    0,
-        max
-:
-    100,
-        step
-:
-    5,
-        integer
-:
-    true
+    "type": "number",
+    "name": "volume",
+    "text": "音量",
+    "default": 50,
+    "min": 0,
+    "max": 100,
+    "step": 5,
+    "integer": True
 }
 ```
 
@@ -1563,45 +1550,36 @@ default:
 
 **单行：**
 
-```js
+```python
 {
-    type: "text", name
-:
-    "apiKey", text
-:
-    "API Key", placeholder
-:
-    "sk-..."
+    "type": "text",
+    "name": "apiKey",
+    "text": "API Key",
+    "placeholder": "sk-..."
 }
 ```
 
 **多行（弹窗编辑）：**
 
-```js
+```python
 {
-    type: "text", name
-:
-    "prompt", text
-:
-    "系统提示词", multiline
-:
-    true
+    "type": "text",
+    "name": "prompt",
+    "text": "系统提示词",
+    "multiline": True
 }
 ```
 
-> 多行文本弹窗已修复为屏幕正中央显示。
+> 多行文本弹窗已优化为屏幕正中央显示。
 
 ### Checkbox（复选框）
 
-```js
+```python
 {
-    type: "checkbox", name
-:
-    "enableProxy", text
-:
-    "启用代理", tips
-:
-    "..."
+    "type": "checkbox",
+    "name": "enableProxy",
+    "text": "启用代理",
+    "tips": "..."
 }
 ```
 
@@ -1611,60 +1589,53 @@ default:
 
 **独立单选（standalone）：**
 
-```js
+```python
 {
-    type: "radio", name
-:
-    "theme", text
-:
-    "深色模式"
-}   // path 会自动处理
+    "type": "radio",
+    "name": "theme",
+    "text": "深色模式"
+}
 ```
 
-**在 group 中使用：**
+**在 group 中使用：**  
 见下方 Group 示例。
 
 ### Select（下拉选择）
 
-```js
+```python
 {
-    type: "select",
-        name
-:
-    "model",
-        text
-:
-    "模型",
-default:
-    "gpt-4o",
-        options
-:
-    [
-        {value: "gpt-4o", label: "GPT-4o"},
-        {value: "claude-3", label: "Claude 3"}
+    "type": "select",
+    "name": "model",
+    "text": "模型",
+    "default": "gpt-4o",
+    "options": [
+        {"value": "gpt-4o", "label": "GPT-4o"},
+        {"value": "claude-3", "label": "Claude 3"}
     ]
+}
+```
+
+### Image（图片上传）
+
+```python
+{
+    "type": "image",
+    "name": "avatar",
+    "text": "模型头像",
+    "tips": "推荐 128×128 尺寸"
 }
 ```
 
 ### Custom（自定义键值对）
 
-```js
+```python
 {
-    type: "custom",
-        name
-:
-    "headers",
-        text
-:
-    "自定义请求头",
-        tips
-:
-    "用于 API 请求",
-default:
-    {
-        "X-Custom"
-    :
-        "value"
+    "type": "custom",
+    "name": "headers",
+    "text": "自定义请求头",
+    "tips": "用于 API 请求",
+    "default": {
+        "X-Custom": "value"
     }
 }
 ```
@@ -1675,55 +1646,60 @@ default:
 
 ### Group（分组）
 
-```js
+```python
 {
-    type: "group",
-        name
-:
-    "advanced",
-        text
-:
-    "高级设置",
-        children
-:
-    [
-        // 可包含 switch、checkbox、radio、number 等
+    "type": "group",
+    "name": "advanced",
+    "text": "高级设置",
+    "children": [
+        # 可包含 switch、checkbox、radio、number 等
     ]
 }
 ```
 
 **带单选的 Group（互斥选项）：**
 
-```js
+```python
 {
-    type: "group",
-        name
-:
-    "mode",
-        text
-:
-    "运行模式",
-        children
-:
-    [
-        {type: "radio", name: "fast", text: "快速模式", default: true},
-        {type: "radio", name: "quality", text: "高质量模式"},
-        {type: "switch", name: "debug", text: "调试信息"}
+    "type": "group",
+    "name": "mode",
+    "text": "运行模式",
+    "children": [
+        {"type": "radio", "name": "fast", "text": "快速模式", "default": True},
+        {"type": "radio", "name": "quality", "text": "高质量模式"},
+        {"type": "switch", "name": "debug", "text": "调试信息"}
     ]
 }
 ```
 
+### List（可折叠列表管理）
+
+```python
+{
+    "type": "list",
+    "name": "models",
+    "text": "模型管理",
+    "tips": "支持动态添加、删除、编辑多个 AI 模型",
+    "itemTitleKey": "name",
+    "uniqueKey": "id",
+    "children": [
+        # 可包含 image、text、select、number、group 等任意控件
+    ]
+}
+```
+
+列表项支持卡片式折叠显示，卡片标题可通过 `itemTitleKey` 实时同步内部字段内容；`uniqueKey` 可自动检测并高亮重复值；支持添加、复制、删除（带二次确认）操作。
+
 ### Heading（标题分隔线）
 
-```js
+```python
 {
-    type: "heading", text
-:
-    "通用设置"
+    "type": "heading",
+    "text": "通用设置"
 }
-// 或纯分隔线
+# 或纯分隔线
 {
-    type: "heading"
+    "type": "heading"
 }
 ```
 
@@ -1754,95 +1730,177 @@ default:
 
 ## 参考配置
 
-```js
-const exampleConfig = [
-    {type: "heading", text: "General Settings"},
+```python
+example_config = [
+    {"type": "heading", "text": "General Settings"},
     {
-        type: "switch",
-        name: "darkMode",
-        text: "Dark Mode",
-        tips: "Enable dark theme across the application",
-        default: false
-    },
-    {type: "switch", name: "notifications", text: "Notifications", tips: "Receive push notifications", default: true},
-    {
-        type: "number",
-        name: "volume",
-        text: "Volume",
-        tips: "System volume level (0-100)",
-        min: 0,
-        max: 100,
-        step: 1,
-        integer: true,
-        default: 75
+        "type": "switch",
+        "name": "darkMode",
+        "text": "Dark Mode",
+        "tips": "Enable dark theme across the application",
+        "default": False
     },
     {
-        type: "number",
-        name: "timeout",
-        text: "Timeout (ms)",
-        tips: "Request timeout. No limit if blank.",
-        integer: true,
-        default: 3000
-    },
-    {type: "number", name: "opacity", text: "Opacity", min: 0, max: 1, step: 0.05, integer: false, default: 0.85, defaultNull: true, nullable: true},
-    {type: "heading", text: "Content"},
-    {
-        type: "text",
-        name: "username",
-        text: "Username",
-        tips: "Your display name",
-        default: "Claude",
-        placeholder: "Enter name..."
+        "type": "switch",
+        "name": "notifications",
+        "text": "Notifications",
+        "tips": "Receive push notifications",
+        "default": True
     },
     {
-        type: "text",
-        name: "bio",
-        text: "Biography",
-        tips: "Multi-line bio (click ••• to edit)",
-        multiline: true,
-        default: "Hello world!\nThis is a multi-line text."
+        "type": "number",
+        "name": "volume",
+        "text": "Volume",
+        "tips": "System volume level (0-100)",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "integer": True,
+        "default": 75
     },
     {
-        type: "select", name: "language", text: "Language", tips: "Interface language", default: "en", options: [
-            {value: "en", label: "English"}, {value: "zh", label: "中文"},
-            {value: "ja", label: "日本語"}, {value: "ko", label: "한국어"},
+        "type": "number",
+        "name": "timeout",
+        "text": "Timeout (ms)",
+        "tips": "Request timeout. No limit if blank.",
+        "integer": True,
+        "default": 3000
+    },
+    {
+        "type": "number",
+        "name": "opacity",
+        "text": "Opacity",
+        "min": 0,
+        "max": 1,
+        "step": 0.05,
+        "integer": False,
+        "default": 0.85,
+        "defaultNull": True,
+        "nullable": True
+    },
+    {"type": "heading", "text": "Content"},
+    {
+        "type": "text",
+        "name": "username",
+        "text": "Username",
+        "tips": "Your display name",
+        "default": "Claude",
+        "placeholder": "Enter name..."
+    },
+    {
+        "type": "text",
+        "name": "bio",
+        "text": "Biography",
+        "tips": "Multi-line bio (click ••• to edit)",
+        "multiline": True,
+        "default": "Hello world!\nThis is a multi-line text."
+    },
+    {
+        "type": "select",
+        "name": "language",
+        "text": "Language",
+        "tips": "Interface language",
+        "default": "en",
+        "options": [
+            {"value": "en", "label": "English"},
+            {"value": "zh", "label": "中文"},
+            {"value": "ja", "label": "日本語"},
+            {"value": "ko", "label": "한국어"}
         ]
     },
     {
-        type: "select", name: "theme", text: "Color Theme", default: "system", options: [
-            {value: "light", label: "Light"}, {value: "dark", label: "Dark"}, {value: "system", label: "System"},
+        "type": "select",
+        "name": "theme",
+        "text": "Color Theme",
+        "default": "system",
+        "options": [
+            {"value": "light", "label": "Light"},
+            {"value": "dark", "label": "Dark"},
+            {"value": "system", "label": "System"}
         ]
     },
-    {type: "heading", text: "Layout Preferences"},
+    {"type": "heading", "text": "Layout Preferences"},
     {
-        type: "group", name: "features", text: "Features", children: [
-            {type: "checkbox", name: "sidebar", text: "Sidebar", default: true},
-            {type: "checkbox", name: "minimap", text: "Minimap", default: false},
-            {type: "checkbox", name: "breadcrumbs", text: "Breadcrumbs", default: true},
-            {type: "checkbox", name: "statusBar", text: "Status Bar", default: true},
+        "type": "group",
+        "name": "features",
+        "text": "Features",
+        "children": [
+            {"type": "checkbox", "name": "sidebar", "text": "Sidebar", "default": True},
+            {"type": "checkbox", "name": "minimap", "text": "Minimap", "default": False},
+            {"type": "checkbox", "name": "breadcrumbs", "text": "Breadcrumbs", "default": True},
+            {"type": "checkbox", "name": "statusBar", "text": "Status Bar", "default": True}
         ]
     },
     {
-        type: "group", name: "layout", text: "Layout Mode", children: [
-            {type: "radio", name: "compact", text: "Compact", tips: "Minimal spacing"},
-            {type: "radio", name: "comfortable", text: "Comfortable", tips: "Balanced spacing", default: true},
-            {type: "radio", name: "spacious", text: "Spacious", tips: "Maximum breathing room"},
+        "type": "group",
+        "name": "layout",
+        "text": "Layout Mode",
+        "children": [
+            {"type": "radio", "name": "compact", "text": "Compact", "tips": "Minimal spacing"},
+            {"type": "radio", "name": "comfortable", "text": "Comfortable", "tips": "Balanced spacing", "default": True},
+            {"type": "radio", "name": "spacious", "text": "Spacious", "tips": "Maximum breathing room"}
         ]
     },
     {
-        type: "group", name: "renderEngine", text: "Render Engine", children: [
-            {type: "radio", name: "canvas", text: "Canvas"},
-            {type: "radio", name: "webgl", text: "WebGL", default: true},
-            {type: "radio", name: "svg", text: "SVG"},
+        "type": "group",
+        "name": "renderEngine",
+        "text": "Render Engine",
+        "children": [
+            {"type": "radio", "name": "canvas", "text": "Canvas"},
+            {"type": "radio", "name": "webgl", "text": "WebGL", "default": True},
+            {"type": "radio", "name": "svg", "text": "SVG"}
         ]
     },
-    {type: "heading", text: "Advanced"},
+    {"type": "heading", "text": "Advanced"},
     {
-        type: "custom", name: "envVars", text: "Environment Variables", tips: "Custom key-value pairs", default: {
-            NODE_ENV: "production", API_URL: "https://api.example.com",
+        "type": "custom",
+        "name": "envVars",
+        "text": "Environment Variables",
+        "tips": "Custom key-value pairs",
+        "default": {
+            "NODE_ENV": "production",
+            "API_URL": "https://api.example.com"
         }
     },
-];
+    {
+        "type": "list",
+        "name": "models",
+        "text": "模型管理",
+        "tips": "支持动态添加、删除、编辑多个 AI 模型",
+        "itemTitleKey": "name",
+        "uniqueKey": "id",
+        "children": [
+            {
+                "type": "image",
+                "name": "avatar",
+                "text": "模型头像",
+                "tips": "推荐 128×128 尺寸"
+            },
+            {
+                "type": "text",
+                "name": "id",
+                "text": "唯一标志ID",
+                "placeholder": "gpt-4o",
+                "required": True
+            },
+            {
+                "type": "text",
+                "name": "name",
+                "text": "模型名称",
+                "required": True
+            },
+            {
+                "type": "select",
+                "name": "type",
+                "text": "模型类型",
+                "options": [
+                    {"value": "chat", "label": "对话模型"},
+                    {"value": "embedding", "label": "嵌入模型"}
+                ]
+            }
+        ]
+    }
+]
 ```
 
 # 默认前端 LocalStorage 配置

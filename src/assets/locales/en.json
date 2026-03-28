@@ -160,7 +160,16 @@
     "confirm": "Confirm",
     "key": "Key",
     "value": "Value",
-    "addParam": "Add"
+    "addParam": "Add",
+    "add": "Add",
+    "noData": "No data yet, click the button above to add",
+    "uploadImage": "Upload Image",
+    "uploading": "Uploading...",
+    "clickToUpload": "Click to upload",
+    "confirmDelete": "Are you sure you want to delete this item?",
+    "deleteConfirmMsg": "This action cannot be undone.",
+    "model": "Model",
+    "duplicate": "Duplicate"
   },
   "advanced_conversation_settings": "Advanced Conversation Settings",
   "no_settings": "No settings to display",

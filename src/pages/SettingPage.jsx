@@ -317,8 +317,9 @@ const SettingPage = ({
         if (!dynamicConfig) return null;
 
         return (
-            <motion.div key={activeTab} initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="max-w-3xl mx-auto">
+            <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="max-w-3xl mx-auto">
                 <DynamicSettings
+                    key={activeTab}
                     config={dynamicConfig.options || []}
                     initialValues={dynamicValues}
                     onChange={handleDynamicValuesChange}
