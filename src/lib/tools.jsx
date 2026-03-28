@@ -345,21 +345,45 @@ export function useIsMobile() {
     return isMobile_;
 }
 
-
 /**
  * 通用加载组件
  * @param {string} text - 加载时的提示文字
- * @param {string} zIndex - Tailwind z-index 类名 (如 "z-20"), 默认为空
+ * @param {string} zIndex - Tailwind z-index 类名 (如 "z-20")，默认为空
+ * @param {boolean} compact - 是否启用紧凑模式（用于侧边栏、卡片等狭窄区域），默认为 false
  */
-export const UnifiedLoadingScreen = ({ text, zIndex = "" }) => (
-    <div className={`absolute ${zIndex} inset-0 bg-white flex items-center justify-center`}>
-        <div className="flex flex-col items-center">
-            {/* 这里的 ThreeDotLoading 需确保在上下文中可用 */}
-            <ThreeDotLoading/>
-            <span className="mt-2 text-sm text-gray-500">{text}</span>
+export const UnifiedLoadingScreen = ({
+                                         text,
+                                         zIndex = "",
+                                         compact = false
+                                     }) => {
+    // 紧凑模式：仅显示加载动画 + 文字（无全屏遮罩、无背景）
+    if (compact) {
+        return (
+            <div className="flex flex-col items-center py-8">
+                <ThreeDotLoading />
+                {text && (
+                    <span className="mt-3 text-xs text-gray-500 text-center">
+                        {text}
+                    </span>
+                )}
+            </div>
+        );
+    }
+
+    // 标准全屏模式（保持原有行为）
+    return (
+        <div className={`absolute ${zIndex} inset-0 bg-white flex items-center justify-center`}>
+            <div className="flex flex-col items-center">
+                <ThreeDotLoading />
+                {text && (
+                    <span className="mt-2 text-sm text-gray-500">
+                        {text}
+                    </span>
+                )}
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 /**
  * 通用错误/重试组件

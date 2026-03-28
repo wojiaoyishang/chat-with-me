@@ -31,12 +31,13 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import {Info, Slash} from "lucide-react"; // Added Slash for nullable icon
+import {Info, Slash} from "lucide-react";
 import {createPortal} from "react-dom";
-import {motion, AnimatePresence} from "framer-motion"; // Added for animations
+import {motion, AnimatePresence} from "framer-motion";
 
 // ─── Context ───────────────────────────────────────────────────────
 const SettingsContext = createContext(null);
+
 function useSettings() {
     return useContext(SettingsContext);
 }
@@ -47,6 +48,7 @@ function clamp(val, min, max) {
     if (max !== undefined && val > max) return max;
     return val;
 }
+
 function deepSet(obj, path, value) {
     const result = {...obj};
     if (path.length === 1) {
@@ -56,6 +58,7 @@ function deepSet(obj, path, value) {
     result[path[0]] = deepSet(result[path[0]] || {}, path.slice(1), value);
     return result;
 }
+
 function deepGet(obj, path) {
     let cur = obj;
     for (const k of path) {
@@ -64,6 +67,7 @@ function deepGet(obj, path) {
     }
     return cur;
 }
+
 function deepMerge(base, overrides) {
     if (!overrides || typeof overrides !== 'object') return base;
     const result = { ...base };
@@ -143,7 +147,6 @@ function SettingRow({
                         isNull = false,
                         onToggleNull = () => {}
                     }) {
-    // 全宽模式（Slider 等整行组件专用）
     if (fullWidth) {
         return (
             <div className={`w-full px-4 pt-1 pb-3 ${className || ""}`}>
@@ -157,10 +160,7 @@ function SettingRow({
             className={`${className} flex items-center justify-between min-h-[35px] gap-3 last-of-type:border-b-0 ${expanded ? "flex-wrap" : "flex-nowrap"} ${noTopPadding ? "pt-0 -mt-2.5" : ""} ${noLeftRightPadding ? "" : "py-2.5 px-4"}`}>
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
                 <TipWrapper tips={tips} nullable={nullable} isNull={isNull} onToggleNull={onToggleNull}>
-                    <span
-                        className="text-sm font-medium truncate"
-                        title={text}
-                    >
+                    <span className="text-sm font-medium truncate" title={text}>
                         {text}
                     </span>
                 </TipWrapper>
@@ -196,12 +196,10 @@ function NumberSliderItem({item, path}) {
     const upDownStep = item.step || 1;
     const nullable = !!item.nullable;
 
-    // Nullable mode state，默认根据 val 是否 null 判断
     const [isNull, setIsNull] = useState(val === null);
 
     val = isNull ? null : (val ?? item.default ?? (item.min || 0));
 
-    // 计算小数位数（用于四舍五入）
     const decimals = item.integer
         ? 0
         : (step.toString().split('.')[1]?.length || 0);
@@ -211,7 +209,6 @@ function NumberSliderItem({item, path}) {
             if (isNull) return;
             let v = typeof raw === 'number' ? raw : parseFloat(raw);
             if (isNaN(v)) v = item.min ?? 0;
-            // 四舍五入到 step 的精度
             v = parseFloat(v.toFixed(decimals));
             v = clamp(v, item.min, item.max);
             update(path, v);
@@ -219,7 +216,6 @@ function NumberSliderItem({item, path}) {
         [item, path, update, decimals, isNull]
     );
 
-    // 渲染时格式化显示值（避免浮点显示问题）
     const displayVal = item.integer
         ? Math.round(val)
         : val?.toFixed(decimals) ?? "";
@@ -252,7 +248,6 @@ function NumberSliderItem({item, path}) {
         };
     }, [val, hasRange, isNull, upDownStep, handleChange]);
 
-    // 紧凑版数字输入控件（text 类型 + 右侧垂直按钮 + 限制宽度）
     const renderCompactNumberInput = () => (
         <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md overflow-hidden bg-white dark:bg-[#1c1e21] w-[80px]">
             <input
@@ -304,7 +299,6 @@ function NumberSliderItem({item, path}) {
         </motion.div>
     );
 
-    // 没有范围的情况
     if (!hasRange) {
         return (
             <SettingRow
@@ -321,7 +315,6 @@ function NumberSliderItem({item, path}) {
         );
     }
 
-    // 有范围的情况（输入框 + 下方全宽 Slider）
     return (
         <>
             <SettingRow
@@ -384,10 +377,25 @@ function TextInputItem({item, path}) {
                     </DialogTrigger>
                     <DialogContent className="w-[min(90vw,520px)] z-999 max-w-none rounded-3xl border-[#e1e4e8] dark:border-[#3a3f45] bg-white dark:bg-[#1c1e21] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
                         <DialogHeader><DialogTitle className="text-base font-semibold mb-4">{item.text}</DialogTitle></DialogHeader>
-                        <textarea className="w-full min-h-[200px] p-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none resize-y leading-relaxed focus:border-[#2563eb] dark:focus:border-[#3b82f6]" value={draft} onChange={(e) => setDraft(e.target.value)} rows={8} />
+                        <textarea
+                            className="w-full min-h-[200px] p-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none resize-y leading-relaxed focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                            value={draft}
+                            onChange={(e) => setDraft(e.target.value)}
+                            rows={8}
+                        />
                         <div className="flex justify-end gap-2 mt-4">
-                            <button className="cursor-pointer h-9 px-4 rounded-md text-sm font-medium border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors" onClick={() => setDialogOpen(false)}>{t("ds.cancel")}</button>
-                            <button className="cursor-pointer h-9 px-4 rounded-md text-sm font-medium bg-[#2563eb] hover:bg-[#1d4ed8] text-white transition-colors" onClick={() => { update(path, draft); setDialogOpen(false); }}>{t("ds.confirm")}</button>
+                            <button
+                                className="cursor-pointer h-9 px-4 rounded-md text-sm font-medium border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors"
+                                onClick={() => setDialogOpen(false)}
+                            >
+                                {t("ds.cancel")}
+                            </button>
+                            <button
+                                className="cursor-pointer h-9 px-4 rounded-md text-sm font-medium bg-[#2563eb] hover:bg-[#1d4ed8] text-white transition-colors"
+                                onClick={() => { update(path, draft); setDialogOpen(false); }}
+                            >
+                                {t("ds.confirm")}
+                            </button>
                         </div>
                     </DialogContent>
                 </Dialog>
@@ -397,7 +405,13 @@ function TextInputItem({item, path}) {
 
     return (
         <SettingRow text={item.text} tips={item.tips}>
-            <input className="h-8 px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none max-w-[220px] w-full transition-colors focus:border-[#2563eb] dark:focus:border-[#3b82f6]" type="text" value={val} onChange={(e) => update(path, e.target.value)} placeholder={item.placeholder || ""} />
+            <input
+                className="h-8 px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none max-w-[220px] w-full transition-colors focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                type="text"
+                value={val}
+                onChange={(e) => update(path, e.target.value)}
+                placeholder={item.placeholder || ""}
+            />
         </SettingRow>
     );
 }
@@ -436,7 +450,10 @@ function RadioItem({item, path, groupPath}) {
     const isSelected = val === myName;
     return (
         <SettingRow text={item.text} tips={item.tips}>
-            <button className={`w-5 h-5 border-2 border-[#e1e4e8] dark:border-[#3a3f45] rounded-full bg-white dark:bg-[#1c1e21] flex items-center justify-center cursor-pointer transition-colors ${isSelected ? "border-[#2563eb] dark:border-[#3b82f6]" : ""}`} onClick={() => update(path.slice(0, -1), myName)}>
+            <button
+                className={`w-5 h-5 border-2 border-[#e1e4e8] dark:border-[#3a3f45] rounded-full bg-white dark:bg-[#1c1e21] flex items-center justify-center cursor-pointer transition-colors ${isSelected ? "border-[#2563eb] dark:border-[#3b82f6]" : ""}`}
+                onClick={() => update(path.slice(0, -1), myName)}
+            >
                 <span className={`w-2 h-2 rounded-full bg-[#2563eb] dark:bg-[#3b82f6] transition-all ${isSelected ? "scale-100" : "scale-0"}`}/>
             </button>
         </SettingRow>
@@ -497,11 +514,21 @@ function SelectItem({item, path}) {
                             <Transition leave="transition-opacity duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
                                 <ListboxOptions
                                     static
-                                    style={{ position: 'absolute', top: `${optionsPosition.top}px`, left: `${optionsPosition.left}px`, minWidth: `${optionsPosition.minWidth}px`, width: 'max-content' }}
+                                    style={{
+                                        position: 'absolute',
+                                        top: `${optionsPosition.top}px`,
+                                        left: `${optionsPosition.left}px`,
+                                        minWidth: `${optionsPosition.minWidth}px`,
+                                        width: 'max-content'
+                                    }}
                                     className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] max-w-[calc(100vw-2rem)]"
                                 >
                                     {options.map((opt) => (
-                                        <ListboxOption key={opt.value} value={opt.value} className="flex items-center justify-between px-2.5 py-2 rounded cursor-pointer text-sm text-[#1a1d21] dark:text-[#e4e7eb] transition-colors hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] data-[selected]:text-[#2563eb] dark:data-[selected]:text-[#3b82f6] data-[selected]:font-medium">
+                                        <ListboxOption
+                                            key={opt.value}
+                                            value={opt.value}
+                                            className="flex items-center justify-between px-2.5 py-2 rounded cursor-pointer text-sm text-[#1a1d21] dark:text-[#e4e7eb] transition-colors hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] data-[selected]:text-[#2563eb] dark:data-[selected]:text-[#3b82f6] data-[selected]:font-medium"
+                                        >
                                             {({ selected: isSel }) => (
                                                 <>
                                                     <span className="truncate">{opt.label}</span>
@@ -541,6 +568,7 @@ function CustomItem({item, path}) {
     const [newKey, setNewKey] = useState("");
     const [newVal, setNewVal] = useState("");
     const entries = Object.entries(val);
+
     const addEntry = () => {
         if (!newKey.trim()) return;
         const next = {...val, [newKey.trim()]: newVal};
@@ -548,14 +576,17 @@ function CustomItem({item, path}) {
         setNewKey("");
         setNewVal("");
     };
+
     const removeEntry = (key) => {
         const next = {...val};
         delete next[key];
         update(path, next);
     };
+
     const updateEntry = (key, v) => {
         update(path, {...val, [key]: v});
     };
+
     return (
         <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] px-4 py-3 last:border-b-0">
             <div className="mb-2.5">
@@ -566,10 +597,8 @@ function CustomItem({item, path}) {
             {entries.length > 0 && (
                 <div className="flex flex-col gap-1.5 mb-2.5">
                     {entries.map(([k, v]) => (
-                        <div key={k}
-                             className="flex items-center gap-2 bg-[#f8f9fa] dark:bg-[#25282c] p-1.5 rounded-md">
-                            <span
-                                className="text-sm font-medium text-[#2563eb] dark:text-[#3b82f6] min-w-[60px]">{k}</span>
+                        <div key={k} className="flex items-center gap-2 bg-[#f8f9fa] dark:bg-[#25282c] p-1.5 rounded-md">
+                            <span className="text-sm font-medium text-[#2563eb] dark:text-[#3b82f6] min-w-[60px]">{k}</span>
                             <input
                                 className="flex-1 h-7 px-2 border border-[#e1e4e8] dark:border-[#3a3f45] rounded text-xs font-sans bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
                                 value={v}
@@ -613,18 +642,18 @@ function GroupItem({item, path}) {
     const {values, update} = useSettings();
     const groupValues = deepGet(values, path) ?? {};
     const hasRadios = item.children?.some((c) => c.type === "radio");
+
     if (hasRadios) {
         const radioChildren = item.children.filter((c) => c.type === "radio");
         const nonRadioChildren = item.children.filter((c) => c.type !== "radio");
         const selectedRadio =
             typeof groupValues === "string"
                 ? groupValues
-                : radioChildren.find((c) => groupValues[c.name])?.name ||
-                radioChildren[0]?.name;
+                : radioChildren.find((c) => groupValues[c.name])?.name || radioChildren[0]?.name;
+
         return (
             <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
-                <div
-                    className="text-xs font-semibold uppercase tracking-[0.5px] text-[#656d76] dark:text-[#9ca3af] px-4 pt-3 pb-1">
+                <div className="text-xs font-semibold uppercase tracking-[0.5px] text-[#656d76] dark:text-[#9ca3af] px-4 pt-3 pb-1">
                     {item.text || item.name}
                 </div>
                 <RadioGroup
@@ -651,11 +680,11 @@ function GroupItem({item, path}) {
             </div>
         );
     }
+
     const hasCheckboxes = item.children?.some((c) => c.type === "checkbox");
     return (
         <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
-            <div
-                className="text-xs font-semibold uppercase tracking-[0.5px] text-[#656d76] dark:text-[#9ca3af] px-4 pt-3 pb-1">
+            <div className="text-xs font-semibold uppercase tracking-[0.5px] text-[#656d76] dark:text-[#9ca3af] px-4 pt-3 pb-1">
                 {item.text || item.name}
             </div>
             <div className={hasCheckboxes ? "flex flex-wrap gap-x-4 gap-y-1 px-4 pb-2.5" : "px-4 pb-2.5"}>
@@ -679,8 +708,7 @@ function HeadingItem({item}) {
     }
     return (
         <div className="flex items-center gap-3 px-4 py-4 pb-2">
-            <span
-                className="text-xs font-bold uppercase tracking-[0.8px] text-[#656d76] dark:text-[#9ca3af] whitespace-nowrap">
+            <span className="text-xs font-bold uppercase tracking-[0.8px] text-[#656d76] dark:text-[#9ca3af] whitespace-nowrap">
                 {item.text}
             </span>
             <div className="flex-1 h-px bg-[#e1e4e8] dark:bg-[#3a3f45]"/>
@@ -691,26 +719,16 @@ function HeadingItem({item}) {
 // ─── Item Renderer ─────────────────────────────────────────────────
 function SettingItemRenderer({item, path}) {
     switch (item.type) {
-        case "group":
-            return <GroupItem item={item} path={path}/>;
-        case "heading":
-            return <HeadingItem item={item}/>;
-        case "switch":
-            return <SwitchItem item={item} path={path}/>;
-        case "number":
-            return <NumberSliderItem item={item} path={path}/>;
-        case "text":
-            return <TextInputItem item={item} path={path}/>;
-        case "checkbox":
-            return <CheckboxItem item={item} path={path}/>;
-        case "radio":
-            return <RadioItem item={item} path={path}/>;
-        case "select":
-            return <SelectItem item={item} path={path}/>;
-        case "custom":
-            return <CustomItem item={item} path={path}/>;
-        default:
-            return null;
+        case "group": return <GroupItem item={item} path={path}/>;
+        case "heading": return <HeadingItem item={item}/>;
+        case "switch": return <SwitchItem item={item} path={path}/>;
+        case "number": return <NumberSliderItem item={item} path={path}/>;
+        case "text": return <TextInputItem item={item} path={path}/>;
+        case "checkbox": return <CheckboxItem item={item} path={path}/>;
+        case "radio": return <RadioItem item={item} path={path}/>;
+        case "select": return <SelectItem item={item} path={path}/>;
+        case "custom": return <CustomItem item={item} path={path}/>;
+        default: return null;
     }
 }
 
@@ -724,8 +742,13 @@ export default function DynamicSettings({
     const [values, setValues] = useState(() => {
         return buildDefaults(config, initialValues);
     });
+
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
+
+    // ==================== 关键修复：防止 React Strict Mode 下初始 onChange 被调用两次 ====================
+    const hasInitialCalledRef = useRef(false);
+
     const update = useCallback((path, value) => {
         setValues((prev) => {
             const next = deepSet(prev, path, value);
@@ -733,16 +756,24 @@ export default function DynamicSettings({
             return next;
         });
     }, []);
+
+    // 初始值变更时只触发一次 onChange（兼容 Strict Mode）
     useEffect(() => {
-        setTimeout(() => {
-            onChangeRef.current?.(values);
-        }, 0);
+        if (hasInitialCalledRef.current) {
+            // 用户后续真实修改
+            setTimeout(() => onChangeRef.current?.(values), 0);
+            return;
+        }
+
+        // 首次初始化
+        hasInitialCalledRef.current = true;
     }, [values]);
-    const ctx = useMemo(() => ({values, update}), [values, update]);
+
+    const ctx = useMemo(() => ({ values, update }), [values, update]);
+
     return (
         <SettingsContext.Provider value={ctx}>
-            <div
-                className={`font-sans text-[#1a1d21] dark:text-[#e4e7eb] rounded-lg overflow-hidden ${className || ""}`}>
+            <div className={`font-sans text-[#1a1d21] dark:text-[#e4e7eb] rounded-lg overflow-hidden ${className || ""}`}>
                 {config.map((item, i) => {
                     const key = item.name || item.text || `item-${i}`;
                     const path = item.name ? [item.name] : [];
@@ -758,12 +789,12 @@ function buildDefaults(config, initialValues) {
     const result = {};
     for (const item of config) {
         if (item.type === "heading") continue;
+
         if (item.type === "group" && item.name && item.children) {
             const hasRadios = item.children.some((c) => c.type === "radio");
             if (hasRadios) {
                 const radioChildren = item.children.filter((c) => c.type === "radio");
-                const defaultRadio =
-                    radioChildren.find((c) => c.default)?.name || radioChildren[0]?.name;
+                const defaultRadio = radioChildren.find((c) => c.default)?.name || radioChildren[0]?.name;
                 if (initialValues && typeof initialValues[item.name] === 'string') {
                     result[item.name] = initialValues[item.name];
                 } else {

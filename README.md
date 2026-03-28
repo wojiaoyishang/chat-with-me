@@ -757,6 +757,15 @@ code 设置为 401 。
 ]
 ```
 
+此外，前端会 GET 请求 `SETTING_TABS_ENDPOINT/id` 来获取对应的设置项，接口参考如下：
+
+```python
+{
+    "options": [],  # 参考 DynamicSettings 设置
+    "defaultOptions": {}  # 默认设置
+}
+```
+
 # 广播事件
 
 ## Websocket 事件 （type=websocket)

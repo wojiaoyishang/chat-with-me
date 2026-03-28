@@ -200,5 +200,12 @@
   "yes": "Yes",
   "load_tabs_error": "Failed to load settings tabs",
   "coming_soon": "This feature is under development",
-  "coming_soon_sub": "Coming soon: {{name}}"
+  "coming_soon_sub": "Coming soon: {{name}}",
+  "save_success": "Saved.",
+  "save_error": "Save Failed.",
+  "loading_config": "Loading Config",
+  "load_config_error": "Load Config Error",
+  "unsaved_changes_confirm": "Unsaved modifications",
+  "unsaved_changes_confirm_close": "There are unsaved modifications. Are you sure you want to leave?",
+  "switch_tab": "Switch Tab"
 }

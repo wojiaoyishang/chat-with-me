@@ -15,7 +15,6 @@ import {useTranslation} from "react-i18next";
 import {format} from 'date-fns';
 import {motion, AnimatePresence} from 'framer-motion';
 
-// 导入项目依赖
 import {fileUpload, processSelectedFiles, UnifiedLoadingScreen} from "@/lib/tools.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
