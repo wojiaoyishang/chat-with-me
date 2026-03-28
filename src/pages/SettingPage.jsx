@@ -108,12 +108,14 @@ const SettingPage = ({
     const [pendingAction, setPendingAction] = useState(null);
     const [pendingTabId, setPendingTabId] = useState(null);
 
+    // 防止 关闭 按钮文字在退出动画中闪变为 切换 的标志
+    const isProgrammaticCloseRef = useRef(false);
+
     // ==================== 图片上传进度弹窗状态 ====================
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadFileName, setUploadFileName] = useState('');
 
-    // 关键：保存 fileUpload 返回的取消函数
     const uploadCleanupRef = useRef(null);
 
     const toggleFullscreen = useCallback(() => setIsFullscreen(prev => !prev), []);
@@ -188,6 +190,7 @@ const SettingPage = ({
             setPendingAction('tabChange');
             setPendingTabId(newTab);
             setShowUnsavedDialog(true);
+            isFirstOnChangeRef.current = false;
             return;
         }
 
@@ -232,15 +235,48 @@ const SettingPage = ({
         onClose();
     }, [isDynamicTab, hasUnsavedChanges, onClose]);
 
-    const confirmUnsavedAction = () => {
-        setShowUnsavedDialog(false);
-        if (pendingAction === 'tabChange') {
-            performTabChange(pendingTabId);
-        } else if (pendingAction === 'close') {
-            onClose();
+    // ==================== 未保存确认处理（已修复按钮文字闪烁 + 关闭后重置为默认值） ====================
+    const handleUnsavedDialogOpenChange = useCallback((isOpen) => {
+        setShowUnsavedDialog(isOpen);
+        // 只有用户主动关闭弹窗（ESC / 点击外部）才立即清理 pending（视为取消）
+        if (!isOpen && !isProgrammaticCloseRef.current) {
+            setPendingAction(null);
+            setPendingTabId(null);
         }
-        setPendingAction(null);
-        setPendingTabId(null);
+    }, []);
+
+    const confirmUnsavedAction = () => {
+        const action = pendingAction;
+        const tabId = pendingTabId;
+
+        // ====================== 关键修复2：确认丢弃修改时立即回归开启之前的默认值 ======================
+        if (isDynamicTab && originalDynamicValues) {
+            const resetValues = JSON.parse(JSON.stringify(originalDynamicValues));
+            setDynamicValues(resetValues);
+            setIsConfigPristine(true);
+        }
+
+        setShowUnsavedDialog(false);
+
+        if (action === 'tabChange') {
+            performTabChange(tabId);
+            setPendingAction(null);
+            setPendingTabId(null);
+            setLoadingDynamicConfig(false);
+            isFirstOnChangeRef.current = false;
+            setIsConfigPristine(true);
+        } else if (action === 'close') {
+            // 标记为程序化关闭，防止退出动画期间按钮文字闪变为「切换」
+            isProgrammaticCloseRef.current = true;
+            setTimeout(() => {
+                onClose();
+                setPendingAction(null);
+                setPendingTabId(null);
+                setLoadingDynamicConfig(false);
+                isProgrammaticCloseRef.current = false;
+                setIsConfigPristine(true);
+            }, 150);
+        }
     };
 
     // ==================== DynamicSettings onChange ====================
@@ -256,7 +292,7 @@ const SettingPage = ({
         setIsConfigPristine(false);
     }, []);
 
-    // ==================== 图片上传函数（显式取消 + 进度弹窗） ====================
+    // ==================== 图片上传函数 ====================
     const handleImageUpload = useCallback(() => {
         return new Promise((resolve) => {
             let hasResponded = false;
@@ -278,7 +314,6 @@ const SettingPage = ({
                     return;
                 }
 
-                // 打开进度弹窗
                 setUploadFileName(file.name || '图片');
                 setUploadProgress(0);
                 setUploadDialogOpen(true);
@@ -302,7 +337,6 @@ const SettingPage = ({
                     resolve('');
                 };
 
-                // 执行上传并保存取消函数
                 const cleanup = fileUpload(uploadFile, handleProgress, handleComplete, handleError);
                 uploadCleanupRef.current = cleanup;
             });
@@ -311,10 +345,9 @@ const SettingPage = ({
         });
     }, [t]);
 
-    // ==================== 取消上传处理 ====================
     const handleUploadCancel = useCallback(() => {
         if (uploadCleanupRef.current) {
-            uploadCleanupRef.current();        // 显式调用 abort
+            uploadCleanupRef.current();
             uploadCleanupRef.current = null;
         }
         setUploadDialogOpen(false);
@@ -426,6 +459,22 @@ const SettingPage = ({
         );
     };
 
+    useEffect(() => {
+        if (!open) return;
+
+        // 每次打开都强制重置动态配置状态（无论上次停在哪个 tab）
+        if (isDynamicTab) {
+            loadDynamicConfig(activeTab);
+        } else {
+            // account / interface 也重置一下
+            setDynamicConfig(null);
+            setDynamicValues({});
+            setOriginalDynamicValues({});
+            setIsConfigPristine(true);
+            isFirstOnChangeRef.current = false;
+        }
+    }, [open]);
+
     return (
         <AnimatePresence>
             {open && (
@@ -503,7 +552,7 @@ const SettingPage = ({
                     </motion.div>
 
                     {/* 未保存修改确认 Dialog */}
-                    <Dialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
+                    <Dialog open={showUnsavedDialog} onOpenChange={handleUnsavedDialogOpenChange}>
                         <DialogContent className="z-[300]">
                             <DialogHeader>
                                 <DialogTitle className="flex items-center gap-2">
