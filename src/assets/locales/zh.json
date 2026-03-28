@@ -216,5 +216,8 @@
   "load_config_error": "加载配置失败",
   "unsaved_changes_confirm": "修改未保存",
   "unsaved_changes_confirm_close": "有未保存的修改，确定要离开吗？",
-  "switch_tab": "切换"
+  "switch_tab": "切换",
+  "uploading": "上传中...",
+  "upload_success": "上传成功",
+  "upload_failed": "上传失败"
 }

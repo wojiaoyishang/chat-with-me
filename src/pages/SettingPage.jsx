@@ -7,7 +7,8 @@ import {
     User,
     Layout,
     Save,
-    Settings
+    Settings,
+    Upload
 } from 'lucide-react';
 import {motion, AnimatePresence} from 'framer-motion';
 import {toast} from "sonner";
@@ -20,10 +21,12 @@ import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {
     UnifiedLoadingScreen,
-    UnifiedErrorScreen
+    UnifiedErrorScreen,
+    processSelectedFiles,
+    fileUpload,
+    createFilePicker,
 } from "@/lib/tools.jsx";
 
-// Shadcn Dialog 组件
 import {
     Dialog,
     DialogContent,
@@ -33,16 +36,45 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 
-const SidebarSkeleton = () => (
-    <div className="flex flex-col gap-1">
-        {[1, 2, 3].map((i) => (
-            <div
-                key={i}
-                className="w-full h-11 px-3 py-2.5 rounded-lg bg-gray-100 animate-pulse"
-            />
-        ))}
-    </div>
-);
+// ==================== 图片上传进度弹窗 ====================
+const ImageUploadProgressDialog = ({ open, progress, fileName, onCancel, t }) => {
+    return (
+        <Dialog open={open} onOpenChange={() => {if (open) onCancel();}}>
+            <DialogContent className="sm:max-w-[380px] z-[300]">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        <Upload className="w-5 h-5 text-blue-600" />
+                        上传图片
+                    </DialogTitle>
+                    <DialogDescription>
+                        {fileName || "正在上传..."}
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="py-4">
+                    <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-blue-600 transition-all duration-300 ease-out"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+                    <div className="mt-3 text-right text-sm font-medium text-gray-600 dark:text-gray-400">
+                        {progress}%
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <button
+                        onClick={onCancel}
+                        className="px-4 h-9 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                    >
+                        {t('cancel')}
+                    </button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 const SettingPage = ({
                          open,
@@ -69,15 +101,20 @@ const SettingPage = ({
     const [dynamicConfigError, setDynamicConfigError] = useState(false);
 
     const abortControllerRef = useRef(null);
-
-    // ==================== 关键修复：首次 onChange 标志位 ====================
-    // 初始值为 false，只有在成功请求到具体动态设置项时才置为 true
     const isFirstOnChangeRef = useRef(false);
 
     // 未保存修改确认 Dialog
     const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
-    const [pendingAction, setPendingAction] = useState(null);   // 'tabChange' | 'close'
+    const [pendingAction, setPendingAction] = useState(null);
     const [pendingTabId, setPendingTabId] = useState(null);
+
+    // ==================== 图片上传进度弹窗状态 ====================
+    const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadFileName, setUploadFileName] = useState('');
+
+    // 关键：保存 fileUpload 返回的取消函数
+    const uploadCleanupRef = useRef(null);
 
     const toggleFullscreen = useCallback(() => setIsFullscreen(prev => !prev), []);
 
@@ -102,7 +139,7 @@ const SettingPage = ({
         }
     };
 
-    // ==================== 加载单个动态 Tab 配置（关键修复点） ====================
+    // ==================== 加载单个动态 Tab 配置 ====================
     const loadDynamicConfig = async (tabId) => {
         if (abortControllerRef.current) abortControllerRef.current.abort();
         const controller = new AbortController();
@@ -125,7 +162,6 @@ const SettingPage = ({
             setOriginalDynamicValues(initialClone);
             setIsConfigPristine(true);
 
-            // ==================== 严格按照用户要求：只有在这里才开始计算第一次修改 ====================
             isFirstOnChangeRef.current = true;
 
         } catch (error) {
@@ -167,7 +203,6 @@ const SettingPage = ({
             setDynamicValues({});
             setOriginalDynamicValues({});
             setIsConfigPristine(true);
-            // 非动态 Tab 不需要重置标志位（避免窗口加载时误判）
             isFirstOnChangeRef.current = false;
         }
     };
@@ -212,15 +247,77 @@ const SettingPage = ({
     const handleDynamicValuesChange = useCallback((newValues) => {
         setDynamicValues(newValues);
 
-        // 只有在 loadDynamicConfig 中明确设置的首次 onChange 才跳过
         if (isFirstOnChangeRef.current) {
             isFirstOnChangeRef.current = false;
             setIsConfigPristine(true);
             return;
         }
 
-        // 后续真实用户修改才标记为 dirty
         setIsConfigPristine(false);
+    }, []);
+
+    // ==================== 图片上传函数（显式取消 + 进度弹窗） ====================
+    const handleImageUpload = useCallback(() => {
+        return new Promise((resolve) => {
+            let hasResponded = false;
+
+            const picker = createFilePicker('image/*', (files) => {
+                if (hasResponded) return;
+                hasResponded = true;
+
+                if (!files || files.length === 0) {
+                    resolve('');
+                    return;
+                }
+
+                const file = files[0];
+                const uploadFile = processSelectedFiles([file])[0];
+
+                if (!uploadFile) {
+                    resolve('');
+                    return;
+                }
+
+                // 打开进度弹窗
+                setUploadFileName(file.name || '图片');
+                setUploadProgress(0);
+                setUploadDialogOpen(true);
+
+                const handleProgress = (_, progress) => {
+                    setUploadProgress(Math.round(progress));
+                };
+
+                const handleComplete = (_, attachment) => {
+                    setUploadDialogOpen(false);
+                    uploadCleanupRef.current = null;
+                    toast.success(t("upload_success") || "上传成功");
+                    const imageUrl = attachment.preview || '';
+                    resolve(imageUrl);
+                };
+
+                const handleError = () => {
+                    setUploadDialogOpen(false);
+                    uploadCleanupRef.current = null;
+                    toast.error(t("upload_failed") || "上传失败");
+                    resolve('');
+                };
+
+                // 执行上传并保存取消函数
+                const cleanup = fileUpload(uploadFile, handleProgress, handleComplete, handleError);
+                uploadCleanupRef.current = cleanup;
+            });
+
+            picker();
+        });
+    }, [t]);
+
+    // ==================== 取消上传处理 ====================
+    const handleUploadCancel = useCallback(() => {
+        if (uploadCleanupRef.current) {
+            uploadCleanupRef.current();        // 显式调用 abort
+            uploadCleanupRef.current = null;
+        }
+        setUploadDialogOpen(false);
     }, []);
 
     // ==================== 左侧侧边栏 ====================
@@ -323,6 +420,7 @@ const SettingPage = ({
                     config={dynamicConfig.options || []}
                     initialValues={dynamicValues}
                     onChange={handleDynamicValuesChange}
+                    onImageUpload={handleImageUpload}
                 />
             </motion.div>
         );
@@ -398,7 +496,7 @@ const SettingPage = ({
 
                         <div className="flex flex-1 overflow-hidden">
                             {renderSidebar()}
-                            <div className="flex-1 overflow-y-auto bg-white p-6 md:p-10">
+                            <div className="flex-1 overflow-y-auto bg-white p-4 md:p-6">
                                 {renderContent()}
                             </div>
                         </div>
@@ -432,10 +530,30 @@ const SettingPage = ({
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
+
+                    {/* 图片上传进度弹窗 */}
+                    <ImageUploadProgressDialog
+                        open={uploadDialogOpen}
+                        progress={uploadProgress}
+                        fileName={uploadFileName}
+                        onCancel={handleUploadCancel}
+                        t={t}
+                    />
                 </div>
             )}
         </AnimatePresence>
     );
 };
+
+const SidebarSkeleton = () => (
+    <div className="flex flex-col gap-1">
+        {[1, 2, 3].map((i) => (
+            <div
+                key={i}
+                className="w-full h-11 px-3 py-2.5 rounded-lg bg-gray-100 animate-pulse"
+            />
+        ))}
+    </div>
+);
 
 export default SettingPage;

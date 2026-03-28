@@ -155,60 +155,54 @@ function ImageItem({item, path}) {
     const {t} = useTranslation();
     const {values, update, onImageUpload} = useSettings();
     const val = deepGet(values, path) ?? item.default ?? "";
-    const [uploading, setUploading] = useState(false);
 
-    const handleFile = async (file) => {
-        if (!onImageUpload || !file) return;
-        setUploading(true);
+    const handleUpload = async () => {
+        if (!onImageUpload) return;
         try {
-            const url = await Promise.resolve(onImageUpload(file));
-            update(path, url);
+            // 上传逻辑完全由外部组件实现（包括 loading toast）
+            const url = await Promise.resolve(onImageUpload());
+
+            // 如果外部返回有效 URL 才更新
+            if (url && typeof url === 'string' && url.trim() !== '') {
+                update(path, url);
+            }
         } catch (err) {
             console.error("Image upload failed", err);
-        } finally {
-            setUploading(false);
         }
+        // 注意：不再需要 setUploading，因为加载动画已交给外部 toast
     };
 
     return (
         <SettingRow text={item.text} tips={item.tips} required={item.required}>
-            <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div
+                className="relative w-12 h-12 cursor-pointer group"
+                onClick={handleUpload}
+            >
+                {/* 预览区域（点击触发上传） */}
+                <div className="w-full h-full rounded-2xl border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] flex items-center justify-center overflow-hidden transition-all group-hover:border-[#2563eb] dark:group-hover:border-[#3b82f6]">
                     {val ? (
-                        <img src={val} alt="" className="w-full h-full object-cover" />
+                        <img
+                            src={val}
+                            alt=""
+                            className="w-full h-full object-cover"
+                        />
                     ) : (
-                        <Upload className="w-5 h-5 text-[#9ca3af]" />
+                        <Upload className="w-5 h-5 text-[#9ca3af] transition-colors group-hover:text-[#2563eb]" />
                     )}
                 </div>
-                <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => {
-                                const input = document.createElement("input");
-                                input.type = "file";
-                                input.accept = "image/*";
-                                input.onchange = (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) handleFile(file);
-                                };
-                                input.click();
-                            }}
-                            disabled={uploading}
-                            className="h-8 px-3 text-sm font-medium border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors flex items-center gap-1 cursor-pointer"
-                        >
-                            {uploading ? t("ds.uploading") : t("ds.uploadImage")}
-                        </button>
-                        {val && (
-                            <button
-                                onClick={() => update(path, "")}
-                                className="h-8 w-8 flex items-center justify-center text-[#dc2626] hover:bg-red-100 dark:hover:bg-red-900/30 rounded-md transition-colors cursor-pointer"
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
-                    </div>
-                    <span className="text-xs text-[#9ca3af]">{t("ds.clickToUpload")}</span>
-                </div>
+
+                {/* 删除按钮（仅在有图片时显示） */}
+                {val && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            update(path, "");
+                        }}
+                        className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-full text-[#dc2626] hover:bg-red-50 dark:hover:bg-red-900/30 shadow-sm transition-colors cursor-pointer"
+                    >
+                        <X size={13} />
+                    </button>
+                )}
             </div>
         </SettingRow>
     );

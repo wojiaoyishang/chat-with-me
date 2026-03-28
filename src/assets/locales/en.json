@@ -216,5 +216,8 @@
   "load_config_error": "Load Config Error",
   "unsaved_changes_confirm": "Unsaved modifications",
   "unsaved_changes_confirm_close": "There are unsaved modifications. Are you sure you want to leave?",
-  "switch_tab": "Switch Tab"
+  "switch_tab": "Switch Tab",
+  "uploading": "Uploading...",
+  "upload_success": "Upload successful",
+  "upload_failed": "Upload failed"
 }
