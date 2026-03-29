@@ -154,10 +154,22 @@ function SettingRow({
 function ImageItem({item, path}) {
     const {t} = useTranslation();
     const {values, update, onImageUpload} = useSettings();
-    const val = deepGet(values, path) ?? item.default ?? "";
+    const rawVal = deepGet(values, path);
+    const nullable = !!item.nullable;
+    const [isNull, setIsNull] = useState(rawVal === null);
+    const val = isNull ? null : (rawVal ?? item.default ?? "");
+
+    const toggleNull = () => {
+        setIsNull((prev) => {
+            const newIsNull = !prev;
+            const newVal = newIsNull ? null : (item.default ?? "");
+            update(path, newVal);
+            return newIsNull;
+        });
+    };
 
     const handleUpload = async () => {
-        if (!onImageUpload) return;
+        if (isNull || !onImageUpload) return;
         try {
             const url = await Promise.resolve(onImageUpload());
             if (url && typeof url === 'string' && url.trim() !== '') {
@@ -168,36 +180,55 @@ function ImageItem({item, path}) {
         }
     };
 
-    return (
-        <SettingRow text={item.text} tips={item.tips} required={item.required}>
-            <div
-                className="relative w-12 h-12 cursor-pointer group"
-                onClick={handleUpload}
-            >
-                <div className="w-full h-full rounded-2xl border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] flex items-center justify-center overflow-hidden transition-all group-hover:border-[#2563eb] dark:group-hover:border-[#3b82f6]">
-                    {val ? (
-                        <img
-                            src={val}
-                            alt=""
-                            className="w-full h-full object-cover"
-                        />
-                    ) : (
-                        <Upload className="w-5 h-5 text-[#9ca3af] transition-colors group-hover:text-[#2563eb]" />
-                    )}
-                </div>
+    const nullModeContent = (
+        <motion.button
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+            onClick={toggleNull}
+        >
+            {t("ds.default")}
+        </motion.button>
+    );
 
-                {val && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            update(path, "");
-                        }}
-                        className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-full text-[#dc2626] hover:bg-red-50 dark:hover:bg-red-900/30 shadow-sm transition-colors cursor-pointer"
-                    >
-                        <X size={13} />
-                    </button>
+    const setModeContent = (
+        <div
+            className="relative w-12 h-12 cursor-pointer group"
+            onClick={handleUpload}
+        >
+            <div className="w-full h-full rounded-2xl border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] flex items-center justify-center overflow-hidden transition-all group-hover:border-[#2563eb] dark:group-hover:border-[#3b82f6]">
+                {val ? (
+                    <img
+                        src={val}
+                        alt=""
+                        className="w-full h-full object-cover"
+                    />
+                ) : (
+                    <Upload className="w-5 h-5 text-[#9ca3af] transition-colors group-hover:text-[#2563eb]" />
                 )}
             </div>
+
+            {val && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        update(path, "");
+                    }}
+                    className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-full text-[#dc2626] hover:bg-red-50 dark:hover:bg-red-900/30 shadow-sm transition-colors cursor-pointer"
+                >
+                    <X size={13} />
+                </button>
+            )}
+        </div>
+    );
+
+    return (
+        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+            <AnimatePresence mode="wait">
+                {isNull ? nullModeContent : setModeContent}
+            </AnimatePresence>
         </SettingRow>
     );
 }
@@ -421,15 +452,44 @@ function ListItem({item, path}) {
 
 // ─── Switch Item ───────────────────────────────────────────────────
 function SwitchItem({item, path}) {
+    const {t} = useTranslation();
     const {values, update} = useSettings();
-    const val = deepGet(values, path) ?? item.default ?? false;
+    const rawVal = deepGet(values, path);
+    const nullable = !!item.nullable;
+    const [isNull, setIsNull] = useState(rawVal === null);
+    const val = isNull ? null : (rawVal ?? item.default ?? false);
+
+    const toggleNull = () => {
+        setIsNull((prev) => {
+            const newIsNull = !prev;
+            const newVal = newIsNull ? null : (item.default ?? false);
+            update(path, newVal);
+            return newIsNull;
+        });
+    };
+
     return (
-        <SettingRow text={item.text} tips={item.tips} required={item.required}>
-            <Switch
-                className="cursor-pointer"
-                checked={val}
-                onCheckedChange={(v) => update(path, v)}
-            />
+        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+            <AnimatePresence mode="wait">
+                {isNull ? (
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+                        onClick={toggleNull}
+                    >
+                        {t("ds.default")}
+                    </motion.button>
+                ) : (
+                    <Switch
+                        className="cursor-pointer"
+                        checked={val}
+                        onCheckedChange={(v) => update(path, v)}
+                    />
+                )}
+            </AnimatePresence>
         </SettingRow>
     );
 }
@@ -562,77 +622,158 @@ function NumberSliderItem({item, path}) {
 function TextInputItem({item, path}) {
     const {t} = useTranslation();
     const {values, update} = useSettings();
-    const val = deepGet(values, path) ?? item.default ?? "";
+    const rawVal = deepGet(values, path);
+    const nullable = !!item.nullable;
+    const [isNull, setIsNull] = useState(rawVal === null);
+    const val = isNull ? null : (rawVal ?? item.default ?? "");
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [draft, setDraft] = useState(val);
-    useEffect(() => { setDraft(val); }, [val]);
+    const [draft, setDraft] = useState(val ?? "");
+
+    useEffect(() => {
+        setIsNull(rawVal === null);
+        setDraft(val ?? "");
+    }, [rawVal, val]);
+
+    const toggleNull = () => {
+        setIsNull((prev) => {
+            const newIsNull = !prev;
+            const newVal = newIsNull ? null : (item.default ?? "");
+            update(path, newVal);
+            return newIsNull;
+        });
+    };
 
     if (item.multiline) {
         return (
-            <SettingRow text={item.text} tips={item.tips} required={item.required}>
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                        <button className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>
-                        </button>
-                    </DialogTrigger>
-                    <DialogContent className="w-[min(90vw,520px)] z-999 max-w-none rounded-3xl border-[#e1e4e8] dark:border-[#3a3f45] bg-white dark:bg-[#1c1e21] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
-                        <DialogHeader><DialogTitle className="text-base font-semibold mb-4">{item.text}</DialogTitle></DialogHeader>
-                        <textarea
-                            className="w-full min-h-[200px] p-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none resize-y leading-relaxed focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
-                            value={draft}
-                            onChange={(e) => setDraft(e.target.value)}
-                            rows={8}
-                        />
-                        <div className="flex justify-end gap-2 mt-4">
-                            <button
-                                className="cursor-pointer h-9 px-4 rounded-md text-sm font-medium border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors"
-                                onClick={() => setDialogOpen(false)}
-                            >
-                                {t("ds.cancel")}
-                            </button>
-                            <button
-                                className="cursor-pointer h-9 px-4 rounded-md text-sm font-medium bg-[#2563eb] hover:bg-[#1d4ed8] text-white transition-colors"
-                                onClick={() => { update(path, draft); setDialogOpen(false); }}
-                            >
-                                {t("ds.confirm")}
-                            </button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
+            <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+                <AnimatePresence mode="wait">
+                    {isNull ? (
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+                            onClick={toggleNull}
+                        >
+                            {t("ds.default")}
+                        </motion.button>
+                    ) : (
+                        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                            <DialogTrigger asChild>
+                                <button className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>
+                                </button>
+                            </DialogTrigger>
+                            <DialogContent className="w-[min(90vw,520px)] z-999 max-w-none rounded-3xl border-[#e1e4e8] dark:border-[#3a3f45] bg-white dark:bg-[#1c1e21] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+                                <DialogHeader><DialogTitle className="text-base font-semibold mb-4">{item.text}</DialogTitle></DialogHeader>
+                                <textarea
+                                    className="w-full min-h-[200px] p-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none resize-y leading-relaxed focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                                    value={draft}
+                                    onChange={(e) => setDraft(e.target.value)}
+                                    rows={8}
+                                />
+                                <div className="flex justify-end gap-2 mt-4">
+                                    <button
+                                        className="cursor-pointer h-9 px-4 rounded-md text-sm font-medium border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors"
+                                        onClick={() => setDialogOpen(false)}
+                                    >
+                                        {t("ds.cancel")}
+                                    </button>
+                                    <button
+                                        className="cursor-pointer h-9 px-4 rounded-md text-sm font-medium bg-[#2563eb] hover:bg-[#1d4ed8] text-white transition-colors"
+                                        onClick={() => { update(path, draft); setDialogOpen(false); }}
+                                    >
+                                        {t("ds.confirm")}
+                                    </button>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                    )}
+                </AnimatePresence>
             </SettingRow>
         );
     }
+
+    const inputType = item.masked === true ? "password" : "text";
+
     return (
-        <SettingRow text={item.text} tips={item.tips} required={item.required}>
-            <input
-                className="h-8 px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none max-w-[220px] w-full transition-colors focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
-                type="text"
-                value={val}
-                onChange={(e) => update(path, e.target.value)}
-                placeholder={item.placeholder || ""}
-            />
+        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+            <AnimatePresence mode="wait">
+                {isNull ? (
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+                        onClick={toggleNull}
+                    >
+                        {t("ds.default")}
+                    </motion.button>
+                ) : (
+                    <input
+                        className="h-8 px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none w-[200px] transition-colors focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                        type={inputType}
+                        value={val}
+                        onChange={(e) => update(path, e.target.value)}
+                        placeholder={item.placeholder || ""}
+                    />
+                )}
+            </AnimatePresence>
         </SettingRow>
     );
 }
 
 // ─── Checkbox Item ─────────────────────────────────────────────────
 function CheckboxItem({item, path}) {
+    const {t} = useTranslation();
     const {values, update} = useSettings();
-    const val = deepGet(values, path) ?? item.default ?? false;
+    const rawVal = deepGet(values, path);
+    const nullable = !!item.nullable;
+    const [isNull, setIsNull] = useState(rawVal === null);
+    const val = isNull ? null : (rawVal ?? item.default ?? false);
+
+    const toggleNull = () => {
+        setIsNull((prev) => {
+            const newIsNull = !prev;
+            const newVal = newIsNull ? null : (item.default ?? false);
+            update(path, newVal);
+            return newIsNull;
+        });
+    };
+
     return (
         <div className="flex items-center gap-2 py-1.5">
             <label className="flex items-center gap-2 cursor-pointer flex-1">
-                <Checkbox checked={val} onCheckedChange={(v) => update(path, !!v)} />
+                <AnimatePresence mode="wait">
+                    {isNull ? (
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+                            onClick={toggleNull}
+                        >
+                            {t("ds.default")}
+                        </motion.button>
+                    ) : (
+                        <Checkbox checked={val} onCheckedChange={(v) => update(path, !!v)} />
+                    )}
+                </AnimatePresence>
                 <span className="text-sm truncate" title={item.text}>{item.text}</span>
             </label>
-            <TipWrapper tips={item.tips} />
+            <TipWrapper tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} />
         </div>
     );
 }
 
 // ─── Radio Item ─────────────────────────────────────────────────────
 function RadioItem({item, path, groupPath}) {
+    const {t} = useTranslation();
+    const {values, update} = useSettings();
+
     if (groupPath) {
         return (
             <div className="flex items-center gap-2 py-1.5">
@@ -644,18 +785,46 @@ function RadioItem({item, path, groupPath}) {
             </div>
         );
     }
-    const {values, update} = useSettings();
-    const val = deepGet(values, path.slice(0, -1));
+
+    const rawVal = deepGet(values, path.slice(0, -1));
+    const nullable = !!item.nullable;
+    const [isNull, setIsNull] = useState(rawVal === null);
     const myName = path[path.length - 1];
+    const val = isNull ? null : rawVal;
     const isSelected = val === myName;
+
+    const toggleNull = () => {
+        setIsNull((prev) => {
+            const newIsNull = !prev;
+            const newVal = newIsNull ? null : (item.default ?? myName);
+            update(path.slice(0, -1), newVal);
+            return newIsNull;
+        });
+    };
+
     return (
-        <SettingRow text={item.text} tips={item.tips} required={item.required}>
-            <button
-                className={`w-5 h-5 border-2 border-[#e1e4e8] dark:border-[#3a3f45] rounded-full bg-white dark:bg-[#1c1e21] flex items-center justify-center cursor-pointer transition-colors ${isSelected ? "border-[#2563eb] dark:border-[#3b82f6]" : ""}`}
-                onClick={() => update(path.slice(0, -1), myName)}
-            >
-                <span className={`w-2 h-2 rounded-full bg-[#2563eb] dark:bg-[#3b82f6] transition-all ${isSelected ? "scale-100" : "scale-0"}`} />
-            </button>
+        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+            <AnimatePresence mode="wait">
+                {isNull ? (
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+                        onClick={toggleNull}
+                    >
+                        {t("ds.default")}
+                    </motion.button>
+                ) : (
+                    <button
+                        className={`w-5 h-5 border-2 border-[#e1e4e8] dark:border-[#3a3f45] rounded-full bg-white dark:bg-[#1c1e21] flex items-center justify-center cursor-pointer transition-colors ${isSelected ? "border-[#2563eb] dark:border-[#3b82f6]" : ""}`}
+                        onClick={() => update(path.slice(0, -1), myName)}
+                    >
+                        <span className={`w-2 h-2 rounded-full bg-[#2563eb] dark:bg-[#3b82f6] transition-all ${isSelected ? "scale-100" : "scale-0"}`} />
+                    </button>
+                )}
+            </AnimatePresence>
         </SettingRow>
     );
 }
@@ -664,11 +833,44 @@ function RadioItem({item, path, groupPath}) {
 function SelectItem({item, path}) {
     const {t} = useTranslation();
     const {values, update} = useSettings();
-    const val = deepGet(values, path) ?? item.default ?? "";
+    const rawVal = deepGet(values, path);
+    const nullable = !!item.nullable;
+    const [isNull, setIsNull] = useState(rawVal === null);
+    const val = isNull ? null : (rawVal ?? item.default ?? "");
     const options = item.options || [];
     const selected = options.find((o) => o.value === val) || options[0] || null;
     const buttonRef = useRef(null);
     const [optionsPosition, setOptionsPosition] = useState(null);
+
+    const toggleNull = () => {
+        setIsNull((prev) => {
+            const newIsNull = !prev;
+            const newVal = newIsNull ? null : (item.default ?? "");
+            update(path, newVal);
+            return newIsNull;
+        });
+    };
+
+    const nullModeContent = (
+        <motion.button
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+            onClick={toggleNull}
+        >
+            {t("ds.default")}
+        </motion.button>
+    );
+
+    if (isNull) {
+        return (
+            <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+                {nullModeContent}
+            </SettingRow>
+        );
+    }
 
     const selectComponent = (
         <Listbox value={val} onChange={(v) => update(path, v)}>
@@ -750,7 +952,7 @@ function SelectItem({item, path}) {
     );
 
     return (
-        <SettingRow text={item.text} tips={item.tips} required={item.required}>
+        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
             <div ref={buttonRef}>
                 {selectComponent}
             </div>
@@ -762,13 +964,25 @@ function SelectItem({item, path}) {
 function CustomItem({item, path}) {
     const {t} = useTranslation();
     const {values, update} = useSettings();
-    const val = deepGet(values, path) ?? item.default ?? {};
+    const rawVal = deepGet(values, path);
+    const nullable = !!item.nullable;
+    const [isNull, setIsNull] = useState(rawVal === null);
+    const val = isNull ? null : (rawVal ?? item.default ?? {});
     const [newKey, setNewKey] = useState("");
     const [newVal, setNewVal] = useState("");
-    const entries = Object.entries(val);
+    const entries = Object.entries(val || {});
+
+    const toggleNull = () => {
+        setIsNull((prev) => {
+            const newIsNull = !prev;
+            const newVal = newIsNull ? null : (item.default ?? {});
+            update(path, newVal);
+            return newIsNull;
+        });
+    };
 
     const addEntry = () => {
-        if (!newKey.trim()) return;
+        if (isNull || !newKey.trim()) return;
         const next = { ...val, [newKey.trim()]: newVal };
         update(path, next);
         setNewKey("");
@@ -776,63 +990,197 @@ function CustomItem({item, path}) {
     };
 
     const removeEntry = (key) => {
+        if (isNull) return;
         const next = { ...val };
         delete next[key];
         update(path, next);
     };
 
     const updateEntry = (key, v) => {
+        if (isNull) return;
         update(path, { ...val, [key]: v });
     };
 
+    const nullModeContent = (
+        <motion.button
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+            onClick={toggleNull}
+        >
+            {t("ds.default")}
+        </motion.button>
+    );
+
     return (
-        <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] px-4 py-3 last:border-b-0">
-            <div className="mb-2.5">
-                <TipWrapper tips={item.tips}>
-                    <span className="text-sm font-semibold mr-1">{item.text}</span>
-                </TipWrapper>
-            </div>
-            {entries.length > 0 && (
-                <div className="flex flex-col gap-1.5 mb-2.5">
-                    {entries.map(([k, v]) => (
-                        <div key={k} className="flex items-center gap-2 bg-[#f8f9fa] dark:bg-[#25282c] p-1.5 rounded-md">
-                            <span className="text-sm font-medium text-[#2563eb] dark:text-[#3b82f6] min-w-[60px]">{k}</span>
+        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+            <AnimatePresence mode="wait">
+                {isNull ? (
+                    nullModeContent
+                ) : (
+                    <div className="w-full">
+                        <div className="mb-2.5">
+                            <TipWrapper tips={item.tips}>
+                                <span className="text-sm font-semibold mr-1">{item.text}</span>
+                            </TipWrapper>
+                        </div>
+                        {entries.length > 0 && (
+                            <div className="flex flex-col gap-1.5 mb-2.5">
+                                {entries.map(([k, v]) => (
+                                    <div key={k} className="flex items-center gap-2 bg-[#f8f9fa] dark:bg-[#25282c] p-1.5 rounded-md">
+                                        <span className="text-sm font-medium text-[#2563eb] dark:text-[#3b82f6] min-w-[60px]">{k}</span>
+                                        <input
+                                            className="flex-1 h-7 px-2 border border-[#e1e4e8] dark:border-[#3a3f45] rounded text-xs font-sans bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                                            value={v}
+                                            onChange={(e) => updateEntry(k, e.target.value)}
+                                        />
+                                        <button
+                                            className="cursor-pointer w-6 h-6 flex items-center justify-center text-[#dc2626] hover:bg-red-100/80 dark:hover:bg-red-900/30 rounded transition-colors"
+                                            onClick={() => removeEntry(k)}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <div className="flex items-center gap-2 flex-wrap">
                             <input
-                                className="flex-1 h-7 px-2 border border-[#e1e4e8] dark:border-[#3a3f45] rounded text-xs font-sans bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
-                                value={v}
-                                onChange={(e) => updateEntry(k, e.target.value)}
+                                className="flex-1 min-w-[80px] h-8 px-2 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                                placeholder={t("ds.key")}
+                                value={newKey}
+                                onChange={(e) => setNewKey(e.target.value)}
+                            />
+                            <input
+                                className="flex-1 min-w-[80px] h-8 px-2 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                                placeholder={t("ds.value")}
+                                value={newVal}
+                                onChange={(e) => setNewVal(e.target.value)}
                             />
                             <button
-                                className="cursor-pointer w-6 h-6 flex items-center justify-center text-[#dc2626] hover:bg-red-100/80 dark:hover:bg-red-900/30 rounded transition-colors"
-                                onClick={() => removeEntry(k)}
+                                className="h-8 px-3 text-xs font-medium bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-md transition-colors cursor-pointer"
+                                onClick={addEntry}
                             >
-                                ×
+                                {t("ds.addParam")}
                             </button>
                         </div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </SettingRow>
+    );
+}
+
+// ─── Tags Item ─────
+function TagsItem({item, path}) {
+    const {t} = useTranslation();
+    const {values, update} = useSettings();
+    const rawVal = deepGet(values, path);
+    const nullable = !!item.nullable;
+    const [isNull, setIsNull] = useState(rawVal === null);
+    const tags = isNull ? [] : (Array.isArray(rawVal) ? rawVal : (item.default || []));
+    const [inputValue, setInputValue] = useState("");
+
+    const toggleNull = () => {
+        setIsNull((prev) => {
+            const newIsNull = !prev;
+            const newVal = newIsNull ? null : (item.default || []);
+            update(path, newVal);
+            return newIsNull;
+        });
+    };
+
+    const addTag = () => {
+        const trimmed = inputValue.trim();
+        if (!trimmed || isNull) return;
+        if (tags.includes(trimmed)) {
+            setInputValue("");
+            return;
+        }
+        update(path, [...tags, trimmed]);
+        setInputValue("");
+    };
+
+    const removeTag = (tagToRemove) => {
+        if (isNull) return;
+        update(path, tags.filter((tag) => tag !== tagToRemove));
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            addTag();
+        }
+    };
+
+    const nullModeContent = (
+        <motion.button
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+            onClick={toggleNull}
+        >
+            {t("ds.default")}
+        </motion.button>
+    );
+
+    const tagsContent = (
+        <div className="flex flex-col gap-3 w-full max-w-[420px]">
+            {/* 仅当有标签时显示横向滚动行（固定宽度 250px） */}
+            {tags.length > 0 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 snap-x snap-mandatory pretty-scrollbar w-[250px]">
+                    {tags.map((tag, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            className="flex-shrink-0 inline-flex items-center gap-1 bg-[#2563eb]/85 hover:bg-[#1d4ed8]/85 text-white text-xs font-medium px-2.5 py-0.5 rounded-2xl cursor-default transition-colors snap-start"
+                        >
+                            <span className="truncate max-w-[140px]">{tag}</span>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeTag(tag);
+                                }}
+                                className="cursor-pointer flex items-center justify-center w-3.5 h-3.5 rounded-full hover:bg-white/30 transition-colors"
+                            >
+                                <X size={11} />
+                            </button>
+                        </motion.div>
                     ))}
                 </div>
             )}
-            <div className="flex items-center gap-2 flex-wrap">
+
+            {/* 输入框 + 添加按钮：始终显示，独立一行 */}
+            <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-2xl bg-white dark:bg-[#1c1e21] overflow-hidden">
                 <input
-                    className="flex-1 min-w-[80px] h-8 px-2 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
-                    placeholder={t("ds.key")}
-                    value={newKey}
-                    onChange={(e) => setNewKey(e.target.value)}
-                />
-                <input
-                    className="flex-1 min-w-[80px] h-8 px-2 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
-                    placeholder={t("ds.value")}
-                    value={newVal}
-                    onChange={(e) => setNewVal(e.target.value)}
+                    className="flex-1 h-8 px-3 text-sm font-sans outline-none bg-transparent text-[#1a1d21] dark:text-[#e4e7eb]"
+                    placeholder={item.placeholder || t("ds.addTagPlaceholder")}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
                 />
                 <button
-                    className="h-8 px-3 text-xs font-medium bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-md transition-colors cursor-pointer"
-                    onClick={addEntry}
+                    onClick={addTag}
+                    className="cursor-pointer h-8 px-4 flex items-center justify-center text-[#2563eb] hover:text-[#1d4ed8] transition-colors border-l border-[#e1e4e8] dark:border-[#3a3f45]"
                 >
-                    {t("ds.addParam")}
+                    <Plus size={18} />
                 </button>
             </div>
         </div>
+    );
+
+    return (
+        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+            <AnimatePresence mode="wait">
+                {isNull ? nullModeContent : tagsContent}
+            </AnimatePresence>
+        </SettingRow>
     );
 }
 
@@ -856,7 +1204,7 @@ function GroupItem({item, path}) {
                     ))}
                 </RadioGroup>
                 {nonRadioChildren.map((child) => (
-                    <SettingItemRenderer key={child.name || child.text} item={child} path={[...path]} />
+                    <SettingItemRenderer key={child.name || child.text} item={child} path={[...path, child.name]} />
                 ))}
             </div>
         );
@@ -892,16 +1240,13 @@ function HeadingItem({item}) {
     );
 }
 
-// ─── Item Renderer（核心修复点） ─────────────────────────────────────
+// ─── Item Renderer ─────────────────────────────────────────────────
 function SettingItemRenderer({item, path}) {
     const { values } = useSettings();
 
-    // ────────────────────────────────────────────────────────────────
-    // 升级后的 showWhen 逻辑：支持 list / group 内部同级字段依赖
-    // ────────────────────────────────────────────────────────────────
     if (item.showWhen && typeof item.showWhen === "object" && !Array.isArray(item.showWhen)) {
         let shouldShow = true;
-        const parentPath = path.slice(0, -1);   // 当前字段的父路径（同级）
+        const parentPath = path.slice(0, -1);
 
         for (const [depField, expected] of Object.entries(item.showWhen)) {
             const depFullPath = [...parentPath, depField];
@@ -931,6 +1276,7 @@ function SettingItemRenderer({item, path}) {
         case "radio": return <RadioItem item={item} path={path} />;
         case "select": return <SelectItem item={item} path={path} />;
         case "custom": return <CustomItem item={item} path={path} />;
+        case "tags": return <TagsItem item={item} path={path} />;   // 新增
         default: return null;
     }
 }

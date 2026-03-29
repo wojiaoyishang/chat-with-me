@@ -169,7 +169,9 @@
     "confirmDelete": "确定要删除此项吗？",
     "deleteConfirmMsg": "此操作不可撤销。",
     "model": "模型",
-    "duplicate": "复制"
+    "duplicate": "复制",
+    "default": "默认",
+    "addTagPlaceholder": "输入标签后按 Enter"
   },
   "advanced_conversation_settings": "高级对话设置",
   "no_settings": "没有设置项以显示",

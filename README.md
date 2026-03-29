@@ -1613,7 +1613,8 @@ function App() {
   "type": "text",
   "name": "apiKey",
   "text": "API Key",
-  "placeholder": "sk-..."
+  "placeholder": "sk-...",
+  "masked": true
 }
 ```
 
@@ -1701,6 +1702,19 @@ function App() {
 
 ```json
 { "type": "heading", "text": "通用设置" }
+```
+
+### 11. Tags 标签组件
+
+```python
+{
+    "type": "tags",
+    "name": "labels",
+    "text": "标签",
+    "nullable": True,
+    "default": ["MoE", "大语言模型"],
+    "placeholder": "输入标签后按 Enter"
+}
 ```
 
 ---
