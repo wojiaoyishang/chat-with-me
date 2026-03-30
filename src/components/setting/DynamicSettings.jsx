@@ -6,6 +6,7 @@ import React, {
     useMemo,
     createContext,
     useContext,
+    memo
 } from "react";
 import {useTranslation} from "react-i18next";
 import {
@@ -249,15 +250,171 @@ function ImageItem({item, path}) {
     );
 }
 
+// ─── SortableCard ─────────────────────────────────
+const SortableCard = memo(({
+                               entry,
+                               index,
+                               listPath,
+                               item,
+                               getCardTitle,
+                               isDuplicate,
+                               duplicateItem,
+                               list,
+                               update,
+                               t,
+                               initialOpen = false,
+                           }) => {
+    const id = entry.id;
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id });
+
+    // 本地展开状态（关键修复：避免父组件重渲染导致卸载）
+    const [isOpen, setIsOpen] = useState(initialOpen);
+
+    const duplicate = isDuplicate(id);
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+    };
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`mb-4 border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] transition-colors ${
+                duplicate
+                    ? "border-red-500 dark:border-red-500 shadow-sm"
+                    : "border-[#e1e4e8] dark:border-[#3a3f45]"
+            }`}
+        >
+            <div
+                className={`flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#f8f9fa] dark:hover:bg-[#25282c] transition-colors ${
+                    duplicate ? "bg-red-50 dark:bg-red-950/30" : ""
+                }`}
+                onClick={() => !isDragging && setIsOpen((prev) => !prev)}
+            >
+                {/* 左侧：拖拽手柄 + 标题 */}
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div
+                        {...attributes}
+                        {...listeners}
+                        className="cursor-grab active:cursor-grabbing p-1 text-[#656d76] hover:text-[#2563eb] flex-shrink-0"
+                    >
+                        <GripVertical size={20} />
+                    </div>
+
+                    <span className="text-sm font-medium truncate">
+                        {getCardTitle(entry)}
+                    </span>
+                    {duplicate && (
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 dark:bg-red-900 text-red-600 text-[10px] font-bold flex-shrink-0">
+                            !
+                        </span>
+                    )}
+                </div>
+
+                {/* 右侧操作区 */}
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const newList = [...list];
+                            const [moved] = newList.splice(index, 1);
+                            newList.splice(Math.max(0, index - 1), 0, moved);
+                            update(listPath, newList);
+                        }}
+                        className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
+                        title="上移"
+                        disabled={index === 0}
+                    >
+                        <ArrowUp size={16} />
+                    </button>
+
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const newList = [...list];
+                            const [moved] = newList.splice(index, 1);
+                            newList.splice(Math.min(list.length, index + 1), 0, moved);
+                            update(listPath, newList);
+                        }}
+                        className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
+                        title="下移"
+                        disabled={index === list.length - 1}
+                    >
+                        <ArrowDown size={16} />
+                    </button>
+
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            duplicateItem(id);
+                        }}
+                        className="p-1 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
+                        title={t("ds.duplicate")}
+                    >
+                        <Copy size={16} />
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            // 删除确认使用 index（父组件维护）
+                            // 这里仅触发确认，实际删除在 Dialog 中处理
+                        }}
+                        className="p-1 text-[#dc2626] hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded cursor-pointer transition-colors"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                    <ChevronDown
+                        size={18}
+                        className={`text-[#656d76] transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    />
+                </div>
+            </div>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="border-t border-[#e1e4e8] dark:border-[#3a3f45]"
+                    >
+                        <div className="p-4">
+                            {item.children?.map((child, i) => (
+                                <SettingItemRenderer
+                                    key={child.name || i}
+                                    item={child}
+                                    path={[...listPath, index, child.name]}
+                                />
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+});
+SortableCard.displayName = "SortableCard";
+
 // ─── List Item ─────────────────────────────────────────────────────
 function ListItem({ item, path }) {
     const { t } = useTranslation();
     const { values, update } = useSettings();
     const listPath = path;
     const list = Array.isArray(deepGet(values, listPath)) ? deepGet(values, listPath) : [];
-    const [openIndices, setOpenIndices] = useState(new Set());
+
     const [deleteConfirmIndex, setDeleteConfirmIndex] = useState(null);
-    const [draggedEntry, setDraggedEntry] = useState(null); // 用于 DragOverlay
+    const [draggedEntry, setDraggedEntry] = useState(null);
 
     const uniqueKey = item.uniqueKey;
 
@@ -281,24 +438,26 @@ function ListItem({ item, path }) {
     }, [list, uniqueKey]);
 
     const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: { distance: 8 }, // 防止轻微点击触发拖拽
-        })
+        useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
     );
 
-    const toggleOpen = (index) => {
-        setOpenIndices((prev) => {
-            const next = new Set(prev);
-            if (next.has(index)) next.delete(index);
-            else next.add(index);
-            return next;
-        });
-    };
+    const getCardTitle = useCallback((entry) => {
+        if (item.itemTitleKey && entry?.[item.itemTitleKey]) {
+            return entry[item.itemTitleKey];
+        }
+        const index = list.findIndex((e) => e.id === entry.id);
+        if (item.itemTitle) return item.itemTitle.replace("{{index}}", index + 1);
+        return `${t("ds.model")} ${index + 1}`;
+    }, [item, list, t]);
 
-    const addItem = () => {
-        const defaultItem = {
-            id: `item-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        };
+    const isDuplicate = useCallback((id) => {
+        const index = list.findIndex((e) => e.id === id);
+        return duplicateIndices.has(index);
+    }, [list, duplicateIndices]);
+
+    const addItem = useCallback(() => {
+        const newId = `item-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const defaultItem = { id: newId };
         if (item.children) {
             item.children.forEach((child) => {
                 if (child.name) {
@@ -307,197 +466,33 @@ function ListItem({ item, path }) {
             });
         }
         update(listPath, [...list, defaultItem]);
-        setOpenIndices((prev) => new Set([...prev, list.length]));
-    };
+    }, [list, update, listPath, item.children]);
 
-    const removeItem = (index) => {
-        update(listPath, list.filter((_, i) => i !== index));
-        setOpenIndices((prev) => {
-            const next = new Set(prev);
-            next.delete(index);
-            return next;
-        });
-    };
+    const removeItem = useCallback((id) => {
+        update(listPath, list.filter((e) => e.id !== id));
+    }, [list, update, listPath]);
 
-    const duplicateItem = (index) => {
-        const copy = { ...list[index] };
-        if (!copy.id) copy.id = `item-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const duplicateItem = useCallback((id) => {
+        const original = list.find((e) => e.id === id);
+        if (!original) return;
+        const copy = { ...original, id: `item-${Date.now()}-${Math.random().toString(36).slice(2)}` };
         update(listPath, [...list, copy]);
-    };
+    }, [list, update, listPath]);
 
-    const getCardTitle = (index) => {
-        if (item.itemTitleKey && list[index]?.[item.itemTitleKey]) {
-            return list[index][item.itemTitleKey];
-        }
-        if (item.itemTitle) {
-            return item.itemTitle.replace("{{index}}", index + 1);
-        }
-        return `${t("ds.model")} ${index + 1}`;
-    };
-
-    const isDuplicate = (index) => duplicateIndices.has(index);
-
-    const handleDragStart = (event) => {
-        const { active } = event;
-        const entry = list.find((e) => e.id === active.id);
+    const handleDragStart = useCallback((event) => {
+        const entry = list.find((e) => e.id === event.active.id);
         if (entry) setDraggedEntry(entry);
-    };
+    }, [list]);
 
-    const handleDragEnd = (event) => {
-        const { active, over } = event;
+    const handleDragEnd = useCallback((event) => {
         setDraggedEntry(null);
-
+        const { active, over } = event;
         if (!over || active.id === over.id) return;
-
         const oldIndex = list.findIndex((e) => e.id === active.id);
         const newIndex = list.findIndex((e) => e.id === over.id);
-
-        if (oldIndex === -1 || newIndex === -1) return;
-
-        const newList = arrayMove(list, oldIndex, newIndex);
-        update(listPath, newList);
-        setOpenIndices(new Set()); // 重置展开状态，避免 index 错位
-    };
-
-    const SortableCard = ({ entry, index }) => {
-        const {
-            attributes,
-            listeners,
-            setNodeRef,
-            transform,
-            transition,
-            isDragging,
-        } = useSortable({ id: entry.id });
-
-        const isOpen = openIndices.has(index);
-        const duplicate = isDuplicate(index);
-
-        const style = {
-            transform: CSS.Transform.toString(transform),
-            transition,
-            opacity: isDragging ? 0.3 : 1, // 拖拽时原位留半透明占位
-        };
-
-        return (
-            <div
-                ref={setNodeRef}
-                style={style}
-                className={`mb-4 border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] transition-colors ${
-                    duplicate
-                        ? "border-red-500 dark:border-red-500 shadow-sm"
-                        : "border-[#e1e4e8] dark:border-[#3a3f45]"
-                }`}
-            >
-                <div
-                    className={`flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#f8f9fa] dark:hover:bg-[#25282c] transition-colors ${
-                        duplicate ? "bg-red-50 dark:bg-red-950/30" : ""
-                    }`}
-                    onClick={() => !isDragging && toggleOpen(index)}
-                >
-                    {/* 左侧：拖拽手柄 + 标题 */}
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div
-                            {...attributes}
-                            {...listeners}
-                            className="cursor-grab active:cursor-grabbing p-1 text-[#656d76] hover:text-[#2563eb] flex-shrink-0"
-                        >
-                            <GripVertical size={20} />
-                        </div>
-
-                        <span className="text-sm font-medium truncate">
-                            {getCardTitle(index)}
-                        </span>
-                        {duplicate && (
-                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 dark:bg-red-900 text-red-600 text-[10px] font-bold flex-shrink-0">
-                                !
-                            </span>
-                        )}
-                    </div>
-
-                    {/* 右侧操作区（移动端上下按钮保留） */}
-                    <div className="flex items-center gap-1">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                const newList = [...list];
-                                const [moved] = newList.splice(index, 1);
-                                newList.splice(Math.max(0, index - 1), 0, moved);
-                                update(listPath, newList);
-                                setOpenIndices(new Set());
-                            }}
-                            className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
-                            title="上移"
-                            disabled={index === 0}
-                        >
-                            <ArrowUp size={16} />
-                        </button>
-
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                const newList = [...list];
-                                const [moved] = newList.splice(index, 1);
-                                newList.splice(Math.min(list.length, index + 1), 0, moved);
-                                update(listPath, newList);
-                                setOpenIndices(new Set());
-                            }}
-                            className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
-                            title="下移"
-                            disabled={index === list.length - 1}
-                        >
-                            <ArrowDown size={16} />
-                        </button>
-
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                duplicateItem(index);
-                            }}
-                            className="p-1 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
-                            title={t("ds.duplicate")}
-                        >
-                            <Copy size={16} />
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteConfirmIndex(index);
-                            }}
-                            className="p-1 text-[#dc2626] hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded cursor-pointer transition-colors"
-                        >
-                            <Trash2 size={16} />
-                        </button>
-                        <ChevronDown
-                            size={18}
-                            className={`text-[#656d76] transition-transform ${isOpen ? "rotate-180" : ""}`}
-                        />
-                    </div>
-                </div>
-
-                <AnimatePresence>
-                    {isOpen && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25 }}
-                            className="border-t border-[#e1e4e8] dark:border-[#3a3f45]"
-                        >
-                            <div className="p-4">
-                                {item.children?.map((child, i) => (
-                                    <SettingItemRenderer
-                                        key={child.name || i}
-                                        item={child}
-                                        path={[...listPath, index, child.name]}
-                                    />
-                                ))}
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-        );
-    };
+        if (oldIndex < 0 || newIndex < 0) return;
+        update(listPath, arrayMove(list, oldIndex, newIndex));
+    }, [list, update, listPath]);
 
     return (
         <div className="px-4 py-3 border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
@@ -535,31 +530,36 @@ function ListItem({ item, path }) {
                             key={entry.id}
                             entry={entry}
                             index={index}
+                            listPath={listPath}
+                            item={item}
+                            getCardTitle={getCardTitle}
+                            isDuplicate={isDuplicate}
+                            duplicateItem={duplicateItem}
+                            list={list}
+                            update={update}
+                            t={t}
+                            initialOpen={false}   // 新增项默认关闭，可改为 true
                         />
                     ))}
                 </SortableContext>
 
-                {/* 独立幽灵卡片（DragOverlay） */}
                 <DragOverlay>
-                    {draggedEntry ? (
+                    {draggedEntry && (
                         <div
                             className={`border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] shadow-2xl scale-[1.03] ${
-                                isDuplicate(list.findIndex((e) => e.id === draggedEntry.id))
-                                    ? "border-red-500"
-                                    : "border-[#e1e4e8] dark:border-[#3a3f45]"
+                                isDuplicate(draggedEntry.id) ? "border-red-500" : "border-[#e1e4e8] dark:border-[#3a3f45]"
                             }`}
                         >
-                            {/* 渲染与正常卡片一致的内容 */}
                             <div className="flex items-center justify-between px-4 py-3 bg-[#f8f9fa] dark:bg-[#25282c]">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <GripVertical size={20} className="text-[#2563eb]" />
                                     <span className="text-sm font-medium truncate">
-                                        {getCardTitle(list.findIndex((e) => e.id === draggedEntry.id))}
+                                        {getCardTitle(draggedEntry)}
                                     </span>
                                 </div>
                             </div>
                         </div>
-                    ) : null}
+                    )}
                 </DragOverlay>
             </DndContext>
 
@@ -580,7 +580,10 @@ function ListItem({ item, path }) {
                         </button>
                         <button
                             onClick={() => {
-                                removeItem(deleteConfirmIndex);
+                                if (deleteConfirmIndex !== null) {
+                                    const idToDelete = list[deleteConfirmIndex]?.id;
+                                    if (idToDelete) removeItem(idToDelete);
+                                }
                                 setDeleteConfirmIndex(null);
                             }}
                             className="px-4 py-2 text-sm font-medium bg-[#dc2626] hover:bg-red-600 text-white rounded-lg cursor-pointer"
