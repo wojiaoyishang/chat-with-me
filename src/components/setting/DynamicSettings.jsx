@@ -32,9 +32,25 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import {Info, Slash, Plus, Copy, Trash2, ChevronDown, Upload, X} from "lucide-react";
+import { Info, Slash, Plus, Copy, Trash2, ChevronDown, Upload, X, GripVertical, ArrowUp, ArrowDown } from "lucide-react";
 import {createPortal} from "react-dom";
-import {motion, AnimatePresence} from "framer-motion";
+import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
+
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragOverlay,
+} from "@dnd-kit/core";
+import {
+    arrayMove,
+    SortableContext,
+    verticalListSortingStrategy,
+    useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 // ─── Context ───────────────────────────────────────────────────────
 const SettingsContext = createContext(null);
@@ -234,13 +250,14 @@ function ImageItem({item, path}) {
 }
 
 // ─── List Item ─────────────────────────────────────────────────────
-function ListItem({item, path}) {
-    const {t} = useTranslation();
-    const {values, update} = useSettings();
+function ListItem({ item, path }) {
+    const { t } = useTranslation();
+    const { values, update } = useSettings();
     const listPath = path;
     const list = Array.isArray(deepGet(values, listPath)) ? deepGet(values, listPath) : [];
     const [openIndices, setOpenIndices] = useState(new Set());
     const [deleteConfirmIndex, setDeleteConfirmIndex] = useState(null);
+    const [draggedEntry, setDraggedEntry] = useState(null); // 用于 DragOverlay
 
     const uniqueKey = item.uniqueKey;
 
@@ -263,6 +280,12 @@ function ListItem({item, path}) {
         return dups;
     }, [list, uniqueKey]);
 
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: { distance: 8 }, // 防止轻微点击触发拖拽
+        })
+    );
+
     const toggleOpen = (index) => {
         setOpenIndices((prev) => {
             const next = new Set(prev);
@@ -273,7 +296,9 @@ function ListItem({item, path}) {
     };
 
     const addItem = () => {
-        const defaultItem = {};
+        const defaultItem = {
+            id: `item-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        };
         if (item.children) {
             item.children.forEach((child) => {
                 if (child.name) {
@@ -295,7 +320,8 @@ function ListItem({item, path}) {
     };
 
     const duplicateItem = (index) => {
-        const copy = {...list[index]};
+        const copy = { ...list[index] };
+        if (!copy.id) copy.id = `item-${Date.now()}-${Math.random().toString(36).slice(2)}`;
         update(listPath, [...list, copy]);
     };
 
@@ -310,6 +336,168 @@ function ListItem({item, path}) {
     };
 
     const isDuplicate = (index) => duplicateIndices.has(index);
+
+    const handleDragStart = (event) => {
+        const { active } = event;
+        const entry = list.find((e) => e.id === active.id);
+        if (entry) setDraggedEntry(entry);
+    };
+
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+        setDraggedEntry(null);
+
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = list.findIndex((e) => e.id === active.id);
+        const newIndex = list.findIndex((e) => e.id === over.id);
+
+        if (oldIndex === -1 || newIndex === -1) return;
+
+        const newList = arrayMove(list, oldIndex, newIndex);
+        update(listPath, newList);
+        setOpenIndices(new Set()); // 重置展开状态，避免 index 错位
+    };
+
+    const SortableCard = ({ entry, index }) => {
+        const {
+            attributes,
+            listeners,
+            setNodeRef,
+            transform,
+            transition,
+            isDragging,
+        } = useSortable({ id: entry.id });
+
+        const isOpen = openIndices.has(index);
+        const duplicate = isDuplicate(index);
+
+        const style = {
+            transform: CSS.Transform.toString(transform),
+            transition,
+            opacity: isDragging ? 0.3 : 1, // 拖拽时原位留半透明占位
+        };
+
+        return (
+            <div
+                ref={setNodeRef}
+                style={style}
+                className={`mb-4 border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] transition-colors ${
+                    duplicate
+                        ? "border-red-500 dark:border-red-500 shadow-sm"
+                        : "border-[#e1e4e8] dark:border-[#3a3f45]"
+                }`}
+            >
+                <div
+                    className={`flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#f8f9fa] dark:hover:bg-[#25282c] transition-colors ${
+                        duplicate ? "bg-red-50 dark:bg-red-950/30" : ""
+                    }`}
+                    onClick={() => !isDragging && toggleOpen(index)}
+                >
+                    {/* 左侧：拖拽手柄 + 标题 */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div
+                            {...attributes}
+                            {...listeners}
+                            className="cursor-grab active:cursor-grabbing p-1 text-[#656d76] hover:text-[#2563eb] flex-shrink-0"
+                        >
+                            <GripVertical size={20} />
+                        </div>
+
+                        <span className="text-sm font-medium truncate">
+                            {getCardTitle(index)}
+                        </span>
+                        {duplicate && (
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 dark:bg-red-900 text-red-600 text-[10px] font-bold flex-shrink-0">
+                                !
+                            </span>
+                        )}
+                    </div>
+
+                    {/* 右侧操作区（移动端上下按钮保留） */}
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const newList = [...list];
+                                const [moved] = newList.splice(index, 1);
+                                newList.splice(Math.max(0, index - 1), 0, moved);
+                                update(listPath, newList);
+                                setOpenIndices(new Set());
+                            }}
+                            className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
+                            title="上移"
+                            disabled={index === 0}
+                        >
+                            <ArrowUp size={16} />
+                        </button>
+
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const newList = [...list];
+                                const [moved] = newList.splice(index, 1);
+                                newList.splice(Math.min(list.length, index + 1), 0, moved);
+                                update(listPath, newList);
+                                setOpenIndices(new Set());
+                            }}
+                            className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
+                            title="下移"
+                            disabled={index === list.length - 1}
+                        >
+                            <ArrowDown size={16} />
+                        </button>
+
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                duplicateItem(index);
+                            }}
+                            className="p-1 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
+                            title={t("ds.duplicate")}
+                        >
+                            <Copy size={16} />
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteConfirmIndex(index);
+                            }}
+                            className="p-1 text-[#dc2626] hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded cursor-pointer transition-colors"
+                        >
+                            <Trash2 size={16} />
+                        </button>
+                        <ChevronDown
+                            size={18}
+                            className={`text-[#656d76] transition-transform ${isOpen ? "rotate-180" : ""}`}
+                        />
+                    </div>
+                </div>
+
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="border-t border-[#e1e4e8] dark:border-[#3a3f45]"
+                        >
+                            <div className="p-4">
+                                {item.children?.map((child, i) => (
+                                    <SettingItemRenderer
+                                        key={child.name || i}
+                                        item={child}
+                                        path={[...listPath, index, child.name]}
+                                    />
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        );
+    };
 
     return (
         <div className="px-4 py-3 border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
@@ -332,92 +520,48 @@ function ListItem({item, path}) {
                 </div>
             )}
 
-            <AnimatePresence>
-                {list.map((_, index) => {
-                    const itemPath = [...listPath, index];
-                    const isOpen = openIndices.has(index);
-                    const duplicate = isDuplicate(index);
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+            >
+                <SortableContext
+                    items={list.map((e) => e.id)}
+                    strategy={verticalListSortingStrategy}
+                >
+                    {list.map((entry, index) => (
+                        <SortableCard
+                            key={entry.id}
+                            entry={entry}
+                            index={index}
+                        />
+                    ))}
+                </SortableContext>
 
-                    return (
-                        <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className={`mb-4 border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] transition-colors ${
-                                duplicate
-                                    ? "border-red-500 dark:border-red-500 shadow-sm"
+                {/* 独立幽灵卡片（DragOverlay） */}
+                <DragOverlay>
+                    {draggedEntry ? (
+                        <div
+                            className={`border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] shadow-2xl scale-[1.03] ${
+                                isDuplicate(list.findIndex((e) => e.id === draggedEntry.id))
+                                    ? "border-red-500"
                                     : "border-[#e1e4e8] dark:border-[#3a3f45]"
                             }`}
                         >
-                            <div
-                                className={`flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#f8f9fa] dark:hover:bg-[#25282c] transition-colors ${
-                                    duplicate ? "bg-red-50 dark:bg-red-950/30" : ""
-                                }`}
-                                onClick={() => toggleOpen(index)}
-                            >
+                            {/* 渲染与正常卡片一致的内容 */}
+                            <div className="flex items-center justify-between px-4 py-3 bg-[#f8f9fa] dark:bg-[#25282c]">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <GripVertical size={20} className="text-[#2563eb]" />
                                     <span className="text-sm font-medium truncate">
-                                        {getCardTitle(index)}
+                                        {getCardTitle(list.findIndex((e) => e.id === draggedEntry.id))}
                                     </span>
-                                    {duplicate && (
-                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 dark:bg-red-900 text-red-600 text-[10px] font-bold flex-shrink-0">
-                                            !
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            duplicateItem(index);
-                                        }}
-                                        className="p-1 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
-                                        title={t("ds.duplicate")}
-                                    >
-                                        <Copy size={16} />
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setDeleteConfirmIndex(index);
-                                        }}
-                                        className="p-1 text-[#dc2626] hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded cursor-pointer transition-colors"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                    <ChevronDown
-                                        size={18}
-                                        className={`text-[#656d76] transition-transform ${isOpen ? "rotate-180" : ""}`}
-                                    />
                                 </div>
                             </div>
-
-                            <AnimatePresence>
-                                {isOpen && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.25 }}
-                                        className="border-t border-[#e1e4e8] dark:border-[#3a3f45]"
-                                    >
-                                        <div className="p-4">
-                                            {item.children?.map((child, i) => (
-                                                <SettingItemRenderer
-                                                    key={child.name || i}
-                                                    item={child}
-                                                    path={[...itemPath, child.name]}
-                                                />
-                                            ))}
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </motion.div>
-                    );
-                })}
-            </AnimatePresence>
+                        </div>
+                    ) : null}
+                </DragOverlay>
+            </DndContext>
 
             <Dialog open={deleteConfirmIndex !== null} onOpenChange={() => setDeleteConfirmIndex(null)}>
                 <DialogContent className="sm:max-w-[380px]">
