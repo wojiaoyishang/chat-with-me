@@ -89,6 +89,16 @@ function deepGet(obj, path) {
     return cur;
 }
 
+// 生成唯一 internalId
+function generateInternalId() {
+    return `internal-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+// 生成唯一业务 id
+function generateBusinessId() {
+    return `item-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 // ─── Tip Component ───────────────────────────────────────────────────
 function TipWrapper({tips, children, nullable, isNull, onToggleNull}) {
     if (!tips && !nullable) return children;
@@ -250,7 +260,7 @@ function ImageItem({item, path}) {
     );
 }
 
-// ─── SortableCard ─────────────────────────────────
+// ─── SortableCard (独立 memo 组件，彻底隔离 ID 修改影响) ─────────────────────
 const SortableCard = memo(({
                                entry,
                                index,
@@ -259,12 +269,13 @@ const SortableCard = memo(({
                                getCardTitle,
                                isDuplicate,
                                duplicateItem,
+                               removeItem,
                                list,
                                update,
                                t,
                                initialOpen = false,
                            }) => {
-    const id = entry.id;
+    const stableId = entry.internalId;   // 使用稳定的 internalId
     const {
         attributes,
         listeners,
@@ -272,17 +283,41 @@ const SortableCard = memo(({
         transform,
         transition,
         isDragging,
-    } = useSortable({ id });
+    } = useSortable({ id: stableId });
 
-    // 本地展开状态（关键修复：避免父组件重渲染导致卸载）
     const [isOpen, setIsOpen] = useState(initialOpen);
-
-    const duplicate = isDuplicate(id);
+    const duplicate = isDuplicate(stableId);
 
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.4 : 1,
+    };
+
+    const handleMoveUp = (e) => {
+        e.stopPropagation();
+        const newList = [...list];
+        const [moved] = newList.splice(index, 1);
+        newList.splice(Math.max(0, index - 1), 0, moved);
+        update(listPath, newList);
+    };
+
+    const handleMoveDown = (e) => {
+        e.stopPropagation();
+        const newList = [...list];
+        const [moved] = newList.splice(index, 1);
+        newList.splice(Math.min(list.length, index + 1), 0, moved);
+        update(listPath, newList);
+    };
+
+    const handleDuplicate = (e) => {
+        e.stopPropagation();
+        duplicateItem(stableId);
+    };
+
+    const handleDelete = (e) => {
+        e.stopPropagation();
+        removeItem(stableId);
     };
 
     return (
@@ -324,55 +359,39 @@ const SortableCard = memo(({
                 {/* 右侧操作区 */}
                 <div className="flex items-center gap-1">
                     <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            const newList = [...list];
-                            const [moved] = newList.splice(index, 1);
-                            newList.splice(Math.max(0, index - 1), 0, moved);
-                            update(listPath, newList);
-                        }}
-                        className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
-                        title="上移"
+                        onClick={handleMoveUp}
+                        className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        title={t("ds.moveUp")}
                         disabled={index === 0}
                     >
                         <ArrowUp size={16} />
                     </button>
 
                     <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            const newList = [...list];
-                            const [moved] = newList.splice(index, 1);
-                            newList.splice(Math.min(list.length, index + 1), 0, moved);
-                            update(listPath, newList);
-                        }}
-                        className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
-                        title="下移"
+                        onClick={handleMoveDown}
+                        className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        title={t("ds.moveDown")}
                         disabled={index === list.length - 1}
                     >
                         <ArrowDown size={16} />
                     </button>
 
                     <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            duplicateItem(id);
-                        }}
+                        onClick={handleDuplicate}
                         className="p-1 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
                         title={t("ds.duplicate")}
                     >
                         <Copy size={16} />
                     </button>
+
                     <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            // 删除确认使用 index（父组件维护）
-                            // 这里仅触发确认，实际删除在 Dialog 中处理
-                        }}
+                        onClick={handleDelete}
                         className="p-1 text-[#dc2626] hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded cursor-pointer transition-colors"
+                        title={t("ds.delete")}
                     >
                         <Trash2 size={16} />
                     </button>
+
                     <ChevronDown
                         size={18}
                         className={`text-[#656d76] transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -413,7 +432,6 @@ function ListItem({ item, path }) {
     const listPath = path;
     const list = Array.isArray(deepGet(values, listPath)) ? deepGet(values, listPath) : [];
 
-    const [deleteConfirmIndex, setDeleteConfirmIndex] = useState(null);
     const [draggedEntry, setDraggedEntry] = useState(null);
 
     const uniqueKey = item.uniqueKey;
@@ -445,19 +463,20 @@ function ListItem({ item, path }) {
         if (item.itemTitleKey && entry?.[item.itemTitleKey]) {
             return entry[item.itemTitleKey];
         }
-        const index = list.findIndex((e) => e.id === entry.id);
+        const index = list.findIndex((e) => e.internalId === entry.internalId);
         if (item.itemTitle) return item.itemTitle.replace("{{index}}", index + 1);
         return `${t("ds.model")} ${index + 1}`;
     }, [item, list, t]);
 
-    const isDuplicate = useCallback((id) => {
-        const index = list.findIndex((e) => e.id === id);
+    const isDuplicate = useCallback((internalId) => {
+        const index = list.findIndex((e) => e.internalId === internalId);
         return duplicateIndices.has(index);
     }, [list, duplicateIndices]);
 
     const addItem = useCallback(() => {
-        const newId = `item-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        const defaultItem = { id: newId };
+        const internalId = generateInternalId();
+        const editableId = generateBusinessId();
+        const defaultItem = { id: editableId, internalId };
         if (item.children) {
             item.children.forEach((child) => {
                 if (child.name) {
@@ -468,19 +487,23 @@ function ListItem({ item, path }) {
         update(listPath, [...list, defaultItem]);
     }, [list, update, listPath, item.children]);
 
-    const removeItem = useCallback((id) => {
-        update(listPath, list.filter((e) => e.id !== id));
+    const removeItem = useCallback((internalId) => {
+        update(listPath, list.filter((e) => e.internalId !== internalId));
     }, [list, update, listPath]);
 
-    const duplicateItem = useCallback((id) => {
-        const original = list.find((e) => e.id === id);
+    const duplicateItem = useCallback((internalId) => {
+        const original = list.find((e) => e.internalId === internalId);
         if (!original) return;
-        const copy = { ...original, id: `item-${Date.now()}-${Math.random().toString(36).slice(2)}` };
+        const copy = {
+            ...original,
+            id: generateBusinessId(),
+            internalId: generateInternalId(), // 生成全新的 internalId
+        };
         update(listPath, [...list, copy]);
     }, [list, update, listPath]);
 
     const handleDragStart = useCallback((event) => {
-        const entry = list.find((e) => e.id === event.active.id);
+        const entry = list.find((e) => e.internalId === event.active.id);
         if (entry) setDraggedEntry(entry);
     }, [list]);
 
@@ -488,8 +511,8 @@ function ListItem({ item, path }) {
         setDraggedEntry(null);
         const { active, over } = event;
         if (!over || active.id === over.id) return;
-        const oldIndex = list.findIndex((e) => e.id === active.id);
-        const newIndex = list.findIndex((e) => e.id === over.id);
+        const oldIndex = list.findIndex((e) => e.internalId === active.id);
+        const newIndex = list.findIndex((e) => e.internalId === over.id);
         if (oldIndex < 0 || newIndex < 0) return;
         update(listPath, arrayMove(list, oldIndex, newIndex));
     }, [list, update, listPath]);
@@ -522,12 +545,12 @@ function ListItem({ item, path }) {
                 onDragEnd={handleDragEnd}
             >
                 <SortableContext
-                    items={list.map((e) => e.id)}
+                    items={list.map((e) => e.internalId)}
                     strategy={verticalListSortingStrategy}
                 >
                     {list.map((entry, index) => (
                         <SortableCard
-                            key={entry.id}
+                            key={entry.internalId}  // 使用稳定的 internalId 作为 key
                             entry={entry}
                             index={index}
                             listPath={listPath}
@@ -535,10 +558,11 @@ function ListItem({ item, path }) {
                             getCardTitle={getCardTitle}
                             isDuplicate={isDuplicate}
                             duplicateItem={duplicateItem}
+                            removeItem={removeItem}
                             list={list}
                             update={update}
                             t={t}
-                            initialOpen={false}   // 新增项默认关闭，可改为 true
+                            initialOpen={false}
                         />
                     ))}
                 </SortableContext>
@@ -547,7 +571,9 @@ function ListItem({ item, path }) {
                     {draggedEntry && (
                         <div
                             className={`border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] shadow-2xl scale-[1.03] ${
-                                isDuplicate(draggedEntry.id) ? "border-red-500" : "border-[#e1e4e8] dark:border-[#3a3f45]"
+                                isDuplicate(draggedEntry.internalId)
+                                    ? "border-red-500"
+                                    : "border-[#e1e4e8] dark:border-[#3a3f45]"
                             }`}
                         >
                             <div className="flex items-center justify-between px-4 py-3 bg-[#f8f9fa] dark:bg-[#25282c]">
@@ -562,37 +588,6 @@ function ListItem({ item, path }) {
                     )}
                 </DragOverlay>
             </DndContext>
-
-            <Dialog open={deleteConfirmIndex !== null} onOpenChange={() => setDeleteConfirmIndex(null)}>
-                <DialogContent className="sm:max-w-[380px]">
-                    <DialogHeader>
-                        <DialogTitle>{t("ds.confirmDelete")}</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4 text-sm text-[#1a1d21] dark:text-[#e4e7eb]">
-                        {t("ds.deleteConfirmMsg")}
-                    </div>
-                    <DialogFooter>
-                        <button
-                            onClick={() => setDeleteConfirmIndex(null)}
-                            className="px-4 py-2 text-sm font-medium border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136]"
-                        >
-                            {t("ds.cancel")}
-                        </button>
-                        <button
-                            onClick={() => {
-                                if (deleteConfirmIndex !== null) {
-                                    const idToDelete = list[deleteConfirmIndex]?.id;
-                                    if (idToDelete) removeItem(idToDelete);
-                                }
-                                setDeleteConfirmIndex(null);
-                            }}
-                            className="px-4 py-2 text-sm font-medium bg-[#dc2626] hover:bg-red-600 text-white rounded-lg cursor-pointer"
-                        >
-                            {t("ds.confirm")}
-                        </button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }
@@ -1277,7 +1272,6 @@ function TagsItem({item, path}) {
 
     const tagsContent = (
         <div className="flex flex-col gap-3 w-full max-w-[420px]">
-            {/* 仅当有标签时显示横向滚动行（固定宽度 250px） */}
             {tags.length > 0 && (
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 snap-x snap-mandatory pretty-scrollbar w-[250px]">
                     {tags.map((tag, index) => (
@@ -1303,7 +1297,6 @@ function TagsItem({item, path}) {
                 </div>
             )}
 
-            {/* 输入框 + 添加按钮：始终显示，独立一行 */}
             <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-2xl bg-white dark:bg-[#1c1e21] overflow-hidden">
                 <input
                     className="flex-1 h-8 px-3 text-sm font-sans outline-none bg-transparent text-[#1a1d21] dark:text-[#e4e7eb]"
@@ -1423,7 +1416,7 @@ function SettingItemRenderer({item, path}) {
         case "radio": return <RadioItem item={item} path={path} />;
         case "select": return <SelectItem item={item} path={path} />;
         case "custom": return <CustomItem item={item} path={path} />;
-        case "tags": return <TagsItem item={item} path={path} />;   // 新增
+        case "tags": return <TagsItem item={item} path={path} />;
         default: return null;
     }
 }
@@ -1479,7 +1472,13 @@ function buildDefaults(config, initialValues) {
         if (item.type === "heading") continue;
         if (item.type === "list" && item.name) {
             const initList = initialValues?.[item.name];
-            result[item.name] = Array.isArray(initList) ? initList : [];
+            // 为每个列表项补充稳定的 internalId
+            result[item.name] = Array.isArray(initList)
+                ? initList.map(entry => ({
+                    ...entry,
+                    internalId: entry.internalId || generateInternalId()
+                }))
+                : [];
             continue;
         }
         if (item.type === "group" && item.name && item.children) {
