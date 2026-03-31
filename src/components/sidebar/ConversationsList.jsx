@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef, forwardRef, useImperativeHandle} from 'react';
 import {isToday, isYesterday, subDays, subMonths, isWithinInterval} from 'date-fns';
-import {ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut, Trash, Sidebar} from 'lucide-react';
+import {ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut, Trash, Sidebar, Loader2, ChevronDown} from 'lucide-react';
 import {generateUUID, UnifiedErrorScreen, UnifiedLoadingScreen, updateURL} from "@/lib/tools.jsx";
 import {useTranslation} from "react-i18next";
 import apiClient from "@/lib/apiClient.js";
@@ -48,32 +48,27 @@ const ConversationMenu = ({markId, onDelete}) => {
         }
     };
 
-    // 判断是否有可操作项
     const hasMenuItems = !!onDelete;
 
     return (
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <button
-                        className="cursor-pointer p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors">
+                    <button className="cursor-pointer p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors">
                         <MoreHorizontal className="w-4 h-4"/>
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-fit min-w-[120px]">
                     {hasMenuItems ? (
-                        // 有操作项时正常显示
                         <>
                             {onDelete && (
-                                <DropdownMenuItem onClick={handleDeleteClick}
-                                                  className="text-red-600 focus:text-red-600 cursor-pointer">
+                                <DropdownMenuItem onClick={handleDeleteClick} className="text-red-600 focus:text-red-600 cursor-pointer">
                                     <Trash className="w-4 h-4 text-red-600 cursor-pointer"/>
                                     {t('delete_conversation')}
                                 </DropdownMenuItem>
                             )}
                         </>
                     ) : (
-                        // 无操作项时显示提示
                         <div className="px-4 py-3 text-sm text-gray-500 text-center">
                             {t('no_actions_available')}
                         </div>
@@ -88,12 +83,10 @@ const ConversationMenu = ({markId, onDelete}) => {
                         <DialogDescription>{t('confirm_delete_description')}</DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={isDeleting}
-                                className="cursor-pointer">
+                        <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={isDeleting} className="cursor-pointer">
                             {t('cancel')}
                         </Button>
-                        <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting}
-                                className="cursor-pointer">
+                        <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting} className="cursor-pointer">
                             <ButtonContentWrapper isLoading={isDeleting}>{t("confirm")}</ButtonContentWrapper>
                         </Button>
                     </DialogFooter>
@@ -103,31 +96,55 @@ const ConversationMenu = ({markId, onDelete}) => {
     );
 };
 
-// ====================== 对话列表组件（内部状态 + 暴露更新方法） ======================
+// ====================== 对话列表组件 ======================
 const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref) => {
     const {t} = useTranslation();
     const listRef = useRef(null);
 
-    // 状态
+    // 分页状态
     const [conversations, setConversations] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
+    const [offset, setOffset] = useState(0);
+    const [limit] = useState(20);
+    const [total, setTotal] = useState(0);
+    const [hasMore, setHasMore] = useState(false);
+
     const [oldPositions, setOldPositions] = useState(null);
     const [titleTransitioning, setTitleTransitioning] = useState({});
     const [titleCache, setTitleCache] = useState({});
 
-    // 加载会话列表
-    const loadConversations = async () => {
+    // 加载会话列表（支持分页）
+    const loadConversations = async (reset = false) => {
         try {
             setIsLoading(true);
             setIsLoadingError(false);
-            const histories = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT);
-            const formatted = histories.map(conv => ({
+
+            const currentOffset = reset ? 0 : offset;
+            const response = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT, {
+                params: {
+                    offset: currentOffset,
+                    limit: limit
+                }
+            });
+
+            const newData = (response.data || []).map(conv => ({
                 ...conv,
                 updateDate: new Date(conv.updateDate)
-            })).sort((a, b) => b.updateDate - a.updateDate);
-            setConversations(formatted);
+            }));
+
+            if (reset) {
+                setConversations(newData);
+                setOffset(limit);
+            } else {
+                setConversations(prev => [...prev, ...newData]);
+                setOffset(prev => prev + limit);
+            }
+
+            setTotal(response.total || 0);
+            setHasMore(newData.length === limit && (response.total || 0) > (reset ? 0 : currentOffset) + limit);
         } catch (error) {
+            console.error(error);
             setIsLoadingError(true);
         } finally {
             setIsLoading(false);
@@ -136,9 +153,8 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
 
     // 暴露方法给父组件
     useImperativeHandle(ref, () => ({
-        reload: loadConversations,
+        reload: () => loadConversations(true),   // 重置分页
         updateDate: (markId, newDate) => {
-            // 记录旧位置用于 FLIP 动画
             const positions = {};
             if (listRef.current) {
                 const elements = listRef.current.querySelectorAll('div[data-group], li[data-markid]');
@@ -155,7 +171,6 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
             });
         },
         updateTitle: (markId, newTitle) => {
-            // 记录旧位置用于 FLIP 动画
             const positions = {};
             if (listRef.current) {
                 const elements = listRef.current.querySelectorAll('div[data-group], li[data-markid]');
@@ -166,7 +181,6 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
             }
             setOldPositions(positions);
 
-            // 保存旧标题用于淡出动画
             setConversations(prev => {
                 const oldConv = prev.find(c => c.markId === markId);
                 if (oldConv) {
@@ -176,7 +190,6 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                 return updated.sort((a, b) => b.updateDate - a.updateDate);
             });
 
-            // 触发标题过渡动画
             setTitleTransitioning(prev => ({...prev, [markId]: true}));
             setTimeout(() => {
                 setTitleTransitioning(prev => {
@@ -195,10 +208,10 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
 
     // 初始加载
     useEffect(() => {
-        loadConversations();
+        loadConversations(true);
     }, []);
 
-    // 分组逻辑
+    // 分组逻辑（基于已加载的数据）
     const groupConversations = () => {
         const groups = {
             Today: [],
@@ -221,20 +234,23 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
         Object.keys(groups).forEach(key => groups[key].sort((a, b) => b.updateDate - a.updateDate));
         return groups;
     };
+
     const groupedConvs = groupConversations();
 
-    // 选择处理
     const handleSelectConversation = (markId) => {
         onSelect?.(markId);
     };
 
-    // 删除处理
-    const handleDeleteConversation = async (deletedMarkId) => {
+    const handleDeleteConversation = (deletedMarkId) => {
         setConversations(prev => prev.filter(c => c.markId !== deletedMarkId));
         onDelete?.(deletedMarkId);
     };
 
-    // FLIP 动画（位置变化）
+    const handleLoadMore = () => {
+        loadConversations(false);
+    };
+
+    // FLIP 动画
     useEffect(() => {
         if (!oldPositions || !listRef.current) return;
         const elements = listRef.current.querySelectorAll('div[data-group], li[data-markid]');
@@ -255,18 +271,18 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
         setOldPositions(null);
     }, [conversations, oldPositions]);
 
-    // 渲染列表
     if (isLoadingError) {
         return (
             <UnifiedErrorScreen
                 title={t("load_history_error")}
                 subtitle={t("retry_after_network")}
                 retryText={t("retry")}
-                onRetry={loadConversations}
+                onRetry={() => loadConversations(true)}
             />
         );
     }
-    if (isLoading) {
+
+    if (isLoading && conversations.length === 0) {
         return <UnifiedLoadingScreen text={t("loading_history")}/>;
     }
 
@@ -285,25 +301,22 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                                 const oldTitle = titleCache[conv.markId];
                                 return (
                                     <li key={conv.markId} data-markid={conv.markId}>
-                                        <div
-                                            className={`w-full flex items-center justify-between px-3.5 py-1.5 rounded-lg transition-colors ${
-                                                isSelected ? 'bg-gray-200 text-gray-800' : 'hover:bg-gray-200 text-gray-800'
-                                            }`}>
+                                        <div className={`w-full flex items-center justify-between px-3.5 py-1.5 rounded-lg transition-colors ${
+                                            isSelected ? 'bg-gray-200 text-gray-800' : 'hover:bg-gray-200 text-gray-800'
+                                        }`}>
                                             <button
                                                 onClick={() => handleSelectConversation(conv.markId)}
                                                 className="flex-1 min-w-0 text-left text-base cursor-pointer"
                                             >
                                                 <div className="relative overflow-hidden flex-1 min-w-0">
-                                                    <span
-                                                        className={`font-medium truncate block transition-all duration-300 ${
-                                                            isTitleTransitioning ? 'opacity-0' : 'opacity-100'
-                                                        }`}>
+                                                    <span className={`font-medium truncate block transition-all duration-300 ${
+                                                        isTitleTransitioning ? 'opacity-0' : 'opacity-100'
+                                                    }`}>
                                                         {conv.title}
                                                     </span>
                                                     {isTitleTransitioning && oldTitle && (
-                                                        <span
-                                                            className="font-medium truncate block absolute inset-0 opacity-0">
-                                                                {oldTitle}
+                                                        <span className="font-medium truncate block absolute inset-0 opacity-0">
+                                                            {oldTitle}
                                                         </span>
                                                     )}
                                                 </div>
@@ -322,6 +335,36 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                     </div>
                 )
             ))}
+
+            {/* 加载更多按钮 */}
+            {hasMore && (
+                <div className="mt-2 flex justify-center">
+                    <Button
+                        onClick={handleLoadMore}
+                        variant="outline"
+                        disabled={isLoading}
+                        className="cursor-pointer flex items-center gap-2 px-8 py-3 rounded-2xl text-sm font-medium border border-gray-200 hover:border-gray-300 hover:bg-gray-50 active:scale-[0.97] transition-all duration-200"
+                    >
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                {t("loading")}
+                            </>
+                        ) : (
+                            <>
+                                {t("load_more")}
+                                <ChevronDown className="w-4 h-4" />
+                            </>
+                        )}
+                    </Button>
+                </div>
+            )}
+
+            {conversations.length === 0 && !isLoading && (
+                <div className="text-center text-gray-500 py-8">
+                    {t("no_conversations")}
+                </div>
+            )}
         </div>
     );
 });
