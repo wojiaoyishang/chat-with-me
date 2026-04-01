@@ -931,7 +931,7 @@ function ChatBox({
         }
     }, [chatboxSetup, onSendMessage, setAttachments, toolsStatus, markId]);
 
-// 在 ChatBox 组件内部定义渲染菜单项的函数
+    // 在 ChatBox 组件内部定义渲染菜单项的函数
     const renderMenuItems = useCallback((items, parentPath = []) => {
         return items.map((item, index) => {
             if (item.type === 'label') {

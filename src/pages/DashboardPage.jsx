@@ -16,6 +16,9 @@ const DashboardPage = ({type = "chat"}) => {
 
     const urlParams = useParams();
 
+    const prevChatMarkIdRef = useRef("");
+    const prevDocumentMarkIdRef = useRef("");
+
     const [chatMarkId, setChatMarkId] = useState(urlParams.chatMarkId);
     const [documentMarkId, setDocumentMarkId] = useState(urlParams.documentMarkId);
 
@@ -88,16 +91,23 @@ const DashboardPage = ({type = "chat"}) => {
     );
 
     useEffect(() => {
+
         emitEvent({
             type: "page",
             target: "Dashboard",
             payload: {
                 command: "Dashboard-Change",
                 pageType: pageType,
-            },
-            markId: chatMarkId
+                chatMarkId: chatMarkId,
+                prevChatMarkId: prevChatMarkIdRef.current,
+                documentMarkId: documentMarkId,
+                prevDocumentMarkId: prevDocumentMarkIdRef.current
+            }
         })
-    }, [pageType, chatMarkId]);
+
+        prevChatMarkIdRef.current = chatMarkId;
+        prevDocumentMarkIdRef.current = documentMarkId;
+    }, [pageType, chatMarkId, documentMarkId]);
 
     // 处理聊天 MarkId 变化，组件中不能直接call这个函数，不然不知道是设为空还是真的没有提供
     const handleMarkIdSelect = useCallback(({newChatMarkId, newDocumentMarkId}) => {

@@ -939,44 +939,52 @@ function ChatPage({
         toast.error(t("folder_upload_not_supported"));
     }, [t]);
 
-    const handleSelectedFiles = useCallback((files, items) => {
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (item.kind === 'string' && item.type === 'text/plain') {
-                item.getAsString(function (text) {
-                    emitEvent({
-                        type: "widget",
-                        target: "ChatBox",
-                        payload: { command: "Get-MessageContent" },
-                        markId: chatMarkId,
-                        fromWebsocket: true,
-                        notReplyToWebsocket: true
-                    }).then(payload => {
+    const handleSelectedFiles = useCallback((files, items = []) => {  // ← 默认值 items = []
+        // 处理拖拽/粘贴时的纯文本插入（items 可能存在）
+        if (items && items.length > 0) {
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.kind === 'string' && item.type === 'text/plain') {
+                    item.getAsString(function (text) {
                         emitEvent({
                             type: "widget",
                             target: "ChatBox",
-                            payload: {
-                                command: "Set-MessageContent",
-                                value: payload.value + text
-                            },
+                            payload: { command: "Get-MessageContent" },
                             markId: chatMarkId,
-                            fromWebsocket: true
-                        })
-                    })
-                });
+                            fromWebsocket: true,
+                            notReplyToWebsocket: true
+                        }).then(payload => {
+                            emitEvent({
+                                type: "widget",
+                                target: "ChatBox",
+                                payload: {
+                                    command: "Set-MessageContent",
+                                    value: payload.value + text
+                                },
+                                markId: chatMarkId,
+                                fromWebsocket: true
+                            });
+                        });
+                    });
+                }
             }
         }
+
         if (!(files && files.length > 0)) {
             return;
         }
+
         if (isProcessingRef.current) return;
         isProcessingRef.current = true;
+
         const newUploadFiles = processSelectedFiles(files);
         if (newUploadFiles.length === 0) {
             isProcessingRef.current = false;
             return;
         }
+
         setUploadFiles(prev => [...prev, ...newUploadFiles]);
+
         newUploadFiles.forEach(uploadFile => {
             const handleProgressUpdate = (uploadId, progress) => {
                 setUploadFiles(prev => {
@@ -987,23 +995,27 @@ function ChatPage({
                     return updated;
                 });
             };
+
             const handleComplete = (uploadId, attachment) => {
                 setUploadFiles(prev => prev.filter(f => f.id !== uploadId));
                 setAttachments(prev => [...prev, attachment]);
             };
+
             const cleanup = fileUpload(
                 uploadFile,
                 handleProgressUpdate,
                 handleComplete,
                 (error) => {
-                    toast.error(t("file_upload.error", {message: error?.message || 'Upload failed'}));
+                    toast.error(t("file_upload.error", { message: error?.message || 'Upload failed' }));
                     setUploadFiles(prev =>
-                        prev.map(f => f.id === uploadFile.id ? {...f, error: true, progress: 0} : f)
+                        prev.map(f => f.id === uploadFile.id ? { ...f, error: true, progress: 0 } : f)
                     );
                 }
             );
+
             uploadIntervals.current.set(uploadFile.id, cleanup);
         });
+
         setTimeout(() => {
             isProcessingRef.current = false;
         }, 500);
@@ -1065,11 +1077,11 @@ function ChatPage({
     }, []);
 
     const handleFilePicker = useCallback(() => {
-        return createFilePicker('*', handleSelectedFiles);
+        return createFilePicker('*', handleSelectedFiles)();
     }, [handleSelectedFiles]);
 
     const handlePicPicker = useCallback(() => {
-        return createFilePicker('image/*', handleSelectedFiles);
+        return createFilePicker('image/*', handleSelectedFiles)();
     }, [handleSelectedFiles]);
 
     // ========= 消息相关 =========

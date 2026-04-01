@@ -1284,12 +1284,16 @@ code 设置为 401 。
 
 #### 页面切换事件
 
-由用户切换页面时自动发出，注意 markId 可能为空，这个事件只能是前端发给后端
+由用户切换页面时自动发出，注意 markId 可能为空，这个事件只能是前端发给后端，并且外部的 markId 为空
 
 ```python
 {
     "command": "Dashboard-Change",
     "pageType": "pageType",  # 页面的类型，chat
+    "chatMarkId": "xxx",  # 目前页面聊天 ID
+    "prevChatMarkId": "xxx",  # 上一个页面聊天 ID
+    "documentMarkId": "xxx", # 目前文档ID
+    "prevDocumentMarkId": "xxx"
 }  
 ```
 
