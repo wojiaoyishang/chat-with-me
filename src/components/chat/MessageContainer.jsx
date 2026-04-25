@@ -14,7 +14,7 @@ import {
     ChevronRight,
     ChevronDown,
     ChevronUp,
-    GitBranch
+    GitBranch, BarChart3
 } from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
@@ -35,6 +35,9 @@ import {
 
 import {copyTextToClipboard, useIsMobile} from "@/lib/tools.jsx";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
+
+import {InteractiveNvlWrapper} from '@neo4j-nvl/react';
+import LazyVisibility from "@/context/LazyVisibility.jsx";
 
 /**
  * 处理消息操作工具函数
@@ -160,7 +163,6 @@ const MessageMenuButton = memo(({messageData}) => {
                         {t('regenerate_message')}
                     </DropdownMenuItem>
                 )}
-
             </DropdownMenuContent>
         </DropdownMenu>
     );
@@ -222,7 +224,6 @@ const MessageTools = memo(({messageData}) => {
 
     return (
         <div className="flex gap-1">
-
             {/* 编辑消息 */}
             <Tooltip>
                 <TooltipTrigger asChild>
@@ -256,7 +257,6 @@ const MessageTools = memo(({messageData}) => {
                     </TooltipContent>
                 </Tooltip>
             )}
-
 
             {/* 复制 */}
             <Tooltip>
@@ -382,30 +382,202 @@ const MessagePaginator = memo(({
     );
 });
 
+const KnowledgeGraphViewer = memo(({msg, className = "w-full"}) => {
+        const nvlRef = useRef(null);
+        const network = msg?.network;
+        const hasAttachedRef = useRef(false);
+        const initializedRef = useRef(false);
+        const [isGraphLoading, setIsGraphLoading] = useState(true);
+
+        // ====================== 严格模式兼容初始化（不变） ======================
+        useEffect(() => {
+            if (initializedRef.current) return;
+
+            if (msg && nvlRef.current) {
+                msg.nvlInstance = nvlRef.current;
+                hasAttachedRef.current = true;
+                initializedRef.current = true;
+            }
+
+            return () => {
+                if (nvlRef.current) {
+                    nvlRef.current.destroy?.();
+                    nvlRef.current = null;
+                    initializedRef.current = false;
+                }
+            };
+        }, []);
+
+        // ====================== 所有 Hook 必须在最前面 ======================
+        if (!network?.nodes || !Array.isArray(network.nodes) || network.nodes.length === 0) {
+            return null;
+        }
+
+        // 颜色映射（移到最前面）
+        const getColorForLabel = (label) => {
+            if (!label) return '#666666';
+            const colorMap = {
+                'Person': '#fae08e',
+                'Event': '#67bdff',
+                'Emotion': '#ff6b6b',
+                'Thing': '#4ecdc4',
+            };
+            if (colorMap[label]) return colorMap[label];
+
+            let hash = 0;
+            for (let i = 0; i < label.length; i++) {
+                hash = label.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const hue = Math.abs(hash) % 360;
+            return `hsl(${hue}, 88%, 58%)`;
+        };
+
+        // ====================== 直接计算（去掉 useMemo，避免缓存问题） ======================
+        const nvlNodes = network.nodes.map((node) => ({
+            id: node.name || String(Math.random()),
+            label: node.label || 'Node',
+            captions: [{value: node.name || node.name}],
+            color: getColorForLabel(node.label || 'Node'),
+        }));
+
+        const nvlRels = (network.relationships || [])
+            .map((rel, index) => ({
+                id: `rel-${index}`,
+                from: rel.source,
+                to: rel.target,
+                label: rel.type || '',
+            }))
+            .filter(r => r.from && r.to);
+
+        // 加载覆盖层（不变）
+        const loadingLayer = (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/85 rounded-b-lg">
+                <div className="flex flex-col items-center">
+                    <ThreeDotLoading size={10} color="#6366f1"/>
+                    <span className="mt-3 text-sm text-gray-500 font-medium">正在渲染知识图谱...</span>
+                </div>
+            </div>
+        );
+
+        // ====================== 图谱内容子组件（不变） ======================
+        const GraphContent = React.memo(({nvlRef, nodes, rels, loadingLayer, onLoadingComplete}) => {
+            const [isLoading, setIsLoading] = useState(true);
+
+            useEffect(() => {
+                const timer = setTimeout(() => {
+                    setIsLoading(false);
+                    onLoadingComplete?.();
+                }, 700);
+                return () => clearTimeout(timer);
+            }, [onLoadingComplete]);
+
+            return (
+                <div className="relative" style={{height: '200px'}}>
+                    <InteractiveNvlWrapper
+                        ref={nvlRef}
+                        nodes={nodes}
+                        rels={rels}
+                        nvlOptions={{
+                            layout: 'd3Force',
+                            renderer: 'canvas',
+                            nodeColorScheme: 'neo4j',
+                            relationshipColorScheme: 'neo4j',
+                            nodeSize: 56,
+                            fontSize: 11.5,
+                        }}
+                        mouseEventCallbacks={{
+                            onPan: true, onPanStart: true, onPanEnd: true,
+                            onZoom: true, onZoomStart: true, onZoomEnd: true,
+                            onDragStart: true, onDrag: true, onDragEnd: true,
+                            onHover: true,
+                        }}
+                        style={{width: '100%', height: '200px', minHeight: '200px'}}
+                    />
+                    {isLoading && loadingLayer}
+                </div>
+            );
+        });
+        GraphContent.displayName = 'GraphContent';
+
+        // ====================== 最终渲染 ======================
+        return (
+            <div className={`mt-1 mb-4 border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm ${className}`}>
+                <div
+                    className="px-4 py-2.5 text-sm font-medium text-gray-600 border-b bg-gray-50 flex items-center justify-between w-full">
+                <span className="flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4 text-gray-500"/>
+                    知识图谱记忆
+                </span>
+
+                    {isGraphLoading ? (
+                        <div className="flex items-center gap-1.5">
+                            <ThreeDotLoading size={6} color="#9ca3af"/>
+                            <span className="text-xs text-gray-400">正在渲染...</span>
+                        </div>
+                    ) : (
+                        <span className="text-xs text-gray-400">
+                        {nvlNodes.length} 个节点 · {nvlRels.length} 条关系
+                    </span>
+                    )}
+                </div>
+
+                <LazyVisibility
+                    placeholder={loadingLayer}
+                    rootMargin="150px"
+                    className="w-full min-h-[200px]"
+                    fade={false}
+                    hideOnExit={true}
+                >
+                    <GraphContent
+                        nvlRef={nvlRef}
+                        nodes={nvlNodes}
+                        rels={nvlRels}
+                        loadingLayer={loadingLayer}
+                        onLoadingComplete={() => setIsGraphLoading(false)}
+                    />
+                </LazyVisibility>
+            </div>
+        );
+    },
+    (prev, next) => {
+        return (
+            prev.msg.network === next.msg.network &&
+            prev.className === next.className
+        )
+    }
+);
+
+KnowledgeGraphViewer.displayName = 'KnowledgeGraphViewer';
+
 /**
  * 纯文本消息内容组件（仅用于 right）
  */
-const TextOnlyMessageContent = memo(({msgId, key, isRight, content, avatar, displayName, isLeaving}) => {
+const TextOnlyMessageContent = memo(({msg, msgId, isRight, content, avatar, displayName, isLeaving}) => {
     if (isRight) {
         return (
-            <div className="flex justify-end items-center gap-3 max-w-[80%] ml-auto">
-                <div
-                    className={`max-w-[100%] bg-white rounded-2xl px-4 py-2.5 shadow-sm text-gray-800 break-words whitespace-pre-wrap border border-gray-100 transition-opacity duration-300 ${isLeaving ? 'opacity-0' : 'opacity-100'
-                    }`}
-                >
-                    {content}
+            <>
+                <KnowledgeGraphViewer key={msgId} msg={msg} className="w-[80%] mr-13" align="right"/>
+                <div className="flex justify-end items-center gap-3 max-w-[80%] ml-auto">
+                    <div
+                        className={`max-w-[100%] bg-white rounded-2xl px-4 py-2.5 shadow-sm text-gray-800 break-words whitespace-pre-wrap border border-gray-100 transition-opacity duration-300 ${isLeaving ? 'opacity-0' : 'opacity-100'
+                        }`}
+                    >
+                        {content}
+                    </div>
+                    <Avatar className="h-10 w-10">
+                        <AvatarImage src={avatar} alt={displayName}/>
+                        <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
+                    </Avatar>
                 </div>
-                <Avatar className="h-10 w-10">
-                    <AvatarImage src={avatar} alt={displayName}/>
-                    <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
-                </Avatar>
-            </div>
+            </>
         );
     }
 
     return (
         <div className="w-full pl-10 pr-10">
             <div className="text-gray-800 break-words max-w-none">
+                {/* 图谱可视化*/}
+                <KnowledgeGraphViewer key={msgId} msg={msg}/>
                 <MarkdownRenderer
                     contextId={msgId}
                     content={content}
@@ -495,7 +667,6 @@ const useMessageAnimation = (messagesOrder) => {
         const prevOrder = prevMessagesOrderRef.current;
         const newOrder = messagesOrder;
 
-        // 识别新消息（排除分页占位符）
         const normalNewMessages = newOrder.filter(msgId =>
             !prevOrder.includes(msgId) &&
             msgId !== "<PREV_MORE>" &&
@@ -506,13 +677,11 @@ const useMessageAnimation = (messagesOrder) => {
             setEnteringMessages(prev => new Set([...prev, msgId]));
         });
 
-        // 识别移除的消息
         const removedMessages = prevOrder.filter(msgId => !newOrder.includes(msgId));
         removedMessages.forEach(msgId => {
             setLeavingMessages(prev => new Set([...prev, msgId]));
         });
 
-        // 清理动画状态
         if (normalNewMessages.length > 0 || removedMessages.length > 0 || fadeMessages.size > 0) {
             animationFrameRef.current = requestAnimationFrame(() => {
                 setTimeout(() => {
@@ -532,9 +701,6 @@ const useMessageAnimation = (messagesOrder) => {
         };
     }, [messagesOrder, fadeMessages]);
 
-    /**
-     * 获取消息动画类名
-     */
     const getMessageAnimationClass = useCallback((msgId, isFading) => {
         if (leavingMessages.has(msgId)) {
             return 'opacity-0 -translate-y-2 pointer-events-none';
@@ -560,7 +726,7 @@ const useMessageAnimation = (messagesOrder) => {
 /**
  * 自定义Hook：处理消息事件监听
  */
-const useMessageEvents = (markId, setSwitchingMessageId) => {
+const useMessageEvents = (markId, setSwitchingMessageId, messages) => {
     useEffect(() => {
         const unsubscribe = onEvent({
             type: "widget",
@@ -574,7 +740,6 @@ const useMessageEvents = (markId, setSwitchingMessageId) => {
                 case "Set-SwitchingMessage":
                     setSwitchingMessageId(payload.value);
 
-                    // 设置不要编辑消息
                     emitEvent({
                         type: "widget",
                         target: "ChatBox",
@@ -656,19 +821,8 @@ const MessageItem = React.memo(({
     // ==================== mid 专属展开逻辑 ====================
     const [isExpanded, setIsExpanded] = useState(false);
     const contentRef = useRef(null);
-    const shouldShowExpand = isMid && displayContent.length > 650; // 可根据需要调整阈值
+    const shouldShowExpand = isMid && displayContent.length > 650;
     const [isMobileActive, setIsMobileActive] = useState(false);
-
-    useEffect(() => {
-        if (!isMid || !contentRef.current) return;
-        // 延迟检查，等待 Markdown 渲染完成
-        const timer = setTimeout(() => {
-            if (contentRef.current) {
-                // 也可以改成 scrollHeight 判断，更精确
-            }
-        }, 100);
-        return () => clearTimeout(timer);
-    }, [isMid, displayContent]);
 
     // 只在右侧消息上启用 hover 检测
     const [isHovered, setIsHovered] = useState(false);
@@ -694,13 +848,13 @@ const MessageItem = React.memo(({
                         className="relative group bg-gray-50/40 border border-gray-100 rounded-2xl transition-all duration-300 hover:shadow-sm">
                         <div className="flex flex-col items-start w-full px-5 py-5">
 
+                            <KnowledgeGraphViewer key={msgId} msg={msg} className={"w-full"}/>
+
                             {/* 1. 内容区域 */}
                             <div
-                                // 添加 onClick 切换状态 (仅针对移动端逻辑)
                                 onClick={() => setIsMobileActive(!isMobileActive)}
-                                // 增加聚焦失去后的处理
                                 onBlur={() => setIsMobileActive(false)}
-                                tabIndex={0} // 使 div 可获焦以支持 onBlur
+                                tabIndex={0}
                                 className="relative group bg-gray-50/40 rounded-2xl transition-all duration-300 outline-none"
                             >
                                 <MarkdownRenderer
@@ -708,28 +862,22 @@ const MessageItem = React.memo(({
                                     content={displayContent}
                                 />
 
-                                {/* 2. 附件区域 - 放在最顶上 */}
+                                {/* 附件区域 */}
                                 {hasAttachments && (
-                                    <div className="w-full border rounded-md">
+                                    <div className="w-full border rounded-md mt-3">
                                         <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
                                     </div>
                                 )}
 
-                                {/* 阴影遮罩 - 颜色与容器背景 gray-50 保持一致 */}
                                 {!isExpanded && shouldShowExpand && (
                                     <div
                                         className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#f9fafb] via-[#f9fafb]/95 to-transparent pointer-events-none"/>
                                 )}
                             </div>
 
-                            {/* 3. 动态底部区域：处理工具栏扩展动画 */}
-                            <div className={`
-                                    w-full grid transition-all duration-300 ease-in-out
-                                    ${shouldShowExpand
-                                ? 'grid-rows-[1fr] mt-3'
-                                : (isMobileActive ? 'grid-rows-[1fr] mt-4' : 'grid-rows-[0fr] group-hover:grid-rows-[1fr] group-hover:mt-4')
-                            }
-                                `}>
+                            {/* 底部区域：展开按钮 + 工具栏 */}
+                            <div
+                                className={`w-full grid transition-all duration-300 ease-in-out ${shouldShowExpand ? 'grid-rows-[1fr] mt-3' : (isMobileActive ? 'grid-rows-[1fr] mt-4' : 'grid-rows-[0fr] group-hover:grid-rows-[1fr] group-hover:mt-4')}`}>
                                 <div className="overflow-hidden">
                                     <div className="flex items-center justify-between w-full">
                                         {shouldShowExpand ? (
@@ -753,14 +901,8 @@ const MessageItem = React.memo(({
                                             <div/>
                                         )}
 
-                                        {/* 工具栏显示逻辑 */}
-                                        <div className={`
-                                            transition-all duration-300
-                                            ${shouldShowExpand
-                                            ? 'opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 delay-100' // 有展开按钮：淡入+位移
-                                            : 'opacity-100' // 无按钮：随父级网格扩展直接出现
-                                        }
-                                        `}>
+                                        <div
+                                            className={`transition-all duration-300 ${shouldShowExpand ? 'opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 delay-100' : 'opacity-100'}`}>
                                             <MessageActions
                                                 showPaginator={showPaginator}
                                                 msgPrev={msgPrev}
@@ -778,7 +920,6 @@ const MessageItem = React.memo(({
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -790,21 +931,13 @@ const MessageItem = React.memo(({
         if (hasAttachments && !hasContent) {
             return (
                 <>
-                    {!isRight && (
-                        <LeftAvatarName
-                            avatar={avatar}
-                            displayName={displayName}
-                            isLeaving={leavingMessages.has(msgId)}
-                        />
-                    )}
+                    {!isRight && <LeftAvatarName avatar={avatar} displayName={displayName}
+                                                 isLeaving={leavingMessages.has(msgId)}/>}
 
                     {isRight ? (
                         <div className="flex items-start gap-2 max-w-full mt-1">
                             <div className="flex-1 min-w-[150px] max-w-[calc(100%-3rem)] sm:pl-0 pl-7">
-                                <AttachmentShowcase
-                                    attachmentsMeta={msg.attachments}
-                                    msgMode={true}
-                                />
+                                <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
                             </div>
                             <Avatar className="h-10 w-10 flex-shrink-0 mt-1">
                                 <AvatarImage src={avatar} alt={displayName}/>
@@ -813,12 +946,12 @@ const MessageItem = React.memo(({
                         </div>
                     ) : (
                         <div className="max-w-[95%] pl-7 mb-2">
-                            <AttachmentShowcase
-                                attachmentsMeta={msg.attachments}
-                                msgMode={true}
-                            />
+                            <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
                         </div>
                     )}
+
+                    {/* 图谱 - 附件消息也支持 */}
+                    <KnowledgeGraphViewer key={msgId} msg={msg}/>
                 </>
             );
         }
@@ -833,7 +966,7 @@ const MessageItem = React.memo(({
                                 <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
                             </div>
                             <TextOnlyMessageContent
-                                key={msgId}
+                                msg={msg}
                                 msgId={msgId}
                                 isRight={true}
                                 content={displayContent}
@@ -850,7 +983,7 @@ const MessageItem = React.memo(({
                                 <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
                             </div>
                             <TextOnlyMessageContent
-                                key={msgId}
+                                msg={msg}
                                 msgId={msgId}
                                 isRight={false}
                                 content={displayContent}
@@ -867,20 +1000,22 @@ const MessageItem = React.memo(({
         // 情况3: 只有内容
         if (hasContent) {
             return isRight ? (
-                <TextOnlyMessageContent
-                    key={msgId}
-                    msgId={msgId}
-                    isRight={true}
-                    content={displayContent}
-                    avatar={avatar}
-                    displayName={displayName}
-                    isLeaving={leavingMessages.has(msgId)}
-                />
+                <>
+                    <TextOnlyMessageContent
+                        msg={msg}
+                        msgId={msgId}
+                        isRight={true}
+                        content={displayContent}
+                        avatar={avatar}
+                        displayName={displayName}
+                        isLeaving={leavingMessages.has(msgId)}
+                    />
+                </>
             ) : (
                 <div className="flex flex-col items-start w-full">
                     <LeftAvatarName avatar={avatar} displayName={displayName} isLeaving={leavingMessages.has(msgId)}/>
                     <TextOnlyMessageContent
-                        key={msgId}
+                        msg={msg}
                         msgId={msgId}
                         isRight={false}
                         content={displayContent}
@@ -892,7 +1027,7 @@ const MessageItem = React.memo(({
             );
         }
 
-        // 情况4: 无内容
+        // 情况4: 无内容（仅头像）
         return (
             <>
                 {isRight ? (
@@ -910,6 +1045,7 @@ const MessageItem = React.memo(({
                         <div className="pl-7 min-h-[1.25rem]"></div>
                     </div>
                 )}
+                <KnowledgeGraphViewer key={msgId} msg={msg}/>
             </>
         );
     };
@@ -977,11 +1113,8 @@ const MessageContainer = forwardRef(({
         getMessageAnimationClass
     } = useMessageAnimation(messagesOrder);
 
-    useMessageEvents(markId, setSwitchingMessageId);
+    useMessageEvents(markId, setSwitchingMessageId, messages);
 
-    /**
-     * 处理加载更多请求
-     */
     const handleLoadMore = useCallback(async () => {
         if (isLoadingMore || !onLoadMore) return;
         setIsLoadingMore(true);
@@ -991,17 +1124,12 @@ const MessageContainer = forwardRef(({
                 throw new Error(t('unknown_error'));
             }
         } catch (error) {
-            toast.error(t('load_more_error', {
-                message: error?.message || t('unknown_error')
-            }));
+            toast.error(t('load_more_error', {message: error?.message || t('unknown_error')}));
         } finally {
             setIsLoadingMore(false);
         }
     }, [isLoadingMore, onLoadMore, t]);
 
-    /**
-     * 渲染加载更多占位符
-     */
     const renderLoadMore = useCallback((msgId) => (
         <div
             key={msgId}
@@ -1027,9 +1155,6 @@ const MessageContainer = forwardRef(({
         </div>
     ), [isLoadingMore, leavingMessages, enteringMessages, handleLoadMore, t]);
 
-    /**
-     * 渲染切换消息加载器
-     */
     const renderSwitchingLoader = useCallback((msgId) => (
         <div
             key={`loading-${msgId}`}

@@ -1640,6 +1640,39 @@ function ChatPage({
                     case "Re-Messages-Loaded":
                         emitMessagesLoaded();
                         break;
+                    case "Add-MessageNodes":
+                        if (payload.value && typeof payload.value === 'object') {
+                            updateStreamingStatus();
+                            const newMessages = produce(messagesRef.current, draft => {
+                                for (const [msgId, newNodes] of Object.entries(payload.value)) {
+                                    if (draft[msgId]) {
+                                        if (!draft[msgId].network) {
+                                            draft[msgId].network = {};
+                                        }
+                                        if (!draft[msgId].network.nodes) {
+                                            draft[msgId].network.nodes = [];
+                                        }
+                                        draft[msgId].network.nodes = draft[msgId].network.nodes.concat(newNodes || []);
+                                    }
+                                }
+                            });
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+                            setTimeout(() => {
+                                if (isAutoScrollEnabledRef.current) {
+                                    if (isStreamingRef.current) {
+                                        smoothScrollToBottom(true);
+                                    } else {
+                                        requestScrollToBottom();
+                                    }
+                                }
+                                checkScrollPosition(true);
+                            }, 0);
+                            if (payload.reply) reply({success: true});
+                        } else {
+                            reply({success: false});
+                        }
+                        break;
                 }
             });
         const unsubscribe2 = onEvent({

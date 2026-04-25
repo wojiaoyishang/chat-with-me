@@ -6,6 +6,19 @@ import {visualizer} from 'rollup-plugin-visualizer';
 
 export default defineConfig({
     plugins: [react(), tailwindcss(), visualizer({open: true})],
+    optimizeDeps: {
+        // 1. 继续排除 workers 包（避免之前的 worker 文件报错）
+        exclude: ['@neo4j-nvl/layout-workers'],
+
+        // 2. 强制把 workers 包内部依赖的 CommonJS 模块也预构建
+        include: [
+            '@neo4j-nvl/layout-workers > cytoscape',
+            '@neo4j-nvl/layout-workers > cytoscape-cose-bilkent',
+            '@neo4j-nvl/layout-workers > bin-pack',
+            '@neo4j-nvl/layout-workers > @neo4j-bloom/dagre',
+            '@neo4j-nvl/layout-workers > graphlib'
+        ]
+    },
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./src"),

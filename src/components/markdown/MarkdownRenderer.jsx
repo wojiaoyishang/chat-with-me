@@ -12,7 +12,7 @@ import './CodeBlock.css';
 
 import {BASE_BACKEND_URL} from '@/config';
 
-import LazyVisibility from "./LazyVisibility.jsx";
+import LazyVisibility from "../../context/LazyVisibility.jsx";
 
 // 链接处理
 const allowCustomScheme = (uri, key, node) => {
