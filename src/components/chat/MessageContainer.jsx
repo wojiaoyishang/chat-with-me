@@ -382,172 +382,169 @@ const MessagePaginator = memo(({
     );
 });
 
-const KnowledgeGraphViewer = memo(({msg, className = "w-full"}) => {
-        const nvlRef = useRef(null);
-        const network = msg?.network;
-        const hasAttachedRef = useRef(false);
-        const initializedRef = useRef(false);
-        const [isGraphLoading, setIsGraphLoading] = useState(true);
+const getColorForLabel = (label) => {
+    if (!label) return '#666666';
+    const colorMap = {
+        'Person': '#fae08e',
+        'Event': '#67bdff',
+        'Emotion': '#ff6b6b',
+        'Thing': '#4ecdc4',
+        'Chunk': '#a78bfa',
+    };
+    if (colorMap[label]) return colorMap[label];
+    let hash = 0;
+    for (let i = 0; i < label.length; i++) {
+        hash = label.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 88%, 58%)`;
+};
 
-        // ====================== 严格模式兼容初始化（不变） ======================
-        useEffect(() => {
-            if (initializedRef.current) return;
+const GraphContent = React.memo(({ nvlRef, nodes, rels, loadingLayer, onLoadingComplete }) => {
+    const [isLoading, setIsLoading] = useState(true);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+            onLoadingComplete?.();
+        }, 700);
+        return () => clearTimeout(timer);
+    }, [onLoadingComplete]);
+    return (
+        <div className="relative" style={{ height: '200px' }}>
+            <InteractiveNvlWrapper
+                ref={nvlRef}
+                nodes={nodes}
+                rels={rels}
+                nvlOptions={{
+                    layout: 'd3Force',
+                    renderer: 'canvas',
+                    nodeColorScheme: 'neo4j',
+                    relationshipColorScheme: 'neo4j',
+                    nodeSize: 75,
+                    fontSize: 12,
+                    initialZoom: 1.8,
+                    minZoom: 0.2,
+                    maxZoom: 12,
+                }}
+                mouseEventCallbacks={{
+                    onPan: true, onPanStart: true, onPanEnd: true,
+                    onZoom: true, onZoomStart: true, onZoomEnd: true,
+                    onDragStart: true, onDrag: true, onDragEnd: true,
+                    onHover: true,
+                }}
+                style={{ width: '100%', height: '200px', minHeight: '200px' }}
+            />
+            {isLoading && loadingLayer}
+        </div>
+    );
+});
+GraphContent.displayName = 'GraphContent';
 
-            if (msg && nvlRef.current) {
-                msg.nvlInstance = nvlRef.current;
-                hasAttachedRef.current = true;
-                initializedRef.current = true;
+const KnowledgeGraphViewer = memo(({ msg, className = "w-full" }) => {
+    const nvlRef = useRef(null);
+    const hasAttachedRef = useRef(false);
+    const initializedRef = useRef(false);
+    const [isGraphLoading, setIsGraphLoading] = useState(true);
+    const network = msg?.network;
+
+    // === 只保留 cleanup，移除原来的 attachment 逻辑 ===
+    useEffect(() => {
+        return () => {
+            if (nvlRef.current) {
+                nvlRef.current.destroy?.();
+                nvlRef.current = null;
+                initializedRef.current = false;
+                msg.unregisterComponent("nvlInstance");
             }
-
-            return () => {
-                if (nvlRef.current) {
-                    nvlRef.current.destroy?.();
-                    nvlRef.current = null;
-                    initializedRef.current = false;
-                }
-            };
-        }, []);
-
-        // ====================== 所有 Hook 必须在最前面 ======================
-        if (!network?.nodes || !Array.isArray(network.nodes) || network.nodes.length === 0) {
-            return null;
-        }
-
-        // 颜色映射（移到最前面）
-        const getColorForLabel = (label) => {
-            if (!label) return '#666666';
-            const colorMap = {
-                'Person': '#fae08e',
-                'Event': '#67bdff',
-                'Emotion': '#ff6b6b',
-                'Thing': '#4ecdc4',
-            };
-            if (colorMap[label]) return colorMap[label];
-
-            let hash = 0;
-            for (let i = 0; i < label.length; i++) {
-                hash = label.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            const hue = Math.abs(hash) % 360;
-            return `hsl(${hue}, 88%, 58%)`;
         };
+    }, []);
 
-        // ====================== 直接计算（去掉 useMemo，避免缓存问题） ======================
-        const nvlNodes = network.nodes.map((node) => ({
-            id: node.name || String(Math.random()),
-            label: node.label || 'Node',
-            captions: [{value: node.name || node.name}],
-            color: getColorForLabel(node.label || 'Node'),
-        }));
+    if (!network?.nodes || !Array.isArray(network.nodes) || network.nodes.length === 0) {
+        return null;
+    }
 
-        const nvlRels = (network.relationships || [])
-            .map((rel, index) => ({
-                id: `rel-${index}`,
-                from: rel.source,
-                to: rel.target,
-                label: rel.type || '',
-            }))
-            .filter(r => r.from && r.to);
+    const nvlNodes = network.nodes.map((node) => ({
+        id: String(node.id ?? node.name),
+        captions: [{ value: node.name || String(node.id) }],
+        color: getColorForLabel(node.label || 'Node'),
+    }));
 
-        // 加载覆盖层（不变）
-        const loadingLayer = (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/85 rounded-b-lg">
-                <div className="flex flex-col items-center">
-                    <ThreeDotLoading size={10} color="#6366f1"/>
-                    <span className="mt-3 text-sm text-gray-500 font-medium">正在渲染知识图谱...</span>
-                </div>
+    const nodeIdSet = new Set(nvlNodes.map(n => n.id));
+
+    const nvlRels = (network.relationships || [])
+        .map((rel, index) => {
+            const from = String(rel.from ?? rel.source);
+            const to = String(rel.to ?? rel.target);
+            return {
+                id: String(rel.id ?? `rel-${index}`),
+                from,
+                to,
+                captions: (rel.type || rel.label) ? [{ value: rel.type || rel.label }] : undefined,
+            };
+        })
+        .filter(r => nodeIdSet.has(r.from) && nodeIdSet.has(r.to) && r.from !== r.to);
+
+    const loadingLayer = (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/85 rounded-b-lg">
+            <div className="flex flex-col items-center">
+                <ThreeDotLoading size={10} color="#6366f1" />
+                <span className="mt-3 text-sm text-gray-500 font-medium">正在渲染知识图谱...</span>
             </div>
-        );
+        </div>
+    );
 
-        // ====================== 图谱内容子组件（不变） ======================
-        const GraphContent = React.memo(({nvlRef, nodes, rels, loadingLayer, onLoadingComplete}) => {
-            const [isLoading, setIsLoading] = useState(true);
-
-            useEffect(() => {
-                const timer = setTimeout(() => {
-                    setIsLoading(false);
-                    onLoadingComplete?.();
-                }, 700);
-                return () => clearTimeout(timer);
-            }, [onLoadingComplete]);
-
-            return (
-                <div className="relative" style={{height: '200px'}}>
-                    <InteractiveNvlWrapper
-                        ref={nvlRef}
-                        nodes={nodes}
-                        rels={rels}
-                        nvlOptions={{
-                            layout: 'd3Force',
-                            renderer: 'canvas',
-                            nodeColorScheme: 'neo4j',
-                            relationshipColorScheme: 'neo4j',
-                            nodeSize: 56,
-                            fontSize: 11.5,
-                        }}
-                        mouseEventCallbacks={{
-                            onPan: true, onPanStart: true, onPanEnd: true,
-                            onZoom: true, onZoomStart: true, onZoomEnd: true,
-                            onDragStart: true, onDrag: true, onDragEnd: true,
-                            onHover: true,
-                        }}
-                        style={{width: '100%', height: '200px', minHeight: '200px'}}
-                    />
-                    {isLoading && loadingLayer}
-                </div>
-            );
-        });
-        GraphContent.displayName = 'GraphContent';
-
-        // ====================== 最终渲染 ======================
-        return (
-            <div className={`mt-1 mb-4 border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm ${className}`}>
-                <div
-                    className="px-4 py-2.5 text-sm font-medium text-gray-600 border-b bg-gray-50 flex items-center justify-between w-full">
+    return (
+        <div className={`mt-1 mb-4 border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm ${className}`}>
+            <div className="px-4 py-2.5 text-sm font-medium text-gray-600 border-b bg-gray-50 flex items-center justify-between w-full">
                 <span className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-gray-500"/>
+                    <BarChart3 className="w-4 h-4 text-gray-500" />
                     知识图谱记忆
                 </span>
-
-                    {isGraphLoading ? (
-                        <div className="flex items-center gap-1.5">
-                            <ThreeDotLoading size={6} color="#9ca3af"/>
-                            <span className="text-xs text-gray-400">正在渲染...</span>
-                        </div>
-                    ) : (
-                        <span className="text-xs text-gray-400">
+                {isGraphLoading ? (
+                    <div className="flex items-center gap-1.5">
+                        <ThreeDotLoading size={6} color="#9ca3af" />
+                        <span className="text-xs text-gray-400">正在渲染...</span>
+                    </div>
+                ) : (
+                    <span className="text-xs text-gray-400">
                         {nvlNodes.length} 个节点 · {nvlRels.length} 条关系
                     </span>
-                    )}
-                </div>
-
-                <LazyVisibility
-                    placeholder={loadingLayer}
-                    rootMargin="150px"
-                    className="w-full min-h-[200px]"
-                    fade={false}
-                    hideOnExit={true}
-                >
-                    <GraphContent
-                        nvlRef={nvlRef}
-                        nodes={nvlNodes}
-                        rels={nvlRels}
-                        loadingLayer={loadingLayer}
-                        onLoadingComplete={() => setIsGraphLoading(false)}
-                    />
-                </LazyVisibility>
+                )}
             </div>
-        );
-    },
-    (prev, next) => {
-        return (
-            prev.msg.network === next.msg.network &&
-            prev.className === next.className
-        )
-    }
-);
+            <LazyVisibility
+                placeholder={loadingLayer}
+                rootMargin="150px"
+                className="w-full min-h-[200px]"
+                fade={false}
+                hideOnExit={true}
+            >
+                <GraphContent
+                    nvlRef={nvlRef}
+                    nodes={nvlNodes}
+                    rels={nvlRels}
+                    loadingLayer={loadingLayer}
+                    onLoadingComplete={() => {
+                        setIsGraphLoading(false);
 
-KnowledgeGraphViewer.displayName = 'KnowledgeGraphViewer';
+                        if (!initializedRef.current && msg && nvlRef.current) {
+
+                            msg.registerComponent("nvlInstance", nvlRef.current);
+
+                            if (msg.network_focus) nvlRef.current.fit([msg.network_focus], {
+                                minZoom: 1.8
+                            });
+
+                            hasAttachedRef.current = true;
+                            initializedRef.current = true;
+                        }
+                    }}
+                />
+            </LazyVisibility>
+        </div>
+    );
+}, (prev, next) => {
+    return prev.msg.network === next.msg.network && prev.className === next.msg.className;
+});
 
 /**
  * 纯文本消息内容组件（仅用于 right）

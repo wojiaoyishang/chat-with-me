@@ -1255,10 +1255,40 @@ function ChatPage({
         }
 
         const nextMessagesState = produce(finalMessagesMap, (draft) => {
+            // 原有逻辑：设置 nextMessage
             if (draft[msgId]) {
                 draft[msgId].nextMessage = newMsgId;
             }
+
+            // 确保新消息也有挂载点功能（安全版本）
+            if (newMsgId && draft[newMsgId]) {
+                const msgDraft = draft[newMsgId];
+
+                // 幂等保护：如果已经注入过，就不再重复注入
+                if (typeof msgDraft.registerComponent === 'function') {
+                    return;
+                }
+
+                // === 使用闭包存储 mountPoints，不依赖 draft ===
+                const mountPoints = {};
+
+                // 添加注册函数
+                msgDraft.registerComponent = (componentKey, componentRef) => {
+                    mountPoints[componentKey] = componentRef;
+                };
+
+                // 添加注销函数
+                msgDraft.unregisterComponent = (componentKey) => {
+                    delete mountPoints[componentKey];
+                };
+
+                // 添加获取函数
+                msgDraft.getComponent = (componentKey) => {
+                    return mountPoints[componentKey];
+                };
+            }
         });
+
         messagesRef.current = nextMessagesState;
         setMessages(nextMessagesState);
         return true;
@@ -1363,34 +1393,58 @@ function ChatPage({
                     case "Add-Message":
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            let newMessages = {...messagesRef.current};
+                            let newMessages = { ...messagesRef.current };
+
                             for (const [key, newValue] of Object.entries(payload.value)) {
                                 if (payload.isEdit && !newMessages[key]) {
-                                    reply({success: false});
+                                    reply({ success: false });
                                     return;
                                 }
+
                                 if (newValue.messages === undefined) {
                                     newValue.messages = [];
                                 }
+
                                 if (typeof newValue === 'object') {
                                     if (newMessages[key] && typeof newMessages[key] === 'object' && newMessages[key] !== null) {
-                                        newMessages[key] = {...newMessages[key], ...newValue};
+                                        newMessages[key] = { ...newMessages[key], ...newValue };
                                     } else {
                                         newMessages[key] = newValue;
                                     }
                                 } else {
                                     newMessages[key] = newValue;
                                 }
+
+                                // === 安全注入 registerComponent / getComponent===
+                                const msg = newMessages[key];
+                                if (msg && typeof msg === 'object' && !msg.registerComponent) {
+                                    const mountPoints = {};   // 真正的存储容器（不在 draft 上）
+
+                                    msg.registerComponent = (componentKey, componentRef) => {
+                                        mountPoints[componentKey] = componentRef;
+                                    };
+
+                                    msg.unregisterComponent = (componentKey) => {
+                                        delete mountPoints[componentKey];
+                                    };
+
+                                    msg.getComponent = (componentKey) => {
+                                        return mountPoints[componentKey];
+                                    };
+                                }
                             }
+
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
+
                             setTimeout(() => {
                                 if (wasAutoScroll) {
                                     requestScrollToBottom();
                                 }
                                 checkScrollPosition(true);
                             }, 50);
-                            reply({success: true});
+
+                            reply({ success: true });
                         }
                         break;
                     case "MessagesOrder-Meta":
@@ -1652,7 +1706,14 @@ function ChatPage({
                                         if (!draft[msgId].network.nodes) {
                                             draft[msgId].network.nodes = [];
                                         }
-                                        draft[msgId].network.nodes = draft[msgId].network.nodes.concat(newNodes || []);
+
+                                        // === 新增：按 id 去重 ===
+                                        const currentNodes = draft[msgId].network.nodes;
+                                        const incomingNodes = Array.isArray(newNodes) ? newNodes : [];
+                                        const existingIds = new Set(currentNodes.map(n => n?.id).filter(Boolean));
+                                        const uniqueNewNodes = incomingNodes.filter(n => n && n.id && !existingIds.has(n.id));
+
+                                        draft[msgId].network.nodes = currentNodes.concat(uniqueNewNodes);
                                     }
                                 }
                             });
@@ -1671,6 +1732,91 @@ function ChatPage({
                             if (payload.reply) reply({success: true});
                         } else {
                             reply({success: false});
+                        }
+                        break;
+                    case "Add-MessageNetwork":
+                        if (payload.value && typeof payload.value === 'object') {
+                            updateStreamingStatus();
+                            const newMessages = produce(messagesRef.current, draft => {
+                                for (const [msgId, networkUpdate] of Object.entries(payload.value)) {
+                                    if (draft[msgId] && networkUpdate && typeof networkUpdate === 'object') {
+                                        if (!draft[msgId].network) {
+                                            draft[msgId].network = {};
+                                        }
+
+                                        // === 添加 nodes（支持部分更新 + id 去重）===
+                                        if (networkUpdate.nodes !== undefined) {
+                                            if (!draft[msgId].network.nodes) {
+                                                draft[msgId].network.nodes = [];
+                                            }
+                                            const currentNodes = draft[msgId].network.nodes;
+                                            const incomingNodes = Array.isArray(networkUpdate.nodes) ? networkUpdate.nodes : [];
+                                            const existingIds = new Set(currentNodes.map(n => n?.id).filter(Boolean));
+                                            const uniqueNewNodes = incomingNodes.filter(n => n && n.id && !existingIds.has(n.id));
+                                            draft[msgId].network.nodes = currentNodes.concat(uniqueNewNodes);
+                                        }
+
+                                        // === 添加 relationships（支持部分更新 + id 去重）===
+                                        if (networkUpdate.relationships !== undefined) {
+                                            if (!draft[msgId].network.relationships) {
+                                                draft[msgId].network.relationships = [];
+                                            }
+                                            const currentRels = draft[msgId].network.relationships;
+                                            const incomingRels = Array.isArray(networkUpdate.relationships) ? networkUpdate.relationships : [];
+                                            const existingRelIds = new Set(currentRels.map(r => r?.id).filter(Boolean));
+                                            const uniqueNewRels = incomingRels.filter(r => r && r.id && !existingRelIds.has(r.id));
+                                            draft[msgId].network.relationships = currentRels.concat(uniqueNewRels);
+                                        }
+                                    }
+                                }
+                            });
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+
+                            setTimeout(() => {
+                                if (isAutoScrollEnabledRef.current) {
+                                    if (isStreamingRef.current) {
+                                        smoothScrollToBottom(true);
+                                    } else {
+                                        requestScrollToBottom();
+                                    }
+                                }
+                                checkScrollPosition(true);
+                            }, 0);
+
+                            if (payload.reply) reply({ success: true });
+                        } else {
+                            reply({ success: false });
+                        }
+                        break;
+                    case "Focus-MessageNetwork":
+                        if (payload.value && typeof payload.value === 'object') {
+                            for (const [msgId, nodeId] of Object.entries(payload.value)) {
+                                const msg = messagesRef.current[msgId];
+
+
+
+                                if (msg && typeof nodeId === 'string' && nodeId) {
+
+                                    const nvlInstance = msg.getComponent("nvlInstance");
+
+                                    if (nvlInstance) {
+                                        if (typeof nvlInstance.fit === 'function') {
+                                            nvlInstance.fit([nodeId], {
+                                                minZoom: 1.8
+                                            });
+                                        }
+                                    } else {
+                                        reply({ success: false })
+                                    }
+
+                                }
+                            }
+
+                            // 聚焦是纯副作用，无需 produce / setMessages / 滚动
+                            if (payload.reply) reply({ success: true });
+                        } else {
+                            if (payload.reply) reply({ success: false });
                         }
                         break;
                 }
@@ -1750,8 +1896,40 @@ function ChatPage({
                 const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                     params: {markId: chatMarkId}
                 });
-                setMessages(messagesData.messages);
-                messagesRef.current = messagesData.messages;
+
+                const messages = produce(messagesData.messages, (draft) => {
+                    Object.keys(draft).forEach(key => {
+                        const msgDraft = draft[key];
+
+                        // 防御：确保是有效消息对象
+                        if (!msgDraft || typeof msgDraft !== 'object') return;
+
+                        // === 幂等判断，防止重复注入 ===
+                        if (typeof msgDraft.registerComponent === 'function') return;
+
+                        // 真正的存储容器（闭包变量，不会被 Immer freeze/revoke）
+                        const mountPoints = {};
+
+                        // 添加注册函数
+                        msgDraft.registerComponent = (componentKey, componentRef) => {
+                            mountPoints[componentKey] = componentRef;
+                        };
+
+                        // 添加注销函数
+                        msgDraft.unregisterComponent = (componentKey) => {
+                            delete mountPoints[componentKey];
+                        };
+
+                        // 添加获取函数
+                        msgDraft.getComponent = (componentKey) => {
+                            return mountPoints[componentKey];
+                        };
+                    });
+                });
+
+                setMessages(messages);
+                messagesRef.current = messages;
+
                 let initOrder = messagesData.messagesOrder;
                 if (messagesData.haveMore) initOrder = ["<PREV_MORE>", ...messagesData.messagesOrder];
                 setMessagesOrder(initOrder);
