@@ -164,7 +164,7 @@ const MarkdownRenderer = ({
 
     // 使用缓存或创建新的 components
     const components = useMemo(() => {
-        const cacheKey = `components_${withCustomComponent}`;
+        const cacheKey = `components_${withCustomComponent}_${contextId}`;
         if (!componentCache.has(cacheKey)) {
             componentCache.set(cacheKey, createComponents(withCustomComponent, contextId));
         }

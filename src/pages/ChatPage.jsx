@@ -1791,21 +1791,19 @@ function ChatPage({
                         break;
                     case "Focus-MessageNetwork":
                         if (payload.value && typeof payload.value === 'object') {
-                            for (const [msgId, nodeId] of Object.entries(payload.value)) {
+                            for (const [msgId, nodeIds] of Object.entries(payload.value)) {
                                 const msg = messagesRef.current[msgId];
 
-                                if (msg && typeof nodeId === 'string' && nodeId) {
+                                if (msg && nodeIds) {
 
                                     const nvlInstance = msg.getComponent("nvlInstance");
 
                                     // 将需要聚焦的节点挂载到 msg 中
-                                    msg.registerComponent("focusNode", nodeId);
+                                    msg.registerComponent("focusNode", nodeIds);
 
                                     if (nvlInstance) {
-                                        if (typeof nvlInstance.fit === 'function') {
-                                            nvlInstance.fit([nodeId], {
-                                                minZoom: 1.8
-                                            });
+                                        if (typeof nvlInstance.focusNetwork === 'function') {
+                                            nvlInstance.focusNetwork(nodeIds);
                                             // 如果成功了，就取消挂载
                                             msg.unregisterComponent("focusNode");
                                         }

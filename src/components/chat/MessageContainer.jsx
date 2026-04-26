@@ -416,7 +416,6 @@ const GraphContent = React.memo(({ nvlRef, nodes, rels, loadingLayer, onLoadingC
                 nodes={nodes}
                 rels={rels}
                 nvlOptions={{
-                    layout: 'd3Force',
                     renderer: 'canvas',
                     nodeColorScheme: 'neo4j',
                     relationshipColorScheme: 'neo4j',
@@ -528,18 +527,165 @@ const KnowledgeGraphViewer = memo(({ msg, className = "w-full" }) => {
 
                         if (!initializedRef.current && msg && nvlRef.current) {
 
+                            nvlRef.current.focusNetwork = (focusIds) => {
+                                const ids = Array.isArray(focusIds)
+                                    ? focusIds.map(String)
+                                    : focusIds
+                                        ? [String(focusIds)]
+                                        : [];
+
+                                if (ids.length === 0 || !nvlRef.current) return;
+
+                                const isSingleFocus = ids.length === 1;
+
+                                const safeFit = () => {
+                                    requestAnimationFrame(() => {
+                                        requestAnimationFrame(() => {
+                                            nvlRef.current?.fit?.(ids, {
+                                                maxZoom: isSingleFocus ? 1.8 : 1.6,
+                                                minZoom: isSingleFocus ? 1.8 : 0.6,
+                                            });
+                                        });
+                                    });
+                                };
+
+                                // 单节点直接 fit
+                                if (isSingleFocus) {
+                                    safeFit();
+                                    return;
+                                }
+
+                                const focusSet = new Set(ids);
+
+                                // 只取 focus 节点之间的关系
+                                const relatedRels = nvlRels.filter(rel =>
+                                    focusSet.has(String(rel.from)) &&
+                                    focusSet.has(String(rel.to))
+                                );
+
+                                const getOrderedIds = () => {
+                                    // 没有关系时，保持传入顺序
+                                    if (relatedRels.length === 0) return ids;
+
+                                    const graph = new Map();
+                                    const degree = new Map();
+
+                                    ids.forEach(id => {
+                                        graph.set(id, []);
+                                        degree.set(id, 0);
+                                    });
+
+                                    relatedRels.forEach(rel => {
+                                        const from = String(rel.from);
+                                        const to = String(rel.to);
+
+                                        graph.get(from)?.push(to);
+                                        graph.get(to)?.push(from);
+
+                                        degree.set(from, (degree.get(from) || 0) + 1);
+                                        degree.set(to, (degree.get(to) || 0) + 1);
+                                    });
+
+                                    // 优先从端点开始，这样链式关系会更自然
+                                    const start =
+                                        ids.find(id => degree.get(id) === 1) ||
+                                        ids.find(id => (degree.get(id) || 0) > 0) ||
+                                        ids[0];
+
+                                    const visited = new Set();
+                                    const result = [];
+
+                                    const walk = (id) => {
+                                        visited.add(id);
+                                        result.push(id);
+
+                                        const nextNodes = graph.get(id) || [];
+
+                                        // 优先访问度更低的节点，尽量形成链式顺序
+                                        nextNodes
+                                            .filter(nextId => !visited.has(nextId))
+                                            .sort((a, b) => (degree.get(a) || 0) - (degree.get(b) || 0))
+                                            .forEach(walk);
+                                    };
+
+                                    walk(start);
+
+                                    // 防止分叉、孤立点、非连通子图遗漏
+                                    ids.forEach(id => {
+                                        if (!visited.has(id)) result.push(id);
+                                    });
+
+                                    return result;
+                                };
+
+                                const orderedIds = getOrderedIds();
+
+                                const spacing = 240;
+                                const startX = -((orderedIds.length - 1) * spacing) / 2;
+
+                                const buildHorizontalNodes = () => {
+                                    return nvlNodes.map(node => {
+                                        const index = orderedIds.indexOf(String(node.id));
+
+                                        if (index === -1) return node;
+
+                                        return {
+                                            ...node,
+                                            x: startX + index * spacing,
+                                            y: 0,
+
+                                            // 尽量兼容不同版本的固定坐标字段
+                                            fixed: true,
+                                            isFixed: true,
+                                            fx: startX + index * spacing,
+                                            fy: 0,
+                                        };
+                                    });
+                                };
+
+                                const applyHorizontalLayout = () => {
+                                    const horizontalNodes = buildHorizontalNodes();
+
+                                    if (typeof nvlRef.current.updateElementsInGraph === "function") {
+                                        nvlRef.current.updateElementsInGraph(horizontalNodes, nvlRels);
+                                    } else if (typeof nvlRef.current.setData === "function") {
+                                        nvlRef.current.setData(horizontalNodes, nvlRels);
+                                    } else if (typeof nvlRef.current.setNodes === "function") {
+                                        nvlRef.current.setNodes(horizontalNodes);
+                                    }
+                                };
+
+                                try {
+                                    applyHorizontalLayout();
+
+                                    // hierarchical layout 可能会异步覆盖坐标，所以再补一次
+                                    setTimeout(() => {
+                                        applyHorizontalLayout();
+
+                                        requestAnimationFrame(() => {
+                                            requestAnimationFrame(() => {
+                                                nvlRef.current?.fit?.(ids, {
+                                                    maxZoom: 2.8,
+                                                    minZoom: 1.4
+                                                });
+                                            });
+                                        });
+                                    }, 80);
+                                } catch (error) {
+                                    console.warn("Failed to apply horizontal NVL layout:", error);
+                                }
+
+                                safeFit();
+                            };
+
                             msg.registerComponent("nvlInstance", nvlRef.current);
 
                             // 这里是消息已经完成，从服务器拿到完整消息的时候
-                            if (msg.network_focus) nvlRef.current.fit([msg.network_focus], {
-                                minZoom: 1.8
-                            });
+                            if (msg.network_focus) nvlRef.current.focusNetwork(msg.network_focus);
 
                             // 流式聚焦同时也要考虑一下
                             const focusNode = msg.getComponent("focusNode");
-                            if (focusNode) nvlRef.current.fit([focusNode], {
-                                minZoom: 1.8
-                            });
+                            if (focusNode) nvlRef.current.focusNetwork(focusNode);
 
                             hasAttachedRef.current = true;
                             initializedRef.current = true;
@@ -550,7 +696,7 @@ const KnowledgeGraphViewer = memo(({ msg, className = "w-full" }) => {
         </div>
     );
 }, (prev, next) => {
-    return prev.msg.network === next.msg.network && prev.className === next.msg.className;
+    return prev.msg.network === next.msg.network && prev.className === next.className;
 });
 
 /**
