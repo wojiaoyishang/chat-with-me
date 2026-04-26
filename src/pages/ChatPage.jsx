@@ -1794,17 +1794,20 @@ function ChatPage({
                             for (const [msgId, nodeId] of Object.entries(payload.value)) {
                                 const msg = messagesRef.current[msgId];
 
-
-
                                 if (msg && typeof nodeId === 'string' && nodeId) {
 
                                     const nvlInstance = msg.getComponent("nvlInstance");
+
+                                    // 将需要聚焦的节点挂载到 msg 中
+                                    msg.registerComponent("focusNode", nodeId);
 
                                     if (nvlInstance) {
                                         if (typeof nvlInstance.fit === 'function') {
                                             nvlInstance.fit([nodeId], {
                                                 minZoom: 1.8
                                             });
+                                            // 如果成功了，就取消挂载
+                                            msg.unregisterComponent("focusNode");
                                         }
                                     } else {
                                         reply({ success: false })
@@ -1813,7 +1816,6 @@ function ChatPage({
                                 }
                             }
 
-                            // 聚焦是纯副作用，无需 produce / setMessages / 滚动
                             if (payload.reply) reply({ success: true });
                         } else {
                             if (payload.reply) reply({ success: false });

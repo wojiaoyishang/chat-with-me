@@ -25,7 +25,7 @@ export default defineConfig({
         },
     },
     define: {
-        DEBUG_MODE: true
+        DEBUG_MODE: false
     },
     server: {
         host: '0.0.0.0',

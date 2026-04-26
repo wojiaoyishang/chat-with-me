@@ -530,7 +530,14 @@ const KnowledgeGraphViewer = memo(({ msg, className = "w-full" }) => {
 
                             msg.registerComponent("nvlInstance", nvlRef.current);
 
+                            // 这里是消息已经完成，从服务器拿到完整消息的时候
                             if (msg.network_focus) nvlRef.current.fit([msg.network_focus], {
+                                minZoom: 1.8
+                            });
+
+                            // 流式聚焦同时也要考虑一下
+                            const focusNode = msg.getComponent("focusNode");
+                            if (focusNode) nvlRef.current.fit([focusNode], {
                                 minZoom: 1.8
                             });
 
