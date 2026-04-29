@@ -1789,6 +1789,71 @@ function ChatPage({
                             reply({ success: false });
                         }
                         break;
+                    case "Del-MessageNetwork":
+                        if (payload.value && typeof payload.value === 'object') {
+                            updateStreamingStatus();
+
+                            const newMessages = produce(messagesRef.current, draft => {
+                                for (const [msgId, networkDelete] of Object.entries(payload.value)) {
+                                    if (draft[msgId] && networkDelete && typeof networkDelete === 'object') {
+                                        const network = draft[msgId].network;
+
+                                        if (!network) {
+                                            continue;
+                                        }
+
+                                        // === 删除 nodes（基于 id 匹配）===
+                                        if (networkDelete.nodes !== undefined) {
+                                            const deleteNodeIds = new Set(
+                                                Array.isArray(networkDelete.nodes)
+                                                    ? networkDelete.nodes.filter(Boolean)
+                                                    : []
+                                            );
+
+                                            if (Array.isArray(network.nodes) && deleteNodeIds.size > 0) {
+                                                network.nodes = network.nodes.filter(
+                                                    node => !(node && deleteNodeIds.has(node.id))
+                                                );
+                                            }
+                                        }
+
+                                        // === 删除 relationships（基于 id 匹配）===
+                                        if (networkDelete.relationships !== undefined) {
+                                            const deleteRelIds = new Set(
+                                                Array.isArray(networkDelete.relationships)
+                                                    ? networkDelete.relationships.filter(Boolean)
+                                                    : []
+                                            );
+
+                                            if (Array.isArray(network.relationships) && deleteRelIds.size > 0) {
+                                                network.relationships = network.relationships.filter(
+                                                    rel => !(rel && deleteRelIds.has(rel.id))
+                                                );
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+
+                            setTimeout(() => {
+                                if (isAutoScrollEnabledRef.current) {
+                                    if (isStreamingRef.current) {
+                                        smoothScrollToBottom(true);
+                                    } else {
+                                        requestScrollToBottom();
+                                    }
+                                }
+                                checkScrollPosition(true);
+                            }, 0);
+
+                            if (payload.reply) reply({ success: true });
+                        } else {
+                            reply({ success: false });
+                        }
+                        break;
                     case "Focus-MessageNetwork":
                         if (payload.value && typeof payload.value === 'object') {
                             for (const [msgId, nodeIds] of Object.entries(payload.value)) {

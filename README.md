@@ -1008,6 +1008,28 @@ code 设置为 401 。
 }
 ```
 
+#### 为消息删除节点和关系
+
+```python
+{
+    "command": "Del-MessageNetwork",
+    "value": {
+        "msgId": {
+            "nodes": [],  # 节点ID
+            "relationships": [] # 关系ID
+        }  # 节点
+    },
+    "reply": False  # 是否需要回复
+}
+```
+
+返回
+
+```python
+{
+    "success": True  # 如果 msgid 不存在会返回 False
+}
+```
 
 #### 将知识图谱聚焦到某个节点
 
