@@ -416,6 +416,7 @@ const GraphContent = React.memo(({ nvlRef, nodes, rels, loadingLayer, onLoadingC
                 nodes={nodes}
                 rels={rels}
                 nvlOptions={{
+                    layout: 'd3Force',
                     renderer: 'canvas',
                     nodeColorScheme: 'neo4j',
                     relationshipColorScheme: 'neo4j',
@@ -724,7 +725,7 @@ const TextOnlyMessageContent = memo(({msg, msgId, isRight, content, avatar, disp
     }
 
     return (
-        <div className="w-full pl-10 pr-10">
+        <div className="w-full pl-2 pr-2 lg:pl-10 lg:pr-10">
             <div className="text-gray-800 break-words max-w-none">
                 {/* 图谱可视化*/}
                 <KnowledgeGraphViewer key={msgId} msg={msg}/>
@@ -758,7 +759,7 @@ const MessageActions = memo(({
 
     return (
         <div
-            className={`flex items-center mt-1 transition-opacity duration-300 ${isRight ? 'justify-end pr-12' : 'justify-between pl-10'}`}
+            className={`flex items-center mt-1 transition-opacity duration-300 ${isRight ? 'justify-end pr-12' : 'justify-between pl-2 lg:pl-10'}`}
         >
             {isRight && (
                 <div className={"ml-2 flex items-center " + (showPaginator ? 'pr-1' : '')}>
