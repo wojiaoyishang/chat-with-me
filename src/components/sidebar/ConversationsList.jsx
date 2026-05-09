@@ -24,27 +24,41 @@ import {Button} from "@/components/ui/button";
 import {toast} from "sonner";
 import {useNavigate} from 'react-router-dom';
 import SettingPage from "@/pages/SettingPage.jsx";
+
 import {ButtonContentWrapper} from "@/components/ui/ButtonContentWrapper.jsx";
+import { DeleteConfirmDialog } from "@/components/ui/DeleteConfirmDialog";
 
 // ====================== 内部菜单组件 ======================
-const ConversationMenu = ({markId, onDelete}) => {
-    const {t} = useTranslation();
+// ====================== 内部菜单组件 ======================
+const ConversationMenu = ({ markId, onDelete }) => {
+    const { t } = useTranslation();
+
     const [showConfirm, setShowConfirm] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    const handleDeleteClick = () => setShowConfirm(true);
+    const handleDeleteClick = () => {
+        setShowConfirm(true);
+    };
 
     const handleConfirmDelete = async () => {
         setIsDeleting(true);
+
         try {
-            await apiClient.delete(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + markId);
-            onDelete(markId);
+            await apiClient.delete(
+                apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + markId
+            );
+
+            onDelete?.(markId);
             toast.success(t("delete_success"));
+            setShowConfirm(false);
         } catch (error) {
-            toast.error(t("delete_error", {message: error?.message || t("unknown_error")}));
+            toast.error(
+                t("delete_error", {
+                    message: error?.message || t("unknown_error"),
+                })
+            );
         } finally {
             setIsDeleting(false);
-            setShowConfirm(false);
         }
     };
 
@@ -55,46 +69,43 @@ const ConversationMenu = ({markId, onDelete}) => {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <button className="cursor-pointer p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors">
-                        <MoreHorizontal className="w-4 h-4"/>
+                        <MoreHorizontal className="w-4 h-4" />
                     </button>
                 </DropdownMenuTrigger>
+
                 <DropdownMenuContent align="end" className="w-fit min-w-[120px]">
                     {hasMenuItems ? (
-                        <>
-                            {onDelete && (
-                                <DropdownMenuItem onClick={handleDeleteClick} className="text-red-600 focus:text-red-600 cursor-pointer">
-                                    <Trash className="w-4 h-4 text-red-600 cursor-pointer"/>
-                                    {t('delete_conversation')}
-                                </DropdownMenuItem>
-                            )}
-                        </>
+                        onDelete && (
+                            <DropdownMenuItem
+                                onSelect={handleDeleteClick}
+                                className="text-red-600 focus:text-red-600 cursor-pointer active:bg-red-50 focus:bg-red-50 data-[highlighted]:bg-red-50"
+                            >
+                                <Trash className="w-4 h-4 text-red-600" />
+                                {t("delete_conversation")}
+                            </DropdownMenuItem>
+                        )
                     ) : (
                         <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                            {t('no_actions_available')}
+                            {t("no_actions_available")}
                         </div>
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{t('confirm_delete_title')}</DialogTitle>
-                        <DialogDescription>{t('confirm_delete_description')}</DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={isDeleting} className="cursor-pointer">
-                            {t('cancel')}
-                        </Button>
-                        <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting} className="cursor-pointer">
-                            <ButtonContentWrapper isLoading={isDeleting}>{t("confirm")}</ButtonContentWrapper>
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <DeleteConfirmDialog
+                open={showConfirm}
+                onOpenChange={setShowConfirm}
+                isDeleting={isDeleting}
+                title={t("confirm_delete_title")}
+                description={t("confirm_delete_description")}
+                cancelText={t("cancel")}
+                confirmText={t("confirm")}
+                onConfirm={handleConfirmDelete}
+            />
         </>
     );
 };
+
 
 // ====================== 对话列表组件 ======================
 const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref) => {

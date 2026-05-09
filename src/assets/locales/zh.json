@@ -125,8 +125,8 @@
   "load_page_error": "加载页面失败：{{message}}",
   "delete_conversation": "删除会话",
   "logout": "登出",
-  "confirm_delete_title": "确认删除？",
-  "confirm_delete_description": "确认删除这个会话吗？之后你将无法复原。",
+  "confirm_delete_title": "确认此项？",
+  "confirm_delete_description": "确认删除此项吗？之后你将无法复原。",
   "confirm": "确认",
   "delete_success": "删除成功",
   "delete_error": "删除失败：{{message}}",
@@ -221,5 +221,6 @@
   "switch_tab": "切换",
   "uploading": "上传中...",
   "upload_success": "上传成功",
-  "upload_failed": "上传失败"
+  "upload_failed": "上传失败",
+  "delete_message": "删除消息"
 }

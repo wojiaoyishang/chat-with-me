@@ -27,6 +27,7 @@ import {Button} from "@/components/ui/button.tsx";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
 import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
+import {DeleteConfirmDialog} from "@/components/ui/DeleteConfirmDialog";
 
 // ========== 内部组件：模型项 ==========
 const ModelItem = memo(({
@@ -396,7 +397,7 @@ const ChatHeader = memo(({
                     <PopoverContent
                         align="start"
                         className={isMobile ? "w-[90vw] max-w-md p-4" : "w-85"}
-                        style={{ zIndex: isWindowMode ? 100000 : undefined }}
+                        style={{zIndex: isWindowMode ? 100000 : undefined}}
                     >
                         <div className="flex flex-col space-y-4">
                             <div
@@ -420,9 +421,9 @@ const ChatHeader = memo(({
                         onTouchMove={handleDragTouchMove}
                         onTouchEnd={handleDragTouchEnd}
                         onTouchCancel={handleDragTouchEnd}
-                        style={{ touchAction: 'none' }}
+                        style={{touchAction: 'none'}}
                     >
-                        {isMobile && <div className="w-10 h-1 bg-gray-300 rounded-full" />}
+                        {isMobile && <div className="w-10 h-1 bg-gray-300 rounded-full"/>}
                     </div>
                 )}
 
@@ -529,20 +530,25 @@ function ChatPage({
     const [initialSettingValues, setInitialSettingValues] = useState({});
     const [advancedSettingsValues, setAdvancedSettingsValues] = useState({});
 
+    // 删除相关
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [pendingDeleteMsgId, setPendingDeleteMsgId] = useState(null);
+    const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+
     // ========== 窗口化模式状态与拖拽、缩放逻辑 ==========
     const [isReady, setIsReady] = useState(false);
     const [isWindowMode, setIsWindowMode] = useState(false);
-    const [windowPos, setWindowPos] = useState({ left: 0, top: 0 });
-    const [windowDimensions, setWindowDimensions] = useState({ width: 900, height: 700 });
+    const [windowPos, setWindowPos] = useState({left: 0, top: 0});
+    const [windowDimensions, setWindowDimensions] = useState({width: 900, height: 700});
     const windowRef = useRef(null);
 
-    const dragOffsetRef = useRef({ x: 0, y: 0 });
+    const dragOffsetRef = useRef({x: 0, y: 0});
     const [isDragging, setIsDragging] = useState(false);
     const [isDragReady, setIsDragReady] = useState(false);
     const longPressTimerRef = useRef(null);
 
     const [isResizing, setIsResizing] = useState(false);
-    const resizeOffsetRef = useRef({ width: 0, height: 0, startX: 0, startY: 0, direction: '' });
+    const resizeOffsetRef = useRef({width: 0, height: 0, startX: 0, startY: 0, direction: ''});
 
     // 计算允许的最大宽高，设置为网页大小的 0.98
     const getMaxDimensions = useCallback(() => {
@@ -560,7 +566,7 @@ function ChatPage({
         const maxTop = window.innerHeight - windowDimensions.height;
         newLeft = Math.max(0, Math.min(newLeft, maxLeft));
         newTop = Math.max(0, Math.min(newTop, maxTop));
-        setWindowPos({ left: newLeft, top: newTop });
+        setWindowPos({left: newLeft, top: newTop});
     }, [windowDimensions]);
 
     const startDragging = useCallback((clientX, clientY) => {
@@ -630,7 +636,7 @@ function ChatPage({
         const deltaY = clientY - resizeOffsetRef.current.startY;
         const dir = resizeOffsetRef.current.direction;
 
-        const { maxWidth, maxHeight } = getMaxDimensions();
+        const {maxWidth, maxHeight} = getMaxDimensions();
         const minWidth = 320;
         const minHeight = 400;
 
@@ -657,8 +663,8 @@ function ChatPage({
             newHeight = clampedHeight;
         }
 
-        setWindowDimensions({ width: newWidth, height: newHeight });
-        setWindowPos({ left: newLeft, top: newTop });
+        setWindowDimensions({width: newWidth, height: newHeight});
+        setWindowPos({left: newLeft, top: newTop});
     }, [getMaxDimensions]);
 
     const startResizing = useCallback((clientX, clientY, direction) => {
@@ -705,7 +711,7 @@ function ChatPage({
             setIsResizing(false);
         };
 
-        document.addEventListener('touchmove', handleTouchMoveLocal, { passive: false });
+        document.addEventListener('touchmove', handleTouchMoveLocal, {passive: false});
         document.addEventListener('touchend', handleTouchEndLocal);
     }, [startResizing, handleResizeMove]);
 
@@ -739,13 +745,13 @@ function ChatPage({
         if (isWindowMode) {
             setIsWindowMode(false);
         } else {
-            const { maxWidth, maxHeight } = getMaxDimensions();
+            const {maxWidth, maxHeight} = getMaxDimensions();
             const initialW = window.innerWidth * 0.85;
             const initialH = window.innerHeight * 0.85;
             const l = (window.innerWidth - initialW) / 2;
             const t = (window.innerHeight - initialH) / 2;
-            setWindowDimensions({ width: initialW, height: initialH });
-            setWindowPos({ left: l, top: t });
+            setWindowDimensions({width: initialW, height: initialH});
+            setWindowPos({left: l, top: t});
             setIsWindowMode(true);
         }
     }, [isWindowMode, onWindowModeChange, getMaxDimensions]);
@@ -949,7 +955,7 @@ function ChatPage({
                         emitEvent({
                             type: "widget",
                             target: "ChatBox",
-                            payload: { command: "Get-MessageContent" },
+                            payload: {command: "Get-MessageContent"},
                             markId: chatMarkId,
                             fromWebsocket: true,
                             notReplyToWebsocket: true
@@ -1006,9 +1012,9 @@ function ChatPage({
                 handleProgressUpdate,
                 handleComplete,
                 (error) => {
-                    toast.error(t("file_upload.error", { message: error?.message || 'Upload failed' }));
+                    toast.error(t("file_upload.error", {message: error?.message || 'Upload failed'}));
                     setUploadFiles(prev =>
-                        prev.map(f => f.id === uploadFile.id ? { ...f, error: true, progress: 0 } : f)
+                        prev.map(f => f.id === uploadFile.id ? {...f, error: true, progress: 0} : f)
                     );
                 }
             );
@@ -1084,6 +1090,82 @@ function ChatPage({
         return createFilePicker('image/*', handleSelectedFiles)();
     }, [handleSelectedFiles]);
 
+    // ========= 消息删除 =========
+    const deleteMessageLocally = useCallback((msgId) => {
+        if (!msgId) {
+            toast.error(t("delete_error"));
+            return false;
+        }
+
+        const currentMessages = messagesRef.current || {};
+        const currentOrder = messagesOrderRef.current || [];
+
+        const deleteOrderIndex = currentOrder.indexOf(msgId);
+
+        if (!currentMessages[msgId] || deleteOrderIndex === -1) {
+            toast.error(t("delete_error"));
+            return false;
+        }
+
+        const targetMessage = currentMessages[msgId];
+        const parentId = targetMessage.prevMessage;
+        const parentMessage = parentId ? currentMessages[parentId] : null;
+
+        let replacementMsgId = null;
+        const newMessages = {...currentMessages};
+
+        if (parentMessage) {
+            const oldChildren = Array.isArray(parentMessage.messages)
+                ? parentMessage.messages
+                : [];
+
+            const deleteChildIndex = oldChildren.indexOf(msgId);
+            const newChildren = oldChildren.filter(childId => childId !== msgId);
+
+            if (deleteChildIndex > 0) {
+                replacementMsgId = oldChildren[deleteChildIndex - 1];
+            }
+
+            newMessages[parentId] = {
+                ...parentMessage,
+                messages: newChildren,
+                nextMessage: replacementMsgId || null,
+            };
+        }
+
+
+        setMessages(newMessages);
+        messagesRef.current = newMessages;
+
+        if (replacementMsgId) {
+            loadSwitchMessage(parentId, replacementMsgId);
+        } else {
+            const newOrder = [
+                ...currentOrder.slice(0, deleteOrderIndex),
+                ...(replacementMsgId ? [replacementMsgId] : []),
+            ]
+
+            setMessagesOrder(newOrder);
+            messagesOrderRef.current = newOrder;
+        }
+
+        setTimeout(() => {
+            checkScrollPosition(true);
+
+            if (isAutoScrollEnabledRef.current) {
+                requestScrollToBottom();
+            }
+        }, 50);
+
+        return true;
+    }, [
+        t,
+        setMessages,
+        setMessagesOrder,
+        checkScrollPosition,
+        requestScrollToBottom,
+    ]);
+
     // ========= 消息相关 =========
     const handleSendMessage = useCallback((
         {
@@ -1107,7 +1189,7 @@ function ChatPage({
                 emitEvent({
                     type: "widget",
                     target: "Sidebar",
-                    payload: { command: "Update-ConversationDate" },
+                    payload: {command: "Update-ConversationDate"},
                     markId: markId,
                 });
                 setIsFirstMessageSend(false);
@@ -1388,16 +1470,46 @@ function ChatPage({
             target: "ChatPage",
             markId: chatMarkId
         })
-            .then(({ payload, reply }) => {
+            .then(({payload, reply}) => {
                 switch (payload.command) {
+                    case "Delete-Message":
+                        if (payload.value) {
+                            const msgId = payload.value;
+                            const silent = payload.silent === true;
+
+                            if (!messagesRef.current?.[msgId] || !messagesOrderRef.current?.includes(msgId)) {
+                                toast.error(t("delete_error"));
+                                reply({success: false});
+                                return;
+                            }
+
+                            if (silent) {
+                                apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + msgId,
+                                    {params: {markId: chatMarkId}})
+                                    .then((data) => {
+                                        deleteMessageLocally(msgId);
+                                    })
+                                    .catch((error) => {
+                                        toast.error(t("delete_error", {message: error?.message || t("unknown_error")}));
+                                    })
+                                reply({success: true});
+                            } else {
+                                setPendingDeleteMsgId(msgId);
+                                setShowDeleteConfirm(true);
+                                reply({success: true});
+                            }
+                        } else {
+                            reply({success: false});
+                        }
+                        break;
                     case "Add-Message":
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            let newMessages = { ...messagesRef.current };
+                            let newMessages = {...messagesRef.current};
 
                             for (const [key, newValue] of Object.entries(payload.value)) {
                                 if (payload.isEdit && !newMessages[key]) {
-                                    reply({ success: false });
+                                    reply({success: false});
                                     return;
                                 }
 
@@ -1407,7 +1519,7 @@ function ChatPage({
 
                                 if (typeof newValue === 'object') {
                                     if (newMessages[key] && typeof newMessages[key] === 'object' && newMessages[key] !== null) {
-                                        newMessages[key] = { ...newMessages[key], ...newValue };
+                                        newMessages[key] = {...newMessages[key], ...newValue};
                                     } else {
                                         newMessages[key] = newValue;
                                     }
@@ -1444,7 +1556,7 @@ function ChatPage({
                                 checkScrollPosition(true);
                             }, 50);
 
-                            reply({ success: true });
+                            reply({success: true});
                         }
                         break;
                     case "MessagesOrder-Meta":
@@ -1784,9 +1896,9 @@ function ChatPage({
                                 checkScrollPosition(true);
                             }, 0);
 
-                            if (payload.reply) reply({ success: true });
+                            if (payload.reply) reply({success: true});
                         } else {
-                            reply({ success: false });
+                            reply({success: false});
                         }
                         break;
                     case "Del-MessageNetwork":
@@ -1849,9 +1961,9 @@ function ChatPage({
                                 checkScrollPosition(true);
                             }, 0);
 
-                            if (payload.reply) reply({ success: true });
+                            if (payload.reply) reply({success: true});
                         } else {
-                            reply({ success: false });
+                            reply({success: false});
                         }
                         break;
                     case "Focus-MessageNetwork":
@@ -1873,15 +1985,15 @@ function ChatPage({
                                             msg.unregisterComponent("focusNode");
                                         }
                                     } else {
-                                        reply({ success: false })
+                                        reply({success: false})
                                     }
 
                                 }
                             }
 
-                            if (payload.reply) reply({ success: true });
+                            if (payload.reply) reply({success: true});
                         } else {
-                            if (payload.reply) reply({ success: false });
+                            if (payload.reply) reply({success: false});
                         }
                         break;
                 }
@@ -2101,7 +2213,7 @@ function ChatPage({
                 layout={isReady}
                 transition={
                     (isResizing || isDragging)
-                        ? { duration: 0 }
+                        ? {duration: 0}
                         : {
                             duration: 0.35,
                             ease: [0.25, 0.1, 0.25, 1],
@@ -2114,10 +2226,10 @@ function ChatPage({
                                 damping: 30,
                                 restDelta: 0.5
                             },
-                            left: { type: "tween", duration: isResizing || isDragging ? 0 : 0.35 },
-                            top: { type: "tween", duration: isResizing || isDragging ? 0 : 0.35 },
-                            opacity: { duration: 0.25 },
-                            scale: { duration: 0.25 }
+                            left: {type: "tween", duration: isResizing || isDragging ? 0 : 0.35},
+                            top: {type: "tween", duration: isResizing || isDragging ? 0 : 0.35},
+                            opacity: {duration: 0.25},
+                            scale: {duration: 0.25}
                         }
                 }
             >
@@ -2220,24 +2332,34 @@ function ChatPage({
                 {isWindowMode && (
                     <>
                         <div className="absolute top-0 left-0 w-full h-2 cursor-n-resize z-[10000]"
-                             onMouseDown={(e) => handleResizeMouseDown(e, 'n')} onTouchStart={(e) => handleResizeTouchStart(e, 'n')} style={{ touchAction: 'none' }}/>
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'n')}
+                             onTouchStart={(e) => handleResizeTouchStart(e, 'n')} style={{touchAction: 'none'}}/>
                         <div className="absolute bottom-0 left-0 w-full h-2 cursor-s-resize z-[10000]"
-                             onMouseDown={(e) => handleResizeMouseDown(e, 's')} onTouchStart={(e) => handleResizeTouchStart(e, 's')} style={{ touchAction: 'none' }}/>
+                             onMouseDown={(e) => handleResizeMouseDown(e, 's')}
+                             onTouchStart={(e) => handleResizeTouchStart(e, 's')} style={{touchAction: 'none'}}/>
                         <div className="absolute top-0 left-0 w-2 h-full cursor-w-resize z-[10000]"
-                             onMouseDown={(e) => handleResizeMouseDown(e, 'w')} onTouchStart={(e) => handleResizeTouchStart(e, 'w')} style={{ touchAction: 'none' }}/>
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'w')}
+                             onTouchStart={(e) => handleResizeTouchStart(e, 'w')} style={{touchAction: 'none'}}/>
                         <div className="absolute top-0 right-0 w-2 h-full cursor-e-resize z-[10000]"
-                             onMouseDown={(e) => handleResizeMouseDown(e, 'e')} onTouchStart={(e) => handleResizeTouchStart(e, 'e')} style={{ touchAction: 'none' }}/>
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'e')}
+                             onTouchStart={(e) => handleResizeTouchStart(e, 'e')} style={{touchAction: 'none'}}/>
 
                         <div className="absolute top-0 left-0 w-4 h-4 cursor-nw-resize z-[10001]"
-                             onMouseDown={(e) => handleResizeMouseDown(e, 'nw')} onTouchStart={(e) => handleResizeTouchStart(e, 'nw')} style={{ touchAction: 'none' }}/>
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'nw')}
+                             onTouchStart={(e) => handleResizeTouchStart(e, 'nw')} style={{touchAction: 'none'}}/>
                         <div className="absolute top-0 right-0 w-4 h-4 cursor-ne-resize z-[10001]"
-                             onMouseDown={(e) => handleResizeMouseDown(e, 'ne')} onTouchStart={(e) => handleResizeTouchStart(e, 'ne')} style={{ touchAction: 'none' }}/>
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'ne')}
+                             onTouchStart={(e) => handleResizeTouchStart(e, 'ne')} style={{touchAction: 'none'}}/>
                         <div className="absolute bottom-0 left-0 w-4 h-4 cursor-sw-resize z-[10001]"
-                             onMouseDown={(e) => handleResizeMouseDown(e, 'sw')} onTouchStart={(e) => handleResizeTouchStart(e, 'sw')} style={{ touchAction: 'none' }}/>
-                        <div className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize z-[10001] flex items-end justify-end p-1"
-                             onMouseDown={(e) => handleResizeMouseDown(e, 'se')} onTouchStart={(e) => handleResizeTouchStart(e, 'se')} style={{ touchAction: 'none' }}>
-                            <svg className="w-3 h-3 text-gray-400 opacity-60 hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                <path d="M21 15l-6 6 M21 9l-12 12 M21 3l-18 18" />
+                             onMouseDown={(e) => handleResizeMouseDown(e, 'sw')}
+                             onTouchStart={(e) => handleResizeTouchStart(e, 'sw')} style={{touchAction: 'none'}}/>
+                        <div
+                            className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize z-[10001] flex items-end justify-end p-1"
+                            onMouseDown={(e) => handleResizeMouseDown(e, 'se')}
+                            onTouchStart={(e) => handleResizeTouchStart(e, 'se')} style={{touchAction: 'none'}}>
+                            <svg className="w-3 h-3 text-gray-400 opacity-60 hover:opacity-100 transition-opacity"
+                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                <path d="M21 15l-6 6 M21 9l-12 12 M21 3l-18 18"/>
                             </svg>
                         </div>
                     </>
@@ -2252,7 +2374,46 @@ function ChatPage({
                     }}
                 />
             )}
+
+            <DeleteConfirmDialog
+                open={showDeleteConfirm}
+                onOpenChange={(open) => {
+                    setShowDeleteConfirm(open);
+
+                    if (!open) {
+                        setPendingDeleteMsgId(null);
+                    }
+                }}
+                isDeleting={isDeletingMessage}
+                title={t("confirm_delete_title")}
+                description={t("confirm_delete_description")}
+                cancelText={t("cancel")}
+                confirmText={t("confirm")}
+                onConfirm={() => {
+                    if (!pendingDeleteMsgId) {
+                        setShowDeleteConfirm(false);
+                        return;
+                    }
+
+                    setIsDeletingMessage(true);
+
+                    apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId,
+                        {params: {markId: chatMarkId}}
+                    )
+                        .then((data) => {
+                            deleteMessageLocally(pendingDeleteMsgId);
+                        })
+                        .catch((error) => {
+                            toast.error(t("delete_error", {message: error?.message || t("unknown_error")}));
+                        })
+
+                    setIsDeletingMessage(false);
+                    setPendingDeleteMsgId(null);
+                    setShowDeleteConfirm(false);
+                }}
+            />
         </>
     );
 }
+
 export default ChatPage;

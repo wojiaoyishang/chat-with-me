@@ -14,7 +14,9 @@ import {
     ChevronRight,
     ChevronDown,
     ChevronUp,
-    GitBranch, BarChart3
+    GitBranch,
+    BarChart3,
+    Trash
 } from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
@@ -46,6 +48,18 @@ const handleMessageAction = (action, messageData, t) => {
     const {msg, markId, msgId, displayContent} = messageData;
 
     switch (action) {
+        case "delete":
+            emitEvent({
+                type: "message",
+                target: "ChatPage",
+                payload: {
+                    command: "Delete-Message",
+                    value: msgId
+                },
+                markId: markId,
+                fromWebsocket: true
+            });
+            break;
         case "edit":
             emitEvent({
                 type: "widget",
@@ -111,64 +125,6 @@ const handleMessageAction = (action, messageData, t) => {
 };
 
 /**
- * 消息菜单组件 - 移动端下拉菜单
- */
-const MessageMenuButton = memo(({messageData}) => {
-    const {t} = useTranslation();
-    const {msg, markId, msgId, displayContent} = messageData;
-
-    return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <button
-                    className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer md:hidden"
-                    aria-label={t("menu_function")}
-                >
-                    <Menu size={16} className="text-gray-600 hover:text-gray-800"/>
-                </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-                <DropdownMenuItem
-                    className="flex items-center gap-2"
-                    onSelect={() => handleMessageAction("edit", messageData, t)}
-                >
-                    <PenLine size={16}/>
-                    {t('edit_message')}
-                </DropdownMenuItem>
-
-                {(msg.allowFork) && (
-                    <DropdownMenuItem
-                        className="flex items-center gap-2"
-                        onSelect={() => handleMessageAction("fork", messageData, t)}
-                    >
-                        <GitBranch size={16}/>
-                        {t('fork_message')}
-                    </DropdownMenuItem>
-                )}
-
-                <DropdownMenuItem
-                    className="flex items-center gap-2"
-                    onSelect={() => handleMessageAction("copy", messageData, t)}
-                >
-                    <Copy size={16}/>
-                    {t('copy_message')}
-                </DropdownMenuItem>
-
-                {(msg.allowRegenerate) && (
-                    <DropdownMenuItem
-                        className="flex items-center gap-2"
-                        onSelect={() => handleMessageAction("regenerate", messageData, t)}
-                    >
-                        <RotateCw size={16}/>
-                        {t('regenerate_message')}
-                    </DropdownMenuItem>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
-});
-
-/**
  * 工具提示组件
  */
 const TooltipInfo = memo(({tip, t}) => {
@@ -212,6 +168,78 @@ const TooltipInfo = memo(({tip, t}) => {
                 </div>
             </TooltipContent>
         </Tooltip>
+    );
+});
+
+/**
+ * 消息菜单组件 - 移动端下拉菜单
+ */
+const MessageMenuButton = memo(({messageData}) => {
+    const {t} = useTranslation();
+    const {msg, markId, msgId, displayContent} = messageData;
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button
+                    className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer md:hidden"
+                    aria-label={t("menu_function")}
+                >
+                    <Menu size={16} className="text-gray-600 hover:text-gray-800"/>
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuItem
+                    className="flex items-center gap-2"
+                    onSelect={() => handleMessageAction("edit", messageData, t)}
+                >
+                    <PenLine size={16}/>
+                    {t('edit_message')}
+                </DropdownMenuItem>
+
+                {(msg.allowFork) && (
+                    <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onSelect={() => handleMessageAction("fork", messageData, t)}
+                    >
+                        <GitBranch size={16}/>
+                        {t('fork_message')}
+                    </DropdownMenuItem>
+                )}
+
+                <DropdownMenuItem
+                    className="flex items-center gap-2"
+                    onSelect={() => handleMessageAction("copy", messageData, t)}
+                >
+                    <Copy size={16}/>
+                    {t('copy_message')}
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                    className="
+                    flex items-center gap-2
+                    text-red-600
+                    active:bg-red-50
+                    focus:bg-red-50
+                    data-[highlighted]:bg-red-50
+                    data-[highlighted]:text-red-600"
+                    onSelect={() => handleMessageAction("delete", messageData, t)}
+                >
+                    <Trash size={16} className="text-red-600"/>
+                    {t("delete_message")}
+                </DropdownMenuItem>
+
+                {(msg.allowRegenerate) && (
+                    <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onSelect={() => handleMessageAction("regenerate", messageData, t)}
+                    >
+                        <RotateCw size={16}/>
+                        {t('regenerate_message')}
+                    </DropdownMenuItem>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 });
 
@@ -271,6 +299,25 @@ const MessageTools = memo(({messageData}) => {
                 </TooltipTrigger>
                 <TooltipContent>
                     {t("copy_message")}
+                </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        onClick={() => handleMessageAction("delete", messageData, t)}
+                        className="group p-1.5 rounded-sm hover:bg-red-200 transition-colors cursor-pointer hidden md:block"
+                        aria-label={t("delete_message")}
+                    >
+                        <Trash
+                            size={16}
+                            className="text-gray-600 group-hover:text-red-600 transition-colors"
+                        />
+                    </button>
+                </TooltipTrigger>
+
+                <TooltipContent>
+                    {t("delete_message")}
                 </TooltipContent>
             </Tooltip>
 
@@ -400,7 +447,7 @@ const getColorForLabel = (label) => {
     return `hsl(${hue}, 88%, 58%)`;
 };
 
-const GraphContent = React.memo(({ nvlRef, nodes, rels, loadingLayer, onLoadingComplete }) => {
+const GraphContent = React.memo(({nvlRef, nodes, rels, loadingLayer, onLoadingComplete}) => {
     const [isLoading, setIsLoading] = useState(true);
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -410,7 +457,7 @@ const GraphContent = React.memo(({ nvlRef, nodes, rels, loadingLayer, onLoadingC
         return () => clearTimeout(timer);
     }, [onLoadingComplete]);
     return (
-        <div className="relative" style={{ height: '200px' }}>
+        <div className="relative" style={{height: '200px'}}>
             <InteractiveNvlWrapper
                 ref={nvlRef}
                 nodes={nodes}
@@ -432,7 +479,7 @@ const GraphContent = React.memo(({ nvlRef, nodes, rels, loadingLayer, onLoadingC
                     onDragStart: true, onDrag: true, onDragEnd: true,
                     onHover: true,
                 }}
-                style={{ width: '100%', height: '200px', minHeight: '200px' }}
+                style={{width: '100%', height: '200px', minHeight: '200px'}}
             />
             {isLoading && loadingLayer}
         </div>
@@ -440,7 +487,7 @@ const GraphContent = React.memo(({ nvlRef, nodes, rels, loadingLayer, onLoadingC
 });
 GraphContent.displayName = 'GraphContent';
 
-const KnowledgeGraphViewer = memo(({ msg, className = "w-full" }) => {
+const KnowledgeGraphViewer = memo(({msg, className = "w-full"}) => {
     const nvlRef = useRef(null);
     const hasAttachedRef = useRef(false);
     const initializedRef = useRef(false);
@@ -465,7 +512,7 @@ const KnowledgeGraphViewer = memo(({ msg, className = "w-full" }) => {
 
     const nvlNodes = network.nodes.map((node) => ({
         id: String(node.id ?? node.name),
-        captions: [{ value: node.name || String(node.id) }],
+        captions: [{value: node.name || String(node.id)}],
         color: getColorForLabel(node.label || 'Node'),
     }));
 
@@ -479,7 +526,7 @@ const KnowledgeGraphViewer = memo(({ msg, className = "w-full" }) => {
                 id: String(rel.id ?? `rel-${index}`),
                 from,
                 to,
-                captions: (rel.type || rel.label) ? [{ value: rel.type || rel.label }] : undefined,
+                captions: (rel.type || rel.label) ? [{value: rel.type || rel.label}] : undefined,
             };
         })
         .filter(r => nodeIdSet.has(r.from) && nodeIdSet.has(r.to) && r.from !== r.to);
@@ -487,7 +534,7 @@ const KnowledgeGraphViewer = memo(({ msg, className = "w-full" }) => {
     const loadingLayer = (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/85 rounded-b-lg">
             <div className="flex flex-col items-center">
-                <ThreeDotLoading size={10} color="#6366f1" />
+                <ThreeDotLoading size={10} color="#6366f1"/>
                 <span className="mt-3 text-sm text-gray-500 font-medium">正在渲染知识图谱...</span>
             </div>
         </div>
@@ -495,14 +542,15 @@ const KnowledgeGraphViewer = memo(({ msg, className = "w-full" }) => {
 
     return (
         <div className={`mt-1 mb-4 border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm ${className}`}>
-            <div className="px-4 py-2.5 text-sm font-medium text-gray-600 border-b bg-gray-50 flex items-center justify-between w-full">
+            <div
+                className="px-4 py-2.5 text-sm font-medium text-gray-600 border-b bg-gray-50 flex items-center justify-between w-full">
                 <span className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-gray-500" />
+                    <BarChart3 className="w-4 h-4 text-gray-500"/>
                     知识图谱记忆
                 </span>
                 {isGraphLoading ? (
                     <div className="flex items-center gap-1.5">
-                        <ThreeDotLoading size={6} color="#9ca3af" />
+                        <ThreeDotLoading size={6} color="#9ca3af"/>
                         <span className="text-xs text-gray-400">正在渲染...</span>
                     </div>
                 ) : (
