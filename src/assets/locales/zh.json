@@ -222,5 +222,6 @@
   "uploading": "上传中...",
   "upload_success": "上传成功",
   "upload_failed": "上传失败",
-  "delete_message": "删除消息"
+  "delete_message": "删除消息",
+  "progenerate_message": "继续生成"
 }

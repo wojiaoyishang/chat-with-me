@@ -795,6 +795,7 @@ function ChatBox({
                             attachments: payload.attachments,
                             sendButtonStatus: sendButtonStatusRef.current,
                             isRegenerate: payload.isRegenerate,
+                            isProgenerate: payload.isProgenerate,
                             role: payload.role,
                             isFork: payload.isFork
                         }

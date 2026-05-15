@@ -16,7 +16,8 @@ import {
     ChevronUp,
     GitBranch,
     BarChart3,
-    Trash
+    Trash,
+    StepForward
 } from "lucide-react";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
@@ -94,6 +95,23 @@ const handleMessageAction = (action, messageData, t) => {
                     isRegenerate: true,
                     attachments: msg.attachments,
                     content: msg.content,
+                    msgId: msgId,
+                    role: msg.role
+                },
+                markId: markId,
+                fromWebsocket: true
+            });
+            break;
+        case "progenerate":
+            emitEvent({
+                type: "widget",
+                target: "ChatBox",
+                payload: {
+                    command: "Set-EditMessage",
+                    isEdit: true,
+                    immediate: true,
+                    isProgenerate: true,
+                    attachments: msg.attachments,
                     msgId: msgId,
                     role: msg.role
                 },
@@ -215,6 +233,27 @@ const MessageMenuButton = memo(({messageData}) => {
                     {t('copy_message')}
                 </DropdownMenuItem>
 
+                {(msg.allowProgenerate) && (
+                    <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onSelect={() => handleMessageAction("progenerate", messageData, t)}
+                    >
+                        <StepForward size={16}/>
+                        {t('progenerate_message')}
+                    </DropdownMenuItem>
+                )}
+
+                {(msg.allowRegenerate) && (
+                    <DropdownMenuItem
+                        className="flex items-center gap-2"
+                        onSelect={() => handleMessageAction("regenerate", messageData, t)}
+                    >
+                        <RotateCw size={16}/>
+                        {t('regenerate_message')}
+                    </DropdownMenuItem>
+                )}
+
+
                 <DropdownMenuItem
                     className="
                     flex items-center gap-2
@@ -228,16 +267,6 @@ const MessageMenuButton = memo(({messageData}) => {
                     <Trash size={16} className="text-red-600"/>
                     {t("delete_message")}
                 </DropdownMenuItem>
-
-                {(msg.allowRegenerate) && (
-                    <DropdownMenuItem
-                        className="flex items-center gap-2"
-                        onSelect={() => handleMessageAction("regenerate", messageData, t)}
-                    >
-                        <RotateCw size={16}/>
-                        {t('regenerate_message')}
-                    </DropdownMenuItem>
-                )}
             </DropdownMenuContent>
         </DropdownMenu>
     );
@@ -321,10 +350,29 @@ const MessageTools = memo(({messageData}) => {
                 </TooltipContent>
             </Tooltip>
 
+            {/* 继续生成 */}
+            {(msg.allowProgenerate) && (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <button
+                            onClick={() => handleMessageAction("progenerate", messageData, t)}
+                            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                            aria-label={t("progenerate_message")}
+                        >
+                            <StepForward size={16} className="text-gray-600 hover:text-gray-800"/>
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        {t("progenerate_message")}
+                    </TooltipContent>
+                </Tooltip>
+            )}
+
             {/* 重生成 */}
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    {(msg.allowRegenerate) && (
+            {(msg.allowRegenerate) && (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+
                         <button
                             onClick={() => handleMessageAction("regenerate", messageData, t)}
                             className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
@@ -332,12 +380,12 @@ const MessageTools = memo(({messageData}) => {
                         >
                             <RotateCw size={16} className="text-gray-600 hover:text-gray-800"/>
                         </button>
-                    )}
-                </TooltipTrigger>
-                <TooltipContent>
-                    {t("regenerate_message")}
-                </TooltipContent>
-            </Tooltip>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        {t("regenerate_message")}
+                    </TooltipContent>
+                </Tooltip>
+            )}
 
             <TooltipInfo tip={msg.tip} t={t}/>
             <MessageMenuButton messageData={messageData}/>
@@ -730,7 +778,7 @@ const KnowledgeGraphViewer = memo(({msg, className = "w-full"}) => {
                             msg.registerComponent("nvlInstance", nvlRef.current);
 
                             // 这里是消息已经完成，从服务器拿到完整消息的时候
-                            if (msg.network_focus) nvlRef.current.focusNetwork(msg.network_focus);
+                            if (msg.networkFocus) nvlRef.current.focusNetwork(msg.networkFocus);
 
                             // 流式聚焦同时也要考虑一下
                             const focusNode = msg.getComponent("focusNode");

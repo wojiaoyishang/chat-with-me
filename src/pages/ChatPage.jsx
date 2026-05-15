@@ -1175,6 +1175,7 @@ function ChatPage({
             editMessageId,
             attachments,
             sendButtonStatus,
+            isProgenerate = false,
             isRegenerate = false,
             isFork = false,
             role
@@ -1206,6 +1207,7 @@ function ChatPage({
                     model: selectedModel.id,
                     sendButtonStatus: sendButtonStatus,
                     isRegenerate: isRegenerate,
+                    isProgenerate: isProgenerate,
                     isFork: isFork,
                     role: role,
                     options: advancedSettingsValues,
