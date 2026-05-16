@@ -1692,6 +1692,74 @@ function ChatPage({
                             if (payload.reply) reply({success: false});
                         }
                         break;
+                    case "Insert-MessageReplaceContent":
+                        if (payload.value && typeof payload.value === 'object') {
+                            updateStreamingStatus();
+
+                            const newMessages = produce(messagesRef.current, draft => {
+                                for (const [msgId, insertFields] of Object.entries(payload.value)) {
+                                    if (draft[msgId] && insertFields && typeof insertFields === 'object') {
+                                        if (!draft[msgId].extraInfo) {
+                                            draft[msgId].extraInfo = {};
+                                        }
+
+                                        if (!draft[msgId].extraInfo.replace) {
+                                            draft[msgId].extraInfo.replace = {};
+                                        }
+
+                                        for (const [key, insertConfig] of Object.entries(insertFields)) {
+                                            if (
+                                                insertConfig &&
+                                                typeof insertConfig === 'object' &&
+                                                typeof insertConfig.content === 'string' &&
+                                                typeof insertConfig.position === 'number'
+                                            ) {
+                                                const currentValue = draft[msgId].extraInfo.replace[key] || '';
+                                                const { content, position } = insertConfig;
+
+                                                let insertIndex;
+
+                                                if (position >= 0) {
+                                                    insertIndex = position;
+                                                } else {
+                                                    insertIndex = currentValue.length + position;
+                                                }
+
+                                                // 防止越界
+                                                insertIndex = Math.max(
+                                                    0,
+                                                    Math.min(insertIndex, currentValue.length)
+                                                );
+
+                                                draft[msgId].extraInfo.replace[key] =
+                                                    currentValue.slice(0, insertIndex) +
+                                                    content +
+                                                    currentValue.slice(insertIndex);
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+
+                            setTimeout(() => {
+                                if (isAutoScrollEnabledRef.current) {
+                                    if (isStreamingRef.current) {
+                                        smoothScrollToBottom(true);
+                                    } else {
+                                        requestScrollToBottom();
+                                    }
+                                }
+                                checkScrollPosition(true);
+                            }, 0);
+
+                            if (payload.reply) reply({ success: true });
+                        } else {
+                            if (payload.reply) reply({ success: false });
+                        }
+                        break;
                     case "Set-MessageAttachments":
                         if (payload.value && typeof payload.value === 'object') {
                             const newMessages = produce(messagesRef.current, draft => {

@@ -828,6 +828,7 @@ const TextOnlyMessageContent = memo(({msg, msgId, isRight, content, avatar, disp
                 <MarkdownRenderer
                     contextId={msgId}
                     content={content}
+                    replacement={msg?.extraInfo?.replace}
                 />
             </div>
         </div>
@@ -1107,6 +1108,7 @@ const MessageItem = React.memo(({
                                 <MarkdownRenderer
                                     contextId={msgId}
                                     content={displayContent}
+                                    replacement={msg?.extraInfo?.replace}
                                 />
 
                                 {/* 附件区域 */}

@@ -1,80 +1,194 @@
 import {visit} from 'unist-util-visit';
 
+function parseCardReplaceAttrs(rawAttrs = '') {
+    const attrs = {};
 
-export function componentBlockDirective() {
-    return (tree, file) => {
-        const fullContent = typeof file.value === 'string' ? file.value : '';
+    const attrRe = /([a-zA-Z_$][\w$-]*)=(?:"([^"]*)"|'([^']*)'|([^\s}]+))/g;
+    let match;
 
-        visit(tree, ['containerDirective', 'textDirective', 'leafDirective'], (node, index, parent) => {
-            if (!node.position) return;
+    while ((match = attrRe.exec(rawAttrs)) !== null) {
+        const key = match[1];
+        const value = match[2] ?? match[3] ?? match[4] ?? '';
+        attrs[key] = value;
+    }
 
-            const startOffset = node.position.start.offset;
-            const endOffset = node.position.end.offset;
-            const raw = fullContent.slice(startOffset, endOffset);
+    return attrs;
+}
 
-            // ==================== 只处理我们自己的 card ====================
-            if (node.type === 'containerDirective' && node.name === 'card') {
-                // Step 1: 确定冒号数量（支持 :::card 或 ::::card 等）
-                const firstNewlineIndex = raw.indexOf('\n');
-                if (firstNewlineIndex === -1) return;
+function createCardReplaceNode(attrs) {
+    const id = attrs.id || '';
+    const type = attrs.type || '';
 
-                const firstLine = raw.slice(0, firstNewlineIndex);
-                let colonCount = 0;
-                for (let i = 0; i < firstLine.length; i++) {
-                    if (firstLine[i] === ':') colonCount++;
-                    else break;
-                }
+    const hProperties = {
+        component: 'cardReplace',
+    };
 
-                const expectedEndMarker = '\n' + ':'.repeat(colonCount);
-                let contentEnd = raw.length;
+    if (id) {
+        hProperties.id = id;
+    }
 
-                if (raw.endsWith(expectedEndMarker)) {
-                    contentEnd = raw.length - expectedEndMarker.length;
+    if (type) {
+        hProperties.type = type;
+    }
+
+    return {
+        type: 'cardReplace',
+        data: {
+            hName: 'card-replace',
+            hProperties,
+            hChildren: [],
+        },
+    };
+}
+
+function hasMeaningfulChildren(children) {
+    return children.some((child) => {
+        if (child.type === 'text') {
+            return child.value.length > 0 && child.value.trim().length > 0;
+        }
+
+        return true;
+    });
+}
+
+function createParagraphFromChildren(children, originalParagraph) {
+    return {
+        ...originalParagraph,
+        children,
+    };
+}
+
+function splitTextNodeByCardReplace(node) {
+    const text = node.value || '';
+    const tokenRe = /\{\{cardReplace\s+([^}]+)\}\}/g;
+
+    tokenRe.lastIndex = 0;
+
+    if (!tokenRe.test(text)) {
+        tokenRe.lastIndex = 0;
+        return [node];
+    }
+
+    tokenRe.lastIndex = 0;
+
+    const newNodes = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = tokenRe.exec(text)) !== null) {
+        const fullMatch = match[0];
+        const rawAttrs = match[1];
+
+        if (match.index > lastIndex) {
+            newNodes.push({
+                type: 'text',
+                value: text.slice(lastIndex, match.index),
+            });
+        }
+
+        const attrs = parseCardReplaceAttrs(rawAttrs);
+
+        // 允许：
+        // {{cardReplace id=xxx}}
+        // {{cardReplace id=xxx type=thinking}}
+        // {{cardReplace type=thinking}}
+        if (attrs.id || attrs.type) {
+            newNodes.push(createCardReplaceNode(attrs));
+        } else {
+            newNodes.push({
+                type: 'text',
+                value: fullMatch,
+            });
+        }
+
+        lastIndex = match.index + fullMatch.length;
+    }
+
+    if (lastIndex < text.length) {
+        newNodes.push({
+            type: 'text',
+            value: text.slice(lastIndex),
+        });
+    }
+
+    return newNodes;
+}
+
+export function remarkCardReplace() {
+    return function transformer(tree) {
+        visit(tree, 'paragraph', (paragraphNode, paragraphIndex, paragraphParent) => {
+            if (!paragraphParent || typeof paragraphIndex !== 'number') return;
+            if (!Array.isArray(paragraphNode.children)) return;
+
+            const expandedChildren = [];
+
+            for (const child of paragraphNode.children) {
+                if (child.type === 'text') {
+                    expandedChildren.push(...splitTextNodeByCardReplace(child));
                 } else {
-                    const lines = raw.split('\n');
-                    if (lines.length >= 2) {
-                        const lastLine = lines[lines.length - 1];
-                        const trimmedLast = lastLine.trim();
-                        if (trimmedLast === ':'.repeat(colonCount)) {
-                            contentEnd = raw.lastIndexOf('\n', raw.length - 1);
-                        }
-                    }
+                    expandedChildren.push(child);
+                }
+            }
+
+            const hasCardReplace = expandedChildren.some((child) => {
+                return child.type === 'cardReplace';
+            });
+
+            if (!hasCardReplace) {
+                paragraphNode.children = expandedChildren;
+                return;
+            }
+
+            const replacementNodes = [];
+            let paragraphBuffer = [];
+
+            const flushParagraphBuffer = () => {
+                if (!hasMeaningfulChildren(paragraphBuffer)) {
+                    paragraphBuffer = [];
+                    return;
                 }
 
-                const rawContent = raw.slice(firstNewlineIndex + 1, contentEnd).trim();
+                replacementNodes.push(
+                    createParagraphFromChildren(paragraphBuffer, paragraphNode)
+                );
 
-                const data = node.data || (node.data = {});
-                data.hName = 'component-block';
-                data.hProperties = {
-                    component: 'card',
-                    type: node.attributes?.type || '',
-                    id: node.attributes?.id || `component-${startOffset}`,
-                    startOffset,
-                    endOffset,
-                    rawContent,
-                };
-                return;   // card 处理完就退出
+                paragraphBuffer = [];
+            };
+
+            for (const child of expandedChildren) {
+                if (child.type === 'cardReplace') {
+                    flushParagraphBuffer();
+                    replacementNodes.push(child);
+                } else {
+                    paragraphBuffer.push(child);
+                }
             }
 
-            // ==================== 所有其他 directive 全部还原成普通文本 ====================
-            if (parent && typeof index === 'number') {
-                parent.children[index] = {
-                    type: 'text',
-                    value: raw,
-                };
+            flushParagraphBuffer();
+
+            if (replacementNodes.length === 0) {
+                paragraphParent.children.splice(paragraphIndex, 1);
+                return;
             }
+
+            paragraphParent.children.splice(
+                paragraphIndex,
+                1,
+                ...replacementNodes
+            );
         });
     };
 }
 
 export function rehypeInlineCodeProperty() {
-    return function (tree) {
-        visit(tree, 'code', function (node, index, parent) {
+    return function transformer(tree) {
+        visit(tree, 'code', (node) => {
             const data = node.data || (node.data = {});
 
             data.hProperties = {
-                'isCodeBlock': true
+                ...(data.hProperties || {}),
+                isCodeBlock: true,
             };
-        })
-    }
+        });
+    };
 }
