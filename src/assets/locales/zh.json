@@ -223,5 +223,6 @@
   "upload_success": "上传成功",
   "upload_failed": "上传失败",
   "delete_message": "删除消息",
-  "progenerate_message": "继续生成"
+  "progenerate_message": "继续生成",
+  "no_conversations": "没有会话"
 }

@@ -212,7 +212,7 @@ const StableStepsButton = memo(({
             aria-label={isExpanded ? 'Collapse steps' : 'Expand steps'}
             style={{
                 position: 'relative',
-                zIndex: 20,
+                zIndex: 10,
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation',
                 width: '28px',

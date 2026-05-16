@@ -223,5 +223,6 @@
   "upload_success": "Upload successful",
   "upload_failed": "Upload failed",
   "delete_message": "Delete Message",
-  "progenerate_message": "Continue to generate"
+  "progenerate_message": "Continue to generate",
+  "no_conversations": "No Conversations"
 }
