@@ -2,6 +2,7 @@ import React, {
     memo,
     useCallback,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState,
@@ -22,6 +23,60 @@ import {
 } from 'lucide-react';
 
 import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
+
+// 使用 import.meta.glob 静态收集所有语言模块，供 toolCommand 按需加载高亮语言。
+const languageModules = import.meta.glob('/node_modules/highlight.js/es/languages/*.js');
+
+if (typeof window !== 'undefined' && !window.hljsFailedLanguages) {
+    window.hljsFailedLanguages = new Set();
+}
+
+let hljs = null;
+let loadingPromise = null;
+
+const loadHljs = () => {
+    if (hljs) {
+        return Promise.resolve(hljs);
+    }
+
+    if (!loadingPromise) {
+        loadingPromise = import('highlight.js/lib/core')
+            .then((module) => {
+                hljs = module.default;
+                return hljs;
+            })
+            .finally(() => {
+                loadingPromise = null;
+            });
+    }
+
+    return loadingPromise;
+};
+
+const HIGHLIGHT_LANGUAGE_ALIASES = {
+    csharp: 'csharp',
+    'c#': 'csharp',
+    cpp: 'cpp',
+    'c++': 'cpp',
+    html: 'xml',
+    js: 'javascript',
+    md: 'markdown',
+    py: 'python',
+    python3: 'python',
+    shell: 'bash',
+    sh: 'bash',
+    ts: 'typescript',
+};
+
+const normalizeHighlightLanguage = (language) => {
+    const normalized = toSafeString(language).trim().toLowerCase();
+
+    if (!normalized) {
+        return '';
+    }
+
+    return HIGHLIGHT_LANGUAGE_ALIASES[normalized] || normalized;
+};
 
 const expandedMap = new Map();
 const expandedListeners = new Map();
@@ -1232,6 +1287,265 @@ const AgentWidget = memo(({
 
 AgentWidget.displayName = 'AgentWidget';
 
+
+const TOOL_COMMAND_CODE_RE = /^\s*\[CODE:([^\]]+)]\s*(?:\r?\n|$)/i;
+const TOOL_LOG_TITLE_RE = /^\s*\[TITLE:([^\]]+)]\s*(?:\r?\n|$)/i;
+
+const parseToolCommandContent = (content) => {
+    const safeContent = toSafeString(content).replace(/^\uFEFF/, '');
+    const match = safeContent.match(TOOL_COMMAND_CODE_RE);
+
+    if (!match) {
+        return {
+            codeString: safeContent,
+            language: 'text',
+        };
+    }
+
+    const rawLanguage = match[1].trim();
+    const language = normalizeHighlightLanguage(rawLanguage) || 'text';
+
+    return {
+        codeString: safeContent.slice(match[0].length),
+        language,
+    };
+};
+
+const parseToolLogContent = (content) => {
+    const safeContent = toSafeString(content).replace(/^\uFEFF/, '').trimEnd();
+    const lines = safeContent.split(/\r?\n/);
+    const lastLine = lines[lines.length - 1]?.trim();
+    const isDone = lastLine === '[DONE]';
+    const isFailed = lastLine === '[FAILED]';
+    const status = isFailed ? 'failed' : isDone ? 'done' : 'running';
+    const contentWithoutStatus = (isDone || isFailed)
+        ? lines.slice(0, -1).join('\n').trimEnd()
+        : safeContent;
+    const titleMatch = contentWithoutStatus.match(TOOL_LOG_TITLE_RE);
+
+    if (titleMatch) {
+        return {
+            title: titleMatch[1].trim() || 'Tool Log',
+            body: contentWithoutStatus.slice(titleMatch[0].length).trimStart(),
+            status,
+        };
+    }
+
+    const [firstLine = '', ...restLines] = contentWithoutStatus.split(/\r?\n/);
+    const title = firstLine.trim() || 'Tool Log';
+    const body = restLines.join('\n').trimStart();
+
+    return {
+        title,
+        body,
+        status,
+    };
+};
+
+const ToolCommandBlock = memo(({content = '', id}) => {
+    const codeRef = useRef(null);
+
+    const {
+        codeString,
+        language,
+    } = useMemo(() => {
+        return parseToolCommandContent(content);
+    }, [content]);
+
+    useLayoutEffect(() => {
+        if (!codeString || !codeRef.current || language === 'text') {
+            return undefined;
+        }
+
+        let isDisposed = false;
+
+        const doHighlight = async () => {
+            const hljsInst = await loadHljs();
+
+            if (isDisposed || !codeRef.current) {
+                return;
+            }
+
+            const failedLanguages = typeof window !== 'undefined'
+                ? window.hljsFailedLanguages
+                : null;
+
+            if (
+                language &&
+                !hljsInst.getLanguage(language) &&
+                !(failedLanguages && failedLanguages.has(language))
+            ) {
+                const langPath = `/node_modules/highlight.js/es/languages/${language}.js`;
+                const loadModule = languageModules[langPath];
+
+                if (loadModule) {
+                    try {
+                        const mod = await loadModule();
+
+                        if (!isDisposed) {
+                            hljsInst.registerLanguage(language, mod.default);
+                        }
+                    } catch (err) {
+                        console.error(`Failed to load language module for: ${language}`, err);
+                        failedLanguages?.add(language);
+                    }
+                } else {
+                    failedLanguages?.add(language);
+                }
+            }
+
+            if (isDisposed || !codeRef.current) {
+                return;
+            }
+
+            if (codeRef.current.dataset.highlighted) {
+                delete codeRef.current.dataset.highlighted;
+            }
+
+            try {
+                hljsInst.highlightElement(codeRef.current);
+            } catch (err) {
+                console.error('Highlight failed:', err);
+            }
+        };
+
+        doHighlight();
+
+        return () => {
+            isDisposed = true;
+        };
+    }, [codeString, language]);
+
+    if (!codeString.trim()) {
+        return null;
+    }
+
+    return (
+        <div
+            className="my-1.5 max-h-[260px] overflow-auto rounded-md border border-zinc-200/80 bg-zinc-50/60"
+            data-card-block-id={id}
+        >
+            <pre
+                className="m-0 min-w-max bg-transparent px-2.5 py-2 text-[11px] leading-5 text-zinc-700"
+                style={{background: 'transparent'}}
+            >
+                <code
+                    ref={codeRef}
+                    className={`hljs block bg-transparent font-mono text-[11px] leading-5 text-inherit ${language ? `language-${language}` : ''}`}
+                    style={{background: 'transparent', padding: 0}}
+                >
+                    {codeString}
+                </code>
+            </pre>
+        </div>
+    );
+}, (prev, next) => {
+    return (
+        prev.id === next.id &&
+        prev.content === next.content
+    );
+});
+
+ToolCommandBlock.displayName = 'ToolCommandBlock';
+
+const ToolLogBlock = memo(({content = '', id}) => {
+    const {
+        title,
+        body,
+        status,
+    } = useMemo(() => {
+        return parseToolLogContent(content);
+    }, [content]);
+
+    const hasBody = body.trim().length > 0;
+    const isDone = status === 'done';
+    const isFailed = status === 'failed';
+    const isRunning = status === 'running';
+
+    const tone = isFailed
+        ? {
+            card: 'border-red-200/80 bg-red-50/60',
+            title: 'text-red-700',
+            body: 'border-red-100 text-red-700/85',
+            icon: 'border-red-100 bg-red-50 text-red-600',
+        }
+        : isDone
+            ? {
+                card: 'border-emerald-200/80 bg-emerald-50/60',
+                title: 'text-emerald-700',
+                body: 'border-emerald-100 text-emerald-700/85',
+                icon: 'border-emerald-100 bg-emerald-50 text-emerald-600',
+            }
+            : {
+                card: 'border-amber-200/80 bg-amber-50/70',
+                title: 'text-amber-800',
+                body: 'border-amber-100 text-amber-800/80',
+                icon: 'border-amber-100 bg-amber-50 text-amber-600',
+            };
+
+    return (
+        <div
+            className={`relative my-1.5 rounded-md border px-2.5 py-2 pr-8 transition-colors duration-300 ${tone.card}`}
+            data-card-block-id={id}
+            style={isRunning ? {animation: 'tool-log-running-breathe 1.8s ease-in-out infinite'} : undefined}
+        >
+            {isRunning && (
+                <style>{`
+                    @keyframes tool-log-running-breathe {
+                        0%, 100% {
+                            box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.12);
+                            filter: saturate(1);
+                        }
+                        50% {
+                            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.18);
+                            filter: saturate(1.18) brightness(1.015);
+                        }
+                    }
+                `}</style>
+            )}
+
+            <div className={`min-w-0 truncate text-[11px] font-medium leading-4 ${tone.title}`}>
+                {title}
+            </div>
+
+            {hasBody && (
+                <pre className={`mt-1.5 max-h-[220px] overflow-auto whitespace-pre-wrap break-words border-t pt-1.5 font-mono text-[11px] leading-5 ${tone.body}`}>
+                    {body}
+                </pre>
+            )}
+
+            {isRunning && (
+                <div
+                    className="absolute right-2 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center text-amber-600"
+                    aria-label="Tool log is running"
+                >
+                    <Loader2 className="h-3.5 w-3.5 animate-spin"/>
+                </div>
+            )}
+
+            {(isDone || isFailed) && (
+                <div
+                    className={`absolute bottom-1.5 right-2 flex h-4 w-4 items-center justify-center rounded-full border ${tone.icon}`}
+                    aria-label={isDone ? 'Tool log finished' : 'Tool log failed'}
+                >
+                    {isDone ? (
+                        <Check className="h-2.5 w-2.5 stroke-[3]"/>
+                    ) : (
+                        <X className="h-2.5 w-2.5 stroke-[3]"/>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}, (prev, next) => {
+    return (
+        prev.id === next.id &&
+        prev.content === next.content
+    );
+});
+
+ToolLogBlock.displayName = 'ToolLogBlock';
+
 const HtmlBlock = memo(({content = '', id}) => {
     return (
         <div
@@ -1307,6 +1621,22 @@ const CardBlock = memo(({
         case 'html':
             return (
                 <HtmlBlock
+                    id={id}
+                    content={content}
+                />
+            );
+
+        case 'toolCommand':
+            return (
+                <ToolCommandBlock
+                    id={id}
+                    content={content}
+                />
+            );
+
+        case 'toolLog':
+            return (
+                <ToolLogBlock
                     id={id}
                     content={content}
                 />
