@@ -1,7 +1,10 @@
 import React, {
     memo,
     useCallback,
+    useEffect,
     useMemo,
+    useRef,
+    useState,
     useSyncExternalStore,
 } from 'react';
 
@@ -24,6 +27,8 @@ const expandedMap = new Map();
 const expandedListeners = new Map();
 
 const CARD_REPLACE_TOKEN_RE = /\{\{cardReplace\s+[^}]*\}\}/g;
+const PROGRESS_LINE_RE = /^\[PROGRESS\s+(\d+)\/(\d+)\]$/;
+const PROGRESS_LINE_GLOBAL_RE = /^[ \t]*\[PROGRESS\s+\d+\/\d+\][ \t]*$/gm;
 
 const defaultRenderMarkdown = (content) => {
     return <>{content}</>;
@@ -39,6 +44,47 @@ const stripCardReplaceTokensForPreview = (content) => {
         .replace(/[ \t]+\n/g, '\n')
         .replace(/\n{3,}/g, '\n\n')
         .trim();
+};
+
+
+const stripProgressMarkers = (content) => {
+    return toSafeString(content)
+        .replace(PROGRESS_LINE_GLOBAL_RE, '')
+        .replace(/[ \t]+\n/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trimEnd();
+};
+
+const getLatestProgressMarker = (content) => {
+    const lines = toSafeString(content).split(/\r?\n/);
+
+    for (let index = lines.length - 1; index >= 0; index -= 1) {
+        const line = lines[index].trim();
+        const match = line.match(PROGRESS_LINE_RE);
+
+        if (!match) {
+            continue;
+        }
+
+        const rawCurrent = Number.parseInt(match[1], 10);
+        const rawTotal = Number.parseInt(match[2], 10);
+
+        if (!Number.isFinite(rawCurrent) || !Number.isFinite(rawTotal) || rawTotal <= 0) {
+            return null;
+        }
+
+        const total = rawTotal;
+        const current = Math.min(Math.max(rawCurrent, 0), total);
+
+        return {
+            current,
+            total,
+            isNotStarted: current === 0,
+            isComplete: current >= total,
+        };
+    }
+
+    return null;
 };
 
 const getParagraphsForPreview = (content) => {
@@ -232,6 +278,325 @@ const StableStepsButton = memo(({
 
 StableStepsButton.displayName = 'StableStepsButton';
 
+
+const progressPercentMap = new Map();
+
+const getProgressStorageKey = (progressKey, total) => {
+    return `${progressKey || '__tool_progress__'}::${total || 0}`;
+};
+
+const AnimatedProgressFill = memo(({
+                                       className = '',
+                                       isActive = false,
+                                       progressKey,
+                                       storageKey,
+                                       targetPercent,
+                                   }) => {
+    const safeTargetPercent = Math.max(0, Math.min(100, Number(targetPercent) || 0));
+    const resolvedStorageKey = storageKey || progressKey || '__tool_progress__';
+    const [displayPercent, setDisplayPercent] = useState(() => {
+        if (progressPercentMap.has(resolvedStorageKey)) {
+            return progressPercentMap.get(resolvedStorageKey);
+        }
+
+        return safeTargetPercent <= 0 ? 0 : Math.max(0, safeTargetPercent - 18);
+    });
+
+    useEffect(() => {
+        let rafId = 0;
+
+        rafId = window.requestAnimationFrame(() => {
+            setDisplayPercent(safeTargetPercent);
+            progressPercentMap.set(resolvedStorageKey, safeTargetPercent);
+        });
+
+        return () => {
+            window.cancelAnimationFrame(rafId);
+        };
+    }, [resolvedStorageKey, safeTargetPercent]);
+
+    return (
+        <div
+            className={className}
+            style={{
+                width: `${displayPercent}%`,
+                animation: isActive ? 'card-progress-breathe 1.55s ease-in-out infinite' : undefined,
+            }}
+        />
+    );
+}, (prev, next) => {
+    return (
+        prev.className === next.className &&
+        prev.isActive === next.isActive &&
+        prev.progressKey === next.progressKey &&
+        prev.storageKey === next.storageKey &&
+        prev.targetPercent === next.targetPercent
+    );
+});
+
+AnimatedProgressFill.displayName = 'AnimatedProgressFill';
+
+const getCompactProgressSteps = (current, total) => {
+    if (current <= 0) {
+        return [];
+    }
+
+    return [Math.min(current, total)];
+};
+
+const getVisualProgressPercent = (current, total) => {
+    if (total <= 0 || current <= 0) {
+        return 0;
+    }
+
+    if (current >= total) {
+        return 100;
+    }
+
+    // 完成一个工具后，视觉上向下一段轻轻推进一点点，
+    // 让进度看起来还在持续流动，但不会越过下一个工具节点。
+    const fakeAdvance = 0.22;
+    const maxBeforeNextStep = current + 0.38;
+    const visualCurrent = Math.min(current + fakeAdvance, maxBeforeNextStep, total);
+
+    return Math.max(0, Math.min(96, (visualCurrent / total) * 100));
+};
+
+const ProgressTimeline = memo(({
+                                   progress,
+                                   progressKey,
+                                   isFinished,
+                                   isFailed,
+                                   isDisappearing = false,
+                               }) => {
+    if (!progress) {
+        return null;
+    }
+
+    const {current, total, isNotStarted} = progress;
+    const steps = Array.from({length: total}, (_, index) => index + 1);
+    const compactSteps = getCompactProgressSteps(current, total);
+    const progressPercent = getVisualProgressPercent(current, total);
+    const shouldBreathe = !isFailed && current > 0;
+    const latestCompletedStep = current > 0 ? Math.min(current, total) : null;
+
+    const tone = isFailed
+        ? {
+            active: 'bg-red-500 border-red-500 text-white',
+            activeText: 'text-red-600',
+            ring: 'ring-red-200',
+            fill: 'from-red-400 via-red-500 to-red-400',
+            glow: 'shadow-red-200/70',
+        }
+        : {
+            active: 'bg-yellow-500 border-yellow-500 text-white',
+            activeText: 'text-yellow-700',
+            ring: 'ring-yellow-200',
+            fill: 'from-yellow-300 via-yellow-500 to-yellow-300',
+            glow: 'shadow-yellow-200/80',
+        };
+
+    const progressStorageKey = getProgressStorageKey(progressKey, total);
+
+    return (
+        <div
+            className={`w-full min-w-0 flex-1 overflow-visible transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${isDisappearing ? 'opacity-0 scale-x-[0.985] blur-[0.5px]' : 'opacity-100 scale-x-100 blur-0'}`}
+            aria-label={`Tool progress ${current} of ${total}`}
+        >
+            <style>{`
+                @keyframes card-progress-breathe {
+                    0%, 100% { filter: saturate(1); opacity: 0.9; }
+                    50% { filter: saturate(1.35) brightness(1.06); opacity: 1; }
+                }
+
+                @keyframes card-progress-node-breathe {
+                    0%, 100% {
+                        transform: scale(1);
+                        filter: brightness(1) saturate(1);
+                    }
+                    50% {
+                        transform: scale(1.045);
+                        filter: brightness(1.06) saturate(1.18);
+                    }
+                }
+
+                @keyframes card-progress-node-halo {
+                    0%, 100% {
+                        opacity: 0.14;
+                        transform: scale(0.72);
+                    }
+                    50% {
+                        opacity: 0.55;
+                        transform: scale(0.98);
+                    }
+                }
+            `}</style>
+
+            <div className="hidden sm:flex items-center gap-3 w-full min-w-0 pr-0 overflow-visible">
+                <span className={`text-xs font-bold tabular-nums whitespace-nowrap ${isNotStarted ? 'text-zinc-400' : tone.activeText}`}>
+                    {current}/{total}
+                </span>
+
+                <div className="relative flex items-center min-w-0 flex-1 py-1.5">
+                    <div className="absolute left-2 right-2 top-1/2 h-3.5 -translate-y-1/2 rounded-full bg-zinc-200/90 overflow-hidden shadow-inner">
+                        <AnimatedProgressFill
+                            className={`h-full rounded-full bg-gradient-to-r ${tone.fill} shadow-lg ${tone.glow} transition-[width] duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] origin-left`}
+                            isActive={shouldBreathe && !isDisappearing}
+                            progressKey={progressKey}
+                            storageKey={`${progressStorageKey}::desktop`}
+                            targetPercent={progressPercent}
+                        />
+                    </div>
+
+                    <div className="relative z-[1] flex items-center justify-between w-full min-w-0">
+                        {steps.map((step) => {
+                            const isCompleted = step <= current;
+                            const isLatestCompleted = step === latestCompletedStep && !isFailed;
+
+                            return (
+                                <div
+                                    key={step}
+                                    className={`
+                                        relative flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold shadow-sm transition-all duration-300 overflow-visible
+                                        ${isCompleted ? tone.active : 'border-zinc-300 bg-white text-zinc-400'}
+                                    `}
+                                    style={{
+                                        animation: isLatestCompleted ? 'card-progress-node-breathe 1.35s ease-in-out infinite' : undefined,
+                                    }}
+                                >
+
+                                    {isLatestCompleted && (
+                                        <span
+                                            className="pointer-events-none absolute inset-[2px] rounded-full"
+                                            style={{
+                                                background: 'radial-gradient(circle, rgba(254, 240, 138, 0.82) 0%, rgba(250, 204, 21, 0.34) 52%, rgba(250, 204, 21, 0) 74%)',
+                                                animation: 'card-progress-node-halo 1.55s ease-in-out infinite',
+                                            }}
+                                        />
+                                    )}
+
+                                    {isCompleted ? (
+                                        <Check className="relative z-[1] h-3.5 w-3.5 stroke-[3]"/>
+                                    ) : (
+                                        <span className="relative z-[1]">{step}</span>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
+            <div className="sm:hidden flex items-center gap-2 w-full min-w-0 overflow-visible">
+                <div className="relative h-4 min-w-0 flex-1 rounded-full bg-zinc-200/90 overflow-hidden shadow-inner">
+                    <AnimatedProgressFill
+                        className={`h-full rounded-full bg-gradient-to-r ${tone.fill} shadow-lg ${tone.glow} transition-[width] duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] origin-left`}
+                        isActive={shouldBreathe && !isDisappearing}
+                        progressKey={progressKey}
+                        storageKey={`${progressStorageKey}::mobile`}
+                        targetPercent={progressPercent}
+                    />
+                </div>
+
+                {compactSteps.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {compactSteps.map((step) => {
+                            const isCompleted = step <= current;
+                            const isLatestCompleted = step === latestCompletedStep && !isFailed;
+
+                            return (
+                                <div
+                                    key={step}
+                                    className={`
+                                        relative flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold shadow-sm transition-all duration-300 overflow-visible
+                                        ${isCompleted ? tone.active : 'border-zinc-300 bg-white text-zinc-400'}
+                                    `}
+                                    style={{
+                                        animation: isLatestCompleted ? 'card-progress-node-breathe 1.35s ease-in-out infinite' : undefined,
+                                    }}
+                                >
+
+                                    {isLatestCompleted && (
+                                        <span
+                                            className="pointer-events-none absolute inset-[2px] rounded-full"
+                                            style={{
+                                                background: 'radial-gradient(circle, rgba(254, 240, 138, 0.82) 0%, rgba(250, 204, 21, 0.34) 52%, rgba(250, 204, 21, 0) 74%)',
+                                                animation: 'card-progress-node-halo 1.55s ease-in-out infinite',
+                                            }}
+                                        />
+                                    )}
+
+                                    {isCompleted ? (
+                                        <Check className="relative z-[1] h-3.5 w-3.5 stroke-[3]"/>
+                                    ) : (
+                                        <span className="relative z-[1]">{step}</span>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                <span className={`text-[10px] font-bold tabular-nums whitespace-nowrap ${isNotStarted ? 'text-zinc-400' : tone.activeText}`}>
+                    {current}/{total}
+                </span>
+            </div>
+        </div>
+    );
+}, (prev, next) => {
+    return (
+        prev.progressKey === next.progressKey &&
+        prev.isFinished === next.isFinished &&
+        prev.isFailed === next.isFailed &&
+        prev.isDisappearing === next.isDisappearing &&
+        prev.progress?.current === next.progress?.current &&
+        prev.progress?.total === next.progress?.total
+    );
+});
+
+ProgressTimeline.displayName = 'ProgressTimeline';
+
+
+const ToolCallingRightStatus = memo(({
+                                         isDone,
+                                         isFailed,
+                                         isFinished,
+                                     }) => {
+    if (isFailed) {
+        return (
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600 border border-red-100">
+                <X className="h-3.5 w-3.5 stroke-[3]"/>
+            </div>
+        );
+    }
+
+    if (isFinished || isDone) {
+        return (
+            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm">
+                <Check className="h-3.5 w-3.5 stroke-[3]"/>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex h-6 flex-shrink-0 items-center justify-center px-1.5 rounded-full bg-yellow-50/80 border border-yellow-100 text-yellow-600">
+            <span className="flex items-center gap-1" aria-label="Tool calling is running">
+                <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.35s]"/>
+                <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.18s]"/>
+                <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse"/>
+            </span>
+        </div>
+    );
+}, (prev, next) => {
+    return (
+        prev.isDone === next.isDone &&
+        prev.isFailed === next.isFailed &&
+        prev.isFinished === next.isFinished
+    );
+});
+
+ToolCallingRightStatus.displayName = 'ToolCallingRightStatus';
+
 const StatusHeader = memo(({
                                activeColor,
                                currentColor,
@@ -243,14 +608,74 @@ const StatusHeader = memo(({
                                isFailed,
                                isFinished,
                                isProcessing,
+                               isToolCalling,
+                               progress,
                                truncatedLastLine,
                            }) => {
+    const previousIsFinishedRef = useRef(isFinished);
+    const [isFinishingProgressVisible, setIsFinishingProgressVisible] = useState(false);
+    const [isFinishingProgressFading, setIsFinishingProgressFading] = useState(false);
+
+    const justFinishedDuringRender = Boolean(
+        isToolCalling &&
+        progress &&
+        isFinished &&
+        !previousIsFinishedRef.current &&
+        !isFailed,
+    );
+
+    useEffect(() => {
+        if (!isToolCalling || !progress || isFailed) {
+            setIsFinishingProgressVisible(false);
+            setIsFinishingProgressFading(false);
+            previousIsFinishedRef.current = isFinished;
+            return undefined;
+        }
+
+        const justFinished = isFinished && !previousIsFinishedRef.current;
+        previousIsFinishedRef.current = isFinished;
+
+        if (!isFinished) {
+            setIsFinishingProgressVisible(false);
+            setIsFinishingProgressFading(false);
+            return undefined;
+        }
+
+        if (!justFinished) {
+            return undefined;
+        }
+
+        setIsFinishingProgressVisible(true);
+        setIsFinishingProgressFading(false);
+
+        const fadeTimer = window.setTimeout(() => {
+            setIsFinishingProgressFading(true);
+        }, 650);
+
+        const hideTimer = window.setTimeout(() => {
+            setIsFinishingProgressVisible(false);
+            setIsFinishingProgressFading(false);
+        }, 1750);
+
+        return () => {
+            window.clearTimeout(fadeTimer);
+            window.clearTimeout(hideTimer);
+        };
+    }, [isToolCalling, progress, isFinished, isFailed]);
+
+    const shouldShowProgress = Boolean(progress && (!isFinished || isFinishingProgressVisible || justFinishedDuringRender));
+    const shouldFadeProgress = Boolean(progress && isFinished && isFinishingProgressFading && !isFailed);
+
     return (
-        <div className="flex items-center justify-between group">
-            <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden">
-                <div className={`${currentColor} flex-shrink-0`}>
+        <div className="flex items-center justify-between gap-2 group">
+            <div className={`flex items-center gap-2.5 min-w-0 flex-1 ${shouldShowProgress ? 'overflow-visible' : 'overflow-hidden'}`}>
+                <div className={`${isToolCalling && !isFailed && !isFinished ? 'text-yellow-600' : currentColor} flex-shrink-0`}>
                     {isFailed ? (
                         <X className="w-4 h-4 stroke-[3]"/>
+                    ) : isToolCalling && isFinished ? (
+                        <Check className="w-4 h-4 stroke-[3]"/>
+                    ) : isToolCalling ? (
+                        <Icon className="w-4 h-4 animate-pulse"/>
                     ) : isDone ? (
                         <Check className="w-4 h-4 stroke-[3]"/>
                     ) : (
@@ -260,30 +685,62 @@ const StatusHeader = memo(({
                     )}
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className={`text-sm font-medium ${isFinished ? 'text-gray-500' : 'text-gray-800'}`}>
-                        {displayTitle}
-                    </span>
+                {shouldShowProgress ? (
+                    <>
+                        <span
+                            className="text-sm font-medium whitespace-nowrap flex-shrink-0 text-gray-800"
+                        >
+                            {displayTitle}
+                        </span>
 
-                    {!isFinished && (
-                        <div className={`flex items-center gap-1 ${activeColor}`}>
-                            <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.4s]"/>
-                            <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.2s]"/>
-                            <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"/>
+                        <ProgressTimeline
+                            progress={progress}
+                            progressKey={expandedKey}
+                            isFinished={isFinished}
+                            isFailed={isFailed}
+                            isDisappearing={shouldFadeProgress}
+                        />
+                    </>
+                ) : (
+                    <>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <span
+                                className={`text-sm font-medium ${isFinished ? 'text-gray-500' : 'text-gray-800'}`}
+                            >
+                                {displayTitle}
+                            </span>
+
+                            {!isFinished && !isToolCalling && (
+                                <div className={`flex items-center gap-1 ${activeColor}`}>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.4s]"/>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.2s]"/>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"/>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
 
-                {!isFinished && truncatedLastLine && (
-                    <span className="text-xs font-mono text-gray-500 border-l border-gray-200 ml-3 pl-3 hidden sm:block flex-grow min-w-[200px] overflow-hidden whitespace-nowrap">
-                        {truncatedLastLine}
-                    </span>
+                        {!isFinished && !isToolCalling && truncatedLastLine && (
+                            <span className="text-xs font-mono text-gray-500 border-l border-gray-200 ml-3 pl-3 hidden sm:block flex-grow min-w-[200px] overflow-hidden whitespace-nowrap">
+                                {truncatedLastLine}
+                            </span>
+                        )}
+                    </>
                 )}
             </div>
 
-            {hasSteps && (
-                <StableStepsButton expandedKey={expandedKey}/>
-            )}
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+                {isToolCalling && !isFinished && (
+                    <ToolCallingRightStatus
+                        isDone={isDone}
+                        isFailed={isFailed}
+                        isFinished={isFinished}
+                    />
+                )}
+
+                {hasSteps && (
+                    <StableStepsButton expandedKey={expandedKey}/>
+                )}
+            </div>
         </div>
     );
 }, (prev, next) => {
@@ -298,6 +755,9 @@ const StatusHeader = memo(({
         prev.isFailed === next.isFailed &&
         prev.isFinished === next.isFinished &&
         prev.isProcessing === next.isProcessing &&
+        prev.isToolCalling === next.isToolCalling &&
+        prev.progress?.current === next.progress?.current &&
+        prev.progress?.total === next.progress?.total &&
         prev.truncatedLastLine === next.truncatedLastLine
     );
 });
@@ -307,6 +767,9 @@ StatusHeader.displayName = 'StatusHeader';
 const StatusBody = memo(({
                              cleanContent,
                              expandedKey,
+                             isFailed = false,
+                             isFinished = false,
+                             isToolCalling = false,
                              renderMarkdown,
                          }) => {
     const subscribe = useCallback((listener) => {
@@ -328,7 +791,27 @@ const StatusBody = memo(({
     }
 
     return (
-        <div className="mt-2 ml-2 pl-4 border-l border-gray-200">
+        <div
+            className={`mt-2 ml-2 pl-4 border-l border-gray-200 ${isToolCalling ? 'transition-all duration-300' : ''}`}
+            style={isToolCalling && !isFinished && !isFailed ? {
+                animation: 'card-tool-body-breathe 1.8s ease-in-out infinite',
+            } : undefined}
+        >
+            {isToolCalling && !isFinished && !isFailed && (
+                <style>{`
+                    @keyframes card-tool-body-breathe {
+                        0%, 100% {
+                            opacity: 0.92;
+                            filter: saturate(1);
+                        }
+                        50% {
+                            opacity: 1;
+                            filter: saturate(1.08) brightness(1.015);
+                        }
+                    }
+                `}</style>
+            )}
+
             {renderMarkdown(cleanContent)}
         </div>
     );
@@ -336,6 +819,9 @@ const StatusBody = memo(({
     return (
         prev.cleanContent === next.cleanContent &&
         prev.expandedKey === next.expandedKey &&
+        prev.isFailed === next.isFailed &&
+        prev.isFinished === next.isFinished &&
+        prev.isToolCalling === next.isToolCalling &&
         prev.renderMarkdown === next.renderMarkdown
     );
 });
@@ -367,6 +853,7 @@ const StatusWidget = memo(({
         isFailed,
         lastLine,
         paragraphs,
+        progress,
     } = useMemo(() => {
         const safeContent = toSafeString(content);
         const trimmedContent = safeContent.trim();
@@ -382,6 +869,14 @@ const StatusWidget = memo(({
             cleanContent = safeContent.replace(/\n\[FAILED\]\s*$/, '').trimEnd();
         }
 
+        const progress = type === 'toolCalling'
+            ? getLatestProgressMarker(cleanContent)
+            : null;
+
+        if (type === 'toolCalling') {
+            cleanContent = stripProgressMarkers(cleanContent);
+        }
+
         const previewContent = stripCardReplaceTokensForPreview(cleanContent);
         const lastLine = getLastLineForPreview(previewContent);
         const paragraphs = getParagraphsForPreview(previewContent);
@@ -392,8 +887,9 @@ const StatusWidget = memo(({
             isFailed,
             lastLine,
             paragraphs,
+            progress,
         };
-    }, [content]);
+    }, [content, type]);
 
     const truncatedLastLine = useMemo(() => {
         if (!lastLine) return '';
@@ -407,14 +903,25 @@ const StatusWidget = memo(({
         return `...${lastLine.slice(-maxLen)}`;
     }, [lastLine]);
 
-    const isFinished = isDone || isFailed;
+    const isProgressComplete = type === 'toolCalling' && progress?.isComplete === true;
+    const isFinished = isDone || isFailed || isProgressComplete;
 
     let displayTitle = title;
-    if (isDone) displayTitle = `${title} Finished`;
-    if (isFailed) displayTitle = `${title} Failed`;
+    if (type === 'toolCalling') {
+        if (isFailed) {
+            displayTitle = `${title} Failed`;
+        } else if (isDone) {
+            displayTitle = `${title} Finished`;
+        } else if (isProgressComplete) {
+            displayTitle = `${title} Done`;
+        }
+    } else {
+        if (isDone) displayTitle = `${title} Finished`;
+        if (isFailed) displayTitle = `${title} Failed`;
+    }
 
     let currentColor = activeColor;
-    if (isDone) currentColor = doneColor;
+    if (isDone || isProgressComplete) currentColor = doneColor;
     if (isFailed) currentColor = 'text-red-600';
 
     return (
@@ -430,12 +937,17 @@ const StatusWidget = memo(({
                 isFailed={isFailed}
                 isFinished={isFinished}
                 isProcessing={isProcessing}
+                isToolCalling={type === 'toolCalling'}
+                progress={progress}
                 truncatedLastLine={truncatedLastLine}
             />
 
             <StatusBody
                 cleanContent={cleanContent}
                 expandedKey={expandedKey}
+                isFailed={isFailed}
+                isFinished={isFinished}
+                isToolCalling={type === 'toolCalling'}
                 renderMarkdown={renderMarkdown}
             />
         </div>
@@ -830,7 +1342,7 @@ const CardBlock = memo(({
                     activeColor="text-amber-600"
                     doneColor="text-emerald-600"
                     Icon={Wrench}
-                    title="Using Tool"
+                    title="Tool Calling"
                 />
             );
 
