@@ -1,0 +1,97 @@
+@keyframes card-progress-breathe {
+    0%, 100% {
+        filter: saturate(1);
+        opacity: 0.9;
+    }
+    50% {
+        filter: saturate(1.35) brightness(1.06);
+        opacity: 1;
+    }
+}
+
+@keyframes card-progress-node-breathe {
+    0%, 100% {
+        transform: scale(1);
+        filter: brightness(1) saturate(1);
+    }
+    50% {
+        transform: scale(1.045);
+        filter: brightness(1.06) saturate(1.18);
+    }
+}
+
+@keyframes card-progress-node-halo {
+    0%, 100% {
+        opacity: 0.14;
+        transform: scale(0.72);
+    }
+    50% {
+        opacity: 0.55;
+        transform: scale(0.98);
+    }
+}
+
+@keyframes card-tool-body-breathe {
+    0%, 100% {
+        opacity: 0.92;
+        filter: saturate(1);
+    }
+    50% {
+        opacity: 1;
+        filter: saturate(1.08) brightness(1.015);
+    }
+}
+
+@keyframes tool-command-soft-breathe {
+    0%, 100% {
+        box-shadow:
+            0 8px 24px rgba(14, 165, 233, 0.07),
+            0 0 18px rgba(125, 211, 252, 0.10);
+        filter: saturate(1) brightness(1);
+    }
+    50% {
+        box-shadow:
+            0 10px 28px rgba(14, 165, 233, 0.10),
+            0 0 26px rgba(125, 211, 252, 0.16);
+        filter: saturate(1.04) brightness(1.01);
+    }
+}
+
+@keyframes tool-log-running-breathe {
+    0%, 100% {
+        box-shadow:
+            0 8px 24px rgba(245, 158, 11, 0.07),
+            0 0 18px rgba(251, 191, 36, 0.10);
+        filter: saturate(1) brightness(1);
+    }
+    50% {
+        box-shadow:
+            0 10px 30px rgba(245, 158, 11, 0.10),
+            0 0 30px rgba(251, 191, 36, 0.16);
+        filter: saturate(1.08) brightness(1.01);
+    }
+}
+
+.card-progress-breathe {
+    animation: card-progress-breathe 1.55s ease-in-out infinite;
+}
+
+.card-progress-node-breathe {
+    animation: card-progress-node-breathe 1.35s ease-in-out infinite;
+}
+
+.card-progress-node-halo {
+    animation: card-progress-node-halo 1.55s ease-in-out infinite;
+}
+
+.card-tool-body-breathe {
+    animation: card-tool-body-breathe 1.8s ease-in-out infinite;
+}
+
+.card-tool-command-soft-breathe {
+    animation: tool-command-soft-breathe 2.8s ease-in-out infinite;
+}
+
+.card-tool-log-running-breathe {
+    animation: tool-log-running-breathe 1.8s ease-in-out infinite;
+}

@@ -1,4 +1,4 @@
-import React, {memo, useMemo} from 'react';
+import React, {memo, useEffect, useMemo} from 'react';
 import ReactMarkdown, {defaultUrlTransform} from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -10,7 +10,7 @@ import {
 } from './remarkDirectiveToComponent.js';
 
 import CodeBlock from './CodeBlock.jsx';
-import CardBlock from './CardBlock.jsx';
+import CardBlock from './card-block/CardBlock.jsx';
 
 import 'katex/dist/katex.min.css';
 import './CodeBlock.css';
@@ -25,6 +25,55 @@ const replacementObjectIds = new WeakMap();
 let replacementObjectSeq = 0;
 
 const TYPE_MARKER_RE = /^\[([a-zA-Z][\w-]*)\]$/;
+
+const CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE = /:{2,3}\s*(card|card-replace)\s*\{([^}]*)\}\s*:{2,3}/g;
+const CARD_REPLACE_BLOCK_DIRECTIVE_RE = /:{3}\s*(card|card-replace)\s*\{([^}]*)\}\s*\n[\s\S]*?\n:{3}/g;
+const CARD_REPLACE_MUSTACHE_RE = /\{\{\s*(cardReplace|card-replace|card)\s+([^{}]*?)\s*\}\}/g;
+
+export const MARKDOWN_COPY_CONTENT_COMPONENT_NAME = 'markdownCopyContent';
+
+const parseDirectiveAttributes = (attributes = '') => {
+    const result = {};
+    const source = String(attributes || '').trim();
+    const attrRegex = /([^\s=]+)(?:=("([^"]*)"|'([^']*)'|([^\s}]+)))?/g;
+    let match;
+
+    while ((match = attrRegex.exec(source)) !== null) {
+        const key = match[1];
+        const value = match[3] ?? match[4] ?? match[5] ?? '';
+
+        if (!key) {
+            continue;
+        }
+
+        if (value === '' && !key.includes('=')) {
+            result.__tokens = [...(result.__tokens || []), key];
+            continue;
+        }
+
+        result[key] = value;
+    }
+
+    if (!result.id && Array.isArray(result.__tokens)) {
+        const positionalId = result.__tokens.find(token => token && token !== 'replace');
+
+        if (positionalId) {
+            result.id = positionalId;
+        }
+    }
+
+    return result;
+};
+
+const getReplacementIdFromAttributes = (attributes = {}) => {
+    return String(
+        attributes.id
+        || attributes.cardId
+        || attributes.replaceId
+        || attributes.name
+        || '',
+    ).trim();
+};
 
 const getReplacementCacheId = (replacement) => {
     if (!replacement || typeof replacement !== 'object') {
@@ -192,6 +241,246 @@ const normalizeReplacementEntry = (replacement, id, tokenType) => {
         inferredType: inferred.inferred,
     };
 };
+
+
+const normalizeCopyText = (content) => {
+    return normalizeLineBreaks(content).replace(/\n{3,}/g, '\n\n');
+};
+
+const COPY_TEXT_FIELD_PRIORITY = [
+    'copyContent',
+    'copyMarkdown',
+    'copyText',
+    'markdown',
+    'displayContent',
+    'displayText',
+    'plainText',
+    'plain',
+    'text',
+    'content',
+    'frontend',
+    'value',
+    'children',
+];
+
+const TYPE_ONLY_LINE_RE = /^\s*\[([a-zA-Z][\w-]*)\]\s*$/;
+
+const stripCopyTypeMarker = (content) => {
+    const normalizedContent = normalizeLineBreaks(content);
+    const lines = normalizedContent.split('\n');
+
+    for (let i = 0; i < lines.length; i += 1) {
+        if (lines[i] === '') {
+            continue;
+        }
+
+        if (!TYPE_ONLY_LINE_RE.test(lines[i])) {
+            return normalizedContent;
+        }
+
+        const nextLines = [...lines];
+        nextLines.splice(i, 1);
+        return nextLines.join('\n');
+    }
+
+    return normalizedContent;
+};
+
+const extractCopyTextFromReplacementValue = (value, seenObjects = new WeakSet()) => {
+    if (value == null) {
+        return '';
+    }
+
+    if (typeof value === 'string') {
+        return value;
+    }
+
+    if (typeof value === 'number' || typeof value === 'boolean') {
+        return String(value);
+    }
+
+    if (Array.isArray(value)) {
+        return value
+            .map(item => extractCopyTextFromReplacementValue(item, seenObjects))
+            .filter(Boolean)
+            .join('\n');
+    }
+
+    if (typeof value !== 'object') {
+        return '';
+    }
+
+    if (seenObjects.has(value)) {
+        return '';
+    }
+
+    seenObjects.add(value);
+
+    for (const fieldName of COPY_TEXT_FIELD_PRIORITY) {
+        if (Object.prototype.hasOwnProperty.call(value, fieldName)) {
+            const fieldText = extractCopyTextFromReplacementValue(value[fieldName], seenObjects);
+
+            if (fieldText) {
+                return fieldText;
+            }
+        }
+    }
+
+    return '';
+};
+
+const normalizeReplacementCopyEntry = (replacement, id) => {
+    const normalizedId = String(id || '');
+
+    if (!replacement || typeof replacement !== 'object') {
+        return {
+            exists: false,
+            id: normalizedId,
+            content: '',
+        };
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(replacement, normalizedId)) {
+        return {
+            exists: false,
+            id: normalizedId,
+            content: '',
+        };
+    }
+
+    const rawCopyContent = extractCopyTextFromReplacementValue(replacement[normalizedId]);
+
+    return {
+        exists: true,
+        id: normalizedId,
+        content: stripCopyTypeMarker(rawCopyContent),
+    };
+};
+
+const isReplaceDirective = (directiveName, attributes) => {
+    if (directiveName === 'card-replace') {
+        return true;
+    }
+
+    if (directiveName !== 'card') {
+        return false;
+    }
+
+    return String(attributes.type || '').trim() === 'replace';
+};
+
+const replaceCopyDirectives = (source, directiveRegex, replacement, options) => {
+    const {
+        depth,
+        maxDepth,
+        visitedIds,
+    } = options;
+
+    directiveRegex.lastIndex = 0;
+
+    return source.replace(directiveRegex, (match, directiveName, rawAttributes) => {
+        const attributes = parseDirectiveAttributes(rawAttributes);
+        const finalId = getReplacementIdFromAttributes(attributes);
+        const hasReplacementEntry = Boolean(
+            finalId &&
+            replacement &&
+            typeof replacement === 'object' &&
+            Object.prototype.hasOwnProperty.call(replacement, finalId),
+        );
+
+        // copy 走纯 Markdown 文本路径：UI card marker 本身不进入剪切板。
+        // 明确的 replace marker 会展开 replacement；其它 card marker 如能命中 replacement，也按 replacement 展开；否则移除。
+        if (!isReplaceDirective(directiveName, attributes) && !hasReplacementEntry) {
+            return '';
+        }
+
+        if (!finalId) {
+            return '';
+        }
+
+        if (visitedIds.includes(finalId)) {
+            console.error(`[MarkdownRenderer] cardReplace copy 文本出现循环引用，id: ${finalId}`);
+            return '';
+        }
+
+        const normalized = normalizeReplacementCopyEntry(replacement, finalId);
+
+        if (!normalized.exists) {
+            return '';
+        }
+
+        return resolveMarkdownCopyContent(normalized.content, replacement, {
+            depth: depth + 1,
+            maxDepth,
+            visitedIds: [...visitedIds, finalId],
+        });
+    });
+};
+
+export const resolveMarkdownCopyContent = (content, replacement = {}, options = {}) => {
+    const {
+        depth = 0,
+        maxDepth = 10,
+        visitedIds = [],
+    } = options;
+
+    const source = normalizeLineBreaks(content);
+
+    if (!source) {
+        return '';
+    }
+
+    if (depth >= maxDepth) {
+        return normalizeCopyText(
+            source
+                .replace(CARD_REPLACE_BLOCK_DIRECTIVE_RE, '')
+                .replace(CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE, '')
+                .replace(CARD_REPLACE_MUSTACHE_RE, ''),
+        );
+    }
+
+    const withoutBlockDirectives = replaceCopyDirectives(
+        source,
+        CARD_REPLACE_BLOCK_DIRECTIVE_RE,
+        replacement,
+        {depth, maxDepth, visitedIds},
+    );
+
+    const withoutSelfClosingDirectives = replaceCopyDirectives(
+        withoutBlockDirectives,
+        CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE,
+        replacement,
+        {depth, maxDepth, visitedIds},
+    );
+
+    const withoutMustacheDirectives = replaceCopyDirectives(
+        withoutSelfClosingDirectives,
+        CARD_REPLACE_MUSTACHE_RE,
+        replacement,
+        {depth, maxDepth, visitedIds},
+    );
+
+    return normalizeCopyText(withoutMustacheDirectives);
+};
+
+export const createMarkdownCopyContentComponent = (copyContent) => {
+    const safeCopyContent = toSafeString(copyContent);
+
+    return {
+        content: safeCopyContent,
+        copyContent: safeCopyContent,
+        markdownContent: safeCopyContent,
+        displayContent: safeCopyContent,
+        text: safeCopyContent,
+        getContent: () => safeCopyContent,
+        getCopyContent: () => safeCopyContent,
+        getMarkdownContent: () => safeCopyContent,
+        getDisplayContent: () => safeCopyContent,
+        getText: () => safeCopyContent,
+        toString: () => safeCopyContent,
+    };
+};
+
 
 const createComponents = ({
                               contextId = '',
@@ -478,6 +767,8 @@ function MarkdownRendererInner({
                                    depth = 0,
                                    maxDepth = 10,
                                    visitedIds = [],
+                                   msg = null,
+                                   copyContentComponentName = MARKDOWN_COPY_CONTENT_COMPONENT_NAME,
                                }) {
     const components = useMemo(() => {
         return getComponents({
@@ -498,6 +789,42 @@ function MarkdownRendererInner({
     const processedContent = useMemo(() => {
         return preprocessContent(content);
     }, [content]);
+
+    const copyContent = useMemo(() => {
+        return resolveMarkdownCopyContent(content, replacement, {
+            maxDepth,
+        });
+    }, [content, replacement, maxDepth]);
+
+    useEffect(() => {
+        if (depth !== 0 || !msg || typeof msg.registerComponent !== 'function') {
+            return undefined;
+        }
+
+        if (!copyContentComponentName) {
+            return undefined;
+        }
+
+        const copyContentComponent = createMarkdownCopyContentComponent(copyContent);
+
+        msg.registerComponent(copyContentComponentName, copyContentComponent);
+
+        return () => {
+            if (typeof msg.unregisterComponent !== 'function') {
+                return;
+            }
+
+            if (typeof msg.getComponent === 'function') {
+                const currentComponent = msg.getComponent(copyContentComponentName);
+
+                if (currentComponent && currentComponent !== copyContentComponent) {
+                    return;
+                }
+            }
+
+            msg.unregisterComponent(copyContentComponentName);
+        };
+    }, [depth, msg, copyContentComponentName, copyContent]);
 
     return (
         <ReactMarkdown
@@ -534,6 +861,8 @@ const MarkdownRenderer = memo(MarkdownRendererInner, (prev, next) => {
         prev.replacement === next.replacement &&
         prev.depth === next.depth &&
         prev.maxDepth === next.maxDepth &&
+        prev.msg === next.msg &&
+        prev.displayContentComponentName === next.displayContentComponentName &&
         areVisitedIdsEqual(prev.visitedIds, next.visitedIds)
     );
 });
