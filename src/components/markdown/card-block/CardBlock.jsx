@@ -19,6 +19,20 @@ import './cardBlockAnimations.css';
 import { defaultRenderMarkdown } from './constants.jsx';
 import StatusWidget from './status/StatusWidget.jsx';
 
+const CARD_TYPES_WITH_NESTED_MARKDOWN = new Set([
+    'markdown',
+    'processing',
+    'thinking',
+    'toolCalling',
+    'coding',
+    'doc',
+    'agent',
+]);
+
+const shouldCompareRenderContext = (type) => {
+    return CARD_TYPES_WITH_NESTED_MARKDOWN.has(type);
+};
+
 const UnknownBlock = memo(({type, content}) => {
     return (
         <div className="bg-red-50/40 border border-red-200 p-3 my-2 rounded-md">
@@ -180,11 +194,22 @@ const CardBlock = memo(({
             );
     }
 }, (prev, next) => {
+    if (
+        prev.contextId !== next.contextId ||
+        prev.content !== next.content ||
+        prev.id !== next.id ||
+        prev.type !== next.type
+    ) {
+        return false;
+    }
+
+    // Leaf card blocks such as toolLog/toolCommand do not consume replacement or renderMarkdown.
+    // During streaming, unrelated replacement object changes should not disturb their DOM.
+    if (!shouldCompareRenderContext(prev.type)) {
+        return true;
+    }
+
     return (
-        prev.contextId === next.contextId &&
-        prev.content === next.content &&
-        prev.id === next.id &&
-        prev.type === next.type &&
         prev.replacement === next.replacement &&
         prev.renderMarkdown === next.renderMarkdown
     );

@@ -138,6 +138,51 @@ const parseToolLogContent = (content) => {
     };
 };
 
+const ToolLogDuration = memo(({
+    className = '',
+    endTimeMs,
+    isRunning,
+    startTimeMs,
+}) => {
+    const [nowMs, setNowMs] = useState(() => Date.now());
+
+    useEffect(() => {
+        if (!isRunning || startTimeMs === null) {
+            return undefined;
+        }
+
+        const timer = window.setInterval(() => {
+            setNowMs(Date.now());
+        }, 1000);
+
+        return () => {
+            window.clearInterval(timer);
+        };
+    }, [isRunning, startTimeMs]);
+
+    const durationMs = startTimeMs !== null && (endTimeMs !== null || isRunning)
+        ? (endTimeMs ?? nowMs) - startTimeMs
+        : null;
+
+    const durationText = formatDuration(durationMs);
+
+    if (!durationText) {
+        return null;
+    }
+
+    return (
+        <div
+            className={className}
+            aria-label={`Tool log duration ${durationText}`}
+            title={`Duration: ${durationText}`}
+        >
+            {durationText}
+        </div>
+    );
+});
+
+ToolLogDuration.displayName = 'ToolLogDuration';
+
 const ToolLogBlock = memo(({content = '', id}) => {
     const {
         title,
@@ -155,34 +200,13 @@ const ToolLogBlock = memo(({content = '', id}) => {
     const isFailed = status === 'failed';
     const isRunning = status === 'running';
 
-    const [nowMs, setNowMs] = useState(() => Date.now());
-
-    useEffect(() => {
-        if (!isRunning || startTimeMs === null) {
-            return undefined;
-        }
-
-        const timer = window.setInterval(() => {
-            setNowMs(Date.now());
-        }, 1000);
-
-        return () => {
-            window.clearInterval(timer);
-        };
-    }, [isRunning, startTimeMs]);
-
     const endTimeMs = isDone
         ? doneTimeMs
         : isFailed
             ? failedTimeMs
             : null;
 
-    const durationMs = startTimeMs !== null && (endTimeMs !== null || isRunning)
-        ? (endTimeMs ?? nowMs) - startTimeMs
-        : null;
-
-    const durationText = formatDuration(durationMs);
-    const shouldShowDuration = durationText.length > 0;
+    const shouldShowDuration = startTimeMs !== null && (endTimeMs !== null || isRunning);
 
     const tone = isFailed
         ? {
@@ -224,13 +248,12 @@ const ToolLogBlock = memo(({content = '', id}) => {
             )}
 
             {shouldShowDuration && (
-                <div
+                <ToolLogDuration
                     className={`absolute right-7 flex h-4 items-center whitespace-nowrap font-mono text-[10px] leading-4 ${isRunning ? 'top-1/2 -translate-y-1/2' : 'bottom-1.5'} ${tone.duration}`}
-                    aria-label={`Tool log duration ${durationText}`}
-                    title={`Duration: ${durationText}`}
-                >
-                    {durationText}
-                </div>
+                    endTimeMs={endTimeMs}
+                    isRunning={isRunning}
+                    startTimeMs={startTimeMs}
+                />
             )}
 
             {isRunning && (

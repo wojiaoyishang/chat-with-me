@@ -22,19 +22,21 @@ import {
 import StatusBody from './StatusBody.jsx';
 import StatusHeader from './StatusHeader.jsx';
 
+const STATUS_MARKER_REGEX = /^[ \t]*(\[DONE\]|\[FAILED\])[ \t]*$/gm;
+
 const StatusWidget = memo(({
-    activeColor,
-    content = '',
-    doneColor,
-    Icon,
-    id,
-    isProcessing = false,
-    title,
-    defaultExpanded = false,
-    contextId = '',
-    type = '',
-    renderMarkdown = defaultRenderMarkdown,
-}) => {
+                               activeColor,
+                               content = '',
+                               doneColor,
+                               Icon,
+                               id,
+                               isProcessing = false,
+                               title,
+                               defaultExpanded = false,
+                               contextId = '',
+                               type = '',
+                               renderMarkdown = defaultRenderMarkdown,
+                           }) => {
     const expandedKey = useMemo(() => {
         return getExpandedKey(contextId, id, type);
     }, [contextId, id, type]);
@@ -48,18 +50,17 @@ const StatusWidget = memo(({
         progress,
     } = useMemo(() => {
         const safeContent = toSafeString(content);
-        const trimmedContent = safeContent.trim();
 
-        const isDone = trimmedContent.endsWith('[DONE]');
-        const isFailed = trimmedContent.endsWith('[FAILED]');
+        // [DONE] / [FAILED] 允许出现在中间任意一行。
+        // 状态以最后一次出现的显式结束标记为准。
+        // 只匹配“整行就是标记”的情况，避免误判正文里的普通文本。
+        const markers = [...safeContent.matchAll(STATUS_MARKER_REGEX)];
+        const lastMarker = markers.at(-1)?.[1] ?? null;
 
-        let cleanContent = safeContent;
+        const isDone = lastMarker === '[DONE]';
+        const isFailed = lastMarker === '[FAILED]';
 
-        if (isDone) {
-            cleanContent = safeContent.replace(/\n\[DONE\]\s*$/, '').trimEnd();
-        } else if (isFailed) {
-            cleanContent = safeContent.replace(/\n\[FAILED\]\s*$/, '').trimEnd();
-        }
+        let cleanContent = safeContent.replace(STATUS_MARKER_REGEX, '').trimEnd();
 
         const progress = type === 'toolCalling'
             ? getLatestProgressMarker(cleanContent)

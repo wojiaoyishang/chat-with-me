@@ -1,4 +1,4 @@
-import React, {memo, useEffect, useMemo} from 'react';
+import React, {memo, useEffect, useMemo, useRef} from 'react';
 import ReactMarkdown, {defaultUrlTransform} from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -16,13 +16,6 @@ import 'katex/dist/katex.min.css';
 import './CodeBlock.css';
 
 import {BASE_BACKEND_URL} from '@/config';
-
-const MAX_COMPONENT_CACHE_SIZE = 200;
-
-const componentCache = new Map();
-const replacementObjectIds = new WeakMap();
-
-let replacementObjectSeq = 0;
 
 const TYPE_MARKER_RE = /^\[([a-zA-Z][\w-]*)\]$/;
 
@@ -75,37 +68,12 @@ const getReplacementIdFromAttributes = (attributes = {}) => {
     ).trim();
 };
 
-const getReplacementCacheId = (replacement) => {
-    if (!replacement || typeof replacement !== 'object') {
-        return 'none';
-    }
-
-    if (!replacementObjectIds.has(replacement)) {
-        replacementObjectSeq += 1;
-        replacementObjectIds.set(replacement, replacementObjectSeq);
-    }
-
-    return replacementObjectIds.get(replacement);
-};
-
 const getVisitedKey = (visitedIds) => {
     if (!Array.isArray(visitedIds) || visitedIds.length === 0) {
         return '';
     }
 
     return visitedIds.join('>');
-};
-
-const setComponentCache = (key, value) => {
-    if (componentCache.size >= MAX_COMPONENT_CACHE_SIZE) {
-        const firstKey = componentCache.keys().next().value;
-
-        if (firstKey) {
-            componentCache.delete(firstKey);
-        }
-    }
-
-    componentCache.set(key, value);
 };
 
 const allowCustomScheme = (uri, key, node) => {
@@ -484,17 +452,21 @@ export const createMarkdownCopyContentComponent = (copyContent) => {
 
 const createComponents = ({
                               contextId = '',
-                              replacement = {},
+                              replacementRef,
                               depth = 0,
                               maxDepth = 10,
                               visitedIds = [],
                           }) => {
+    const getCurrentReplacement = () => {
+        return replacementRef?.current || {};
+    };
+
     const renderNestedMarkdown = (nestedContent, extra = {}) => {
         return (
             <MarkdownRendererInner
                 contextId={contextId}
                 content={nestedContent}
-                replacement={replacement}
+                replacement={getCurrentReplacement()}
                 depth={extra.depth ?? depth + 1}
                 maxDepth={maxDepth}
                 visitedIds={extra.visitedIds ?? visitedIds}
@@ -620,6 +592,7 @@ const createComponents = ({
         'card-replace': ({id, type, node}) => {
             const finalId = String(id || node?.properties?.id || '');
             const tokenType = String(type || node?.properties?.type || '');
+            const currentReplacement = getCurrentReplacement();
 
             // 情况 1：没有 id，但提供了 type
             // 允许渲染，正文为空
@@ -630,7 +603,7 @@ const createComponents = ({
                         type={tokenType}
                         content=""
                         contextId={contextId}
-                        replacement={replacement}
+                        replacement={currentReplacement}
                         renderMarkdown={(markdownContent) => {
                             return renderNestedMarkdown(markdownContent, {
                                 depth: depth + 1,
@@ -658,7 +631,7 @@ const createComponents = ({
                         type="error"
                         content={`cardReplace 出现循环引用，id: ${finalId}`}
                         contextId={contextId}
-                        replacement={replacement}
+                        replacement={currentReplacement}
                         renderMarkdown={(markdownContent) => {
                             return renderNestedMarkdown(markdownContent, {
                                 depth: depth + 1,
@@ -680,7 +653,7 @@ const createComponents = ({
                         type="error"
                         content={`cardReplace 嵌套过深，id: ${finalId}`}
                         contextId={contextId}
-                        replacement={replacement}
+                        replacement={currentReplacement}
                         renderMarkdown={(markdownContent) => {
                             return renderNestedMarkdown(markdownContent, {
                                 depth: depth + 1,
@@ -692,7 +665,7 @@ const createComponents = ({
             }
 
             const normalized = normalizeReplacementEntry(
-                replacement,
+                currentReplacement,
                 finalId,
                 tokenType,
             );
@@ -711,7 +684,7 @@ const createComponents = ({
                     type={normalized.type}
                     content={normalized.content}
                     contextId={contextId}
-                    replacement={replacement}
+                    replacement={currentReplacement}
                     renderMarkdown={(markdownContent) => {
                         return renderNestedMarkdown(markdownContent, {
                             depth: depth + 1,
@@ -724,42 +697,6 @@ const createComponents = ({
     };
 };
 
-const getComponents = ({
-                           contextId,
-                           replacement,
-                           depth,
-                           maxDepth,
-                           visitedIds,
-                       }) => {
-    const replacementCacheId = getReplacementCacheId(replacement);
-    const visitedKey = getVisitedKey(visitedIds);
-
-    const cacheKey = [
-        'components',
-        contextId || '',
-        replacementCacheId,
-        depth,
-        maxDepth,
-        visitedKey,
-    ].join('__');
-
-    if (componentCache.has(cacheKey)) {
-        return componentCache.get(cacheKey);
-    }
-
-    const components = createComponents({
-        contextId,
-        replacement,
-        depth,
-        maxDepth,
-        visitedIds,
-    });
-
-    setComponentCache(cacheKey, components);
-
-    return components;
-};
-
 function MarkdownRendererInner({
                                    contextId = '',
                                    content,
@@ -770,20 +707,27 @@ function MarkdownRendererInner({
                                    msg = null,
                                    copyContentComponentName = MARKDOWN_COPY_CONTENT_COMPONENT_NAME,
                                }) {
+    const replacementRef = useRef(replacement);
+    replacementRef.current = replacement;
+
+    const visitedKey = useMemo(() => {
+        return getVisitedKey(visitedIds);
+    }, [visitedIds]);
+
     const components = useMemo(() => {
-        return getComponents({
+        return createComponents({
             contextId,
-            replacement,
+            replacementRef,
             depth,
             maxDepth,
             visitedIds,
         });
     }, [
         contextId,
-        replacement,
+        replacementRef,
         depth,
         maxDepth,
-        visitedIds,
+        visitedKey,
     ]);
 
     const processedContent = useMemo(() => {
@@ -862,7 +806,7 @@ const MarkdownRenderer = memo(MarkdownRendererInner, (prev, next) => {
         prev.depth === next.depth &&
         prev.maxDepth === next.maxDepth &&
         prev.msg === next.msg &&
-        prev.displayContentComponentName === next.displayContentComponentName &&
+        prev.copyContentComponentName === next.copyContentComponentName &&
         areVisitedIdsEqual(prev.visitedIds, next.visitedIds)
     );
 });
