@@ -79,19 +79,28 @@ GraphContent.displayName = 'GraphContent';
 const KnowledgeGraphViewer = memo(({msg, className = 'w-full'}) => {
     const nvlRef = useRef(null);
     const initializedRef = useRef(false);
+    const latestMsgRef = useRef(msg);
     const [isGraphLoading, setIsGraphLoading] = useState(true);
     const network = msg?.network;
 
+    // 流式更新会不断生成新的 msg 对象。
+    // 这里仅保存最新引用，避免 effect cleanup 因 msg 引用变化而销毁 NVL 实例。
+    useEffect(() => {
+        latestMsgRef.current = msg;
+    }, [msg]);
+
+    // 只在组件真正卸载时销毁 NVL，避免流式更新时“刚渲染又被 destroy”。
     useEffect(() => {
         return () => {
             if (nvlRef.current) {
                 nvlRef.current.destroy?.();
                 nvlRef.current = null;
-                initializedRef.current = false;
-                msg?.unregisterComponent?.('nvlInstance');
             }
+
+            initializedRef.current = false;
+            latestMsgRef.current?.unregisterComponent?.('nvlInstance');
         };
-    }, [msg]);
+    }, []);
 
     if (!network?.nodes || !Array.isArray(network.nodes) || network.nodes.length === 0) {
         return null;
@@ -105,7 +114,7 @@ const KnowledgeGraphViewer = memo(({msg, className = 'w-full'}) => {
 
     const nodeIdSet = new Set(nvlNodes.map(n => n.id));
 
-    const nvlRels = (network.relationships || [])
+    const nvlRels = (network.relationships || network.relationship || [])
         .map((rel, index) => {
             const from = String(rel.from ?? rel.source);
             const to = String(rel.to ?? rel.target);
@@ -153,7 +162,7 @@ const KnowledgeGraphViewer = memo(({msg, className = 'w-full'}) => {
                 rootMargin="150px"
                 className="w-full min-h-[200px]"
                 fade={false}
-                hideOnExit={true}
+                hideOnExit={false}
             >
                 <GraphContent
                     nvlRef={nvlRef}
