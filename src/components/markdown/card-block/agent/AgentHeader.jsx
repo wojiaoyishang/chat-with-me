@@ -5,18 +5,16 @@ import useExpandedState from '../useExpandedState.js';
 import StableStepsButton from '../status/StableStepsButton.jsx';
 
 const AgentHeader = memo(({
-    Icon,
-    expandedKey,
-    hasSteps,
-    isDone,
-    isFailed,
-    isFinished,
-    isProcessing,
-    lastLine,
-    statusConfig,
-    title,
-    hasContent,
-}) => {
+                              Icon,
+                              expandedKey,
+                              isDone,
+                              isFailed,
+                              isFinished,
+                              isProcessing,
+                              lastLine,
+                              statusConfig,
+                              title,
+                          }) => {
     const [isExpanded] = useExpandedState(expandedKey);
 
     return (
@@ -59,24 +57,20 @@ const AgentHeader = memo(({
                 </div>
             </div>
 
-            {hasContent && hasSteps && (
-                <StableStepsButton expandedKey={expandedKey}/>
-            )}
+            <StableStepsButton expandedKey={expandedKey}/>
         </div>
     );
 }, (prev, next) => {
     return (
         prev.Icon === next.Icon &&
         prev.expandedKey === next.expandedKey &&
-        prev.hasSteps === next.hasSteps &&
         prev.isDone === next.isDone &&
         prev.isFailed === next.isFailed &&
         prev.isFinished === next.isFinished &&
         prev.isProcessing === next.isProcessing &&
         prev.lastLine === next.lastLine &&
         prev.statusConfig === next.statusConfig &&
-        prev.title === next.title &&
-        prev.hasContent === next.hasContent
+        prev.title === next.title
     );
 });
 

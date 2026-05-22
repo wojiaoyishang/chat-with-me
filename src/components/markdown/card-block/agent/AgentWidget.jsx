@@ -9,7 +9,6 @@ import { getExpandedKey } from '../expandedStore.js';
 import useExpandedState from '../useExpandedState.js';
 import {
     getLastLineForPreview,
-    getParagraphsForPreview,
     stripCardReplaceTokensForPreview,
     toSafeString,
 } from '../utils.js';
@@ -17,16 +16,16 @@ import AgentBody from './AgentBody.jsx';
 import AgentHeader from './AgentHeader.jsx';
 
 const AgentWidget = memo(({
-    content = '',
-    Icon = Bot,
-    id,
-    isProcessing = false,
-    title = 'Sub-Agent',
-    defaultExpanded = false,
-    contextId = '',
-    type = 'agent',
-    renderMarkdown = defaultRenderMarkdown,
-}) => {
+                              content = '',
+                              Icon = Bot,
+                              id,
+                              isProcessing = false,
+                              title = 'Sub-Agent',
+                              defaultExpanded = false,
+                              contextId = '',
+                              type = 'agent',
+                              renderMarkdown = defaultRenderMarkdown,
+                          }) => {
     const expandedKey = useMemo(() => {
         return getExpandedKey(contextId, id, type);
     }, [contextId, id, type]);
@@ -38,7 +37,6 @@ const AgentWidget = memo(({
         isDone,
         isFailed,
         lastLine,
-        paragraphs,
         hasContent,
     } = useMemo(() => {
         const safeContent = toSafeString(content);
@@ -58,7 +56,6 @@ const AgentWidget = memo(({
         }
 
         const previewContent = stripCardReplaceTokensForPreview(clean);
-        const paragraphs = getParagraphsForPreview(previewContent);
         const lastLine = getLastLineForPreview(previewContent);
         const hasContent = clean.length > 0;
 
@@ -67,7 +64,6 @@ const AgentWidget = memo(({
             isDone,
             isFailed,
             lastLine,
-            paragraphs,
             hasContent,
         };
     }, [content]);
@@ -114,7 +110,6 @@ const AgentWidget = memo(({
             <AgentHeader
                 Icon={Icon}
                 expandedKey={expandedKey}
-                hasSteps={paragraphs.length > 0}
                 isDone={isDone}
                 isFailed={isFailed}
                 isFinished={isFinished}
@@ -122,7 +117,6 @@ const AgentWidget = memo(({
                 lastLine={lastLine}
                 statusConfig={statusConfig}
                 title={title}
-                hasContent={hasContent}
             />
 
             <AgentBody

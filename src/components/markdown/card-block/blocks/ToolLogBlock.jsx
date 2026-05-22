@@ -139,11 +139,11 @@ const parseToolLogContent = (content) => {
 };
 
 const ToolLogDuration = memo(({
-    className = '',
-    endTimeMs,
-    isRunning,
-    startTimeMs,
-}) => {
+                                  className = '',
+                                  endTimeMs,
+                                  isRunning,
+                                  startTimeMs,
+                              }) => {
     const [nowMs, setNowMs] = useState(() => Date.now());
 
     useEffect(() => {
@@ -249,7 +249,7 @@ const ToolLogBlock = memo(({content = '', id}) => {
 
             {shouldShowDuration && (
                 <ToolLogDuration
-                    className={`absolute right-7 flex h-4 items-center whitespace-nowrap font-mono text-[10px] leading-4 ${isRunning ? 'top-1/2 -translate-y-1/2' : 'bottom-1.5'} ${tone.duration}`}
+                    className={`absolute bottom-1.5 right-7 flex h-4 items-center whitespace-nowrap font-mono text-[10px] leading-4 ${tone.duration}`}
                     endTimeMs={endTimeMs}
                     isRunning={isRunning}
                     startTimeMs={startTimeMs}
@@ -258,7 +258,7 @@ const ToolLogBlock = memo(({content = '', id}) => {
 
             {isRunning && (
                 <div
-                    className="absolute right-2 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center text-amber-600"
+                    className="absolute bottom-1.5 right-2 flex h-4 w-4 items-center justify-center text-amber-600"
                     aria-label="Tool log is running"
                 >
                     <Loader2 className="h-3.5 w-3.5 animate-spin"/>
