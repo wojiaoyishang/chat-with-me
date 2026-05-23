@@ -9,6 +9,30 @@ import {getCopyContent} from './copyContent.js';
  */
 export const handleMessageAction = (action, msg, {markId, msgId}, t) => {
     switch (action) {
+        case 'speak':
+            emitEvent({
+                type: 'message',
+                target: 'ChatPage',
+                payload: {
+                    command: 'Speak-Message',
+                    msgId
+                },
+                markId,
+                fromWebsocket: true
+            });
+            break;
+        case 'stopSpeak':
+            emitEvent({
+                type: 'message',
+                target: 'ChatPage',
+                payload: {
+                    command: 'Stop-Speech',
+                    msgId
+                },
+                markId,
+                fromWebsocket: true
+            });
+            break;
         case 'delete':
             emitEvent({
                 type: 'message',

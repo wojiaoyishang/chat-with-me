@@ -11,9 +11,11 @@ import MessageContainer from '@/components/chat/MessageContainer.jsx';
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
+import {getSpeakableSegments} from '@/components/chat/message/utils/speechContent.js';
 import ChatHeader from './chat/components/ChatHeader.jsx';
 import RightSidebar from './chat/components/RightSidebar.jsx';
 import ScrollToBottomButton from './chat/components/ScrollToBottomButton.jsx';
+import SpeechPlayer from './chat/components/SpeechPlayer.jsx';
 import ResizeHandles from './chat/components/ResizeHandles.jsx';
 import {LoadingFailedScreen, LoadingScreen} from './chat/components/LoadingScreens.jsx';
 import useChatWindowMode from './chat/hooks/useChatWindowMode.js';
@@ -74,6 +76,26 @@ function ChatPage({
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [pendingDeleteMsgId, setPendingDeleteMsgId] = useState(null);
     const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+
+
+    // 语音朗读相关：由 ChatPage 统一处理播放状态和当前高亮句子。
+    const [speechState, setSpeechState] = useState({
+        status: 'idle',
+        messageId: null,
+        requestId: null,
+        engine: 'browser',
+        segments: [],
+        currentSegmentId: null,
+        currentSegmentIndex: -1,
+        rate: 1,
+    });
+    const speechStateRef = useRef(speechState);
+    const speechControllerRef = useRef({
+        requestId: null,
+        engine: null,
+        cancelled: false,
+        playToken: 0,
+    });
 
 // ========== 窗口化、滚动和上传模块 ==========
     const {
@@ -759,6 +781,541 @@ function ChatPage({
         requestScrollToBottom,
     ]);
 
+
+    useEffect(() => {
+        speechStateRef.current = speechState;
+    }, [speechState]);
+
+    const normalizeSpeechRate = useCallback((value) => {
+        const nextRate = Number(value);
+        if (!Number.isFinite(nextRate)) return 1;
+        return Math.min(Math.max(nextRate, 0.1), 10);
+    }, []);
+
+    const resetSpeechState = useCallback(() => {
+        setSpeechState({
+            status: 'idle',
+            messageId: null,
+            requestId: null,
+            engine: 'browser',
+            segments: [],
+            currentSegmentId: null,
+            currentSegmentIndex: -1,
+            rate: 1,
+        });
+    }, []);
+
+    const cancelActiveSpeech = useCallback((notifyBackend = false) => {
+        const currentController = speechControllerRef.current;
+        currentController.cancelled = true;
+
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+
+        if (
+            notifyBackend &&
+            currentController.requestId &&
+            currentController.engine &&
+            currentController.engine !== 'browser'
+        ) {
+            emitEvent({
+                type: 'speech',
+                target: 'TTS',
+                payload: {
+                    command: 'Speech-Cancel',
+                    requestId: currentController.requestId,
+                    messageId: speechStateRef.current?.messageId,
+                    msgId: speechStateRef.current?.messageId,
+                },
+                markId: chatMarkId,
+            });
+        }
+
+        speechControllerRef.current = {
+            requestId: null,
+            engine: null,
+            cancelled: false,
+            playToken: 0,
+        };
+        resetSpeechState();
+    }, [chatMarkId, resetSpeechState]);
+
+    const pauseActiveSpeech = useCallback(() => {
+        const currentController = speechControllerRef.current;
+        if (!currentController?.requestId) return false;
+
+        if (currentController.engine === 'browser') {
+            currentController.paused = true;
+            if (typeof window !== 'undefined' && window.speechSynthesis) {
+                window.speechSynthesis.pause();
+            }
+        } else {
+            emitEvent({
+                type: 'speech',
+                target: 'TTS',
+                payload: {
+                    command: 'Speech-Pause',
+                    requestId: currentController.requestId,
+                    messageId: speechStateRef.current?.messageId,
+                    msgId: speechStateRef.current?.messageId,
+                },
+                markId: chatMarkId,
+            });
+        }
+
+        setSpeechState(prev => ({
+            ...prev,
+            status: prev.status === 'idle' ? prev.status : 'paused',
+        }));
+        return true;
+    }, [chatMarkId]);
+
+    const resumeActiveSpeech = useCallback(() => {
+        const currentController = speechControllerRef.current;
+        if (!currentController?.requestId) return false;
+
+        if (currentController.engine === 'browser') {
+            currentController.paused = false;
+            if (typeof window !== 'undefined' && window.speechSynthesis) {
+                window.speechSynthesis.resume();
+            }
+            // Safari 在某些情况下 pause 后不会自动恢复下一句；这里补一次调度。
+            if (!speechStateRef.current?.currentSegmentId && typeof currentController.playNext === 'function') {
+                window.setTimeout(() => {
+                    if (!currentController.cancelled && !currentController.paused) {
+                        currentController.playNext();
+                    }
+                }, 0);
+            }
+        } else {
+            emitEvent({
+                type: 'speech',
+                target: 'TTS',
+                payload: {
+                    command: 'Speech-Resume',
+                    requestId: currentController.requestId,
+                    messageId: speechStateRef.current?.messageId,
+                    msgId: speechStateRef.current?.messageId,
+                },
+                markId: chatMarkId,
+            });
+        }
+
+        setSpeechState(prev => ({
+            ...prev,
+            status: prev.status === 'idle' ? prev.status : 'playing',
+        }));
+        return true;
+    }, [chatMarkId]);
+
+    const updateSpeechRate = useCallback((value) => {
+        const nextRate = normalizeSpeechRate(value);
+        const currentController = speechControllerRef.current;
+
+        if (currentController?.requestId) {
+            currentController.rate = nextRate;
+
+            if (currentController.engine && currentController.engine !== 'browser') {
+                emitEvent({
+                    type: 'speech',
+                    target: 'TTS',
+                    payload: {
+                        command: 'Speech-Set-Rate',
+                        requestId: currentController.requestId,
+                        messageId: speechStateRef.current?.messageId,
+                        msgId: speechStateRef.current?.messageId,
+                        rate: nextRate,
+                    },
+                    markId: chatMarkId,
+                });
+            }
+        }
+
+        setSpeechState(prev => ({
+            ...prev,
+            rate: nextRate,
+        }));
+    }, [chatMarkId, normalizeSpeechRate]);
+
+    const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
+        if (typeof window === 'undefined' || !window.speechSynthesis) return null;
+
+        const voices = window.speechSynthesis.getVoices?.() || [];
+        const configuredVoice = speechConfig.voice || speechConfig.speakVoice || speechConfig.browserVoice;
+        const configuredLang = speechConfig.lang || speechConfig.speakLang || navigator.language || 'zh-CN';
+
+        if (configuredVoice) {
+            const voice = voices.find(item => (
+                item.name === configuredVoice ||
+                item.voiceURI === configuredVoice ||
+                item.lang === configuredVoice
+            ));
+            if (voice) return voice;
+        }
+
+        return voices.find(item => item.lang === configuredLang) ||
+            voices.find(item => item.lang?.toLowerCase?.().startsWith(String(configuredLang).slice(0, 2).toLowerCase())) ||
+            null;
+    }, []);
+
+    const speakWithBrowser = useCallback(({messageId, requestId, segments, speechConfig}) => {
+        if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
+            toast.error(t('browser_speech_not_supported'));
+            return false;
+        }
+
+        cancelActiveSpeech(false);
+
+        const synthesis = window.speechSynthesis;
+        const lang = speechConfig.lang || speechConfig.speakLang || navigator.language || 'zh-CN';
+        const baseRate = normalizeSpeechRate(speechConfig.rate ?? speechConfig.speakRate ?? 1);
+        const pitch = Number(speechConfig.pitch ?? speechConfig.speakPitch ?? 1) || 1;
+        const volume = Number(speechConfig.volume ?? speechConfig.speakVolume ?? 1);
+
+        const controller = {
+            requestId,
+            engine: 'browser',
+            cancelled: false,
+            paused: false,
+            segments,
+            nextIndex: 0,
+            currentIndex: -1,
+            rate: baseRate,
+            pitch,
+            volume,
+            lang,
+            playNext: null,
+            playFrom: null,
+            playToken: 0,
+        };
+        speechControllerRef.current = controller;
+
+        setSpeechState({
+            status: 'loading',
+            messageId,
+            requestId,
+            engine: 'browser',
+            segments,
+            currentSegmentId: null,
+            currentSegmentIndex: -1,
+            rate: baseRate,
+        });
+
+        const finish = () => {
+            if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return;
+
+            setSpeechState(prev => ({
+                ...prev,
+                status: 'ended',
+                currentSegmentId: null,
+                currentSegmentIndex: -1,
+            }));
+
+            window.setTimeout(() => {
+                if (speechControllerRef.current.requestId === requestId) {
+                    speechControllerRef.current = {
+                        requestId: null,
+                        engine: null,
+                        cancelled: false,
+                        playToken: 0,
+                    };
+                    resetSpeechState();
+                }
+            }, 300);
+        };
+
+        const playNext = () => {
+            if (controller.cancelled || controller.paused || speechControllerRef.current.requestId !== requestId) return;
+            if (controller.nextIndex >= segments.length) {
+                finish();
+                return;
+            }
+
+            const segmentIndex = controller.nextIndex;
+            const segment = segments[segmentIndex];
+            const playToken = (controller.playToken || 0) + 1;
+            controller.playToken = playToken;
+            controller.currentIndex = segmentIndex;
+            controller.nextIndex = segmentIndex + 1;
+
+            const utterance = new SpeechSynthesisUtterance(segment.text);
+            utterance.lang = controller.lang;
+            utterance.rate = normalizeSpeechRate(controller.rate);
+            utterance.pitch = Math.min(Math.max(controller.pitch, 0), 2);
+            utterance.volume = Number.isFinite(controller.volume) ? Math.min(Math.max(controller.volume, 0), 1) : 1;
+
+            const voice = findBrowserSpeechVoice(speechConfig);
+            if (voice) utterance.voice = voice;
+
+            utterance.onstart = () => {
+                if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken) return;
+                setSpeechState(prev => ({
+                    ...prev,
+                    status: controller.paused ? 'paused' : 'playing',
+                    currentSegmentId: segment.id,
+                    currentSegmentIndex: segmentIndex,
+                    rate: normalizeSpeechRate(controller.rate),
+                }));
+            };
+
+            utterance.onend = () => {
+                if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken) return;
+                setSpeechState(prev => ({
+                    ...prev,
+                    currentSegmentId: null,
+                    currentSegmentIndex: -1,
+                }));
+                if (!controller.paused) playNext();
+            };
+
+            utterance.onerror = (event) => {
+                if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken || event?.error === 'interrupted' || event?.error === 'canceled') return;
+                toast.error(t('speech_play_error', {message: event?.error || t('unknown_error')}));
+                cancelActiveSpeech(false);
+            };
+
+            synthesis.speak(utterance);
+        };
+
+        controller.playNext = playNext;
+        controller.playFrom = (targetIndex) => {
+            if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return false;
+
+            const nextIndex = Math.min(Math.max(Number(targetIndex) || 0, 0), Math.max(segments.length - 1, 0));
+            controller.paused = false;
+            controller.nextIndex = nextIndex;
+            controller.currentIndex = -1;
+            // 让旧 utterance 的 onend/onerror 失效，避免 cancel 后又触发顺序播放。
+            controller.playToken = (controller.playToken || 0) + 1;
+
+            setSpeechState(prev => ({
+                ...prev,
+                status: 'loading',
+                currentSegmentId: null,
+                currentSegmentIndex: -1,
+                rate: normalizeSpeechRate(controller.rate),
+            }));
+
+            synthesis.cancel();
+            window.setTimeout(() => {
+                if (!controller.cancelled && !controller.paused && speechControllerRef.current.requestId === requestId) {
+                    playNext();
+                }
+            }, 0);
+            return true;
+        };
+
+        // 某些浏览器语音列表延迟加载；先触发一次，下一帧再播放。
+        synthesis.getVoices?.();
+        window.setTimeout(playNext, 0);
+        return true;
+    }, [cancelActiveSpeech, findBrowserSpeechVoice, normalizeSpeechRate, resetSpeechState, t]);
+
+    const requestBackendSpeech = useCallback(({messageId, requestId, segments, engine, speechConfig}) => {
+        cancelActiveSpeech(false);
+
+        const rate = normalizeSpeechRate(speechConfig.rate ?? speechConfig.speakRate ?? 1);
+
+        speechControllerRef.current = {
+            requestId,
+            engine,
+            cancelled: false,
+            rate,
+            segments,
+            currentIndex: -1,
+            playToken: 0,
+        };
+
+        setSpeechState({
+            status: 'loading',
+            messageId,
+            requestId,
+            engine,
+            segments,
+            currentSegmentId: null,
+            currentSegmentIndex: -1,
+            rate,
+        });
+
+        emitEvent({
+            type: 'speech',
+            target: 'TTS',
+            payload: {
+                command: 'Speak-Message',
+                requestId,
+                msgId: messageId,
+                messageId,
+                engine,
+                model: selectedModel?.id,
+                options: {...speechConfig, rate},
+                segments,
+            },
+            markId: chatMarkId,
+        });
+    }, [cancelActiveSpeech, chatMarkId, normalizeSpeechRate, selectedModel?.id]);
+
+    const seekSpeechSegment = useCallback((directionOrIndex) => {
+        const currentController = speechControllerRef.current;
+        const currentSpeech = speechStateRef.current;
+
+        if (!currentController?.requestId || !currentSpeech || !['loading', 'playing', 'paused'].includes(currentSpeech.status)) {
+            return false;
+        }
+
+        const segments = currentController.segments || currentSpeech.segments || [];
+        if (!Array.isArray(segments) || segments.length === 0) return false;
+
+        const currentIndex = Number.isInteger(currentSpeech.currentSegmentIndex) && currentSpeech.currentSegmentIndex >= 0
+            ? currentSpeech.currentSegmentIndex
+            : (Number.isInteger(currentController.currentIndex) && currentController.currentIndex >= 0
+                ? currentController.currentIndex
+                : 0);
+
+        const rawTarget = typeof directionOrIndex === 'number'
+            ? currentIndex + directionOrIndex
+            : currentIndex;
+        const targetIndex = Math.min(Math.max(rawTarget, 0), segments.length - 1);
+        const targetSegment = segments[targetIndex];
+        if (!targetSegment) return false;
+
+        if (currentController.engine === 'browser') {
+            if (typeof currentController.playFrom !== 'function') return false;
+            return currentController.playFrom(targetIndex);
+        }
+
+        emitEvent({
+            type: 'speech',
+            target: 'TTS',
+            payload: {
+                command: 'Speech-SeekSegment',
+                requestId: currentController.requestId,
+                messageId: currentSpeech.messageId,
+                msgId: currentSpeech.messageId,
+                segmentId: targetSegment.id,
+                segmentIndex: targetIndex,
+                direction: typeof directionOrIndex === 'number' ? directionOrIndex : 0,
+            },
+            markId: chatMarkId,
+        });
+
+        setSpeechState(prev => ({
+            ...prev,
+            status: prev.status === 'paused' ? 'paused' : 'loading',
+            currentSegmentId: targetSegment.id,
+            currentSegmentIndex: targetIndex,
+        }));
+
+        return true;
+    }, [chatMarkId]);
+
+    const handleSpeakMessageRequest = useCallback((payload, reply) => {
+        const messageId = payload?.msgId || payload?.messageId || payload?.value;
+        if (!messageId) {
+            reply?.({success: false, value: 'Missing message id'});
+            return;
+        }
+
+        const currentSpeech = speechStateRef.current;
+        if (
+            currentSpeech?.messageId === messageId &&
+            ['loading', 'playing', 'paused'].includes(currentSpeech?.status)
+        ) {
+            cancelActiveSpeech(true);
+            reply?.({success: true});
+            return;
+        }
+
+        const msg = messagesRef.current?.[messageId];
+        if (!msg) {
+            toast.error(t('message_not_found'));
+            reply?.({success: false, value: 'Message not found'});
+            return;
+        }
+
+        const segments = getSpeakableSegments(msg, messageId);
+        if (segments.length === 0) {
+            toast.warning(t('no_speakable_content'));
+            reply?.({success: false, value: 'No speakable content'});
+            return;
+        }
+
+        const speechConfig = {
+            ...advancedSettingsValues,
+            ...(payload?.options || {}),
+        };
+        const engine = payload?.engine || speechConfig.speakEngine || 'browser';
+        const requestId = payload?.requestId || generateUUID();
+
+        if (engine === 'browser') {
+            const success = speakWithBrowser({messageId, requestId, segments, speechConfig});
+            reply?.({success});
+            return;
+        }
+
+        requestBackendSpeech({messageId, requestId, segments, engine, speechConfig});
+        reply?.({success: true});
+    }, [advancedSettingsValues, cancelActiveSpeech, requestBackendSpeech, speakWithBrowser, t]);
+
+    const handleBackendSpeechEvent = useCallback((payload, reply) => {
+        const requestId = payload?.requestId;
+        if (requestId && speechControllerRef.current.requestId && requestId !== speechControllerRef.current.requestId) {
+            reply?.({success: false, value: 'Speech request id mismatch'});
+            return;
+        }
+
+        switch (payload?.command) {
+            case 'Speech-Start':
+                setSpeechState(prev => ({
+                    ...prev,
+                    status: 'loading',
+                    requestId: payload.requestId || prev.requestId,
+                    messageId: payload.messageId || payload.msgId || prev.messageId,
+                    rate: normalizeSpeechRate(payload.rate ?? prev.rate ?? 1),
+                }));
+                reply?.({success: true});
+                break;
+            case 'Speech-Segment-Start':
+            case 'Speech-Highlight':
+                setSpeechState(prev => {
+                    const segmentId = payload.segmentId || payload.currentSegmentId || null;
+                    const currentSegmentIndex = segmentId
+                        ? (prev.segments || []).findIndex(item => item.id === segmentId)
+                        : -1;
+                    return {
+                        ...prev,
+                        status: 'playing',
+                        currentSegmentId: segmentId,
+                        currentSegmentIndex,
+                        rate: normalizeSpeechRate(payload.rate ?? prev.rate ?? 1),
+                    };
+                });
+                reply?.({success: true});
+                break;
+            case 'Speech-Paused':
+                setSpeechState(prev => ({...prev, status: 'paused'}));
+                reply?.({success: true});
+                break;
+            case 'Speech-Resumed':
+                setSpeechState(prev => ({...prev, status: 'playing'}));
+                reply?.({success: true});
+                break;
+            case 'Speech-End':
+            case 'Speech-Cancelled':
+                cancelActiveSpeech(false);
+                reply?.({success: true});
+                break;
+            case 'Speech-Error':
+                toast.error(t('speech_play_error', {message: payload.value || payload.message || t('unknown_error')}));
+                cancelActiveSpeech(false);
+                reply?.({success: true});
+                break;
+            default:
+                // 预留给后端 TTS：Speech-Audio-Chunk / Speech-Segment-End 等事件可以在这里继续接入。
+                reply?.({success: true, value: 'Speech event reserved'});
+        }
+    }, [cancelActiveSpeech, normalizeSpeechRate, t]);
+
     useEffect(() => {
         const unsubscribe1 = onEvent({
             type: "message",
@@ -767,6 +1324,32 @@ function ChatPage({
         })
             .then(({payload, reply}) => {
                 switch (payload.command) {
+                    case "Speak-Message":
+                        handleSpeakMessageRequest(payload, reply);
+                        break;
+                    case "Stop-Speech":
+                        cancelActiveSpeech(true);
+                        reply({success: true});
+                        break;
+                    case "Pause-Speech":
+                        reply({success: pauseActiveSpeech()});
+                        break;
+                    case "Resume-Speech":
+                        reply({success: resumeActiveSpeech()});
+                        break;
+                    case "Set-SpeechRate":
+                        updateSpeechRate(payload.value ?? payload.rate);
+                        reply({success: true});
+                        break;
+                    case "Previous-SpeechSegment":
+                        reply({success: seekSpeechSegment(-1)});
+                        break;
+                    case "Next-SpeechSegment":
+                        reply({success: seekSpeechSegment(1)});
+                        break;
+                    case "Seek-SpeechSegment":
+                        reply({success: seekSpeechSegment(Number(payload.index ?? payload.segmentIndex ?? 0) - (speechStateRef.current?.currentSegmentIndex ?? 0))});
+                        break;
                     case "Delete-Message":
                         if (payload.value) {
                             const msgId = payload.value;
@@ -1261,11 +1844,25 @@ function ChatPage({
         }).then(() => {
             if (isMessageLoadedRef.current) emitMessagesLoaded();
         });
+        const unsubscribe3 = onEvent({
+            type: "speech",
+            target: "ChatPage",
+            markId: chatMarkId
+        }).then(({payload, reply}) => {
+            handleBackendSpeechEvent(payload, reply);
+        });
         return () => {
             unsubscribe1();
             unsubscribe2();
+            unsubscribe3();
         };
-    }, [chatMarkId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage]);
+    }, [chatMarkId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent]);
+
+    useEffect(() => {
+        return () => {
+            cancelActiveSpeech(true);
+        };
+    }, [cancelActiveSpeech]);
 
     useEffect(() => {
         isNewMarkIdRef.current = isNewMarkId;
@@ -1525,6 +2122,7 @@ function ChatPage({
                                 onLoadMore={loadMoreHistory}
                                 onSwitchMessage={switchMessage}
                                 markId={chatMarkId}
+                                speechState={speechState}
                             />
                         </div>
                         {isLoading && <LoadingScreen t={t}/>}
@@ -1538,6 +2136,17 @@ function ChatPage({
                     />
 
                     <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
+                        <SpeechPlayer
+                            speechState={speechState}
+                            message={speechState?.messageId ? messages?.[speechState.messageId] : null}
+                            onPause={pauseActiveSpeech}
+                            onResume={resumeActiveSpeech}
+                            onStop={() => cancelActiveSpeech(true)}
+                            onPrevious={() => seekSpeechSegment(-1)}
+                            onNext={() => seekSpeechSegment(1)}
+                            onRateChange={updateSpeechRate}
+                            t={t}
+                        />
                         <ChatBox
                             onSendMessage={handleSendMessage}
                             markId={chatMarkId}

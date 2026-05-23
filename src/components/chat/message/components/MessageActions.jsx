@@ -13,10 +13,12 @@ const MessageActions = memo(({
                                  setFadeMessages,
                                  isHovered,
                                  readonly,
+                                 speechState,
                                  t
                              }) => {
     const isRight = msg.position === 'right';
     const showPaginator = messages?.[msg?.prevMessage]?.messages?.length > 1;
+    const shouldShowTools = !readonly;
     const showRightTools = isRight && isHovered;
 
     return (
@@ -30,10 +32,10 @@ const MessageActions = memo(({
                             className={`absolute inset-0 flex items-center justify-center transition-opacity duration-200 ${showRightTools ? 'opacity-100' : 'opacity-0 pointer-events-none'
                             }`}
                         >
-                            {!readonly && <MessageTools msg={msg} msgId={msgId} markId={markId}/>} 
+                            {shouldShowTools && <MessageTools msg={msg} msgId={msgId} markId={markId} readonly={readonly} speechState={speechState}/>} 
                         </div>
                         <div className="flex items-center justify-center invisible">
-                            {!readonly && <MessageTools msg={msg} msgId={msgId} markId={markId}/>} 
+                            {shouldShowTools && <MessageTools msg={msg} msgId={msgId} markId={markId} readonly={readonly} speechState={speechState}/>} 
                         </div>
                     </div>
                 </div>
@@ -58,7 +60,7 @@ const MessageActions = memo(({
 
             {!isRight && (
                 <div className={'text-right flex-shrink-0 ' + (showPaginator ? 'pl-1' : 'translate-x-[-0.4em]')}>
-                    {!readonly && <MessageTools msg={msg} msgId={msgId} markId={markId}/>} 
+                    {shouldShowTools && <MessageTools msg={msg} msgId={msgId} markId={markId} readonly={readonly} speechState={speechState}/>} 
                 </div>
             )}
         </div>

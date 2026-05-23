@@ -1080,6 +1080,8 @@ replacement 内容中可以继续包含其他 `cardReplace`：
     "attachments": [],  # 附件内容，可选，如果和 content 两个都没有前端将无法渲染出消息占位
     "allowRegenerate": False,  # 是否允许重新生成，默认为 False，可选
     "allowFork": True,  # 是否允许 Fork，默认 False，可选
+    "allowProgenerate": False,  # 是否允许继续生成，默认为 False，可选
+    "allowSpeak": False,  # 是否允许朗读，默认为 False，可选
     "tip": "",  # 如果存在，下方将会显示一个信息提示，可选
     "readonly": False,  # 消失是否不允许编辑（不显示工具条）
     "options": {},  # 额外设置项，参考 CHAT_CONVERSATIONS_ENDPOINT 接口的 options 配置

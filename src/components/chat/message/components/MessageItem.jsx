@@ -1,4 +1,4 @@
-import React, {memo, useState} from 'react';
+import React, {memo, useRef, useState} from 'react';
 import {ChevronDown, ChevronUp} from 'lucide-react';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
@@ -8,6 +8,7 @@ import KnowledgeGraphViewer from './KnowledgeGraphViewer.jsx';
 import LeftAvatarName from './LeftAvatarName.jsx';
 import MessageActions from './MessageActions.jsx';
 import TextOnlyMessageContent from './TextOnlyMessageContent.jsx';
+import SpeechOverlayHighlighter from './SpeechOverlayHighlighter.jsx';
 
 const MessageItem = memo(({
                               msgId,
@@ -21,11 +22,13 @@ const MessageItem = memo(({
                               setFadeMessages,
                               onSwitchMessage,
                               leavingMessages,
+                              speechState,
                               t
                           }) => {
     const isRight = msg.position === 'right';
     const isMid = msg.position === 'mid';
     const readonly = msg.readonly;
+    const markdownRef = useRef(null);
     const displayName = msg.name || 'U';
     const hasAttachments = msg.attachments?.length > 0;
     const hasContent = msg.content?.trim();
@@ -52,6 +55,7 @@ const MessageItem = memo(({
         setFadeMessages,
         isHovered,
         readonly,
+        speechState,
         t
     };
 
@@ -71,12 +75,17 @@ const MessageItem = memo(({
                                 tabIndex={0}
                                 className="relative group bg-gray-50/40 rounded-2xl transition-all duration-300 outline-none"
                             >
-                                <MarkdownRenderer
-                                    contextId={msgId}
-                                    content={msg.content}
-                                    replacement={msg?.extraInfo?.replace}
-                                    msg={msg}
-                                />
+                                <div ref={markdownRef} data-tts-message-id={msgId} className="relative">
+                                    <div className="relative z-[2]">
+                                    <MarkdownRenderer
+                                        contextId={msgId}
+                                        content={msg.content}
+                                        replacement={msg?.extraInfo?.replace}
+                                        msg={msg}
+                                    />
+                                    </div>
+                                    <SpeechOverlayHighlighter containerRef={markdownRef} msgId={msgId} speechState={speechState}/>
+                                </div>
 
                                 {hasAttachments && (
                                     <div className="w-full border rounded-md mt-3">
@@ -169,6 +178,7 @@ const MessageItem = memo(({
                                 msg={msg}
                                 msgId={msgId}
                                 isLeaving={leavingMessages.has(msgId)}
+                                speechState={speechState}
                             />
                         </>
                     ) : (
@@ -181,6 +191,7 @@ const MessageItem = memo(({
                                 msg={msg}
                                 msgId={msgId}
                                 isLeaving={leavingMessages.has(msgId)}
+                                speechState={speechState}
                             />
                         </div>
                     )}
@@ -194,6 +205,7 @@ const MessageItem = memo(({
                     msg={msg}
                     msgId={msgId}
                     isLeaving={leavingMessages.has(msgId)}
+                    speechState={speechState}
                 />
             ) : (
                 <div className="flex flex-col items-start w-full">
@@ -202,6 +214,7 @@ const MessageItem = memo(({
                         msg={msg}
                         msgId={msgId}
                         isLeaving={leavingMessages.has(msgId)}
+                        speechState={speechState}
                     />
                 </div>
             );
@@ -247,7 +260,9 @@ const MessageItem = memo(({
         prevProps.messages[prevProps.msgId] === nextProps.messages[nextProps.msgId] &&
         prevProps.animationClass === nextProps.animationClass &&
         prevProps.isFading === nextProps.isFading &&
-        prevProps.leavingMessages.has(prevProps.msgId) === nextProps.leavingMessages.has(nextProps.msgId)
+        prevProps.leavingMessages.has(prevProps.msgId) === nextProps.leavingMessages.has(nextProps.msgId) &&
+        (prevProps.speechState?.messageId === prevProps.msgId ? `${prevProps.speechState?.status || ''}:${prevProps.speechState?.currentSegmentId || ''}` : '') ===
+        (nextProps.speechState?.messageId === nextProps.msgId ? `${nextProps.speechState?.status || ''}:${nextProps.speechState?.currentSegmentId || ''}` : '')
     );
 });
 

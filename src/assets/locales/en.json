@@ -224,5 +224,8 @@
   "upload_failed": "Upload failed",
   "delete_message": "Delete Message",
   "progenerate_message": "Continue to generate",
-  "no_conversations": "No Conversations"
+  "no_conversations": "No Conversations",
+  "speak_message": "Speak Message",
+  "stop_speak_message": "Stop Speaking",
+  "no_speakable_content": "No speakable content"
 }

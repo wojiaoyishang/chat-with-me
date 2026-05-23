@@ -12,7 +12,8 @@ const MessageContainer = forwardRef(({
                                          messages = {},
                                          onLoadMore,
                                          onSwitchMessage,
-                                         markId
+                                         markId,
+                                         speechState
                                      }, ref) => {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [switchingMessageId, setSwitchingMessageId] = useState(null);
@@ -126,6 +127,7 @@ const MessageContainer = forwardRef(({
                 setFadeMessages={setFadeMessages}
                 onSwitchMessage={onSwitchMessage}
                 leavingMessages={leavingMessages}
+                speechState={speechState}
                 t={t}
             />
         );
@@ -142,7 +144,8 @@ const MessageContainer = forwardRef(({
         onSwitchMessage,
         setFadeMessages,
         leavingMessages,
-        t
+        t,
+        speechState
     ]);
 
     return (
