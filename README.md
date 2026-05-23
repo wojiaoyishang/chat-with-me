@@ -533,6 +533,7 @@ backend
 ### `toolLog`
 
 前置允许添加标记 `[TITLE:XXX]` 用于展示工具调用输出卡片。
+使用 `[TERMINAL][/TERMINAL]` 切换为终端样式。
 使用 `[START:ISO 8601时间]` 标记调用开始，卡片会出现调用时间条。
 使用 `[DONE:ISO 8601时间]` 标识工具调用结束并停止记时，FAILED 同理。
 

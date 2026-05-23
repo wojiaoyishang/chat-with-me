@@ -1356,7 +1356,7 @@ const {
                     <div className="flex-1 w-full relative overflow-hidden">
                         <div
                             ref={messagesContainerRef}
-                            className="h-full overflow-y-auto pb-20 scroll-smooth"
+                            className="h-full overflow-y-auto pb-20 scroll-smooth pretty-scrollbar"
                             style={{maxHeight: 'calc(120vh - 256px)'}}
                         >
                             <MessageContainer
