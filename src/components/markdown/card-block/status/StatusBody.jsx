@@ -4,13 +4,13 @@ import { defaultRenderMarkdown } from '../constants.jsx';
 import useExpandedState from '../useExpandedState.js';
 
 const StatusBody = memo(({
-    cleanContent,
-    expandedKey,
-    isFailed = false,
-    isFinished = false,
-    isToolCalling = false,
-    renderMarkdown = defaultRenderMarkdown,
-}) => {
+                             cleanContent,
+                             expandedKey,
+                             isFailed = false,
+                             isFinished = false,
+                             isToolCalling = false,
+                             renderMarkdown = defaultRenderMarkdown,
+                         }) => {
     const [isExpanded] = useExpandedState(expandedKey);
 
     if (!isExpanded) {

@@ -11,20 +11,20 @@ import StableStepsButton from './StableStepsButton.jsx';
 import ToolCallingRightStatus from './ToolCallingRightStatus.jsx';
 
 const StatusHeader = memo(({
-    activeColor,
-    currentColor,
-    displayTitle,
-    Icon,
-    expandedKey,
-    hasSteps,
-    isDone,
-    isFailed,
-    isFinished,
-    isProcessing,
-    isToolCalling,
-    progress,
-    truncatedLastLine,
-}) => {
+                               activeColor,
+                               currentColor,
+                               displayTitle,
+                               Icon,
+                               expandedKey,
+                               canToggleExpansion = false,
+                               isDone,
+                               isFailed,
+                               isFinished,
+                               isProcessing,
+                               isToolCalling,
+                               progress,
+                               truncatedLastLine,
+                           }) => {
     const previousIsFinishedRef = useRef(isFinished);
     const [isFinishingProgressVisible, setIsFinishingProgressVisible] = useState(false);
     const [isFinishingProgressFading, setIsFinishingProgressFading] = useState(false);
@@ -149,7 +149,7 @@ const StatusHeader = memo(({
                     />
                 )}
 
-                {hasSteps && (
+                {canToggleExpansion && (
                     <StableStepsButton expandedKey={expandedKey}/>
                 )}
             </div>
@@ -162,7 +162,7 @@ const StatusHeader = memo(({
         prev.displayTitle === next.displayTitle &&
         prev.Icon === next.Icon &&
         prev.expandedKey === next.expandedKey &&
-        prev.hasSteps === next.hasSteps &&
+        prev.canToggleExpansion === next.canToggleExpansion &&
         prev.isDone === next.isDone &&
         prev.isFailed === next.isFailed &&
         prev.isFinished === next.isFinished &&

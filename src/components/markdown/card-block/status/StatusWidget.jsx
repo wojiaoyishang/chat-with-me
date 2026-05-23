@@ -14,7 +14,6 @@ import useExpandedState from '../useExpandedState.js';
 import {
     getLastLineForPreview,
     getLatestProgressMarker,
-    getParagraphsForPreview,
     stripCardReplaceTokensForPreview,
     stripProgressMarkers,
     toSafeString,
@@ -23,6 +22,29 @@ import StatusBody from './StatusBody.jsx';
 import StatusHeader from './StatusHeader.jsx';
 
 const STATUS_MARKER_REGEX = /^[ \t]*(\[DONE\]|\[FAILED\])[ \t]*$/gm;
+const BADGE_MARKER_REGEX = /^[ \t]*\[BADGE\s+NAME:([^\]\r\n]*?)\s+COLOR:(#[0-9a-fA-F]{3,8})\][ \t]*$/gm;
+
+const getBadgeTextColor = (backgroundColor) => {
+    const hex = backgroundColor.replace('#', '');
+
+    let r;
+    let g;
+    let b;
+
+    if (hex.length === 3 || hex.length === 4) {
+        r = parseInt(hex[0] + hex[0], 16);
+        g = parseInt(hex[1] + hex[1], 16);
+        b = parseInt(hex[2] + hex[2], 16);
+    } else {
+        r = parseInt(hex.slice(0, 2), 16);
+        g = parseInt(hex.slice(2, 4), 16);
+        b = parseInt(hex.slice(4, 6), 16);
+    }
+
+    // YIQ contrast formula: use dark text on light backgrounds, white text on dark backgrounds.
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 160 ? '#111827' : '#ffffff';
+};
 
 const StatusWidget = memo(({
                                activeColor,
@@ -42,14 +64,28 @@ const StatusWidget = memo(({
     }, [contextId, id, type]);
 
     const {
+        badges,
         cleanContent,
         isDone,
         isFailed,
         lastLine,
-        paragraphs,
         progress,
     } = useMemo(() => {
         const safeContent = toSafeString(content);
+
+        const badges = [...safeContent.matchAll(BADGE_MARKER_REGEX)]
+            .map((match) => {
+                const name = toSafeString(match[1]).trim();
+                const color = toSafeString(match[2]).trim();
+
+                if (!name || !color) return null;
+
+                return {
+                    name,
+                    color,
+                };
+            })
+            .filter(Boolean);
 
         // [DONE] / [FAILED] 允许出现在中间任意一行。
         // 状态以最后一次出现的显式结束标记为准。
@@ -60,7 +96,10 @@ const StatusWidget = memo(({
         const isDone = lastMarker === '[DONE]';
         const isFailed = lastMarker === '[FAILED]';
 
-        let cleanContent = safeContent.replace(STATUS_MARKER_REGEX, '').trimEnd();
+        let cleanContent = safeContent
+            .replace(BADGE_MARKER_REGEX, '')
+            .replace(STATUS_MARKER_REGEX, '')
+            .trimEnd();
 
         const progress = type === 'toolCalling'
             ? getLatestProgressMarker(cleanContent)
@@ -72,14 +111,13 @@ const StatusWidget = memo(({
 
         const previewContent = stripCardReplaceTokensForPreview(cleanContent);
         const lastLine = getLastLineForPreview(previewContent);
-        const paragraphs = getParagraphsForPreview(previewContent);
 
         return {
+            badges,
             cleanContent,
             isDone,
             isFailed,
             lastLine,
-            paragraphs,
             progress,
         };
     }, [content, type]);
@@ -129,6 +167,28 @@ const StatusWidget = memo(({
         if (isFailed) displayTitle = `${title} Failed`;
     }
 
+    const displayTitleWithBadges = badges.length > 0 ? (
+        <span className="inline-flex min-w-0 items-center gap-1.5 align-middle">
+            <span className="min-w-0 truncate">{displayTitle}</span>
+            <span className="inline-flex shrink-0 flex-wrap items-center gap-1">
+                {badges.map((badge, index) => (
+                    <span
+                        // eslint-disable-next-line react/no-array-index-key
+                        key={`${badge.name}-${badge.color}-${index}`}
+                        className="inline-flex min-h-[20px] items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none"
+                        style={{
+                            backgroundColor: badge.color,
+                            color: getBadgeTextColor(badge.color),
+                        }}
+                        title={badge.name}
+                    >
+                        {badge.name}
+                    </span>
+                ))}
+            </span>
+        </span>
+    ) : displayTitle;
+
     let currentColor = activeColor;
     if (isDone || isProgressComplete) currentColor = doneColor;
     if (isFailed) currentColor = 'text-red-600';
@@ -138,10 +198,10 @@ const StatusWidget = memo(({
             <StatusHeader
                 activeColor={activeColor}
                 currentColor={currentColor}
-                displayTitle={displayTitle}
+                displayTitle={displayTitleWithBadges}
                 Icon={Icon}
                 expandedKey={expandedKey}
-                hasSteps={paragraphs.length > 0}
+                canToggleExpansion
                 isDone={isDone}
                 isFailed={isFailed}
                 isFinished={isFinished}

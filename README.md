@@ -292,6 +292,8 @@ backend
 
 允许出现：`[PROGRESS 0/5]` 用于展示进度条
 
+使用 `[BADGE NAME:Beta COLOR:#7C3AED]` 可以显示徽章
+
 ---
 
 ### `thinking`
