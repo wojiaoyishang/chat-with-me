@@ -3,7 +3,7 @@ import {useImmer} from 'use-immer';
 import {produce} from 'immer';
 import {generateUUID, useIsMobile} from '@/lib/tools.jsx';
 import {toast} from 'sonner';
-import {motion, AnimatePresence} from 'framer-motion';
+import {motion} from 'framer-motion';
 import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
 import {useTranslation} from 'react-i18next';
 import ChatBox from '@/components/chat/ChatBox.jsx';
@@ -25,7 +25,6 @@ import {
     mergeNetworkData,
     normalizeNetworkData,
     toDeleteKeySet,
-    upsertArrayByKey,
 } from './chat/utils/networkMerge.js';
 
 // ========== 主组件 ==========
@@ -77,39 +76,39 @@ function ChatPage({
     const [isDeletingMessage, setIsDeletingMessage] = useState(false);
 
 // ========== 窗口化、滚动和上传模块 ==========
-const {
-    isReady,
-    isWindowMode,
-    windowPos,
-    windowDimensions,
-    windowRef,
-    isDragging,
-    isDragReady,
-    isResizing,
-    ghostCursor,
-    toggleWindowMode,
-    handleDragMouseDown,
-    handleDragTouchStart,
-    handleDragTouchMove,
-    handleDragTouchEnd,
-    handleResizeMouseDown,
-    handleResizeTouchStart,
-} = useChatWindowMode({onWindowModeChange});
+    const {
+        isReady,
+        isWindowMode,
+        windowPos,
+        windowDimensions,
+        windowRef,
+        isDragging,
+        isDragReady,
+        isResizing,
+        ghostCursor,
+        toggleWindowMode,
+        handleDragMouseDown,
+        handleDragTouchStart,
+        handleDragTouchMove,
+        handleDragTouchEnd,
+        handleResizeMouseDown,
+        handleResizeTouchStart,
+    } = useChatWindowMode({onWindowModeChange});
 
-const {
-    showScrollToBottomButton,
-    setShowScrollToBottomButton,
-    chatBoxHeight,
-    isAutoScrollEnabledRef,
-    pendingScrollRef,
-    checkScrollPosition,
-    smoothScrollToBottom,
-    executePendingScroll,
-    requestScrollToBottom,
-    handleScrollToBottomClick,
-    updateStreamingStatus,
-    handleChatBoxHeightChange,
-} = useChatScroll(messagesContainerRef);
+    const {
+        showScrollToBottomButton,
+        setShowScrollToBottomButton,
+        chatBoxHeight,
+        isAutoScrollEnabledRef,
+        pendingScrollRef,
+        checkScrollPosition,
+        smoothScrollToBottom,
+        executePendingScroll,
+        requestScrollToBottom,
+        handleScrollToBottomClick,
+        updateStreamingStatus,
+        handleChatBoxHeightChange,
+    } = useChatScroll(messagesContainerRef);
 
     // ========== Popover 相关函数 ==========
     const scrollToSelectedItem = useCallback((modelListRef) => {
@@ -148,19 +147,122 @@ const {
     }, [isMobile]);
 
 // ========= 上传相关 =========
-const {
-    uploadFiles,
-    attachments,
-    setAttachments,
-    handleFolderDetected,
-    onAttachmentRemove,
-    handleImagePaste,
-    handleRetryUpload,
-    handleCancelUpload,
-    handleFilePicker,
-    handlePicPicker,
-    handleSelectedFiles,
-} = useFileUpload({chatMarkId, t});
+    const {
+        uploadFiles,
+        attachments,
+        setAttachments,
+        handleFolderDetected,
+        onAttachmentRemove,
+        handleImagePaste,
+        handleRetryUpload,
+        handleCancelUpload,
+        handleFilePicker,
+        handlePicPicker,
+        handleSelectedFiles,
+    } = useFileUpload({chatMarkId, t});
+
+    // ========= 滚动辅助 =========
+    // 高频流式更新时，用户只要主动向上滚/滑，就应该立即退出自动置底，
+    // 否则后续 replace/content 变化会把用户反复拉回底部，造成“难以逃脱置底”。
+    const USER_SCROLL_UNLOCK_MS = 1500;
+    const USER_SCROLL_UP_DELTA = 2;
+    const BOTTOM_RELOCK_THRESHOLD = 24;
+
+    const userScrollStateRef = useRef({
+        lastScrollTop: 0,
+        touchLastY: null,
+        programmaticScrollUntil: 0,
+    });
+    const userAutoScrollUnlockUntilRef = useRef(0);
+
+    const isUserAutoScrollUnlocked = useCallback(() => {
+        return Date.now() < userAutoScrollUnlockUntilRef.current;
+    }, []);
+
+    const markProgrammaticScroll = useCallback((duration = 450) => {
+        userScrollStateRef.current.programmaticScrollUntil = Date.now() + duration;
+    }, []);
+
+    const unlockAutoScrollByUser = useCallback(() => {
+        userAutoScrollUnlockUntilRef.current = Date.now() + USER_SCROLL_UNLOCK_MS;
+        isAutoScrollEnabledRef.current = false;
+        pendingScrollRef.current = false;
+
+        const container = messagesContainerRef.current;
+        if (container && container.scrollHeight > container.clientHeight + BOTTOM_RELOCK_THRESHOLD) {
+            setShowScrollToBottomButton(true);
+        }
+    }, [isAutoScrollEnabledRef, pendingScrollRef, setShowScrollToBottomButton]);
+
+    const relockAutoScrollAtBottom = useCallback(() => {
+        userAutoScrollUnlockUntilRef.current = 0;
+        isAutoScrollEnabledRef.current = true;
+        pendingScrollRef.current = false;
+        checkScrollPosition(true);
+    }, [checkScrollPosition, isAutoScrollEnabledRef, pendingScrollRef]);
+
+    // replace/content/network 等更新经常只改变消息内部高度，不会改变滚动容器自身高度。
+    // 因此需要在 React 提交 DOM 后再滚动，并额外监听内容区的 resize / mutation。
+    const scrollToBottomAfterRender = useCallback((shouldAutoScroll = isAutoScrollEnabledRef.current, options = {}) => {
+        const {streaming = false, delay = 0} = options;
+
+        const doScroll = () => {
+            const container = messagesContainerRef.current;
+            if (!container) return;
+
+            const userUnlocked = isUserAutoScrollUnlocked();
+            const shouldStickToBottom = !userUnlocked && (shouldAutoScroll || pendingScrollRef.current);
+
+            if (shouldStickToBottom) {
+                // 内容变化前用户就在底部时，保持自动滚动状态，避免 scrollHeight 增加后被误判为离底。
+                isAutoScrollEnabledRef.current = true;
+                markProgrammaticScroll(streaming ? 700 : 450);
+
+                if (streaming) {
+                    smoothScrollToBottom(true);
+                } else {
+                    requestScrollToBottom();
+                }
+
+                checkScrollPosition(true);
+            } else if (userUnlocked) {
+                setShowScrollToBottomButton(container.scrollHeight > container.clientHeight + BOTTOM_RELOCK_THRESHOLD);
+            } else {
+                checkScrollPosition(true);
+            }
+        };
+
+        const runAfterPaint = () => {
+            requestAnimationFrame(() => {
+                doScroll();
+                // 很多 replace 渲染链路里会有 Markdown / 高亮 / 图表等二次布局，再补一帧更稳。
+                requestAnimationFrame(doScroll);
+            });
+        };
+
+        if (delay > 0) {
+            setTimeout(runAfterPaint, delay);
+        } else {
+            runAfterPaint();
+        }
+    }, [
+        checkScrollPosition,
+        isAutoScrollEnabledRef,
+        isUserAutoScrollUnlocked,
+        markProgrammaticScroll,
+        pendingScrollRef,
+        requestScrollToBottom,
+        setShowScrollToBottomButton,
+        smoothScrollToBottom,
+    ]);
+
+    const handleManualScrollToBottomClick = useCallback(() => {
+        userAutoScrollUnlockUntilRef.current = 0;
+        isAutoScrollEnabledRef.current = true;
+        pendingScrollRef.current = true;
+        markProgrammaticScroll(700);
+        handleScrollToBottomClick();
+    }, [handleScrollToBottomClick, isAutoScrollEnabledRef, markProgrammaticScroll, pendingScrollRef]);
 
     // ========= 消息删除 =========
     const deleteMessageLocally = useCallback((msgId) => {
@@ -221,21 +323,15 @@ const {
             messagesOrderRef.current = newOrder;
         }
 
-        setTimeout(() => {
-            checkScrollPosition(true);
-
-            if (isAutoScrollEnabledRef.current) {
-                requestScrollToBottom();
-            }
-        }, 50);
+        scrollToBottomAfterRender(isAutoScrollEnabledRef.current, {delay: 50});
 
         return true;
     }, [
         t,
         setMessages,
         setMessagesOrder,
-        checkScrollPosition,
-        requestScrollToBottom,
+        isAutoScrollEnabledRef,
+        scrollToBottomAfterRender,
     ]);
 
     // ========= 消息相关 =========
@@ -495,22 +591,157 @@ const {
     }
 
     useEffect(() => {
-        if (!messagesContainerRef.current) return;
-        const observer = new ResizeObserver(() => {
-            if (isAutoScrollEnabledRef.current) {
-                requestScrollToBottom();
+        const container = messagesContainerRef.current;
+        if (!container) return;
+
+        let rafId = null;
+        const observedElements = new WeakSet();
+
+        const scheduleCheck = () => {
+            const userUnlocked = isUserAutoScrollUnlocked();
+            const shouldAutoScroll = !userUnlocked && (isAutoScrollEnabledRef.current || pendingScrollRef.current);
+
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
             }
-            checkScrollPosition(true);
-        });
-        observer.observe(messagesContainerRef.current);
-        return () => {
-            observer.disconnect();
+
+            rafId = requestAnimationFrame(() => {
+                rafId = null;
+
+                if (shouldAutoScroll) {
+                    isAutoScrollEnabledRef.current = true;
+                    markProgrammaticScroll();
+                    requestScrollToBottom();
+                    checkScrollPosition(true);
+                } else if (isUserAutoScrollUnlocked()) {
+                    setShowScrollToBottomButton(container.scrollHeight > container.clientHeight + BOTTOM_RELOCK_THRESHOLD);
+                } else {
+                    checkScrollPosition(true);
+                }
+            });
         };
-    }, [checkScrollPosition, requestScrollToBottom]);
+
+        const resizeObserver = new ResizeObserver(scheduleCheck);
+
+        const observeElement = (element) => {
+            if (!element || observedElements.has(element)) return;
+            observedElements.add(element);
+            resizeObserver.observe(element);
+        };
+
+        observeElement(container);
+        Array.from(container.children).forEach(observeElement);
+
+        const mutationObserver = new MutationObserver(() => {
+            Array.from(container.children).forEach(observeElement);
+            scheduleCheck();
+        });
+
+        mutationObserver.observe(container, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+        });
+
+        return () => {
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+            }
+            resizeObserver.disconnect();
+            mutationObserver.disconnect();
+        };
+    }, [
+        checkScrollPosition,
+        isAutoScrollEnabledRef,
+        isUserAutoScrollUnlocked,
+        markProgrammaticScroll,
+        pendingScrollRef,
+        requestScrollToBottom,
+        setShowScrollToBottomButton,
+    ]);
 
     useEffect(() => {
-        if (isAutoScrollEnabledRef.current && messagesOrder.length > 0) {
+        const container = messagesContainerRef.current;
+        if (!container) return;
+
+        const state = userScrollStateRef.current;
+        state.lastScrollTop = container.scrollTop;
+
+        const getDistanceToBottom = () => {
+            return container.scrollHeight - container.scrollTop - container.clientHeight;
+        };
+
+        const handleWheel = (event) => {
+            // deltaY < 0 表示用户想向上看历史内容；不要等真正滚动发生，先解除置底锁。
+            if (event.deltaY < -USER_SCROLL_UP_DELTA) {
+                unlockAutoScrollByUser();
+            }
+        };
+
+        const handleTouchStart = (event) => {
+            state.touchLastY = event.touches?.[0]?.clientY ?? null;
+        };
+
+        const handleTouchMove = (event) => {
+            const currentY = event.touches?.[0]?.clientY;
+            if (typeof currentY !== 'number' || typeof state.touchLastY !== 'number') {
+                state.touchLastY = currentY ?? null;
+                return;
+            }
+
+            // 手指向下滑时，页面内容通常向上滚，用户是在尝试逃离底部。
+            if (currentY - state.touchLastY > USER_SCROLL_UP_DELTA) {
+                unlockAutoScrollByUser();
+            }
+
+            state.touchLastY = currentY;
+        };
+
+        const handleScroll = () => {
+            const currentScrollTop = container.scrollTop;
+            const previousScrollTop = state.lastScrollTop;
+            const isProgrammaticScroll = Date.now() < state.programmaticScrollUntil;
+
+            if (!isProgrammaticScroll && currentScrollTop < previousScrollTop - USER_SCROLL_UP_DELTA) {
+                unlockAutoScrollByUser();
+            }
+
+            state.lastScrollTop = currentScrollTop;
+
+            if (getDistanceToBottom() <= BOTTOM_RELOCK_THRESHOLD) {
+                // 用户主动回到底部后，再恢复自动置底；刚触发逃逸的冷却期内不抢回控制权。
+                if (!isUserAutoScrollUnlocked()) {
+                    relockAutoScrollAtBottom();
+                }
+            } else if (!isUserAutoScrollUnlocked()) {
+                checkScrollPosition(true);
+            }
+        };
+
+        container.addEventListener('wheel', handleWheel, {passive: true});
+        container.addEventListener('touchstart', handleTouchStart, {passive: true});
+        container.addEventListener('touchmove', handleTouchMove, {passive: true});
+        container.addEventListener('scroll', handleScroll, {passive: true});
+
+        return () => {
+            container.removeEventListener('wheel', handleWheel);
+            container.removeEventListener('touchstart', handleTouchStart);
+            container.removeEventListener('touchmove', handleTouchMove);
+            container.removeEventListener('scroll', handleScroll);
+        };
+    }, [
+        checkScrollPosition,
+        isUserAutoScrollUnlocked,
+        relockAutoScrollAtBottom,
+        unlockAutoScrollByUser,
+    ]);
+
+    useEffect(() => {
+        if (isAutoScrollEnabledRef.current && messagesOrder.length > 0 && !isUserAutoScrollUnlocked()) {
             requestAnimationFrame(() => {
+                if (isUserAutoScrollUnlocked()) return;
+
+                markProgrammaticScroll();
                 if (pendingScrollRef.current) {
                     executePendingScroll();
                 } else {
@@ -518,7 +749,15 @@ const {
                 }
             });
         }
-    }, [messagesOrder, executePendingScroll, requestScrollToBottom]);
+    }, [
+        messagesOrder,
+        executePendingScroll,
+        isAutoScrollEnabledRef,
+        isUserAutoScrollUnlocked,
+        markProgrammaticScroll,
+        pendingScrollRef,
+        requestScrollToBottom,
+    ]);
 
     useEffect(() => {
         const unsubscribe1 = onEvent({
@@ -621,24 +860,14 @@ const {
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
 
-                            setTimeout(() => {
-                                if (wasAutoScroll) {
-                                    requestScrollToBottom();
-                                }
-                                checkScrollPosition(true);
-                            }, 50);
+                            scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
 
                             reply({success: true});
                         }
                         break;
                     case "MessagesOrder-Meta":
                         if (Array.isArray(payload.value) && payload.value.length > 0) {
-                            setTimeout(() => {
-                                checkScrollPosition(true);
-                                if (isAutoScrollEnabledRef.current) {
-                                    requestScrollToBottom();
-                                }
-                            }, 50)
+                            scrollToBottomAfterRender(isAutoScrollEnabledRef.current, {delay: 50});
                             setMessagesOrder(payload.value);
                             messagesOrderRef.current = payload.value;
                             reply({value: payload.value});
@@ -648,6 +877,7 @@ const {
                         break;
                     case "Set-MessageContent":
                         if (payload.value && typeof payload.value === 'object') {
+                            const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, newContent] of Object.entries(payload.value)) {
@@ -658,16 +888,7 @@ const {
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-                            setTimeout(() => {
-                                if (isAutoScrollEnabledRef.current) {
-                                    if (isStreamingRef.current) {
-                                        smoothScrollToBottom(true);
-                                    } else {
-                                        requestScrollToBottom();
-                                    }
-                                }
-                                checkScrollPosition(true);
-                            }, 0);
+                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
                             if (payload.reply) reply({success: true});
                         } else {
                             reply({success: false});
@@ -675,6 +896,7 @@ const {
                         break;
                     case "Add-MessageContent":
                         if (payload.value && typeof payload.value === 'object') {
+                            const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, newContent] of Object.entries(payload.value)) {
@@ -685,16 +907,7 @@ const {
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-                            setTimeout(() => {
-                                if (isAutoScrollEnabledRef.current) {
-                                    if (isStreamingRef.current) {
-                                        smoothScrollToBottom(true);
-                                    } else {
-                                        requestScrollToBottom();
-                                    }
-                                }
-                                checkScrollPosition(true);
-                            }, 0);
+                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
                             if (payload.reply) reply({success: true});
                         } else {
                             reply({success: false});
@@ -702,6 +915,7 @@ const {
                         break;
                     case "Set-MessageReplace":
                         if (payload.value && typeof payload.value === 'object') {
+                            const wasAutoScroll = isAutoScrollEnabledRef.current;
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, newReplaces] of Object.entries(payload.value)) {
                                     if (draft[msgId]) {
@@ -715,12 +929,7 @@ const {
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-                            setTimeout(() => {
-                                if (isAutoScrollEnabledRef.current) {
-                                    requestScrollToBottom();
-                                }
-                                checkScrollPosition(true);
-                            }, 50);
+                            scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
                             if (payload.reply) reply({success: true});
                         } else {
                             reply({success: false});
@@ -728,6 +937,7 @@ const {
                         break;
                     case "Add-MessageReplaceContent":
                         if (payload.value && typeof payload.value === 'object') {
+                            const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, appendFields] of Object.entries(payload.value)) {
@@ -747,16 +957,7 @@ const {
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-                            setTimeout(() => {
-                                if (isAutoScrollEnabledRef.current) {
-                                    if (isStreamingRef.current) {
-                                        smoothScrollToBottom(true);
-                                    } else {
-                                        requestScrollToBottom();
-                                    }
-                                }
-                                checkScrollPosition(true);
-                            }, 0);
+                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
                             if (payload.reply) reply({success: true});
                         } else {
                             if (payload.reply) reply({success: false});
@@ -764,6 +965,7 @@ const {
                         break;
                     case "Insert-MessageReplaceContent":
                         if (payload.value && typeof payload.value === 'object') {
+                            const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
 
                             const newMessages = produce(messagesRef.current, draft => {
@@ -814,16 +1016,7 @@ const {
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
 
-                            setTimeout(() => {
-                                if (isAutoScrollEnabledRef.current) {
-                                    if (isStreamingRef.current) {
-                                        smoothScrollToBottom(true);
-                                    } else {
-                                        requestScrollToBottom();
-                                    }
-                                }
-                                checkScrollPosition(true);
-                            }, 0);
+                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
 
                             if (payload.reply) reply({ success: true });
                         } else {
@@ -832,6 +1025,7 @@ const {
                         break;
                     case "Set-MessageAttachments":
                         if (payload.value && typeof payload.value === 'object') {
+                            const wasAutoScroll = isAutoScrollEnabledRef.current;
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, newAttachments] of Object.entries(payload.value)) {
                                     if (draft[msgId]) {
@@ -841,12 +1035,7 @@ const {
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-                            setTimeout(() => {
-                                if (isAutoScrollEnabledRef.current) {
-                                    requestScrollToBottom();
-                                }
-                                checkScrollPosition(true);
-                            }, 50);
+                            scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
                             if (payload.reply) reply({success: true});
                         } else {
                             reply({success: false});
@@ -854,6 +1043,7 @@ const {
                         break;
                     case "Add-Message-Messages":
                         if (payload.msgId && payload.value) {
+                            const wasAutoScroll = isAutoScrollEnabledRef.current;
                             if (!messagesRef.current[payload.msgId]) {
                                 reply({success: false});
                                 return;
@@ -894,21 +1084,11 @@ const {
                                             fromWebsocket: true,
                                             notReplyToWebsocket: true
                                         })
-                                        setTimeout(() => {
-                                            if (isAutoScrollEnabledRef.current) {
-                                                requestScrollToBottom();
-                                            }
-                                            checkScrollPosition(true);
-                                        }, 50);
+                                        scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
                                     });
                                 });
                             } else {
-                                setTimeout(() => {
-                                    if (isAutoScrollEnabledRef.current) {
-                                        requestScrollToBottom();
-                                    }
-                                    checkScrollPosition(true);
-                                }, 50);
+                                scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
                             }
                             reply({success: true});
                         }
@@ -948,6 +1128,7 @@ const {
                         break;
                     case "Add-MessageNodes":
                         if (payload.value && typeof payload.value === 'object') {
+                            const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, newNodes] of Object.entries(payload.value)) {
@@ -961,16 +1142,7 @@ const {
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
-                            setTimeout(() => {
-                                if (isAutoScrollEnabledRef.current) {
-                                    if (isStreamingRef.current) {
-                                        smoothScrollToBottom(true);
-                                    } else {
-                                        requestScrollToBottom();
-                                    }
-                                }
-                                checkScrollPosition(true);
-                            }, 0);
+                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
                             if (payload.reply) reply({success: true});
                         } else {
                             reply({success: false});
@@ -978,6 +1150,7 @@ const {
                         break;
                     case "Add-MessageNetwork":
                         if (payload.value && typeof payload.value === 'object') {
+                            const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, networkUpdate] of Object.entries(payload.value)) {
@@ -992,16 +1165,7 @@ const {
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
 
-                            setTimeout(() => {
-                                if (isAutoScrollEnabledRef.current) {
-                                    if (isStreamingRef.current) {
-                                        smoothScrollToBottom(true);
-                                    } else {
-                                        requestScrollToBottom();
-                                    }
-                                }
-                                checkScrollPosition(true);
-                            }, 0);
+                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
 
                             if (payload.reply) reply({success: true});
                         } else {
@@ -1010,6 +1174,7 @@ const {
                         break;
                     case "Del-MessageNetwork":
                         if (payload.value && typeof payload.value === 'object') {
+                            const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
 
                             const newMessages = produce(messagesRef.current, draft => {
@@ -1050,16 +1215,7 @@ const {
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
 
-                            setTimeout(() => {
-                                if (isAutoScrollEnabledRef.current) {
-                                    if (isStreamingRef.current) {
-                                        smoothScrollToBottom(true);
-                                    } else {
-                                        requestScrollToBottom();
-                                    }
-                                }
-                                checkScrollPosition(true);
-                            }, 0);
+                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
 
                             if (payload.reply) reply({success: true});
                         } else {
@@ -1109,7 +1265,7 @@ const {
             unsubscribe1();
             unsubscribe2();
         };
-    }, [chatMarkId, checkScrollPosition, requestScrollToBottom, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage]);
+    }, [chatMarkId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage]);
 
     useEffect(() => {
         isNewMarkIdRef.current = isNewMarkId;
@@ -1214,8 +1370,10 @@ const {
 
                 setTimeout(() => {
                     setTimeout(() => {
+                        userAutoScrollUnlockUntilRef.current = 0;
                         isAutoScrollEnabledRef.current = true;
                         pendingScrollRef.current = true;
+                        markProgrammaticScroll(700);
                         checkScrollPosition(true);
                         executePendingScroll();
                         const container = messagesContainerRef.current;
@@ -1247,6 +1405,7 @@ const {
                     if (messagesContainerRef.current) {
                         const container = messagesContainerRef.current;
                         const {scrollHeight} = container;
+                        markProgrammaticScroll(700);
                         container.scrollTo({
                             top: scrollHeight,
                             behavior: 'auto'
@@ -1375,7 +1534,7 @@ const {
                     <ScrollToBottomButton
                         isVisible={showScrollToBottomButton}
                         chatBoxHeight={chatBoxHeight}
-                        onClick={handleScrollToBottomClick}
+                        onClick={handleManualScrollToBottomClick}
                     />
 
                     <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
@@ -1422,12 +1581,12 @@ const {
                     containerRef={chatPageRef}
                     isWindowMode={isWindowMode}
                 />
-{isWindowMode && (
-    <ResizeHandles
-        onResizeMouseDown={handleResizeMouseDown}
-        onResizeTouchStart={handleResizeTouchStart}
-    />
-)}
+                {isWindowMode && (
+                    <ResizeHandles
+                        onResizeMouseDown={handleResizeMouseDown}
+                        onResizeTouchStart={handleResizeTouchStart}
+                    />
+                )}
             </motion.div>
 
             {isWindowMode && (isDragging || isResizing) && (
