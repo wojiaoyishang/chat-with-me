@@ -10,6 +10,7 @@ import {
     SkipForward,
     Square,
     Volume2,
+    ChevronsRight
 } from 'lucide-react';
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
@@ -495,7 +496,7 @@ const SpeechPlayer = memo(({speechState, message, onPause, onResume, onStop, onP
                                 aria-label={fallbackText(t, 'dock_speech_player', '收起到右侧')}
                                 title={fallbackText(t, 'dock_speech_player', '收起到右侧')}
                             >
-                                ⇥
+                                <ChevronsRight size={14} strokeWidth={1.5} />
                             </button>
                         </div>
                     </div>

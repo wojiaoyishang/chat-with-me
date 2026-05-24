@@ -26,7 +26,6 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import {
     Popover,
@@ -35,7 +34,7 @@ import {
 } from "@/components/ui/popover";
 import { Info, Slash, Plus, Copy, Trash2, ChevronDown, Upload, X, GripVertical, ArrowUp, ArrowDown } from "lucide-react";
 import {createPortal} from "react-dom";
-import { motion, AnimatePresence, Reorder, useDragControls } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
     DndContext,
@@ -99,6 +98,77 @@ function generateBusinessId() {
     return `item-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+
+// ─── Auto Scroll Text ──────────────────────────────────────────────
+function AutoScrollText({children, className = "", title, scrollSpeed = 36}) {
+    const containerRef = useRef(null);
+    const contentRef = useRef(null);
+    const [scrollDistance, setScrollDistance] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
+
+    const measureOverflow = useCallback(() => {
+        const container = containerRef.current;
+        const content = contentRef.current;
+        if (!container || !content) return;
+
+        const nextDistance = Math.ceil(content.scrollWidth - container.clientWidth);
+        setScrollDistance(nextDistance > 1 ? nextDistance : 0);
+    }, [children]);
+
+    useEffect(() => {
+        const container = containerRef.current;
+        const content = contentRef.current;
+        if (!container || !content) return;
+
+        measureOverflow();
+        const rafId = window.requestAnimationFrame(measureOverflow);
+        const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measureOverflow) : null;
+
+        resizeObserver?.observe(container);
+        resizeObserver?.observe(content);
+        window.addEventListener("resize", measureOverflow);
+
+        return () => {
+            window.cancelAnimationFrame(rafId);
+            resizeObserver?.disconnect();
+            window.removeEventListener("resize", measureOverflow);
+        };
+    }, [measureOverflow]);
+
+    const shouldScroll = isHovered && scrollDistance > 0;
+    const duration = scrollDistance > 0
+        ? Math.max(3.2, (scrollDistance / scrollSpeed) * 2 + 1.6)
+        : 0;
+
+    return (
+        <span
+            ref={containerRef}
+            title={title}
+            className={`relative block min-w-0 max-w-full overflow-hidden whitespace-nowrap ${className || ""}`}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onFocus={() => setIsHovered(true)}
+            onBlur={() => setIsHovered(false)}
+        >
+            <motion.span
+                ref={contentRef}
+                className="inline-flex items-center whitespace-nowrap"
+                animate={shouldScroll ? { x: [0, -scrollDistance, -scrollDistance, 0] } : { x: 0 }}
+                transition={shouldScroll ? {
+                    duration,
+                    times: [0, 0.42, 0.58, 1],
+                    ease: "linear",
+                    repeat: Infinity,
+                    repeatDelay: 0.8,
+                } : { duration: 0.18, ease: "easeOut" }}
+                style={{ willChange: shouldScroll ? "transform" : "auto" }}
+            >
+                {children}
+            </motion.span>
+        </span>
+    );
+}
+
 // ─── Tip Component ───────────────────────────────────────────────────
 function TipWrapper({tips, children, nullable, isNull, onToggleNull}) {
     if (!tips && !nullable) return children;
@@ -154,23 +224,25 @@ function SettingRow({
                     }) {
     if (fullWidth) {
         return (
-            <div className={`w-full px-4 pt-1 pb-3 ${className || ""}`}>
+            <div className={`w-full px-3 sm:px-4 pt-1 pb-3 ${className || ""}`}>
                 {children}
             </div>
         );
     }
+
     return (
         <div
-            className={`${className} flex items-center justify-between min-h-[35px] gap-3 last-of-type:border-b-0 ${expanded ? "flex-wrap" : "flex-nowrap"} ${noTopPadding ? "pt-0 -mt-2.5" : ""} ${noLeftRightPadding ? "" : "py-2.5 px-4"}`}>
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            className={`${className || ""} flex flex-col sm:flex-row sm:items-center sm:justify-between min-h-[42px] gap-2.5 sm:gap-3 last-of-type:border-b-0 ${expanded ? "flex-wrap" : ""} ${noTopPadding ? "pt-0 -mt-2.5" : ""} ${noLeftRightPadding ? "" : "py-3 px-3 sm:px-4"}`}
+        >
+            <div className="flex items-center gap-1.5 min-w-0 w-full sm:flex-1">
                 <TipWrapper tips={tips} nullable={nullable} isNull={isNull} onToggleNull={onToggleNull}>
-                    <span className="text-sm font-medium truncate flex items-center" title={text}>
+                    <AutoScrollText className="text-sm font-medium flex-1 min-w-0" title={text}>
                         {text}
                         {required && <span className="text-red-500 ml-0.5 text-base leading-none">*</span>}
-                    </span>
+                    </AutoScrollText>
                 </TipWrapper>
             </div>
-            <div className="flex items-center justify-end flex-shrink-0">
+            <div className="flex items-center justify-start sm:justify-end flex-shrink-0 w-full sm:w-auto min-w-0">
                 {children}
             </div>
         </div>
@@ -320,35 +392,39 @@ const SortableCard = memo(({
         removeItem(stableId);
     };
 
+    const iconButtonBase = "p-1.5 rounded-lg cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
+
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className={`mb-4 border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] transition-colors ${
+            className={`mb-3 sm:mb-4 border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] shadow-sm transition-colors ${
                 duplicate
-                    ? "border-red-500 dark:border-red-500 shadow-sm"
+                    ? "border-red-500 dark:border-red-500"
                     : "border-[#e1e4e8] dark:border-[#3a3f45]"
             }`}
         >
             <div
-                className={`flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#f8f9fa] dark:hover:bg-[#25282c] transition-colors ${
+                className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 sm:px-4 py-3 cursor-pointer transition-colors hover:bg-[#f8f9fa] dark:hover:bg-[#25282c] ${
                     duplicate ? "bg-red-50 dark:bg-red-950/30" : ""
                 }`}
                 onClick={() => !isDragging && setIsOpen((prev) => !prev)}
             >
-                {/* 左侧：拖拽手柄 + 标题 */}
-                <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex items-center gap-2.5 flex-1 min-w-0 w-full">
                     <div
                         {...attributes}
                         {...listeners}
-                        className="cursor-grab active:cursor-grabbing p-1 text-[#656d76] hover:text-[#2563eb] flex-shrink-0"
+                        className="cursor-grab active:cursor-grabbing p-1 -ml-1 text-[#656d76] hover:text-[#2563eb] flex-shrink-0 rounded-lg hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors touch-none"
                     >
                         <GripVertical size={20} />
                     </div>
 
-                    <span className="text-sm font-medium truncate">
+                    <AutoScrollText
+                        className="text-sm font-semibold text-[#1a1d21] dark:text-[#e4e7eb] flex-1 min-w-0"
+                        title={getCardTitle(entry)}
+                    >
                         {getCardTitle(entry)}
-                    </span>
+                    </AutoScrollText>
                     {duplicate && (
                         <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-100 dark:bg-red-900 text-red-600 text-[10px] font-bold flex-shrink-0">
                             !
@@ -356,11 +432,10 @@ const SortableCard = memo(({
                     )}
                 </div>
 
-                {/* 右侧操作区 */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center justify-end gap-1 w-full sm:w-auto">
                     <button
                         onClick={handleMoveUp}
-                        className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className={`${iconButtonBase} text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136]`}
                         title={t("ds.moveUp")}
                         disabled={index === 0}
                     >
@@ -369,7 +444,7 @@ const SortableCard = memo(({
 
                     <button
                         onClick={handleMoveDown}
-                        className="p-1.5 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className={`${iconButtonBase} text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136]`}
                         title={t("ds.moveDown")}
                         disabled={index === list.length - 1}
                     >
@@ -378,7 +453,7 @@ const SortableCard = memo(({
 
                     <button
                         onClick={handleDuplicate}
-                        className="p-1 text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] rounded cursor-pointer transition-colors"
+                        className={`${iconButtonBase} text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136]`}
                         title={t("ds.duplicate")}
                     >
                         <Copy size={16} />
@@ -386,7 +461,7 @@ const SortableCard = memo(({
 
                     <button
                         onClick={handleDelete}
-                        className="p-1 text-[#dc2626] hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded cursor-pointer transition-colors"
+                        className={`${iconButtonBase} text-[#dc2626] hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30`}
                         title={t("ds.delete")}
                     >
                         <Trash2 size={16} />
@@ -394,7 +469,7 @@ const SortableCard = memo(({
 
                     <ChevronDown
                         size={18}
-                        className={`text-[#656d76] transition-transform ${isOpen ? "rotate-180" : ""}`}
+                        className={`text-[#656d76] transition-transform ml-0.5 ${isOpen ? "rotate-180" : ""}`}
                     />
                 </div>
             </div>
@@ -408,7 +483,7 @@ const SortableCard = memo(({
                         transition={{ duration: 0.25 }}
                         className="border-t border-[#e1e4e8] dark:border-[#3a3f45]"
                     >
-                        <div className="p-4">
+                        <div className="p-3 sm:p-4 space-y-1">
                             {item.children?.map((child, i) => (
                                 <SettingItemRenderer
                                     key={child.name || i}
@@ -518,22 +593,22 @@ function ListItem({ item, path }) {
     }, [list, update, listPath]);
 
     return (
-        <div className="px-4 py-3 border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
-            <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-semibold">{item.text}</span>
+        <div className="px-3 sm:px-4 py-3 border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <AutoScrollText className="text-sm font-semibold flex-1 min-w-0" title={item.text}>{item.text}</AutoScrollText>
                     <TipWrapper tips={item.tips} />
                 </div>
                 <button
                     onClick={addItem}
-                    className="flex items-center gap-1 text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8] transition-colors cursor-pointer"
+                    className="inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-sm font-medium text-[#2563eb] bg-[#2563eb]/5 hover:bg-[#2563eb]/10 hover:text-[#1d4ed8] transition-colors cursor-pointer w-full sm:w-auto"
                 >
                     <Plus size={16} /> {t("ds.add")}
                 </button>
             </div>
 
             {list.length === 0 && (
-                <div className="text-center py-6 text-[#9ca3af] text-sm">
+                <div className="text-center py-6 text-[#9ca3af] text-sm rounded-2xl border border-dashed border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c]">
                     {t("ds.noData")}
                 </div>
             )}
@@ -579,9 +654,9 @@ function ListItem({ item, path }) {
                             <div className="flex items-center justify-between px-4 py-3 bg-[#f8f9fa] dark:bg-[#25282c]">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <GripVertical size={20} className="text-[#2563eb]" />
-                                    <span className="text-sm font-medium truncate">
+                                    <AutoScrollText className="text-sm font-semibold flex-1 min-w-0" title={getCardTitle(draggedEntry)}>
                                         {getCardTitle(draggedEntry)}
-                                    </span>
+                                    </AutoScrollText>
                                 </div>
                             </div>
                         </div>
@@ -700,9 +775,9 @@ function NumberSliderItem({item, path}) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="flex-shrink-0"
+            className="w-full sm:w-auto flex-shrink-0"
         >
-            <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md overflow-hidden bg-white dark:bg-[#1c1e21] w-[80px]">
+            <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg overflow-hidden bg-white dark:bg-[#1c1e21] w-full sm:w-[88px]">
                 <input
                     className="w-full h-8 px-2.5 text-center text-sm font-sans outline-none bg-transparent text-[#1a1d21] dark:text-[#e4e7eb]"
                     type="text"
@@ -807,7 +882,7 @@ function TextInputItem({item, path}) {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>
                                 </button>
                             </DialogTrigger>
-                            <DialogContent className="w-[min(90vw,520px)] z-999 max-w-none rounded-3xl border-[#e1e4e8] dark:border-[#3a3f45] bg-white dark:bg-[#1c1e21] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+                            <DialogContent className="w-[min(92vw,560px)] z-[999] max-w-none rounded-3xl border-[#e1e4e8] dark:border-[#3a3f45] bg-white dark:bg-[#1c1e21] p-4 sm:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
                                 <DialogHeader><DialogTitle className="text-base font-semibold mb-4">{item.text}</DialogTitle></DialogHeader>
                                 <textarea
                                     className="w-full min-h-[200px] p-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none resize-y leading-relaxed focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
@@ -855,7 +930,7 @@ function TextInputItem({item, path}) {
                     </motion.button>
                 ) : (
                     <input
-                        className="h-8 px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none w-[200px] transition-colors focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                        className="h-8 px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none w-full sm:w-[220px] transition-colors focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
                         type={inputType}
                         value={val}
                         onChange={(e) => update(path, e.target.value)}
@@ -886,8 +961,8 @@ function CheckboxItem({item, path}) {
     };
 
     return (
-        <div className="flex items-center gap-2 py-1.5">
-            <label className="flex items-center gap-2 cursor-pointer flex-1">
+        <div className="flex items-center gap-2 py-1.5 min-w-0">
+            <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
                 <AnimatePresence mode="wait">
                     {isNull ? (
                         <motion.button
@@ -904,7 +979,7 @@ function CheckboxItem({item, path}) {
                         <Checkbox checked={val} onCheckedChange={(v) => update(path, !!v)} />
                     )}
                 </AnimatePresence>
-                <span className="text-sm truncate" title={item.text}>{item.text}</span>
+                <AutoScrollText className="text-sm text-[#1a1d21] dark:text-[#e4e7eb] flex-1 min-w-0" title={item.text}>{item.text}</AutoScrollText>
             </label>
             <TipWrapper tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} />
         </div>
@@ -918,10 +993,10 @@ function RadioItem({item, path, groupPath}) {
 
     if (groupPath) {
         return (
-            <div className="flex items-center gap-2 py-1.5">
-                <label className="flex items-center gap-2 cursor-pointer flex-1">
+            <div className="flex items-center gap-2 py-1.5 min-w-0">
+                <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
                     <RadioGroupItem value={item.name} />
-                    <span className="text-sm">{item.text}</span>
+                    <AutoScrollText className="text-sm flex-1 min-w-0" title={item.text}>{item.text}</AutoScrollText>
                 </label>
                 <TipWrapper tips={item.tips} />
             </div>
@@ -972,6 +1047,85 @@ function RadioItem({item, path, groupPath}) {
 }
 
 // ─── Select Item ───────────────────────────────────────────────────
+function SelectOptionsPortal({ open, anchorRef, options, selectedValue }) {
+    const [optionsPosition, setOptionsPosition] = useState(null);
+
+    useEffect(() => {
+        if (!open || !anchorRef.current) {
+            setOptionsPosition(null);
+            return;
+        }
+
+        const updatePos = () => {
+            if (!anchorRef.current) return;
+            const rect = anchorRef.current.getBoundingClientRect();
+            const viewportPadding = 16;
+            const maxLeft = window.scrollX + window.innerWidth - rect.width - viewportPadding;
+            const left = Math.max(window.scrollX + viewportPadding, Math.min(rect.left + window.scrollX, maxLeft));
+            setOptionsPosition({
+                top: rect.top + window.scrollY + rect.height + 6,
+                left,
+                minWidth: rect.width,
+                maxWidth: Math.max(160, window.innerWidth - viewportPadding * 2),
+            });
+        };
+
+        updatePos();
+        window.addEventListener('resize', updatePos);
+        window.addEventListener('scroll', updatePos, true);
+        return () => {
+            window.removeEventListener('resize', updatePos);
+            window.removeEventListener('scroll', updatePos, true);
+        };
+    }, [open, anchorRef]);
+
+    if (!open || !optionsPosition) return null;
+
+    return createPortal(
+        <Transition
+            show={open}
+            enter="transition ease-out duration-100"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="transition ease-in duration-75"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+        >
+            <ListboxOptions
+                static
+                style={{
+                    position: 'absolute',
+                    top: `${optionsPosition.top}px`,
+                    left: `${optionsPosition.left}px`,
+                    minWidth: `${optionsPosition.minWidth}px`,
+                    maxWidth: `${optionsPosition.maxWidth}px`,
+                }}
+                className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] max-h-[min(280px,calc(100vh-2rem))] overflow-auto outline-none origin-top-left"
+            >
+                {options.map((opt) => (
+                    <ListboxOption
+                        key={opt.value}
+                        value={opt.value}
+                        className="flex items-center justify-between gap-3 px-2.5 py-2 rounded-lg cursor-pointer text-sm text-[#1a1d21] dark:text-[#e4e7eb] transition-colors hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] data-[selected]:text-[#2563eb] dark:data-[selected]:text-[#3b82f6] data-[selected]:font-medium"
+                    >
+                        {({ selected: isSel }) => (
+                            <>
+                                <AutoScrollText className="flex-1 min-w-0" title={opt.label}>{opt.label}</AutoScrollText>
+                                {(isSel || selectedValue === opt.value) && (
+                                    <svg className="w-4 h-4 text-[#2563eb] dark:text-[#3b82f6] flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd"/>
+                                    </svg>
+                                )}
+                            </>
+                        )}
+                    </ListboxOption>
+                ))}
+            </ListboxOptions>
+        </Transition>,
+        document.body
+    );
+}
+
 function SelectItem({item, path}) {
     const {t} = useTranslation();
     const {values, update} = useSettings();
@@ -982,7 +1136,10 @@ function SelectItem({item, path}) {
     const options = item.options || [];
     const selected = options.find((o) => o.value === val) || options[0] || null;
     const buttonRef = useRef(null);
-    const [optionsPosition, setOptionsPosition] = useState(null);
+
+    useEffect(() => {
+        setIsNull(rawVal === null);
+    }, [rawVal]);
 
     const toggleNull = () => {
         setIsNull((prev) => {
@@ -999,7 +1156,7 @@ function SelectItem({item, path}) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium w-full sm:w-auto"
             onClick={toggleNull}
         >
             {t("ds.default")}
@@ -1014,90 +1171,24 @@ function SelectItem({item, path}) {
         );
     }
 
-    const selectComponent = (
-        <Listbox value={val} onChange={(v) => update(path, v)}>
-            {({ open }) => {
-                useEffect(() => {
-                    if (open && buttonRef.current) {
-                        const rect = buttonRef.current.getBoundingClientRect();
-                        setOptionsPosition({
-                            top: rect.top + window.scrollY + rect.height + 2,
-                            left: rect.left + window.scrollX,
-                            minWidth: rect.width,
-                        });
-                        const updatePos = () => {
-                            if (buttonRef.current) {
-                                const r = buttonRef.current.getBoundingClientRect();
-                                setOptionsPosition({ top: r.top + window.scrollY + r.height + 2, left: r.left + window.scrollX, minWidth: r.width });
-                            }
-                        };
-                        window.addEventListener('resize', updatePos);
-                        window.addEventListener('scroll', updatePos, true);
-                        return () => {
-                            window.removeEventListener('resize', updatePos);
-                            window.removeEventListener('scroll', updatePos, true);
-                        };
-                    } else {
-                        setOptionsPosition(null);
-                    }
-                }, [open]);
-                return (
-                    <>
+    return (
+        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+            <Listbox value={val} onChange={(v) => update(path, v)}>
+                {({ open }) => (
+                    <div className="w-full sm:w-auto">
                         <ListboxButton
                             ref={buttonRef}
-                            className="flex items-center gap-1.5 h-8 px-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer text-sm font-sans min-w-[120px] text-left transition-colors hover:border-[#2563eb] dark:hover:border-[#3b82f6]"
+                            className="flex items-center gap-1.5 h-8 px-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer text-sm font-sans w-full sm:min-w-[140px] text-left transition-colors hover:border-[#2563eb] dark:hover:border-[#3b82f6] outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
                         >
-                            <span className="truncate">{selected?.label ?? val}</span>
+                            <AutoScrollText className="flex-1 min-w-0" title={selected?.label ?? val}>{selected?.label ?? val}</AutoScrollText>
                             <svg className="w-4 h-4 text-[#656d76] dark:text-[#9ca3af] ml-auto flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd"/>
                             </svg>
                         </ListboxButton>
-                        {open && optionsPosition && createPortal(
-                            <Transition leave="transition-opacity duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-                                <ListboxOptions
-                                    static
-                                    style={{
-                                        position: 'absolute',
-                                        top: `${optionsPosition.top}px`,
-                                        left: `${optionsPosition.left}px`,
-                                        minWidth: `${optionsPosition.minWidth}px`,
-                                        width: 'max-content'
-                                    }}
-                                    className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] max-w-[calc(100vw-2rem)]"
-                                >
-                                    {options.map((opt) => (
-                                        <ListboxOption
-                                            key={opt.value}
-                                            value={opt.value}
-                                            className="flex items-center justify-between px-2.5 py-2 rounded cursor-pointer text-sm text-[#1a1d21] dark:text-[#e4e7eb] transition-colors hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] data-[selected]:text-[#2563eb] dark:data-[selected]:text-[#3b82f6] data-[selected]:font-medium"
-                                        >
-                                            {({ selected: isSel }) => (
-                                                <>
-                                                    <span className="truncate">{opt.label}</span>
-                                                    {isSel && (
-                                                        <svg className="w-4 h-4 text-[#2563eb] dark:text-[#3b82f6]" viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd"/>
-                                                        </svg>
-                                                    )}
-                                                </>
-                                            )}
-                                        </ListboxOption>
-                                    ))}
-                                </ListboxOptions>
-                            </Transition>,
-                            document.body
-                        )}
-                    </>
-                );
-            }}
-        </Listbox>
-    );
-
-    return (
-        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
-            <div ref={buttonRef}>
-                {selectComponent}
-            </div>
+                        <SelectOptionsPortal open={open} anchorRef={buttonRef} options={options} selectedValue={val} />
+                    </div>
+                )}
+            </Listbox>
         </SettingRow>
     );
 }
@@ -1114,6 +1205,10 @@ function CustomItem({item, path}) {
     const [newVal, setNewVal] = useState("");
     const entries = Object.entries(val || {});
 
+    useEffect(() => {
+        setIsNull(rawVal === null);
+    }, [rawVal]);
+
     const toggleNull = () => {
         setIsNull((prev) => {
             const newIsNull = !prev;
@@ -1124,8 +1219,9 @@ function CustomItem({item, path}) {
     };
 
     const addEntry = () => {
-        if (isNull || !newKey.trim()) return;
-        const next = { ...val, [newKey.trim()]: newVal };
+        const key = newKey.trim();
+        if (isNull || !key) return;
+        const next = { ...val, [key]: newVal };
         update(path, next);
         setNewKey("");
         setNewVal("");
@@ -1143,13 +1239,20 @@ function CustomItem({item, path}) {
         update(path, { ...val, [key]: v });
     };
 
+    const handleAddKeyDown = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            addEntry();
+        }
+    };
+
     const nullModeContent = (
         <motion.button
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium w-full sm:w-auto"
             onClick={toggleNull}
         >
             {t("ds.default")}
@@ -1157,60 +1260,100 @@ function CustomItem({item, path}) {
     );
 
     return (
-        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
-            <AnimatePresence mode="wait">
-                {isNull ? (
-                    nullModeContent
-                ) : (
-                    <div className="w-full">
-                        <div className="mb-2.5">
-                            <TipWrapper tips={item.tips}>
-                                <span className="text-sm font-semibold mr-1">{item.text}</span>
-                            </TipWrapper>
-                        </div>
-                        {entries.length > 0 && (
-                            <div className="flex flex-col gap-1.5 mb-2.5">
-                                {entries.map(([k, v]) => (
-                                    <div key={k} className="flex items-center gap-2 bg-[#f8f9fa] dark:bg-[#25282c] p-1.5 rounded-md">
-                                        <span className="text-sm font-medium text-[#2563eb] dark:text-[#3b82f6] min-w-[60px]">{k}</span>
-                                        <input
-                                            className="flex-1 h-7 px-2 border border-[#e1e4e8] dark:border-[#3a3f45] rounded text-xs font-sans bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
-                                            value={v}
-                                            onChange={(e) => updateEntry(k, e.target.value)}
-                                        />
-                                        <button
-                                            className="cursor-pointer w-6 h-6 flex items-center justify-center text-[#dc2626] hover:bg-red-100/80 dark:hover:bg-red-900/30 rounded transition-colors"
-                                            onClick={() => removeEntry(k)}
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <input
-                                className="flex-1 min-w-[80px] h-8 px-2 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
-                                placeholder={t("ds.key")}
-                                value={newKey}
-                                onChange={(e) => setNewKey(e.target.value)}
-                            />
-                            <input
-                                className="flex-1 min-w-[80px] h-8 px-2 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
-                                placeholder={t("ds.value")}
-                                value={newVal}
-                                onChange={(e) => setNewVal(e.target.value)}
-                            />
-                            <button
-                                className="h-8 px-3 text-xs font-medium bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-md transition-colors cursor-pointer"
-                                onClick={addEntry}
-                            >
-                                {t("ds.addParam")}
-                            </button>
-                        </div>
+        <SettingRow fullWidth className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0 py-3">
+            <div className="w-full rounded-2xl border border-[#e1e4e8] dark:border-[#3a3f45] bg-white dark:bg-[#1c1e21] shadow-sm overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 sm:px-4 py-3 bg-[#f8f9fa] dark:bg-[#25282c] border-b border-[#e1e4e8] dark:border-[#3a3f45]">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <TipWrapper tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull}>
+                            <AutoScrollText className="text-sm font-semibold flex-1 min-w-0" title={item.text}>
+                                {item.text}
+                                {item.required && <span className="text-red-500 ml-0.5 text-base leading-none">*</span>}
+                            </AutoScrollText>
+                        </TipWrapper>
                     </div>
-                )}
-            </AnimatePresence>
+                    {!isNull && (
+                        <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-[#e5edff] dark:bg-[#1e3a8a]/50 text-[#2563eb] dark:text-[#bfdbfe] text-xs font-semibold">
+                            {entries.length}
+                        </span>
+                    )}
+                </div>
+
+                <AnimatePresence mode="wait">
+                    {isNull ? (
+                        <motion.div
+                            key="custom-null"
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            transition={{ duration: 0.18 }}
+                            className="p-3 sm:p-4"
+                        >
+                            {nullModeContent}
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="custom-content"
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            transition={{ duration: 0.18 }}
+                            className="p-3 sm:p-4"
+                        >
+                            {entries.length > 0 ? (
+                                <div className="grid gap-2 mb-3">
+                                    {entries.map(([k, v]) => (
+                                        <div
+                                            key={k}
+                                            className="grid grid-cols-1 sm:grid-cols-[minmax(96px,160px)_minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] p-2"
+                                        >
+                                            <AutoScrollText className="text-sm font-medium text-[#2563eb] dark:text-[#3b82f6] flex-1 min-w-0" title={k}>{k}</AutoScrollText>
+                                            <input
+                                                className="w-full h-8 px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg text-sm font-sans bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                                                value={v}
+                                                onChange={(e) => updateEntry(k, e.target.value)}
+                                            />
+                                            <button
+                                                className="cursor-pointer h-8 w-full sm:w-8 flex items-center justify-center text-[#dc2626] hover:bg-red-100/80 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                                onClick={() => removeEntry(k)}
+                                                aria-label={`${t("ds.delete") || "Delete"} ${k}`}
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-5 mb-3 text-[#9ca3af] text-sm rounded-xl border border-dashed border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c]">
+                                    {t("ds.noData")}
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2">
+                                <input
+                                    className="w-full h-9 px-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                                    placeholder={t("ds.key")}
+                                    value={newKey}
+                                    onChange={(e) => setNewKey(e.target.value)}
+                                    onKeyDown={handleAddKeyDown}
+                                />
+                                <input
+                                    className="w-full h-9 px-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                                    placeholder={t("ds.value")}
+                                    value={newVal}
+                                    onChange={(e) => setNewVal(e.target.value)}
+                                    onKeyDown={handleAddKeyDown}
+                                />
+                                <button
+                                    className="h-9 px-3 text-sm font-medium bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-lg transition-colors cursor-pointer w-full sm:w-auto whitespace-nowrap"
+                                    onClick={addEntry}
+                                >
+                                    {t("ds.addParam")}
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
         </SettingRow>
     );
 }
@@ -1224,6 +1367,10 @@ function TagsItem({item, path}) {
     const [isNull, setIsNull] = useState(rawVal === null);
     const tags = isNull ? [] : (Array.isArray(rawVal) ? rawVal : (item.default || []));
     const [inputValue, setInputValue] = useState("");
+
+    useEffect(() => {
+        setIsNull(rawVal === null);
+    }, [rawVal]);
 
     const toggleNull = () => {
         setIsNull((prev) => {
@@ -1263,7 +1410,7 @@ function TagsItem({item, path}) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium w-full sm:w-auto"
             onClick={toggleNull}
         >
             {t("ds.default")}
@@ -1271,24 +1418,24 @@ function TagsItem({item, path}) {
     );
 
     const tagsContent = (
-        <div className="flex flex-col gap-3 w-full max-w-[420px]">
+        <div className="flex flex-col gap-2.5 w-full sm:max-w-[460px]">
             {tags.length > 0 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 snap-x snap-mandatory pretty-scrollbar w-[250px]">
+                <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                     {tags.map((tag, index) => (
                         <motion.div
-                            key={index}
+                            key={`${tag}-${index}`}
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
-                            className="flex-shrink-0 inline-flex items-center gap-1 bg-[#2563eb]/85 hover:bg-[#1d4ed8]/85 text-white text-xs font-medium px-2.5 py-0.5 rounded-2xl cursor-default transition-colors snap-start"
+                            className="inline-flex items-center gap-1 bg-[#2563eb]/85 hover:bg-[#1d4ed8]/85 text-white text-xs font-medium px-2.5 py-1 rounded-full cursor-default transition-colors max-w-full"
                         >
-                            <span className="truncate max-w-[140px]">{tag}</span>
+                            <AutoScrollText className="max-w-[160px] sm:max-w-[220px]" title={tag}>{tag}</AutoScrollText>
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     removeTag(tag);
                                 }}
-                                className="cursor-pointer flex items-center justify-center w-3.5 h-3.5 rounded-full hover:bg-white/30 transition-colors"
+                                className="cursor-pointer flex items-center justify-center w-3.5 h-3.5 rounded-full hover:bg-white/30 transition-colors flex-shrink-0"
                             >
                                 <X size={11} />
                             </button>
@@ -1297,9 +1444,9 @@ function TagsItem({item, path}) {
                 </div>
             )}
 
-            <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-2xl bg-white dark:bg-[#1c1e21] overflow-hidden">
+            <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-xl bg-white dark:bg-[#1c1e21] overflow-hidden w-full focus-within:border-[#2563eb] dark:focus-within:border-[#3b82f6] transition-colors">
                 <input
-                    className="flex-1 h-8 px-3 text-sm font-sans outline-none bg-transparent text-[#1a1d21] dark:text-[#e4e7eb]"
+                    className="flex-1 min-w-0 h-9 px-3 text-sm font-sans outline-none bg-transparent text-[#1a1d21] dark:text-[#e4e7eb]"
                     placeholder={item.placeholder || t("ds.addTagPlaceholder")}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
@@ -1307,7 +1454,7 @@ function TagsItem({item, path}) {
                 />
                 <button
                     onClick={addTag}
-                    className="cursor-pointer h-8 px-4 flex items-center justify-center text-[#2563eb] hover:text-[#1d4ed8] transition-colors border-l border-[#e1e4e8] dark:border-[#3a3f45]"
+                    className="cursor-pointer h-9 px-3 flex items-center justify-center text-[#2563eb] hover:text-[#1d4ed8] transition-colors border-l border-[#e1e4e8] dark:border-[#3a3f45] flex-shrink-0"
                 >
                     <Plus size={18} />
                 </button>
@@ -1335,10 +1482,10 @@ function GroupItem({item, path}) {
         const selectedRadio = typeof groupValues === "string" ? groupValues : radioChildren.find((c) => groupValues[c.name])?.name || radioChildren[0]?.name;
         return (
             <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
-                <div className="text-xs font-semibold uppercase tracking-[0.5px] text-[#656d76] dark:text-[#9ca3af] px-4 pt-3 pb-1">
+                <div className="text-xs font-semibold uppercase tracking-[0.5px] text-[#656d76] dark:text-[#9ca3af] px-3 sm:px-4 pt-3 pb-1">
                     {item.text || item.name}
                 </div>
-                <RadioGroup className="flex flex-wrap gap-x-4 gap-y-1 px-4 pb-2.5" value={selectedRadio} onValueChange={(v) => update(path, v)}>
+                <RadioGroup className="flex flex-wrap gap-x-4 gap-y-1 px-3 sm:px-4 pb-2.5" value={selectedRadio} onValueChange={(v) => update(path, v)}>
                     {radioChildren.map((child) => (
                         <RadioItem key={child.name} item={child} path={[...path, child.name]} groupPath={path} />
                     ))}
@@ -1352,10 +1499,10 @@ function GroupItem({item, path}) {
     const hasCheckboxes = item.children?.some((c) => c.type === "checkbox");
     return (
         <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
-            <div className="text-xs font-semibold uppercase tracking-[0.5px] text-[#656d76] dark:text-[#9ca3af] px-4 pt-3 pb-1">
+            <div className="text-xs font-semibold uppercase tracking-[0.5px] text-[#656d76] dark:text-[#9ca3af] px-3 sm:px-4 pt-3 pb-1">
                 {item.text || item.name}
             </div>
-            <div className={hasCheckboxes ? "flex flex-wrap gap-x-4 gap-y-1 px-4 pb-2.5" : "px-4 pb-2.5"}>
+            <div className={hasCheckboxes ? "flex flex-wrap gap-x-4 gap-y-1 px-3 sm:px-4 pb-2.5" : "px-3 sm:px-4 pb-2.5"}>
                 {item.children?.map((child) => (
                     <SettingItemRenderer key={child.name || child.text} item={child} path={[...path, child.name]} />
                 ))}
@@ -1368,10 +1515,10 @@ function GroupItem({item, path}) {
 function HeadingItem({item}) {
     const hasText = item.text && item.text.trim() !== "";
     if (!hasText) {
-        return <div className="h-px bg-[#e1e4e8] dark:bg-[#3a3f45] mx-4 my-2" />;
+        return <div className="h-px bg-[#e1e4e8] dark:bg-[#3a3f45] mx-3 sm:mx-4 my-2" />;
     }
     return (
-        <div className="flex items-center gap-3 px-4 py-4 pb-2">
+        <div className="flex items-center gap-3 px-3 sm:px-4 py-4 pb-2">
             <span className="text-xs font-bold uppercase tracking-[0.8px] text-[#656d76] dark:text-[#9ca3af] whitespace-nowrap">
                 {item.text}
             </span>

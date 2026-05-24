@@ -1,426 +1,24 @@
-import React, {useState, useRef, useEffect, useLayoutEffect, useMemo, Fragment, useCallback, memo} from 'react';
+import React, {useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, memo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Transition} from '@headlessui/react';
-import {motion, AnimatePresence} from 'framer-motion';
-import {Check, X, PenLine, Trash2, Minus, Square, RotateCw, Search, Earth, GitBranch} from 'lucide-react';
 
-import {
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenu,
-    DropdownMenuTrigger,
-    DropdownMenuContent
-} from '@/components/ui/dropdown-menu';
-
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-} from '@/components/ui/avatar';
-
-import SimpleMDEditor from '@/components/editor/SimpleMDEditor.jsx';
+import {toast} from 'sonner';
+import {apiEndpoint} from '@/config.js';
+import apiClient from '@/lib/apiClient';
+import {getLocalSetting, isMobile, setLocalSetting} from '@/lib/tools.jsx';
 import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
+
 import ChatBoxHeader from './ChatBoxHeader';
 import ToolButtons from './ToolButtons';
 import AttachmentShowcase from './AttachmentShowcase';
 import FileUploadProgress from './FileUploadProgress';
 import DropFileLayer from '@/components/chat/DropFileLayer.jsx';
-import {toast} from 'sonner';
-import {apiEndpoint} from '@/config.js';
-import apiClient from '@/lib/apiClient';
-import {getLocalSetting, isMobile, setLocalSetting} from '@/lib/tools.jsx';
-
-// ========== 对象操作辅助函数（移到外部，避免每次渲染都创建）==========
-
-const getNestedValue = (obj, path) => {
-    if (!obj || !path || path.length === 0) return undefined;
-    let current = obj;
-    for (const key of path) {
-        if (current[key] === undefined) return undefined;
-        current = current[key];
-    }
-    return current;
-};
-
-const setNestedValue = (obj, path, value) => {
-    if (!path || path.length === 0) return obj;
-    const result = {...obj};
-    let current = result;
-    for (let i = 0; i < path.length - 1; i++) {
-        const key = path[i];
-        if (!current[key] || typeof current[key] !== 'object') {
-            current[key] = {};
-        }
-        current = current[key];
-    }
-    current[path[path.length - 1]] = value;
-    return result;
-};
-
-const deleteNestedValue = (obj, path) => {
-    if (!path || path.length === 0) return obj;
-    if (path.length === 1) {
-        const result = {...obj};
-        delete result[path[0]];
-        return result;
-    }
-    const parentPath = path.slice(0, -1);
-    const key = path[path.length - 1];
-    const parent = getNestedValue(obj, parentPath);
-    if (parent && typeof parent === 'object') {
-        const newParent = {...parent};
-        delete newParent[key];
-        if (Object.keys(newParent).length === 0) {
-            return deleteNestedValue(obj, parentPath);
-        }
-        return setNestedValue(obj, parentPath, newParent);
-    }
-    return obj;
-};
-
-const deepMerge = (target, source) => {
-    if (typeof source !== 'object' || source === null) return target;
-    const output = {...target};
-    for (const key in source) {
-        if (source.hasOwnProperty(key)) {
-            if (typeof source[key] === 'object' && source[key] !== null && typeof output[key] === 'object') {
-                output[key] = deepMerge(output[key], source[key]);
-            } else {
-                output[key] = source[key];
-            }
-        }
-    }
-    return output;
-};
-
-const collectTogglePaths = (items, parentPath = []) => {
-    let paths = [];
-    items.forEach(item => {
-        if (!item.name) return;
-        const currentPath = [...parentPath, item.name];
-        if (item.type === 'toggle') {
-            paths.push(currentPath);
-        } else if (item.type === 'group' && item.children) {
-            paths = [...paths, ...collectTogglePaths(item.children, currentPath)];
-        }
-    });
-    return paths;
-};
-
-const getGroupCheckState = (extraTools, togglePaths) => {
-    if (togglePaths.length === 0) return 'unchecked';
-    let checkedCount = 0;
-    togglePaths.forEach(path => {
-        if (getNestedValue(extraTools, path)) checkedCount++;
-    });
-    if (checkedCount === togglePaths.length) return 'checked';
-    if (checkedCount > 0) return 'indeterminate';
-    return 'unchecked';
-};
-
-const toggleAllInGroup = (extraTools, togglePaths, toChecked) => {
-    let newExtraTools = {...extraTools};
-    togglePaths.forEach(path => {
-        newExtraTools = setNestedValue(newExtraTools, path, toChecked);
-    });
-    return newExtraTools;
-};
-
-// ========== 独立的消息输入组件（避免打字时触发整个ChatBox重新渲染）==========
-
-const MessageInput = memo(({
-                               value,
-                               onChange,
-                               onPaste,
-                               onKeyDown,
-                               isReadOnly,
-                               placeholder,
-                               textareaRef,
-                               isEditMessage,
-                           }) => {
-    const cloneTextareaRef = useRef(null);
-
-    // 高度调整逻辑
-    const initTextareaClone = useCallback(() => {
-        if (cloneTextareaRef.current) return;
-        const textarea = textareaRef.current;
-        if (!textarea) return;
-        const clone = textarea.cloneNode();
-        Object.assign(clone.style, {
-            position: 'absolute',
-            top: '-9999px',
-            left: '-9999px',
-            visibility: 'hidden',
-            height: 'auto',
-            resize: 'none',
-            overflow: 'hidden',
-            pointerEvents: 'none',
-            zIndex: '-1',
-        });
-        document.body.appendChild(clone);
-        cloneTextareaRef.current = clone;
-    }, [textareaRef]);
-
-    const cleanupTextareaClone = useCallback(() => {
-        if (cloneTextareaRef.current) {
-            document.body.removeChild(cloneTextareaRef.current);
-            cloneTextareaRef.current = null;
-        }
-    }, []);
-
-    const adjustTextareaHeight = useCallback(() => {
-        const textarea = textareaRef.current;
-        const clone = cloneTextareaRef.current;
-        if (!textarea || !clone) return;
-
-        clone.value = textarea.value;
-        clone.style.width = textarea.offsetWidth + 'px';
-        const computedStyle = getComputedStyle(textarea);
-        clone.style.fontFamily = computedStyle.fontFamily;
-        clone.style.fontSize = computedStyle.fontSize;
-        clone.style.lineHeight = computedStyle.lineHeight;
-        clone.style.padding = computedStyle.padding;
-        clone.style.border = computedStyle.border;
-        clone.style.boxSizing = computedStyle.boxSizing;
-
-        const contentHeight = clone.scrollHeight;
-        const cappedHeight = Math.min(contentHeight, 512);
-        textarea.style.height = cappedHeight + 'px';
-        textarea.style.overflowY = contentHeight > 48 ? 'scroll' : 'auto';
-    }, [textareaRef]);
-
-    useEffect(() => {
-        initTextareaClone();
-        return cleanupTextareaClone;
-    }, [initTextareaClone, cleanupTextareaClone]);
-
-    useEffect(() => {
-        adjustTextareaHeight();
-    }, [value, isEditMessage, adjustTextareaHeight]);
-
-    const handleChange = useCallback((e) => {
-        onChange(e.target.value);
-    }, [onChange]);
-
-    return (
-        <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={handleChange}
-            onPaste={onPaste}
-            onKeyDown={onKeyDown}
-            placeholder={placeholder}
-            className="w-full min-h-[48px] max-h-[132px] p-4 pt-4 pb-2 pr-4 text-gray-800 bg-transparent border-none resize-none outline-none pretty-scrollbar"
-            rows={1}
-            style={{transition: 'height 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)'}}
-        />
-    );
-}, (prevProps, nextProps) => {
-    // 只有当必要属性变化时才重新渲染
-    return (
-        prevProps.value === nextProps.value &&
-        prevProps.isReadOnly === nextProps.isReadOnly &&
-        prevProps.placeholder === nextProps.placeholder &&
-        prevProps.isEditMessage === nextProps.isEditMessage &&
-        prevProps.onChange === nextProps.onChange &&
-        prevProps.onPaste === nextProps.onPaste &&
-        prevProps.onKeyDown === nextProps.onKeyDown
-    );
-});
-
-MessageInput.displayName = 'MessageInput';
-
-// ========== 独立的编辑状态提示组件 ==========
-
-const EditMessageIndicator = memo((
-    {
-        isEditMessage,
-        setIsEditMessage,
-        isForkMode,
-        setIsForkMode,
-        setAttachments,
-        setMessageContent,
-        t
-    }) => {
-    const handleCancel = useCallback(() => {
-        setIsEditMessage(false);
-        setIsForkMode(false);
-    }, [setIsEditMessage]);
-
-    const handleClear = useCallback(() => {
-        setIsEditMessage(false);
-        setIsForkMode(false);
-        setAttachments([]);
-        setMessageContent('');
-    }, [setIsEditMessage, setAttachments, setMessageContent]);
-
-    if (!isEditMessage) return null;
-
-    return (
-        <Transition
-            show={isEditMessage}
-            enter="transition-opacity duration-200"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transition-opacity duration-150"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-        >
-            <div
-                className="bg-gray-100 text-gray-800 text-sm font-medium py-3 px-4 rounded-t-2xl flex items-center justify-between">
-                <div className="flex items-center">
-                    {
-                        (isForkMode) ? (
-                            <>
-                                <GitBranch className="w-4 h-4 mr-2"/>
-                                <span>{t('forking_message')}</span>
-                            </>
-                        ) : (
-                            <>
-                                <PenLine className="w-4 h-4 mr-2"/>
-                                <span>{t('editing_message')}</span>
-                            </>)
-                    }
-                </div>
-                <div className="flex items-center space-x-2">
-                    <button
-                        type="button"
-                        onClick={handleCancel}
-                        className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
-                        aria-label={t('cancel_editing')}
-                    >
-                        <X className="w-4 h-4"/>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleClear}
-                        className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
-                        aria-label={t('cancel_editing')}
-                    >
-                        <Trash2 className="w-4 h-4"/>
-                    </button>
-                </div>
-            </div>
-        </Transition>
-    );
-}, (prevProps, nextProps) => {
-    return (
-        prevProps.isEditMessage === nextProps.isEditMessage &&
-        prevProps.isForkMode === nextProps.isForkMode &&
-        prevProps.setIsForkMode !== nextProps.setIsForkMode &&
-        prevProps.t === nextProps.t &&
-        prevProps.setIsEditMessage === nextProps.setIsEditMessage &&
-        prevProps.setAttachments === nextProps.setAttachments &&
-        prevProps.setMessageContent === nextProps.setMessageContent
-    );
-});
-
-EditMessageIndicator.displayName = 'EditMessageIndicator';
-
-// ========== 发送按钮组件 ==========
-
-const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, t}) => {
-    const sendButtonStyle = useMemo(() => {
-        const isEmpty = !messageContent.trim() && attachmentsMeta.length === 0 && status === 'normal';
-        const baseIcon = (
-            <svg
-                t="1758800079268"
-                className="icon"
-                viewBox="0 0 1024 1024"
-                version="1.1"
-                xmlns="http://www.w3.org/2000/svg"
-                p-id="6097"
-                width="24"
-                height="24"
-            >
-                <path
-                    d="M512 85.333333a42.666667 42.666667 0 0 1 38.144 23.594667l384 768a42.666667 42.666667 0 0 1-47.36 60.714667L512 854.357333l-374.741333 83.285334a42.666667 42.666667 0 0 1-47.402667-60.714667l384-768A42.666667 42.666667 0 0 1 512 85.333333z m42.666667 691.114667l263.082666 58.453333L554.666667 308.736v467.712zM469.333333 308.736L206.250667 834.901333 469.333333 776.448V308.736z"
-                    fill={isEmpty ? '#9ca3af' : '#ffffff'}
-                    p-id="6098"
-                ></path>
-            </svg>
-        );
-
-        if (isEmpty) {
-            return {
-                state: 'disabled',
-                className: 'text-gray-400 bg-gray-200 cursor-not-allowed',
-                icon: baseIcon,
-                disabled: true,
-            };
-        }
-
-        switch (status) {
-            case 'disabled':
-                return {
-                    state: 'disabled',
-                    className: 'text-gray-400 bg-gray-200 cursor-not-allowed',
-                    icon: baseIcon,
-                    disabled: true,
-                };
-            case 'loading':
-                return {
-                    state: 'loading',
-                    className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
-                    icon: (
-                        <div className="relative w-6 h-6">
-                            <div
-                                className="absolute inset-[-9px] border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-4 h-4 bg-white rounded"></div>
-                            </div>
-                        </div>
-                    ),
-                    disabled: false,
-                };
-            case 'generating':
-                return {
-                    state: 'generating',
-                    className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
-                    icon: (
-                        <div className="relative w-6 h-6">
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-4 h-4 bg-white rounded"></div>
-                            </div>
-                        </div>
-                    ),
-                    disabled: false,
-                };
-            default:
-                return {
-                    state: 'normal',
-                    className: 'text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 cursor-pointer',
-                    icon: baseIcon,
-                    disabled: false,
-                };
-        }
-    }, [status, messageContent, attachmentsMeta]);
-
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            disabled={sendButtonStyle.disabled}
-            aria-label={t('send_message')}
-            className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${sendButtonStyle.className}`}
-        >
-            {sendButtonStyle.icon}
-        </button>
-    );
-}, (prevProps, nextProps) => {
-    return (
-        prevProps.status === nextProps.status &&
-        prevProps.messageContent === nextProps.messageContent &&
-        prevProps.attachmentsMeta === nextProps.attachmentsMeta &&
-        prevProps.onClick === nextProps.onClick
-    );
-});
-
-SendButton.displayName = 'SendButton';
+import MessageInput from './chatbox/components/MessageInput';
+import EditMessageIndicator from './chatbox/components/EditMessageIndicator';
+import SendButton from './chatbox/components/SendButton';
+import RoleSelector from './chatbox/components/RoleSelector';
+import FullscreenEditorModal from './chatbox/components/FullscreenEditorModal';
+import {useExtraToolsMenuItems} from './chatbox/components/ExtraToolsMenuItems';
+import {deepMerge} from './chatbox/utils/toolState';
 
 // ========== 主组件 ==========
 
@@ -521,7 +119,7 @@ function ChatBox({
             attachments: attachmentsMeta,
             sendButtonStatus: sendButtonStatusRef.current,
             isRegenerate: false,
-            role: currentRole.name,
+            role: currentRole?.name,
             isFork: isForkMode
         });
         textareaRef.current?.focus();
@@ -586,12 +184,14 @@ function ChatBox({
     const handleOptionClick = useCallback((option) => {
         if (selectedQuickOption === option.id) {
             if (messageContentRef.current === option.value) {
+                messageContentRef.current = '';
                 setMessageContent('');
                 setSelectedQuickOption(null);
             } else {
                 setSelectedQuickOption(null);
             }
         } else {
+            messageContentRef.current = option.value;
             setMessageContent(option.value);
             setSelectedQuickOption(option.id);
             textareaRef.current?.focus();
@@ -932,199 +532,12 @@ function ChatBox({
         }
     }, [chatboxSetup, onSendMessage, setAttachments, toolsStatus, markId]);
 
-    // 在 ChatBox 组件内部定义渲染菜单项的函数
-    const renderMenuItems = useCallback((items, parentPath = []) => {
-        return items.map((item, index) => {
-            if (item.type === 'label') {
-                return (
-                    <DropdownMenuLabel
-                        key={`label-${index}`}
-                        className={`px-2 py-1.5 text-sm font-semibold ${item.disabled ? 'text-gray-400 cursor-not-allowed' : ''}`}
-                    >
-                        {t(item.text)}
-                    </DropdownMenuLabel>
-                );
-            } else if (item.type === 'separator') {
-                return <DropdownMenuSeparator key={`sep-${index}`}/>;
-            } else if (item.type === 'group') {
-                const isDisabled = item.disabled;
-                const currentPath = [...parentPath, item.name];
-                const togglePaths = collectTogglePaths(item.children, []);
-                const checkState = getGroupCheckState(
-                    toolsStatus.extra_tools,
-                    togglePaths.map(path => [...currentPath, ...path])
-                );
-                const handleToggleAll = (e) => {
-                    const toChecked = checkState === 'unchecked';
-                    setToolsStatus(prev => ({
-                        ...prev,
-                        extra_tools: toggleAllInGroup(
-                            prev.extra_tools,
-                            togglePaths.map(path => [...currentPath, ...path]),
-                            toChecked
-                        ),
-                    }));
-                };
-                return (
-                    <DropdownMenuSub key={`group-${item.name || index}`}>
-                        <DropdownMenuSubTrigger
-                            disabled={isDisabled}
-                            className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
-                                isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'
-                            }`}
-                        >
-                            {item.iconData && renderIcon(item.iconType, item.iconData)}
-                            <span>{t(item.text)}</span>
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent
-                            className={`${highZClass} max-h-[50vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar-thumb-rounded-full scrollbar-track-rounded-full rounded-md`}>
-                            {!isDisabled && (
-                                <div className="sticky top-0 bg-white z-10 rounded-t-md">
-                                    <DropdownMenuItem
-                                        onSelect={(e) => e.preventDefault()}
-                                        onClick={handleToggleAll}
-                                        className="flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100"
-                                    >
-                                        <span>{t('select_all')}</span>
-                                        {checkState === 'checked' && <Check className="ml-auto w-4 h-4 text-blue-500"/>}
-                                        {checkState === 'indeterminate' &&
-                                            <Minus className="ml-auto w-4 h-4 text-blue-500"/>}
-                                        {checkState === 'unchecked' &&
-                                            <Square className="ml-auto w-4 h-4 text-gray-500"/>}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator/>
-                                </div>
-                            )}
-                            {isDisabled ? null : renderMenuItems(item.children, currentPath)}
-                        </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                );
-            } else if (item.type === 'toggle') {
-                const isDisabled = item.disabled;
-                const currentPath = [...parentPath, item.name];
-                const isChecked = getNestedValue(toolsStatus.extra_tools, currentPath) ?? false;
-                return (
-                    <DropdownMenuItem
-                        key={`toggle-${item.name}`}
-                        onSelect={(e) => e.preventDefault()}
-                        onClick={(e) => {
-                            if (isDisabled) {
-                                e.preventDefault();
-                                return;
-                            }
-                            setToolsStatus(prev => {
-                                const newValue = !isChecked;
-                                let newExtraTools = {...prev.extra_tools};
-                                newExtraTools = setNestedValue(newExtraTools, currentPath, newValue);
-                                return {
-                                    ...prev,
-                                    extra_tools: newExtraTools,
-                                };
-                            });
-                        }}
-                        className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
-                            isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'
-                        }`}
-                        disabled={isDisabled}
-                    >
-                        {item.iconData && renderIcon(item.iconType, item.iconData)}
-                        <span>{t(item.text)}</span>
-                        {!isDisabled && isChecked && <Check className="ml-auto w-4 h-4 text-blue-500"/>}
-                    </DropdownMenuItem>
-                );
-            } else if (item.type === 'radio') {
-                const isDisabled = item.disabled;
-                const currentPath = [...parentPath, item.name];
-                const currentValue = getNestedValue(toolsStatus.extra_tools, currentPath);
-
-                return (
-                    <DropdownMenuSub key={`radio-${item.name}`}>
-                        <DropdownMenuSubTrigger
-                            disabled={isDisabled}
-                            className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
-                                isDisabled ? 'text-gray-400 pointer-events-none opacity-70' : 'hover:bg-gray-100'
-                            }`}
-                        >
-                            {item.iconData && renderIcon(item.iconType, item.iconData)}
-                            <span>{t(item.text)}</span>
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent className={`max-h-[50vh] rounded-md ${highZClass}`}>
-                            {item.children.map(child => {
-                                const childIsDisabled = child.disabled || false;
-                                const isSelected = currentValue === child.name;
-                                return (
-                                    <DropdownMenuItem
-                                        key={`radio-${item.name}-${child.name}`}
-                                        onSelect={(e) => e.preventDefault()}
-                                        onClick={(e) => {
-                                            if (isDisabled || childIsDisabled) {
-                                                e.preventDefault();
-                                                return;
-                                            }
-                                            setToolsStatus(prev => ({
-                                                ...prev,
-                                                extra_tools: setNestedValue(
-                                                    {...prev.extra_tools},
-                                                    currentPath,
-                                                    child.name
-                                                ),
-                                            }));
-                                        }}
-                                        className={`flex items-center px-2 py-1.5 text-sm cursor-pointer ${
-                                            childIsDisabled || isDisabled
-                                                ? 'text-gray-400 pointer-events-none opacity-70'
-                                                : 'hover:bg-gray-100'
-                                        }`}
-                                        disabled={isDisabled || childIsDisabled}
-                                    >
-                                        {child.iconData && renderIcon(child.iconType, child.iconData)}
-                                        <span>{t(child.text)}</span>
-                                        {isSelected && !isDisabled && !childIsDisabled && (
-                                            <Check className="ml-auto w-4 h-4 text-blue-500"/>
-                                        )}
-                                    </DropdownMenuItem>
-                                );
-                            })}
-                        </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                );
-            } else if (item.type === 'button') {
-                const onSelectHandler = item.autoClose ? undefined : (e) => e.preventDefault();
-                return (
-                    <DropdownMenuItem
-                        key={`button-${item.text || index}`}
-                        onSelect={onSelectHandler}
-                        onClick={() => item.onClick?.()}
-                        className="flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100"
-                    >
-                        {item.iconData && renderIcon(item.iconType, item.iconData)}
-                        <span>{t(item.text)}</span>
-                    </DropdownMenuItem>
-                );
-            }
-            return null;
-        });
-    }, [toolsStatus.extra_tools, setToolsStatus, isWindowMode]);
-
-    // 需要将 renderIcon 函数也定义在组件内部
-    const renderIcon = useCallback((iconType, iconData) => {
-        if (!iconData) return null;
-        if (iconType === 'library') {
-            const iconMap = {search: Search, refresh: RotateCw, earth: Earth};
-            const IconComponent = iconMap[iconData];
-            return IconComponent ? <IconComponent className="w-4 h-4 mr-2"/> : null;
-        } else if (iconType === 'svg') {
-            return (
-                <span
-                    className="inline-block w-4 h-4 mr-2"
-                    dangerouslySetInnerHTML={{__html: iconData}}
-                />
-            );
-        } else if (iconType === 'image') {
-            return <img src={iconData} alt="" className="w-4 h-4 mr-2"/>;
-        }
-        return null;
-    }, []);
+    const renderMenuItems = useExtraToolsMenuItems({
+        toolsStatus,
+        setToolsStatus,
+        highZClass,
+        t,
+    });
 
     // ========== 副作用 ==========
 
@@ -1334,7 +747,7 @@ function ChatBox({
         isWindowMode,
         containerWidth
     }), [toolsLoadedStatus, extraTools, tools, toolsStatus,
-        setToolsStatus, setToolsLoadedStatus, renderMenuItems, isWindowMode, containerWidth]);
+        setToolsStatus, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth]);
 
     return (
         <>
@@ -1440,74 +853,13 @@ function ChatBox({
                             </button>
 
                             {/* 角色选择按钮 */}
-                            {roles.length > 0 && (
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <button
-                                            type="button"
-                                            className="rounded-full hover:bg-gray-200 focus:outline-none focus:ring-offset-2 transition-colors cursor-pointer"
-                                        >
-                                            {(() => {
-
-                                                let avatar = currentRole.avatar;
-                                                let text = currentRole.text;
-
-                                                if (currentRole.model) {
-                                                    avatar = avatar || selectedModel.avatar;
-                                                    text = text || selectedModel.text;
-                                                }
-
-                                                return (
-                                                    <Avatar className="h-11 w-11">  {/* 调整大小以匹配按钮 */}
-                                                        <AvatarImage src={avatar} alt={text}/>
-                                                        <AvatarFallback
-                                                            className="bg-gray-200 text-gray-700 font-medium">
-                                                            {text?.charAt(0).toUpperCase()} {/* 默认显示首字母 */}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                )
-                                            })()}
-
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent side="top" align="end"
-                                                         className={`w-fit min-w-[140px] ${highZClass}`}>
-                                        {roles.map((role) => {
-
-                                            let avatar = role.avatar;
-                                            let text = role.text;
-
-                                            if (role.model) {
-                                                avatar = avatar || selectedModel.avatar;
-                                                text = text || selectedModel.text;
-                                            }
-
-                                            const isSelected = role.name === currentRole?.name;
-
-                                            return (
-                                                <DropdownMenuItem
-                                                    key={role.name}
-                                                    onClick={() => setCurrentRole(role)}
-                                                    className={"cursor-pointer flex items-center px-2 py-1.5 text-sm hover:bg-gray-100"}
-                                                >
-                                                    <Avatar className="h-11 w-11 mr-2">
-                                                        <AvatarImage src={avatar} alt={text}/>
-                                                        <AvatarFallback
-                                                            className="bg-gray-200 text-gray-700 font-medium">
-                                                            {text?.charAt(0).toUpperCase() || 'S'}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    <span>{text}</span>
-                                                    <div className={isSelected ? '' : 'invisible'}>
-                                                        <Check className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0"/>
-                                                    </div>
-
-                                                </DropdownMenuItem>
-                                            )
-                                        })}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            )}
+                            <RoleSelector
+                                roles={roles}
+                                currentRole={currentRole}
+                                selectedModel={selectedModel}
+                                highZClass={highZClass}
+                                onRoleChange={setCurrentRole}
+                            />
 
                             {/* 发送按钮 */}
                             <SendButton
@@ -1522,49 +874,16 @@ function ChatBox({
 
                 </div>
 
-                {/* 全屏编辑模态框（修改后支持 windowMode 填满 windowRef） */}
-                {isModalOpen && (
-                    <div
-                        className={isWindowMode
-                            ? "pointer-events-auto"
-                            : "fixed inset-0 flex items-center justify-center pointer-events-auto"
-                        }
-                        style={isWindowMode
-                            ? modalPosition
-                            : {
-                                zIndex: 50,
-                                marginLeft: !isMobile() ? 'var(--sidebar-width)' : '0',
-                                transition: 'margin-left 0.3s ease-in-out',
-                            }
-                        }
-                    >
-                        <motion.div
-                            initial={{opacity: 0, x: 10}}
-                            animate={{opacity: 1, x: 0}}
-                            className="h-full w-full mx-auto"
-                        >
-                            <div
-                                className="bg-white z-10001 w-full h-full p-0.5 relative"
-                                onClick={e => e.stopPropagation()}
-                            >
-                                <button
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="absolute z-50 top-0 right-0 m-2 rounded-full bg-gray-200 text-gray-500 hover:text-gray-700 cursor-pointer"
-                                    aria-label={t('close')}
-                                >
-                                    <X className="w-5 h-5"/>
-                                </button>
-                                <div className="h-full p-5">
-                                    <SimpleMDEditor
-                                        text={messageContent}
-                                        setText={setMessageContent}
-                                        readOnly={isReadOnly}
-                                    />
-                                </div>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
+                <FullscreenEditorModal
+                    isOpen={isModalOpen}
+                    isWindowMode={isWindowMode}
+                    modalPosition={modalPosition}
+                    messageContent={messageContent}
+                    setMessageContent={setMessageContent}
+                    isReadOnly={isReadOnly}
+                    onClose={() => setIsModalOpen(false)}
+                    t={t}
+                />
             </div>
         </>
     );

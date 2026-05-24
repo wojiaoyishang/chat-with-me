@@ -112,7 +112,7 @@ const ToolButtons = memo(({
                         <IoMdAdd />
                     </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className={`bg-white p-1 shadow-lg rounded-md ${highZClass}`}>
+                <DropdownMenuContent align="start" className={`bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar ${highZClass}`}>
                     {extraTools.length > 0 ? (
                         renderMenuItems(extraTools)
                     ) : (
@@ -192,7 +192,7 @@ const ToolButtons = memo(({
                                         <MoreHorizontal className="w-4 h-4" />
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" className={`bg-white p-1 shadow-lg rounded-md ${highZClass}`}>
+                                <DropdownMenuContent align="start" className={`bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar ${highZClass}`}>
                                     <div className="flex flex-col gap-1">
                                         {builtinToolButtons}
                                     </div>
