@@ -98,7 +98,7 @@ const MessageAvatarMenu = memo(({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 active:bg-gray-200"
+                                className="cursor-pointer inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 active:bg-gray-200"
                                 aria-label={getLabel('close', '关闭')}
                             >
                                 <X size={18}/>
