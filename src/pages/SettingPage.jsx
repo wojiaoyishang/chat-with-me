@@ -102,6 +102,18 @@ const SettingPage = ({
 
     const abortControllerRef = useRef(null);
     const isFirstOnChangeRef = useRef(false);
+    const latestDynamicConfigRequestRef = useRef(0);
+
+    const isStaticTab = useCallback((tabId) => ['account', 'interface'].includes(tabId), []);
+
+    const cloneData = useCallback((value) => {
+        try {
+            return JSON.parse(JSON.stringify(value ?? {}));
+        } catch (error) {
+            console.warn('Failed to clone settings data:', error);
+            return value ?? {};
+        }
+    }, []);
 
     // 未保存修改确认 Dialog
     const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
@@ -143,23 +155,35 @@ const SettingPage = ({
 
     // ==================== 加载单个动态 Tab 配置 ====================
     const loadDynamicConfig = async (tabId) => {
+        if (!tabId || isStaticTab(tabId)) return;
+
         if (abortControllerRef.current) abortControllerRef.current.abort();
+
         const controller = new AbortController();
+        const requestId = latestDynamicConfigRequestRef.current + 1;
+        latestDynamicConfigRequestRef.current = requestId;
         abortControllerRef.current = controller;
 
         try {
             setLoadingDynamicConfig(true);
             setDynamicConfigError(false);
+            // 切换到新的动态 tab 时先清空旧配置，避免新 tab 使用旧 tab 的 schema 渲染。
+            setDynamicConfig(null);
+            setDynamicValues({});
+            setOriginalDynamicValues({});
 
             const response = await apiClient.get(
                 `${apiEndpoint.SETTING_TABS_ENDPOINT}/${tabId}`,
                 {signal: controller.signal}
             );
 
-            const initial = response.defaultOptions || {};
-            const initialClone = JSON.parse(JSON.stringify(initial));
+            if (controller.signal.aborted || latestDynamicConfigRequestRef.current !== requestId) return;
 
-            setDynamicConfig(response);
+            const options = Array.isArray(response?.options) ? response.options : [];
+            const initial = cloneData(response?.defaultOptions || {});
+            const initialClone = cloneData(initial);
+
+            setDynamicConfig({...(response || {}), options});
             setDynamicValues(initial);
             setOriginalDynamicValues(initialClone);
             setIsConfigPristine(true);
@@ -167,14 +191,21 @@ const SettingPage = ({
             isFirstOnChangeRef.current = true;
 
         } catch (error) {
-            if (error.name === 'AbortError') return;
+            if (error?.name === 'AbortError' || controller.signal.aborted || latestDynamicConfigRequestRef.current !== requestId) return;
             console.error("Failed to load tab config:", error);
             setDynamicConfig(null);
+            setDynamicValues({});
+            setOriginalDynamicValues({});
             setDynamicConfigError(true);
             toast.error(t("load_config_error") || "Failed to load settings config");
         } finally {
-            setLoadingDynamicConfig(false);
-            abortControllerRef.current = null;
+            // 只允许当前最后一次请求收尾，避免被已 abort 的旧请求把 loading 关闭。
+            if (latestDynamicConfigRequestRef.current === requestId) {
+                setLoadingDynamicConfig(false);
+                if (abortControllerRef.current === controller) {
+                    abortControllerRef.current = null;
+                }
+            }
         }
     };
 
@@ -198,16 +229,26 @@ const SettingPage = ({
     }, [activeTab, isDynamicTab, hasUnsavedChanges]);
 
     const performTabChange = (newTab) => {
+        if (!newTab) return;
+
         setActiveTab(newTab);
-        if (!['account', 'interface'].includes(newTab)) {
+        setIsConfigPristine(true);
+        isFirstOnChangeRef.current = false;
+
+        if (!isStaticTab(newTab)) {
             loadDynamicConfig(newTab);
-        } else {
-            setDynamicConfig(null);
-            setDynamicValues({});
-            setOriginalDynamicValues({});
-            setIsConfigPristine(true);
-            isFirstOnChangeRef.current = false;
+            return;
         }
+
+        // 切到内置 tab 时中止动态配置请求，并让旧请求无法再回写状态。
+        if (abortControllerRef.current) abortControllerRef.current.abort();
+        latestDynamicConfigRequestRef.current += 1;
+        abortControllerRef.current = null;
+        setLoadingDynamicConfig(false);
+        setDynamicConfigError(false);
+        setDynamicConfig(null);
+        setDynamicValues({});
+        setOriginalDynamicValues({});
     };
 
     // ==================== 保存 ====================
@@ -249,35 +290,39 @@ const SettingPage = ({
         const action = pendingAction;
         const tabId = pendingTabId;
 
-        // ====================== 关键修复2：确认丢弃修改时立即回归开启之前的默认值 ======================
-        if (isDynamicTab && originalDynamicValues) {
-            const resetValues = JSON.parse(JSON.stringify(originalDynamicValues));
-            setDynamicValues(resetValues);
-            setIsConfigPristine(true);
+        // 这是程序化关闭弹窗，不要让 onOpenChange 把 pending 状态抢先清掉，
+        // 否则退出动画期间按钮文案/状态会闪变。
+        isProgrammaticCloseRef.current = true;
+        setShowUnsavedDialog(false);
+        setPendingAction(null);
+        setPendingTabId(null);
+
+        if (action === 'tabChange' && tabId) {
+            performTabChange(tabId);
+            setTimeout(() => {
+                isProgrammaticCloseRef.current = false;
+            }, 150);
+            return;
         }
 
-        setShowUnsavedDialog(false);
+        if (action === 'close') {
+            // 关闭时丢弃未保存修改；重新打开时会按当前 activeTab 重新拉取后端配置。
+            if (isDynamicTab && originalDynamicValues) {
+                setDynamicValues(cloneData(originalDynamicValues));
+                setIsConfigPristine(true);
+            }
 
-        if (action === 'tabChange') {
-            performTabChange(tabId);
-            setPendingAction(null);
-            setPendingTabId(null);
-            setLoadingDynamicConfig(false);
-            isFirstOnChangeRef.current = false;
-            setIsConfigPristine(true);
-        } else if (action === 'close') {
-            // 标记为程序化关闭，防止退出动画期间按钮文字闪变为「切换」
-            isProgrammaticCloseRef.current = true;
             setTimeout(() => {
                 onClose();
-                setPendingAction(null);
-                setPendingTabId(null);
                 setLoadingDynamicConfig(false);
                 isProgrammaticCloseRef.current = false;
-                setIsConfigPristine(true);
             }, 150);
+            return;
         }
+
+        isProgrammaticCloseRef.current = false;
     };
+
 
     // ==================== DynamicSettings onChange ====================
     const handleDynamicValuesChange = useCallback((newValues) => {

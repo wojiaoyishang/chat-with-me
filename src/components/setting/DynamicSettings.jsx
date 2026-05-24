@@ -1580,6 +1580,7 @@ export default function DynamicSettings({
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
     const hasInitialCalledRef = useRef(false);
+    const previousConfigRef = useRef(config);
 
     const update = useCallback((path, value) => {
         setValues((prev) => {
@@ -1588,6 +1589,14 @@ export default function DynamicSettings({
             return next;
         });
     }, []);
+
+    useEffect(() => {
+        if (previousConfigRef.current === config) return;
+
+        previousConfigRef.current = config;
+        hasInitialCalledRef.current = false;
+        setValues(buildDefaults(config, initialValues));
+    }, [config, initialValues]);
 
     useEffect(() => {
         if (hasInitialCalledRef.current) {

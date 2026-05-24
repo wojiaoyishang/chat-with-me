@@ -227,5 +227,6 @@
   "no_conversations": "没有会话",
   "speak_message": "朗读消息",
   "stop_speak_message": "停止朗读",
-  "no_speakable_content": "没有可以朗读的内容"
+  "no_speakable_content": "没有可以朗读的内容",
+  "speech_play_error": "朗读失败：{{message}}"
 }

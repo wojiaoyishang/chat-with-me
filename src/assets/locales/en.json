@@ -227,5 +227,6 @@
   "no_conversations": "No Conversations",
   "speak_message": "Speak Message",
   "stop_speak_message": "Stop Speaking",
-  "no_speakable_content": "No speakable content"
+  "no_speakable_content": "No speakable content",
+  "speech_play_error": "Speech play error: {{message}}"
 }

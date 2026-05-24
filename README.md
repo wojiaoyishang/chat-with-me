@@ -181,7 +181,7 @@ content
 
 ```js
 {
-  "123": "[thinking]\n正在分析问题..."
+    "123": "[thinking]\n正在分析问题..."
 }
 ```
 
@@ -565,6 +565,9 @@ replacement 内容中可以继续包含其他 `cardReplace`：
 
 每个 `id` 都会独立替换、独立渲染、独立保持展开状态。
 
+
+
+> **v8 升级注意**：本协议不包含 `Speech-Segment-Start` / `Speech-Segment-End` / `Speech-SeekSegment` / `Speech-Highlight`。如果运行时报 `TTS.Speech.segment_start` 不存在，说明 `workers/tts.py` 仍是旧版，请整体替换本包内文件，不能混用 v6/v7/v8。
 
 # 接口说明
 
@@ -1209,7 +1212,7 @@ code 设置为 401 。
 }
 ```
 
-# SETTING_TABS_ENDPOINT - 获取设置 tabs 
+# SETTING_TABS_ENDPOINT - 获取设置 tabs
 
 前端会 GET 请求这个接口，用于获取所有设置项的 tags ，接口需要返回：
 
@@ -1219,7 +1222,7 @@ code 设置为 401 。
         "id": "models",   # Tab ID
         "name": "模型设置",   # Tab 的名称
         "preview": "/public/model.svg"  # Tab 的图标
-    }  
+    }
 ]
 ```
 
@@ -1763,9 +1766,9 @@ code 设置为 401 。
 {
     "command": "Set-EditMessage",
     "isEdit": True, // 是否编辑模式
-    "attachments": [], // 附件数据
-    "content": "", // 输入框文本
-    "msgId": "", // 目标消息ID
+"attachments": [], // 附件数据
+"content": "", // 输入框文本
+"msgId": "", // 目标消息ID
 }
 ```
 
@@ -1902,1181 +1905,254 @@ code 设置为 401 。
 
 # TTS 事件说明
 
-## TTS 事件 `target=TTS`
+## 设计原则
 
-语音合成事件用于前端请求后端进行文本语音合成，并接收后端返回的分段音频数据。
+后端 TTS 使用严格同步协议：**生成归生成，播放归播放**。
 
-该事件主要用于 `advancedSettingsValues.speakEngine !== "browser"` 的情况。
-如果 `speakEngine === "browser"`，前端会直接使用浏览器 `speechSynthesis` 进行朗读，不需要请求后端。
+- 前端发起朗读时只携带 `startSegmentPosition` 作为起点。
+- 用户点击上一句、下一句或跳转时，前端直接取消旧任务并使用新的 `requestId` 从新的 `startSegmentPosition` 重新发起 `Speak-Message`。
+- 后端只接受新的 `Speak-Message(startSegmentPosition)` 重启请求。
+- 后端不再广播合成进度类句子事件；句子高亮只由前端真实音频播放开始时触发。
+- Worker 默认开启 `playbackBarrier`：每合成完一句后等待前端 `Speech-Playback-Ack phase=end`，再合成下一句。
 
-事件外层结构仍然遵循项目广播格式：
+这样可以避免后端合成速度快于浏览器播放速度时，文字高亮提前跳句。
+
+## 前端请求后端朗读
+
+WebSocket 广播：
 
 ```python
 {
     "type": "speech",
     "target": "TTS",
-    "payload": {},
-    "markId": "当前会话ID",
-    "id": "事件ID",
-    "isReply": False,
-    "fromWebsocket": False,
-    "notReplyToWebsocket": False
+    "payload": {
+        "command": "Speak-Message",
+        "requestId": "uuid",
+        "msgId": "message-id",
+        "messageId": "message-id",
+        "engine": "dashscope",
+        "model": "optional-tts-model-id",
+        "segments": [
+            {
+                "id": "segment-id-0",
+                "index": 0,
+                "text": "第一句文本"
+            }
+        ],
+        "startSegmentPosition": 0,
+        "restartReason": "initial"
+    },
+    "markId": "chat-mark-id"
 }
 ```
 
-下方示例只展示 `payload` 字段内容。
+字段说明：
 
----
+| 字段 | 说明 |
+|---|---|
+| `requestId` | 本次朗读任务 ID。跳句重启时必须生成新的 ID。 |
+| `msgId/messageId` | 消息 ID。 |
+| `engine` | 前端当前选择的 TTS 引擎。 |
+| `model` | 可选 TTS 模型 ID。 |
+| `segments` | 前端拆好的可朗读句子数组。 |
+| `startSegmentPosition` | 本次从 `segments` 数组中的哪个位置开始朗读。唯一定位字段。 |
+| `restartReason` | 可选，仅用于日志：`initial` / `previous` / `next` / `seek`。 |
 
-## type=speech
-
-### 请求后端合成语音
-
-当前端点击消息朗读按钮，并且当前 `speakEngine` 不是 `browser` 时，ChatPage 会向后端发送该事件。
-
-```python
-{
-    "command": "Speak-Message",
-
-    "requestId": "tts-uuid",  # 本次朗读任务 ID，用于防抖、取消、续传、状态匹配
-    "msgId": "msg-uuid",  # 当前朗读的消息 ID
-
-    "engine": "openai",  # 语音合成引擎，由 advancedSettingsValues.speakEngine 提供
-    "voice": "default",  # 语音音色，可选
-    "rate": 1.0,  # 朗读速度
-    "format": "mp3",  # 音频格式，建议 mp3 / wav / webm / opus
-    "mime": "audio/mpeg",  # 音频 MIME 类型
-
-    "segments": [
-        {
-            "id": "msg-uuid:tts:0",  # 分段 ID，前端用于高亮和播放队列
-            "index": 0,  # 分段序号
-            "text": "这是第一句话。"  # 要合成的文本
-        },
-        {
-            "id": "msg-uuid:tts:1",
-            "index": 1,
-            "text": "这是第二句话。"
-        }
-    ],
-
-    "options": {
-        # 预留字段，用于传递额外 TTS 参数
-        # 例如 pitch、volume、language、style、emotion 等
-    }
-}
-```
-
-需要立即回复：
+后端接收成功回复：
 
 ```python
 {
     "success": True,
     "value": {
-        "requestId": "tts-uuid",
-        "msgId": "msg-uuid"
+        "requestId": "uuid",
+        "msgId": "message-id",
+        "streamId": "redis-stream-id",
+        "modelId": "tts-model-id",
+        "format": "pcm",
+        "startSegmentPosition": 0
     }
 }
 ```
 
-如果后端无法创建合成任务，需要回复：
+## 后端返回事件
 
-```python
-{
-    "success": False,
-    "value": "语音合成任务创建失败的原因"
-}
-```
+### Speech-Start
 
-> 注意：这个回复只表示“后端是否成功接收任务”，不表示音频已经合成完成。音频数据需要通过后续 `Speech-*` 事件继续返回。
-
----
-
-### 后端通知语音任务开始
-
-后端成功创建语音合成任务后，可以发送该事件通知前端进入后端合成状态。
+任务开始。
 
 ```python
 {
     "command": "Speech-Start",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-
-    "engine": "openai",
-    "voice": "default",
+    "requestId": "uuid",
+    "msgId": "message-id",
+    "messageId": "message-id",
+    "engine": "dashscope",
+    "voice": "longxiaochun",
     "rate": 1.0,
-    "format": "mp3",
-    "mime": "audio/mpeg",
-
-    "total": 2  # 本次任务总分段数
+    "format": "pcm",
+    "mime": "audio/pcm",
+    "sampleRate": 24000,
+    "total": 12
 }
 ```
 
-前端收到后可以将播放器状态设置为：
+### Speech-Audio-Chunk
 
-```python
-{
-    "status": "loading"
-}
-```
-
----
-
-### 后端通知某个分段开始合成
-
-每个文本分段开始合成时，后端可以发送该事件。
-
-```python
-{
-    "command": "Speech-Segment-Start",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-
-    "segmentId": "msg-uuid:tts:0",
-    "segmentIndex": 0,
-    "text": "这是第一句话。",
-
-    "format": "mp3",
-    "mime": "audio/mpeg"
-}
-```
-
-该事件主要用于前端预创建分段缓冲区。
-
----
-
-### 后端返回音频 chunk
-
-后端将某个分段的音频数据按 base64 chunk 形式返回。
+单句音频分片。音频内容是 base64 编码后的 PCM bytes。
 
 ```python
 {
     "command": "Speech-Audio-Chunk",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-
-    "segmentId": "msg-uuid:tts:0",
+    "requestId": "uuid",
+    "msgId": "message-id",
+    "messageId": "message-id",
+    "segmentId": "segment-id-0",
     "segmentIndex": 0,
-
-    "chunkIndex": 0,  # 当前 chunk 序号，从 0 开始
-    "audio": "base64-encoded-audio-data",  # base64 音频数据
-
-    "format": "mp3",
-    "mime": "audio/mpeg"
+    "segmentPosition": 0,
+    "chunkIndex": 0,
+    "audio": "base64-pcm",
+    "format": "pcm",
+    "mime": "audio/pcm",
+    "sampleRate": 24000
 }
 ```
 
-前端处理逻辑：
+### Speech-Segment-Ready
 
-```python
-# 按 segmentId 收集 chunk
-segmentAudioChunks[segmentId].append(audio)
-
-# 不建议收到一个 chunk 就立即播放
-# 建议等 Speech-Segment-End 后合并成 Blob 再加入播放队列
-```
-
-建议后端 chunk 大小：
-
-```python
-16KB ~ 64KB  # 指原始二进制音频大小，不是 base64 后大小
-```
-
----
-
-### 后端通知某个分段音频结束
-
-当某个 segment 的所有音频 chunk 都发送完成后，后端发送该事件。
+单句全部 chunk 已发送完成，前端应合并该句 chunk，并封装为 WAV Blob 加入播放队列。
 
 ```python
 {
-    "command": "Speech-Segment-End",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-
-    "segmentId": "msg-uuid:tts:0",
+    "command": "Speech-Segment-Ready",
+    "requestId": "uuid",
+    "msgId": "message-id",
+    "messageId": "message-id",
+    "segmentId": "segment-id-0",
     "segmentIndex": 0,
-
-    "chunkCount": 5,  # 当前分段总 chunk 数
-    "durationMs": 1800,  # 当前分段音频时长，可选
-
-    "format": "mp3",
-    "mime": "audio/mpeg"
+    "segmentPosition": 0,
+    "chunkCount": 3,
+    "byteLength": 98304,
+    "format": "pcm",
+    "mime": "audio/pcm",
+    "sampleRate": 24000
 }
 ```
 
-前端收到后应该：
+`Speech-Segment-Ready` 只表示“音频可以播放”，不表示“正在播放”。前端不能在此事件上切换句子高亮。
 
-```python
-{
-    "action": [
-        "校验 chunk 数量",
-        "按 chunkIndex 排序",
-        "base64 解码",
-        "合并成 Blob",
-        "创建 objectURL",
-        "加入播放器队列"
-    ]
-}
-```
+### Speech-End
 
-例如：
-
-```javascript
-const blob = new Blob(byteArrays, { type: "audio/mpeg" });
-const audioUrl = URL.createObjectURL(blob);
-```
-
----
-
-### 后端直接返回完整分段音频
-
-如果后端不想分 chunk，也可以直接返回完整 base64 音频。
-
-```python
-{
-    "command": "Speech-Segment",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-
-    "segmentId": "msg-uuid:tts:0",
-    "segmentIndex": 0,
-    "text": "这是第一句话。",
-
-    "audio": "base64-encoded-full-segment-audio",
-    "durationMs": 1800,
-
-    "format": "mp3",
-    "mime": "audio/mpeg"
-}
-```
-
-该模式适合短文本，但长文本不推荐，因为单条 WebSocket 消息可能过大。
-
----
-
-### 后端返回音频 URL
-
-如果后端采用文件缓存或对象存储，也可以不返回 base64，而是返回音频链接。
-
-```python
-{
-    "command": "Speech-Segment",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-
-    "segmentId": "msg-uuid:tts:0",
-    "segmentIndex": 0,
-    "text": "这是第一句话。",
-
-    "audioUrl": "/api/tts/audio/tts-uuid/seg-0.mp3",
-    "durationMs": 1800,
-
-    "format": "mp3",
-    "mime": "audio/mpeg"
-}
-```
-
-前端可以把 `audioUrl` 和 base64 合成出的 Blob URL 统一看作：
-
-```python
-{
-    "segmentId": "msg-uuid:tts:0",
-    "segmentIndex": 0,
-    "audioUrl": "可播放地址"
-}
-```
-
-这样后续切换 base64 / HTTP URL 时，播放器逻辑不用大改。
-
----
-
-### 后端通知当前朗读高亮位置
-
-如果后端 TTS 支持更精确的播放控制或时间戳，可以主动通知前端当前高亮分段。
-
-```python
-{
-    "command": "Speech-Highlight",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-
-    "segmentId": "msg-uuid:tts:0",
-    "segmentIndex": 0
-}
-```
-
-对于当前前端实现，通常不需要后端频繁发送该事件。
-前端会在播放某个 segment 前自行设置当前高亮。
-
----
-
-### 后端通知任务完成
-
-当所有 segment 都合成并发送完成后，后端发送该事件。
+任务结束。由于默认开启 `playbackBarrier`，该事件通常会在最后一句播放完成 ACK 后出现。
 
 ```python
 {
     "command": "Speech-End",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-
-    "total": 2
+    "requestId": "uuid",
+    "msgId": "message-id",
+    "messageId": "message-id",
+    "total": 12
 }
 ```
 
-注意：
-`Speech-End` 表示后端音频数据已经发送完，不代表前端已经播放完。
-前端播放结束由播放器内部状态控制。
-
----
-
-### 后端通知任务失败
-
-如果合成过程中发生错误，后端发送该事件。
+### Speech-Error / Speech-Cancelled / Speech-Paused / Speech-Resumed
 
 ```python
 {
     "command": "Speech-Error",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-
-    "segmentId": "msg-uuid:tts:1",  # 如果是某个分段失败，则提供
-    "segmentIndex": 1,
-
-    "message": "语音合成失败的原因",
+    "requestId": "uuid",
+    "msgId": "message-id",
+    "messageId": "message-id",
+    "message": "错误信息",
+    "value": "错误信息",
     "code": "TTS_ENGINE_ERROR"
 }
 ```
 
-前端收到后可以：
+## 前端播放 ACK
+
+前端在本地 `Audio` 真实播放某句时发送 ACK 给后端。后端据此控制 `playbackBarrier`。
 
 ```python
 {
-    "action": [
-        "停止当前任务",
-        "清空播放队列",
-        "移除高亮",
-        "显示错误提示"
-    ]
+    "type": "speech",
+    "target": "TTS",
+    "payload": {
+        "command": "Speech-Playback-Ack",
+        "requestId": "uuid",
+        "msgId": "message-id",
+        "messageId": "message-id",
+        "segmentId": "segment-id-0",
+        "segmentIndex": 0,
+        "segmentPosition": 0,
+        "phase": "start"
+    },
+    "markId": "chat-mark-id"
 }
 ```
 
----
+`phase` 可取：
 
-## 前端控制后端 TTS
+| phase | 说明 |
+|---|---|
+| `start` | 前端本地 `Audio.onplaying` 触发。此时前端切换高亮。 |
+| `end` | 前端本地 `Audio.onended` 触发。Worker 默认收到后才合成下一句。 |
+| `error` | 前端播放失败。Worker 收到后终止任务。 |
 
-以下事件用于用户在全局播放器中操作后端 TTS。
+## 前端控制事件
 
----
-
-### 取消朗读任务
-
-用户点击停止按钮时发送。
+### 取消
 
 ```python
 {
-    "command": "Speech-Cancel",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid"
+    "type": "speech",
+    "target": "TTS",
+    "payload": {
+        "command": "Speech-Cancel",
+        "requestId": "uuid",
+        "msgId": "message-id"
+    },
+    "markId": "chat-mark-id"
 }
 ```
 
-需要回复：
+### 暂停 / 恢复
 
 ```python
-{
-    "success": True,
-    "value": {
-        "requestId": "tts-uuid",
-        "cancelled": True
-    }
-}
+{"command": "Speech-Pause", "requestId": "uuid"}
+{"command": "Speech-Resume", "requestId": "uuid"}
 ```
 
-后端取消成功后，也可以广播：
-
-```python
-{
-    "command": "Speech-Cancelled",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid"
-}
-```
-
----
-
-### 暂停朗读
-
-用户点击暂停按钮时发送。
-
-```python
-{
-    "command": "Speech-Pause",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid"
-}
-```
-
-需要回复：
-
-```python
-{
-    "success": True,
-    "value": {
-        "requestId": "tts-uuid",
-        "paused": True
-    }
-}
-```
-
-说明：
-
-```python
-# 如果后端只负责合成音频，不负责实际播放，
-# 那么该事件可以只用于停止继续生成后续 segment。
-# 真正的暂停播放由前端 audio 元素控制。
-```
-
----
-
-### 继续朗读
-
-用户点击继续按钮时发送。
-
-```python
-{
-    "command": "Speech-Resume",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid"
-}
-```
-
-需要回复：
-
-```python
-{
-    "success": True,
-    "value": {
-        "requestId": "tts-uuid",
-        "resumed": True
-    }
-}
-```
-
----
-
-### 修改朗读速度
-
-用户在播放器中切换倍速时发送。
+### 倍速
 
 ```python
 {
     "command": "Speech-Set-Rate",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-
+    "requestId": "uuid",
     "rate": 1.25
 }
 ```
 
-需要回复：
+## 上下句 / 跳转策略
 
-```python
-{
-    "success": True,
-    "value": {
-        "requestId": "tts-uuid",
-        "rate": 1.25
-    }
-}
-```
+后端 TTS 不做旧任务内 seek。
 
-说明：
+当前端触发上一句、下一句或指定句跳转时：
 
-```python
-# 对于已经生成好的音频，前端可以直接修改 audio.playbackRate。
-# 对于还没生成的后续 segment，后端可以使用新的 rate 继续合成。
-```
+1. 前端根据当前播放句子的 `segmentPosition` 计算目标位置。
+2. 前端停止当前本地 `Audio`，清空旧音频队列。
+3. 前端生成新的 `requestId`。
+4. 前端发送新的 `Speak-Message`，只携带 `startSegmentPosition`。
+5. WebSocket 入口会结束同一会话中的旧 TTS stream。
+6. Worker 从新的 `startSegmentPosition` 开始重新合成。
 
----
+这个策略不依赖目标句是否已经生成，也不依赖旧任务队列是否还保留目标句，因此不会再出现“找不到句子”或“跳句后旧音频把高亮拉回去”的问题。
 
-### 跳转到指定句子
+## PCM 播放说明
 
-用户点击上一句 / 下一句时，前端发送该事件。
+前端传入和后端返回的音频格式固定为 `pcm`。浏览器不能直接播放裸 PCM，因此 ChatPage 会：
 
-```python
-{
-    "command": "Speech-SeekSegment",
-
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-
-    "segmentId": "msg-uuid:tts:2",
-    "segmentIndex": 2,
-
-    "direction": "next"  # previous / next / absolute
-}
-```
-
-需要回复：
-
-```python
-{
-    "success": True,
-    "value": {
-        "requestId": "tts-uuid",
-        "msgId": "msg-uuid",
-        "segmentId": "msg-uuid:tts:2",
-        "segmentIndex": 2
-    }
-}
-```
-
-如果目标 segment 的音频还没有生成，后端可以优先生成该 segment，并返回：
-
-```python
-{
-    "command": "Speech-Segment-Start",
-    "requestId": "tts-uuid",
-    "msgId": "msg-uuid",
-    "segmentId": "msg-uuid:tts:2",
-    "segmentIndex": 2,
-    "text": "目标句子内容。"
-}
-```
-
----
-
-## 推荐的后端返回流程
-
-### base64 chunk 模式
-
-推荐第一版采用该模式。
-
-```python
-# 1. 前端请求
-Speak-Message
-
-# 2. 后端确认任务开始
-Speech-Start
-
-# 3. 第 0 段开始
-Speech-Segment-Start
-
-# 4. 第 0 段音频数据
-Speech-Audio-Chunk
-Speech-Audio-Chunk
-Speech-Audio-Chunk
-
-# 5. 第 0 段结束
-Speech-Segment-End
-
-# 6. 第 1 段开始
-Speech-Segment-Start
-
-# 7. 第 1 段音频数据
-Speech-Audio-Chunk
-Speech-Audio-Chunk
-
-# 8. 第 1 段结束
-Speech-Segment-End
-
-# 9. 后端发送完成
-Speech-End
-```
-
----
-
-## 推荐字段说明
-
-| 字段             | 类型     | 说明                      |
-| -------------- | ------ | ----------------------- |
-| `requestId`    | string | 本次 TTS 任务 ID            |
-| `msgId`        | string | 被朗读的消息 ID               |
-| `engine`       | string | 后端语音合成引擎                |
-| `voice`        | string | 音色                      |
-| `rate`         | number | 朗读速度                    |
-| `format`       | string | 音频格式，例如 `mp3`           |
-| `mime`         | string | MIME 类型，例如 `audio/mpeg` |
-| `segments`     | list   | 要合成的文本分段                |
-| `segmentId`    | string | 当前分段 ID                 |
-| `segmentIndex` | int    | 当前分段序号                  |
-| `text`         | string | 当前分段文本                  |
-| `chunkIndex`   | int    | 当前音频 chunk 序号           |
-| `chunkCount`   | int    | 当前分段总 chunk 数           |
-| `audio`        | string | base64 音频数据             |
-| `audioUrl`     | string | 可选，后端音频文件地址             |
-| `durationMs`   | int    | 可选，音频时长                 |
-| `message`      | string | 错误信息                    |
-| `code`         | string | 错误代码                    |
-
----
-
-## 约定
-
-### 1. 一个 `segmentId` 对应一个可播放音频段
-
-```python
-{
-    "segmentId": "msg-uuid:tts:0",
-    "text": "这是第一句话。",
-    "audio": "这一句话对应的完整音频"
-}
-```
-
-前端高亮也是基于 `segmentId`。
-
----
-
-### 2. 一个音频段可以拆成多个 chunk
-
-```python
-segmentId = "msg-uuid:tts:0"
-
-chunkIndex = 0
-chunkIndex = 1
-chunkIndex = 2
-...
-```
-
-前端必须等到 `Speech-Segment-End` 后，再把该段 chunk 合并为一个可播放音频。
-
----
-
-### 3. 不要求单个 chunk 可以独立播放
-
-```python
-# 不推荐：
-收到一个 Speech-Audio-Chunk 就播放一个 chunk
-
-# 推荐：
-收集完整 segment 的所有 chunk
-合并为 Blob
-加入播放器队列
-```
-
----
-
-### 4. 前端只会朗读主内容
-
-前端发送给后端的 `segments` 已经完成清洗：
-
-```python
-{
-    "跳过": [
-        "cardReplace 占位符",
-        "extraInfo.replace 内容",
-        "代码块",
-        "HTML 标签",
-        "不可见内容"
-    ],
-    "保留": [
-        "普通 Markdown 文本",
-        "行内 code 文本",
-        "表格文本",
-        "链接显示文本"
-    ]
-}
-```
-
-所以后端通常不需要再次处理 Markdown，只需要按 `segments[].text` 合成即可。
-
----
-
-### 5. 后端应该忽略过期 requestId
-
-如果前端已经发起新的朗读任务，旧任务返回的音频应该被前端丢弃。
-后端也建议在收到 `Speech-Cancel` 后停止旧任务。
-
-```python
-{
-    "requestId": "旧任务 ID"
-}
-```
-
-如果该 `requestId` 已经不是当前活跃任务，前端不会再播放它。
-
-
-## ChatWithEditor 事件 (target=ChatWithEditor)
-
-### type=page （已弃用，改为服务器端后台添加）
-
-#### 获取编辑器文章纯文本内容
-
-```python
-{
-    "command": "Document-Extract-To-Text",
-    "start": 0,
-    "end": -1
-}
-```
-
-`start` 和 `end` 两个参数用于确定开始和最终获取的位置（字符）。
-
-返回响应：
-
-```python
-{
-    "success": True,
-    "value": "最终的内容"
-}
-```
-
-#### 提取选中文本为 HTML
-
-```python
-{
-    "command": "Document-Extract-Selected-To-Html"
-}
-```
-返回响应：
-
-```python
-{
-    "success": True,
-    "value": "<html>..."
-}
-```
-
-#### 偏移鼠标并选择
-
-```python
-{
-    "command": "Document-Move-Cursor-And-Select",
-    "whence": 0,  # 位置基准（整数）：0=从开始 (SEEK_SET)，1=从当前 (SEEK_CUR)，2=从结尾 (SEEK_END)
-    "offset": -1,  # 相对偏移（可为负数，向左移动）
-    "selectLength": 0  # 选中长度（>0 向右选中，<0 向左选中，0=不选中/折叠）, 如果为 'back' 选到文档尾，如果为 'forward' 选到文档头
-}
-```
-
-返回响应：
-
-```python
-{
-    "success": True,
-    "value": "一开始的光标位置"
-}
-```
-
-#### 获取光标位置
-
-```python
-{
-    "command": "Document-Get-Cursor-Position"
-}
-```
-
-返回响应：
-
-```python
-{
-    "success": True,
-    "value": "目前光标位置"
-}
-```
-
-#### 搜索匹配并移动光标
-
-```python
-{
-    "command": "Document-Find-And-Select-Smart",
-    "pattern": "正则表达式内容",  # 字符串：用于搜索的正则模式
-    "group": 1,  # 整数：捕获组索引 (0=全匹配，1+=括号组)
-    "position": "end",  # 字符串："start" 或 "end"，决定光标最终停留位置
-    "select": True  # 布尔值：true=选中该组区域，false=仅移动光标
-}
-```
-
-```python
-{
-    "success": True,
-    "value": {
-        "pos": 105,  # 坐标
-        "text": "匹配到的具体内容"  # 实际匹配到的文本内容
-    }
-}
-```
-
-#### 插入文本
-
-在光标处插入文本，如果光标选中内容就覆盖选择处。
-
-```python
-{
-    "command": "Document-Insert-Html",
-    "html": "HTML内容",  # 字符串：用于搜索的正则模式
-    "mode": "merge"  # 模式
-}
-```
-
-mode参数参考：
-
-- 'merge' (默认): 合并模式。HTML 样式被保留，未定义的样式继承当前光标位置的上下文。
-- 'override': 覆盖模式。在插入前清除选区的所有硬格式（手动加粗、颜色等），确保 HTML 样式占据主导。
-- 'retain': 保留模式。剥离所有 HTML 标签，仅将纯文本按当前光标处的格式插入。
-
-
-#### 获取所有可用字体
-
-```python
-{
-    "command": "Document-Get-All-Available-Fonts",
-}
-```
-
-```python
-{
-    "success": True,
-    "value": []  # 可用字体名称
-}
-```
-
-# 设置组件配置
-
-## 导入位置
-
-```jsx
-import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
-```
-
-**已更新**：以下是**完整、专业的 `DynamicSettings` 组件说明文档**（已新增 `showWhen` 相关说明）：
-
----
-
-## 概述
-
-`DynamicSettings` 是一个高度可配置的 React 设置面板组件，支持通过 JSON 配置动态渲染多种 UI 控件。
-
-- 完全使用 **Tailwind CSS** 内联样式
-- 支持亮/暗模式自动适配
-- 支持条件显示（`showWhen`）
-- 支持移动端优化与无障碍交互
-- 使用 Context 统一管理表单状态
-
----
-
-## 主要特性
-
-- 支持嵌套分组（`group`）
-- 支持可动态增删的列表（`list`）
-- 支持图片上传预览
-- 支持条件可见性（`showWhen`）
-- 支持提示信息（`tips`）与必填标记（`required`）
-- 支持默认值自动生成
-- 实时 `onChange` 回调
-- 深层路径状态管理（`deepGet` / `deepSet`）
-
----
-
-## 使用方式
-
-```tsx
-import DynamicSettings from "./DynamicSettings";
-
-const config = [ /* 配置数组 */ ];
-
-function App() {
-    const handleChange = (newValues) => {
-        console.log("设置已更新:", newValues);
-    };
-
-    return (
-        <DynamicSettings
-            config={config}
-            onChange={handleChange}
-            initialValues={initialData}
-            className="max-w-2xl"
-            onImageUpload={handleImageUpload}   // 可选，用于图片上传
-        />
-    );
-}
-```
-
----
-
-## 配置结构（config）
-
-`config` 是一个数组，每一项是一个对象，必须包含 `type`。
-
-### 通用字段
-
-| 字段             | 类型                  | 说明                                      | 是否必填 |
-|------------------|-----------------------|-------------------------------------------|----------|
-| `type`           | string                | 控件类型                                  | 是       |
-| `name`           | string                | 字段名称（用于数据路径）                  | 多数情况是 |
-| `text`           | string                | 显示标题                                  | 是       |
-| `tips`           | string                | 提示文字（支持简单 HTML）                 | 否       |
-| `default`        | any                   | 默认值                                    | 否       |
-| `required`       | boolean               | 是否必填（显示红色 *）                    | 否       |
-| `showWhen`       | object                | **条件显示规则**（新增）                  | 否       |
-
----
-
-## 新增特性：`showWhen` 条件可见性
-
-用于实现**根据其他字段的值动态显示或隐藏当前控件**。
-
-### 使用规则
-
-- `showWhen` 是一个对象，键为依赖的字段名（`name`），值为期望的值。
-- 支持**精确匹配**、**多值 OR**、**多条件 AND**。
-- 仅当所有条件同时满足时，当前字段才会显示。
-- 目前支持**同级字段**（与当前控件处于同一层级）。
-
-### 配置示例
-
-```json
-{
-  "type": "select",
-  "name": "avatar_type",
-  "text": "头像类型",
-  "options": [
-    { "value": "builtin", "label": "使用内置头像" },
-    { "value": "upload", "label": "自定义上传" }
-  ],
-  "default": "builtin"
-},
-{
-  "type": "select",
-  "name": "avatar_builtin",
-  "text": "选择内置头像",
-  "options": [ /* ... */ ],
-  "showWhen": { "avatar_type": "builtin" }
-},
-{
-  "type": "image",
-  "name": "avatar",
-  "text": "上传自定义头像",
-  "tips": "推荐尺寸 128×128",
-  "showWhen": { "avatar_type": "upload" }
-}
-```
-
-### 更多 `showWhen` 用法
-
-```json
-// 1. 精确匹配
-"showWhen": { "mode": "advanced" }
-
-// 2. 多值匹配（OR）
-"showWhen": { "avatar_type": ["builtin", "preset"] }
-
-// 3. 多条件同时满足（AND）
-"showWhen": { 
-  "model_type": "chat", 
-  "enable_vision": true 
-}
-```
-
----
-
-## 支持的控件类型
-
-### 1. Switch（开关）
-
-```json
-{
-  "type": "switch",
-  "name": "autoSave",
-  "text": "自动保存",
-  "default": true,
-  "tips": "每次修改后自动保存设置"
-}
-```
-
-### 2. Number（数值 + 滑块）
-
-```json
-{
-  "type": "number",
-  "name": "volume",
-  "text": "音量",
-  "min": 0,
-  "max": 100,
-  "step": 5,
-  "integer": true,
-  "default": 50,
-  "nullable": true
-}
-```
-
-### 3. Text（文本输入）
-
-**单行文本：**
-```json
-{
-  "type": "text",
-  "name": "apiKey",
-  "text": "API Key",
-  "placeholder": "sk-...",
-  "masked": true
-}
-```
-
-**多行文本（弹窗编辑）：**
-```json
-{
-  "type": "text",
-  "name": "prompt",
-  "text": "系统提示词",
-  "multiline": true
-}
-```
-
-### 4. Checkbox（复选框）
-
-```json
-{
-  "type": "checkbox",
-  "name": "enableProxy",
-  "text": "启用代理"
-}
-```
-
-### 5. Select（下拉选择）
-
-```json
-{
-  "type": "select",
-  "name": "model",
-  "text": "模型",
-  "default": "gpt-4o",
-  "options": [
-    { "value": "gpt-4o", "label": "GPT-4o" },
-    { "value": "claude-3", "label": "Claude 3" }
-  ]
-}
-```
-
-### 6. Image（图片上传）
-
-```json
-{
-  "type": "image",
-  "name": "avatar",
-  "text": "模型头像",
-  "tips": "推荐 128×128 尺寸"
-}
-```
-
-### 7. Custom（自定义键值对）
-
-```json
-{
-  "type": "custom",
-  "name": "headers",
-  "text": "自定义请求头"
-}
-```
-
-### 8. Group（分组）
-
-```json
-{
-  "type": "group",
-  "name": "advanced",
-  "text": "高级设置",
-  "children": [ /* 子控件 */ ]
-}
-```
-
-### 9. List（动态列表）
-
-```json
-{
-  "type": "list",
-  "name": "models",
-  "text": "模型管理",
-  "itemTitleKey": "name",
-  "uniqueKey": "id",
-  "children": [ /* 子控件 */ ]
-}
-```
-
-### 10. Heading（标题/分隔线）
-
-```json
-{ "type": "heading", "text": "通用设置" }
-```
-
-### 11. Tags 标签组件
-
-```python
-{
-    "type": "tags",
-    "name": "labels",
-    "text": "标签",
-    "nullable": True,
-    "default": ["MoE", "大语言模型"],
-    "placeholder": "输入标签后按 Enter"
-}
-```
-
----
-
-## 参考配置示例（包含 `showWhen`）
-
-```json
-[
-  { "type": "heading", "text": "头像设置" },
-  {
-    "type": "select",
-    "name": "avatar_type",
-    "text": "头像类型",
-    "options": [
-      { "value": "builtin", "label": "内置头像" },
-      { "value": "upload", "label": "自定义上传" }
-    ],
-    "default": "builtin"
-  },
-  {
-    "type": "select",
-    "name": "avatar_builtin",
-    "text": "选择内置头像",
-    "showWhen": { "avatar_type": "builtin" }
-  },
-  {
-    "type": "image",
-    "name": "avatar",
-    "text": "上传自定义头像",
-    "tips": "支持 JPG、PNG 格式",
-    "showWhen": { "avatar_type": "upload" }
-  }
-]
-```
-
----
-
-## 注意事项
-
-- `showWhen` 目前仅支持**同级字段**的条件判断。
-- 当依赖字段的值发生变化时，相关控件会实时显示/隐藏。
-- `showWhen` 不影响默认值生成逻辑，仅控制渲染。
-- 列表（`list`）内部的子字段暂不支持跨层级 `showWhen`（如需可后续扩展）。
-
----
-
-如需进一步扩展 `showWhen` 支持功能（例如跨层级路径、函数式条件、隐藏逻辑 `hideWhen` 等），请随时告知，我将立即更新文档与代码。
-
-此文档已完整、清晰，可直接用于团队内部使用或开发者参考。
-
-# 默认前端 LocalStorage 配置
-
-- ShowShiftEnterNewlineTip 布尔值，是否在桌面端第一次显示按下 Shift + Enter 提示，默认为 true
-- sidebarOpenDesktop 布尔值，是否在桌面端打开 Sidebar
-- sidebarOpenMobile 布尔值，是否在移动端打开 Sidebar
+1. 收集同一句的全部 `Speech-Audio-Chunk`。
+2. 在 `Speech-Segment-Ready` 时按 `chunkIndex` 排序并合并 bytes。
+3. 用 `sampleRate`、`channels=1`、`bitsPerSample=16` 封装 WAV header。
+4. 生成 Blob URL 并交给本地 `Audio` 播放。
+5. 仅在本地 `Audio.onplaying` 时切换当前句高亮。

@@ -57,6 +57,138 @@ const SPEECH_TEXT_CANDIDATE_SELECTOR = [
     'h6',
 ].join(',');
 
+
+const DEFAULT_BACKEND_PCM_SAMPLE_RATE = 24000;
+const DEFAULT_BACKEND_PCM_CHANNELS = 1;
+const DEFAULT_BACKEND_PCM_BITS_PER_SAMPLE = 16;
+
+const createBackendSpeechAudioState = () => ({
+    requestId: null,
+    messageId: null,
+    engine: null,
+    audio: null,
+    chunks: new Map(),
+    queue: [],
+    queuedIds: new Set(),
+    objectUrls: new Set(),
+    playing: false,
+    generationEnded: false,
+    cancelled: false,
+    playbackEpoch: 0,
+    seekEpoch: 0,
+    lastPlaybackAckKey: null,
+    sampleRate: DEFAULT_BACKEND_PCM_SAMPLE_RATE,
+    channels: DEFAULT_BACKEND_PCM_CHANNELS,
+    bitsPerSample: DEFAULT_BACKEND_PCM_BITS_PER_SAMPLE,
+    format: 'pcm',
+    mime: 'audio/pcm',
+});
+
+const normalizeBackendAudioFormat = (payload = {}) => String(
+    payload.format || 'pcm'
+).toLowerCase();
+
+const getBackendSpeechSegmentId = (payload = {}) => String(
+    payload.segmentId || `speech-segment-${payload.segmentPosition ?? 0}`
+);
+
+const getBackendSpeechSegmentIndex = (payload = {}, fallback = 0) => {
+    const value = Number(payload.segmentIndex ?? fallback);
+    return Number.isFinite(value) ? value : fallback;
+};
+
+const getBackendSpeechSegmentPosition = (payload = {}, fallback = 0) => {
+    const value = Number(payload.segmentPosition ?? fallback);
+    return Number.isFinite(value) ? value : fallback;
+};
+
+const getBackendSpeechSampleRate = (payload = {}, fallback = DEFAULT_BACKEND_PCM_SAMPLE_RATE) => {
+    const value = Number(payload.sampleRate ?? fallback);
+    return Number.isFinite(value) && value > 0 ? value : fallback;
+};
+
+const getBackendSpeechChannels = (payload = {}, fallback = DEFAULT_BACKEND_PCM_CHANNELS) => {
+    const value = Number(payload.channels ?? fallback);
+    return Number.isFinite(value) && value > 0 ? value : fallback;
+};
+
+const getBackendSpeechBitsPerSample = (payload = {}, fallback = DEFAULT_BACKEND_PCM_BITS_PER_SAMPLE) => {
+    const value = Number(payload.bitsPerSample ?? fallback);
+    return Number.isFinite(value) && value > 0 ? value : fallback;
+};
+
+const decodeBase64ToUint8Array = (value) => {
+    const normalized = String(value || '').replace(/\s+/g, '');
+    if (!normalized) return new Uint8Array(0);
+
+    const binaryString = window.atob(normalized);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let index = 0; index < binaryString.length; index += 1) {
+        bytes[index] = binaryString.charCodeAt(index);
+    }
+    return bytes;
+};
+
+const concatUint8Arrays = (arrays) => {
+    const totalLength = arrays.reduce((sum, item) => sum + (item?.byteLength || 0), 0);
+    const result = new Uint8Array(totalLength);
+    let offset = 0;
+
+    arrays.forEach((item) => {
+        if (!item?.byteLength) return;
+        result.set(item, offset);
+        offset += item.byteLength;
+    });
+
+    return result;
+};
+
+const writeAsciiString = (view, offset, value) => {
+    for (let index = 0; index < value.length; index += 1) {
+        view.setUint8(offset + index, value.charCodeAt(index));
+    }
+};
+
+const createWavBlobFromPcm = (pcmBytes, options = {}) => {
+    const sampleRate = getBackendSpeechSampleRate(options);
+    const channels = getBackendSpeechChannels(options);
+    const bitsPerSample = getBackendSpeechBitsPerSample(options);
+    const bytesPerSample = bitsPerSample / 8;
+    const blockAlign = channels * bytesPerSample;
+    const byteRate = sampleRate * blockAlign;
+    const buffer = new ArrayBuffer(44 + pcmBytes.byteLength);
+    const view = new DataView(buffer);
+
+    writeAsciiString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + pcmBytes.byteLength, true);
+    writeAsciiString(view, 8, 'WAVE');
+    writeAsciiString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, channels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitsPerSample, true);
+    writeAsciiString(view, 36, 'data');
+    view.setUint32(40, pcmBytes.byteLength, true);
+    new Uint8Array(buffer, 44).set(pcmBytes);
+
+    return new Blob([buffer], {type: 'audio/wav'});
+};
+
+const createBackendSpeechBlob = (byteArrays, payload = {}) => {
+    const rawBytes = concatUint8Arrays(byteArrays);
+    const format = normalizeBackendAudioFormat(payload);
+    const mime = payload.mime || (format === 'pcm' ? 'audio/pcm' : `audio/${format}`);
+
+    if (format === 'pcm' || String(mime).toLowerCase().includes('pcm')) {
+        return createWavBlobFromPcm(rawBytes, payload);
+    }
+
+    return new Blob([rawBytes], {type: mime});
+};
+
 const normalizeSpeechMatchText = (value) => String(value ?? '')
     .replace(/[​-‍﻿]/g, '')
     .replace(/\s+/g, ' ')
@@ -162,6 +294,7 @@ function ChatPage({
         segments: [],
         currentSegmentId: null,
         currentSegmentIndex: -1,
+        currentSegmentPosition: -1,
         rate: 1,
     });
     const speechStateRef = useRef(speechState);
@@ -171,6 +304,7 @@ function ChatPage({
         cancelled: false,
         playToken: 0,
     });
+    const backendSpeechAudioRef = useRef(createBackendSpeechAudioState());
     const [speechAutoFollowEnabled, setSpeechAutoFollowEnabled] = useState(false);
     const speechAutoFollowEnabledRef = useRef(false);
     const speechFollowProgrammaticScrollUntilRef = useRef(0);
@@ -1507,9 +1641,121 @@ function ChatPage({
             segments: [],
             currentSegmentId: null,
             currentSegmentIndex: -1,
+            currentSegmentPosition: -1,
             rate: 1,
         });
     }, []);
+
+    const clearBackendSpeechAudio = useCallback(({stopAudio = true} = {}) => {
+        const backendState = backendSpeechAudioRef.current;
+
+        if (backendState?.audio) {
+            try {
+                if (stopAudio) {
+                    backendState.audio.pause();
+                }
+                backendState.audio.removeAttribute?.('src');
+                backendState.audio.load?.();
+            } catch (_) {
+                // 忽略浏览器音频对象释放时的异常。
+            }
+        }
+
+        backendState?.objectUrls?.forEach((url) => {
+            try {
+                URL.revokeObjectURL(url);
+            } catch (_) {
+                // 忽略重复 revoke。
+            }
+        });
+
+        backendSpeechAudioRef.current = createBackendSpeechAudioState();
+    }, []);
+
+    const resetBackendSpeechPlaybackQueue = useCallback(({
+                                                             stopAudio = true,
+                                                             clearChunks = true,
+                                                             bumpEpoch = true,
+                                                         } = {}) => {
+        const backendState = backendSpeechAudioRef.current;
+        if (!backendState) return;
+
+        if (bumpEpoch) {
+            backendState.playbackEpoch = (backendState.playbackEpoch || 0) + 1;
+        }
+
+        if (backendState.audio) {
+            try {
+                if (stopAudio) backendState.audio.pause();
+                backendState.audio.removeAttribute?.('src');
+                backendState.audio.load?.();
+            } catch (_) {
+                // 忽略浏览器音频对象释放时的异常。
+            }
+            backendState.audio = null;
+        }
+
+        backendState.queue = [];
+        backendState.queuedIds.clear?.();
+        if (clearChunks) backendState.chunks.clear?.();
+
+        backendState.objectUrls?.forEach((url) => {
+            try {
+                URL.revokeObjectURL(url);
+            } catch (_) {
+                // 忽略重复 revoke。
+            }
+        });
+        backendState.objectUrls.clear?.();
+
+        backendState.playing = false;
+        backendState.currentSegmentId = null;
+        backendState.currentSegmentIndex = -1;
+        backendState.currentSegmentPosition = -1;
+        backendState.lastPlaybackAckKey = null;
+    }, []);
+
+    const emitBackendSpeechPlaybackAck = useCallback((payload = {}, phase = 'start') => {
+        const controller = speechControllerRef.current;
+        if (!controller?.requestId || controller.engine === 'browser') return;
+
+        const backendState = backendSpeechAudioRef.current;
+        const requestId = payload.requestId || backendState?.requestId || controller.requestId;
+        const messageId = payload.messageId || payload.msgId || backendState?.messageId || speechStateRef.current?.messageId;
+        const segmentId = getBackendSpeechSegmentId(payload);
+        const segmentIndex = getBackendSpeechSegmentIndex(payload, -1);
+        const segmentPosition = getBackendSpeechSegmentPosition(payload, -1);
+        const playbackEpoch = backendState?.playbackEpoch || 0;
+        const ackKey = `${requestId}:${phase}:${segmentId}:${segmentPosition}:${playbackEpoch}`;
+
+        if (backendState) {
+            if (backendState.lastPlaybackAckKey === ackKey) return;
+            backendState.lastPlaybackAckKey = ackKey;
+        }
+
+        emitEvent({
+            type: 'speech',
+            target: 'TTS',
+            payload: {
+                command: 'Speech-Playback-Ack',
+                requestId,
+                msgId: messageId,
+                messageId,
+                segmentId,
+                segmentIndex,
+                segmentPosition,
+                phase,
+                status: phase,
+                playbackEpoch,
+                timestamp: new Date().toISOString(),
+            },
+            markId: chatMarkId,
+        });
+    }, [chatMarkId]);
+
+    useEffect(() => () => {
+        clearBackendSpeechAudio();
+    }, [clearBackendSpeechAudio]);
 
     const cancelActiveSpeech = useCallback((notifyBackend = false) => {
         const currentController = speechControllerRef.current;
@@ -1518,6 +1764,8 @@ function ChatPage({
         if (typeof window !== 'undefined' && window.speechSynthesis) {
             window.speechSynthesis.cancel();
         }
+
+        clearBackendSpeechAudio();
 
         if (
             notifyBackend &&
@@ -1545,7 +1793,7 @@ function ChatPage({
             playToken: 0,
         };
         resetSpeechState();
-    }, [chatMarkId, resetSpeechState]);
+    }, [chatMarkId, clearBackendSpeechAudio, resetSpeechState]);
 
     const pauseActiveSpeech = useCallback(() => {
         const currentController = speechControllerRef.current;
@@ -1557,6 +1805,12 @@ function ChatPage({
                 window.speechSynthesis.pause();
             }
         } else {
+            currentController.paused = true;
+            const backendAudio = backendSpeechAudioRef.current?.audio;
+            if (backendAudio && !backendAudio.paused) {
+                backendAudio.pause();
+            }
+
             emitEvent({
                 type: 'speech',
                 target: 'TTS',
@@ -1595,6 +1849,12 @@ function ChatPage({
                 }, 0);
             }
         } else {
+            currentController.paused = false;
+            const backendAudio = backendSpeechAudioRef.current?.audio;
+            if (backendAudio && backendAudio.paused) {
+                backendAudio.play?.().catch?.(() => {});
+            }
+
             emitEvent({
                 type: 'speech',
                 target: 'TTS',
@@ -1621,6 +1881,11 @@ function ChatPage({
 
         if (currentController?.requestId) {
             currentController.rate = nextRate;
+
+            const backendAudio = backendSpeechAudioRef.current?.audio;
+            if (backendAudio) {
+                backendAudio.playbackRate = nextRate;
+            }
 
             if (currentController.engine && currentController.engine !== 'browser') {
                 emitEvent({
@@ -1818,19 +2083,46 @@ function ChatPage({
         return true;
     }, [cancelActiveSpeech, findBrowserSpeechVoice, normalizeSpeechRate, resetSpeechState, t]);
 
-    const requestBackendSpeech = useCallback(({messageId, requestId, segments, engine, speechConfig}) => {
+    const requestBackendSpeech = useCallback(({
+                                                  messageId,
+                                                  requestId,
+                                                  segments,
+                                                  engine,
+                                                  speechConfig,
+                                                  startSegmentPosition = 0,
+                                                  restartReason = null,
+                                              }) => {
         cancelActiveSpeech(false);
 
+        const safeStartPosition = Number.isInteger(Number(startSegmentPosition))
+            ? Math.min(Math.max(Number(startSegmentPosition), 0), Math.max((segments?.length || 1) - 1, 0))
+            : 0;
         const rate = normalizeSpeechRate(speechConfig.rate ?? speechConfig.speakRate ?? 1);
+        const backendOptions = {
+            ...speechConfig,
+            rate,
+            startSegmentPosition: safeStartPosition,
+            restartReason,
+        };
 
         speechControllerRef.current = {
             requestId,
             engine,
             cancelled: false,
+            paused: false,
             rate,
             segments,
+            speechConfig,
             currentIndex: -1,
+            startSegmentPosition: safeStartPosition,
             playToken: 0,
+        };
+
+        backendSpeechAudioRef.current = {
+            ...createBackendSpeechAudioState(),
+            requestId,
+            messageId,
+            engine,
         };
 
         setSpeechState({
@@ -1841,6 +2133,7 @@ function ChatPage({
             segments,
             currentSegmentId: null,
             currentSegmentIndex: -1,
+            currentSegmentPosition: -1,
             rate,
         });
 
@@ -1854,14 +2147,35 @@ function ChatPage({
                 messageId,
                 engine,
                 model: selectedModel?.id,
-                options: {...speechConfig, rate},
+                options: backendOptions,
                 segments,
+                startSegmentPosition: safeStartPosition,
+                restartReason,
             },
             markId: chatMarkId,
         });
     }, [cancelActiveSpeech, chatMarkId, normalizeSpeechRate, selectedModel?.id]);
 
-    const seekSpeechSegment = useCallback((directionOrIndex) => {
+    const resolveSpeechSegmentPosition = useCallback((segments = [], locator = {}) => {
+        if (!Array.isArray(segments) || segments.length === 0) return -1;
+
+        const explicitPosition = locator?.segmentPosition;
+        if (explicitPosition !== undefined && explicitPosition !== null && explicitPosition !== '') {
+            const parsedPosition = Number(explicitPosition);
+            if (Number.isInteger(parsedPosition) && parsedPosition >= 0 && parsedPosition < segments.length) {
+                return parsedPosition;
+            }
+        }
+
+        const segmentId = locator?.segmentId;
+        if (segmentId !== undefined && segmentId !== null && segmentId !== '') {
+            return segments.findIndex(item => String(item?.id) === String(segmentId));
+        }
+
+        return -1;
+    }, []);
+
+    const seekSpeechSegment = useCallback((directionOrLocator, options = {}) => {
         const currentController = speechControllerRef.current;
         const currentSpeech = speechStateRef.current;
 
@@ -1872,48 +2186,72 @@ function ChatPage({
         const segments = currentController.segments || currentSpeech.segments || [];
         if (!Array.isArray(segments) || segments.length === 0) return false;
 
-        const currentIndex = Number.isInteger(currentSpeech.currentSegmentIndex) && currentSpeech.currentSegmentIndex >= 0
-            ? currentSpeech.currentSegmentIndex
-            : (Number.isInteger(currentController.currentIndex) && currentController.currentIndex >= 0
-                ? currentController.currentIndex
-                : 0);
+        const isLocatorObject = directionOrLocator && typeof directionOrLocator === 'object';
+        const isAbsolute = options.absolute === true || isLocatorObject;
+        const backendState = backendSpeechAudioRef.current;
 
-        const rawTarget = typeof directionOrIndex === 'number'
-            ? currentIndex + directionOrIndex
-            : currentIndex;
-        const targetIndex = Math.min(Math.max(rawTarget, 0), segments.length - 1);
-        const targetSegment = segments[targetIndex];
+        let currentPosition = resolveSpeechSegmentPosition(segments, {
+            segmentPosition: currentSpeech.currentSegmentPosition,
+            segmentId: currentSpeech.currentSegmentId || backendState?.currentSegmentId,
+        });
+
+        if (currentPosition < 0) {
+            currentPosition = resolveSpeechSegmentPosition(segments, {
+                segmentPosition: backendState?.currentSegmentPosition,
+                segmentId: backendState?.currentSegmentId,
+            });
+        }
+
+        if (currentPosition < 0 && Number.isInteger(currentController.currentIndex) && currentController.currentIndex >= 0) {
+            currentPosition = Math.min(currentController.currentIndex, segments.length - 1);
+        }
+
+        if (currentPosition < 0) currentPosition = 0;
+
+        let targetPosition;
+        if (isAbsolute) {
+            targetPosition = resolveSpeechSegmentPosition(segments, isLocatorObject
+                ? {segmentPosition: directionOrLocator.segmentPosition, segmentId: directionOrLocator.segmentId}
+                : {segmentPosition: directionOrLocator});
+            if (targetPosition < 0 && typeof directionOrLocator === 'number') {
+                targetPosition = Math.min(Math.max(directionOrLocator, 0), segments.length - 1);
+            }
+        } else {
+            const direction = Number(directionOrLocator);
+            targetPosition = currentPosition + (Number.isFinite(direction) ? direction : 0);
+        }
+
+        targetPosition = Math.min(Math.max(targetPosition, 0), segments.length - 1);
+        const targetSegment = segments[targetPosition];
         if (!targetSegment) return false;
 
         if (currentController.engine === 'browser') {
             if (typeof currentController.playFrom !== 'function') return false;
-            return currentController.playFrom(targetIndex);
+            return currentController.playFrom(targetPosition);
         }
 
-        emitEvent({
-            type: 'speech',
-            target: 'TTS',
-            payload: {
-                command: 'Speech-SeekSegment',
-                requestId: currentController.requestId,
-                messageId: currentSpeech.messageId,
-                msgId: currentSpeech.messageId,
-                segmentId: targetSegment.id,
-                segmentIndex: targetIndex,
-                direction: typeof directionOrIndex === 'number' ? directionOrIndex : 0,
-            },
-            markId: chatMarkId,
+        // 后端 TTS 跳句采用“硬重启”模式：直接清空本地旧音频、生成新 requestId，
+        // 后端收到新的 Speak-Message 后会取消旧流，并从 startSegmentPosition 重新合成。
+        resetBackendSpeechPlaybackQueue({stopAudio: true, clearChunks: true, bumpEpoch: true});
+        const newRequestId = generateUUID();
+        const direction = !isAbsolute && typeof directionOrLocator === 'number' ? directionOrLocator : 0;
+        const speechConfig = {
+            ...(currentController.speechConfig || {}),
+            rate: currentSpeech.rate ?? currentController.rate ?? 1,
+        };
+
+        requestBackendSpeech({
+            messageId: currentSpeech.messageId,
+            requestId: newRequestId,
+            segments,
+            engine: currentController.engine,
+            speechConfig,
+            startSegmentPosition: targetPosition,
+            restartReason: direction < 0 ? 'previous' : (direction > 0 ? 'next' : 'seek'),
         });
 
-        setSpeechState(prev => ({
-            ...prev,
-            status: prev.status === 'paused' ? 'paused' : 'loading',
-            currentSegmentId: targetSegment.id,
-            currentSegmentIndex: targetIndex,
-        }));
-
         return true;
-    }, [chatMarkId]);
+    }, [requestBackendSpeech, resetBackendSpeechPlaybackQueue, resolveSpeechSegmentPosition]);
 
     const handleSpeakMessageRequest = useCallback((payload, reply) => {
         const messageId = payload?.msgId || payload?.messageId || payload?.value;
@@ -1947,10 +2285,9 @@ function ChatPage({
         }
 
         const speechConfig = {
-            ...advancedSettingsValues,
             ...(payload?.options || {}),
         };
-        const engine = payload?.engine || speechConfig.speakEngine || 'browser';
+        const engine = advancedSettingsValues.speakEngine || 'browser';
         const requestId = payload?.requestId || generateUUID();
 
         if (engine === 'browser') {
@@ -1963,6 +2300,285 @@ function ChatPage({
         reply?.({success: true});
     }, [advancedSettingsValues, cancelActiveSpeech, requestBackendSpeech, speakWithBrowser, t]);
 
+
+    const applyBackendSpeechPlaybackSegment = useCallback((payload = {}) => {
+        const segmentPosition = getBackendSpeechSegmentPosition(payload, -1);
+        const segmentIndex = getBackendSpeechSegmentIndex(payload, segmentPosition);
+        const segmentId = payload.segmentId || speechControllerRef.current?.segments?.[segmentPosition]?.id || null;
+
+        if (Number.isFinite(segmentPosition) && segmentPosition >= 0) {
+            speechControllerRef.current.currentIndex = segmentPosition;
+        }
+
+        setSpeechState(prev => ({
+            ...prev,
+            status: prev.status === 'paused' ? 'paused' : 'playing',
+            currentSegmentId: segmentId,
+            currentSegmentIndex: segmentIndex,
+            currentSegmentPosition: segmentPosition,
+            rate: normalizeSpeechRate(payload.rate ?? prev.rate ?? 1),
+        }));
+    }, [normalizeSpeechRate]);
+
+    const finishBackendSpeechPlayback = useCallback((requestId) => {
+        setSpeechState(prev => ({
+            ...prev,
+            status: 'ended',
+            currentSegmentId: null,
+            currentSegmentIndex: -1,
+            currentSegmentPosition: -1,
+        }));
+
+        window.setTimeout(() => {
+            if (speechControllerRef.current.requestId === requestId) {
+                speechControllerRef.current = {
+                    requestId: null,
+                    engine: null,
+                    cancelled: false,
+                    playToken: 0,
+                };
+                clearBackendSpeechAudio({stopAudio: false});
+                resetSpeechState();
+            }
+        }, 300);
+    }, [clearBackendSpeechAudio, resetSpeechState]);
+
+    const playNextBackendSpeechSegment = useCallback(() => {
+        const backendState = backendSpeechAudioRef.current;
+        const controller = speechControllerRef.current;
+        const requestId = backendState?.requestId;
+
+        if (!requestId || backendState.cancelled || controller.requestId !== requestId) return;
+        if (backendState.playing || controller.paused || speechStateRef.current?.status === 'paused') return;
+
+        const nextItem = backendState.queue.shift();
+        if (!nextItem) {
+            if (backendState.generationEnded) {
+                finishBackendSpeechPlayback(requestId);
+            }
+            return;
+        }
+
+        const audio = new Audio(nextItem.audioUrl);
+        const rate = normalizeSpeechRate(controller.rate ?? speechStateRef.current?.rate ?? 1);
+        const segmentPosition = getBackendSpeechSegmentPosition(nextItem, 0);
+        const segmentIndex = getBackendSpeechSegmentIndex(nextItem, segmentPosition);
+        const segmentId = nextItem.segmentId;
+        const playbackEpoch = backendState.playbackEpoch || 0;
+
+        backendState.audio = audio;
+        backendState.playing = true;
+        backendState.currentSegmentId = segmentId;
+        backendState.currentSegmentIndex = segmentIndex;
+        backendState.currentSegmentPosition = segmentPosition;
+        // 后端 TTS 使用被动句子进度模式：本地 Audio 队列只负责播放音频，
+        // 不写入 controller.currentIndex，避免上一句/下一句基于前端播放队列自行跳转。
+        audio.playbackRate = rate;
+
+        const cleanupCurrentAudio = ({revoke = true} = {}) => {
+            if (backendState.audio === audio) {
+                backendState.audio = null;
+            }
+            backendState.playing = false;
+            backendState.currentSegmentId = null;
+            backendState.currentSegmentIndex = -1;
+            backendState.currentSegmentPosition = -1;
+            backendState.queuedIds.delete(segmentId);
+
+            if (revoke && nextItem.revoke !== false && nextItem.audioUrl) {
+                try {
+                    URL.revokeObjectURL(nextItem.audioUrl);
+                } catch (_) {
+                    // 忽略重复释放。
+                }
+                backendState.objectUrls.delete(nextItem.audioUrl);
+            }
+        };
+
+        const isStalePlayback = () => (
+            backendState.cancelled ||
+            speechControllerRef.current.requestId !== requestId ||
+            (backendState.playbackEpoch || 0) !== playbackEpoch
+        );
+
+        audio.onplaying = () => {
+            if (isStalePlayback()) return;
+
+            const playbackPayload = {
+                requestId,
+                messageId: backendState.messageId,
+                msgId: backendState.messageId,
+                segmentId,
+                segmentIndex,
+                segmentPosition,
+                rate,
+                source: 'frontend-audio-playback',
+                playback: true,
+            };
+
+            // 只有真实开始播放这一刻才推进 UI 句子进度。
+            applyBackendSpeechPlaybackSegment(playbackPayload);
+            emitBackendSpeechPlaybackAck(playbackPayload, 'start');
+        };
+
+        audio.onended = () => {
+            if (isStalePlayback()) return;
+
+            emitBackendSpeechPlaybackAck({
+                requestId,
+                messageId: backendState.messageId,
+                msgId: backendState.messageId,
+                segmentId,
+                segmentIndex,
+                segmentPosition,
+            }, 'end');
+
+            cleanupCurrentAudio();
+            // 播放完一句之后再播放下一句；下一句的高亮只会在下一段 audio.onplaying 时切换。
+            playNextBackendSpeechSegment();
+        };
+
+        audio.onerror = () => {
+            if (isStalePlayback()) return;
+
+            emitBackendSpeechPlaybackAck({
+                requestId,
+                messageId: backendState.messageId,
+                msgId: backendState.messageId,
+                segmentId,
+                segmentIndex,
+                segmentPosition,
+            }, 'error');
+
+            cleanupCurrentAudio();
+            toast.error(t('speech_play_error', {message: t('unknown_error')}));
+            clearBackendSpeechAudio();
+            resetSpeechState();
+        };
+
+        audio.play().catch((error) => {
+            if (isStalePlayback()) return;
+
+            emitBackendSpeechPlaybackAck({
+                requestId,
+                messageId: backendState.messageId,
+                msgId: backendState.messageId,
+                segmentId,
+                segmentIndex,
+                segmentPosition,
+            }, 'error');
+
+            cleanupCurrentAudio();
+            toast.error(t('speech_play_error', {message: error?.message || t('unknown_error')}));
+            clearBackendSpeechAudio();
+            resetSpeechState();
+        });
+    }, [
+        applyBackendSpeechPlaybackSegment,
+        clearBackendSpeechAudio,
+        emitBackendSpeechPlaybackAck,
+        finishBackendSpeechPlayback,
+        normalizeSpeechRate,
+        resetSpeechState,
+        t,
+    ]);
+
+    const enqueueBackendSpeechSegment = useCallback((payload, audioUrl, revoke = true) => {
+        const backendState = backendSpeechAudioRef.current;
+        const requestId = payload?.requestId || backendState.requestId;
+        const segmentId = getBackendSpeechSegmentId(payload);
+
+        if (!audioUrl || !requestId || backendState.cancelled) return false;
+        if (backendState.queuedIds.has(segmentId)) return true;
+
+        backendState.requestId = requestId;
+        backendState.messageId = payload?.messageId || payload?.msgId || backendState.messageId;
+        backendState.format = normalizeBackendAudioFormat(payload);
+        backendState.mime = payload?.mime || backendState.mime;
+        backendState.sampleRate = getBackendSpeechSampleRate(payload, backendState.sampleRate);
+        backendState.channels = getBackendSpeechChannels(payload, backendState.channels);
+        backendState.bitsPerSample = getBackendSpeechBitsPerSample(payload, backendState.bitsPerSample);
+        backendState.queue.push({
+            segmentId,
+            segmentIndex: getBackendSpeechSegmentIndex(payload, getBackendSpeechSegmentPosition(payload, backendState.queue.length)),
+            segmentPosition: getBackendSpeechSegmentPosition(payload, backendState.queue.length),
+            audioUrl,
+            revoke,
+        });
+        backendState.queuedIds.add(segmentId);
+        if (revoke) backendState.objectUrls.add(audioUrl);
+
+        playNextBackendSpeechSegment();
+        return true;
+    }, [playNextBackendSpeechSegment]);
+
+    const handleBackendSpeechAudioChunk = useCallback((payload) => {
+        if (!payload?.audio) return false;
+
+        const backendState = backendSpeechAudioRef.current;
+        const segmentId = getBackendSpeechSegmentId(payload);
+        let segmentBuffer = backendState.chunks.get(segmentId);
+
+        if (!segmentBuffer) {
+            segmentBuffer = {
+                chunks: new Map(),
+                payload: {},
+            };
+            backendState.chunks.set(segmentId, segmentBuffer);
+        }
+
+        const chunkIndex = Number(payload.chunkIndex ?? segmentBuffer.chunks.size);
+        segmentBuffer.chunks.set(Number.isFinite(chunkIndex) ? chunkIndex : segmentBuffer.chunks.size, payload.audio);
+        segmentBuffer.payload = {
+            ...segmentBuffer.payload,
+            ...payload,
+            segmentId,
+        };
+        backendState.sampleRate = getBackendSpeechSampleRate(payload, backendState.sampleRate);
+        backendState.format = normalizeBackendAudioFormat(payload);
+        backendState.mime = payload.mime || backendState.mime;
+        return true;
+    }, []);
+
+    const handleBackendSpeechSegmentReady = useCallback((payload) => {
+        const backendState = backendSpeechAudioRef.current;
+        const segmentId = getBackendSpeechSegmentId(payload);
+        const segmentBuffer = backendState.chunks.get(segmentId);
+
+        if (!segmentBuffer) {
+            // 允许空分段结束事件，不中断整个播放任务。
+            return false;
+        }
+
+        const mergedPayload = {
+            ...segmentBuffer.payload,
+            ...payload,
+            segmentId,
+            sampleRate: getBackendSpeechSampleRate(payload, backendState.sampleRate),
+            channels: getBackendSpeechChannels(payload, backendState.channels),
+            bitsPerSample: getBackendSpeechBitsPerSample(payload, backendState.bitsPerSample),
+        };
+        const chunkEntries = Array.from(segmentBuffer.chunks.entries())
+            .sort(([left], [right]) => Number(left) - Number(right));
+        const chunkCount = Number(payload.chunkCount ?? chunkEntries.length);
+
+        if (Number.isFinite(chunkCount) && chunkCount > 0 && chunkEntries.length < chunkCount) {
+            toast.warning(t('speech_play_error', {message: `TTS 音频分片缺失：${segmentId}`}));
+        }
+
+        try {
+            const byteArrays = chunkEntries.map(([, audio]) => decodeBase64ToUint8Array(audio));
+            const blob = createBackendSpeechBlob(byteArrays, mergedPayload);
+            const audioUrl = URL.createObjectURL(blob);
+            backendState.chunks.delete(segmentId);
+            return enqueueBackendSpeechSegment(mergedPayload, audioUrl, true);
+        } catch (error) {
+            backendState.chunks.delete(segmentId);
+            toast.error(t('speech_play_error', {message: error?.message || t('unknown_error')}));
+            return false;
+        }
+    }, [enqueueBackendSpeechSegment, t]);
+
     const handleBackendSpeechEvent = useCallback((payload, reply) => {
         const requestId = payload?.requestId;
         if (requestId && speechControllerRef.current.requestId && requestId !== speechControllerRef.current.requestId) {
@@ -1971,42 +2587,54 @@ function ChatPage({
         }
 
         switch (payload?.command) {
-            case 'Speech-Start':
+            case 'Speech-Start': {
+                const requestId = payload.requestId || speechControllerRef.current.requestId;
+                const messageId = payload.messageId || payload.msgId || speechStateRef.current?.messageId;
+                const backendState = backendSpeechAudioRef.current;
+                backendState.requestId = requestId || backendState.requestId;
+                backendState.messageId = messageId || backendState.messageId;
+                backendState.engine = payload.engine || backendState.engine;
+                backendState.sampleRate = getBackendSpeechSampleRate(payload, backendState.sampleRate);
+                backendState.channels = getBackendSpeechChannels(payload, backendState.channels);
+                backendState.bitsPerSample = getBackendSpeechBitsPerSample(payload, backendState.bitsPerSample);
+                backendState.format = normalizeBackendAudioFormat(payload);
+                backendState.mime = payload.mime || backendState.mime;
+
                 setSpeechState(prev => ({
                     ...prev,
                     status: 'loading',
-                    requestId: payload.requestId || prev.requestId,
-                    messageId: payload.messageId || payload.msgId || prev.messageId,
+                    requestId: requestId || prev.requestId,
+                    messageId: messageId || prev.messageId,
                     rate: normalizeSpeechRate(payload.rate ?? prev.rate ?? 1),
                 }));
                 reply?.({success: true});
                 break;
-            case 'Speech-Segment-Start':
-            case 'Speech-Highlight':
-                setSpeechState(prev => {
-                    const segmentId = payload.segmentId || payload.currentSegmentId || null;
-                    const currentSegmentIndex = segmentId
-                        ? (prev.segments || []).findIndex(item => item.id === segmentId)
-                        : -1;
-                    return {
-                        ...prev,
-                        status: 'playing',
-                        currentSegmentId: segmentId,
-                        currentSegmentIndex,
-                        rate: normalizeSpeechRate(payload.rate ?? prev.rate ?? 1),
-                    };
-                });
-                reply?.({success: true});
-                break;
-            case 'Speech-Paused':
+            }
+            case 'Speech-Paused': {
+                speechControllerRef.current.paused = true;
+                const backendAudio = backendSpeechAudioRef.current?.audio;
+                if (backendAudio && !backendAudio.paused) backendAudio.pause();
                 setSpeechState(prev => ({...prev, status: 'paused'}));
                 reply?.({success: true});
                 break;
-            case 'Speech-Resumed':
+            }
+            case 'Speech-Resumed': {
+                speechControllerRef.current.paused = false;
+                const backendAudio = backendSpeechAudioRef.current?.audio;
+                if (backendAudio && backendAudio.paused) {
+                    backendAudio.play?.().catch?.(() => {});
+                } else {
+                    playNextBackendSpeechSegment();
+                }
                 setSpeechState(prev => ({...prev, status: 'playing'}));
                 reply?.({success: true});
                 break;
+            }
             case 'Speech-End':
+                backendSpeechAudioRef.current.generationEnded = true;
+                playNextBackendSpeechSegment();
+                reply?.({success: true});
+                break;
             case 'Speech-Cancelled':
                 cancelActiveSpeech(false);
                 reply?.({success: true});
@@ -2016,11 +2644,24 @@ function ChatPage({
                 cancelActiveSpeech(false);
                 reply?.({success: true});
                 break;
+            case 'Speech-Audio-Chunk':
+                reply?.({success: handleBackendSpeechAudioChunk(payload)});
+                break;
+            case 'Speech-Segment-Ready':
+                reply?.({success: handleBackendSpeechSegmentReady(payload)});
+                break;
             default:
-                // 预留给后端 TTS：Speech-Audio-Chunk / Speech-Segment-End 等事件可以在这里继续接入。
-                reply?.({success: true, value: 'Speech event reserved'});
+                reply?.({success: true, value: 'Unknown speech event ignored'});
         }
-    }, [cancelActiveSpeech, normalizeSpeechRate, t]);
+    }, [
+        applyBackendSpeechPlaybackSegment,
+        cancelActiveSpeech,
+        handleBackendSpeechAudioChunk,
+        handleBackendSpeechSegmentReady,
+        normalizeSpeechRate,
+        playNextBackendSpeechSegment,
+        t,
+    ]);
 
     useEffect(() => {
         const unsubscribe1 = onEvent({
@@ -2054,7 +2695,10 @@ function ChatPage({
                         reply({success: seekSpeechSegment(1)});
                         break;
                     case "Seek-SpeechSegment":
-                        reply({success: seekSpeechSegment(Number(payload.index ?? payload.segmentIndex ?? 0) - (speechStateRef.current?.currentSegmentIndex ?? 0))});
+                        reply({success: seekSpeechSegment({
+                                segmentId: payload.segmentId,
+                                segmentPosition: payload.segmentPosition,
+                            }, {absolute: true})});
                         break;
                     case "Delete-Message":
                         if (payload.value) {
@@ -2475,7 +3119,6 @@ function ChatPage({
                                             continue;
                                         }
 
-                                        // === 删除 nodes（兼容 id / name / 对象）===
                                         if (networkDelete.nodes !== undefined) {
                                             const deleteNodeKeys = toDeleteKeySet(networkDelete.nodes, getNodeMergeKey);
 
@@ -2486,7 +3129,6 @@ function ChatPage({
                                             }
                                         }
 
-                                        // === 删除 relationships（兼容 id / 派生 key / 对象）===
                                         const normalizedNetworkDelete = normalizeNetworkData(networkDelete);
                                         if (normalizedNetworkDelete.relationships !== undefined) {
                                             const deleteRelKeys = toDeleteKeySet(normalizedNetworkDelete.relationships, getRelationshipMergeKey);
