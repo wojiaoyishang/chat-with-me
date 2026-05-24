@@ -1900,6 +1900,718 @@ code 设置为 401 。
 }
 ```
 
+# TTS 事件说明
+
+## TTS 事件 `target=TTS`
+
+语音合成事件用于前端请求后端进行文本语音合成，并接收后端返回的分段音频数据。
+
+该事件主要用于 `advancedSettingsValues.speakEngine !== "browser"` 的情况。
+如果 `speakEngine === "browser"`，前端会直接使用浏览器 `speechSynthesis` 进行朗读，不需要请求后端。
+
+事件外层结构仍然遵循项目广播格式：
+
+```python
+{
+    "type": "speech",
+    "target": "TTS",
+    "payload": {},
+    "markId": "当前会话ID",
+    "id": "事件ID",
+    "isReply": False,
+    "fromWebsocket": False,
+    "notReplyToWebsocket": False
+}
+```
+
+下方示例只展示 `payload` 字段内容。
+
+---
+
+## type=speech
+
+### 请求后端合成语音
+
+当前端点击消息朗读按钮，并且当前 `speakEngine` 不是 `browser` 时，ChatPage 会向后端发送该事件。
+
+```python
+{
+    "command": "Speak-Message",
+
+    "requestId": "tts-uuid",  # 本次朗读任务 ID，用于防抖、取消、续传、状态匹配
+    "msgId": "msg-uuid",  # 当前朗读的消息 ID
+
+    "engine": "openai",  # 语音合成引擎，由 advancedSettingsValues.speakEngine 提供
+    "voice": "default",  # 语音音色，可选
+    "rate": 1.0,  # 朗读速度
+    "format": "mp3",  # 音频格式，建议 mp3 / wav / webm / opus
+    "mime": "audio/mpeg",  # 音频 MIME 类型
+
+    "segments": [
+        {
+            "id": "msg-uuid:tts:0",  # 分段 ID，前端用于高亮和播放队列
+            "index": 0,  # 分段序号
+            "text": "这是第一句话。"  # 要合成的文本
+        },
+        {
+            "id": "msg-uuid:tts:1",
+            "index": 1,
+            "text": "这是第二句话。"
+        }
+    ],
+
+    "options": {
+        # 预留字段，用于传递额外 TTS 参数
+        # 例如 pitch、volume、language、style、emotion 等
+    }
+}
+```
+
+需要立即回复：
+
+```python
+{
+    "success": True,
+    "value": {
+        "requestId": "tts-uuid",
+        "msgId": "msg-uuid"
+    }
+}
+```
+
+如果后端无法创建合成任务，需要回复：
+
+```python
+{
+    "success": False,
+    "value": "语音合成任务创建失败的原因"
+}
+```
+
+> 注意：这个回复只表示“后端是否成功接收任务”，不表示音频已经合成完成。音频数据需要通过后续 `Speech-*` 事件继续返回。
+
+---
+
+### 后端通知语音任务开始
+
+后端成功创建语音合成任务后，可以发送该事件通知前端进入后端合成状态。
+
+```python
+{
+    "command": "Speech-Start",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+
+    "engine": "openai",
+    "voice": "default",
+    "rate": 1.0,
+    "format": "mp3",
+    "mime": "audio/mpeg",
+
+    "total": 2  # 本次任务总分段数
+}
+```
+
+前端收到后可以将播放器状态设置为：
+
+```python
+{
+    "status": "loading"
+}
+```
+
+---
+
+### 后端通知某个分段开始合成
+
+每个文本分段开始合成时，后端可以发送该事件。
+
+```python
+{
+    "command": "Speech-Segment-Start",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+
+    "segmentId": "msg-uuid:tts:0",
+    "segmentIndex": 0,
+    "text": "这是第一句话。",
+
+    "format": "mp3",
+    "mime": "audio/mpeg"
+}
+```
+
+该事件主要用于前端预创建分段缓冲区。
+
+---
+
+### 后端返回音频 chunk
+
+后端将某个分段的音频数据按 base64 chunk 形式返回。
+
+```python
+{
+    "command": "Speech-Audio-Chunk",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+
+    "segmentId": "msg-uuid:tts:0",
+    "segmentIndex": 0,
+
+    "chunkIndex": 0,  # 当前 chunk 序号，从 0 开始
+    "audio": "base64-encoded-audio-data",  # base64 音频数据
+
+    "format": "mp3",
+    "mime": "audio/mpeg"
+}
+```
+
+前端处理逻辑：
+
+```python
+# 按 segmentId 收集 chunk
+segmentAudioChunks[segmentId].append(audio)
+
+# 不建议收到一个 chunk 就立即播放
+# 建议等 Speech-Segment-End 后合并成 Blob 再加入播放队列
+```
+
+建议后端 chunk 大小：
+
+```python
+16KB ~ 64KB  # 指原始二进制音频大小，不是 base64 后大小
+```
+
+---
+
+### 后端通知某个分段音频结束
+
+当某个 segment 的所有音频 chunk 都发送完成后，后端发送该事件。
+
+```python
+{
+    "command": "Speech-Segment-End",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+
+    "segmentId": "msg-uuid:tts:0",
+    "segmentIndex": 0,
+
+    "chunkCount": 5,  # 当前分段总 chunk 数
+    "durationMs": 1800,  # 当前分段音频时长，可选
+
+    "format": "mp3",
+    "mime": "audio/mpeg"
+}
+```
+
+前端收到后应该：
+
+```python
+{
+    "action": [
+        "校验 chunk 数量",
+        "按 chunkIndex 排序",
+        "base64 解码",
+        "合并成 Blob",
+        "创建 objectURL",
+        "加入播放器队列"
+    ]
+}
+```
+
+例如：
+
+```javascript
+const blob = new Blob(byteArrays, { type: "audio/mpeg" });
+const audioUrl = URL.createObjectURL(blob);
+```
+
+---
+
+### 后端直接返回完整分段音频
+
+如果后端不想分 chunk，也可以直接返回完整 base64 音频。
+
+```python
+{
+    "command": "Speech-Segment",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+
+    "segmentId": "msg-uuid:tts:0",
+    "segmentIndex": 0,
+    "text": "这是第一句话。",
+
+    "audio": "base64-encoded-full-segment-audio",
+    "durationMs": 1800,
+
+    "format": "mp3",
+    "mime": "audio/mpeg"
+}
+```
+
+该模式适合短文本，但长文本不推荐，因为单条 WebSocket 消息可能过大。
+
+---
+
+### 后端返回音频 URL
+
+如果后端采用文件缓存或对象存储，也可以不返回 base64，而是返回音频链接。
+
+```python
+{
+    "command": "Speech-Segment",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+
+    "segmentId": "msg-uuid:tts:0",
+    "segmentIndex": 0,
+    "text": "这是第一句话。",
+
+    "audioUrl": "/api/tts/audio/tts-uuid/seg-0.mp3",
+    "durationMs": 1800,
+
+    "format": "mp3",
+    "mime": "audio/mpeg"
+}
+```
+
+前端可以把 `audioUrl` 和 base64 合成出的 Blob URL 统一看作：
+
+```python
+{
+    "segmentId": "msg-uuid:tts:0",
+    "segmentIndex": 0,
+    "audioUrl": "可播放地址"
+}
+```
+
+这样后续切换 base64 / HTTP URL 时，播放器逻辑不用大改。
+
+---
+
+### 后端通知当前朗读高亮位置
+
+如果后端 TTS 支持更精确的播放控制或时间戳，可以主动通知前端当前高亮分段。
+
+```python
+{
+    "command": "Speech-Highlight",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+
+    "segmentId": "msg-uuid:tts:0",
+    "segmentIndex": 0
+}
+```
+
+对于当前前端实现，通常不需要后端频繁发送该事件。
+前端会在播放某个 segment 前自行设置当前高亮。
+
+---
+
+### 后端通知任务完成
+
+当所有 segment 都合成并发送完成后，后端发送该事件。
+
+```python
+{
+    "command": "Speech-End",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+
+    "total": 2
+}
+```
+
+注意：
+`Speech-End` 表示后端音频数据已经发送完，不代表前端已经播放完。
+前端播放结束由播放器内部状态控制。
+
+---
+
+### 后端通知任务失败
+
+如果合成过程中发生错误，后端发送该事件。
+
+```python
+{
+    "command": "Speech-Error",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+
+    "segmentId": "msg-uuid:tts:1",  # 如果是某个分段失败，则提供
+    "segmentIndex": 1,
+
+    "message": "语音合成失败的原因",
+    "code": "TTS_ENGINE_ERROR"
+}
+```
+
+前端收到后可以：
+
+```python
+{
+    "action": [
+        "停止当前任务",
+        "清空播放队列",
+        "移除高亮",
+        "显示错误提示"
+    ]
+}
+```
+
+---
+
+## 前端控制后端 TTS
+
+以下事件用于用户在全局播放器中操作后端 TTS。
+
+---
+
+### 取消朗读任务
+
+用户点击停止按钮时发送。
+
+```python
+{
+    "command": "Speech-Cancel",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid"
+}
+```
+
+需要回复：
+
+```python
+{
+    "success": True,
+    "value": {
+        "requestId": "tts-uuid",
+        "cancelled": True
+    }
+}
+```
+
+后端取消成功后，也可以广播：
+
+```python
+{
+    "command": "Speech-Cancelled",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid"
+}
+```
+
+---
+
+### 暂停朗读
+
+用户点击暂停按钮时发送。
+
+```python
+{
+    "command": "Speech-Pause",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid"
+}
+```
+
+需要回复：
+
+```python
+{
+    "success": True,
+    "value": {
+        "requestId": "tts-uuid",
+        "paused": True
+    }
+}
+```
+
+说明：
+
+```python
+# 如果后端只负责合成音频，不负责实际播放，
+# 那么该事件可以只用于停止继续生成后续 segment。
+# 真正的暂停播放由前端 audio 元素控制。
+```
+
+---
+
+### 继续朗读
+
+用户点击继续按钮时发送。
+
+```python
+{
+    "command": "Speech-Resume",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid"
+}
+```
+
+需要回复：
+
+```python
+{
+    "success": True,
+    "value": {
+        "requestId": "tts-uuid",
+        "resumed": True
+    }
+}
+```
+
+---
+
+### 修改朗读速度
+
+用户在播放器中切换倍速时发送。
+
+```python
+{
+    "command": "Speech-Set-Rate",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+
+    "rate": 1.25
+}
+```
+
+需要回复：
+
+```python
+{
+    "success": True,
+    "value": {
+        "requestId": "tts-uuid",
+        "rate": 1.25
+    }
+}
+```
+
+说明：
+
+```python
+# 对于已经生成好的音频，前端可以直接修改 audio.playbackRate。
+# 对于还没生成的后续 segment，后端可以使用新的 rate 继续合成。
+```
+
+---
+
+### 跳转到指定句子
+
+用户点击上一句 / 下一句时，前端发送该事件。
+
+```python
+{
+    "command": "Speech-SeekSegment",
+
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+
+    "segmentId": "msg-uuid:tts:2",
+    "segmentIndex": 2,
+
+    "direction": "next"  # previous / next / absolute
+}
+```
+
+需要回复：
+
+```python
+{
+    "success": True,
+    "value": {
+        "requestId": "tts-uuid",
+        "msgId": "msg-uuid",
+        "segmentId": "msg-uuid:tts:2",
+        "segmentIndex": 2
+    }
+}
+```
+
+如果目标 segment 的音频还没有生成，后端可以优先生成该 segment，并返回：
+
+```python
+{
+    "command": "Speech-Segment-Start",
+    "requestId": "tts-uuid",
+    "msgId": "msg-uuid",
+    "segmentId": "msg-uuid:tts:2",
+    "segmentIndex": 2,
+    "text": "目标句子内容。"
+}
+```
+
+---
+
+## 推荐的后端返回流程
+
+### base64 chunk 模式
+
+推荐第一版采用该模式。
+
+```python
+# 1. 前端请求
+Speak-Message
+
+# 2. 后端确认任务开始
+Speech-Start
+
+# 3. 第 0 段开始
+Speech-Segment-Start
+
+# 4. 第 0 段音频数据
+Speech-Audio-Chunk
+Speech-Audio-Chunk
+Speech-Audio-Chunk
+
+# 5. 第 0 段结束
+Speech-Segment-End
+
+# 6. 第 1 段开始
+Speech-Segment-Start
+
+# 7. 第 1 段音频数据
+Speech-Audio-Chunk
+Speech-Audio-Chunk
+
+# 8. 第 1 段结束
+Speech-Segment-End
+
+# 9. 后端发送完成
+Speech-End
+```
+
+---
+
+## 推荐字段说明
+
+| 字段             | 类型     | 说明                      |
+| -------------- | ------ | ----------------------- |
+| `requestId`    | string | 本次 TTS 任务 ID            |
+| `msgId`        | string | 被朗读的消息 ID               |
+| `engine`       | string | 后端语音合成引擎                |
+| `voice`        | string | 音色                      |
+| `rate`         | number | 朗读速度                    |
+| `format`       | string | 音频格式，例如 `mp3`           |
+| `mime`         | string | MIME 类型，例如 `audio/mpeg` |
+| `segments`     | list   | 要合成的文本分段                |
+| `segmentId`    | string | 当前分段 ID                 |
+| `segmentIndex` | int    | 当前分段序号                  |
+| `text`         | string | 当前分段文本                  |
+| `chunkIndex`   | int    | 当前音频 chunk 序号           |
+| `chunkCount`   | int    | 当前分段总 chunk 数           |
+| `audio`        | string | base64 音频数据             |
+| `audioUrl`     | string | 可选，后端音频文件地址             |
+| `durationMs`   | int    | 可选，音频时长                 |
+| `message`      | string | 错误信息                    |
+| `code`         | string | 错误代码                    |
+
+---
+
+## 约定
+
+### 1. 一个 `segmentId` 对应一个可播放音频段
+
+```python
+{
+    "segmentId": "msg-uuid:tts:0",
+    "text": "这是第一句话。",
+    "audio": "这一句话对应的完整音频"
+}
+```
+
+前端高亮也是基于 `segmentId`。
+
+---
+
+### 2. 一个音频段可以拆成多个 chunk
+
+```python
+segmentId = "msg-uuid:tts:0"
+
+chunkIndex = 0
+chunkIndex = 1
+chunkIndex = 2
+...
+```
+
+前端必须等到 `Speech-Segment-End` 后，再把该段 chunk 合并为一个可播放音频。
+
+---
+
+### 3. 不要求单个 chunk 可以独立播放
+
+```python
+# 不推荐：
+收到一个 Speech-Audio-Chunk 就播放一个 chunk
+
+# 推荐：
+收集完整 segment 的所有 chunk
+合并为 Blob
+加入播放器队列
+```
+
+---
+
+### 4. 前端只会朗读主内容
+
+前端发送给后端的 `segments` 已经完成清洗：
+
+```python
+{
+    "跳过": [
+        "cardReplace 占位符",
+        "extraInfo.replace 内容",
+        "代码块",
+        "HTML 标签",
+        "不可见内容"
+    ],
+    "保留": [
+        "普通 Markdown 文本",
+        "行内 code 文本",
+        "表格文本",
+        "链接显示文本"
+    ]
+}
+```
+
+所以后端通常不需要再次处理 Markdown，只需要按 `segments[].text` 合成即可。
+
+---
+
+### 5. 后端应该忽略过期 requestId
+
+如果前端已经发起新的朗读任务，旧任务返回的音频应该被前端丢弃。
+后端也建议在收到 `Speech-Cancel` 后停止旧任务。
+
+```python
+{
+    "requestId": "旧任务 ID"
+}
+```
+
+如果该 `requestId` 已经不是当前活跃任务，前端不会再播放它。
+
+
 ## ChatWithEditor 事件 (target=ChatWithEditor)
 
 ### type=page （已弃用，改为服务器端后台添加）
