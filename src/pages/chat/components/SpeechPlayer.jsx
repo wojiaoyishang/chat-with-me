@@ -3,7 +3,6 @@ import {
     ChevronDown,
     Gauge,
     GripVertical,
-    MoveHorizontal,
     Pause,
     Play,
     SkipBack,
@@ -85,25 +84,39 @@ const getInitialPosition = () => {
     return normalizePanelState({});
 };
 
+
+const getIsMobileInteraction = () => {
+    if (typeof window === 'undefined') return false;
+
+    const hasCoarsePointer = window.matchMedia?.('(pointer: coarse)')?.matches;
+    const hasNoHover = window.matchMedia?.('(hover: none)')?.matches;
+    const isSmallScreen = window.innerWidth <= 640;
+
+    return Boolean(hasCoarsePointer || hasNoHover || isSmallScreen);
+};
+
 const SpeechPlayer = memo(({
-    speechState,
-    message,
-    autoFollowEnabled = false,
-    onAutoFollowToggle,
-    onPause,
-    onResume,
-    onStop,
-    onPrevious,
-    onNext,
-    onRateChange,
-    t,
-}) => {
+                               speechState,
+                               message,
+                               autoFollowEnabled = false,
+                               onAutoFollowToggle,
+                               onPause,
+                               onResume,
+                               onStop,
+                               onPrevious,
+                               onNext,
+                               onRateChange,
+                               t,
+                           }) => {
     const isVisible = ACTIVE_STATUSES.has(speechState?.status);
     const panelRef = useRef(null);
+    const speedButtonRef = useRef(null);
     const collapseTimerRef = useRef(null);
     const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
+    const [speedMenuPosition, setSpeedMenuPosition] = useState({top: 0, left: 0});
     const interactionRef = useRef({active: false, type: null});
     const [floatingState, setFloatingState] = useState(getInitialPosition);
+    const [isMobileInteraction, setIsMobileInteraction] = useState(getIsMobileInteraction);
 
     const currentSegment = useMemo(() => {
         if (!speechState?.currentSegmentId) return null;
@@ -125,6 +138,79 @@ const SpeechPlayer = memo(({
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+
+        const mediaQueries = [
+            window.matchMedia?.('(pointer: coarse)'),
+            window.matchMedia?.('(hover: none)'),
+            window.matchMedia?.('(max-width: 640px)'),
+        ].filter(Boolean);
+
+        const updateInteractionMode = () => {
+            setIsMobileInteraction(getIsMobileInteraction());
+        };
+
+        updateInteractionMode();
+        mediaQueries.forEach((query) => {
+            if (typeof query.addEventListener === 'function') {
+                query.addEventListener('change', updateInteractionMode);
+            } else {
+                query.addListener?.(updateInteractionMode);
+            }
+        });
+        window.addEventListener('resize', updateInteractionMode);
+
+        return () => {
+            mediaQueries.forEach((query) => {
+                if (typeof query.removeEventListener === 'function') {
+                    query.removeEventListener('change', updateInteractionMode);
+                } else {
+                    query.removeListener?.(updateInteractionMode);
+                }
+            });
+            window.removeEventListener('resize', updateInteractionMode);
+        };
+    }, []);
+
+    const updateSpeedMenuPosition = useCallback(() => {
+        if (typeof window === 'undefined') return;
+
+        const rect = speedButtonRef.current?.getBoundingClientRect();
+        if (!rect) return;
+
+        const viewport = getViewportSize();
+        const menuWidth = 144;
+        const estimatedMenuHeight = 220;
+        const nextTop = clamp(rect.bottom + 8, 8, Math.max(8, viewport.height - estimatedMenuHeight - 8));
+        const nextLeft = clamp(rect.right - menuWidth, 8, Math.max(8, viewport.width - menuWidth - 8));
+
+        setSpeedMenuPosition({top: nextTop, left: nextLeft});
+    }, []);
+
+    const toggleSpeedMenu = useCallback(() => {
+        setSpeedMenuOpen((open) => {
+            const nextOpen = !open;
+            if (nextOpen && typeof window !== 'undefined') {
+                window.requestAnimationFrame(updateSpeedMenuPosition);
+            }
+            return nextOpen;
+        });
+    }, [updateSpeedMenuPosition]);
+
+    useEffect(() => {
+        if (!speedMenuOpen) return undefined;
+
+        updateSpeedMenuPosition();
+        window.addEventListener('resize', updateSpeedMenuPosition);
+        window.addEventListener('scroll', updateSpeedMenuPosition, true);
+
+        return () => {
+            window.removeEventListener('resize', updateSpeedMenuPosition);
+            window.removeEventListener('scroll', updateSpeedMenuPosition, true);
+        };
+    }, [speedMenuOpen, updateSpeedMenuPosition]);
 
     useEffect(() => {
         if (!speedMenuOpen) return;
@@ -154,11 +240,13 @@ const SpeechPlayer = memo(({
     }, []);
 
     const scheduleDockCollapse = useCallback(() => {
+        if (isMobileInteraction) return;
+
         clearCollapseTimer();
         collapseTimerRef.current = window.setTimeout(() => {
             setFloatingState(prev => prev.dockedSide ? {...prev, collapsed: true} : prev);
         }, 380);
-    }, [clearCollapseTimer]);
+    }, [clearCollapseTimer, isMobileInteraction]);
 
     const updateDragPosition = useCallback((clientX, clientY) => {
         const viewport = getViewportSize();
@@ -312,6 +400,38 @@ const SpeechPlayer = memo(({
         setFloatingState(prev => ({...prev, collapsed: false}));
     }, [clearCollapseTimer]);
 
+    const collapseToDock = useCallback(() => {
+        clearCollapseTimer();
+        setSpeedMenuOpen(false);
+        setFloatingState(prev => prev.dockedSide ? {...prev, collapsed: true} : prev);
+    }, [clearCollapseTimer]);
+
+    useEffect(() => {
+        if (!isVisible || !isMobileInteraction || !floatingState.dockedSide || floatingState.collapsed) {
+            return undefined;
+        }
+
+        const handlePointerDownOutside = (event) => {
+            if (interactionRef.current.active) return;
+            if (panelRef.current?.contains(event.target)) return;
+            collapseToDock();
+        };
+
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                collapseToDock();
+            }
+        };
+
+        window.addEventListener('pointerdown', handlePointerDownOutside, true);
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            window.removeEventListener('pointerdown', handlePointerDownOutside, true);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [collapseToDock, floatingState.collapsed, floatingState.dockedSide, isMobileInteraction, isVisible]);
+
     if (!isVisible) return null;
 
     const isPaused = speechState.status === 'paused';
@@ -342,17 +462,17 @@ const SpeechPlayer = memo(({
             <div
                 className="fixed pointer-events-auto"
                 style={tabStyle}
-                onMouseEnter={undock}
+                onMouseEnter={isMobileInteraction ? undefined : undock}
                 onFocus={undock}
             >
                 <button
                     type="button"
                     onClick={undock}
-                    className={`h-20 w-11 bg-white/95 border border-indigo-100 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl flex flex-col items-center justify-center gap-1 text-indigo-600 hover:bg-indigo-50 transition-all rounded-l-2xl border-r-0 ring-1 ring-white/60`}
+                    className={`h-16 w-11 sm:h-20 bg-white/95 border border-indigo-100 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl flex flex-col items-center justify-center gap-1 text-indigo-600 hover:bg-indigo-50 transition-all rounded-l-2xl border-r-0 ring-1 ring-white/60`}
                     aria-label={fallbackText(t, 'expand_speech_player', '展开朗读播放器')}
                 >
                     <Volume2 size={18}/>
-                    <span className="text-[10px] leading-none writing-mode-vertical">{isPaused ? fallbackText(t, 'paused', '暂停') : progressText}</span>
+                    <span className="hidden text-[10px] leading-none writing-mode-vertical sm:block">{isPaused ? fallbackText(t, 'paused', '暂停') : progressText}</span>
                 </button>
             </div>
         );
@@ -372,7 +492,7 @@ const SpeechPlayer = memo(({
             className="fixed pointer-events-auto"
             style={panelStyle}
             onMouseEnter={clearCollapseTimer}
-            onMouseLeave={() => dockedSide && scheduleDockCollapse()}
+            onMouseLeave={() => !isMobileInteraction && dockedSide && scheduleDockCollapse()}
         >
             <div className="relative overflow-visible rounded-3xl border border-white/70 bg-white/90 shadow-[0_22px_70px_rgba(15,23,42,0.20)] backdrop-blur-2xl ring-1 ring-indigo-100/70">
                 <button
@@ -391,7 +511,7 @@ const SpeechPlayer = memo(({
                 />
                 <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-50/80 via-white/40 to-violet-50/70"/>
                 <div className="relative px-3.5 py-3">
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
                         <button
                             type="button"
                             onPointerDown={handleDragStart}
@@ -409,7 +529,7 @@ const SpeechPlayer = memo(({
                             )}
                         </div>
 
-                        <div className="min-w-0 flex-1">
+                        <div className="hidden min-w-0 flex-1 basis-0 sm:block">
                             <div className="flex items-center gap-2 min-w-0">
                                 <span className="text-sm font-semibold text-gray-900 truncate">
                                     {title}
@@ -423,112 +543,118 @@ const SpeechPlayer = memo(({
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
-                            <div className="relative">
+                        <div className="min-w-0 flex-1 overflow-x-auto overflow-y-visible overscroll-x-contain pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-none sm:max-w-none sm:overflow-visible">
+                            <div className="flex w-max flex-nowrap items-center gap-1.5">
+                                <div className="relative shrink-0">
+                                    <button
+                                        ref={speedButtonRef}
+                                        type="button"
+                                        onClick={toggleSpeedMenu}
+                                        className="h-8 shrink-0 px-2.5 rounded-full flex items-center gap-1.5 text-xs font-medium text-gray-700 bg-white/80 hover:bg-white border border-gray-200/80 shadow-sm transition-colors cursor-pointer"
+                                        aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${rate}x`}
+                                        aria-expanded={speedMenuOpen}
+                                    >
+                                        <Gauge size={14} className="text-indigo-500"/>
+                                        <span>{rate}x</span>
+                                        <ChevronDown size={13} className={`text-gray-400 transition-transform ${speedMenuOpen ? 'rotate-180' : ''}`}/>
+                                    </button>
+
+                                    {speedMenuOpen && (
+                                        <div
+                                            className="fixed w-36 rounded-2xl border border-gray-200 bg-white/[0.98] p-1.5 shadow-2xl shadow-slate-900/15 ring-1 ring-black/5 backdrop-blur-xl"
+                                            style={{top: speedMenuPosition.top, left: speedMenuPosition.left, zIndex: PLAYER_Z_INDEX + 2}}
+                                        >
+                                            <div className="px-2 py-1 text-[11px] text-gray-400">
+                                                {fallbackText(t, 'speech_speed', '播放速度')}
+                                            </div>
+                                            {SPEEDS.map(item => {
+                                                const active = Math.abs(rate - item) < 0.01;
+                                                return (
+                                                    <button
+                                                        key={item}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            onRateChange?.(item);
+                                                            setSpeedMenuOpen(false);
+                                                        }}
+                                                        className={`w-full flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs transition-colors cursor-pointer ${active
+                                                            ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                                        }`}
+                                                        aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${item}x`}
+                                                    >
+                                                        <span>{item}x</span>
+                                                        {active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500"/>}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+
                                 <button
                                     type="button"
-                                    onClick={() => setSpeedMenuOpen(open => !open)}
-                                    className="h-8 px-2.5 rounded-full flex items-center gap-1.5 text-xs font-medium text-gray-700 bg-white/80 hover:bg-white border border-gray-200/80 shadow-sm transition-colors cursor-pointer"
-                                    aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${rate}x`}
-                                    aria-expanded={speedMenuOpen}
+                                    onClick={() => onAutoFollowToggle?.(!autoFollowEnabled)}
+                                    className={`h-8 shrink-0 px-2 rounded-full flex items-center gap-1.5 text-xs font-medium border shadow-sm transition-colors cursor-pointer ${autoFollowEnabled
+                                        ? 'text-indigo-600 bg-indigo-50 border-indigo-200 ring-1 ring-indigo-100'
+                                        : 'text-gray-600 bg-white/80 hover:bg-white hover:text-indigo-600 border-gray-200/80'
+                                    }`}
+                                    aria-label={autoFollowLabel}
+                                    title={autoFollowLabel}
+                                    aria-pressed={autoFollowEnabled}
                                 >
-                                    <Gauge size={14} className="text-indigo-500"/>
-                                    <span>{rate}x</span>
-                                    <ChevronDown size={13} className={`text-gray-400 transition-transform ${speedMenuOpen ? 'rotate-180' : ''}`}/>
+                                    <Target size={14} className={autoFollowEnabled ? 'text-indigo-500' : 'text-gray-500'}/>
+                                    <span>{fallbackText(t, 'speech_auto_follow_short', '跟随')}</span>
                                 </button>
 
-                                {speedMenuOpen && (
-                                    <div className="absolute right-0 top-10 w-36 rounded-2xl border border-gray-200 bg-white/[0.98] p-1.5 shadow-2xl shadow-slate-900/15 ring-1 ring-black/5 backdrop-blur-xl">
-                                        <div className="px-2 py-1 text-[11px] text-gray-400">
-                                            {fallbackText(t, 'speech_speed', '播放速度')}
-                                        </div>
-                                        {SPEEDS.map(item => {
-                                            const active = Math.abs(rate - item) < 0.01;
-                                            return (
-                                                <button
-                                                    key={item}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        onRateChange?.(item);
-                                                        setSpeedMenuOpen(false);
-                                                    }}
-                                                    className={`w-full flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs transition-colors cursor-pointer ${active
-                                                        ? 'bg-indigo-50 text-indigo-600 font-semibold'
-                                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                                    }`}
-                                                    aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${item}x`}
-                                                >
-                                                    <span>{item}x</span>
-                                                    {active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500"/>}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                )}
+                                <button
+                                    type="button"
+                                    onClick={onPrevious}
+                                    disabled={!canGoPrevious}
+                                    className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:bg-white hover:text-indigo-600 border border-gray-200/80 shadow-sm disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                    aria-label={fallbackText(t, 'previous_speech_segment', '上一句')}
+                                    title={fallbackText(t, 'previous_speech_segment', '上一句')}
+                                >
+                                    <SkipBack size={14}/>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onNext}
+                                    disabled={!canGoNext}
+                                    className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:bg-white hover:text-indigo-600 border border-gray-200/80 shadow-sm disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                    aria-label={fallbackText(t, 'next_speech_segment', '下一句')}
+                                    title={fallbackText(t, 'next_speech_segment', '下一句')}
+                                >
+                                    <SkipForward size={14}/>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={isPaused ? onResume : onPause}
+                                    disabled={isLoading}
+                                    className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:bg-white hover:text-indigo-600 border border-gray-200/80 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                    aria-label={isPaused ? fallbackText(t, 'resume_speech', '继续') : fallbackText(t, 'pause_speech', '暂停')}
+                                >
+                                    {isPaused ? <Play size={15}/> : <Pause size={15}/>}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onStop}
+                                    className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:text-red-600 hover:bg-red-50 border border-gray-200/80 shadow-sm transition-colors cursor-pointer"
+                                    aria-label={fallbackText(t, 'stop_speech', '停止')}
+                                >
+                                    <Square size={14}/>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={dockToRight}
+                                    className="h-8 shrink-0 px-2 rounded-full flex items-center justify-center text-xs text-gray-500 bg-white/70 hover:text-indigo-600 hover:bg-indigo-50 border border-gray-200/70 transition-colors cursor-pointer"
+                                    aria-label={fallbackText(t, 'dock_speech_player', '收起到右侧')}
+                                    title={fallbackText(t, 'dock_speech_player', '收起到右侧')}
+                                >
+                                    <ChevronsRight size={14} strokeWidth={1.5} />
+                                </button>
                             </div>
-
-                            <button
-                                type="button"
-                                onClick={() => onAutoFollowToggle?.(!autoFollowEnabled)}
-                                className={`h-8 px-2 rounded-full flex items-center gap-1.5 text-xs font-medium border shadow-sm transition-colors cursor-pointer ${autoFollowEnabled
-                                    ? 'text-indigo-600 bg-indigo-50 border-indigo-200 ring-1 ring-indigo-100'
-                                    : 'text-gray-600 bg-white/80 hover:bg-white hover:text-indigo-600 border-gray-200/80'
-                                }`}
-                                aria-label={autoFollowLabel}
-                                title={autoFollowLabel}
-                                aria-pressed={autoFollowEnabled}
-                            >
-                                <Target size={14} className={autoFollowEnabled ? 'text-indigo-500' : 'text-gray-500'}/>
-                                <span>{fallbackText(t, 'speech_auto_follow_short', '跟随')}</span>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={onPrevious}
-                                disabled={!canGoPrevious}
-                                className="h-8 w-8 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:bg-white hover:text-indigo-600 border border-gray-200/80 shadow-sm disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                                aria-label={fallbackText(t, 'previous_speech_segment', '上一句')}
-                                title={fallbackText(t, 'previous_speech_segment', '上一句')}
-                            >
-                                <SkipBack size={14}/>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={onNext}
-                                disabled={!canGoNext}
-                                className="h-8 w-8 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:bg-white hover:text-indigo-600 border border-gray-200/80 shadow-sm disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                                aria-label={fallbackText(t, 'next_speech_segment', '下一句')}
-                                title={fallbackText(t, 'next_speech_segment', '下一句')}
-                            >
-                                <SkipForward size={14}/>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={isPaused ? onResume : onPause}
-                                disabled={isLoading}
-                                className="h-8 w-8 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:bg-white hover:text-indigo-600 border border-gray-200/80 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                                aria-label={isPaused ? fallbackText(t, 'resume_speech', '继续') : fallbackText(t, 'pause_speech', '暂停')}
-                            >
-                                {isPaused ? <Play size={15}/> : <Pause size={15}/>} 
-                            </button>
-                            <button
-                                type="button"
-                                onClick={onStop}
-                                className="h-8 w-8 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:text-red-600 hover:bg-red-50 border border-gray-200/80 shadow-sm transition-colors cursor-pointer"
-                                aria-label={fallbackText(t, 'stop_speech', '停止')}
-                            >
-                                <Square size={14}/>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={dockToRight}
-                                className="h-8 px-2 rounded-full flex items-center justify-center text-xs text-gray-500 bg-white/70 hover:text-indigo-600 hover:bg-indigo-50 border border-gray-200/70 transition-colors cursor-pointer"
-                                aria-label={fallbackText(t, 'dock_speech_player', '收起到右侧')}
-                                title={fallbackText(t, 'dock_speech_player', '收起到右侧')}
-                            >
-                                <ChevronsRight size={14} strokeWidth={1.5} />
-                            </button>
                         </div>
                     </div>
                 </div>
