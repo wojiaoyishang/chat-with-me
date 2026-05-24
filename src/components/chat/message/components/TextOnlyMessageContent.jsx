@@ -4,10 +4,11 @@ import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import KnowledgeGraphViewer from './KnowledgeGraphViewer.jsx';
 import SpeechOverlayHighlighter from './SpeechOverlayHighlighter.jsx';
 
-const TextOnlyMessageContent = memo(({msg, msgId, isLeaving, speechState}) => {
+const TextOnlyMessageContent = memo(({msg, msgId, isLeaving, speechState, avatarClickProps = {}}) => {
     const isRight = msg.position === 'right';
     const displayName = msg.name || 'U';
     const contentRef = useRef(null);
+    const {className: avatarClickClassName = '', ...restAvatarClickProps} = avatarClickProps || {};
 
     if (isRight) {
         return (
@@ -23,7 +24,10 @@ const TextOnlyMessageContent = memo(({msg, msgId, isLeaving, speechState}) => {
                         <div className="relative z-[2]">{msg.content}</div>
                         <SpeechOverlayHighlighter containerRef={contentRef} msgId={msgId} speechState={speechState}/>
                     </div>
-                    <Avatar className="h-10 w-10">
+                    <Avatar
+                        {...restAvatarClickProps}
+                        className={`h-10 w-10 cursor-pointer select-none touch-manipulation ${avatarClickClassName}`}
+                    >
                         <AvatarImage src={msg.avatar} alt={displayName}/>
                         <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
                     </Avatar>

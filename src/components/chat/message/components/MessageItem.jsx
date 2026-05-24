@@ -1,4 +1,4 @@
-import React, {memo, useRef, useState} from 'react';
+import React, {memo, useCallback, useRef, useState} from 'react';
 import {ChevronDown, ChevronUp} from 'lucide-react';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
@@ -7,6 +7,7 @@ import {resolveMessageCopyContent} from '../utils/copyContent.js';
 import KnowledgeGraphViewer from './KnowledgeGraphViewer.jsx';
 import LeftAvatarName from './LeftAvatarName.jsx';
 import MessageActions from './MessageActions.jsx';
+import MessageAvatarMenu from './MessageAvatarMenu.jsx';
 import TextOnlyMessageContent from './TextOnlyMessageContent.jsx';
 import SpeechOverlayHighlighter from './SpeechOverlayHighlighter.jsx';
 
@@ -37,12 +38,18 @@ const MessageItem = memo(({
     const [isExpanded, setIsExpanded] = useState(false);
     const shouldShowExpand = isMid && copyContent.length > 650;
     const [isMobileActive, setIsMobileActive] = useState(false);
+    const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
 
     const [isHovered, setIsHovered] = useState(false);
     const hoverHandlers = isRight && !readonly ? {
         onMouseEnter: () => setIsHovered(true),
         onMouseLeave: () => setIsHovered(false),
     } : {};
+
+    const getLabel = useCallback((key, fallback) => {
+        const value = typeof t === 'function' ? t(key) : undefined;
+        return value && value !== key ? value : fallback;
+    }, [t]);
 
     const actionProps = {
         msg,
@@ -57,6 +64,55 @@ const MessageItem = memo(({
         readonly,
         speechState,
         t
+    };
+
+    const closeAvatarMenu = useCallback(() => {
+        setIsAvatarMenuOpen(false);
+    }, []);
+
+    const openAvatarMenu = useCallback((event) => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+        setIsAvatarMenuOpen(true);
+    }, []);
+
+    const handleRootClickCapture = useCallback((event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (!target.closest('[data-message-avatar-trigger="true"]')) return;
+        openAvatarMenu(event);
+    }, [openAvatarMenu]);
+
+    const avatarTriggerProps = {
+        'data-message-avatar-trigger': 'true',
+        title: getLabel('message_menu', '点击打开消息菜单'),
+    };
+
+    const renderLeftAvatarName = () => (
+        <div
+            {...avatarTriggerProps}
+            className="inline-flex cursor-pointer select-none touch-manipulation"
+        >
+            <LeftAvatarName msg={msg} isLeaving={leavingMessages.has(msgId)}/>
+        </div>
+    );
+
+    const renderRightAvatar = (className = 'h-10 w-10 flex-shrink-0') => (
+        <Avatar
+            {...avatarTriggerProps}
+            className={`${className} cursor-pointer select-none touch-manipulation`}
+        >
+            <AvatarImage src={msg.avatar} alt={displayName}/>
+            <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
+        </Avatar>
+    );
+
+    const textOnlyMessageProps = {
+        msg,
+        msgId,
+        isLeaving: leavingMessages.has(msgId),
+        speechState,
+        avatarClickProps: avatarTriggerProps,
     };
 
     const renderMessageContent = () => {
@@ -77,12 +133,12 @@ const MessageItem = memo(({
                             >
                                 <div ref={markdownRef} data-tts-message-id={msgId} className="relative">
                                     <div className="relative z-[2]">
-                                    <MarkdownRenderer
-                                        contextId={msgId}
-                                        content={msg.content}
-                                        replacement={msg?.extraInfo?.replace}
-                                        msg={msg}
-                                    />
+                                        <MarkdownRenderer
+                                            contextId={msgId}
+                                            content={msg.content}
+                                            replacement={msg?.extraInfo?.replace}
+                                            msg={msg}
+                                        />
                                     </div>
                                     <SpeechOverlayHighlighter containerRef={markdownRef} msgId={msgId} speechState={speechState}/>
                                 </div>
@@ -104,7 +160,7 @@ const MessageItem = memo(({
                                 className={`w-full grid transition-all duration-300 ease-in-out ${shouldShowExpand ? 'grid-rows-[1fr] mt-3' : (isMobileActive ? 'grid-rows-[1fr] mt-4' : 'grid-rows-[0fr] group-hover:grid-rows-[1fr] group-hover:mt-4')}`}
                             >
                                 <div className="overflow-hidden">
-                                    <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center justify-between w-full min-w-0">
                                         {shouldShowExpand ? (
                                             <button
                                                 onClick={() => setIsExpanded(!isExpanded)}
@@ -127,7 +183,7 @@ const MessageItem = memo(({
                                         )}
 
                                         <div
-                                            className={`transition-all duration-300 ${shouldShowExpand ? 'opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 delay-100' : 'opacity-100'}`}
+                                            className={`min-w-0 transition-all duration-300 ${shouldShowExpand ? 'opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 delay-100' : 'opacity-100'}`}
                                         >
                                             <MessageActions {...actionProps}/>
                                         </div>
@@ -143,17 +199,14 @@ const MessageItem = memo(({
         if (hasAttachments && !hasContent) {
             return (
                 <>
-                    {!isRight && <LeftAvatarName msg={msg} isLeaving={leavingMessages.has(msgId)}/>} 
+                    {!isRight && renderLeftAvatarName()}
 
                     {isRight ? (
                         <div className="flex items-start gap-2 max-w-full mt-1">
                             <div className="flex-1 min-w-[150px] max-w-[calc(100%-3rem)] sm:pl-0 pl-7">
                                 <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
                             </div>
-                            <Avatar className="h-10 w-10 flex-shrink-0 mt-1">
-                                <AvatarImage src={msg.avatar} alt={displayName}/>
-                                <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
-                            </Avatar>
+                            {renderRightAvatar('h-10 w-10 flex-shrink-0 mt-1')}
                         </div>
                     ) : (
                         <div className="max-w-[95%] pl-7 mb-2">
@@ -174,25 +227,15 @@ const MessageItem = memo(({
                             <div className="max-w-[90%] lg:max-w-[55%] ml-auto pr-10 mb-2">
                                 <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
                             </div>
-                            <TextOnlyMessageContent
-                                msg={msg}
-                                msgId={msgId}
-                                isLeaving={leavingMessages.has(msgId)}
-                                speechState={speechState}
-                            />
+                            <TextOnlyMessageContent {...textOnlyMessageProps}/>
                         </>
                     ) : (
                         <div className="flex flex-col items-start w-full">
-                            <LeftAvatarName msg={msg} isLeaving={leavingMessages.has(msgId)}/>
+                            {renderLeftAvatarName()}
                             <div className="max-w-[95%] pl-7 mb-2">
                                 <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
                             </div>
-                            <TextOnlyMessageContent
-                                msg={msg}
-                                msgId={msgId}
-                                isLeaving={leavingMessages.has(msgId)}
-                                speechState={speechState}
-                            />
+                            <TextOnlyMessageContent {...textOnlyMessageProps}/>
                         </div>
                     )}
                 </>
@@ -201,21 +244,11 @@ const MessageItem = memo(({
 
         if (hasContent) {
             return isRight ? (
-                <TextOnlyMessageContent
-                    msg={msg}
-                    msgId={msgId}
-                    isLeaving={leavingMessages.has(msgId)}
-                    speechState={speechState}
-                />
+                <TextOnlyMessageContent {...textOnlyMessageProps}/>
             ) : (
                 <div className="flex flex-col items-start w-full">
-                    <LeftAvatarName msg={msg} isLeaving={leavingMessages.has(msgId)}/>
-                    <TextOnlyMessageContent
-                        msg={msg}
-                        msgId={msgId}
-                        isLeaving={leavingMessages.has(msgId)}
-                        speechState={speechState}
-                    />
+                    {renderLeftAvatarName()}
+                    <TextOnlyMessageContent {...textOnlyMessageProps}/>
                 </div>
             );
         }
@@ -225,14 +258,11 @@ const MessageItem = memo(({
                 {isRight ? (
                     <div className="flex justify-end items-start gap-3 max-w-[80%] ml-auto">
                         <div className="h-10 w-10"/>
-                        <Avatar className="h-10 w-10 flex-shrink-0">
-                            <AvatarImage src={msg.avatar} alt={displayName}/>
-                            <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
-                        </Avatar>
+                        {renderRightAvatar()}
                     </div>
                 ) : (
                     <div className="flex flex-col items-start w-full">
-                        <LeftAvatarName msg={msg} isLeaving={leavingMessages.has(msgId)}/>
+                        {renderLeftAvatarName()}
                         <div className="pl-7 min-h-[1.25rem]"/>
                     </div>
                 )}
@@ -245,11 +275,23 @@ const MessageItem = memo(({
         <div
             key={msgId}
             className={`flex flex-col w-full transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'} ${animationClass}`}
+            onClickCapture={handleRootClickCapture}
             {...hoverHandlers}
         >
             {renderMessageContent()}
 
-            {!isMid && <MessageActions {...actionProps}/>}
+            {!isMid && <MessageActions {...actionProps}/>}            
+            <MessageAvatarMenu
+                open={isAvatarMenuOpen}
+                onClose={closeAvatarMenu}
+                msg={msg}
+                msgId={msgId}
+                markId={markId}
+                readonly={readonly}
+                speechState={speechState}
+                displayName={displayName}
+                t={t}
+            />
         </div>
     );
 }, (prevProps, nextProps) => {

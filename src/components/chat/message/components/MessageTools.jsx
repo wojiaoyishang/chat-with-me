@@ -18,9 +18,9 @@ import {
 import {handleMessageAction} from '../utils/messageActions.js';
 import {canSpeakMessage} from '../utils/speechContent.js';
 import TooltipInfo from './TooltipInfo.jsx';
-import MessageMenuButton from './MessageMenuButton.jsx';
 
 const isActiveSpeechStatus = (status) => ['loading', 'playing', 'paused'].includes(status);
+const toolButtonClassName = 'shrink-0 p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer';
 
 const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) => {
     const {t} = useTranslation();
@@ -29,15 +29,13 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
     const isSpeakingThisMessage = canSpeak && speechState?.messageId === msgId && isActiveSpeechStatus(speechState?.status);
 
     return (
-        <div className="flex gap-1">
-
-
+        <div className="flex min-w-max flex-nowrap items-center gap-1">
             {!readonly && (
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <button
                             onClick={() => handleMessageAction('edit', msg, actionContext, t)}
-                            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                            className={toolButtonClassName}
                             aria-label={t('edit_message')}
                         >
                             <PenLine size={16} className="text-gray-600 hover:text-gray-800"/>
@@ -54,7 +52,7 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
                     <TooltipTrigger asChild>
                         <button
                             onClick={() => handleMessageAction('fork', msg, actionContext, t)}
-                            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                            className={toolButtonClassName}
                             aria-label={t('fork_message')}
                         >
                             <GitBranch size={16} className="text-gray-600 hover:text-gray-800"/>
@@ -71,7 +69,7 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
                     <TooltipTrigger asChild>
                         <button
                             onClick={() => handleMessageAction('copy', msg, actionContext, t)}
-                            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                            className={toolButtonClassName}
                             aria-label={t('copy_message')}
                         >
                             <Copy size={16} className="text-gray-600 hover:text-gray-800"/>
@@ -88,7 +86,7 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
                     <TooltipTrigger asChild>
                         <button
                             onClick={() => handleMessageAction(isSpeakingThisMessage ? 'stopSpeak' : 'speak', msg, actionContext, t)}
-                            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                            className={toolButtonClassName}
                             aria-label={isSpeakingThisMessage ? t('stop_speak_message') : t('speak_message')}
                         >
                             {isSpeakingThisMessage ? (
@@ -109,12 +107,12 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
                     <TooltipTrigger asChild>
                         <button
                             onClick={() => handleMessageAction('delete', msg, actionContext, t)}
-                            className="group p-1.5 rounded-sm hover:bg-red-200 transition-colors cursor-pointer hidden md:block"
+                            className={`${toolButtonClassName} group hover:bg-red-200`}
                             aria-label={t('delete_message')}
                         >
                             <Trash
                                 size={16}
-                                className="text-gray-600 group-hover:text-red-600 transition-colors"
+                                className="text-gray-600 transition-colors group-hover:text-red-600"
                             />
                         </button>
                     </TooltipTrigger>
@@ -129,7 +127,7 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
                     <TooltipTrigger asChild>
                         <button
                             onClick={() => handleMessageAction('progenerate', msg, actionContext, t)}
-                            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                            className={toolButtonClassName}
                             aria-label={t('progenerate_message')}
                         >
                             <StepForward size={16} className="text-gray-600 hover:text-gray-800"/>
@@ -146,7 +144,7 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
                     <TooltipTrigger asChild>
                         <button
                             onClick={() => handleMessageAction('regenerate', msg, actionContext, t)}
-                            className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer hidden md:block"
+                            className={toolButtonClassName}
                             aria-label={t('regenerate_message')}
                         >
                             <RotateCw size={16} className="text-gray-600 hover:text-gray-800"/>
@@ -159,7 +157,6 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
             )}
 
             <TooltipInfo tip={msg.tip} t={t}/>
-            {!readonly && <MessageMenuButton msg={msg} msgId={msgId} markId={markId}/>}
         </div>
     );
 });
