@@ -9,6 +9,7 @@ import {
     SkipBack,
     SkipForward,
     Square,
+    Target,
     Volume2,
     ChevronsRight
 } from 'lucide-react';
@@ -84,7 +85,19 @@ const getInitialPosition = () => {
     return normalizePanelState({});
 };
 
-const SpeechPlayer = memo(({speechState, message, onPause, onResume, onStop, onPrevious, onNext, onRateChange, t}) => {
+const SpeechPlayer = memo(({
+    speechState,
+    message,
+    autoFollowEnabled = false,
+    onAutoFollowToggle,
+    onPause,
+    onResume,
+    onStop,
+    onPrevious,
+    onNext,
+    onRateChange,
+    t,
+}) => {
     const isVisible = ACTIVE_STATUSES.has(speechState?.status);
     const panelRef = useRef(null);
     const collapseTimerRef = useRef(null);
@@ -314,6 +327,9 @@ const SpeechPlayer = memo(({speechState, message, onPause, onResume, onStop, onP
     const rate = Number(speechState?.rate || 1);
     const dockedSide = floatingState.dockedSide;
     const isCollapsed = Boolean(dockedSide && floatingState.collapsed);
+    const autoFollowLabel = autoFollowEnabled
+        ? fallbackText(t, 'speech_auto_follow_on', '已开启跟随朗读，点击关闭')
+        : fallbackText(t, 'speech_auto_follow_off', '跟随当前朗读位置');
 
     if (isCollapsed) {
         const tabStyle = {
@@ -450,6 +466,21 @@ const SpeechPlayer = memo(({speechState, message, onPause, onResume, onStop, onP
                                     </div>
                                 )}
                             </div>
+
+                            <button
+                                type="button"
+                                onClick={() => onAutoFollowToggle?.(!autoFollowEnabled)}
+                                className={`h-8 px-2 rounded-full flex items-center gap-1.5 text-xs font-medium border shadow-sm transition-colors cursor-pointer ${autoFollowEnabled
+                                    ? 'text-indigo-600 bg-indigo-50 border-indigo-200 ring-1 ring-indigo-100'
+                                    : 'text-gray-600 bg-white/80 hover:bg-white hover:text-indigo-600 border-gray-200/80'
+                                }`}
+                                aria-label={autoFollowLabel}
+                                title={autoFollowLabel}
+                                aria-pressed={autoFollowEnabled}
+                            >
+                                <Target size={14} className={autoFollowEnabled ? 'text-indigo-500' : 'text-gray-500'}/>
+                                <span>{fallbackText(t, 'speech_auto_follow_short', '跟随')}</span>
+                            </button>
 
                             <button
                                 type="button"

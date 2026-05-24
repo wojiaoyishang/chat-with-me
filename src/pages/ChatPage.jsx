@@ -29,6 +29,81 @@ import {
     toDeleteKeySet,
 } from './chat/utils/networkMerge.js';
 
+
+const SPEECH_AUTO_HIGHLIGHT_CLASS = 'chat-speech-auto-highlight';
+const SPEECH_AUTO_HIGHLIGHT_ATTR = 'data-chat-speech-auto-highlight';
+const SPEECH_SEGMENT_BINDING_ATTR = 'data-chat-speech-segment-binding';
+const SPEECH_SEGMENT_BOUND_ID_ATTR = 'data-chat-speech-segment-id';
+const SPEECH_SEGMENT_BOUND_IDS_ATTR = 'data-chat-speech-segment-ids';
+const SPEECH_SEGMENT_BOUND_INDEX_ATTR = 'data-chat-speech-segment-index';
+const SPEECH_SEGMENT_BOUND_INDEXES_ATTR = 'data-chat-speech-segment-indexes';
+const SPEECH_BOUNDARY_TOKEN = '\u001F';
+const SPEECH_TEXT_CANDIDATE_SELECTOR = [
+    'li',
+    '[role="listitem"]',
+    'p',
+    'blockquote',
+    'pre',
+    'code',
+    'td',
+    'th',
+    'figcaption',
+    'summary',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+].join(',');
+
+const normalizeSpeechMatchText = (value) => String(value ?? '')
+    .replace(/[​-‍﻿]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const stripSpeechListMarker = (value) => normalizeSpeechMatchText(value)
+    .replace(/^\s*(?:[-*+•‣⁃]|\d+[.)、]|[a-zA-Z][.)])\s+/, '')
+    .trim();
+
+const getSpeechTextVariants = (value) => {
+    const raw = normalizeSpeechMatchText(value);
+    if (!raw) return [];
+
+    const withoutListMarker = stripSpeechListMarker(raw);
+    const withoutMarkdown = normalizeSpeechMatchText(
+        withoutListMarker
+            .replace(/^[>]+\s*/, '')
+            .replace(/[`*_~#]/g, '')
+    );
+
+    return Array.from(new Set([raw, withoutListMarker, withoutMarkdown].filter(Boolean)));
+};
+
+const getSpeechSegmentText = (segment) => String(
+    segment?.text ??
+    segment?.content ??
+    segment?.value ??
+    segment?.rawText ??
+    ''
+);
+
+const getSpeechSegmentTextVariants = (segment) => getSpeechTextVariants(getSpeechSegmentText(segment));
+
+const getSpeechElementText = (element) => normalizeSpeechMatchText(element?.innerText || element?.textContent || '');
+
+const getSpeechTagScore = (element) => {
+    const tagName = element?.tagName?.toLowerCase?.() || '';
+    if (tagName === 'li') return 180;
+    if (element?.getAttribute?.('role') === 'listitem') return 175;
+    if (['p', 'blockquote', 'td', 'th', 'figcaption', 'summary'].includes(tagName)) return 140;
+    if (/^h[1-6]$/.test(tagName)) return 130;
+    if (['pre', 'code'].includes(tagName)) return 100;
+    if (['span', 'strong', 'em'].includes(tagName)) return 30;
+    if (tagName === 'div') return -60;
+    return 0;
+};
+
 // ========== 主组件 ==========
 function ChatPage({
                       chatMarkId,
@@ -95,6 +170,15 @@ function ChatPage({
         engine: null,
         cancelled: false,
         playToken: 0,
+    });
+    const [speechAutoFollowEnabled, setSpeechAutoFollowEnabled] = useState(false);
+    const speechAutoFollowEnabledRef = useRef(false);
+    const speechFollowProgrammaticScrollUntilRef = useRef(0);
+    const lastSpeechFollowTargetRef = useRef(null);
+    const speechSegmentElementMapRef = useRef({
+        key: null,
+        byId: new Map(),
+        byIndex: new Map(),
     });
 
 // ========== 窗口化、滚动和上传模块 ==========
@@ -205,6 +289,22 @@ function ChatPage({
         userScrollStateRef.current.programmaticScrollUntil = Date.now() + duration;
     }, []);
 
+    const markSpeechFollowProgrammaticScroll = useCallback((duration = 800) => {
+        const until = Date.now() + duration;
+        speechFollowProgrammaticScrollUntilRef.current = until;
+        userScrollStateRef.current.programmaticScrollUntil = Math.max(
+            userScrollStateRef.current.programmaticScrollUntil,
+            until,
+        );
+    }, []);
+
+    const disableSpeechAutoFollowByUser = useCallback(() => {
+        if (!speechAutoFollowEnabledRef.current) return;
+        speechAutoFollowEnabledRef.current = false;
+        setSpeechAutoFollowEnabled(false);
+        lastSpeechFollowTargetRef.current = null;
+    }, []);
+
     const unlockAutoScrollByUser = useCallback(() => {
         userAutoScrollUnlockUntilRef.current = Date.now() + USER_SCROLL_UNLOCK_MS;
         isAutoScrollEnabledRef.current = false;
@@ -285,6 +385,538 @@ function ChatPage({
         markProgrammaticScroll(700);
         handleScrollToBottomClick();
     }, [handleScrollToBottomClick, isAutoScrollEnabledRef, markProgrammaticScroll, pendingScrollRef]);
+
+    const escapeSelectorValue = useCallback((value) => {
+        const stringValue = String(value ?? '');
+        if (typeof window !== 'undefined' && window.CSS?.escape) {
+            return window.CSS.escape(stringValue);
+        }
+        return stringValue.replace(/[\\"']/g, '\\$&');
+    }, []);
+
+    const resolveMountedElement = useCallback((value) => {
+        if (!value || typeof HTMLElement === 'undefined') return null;
+        if (value instanceof HTMLElement) return value;
+        if (value.current instanceof HTMLElement) return value.current;
+        if (value.element instanceof HTMLElement) return value.element;
+        if (value.el instanceof HTMLElement) return value.el;
+        if (value.node instanceof HTMLElement) return value.node;
+        return null;
+    }, []);
+
+    const queryFirstSpeechElement = useCallback((root, selectors) => {
+        if (!root) return null;
+
+        for (const selector of selectors.filter(Boolean)) {
+            try {
+                if (typeof root.matches === 'function' && root.matches(selector)) {
+                    return root;
+                }
+                const element = root.querySelector?.(selector);
+                if (element) return element;
+            } catch (_) {
+                // 忽略极端 ID / selector 造成的解析失败，继续尝试其他定位方式。
+            }
+        }
+
+        return null;
+    }, []);
+
+    const getSpeechMessageElement = useCallback((container, messageId) => {
+        if (!container || !messageId) return null;
+        const escapedMessageId = escapeSelectorValue(messageId);
+        const selectors = [
+            `[data-message-id="${escapedMessageId}"]`,
+            `[data-msg-id="${escapedMessageId}"]`,
+            `[data-speech-message-id="${escapedMessageId}"]`,
+            `[id="${escapedMessageId}"]`,
+            `[id="message-${escapedMessageId}"]`,
+        ];
+
+        const element = queryFirstSpeechElement(container, selectors);
+        if (element) return element;
+
+        const message = messagesRef.current?.[messageId];
+        if (message && typeof message.getComponent === 'function') {
+            const componentKeys = ['messageRef', 'message', 'root', 'container', 'content'];
+            for (const key of componentKeys) {
+                const mountedElement = resolveMountedElement(message.getComponent(key));
+                if (mountedElement) return mountedElement;
+            }
+        }
+
+        return null;
+    }, [escapeSelectorValue, queryFirstSpeechElement, resolveMountedElement]);
+
+    const scoreSpeechTextCandidate = useCallback((element, textVariants) => {
+        if (!element || !Array.isArray(textVariants) || textVariants.length === 0) return -Infinity;
+        if (element.closest?.('button, textarea, input, select, [aria-hidden="true"]')) return -Infinity;
+
+        const elementText = getSpeechElementText(element);
+        if (!elementText) return -Infinity;
+
+        const normalizedElementText = elementText.toLowerCase();
+        let bestTextScore = -Infinity;
+
+        for (const variant of textVariants) {
+            const normalizedVariant = normalizeSpeechMatchText(variant).toLowerCase();
+            if (!normalizedVariant) continue;
+
+            const exactMatch = normalizedElementText === normalizedVariant;
+            const containsSegment = normalizedElementText.includes(normalizedVariant);
+            const segmentContainsElement = normalizedVariant.includes(normalizedElementText);
+            const isMeaningfulReverseMatch = segmentContainsElement &&
+                elementText.length >= Math.min(12, Math.max(4, Math.round(variant.length * 0.45)));
+
+            if (!exactMatch && !containsSegment && !isMeaningfulReverseMatch) continue;
+
+            let score = exactMatch ? 1000 : 0;
+            score += containsSegment ? 420 : 0;
+            score += isMeaningfulReverseMatch ? 260 : 0;
+            score -= Math.abs(elementText.length - variant.length) * 0.8;
+
+            if (elementText.length > variant.length * 4 && !exactMatch) score -= 260;
+            if (element.childElementCount > 0) score -= Math.min(element.childElementCount * 4, 80);
+
+            bestTextScore = Math.max(bestTextScore, score);
+        }
+
+        if (bestTextScore === -Infinity) return -Infinity;
+        return bestTextScore + getSpeechTagScore(element);
+    }, []);
+
+    const collectSpeechTextCandidates = useCallback((searchRoot, preferredVariants = []) => {
+        if (!searchRoot) return [];
+
+        const candidates = [];
+        const seen = new WeakSet();
+        const addCandidate = (element) => {
+            if (!element || seen.has(element)) return;
+            if (element.closest?.('button, textarea, input, select, [aria-hidden="true"]')) return;
+            if (!getSpeechElementText(element)) return;
+            seen.add(element);
+            candidates.push(element);
+        };
+
+        try {
+            if (searchRoot.matches?.(SPEECH_TEXT_CANDIDATE_SELECTOR)) {
+                addCandidate(searchRoot);
+            }
+            searchRoot.querySelectorAll?.(SPEECH_TEXT_CANDIDATE_SELECTOR).forEach(addCandidate);
+
+            // 部分 Markdown 渲染器会把列表项/段落内容拆进 span、strong、em、div。
+            // 这些只能作为兜底候选，且需要尽量排除包住整条消息的大 div，避免同文案误命中。
+            searchRoot.querySelectorAll?.('span, strong, em, div').forEach((element) => {
+                const tagName = element.tagName?.toLowerCase?.();
+                const elementTextLength = getSpeechElementText(element).length;
+                const variantLength = preferredVariants[0]?.length || 80;
+                const isLeafLike = element.childElementCount <= 1;
+                const isSmallEnough = elementTextLength <= Math.max(240, variantLength * 3);
+                if ((tagName !== 'div' || isLeafLike) && isSmallEnough) {
+                    addCandidate(element);
+                }
+            });
+        } catch (_) {
+            return [];
+        }
+
+        return candidates;
+    }, []);
+
+    const findNextSpeechCandidateIndex = useCallback((candidates, matchedElement, matchedIndex) => {
+        if (!matchedElement) return Math.max(0, matchedIndex + 1);
+
+        for (let index = matchedIndex + 1; index < candidates.length; index += 1) {
+            const candidate = candidates[index];
+            if (!matchedElement.contains(candidate)) return index;
+        }
+
+        return candidates.length;
+    }, []);
+
+    const canReuseSpeechCandidateForNextSegment = useCallback((element, segment) => {
+        if (!element || !segment) return false;
+
+        const elementText = getSpeechElementText(element);
+        const variants = getSpeechSegmentTextVariants(segment);
+        if (!elementText || variants.length === 0) return false;
+
+        const normalizedElementText = elementText.toLowerCase();
+        const normalizedVariants = variants
+            .map(item => normalizeSpeechMatchText(item).toLowerCase())
+            .filter(Boolean);
+        const exactMatch = normalizedVariants.some(item => item === normalizedElementText);
+        if (exactMatch) return false;
+
+        const primaryLength = Math.max(...normalizedVariants.map(item => item.length));
+        if (elementText.length < Math.max(primaryLength + 8, Math.ceil(primaryLength * 1.2))) return false;
+
+        // 嵌套列表里父 li 的 innerText 会包含子列表文本；不复用父 li，避免把子列表项绑定到父项。
+        const tagName = element.tagName?.toLowerCase?.();
+        if (tagName === 'li' && element.querySelector?.('ol, ul')) return false;
+
+        return true;
+    }, []);
+
+    const appendSpeechBindingToken = useCallback((element, attrName, value) => {
+        if (!element || value === undefined || value === null) return;
+        const token = String(value);
+        const oldValue = element.getAttribute(attrName) || '';
+        const tokens = oldValue.split(SPEECH_BOUNDARY_TOKEN).filter(Boolean);
+        if (!tokens.includes(token)) tokens.push(token);
+        element.setAttribute(attrName, tokens.join(SPEECH_BOUNDARY_TOKEN));
+    }, []);
+
+    const clearSpeechSegmentElementBindings = useCallback((root) => {
+        if (!root) return;
+        try {
+            root.querySelectorAll?.(`[${SPEECH_SEGMENT_BINDING_ATTR}="true"]`).forEach((element) => {
+                element.removeAttribute(SPEECH_SEGMENT_BINDING_ATTR);
+                element.removeAttribute(SPEECH_SEGMENT_BOUND_ID_ATTR);
+                element.removeAttribute(SPEECH_SEGMENT_BOUND_IDS_ATTR);
+                element.removeAttribute(SPEECH_SEGMENT_BOUND_INDEX_ATTR);
+                element.removeAttribute(SPEECH_SEGMENT_BOUND_INDEXES_ATTR);
+            });
+        } catch (_) {
+            // 清理只影响本次朗读辅助定位，失败时不阻断播放器。
+        }
+    }, []);
+
+    const bindSpeechSegmentElement = useCallback((map, element, segment, segmentIndex) => {
+        if (!element || !segment) return;
+
+        if (segment.id !== undefined && segment.id !== null) {
+            map.byId.set(segment.id, element);
+            appendSpeechBindingToken(element, SPEECH_SEGMENT_BOUND_IDS_ATTR, segment.id);
+            if (!element.hasAttribute(SPEECH_SEGMENT_BOUND_ID_ATTR)) {
+                element.setAttribute(SPEECH_SEGMENT_BOUND_ID_ATTR, String(segment.id));
+            }
+        }
+
+        map.byIndex.set(segmentIndex, element);
+        appendSpeechBindingToken(element, SPEECH_SEGMENT_BOUND_INDEXES_ATTR, segmentIndex);
+        if (!element.hasAttribute(SPEECH_SEGMENT_BOUND_INDEX_ATTR)) {
+            element.setAttribute(SPEECH_SEGMENT_BOUND_INDEX_ATTR, String(segmentIndex));
+        }
+        element.setAttribute(SPEECH_SEGMENT_BINDING_ATTR, 'true');
+    }, [appendSpeechBindingToken]);
+
+    const rebuildSpeechSegmentElementMap = useCallback((container, speech = speechStateRef.current) => {
+        const map = {
+            key: `${speech?.requestId || ''}:${speech?.messageId || ''}:${speech?.segments?.length || 0}`,
+            byId: new Map(),
+            byIndex: new Map(),
+        };
+
+        if (!container || !speech?.messageId || !Array.isArray(speech.segments) || speech.segments.length === 0) {
+            speechSegmentElementMapRef.current = map;
+            return map;
+        }
+
+        const messageElement = getSpeechMessageElement(container, speech.messageId);
+        const searchRoot = messageElement || container;
+        clearSpeechSegmentElementBindings(searchRoot);
+
+        const candidates = collectSpeechTextCandidates(searchRoot, getSpeechSegmentTextVariants(speech.segments[0]));
+        let cursor = 0;
+        let currentMatch = null;
+        let currentMatchCanReuse = false;
+
+        speech.segments.forEach((segment, segmentIndex) => {
+            const variants = getSpeechSegmentTextVariants(segment);
+            if (variants.length === 0) return;
+
+            let matchedElement = null;
+            let matchedIndex = -1;
+
+            if (currentMatch?.element && currentMatchCanReuse) {
+                const reuseScore = scoreSpeechTextCandidate(currentMatch.element, variants);
+                if (reuseScore > -Infinity) {
+                    matchedElement = currentMatch.element;
+                    matchedIndex = currentMatch.index;
+                }
+            }
+
+            if (!matchedElement) {
+                if (currentMatch?.element) {
+                    cursor = Math.max(
+                        cursor,
+                        findNextSpeechCandidateIndex(candidates, currentMatch.element, currentMatch.index),
+                    );
+                }
+
+                let bestElement = null;
+                let bestIndex = -1;
+                let bestScore = -Infinity;
+
+                for (let candidateIndex = cursor; candidateIndex < candidates.length; candidateIndex += 1) {
+                    const candidate = candidates[candidateIndex];
+                    const rawScore = scoreSpeechTextCandidate(candidate, variants);
+                    if (rawScore === -Infinity) continue;
+
+                    // 当前分段应该优先匹配“当前消息内、当前游标之后”的第一个高质量候选。
+                    // 加入距离惩罚，避免相同文字时跨过更近的真实段落去匹配后面的重复文案。
+                    const score = rawScore - ((candidateIndex - cursor) * 500);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestElement = candidate;
+                        bestIndex = candidateIndex;
+                    }
+                }
+
+                if (bestElement) {
+                    matchedElement = bestElement;
+                    matchedIndex = bestIndex;
+                }
+            }
+
+            if (!matchedElement) return;
+
+            bindSpeechSegmentElement(map, matchedElement, segment, segmentIndex);
+
+            currentMatch = {element: matchedElement, index: matchedIndex};
+            currentMatchCanReuse = canReuseSpeechCandidateForNextSegment(matchedElement, segment);
+            if (!currentMatchCanReuse) {
+                cursor = findNextSpeechCandidateIndex(candidates, matchedElement, matchedIndex);
+                currentMatch = null;
+            }
+        });
+
+        speechSegmentElementMapRef.current = map;
+        return map;
+    }, [
+        bindSpeechSegmentElement,
+        canReuseSpeechCandidateForNextSegment,
+        clearSpeechSegmentElementBindings,
+        collectSpeechTextCandidates,
+        findNextSpeechCandidateIndex,
+        getSpeechMessageElement,
+        scoreSpeechTextCandidate,
+    ]);
+
+    const getMappedSpeechSegmentElement = useCallback((container, speech = speechStateRef.current) => {
+        if (!container || !speech?.messageId) return null;
+
+        // 每次朗读段落变化时重建映射，保证 DOM 更新、重复文本和列表项都按当前消息顺序定位。
+        const map = rebuildSpeechSegmentElementMap(container, speech);
+        const {currentSegmentId, currentSegmentIndex} = speech;
+
+        if (currentSegmentId !== undefined && currentSegmentId !== null) {
+            const byIdElement = map.byId.get(currentSegmentId);
+            if (byIdElement) return byIdElement;
+        }
+
+        if (Number.isInteger(currentSegmentIndex) && currentSegmentIndex >= 0) {
+            const byIndexElement = map.byIndex.get(currentSegmentIndex);
+            if (byIndexElement) return byIndexElement;
+        }
+
+        return null;
+    }, [rebuildSpeechSegmentElementMap]);
+
+    const findSpeechElementByText = useCallback((searchRoot, currentSegment) => {
+        if (!searchRoot || !currentSegment) return null;
+
+        const textVariants = getSpeechSegmentTextVariants(currentSegment);
+        if (textVariants.length === 0) return null;
+
+        const candidates = collectSpeechTextCandidates(searchRoot, textVariants);
+        let bestElement = null;
+        let bestScore = -Infinity;
+        for (const element of candidates) {
+            const score = scoreSpeechTextCandidate(element, textVariants);
+            if (score > bestScore) {
+                bestScore = score;
+                bestElement = element;
+            }
+        }
+
+        return bestScore > -Infinity ? bestElement : null;
+    }, [collectSpeechTextCandidates, scoreSpeechTextCandidate]);
+
+    const getSpeechSegmentElement = useCallback((container, speech = speechStateRef.current) => {
+        if (!container || !speech?.messageId) return null;
+
+        const {messageId, currentSegmentId, currentSegmentIndex} = speech;
+        const segments = Array.isArray(speech.segments) ? speech.segments : [];
+        const currentSegment = currentSegmentId
+            ? segments.find(item => item.id === currentSegmentId)
+            : segments[currentSegmentIndex];
+        const messageElement = getSpeechMessageElement(container, messageId);
+        const searchRoot = messageElement || container;
+
+        const exactSelectors = [];
+        if (currentSegmentId) {
+            const escapedSegmentId = escapeSelectorValue(currentSegmentId);
+            exactSelectors.push(
+                `[data-speech-segment-id="${escapedSegmentId}"]`,
+                `[data-current-segment-id="${escapedSegmentId}"]`,
+                `[data-segment-id="${escapedSegmentId}"]`,
+                `[data-speech-id="${escapedSegmentId}"]`,
+                `[id="${escapedSegmentId}"]`,
+                `[id="speech-segment-${escapedSegmentId}"]`,
+                `[id="${escapeSelectorValue(messageId)}-${escapedSegmentId}"]`,
+            );
+        }
+
+        if (Number.isInteger(currentSegmentIndex) && currentSegmentIndex >= 0) {
+            exactSelectors.push(
+                `[data-speech-segment-index="${currentSegmentIndex}"]`,
+                `[data-segment-index="${currentSegmentIndex}"]`,
+            );
+        }
+
+        const exactElement = queryFirstSpeechElement(searchRoot, exactSelectors);
+        if (exactElement) return exactElement;
+
+        const message = messagesRef.current?.[messageId];
+        if (message && typeof message.getComponent === 'function') {
+            const componentKeys = [
+                currentSegmentId,
+                currentSegmentId ? `speechSegment:${currentSegmentId}` : null,
+                currentSegmentId ? `speech-segment:${currentSegmentId}` : null,
+                currentSegmentId ? `segment:${currentSegmentId}` : null,
+                currentSegment ? `speechSegment:${currentSegment.index ?? currentSegmentIndex}` : null,
+            ].filter(Boolean);
+
+            for (const key of componentKeys) {
+                const element = resolveMountedElement(message.getComponent(key));
+                if (element) return element;
+            }
+        }
+
+        const mappedElement = getMappedSpeechSegmentElement(container, speech);
+        if (mappedElement) return mappedElement;
+
+        const textElement = findSpeechElementByText(searchRoot, currentSegment);
+        if (textElement) return textElement;
+
+        const activeElement = queryFirstSpeechElement(searchRoot, [
+            '[data-speech-current="true"]',
+            '[data-speech-active="true"]',
+            '.speech-current',
+            '.speech-segment-current',
+            '.speech-highlight-active',
+            '.speech-highlight',
+        ]);
+        if (activeElement) return activeElement;
+
+        if (messageElement) return messageElement;
+        return null;
+    }, [escapeSelectorValue, findSpeechElementByText, getMappedSpeechSegmentElement, getSpeechMessageElement, queryFirstSpeechElement, resolveMountedElement]);
+
+    const ensureSpeechHighlightStyle = useCallback(() => {
+        if (typeof document === 'undefined') return;
+        if (document.getElementById('chat-speech-auto-highlight-style')) return;
+
+        const style = document.createElement('style');
+        style.id = 'chat-speech-auto-highlight-style';
+        style.textContent = `
+            .${SPEECH_AUTO_HIGHLIGHT_CLASS} {
+                background: rgba(99, 102, 241, 0.14) !important;
+                box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12) !important;
+                border-radius: 0.45rem !important;
+                transition: background-color 160ms ease, box-shadow 160ms ease !important;
+                scroll-margin-top: 5rem;
+            }
+            li.${SPEECH_AUTO_HIGHLIGHT_CLASS},
+            [role="listitem"].${SPEECH_AUTO_HIGHLIGHT_CLASS} {
+                padding-top: 0.08rem;
+                padding-bottom: 0.08rem;
+            }
+            li.${SPEECH_AUTO_HIGHLIGHT_CLASS}::marker {
+                color: rgb(79, 70, 229);
+                font-weight: 700;
+            }
+        `;
+        document.head.appendChild(style);
+    }, []);
+
+    const clearSpeechAutoHighlights = useCallback((root = messagesContainerRef.current) => {
+        if (!root) return;
+        try {
+            root.querySelectorAll?.(`.${SPEECH_AUTO_HIGHLIGHT_CLASS}, [${SPEECH_AUTO_HIGHLIGHT_ATTR}="true"]`).forEach((element) => {
+                element.classList.remove(SPEECH_AUTO_HIGHLIGHT_CLASS);
+                element.removeAttribute(SPEECH_AUTO_HIGHLIGHT_ATTR);
+            });
+        } catch (_) {
+            // DOM 可能已经被 React 卸载，忽略清理失败。
+        }
+    }, []);
+
+    const applySpeechHighlight = useCallback((speech = speechStateRef.current) => {
+        const container = messagesContainerRef.current;
+        if (!container) return null;
+
+        const hasActiveSegment = speech?.currentSegmentId || speech?.currentSegmentIndex >= 0;
+        if (!speech?.messageId || !['loading', 'playing', 'paused'].includes(speech.status) || !hasActiveSegment) {
+            clearSpeechAutoHighlights(container);
+            return null;
+        }
+
+        ensureSpeechHighlightStyle();
+        clearSpeechAutoHighlights(container);
+
+        const targetElement = getSpeechSegmentElement(container, speech);
+        if (!targetElement || targetElement === container) return targetElement;
+
+        targetElement.setAttribute(SPEECH_AUTO_HIGHLIGHT_ATTR, 'true');
+        targetElement.classList.add(SPEECH_AUTO_HIGHLIGHT_CLASS);
+        return targetElement;
+    }, [clearSpeechAutoHighlights, ensureSpeechHighlightStyle, getSpeechSegmentElement]);
+
+    const scrollSpeechToCurrentSegment = useCallback((options = {}) => {
+        const container = messagesContainerRef.current;
+        if (!container) return false;
+
+        const speech = options.speech || speechStateRef.current;
+        if (!speech?.messageId || !['loading', 'playing', 'paused'].includes(speech.status)) return false;
+
+        const targetElement = applySpeechHighlight(speech) || getSpeechSegmentElement(container, speech);
+        if (!targetElement || targetElement === container) return false;
+
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = targetElement.getBoundingClientRect();
+        const focusOffset = Math.max(72, Math.round(container.clientHeight * 0.36));
+        const targetTop = container.scrollTop + targetRect.top - containerRect.top;
+        const targetCenterBias = Math.min(Math.max(targetRect.height * 0.25, 0), 80);
+        const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
+        const nextScrollTop = Math.min(
+            Math.max(targetTop - focusOffset + targetCenterBias, 0),
+            maxScrollTop,
+        );
+
+        markSpeechFollowProgrammaticScroll(options.duration || 1100);
+        container.scrollTo({
+            top: nextScrollTop,
+            behavior: options.behavior || 'smooth',
+        });
+        userScrollStateRef.current.lastScrollTop = nextScrollTop;
+        setShowScrollToBottomButton(false);
+        window.setTimeout(() => checkScrollPosition(true), 160);
+        return true;
+    }, [applySpeechHighlight, checkScrollPosition, getSpeechSegmentElement, markSpeechFollowProgrammaticScroll, setShowScrollToBottomButton]);
+
+    const handleSpeechAutoFollowToggle = useCallback((nextEnabled) => {
+        const enabled = typeof nextEnabled === 'boolean'
+            ? nextEnabled
+            : !speechAutoFollowEnabledRef.current;
+
+        speechAutoFollowEnabledRef.current = enabled;
+        setSpeechAutoFollowEnabled(enabled);
+        lastSpeechFollowTargetRef.current = null;
+
+        if (enabled) {
+            isAutoScrollEnabledRef.current = false;
+            pendingScrollRef.current = false;
+            userAutoScrollUnlockUntilRef.current = 0;
+            requestAnimationFrame(() => {
+                if (speechAutoFollowEnabledRef.current) {
+                    scrollSpeechToCurrentSegment({behavior: 'smooth', duration: 1100});
+                }
+            });
+        }
+    }, [isAutoScrollEnabledRef, pendingScrollRef, scrollSpeechToCurrentSegment]);
 
     // ========= 消息删除 =========
     const deleteMessageLocally = useCallback((msgId) => {
@@ -694,6 +1326,9 @@ function ChatPage({
         };
 
         const handleWheel = (event) => {
+            if (Math.abs(event.deltaY) > USER_SCROLL_UP_DELTA) {
+                disableSpeechAutoFollowByUser();
+            }
             // deltaY < 0 表示用户想向上看历史内容；不要等真正滚动发生，先解除置底锁。
             if (event.deltaY < -USER_SCROLL_UP_DELTA) {
                 unlockAutoScrollByUser();
@@ -711,8 +1346,12 @@ function ChatPage({
                 return;
             }
 
+            const touchDeltaY = currentY - state.touchLastY;
+            if (Math.abs(touchDeltaY) > USER_SCROLL_UP_DELTA) {
+                disableSpeechAutoFollowByUser();
+            }
             // 手指向下滑时，页面内容通常向上滚，用户是在尝试逃离底部。
-            if (currentY - state.touchLastY > USER_SCROLL_UP_DELTA) {
+            if (touchDeltaY > USER_SCROLL_UP_DELTA) {
                 unlockAutoScrollByUser();
             }
 
@@ -722,7 +1361,13 @@ function ChatPage({
         const handleScroll = () => {
             const currentScrollTop = container.scrollTop;
             const previousScrollTop = state.lastScrollTop;
-            const isProgrammaticScroll = Date.now() < state.programmaticScrollUntil;
+            const now = Date.now();
+            const isProgrammaticScroll = now < state.programmaticScrollUntil;
+            const isSpeechFollowScroll = now < speechFollowProgrammaticScrollUntilRef.current;
+
+            if (!isProgrammaticScroll && !isSpeechFollowScroll && Math.abs(currentScrollTop - previousScrollTop) > USER_SCROLL_UP_DELTA) {
+                disableSpeechAutoFollowByUser();
+            }
 
             if (!isProgrammaticScroll && currentScrollTop < previousScrollTop - USER_SCROLL_UP_DELTA) {
                 unlockAutoScrollByUser();
@@ -753,6 +1398,7 @@ function ChatPage({
         };
     }, [
         checkScrollPosition,
+        disableSpeechAutoFollowByUser,
         isUserAutoScrollUnlocked,
         relockAutoScrollAtBottom,
         unlockAutoScrollByUser,
@@ -785,6 +1431,66 @@ function ChatPage({
     useEffect(() => {
         speechStateRef.current = speechState;
     }, [speechState]);
+
+    useEffect(() => {
+        speechAutoFollowEnabledRef.current = speechAutoFollowEnabled;
+    }, [speechAutoFollowEnabled]);
+
+    useEffect(() => {
+        const hasActiveSegment = speechState.currentSegmentId || speechState.currentSegmentIndex >= 0;
+
+        if (!['loading', 'playing', 'paused'].includes(speechState.status) || !hasActiveSegment) {
+            clearSpeechAutoHighlights();
+            clearSpeechSegmentElementBindings(messagesContainerRef.current);
+            speechSegmentElementMapRef.current = {
+                key: null,
+                byId: new Map(),
+                byIndex: new Map(),
+            };
+            return undefined;
+        }
+
+        const rafId = requestAnimationFrame(() => {
+            applySpeechHighlight(speechState);
+        });
+
+        return () => cancelAnimationFrame(rafId);
+    }, [
+        applySpeechHighlight,
+        clearSpeechAutoHighlights,
+        clearSpeechSegmentElementBindings,
+        speechState.currentSegmentId,
+        speechState.currentSegmentIndex,
+        speechState.messageId,
+        speechState.requestId,
+        speechState.status,
+    ]);
+
+    useEffect(() => {
+        if (!speechAutoFollowEnabled || !['loading', 'playing', 'paused'].includes(speechState.status)) {
+            if (speechState.status === 'idle' || speechState.status === 'ended') {
+                lastSpeechFollowTargetRef.current = null;
+            }
+            return;
+        }
+
+        const hasActiveSegment = speechState.currentSegmentId || speechState.currentSegmentIndex >= 0;
+        if (!hasActiveSegment) return;
+
+        const targetKey = `${speechState.requestId || ''}:${speechState.currentSegmentId || speechState.currentSegmentIndex}`;
+        if (lastSpeechFollowTargetRef.current === targetKey) return;
+        lastSpeechFollowTargetRef.current = targetKey;
+
+        requestAnimationFrame(() => {
+            if (speechAutoFollowEnabledRef.current) {
+                scrollSpeechToCurrentSegment({speech: speechState, behavior: 'smooth', duration: 1100});
+            }
+        });
+    }, [
+        scrollSpeechToCurrentSegment,
+        speechAutoFollowEnabled,
+        speechState,
+    ]);
 
     const normalizeSpeechRate = useCallback((value) => {
         const nextRate = Number(value);
@@ -2139,6 +2845,8 @@ function ChatPage({
                         <SpeechPlayer
                             speechState={speechState}
                             message={speechState?.messageId ? messages?.[speechState.messageId] : null}
+                            autoFollowEnabled={speechAutoFollowEnabled}
+                            onAutoFollowToggle={handleSpeechAutoFollowToggle}
                             onPause={pauseActiveSpeech}
                             onResume={resumeActiveSpeech}
                             onStop={() => cancelActiveSpeech(true)}
