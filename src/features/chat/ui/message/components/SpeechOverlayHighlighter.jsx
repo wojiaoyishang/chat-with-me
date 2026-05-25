@@ -25,6 +25,46 @@ const SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR = [
 const SPEECH_HIGHLIGHT_INLINE_SELECTOR = 'a, span, strong, em, b, i, code, mark, small';
 const CHAT_SPEECH_FRAME_SELECTOR = '.chat-speech-auto-highlight, [data-chat-speech-auto-highlight="true"]';
 
+const EMPTY_HIGHLIGHT = Object.freeze({rects: [], frame: null, boundaryType: null});
+const RECT_EPSILON = 0.5;
+
+const rectsEqual = (a, b) => {
+    if (!a && !b) return true;
+    if (!a || !b) return false;
+    return Math.abs((a.left || 0) - (b.left || 0)) <= RECT_EPSILON &&
+        Math.abs((a.top || 0) - (b.top || 0)) <= RECT_EPSILON &&
+        Math.abs((a.width || 0) - (b.width || 0)) <= RECT_EPSILON &&
+        Math.abs((a.height || 0) - (b.height || 0)) <= RECT_EPSILON;
+};
+
+const highlightEqual = (a, b) => {
+    if (a === b) return true;
+    if (!a || !b) return false;
+    if ((a.boundaryType || null) !== (b.boundaryType || null)) return false;
+    if (!rectsEqual(a.frame, b.frame)) return false;
+
+    const aRects = Array.isArray(a.rects) ? a.rects : [];
+    const bRects = Array.isArray(b.rects) ? b.rects : [];
+    if (aRects.length !== bRects.length) return false;
+
+    for (let index = 0; index < aRects.length; index += 1) {
+        if (!rectsEqual(aRects[index], bRects[index])) return false;
+    }
+    return true;
+};
+
+const normalizeHighlight = (highlight) => {
+    if (!highlight?.frame || !Array.isArray(highlight.rects) || highlight.rects.length === 0) {
+        return EMPTY_HIGHLIGHT;
+    }
+    return highlight;
+};
+
+const setHighlightIfChanged = (setHighlight, nextHighlight) => {
+    const normalizedNext = normalizeHighlight(nextHighlight);
+    setHighlight((prev) => highlightEqual(prev, normalizedNext) ? prev : normalizedNext);
+};
+
 const shouldSkipTextNode = (node, root) => {
     if (!node?.nodeValue?.trim()) return true;
 
@@ -440,7 +480,7 @@ const rectsFromRange = (root, range) => {
 };
 
 const useSegmentHighlightRects = ({containerRef, segments, currentSegmentIndex, deps = []}) => {
-    const [highlight, setHighlight] = useState({rects: [], frame: null, boundaryType: null});
+    const [highlight, setHighlight] = useState(EMPTY_HIGHLIGHT);
 
     useEffect(() => {
         const root = containerRef?.current;
@@ -449,7 +489,7 @@ const useSegmentHighlightRects = ({containerRef, segments, currentSegmentIndex, 
             : null;
 
         if (!root || !currentSegment?.text || typeof window === 'undefined') {
-            setHighlight({rects: [], frame: null, boundaryType: null});
+            setHighlightIfChanged(setHighlight, EMPTY_HIGHLIGHT);
             return undefined;
         }
 
@@ -460,7 +500,7 @@ const useSegmentHighlightRects = ({containerRef, segments, currentSegmentIndex, 
             if (disposed) return;
             const range = findOrderedSegmentRange(root, segments, currentSegmentIndex);
             const nextHighlight = rectsFromRange(root, range);
-            setHighlight(nextHighlight);
+            setHighlightIfChanged(setHighlight, nextHighlight);
         };
 
         const scheduleMeasure = () => {

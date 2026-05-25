@@ -1,4 +1,4 @@
-import React, {memo, useCallback, useLayoutEffect, useRef, useState} from 'react';
+import React, {memo, useCallback, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {motion} from 'framer-motion';
 import {X} from 'lucide-react';
 import DynamicSettings from '@/components/setting/DynamicSettings.jsx';
@@ -8,6 +8,7 @@ const RightSidebar = memo(({
                                onClose,
                                advancedSettings,
                                initialSettingValues,
+                               settingsInstanceKey,
                                onSettingChange,
                                t,
                                containerRef,
@@ -15,6 +16,13 @@ const RightSidebar = memo(({
                            }) => {
     const [lockedMode, setLockedMode] = useState(null);
     const sidebarRef = useRef(null);
+    const dynamicSettingsKey = useMemo(() => {
+        const names = Array.isArray(advancedSettings)
+            ? advancedSettings.map((item) => item?.name || item?.text || item?.type || '').join('|')
+            : '';
+
+        return `${settingsInstanceKey ?? 'conversationless'}:${names}`;
+    }, [advancedSettings, settingsInstanceKey]);
 
     useLayoutEffect(() => {
         const container = containerRef?.current;
@@ -43,12 +51,13 @@ const RightSidebar = memo(({
 
         return (
             <DynamicSettings
+                key={dynamicSettingsKey}
                 config={advancedSettings}
                 initialValues={initialSettingValues}
                 onChange={onSettingChange ?? null}
             />
         );
-    }, [advancedSettings, initialSettingValues, onSettingChange, t]);
+    }, [advancedSettings, dynamicSettingsKey, initialSettingValues, onSettingChange, t]);
 
     if (lockedMode === null) return null;
 

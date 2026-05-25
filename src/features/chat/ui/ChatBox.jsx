@@ -11,7 +11,7 @@ import ChatBoxHeader from './ChatBoxHeader';
 import ToolButtons from './ToolButtons';
 import AttachmentShowcase from './AttachmentShowcase';
 import FileUploadProgress from './FileUploadProgress';
-import DropFileLayer from '@/components/chat/DropFileLayer.jsx';
+import DropFileLayer from './DropFileLayer.jsx';
 import MessageInput from './chatbox/components/MessageInput';
 import EditMessageIndicator from './chatbox/components/EditMessageIndicator';
 import SendButton from './chatbox/components/SendButton';

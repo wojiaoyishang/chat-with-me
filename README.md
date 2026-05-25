@@ -189,10 +189,10 @@ content
 
 ```js
 {
-  "123": {
-    "content": "[thinking]\n正在分析问题...",
-    "backend": "发送给后端模型的内容"
-  }
+    "123": {
+        "content": "[thinking]\n正在分析问题...",
+            "backend": "发送给后端模型的内容"
+    }
 }
 ```
 
@@ -2156,3 +2156,159 @@ WebSocket 广播：
 3. 用 `sampleRate`、`channels=1`、`bitsPerSample=16` 封装 WAV header。
 4. 生成 Blob URL 并交给本地 `Audio` 播放。
 5. 仅在本地 `Audio.onplaying` 时切换当前句高亮。
+# TTS push_text + 进度协议 v2
+
+本次改造把 TTS 拆成三条独立进度线，避免“后端生成进度”和“前端真实播放进度”混用：
+
+- **生成进度 generation**：后端 worker 从 TTS 服务商拿到音频 chunk 的进度。
+- **缓存进度 buffer**：某个 segment 已完整收到，前端已可封装 Blob 并加入播放队列。
+- **播放进度 playback**：浏览器 `Audio` 真实开始/结束播放某个 segment 的进度。
+
+## 后端生成策略
+
+前端仍然在 `Speak-Message` 中一次性传入完整 `segments`。后端优先调用：
+
+```python
+client.stream_tts_segments(segments, model, options)
+```
+
+支持 Qwen realtime 的客户端会使用一个 WebSocket 会话，并通过：
+
+```python
+await session.push_text(text, text_id=segment_id, index=segment_index, position=segment_position)
+```
+
+持续向同一个 TTS 会话追加文本。其它不支持 push_text 的模型会自动回退到旧的逐句 `stream_tts(text, ...)`。
+
+`playbackBarrier` 默认改为 `False`。也就是后端不再等待浏览器播放完一句才生成下一句；如需旧行为，前端可显式传：
+
+```json
+{"playbackBarrier": true}
+```
+
+## 新增广播事件
+
+所有事件仍通过原来的 `type: "speech"`, `target: "ChatPage"` 广播。
+
+### Speech-Generation-Progress
+
+后端 worker 发出，用于表示 TTS 生成侧进度。该事件可能在每个 chunk 后高频出现。
+
+```json
+{
+  "command": "Speech-Generation-Progress",
+  "requestId": "uuid",
+  "msgId": "message-id",
+  "messageId": "message-id",
+  "phase": "start | chunk | segment_ready | end",
+  "segmentId": "segment-id-0",
+  "segmentIndex": 0,
+  "segmentPosition": 0,
+  "chunkIndex": 0,
+  "byteLength": 32768,
+  "generatedCount": 1,
+  "readyCount": 0,
+  "pendingCount": 11,
+  "total": 12,
+  "generatedPercent": 0.0833,
+  "readyPercent": 0,
+  "generatedBytes": 32768,
+  "format": "pcm",
+  "mime": "audio/pcm",
+  "sampleRate": 24000
+}
+```
+
+### Speech-Buffer-Progress
+
+后端在某句 `Speech-Segment-Ready` 后发出；前端收到后也会在本地封装 Blob 入队时再次校正缓存计数。
+
+```json
+{
+  "command": "Speech-Buffer-Progress",
+  "requestId": "uuid",
+  "msgId": "message-id",
+  "messageId": "message-id",
+  "segmentId": "segment-id-0",
+  "segmentIndex": 0,
+  "segmentPosition": 0,
+  "bufferedCount": 1,
+  "readyCount": 1,
+  "total": 12,
+  "bufferedPercent": 0.0833,
+  "readyPercent": 0.0833,
+  "queueMode": "frontend-cache"
+}
+```
+
+### Speech-Playback-Progress
+
+浏览器 `Audio.onplaying/onended/onerror` 仍会向后端发送 `Speech-Playback-Ack`。后端收到 ACK 后，会回广播 `Speech-Playback-Progress`；前端本地也会以真实 `Audio` 事件立即更新播放进度，避免等待后端回包。
+
+```json
+{
+  "command": "Speech-Playback-Progress",
+  "requestId": "uuid",
+  "msgId": "message-id",
+  "messageId": "message-id",
+  "segmentId": "segment-id-0",
+  "segmentIndex": 0,
+  "segmentPosition": 0,
+  "phase": "start | end | error",
+  "playbackCount": 1,
+  "total": 12,
+  "playbackPercent": 0.0833,
+  "playbackEpoch": 0
+}
+```
+
+## 前端状态字段
+
+`speechState` 新增以下字段，供 `SpeechPlayer` 或其它 UI 展示三条独立进度：
+
+```js
+{
+  generationStatus: 'idle' | 'generating' | 'ended',
+  generationPhase: 'queued' | 'start' | 'chunk' | 'segment_ready' | 'end',
+  generatedSegmentCount: 0,
+  bufferedSegmentCount: 0,
+  playedSegmentCount: 0,
+  totalSegments: 0,
+  generatedSegmentPosition: -1,
+  bufferedSegmentPosition: -1,
+  playbackStatus: 'idle' | 'waiting' | 'playing' | 'start' | 'end' | 'error' | 'ended',
+  playbackSegmentPosition: -1,
+  generationPercent: 0,
+  bufferPercent: 0,
+  playbackPercent: 0
+}
+```
+
+其中：
+
+- `currentSegmentPosition/currentSegmentId` 只由真实播放推进，高亮不会跟随后端生成提前跳句。
+- `bufferedSegmentCount` 表示前端可播放缓存数量，不等同于正在播放。
+- `generatedSegmentCount` 表示后端已经开始或完成生成过的句子数。
+- `playedSegmentCount` 表示浏览器实际播放过的句子数。
+
+## 替换文件
+
+```text
+application/tts/client.py
+application/tts/providers/dashscope_client.py
+workers/tts.py
+websocket/tts.py
+frontend/src/pages/ChatPage.jsx
+README_TTS_PROGRESS_V2.md
+```
+
+## TTS v3 播放队列注意事项
+
+后端 TTS 可能提前生成并缓存多句，因此前端必须区分：
+
+- 生成进度：`Speech-Generation-Progress`
+- 缓存进度：`Speech-Buffer-Progress`
+- 本地播放队列进度：`Speech-Playback-Queue-Progress`
+- 真实播放进度：`Speech-Playback-Progress`
+
+其中只有真实音频事件 `Audio.onplaying` 可以更新当前朗读句子和高亮。`Speech-Segment-Ready` 只表示某句已经可播放，不能直接推进播放游标；前端播放队列必须按 `segmentPosition` 严格顺序消费，避免异步生成导致第 3 句先 ready 时跳过第 2 句。

@@ -8,7 +8,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import ToggleButton from '@/components/chat/ChatButton.jsx';
+import ToggleButton from './ChatButton.jsx';
 import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
 
 /**
