@@ -1,0 +1,31 @@
+export const createInitialSpeechState = () => ({
+    status: 'idle',
+    messageId: null,
+    requestId: null,
+    engine: 'browser',
+    segments: [],
+    currentSegmentId: null,
+    currentSegmentIndex: -1,
+    currentSegmentPosition: -1,
+    rate: 1,
+    generationStatus: 'idle',
+    generationPhase: null,
+    generatedSegmentCount: 0,
+    bufferedSegmentCount: 0,
+    playedSegmentCount: 0,
+    totalSegments: 0,
+    generatedSegmentPosition: -1,
+    bufferedSegmentPosition: -1,
+    playbackStatus: 'idle',
+    playbackSegmentPosition: -1,
+    generationPercent: 0,
+    bufferPercent: 0,
+    playbackPercent: 0,
+});
+
+export const createInitialSpeechControllerState = () => ({
+    requestId: null,
+    engine: null,
+    cancelled: false,
+    playToken: 0,
+});

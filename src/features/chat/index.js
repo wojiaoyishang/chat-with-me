@@ -14,6 +14,7 @@ export {LoadingFailedScreen, LoadingScreen} from './page/components/LoadingScree
 export {default as useChatWindowMode} from './page/hooks/useChatWindowMode.js';
 export {default as useChatScroll} from './page/hooks/useChatScroll.js';
 export {default as useFileUpload} from './page/hooks/useFileUpload.js';
+export {default as useChatSpeech} from './page/hooks/useChatSpeech.js';
 
 export * from './page/utils/networkMerge.js';
 export * from './page/utils/messageMountPoints.js';
