@@ -14,7 +14,6 @@ import {
     ListboxButton,
     ListboxOption,
     ListboxOptions,
-    Transition,
 } from "@headlessui/react";
 import {Switch} from "@/components/ui/switch";
 import {Checkbox} from "@/components/ui/checkbox";
@@ -1071,7 +1070,6 @@ function SelectOptionsPortal({ open, anchorRef, options, selectedValue }) {
 
     useEffect(() => {
         if (!open || !anchorRef.current) {
-            setOptionsPosition(null);
             return;
         }
 
@@ -1172,51 +1170,52 @@ function SelectOptionsPortal({ open, anchorRef, options, selectedValue }) {
         };
     }, [open, anchorRef, options]);
 
-    if (!open || !optionsPosition) return null;
+    if (!optionsPosition) return null;
+
+    const menuOffset = optionsPosition.placement === "top" ? 8 : -8;
 
     return createPortal(
-        <Transition
-            show={open}
-            enter="transition ease-out duration-100"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="transition ease-in duration-75"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95"
-        >
-            <ListboxOptions
-                static
-                style={{
-                    position: 'fixed',
-                    top: `${optionsPosition.top}px`,
-                    left: `${optionsPosition.left}px`,
-                    width: `${optionsPosition.width}px`,
-                    maxWidth: `${optionsPosition.maxWidth}px`,
-                    maxHeight: `${optionsPosition.maxHeight}px`,
-                    transformOrigin: optionsPosition.placement === "top" ? "bottom left" : "top left",
-                }}
-                className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] overflow-auto overscroll-contain outline-none"
-            >
-                {options.map((opt) => (
-                    <ListboxOption
-                        key={opt.value}
-                        value={opt.value}
-                        className="flex items-center justify-between gap-3 px-2.5 py-2 rounded-lg cursor-pointer text-sm text-[#1a1d21] dark:text-[#e4e7eb] transition-colors hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] data-[selected]:text-[#2563eb] dark:data-[selected]:text-[#3b82f6] data-[selected]:font-medium"
-                    >
-                        {({ selected: isSel }) => (
-                            <>
-                                <AutoScrollText className="flex-1 min-w-0" title={opt.label}>{opt.label}</AutoScrollText>
-                                {(isSel || selectedValue === opt.value) && (
-                                    <svg className="w-4 h-4 text-[#2563eb] dark:text-[#3b82f6] flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd"/>
-                                    </svg>
-                                )}
-                            </>
-                        )}
-                    </ListboxOption>
-                ))}
-            </ListboxOptions>
-        </Transition>,
+        <AnimatePresence>
+            {open && (
+                <ListboxOptions
+                    static
+                    as={motion.div}
+                    initial={{ opacity: 0, y: menuOffset, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: menuOffset, scale: 0.96 }}
+                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                        position: 'fixed',
+                        top: `${optionsPosition.top}px`,
+                        left: `${optionsPosition.left}px`,
+                        width: `${optionsPosition.width}px`,
+                        maxWidth: `${optionsPosition.maxWidth}px`,
+                        maxHeight: `${optionsPosition.maxHeight}px`,
+                        transformOrigin: optionsPosition.placement === "top" ? "bottom left" : "top left",
+                    }}
+                    className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] overflow-auto overscroll-contain outline-none"
+                >
+                    {options.map((opt) => (
+                        <ListboxOption
+                            key={opt.value}
+                            value={opt.value}
+                            className="flex items-center justify-between gap-3 px-2.5 py-2 rounded-lg cursor-pointer text-sm text-[#1a1d21] dark:text-[#e4e7eb] transition-colors hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] data-[selected]:text-[#2563eb] dark:data-[selected]:text-[#3b82f6] data-[selected]:font-medium"
+                        >
+                            {({ selected: isSel }) => (
+                                <>
+                                    <AutoScrollText className="flex-1 min-w-0" title={opt.label}>{opt.label}</AutoScrollText>
+                                    {(isSel || selectedValue === opt.value) && (
+                                        <svg className="w-4 h-4 text-[#2563eb] dark:text-[#3b82f6] flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd"/>
+                                        </svg>
+                                    )}
+                                </>
+                            )}
+                        </ListboxOption>
+                    ))}
+                </ListboxOptions>
+            )}
+        </AnimatePresence>,
         document.body
     );
 }
@@ -1276,9 +1275,15 @@ function SelectItem({item, path}) {
                             className="flex items-center gap-1.5 h-8 px-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer text-sm font-sans w-full sm:min-w-[140px] text-left transition-colors hover:border-[#2563eb] dark:hover:border-[#3b82f6] outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
                         >
                             <AutoScrollText className="flex-1 min-w-0" title={selected?.label ?? val}>{selected?.label ?? val}</AutoScrollText>
-                            <svg className="w-4 h-4 text-[#656d76] dark:text-[#9ca3af] ml-auto flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                            <motion.svg
+                                className="w-4 h-4 text-[#656d76] dark:text-[#9ca3af] ml-auto flex-shrink-0"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                animate={{ rotate: open ? 180 : 0 }}
+                                transition={{ duration: 0.18, ease: "easeOut" }}
+                            >
                                 <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd"/>
-                            </svg>
+                            </motion.svg>
                         </ListboxButton>
                         <SelectOptionsPortal open={open} anchorRef={buttonRef} options={options} selectedValue={val} />
                     </div>

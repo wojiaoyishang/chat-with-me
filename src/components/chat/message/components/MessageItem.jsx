@@ -27,6 +27,7 @@ const MessageItem = memo(({
                               onSwitchMessage,
                               leavingMessages,
                               speechState,
+                              onSpeechTextClick,
                               t
                           }) => {
     const isRight = msg.position === 'right';
@@ -180,6 +181,7 @@ const MessageItem = memo(({
         msgId,
         isLeaving: leavingMessages.has(msgId),
         speechState,
+        onSpeechTextClick,
         avatarClickProps: avatarTriggerProps,
     };
 
@@ -223,7 +225,13 @@ const MessageItem = memo(({
                                 ref={midBodyRef}
                                 className={`relative w-full bg-gray-50/40 rounded-2xl transition-[max-height] duration-300 outline-none ${shouldShowExpand && !isExpanded ? 'max-h-[360px] overflow-hidden' : 'max-h-none overflow-visible'}`}
                             >
-                                <div ref={markdownRef} data-tts-message-id={msgId} className="relative">
+                                <div
+                                        ref={markdownRef}
+                                        data-tts-message-id={msgId}
+                                        data-speech-seek-active={speechState?.messageId === msgId && ['loading', 'playing', 'paused'].includes(speechState?.status) ? 'true' : undefined}
+                                        onClickCapture={onSpeechTextClick ? (event) => onSpeechTextClick(event, msgId) : undefined}
+                                        className={`relative ${speechState?.messageId === msgId && ['loading', 'playing', 'paused'].includes(speechState?.status) ? 'cursor-pointer' : ''}`}
+                                    >
                                     <div className="relative z-[2]">
                                         <MarkdownRenderer
                                             contextId={msgId}
@@ -373,8 +381,8 @@ const MessageItem = memo(({
         prevProps.animationClass === nextProps.animationClass &&
         prevProps.isFading === nextProps.isFading &&
         prevProps.leavingMessages.has(prevProps.msgId) === nextProps.leavingMessages.has(nextProps.msgId) &&
-        (prevProps.speechState?.messageId === prevProps.msgId ? `${prevProps.speechState?.status || ''}:${prevProps.speechState?.currentSegmentId || ''}` : '') ===
-        (nextProps.speechState?.messageId === nextProps.msgId ? `${nextProps.speechState?.status || ''}:${nextProps.speechState?.currentSegmentId || ''}` : '')
+        (prevProps.speechState?.messageId === prevProps.msgId ? `${prevProps.speechState?.status || ''}:${prevProps.speechState?.currentSegmentId || ''}:${prevProps.speechState?.currentSegmentPosition ?? ''}` : '') ===
+        (nextProps.speechState?.messageId === nextProps.msgId ? `${nextProps.speechState?.status || ''}:${nextProps.speechState?.currentSegmentId || ''}:${nextProps.speechState?.currentSegmentPosition ?? ''}` : '')
     );
 });
 

@@ -222,6 +222,30 @@ const getSpeechSegmentText = (segment) => String(
 
 const getSpeechSegmentTextVariants = (segment) => getSpeechTextVariants(getSpeechSegmentText(segment));
 
+const resolveSpeechSegmentByLocator = (segments = [], locator = {}) => {
+    if (!Array.isArray(segments) || segments.length === 0) return null;
+
+    const id = locator.segmentId ?? locator.currentSegmentId;
+    if (id !== undefined && id !== null && id !== '') {
+        const byId = segments.find(item => String(item.id) === String(id));
+        if (byId) return byId;
+    }
+
+    const position = Number(locator.segmentPosition ?? locator.currentSegmentPosition ?? locator.position);
+    if (Number.isInteger(position) && position >= 0 && position < segments.length) return segments[position];
+
+    const index = Number(locator.segmentIndex ?? locator.currentSegmentIndex ?? locator.index);
+    if (Number.isInteger(index) && index >= 0 && index < segments.length) return segments[index];
+
+    return null;
+};
+
+const resolveSpeechSegmentIdByLocator = (segments = [], locator = {}, fallback = null) => (
+    resolveSpeechSegmentByLocator(segments, locator)?.id ?? fallback
+);
+
+const isActiveSpeechStatus = (status) => ['loading', 'playing', 'paused'].includes(status);
+
 const getSpeechElementText = (element) => normalizeSpeechMatchText(element?.innerText || element?.textContent || '');
 
 const getSpeechTagScore = (element) => {
@@ -833,16 +857,23 @@ function ChatPage({
 
         // 每次朗读段落变化时重建映射，保证 DOM 更新、重复文本和列表项都按当前消息顺序定位。
         const map = rebuildSpeechSegmentElementMap(container, speech);
-        const {currentSegmentId, currentSegmentIndex} = speech;
+        const {currentSegmentId, currentSegmentIndex, currentSegmentPosition} = speech;
+        const canonicalSegmentId = resolveSpeechSegmentIdByLocator(speech.segments, {
+            currentSegmentId,
+            currentSegmentIndex,
+            currentSegmentPosition,
+        }, currentSegmentId);
 
-        if (currentSegmentId !== undefined && currentSegmentId !== null) {
-            const byIdElement = map.byId.get(currentSegmentId);
+        for (const segmentId of Array.from(new Set([currentSegmentId, canonicalSegmentId].filter(Boolean)))) {
+            const byIdElement = map.byId.get(segmentId);
             if (byIdElement) return byIdElement;
         }
 
-        if (Number.isInteger(currentSegmentIndex) && currentSegmentIndex >= 0) {
-            const byIndexElement = map.byIndex.get(currentSegmentIndex);
-            if (byIndexElement) return byIndexElement;
+        for (const segmentIndex of Array.from(new Set([currentSegmentPosition, currentSegmentIndex]))) {
+            if (Number.isInteger(segmentIndex) && segmentIndex >= 0) {
+                const byIndexElement = map.byIndex.get(segmentIndex);
+                if (byIndexElement) return byIndexElement;
+            }
         }
 
         return null;
@@ -871,17 +902,21 @@ function ChatPage({
     const getSpeechSegmentElement = useCallback((container, speech = speechStateRef.current) => {
         if (!container || !speech?.messageId) return null;
 
-        const {messageId, currentSegmentId, currentSegmentIndex} = speech;
+        const {messageId, currentSegmentId, currentSegmentIndex, currentSegmentPosition} = speech;
         const segments = Array.isArray(speech.segments) ? speech.segments : [];
-        const currentSegment = currentSegmentId
-            ? segments.find(item => item.id === currentSegmentId)
-            : segments[currentSegmentIndex];
+        const currentSegment = resolveSpeechSegmentByLocator(segments, {
+            currentSegmentId,
+            currentSegmentIndex,
+            currentSegmentPosition,
+        });
+        const canonicalSegmentId = currentSegment?.id ?? currentSegmentId;
         const messageElement = getSpeechMessageElement(container, messageId);
         const searchRoot = messageElement || container;
 
         const exactSelectors = [];
-        if (currentSegmentId) {
-            const escapedSegmentId = escapeSelectorValue(currentSegmentId);
+        const segmentIdsForSelectors = Array.from(new Set([currentSegmentId, canonicalSegmentId].filter(Boolean).map(String)));
+        segmentIdsForSelectors.forEach((segmentIdForSelector) => {
+            const escapedSegmentId = escapeSelectorValue(segmentIdForSelector);
             exactSelectors.push(
                 `[data-speech-segment-id="${escapedSegmentId}"]`,
                 `[data-current-segment-id="${escapedSegmentId}"]`,
@@ -891,7 +926,7 @@ function ChatPage({
                 `[id="speech-segment-${escapedSegmentId}"]`,
                 `[id="${escapeSelectorValue(messageId)}-${escapedSegmentId}"]`,
             );
-        }
+        });
 
         if (Number.isInteger(currentSegmentIndex) && currentSegmentIndex >= 0) {
             exactSelectors.push(
@@ -907,9 +942,12 @@ function ChatPage({
         if (message && typeof message.getComponent === 'function') {
             const componentKeys = [
                 currentSegmentId,
-                currentSegmentId ? `speechSegment:${currentSegmentId}` : null,
-                currentSegmentId ? `speech-segment:${currentSegmentId}` : null,
-                currentSegmentId ? `segment:${currentSegmentId}` : null,
+                canonicalSegmentId,
+                ...segmentIdsForSelectors.flatMap(segmentIdForSelector => ([
+                    `speechSegment:${segmentIdForSelector}`,
+                    `speech-segment:${segmentIdForSelector}`,
+                    `segment:${segmentIdForSelector}`,
+                ])),
                 currentSegment ? `speechSegment:${currentSegment.index ?? currentSegmentIndex}` : null,
             ].filter(Boolean);
 
@@ -1760,9 +1798,23 @@ function ChatPage({
     const cancelActiveSpeech = useCallback((notifyBackend = false) => {
         const currentController = speechControllerRef.current;
         currentController.cancelled = true;
+        if (typeof window !== 'undefined') {
+            if (currentController.speakTimer) {
+                window.clearTimeout(currentController.speakTimer);
+                currentController.speakTimer = null;
+            }
+            if (currentController.releaseTimer) {
+                window.clearTimeout(currentController.releaseTimer);
+                currentController.releaseTimer = null;
+            }
+        }
+        currentController.currentUtterance = null;
+        currentController.utteranceKeepAlive = [];
 
         if (typeof window !== 'undefined' && window.speechSynthesis) {
             window.speechSynthesis.cancel();
+            // cancel() 不会保证退出 paused 状态。下一次主动播放前恢复一次，避免新 utterance 入队后不出声。
+            window.speechSynthesis.resume?.();
         }
 
         clearBackendSpeechAudio();
@@ -1943,6 +1995,35 @@ function ChatPage({
         const baseRate = normalizeSpeechRate(speechConfig.rate ?? speechConfig.speakRate ?? 1);
         const pitch = Number(speechConfig.pitch ?? speechConfig.speakPitch ?? 1) || 1;
         const volume = Number(speechConfig.volume ?? speechConfig.speakVolume ?? 1);
+        const isCjkSpeechLang = /^(zh|ja|ko)(-|_|$)/i.test(String(lang || ''));
+        const BROWSER_SPEECH_MIN_GAP_MS = 80;
+        const BROWSER_SPEECH_SHORT_GAP_MS = 140;
+        const BROWSER_SPEECH_CANCEL_COOLDOWN_MS = 160;
+        const BROWSER_UTTERANCE_KEEP_ALIVE_MS = 3000;
+        const SHORT_BROWSER_SEGMENT_CHARS = isCjkSpeechLang ? 10 : 18;
+
+        const normalizeBrowserSpeechText = (value) => String(value || '')
+            .replace(/[\u200B-\u200D\uFEFF]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        const getBrowserSpeechCharCount = (value) => Array.from(
+            normalizeBrowserSpeechText(value).replace(/[\s。！？!?.,，、；;：:\-—…“”"'`~（）()\[\]{}<>《》]/g, '')
+        ).length;
+
+        const buildBrowserUtteranceText = (segment = {}) => {
+            const text = normalizeBrowserSpeechText(segment.text);
+            if (!text) return '';
+            const visibleLength = getBrowserSpeechCharCount(text);
+            const hasTerminalPunctuation = /[。！？!?.…]$/.test(text);
+
+            // 一些系统 TTS 对连续极短 utterance 的收尾状态恢复不稳定，容易出现跳读、串音或短暂乱码。
+            // 给短句补一个自然结束符，让语音引擎获得稳定的短暂停顿，但不改变 UI 中显示/高亮的原始文本。
+            if (visibleLength > 0 && visibleLength <= SHORT_BROWSER_SEGMENT_CHARS && !hasTerminalPunctuation) {
+                return `${text}${isCjkSpeechLang ? '。' : '.'}`;
+            }
+            return text;
+        };
         const browserSpeechOptions = {
             ...speechConfig,
             engine: 'browser',
@@ -1993,6 +2074,10 @@ function ChatPage({
             playNext: null,
             playFrom: null,
             playToken: 0,
+            speakTimer: null,
+            releaseTimer: null,
+            currentUtterance: null,
+            utteranceKeepAlive: [],
         };
         speechControllerRef.current = controller;
 
@@ -2004,17 +2089,29 @@ function ChatPage({
             segments,
             currentSegmentId: null,
             currentSegmentIndex: -1,
+            currentSegmentPosition: -1,
             rate: baseRate,
         });
 
         const finish = () => {
             if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return;
+            if (controller.speakTimer) {
+                window.clearTimeout(controller.speakTimer);
+                controller.speakTimer = null;
+            }
+            if (controller.releaseTimer) {
+                window.clearTimeout(controller.releaseTimer);
+                controller.releaseTimer = null;
+            }
+            controller.currentUtterance = null;
+            controller.utteranceKeepAlive = [];
 
             setSpeechState(prev => ({
                 ...prev,
                 status: 'ended',
                 currentSegmentId: null,
                 currentSegmentIndex: -1,
+                currentSegmentPosition: -1,
             }));
 
             window.setTimeout(() => {
@@ -2030,6 +2127,24 @@ function ChatPage({
             }, 300);
         };
 
+        const releaseFinishedUtteranceLater = (utterance) => {
+            if (controller.releaseTimer) window.clearTimeout(controller.releaseTimer);
+            controller.releaseTimer = window.setTimeout(() => {
+                controller.utteranceKeepAlive = (controller.utteranceKeepAlive || []).filter(item => item !== utterance);
+                if (controller.currentUtterance === utterance) controller.currentUtterance = null;
+                controller.releaseTimer = null;
+            }, BROWSER_UTTERANCE_KEEP_ALIVE_MS);
+        };
+
+        const schedulePlayNext = (delay = BROWSER_SPEECH_MIN_GAP_MS) => {
+            if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return;
+            if (controller.speakTimer) window.clearTimeout(controller.speakTimer);
+            controller.speakTimer = window.setTimeout(() => {
+                controller.speakTimer = null;
+                playNext();
+            }, Math.max(0, delay));
+        };
+
         const playNext = () => {
             if (controller.cancelled || controller.paused || speechControllerRef.current.requestId !== requestId) return;
             if (controller.nextIndex >= segments.length) {
@@ -2039,12 +2154,20 @@ function ChatPage({
 
             const segmentIndex = controller.nextIndex;
             const segment = segments[segmentIndex];
+            const utteranceText = buildBrowserUtteranceText(segment);
+
+            if (!utteranceText) {
+                controller.nextIndex = segmentIndex + 1;
+                schedulePlayNext(0);
+                return;
+            }
+
             const playToken = (controller.playToken || 0) + 1;
             controller.playToken = playToken;
             controller.currentIndex = segmentIndex;
             controller.nextIndex = segmentIndex + 1;
 
-            const utterance = new SpeechSynthesisUtterance(segment.text);
+            const utterance = new SpeechSynthesisUtterance(utteranceText);
             utterance.lang = controller.lang;
             utterance.rate = normalizeSpeechRate(controller.rate);
             utterance.pitch = Math.min(Math.max(controller.pitch, 0), 2);
@@ -2053,37 +2176,61 @@ function ChatPage({
             const voice = findBrowserSpeechVoice(speechConfig);
             if (voice) utterance.voice = voice;
 
-            utterance.onstart = () => {
+            controller.currentUtterance = utterance;
+            controller.utteranceKeepAlive = [...(controller.utteranceKeepAlive || []), utterance].slice(-4);
+
+            const markSegmentPlaying = () => {
                 if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken) return;
                 setSpeechState(prev => ({
                     ...prev,
                     status: controller.paused ? 'paused' : 'playing',
                     currentSegmentId: segment.id,
                     currentSegmentIndex: segmentIndex,
+                    currentSegmentPosition: segmentIndex,
                     rate: normalizeSpeechRate(controller.rate),
                 }));
             };
 
+            utterance.onstart = markSegmentPlaying;
+
             utterance.onend = () => {
                 if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken) return;
+                releaseFinishedUtteranceLater(utterance);
                 setSpeechState(prev => ({
                     ...prev,
                     currentSegmentId: null,
                     currentSegmentIndex: -1,
+                    currentSegmentPosition: -1,
                 }));
-                if (!controller.paused) playNext();
+                if (!controller.paused) {
+                    const nextDelay = getBrowserSpeechCharCount(segment.text) <= SHORT_BROWSER_SEGMENT_CHARS
+                        ? BROWSER_SPEECH_SHORT_GAP_MS
+                        : BROWSER_SPEECH_MIN_GAP_MS;
+                    schedulePlayNext(nextDelay);
+                }
             };
 
             utterance.onerror = (event) => {
+                releaseFinishedUtteranceLater(utterance);
                 if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken || event?.error === 'interrupted' || event?.error === 'canceled') return;
                 toast.error(t('speech_play_error', {message: event?.error || t('unknown_error')}));
                 cancelActiveSpeech(false);
             };
 
-            synthesis.speak(utterance);
+            try {
+                // Safari/Chrome 的 cancel/pause 状态有时会残留；播放前恢复一次，减少新 utterance 被静默入队或跳过。
+                synthesis.resume?.();
+                synthesis.speak(utterance);
+                // 少数实现 onstart 不稳定，先把 UI/高亮推进到当前分段，真实播放仍由 speechSynthesis 控制。
+                window.setTimeout(markSegmentPlaying, 120);
+            } catch (error) {
+                releaseFinishedUtteranceLater(utterance);
+                toast.error(t('speech_play_error', {message: error?.message || t('unknown_error')}));
+                cancelActiveSpeech(false);
+            }
         };
 
-        controller.playNext = playNext;
+        controller.playNext = () => schedulePlayNext(0);
         emitBrowserSpeakMessage({startSegmentPosition: 0});
         controller.playFrom = (targetIndex) => {
             if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return false;
@@ -2100,22 +2247,32 @@ function ChatPage({
                 status: 'loading',
                 currentSegmentId: null,
                 currentSegmentIndex: -1,
+                currentSegmentPosition: -1,
                 rate: normalizeSpeechRate(controller.rate),
             }));
 
+            if (controller.speakTimer) {
+                window.clearTimeout(controller.speakTimer);
+                controller.speakTimer = null;
+            }
+            if (controller.releaseTimer) {
+                window.clearTimeout(controller.releaseTimer);
+                controller.releaseTimer = null;
+            }
+            controller.currentUtterance = null;
+            controller.utteranceKeepAlive = [];
+
             synthesis.cancel();
+            synthesis.resume?.();
             emitBrowserSpeakMessage({startSegmentPosition: nextIndex, restartReason: 'seek'});
-            window.setTimeout(() => {
-                if (!controller.cancelled && !controller.paused && speechControllerRef.current.requestId === requestId) {
-                    playNext();
-                }
-            }, 0);
+            schedulePlayNext(BROWSER_SPEECH_CANCEL_COOLDOWN_MS);
             return true;
         };
 
-        // 某些浏览器语音列表延迟加载；先触发一次，下一帧再播放。
+        // 某些浏览器语音列表延迟加载；先触发一次，再给系统 TTS 一个很短的冷却时间后播放。
         synthesis.getVoices?.();
-        window.setTimeout(playNext, 0);
+        synthesis.resume?.();
+        schedulePlayNext(BROWSER_SPEECH_MIN_GAP_MS);
         return true;
     }, [cancelActiveSpeech, chatMarkId, findBrowserSpeechVoice, normalizeSpeechRate, resetSpeechState, selectedModel?.id, t]);
 
@@ -2289,6 +2446,76 @@ function ChatPage({
         return true;
     }, [requestBackendSpeech, resetBackendSpeechPlaybackQueue, resolveSpeechSegmentPosition]);
 
+    const getSpeechBoundSegmentPositions = useCallback((element) => {
+        if (!element || typeof element.getAttribute !== 'function') return [];
+
+        const rawIndexes = element.getAttribute(SPEECH_SEGMENT_BOUND_INDEXES_ATTR) ||
+            element.getAttribute(SPEECH_SEGMENT_BOUND_INDEX_ATTR) ||
+            '';
+
+        return rawIndexes
+            .split(SPEECH_BOUNDARY_TOKEN)
+            .map(value => Number(value))
+            .filter(value => Number.isInteger(value) && value >= 0);
+    }, []);
+
+    const findSpeechSeekBoundElement = useCallback((target, boundary) => {
+        if (!(target instanceof Element)) return null;
+
+        let element = target;
+        while (element) {
+            if (element.getAttribute?.(SPEECH_SEGMENT_BINDING_ATTR) === 'true') {
+                return element;
+            }
+
+            if (boundary && element === boundary) break;
+            element = element.parentElement;
+        }
+
+        return null;
+    }, []);
+
+    const handleSpeechTextClick = useCallback((event, msgId) => {
+        const currentSpeech = speechStateRef.current;
+        if (currentSpeech?.messageId !== msgId || !isActiveSpeechStatus(currentSpeech?.status)) return false;
+
+        const target = event?.target;
+        if (!(target instanceof Element)) return false;
+
+        // 朗读模式下，文本点击用于选择朗读进度；但不拦截真正的控件点击。
+        if (target.closest?.('button, input, textarea, select, [role="button"], [data-message-avatar-trigger="true"], [data-radix-popper-content-wrapper]')) {
+            return false;
+        }
+
+        const container = messagesContainerRef.current;
+        if (!container) return false;
+
+        // 先重建当前消息的段落映射，确保重复段落/列表项也按 DOM 顺序绑定到正确进度。
+        rebuildSpeechSegmentElementMap(container, currentSpeech);
+
+        const messageElement = getSpeechMessageElement(container, msgId) || target.closest?.('[data-tts-message-id]') || container;
+        const boundElement = findSpeechSeekBoundElement(target, messageElement);
+        const boundPositions = getSpeechBoundSegmentPositions(boundElement);
+        if (boundPositions.length === 0) return false;
+
+        // 一个段落里可能绑定多个句子。按“紫框段落”为点击主体时，跳到该段落绑定的第一句。
+        const targetPosition = Math.min(...boundPositions);
+        const didSeek = seekSpeechSegment({segmentPosition: targetPosition}, {absolute: true});
+
+        if (didSeek) {
+            event.preventDefault?.();
+            event.stopPropagation?.();
+        }
+
+        return didSeek;
+    }, [
+        findSpeechSeekBoundElement,
+        getSpeechBoundSegmentPositions,
+        getSpeechMessageElement,
+        rebuildSpeechSegmentElementMap,
+        seekSpeechSegment,
+    ]);
+
     const handleSpeakMessageRequest = useCallback((payload, reply) => {
         const messageId = payload?.msgId || payload?.messageId || payload?.value;
         if (!messageId) {
@@ -2340,7 +2567,12 @@ function ChatPage({
     const applyBackendSpeechPlaybackSegment = useCallback((payload = {}) => {
         const segmentPosition = getBackendSpeechSegmentPosition(payload, -1);
         const segmentIndex = getBackendSpeechSegmentIndex(payload, segmentPosition);
-        const segmentId = payload.segmentId || speechControllerRef.current?.segments?.[segmentPosition]?.id || null;
+        const controllerSegments = speechControllerRef.current?.segments || [];
+        const segmentId = resolveSpeechSegmentIdByLocator(controllerSegments, {
+            segmentId: payload.segmentId,
+            segmentPosition,
+            segmentIndex,
+        }, payload.segmentId || null);
 
         if (Number.isFinite(segmentPosition) && segmentPosition >= 0) {
             speechControllerRef.current.currentIndex = segmentPosition;
@@ -2522,7 +2754,14 @@ function ChatPage({
     const enqueueBackendSpeechSegment = useCallback((payload, audioUrl, revoke = true) => {
         const backendState = backendSpeechAudioRef.current;
         const requestId = payload?.requestId || backendState.requestId;
-        const segmentId = getBackendSpeechSegmentId(payload);
+        const segmentPosition = getBackendSpeechSegmentPosition(payload, backendState.queue.length);
+        const segmentIndex = getBackendSpeechSegmentIndex(payload, segmentPosition);
+        const fallbackSegmentId = getBackendSpeechSegmentId(payload);
+        const segmentId = resolveSpeechSegmentIdByLocator(speechControllerRef.current?.segments, {
+            segmentId: payload?.segmentId,
+            segmentPosition,
+            segmentIndex,
+        }, fallbackSegmentId);
 
         if (!audioUrl || !requestId || backendState.cancelled) return false;
         if (backendState.queuedIds.has(segmentId)) return true;
@@ -2536,8 +2775,8 @@ function ChatPage({
         backendState.bitsPerSample = getBackendSpeechBitsPerSample(payload, backendState.bitsPerSample);
         backendState.queue.push({
             segmentId,
-            segmentIndex: getBackendSpeechSegmentIndex(payload, getBackendSpeechSegmentPosition(payload, backendState.queue.length)),
-            segmentPosition: getBackendSpeechSegmentPosition(payload, backendState.queue.length),
+            segmentIndex,
+            segmentPosition,
             audioUrl,
             revoke,
         });
@@ -3507,6 +3746,7 @@ function ChatPage({
                                 onSwitchMessage={switchMessage}
                                 markId={chatMarkId}
                                 speechState={speechState}
+                                onSpeechTextClick={handleSpeechTextClick}
                             />
                         </div>
                         {isLoading && <LoadingScreen t={t}/>}
