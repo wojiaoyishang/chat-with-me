@@ -1,15 +1,18 @@
-import React, {memo, useCallback, useRef, useState} from 'react';
+import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
 import {ChevronDown, ChevronUp} from 'lucide-react';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import AttachmentShowcase from '../../AttachmentShowcase';
-import {resolveMessageCopyContent} from '../utils/copyContent.js';
 import KnowledgeGraphViewer from './KnowledgeGraphViewer.jsx';
 import LeftAvatarName from './LeftAvatarName.jsx';
 import MessageActions from './MessageActions.jsx';
 import MessageAvatarMenu from './MessageAvatarMenu.jsx';
 import TextOnlyMessageContent from './TextOnlyMessageContent.jsx';
 import SpeechOverlayHighlighter from './SpeechOverlayHighlighter.jsx';
+import {useIsMobile} from '@/lib/tools.jsx';
+
+const MID_COLLAPSED_CONTENT_MAX_HEIGHT = 360;
+const MID_OVERFLOW_TOLERANCE = 18;
 
 const MessageItem = memo(({
                               msgId,
@@ -29,19 +32,23 @@ const MessageItem = memo(({
     const isRight = msg.position === 'right';
     const isMid = msg.position === 'mid';
     const readonly = msg.readonly;
+    const rootRef = useRef(null);
     const markdownRef = useRef(null);
+    const midBodyRef = useRef(null);
     const displayName = msg.name || 'U';
     const hasAttachments = msg.attachments?.length > 0;
     const hasContent = msg.content?.trim();
-    const copyContent = resolveMessageCopyContent(msg.content, msg.extraInfo) || '';
-
     const [isExpanded, setIsExpanded] = useState(false);
-    const shouldShowExpand = isMid && copyContent.length > 650;
+    const [isMidOverflowing, setIsMidOverflowing] = useState(false);
+    const shouldShowExpand = isMid && isMidOverflowing;
     const [isMobileActive, setIsMobileActive] = useState(false);
     const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+    const isMobile = useIsMobile();
 
     const [isHovered, setIsHovered] = useState(false);
-    const hoverHandlers = isRight && !readonly ? {
+    const canRevealActions = !readonly && (isRight || isMid);
+    const isActionActive = !canRevealActions || isHovered || isMobileActive;
+    const hoverHandlers = !isMobile && canRevealActions ? {
         onMouseEnter: () => setIsHovered(true),
         onMouseLeave: () => setIsHovered(false),
     } : {};
@@ -60,7 +67,7 @@ const MessageItem = memo(({
         switchingMessageId,
         setSwitchingMessageId,
         setFadeMessages,
-        isHovered,
+        isActionActive,
         readonly,
         speechState,
         t
@@ -82,6 +89,67 @@ const MessageItem = memo(({
         if (!target.closest('[data-message-avatar-trigger="true"]')) return;
         openAvatarMenu(event);
     }, [openAvatarMenu]);
+
+    const handleRootClick = useCallback((event) => {
+        if (!isMobile || !canRevealActions) return;
+
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (target.closest('button, a, input, textarea, select, [role="button"], [data-message-avatar-trigger="true"], [data-radix-popper-content-wrapper]')) {
+            return;
+        }
+
+        setIsMobileActive(true);
+    }, [canRevealActions, isMobile]);
+
+    useEffect(() => {
+        if (!isMobile || !isMobileActive) return undefined;
+
+        const handlePointerDown = (event) => {
+            const target = event.target;
+            if (target instanceof Node && rootRef.current?.contains(target)) return;
+            setIsMobileActive(false);
+        };
+
+        document.addEventListener('pointerdown', handlePointerDown, true);
+        return () => document.removeEventListener('pointerdown', handlePointerDown, true);
+    }, [isMobile, isMobileActive]);
+
+    useEffect(() => {
+        if (!isMid) return;
+        setIsExpanded(false);
+    }, [isMid, msgId, msg.content, msg.attachments?.length]);
+
+    useEffect(() => {
+        if (!isMid) {
+            setIsMidOverflowing(false);
+            return undefined;
+        }
+
+        const node = midBodyRef.current;
+        if (!node) return undefined;
+
+        let frameId = null;
+        const measure = () => {
+            if (frameId) cancelAnimationFrame(frameId);
+            frameId = requestAnimationFrame(() => {
+                const nextOverflowing = node.scrollHeight > MID_COLLAPSED_CONTENT_MAX_HEIGHT + MID_OVERFLOW_TOLERANCE;
+                setIsMidOverflowing(prev => (prev === nextOverflowing ? prev : nextOverflowing));
+            });
+        };
+
+        measure();
+
+        const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+        resizeObserver?.observe(node);
+        window.addEventListener('resize', measure);
+
+        return () => {
+            if (frameId) cancelAnimationFrame(frameId);
+            resizeObserver?.disconnect();
+            window.removeEventListener('resize', measure);
+        };
+    }, [isMid, msg.content, msg.extraInfo?.replace, msg.attachments?.length]);
 
     const avatarTriggerProps = {
         'data-message-avatar-trigger': 'true',
@@ -115,21 +183,45 @@ const MessageItem = memo(({
         avatarClickProps: avatarTriggerProps,
     };
 
+    const renderMidExpandControl = () => {
+        if (!shouldShowExpand) return null;
+
+        return (
+            <button
+                type="button"
+                onClick={() => setIsExpanded(prev => !prev)}
+                className="shrink-0 cursor-pointer flex items-center gap-1 text-gray-400 hover:text-blue-500 text-sm font-medium transition-colors"
+            >
+                {isExpanded ? (
+                    <>
+                        <ChevronUp size={16}/>
+                        {t('collapse')}
+                    </>
+                ) : (
+                    <>
+                        <ChevronDown size={16}/>
+                        {t('expand')}
+                    </>
+                )}
+            </button>
+        );
+    };
+
     const renderMessageContent = () => {
         if (isMid) {
+            const showMidActionsRow = shouldShowExpand || isActionActive;
+
             return (
                 <div className="w-full py-2 px-1">
                     <div
-                        className="relative group bg-gray-50/40 border border-gray-100 rounded-2xl transition-all duration-300 hover:shadow-sm"
+                        className={`relative bg-gray-50/40 border border-gray-100 rounded-2xl transition-all duration-300 ${isActionActive ? 'shadow-sm' : ''}`}
                     >
-                        <div className="flex flex-col items-start w-full px-5 py-5">
+                        <div className="flex flex-col items-start w-full px-4 py-4 sm:px-5 sm:py-5">
                             <KnowledgeGraphViewer key={msgId} msg={msg} className="w-full"/>
 
                             <div
-                                onClick={() => setIsMobileActive(!isMobileActive)}
-                                onBlur={() => setIsMobileActive(false)}
-                                tabIndex={0}
-                                className="relative group bg-gray-50/40 rounded-2xl transition-all duration-300 outline-none"
+                                ref={midBodyRef}
+                                className={`relative w-full bg-gray-50/40 rounded-2xl transition-[max-height] duration-300 outline-none ${shouldShowExpand && !isExpanded ? 'max-h-[360px] overflow-hidden' : 'max-h-none overflow-visible'}`}
                             >
                                 <div ref={markdownRef} data-tts-message-id={msgId} className="relative">
                                     <div className="relative z-[2]">
@@ -157,37 +249,13 @@ const MessageItem = memo(({
                             </div>
 
                             <div
-                                className={`w-full grid transition-all duration-300 ease-in-out ${shouldShowExpand ? 'grid-rows-[1fr] mt-3' : (isMobileActive ? 'grid-rows-[1fr] mt-4' : 'grid-rows-[0fr] group-hover:grid-rows-[1fr] group-hover:mt-4')}`}
+                                className={`w-full grid transition-all duration-300 ease-in-out ${showMidActionsRow ? 'grid-rows-[1fr] mt-4' : 'grid-rows-[0fr] mt-0'}`}
                             >
                                 <div className="overflow-hidden">
-                                    <div className="flex items-center justify-between w-full min-w-0">
-                                        {shouldShowExpand ? (
-                                            <button
-                                                onClick={() => setIsExpanded(!isExpanded)}
-                                                className="cursor-pointer flex items-center gap-1 text-gray-400 hover:text-blue-500 text-sm font-medium transition-colors"
-                                            >
-                                                {isExpanded ? (
-                                                    <>
-                                                        <ChevronUp size={16}/>
-                                                        {t('collapse')}
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <ChevronDown size={16}/>
-                                                        {t('expand')}
-                                                    </>
-                                                )}
-                                            </button>
-                                        ) : (
-                                            <div/>
-                                        )}
-
-                                        <div
-                                            className={`min-w-0 transition-all duration-300 ${shouldShowExpand ? 'opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 delay-100' : 'opacity-100'}`}
-                                        >
-                                            <MessageActions {...actionProps}/>
-                                        </div>
-                                    </div>
+                                    <MessageActions
+                                        {...actionProps}
+                                        leadingContent={renderMidExpandControl()}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -274,8 +342,10 @@ const MessageItem = memo(({
     return (
         <div
             key={msgId}
+            ref={rootRef}
             className={`flex flex-col w-full transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'} ${animationClass}`}
             onClickCapture={handleRootClickCapture}
+            onClick={handleRootClick}
             {...hoverHandlers}
         >
             {renderMessageContent()}

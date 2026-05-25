@@ -1,4 +1,5 @@
 import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {createPortal} from 'react-dom';
 import {
     ChevronDown,
     Gauge,
@@ -15,11 +16,16 @@ import {
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 const ACTIVE_STATUSES = new Set(['loading', 'playing', 'paused']);
-const STORAGE_KEY = 'chat-speech-player-position-v2';
-const DEFAULT_WIDTH_RATIO = 0.6;
-const MIN_WIDTH = 360;
+const STORAGE_KEY = 'chat-speech-player-position-v3';
+const DESKTOP_DEFAULT_WIDTH_RATIO = 0.52;
+const DESKTOP_MIN_WIDTH = 360;
+const MOBILE_MIN_WIDTH = 288;
+const DESKTOP_MAX_WIDTH = 880;
+const MOBILE_BREAKPOINT = 640;
 const PLAYER_Z_INDEX = 2147483000;
 const SIDE_SNAP_DISTANCE = 28;
+const MOBILE_SIDE_SNAP_DISTANCE = 56;
+const EDGE_MARGIN = 8;
 
 const fallbackText = (t, key, fallback) => {
     const value = t?.(key);
@@ -36,31 +42,78 @@ const getViewportSize = () => ({
     height: window.innerHeight || document.documentElement.clientHeight || 768,
 });
 
-const getMaxPanelWidth = (viewportWidth) => Math.max(280, viewportWidth - 32);
+const isCompactViewport = (viewportWidth) => viewportWidth <= MOBILE_BREAKPOINT;
 
-const getMinPanelWidth = (viewportWidth) => Math.min(MIN_WIDTH, getMaxPanelWidth(viewportWidth));
+const getMaxPanelWidth = (viewportWidth) => {
+    if (isCompactViewport(viewportWidth)) {
+        return Math.max(280, viewportWidth - EDGE_MARGIN * 2);
+    }
+
+    return Math.max(320, Math.min(DESKTOP_MAX_WIDTH, viewportWidth - 32));
+};
+
+const getMinPanelWidth = (viewportWidth) => Math.min(
+    isCompactViewport(viewportWidth) ? MOBILE_MIN_WIDTH : DESKTOP_MIN_WIDTH,
+    getMaxPanelWidth(viewportWidth),
+);
 
 const getDefaultWidth = (viewport = getViewportSize()) => {
     const maxWidth = getMaxPanelWidth(viewport.width);
     const minWidth = getMinPanelWidth(viewport.width);
-    return Math.round(clamp(viewport.width * DEFAULT_WIDTH_RATIO, minWidth, maxWidth));
+
+    if (isCompactViewport(viewport.width)) {
+        return Math.round(clamp(Math.min(360, viewport.width - EDGE_MARGIN * 2), minWidth, maxWidth));
+    }
+
+    return Math.round(clamp(viewport.width * DESKTOP_DEFAULT_WIDTH_RATIO, minWidth, maxWidth));
 };
 
-const normalizePanelState = (state, viewport = getViewportSize()) => {
+const getMinPanelY = (viewport = getViewportSize()) => (isCompactViewport(viewport.width) ? 12 : 64);
+
+const getDockedSide = (state) => (
+    state?.dockedSide === 'left' || state?.dockedSide === 'right' ? state.dockedSide : null
+);
+
+const getDockCandidate = (x, width, viewport, snapDistance) => {
+    const leftDistance = x - EDGE_MARGIN;
+    const rightDistance = viewport.width - (x + width) - EDGE_MARGIN;
+
+    if (leftDistance > snapDistance && rightDistance > snapDistance) return null;
+    return leftDistance <= rightDistance ? 'left' : 'right';
+};
+
+const getDockedX = (side, width, viewport) => (
+    side === 'left' ? EDGE_MARGIN : Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN)
+);
+
+const normalizePanelState = (state, viewport = getViewportSize(), measuredHeight) => {
     const width = clamp(
         typeof state?.width === 'number' ? state.width : getDefaultWidth(viewport),
         getMinPanelWidth(viewport.width),
         getMaxPanelWidth(viewport.width),
     );
 
-    const dockedSide = state?.dockedSide === 'right' ? 'right' : null;
-    const x = dockedSide === 'right'
-        ? Math.max(8, viewport.width - width - 8)
-        : clamp(typeof state?.x === 'number' ? state.x : Math.max(16, Math.round((viewport.width - width) / 2)), 8, Math.max(8, viewport.width - width - 8));
+    const dockedSide = getDockedSide(state);
+    const maxX = Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN);
+    const fallbackX = Math.max(EDGE_MARGIN, Math.round((viewport.width - width) / 2));
+    const x = dockedSide
+        ? getDockedX(dockedSide, width, viewport)
+        : clamp(typeof state?.x === 'number' ? state.x : fallbackX, EDGE_MARGIN, maxX);
+
+    const minY = getMinPanelY(viewport);
+    const defaultY = isCompactViewport(viewport.width)
+        ? Math.max(24, viewport.height - 190)
+        : Math.max(88, viewport.height - 220);
+    const maxY = Math.max(
+        minY,
+        typeof measuredHeight === 'number'
+            ? viewport.height - measuredHeight - EDGE_MARGIN
+            : viewport.height - 88,
+    );
 
     return {
         x,
-        y: clamp(typeof state?.y === 'number' ? state.y : Math.max(88, viewport.height - 220), 64, Math.max(64, viewport.height - 110)),
+        y: clamp(typeof state?.y === 'number' ? state.y : defaultY, minY, maxY),
         width,
         dockedSide,
         collapsed: state?.collapsed === true,
@@ -84,13 +137,12 @@ const getInitialPosition = () => {
     return normalizePanelState({});
 };
 
-
 const getIsMobileInteraction = () => {
     if (typeof window === 'undefined') return false;
 
     const hasCoarsePointer = window.matchMedia?.('(pointer: coarse)')?.matches;
     const hasNoHover = window.matchMedia?.('(hover: none)')?.matches;
-    const isSmallScreen = window.innerWidth <= 640;
+    const isSmallScreen = window.innerWidth <= MOBILE_BREAKPOINT;
 
     return Boolean(hasCoarsePointer || hasNoHover || isSmallScreen);
 };
@@ -111,33 +163,74 @@ const SpeechPlayer = memo(({
     const isVisible = ACTIVE_STATUSES.has(speechState?.status);
     const panelRef = useRef(null);
     const speedButtonRef = useRef(null);
+    const speedMenuRef = useRef(null);
     const collapseTimerRef = useRef(null);
     const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
     const [speedMenuPosition, setSpeedMenuPosition] = useState({top: 0, left: 0});
     const interactionRef = useRef({active: false, type: null});
+    const suppressCollapsedClickRef = useRef(false);
     const [floatingState, setFloatingState] = useState(getInitialPosition);
     const [isMobileInteraction, setIsMobileInteraction] = useState(getIsMobileInteraction);
 
     const currentSegment = useMemo(() => {
-        if (!speechState?.currentSegmentId) return null;
-        return (speechState?.segments || []).find(item => item.id === speechState.currentSegmentId) || null;
-    }, [speechState?.segments, speechState?.currentSegmentId]);
+        const segments = speechState?.segments || [];
+        if (!segments.length) return null;
+
+        if (speechState?.currentSegmentId !== undefined && speechState?.currentSegmentId !== null) {
+            const byId = segments.find(item => String(item.id) === String(speechState.currentSegmentId));
+            if (byId) return byId;
+        }
+
+        const position = Number(speechState?.currentSegmentPosition);
+        if (Number.isInteger(position) && position >= 0 && position < segments.length) return segments[position];
+
+        const index = Number(speechState?.currentSegmentIndex);
+        if (Number.isInteger(index) && index >= 0 && index < segments.length) return segments[index];
+
+        return null;
+    }, [speechState?.segments, speechState?.currentSegmentId, speechState?.currentSegmentIndex, speechState?.currentSegmentPosition]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(floatingState));
     }, [floatingState]);
 
-    useEffect(() => {
+    const keepPanelInViewport = useCallback(() => {
         if (typeof window === 'undefined') return;
+        const measuredHeight = panelRef.current?.offsetHeight;
 
-        const handleResize = () => {
-            setFloatingState(prev => normalizePanelState(prev));
-        };
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        setFloatingState(prev => {
+            const next = normalizePanelState(prev, getViewportSize(), measuredHeight);
+            if (
+                prev.x === next.x &&
+                prev.y === next.y &&
+                prev.width === next.width &&
+                prev.dockedSide === next.dockedSide &&
+                prev.collapsed === next.collapsed
+            ) {
+                return prev;
+            }
+            return next;
+        });
     }, []);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+
+        keepPanelInViewport();
+        window.addEventListener('resize', keepPanelInViewport);
+        window.visualViewport?.addEventListener?.('resize', keepPanelInViewport);
+        return () => {
+            window.removeEventListener('resize', keepPanelInViewport);
+            window.visualViewport?.removeEventListener?.('resize', keepPanelInViewport);
+        };
+    }, [keepPanelInViewport]);
+
+    useEffect(() => {
+        if (!isVisible) return undefined;
+        const frame = window.requestAnimationFrame(keepPanelInViewport);
+        return () => window.cancelAnimationFrame(frame);
+    }, [isVisible, keepPanelInViewport, currentSegment?.text, speedMenuOpen]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return undefined;
@@ -145,7 +238,7 @@ const SpeechPlayer = memo(({
         const mediaQueries = [
             window.matchMedia?.('(pointer: coarse)'),
             window.matchMedia?.('(hover: none)'),
-            window.matchMedia?.('(max-width: 640px)'),
+            window.matchMedia?.(`(max-width: ${MOBILE_BREAKPOINT}px)`),
         ].filter(Boolean);
 
         const updateInteractionMode = () => {
@@ -181,10 +274,17 @@ const SpeechPlayer = memo(({
         if (!rect) return;
 
         const viewport = getViewportSize();
-        const menuWidth = 144;
-        const estimatedMenuHeight = 220;
-        const nextTop = clamp(rect.bottom + 8, 8, Math.max(8, viewport.height - estimatedMenuHeight - 8));
-        const nextLeft = clamp(rect.right - menuWidth, 8, Math.max(8, viewport.width - menuWidth - 8));
+        const menuWidth = 152;
+        const estimatedMenuHeight = 214;
+        const hasRoomBelow = viewport.height - rect.bottom >= estimatedMenuHeight + 16;
+        const rawTop = hasRoomBelow ? rect.bottom + 8 : rect.top - estimatedMenuHeight - 8;
+        const alignCenter = viewport.width <= MOBILE_BREAKPOINT;
+        const rawLeft = alignCenter
+            ? rect.left + rect.width / 2 - menuWidth / 2
+            : rect.right - menuWidth;
+
+        const nextTop = clamp(rawTop, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.height - estimatedMenuHeight - EDGE_MARGIN));
+        const nextLeft = clamp(rawLeft, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.width - menuWidth - EDGE_MARGIN));
 
         setSpeedMenuPosition({top: nextTop, left: nextLeft});
     }, []);
@@ -205,18 +305,22 @@ const SpeechPlayer = memo(({
         updateSpeedMenuPosition();
         window.addEventListener('resize', updateSpeedMenuPosition);
         window.addEventListener('scroll', updateSpeedMenuPosition, true);
+        window.visualViewport?.addEventListener?.('resize', updateSpeedMenuPosition);
 
         return () => {
             window.removeEventListener('resize', updateSpeedMenuPosition);
             window.removeEventListener('scroll', updateSpeedMenuPosition, true);
+            window.visualViewport?.removeEventListener?.('resize', updateSpeedMenuPosition);
         };
     }, [speedMenuOpen, updateSpeedMenuPosition]);
 
     useEffect(() => {
-        if (!speedMenuOpen) return;
+        if (!speedMenuOpen) return undefined;
 
         const handlePointerDown = (event) => {
-            if (panelRef.current && panelRef.current.contains(event.target)) return;
+            const target = event.target;
+            if (panelRef.current?.contains(target)) return;
+            if (speedMenuRef.current?.contains(target)) return;
             setSpeedMenuOpen(false);
         };
 
@@ -224,10 +328,10 @@ const SpeechPlayer = memo(({
             if (event.key === 'Escape') setSpeedMenuOpen(false);
         };
 
-        window.addEventListener('pointerdown', handlePointerDown);
+        window.addEventListener('pointerdown', handlePointerDown, true);
         window.addEventListener('keydown', handleKeyDown);
         return () => {
-            window.removeEventListener('pointerdown', handlePointerDown);
+            window.removeEventListener('pointerdown', handlePointerDown, true);
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [speedMenuOpen]);
@@ -252,10 +356,53 @@ const SpeechPlayer = memo(({
         const viewport = getViewportSize();
         const width = interactionRef.current.width || floatingState.width || getDefaultWidth(viewport);
         const height = panelRef.current?.offsetHeight || 120;
-        const x = clamp(clientX - interactionRef.current.offsetX, 8, Math.max(8, viewport.width - width - 8));
-        const y = clamp(clientY - interactionRef.current.offsetY, 64, Math.max(64, viewport.height - height - 8));
+        const minY = getMinPanelY(viewport);
+        const x = clamp(clientX - interactionRef.current.offsetX, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN));
+        const y = clamp(clientY - interactionRef.current.offsetY, minY, Math.max(minY, viewport.height - height - EDGE_MARGIN));
+        const dockedSide = getDockCandidate(
+            x,
+            width,
+            viewport,
+            isMobileInteraction ? MOBILE_SIDE_SNAP_DISTANCE : SIDE_SNAP_DISTANCE,
+        );
+        const nextX = dockedSide ? getDockedX(dockedSide, width, viewport) : x;
 
-        setFloatingState(prev => ({...prev, x, y, width, dockedSide: null, collapsed: false}));
+        setFloatingState(prev => ({...prev, x: nextX, y, width, dockedSide, collapsed: false}));
+    }, [floatingState.width, isMobileInteraction]);
+
+    const updateCollapsedDragPosition = useCallback((clientX, clientY) => {
+        const viewport = getViewportSize();
+        const interaction = interactionRef.current;
+        const tabHeight = interaction.height || 64;
+        const width = clamp(
+            interaction.panelWidth || floatingState.width || getDefaultWidth(viewport),
+            getMinPanelWidth(viewport.width),
+            getMaxPanelWidth(viewport.width),
+        );
+        const minY = getMinPanelY(viewport);
+        const y = clamp(
+            clientY - interaction.offsetY,
+            minY,
+            Math.max(minY, viewport.height - tabHeight - EDGE_MARGIN),
+        );
+        const movedDistance = Math.hypot(
+            clientX - (interaction.startClientX || clientX),
+            clientY - (interaction.startClientY || clientY),
+        );
+        if (movedDistance > 4) {
+            suppressCollapsedClickRef.current = true;
+        }
+
+        const dockedSide = clientX <= viewport.width / 2 ? 'left' : 'right';
+
+        setFloatingState(prev => ({
+            ...prev,
+            x: getDockedX(dockedSide, width, viewport),
+            y,
+            width,
+            dockedSide,
+            collapsed: true,
+        }));
     }, [floatingState.width]);
 
     const updateResize = useCallback((clientX) => {
@@ -272,22 +419,23 @@ const SpeechPlayer = memo(({
         let x;
 
         if (interaction.direction === 'left') {
-            const maxWidth = Math.min(maxPanelWidth, Math.max(minWidth, startRight - 8));
+            const maxWidth = Math.min(maxPanelWidth, Math.max(minWidth, startRight - EDGE_MARGIN));
             width = clamp(startWidth - deltaX, minWidth, maxWidth);
-            x = clamp(startRight - width, 8, Math.max(8, viewport.width - width - 8));
+            x = clamp(startRight - width, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN));
         } else {
-            const maxWidth = Math.min(maxPanelWidth, Math.max(minWidth, viewport.width - startLeft - 8));
+            const maxWidth = Math.min(maxPanelWidth, Math.max(minWidth, viewport.width - startLeft - EDGE_MARGIN));
             width = clamp(startWidth + deltaX, minWidth, maxWidth);
-            x = clamp(startLeft, 8, Math.max(8, viewport.width - width - 8));
+            x = clamp(startLeft, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN));
         }
 
-        const shouldKeepRightDock = viewport.width - (x + width) <= SIDE_SNAP_DISTANCE;
+        const dockedSide = getDockCandidate(x, width, viewport, SIDE_SNAP_DISTANCE);
+        const nextX = dockedSide ? getDockedX(dockedSide, width, viewport) : x;
 
         setFloatingState(prev => ({
             ...prev,
-            x,
+            x: nextX,
             width,
-            dockedSide: shouldKeepRightDock ? 'right' : null,
+            dockedSide,
             collapsed: false,
         }));
     }, []);
@@ -298,27 +446,65 @@ const SpeechPlayer = memo(({
         interactionRef.current = {active: false, type: null};
         document.body.style.userSelect = '';
         document.body.style.cursor = '';
+        document.body.style.touchAction = '';
+
+        const viewport = getViewportSize();
+        const measuredHeight = panelRef.current?.offsetHeight;
+
+        if (type === 'collapsed-drag') {
+            const wasDragged = suppressCollapsedClickRef.current;
+
+            if (!wasDragged) {
+                setFloatingState(prev => ({...prev, collapsed: false}));
+                return;
+            }
+
+            setFloatingState(prev => {
+                const normalized = normalizePanelState(prev, viewport, measuredHeight);
+                const dockedSide = normalized.dockedSide || prev.dockedSide || 'right';
+
+                return {
+                    ...normalized,
+                    x: getDockedX(dockedSide, normalized.width, viewport),
+                    dockedSide,
+                    collapsed: true,
+                };
+            });
+            window.setTimeout(() => {
+                suppressCollapsedClickRef.current = false;
+            }, 0);
+            return;
+        }
 
         if (type !== 'drag') return;
 
-        const viewport = getViewportSize();
         setFloatingState(prev => {
-            const width = prev.width || getDefaultWidth(viewport);
-            const shouldDockRight = viewport.width - (prev.x + width) <= SIDE_SNAP_DISTANCE;
+            const normalized = normalizePanelState(prev, viewport, measuredHeight);
+            const dockedSide = getDockCandidate(
+                normalized.x,
+                normalized.width,
+                viewport,
+                isMobileInteraction ? MOBILE_SIDE_SNAP_DISTANCE : SIDE_SNAP_DISTANCE,
+            );
+
             return {
-                ...prev,
-                x: shouldDockRight ? Math.max(8, viewport.width - width - 8) : prev.x,
-                dockedSide: shouldDockRight ? 'right' : null,
-                collapsed: shouldDockRight,
+                ...normalized,
+                x: dockedSide ? getDockedX(dockedSide, normalized.width, viewport) : normalized.x,
+                dockedSide,
+                collapsed: dockedSide ? !isMobileInteraction : false,
             };
         });
-    }, []);
+    }, [isMobileInteraction]);
 
     useEffect(() => {
         const handlePointerMove = (event) => {
             if (!interactionRef.current.active) return;
             if (interactionRef.current.type === 'resize') {
                 updateResize(event.clientX);
+                return;
+            }
+            if (interactionRef.current.type === 'collapsed-drag') {
+                updateCollapsedDragPosition(event.clientX, event.clientY);
                 return;
             }
             updateDragPosition(event.clientX, event.clientY);
@@ -335,7 +521,7 @@ const SpeechPlayer = memo(({
             window.removeEventListener('pointerup', handlePointerUp);
             window.removeEventListener('pointercancel', handlePointerUp);
         };
-    }, [finishInteraction, updateDragPosition, updateResize]);
+    }, [finishInteraction, updateCollapsedDragPosition, updateDragPosition, updateResize]);
 
     const handleDragStart = useCallback((event) => {
         if (event.button !== undefined && event.button !== 0) return;
@@ -352,14 +538,45 @@ const SpeechPlayer = memo(({
             width: rect.width,
         };
 
+        event.currentTarget?.setPointerCapture?.(event.pointerId);
         document.body.style.userSelect = 'none';
         document.body.style.cursor = 'grabbing';
+        document.body.style.touchAction = 'none';
         setFloatingState(prev => ({...prev, collapsed: false}));
         event.preventDefault();
     }, [clearCollapseTimer]);
 
+    const handleCollapsedDragStart = useCallback((event) => {
+        if (event.button !== undefined && event.button !== 0) return;
+        setSpeedMenuOpen(false);
+        clearCollapseTimer();
+        suppressCollapsedClickRef.current = false;
+
+        const rect = event.currentTarget?.getBoundingClientRect?.();
+        if (!rect) return;
+
+        interactionRef.current = {
+            active: true,
+            type: 'collapsed-drag',
+            offsetX: event.clientX - rect.left,
+            offsetY: event.clientY - rect.top,
+            height: rect.height,
+            panelWidth: floatingState.width,
+            startClientX: event.clientX,
+            startClientY: event.clientY,
+        };
+
+        event.currentTarget?.setPointerCapture?.(event.pointerId);
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'grabbing';
+        document.body.style.touchAction = 'none';
+        event.preventDefault();
+    }, [clearCollapseTimer, floatingState.width]);
+
+
     const handleResizeStart = useCallback((event, direction) => {
         if (event.button !== undefined && event.button !== 0) return;
+        if (isMobileInteraction) return;
         setSpeedMenuOpen(false);
         clearCollapseTimer();
         const rect = panelRef.current?.getBoundingClientRect();
@@ -374,31 +591,45 @@ const SpeechPlayer = memo(({
             startWidth: rect.width,
         };
 
+        event.currentTarget?.setPointerCapture?.(event.pointerId);
         document.body.style.userSelect = 'none';
         document.body.style.cursor = 'ew-resize';
         setFloatingState(prev => ({...prev, collapsed: false}));
         event.preventDefault();
         event.stopPropagation();
-    }, [clearCollapseTimer]);
+    }, [clearCollapseTimer, isMobileInteraction]);
 
-    const dockToRight = useCallback(() => {
+    const dockToSide = useCallback((side = 'right') => {
+        setSpeedMenuOpen(false);
         const viewport = getViewportSize();
         setFloatingState(prev => {
             const width = clamp(prev.width || getDefaultWidth(viewport), getMinPanelWidth(viewport.width), getMaxPanelWidth(viewport.width));
             return {
                 ...prev,
                 width,
-                x: Math.max(8, viewport.width - width - 8),
-                dockedSide: 'right',
+                x: getDockedX(side, width, viewport),
+                dockedSide: side,
                 collapsed: true,
             };
         });
     }, []);
 
+    const dockToRight = useCallback(() => dockToSide('right'), [dockToSide]);
+
     const undock = useCallback(() => {
         clearCollapseTimer();
         setFloatingState(prev => ({...prev, collapsed: false}));
     }, [clearCollapseTimer]);
+
+    const handleCollapsedClick = useCallback((event) => {
+        if (suppressCollapsedClickRef.current) {
+            suppressCollapsedClickRef.current = false;
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+        undock();
+    }, [undock]);
 
     const collapseToDock = useCallback(() => {
         clearCollapseTimer();
@@ -414,6 +645,7 @@ const SpeechPlayer = memo(({
         const handlePointerDownOutside = (event) => {
             if (interactionRef.current.active) return;
             if (panelRef.current?.contains(event.target)) return;
+            if (speedMenuRef.current?.contains(event.target)) return;
             collapseToDock();
         };
 
@@ -431,6 +663,8 @@ const SpeechPlayer = memo(({
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [collapseToDock, floatingState.collapsed, floatingState.dockedSide, isMobileInteraction, isVisible]);
+
+    useEffect(() => () => clearCollapseTimer(), [clearCollapseTimer]);
 
     if (!isVisible) return null;
 
@@ -451,28 +685,78 @@ const SpeechPlayer = memo(({
         ? fallbackText(t, 'speech_auto_follow_on', '已开启跟随朗读，点击关闭')
         : fallbackText(t, 'speech_auto_follow_off', '跟随当前朗读位置');
 
+    const renderSpeedMenu = () => (
+        <div
+            ref={speedMenuRef}
+            className="fixed rounded-2xl border border-gray-200 bg-white/[0.98] p-1.5 shadow-2xl shadow-slate-900/15 ring-1 ring-black/5 backdrop-blur-xl"
+            style={{top: speedMenuPosition.top, left: speedMenuPosition.left, width: 152, zIndex: PLAYER_Z_INDEX + 2}}
+            onPointerDown={(event) => event.stopPropagation()}
+            role="menu"
+            aria-label={fallbackText(t, 'speech_speed', '播放速度')}
+        >
+            <div className="px-2 py-1 text-[11px] text-gray-400">
+                {fallbackText(t, 'speech_speed', '播放速度')}
+            </div>
+            {SPEEDS.map(item => {
+                const active = Math.abs(rate - item) < 0.01;
+                return (
+                    <button
+                        key={item}
+                        type="button"
+                        onClick={() => {
+                            onRateChange?.(item);
+                            setSpeedMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between rounded-xl px-2.5 py-2 text-xs transition-colors cursor-pointer ${active
+                            ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
+                        aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${item}x`}
+                        role="menuitemradio"
+                        aria-checked={active}
+                    >
+                        <span>{item}x</span>
+                        {active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500"/>}
+                    </button>
+                );
+            })}
+        </div>
+    );
+
+    const speedMenuPortal = speedMenuOpen && typeof document !== 'undefined'
+        ? createPortal(renderSpeedMenu(), document.body)
+        : null;
+
     if (isCollapsed) {
         const tabStyle = {
             top: `${floatingState.y}px`,
             [dockedSide]: 0,
             zIndex: PLAYER_Z_INDEX,
         };
+        const tabSideClass = dockedSide === 'left'
+            ? 'rounded-r-2xl border-l-0'
+            : 'rounded-l-2xl border-r-0';
+
+        const collapsedLabel = `${fallbackText(t, 'expand_speech_player', '展开朗读播放器')} · ${progressText}`;
 
         return (
             <div
-                className="fixed pointer-events-auto"
+                ref={panelRef}
+                className="fixed pointer-events-auto touch-none"
                 style={tabStyle}
-                onMouseEnter={isMobileInteraction ? undefined : undock}
-                onFocus={undock}
             >
                 <button
                     type="button"
-                    onClick={undock}
-                    className={`h-16 w-11 sm:h-20 bg-white/95 border border-indigo-100 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl flex flex-col items-center justify-center gap-1 text-indigo-600 hover:bg-indigo-50 transition-all rounded-l-2xl border-r-0 ring-1 ring-white/60`}
-                    aria-label={fallbackText(t, 'expand_speech_player', '展开朗读播放器')}
+                    onPointerDown={handleCollapsedDragStart}
+                    onClick={handleCollapsedClick}
+                    className={`min-h-16 w-12 cursor-grab touch-none select-none bg-white/95 border border-indigo-100 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl flex flex-col items-center justify-center gap-1.5 px-1.5 py-2 text-indigo-600 hover:bg-indigo-50 active:cursor-grabbing transition-all ${tabSideClass} ring-1 ring-white/60`}
+                    aria-label={collapsedLabel}
+                    title={collapsedLabel}
                 >
-                    <Volume2 size={18}/>
-                    <span className="hidden text-[10px] leading-none writing-mode-vertical sm:block">{isPaused ? fallbackText(t, 'paused', '暂停') : progressText}</span>
+                    <Volume2 size={18} className="shrink-0"/>
+                    <span className="max-w-full rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-indigo-600">
+                        {progressText}
+                    </span>
                 </button>
             </div>
         );
@@ -482,184 +766,163 @@ const SpeechPlayer = memo(({
         left: `${floatingState.x}px`,
         top: `${floatingState.y}px`,
         width: `${floatingState.width}px`,
-        maxWidth: 'calc(100vw - 32px)',
+        maxWidth: 'calc(100vw - 16px)',
+        maxHeight: 'calc(100dvh - 24px)',
         zIndex: PLAYER_Z_INDEX,
     };
 
     return (
-        <div
-            ref={panelRef}
-            className="fixed pointer-events-auto"
-            style={panelStyle}
-            onMouseEnter={clearCollapseTimer}
-            onMouseLeave={() => !isMobileInteraction && dockedSide && scheduleDockCollapse()}
-        >
-            <div className="relative overflow-visible rounded-3xl border border-white/70 bg-white/90 shadow-[0_22px_70px_rgba(15,23,42,0.20)] backdrop-blur-2xl ring-1 ring-indigo-100/70">
-                <button
-                    type="button"
-                    onPointerDown={(event) => handleResizeStart(event, 'left')}
-                    className="absolute left-0 top-4 bottom-4 z-20 w-2 -translate-x-1 cursor-ew-resize rounded-full hover:bg-indigo-300/30 focus:outline-none focus:ring-2 focus:ring-indigo-300/50"
-                    aria-label={fallbackText(t, 'resize_speech_player_left', '向左调整播放器宽度')}
-                    title={fallbackText(t, 'resize_speech_player_left', '向左调整播放器宽度')}
-                />
-                <button
-                    type="button"
-                    onPointerDown={(event) => handleResizeStart(event, 'right')}
-                    className="absolute right-0 top-4 bottom-4 z-20 w-2 translate-x-1 cursor-ew-resize rounded-full hover:bg-indigo-300/30 focus:outline-none focus:ring-2 focus:ring-indigo-300/50"
-                    aria-label={fallbackText(t, 'resize_speech_player_right', '向右调整播放器宽度')}
-                    title={fallbackText(t, 'resize_speech_player_right', '向右调整播放器宽度')}
-                />
-                <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-50/80 via-white/40 to-violet-50/70"/>
-                <div className="relative px-3.5 py-3">
-                    <div className="flex min-w-0 items-center gap-3">
-                        <button
-                            type="button"
-                            onPointerDown={handleDragStart}
-                            className="h-10 w-8 rounded-2xl text-gray-400 hover:text-gray-700 hover:bg-white/80 flex items-center justify-center cursor-grab active:cursor-grabbing flex-shrink-0 transition-colors"
-                            aria-label={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
-                            title={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
-                        >
-                            <GripVertical size={17}/>
-                        </button>
+        <>
+            <div
+                ref={panelRef}
+                className="fixed pointer-events-auto"
+                style={panelStyle}
+                onMouseEnter={clearCollapseTimer}
+                onMouseLeave={() => !isMobileInteraction && dockedSide && scheduleDockCollapse()}
+            >
+                <div className="relative overflow-visible rounded-3xl border border-white/70 bg-white/90 shadow-[0_22px_70px_rgba(15,23,42,0.20)] backdrop-blur-2xl ring-1 ring-indigo-100/70">
+                    <button
+                        type="button"
+                        onPointerDown={(event) => handleResizeStart(event, 'left')}
+                        className="absolute left-0 top-4 bottom-4 z-20 hidden w-2 -translate-x-1 cursor-ew-resize rounded-full hover:bg-indigo-300/30 focus:outline-none focus:ring-2 focus:ring-indigo-300/50 sm:block"
+                        aria-label={fallbackText(t, 'resize_speech_player_left', '向左调整播放器宽度')}
+                        title={fallbackText(t, 'resize_speech_player_left', '向左调整播放器宽度')}
+                    />
+                    <button
+                        type="button"
+                        onPointerDown={(event) => handleResizeStart(event, 'right')}
+                        className="absolute right-0 top-4 bottom-4 z-20 hidden w-2 translate-x-1 cursor-ew-resize rounded-full hover:bg-indigo-300/30 focus:outline-none focus:ring-2 focus:ring-indigo-300/50 sm:block"
+                        aria-label={fallbackText(t, 'resize_speech_player_right', '向右调整播放器宽度')}
+                        title={fallbackText(t, 'resize_speech_player_right', '向右调整播放器宽度')}
+                    />
+                    <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-50/80 via-white/40 to-violet-50/70"/>
+                    <div className="relative px-3 py-3 sm:px-3.5">
+                        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3">
+                            <div className="flex min-w-0 items-center gap-2.5 sm:flex-1 sm:gap-3">
+                                <button
+                                    type="button"
+                                    onPointerDown={handleDragStart}
+                                    className="flex h-10 w-8 flex-shrink-0 touch-none items-center justify-center rounded-2xl text-gray-400 transition-colors hover:bg-white/80 hover:text-gray-700 cursor-grab active:cursor-grabbing"
+                                    aria-label={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
+                                    title={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
+                                >
+                                    <GripVertical size={17}/>
+                                </button>
 
-                        <div className="relative h-10 w-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-500/25">
-                            <Volume2 size={18}/>
-                            {speechState.status === 'playing' && (
-                                <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white"/>
-                            )}
-                        </div>
-
-                        <div className="hidden min-w-0 flex-1 basis-0 sm:block">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <span className="text-sm font-semibold text-gray-900 truncate">
-                                    {title}
-                                </span>
-                                <span className="text-[11px] text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 flex-shrink-0">
-                                    {isLoading ? fallbackText(t, 'speech_loading', '准备中') : progressText}
-                                </span>
-                            </div>
-                            <div className="text-xs text-gray-500 truncate mt-1">
-                                {currentSegment?.text || fallbackText(t, 'speech_waiting_segment', '正在准备朗读内容...')}
-                            </div>
-                        </div>
-
-                        <div className="min-w-0 flex-1 overflow-x-auto overflow-y-visible overscroll-x-contain pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-none sm:max-w-none sm:overflow-visible">
-                            <div className="flex w-max flex-nowrap items-center gap-1.5">
-                                <div className="relative shrink-0">
-                                    <button
-                                        ref={speedButtonRef}
-                                        type="button"
-                                        onClick={toggleSpeedMenu}
-                                        className="h-8 shrink-0 px-2.5 rounded-full flex items-center gap-1.5 text-xs font-medium text-gray-700 bg-white/80 hover:bg-white border border-gray-200/80 shadow-sm transition-colors cursor-pointer"
-                                        aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${rate}x`}
-                                        aria-expanded={speedMenuOpen}
-                                    >
-                                        <Gauge size={14} className="text-indigo-500"/>
-                                        <span>{rate}x</span>
-                                        <ChevronDown size={13} className={`text-gray-400 transition-transform ${speedMenuOpen ? 'rotate-180' : ''}`}/>
-                                    </button>
-
-                                    {speedMenuOpen && (
-                                        <div
-                                            className="fixed w-36 rounded-2xl border border-gray-200 bg-white/[0.98] p-1.5 shadow-2xl shadow-slate-900/15 ring-1 ring-black/5 backdrop-blur-xl"
-                                            style={{top: speedMenuPosition.top, left: speedMenuPosition.left, zIndex: PLAYER_Z_INDEX + 2}}
-                                        >
-                                            <div className="px-2 py-1 text-[11px] text-gray-400">
-                                                {fallbackText(t, 'speech_speed', '播放速度')}
-                                            </div>
-                                            {SPEEDS.map(item => {
-                                                const active = Math.abs(rate - item) < 0.01;
-                                                return (
-                                                    <button
-                                                        key={item}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            onRateChange?.(item);
-                                                            setSpeedMenuOpen(false);
-                                                        }}
-                                                        className={`w-full flex items-center justify-between rounded-xl px-2.5 py-1.5 text-xs transition-colors cursor-pointer ${active
-                                                            ? 'bg-indigo-50 text-indigo-600 font-semibold'
-                                                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                                        }`}
-                                                        aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${item}x`}
-                                                    >
-                                                        <span>{item}x</span>
-                                                        {active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500"/>}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
+                                <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25">
+                                    <Volume2 size={18}/>
+                                    {speechState.status === 'playing' && (
+                                        <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white"/>
                                     )}
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={() => onAutoFollowToggle?.(!autoFollowEnabled)}
-                                    className={`h-8 shrink-0 px-2 rounded-full flex items-center gap-1.5 text-xs font-medium border shadow-sm transition-colors cursor-pointer ${autoFollowEnabled
-                                        ? 'text-indigo-600 bg-indigo-50 border-indigo-200 ring-1 ring-indigo-100'
-                                        : 'text-gray-600 bg-white/80 hover:bg-white hover:text-indigo-600 border-gray-200/80'
-                                    }`}
-                                    aria-label={autoFollowLabel}
-                                    title={autoFollowLabel}
-                                    aria-pressed={autoFollowEnabled}
-                                >
-                                    <Target size={14} className={autoFollowEnabled ? 'text-indigo-500' : 'text-gray-500'}/>
-                                    <span>{fallbackText(t, 'speech_auto_follow_short', '跟随')}</span>
-                                </button>
+                                <div className="min-w-0 flex-1 basis-0">
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <span className="truncate text-sm font-semibold text-gray-900">
+                                            {title}
+                                        </span>
+                                        <span className="flex-shrink-0 rounded-full border border-indigo-100 bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-600">
+                                            {isLoading ? fallbackText(t, 'speech_loading', '准备中') : progressText}
+                                        </span>
+                                    </div>
+                                    <div className="mt-1 truncate text-xs text-gray-500">
+                                        {currentSegment?.text || fallbackText(t, 'speech_waiting_segment', '正在准备朗读内容...')}
+                                    </div>
+                                </div>
+                            </div>
 
-                                <button
-                                    type="button"
-                                    onClick={onPrevious}
-                                    disabled={!canGoPrevious}
-                                    className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:bg-white hover:text-indigo-600 border border-gray-200/80 shadow-sm disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                                    aria-label={fallbackText(t, 'previous_speech_segment', '上一句')}
-                                    title={fallbackText(t, 'previous_speech_segment', '上一句')}
-                                >
-                                    <SkipBack size={14}/>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={onNext}
-                                    disabled={!canGoNext}
-                                    className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:bg-white hover:text-indigo-600 border border-gray-200/80 shadow-sm disabled:opacity-35 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                                    aria-label={fallbackText(t, 'next_speech_segment', '下一句')}
-                                    title={fallbackText(t, 'next_speech_segment', '下一句')}
-                                >
-                                    <SkipForward size={14}/>
-                                </button>
+                            <div className="flex min-w-0 flex-wrap items-center justify-center gap-2 sm:justify-end">
+                                <div className="flex min-w-0 shrink-0 items-center justify-center gap-1.5 rounded-full bg-white/30 p-0.5">
+                                    <div className="relative shrink-0">
+                                        <button
+                                            ref={speedButtonRef}
+                                            type="button"
+                                            onClick={toggleSpeedMenu}
+                                            className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-2.5 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-white"
+                                            aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${rate}x`}
+                                            aria-haspopup="menu"
+                                            aria-expanded={speedMenuOpen}
+                                        >
+                                            <Gauge size={14} className="text-indigo-500"/>
+                                            <span>{rate}x</span>
+                                            <ChevronDown size={13} className={`text-gray-400 transition-transform ${speedMenuOpen ? 'rotate-180' : ''}`}/>
+                                        </button>
+                                    </div>
 
-                                <button
-                                    type="button"
-                                    onClick={isPaused ? onResume : onPause}
-                                    disabled={isLoading}
-                                    className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:bg-white hover:text-indigo-600 border border-gray-200/80 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                                    aria-label={isPaused ? fallbackText(t, 'resume_speech', '继续') : fallbackText(t, 'pause_speech', '暂停')}
-                                >
-                                    {isPaused ? <Play size={15}/> : <Pause size={15}/>}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={onStop}
-                                    className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-gray-700 bg-white/80 hover:text-red-600 hover:bg-red-50 border border-gray-200/80 shadow-sm transition-colors cursor-pointer"
-                                    aria-label={fallbackText(t, 'stop_speech', '停止')}
-                                >
-                                    <Square size={14}/>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={dockToRight}
-                                    className="h-8 shrink-0 px-2 rounded-full flex items-center justify-center text-xs text-gray-500 bg-white/70 hover:text-indigo-600 hover:bg-indigo-50 border border-gray-200/70 transition-colors cursor-pointer"
-                                    aria-label={fallbackText(t, 'dock_speech_player', '收起到右侧')}
-                                    title={fallbackText(t, 'dock_speech_player', '收起到右侧')}
-                                >
-                                    <ChevronsRight size={14} strokeWidth={1.5} />
-                                </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => onAutoFollowToggle?.(!autoFollowEnabled)}
+                                        className={`flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-2 text-xs font-medium shadow-sm transition-colors ${autoFollowEnabled
+                                            ? 'border-indigo-200 bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'
+                                            : 'border-gray-200/80 bg-white/80 text-gray-600 hover:bg-white hover:text-indigo-600'
+                                        }`}
+                                        aria-label={autoFollowLabel}
+                                        title={autoFollowLabel}
+                                        aria-pressed={autoFollowEnabled}
+                                    >
+                                        <Target size={14} className={autoFollowEnabled ? 'text-indigo-500' : 'text-gray-500'}/>
+                                        <span>{fallbackText(t, 'speech_auto_follow_short', '跟随')}</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={onPrevious}
+                                        disabled={!canGoPrevious}
+                                        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
+                                        aria-label={fallbackText(t, 'previous_speech_segment', '上一句')}
+                                        title={fallbackText(t, 'previous_speech_segment', '上一句')}
+                                    >
+                                        <SkipBack size={14}/>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={onNext}
+                                        disabled={!canGoNext}
+                                        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
+                                        aria-label={fallbackText(t, 'next_speech_segment', '下一句')}
+                                        title={fallbackText(t, 'next_speech_segment', '下一句')}
+                                    >
+                                        <SkipForward size={14}/>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={dockToRight}
+                                        className="flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/70 bg-white/70 px-2 text-xs text-gray-500 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
+                                        aria-label={fallbackText(t, 'dock_speech_player', '收起到右侧')}
+                                        title={fallbackText(t, 'dock_speech_player', '收起到右侧')}
+                                    >
+                                        <ChevronsRight size={14} strokeWidth={1.5}/>
+                                    </button>
+                                </div>
+
+                                <div className="flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-white/30 p-0.5">
+                                    <button
+                                        type="button"
+                                        onClick={isPaused ? onResume : onPause}
+                                        disabled={isLoading}
+                                        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-40"
+                                        aria-label={isPaused ? fallbackText(t, 'resume_speech', '继续') : fallbackText(t, 'pause_speech', '暂停')}
+                                    >
+                                        {isPaused ? <Play size={15}/> : <Pause size={15}/>}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={onStop}
+                                        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-red-50 hover:text-red-600"
+                                        aria-label={fallbackText(t, 'stop_speech', '停止')}
+                                    >
+                                        <Square size={14}/>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+            {speedMenuPortal}
+        </>
     );
 });
 

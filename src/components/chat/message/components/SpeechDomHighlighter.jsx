@@ -1,9 +1,8 @@
 import {useEffect} from 'react';
+import {normalizeSpeechText} from '../utils/speechContent.js';
 
 const HIGHLIGHT_ATTR = 'data-tts-dom-highlight';
 const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'BUTTON', 'CODE', 'PRE', 'KBD', 'SAMP']);
-
-const normalizeSpeechText = (value = '') => String(value).replace(/\s+/g, ' ').trim();
 
 const clearHighlights = (root) => {
     if (!root) return;
@@ -60,8 +59,40 @@ const createNormalizedIndex = (nodes) => {
     return {text, map};
 };
 
-const highlightSegment = (root, segmentText) => {
-    const normalizedSegment = normalizeSpeechText(segmentText);
+const collectOccurrenceIndexes = (text, segmentText) => {
+    const indexes = [];
+    let searchFrom = 0;
+    while (text && segmentText && searchFrom <= text.length) {
+        const foundIndex = text.indexOf(segmentText, searchFrom);
+        if (foundIndex < 0) break;
+        indexes.push(foundIndex);
+        searchFrom = foundIndex + Math.max(segmentText.length, 1);
+    }
+    return indexes;
+};
+
+const pickOccurrenceStart = (text, normalizedSegment, segment = {}) => {
+    const matches = collectOccurrenceIndexes(text, normalizedSegment);
+    if (matches.length === 0) return -1;
+    if (matches.length === 1) return matches[0];
+
+    const occurrenceIndex = Number(segment.occurrenceIndex ?? segment.occurrence ?? segment.index ?? 0);
+    if (Number.isInteger(occurrenceIndex) && occurrenceIndex >= 0 && occurrenceIndex < matches.length) {
+        return matches[occurrenceIndex];
+    }
+
+    const normalizedStart = Number(segment.normalizedStart);
+    if (Number.isFinite(normalizedStart)) {
+        return matches.reduce((best, current) => (
+            Math.abs(current - normalizedStart) < Math.abs(best - normalizedStart) ? current : best
+        ), matches[0]);
+    }
+
+    return matches[0];
+};
+
+const highlightSegment = (root, segment) => {
+    const normalizedSegment = normalizeSpeechText(segment?.text);
     if (!root || !normalizedSegment) return false;
 
     const walker = document.createTreeWalker(
@@ -82,7 +113,7 @@ const highlightSegment = (root, segmentText) => {
     }
 
     const {text, map} = createNormalizedIndex(nodes);
-    const startIndex = text.indexOf(normalizedSegment);
+    const startIndex = pickOccurrenceStart(text, normalizedSegment, segment);
     if (startIndex < 0) return false;
 
     const endIndex = startIndex + normalizedSegment.length - 1;
@@ -108,9 +139,29 @@ const highlightSegment = (root, segmentText) => {
     }
 };
 
+const resolveCurrentSegment = (segments = [], currentSegmentId, currentSegmentIndex, currentSegmentPosition) => {
+    if (!Array.isArray(segments) || segments.length === 0) return null;
+
+    if (currentSegmentId !== undefined && currentSegmentId !== null) {
+        const byId = segments.find(item => String(item.id) === String(currentSegmentId));
+        if (byId) return byId;
+    }
+
+    const position = Number(currentSegmentPosition);
+    if (Number.isInteger(position) && position >= 0 && position < segments.length) return segments[position];
+
+    const index = Number(currentSegmentIndex);
+    if (Number.isInteger(index) && index >= 0 && index < segments.length) return segments[index];
+
+    return null;
+};
+
 const SpeechDomHighlighter = ({containerRef, msgId, speechState}) => {
-    const currentSegmentId = speechState?.messageId === msgId ? speechState?.currentSegmentId : null;
-    const segments = speechState?.messageId === msgId ? (speechState?.segments || []) : [];
+    const isCurrentMessage = speechState?.messageId === msgId;
+    const currentSegmentId = isCurrentMessage ? speechState?.currentSegmentId : null;
+    const currentSegmentIndex = isCurrentMessage ? speechState?.currentSegmentIndex : -1;
+    const currentSegmentPosition = isCurrentMessage ? speechState?.currentSegmentPosition : -1;
+    const segments = isCurrentMessage ? (speechState?.segments || []) : [];
 
     useEffect(() => {
         const root = containerRef?.current;
@@ -118,22 +169,20 @@ const SpeechDomHighlighter = ({containerRef, msgId, speechState}) => {
 
         clearHighlights(root);
 
-        if (!currentSegmentId) return;
-
-        const segment = segments.find(item => item.id === currentSegmentId);
+        const segment = resolveCurrentSegment(segments, currentSegmentId, currentSegmentIndex, currentSegmentPosition);
         if (!segment?.text) return;
 
         // 等 MarkdownRenderer 完成本帧 DOM 更新后再做文本节点高亮。
         const rafId = requestAnimationFrame(() => {
             clearHighlights(root);
-            highlightSegment(root, segment.text);
+            highlightSegment(root, segment);
         });
 
         return () => {
             cancelAnimationFrame(rafId);
             clearHighlights(root);
         };
-    }, [containerRef, currentSegmentId, segments, msgId]);
+    }, [containerRef, currentSegmentId, currentSegmentIndex, currentSegmentPosition, segments, msgId]);
 
     return null;
 };

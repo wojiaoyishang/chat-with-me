@@ -1047,6 +1047,25 @@ function RadioItem({item, path, groupPath}) {
 }
 
 // ─── Select Item ───────────────────────────────────────────────────
+function getVisualViewportMetrics() {
+    if (typeof window === "undefined") {
+        return {
+            width: 0,
+            height: 0,
+            offsetLeft: 0,
+            offsetTop: 0,
+        };
+    }
+
+    const vv = window.visualViewport;
+    return {
+        width: vv?.width ?? window.innerWidth,
+        height: vv?.height ?? window.innerHeight,
+        offsetLeft: vv?.offsetLeft ?? 0,
+        offsetTop: vv?.offsetTop ?? 0,
+    };
+}
+
 function SelectOptionsPortal({ open, anchorRef, options, selectedValue }) {
     const [optionsPosition, setOptionsPosition] = useState(null);
 
@@ -1056,28 +1075,102 @@ function SelectOptionsPortal({ open, anchorRef, options, selectedValue }) {
             return;
         }
 
+        let rafId = null;
+
         const updatePos = () => {
             if (!anchorRef.current) return;
+
             const rect = anchorRef.current.getBoundingClientRect();
-            const viewportPadding = 16;
-            const maxLeft = window.scrollX + window.innerWidth - rect.width - viewportPadding;
-            const left = Math.max(window.scrollX + viewportPadding, Math.min(rect.left + window.scrollX, maxLeft));
+            const viewport = getVisualViewportMetrics();
+            const viewportPadding = 12;
+            const gap = 6;
+            const preferredMaxHeight = 280;
+            const fallbackOptionHeight = 38;
+            const estimatedMenuHeight = Math.min(
+                preferredMaxHeight,
+                Math.max(44, (options?.length || 1) * fallbackOptionHeight + 8)
+            );
+
+            const viewportLeft = viewport.offsetLeft;
+            const viewportTop = viewport.offsetTop;
+            const viewportRight = viewportLeft + viewport.width;
+            const viewportBottom = viewportTop + viewport.height;
+
+            const availableBelow = Math.max(
+                0,
+                viewportBottom - rect.bottom - gap - viewportPadding
+            );
+            const availableAbove = Math.max(
+                0,
+                rect.top - viewportTop - gap - viewportPadding
+            );
+
+            const shouldOpenUp =
+                availableBelow < Math.min(estimatedMenuHeight, 120) &&
+                availableAbove > availableBelow;
+
+            const availableInPreferredDirection = shouldOpenUp ? availableAbove : availableBelow;
+            const fallbackMaxHeight = Math.max(0, viewport.height - viewportPadding * 2);
+            const maxHeight = Math.min(
+                preferredMaxHeight,
+                Math.max(
+                    44,
+                    availableInPreferredDirection > 0
+                        ? availableInPreferredDirection
+                        : fallbackMaxHeight
+                )
+            );
+            const heightForPlacement = Math.min(estimatedMenuHeight, maxHeight);
+
+            const maxWidth = Math.max(0, viewport.width - viewportPadding * 2);
+            const width = Math.min(Math.max(rect.width, 160), Math.max(1, maxWidth));
+            const minLeft = viewportLeft + viewportPadding;
+            const maxLeft = Math.max(minLeft, viewportRight - width - viewportPadding);
+            const left = Math.max(minLeft, Math.min(rect.left, maxLeft));
+
+            let top = shouldOpenUp
+                ? rect.top - gap - heightForPlacement
+                : rect.bottom + gap;
+
+            // 如果上下空间都很小，优先把菜单完整限制在当前可视区域内，允许和触发按钮轻微重叠，避免跳出屏幕。
+            if (availableInPreferredDirection < 44 && fallbackMaxHeight > 0) {
+                top = viewportTop + viewportPadding;
+            }
+
+            top = Math.max(
+                viewportTop + viewportPadding,
+                Math.min(top, viewportBottom - viewportPadding - heightForPlacement)
+            );
+
             setOptionsPosition({
-                top: rect.top + window.scrollY + rect.height + 6,
+                top,
                 left,
-                minWidth: rect.width,
-                maxWidth: Math.max(160, window.innerWidth - viewportPadding * 2),
+                width,
+                maxWidth,
+                maxHeight: Math.max(0, Math.min(maxHeight, viewportBottom - viewportPadding - top)),
+                placement: shouldOpenUp ? "top" : "bottom",
             });
         };
 
-        updatePos();
-        window.addEventListener('resize', updatePos);
-        window.addEventListener('scroll', updatePos, true);
-        return () => {
-            window.removeEventListener('resize', updatePos);
-            window.removeEventListener('scroll', updatePos, true);
+        const scheduleUpdatePos = () => {
+            if (rafId !== null) window.cancelAnimationFrame(rafId);
+            rafId = window.requestAnimationFrame(updatePos);
         };
-    }, [open, anchorRef]);
+
+        updatePos();
+        window.addEventListener('resize', scheduleUpdatePos);
+        window.addEventListener('scroll', scheduleUpdatePos, true);
+        window.visualViewport?.addEventListener('resize', scheduleUpdatePos);
+        window.visualViewport?.addEventListener('scroll', scheduleUpdatePos);
+
+        return () => {
+            if (rafId !== null) window.cancelAnimationFrame(rafId);
+            window.removeEventListener('resize', scheduleUpdatePos);
+            window.removeEventListener('scroll', scheduleUpdatePos, true);
+            window.visualViewport?.removeEventListener('resize', scheduleUpdatePos);
+            window.visualViewport?.removeEventListener('scroll', scheduleUpdatePos);
+        };
+    }, [open, anchorRef, options]);
 
     if (!open || !optionsPosition) return null;
 
@@ -1094,13 +1187,15 @@ function SelectOptionsPortal({ open, anchorRef, options, selectedValue }) {
             <ListboxOptions
                 static
                 style={{
-                    position: 'absolute',
+                    position: 'fixed',
                     top: `${optionsPosition.top}px`,
                     left: `${optionsPosition.left}px`,
-                    minWidth: `${optionsPosition.minWidth}px`,
+                    width: `${optionsPosition.width}px`,
                     maxWidth: `${optionsPosition.maxWidth}px`,
+                    maxHeight: `${optionsPosition.maxHeight}px`,
+                    transformOrigin: optionsPosition.placement === "top" ? "bottom left" : "top left",
                 }}
-                className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] max-h-[min(280px,calc(100vh-2rem))] overflow-auto outline-none origin-top-left"
+                className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] overflow-auto overscroll-contain outline-none"
             >
                 {options.map((opt) => (
                     <ListboxOption

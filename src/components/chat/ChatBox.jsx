@@ -128,23 +128,30 @@ function ChatBox({
     }, [onSendMessage, toolsStatus, isEditMessage, editMessageId, attachmentsMeta, currentRole]);
 
     const handleKeyDown = useCallback((e) => {
-        if (e.key === 'Enter') {
-            if (e.shiftKey) {
-                if (tipMessageIsForNewLine) {
-                    chatboxSetup({tipMessage: null});
-                    setLocalSetting('ShowShiftEnterNewlineTip', false);
-                }
-                return;
-            } else {
-                e.preventDefault();
-                if (sendButtonStatusRef.current !== 'normal') {
-                    toast.warning(t('is_generating_try_later'));
-                    return;
-                }
-                handleSendMessage();
+        if (e.key !== 'Enter') return;
+
+        // 移动端 Enter 始终作为普通换行处理，不拦截默认行为，也不触发发送。
+        // 这样软键盘/外接键盘在小屏幕上都能正常输入多行文本。
+        if (isSmallScreen) return;
+
+        // 输入法组合过程中不要发送消息，避免中文/日文等候选确认时误触发发送。
+        if (e.isComposing || e.nativeEvent?.isComposing) return;
+
+        if (e.shiftKey) {
+            if (tipMessageIsForNewLine) {
+                chatboxSetup({tipMessage: null});
+                setLocalSetting('ShowShiftEnterNewlineTip', false);
             }
+            return;
         }
-    }, [handleSendMessage, tipMessageIsForNewLine]);
+
+        e.preventDefault();
+        if (sendButtonStatusRef.current !== 'normal') {
+            toast.warning(t('is_generating_try_later'));
+            return;
+        }
+        handleSendMessage();
+    }, [handleSendMessage, isSmallScreen, t, tipMessageIsForNewLine]);
 
     const handleInputChange = useCallback((newValue) => {
         if (isReadOnly) return;
@@ -819,6 +826,7 @@ function ChatBox({
                             placeholder={t('input_placeholder')}
                             textareaRef={textareaRef}
                             isEditMessage={isEditMessage}
+                            isSmallScreen={isSmallScreen}
                         />
                     </div>
 

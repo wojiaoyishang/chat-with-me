@@ -6,7 +6,22 @@ const MARKDOWN_TABLE_SEPARATOR_ROW_PATTERN = /^[ \t]*\|?[ \t:|.-]*-{3,}[ \t:|.-]
 
 const SENTENCE_PATTERN = /[^。！？!?\.\n]+[。！？!?\.]?|\n+/g;
 
-const normalizeWhitespace = (value = '') => String(value).replace(/\s+/g, ' ').trim();
+export const normalizeSpeechText = (value = '') => String(value ?? '')
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const normalizeWhitespace = normalizeSpeechText;
+
+const getNormalizedPrefixLength = (source, rawIndex) => {
+    const prefix = String(source || '').slice(0, Math.max(0, rawIndex));
+    const normalizedPrefix = normalizeSpeechText(prefix);
+    if (!normalizedPrefix) return 0;
+
+    const boundary = String(source || '').slice(Math.max(0, rawIndex - 1), rawIndex + 1);
+    const shouldIncludeCollapsedSpace = /\s/.test(boundary) && !/\s$/.test(normalizedPrefix);
+    return normalizedPrefix.length + (shouldIncludeCollapsedSpace ? 1 : 0);
+};
 
 export const canSpeakMessage = (msg) => msg?.allowSpeak === true;
 
@@ -36,26 +51,45 @@ export const getSpeakableContent = (msg) => {
 export const splitSpeakableSegments = (text, msgId) => {
     const source = String(text || '');
     const segments = [];
+    const occurrenceMap = new Map();
     let match;
     let index = 0;
 
+    SENTENCE_PATTERN.lastIndex = 0;
     while ((match = SENTENCE_PATTERN.exec(source)) !== null) {
         const text = normalizeWhitespace(match[0]);
         if (!text) continue;
 
+        const normalizedText = normalizeSpeechText(text).toLowerCase();
+        const occurrenceIndex = occurrenceMap.get(normalizedText) || 0;
+        occurrenceMap.set(normalizedText, occurrenceIndex + 1);
+
         segments.push({
             id: `${msgId}:tts:${index}`,
             index,
+            position: index,
             text,
+            rawStart: match.index,
+            rawEnd: match.index + match[0].length,
+            normalizedStart: getNormalizedPrefixLength(source, match.index),
+            occurrenceIndex,
+            occurrenceKey: normalizedText,
         });
         index += 1;
     }
 
     if (segments.length === 0 && normalizeWhitespace(source)) {
+        const text = normalizeWhitespace(source);
         segments.push({
             id: `${msgId}:tts:0`,
             index: 0,
-            text: normalizeWhitespace(source),
+            position: 0,
+            text,
+            rawStart: 0,
+            rawEnd: source.length,
+            normalizedStart: 0,
+            occurrenceIndex: 0,
+            occurrenceKey: normalizeSpeechText(text).toLowerCase(),
         });
     }
 

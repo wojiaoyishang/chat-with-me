@@ -1,8 +1,7 @@
-import React, {memo, useEffect, useMemo, useRef, useState} from 'react';
+import React, {memo, useEffect, useMemo, useState} from 'react';
+import {normalizeSpeechText} from '../utils/speechContent.js';
 
 const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'BUTTON', 'PRE', 'KBD', 'SAMP']);
-
-const normalizeSpeechText = (value = '') => String(value).replace(/\s+/g, ' ').trim();
 
 const shouldSkipTextNode = (node, root) => {
     if (!node?.nodeValue?.trim()) return true;
@@ -74,13 +73,48 @@ const getTextNodes = (root) => {
     return nodes;
 };
 
-const findSegmentRange = (root, segmentText) => {
-    const normalizedSegment = normalizeSpeechText(segmentText);
+const collectOccurrenceIndexes = (text, segmentText) => {
+    const indexes = [];
+    if (!text || !segmentText) return indexes;
+
+    let searchFrom = 0;
+    while (searchFrom <= text.length) {
+        const foundIndex = text.indexOf(segmentText, searchFrom);
+        if (foundIndex < 0) break;
+        indexes.push(foundIndex);
+        searchFrom = foundIndex + Math.max(segmentText.length, 1);
+    }
+
+    return indexes;
+};
+
+const pickOccurrenceStart = (text, normalizedSegment, segment = {}) => {
+    const matches = collectOccurrenceIndexes(text, normalizedSegment);
+    if (matches.length === 0) return -1;
+    if (matches.length === 1) return matches[0];
+
+    const occurrenceIndex = Number(segment.occurrenceIndex ?? segment.occurrence ?? segment.index ?? 0);
+    if (Number.isInteger(occurrenceIndex) && occurrenceIndex >= 0 && occurrenceIndex < matches.length) {
+        return matches[occurrenceIndex];
+    }
+
+    const normalizedStart = Number(segment.normalizedStart);
+    if (Number.isFinite(normalizedStart)) {
+        return matches.reduce((best, current) => (
+            Math.abs(current - normalizedStart) < Math.abs(best - normalizedStart) ? current : best
+        ), matches[0]);
+    }
+
+    return matches[0];
+};
+
+const findSegmentRange = (root, segment) => {
+    const normalizedSegment = normalizeSpeechText(segment?.text);
     if (!root || !normalizedSegment || typeof document === 'undefined') return null;
 
     const nodes = getTextNodes(root);
     const {text, map} = createNormalizedIndex(nodes);
-    const startIndex = text.indexOf(normalizedSegment);
+    const startIndex = pickOccurrenceStart(text, normalizedSegment, segment);
     if (startIndex < 0) return null;
 
     const endIndex = startIndex + normalizedSegment.length - 1;
@@ -126,7 +160,7 @@ const useSegmentRects = ({containerRef, segment, deps = []}) => {
 
         const measure = () => {
             if (disposed) return;
-            const range = findSegmentRange(root, segment.text);
+            const range = findSegmentRange(root, segment);
             const nextRects = rectsFromRange(root, range);
             setRects(nextRects);
         };
@@ -163,18 +197,38 @@ const useSegmentRects = ({containerRef, segment, deps = []}) => {
             window.removeEventListener('resize', scheduleMeasure);
             window.removeEventListener('scroll', scheduleMeasure, true);
         };
-    }, [containerRef, segment?.id, segment?.text, ...deps]);
+    }, [containerRef, segment?.id, segment?.text, segment?.occurrenceIndex, segment?.normalizedStart, ...deps]);
 
     return rects;
 };
 
+const resolveCurrentSegment = (segments = [], currentSegmentId, currentSegmentIndex, currentSegmentPosition) => {
+    if (!Array.isArray(segments) || segments.length === 0) return null;
+
+    if (currentSegmentId !== undefined && currentSegmentId !== null) {
+        const byId = segments.find(item => String(item.id) === String(currentSegmentId));
+        if (byId) return byId;
+    }
+
+    const position = Number(currentSegmentPosition);
+    if (Number.isInteger(position) && position >= 0 && position < segments.length) return segments[position];
+
+    const index = Number(currentSegmentIndex);
+    if (Number.isInteger(index) && index >= 0 && index < segments.length) return segments[index];
+
+    return null;
+};
+
 const SpeechOverlayHighlighter = memo(({containerRef, msgId, speechState}) => {
-    const currentSegmentId = speechState?.messageId === msgId ? speechState?.currentSegmentId : null;
-    const segments = speechState?.messageId === msgId ? (speechState?.segments || []) : [];
+    const isCurrentMessage = speechState?.messageId === msgId;
+    const currentSegmentId = isCurrentMessage ? speechState?.currentSegmentId : null;
+    const currentSegmentIndex = isCurrentMessage ? speechState?.currentSegmentIndex : -1;
+    const currentSegmentPosition = isCurrentMessage ? speechState?.currentSegmentPosition : -1;
+    const segments = isCurrentMessage ? (speechState?.segments || []) : [];
 
     const currentSegment = useMemo(
-        () => segments.find(item => item.id === currentSegmentId) || null,
-        [segments, currentSegmentId]
+        () => resolveCurrentSegment(segments, currentSegmentId, currentSegmentIndex, currentSegmentPosition),
+        [segments, currentSegmentId, currentSegmentIndex, currentSegmentPosition]
     );
 
     const rects = useSegmentRects({

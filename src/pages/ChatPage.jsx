@@ -1943,6 +1943,40 @@ function ChatPage({
         const baseRate = normalizeSpeechRate(speechConfig.rate ?? speechConfig.speakRate ?? 1);
         const pitch = Number(speechConfig.pitch ?? speechConfig.speakPitch ?? 1) || 1;
         const volume = Number(speechConfig.volume ?? speechConfig.speakVolume ?? 1);
+        const browserSpeechOptions = {
+            ...speechConfig,
+            engine: 'browser',
+            rate: baseRate,
+            lang,
+            pitch,
+            volume,
+        };
+
+        const emitBrowserSpeakMessage = ({startSegmentPosition = 0, restartReason = null} = {}) => {
+            // 浏览器内置 TTS 不依赖后端合成结果，但仍通知服务器记录本次朗读请求。
+            // 这里刻意不 await / 不读取 reply，避免阻塞 speechSynthesis.speak。
+            emitEvent({
+                type: 'speech',
+                target: 'TTS',
+                payload: {
+                    command: 'Speak-Message',
+                    requestId,
+                    msgId: messageId,
+                    messageId,
+                    engine: 'browser',
+                    model: selectedModel?.id,
+                    options: {
+                        ...browserSpeechOptions,
+                        startSegmentPosition,
+                        restartReason,
+                    },
+                    segments,
+                    startSegmentPosition,
+                    restartReason,
+                },
+                markId: chatMarkId,
+            });
+        };
 
         const controller = {
             requestId,
@@ -2050,6 +2084,7 @@ function ChatPage({
         };
 
         controller.playNext = playNext;
+        emitBrowserSpeakMessage({startSegmentPosition: 0});
         controller.playFrom = (targetIndex) => {
             if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return false;
 
@@ -2069,6 +2104,7 @@ function ChatPage({
             }));
 
             synthesis.cancel();
+            emitBrowserSpeakMessage({startSegmentPosition: nextIndex, restartReason: 'seek'});
             window.setTimeout(() => {
                 if (!controller.cancelled && !controller.paused && speechControllerRef.current.requestId === requestId) {
                     playNext();
@@ -2081,7 +2117,7 @@ function ChatPage({
         synthesis.getVoices?.();
         window.setTimeout(playNext, 0);
         return true;
-    }, [cancelActiveSpeech, findBrowserSpeechVoice, normalizeSpeechRate, resetSpeechState, t]);
+    }, [cancelActiveSpeech, chatMarkId, findBrowserSpeechVoice, normalizeSpeechRate, resetSpeechState, selectedModel?.id, t]);
 
     const requestBackendSpeech = useCallback(({
                                                   messageId,
