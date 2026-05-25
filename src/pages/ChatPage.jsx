@@ -57,6 +57,28 @@ const SPEECH_TEXT_CANDIDATE_SELECTOR = [
     'h6',
 ].join(',');
 
+// 朗读紫框必须落在一个稳定的边界元素上。列表、表格、标题等非段落结构
+// 不一定有 p 包裹，所以这里显式把它们纳入紫框候选。
+const SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR = [
+    'li',
+    '[role="listitem"]',
+    'p',
+    'blockquote',
+    'pre',
+    'td',
+    'th',
+    'figcaption',
+    'summary',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+].join(',');
+
+const SPEECH_HIGHLIGHT_INLINE_SELECTOR = 'a, span, strong, em, b, i, code, mark, small';
+
 
 const DEFAULT_BACKEND_PCM_SAMPLE_RATE = 24000;
 const DEFAULT_BACKEND_PCM_CHANNELS = 1;
@@ -899,6 +921,80 @@ function ChatPage({
         return bestScore > -Infinity ? bestElement : null;
     }, [collectSpeechTextCandidates, scoreSpeechTextCandidate]);
 
+    const getSpeechParentFallbackElement = useCallback((container, speech = speechStateRef.current, messageElement = null) => {
+        if (!container || !speech?.messageId) return null;
+
+        const messageRoot = messageElement || getSpeechMessageElement(container, speech.messageId);
+        if (!messageRoot) return null;
+
+        const segments = Array.isArray(speech.segments) ? speech.segments : [];
+        if (segments.length === 0) return null;
+
+        const currentSegment = resolveSpeechSegmentByLocator(segments, {
+            currentSegmentId: speech.currentSegmentId,
+            currentSegmentIndex: speech.currentSegmentIndex,
+            currentSegmentPosition: speech.currentSegmentPosition,
+        });
+
+        const currentIndexes = Array.from(new Set([
+            speech.currentSegmentPosition,
+            speech.currentSegmentIndex,
+            currentSegment?.index,
+            currentSegment ? segments.indexOf(currentSegment) : -1,
+        ]
+            .map(Number)
+            .filter(index => Number.isInteger(index) && index >= 0 && index < segments.length)));
+
+        if (currentIndexes.length === 0) return null;
+
+        const isInsideMessage = (element) => element &&
+            element !== container &&
+            element !== messageRoot &&
+            (element === messageRoot || messageRoot.contains(element));
+
+        const toSafeParentBoundary = (element) => {
+            if (!isInsideMessage(element)) return null;
+
+            const listItem = element.closest?.('li, [role="listitem"]');
+            if (isInsideMessage(listItem)) return listItem;
+
+            if (element.matches?.(SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR) && element !== messageRoot) {
+                return element;
+            }
+
+            const blockElement = element.closest?.(SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR);
+            if (isInsideMessage(blockElement)) return blockElement;
+
+            // 最后的兜底只允许回退到“当前碎片的一层父级”，不要回退到整条 message。
+            const parent = element.parentElement;
+            if (isInsideMessage(parent)) return parent;
+
+            return null;
+        };
+
+        // 如果当前短句没有命中，优先借用相邻分段的边界。
+        // 例如同一个 li 内的 “测试时！” 已经绑定到第 2 项，
+        // 那么 “测试2！” 定位失败时只回退到第 2 个 li，而不是整条 message。
+        const map = rebuildSpeechSegmentElementMap(container, speech);
+        const visitedIndexes = new Set();
+
+        for (let distance = 1; distance < segments.length; distance += 1) {
+            for (const currentIndex of currentIndexes) {
+                for (const neighborIndex of [currentIndex - distance, currentIndex + distance]) {
+                    if (visitedIndexes.has(neighborIndex)) continue;
+                    visitedIndexes.add(neighborIndex);
+                    if (!Number.isInteger(neighborIndex) || neighborIndex < 0 || neighborIndex >= segments.length) continue;
+
+                    const neighborElement = map.byIndex.get(neighborIndex);
+                    const boundary = toSafeParentBoundary(neighborElement);
+                    if (boundary) return boundary;
+                }
+            }
+        }
+
+        return null;
+    }, [getSpeechMessageElement, rebuildSpeechSegmentElementMap]);
+
     const getSpeechSegmentElement = useCallback((container, speech = speechStateRef.current) => {
         if (!container || !speech?.messageId) return null;
 
@@ -973,9 +1069,36 @@ function ChatPage({
         ]);
         if (activeElement) return activeElement;
 
-        if (messageElement) return messageElement;
+        const fallbackParentElement = getSpeechParentFallbackElement(container, speech, messageElement);
+        if (fallbackParentElement) return fallbackParentElement;
+
         return null;
-    }, [escapeSelectorValue, findSpeechElementByText, getMappedSpeechSegmentElement, getSpeechMessageElement, queryFirstSpeechElement, resolveMountedElement]);
+    }, [escapeSelectorValue, findSpeechElementByText, getMappedSpeechSegmentElement, getSpeechMessageElement, getSpeechParentFallbackElement, queryFirstSpeechElement, resolveMountedElement]);
+
+    const getSpeechHighlightBoundaryElement = useCallback((targetElement, container) => {
+        if (!targetElement || !container || targetElement === container) return null;
+
+        const messageRoot = targetElement.closest?.(
+            '[data-tts-message-id], [data-speech-message-id], [data-message-id], [data-msg-id]'
+        ) || container;
+        const isInsideMessage = (element) => element && (element === messageRoot || messageRoot.contains(element));
+
+        // 列表项优先。Markdown 渲染器常把 li 内容拆进 span/strong/em，
+        // 如果直接给内联元素加紫框，列表/无序列表里就容易看不到完整边界。
+        const listItem = targetElement.closest?.('li, [role="listitem"]');
+        if (isInsideMessage(listItem)) return listItem;
+
+        if (targetElement.matches?.(SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR)) return targetElement;
+
+        const blockElement = targetElement.closest?.(SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR);
+        if (isInsideMessage(blockElement)) return blockElement;
+
+        // 兜底：如果只命中了 span / strong / code 等内联碎片，仍然允许加 inline 紫框，
+        // 真正的文本高亮由 SpeechOverlayHighlighter 在紫框内裁剪。
+        if (targetElement.matches?.(SPEECH_HIGHLIGHT_INLINE_SELECTOR)) return targetElement;
+
+        return targetElement;
+    }, []);
 
     const ensureSpeechHighlightStyle = useCallback(() => {
         if (typeof document === 'undefined') return;
@@ -985,20 +1108,38 @@ function ChatPage({
         style.id = 'chat-speech-auto-highlight-style';
         style.textContent = `
             .${SPEECH_AUTO_HIGHLIGHT_CLASS} {
-                background: rgba(99, 102, 241, 0.14) !important;
-                box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12) !important;
-                border-radius: 0.45rem !important;
-                transition: background-color 160ms ease, box-shadow 160ms ease !important;
+                position: relative !important;
+                z-index: 0;
+                border-radius: 0.55rem !important;
                 scroll-margin-top: 5rem;
+                isolation: isolate;
             }
-            li.${SPEECH_AUTO_HIGHLIGHT_CLASS},
-            [role="listitem"].${SPEECH_AUTO_HIGHLIGHT_CLASS} {
-                padding-top: 0.08rem;
-                padding-bottom: 0.08rem;
+            .${SPEECH_AUTO_HIGHLIGHT_CLASS}::before {
+                content: '';
+                position: absolute;
+                pointer-events: none;
+                z-index: -1;
+                border-radius: 0.55rem;
+                background: rgba(99, 102, 241, 0.20);
+                transition: background-color 160ms ease, opacity 160ms ease, inset 160ms ease;
+            }
+            .${SPEECH_AUTO_HIGHLIGHT_CLASS}[data-chat-speech-highlight-boundary="block"]::before {
+                inset: -0.16rem -0.36rem;
+            }
+            li.${SPEECH_AUTO_HIGHLIGHT_CLASS}::before,
+            [role="listitem"].${SPEECH_AUTO_HIGHLIGHT_CLASS}::before {
+                inset: -0.16rem -0.50rem -0.16rem -0.28rem;
             }
             li.${SPEECH_AUTO_HIGHLIGHT_CLASS}::marker {
                 color: rgb(79, 70, 229);
                 font-weight: 700;
+            }
+            .${SPEECH_AUTO_HIGHLIGHT_CLASS}[data-chat-speech-highlight-boundary="inline"] {
+                -webkit-box-decoration-break: clone;
+                box-decoration-break: clone;
+            }
+            .${SPEECH_AUTO_HIGHLIGHT_CLASS}[data-chat-speech-highlight-boundary="inline"]::before {
+                inset: -0.12rem -0.24rem;
             }
         `;
         document.head.appendChild(style);
@@ -1010,6 +1151,7 @@ function ChatPage({
             root.querySelectorAll?.(`.${SPEECH_AUTO_HIGHLIGHT_CLASS}, [${SPEECH_AUTO_HIGHLIGHT_ATTR}="true"]`).forEach((element) => {
                 element.classList.remove(SPEECH_AUTO_HIGHLIGHT_CLASS);
                 element.removeAttribute(SPEECH_AUTO_HIGHLIGHT_ATTR);
+                element.removeAttribute('data-chat-speech-highlight-boundary');
             });
         } catch (_) {
             // DOM 可能已经被 React 卸载，忽略清理失败。
@@ -1032,10 +1174,19 @@ function ChatPage({
         const targetElement = getSpeechSegmentElement(container, speech);
         if (!targetElement || targetElement === container) return targetElement;
 
-        targetElement.setAttribute(SPEECH_AUTO_HIGHLIGHT_ATTR, 'true');
-        targetElement.classList.add(SPEECH_AUTO_HIGHLIGHT_CLASS);
-        return targetElement;
-    }, [clearSpeechAutoHighlights, ensureSpeechHighlightStyle, getSpeechSegmentElement]);
+        const highlightElement = getSpeechHighlightBoundaryElement(targetElement, container) || targetElement;
+        if (!highlightElement || highlightElement === container) return targetElement;
+
+        const boundaryType = highlightElement.matches?.('li, [role="listitem"]')
+            ? 'list'
+            : (highlightElement.matches?.(SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR) ? 'block' : 'inline');
+
+        highlightElement.setAttribute(SPEECH_AUTO_HIGHLIGHT_ATTR, 'true');
+        highlightElement.setAttribute('data-chat-speech-highlight-boundary', boundaryType);
+        highlightElement.classList.add(SPEECH_AUTO_HIGHLIGHT_CLASS);
+
+        return highlightElement;
+    }, [clearSpeechAutoHighlights, ensureSpeechHighlightStyle, getSpeechHighlightBoundaryElement, getSpeechSegmentElement]);
 
     const scrollSpeechToCurrentSegment = useCallback((options = {}) => {
         const container = messagesContainerRef.current;
@@ -1609,30 +1760,29 @@ function ChatPage({
     }, [speechAutoFollowEnabled]);
 
     useEffect(() => {
-        const hasActiveSegment = speechState.currentSegmentId || speechState.currentSegmentIndex >= 0;
+        // 紫色背景改成当前边界元素上的 ::before 伪层：不包裹文本、不改变排版，
+        // 但仍由浏览器基于真实 li/p 等边界元素定位，避免 overlay 坐标偏移。
+        clearSpeechSegmentElementBindings(messagesContainerRef.current);
+        speechSegmentElementMapRef.current = {
+            key: null,
+            byId: new Map(),
+            byIndex: new Map(),
+        };
 
-        if (!['loading', 'playing', 'paused'].includes(speechState.status) || !hasActiveSegment) {
+        if (['loading', 'playing', 'paused'].includes(speechState.status)) {
+            applySpeechHighlight(speechState);
+        } else {
             clearSpeechAutoHighlights();
-            clearSpeechSegmentElementBindings(messagesContainerRef.current);
-            speechSegmentElementMapRef.current = {
-                key: null,
-                byId: new Map(),
-                byIndex: new Map(),
-            };
-            return undefined;
         }
 
-        const rafId = requestAnimationFrame(() => {
-            applySpeechHighlight(speechState);
-        });
-
-        return () => cancelAnimationFrame(rafId);
+        return undefined;
     }, [
         applySpeechHighlight,
         clearSpeechAutoHighlights,
         clearSpeechSegmentElementBindings,
         speechState.currentSegmentId,
         speechState.currentSegmentIndex,
+        speechState.currentSegmentPosition,
         speechState.messageId,
         speechState.requestId,
         speechState.status,
@@ -1997,10 +2147,18 @@ function ChatPage({
         const volume = Number(speechConfig.volume ?? speechConfig.speakVolume ?? 1);
         const isCjkSpeechLang = /^(zh|ja|ko)(-|_|$)/i.test(String(lang || ''));
         const BROWSER_SPEECH_MIN_GAP_MS = 80;
-        const BROWSER_SPEECH_SHORT_GAP_MS = 140;
         const BROWSER_SPEECH_CANCEL_COOLDOWN_MS = 160;
         const BROWSER_UTTERANCE_KEEP_ALIVE_MS = 3000;
         const SHORT_BROWSER_SEGMENT_CHARS = isCjkSpeechLang ? 10 : 18;
+        const TINY_BROWSER_SEGMENT_CHARS = isCjkSpeechLang ? 3 : 5;
+        const BROWSER_SPEECH_IDLE_FRAME_COUNT = 2;
+        const BROWSER_SPEECH_MAX_SETTLE_WAIT_MS = 1400;
+        const BROWSER_SPEECH_NORMAL_MIN_DURATION_MS = 180;
+        const BROWSER_SPEECH_SHORT_MIN_DURATION_MS = 420;
+        const BROWSER_SPEECH_TINY_MIN_DURATION_MS = 560;
+        const BROWSER_SPEECH_NORMAL_TAIL_GAP_MS = 80;
+        const BROWSER_SPEECH_SHORT_TAIL_GAP_MS = 160;
+        const BROWSER_SPEECH_TINY_TAIL_GAP_MS = 240;
 
         const normalizeBrowserSpeechText = (value) => String(value || '')
             .replace(/[\u200B-\u200D\uFEFF]/g, '')
@@ -2076,6 +2234,8 @@ function ChatPage({
             playToken: 0,
             speakTimer: null,
             releaseTimer: null,
+            settleTimer: null,
+            settleRaf: null,
             currentUtterance: null,
             utteranceKeepAlive: [],
         };
@@ -2102,6 +2262,14 @@ function ChatPage({
             if (controller.releaseTimer) {
                 window.clearTimeout(controller.releaseTimer);
                 controller.releaseTimer = null;
+            }
+            if (controller.settleTimer) {
+                window.clearTimeout(controller.settleTimer);
+                controller.settleTimer = null;
+            }
+            if (controller.settleRaf) {
+                window.cancelAnimationFrame(controller.settleRaf);
+                controller.settleRaf = null;
             }
             controller.currentUtterance = null;
             controller.utteranceKeepAlive = [];
@@ -2136,8 +2304,103 @@ function ChatPage({
             }, BROWSER_UTTERANCE_KEEP_ALIVE_MS);
         };
 
+        const clearBrowserSpeechSettleWait = () => {
+            if (controller.settleTimer) {
+                window.clearTimeout(controller.settleTimer);
+                controller.settleTimer = null;
+            }
+            if (controller.settleRaf) {
+                window.cancelAnimationFrame(controller.settleRaf);
+                controller.settleRaf = null;
+            }
+        };
+
+        const getBrowserSpeechTimingProfile = (segment = {}) => {
+            const charCount = getBrowserSpeechCharCount(segment.text);
+            if (charCount > 0 && charCount <= TINY_BROWSER_SEGMENT_CHARS) {
+                return {
+                    minDurationMs: BROWSER_SPEECH_TINY_MIN_DURATION_MS,
+                    tailGapMs: BROWSER_SPEECH_TINY_TAIL_GAP_MS,
+                };
+            }
+            if (charCount > 0 && charCount <= SHORT_BROWSER_SEGMENT_CHARS) {
+                return {
+                    minDurationMs: BROWSER_SPEECH_SHORT_MIN_DURATION_MS,
+                    tailGapMs: BROWSER_SPEECH_SHORT_TAIL_GAP_MS,
+                };
+            }
+            return {
+                minDurationMs: BROWSER_SPEECH_NORMAL_MIN_DURATION_MS,
+                tailGapMs: BROWSER_SPEECH_NORMAL_TAIL_GAP_MS,
+            };
+        };
+
+        const waitForBrowserSpeechSettled = (segment, utteranceStartedAt, playToken, onSettled) => {
+            clearBrowserSpeechSettleWait();
+
+            const {minDurationMs, tailGapMs} = getBrowserSpeechTimingProfile(segment);
+            const waitStartedAt = Date.now();
+            let stableIdleFrames = 0;
+
+            const isStale = () => (
+                controller.cancelled ||
+                speechControllerRef.current.requestId !== requestId ||
+                controller.playToken !== playToken
+            );
+
+            const finishSettled = () => {
+                clearBrowserSpeechSettleWait();
+                if (isStale() || controller.paused) return;
+
+                setSpeechState(prev => {
+                    if (prev.currentSegmentId !== segment.id && prev.currentSegmentIndex !== controller.currentIndex) {
+                        return prev;
+                    }
+                    return {
+                        ...prev,
+                        currentSegmentId: null,
+                        currentSegmentIndex: -1,
+                        currentSegmentPosition: -1,
+                    };
+                });
+
+                onSettled?.();
+            };
+
+            const checkSettled = () => {
+                controller.settleTimer = null;
+                controller.settleRaf = null;
+
+                if (isStale()) return;
+
+                // 暂停期间不要推进下一句。保持一个低频检查，恢复后继续等待收尾稳定。
+                if (controller.paused) {
+                    controller.settleTimer = window.setTimeout(checkSettled, 120);
+                    return;
+                }
+
+                const elapsedFromStart = Date.now() - utteranceStartedAt;
+                const elapsedFromEnd = Date.now() - waitStartedAt;
+                const reachedMinDuration = elapsedFromStart >= minDurationMs;
+                const forcedSettled = elapsedFromEnd >= BROWSER_SPEECH_MAX_SETTLE_WAIT_MS;
+                const isIdle = !synthesis.speaking && !synthesis.pending;
+
+                stableIdleFrames = isIdle ? stableIdleFrames + 1 : 0;
+
+                if (reachedMinDuration && (stableIdleFrames >= BROWSER_SPEECH_IDLE_FRAME_COUNT || forcedSettled)) {
+                    controller.settleTimer = window.setTimeout(finishSettled, tailGapMs);
+                    return;
+                }
+
+                controller.settleRaf = window.requestAnimationFrame(checkSettled);
+            };
+
+            checkSettled();
+        };
+
         const schedulePlayNext = (delay = BROWSER_SPEECH_MIN_GAP_MS) => {
             if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return;
+            clearBrowserSpeechSettleWait();
             if (controller.speakTimer) window.clearTimeout(controller.speakTimer);
             controller.speakTimer = window.setTimeout(() => {
                 controller.speakTimer = null;
@@ -2178,6 +2441,7 @@ function ChatPage({
 
             controller.currentUtterance = utterance;
             controller.utteranceKeepAlive = [...(controller.utteranceKeepAlive || []), utterance].slice(-4);
+            let utteranceStartedAt = Date.now();
 
             const markSegmentPlaying = () => {
                 if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken) return;
@@ -2191,26 +2455,22 @@ function ChatPage({
                 }));
             };
 
-            utterance.onstart = markSegmentPlaying;
+            utterance.onstart = () => {
+                utteranceStartedAt = Date.now();
+                markSegmentPlaying();
+            };
 
             utterance.onend = () => {
                 if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken) return;
                 releaseFinishedUtteranceLater(utterance);
-                setSpeechState(prev => ({
-                    ...prev,
-                    currentSegmentId: null,
-                    currentSegmentIndex: -1,
-                    currentSegmentPosition: -1,
-                }));
-                if (!controller.paused) {
-                    const nextDelay = getBrowserSpeechCharCount(segment.text) <= SHORT_BROWSER_SEGMENT_CHARS
-                        ? BROWSER_SPEECH_SHORT_GAP_MS
-                        : BROWSER_SPEECH_MIN_GAP_MS;
-                    schedulePlayNext(nextDelay);
-                }
+
+                waitForBrowserSpeechSettled(segment, utteranceStartedAt, playToken, () => {
+                    schedulePlayNext(0);
+                });
             };
 
             utterance.onerror = (event) => {
+                clearBrowserSpeechSettleWait();
                 releaseFinishedUtteranceLater(utterance);
                 if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken || event?.error === 'interrupted' || event?.error === 'canceled') return;
                 toast.error(t('speech_play_error', {message: event?.error || t('unknown_error')}));
@@ -2221,8 +2481,12 @@ function ChatPage({
                 // Safari/Chrome 的 cancel/pause 状态有时会残留；播放前恢复一次，减少新 utterance 被静默入队或跳过。
                 synthesis.resume?.();
                 synthesis.speak(utterance);
-                // 少数实现 onstart 不稳定，先把 UI/高亮推进到当前分段，真实播放仍由 speechSynthesis 控制。
-                window.setTimeout(markSegmentPlaying, 120);
+                // 少数实现 onstart 不稳定；兜底也必须确认浏览器已经处于 speaking，避免 UI 比真实声音提前切段。
+                window.setTimeout(() => {
+                    if (controller.currentUtterance === utterance && synthesis.speaking) {
+                        markSegmentPlaying();
+                    }
+                }, 160);
             } catch (error) {
                 releaseFinishedUtteranceLater(utterance);
                 toast.error(t('speech_play_error', {message: error?.message || t('unknown_error')}));
@@ -2259,6 +2523,7 @@ function ChatPage({
                 window.clearTimeout(controller.releaseTimer);
                 controller.releaseTimer = null;
             }
+            clearBrowserSpeechSettleWait();
             controller.currentUtterance = null;
             controller.utteranceKeepAlive = [];
 

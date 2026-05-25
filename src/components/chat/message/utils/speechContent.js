@@ -4,7 +4,14 @@ const INLINE_CODE_PATTERN = /`([^`]+)`/g;
 const HTML_TAG_PATTERN = /<[^>]+>/g;
 const MARKDOWN_TABLE_SEPARATOR_ROW_PATTERN = /^[ \t]*\|?[ \t:|.-]*-{3,}[ \t:|.-]*\|?[ \t]*$/gm;
 
-const SENTENCE_PATTERN = /[^。！？!?\.\n]+[。！？!?\.]?|\n+/g;
+const SENTENCE_END_CHARS = new Set(['。', '！', '？', '!', '?', '；', ';']);
+const CLOSING_SENTENCE_CHARS = new Set([
+    '”', '’', '"', "'", '」', '』', '）', ')', '】', ']', '》', '〉', '｝', '}',
+]);
+const MARKDOWN_ORDERED_LIST_PATTERN = /^\s{0,3}\d{1,4}$/;
+const ASCII_ELLIPSIS = '...';
+const CJK_ELLIPSIS_CHAR = '…';
+
 
 export const normalizeSpeechText = (value = '') => String(value ?? '')
     .replace(/[\u200B-\u200D\uFEFF]/g, '')
@@ -48,35 +55,175 @@ export const getSpeakableContent = (msg) => {
         .trim();
 };
 
+const isDigit = (char) => /\d/.test(char || '');
+
+const getLinePrefix = (source, index) => {
+    const lineStart = source.lastIndexOf('\n', Math.max(0, index - 1)) + 1;
+    return source.slice(lineStart, index);
+};
+
+const isMarkdownOrderedListDot = (source, index) => {
+    if (source[index] !== '.') return false;
+
+    const prefix = getLinePrefix(source, index);
+    const nextChar = source[index + 1] || '';
+    return MARKDOWN_ORDERED_LIST_PATTERN.test(prefix) && /\s/.test(nextChar);
+};
+
+const isAsciiSentenceDot = (source, index) => {
+    if (source[index] !== '.') return false;
+
+    const prevChar = source[index - 1] || '';
+    const nextChar = source[index + 1] || '';
+
+    // 3.14 / 192.168 这类小数、版本号、IP 不按句子切。
+    if (isDigit(prevChar) && isDigit(nextChar)) return false;
+
+    // Markdown 有序列表前缀：1. xxx / 23. xxx 不按句子切。
+    if (isMarkdownOrderedListDot(source, index)) return false;
+
+    // 普通英文句号要求后面是空白、闭合引号/括号或文本结束，降低误切缩写的概率。
+    return !nextChar || /\s/.test(nextChar) || CLOSING_SENTENCE_CHARS.has(nextChar);
+};
+
+const consumeClosingSentenceChars = (source, index) => {
+    let cursor = index;
+
+    while (cursor < source.length) {
+        const char = source[cursor];
+
+        if (CLOSING_SENTENCE_CHARS.has(char)) {
+            cursor += 1;
+            continue;
+        }
+
+        // 允许句尾连续标点，如 “？！”、“!!!”。
+        if (SENTENCE_END_CHARS.has(char)) {
+            cursor += 1;
+            continue;
+        }
+
+        if (char === CJK_ELLIPSIS_CHAR) {
+            while (source[cursor] === CJK_ELLIPSIS_CHAR) cursor += 1;
+            continue;
+        }
+
+        if (source.slice(cursor, cursor + ASCII_ELLIPSIS.length) === ASCII_ELLIPSIS) {
+            cursor += ASCII_ELLIPSIS.length;
+            continue;
+        }
+
+        break;
+    }
+
+    return cursor;
+};
+
+const getSentenceBreakEnd = (source, index) => {
+    const char = source[index];
+
+    if (char === '\n') return index;
+
+    if (char === CJK_ELLIPSIS_CHAR) {
+        let cursor = index;
+        while (source[cursor] === CJK_ELLIPSIS_CHAR) cursor += 1;
+        return consumeClosingSentenceChars(source, cursor);
+    }
+
+    if (source.slice(index, index + ASCII_ELLIPSIS.length) === ASCII_ELLIPSIS) {
+        return consumeClosingSentenceChars(source, index + ASCII_ELLIPSIS.length);
+    }
+
+    if (SENTENCE_END_CHARS.has(char)) {
+        return consumeClosingSentenceChars(source, index + 1);
+    }
+
+    if (isAsciiSentenceDot(source, index)) {
+        return consumeClosingSentenceChars(source, index + 1);
+    }
+
+    return -1;
+};
+
+const createSpeechSegment = (source, rawStart, rawEnd, msgId, index, occurrenceMap) => {
+    const text = normalizeWhitespace(source.slice(rawStart, rawEnd));
+    if (!text) return null;
+
+    const normalizedText = normalizeSpeechText(text).toLowerCase();
+    const occurrenceIndex = occurrenceMap.get(normalizedText) || 0;
+    occurrenceMap.set(normalizedText, occurrenceIndex + 1);
+
+    return {
+        id: `${msgId}:tts:${index}`,
+        index,
+        position: index,
+        text,
+        rawStart,
+        rawEnd,
+        normalizedStart: getNormalizedPrefixLength(source, rawStart),
+        occurrenceIndex,
+        occurrenceKey: normalizedText,
+    };
+};
+
+const splitSourceIntoSpeechSlices = (source) => {
+    const slices = [];
+    let segmentStart = 0;
+    let index = 0;
+
+    while (index < source.length) {
+        const breakEnd = getSentenceBreakEnd(source, index);
+
+        if (breakEnd >= 0) {
+            if (index > segmentStart || breakEnd > segmentStart) {
+                slices.push({
+                    rawStart: segmentStart,
+                    rawEnd: breakEnd,
+                });
+            }
+
+            if (source[index] === '\n') {
+                let nextStart = index + 1;
+                while (source[nextStart] === '\n') nextStart += 1;
+                segmentStart = nextStart;
+                index = nextStart;
+            } else {
+                segmentStart = breakEnd;
+                index = breakEnd;
+            }
+            continue;
+        }
+
+        index += 1;
+    }
+
+    if (segmentStart < source.length) {
+        slices.push({
+            rawStart: segmentStart,
+            rawEnd: source.length,
+        });
+    }
+
+    return slices;
+};
+
 export const splitSpeakableSegments = (text, msgId) => {
     const source = String(text || '');
     const segments = [];
     const occurrenceMap = new Map();
-    let match;
-    let index = 0;
 
-    SENTENCE_PATTERN.lastIndex = 0;
-    while ((match = SENTENCE_PATTERN.exec(source)) !== null) {
-        const text = normalizeWhitespace(match[0]);
-        if (!text) continue;
+    splitSourceIntoSpeechSlices(source).forEach((slice) => {
+        const segment = createSpeechSegment(
+            source,
+            slice.rawStart,
+            slice.rawEnd,
+            msgId,
+            segments.length,
+            occurrenceMap,
+        );
 
-        const normalizedText = normalizeSpeechText(text).toLowerCase();
-        const occurrenceIndex = occurrenceMap.get(normalizedText) || 0;
-        occurrenceMap.set(normalizedText, occurrenceIndex + 1);
-
-        segments.push({
-            id: `${msgId}:tts:${index}`,
-            index,
-            position: index,
-            text,
-            rawStart: match.index,
-            rawEnd: match.index + match[0].length,
-            normalizedStart: getNormalizedPrefixLength(source, match.index),
-            occurrenceIndex,
-            occurrenceKey: normalizedText,
-        });
-        index += 1;
-    }
+        if (segment) segments.push(segment);
+    });
 
     if (segments.length === 0 && normalizeWhitespace(source)) {
         const text = normalizeWhitespace(source);
