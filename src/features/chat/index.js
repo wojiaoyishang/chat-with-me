@@ -19,3 +19,4 @@ export {default as useChatSpeech} from './page/hooks/useChatSpeech.js';
 export * from './page/utils/networkMerge.js';
 export * from './page/utils/messageMountPoints.js';
 export * from './speech/speechRuntime.js';
+export * from './ui/chatbox/utils/voiceRecorder.js';

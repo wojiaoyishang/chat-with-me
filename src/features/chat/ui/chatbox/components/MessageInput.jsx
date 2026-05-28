@@ -1,4 +1,5 @@
 import React, {memo, useCallback, useEffect, useLayoutEffect, useRef} from 'react';
+import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
 
 const MIN_TEXTAREA_HEIGHT = 48;
 const MAX_TEXTAREA_HEIGHT = 512;
@@ -25,6 +26,12 @@ const MessageInput = memo(({
                                placeholder,
                                textareaRef,
                                isEditMessage,
+                               isVoiceRecording = false,
+                               isVoiceRecognizing = false,
+                               voiceWaveformLevels = [],
+                               voiceRecordingLabel = 'Voice input in progress',
+                               voiceRecognizingLabel = 'Recognizing voice input',
+                               voiceRecognizingText = 'Recognizing...',
                            }) => {
     const cloneTextareaRef = useRef(null);
     const animationFrameRef = useRef(null);
@@ -165,10 +172,14 @@ const MessageInput = memo(({
     }, [initTextareaClone, cleanupTextareaClone]);
 
     useLayoutEffect(() => {
-        adjustTextareaHeight();
-    }, [value, isEditMessage, adjustTextareaHeight]);
+        if (!isVoiceRecording && !isVoiceRecognizing) {
+            adjustTextareaHeight({immediate: true});
+        }
+    }, [value, isEditMessage, isVoiceRecording, isVoiceRecognizing, adjustTextareaHeight]);
 
     useEffect(() => {
+        if (isVoiceRecording || isVoiceRecognizing) return undefined;
+
         const textarea = textareaRef.current;
         if (!textarea || typeof ResizeObserver === 'undefined') return undefined;
 
@@ -182,7 +193,7 @@ const MessageInput = memo(({
 
         observer.observe(textarea);
         return () => observer.disconnect();
-    }, [adjustTextareaHeight, textareaRef]);
+    }, [adjustTextareaHeight, isVoiceRecording, isVoiceRecognizing, textareaRef]);
 
     const handleChange = useCallback((e) => {
         onChange(e.target.value);
@@ -195,6 +206,56 @@ const MessageInput = memo(({
             requestAnimationFrame(() => adjustTextareaHeight());
         }
     }, [adjustTextareaHeight, onPaste]);
+
+    if (isVoiceRecording || isVoiceRecognizing) {
+        if (isVoiceRecognizing) {
+            return (
+                <div
+                    className="flex min-h-[48px] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3"
+                    role="status"
+                    aria-live="polite"
+                    aria-label={voiceRecognizingLabel}
+                >
+                    <div className="flex items-center gap-3 text-sm font-medium text-gray-500">
+                        <ThreeDotLoading/>
+                        <span>{voiceRecognizingText}</span>
+                    </div>
+                </div>
+            );
+        }
+
+        const bars = voiceWaveformLevels?.length
+            ? voiceWaveformLevels
+            : Array.from({length: 56}, () => 0);
+
+        return (
+            <div
+                className="flex min-h-[48px] w-full items-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3"
+                role="status"
+                aria-live="polite"
+                aria-label={voiceRecordingLabel}
+            >
+                <div className="flex h-12 w-full items-center gap-[3px]" aria-hidden="true">
+                    {bars.map((level, index) => {
+                        const normalizedLevel = Math.max(0, Math.min(1, Number(level) || 0));
+                        const height = 4 + normalizedLevel * 42;
+                        const opacity = 0.28 + normalizedLevel * 0.62;
+
+                        return (
+                            <span
+                                key={index}
+                                className="block flex-1 rounded-full bg-gray-700"
+                                style={{
+                                    height: `${height}px`,
+                                    opacity,
+                                }}
+                            />
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <textarea
@@ -216,6 +277,12 @@ const MessageInput = memo(({
         prevProps.isReadOnly === nextProps.isReadOnly &&
         prevProps.placeholder === nextProps.placeholder &&
         prevProps.isEditMessage === nextProps.isEditMessage &&
+        prevProps.isVoiceRecording === nextProps.isVoiceRecording &&
+        prevProps.isVoiceRecognizing === nextProps.isVoiceRecognizing &&
+        prevProps.voiceWaveformLevels === nextProps.voiceWaveformLevels &&
+        prevProps.voiceRecordingLabel === nextProps.voiceRecordingLabel &&
+        prevProps.voiceRecognizingLabel === nextProps.voiceRecognizingLabel &&
+        prevProps.voiceRecognizingText === nextProps.voiceRecognizingText &&
         prevProps.onChange === nextProps.onChange &&
         prevProps.onPaste === nextProps.onPaste &&
         prevProps.onKeyDown === nextProps.onKeyDown

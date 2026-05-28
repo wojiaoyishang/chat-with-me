@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {apiEndpoint} from '@/config.js';
 import apiClient from '@/lib/apiClient';
-import {getLocalSetting, isMobile, setLocalSetting} from '@/lib/tools.jsx';
+import {getLocalSetting, setLocalSetting, useIsMobile} from '@/lib/tools.jsx';
 import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
 
 import ChatBoxHeader from './ChatBoxHeader';
@@ -15,10 +15,58 @@ import DropFileLayer from './DropFileLayer.jsx';
 import MessageInput from './chatbox/components/MessageInput';
 import EditMessageIndicator from './chatbox/components/EditMessageIndicator';
 import SendButton from './chatbox/components/SendButton';
+import VoiceInputButton from './chatbox/components/VoiceInputButton';
+import VoicePermissionDialog from './chatbox/components/VoicePermissionDialog';
 import RoleSelector from './chatbox/components/RoleSelector';
 import FullscreenEditorModal from './chatbox/components/FullscreenEditorModal';
 import {useExtraToolsMenuItems} from './chatbox/components/ExtraToolsMenuItems';
-import {deepMerge} from './chatbox/utils/toolState';
+import {deepMerge, setNestedValue} from './chatbox/utils/toolState';
+import {
+    createPcm16kRecorder,
+    createSilentWaveformLevels,
+    ensureMicrophonePermission,
+    isVoicePermissionFlowCancelled,
+    requestMicrophoneStream,
+} from './chatbox/utils/voiceRecorder';
+
+const VOICE_WAVEFORM_BARS = 56;
+const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
+
+const normalizeVoiceRecognitionEngine = (value) => (
+    String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote'
+);
+
+const applyLocalSettingBackedExtraToolStatus = (status, toolsConfig = []) => {
+    let result = {...status};
+
+    const visit = (items = [], parentPath = []) => {
+        items.forEach((item) => {
+            if (!item?.name) return;
+            const currentPath = [...parentPath, item.name];
+
+            if (item.type === 'radio' && item.name === VOICE_RECOGNITION_ENGINE_SETTING_KEY) {
+                const allowedValues = new Set((item.children || []).map(child => child?.name).filter(Boolean));
+                const fallbackValue = allowedValues.has(item.default)
+                    ? item.default
+                    : (allowedValues.has('remote') ? 'remote' : (item.children?.[0]?.name || 'remote'));
+                const localValue = normalizeVoiceRecognitionEngine(
+                    getLocalSetting(VOICE_RECOGNITION_ENGINE_SETTING_KEY, fallbackValue)
+                );
+                const nextValue = allowedValues.size === 0 || allowedValues.has(localValue)
+                    ? localValue
+                    : fallbackValue;
+                result = setNestedValue(result, currentPath, nextValue);
+            }
+
+            if (item.type === 'group' && item.children) {
+                visit(item.children, currentPath);
+            }
+        });
+    };
+
+    visit(toolsConfig);
+    return result;
+};
 
 // ========== 主组件 ==========
 
@@ -42,8 +90,43 @@ function ChatBox({
                      windowRef,
                      selectedModel,
                      isWindowMode = false,
+                     onVoicePcmReady,
+                     onVoiceRecordingStart,
+                     onVoiceRecordingCancel,
                  }) {
     const {t} = useTranslation();
+    const voiceText = useMemo(() => {
+        const translate = (key, defaultValue) => t(key, {defaultValue});
+        return {
+            input: translate('voice_input', 'Voice input'),
+            switchToText: translate('voice_input_switch_to_text', 'Switch to text input'),
+            cancelRecording: translate('voice_input_cancel_recording', 'Cancel recording'),
+            recordingAria: translate('voice_input_recording_aria', 'Voice input in progress'),
+            recognizingAria: translate('voice_input_recognizing_aria', 'Recognizing voice input'),
+            recognizingText: translate('voice_input_recognizing', 'Recognizing...'),
+            holdToRecord: translate('voice_input_hold_to_record', 'Hold to record voice'),
+            releaseToFinish: translate('voice_input_release_to_finish', 'Release to finish voice input'),
+            permissionTitle: translate('voice_input_permission_title', 'Microphone permission required'),
+            permissionIntro: translate(
+                'voice_input_permission_intro',
+                'Voice input needs microphone access. Please choose Allow in the browser permission prompt.'
+            ),
+            permissionConfirm: translate('voice_input_permission_confirm', 'Continue'),
+            permissionCancel: translate('voice_input_permission_cancel', 'Not now'),
+            permissionDeniedTitle: translate('voice_input_permission_denied_title', 'Microphone access failed'),
+            permissionDeniedMessage: translate(
+                'voice_input_permission_denied_message',
+                'Could not access the microphone. Please allow microphone access in your browser settings and try again.'
+            ),
+            permissionDeniedConfirm: translate('voice_input_permission_denied_confirm', 'Got it'),
+            microphoneUnsupported: translate(
+                'voice_input_microphone_unsupported',
+                'This browser does not support microphone recording.'
+            ),
+            recordingFailed: translate('voice_input_record_failed', 'Could not process the recording. Please try again.'),
+        };
+    }, [t]);
+    const isMobileDevice = useIsMobile();
     const highZClass = isWindowMode ? 'z-[100000]' : '';
 
     // ========== 状态管理 ==========
@@ -67,9 +150,11 @@ function ChatBox({
     // 工具按钮相关
     const [tools, setTools] = useState([]);
     const [extraTools, setExtraTools] = useState([]);
+    const [attachmentTools, setAttachmentTools] = useState([]);
 
     // 是否为小屏幕
     const [isSmallScreen, setIsSmallScreen] = useState(false);
+    const [mobileOpenMenuSections, setMobileOpenMenuSections] = useState({});
 
     // 快捷选项相关
     const [quickOptions, setQuickOptions] = useState([]);
@@ -82,6 +167,14 @@ function ChatBox({
 
     // 按钮
     const [sendButtonStatus, setSendButtonStatus] = useState('normal');
+
+    // 语音输入相关
+    const [isVoiceRecording, setIsVoiceRecording] = useState(false);
+    const [isVoiceRecognizing, setIsVoiceRecognizing] = useState(false);
+    const [isMobileVoiceMode, setIsMobileVoiceMode] = useState(false);
+    const [voiceActionPending, setVoiceActionPending] = useState(false);
+    const [voiceWaveformLevels, setVoiceWaveformLevels] = useState(() => createSilentWaveformLevels(VOICE_WAVEFORM_BARS));
+    const [voicePermissionDialog, setVoicePermissionDialog] = useState({open: false});
 
     // 固件相关
     const [attachmentHeight, setAttachmentHeight] = useState(0);
@@ -97,6 +190,12 @@ function ChatBox({
     const textareaRef = useRef(null);
     const attachmentRef = useRef(null);
     const rootRef = useRef(null);
+    const voiceRecorderRef = useRef(null);
+    const voicePointerPressedRef = useRef(false);
+    const voicePointerEmitPcmOnReleaseRef = useRef(true);
+    const activeVoicePointerIdRef = useRef(null);
+    const voicePermissionDialogResolverRef = useRef(null);
+    const onVoiceRecordingCancelRef = useRef(onVoiceRecordingCancel);
     const [containerWidth, setContainerWidth] = useState(0);
 
 
@@ -205,6 +304,271 @@ function ChatBox({
         }
     }, [selectedQuickOption]);
 
+    const closeVoicePermissionDialog = useCallback((result = false) => {
+        const resolver = voicePermissionDialogResolverRef.current;
+        voicePermissionDialogResolverRef.current = null;
+        setVoicePermissionDialog(prev => (prev?.open ? {...prev, open: false} : {open: false}));
+
+        // Resolver 只允许触发一次，避免点击取消关闭 Dialog 时又被 onOpenChange 二次触发。
+        resolver?.(result);
+    }, []);
+
+    const showVoicePermissionDialog = useCallback(({
+                                                       title = voiceText.input,
+                                                       description,
+                                                       confirmText = voiceText.permissionDeniedConfirm,
+                                                       cancelText = voiceText.permissionCancel,
+                                                       showCancel = false,
+                                                   }) => {
+        return new Promise((resolve) => {
+            // 如果极端情况下前一个权限弹窗尚未结算，先按取消处理，避免多个流程互相串扰。
+            voicePermissionDialogResolverRef.current?.(false);
+            voicePermissionDialogResolverRef.current = resolve;
+            setVoicePermissionDialog({
+                open: true,
+                title,
+                description,
+                confirmText,
+                cancelText,
+                showCancel,
+            });
+        });
+    }, [voiceText.input, voiceText.permissionCancel, voiceText.permissionDeniedConfirm]);
+
+    const getMicrophoneRequestOptions = useCallback(() => ({
+        permissionIntroMessage: voiceText.permissionIntro,
+        permissionDeniedMessage: voiceText.permissionDeniedMessage,
+        permissionUnsupportedMessage: voiceText.microphoneUnsupported,
+        onPermissionIntro: async (message) => showVoicePermissionDialog({
+            title: voiceText.permissionTitle,
+            description: message,
+            confirmText: voiceText.permissionConfirm,
+            cancelText: voiceText.permissionCancel,
+            showCancel: true,
+        }),
+        onPermissionDenied: async (error, message) => {
+            if (isVoicePermissionFlowCancelled(error)) return;
+            console.error('Microphone permission failed:', error);
+            await showVoicePermissionDialog({
+                title: voiceText.permissionDeniedTitle,
+                description: message,
+                confirmText: voiceText.permissionDeniedConfirm,
+            });
+        },
+    }), [showVoicePermissionDialog, voiceText]);
+
+    const blurTextInputOnMobile = useCallback(() => {
+        if (!isSmallScreen) return;
+
+        requestAnimationFrame(() => {
+            const textarea = textareaRef.current;
+            if (!textarea) return;
+
+            textarea.blur?.();
+        });
+    }, [isSmallScreen]);
+
+    const appendVoiceRecognitionText = useCallback((text) => {
+        const normalizedText = String(text || '').trim();
+        if (!normalizedText) return;
+
+        setMessageContent((previousValue) => {
+            const separator = previousValue && !/\s$/.test(previousValue) ? ' ' : '';
+            const nextValue = `${previousValue || ''}${separator}${normalizedText}`;
+            messageContentRef.current = nextValue;
+            return nextValue;
+        });
+
+        // 语音识别回填文本时不要主动 focus 输入框。
+        // 移动端主动 blur，避免识别完成后软键盘被唤起。
+        blurTextInputOnMobile();
+    }, [blurTextInputOnMobile]);
+
+    const getVoiceRecognitionText = useCallback((result) => {
+        if (typeof result === 'string') return result;
+        if (!result) return '';
+        return result.text || result.transcript || result.messageContent || '';
+    }, []);
+
+    // 最终音频处理由 ChatPage 传入；ChatBox 只负责把采集到的 16k PCM 交出去，并接收可选识别文本回填输入框。
+    const handleVoicePcmReady = useCallback(async (payload) => {
+        if (!payload?.pcm16k?.length) return null;
+
+        const voicePayload = {
+            ...payload,
+            markId,
+        };
+
+        if (typeof onVoicePcmReady === 'function') {
+            const result = await onVoicePcmReady(voicePayload);
+            appendVoiceRecognitionText(getVoiceRecognitionText(result));
+            return result;
+        }
+
+        console.debug('[ChatBox] voice pcm16k ready:', voicePayload);
+        return null;
+    }, [appendVoiceRecognitionText, getVoiceRecognitionText, markId, onVoicePcmReady]);
+
+    const startVoiceRecording = useCallback(async () => {
+        if (isReadOnly || voiceActionPending || isVoiceRecognizing || voiceRecorderRef.current) return false;
+
+        setVoiceActionPending(true);
+
+        try {
+            setVoiceWaveformLevels(createSilentWaveformLevels(VOICE_WAVEFORM_BARS));
+            const stream = await requestMicrophoneStream(getMicrophoneRequestOptions());
+            const recorder = await createPcm16kRecorder(stream, {
+                waveformBars: VOICE_WAVEFORM_BARS,
+                onWaveform: setVoiceWaveformLevels,
+            });
+            voiceRecorderRef.current = recorder;
+            setIsVoiceRecording(true);
+
+            if (typeof onVoiceRecordingStart === 'function') {
+                await onVoiceRecordingStart({
+                    markId,
+                    isMobile: isSmallScreen,
+                    sampleRate: 16000,
+                    channels: 1,
+                    bitDepth: 16,
+                });
+            }
+
+            return true;
+        } catch (error) {
+            const recorderToCancel = voiceRecorderRef.current;
+            voiceRecorderRef.current = null;
+            if (recorderToCancel) {
+                try {
+                    await recorderToCancel.cancel();
+                } catch (cancelError) {
+                    console.error('Failed to cancel voice recorder after start error:', cancelError);
+                }
+            }
+
+            if (!isVoicePermissionFlowCancelled(error)) {
+                console.error('Failed to start voice recording:', error);
+            }
+            setIsVoiceRecording(false);
+            setIsVoiceRecognizing(false);
+            setVoiceWaveformLevels(createSilentWaveformLevels(VOICE_WAVEFORM_BARS));
+            return false;
+        } finally {
+            setVoiceActionPending(false);
+        }
+    }, [getMicrophoneRequestOptions, isReadOnly, isSmallScreen, isVoiceRecognizing, markId, onVoiceRecordingStart, voiceActionPending]);
+
+    const stopVoiceRecording = useCallback(async ({emitPcm = true} = {}) => {
+        const recorder = voiceRecorderRef.current;
+        if (!recorder) {
+            setIsVoiceRecording(false);
+            return null;
+        }
+
+        voiceRecorderRef.current = null;
+        setIsVoiceRecording(false);
+        setVoiceWaveformLevels(createSilentWaveformLevels(VOICE_WAVEFORM_BARS));
+        setVoiceActionPending(true);
+        setIsVoiceRecognizing(Boolean(emitPcm));
+
+        try {
+            if (!emitPcm) {
+                await recorder.cancel();
+                await onVoiceRecordingCancel?.({markId});
+                return null;
+            }
+
+            const payload = await recorder.stop();
+            await handleVoicePcmReady(payload);
+            return payload;
+        } catch (error) {
+            await onVoiceRecordingCancel?.({markId});
+            console.error('Failed to stop voice recording:', error);
+            toast.error(voiceText.recordingFailed);
+            return null;
+        } finally {
+            setIsVoiceRecognizing(false);
+            setVoiceActionPending(false);
+            blurTextInputOnMobile();
+        }
+    }, [blurTextInputOnMobile, handleVoicePcmReady, markId, onVoiceRecordingCancel, voiceText.recordingFailed]);
+
+    const handleVoiceButtonClick = useCallback(async () => {
+        if (isReadOnly || voiceActionPending || isVoiceRecognizing) return;
+
+        if (isSmallScreen) {
+            if (isMobileVoiceMode) {
+                if (isVoiceRecording || voiceRecorderRef.current) {
+                    await stopVoiceRecording({emitPcm: true});
+                }
+                setIsMobileVoiceMode(false);
+                requestAnimationFrame(() => textareaRef.current?.focus());
+                return;
+            }
+
+            setVoiceActionPending(true);
+            try {
+                await ensureMicrophonePermission(getMicrophoneRequestOptions());
+                setIsMobileVoiceMode(true);
+            } catch (error) {
+                if (!isVoicePermissionFlowCancelled(error)) {
+                    // requestMicrophoneStream 已负责弹窗告知失败。
+                    console.error('Failed to enable mobile voice input:', error);
+                }
+            } finally {
+                setVoiceActionPending(false);
+            }
+            return;
+        }
+
+        if (isVoiceRecording || voiceRecorderRef.current) {
+            await stopVoiceRecording({emitPcm: true});
+            return;
+        }
+
+        await startVoiceRecording();
+    }, [
+        getMicrophoneRequestOptions,
+        isMobileVoiceMode,
+        isReadOnly,
+        isSmallScreen,
+        isVoiceRecognizing,
+        isVoiceRecording,
+        startVoiceRecording,
+        stopVoiceRecording,
+        voiceActionPending,
+    ]);
+
+    const handleMobileVoicePointerDown = useCallback(async (event) => {
+        if (isReadOnly || voiceActionPending || isVoiceRecognizing || isVoiceRecording || voiceRecorderRef.current) return;
+        if (event.pointerType === 'mouse' && event.button !== 0) return;
+
+        event.preventDefault();
+        activeVoicePointerIdRef.current = event.pointerId;
+        voicePointerPressedRef.current = true;
+        voicePointerEmitPcmOnReleaseRef.current = true;
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+
+        const started = await startVoiceRecording();
+        if (started && !voicePointerPressedRef.current) {
+            await stopVoiceRecording({emitPcm: voicePointerEmitPcmOnReleaseRef.current});
+        }
+    }, [isReadOnly, isVoiceRecognizing, isVoiceRecording, startVoiceRecording, stopVoiceRecording, voiceActionPending]);
+
+    const finishMobileVoicePointer = useCallback(async (event, emitPcm = true) => {
+        if (activeVoicePointerIdRef.current !== event.pointerId) return;
+
+        event.preventDefault();
+        voicePointerPressedRef.current = false;
+        voicePointerEmitPcmOnReleaseRef.current = emitPcm;
+        activeVoicePointerIdRef.current = null;
+        event.currentTarget.releasePointerCapture?.(event.pointerId);
+
+        if (voiceRecorderRef.current) {
+            await stopVoiceRecording({emitPcm});
+        }
+    }, [stopVoiceRecording]);
+
     // ========== 工具初始化函数 ==========
 
     const initializeExtraTools = useCallback((toolsConfig) => {
@@ -239,7 +603,6 @@ function ChatBox({
 
     const chatboxSetup = useCallback((data) => {
         const newBuiltinStatus = {};
-        let defaultExtraStatus = initializeExtraTools(data.extra_tools || []);
 
         // 默认附件工具配置
         let defaultAttachmentTools = data.ignoreAttachmentTools
@@ -268,9 +631,9 @@ function ChatBox({
             setIgnoreAttachmentTools(Boolean(data.ignoreAttachmentTools));
         }
 
-        const allExtraTools = data.extra_tools
-            ? [...data.extra_tools, ...defaultAttachmentTools]
-            : defaultAttachmentTools;
+        const configuredExtraTools = data.extra_tools ? [...data.extra_tools] : [];
+        const allExtraTools = [...configuredExtraTools, ...defaultAttachmentTools];
+        const defaultExtraStatus = initializeExtraTools(allExtraTools);
 
         let savedExtraStatus = {};
         try {
@@ -282,7 +645,10 @@ function ChatBox({
             console.error('Failed to parse saved extra_tools status:', error);
         }
 
-        const mergedExtraStatus = deepMerge(defaultExtraStatus, savedExtraStatus);
+        const mergedExtraStatus = applyLocalSettingBackedExtraToolStatus(
+            deepMerge(defaultExtraStatus, savedExtraStatus),
+            allExtraTools
+        );
 
         if (data.builtin_tools) {
             data.builtin_tools.forEach(tool => {
@@ -297,9 +663,8 @@ function ChatBox({
             extra_tools: mergedExtraStatus,
         }));
 
-        if (data.extra_tools) {
-            setExtraTools(allExtraTools);
-        }
+        setExtraTools(configuredExtraTools);
+        setAttachmentTools(defaultAttachmentTools);
 
         if (data.readOnly !== undefined) {
             setIsReadOnly(Boolean(data.readOnly));
@@ -544,6 +909,9 @@ function ChatBox({
         setToolsStatus,
         highZClass,
         t,
+        isMobileMenu: isSmallScreen,
+        mobileOpenSections: mobileOpenMenuSections,
+        setMobileOpenSections: setMobileOpenMenuSections,
     });
 
     // ========== 副作用 ==========
@@ -552,7 +920,8 @@ function ChatBox({
     useEffect(() => {
         sendButtonStatusRef.current = sendButtonStatus;
         messageContentRef.current = messageContent;
-    }, [sendButtonStatus, messageContent]);
+        onVoiceRecordingCancelRef.current = onVoiceRecordingCancel;
+    }, [sendButtonStatus, messageContent, onVoiceRecordingCancel]);
 
     // 窗口模式下全屏编辑器填满 windowRef（位置 + 大小）
     useLayoutEffect(() => {
@@ -588,21 +957,40 @@ function ChatBox({
         };
     }, [isModalOpen, isWindowMode, windowRef]);
 
-    // 响应式屏幕检测
+    // 响应式屏幕检测：复用 useIsMobile，保持桌面/移动端语音交互分支一致。
     useEffect(() => {
-        const checkScreenSize = () => {
-            const isSmall = isMobile();
-            setIsSmallScreen(isSmall);
-            if ((isSmall && tipMessageIsForNewLine) || !getLocalSetting('ShowShiftEnterNewlineTip', true)) {
-                setTipMessage(null);
-                setTipMessageIsForNewLine(false);
-                setShowTipMessage(false);
-            }
+        const isSmall = Boolean(isMobileDevice);
+        setIsSmallScreen(isSmall);
+        if ((isSmall && tipMessageIsForNewLine) || !getLocalSetting('ShowShiftEnterNewlineTip', true)) {
+            setTipMessage(null);
+            setTipMessageIsForNewLine(false);
+            setShowTipMessage(false);
+        }
+    }, [isMobileDevice, tipMessageIsForNewLine]);
+
+    // 切换到桌面端时关闭移动端语音模式，避免残留“长按录音”按钮。
+    useEffect(() => {
+        if (!isSmallScreen) {
+            setIsMobileVoiceMode(false);
+        }
+    }, [isSmallScreen]);
+
+    // 只读/卸载时停止录音并释放麦克风。
+    useEffect(() => {
+        if (isReadOnly) {
+            setIsMobileVoiceMode(false);
+            setIsVoiceRecognizing(false);
+            stopVoiceRecording({emitPcm: false});
+        }
+    }, [isReadOnly, stopVoiceRecording]);
+
+    useEffect(() => {
+        return () => {
+            voiceRecorderRef.current?.cancel?.();
+            voiceRecorderRef.current = null;
+            onVoiceRecordingCancelRef.current?.({markId});
         };
-        checkScreenSize();
-        window.addEventListener('resize', checkScreenSize);
-        return () => window.removeEventListener('resize', checkScreenSize);
-    }, [tipMessageIsForNewLine]);
+    }, [markId]);
 
     // 加载工具配置
     useEffect(() => {
@@ -742,9 +1130,36 @@ function ChatBox({
         isTransitioning,
     ]);
 
+    const voiceInputNode = useMemo(() => (
+        <VoiceInputButton
+            isMobile={isSmallScreen}
+            isMobileVoiceMode={isMobileVoiceMode}
+            isRecording={isVoiceRecording}
+            isPending={voiceActionPending}
+            disabled={isReadOnly}
+            onClick={handleVoiceButtonClick}
+            labels={{
+                input: voiceText.input,
+                switchToText: voiceText.switchToText,
+                cancelRecording: voiceText.cancelRecording,
+            }}
+        />
+    ), [
+        handleVoiceButtonClick,
+        isMobileVoiceMode,
+        isReadOnly,
+        isSmallScreen,
+        isVoiceRecording,
+        voiceActionPending,
+        voiceText.cancelRecording,
+        voiceText.input,
+        voiceText.switchToText,
+    ]);
+
     const toolButtonsProps = useMemo(() => ({
         toolsLoadedStatus,
         extraTools,
+        attachmentTools,
         tools,
         toolsStatus,
         setToolsStatus,
@@ -752,9 +1167,13 @@ function ChatBox({
         renderMenuItems, // 传递函数
         t,
         isWindowMode,
-        containerWidth
-    }), [toolsLoadedStatus, extraTools, tools, toolsStatus,
-        setToolsStatus, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth]);
+        containerWidth,
+        voiceInputNode,
+        isMobileMenu: isSmallScreen,
+        mobileOpenSections: mobileOpenMenuSections,
+        setMobileOpenSections: setMobileOpenMenuSections,
+    }), [toolsLoadedStatus, extraTools, attachmentTools, tools, toolsStatus,
+        setToolsStatus, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth, voiceInputNode, isSmallScreen, mobileOpenMenuSections]);
 
     return (
         <>
@@ -827,7 +1246,28 @@ function ChatBox({
                             textareaRef={textareaRef}
                             isEditMessage={isEditMessage}
                             isSmallScreen={isSmallScreen}
+                            isVoiceRecording={isVoiceRecording}
+                            isVoiceRecognizing={isVoiceRecognizing}
+                            voiceWaveformLevels={voiceWaveformLevels}
+                            voiceRecordingLabel={voiceText.recordingAria}
+                            voiceRecognizingLabel={voiceText.recognizingAria}
+                            voiceRecognizingText={voiceText.recognizingText}
                         />
+
+                        {isSmallScreen && isMobileVoiceMode && (
+                            <button
+                                type="button"
+                                className="mt-2 mb-4 flex w-full select-none items-center justify-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                                disabled={isReadOnly || voiceActionPending || isVoiceRecognizing}
+                                onPointerDown={handleMobileVoicePointerDown}
+                                onPointerUp={(event) => finishMobileVoicePointer(event, true)}
+                                onPointerCancel={(event) => finishMobileVoicePointer(event, false)}
+                                onContextMenu={(event) => event.preventDefault()}
+                                aria-label={voiceText.holdToRecord}
+                            >
+                                {isVoiceRecording ? voiceText.releaseToFinish : voiceText.holdToRecord}
+                            </button>
+                        )}
                     </div>
 
                     {/* 工具按钮和发送按钮 */}
@@ -892,6 +1332,11 @@ function ChatBox({
                     onClose={() => setIsModalOpen(false)}
                     t={t}
                 />
+                <VoicePermissionDialog
+                    dialog={voicePermissionDialog}
+                    onConfirm={() => closeVoicePermissionDialog(true)}
+                    onCancel={() => closeVoicePermissionDialog(false)}
+                />
             </div>
         </>
     );
@@ -937,6 +1382,9 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         prevProps.onHeightChange === nextProps.onHeightChange &&
         prevProps.dropTargetRef === nextProps.dropTargetRef &&
         prevProps.selectedModel === nextProps.selectedModel &&
-        prevProps.isWindowMode === nextProps.isWindowMode
+        prevProps.isWindowMode === nextProps.isWindowMode &&
+        prevProps.onVoicePcmReady === nextProps.onVoicePcmReady &&
+        prevProps.onVoiceRecordingStart === nextProps.onVoiceRecordingStart &&
+        prevProps.onVoiceRecordingCancel === nextProps.onVoiceRecordingCancel
     );
 });

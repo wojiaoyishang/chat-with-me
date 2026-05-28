@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useImmer} from 'use-immer';
 import {produce} from 'immer';
-import {generateUUID, useIsMobile} from '@/lib/tools.jsx';
+import {generateUUID, getLocalSetting, useIsMobile} from '@/lib/tools.jsx';
 import {toast} from 'sonner';
 import {motion} from 'framer-motion';
 import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
@@ -30,6 +30,25 @@ import {
     useChatSpeech,
 } from '@/features/chat';
 
+const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
+const VOICE_RECOGNITION_LANGUAGE_SETTING_KEY = 'VoiceRecognitionLanguage';
+
+const normalizeVoiceRecognitionEngine = (value) => {
+    return String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote';
+};
+
+const getBrowserSpeechRecognitionConstructor = () => {
+    if (typeof window === 'undefined') return null;
+    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+};
+
+const normalizeSpeechRecognitionLanguage = (language) => {
+    const value = String(language || '').trim();
+    if (!value) return 'en-US';
+    if (value.toLowerCase().startsWith('zh')) return 'zh-CN';
+    if (value.toLowerCase().startsWith('en')) return 'en-US';
+    return value;
+};
 
 
 // ========== 主组件 ==========
@@ -44,7 +63,7 @@ function ChatPage({
                       visible = true,               // 是否显示整个 ChatPage（默认为 true，变化时带动画）
                       onWindowModeChange,           // 窗口化模式变化回调
                   }) {
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     const chatPageRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const currentMessageSendRequestIDRef = useRef(generateUUID());
@@ -80,6 +99,10 @@ function ChatPage({
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [pendingDeleteMsgId, setPendingDeleteMsgId] = useState(null);
     const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+
+    // 语音识别相关：ChatBox 负责采集真实音频和 16k PCM，ChatPage 负责最终识别/上传处理。
+    const activeVoiceRecognitionEngineRef = useRef('remote');
+    const browserSpeechRecognitionRef = useRef(null);
 
 
 
@@ -168,6 +191,165 @@ function ChatPage({
         handlePicPicker,
         handleSelectedFiles,
     } = useFileUpload({chatMarkId, t});
+
+    const getDefaultVoiceRecognitionEngine = useCallback(() => {
+        return normalizeVoiceRecognitionEngine(
+            getLocalSetting(VOICE_RECOGNITION_ENGINE_SETTING_KEY, 'remote')
+        );
+    }, []);
+
+    const getDefaultVoiceRecognitionLanguage = useCallback(() => {
+        const fallbackLanguage = i18n?.language || (typeof navigator !== 'undefined' ? navigator.language : 'en-US');
+        return normalizeSpeechRecognitionLanguage(
+            getLocalSetting(VOICE_RECOGNITION_LANGUAGE_SETTING_KEY, fallbackLanguage)
+        );
+    }, [i18n?.language]);
+
+    const stopBrowserSpeechRecognition = useCallback(({cancel = false} = {}) => {
+        const current = browserSpeechRecognitionRef.current;
+        if (!current) {
+            return Promise.resolve({text: '', error: null});
+        }
+
+        browserSpeechRecognitionRef.current = null;
+        const {recognition, session} = current;
+
+        return new Promise((resolve) => {
+            let settled = false;
+            const settle = () => {
+                if (settled) return;
+                settled = true;
+                window.clearTimeout?.(timer);
+                const text = cancel ? '' : `${session.finalTranscript} ${session.interimTranscript}`.trim();
+                resolve({text, error: session.error});
+            };
+
+            const timer = window.setTimeout?.(settle, 900);
+            recognition.onend = settle;
+
+            try {
+                if (cancel) {
+                    recognition.abort();
+                } else {
+                    recognition.stop();
+                }
+            } catch (error) {
+                session.error = error;
+                settle();
+            }
+        });
+    }, []);
+
+    const startBrowserSpeechRecognition = useCallback(() => {
+        const SpeechRecognitionConstructor = getBrowserSpeechRecognitionConstructor();
+        if (!SpeechRecognitionConstructor) {
+            toast.error(t('voice_input_local_recognition_unsupported'));
+            return false;
+        }
+
+        // 防止上一次异常残留的识别实例继续占用麦克风。
+        stopBrowserSpeechRecognition({cancel: true});
+
+        const recognition = new SpeechRecognitionConstructor();
+        const session = {
+            finalTranscript: '',
+            interimTranscript: '',
+            error: null,
+        };
+
+        recognition.lang = getDefaultVoiceRecognitionLanguage();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+
+            for (let index = event.resultIndex; index < event.results.length; index += 1) {
+                const result = event.results[index];
+                const transcript = result?.[0]?.transcript || '';
+
+                if (result?.isFinal) {
+                    session.finalTranscript = `${session.finalTranscript} ${transcript}`.trim();
+                } else {
+                    interimTranscript = `${interimTranscript} ${transcript}`.trim();
+                }
+            }
+
+            session.interimTranscript = interimTranscript;
+        };
+
+        recognition.onerror = (event) => {
+            session.error = event?.error || event;
+        };
+
+        recognition.onend = () => {};
+
+        try {
+            recognition.start();
+        } catch (error) {
+            session.error = error;
+            toast.error(t('voice_input_local_recognition_failed'));
+            return false;
+        }
+
+        browserSpeechRecognitionRef.current = {recognition, session};
+        return true;
+    }, [getDefaultVoiceRecognitionLanguage, stopBrowserSpeechRecognition, t]);
+
+    const handleVoiceRecordingStart = useCallback(() => {
+        const engine = getDefaultVoiceRecognitionEngine();
+        activeVoiceRecognitionEngineRef.current = engine;
+
+        if (engine !== 'local') {
+            return {engine: 'remote'};
+        }
+
+        const started = startBrowserSpeechRecognition();
+        if (!started) {
+            // 浏览器不支持 Web Speech API 或启动失败时，不打断录音，保留 PCM 给 remote 流程兜底。
+            activeVoiceRecognitionEngineRef.current = 'remote';
+            return {engine: 'remote', fallback: true};
+        }
+
+        return {engine: 'local'};
+    }, [getDefaultVoiceRecognitionEngine, startBrowserSpeechRecognition]);
+
+    const handleRemoteVoicePcmReady = useCallback(async (payload) => {
+        // remote 是默认策略；后续上传服务器时在这里使用 payload.pcm16kBuffer / payload.blob。
+        // 返回 {text: '...'} 或字符串后，ChatBox 会自动追加到输入框。
+        console.debug('[ChatPage] voice pcm16k ready for remote recognition:', payload);
+        return null;
+    }, []);
+
+    const handleVoicePcmReady = useCallback(async (payload) => {
+        const engine = activeVoiceRecognitionEngineRef.current || getDefaultVoiceRecognitionEngine();
+
+        if (engine === 'local') {
+            const {text, error} = await stopBrowserSpeechRecognition({cancel: false});
+            activeVoiceRecognitionEngineRef.current = 'remote';
+
+            if (text) {
+                return {text};
+            }
+
+            if (error && !['aborted', 'no-speech'].includes(String(error))) {
+                toast.error(t('voice_input_local_recognition_failed'));
+            } else {
+                toast.info(t('voice_input_no_speech_detected'));
+            }
+
+            return null;
+        }
+
+        activeVoiceRecognitionEngineRef.current = 'remote';
+        return handleRemoteVoicePcmReady(payload);
+    }, [getDefaultVoiceRecognitionEngine, handleRemoteVoicePcmReady, stopBrowserSpeechRecognition, t]);
+
+    const handleVoiceRecordingCancel = useCallback(() => {
+        stopBrowserSpeechRecognition({cancel: true});
+        activeVoiceRecognitionEngineRef.current = 'remote';
+    }, [stopBrowserSpeechRecognition]);
 
     // ========= 滚动辅助 =========
     // 高频流式更新时，用户只要主动向上滚/滑，就应该立即退出自动置底，
@@ -1674,6 +1856,9 @@ function ChatPage({
                             selectedModel={selectedModel}
                             windowRef={windowRef}
                             isWindowMode={isWindowMode}
+                            onVoiceRecordingStart={handleVoiceRecordingStart}
+                            onVoicePcmReady={handleVoicePcmReady}
+                            onVoiceRecordingCancel={handleVoiceRecordingCancel}
                         />
                     </div>
 

@@ -611,7 +611,7 @@ replacement 内容中可以继续包含其他 `cardReplace`：
 |------------|--------|----|---------------------------------------|
 | `name`     | `str`  | 是  | 按钮唯一标识符，发送消息时会携带此字段用于标识工具启用状态         |
 | `text`     | `str`  | 是  | 按钮上显示的文本标签                            |
-| `iconType` | `str`  | 是  | 图标类型，支持：`"library"`、`"svg"`、`"image"` |
+| `iconType` | `str`  | 是  | 图标类型，远端配置仅支持：`"svg"`、`"image"` |
 | `iconData` | `str`  | 是  | 图标数据，根据 `iconType` 不同含义不同             |
 | `bgColor`  | `str`  | 否  | 按钮背景颜色，默认为 `"#4F39F6"`（十六进制颜色码）       |
 | `isActive` | `bool` | 否  | 是否默认处于激活状态（高亮），默认 `False`             |
@@ -619,22 +619,9 @@ replacement 内容中可以继续包含其他 `cardReplace`：
 
 #### iconType 说明
 
-##### 1. `library` — 使用图标库（React Icons）
+远端下发的工具配置只支持 `svg` 和 `image` 两种图标类型。前端内部如需使用图标库，应在前端代码中自行处理，不应通过接口配置下发。
 
-支持以下预定义图标查看代码 `src/components/chat/ToolButtons.jsx`
-
-
-```python
-{
-    "name": "search",
-    "text": "搜索",
-    "iconType": "library",
-    "iconData": "search",
-    "bgColor": "#4F39F6"
-}
-```
-
-##### 2. `svg` — 内联 SVG 代码（自动过滤 XSS）
+##### 1. `svg` — 内联 SVG 代码（自动过滤 XSS）
 
 提供合法的 SVG 字符串，推荐使用 24×24 尺寸，单色设计。
 
@@ -643,12 +630,12 @@ replacement 内容中可以继续包含其他 `cardReplace`：
     "name": "custom",
     "text": "自定义",
     "iconType": "svg",
-    "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8h4z'/></svg>",
+    "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z'/></svg>",
     "bgColor": "#FF6B6B"
 }
 ```
 
-##### 3. `image` — 图片 URL
+##### 2. `image` — 图片 URL
 
 提供图片的 HTTP/HTTPS URL，推荐使用 24×24 像素、1:1 比例的 PNG/SVG 图像。
 
@@ -675,15 +662,15 @@ replacement 内容中可以继续包含其他 `cardReplace`：
     "type": "toggle",  # 必须，菜单类型
     "name": "autoTranslate",  # 除 label/separator 外必须
     "text": "自动翻译",  # 显示文本
-    "iconType": "library",  # 可选，图标类型
-    "iconData": "earth",  # 可选，图标数据
+    "iconType": "svg",  # 可选，图标类型，仅支持 svg/image
+    "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'>...</svg>",  # 可选，图标数据
     "disabled": True,  # 可选，是否禁用
     "default": True,  # toggle/radio 可选，默认值
     "autoClose": False  # 可选，点击后是否自动关闭菜单
 }
 ```
 
-> 💡 **注意**：`name` 在整个 `extra_tools` 中必须**全局唯一**，用于状态存储和交互识别。
+> 💡 **注意**：`name` 在整个 `extra_tools` 中必须**全局唯一**，用于状态存储和交互识别。远端配置中的 `iconType` 仅支持 `svg` 和 `image`。
 
 #### 支持的菜单类型
 
@@ -698,8 +685,8 @@ replacement 内容中可以继续包含其他 `cardReplace`：
     "type": "toggle",
     "name": "autoTranslate",
     "text": "自动翻译",
-    "iconType": "library",
-    "iconData": "earth",
+    "iconType": "svg",
+    "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 2c1.1 0 2.1.3 3 .8A14.7 14.7 0 0 0 12 6a14.7 14.7 0 0 0-3 .8A6.9 6.9 0 0 1 12 5zm-5.2 4h10.4c.5.9.8 1.9.8 3s-.3 2.1-.8 3H6.8A6.9 6.9 0 0 1 6 12c0-1.1.3-2.1.8-3z'/></svg>",
     "autoClose": False
 }
 ```
@@ -716,8 +703,8 @@ replacement 内容中可以继续包含其他 `cardReplace`：
     "type": "radio",
     "name": "language",
     "text": "语言设置",
-    "iconType": "library",
-    "iconData": "earth",
+    "iconType": "image",
+    "iconData": "/icons/language.svg",
     "default": "en",
     "children": [
         {
@@ -736,7 +723,46 @@ replacement 内容中可以继续包含其他 `cardReplace`：
 }
 ```
 
-##### 3. `label` — 标题分组（无交互）
+##### 3. 语音识别引擎切换（约定 `name`）
+
+语音输入的识别引擎可以通过 `extra_tools` 下发一个 `radio` 菜单项来配置。该项必须使用固定 `name`：`VoiceRecognitionEngine`。
+
+前端会使用 `setLocalSetting('VoiceRecognitionEngine', value)` 写入本地设置，并在录音结束后由 `ChatPage` 使用 `getLocalSetting('VoiceRecognitionEngine', 'remote')` 读取。默认值为 `remote`。
+
+| 子项 `name` | 说明 |
+|---|---|
+| `remote` | 远程识别，保留 PCM 16k 数据上传服务器处理 |
+| `local` | 本地识别，优先使用浏览器内建 `SpeechRecognition` / `webkitSpeechRecognition` |
+
+```python
+{
+    "type": "radio",
+    "name": "VoiceRecognitionEngine",
+    "text": "语音识别",
+    "iconType": "svg",
+    "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z'/></svg>",
+    "default": "remote",
+    "autoClose": False,
+    "children": [
+        {
+            "name": "remote",
+            "text": "远程识别",
+            "iconType": "svg",
+            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M19.35 10.04A7.49 7.49 0 0 0 12 4a7.5 7.5 0 0 0-7.35 6.04A5.5 5.5 0 0 0 5.5 21H19a5 5 0 0 0 .35-10.96z'/></svg>"
+        },
+        {
+            "name": "local",
+            "text": "本地识别",
+            "iconType": "svg",
+            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm-7-3h2a5 5 0 0 0 10 0h2a7 7 0 0 1-14 0z'/></svg>"
+        }
+    ]
+}
+```
+
+> 如果浏览器不支持本地语音识别，前端应保留远程识别兜底流程。
+
+##### 4. `label` — 标题分组（无交互）
 
 - 仅作为菜单中的标题显示
 - 无状态，无需 `name`
@@ -748,7 +774,7 @@ replacement 内容中可以继续包含其他 `cardReplace`：
 }
 ```
 
-##### 4. `separator` — 分隔线
+##### 5. `separator` — 分隔线
 
 - 用于视觉分隔菜单项
 - 无任何其他字段
@@ -759,7 +785,7 @@ replacement 内容中可以继续包含其他 `cardReplace`：
 }
 ```
 
-##### 5. `group` — 嵌套分组（可多层）
+##### 6. `group` — 嵌套分组（可多层）
 
 - 创建子菜单容器，可包含任意类型（包括嵌套 group）
 - 状态由其子项决定，自身不存储状态
@@ -822,22 +848,22 @@ replacement 内容中可以继续包含其他 `cardReplace`：
         {
             "name": "search",
             "text": "搜索",
-            "iconType": "library",
-            "iconData": "search",
+            "iconType": "svg",
+            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M9.5 3a6.5 6.5 0 0 1 5.17 10.45l4.44 4.44-1.42 1.42-4.44-4.44A6.5 6.5 0 1 1 9.5 3zm0 2a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z'/></svg>",
             "bgColor": "#4F39F6"
         },
         {
             "name": "refresh",
             "text": "刷新",
-            "iconType": "library",
-            "iconData": "refresh",
+            "iconType": "svg",
+            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M17.65 6.35A7.95 7.95 0 0 0 12 4V1L7 6l5 5V6a6 6 0 1 1-5.66 8H4.26A8 8 0 1 0 17.65 6.35z'/></svg>",
             "bgColor": "#6C757D"
         },
         {
             "name": "translate",
             "text": "翻译",
-            "iconType": "library",
-            "iconData": "earth",
+            "iconType": "image",
+            "iconData": "/icons/translate.svg",
             "bgColor": "#198754"
         }
     ],
@@ -850,8 +876,31 @@ replacement 内容中可以继续包含其他 `cardReplace`：
             "type": "toggle",
             "name": "autoTranslate",
             "text": "自动翻译",
-            "iconType": "library",
-            "iconData": "earth"
+            "iconType": "svg",
+            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 2c1.1 0 2.1.3 3 .8A14.7 14.7 0 0 0 12 6a14.7 14.7 0 0 0-3 .8A6.9 6.9 0 0 1 12 5zm-5.2 4h10.4c.5.9.8 1.9.8 3s-.3 2.1-.8 3H6.8A6.9 6.9 0 0 1 6 12c0-1.1.3-2.1.8-3z'/></svg>"
+        },
+        {
+            "type": "radio",
+            "name": "VoiceRecognitionEngine",
+            "text": "语音识别",
+            "iconType": "svg",
+            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z'/></svg>",
+            "default": "remote",
+            "autoClose": False,
+            "children": [
+                {
+                    "name": "remote",
+                    "text": "远程识别",
+                    "iconType": "svg",
+                    "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M19.35 10.04A7.49 7.49 0 0 0 12 4a7.5 7.5 0 0 0-7.35 6.04A5.5 5.5 0 0 0 5.5 21H19a5 5 0 0 0 .35-10.96z'/></svg>"
+                },
+                {
+                    "name": "local",
+                    "text": "本地识别",
+                    "iconType": "svg",
+                    "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm-7-3h2a5 5 0 0 0 10 0h2a7 7 0 0 1-14 0z'/></svg>"
+                }
+            ]
         },
         {
             "type": "separator"
@@ -874,13 +923,13 @@ replacement 内容中可以继续包含其他 `cardReplace`：
                             "name": "light",
                             "text": "浅色模式",
                             "iconType": "svg",
-                            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8h4z'/></svg>"
+                            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z'/></svg>"
                         },
                         {
                             "name": "dark",
                             "text": "深色模式",
                             "iconType": "svg",
-                            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zm-10 5.31a4 4 0 1 1 0-8 4 4 0 0 1 0 8z'/></svg>"
+                            "iconData": "<svg viewBox='0 0 24 24' fill='currentColor'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/></svg>"
                         }
                     ]
                 },
@@ -897,8 +946,8 @@ replacement 内容中可以继续包含其他 `cardReplace`：
             "type": "radio",
             "name": "language",
             "text": "语言设置",
-            "iconType": "library",
-            "iconData": "earth",
+            "iconType": "image",
+            "iconData": "/icons/language.svg",
             "default": "en",
             "children": [
                 {
@@ -961,6 +1010,7 @@ replacement 内容中可以继续包含其他 `cardReplace`：
     },
     "extra_tools": {
         "autoTranslate": True,
+        "VoiceRecognitionEngine": "local",
         "language": "ja",
         "theme": {
             "language": "en",
@@ -2288,12 +2338,12 @@ TTS 事件使用普通广播结构，其中：
 
 ```js
 {
-  chunks: Map<segmentId, ChunkBuffer>,
-  pendingReadyByPosition: Map<segmentPosition, ReadyPayload>,
-  pendingReadyById: Map<segmentId, ReadyPayload>,
-  readySegmentsByPosition: Map<segmentPosition, QueueItem>,
-  nextPlaybackPosition: 0,
-  playingSegmentPosition: -1
+    chunks: Map<segmentId, ChunkBuffer>,
+        pendingReadyByPosition: Map<segmentPosition, ReadyPayload>,
+        pendingReadyById: Map<segmentId, ReadyPayload>,
+        readySegmentsByPosition: Map<segmentPosition, QueueItem>,
+        nextPlaybackPosition: 0,
+        playingSegmentPosition: -1
 }
 ```
 
@@ -2323,28 +2373,28 @@ TTS 事件使用普通广播结构，其中：
 
 ```js
 {
-  status: 'loading' | 'playing' | 'paused' | 'ended' | 'idle',
-  messageId: 'message-id',
-  requestId: 'uuid',
-  engine: 'dashscope',
-  segments: [],
-  currentSegmentId: 'message-id:tts:0',
-  currentSegmentIndex: 0,
-  currentSegmentPosition: 0,
-  rate: 1.0,
-  generationStatus: 'idle' | 'generating' | 'ended',
-  generationPhase: 'start' | 'chunk' | 'segment_ready' | 'end',
-  generatedSegmentCount: 0,
-  bufferedSegmentCount: 0,
-  playedSegmentCount: 0,
-  totalSegments: 0,
-  generatedSegmentPosition: -1,
-  bufferedSegmentPosition: -1,
-  playbackStatus: 'idle' | 'waiting' | 'playing' | 'ended' | 'error',
-  playbackSegmentPosition: -1,
-  generationPercent: 0,
-  bufferPercent: 0,
-  playbackPercent: 0
+    status: 'loading' | 'playing' | 'paused' | 'ended' | 'idle',
+        messageId: 'message-id',
+        requestId: 'uuid',
+        engine: 'dashscope',
+        segments: [],
+        currentSegmentId: 'message-id:tts:0',
+        currentSegmentIndex: 0,
+        currentSegmentPosition: 0,
+        rate: 1.0,
+        generationStatus: 'idle' | 'generating' | 'ended',
+        generationPhase: 'start' | 'chunk' | 'segment_ready' | 'end',
+        generatedSegmentCount: 0,
+        bufferedSegmentCount: 0,
+        playedSegmentCount: 0,
+        totalSegments: 0,
+        generatedSegmentPosition: -1,
+        bufferedSegmentPosition: -1,
+        playbackStatus: 'idle' | 'waiting' | 'playing' | 'ended' | 'error',
+        playbackSegmentPosition: -1,
+        generationPercent: 0,
+        bufferPercent: 0,
+        playbackPercent: 0
 }
 ```
 
