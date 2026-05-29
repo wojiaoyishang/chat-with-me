@@ -553,6 +553,7 @@ function ListItem({ item, path }) {
         const defaultItem = { id: editableId, internalId };
         if (item.children) {
             item.children.forEach((child) => {
+                if (child.type === "info") return;
                 if (child.name) {
                     defaultItem[child.name] = child.default ?? (child.nullable ? null : undefined);
                 }
@@ -1627,6 +1628,47 @@ function HeadingItem({item}) {
     );
 }
 
+// ─── Info Item ──────────────────────────────────────────────────────
+function InfoItem({item}) {
+    const message = item.content ?? item.message ?? item.description ?? item.text ?? "";
+    const title = item.title ?? ((item.content || item.message || item.description) ? item.text : "");
+    const hasTitle = typeof title === "string" && title.trim() !== "";
+    const hasMessage = typeof message === "string" && message.trim() !== "";
+
+    if (!hasTitle && !hasMessage) return null;
+
+    const tone = item.tone || "info";
+    const toneClasses = {
+        info: "border-[#bfdbfe] dark:border-[#1e40af] bg-[#eff6ff] dark:bg-[#1e3a8a]/30 text-[#1e40af] dark:text-[#bfdbfe]",
+        warning: "border-[#fde68a] dark:border-[#92400e] bg-[#fffbeb] dark:bg-[#92400e]/20 text-[#92400e] dark:text-[#fde68a]",
+        success: "border-[#bbf7d0] dark:border-[#166534] bg-[#f0fdf4] dark:bg-[#166534]/20 text-[#166534] dark:text-[#bbf7d0]",
+        error: "border-[#fecaca] dark:border-[#991b1b] bg-[#fef2f2] dark:bg-[#991b1b]/20 text-[#991b1b] dark:text-[#fecaca]",
+    };
+    const wrapperClass = toneClasses[tone] || toneClasses.info;
+
+    return (
+        <SettingRow fullWidth className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0 py-3">
+            <div className={`w-full rounded-2xl border px-3 sm:px-4 py-3 ${wrapperClass}`}>
+                <div className="flex items-start gap-2.5 min-w-0">
+                    <Info size={18} className="mt-0.5 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                        {hasTitle && (
+                            <div className="text-sm font-semibold leading-5 break-words">
+                                {title}
+                            </div>
+                        )}
+                        {hasMessage && (
+                            <div className={`${hasTitle ? "mt-1" : ""} text-sm leading-6 break-words whitespace-pre-wrap opacity-90`}>
+                                {message}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </SettingRow>
+    );
+}
+
 // ─── Item Renderer ─────────────────────────────────────────────────
 function SettingItemRenderer({item, path}) {
     const { values } = useSettings();
@@ -1656,6 +1698,7 @@ function SettingItemRenderer({item, path}) {
         case "image": return <ImageItem item={item} path={path} />;
         case "group": return <GroupItem item={item} path={path} />;
         case "heading": return <HeadingItem item={item} />;
+        case "info": return <InfoItem item={item} />;
         case "switch": return <SwitchItem item={item} path={path} />;
         case "number": return <NumberSliderItem item={item} path={path} />;
         case "text": return <TextInputItem item={item} path={path} />;
@@ -1725,7 +1768,7 @@ export default function DynamicSettings({
 function buildDefaults(config, initialValues) {
     const result = {};
     for (const item of config) {
-        if (item.type === "heading") continue;
+        if (item.type === "heading" || item.type === "info") continue;
         if (item.type === "list" && item.name) {
             const initList = initialValues?.[item.name];
             // 为每个列表项补充稳定的 internalId
@@ -1750,6 +1793,7 @@ function buildDefaults(config, initialValues) {
             } else {
                 const groupResult = {};
                 for (const child of item.children) {
+                    if (child.type === "info") continue;
                     if (child.name) {
                         const initVal = initialValues?.[item.name]?.[child.name];
                         if (initVal !== undefined) {

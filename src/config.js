@@ -15,5 +15,6 @@ export const apiEndpoint = {
     DOCUMENT_ENDPOINT: '/document',
     DOCUMENT_COLLABORA_DIRECTION_ENDPOINT: '/document/redirect',
     SETTING_TABS_ENDPOINT: '/setting/tabs',
+    ASR_ENDPOINT: '/asr',
 };
 

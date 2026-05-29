@@ -252,5 +252,10 @@
   "voice_recognition_engine_remote": "Remote recognition",
   "voice_recognition_engine_remote_description": "Upload the recording for server-side recognition",
   "voice_recognition_engine_local": "Local recognition",
-  "voice_recognition_engine_local_description": "Use the browser's built-in speech recognition when available"
+  "voice_recognition_engine_local_description": "Use the browser's built-in speech recognition when available",
+  "voice_input_remote_recognition_not_configured": "Remote voice recognition endpoint is not configured.",
+  "voice_input_remote_recognition_no_audio": "No valid voice recording was captured. Please try again.",
+  "voice_input_remote_recognition_timeout": "Voice recognition is still processing. Please try again.",
+  "voice_input_remote_recognition_failed": "Remote voice recognition failed: {{message}}",
+  "builtin_tools": "Built-in tools"
 }

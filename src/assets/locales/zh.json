@@ -252,5 +252,10 @@
   "voice_recognition_engine_remote": "远程识别",
   "voice_recognition_engine_remote_description": "录音结束后上传服务器识别",
   "voice_recognition_engine_local": "本地识别",
-  "voice_recognition_engine_local_description": "使用浏览器内建语音识别（如支持）"
+  "voice_recognition_engine_local_description": "使用浏览器内建语音识别（如支持）",
+  "voice_input_remote_recognition_not_configured": "未配置远端语音识别接口。",
+  "voice_input_remote_recognition_no_audio": "未获取到有效的语音录音，请重试。",
+  "voice_input_remote_recognition_timeout": "语音识别仍在处理中，请稍后重试。",
+  "voice_input_remote_recognition_failed": "远端语音识别失败：{{message}}",
+  "builtin_tools": "内建功能"
 }

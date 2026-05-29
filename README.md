@@ -1282,6 +1282,31 @@ code 设置为 401 。
 }
 ```
 
+# ASR_ENDPOINT - ASR 识别接口
+
+前端会 POST PCM 文件数据（请求体为二进制数据）到 ASR_ENDPOINT 接口，采用率为 16000，mime 类型为 audio/mpeg。
+服务器 data 字段需要提供如下响应：
+
+```python
+{
+    "id": "XXXXX",  # 任务ID
+    "finish": False, # 是否完成
+    "status": "",  # 用于标记目前状态，不会显示在前端
+    "text": None,  # 撰写成功的结果（非必要），如果不是 None 则视为撰写已经完成
+    "timeout": 5000  # 最长等待/轮询时间，默认为 5秒（即使没有提供这个字段）
+}
+```
+
+如果没有撰写成功，将进行轮询（建议轮询时间为1秒，服务器应该设置长连接）： GET ASR_ENDPOINT/{id} 尝试获取结果，服务器需返回：
+
+```python
+{
+    "finish": False, # 是否完成
+    "status": "",  # 用于标记目前状态，不会显示在前端
+    "text": None,  # 撰写成功的结果（非必要），如果不是 None 则视为撰写已经完成
+}
+```
+
 # 广播事件
 
 ## Websocket 事件 （type=websocket)
@@ -2433,3 +2458,380 @@ TTS 事件使用普通广播结构，其中：
 3. 使用 `sampleRate`、`channels=1`、`bitsPerSample=16` 封装 WAV header。
 4. 生成 Blob URL 并交给本地 `Audio` 播放。
 5. 在本地音频真实播放推进后切换当前句高亮。
+
+# DynamicSettings 配置说明
+
+`DynamicSettings` 是一个基于配置渲染表单的 React 组件。通过传入 `config` 数组，可以快速生成开关、输入框、选择器、列表、分组等设置项。
+
+## 基础用法
+
+```jsx
+import DynamicSettings from "./DynamicSettings";
+
+const config = [
+  {
+    type: "heading",
+    text: "基础配置",
+  },
+  {
+    type: "switch",
+    name: "enabled",
+    text: "启用功能",
+    default: true,
+  },
+  {
+    type: "text",
+    name: "apiKey",
+    text: "API Key",
+    placeholder: "请输入 API Key",
+    masked: true,
+  },
+];
+
+export default function Demo() {
+  return (
+    <DynamicSettings
+      config={config}
+      initialValues={{ enabled: false }}
+      onChange={(values) => console.log(values)}
+    />
+  );
+}
+```
+
+## 组件参数
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| `config` | `Array` | 配置项数组 |
+| `initialValues` | `Object` | 初始值，会覆盖配置中的 `default` |
+| `onChange` | `Function` | 配置值变化时触发，返回完整 values |
+| `className` | `String` | 外层容器样式类名 |
+| `onImageUpload` | `Function` | 图片上传回调，需返回图片 URL |
+
+## 通用字段
+
+| 字段 | 说明 |
+| --- | --- |
+| `type` | 配置项类型，必填 |
+| `name` | 字段名，会作为 values 中的 key |
+| `text` | 展示文案 |
+| `tips` | 提示说明，展示为信息图标 |
+| `default` | 默认值 |
+| `required` | 是否展示必填标记 |
+| `nullable` | 是否允许切换为 `null` |
+| `defaultNull` | 初始值是否默认为 `null` |
+| `showWhen` | 条件展示，根据同级字段值控制显示 |
+
+`showWhen` 示例：
+
+```js
+{
+  type: "text",
+  name: "endpoint",
+  text: "接口地址",
+  showWhen: {
+    enabled: true,
+  },
+}
+```
+
+## 支持的类型
+
+### heading
+
+用于分隔配置区域。
+
+```js
+{
+  type: "heading",
+  text: "模型配置",
+}
+```
+
+### info
+
+用于展示提示信息，不会写入 values。
+
+```js
+{
+  type: "info",
+  text: "配置说明",
+  content: "修改配置后请保存并刷新页面。",
+  tone: "info",
+}
+```
+
+`tone` 可选：`info`、`warning`、`success`、`error`。
+
+### switch
+
+布尔开关。
+
+```js
+{
+  type: "switch",
+  name: "enabled",
+  text: "启用",
+  default: true,
+}
+```
+
+### text
+
+文本输入。设置 `multiline: true` 时会使用弹窗编辑多行文本。
+
+```js
+{
+  type: "text",
+  name: "name",
+  text: "名称",
+  default: "默认名称",
+  placeholder: "请输入名称",
+}
+```
+
+```js
+{
+  type: "text",
+  name: "prompt",
+  text: "提示词",
+  multiline: true,
+}
+```
+
+常用字段：
+
+| 字段 | 说明 |
+| --- | --- |
+| `placeholder` | 输入占位文案 |
+| `masked` | 是否使用密码输入 |
+| `multiline` | 是否使用多行文本编辑 |
+
+### number
+
+数字输入。配置 `min` 和 `max` 后会显示滑块。
+
+```js
+{
+  type: "number",
+  name: "temperature",
+  text: "温度",
+  min: 0,
+  max: 2,
+  step: 0.1,
+  default: 1,
+}
+```
+
+常用字段：
+
+| 字段 | 说明 |
+| --- | --- |
+| `min` | 最小值 |
+| `max` | 最大值 |
+| `step` | 步长 |
+| `integer` | 是否按整数展示 |
+
+### select
+
+下拉选择。
+
+```js
+{
+  type: "select",
+  name: "model",
+  text: "模型",
+  default: "gpt-4.1",
+  options: [
+    { label: "GPT-4.1", value: "gpt-4.1" },
+    { label: "GPT-4.1 mini", value: "gpt-4.1-mini" },
+  ],
+}
+```
+
+### checkbox
+
+复选框，适合在 `group` 中批量展示。
+
+```js
+{
+  type: "checkbox",
+  name: "stream",
+  text: "流式输出",
+  default: true,
+}
+```
+
+### radio
+
+单选项。通常放在包含多个 `radio` 子项的 `group` 中。
+
+```js
+{
+  type: "group",
+  name: "mode",
+  text: "运行模式",
+  children: [
+    { type: "radio", name: "fast", text: "快速" },
+    { type: "radio", name: "accurate", text: "精准", default: true },
+  ],
+}
+```
+
+最终值：
+
+```js
+{
+  mode: "accurate"
+}
+```
+
+### group
+
+配置分组，用于组织多个子配置。
+
+```js
+{
+  type: "group",
+  name: "request",
+  text: "请求配置",
+  children: [
+    { type: "text", name: "baseUrl", text: "Base URL" },
+    { type: "number", name: "timeout", text: "超时时间", default: 30 },
+  ],
+}
+```
+
+最终值：
+
+```js
+{
+  request: {
+    baseUrl: "",
+    timeout: 30,
+  }
+}
+```
+
+### list
+
+可增删、复制、排序的列表配置。
+
+```js
+{
+  type: "list",
+  name: "models",
+  text: "模型列表",
+  itemTitleKey: "name",
+  uniqueKey: "id",
+  children: [
+    { type: "text", name: "name", text: "名称" },
+    { type: "text", name: "id", text: "模型 ID" },
+    { type: "switch", name: "enabled", text: "启用", default: true },
+  ],
+}
+```
+
+常用字段：
+
+| 字段 | 说明 |
+| --- | --- |
+| `children` | 列表项内部配置 |
+| `itemTitleKey` | 卡片标题使用的字段 |
+| `itemTitle` | 自定义标题模板，支持 `{{index}}` |
+| `uniqueKey` | 用于检查重复值 |
+
+### image
+
+图片上传配置。点击后调用 `onImageUpload`，回填返回的图片 URL。
+
+```js
+{
+  type: "image",
+  name: "avatar",
+  text: "头像",
+  default: "",
+}
+```
+
+### custom
+
+键值对配置，适合自定义参数。
+
+```js
+{
+  type: "custom",
+  name: "headers",
+  text: "请求头",
+  default: {
+    Authorization: "",
+  },
+}
+```
+
+### tags
+
+标签数组配置。
+
+```js
+{
+  type: "tags",
+  name: "tags",
+  text: "标签",
+  default: ["default"],
+  placeholder: "输入标签后回车",
+}
+```
+
+## 完整示例
+
+```js
+const config = [
+  { type: "heading", text: "基础配置" },
+  {
+    type: "info",
+    text: "提示",
+    content: "请确认配置无误后再保存。",
+  },
+  {
+    type: "switch",
+    name: "enabled",
+    text: "启用",
+    default: true,
+  },
+  {
+    type: "select",
+    name: "provider",
+    text: "服务商",
+    default: "openai",
+    options: [
+      { label: "OpenAI", value: "openai" },
+      { label: "Azure", value: "azure" },
+    ],
+  },
+  {
+    type: "text",
+    name: "apiKey",
+    text: "API Key",
+    masked: true,
+    showWhen: { enabled: true },
+  },
+  {
+    type: "number",
+    name: "timeout",
+    text: "超时时间",
+    min: 1,
+    max: 120,
+    step: 1,
+    default: 30,
+    integer: true,
+  },
+  {
+    type: "tags",
+    name: "allowModels",
+    text: "允许模型",
+    default: [],
+  },
+];
+```

@@ -51,6 +51,72 @@ const normalizeSpeechRecognitionLanguage = (language) => {
 };
 
 
+const ASR_AUDIO_MIME_TYPE = 'audio/mpeg';
+const ASR_DEFAULT_TIMEOUT_MS = 5000;
+const ASR_POLL_INTERVAL_MS = 1000;
+
+const sleep = (delay) => new Promise((resolve) => {
+    const timer = typeof window !== 'undefined' ? window.setTimeout : setTimeout;
+    timer(resolve, delay);
+});
+
+const getAsrEndpoint = () => String(apiEndpoint?.ASR_ENDPOINT || '').trim();
+
+const joinAsrTaskEndpoint = (endpoint, id) => {
+    const baseEndpoint = String(endpoint || '').replace(/\/+$/, '');
+    return `${baseEndpoint}/${encodeURIComponent(String(id))}`;
+};
+
+const hasAsrText = (data) => (
+    data &&
+    typeof data === 'object' &&
+    Object.prototype.hasOwnProperty.call(data, 'text') &&
+    data.text !== null &&
+    data.text !== undefined
+);
+
+const isAsrFinished = (data) => data?.finish === true || hasAsrText(data);
+
+const getAsrTextResult = (data) => {
+    if (!hasAsrText(data)) return null;
+    return {text: String(data.text ?? '')};
+};
+
+const getAsrTimeout = (data) => {
+    const timeout = Number(data?.timeout);
+    return Number.isFinite(timeout) && timeout >= 0 ? timeout : ASR_DEFAULT_TIMEOUT_MS;
+};
+
+const getPcm16kRequestBody = (payload) => {
+    const buffer = payload?.pcm16kBuffer;
+
+    if (buffer instanceof ArrayBuffer) {
+        return typeof Blob !== 'undefined'
+            ? new Blob([buffer], {type: ASR_AUDIO_MIME_TYPE})
+            : buffer;
+    }
+
+    if (ArrayBuffer.isView(payload?.pcm16k)) {
+        const pcm16k = payload.pcm16k;
+        const pcmBuffer = pcm16k.buffer.slice(pcm16k.byteOffset, pcm16k.byteOffset + pcm16k.byteLength);
+        return typeof Blob !== 'undefined'
+            ? new Blob([pcmBuffer], {type: ASR_AUDIO_MIME_TYPE})
+            : pcmBuffer;
+    }
+
+    if (payload?.blob) {
+        return payload.blob;
+    }
+
+    return null;
+};
+
+const translateWithFallback = (t, key, fallback, options) => {
+    const translated = t(key, options);
+    return translated && translated !== key ? translated : fallback;
+};
+
+
 // ========== 主组件 ==========
 function ChatPage({
                       chatMarkId,
@@ -316,11 +382,83 @@ function ChatPage({
     }, [getDefaultVoiceRecognitionEngine, startBrowserSpeechRecognition]);
 
     const handleRemoteVoicePcmReady = useCallback(async (payload) => {
-        // remote 是默认策略；后续上传服务器时在这里使用 payload.pcm16kBuffer / payload.blob。
-        // 返回 {text: '...'} 或字符串后，ChatBox 会自动追加到输入框。
-        console.debug('[ChatPage] voice pcm16k ready for remote recognition:', payload);
-        return null;
-    }, []);
+        const endpoint = getAsrEndpoint();
+        if (!endpoint) {
+            toast.error(translateWithFallback(
+                t,
+                'voice_input_remote_recognition_not_configured',
+                'Remote voice recognition endpoint is not configured.'
+            ));
+            return null;
+        }
+
+        const requestBody = getPcm16kRequestBody(payload);
+        if (!requestBody) {
+            toast.error(translateWithFallback(
+                t,
+                'voice_input_remote_recognition_no_audio',
+                'No valid voice recording was captured. Please try again.'
+            ));
+            return null;
+        }
+
+        try {
+            const initialData = await apiClient.post(endpoint, requestBody, {
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': ASR_AUDIO_MIME_TYPE,
+                },
+            });
+
+            const initialTextResult = getAsrTextResult(initialData);
+            if (initialTextResult) {
+                return initialTextResult;
+            }
+
+            if (isAsrFinished(initialData)) {
+                return null;
+            }
+
+            const taskId = initialData?.id;
+            if (!taskId) {
+                throw new Error('ASR task id is missing.');
+            }
+
+            const timeout = getAsrTimeout(initialData);
+            const pollingDeadline = Date.now() + timeout;
+            const pollingEndpoint = joinAsrTaskEndpoint(endpoint, taskId);
+
+            while (Date.now() < pollingDeadline) {
+                await sleep(Math.min(ASR_POLL_INTERVAL_MS, Math.max(0, pollingDeadline - Date.now())));
+
+                const pollingData = await apiClient.get(pollingEndpoint);
+                const pollingTextResult = getAsrTextResult(pollingData);
+                if (pollingTextResult) {
+                    return pollingTextResult;
+                }
+
+                if (isAsrFinished(pollingData)) {
+                    return null;
+                }
+            }
+
+            toast.info(translateWithFallback(
+                t,
+                'voice_input_remote_recognition_timeout',
+                'Voice recognition is still processing. Please try again.'
+            ));
+            return null;
+        } catch (error) {
+            console.error('Remote voice recognition failed:', error);
+            toast.error(translateWithFallback(
+                t,
+                'voice_input_remote_recognition_failed',
+                `Remote voice recognition failed: ${error?.message || t('unknown_error')}`,
+                {message: error?.message || t('unknown_error')}
+            ));
+            return null;
+        }
+    }, [t]);
 
     const handleVoicePcmReady = useCallback(async (payload) => {
         const engine = activeVoiceRecognitionEngineRef.current || getDefaultVoiceRecognitionEngine();

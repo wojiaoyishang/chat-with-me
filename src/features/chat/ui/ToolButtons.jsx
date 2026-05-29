@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useCallback, memo} from 'react';
+import React, {useState, useMemo, useCallback, useEffect, memo} from 'react';
 import {Transition} from '@headlessui/react';
 import {IoMdAdd} from 'react-icons/io';
 import {Check, ChevronDown, Mic, RotateCw, Search, Earth, Puzzle, MoreHorizontal} from 'lucide-react';
@@ -40,23 +40,70 @@ const getVoiceRecognitionEngineLabelKey = (engine) => (
         : 'voice_recognition_engine_remote'
 );
 
+const builtinIconMap = {
+    search: Search,
+    refresh: RotateCw,
+    earth: Earth,
+    puzzle: Puzzle,
+};
+
+const getBuiltinToolIconData = (tool) => {
+    if (!tool) return null;
+
+    if (tool.iconType === 'library') {
+        return builtinIconMap[tool.iconData];
+    }
+
+    if (tool.iconType === 'svg' || tool.iconType === 'image') {
+        return tool.iconData;
+    }
+
+    return null;
+};
+
+const BuiltinToolIcon = ({tool, isActive = false, t, className = ''}) => {
+    const iconData = getBuiltinToolIconData(tool);
+    const iconColorClass = isActive ? 'text-blue-600' : 'text-gray-500';
+    const iconClassName = className || `w-4.5 h-4.5 shrink-0 ${iconColorClass}`;
+
+    if (!iconData) return null;
+
+    if (tool.iconType === 'library') {
+        const Icon = iconData;
+        return <Icon className={iconClassName} />;
+    }
+
+    if (tool.iconType === 'svg') {
+        return (
+            <span
+                className={iconClassName}
+                dangerouslySetInnerHTML={{
+                    __html: typeof iconData === 'string' ? iconData : ''
+                }}
+            />
+        );
+    }
+
+    if (tool.iconType === 'image') {
+        return (
+            <img
+                src={iconData}
+                className={iconClassName}
+                width="18"
+                height="18"
+                alt={t(tool.text || tool.name || 'tool')}
+            />
+        );
+    }
+
+    return null;
+};
+
 /**
  * 单个内置工具按钮组件
  */
 const BuiltinToolButton = memo(({ tool, isActive, onToggle }) => {
-    const iconMap = {
-        search: Search,
-        refresh: RotateCw,
-        earth: Earth,
-        puzzle: Puzzle,
-    };
-
-    let iconData = null;
-    if (tool.iconType === 'library') {
-        iconData = iconMap[tool.iconData];
-    } else if (tool.iconType === 'svg' || tool.iconType === 'image') {
-        iconData = tool.iconData;
-    }
+    const iconData = getBuiltinToolIconData(tool);
 
     if (!iconData) return null;
 
@@ -75,6 +122,37 @@ const BuiltinToolButton = memo(({ tool, isActive, onToggle }) => {
 });
 
 BuiltinToolButton.displayName = 'BuiltinToolButton';
+
+const BuiltinToolMenuItem = memo(({tool, isActive, onToggle, t}) => {
+    if (!getBuiltinToolIconData(tool)) return null;
+
+    const label = t(tool.text || tool.name || 'tool');
+    const isDisabled = tool.disabled ?? false;
+
+    return (
+        <DropdownMenuItem
+            disabled={isDisabled}
+            onSelect={(event) => event.preventDefault()}
+            onClick={(event) => {
+                if (isDisabled) return;
+                onToggle(event, !isActive);
+            }}
+            className={`flex min-w-0 items-center rounded-lg px-2.5 py-2 text-sm transition-colors duration-150 ${
+                isDisabled
+                    ? 'cursor-not-allowed opacity-50'
+                    : isActive
+                        ? 'cursor-pointer bg-blue-50 text-blue-700 hover:bg-blue-100 focus:bg-blue-100'
+                        : 'cursor-pointer text-gray-700 hover:bg-gray-100 focus:bg-gray-100'
+            }`}
+        >
+            <BuiltinToolIcon tool={tool} isActive={isActive} t={t} />
+            <span className="ml-2 min-w-0 flex-1 truncate">{label}</span>
+            {isActive && <Check className="ml-2 h-4 w-4 shrink-0 text-blue-500" />}
+        </DropdownMenuItem>
+    );
+});
+
+BuiltinToolMenuItem.displayName = 'BuiltinToolMenuItem';
 
 /**
  * 工具按钮组件（最终版）
@@ -110,6 +188,7 @@ const ToolButtons = memo(({
     const highZClass = isWindowMode ? 'z-[100000]' : '';
     const desktopMenuContentClass = `bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar min-w-[12rem] w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
     const mobileMenuContentClass = `bg-white p-0 shadow-lg rounded-md overflow-hidden w-64 max-w-[calc(100vw-1rem)] ${highZClass}`;
+    const mobileBuiltinMenuContentClass = `bg-white p-0 shadow-lg rounded-md overflow-hidden w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
     const menuContentClass = isMobileMenu ? mobileMenuContentClass : desktopMenuContentClass;
     const desktopSubMenuContentClass = `bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar min-w-[14rem] w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
     const menuCollisionPadding = isMobileMenu ? 8 : 12;
@@ -148,6 +227,16 @@ const ToolButtons = memo(({
             setMobileOpenSections({});
         }
     }, [isMobileMenu, setMobileOpenSections]);
+
+    useEffect(() => {
+        if (!isMobileMenu) return;
+
+        if (toolsLoadedStatus === 1) {
+            setToolsLoadedStatus(2);
+        } else if (toolsLoadedStatus === 3) {
+            setToolsLoadedStatus(4);
+        }
+    }, [isMobileMenu, setToolsLoadedStatus, toolsLoadedStatus]);
 
     const voiceRecognitionEngineOptions = useMemo(() => [
         {
@@ -260,6 +349,75 @@ const ToolButtons = memo(({
         });
     }, [tools, toolsStatus, handleToggle]);
 
+    const mobileBuiltinToolMenuItems = useMemo(() => {
+        if (!tools || tools.length === 0) return null;
+
+        return tools.map((tool) => {
+            const isActive = toolsStatus?.builtin_tools?.[tool.name] ?? false;
+            return (
+                <BuiltinToolMenuItem
+                    key={tool.name}
+                    tool={tool}
+                    isActive={isActive}
+                    t={t}
+                    onToggle={(event, newIsActive) => handleToggle(tool.name, event, newIsActive)}
+                />
+            );
+        });
+    }, [tools, toolsStatus, handleToggle, t]);
+
+    const hasBuiltinTools = (tools?.length ?? 0) > 0;
+    const shouldShowMobileBuiltinButton = isMobileMenu && (
+        toolsLoadedStatus === 0 ||
+        toolsLoadedStatus === 1 ||
+        toolsLoadedStatus === 3 ||
+        toolsLoadedStatus === 4 ||
+        (toolsLoadedStatus === 2 && hasBuiltinTools)
+    );
+
+    const mobileBuiltinMenuContent = useMemo(() => {
+        if (!isMobileMenu) return null;
+
+        if (toolsLoadedStatus === 0 || toolsLoadedStatus === 1) {
+            return (
+                <div className="flex items-center px-2.5 py-2">
+                    <ThreeDotLoading />
+                </div>
+            );
+        }
+
+        if (toolsLoadedStatus === 3 || toolsLoadedStatus === 4) {
+            return (
+                <div className="rounded-lg px-2.5 py-2 text-sm text-gray-500">
+                    <div className="mb-1 text-red-500">{t('tool_load_failed')}</div>
+                    <button
+                        type="button"
+                        onClick={() => setToolsLoadedStatus(0)}
+                        className="inline-flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
+                        aria-label={t('reload_tools')}
+                    >
+                        <RotateCw className="w-4 h-4 mr-1" />
+                        {t('reload_tools')}
+                    </button>
+                </div>
+            );
+        }
+
+        if (toolsLoadedStatus === 2 && hasBuiltinTools) {
+            return (
+                <div className="space-y-0.5">
+                    {mobileBuiltinToolMenuItems}
+                </div>
+            );
+        }
+
+        return (
+            <div className="px-2.5 py-2 text-sm text-gray-500">
+                {t('no_tools_available')}
+            </div>
+        );
+    }, [hasBuiltinTools, isMobileMenu, mobileBuiltinToolMenuItems, setToolsLoadedStatus, t, toolsLoadedStatus]);
+
     // ==================== 宽度判断逻辑 ====================
     const MAX_INLINE_TOOLS = 4;
     const COMPACT_THRESHOLD = 350;
@@ -326,97 +484,132 @@ const ToolButtons = memo(({
             {/* 语音输入按钮：位于拓展菜单和内建工具之间 */}
             {voiceInputNode}
 
-            {/* 内置工具按钮区域 */}
-            <div className="relative">
-                {/* 加载中动画 */}
-                <Transition
-                    show={toolsLoadedStatus === 0}
-                    enter="transition-opacity duration-500"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="transition-opacity duration-500"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                    afterLeave={() => setToolsLoadedStatus(toolsLoadedStatus === 3 ? 4 : 2)}
-                >
-                    <Transition.Child as="div">
-                        <ThreeDotLoading />
-                    </Transition.Child>
-                </Transition>
-
-                {/* 加载失败提示 */}
-                <Transition
-                    show={toolsLoadedStatus === 4}
-                    enter="transition-opacity duration-500"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="transition-opacity duration-500"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                    afterLeave={() => setToolsLoadedStatus(0)}
-                >
-                    <Transition.Child as="div">
-                        <div className="flex items-center space-x-2 p-1">
-                            <span className="text-red-500 text-sm mb-0.5">
-                                {t('tool_load_failed')}
-                            </span>
-                            <button
-                                onClick={() => setToolsLoadedStatus(5)}
-                                className="text-blue-500 hover:text-blue-700 text-sm flex items-center cursor-pointer"
-                                aria-label={t('reload_tools')}
-                            >
-                                <RotateCw className="w-4 h-4 mr-1" />
-                                {t('reload_tools')}
-                            </button>
-                        </div>
-                    </Transition.Child>
-                </Transition>
-
-                {/* 加载成功后的工具按钮 */}
-                <Transition
-                    show={toolsLoadedStatus === 2}
-                    enter="transition-opacity duration-500"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="transition-opacity duration-500"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                    <Transition.Child as="div">
-                        {isCompact ? (
-                            /* 紧凑模式：更多按钮弹出菜单 */
-                            <DropdownMenu modal={false} open={builtinOpen} onOpenChange={setBuiltinOpen}>
-                                <DropdownMenuTrigger asChild>
-                                    <button
-                                        type="button"
-                                        className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
-                                        aria-label={t('more_tools') ?? '更多内置工具'}
-                                    >
-                                        <MoreHorizontal className="w-4 h-4" />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    align="start"
-                                    side={isMobileMenu ? 'top' : undefined}
-                                    sideOffset={6}
-                                    avoidCollisions
-                                    collisionPadding={menuCollisionPadding}
-                                    className={isMobileMenu ? `bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar w-64 max-w-[calc(100vw-1rem)] ${highZClass}` : desktopMenuContentClass}
-                                >
-                                    <div className="flex flex-col gap-1">
-                                        {builtinToolButtons}
-                                    </div>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        ) : (
-                            /* 正常模式：横向显示所有按钮 */
-                            <div className="flex flex-wrap gap-1">
-                                {builtinToolButtons}
+            {/* 移动端内建工具独立菜单按钮 */}
+            {shouldShowMobileBuiltinButton && (
+                <DropdownMenu modal={false} open={builtinOpen} onOpenChange={setBuiltinOpen}>
+                    <DropdownMenuTrigger asChild>
+                        <button
+                            type="button"
+                            className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                            aria-label={t('builtin_tools', {defaultValue: 'Built-in tools'})}
+                            disabled={toolsLoadedStatus === 1 || toolsLoadedStatus === 3}
+                        >
+                            <Puzzle className="w-4 h-4" />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        align="start"
+                        side="top"
+                        sideOffset={6}
+                        avoidCollisions
+                        collisionPadding={menuCollisionPadding}
+                        className={mobileBuiltinMenuContentClass}
+                    >
+                        <div className="flex max-h-[60vh] flex-col">
+                            <div className="min-h-0 overflow-y-auto p-1 pretty-scrollbar">
+                                <DropdownMenuLabel className="px-2.5 py-1.5 text-xs font-medium text-gray-400">
+                                    {t('builtin_tools', {defaultValue: 'Built-in tools'})}
+                                </DropdownMenuLabel>
+                                {mobileBuiltinMenuContent}
                             </div>
-                        )}
-                    </Transition.Child>
-                </Transition>
-            </div>
+                        </div>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
+
+            {/* 内置工具按钮区域：移动端使用独立菜单，桌面端保持原有展示逻辑 */}
+            {!isMobileMenu && (
+                <div className="relative">
+                    {/* 加载中动画 */}
+                    <Transition
+                        show={toolsLoadedStatus === 0}
+                        enter="transition-opacity duration-500"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="transition-opacity duration-500"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                        afterLeave={() => setToolsLoadedStatus(toolsLoadedStatus === 3 ? 4 : 2)}
+                    >
+                        <Transition.Child as="div">
+                            <ThreeDotLoading />
+                        </Transition.Child>
+                    </Transition>
+
+                    {/* 加载失败提示 */}
+                    <Transition
+                        show={toolsLoadedStatus === 4}
+                        enter="transition-opacity duration-500"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="transition-opacity duration-500"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                        afterLeave={() => setToolsLoadedStatus(0)}
+                    >
+                        <Transition.Child as="div">
+                            <div className="flex items-center space-x-2 p-1">
+                                <span className="text-red-500 text-sm mb-0.5">
+                                    {t('tool_load_failed')}
+                                </span>
+                                <button
+                                    onClick={() => setToolsLoadedStatus(5)}
+                                    className="text-blue-500 hover:text-blue-700 text-sm flex items-center cursor-pointer"
+                                    aria-label={t('reload_tools')}
+                                >
+                                    <RotateCw className="w-4 h-4 mr-1" />
+                                    {t('reload_tools')}
+                                </button>
+                            </div>
+                        </Transition.Child>
+                    </Transition>
+
+                    {/* 加载成功后的工具按钮 */}
+                    <Transition
+                        show={toolsLoadedStatus === 2}
+                        enter="transition-opacity duration-500"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="transition-opacity duration-500"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <Transition.Child as="div">
+                            {isCompact ? (
+                                /* 紧凑模式：更多按钮弹出菜单 */
+                                <DropdownMenu modal={false} open={builtinOpen} onOpenChange={setBuiltinOpen}>
+                                    <DropdownMenuTrigger asChild>
+                                        <button
+                                            type="button"
+                                            className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                                            aria-label={t('more_tools') ?? '更多内置工具'}
+                                        >
+                                            <MoreHorizontal className="w-4 h-4" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                        align="start"
+                                        side={undefined}
+                                        sideOffset={6}
+                                        avoidCollisions
+                                        collisionPadding={menuCollisionPadding}
+                                        className={desktopMenuContentClass}
+                                    >
+                                        <div className="flex flex-col gap-1">
+                                            {builtinToolButtons}
+                                        </div>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            ) : (
+                                /* 正常模式：横向显示所有按钮 */
+                                <div className="flex flex-wrap gap-1">
+                                    {builtinToolButtons}
+                                </div>
+                            )}
+                        </Transition.Child>
+                    </Transition>
+                </div>
+            )}
         </div>
     );
 });
