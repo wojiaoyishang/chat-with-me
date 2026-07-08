@@ -218,6 +218,39 @@ const buildRangeFromIndex = (map, startIndex, segmentLength) => {
     return range;
 };
 
+const buildSegmentRangeFromOffset = (text, map, segment, options = {}) => {
+    if (!text || !map?.length || !segment) return null;
+
+    const normalizedStart = Number(segment.normalizedStart);
+    if (!Number.isFinite(normalizedStart)) return null;
+
+    const variants = getNormalizedSegmentVariants(segment, options)
+        .sort((left, right) => right.length - left.length);
+    if (variants.length === 0) return null;
+
+    const hintStart = Math.max(0, Math.min(Math.round(normalizedStart), Math.max(0, text.length - 1)));
+    const searchSlack = 160;
+
+    for (const variant of variants) {
+        if (!variant) continue;
+
+        if (text.slice(hintStart, hintStart + variant.length) === variant) {
+            const range = buildRangeFromIndex(map, hintStart, variant.length);
+            if (range) return range;
+        }
+
+        const searchStart = Math.max(0, hintStart - searchSlack);
+        const searchEnd = Math.min(text.length, hintStart + searchSlack + variant.length);
+        const foundAt = text.slice(searchStart, searchEnd).indexOf(variant);
+        if (foundAt >= 0) {
+            const range = buildRangeFromIndex(map, searchStart + foundAt, variant.length);
+            if (range) return range;
+        }
+    }
+
+    return null;
+};
+
 const findBestOrderedMatch = (text, variants, cursor) => {
     let bestMatch = null;
 
@@ -239,6 +272,9 @@ const findBestOrderedMatch = (text, variants, cursor) => {
 
 const findOrderedSegmentRangeWithIndex = (text, map, segments, targetSegmentIndex, options = {}) => {
     if (!Array.isArray(segments) || targetSegmentIndex < 0 || targetSegmentIndex >= segments.length) return null;
+
+    const offsetRange = buildSegmentRangeFromOffset(text, map, segments[targetSegmentIndex], options);
+    if (offsetRange) return offsetRange;
 
     let cursor = 0;
     for (let index = 0; index < segments.length; index += 1) {

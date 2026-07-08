@@ -23,6 +23,8 @@ import StatusHeader from './StatusHeader.jsx';
 
 const STATUS_MARKER_REGEX = /^[ \t]*(\[DONE\]|\[FAILED\])[ \t]*$/gm;
 const BADGE_MARKER_REGEX = /^[ \t]*\[BADGE\s+NAME:([^\]\r\n]*?)\s+COLOR:(#[0-9a-fA-F]{3,8})\][ \t]*$/gm;
+const ACTION_MARKER_REGEX = /^[ \t]*\[ACTION\s+([^\]\r\n]*?)\][ \t]*$/gm;
+const ACTION_FIELD_REGEX = /([A-Z_]+):([\s\S]*?)(?=\s+[A-Z_]+:|$)/g;
 
 const getBadgeTextColor = (backgroundColor) => {
     const hex = backgroundColor.replace('#', '');
@@ -46,12 +48,28 @@ const getBadgeTextColor = (backgroundColor) => {
     return yiq >= 160 ? '#111827' : '#ffffff';
 };
 
+const parseActionFields = (rawFields) => {
+    const fields = {};
+
+    for (const match of String(rawFields || '').matchAll(ACTION_FIELD_REGEX)) {
+        const key = toSafeString(match[1]).trim();
+        const value = toSafeString(match[2]).trim();
+
+        if (key) {
+            fields[key] = value;
+        }
+    }
+
+    return fields;
+};
+
 const StatusWidget = memo(({
                                activeColor,
                                content = '',
                                doneColor,
                                Icon,
                                id,
+                               markId = null,
                                isProcessing = false,
                                title,
                                defaultExpanded = false,
@@ -65,6 +83,7 @@ const StatusWidget = memo(({
 
     const {
         badges,
+        actions,
         cleanContent,
         isDone,
         isFailed,
@@ -87,6 +106,23 @@ const StatusWidget = memo(({
             })
             .filter(Boolean);
 
+        const actions = [...safeContent.matchAll(ACTION_MARKER_REGEX)]
+            .map((match) => {
+                const fields = parseActionFields(match[1]);
+                const name = fields.NAME || '';
+                const command = fields.COMMAND || '';
+                const toolId = fields.TOOL_ID || '';
+
+                if (!name || !command) return null;
+
+                return {
+                    name,
+                    command,
+                    toolId,
+                };
+            })
+            .filter(Boolean);
+
         // [DONE] / [FAILED] 允许出现在中间任意一行。
         // 状态以最后一次出现的显式结束标记为准。
         // 只匹配“整行就是标记”的情况，避免误判正文里的普通文本。
@@ -98,6 +134,7 @@ const StatusWidget = memo(({
 
         let cleanContent = safeContent
             .replace(BADGE_MARKER_REGEX, '')
+            .replace(ACTION_MARKER_REGEX, '')
             .replace(STATUS_MARKER_REGEX, '')
             .trimEnd();
 
@@ -114,6 +151,7 @@ const StatusWidget = memo(({
 
         return {
             badges,
+            actions,
             cleanContent,
             isDone,
             isFailed,
@@ -201,12 +239,15 @@ const StatusWidget = memo(({
                 displayTitle={displayTitleWithBadges}
                 Icon={Icon}
                 expandedKey={expandedKey}
+                actions={actions}
                 canToggleExpansion
+                contextId={contextId}
                 isDone={isDone}
                 isFailed={isFailed}
                 isFinished={isFinished}
                 isProcessing={isProcessing}
                 isToolCalling={isToolCalling}
+                markId={markId}
                 progress={progress}
                 truncatedLastLine={truncatedLastLine}
             />
@@ -229,6 +270,7 @@ const StatusWidget = memo(({
         prev.doneColor === next.doneColor &&
         prev.Icon === next.Icon &&
         prev.id === next.id &&
+        prev.markId === next.markId &&
         prev.isProcessing === next.isProcessing &&
         prev.title === next.title &&
         prev.defaultExpanded === next.defaultExpanded &&

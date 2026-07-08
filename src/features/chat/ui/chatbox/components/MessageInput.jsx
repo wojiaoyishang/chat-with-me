@@ -211,7 +211,7 @@ const MessageInput = memo(({
         if (isVoiceRecognizing) {
             return (
                 <div
-                    className="flex min-h-[48px] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3"
+                    className={`flex min-h-[48px] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3`}
                     role="status"
                     aria-live="polite"
                     aria-label={voiceRecognizingLabel}
@@ -230,7 +230,7 @@ const MessageInput = memo(({
 
         return (
             <div
-                className="flex min-h-[48px] w-full items-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3"
+                className={`flex min-h-[48px] w-full items-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3`}
                 role="status"
                 aria-live="polite"
                 aria-label={voiceRecordingLabel}
@@ -265,9 +265,9 @@ const MessageInput = memo(({
             onPaste={handlePaste}
             onKeyDown={onKeyDown}
             placeholder={placeholder}
-            className="w-full min-h-[48px] max-h-[512px] p-4 pt-4 pb-2 pr-4 text-gray-800 bg-transparent border-none resize-none outline-none pretty-scrollbar"
             rows={1}
             readOnly={isReadOnly}
+            className={`w-full min-h-[48px] max-h-[512px] p-4 pt-4 pb-2 pr-4 text-gray-800 bg-transparent border-none resize-none outline-none pretty-scrollbar`}
             style={{overflowY: 'hidden', willChange: 'height'}}
         />
     );

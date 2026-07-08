@@ -6,12 +6,15 @@ import {
 } from 'react';
 import { Check, X } from 'lucide-react';
 
+import {emitEvent} from '@/context/useEventStore.jsx';
 import ProgressTimeline from './ProgressTimeline.jsx';
 import StableStepsButton from './StableStepsButton.jsx';
 import ToolCallingRightStatus from './ToolCallingRightStatus.jsx';
 
 const StatusHeader = memo(({
                                activeColor,
+                               actions = [],
+                               contextId = '',
                                currentColor,
                                displayTitle,
                                Icon,
@@ -22,6 +25,7 @@ const StatusHeader = memo(({
                                isFinished,
                                isProcessing,
                                isToolCalling,
+                               markId = null,
                                progress,
                                truncatedLastLine,
                            }) => {
@@ -78,6 +82,25 @@ const StatusHeader = memo(({
 
     const shouldShowProgress = Boolean(progress && (!isFinished || isFinishingProgressVisible || justFinishedDuringRender));
     const shouldFadeProgress = Boolean(progress && isFinished && isFinishingProgressFading && !isFailed);
+    const visibleActions = isFinished ? [] : actions;
+
+    const handleActionClick = (event, action) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (action.command === 'cancelBackgroundTool') {
+            emitEvent({
+                type: 'message',
+                target: 'ChatPage',
+                payload: {
+                    command: 'Cancel-Background-Tool',
+                    msgId: contextId,
+                    toolCallingId: action.toolId,
+                },
+                markId,
+            });
+        }
+    };
 
     return (
         <div className="flex items-center justify-between gap-2 group">
@@ -141,6 +164,18 @@ const StatusHeader = memo(({
             </div>
 
             <div className="flex items-center gap-1.5 flex-shrink-0">
+                {visibleActions.map((action) => (
+                    <button
+                        key={`${action.command}-${action.toolId || action.name}`}
+                        type="button"
+                        onClick={(event) => handleActionClick(event, action)}
+                        disabled={!markId || (action.command === 'cancelBackgroundTool' && !action.toolId)}
+                        className="shrink-0 cursor-pointer rounded-sm bg-orange-500/15 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        {action.name}
+                    </button>
+                ))}
+
                 {isToolCalling && !isFinished && (
                     <ToolCallingRightStatus
                         isDone={isDone}
@@ -158,6 +193,8 @@ const StatusHeader = memo(({
 }, (prev, next) => {
     return (
         prev.activeColor === next.activeColor &&
+        prev.actions === next.actions &&
+        prev.contextId === next.contextId &&
         prev.currentColor === next.currentColor &&
         prev.displayTitle === next.displayTitle &&
         prev.Icon === next.Icon &&
@@ -168,6 +205,7 @@ const StatusHeader = memo(({
         prev.isFinished === next.isFinished &&
         prev.isProcessing === next.isProcessing &&
         prev.isToolCalling === next.isToolCalling &&
+        prev.markId === next.markId &&
         prev.progress?.current === next.progress?.current &&
         prev.progress?.total === next.progress?.total &&
         prev.truncatedLastLine === next.truncatedLastLine

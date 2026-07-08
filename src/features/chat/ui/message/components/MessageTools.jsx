@@ -27,9 +27,35 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
     const actionContext = {msgId, markId};
     const canSpeak = !readonly && canSpeakMessage(msg);
     const isSpeakingThisMessage = canSpeak && speechState?.messageId === msgId && isActiveSpeechStatus(speechState?.status);
+    const backgroundTools = msg.backgroundTools || {};
+    const hasActiveBackgroundTools = Boolean(
+        backgroundTools.active ||
+        backgroundTools.pending > 0 ||
+        backgroundTools.running > 0 ||
+        backgroundTools.cancelling
+    );
+    const isCancellingBackgroundTools = Boolean(backgroundTools.cancelling);
 
     return (
         <div className="flex min-w-max flex-nowrap items-center gap-1">
+            {hasActiveBackgroundTools && (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <button
+                            onClick={() => handleMessageAction('cancelBackgroundTools', msg, actionContext, t)}
+                            disabled={isCancellingBackgroundTools}
+                            className="shrink-0 cursor-pointer rounded-sm bg-orange-500/15 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                            aria-label={t('cancel_background_tools')}
+                        >
+                            {isCancellingBackgroundTools ? t('cancelling_background_tools') : t('cancel_background_tools')}
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        {isCancellingBackgroundTools ? t('cancelling_background_tools') : t('cancel_background_tools')}
+                    </TooltipContent>
+                </Tooltip>
+            )}
+
             {!readonly && (
                 <Tooltip>
                     <TooltipTrigger asChild>

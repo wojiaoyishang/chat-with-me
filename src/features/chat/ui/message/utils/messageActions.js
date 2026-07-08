@@ -33,6 +33,24 @@ export const handleMessageAction = (action, msg, {markId, msgId}, t) => {
                 fromWebsocket: true
             });
             break;
+        case 'cancelBackgroundTools':
+            emitEvent({
+                type: 'message',
+                target: 'ChatPage',
+                payload: {
+                    command: 'Cancel-Background-Tools',
+                    msgId,
+                    streamId: msg.backgroundTools?.streamId
+                },
+                markId
+            }).then((payload) => {
+                if (payload?.success) {
+                    toast.success(t('background_tools_cancel_requested'));
+                } else {
+                    toast.error(t('background_tools_cancel_failed', {message: payload?.value || t('unknown_error')}));
+                }
+            });
+            break;
         case 'delete':
             emitEvent({
                 type: 'message',

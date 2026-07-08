@@ -605,6 +605,9 @@ function ChatPage({
         pauseActiveSpeech,
         resumeActiveSpeech,
         updateSpeechRate,
+        updateBrowserSpeechVoice,
+        browserSpeechVoices,
+        selectedBrowserSpeechVoiceURI,
         seekSpeechSegment,
         disableSpeechAutoFollowByUser,
     } = useChatSpeech({
@@ -1446,6 +1449,22 @@ function ChatPage({
                             reply({success: false});
                         }
                         break;
+                    case "Set-MessageBackgroundTools":
+                        if (payload.value && typeof payload.value === 'object') {
+                            const newMessages = produce(messagesRef.current, draft => {
+                                for (const [msgId, backgroundTools] of Object.entries(payload.value)) {
+                                    if (draft[msgId]) {
+                                        draft[msgId].backgroundTools = backgroundTools || {active: false};
+                                    }
+                                }
+                            });
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+                            if (payload.reply) reply({success: true});
+                        } else if (payload.reply) {
+                            reply({success: false});
+                        }
+                        break;
                     case "Add-Message-Messages":
                         if (payload.msgId && payload.value) {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
@@ -1973,6 +1992,9 @@ function ChatPage({
                             onPrevious={() => seekSpeechSegment(-1)}
                             onNext={() => seekSpeechSegment(1)}
                             onRateChange={updateSpeechRate}
+                            browserSpeechVoices={browserSpeechVoices}
+                            selectedBrowserSpeechVoiceURI={selectedBrowserSpeechVoiceURI}
+                            onBrowserSpeechVoiceChange={updateBrowserSpeechVoice}
                             t={t}
                         />
                         <ChatBox

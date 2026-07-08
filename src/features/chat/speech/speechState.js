@@ -8,6 +8,7 @@ export const createInitialSpeechState = () => ({
     currentSegmentIndex: -1,
     currentSegmentPosition: -1,
     rate: 1,
+    browserVoice: '',
     generationStatus: 'idle',
     generationPhase: null,
     generatedSegmentCount: 0,

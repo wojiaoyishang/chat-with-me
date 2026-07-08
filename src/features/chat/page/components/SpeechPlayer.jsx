@@ -1,6 +1,12 @@
 import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import {
+    Listbox,
+    ListboxButton,
+    ListboxOption,
+    ListboxOptions,
+} from '@headlessui/react';
+import {
     ChevronDown,
     Gauge,
     GripVertical,
@@ -22,10 +28,24 @@ const DESKTOP_MIN_WIDTH = 360;
 const MOBILE_MIN_WIDTH = 288;
 const DESKTOP_MAX_WIDTH = 880;
 const MOBILE_BREAKPOINT = 640;
-const PLAYER_Z_INDEX = 2147483000;
+const PLAYER_Z_INDEX = 2147483600;
 const SIDE_SNAP_DISTANCE = 28;
 const MOBILE_SIDE_SNAP_DISTANCE = 56;
 const EDGE_MARGIN = 8;
+
+const getVisualViewportMetrics = () => {
+    if (typeof window === 'undefined') {
+        return {width: 0, height: 0, offsetLeft: 0, offsetTop: 0};
+    }
+
+    const viewport = window.visualViewport;
+    return {
+        width: viewport?.width ?? window.innerWidth,
+        height: viewport?.height ?? window.innerHeight,
+        offsetLeft: viewport?.offsetLeft ?? 0,
+        offsetTop: viewport?.offsetTop ?? 0,
+    };
+};
 
 const fallbackText = (t, key, fallback) => {
     const value = t?.(key);
@@ -147,6 +167,141 @@ const getIsMobileInteraction = () => {
     return Boolean(hasCoarsePointer || hasNoHover || isSmallScreen);
 };
 
+const BrowserVoiceOptionsPortal = ({open, anchorRef, options, selectedValue, defaultLabel, t}) => {
+    const [position, setPosition] = useState(null);
+
+    useEffect(() => {
+        if (!open || !anchorRef.current) return undefined;
+
+        let rafId = null;
+
+        const updatePosition = () => {
+            const anchor = anchorRef.current;
+            if (!anchor) return;
+
+            const rect = anchor.getBoundingClientRect();
+            const viewport = getVisualViewportMetrics();
+            const viewportPadding = 12;
+            const gap = 6;
+            const preferredMaxHeight = 280;
+            const fallbackOptionHeight = 36;
+            const estimatedMenuHeight = Math.min(
+                preferredMaxHeight,
+                Math.max(44, ((options?.length || 0) + 1) * fallbackOptionHeight + 8),
+            );
+
+            const viewportLeft = viewport.offsetLeft;
+            const viewportTop = viewport.offsetTop;
+            const viewportRight = viewportLeft + viewport.width;
+            const viewportBottom = viewportTop + viewport.height;
+            const availableBelow = Math.max(0, viewportBottom - rect.bottom - gap - viewportPadding);
+            const availableAbove = Math.max(0, rect.top - viewportTop - gap - viewportPadding);
+            const shouldOpenUp = availableBelow < Math.min(estimatedMenuHeight, 120) && availableAbove > availableBelow;
+            const availableInDirection = shouldOpenUp ? availableAbove : availableBelow;
+            const fallbackMaxHeight = Math.max(0, viewport.height - viewportPadding * 2);
+            const maxHeight = Math.min(
+                preferredMaxHeight,
+                Math.max(44, availableInDirection > 0 ? availableInDirection : fallbackMaxHeight),
+            );
+            const heightForPlacement = Math.min(estimatedMenuHeight, maxHeight);
+            const maxWidth = Math.max(1, viewport.width - viewportPadding * 2);
+            const width = Math.min(Math.max(rect.width, 220), maxWidth);
+            const minLeft = viewportLeft + viewportPadding;
+            const maxLeft = Math.max(minLeft, viewportRight - width - viewportPadding);
+            const left = Math.max(minLeft, Math.min(rect.left, maxLeft));
+
+            let top = shouldOpenUp ? rect.top - gap - heightForPlacement : rect.bottom + gap;
+            if (availableInDirection < 44 && fallbackMaxHeight > 0) {
+                top = viewportTop + viewportPadding;
+            }
+            top = Math.max(
+                viewportTop + viewportPadding,
+                Math.min(top, viewportBottom - viewportPadding - heightForPlacement),
+            );
+
+            setPosition({
+                top,
+                left,
+                width,
+                maxHeight: Math.max(44, Math.min(maxHeight, viewportBottom - viewportPadding - top)),
+                placement: shouldOpenUp ? 'top' : 'bottom',
+            });
+        };
+
+        const scheduleUpdate = () => {
+            if (rafId !== null) window.cancelAnimationFrame(rafId);
+            rafId = window.requestAnimationFrame(updatePosition);
+        };
+
+        updatePosition();
+        window.addEventListener('resize', scheduleUpdate);
+        window.addEventListener('scroll', scheduleUpdate, true);
+        window.visualViewport?.addEventListener('resize', scheduleUpdate);
+        window.visualViewport?.addEventListener('scroll', scheduleUpdate);
+
+        return () => {
+            if (rafId !== null) window.cancelAnimationFrame(rafId);
+            window.removeEventListener('resize', scheduleUpdate);
+            window.removeEventListener('scroll', scheduleUpdate, true);
+            window.visualViewport?.removeEventListener('resize', scheduleUpdate);
+            window.visualViewport?.removeEventListener('scroll', scheduleUpdate);
+        };
+    }, [anchorRef, open, options]);
+
+    if (!open || !position || typeof document === 'undefined') return null;
+
+    const renderOptionLabel = (voice) => {
+        const lang = voice.lang ? ` (${voice.lang})` : '';
+        const defaultMark = voice.default ? ` · ${fallbackText(t, 'speech_voice_default', '默认')}` : '';
+        return `${voice.name}${lang}${defaultMark}`;
+    };
+
+    return createPortal(
+        <ListboxOptions
+            static
+            className="fixed overflow-auto overscroll-contain rounded-xl border border-gray-200 bg-white p-1 shadow-2xl shadow-slate-900/15 ring-1 ring-black/5 outline-none"
+            style={{
+                top: `${position.top}px`,
+                left: `${position.left}px`,
+                width: `${position.width}px`,
+                maxHeight: `${position.maxHeight}px`,
+                zIndex: PLAYER_Z_INDEX + 2,
+                transformOrigin: position.placement === 'top' ? 'bottom left' : 'top left',
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+        >
+            <ListboxOption
+                value=""
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-50 data-[selected]:font-semibold data-[selected]:text-indigo-600"
+            >
+                {({selected}) => (
+                    <>
+                        <span className="min-w-0 flex-1 truncate">{defaultLabel}</span>
+                        {(selected || selectedValue === '') && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500"/>}
+                    </>
+                )}
+            </ListboxOption>
+            {options.map((voice) => (
+                <ListboxOption
+                    key={voice.voiceURI}
+                    value={voice.voiceURI}
+                    className="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-50 data-[selected]:font-semibold data-[selected]:text-indigo-600"
+                >
+                    {({selected}) => (
+                        <>
+                            <span className="min-w-0 flex-1 truncate" title={renderOptionLabel(voice)}>
+                                {renderOptionLabel(voice)}
+                            </span>
+                            {(selected || selectedValue === voice.voiceURI) && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500"/>}
+                        </>
+                    )}
+                </ListboxOption>
+            ))}
+        </ListboxOptions>,
+        document.body,
+    );
+};
+
 const SpeechPlayer = memo(({
                                speechState,
                                message,
@@ -158,11 +313,15 @@ const SpeechPlayer = memo(({
                                onPrevious,
                                onNext,
                                onRateChange,
+                               browserSpeechVoices = [],
+                               selectedBrowserSpeechVoiceURI = '',
+                               onBrowserSpeechVoiceChange,
                                t,
                            }) => {
     const isVisible = ACTIVE_STATUSES.has(speechState?.status);
     const panelRef = useRef(null);
     const speedButtonRef = useRef(null);
+    const browserVoiceButtonRef = useRef(null);
     const speedMenuRef = useRef(null);
     const collapseTimerRef = useRef(null);
     const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
@@ -679,11 +838,27 @@ const SpeechPlayer = memo(({
     const canGoNext = currentIndex >= 0 && currentIndex < segments.length - 1;
     const title = message?.name || fallbackText(t, 'speech_player_title', '语音朗读');
     const rate = Number(speechState?.rate || 1);
+    const isBrowserSpeech = speechState?.engine === 'browser';
+    const browserVoiceOptions = Array.isArray(browserSpeechVoices) ? browserSpeechVoices : [];
+    const selectedBrowserVoiceValue = browserVoiceOptions.some(item => item.voiceURI === selectedBrowserSpeechVoiceURI)
+        ? selectedBrowserSpeechVoiceURI
+        : '';
+    const canSelectBrowserVoice = isBrowserSpeech && browserVoiceOptions.length > 0;
     const dockedSide = floatingState.dockedSide;
     const isCollapsed = Boolean(dockedSide && floatingState.collapsed);
     const autoFollowLabel = autoFollowEnabled
         ? fallbackText(t, 'speech_auto_follow_on', '已开启跟随朗读，点击关闭')
         : fallbackText(t, 'speech_auto_follow_off', '跟随当前朗读位置');
+    const browserVoiceDefaultLabel = fallbackText(t, 'speech_voice_browser_default', '浏览器默认');
+    const selectedBrowserVoiceLabel = selectedBrowserVoiceValue
+        ? (() => {
+            const selectedVoice = browserVoiceOptions.find(item => item.voiceURI === selectedBrowserVoiceValue);
+            if (!selectedVoice) return browserVoiceDefaultLabel;
+            const lang = selectedVoice.lang ? ` (${selectedVoice.lang})` : '';
+            const defaultMark = selectedVoice.default ? ` · ${fallbackText(t, 'speech_voice_default', '默认')}` : '';
+            return `${selectedVoice.name}${lang}${defaultMark}`;
+        })()
+        : browserVoiceDefaultLabel;
 
     const renderSpeedMenu = () => (
         <div
@@ -739,7 +914,7 @@ const SpeechPlayer = memo(({
 
         const collapsedLabel = `${fallbackText(t, 'expand_speech_player', '展开朗读播放器')} · ${progressText}`;
 
-        return (
+        const collapsedPlayer = (
             <div
                 ref={panelRef}
                 className="fixed pointer-events-auto touch-none"
@@ -749,17 +924,21 @@ const SpeechPlayer = memo(({
                     type="button"
                     onPointerDown={handleCollapsedDragStart}
                     onClick={handleCollapsedClick}
-                    className={`min-h-16 w-12 cursor-grab touch-none select-none bg-white/95 border border-indigo-100 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl flex flex-col items-center justify-center gap-1.5 px-1.5 py-2 text-indigo-600 hover:bg-indigo-50 active:cursor-grabbing transition-all ${tabSideClass} ring-1 ring-white/60`}
+                    className={`min-h-16 min-w-12 max-w-24 cursor-grab touch-none select-none bg-white/95 border border-indigo-100 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl flex flex-col items-center justify-center gap-1.5 px-2 py-2 text-indigo-600 hover:bg-indigo-50 active:cursor-grabbing transition-all ${tabSideClass} ring-1 ring-white/60`}
                     aria-label={collapsedLabel}
                     title={collapsedLabel}
                 >
                     <Volume2 size={18} className="shrink-0"/>
-                    <span className="max-w-full rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-indigo-600">
+                    <span className="max-w-full truncate whitespace-nowrap rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-indigo-600">
                         {progressText}
                     </span>
                 </button>
             </div>
         );
+
+        return typeof document !== 'undefined'
+            ? createPortal(collapsedPlayer, document.body)
+            : collapsedPlayer;
     }
 
     const panelStyle = {
@@ -771,7 +950,7 @@ const SpeechPlayer = memo(({
         zIndex: PLAYER_Z_INDEX,
     };
 
-    return (
+    const speechPlayerContent = (
         <>
             <div
                 ref={panelRef}
@@ -833,6 +1012,32 @@ const SpeechPlayer = memo(({
 
                             <div className="flex min-w-0 flex-wrap items-center justify-center gap-2 sm:justify-end">
                                 <div className="flex min-w-0 shrink-0 items-center justify-center gap-1.5 rounded-full bg-white/30 p-0.5">
+                                    {canSelectBrowserVoice && (
+                                        <Listbox value={selectedBrowserVoiceValue} onChange={(value) => onBrowserSpeechVoiceChange?.(value)}>
+                                            {({open}) => (
+                                                <div className="min-w-0 max-w-[190px] shrink">
+                                                    <ListboxButton
+                                                        ref={browserVoiceButtonRef}
+                                                        className="flex h-8 min-w-0 w-full cursor-pointer items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-2 text-left text-xs font-medium text-gray-700 shadow-sm outline-none transition-colors hover:bg-white focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100"
+                                                        aria-label={fallbackText(t, 'speech_voice', '朗读角色')}
+                                                        title={selectedBrowserVoiceLabel}
+                                                    >
+                                                        <Volume2 size={14} className="shrink-0 text-indigo-500"/>
+                                                        <span className="min-w-0 flex-1 truncate">{selectedBrowserVoiceLabel}</span>
+                                                        <ChevronDown size={13} className={`shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}/>
+                                                    </ListboxButton>
+                                                    <BrowserVoiceOptionsPortal
+                                                        open={open}
+                                                        anchorRef={browserVoiceButtonRef}
+                                                        options={browserVoiceOptions}
+                                                        selectedValue={selectedBrowserVoiceValue}
+                                                        defaultLabel={browserVoiceDefaultLabel}
+                                                        t={t}
+                                                    />
+                                                </div>
+                                            )}
+                                        </Listbox>
+                                    )}
                                     <div className="relative shrink-0">
                                         <button
                                             ref={speedButtonRef}
@@ -924,6 +1129,10 @@ const SpeechPlayer = memo(({
             {speedMenuPortal}
         </>
     );
+
+    return typeof document !== 'undefined'
+        ? createPortal(speechPlayerContent, document.body)
+        : speechPlayerContent;
 });
 
 SpeechPlayer.displayName = 'SpeechPlayer';

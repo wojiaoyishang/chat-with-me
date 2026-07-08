@@ -452,6 +452,7 @@ export const createMarkdownCopyContentComponent = (copyContent) => {
 
 const createComponents = ({
                               contextId = '',
+                              markId = null,
                               replacementRef,
                               depth = 0,
                               maxDepth = 10,
@@ -467,6 +468,7 @@ const createComponents = ({
                 contextId={contextId}
                 content={nestedContent}
                 replacement={getCurrentReplacement()}
+                markId={markId}
                 depth={extra.depth ?? depth + 1}
                 maxDepth={maxDepth}
                 visitedIds={extra.visitedIds ?? visitedIds}
@@ -603,6 +605,7 @@ const createComponents = ({
                         type={tokenType}
                         content=""
                         contextId={contextId}
+                        markId={markId}
                         replacement={currentReplacement}
                         renderMarkdown={(markdownContent) => {
                             return renderNestedMarkdown(markdownContent, {
@@ -631,6 +634,7 @@ const createComponents = ({
                         type="error"
                         content={`cardReplace 出现循环引用，id: ${finalId}`}
                         contextId={contextId}
+                        markId={markId}
                         replacement={currentReplacement}
                         renderMarkdown={(markdownContent) => {
                             return renderNestedMarkdown(markdownContent, {
@@ -653,6 +657,7 @@ const createComponents = ({
                         type="error"
                         content={`cardReplace 嵌套过深，id: ${finalId}`}
                         contextId={contextId}
+                        markId={markId}
                         replacement={currentReplacement}
                         renderMarkdown={(markdownContent) => {
                             return renderNestedMarkdown(markdownContent, {
@@ -684,6 +689,7 @@ const createComponents = ({
                     type={normalized.type}
                     content={normalized.content}
                     contextId={contextId}
+                    markId={markId}
                     replacement={currentReplacement}
                     renderMarkdown={(markdownContent) => {
                         return renderNestedMarkdown(markdownContent, {
@@ -699,6 +705,7 @@ const createComponents = ({
 
 function MarkdownRendererInner({
                                    contextId = '',
+                                   markId = null,
                                    content,
                                    replacement = {},
                                    depth = 0,
@@ -717,6 +724,7 @@ function MarkdownRendererInner({
     const components = useMemo(() => {
         return createComponents({
             contextId,
+            markId,
             replacementRef,
             depth,
             maxDepth,
@@ -724,6 +732,7 @@ function MarkdownRendererInner({
         });
     }, [
         contextId,
+        markId,
         replacementRef,
         depth,
         maxDepth,

@@ -31,6 +31,8 @@ import {
 
 const VOICE_WAVEFORM_BARS = 56;
 const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
+const CHATBOX_AUTO_HIDE_SETTING_KEY = 'ChatBoxBottomAutoHide';
+const CHATBOX_COLLAPSED_HEIGHT = 30;
 
 const normalizeVoiceRecognitionEngine = (value) => (
     String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote'
@@ -167,6 +169,10 @@ function ChatBox({
 
     // 按钮
     const [sendButtonStatus, setSendButtonStatus] = useState('normal');
+    const [isBottomAutoHideEnabled, setIsBottomAutoHideEnabled] = useState(() => (
+        Boolean(getLocalSetting(CHATBOX_AUTO_HIDE_SETTING_KEY, false))
+    ));
+    const [isChatBoxCollapsed, setIsChatBoxCollapsed] = useState(false);
 
     // 语音输入相关
     const [isVoiceRecording, setIsVoiceRecording] = useState(false);
@@ -224,7 +230,7 @@ function ChatBox({
         textareaRef.current?.focus();
         setIsForkMode(false);
         setIsEditMessage(false);
-    }, [onSendMessage, toolsStatus, isEditMessage, editMessageId, attachmentsMeta, currentRole]);
+    }, [onSendMessage, toolsStatus, isEditMessage, editMessageId, attachmentsMeta, currentRole, isForkMode]);
 
     const handleKeyDown = useCallback((e) => {
         if (e.key !== 'Enter') return;
@@ -568,6 +574,39 @@ function ChatBox({
             await stopVoiceRecording({emitPcm});
         }
     }, [stopVoiceRecording]);
+
+    const showCollapsedChatBox = useCallback(() => {
+        setIsChatBoxCollapsed(false);
+    }, []);
+
+    const handleAutoHideToggle = useCallback(() => {
+        if (isSmallScreen) {
+            setIsBottomAutoHideEnabled(true);
+            setIsChatBoxCollapsed(true);
+            return;
+        }
+
+        setIsBottomAutoHideEnabled((previousValue) => {
+            const nextValue = !previousValue;
+            setLocalSetting(CHATBOX_AUTO_HIDE_SETTING_KEY, nextValue);
+            if (!nextValue) {
+                setIsChatBoxCollapsed(false);
+            }
+            return nextValue;
+        });
+    }, [isSmallScreen]);
+
+    const handleChatBoxMouseEnter = useCallback(() => {
+        if (!isSmallScreen && isBottomAutoHideEnabled) {
+            setIsChatBoxCollapsed(false);
+        }
+    }, [isBottomAutoHideEnabled, isSmallScreen]);
+
+    const handleChatBoxMouseLeave = useCallback(() => {
+        if (!isSmallScreen && isBottomAutoHideEnabled) {
+            setIsChatBoxCollapsed(true);
+        }
+    }, [isBottomAutoHideEnabled, isSmallScreen]);
 
     // ========== 工具初始化函数 ==========
 
@@ -975,6 +1014,13 @@ function ChatBox({
         }
     }, [isSmallScreen]);
 
+    // 桌面端为开关制靠底隐藏；移动端只保留点击隐藏/展开的按钮制。
+    useEffect(() => {
+        if (!isSmallScreen && !isBottomAutoHideEnabled) {
+            setIsChatBoxCollapsed(false);
+        }
+    }, [isBottomAutoHideEnabled, isSmallScreen]);
+
     // 只读/卸载时停止录音并释放麦克风。
     useEffect(() => {
         if (isReadOnly) {
@@ -1078,7 +1124,7 @@ function ChatBox({
             for (let entry of entries) {
                 const newHeight = entry.contentRect.height;
                 if (onHeightChange) {
-                    onHeightChange(newHeight);
+                    onHeightChange(isChatBoxCollapsed ? CHATBOX_COLLAPSED_HEIGHT : newHeight);
                 }
             }
         });
@@ -1091,7 +1137,20 @@ function ChatBox({
                 resizeObserver.unobserve(currentRoot);
             }
         };
-    }, [onHeightChange]);
+    }, [isChatBoxCollapsed, onHeightChange]);
+
+    useEffect(() => {
+        if (!onHeightChange) return;
+        if (isChatBoxCollapsed) {
+            onHeightChange(CHATBOX_COLLAPSED_HEIGHT);
+            return;
+        }
+
+        const currentHeight = rootRef.current?.getBoundingClientRect?.().height;
+        if (currentHeight) {
+            onHeightChange(currentHeight);
+        }
+    }, [isChatBoxCollapsed, onHeightChange]);
 
     // 保存额外工具状态到本地存储
     useEffect(() => {
@@ -1175,6 +1234,17 @@ function ChatBox({
     }), [toolsLoadedStatus, extraTools, attachmentTools, tools, toolsStatus,
         setToolsStatus, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth, voiceInputNode, isSmallScreen, mobileOpenMenuSections]);
 
+    const autoHideButtonLabel = isSmallScreen
+        ? t('chatbox_hide')
+        : (
+            isBottomAutoHideEnabled
+                ? t('chatbox_disable_auto_hide')
+                : t('chatbox_enable_auto_hide')
+        );
+    const collapsedButtonLabel = t('chatbox_show');
+    const isMobileCollapsed = isSmallScreen && isChatBoxCollapsed;
+    const rootMaxHeightStyle = attachmentHeight > 0 ? `calc(100% + ${attachmentHeight}px)` : '100%';
+
     return (
         <>
             <DropFileLayer
@@ -1188,21 +1258,53 @@ function ChatBox({
                 onFolderDetected={onFolderDetected}
                 targetRef={dropTargetRef}
             />
+            {isMobileCollapsed && (
+                <div className="mx-auto w-full max-w-225 px-4 py-2 pointer-events-auto">
+                    <button
+                        type="button"
+                        aria-label={collapsedButtonLabel}
+                        title={collapsedButtonLabel}
+                        className="mx-auto flex h-8 items-center gap-2 rounded-full border border-gray-200 bg-white/95 px-4 text-xs font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 cursor-pointer"
+                        onClick={showCollapsedChatBox}
+                    >
+                        <span className="h-1.5 w-10 rounded-full bg-gray-300"/>
+                        <span>{collapsedButtonLabel}</span>
+                    </button>
+                </div>
+            )}
             <div
                 ref={rootRef}
-                className="w-full max-w-225 px-4 py-4 overflow-hidden mx-auto"
+                className="relative isolate mx-auto flex w-full max-w-225 flex-col overflow-hidden px-4 py-4 pointer-events-auto transition-transform duration-300 ease-in-out"
+                onMouseEnter={handleChatBoxMouseEnter}
+                onMouseLeave={handleChatBoxMouseLeave}
                 style={{
-                    transition: 'height 0.3s ease-in-out, max-height 0.3s ease-in-out',
-                    height: 'auto',
-                    maxHeight: attachmentHeight > 0 ? `calc(100% + ${attachmentHeight}px)` : '100%',
+                    transitionProperty: 'max-height, transform',
+                    transitionDuration: '0.3s',
+                    transitionTimingFunction: 'ease-in-out',
+                    maxHeight: rootMaxHeightStyle,
+                    display: isMobileCollapsed ? 'none' : undefined,
+                    transform: !isSmallScreen && isChatBoxCollapsed ? `translateY(calc(100% - ${CHATBOX_COLLAPSED_HEIGHT}px))` : 'translateY(0)',
                 }}
             >
+                {!isSmallScreen && isChatBoxCollapsed && (
+                    <button
+                        type="button"
+                        aria-label={collapsedButtonLabel}
+                        title={collapsedButtonLabel}
+                        className="absolute left-1/2 top-1 z-[4] flex h-6 -translate-x-1/2 items-center gap-1 rounded-full border border-gray-200 bg-white/95 px-3 text-xs font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 cursor-pointer"
+                        onMouseEnter={showCollapsedChatBox}
+                        onClick={showCollapsedChatBox}
+                    >
+                        <span className="h-1.5 w-8 rounded-full bg-gray-300"/>
+                        <span className="sm:hidden">{collapsedButtonLabel}</span>
+                    </button>
+                )}
                 <ChatBoxHeader {...chatBoxHeaderProps} />
                 <div
-                    className="border-1 bg-white rounded-2xl transition-shadow duration-200 ease-in-out hover:shadow-lg focus-within:shadow-lg pointer-events-auto">
+                    className="border-1 relative flex min-h-0 flex-col overflow-hidden rounded-2xl bg-white transition-shadow duration-200 ease-in-out hover:shadow-lg focus-within:shadow-lg pointer-events-auto">
                     {/* 文件上传进度 */}
                     <div
-                        className="overflow-hidden transition-all duration-300 ease-in-out"
+                        className="relative z-[1] shrink-0 overflow-hidden transition-all duration-300 ease-in-out"
                         style={{height: uploadFiles.length > 0 ? 'auto' : 0, minHeight: 0}}
                     >
                         <FileUploadProgress uploadFiles={uploadFiles} onRetry={onRetryUpload}
@@ -1212,7 +1314,7 @@ function ChatBox({
                     {/* 附件展示 */}
                     <div
                         ref={attachmentRef}
-                        className="overflow-hidden transition-all duration-300 ease-in-out"
+                        className="shrink-0 overflow-hidden transition-all duration-300 ease-in-out"
                         style={{
                             height: attachmentsMeta.length > 0 ? 'auto' : 0,
                             opacity: attachmentsMeta.length > 0 ? 1 : 0,
@@ -1271,9 +1373,33 @@ function ChatBox({
                     </div>
 
                     {/* 工具按钮和发送按钮 */}
-                    <div className="flex items-center justify-between px-4 pb-3">
+                    <div className="flex shrink-0 items-center justify-between px-4 pb-3">
                         <ToolButtons {...toolButtonsProps}/>
                         <div className="flex items-center space-x-2">
+
+                            {/* 靠底隐藏按钮 */}
+                            <button
+                                type="button"
+                                aria-label={autoHideButtonLabel}
+                                aria-pressed={!isSmallScreen ? isBottomAutoHideEnabled : undefined}
+                                title={autoHideButtonLabel}
+                                className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors cursor-pointer ${isBottomAutoHideEnabled && !isSmallScreen ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 focus:ring-blue-300' : 'text-gray-600 hover:bg-gray-200 focus:ring-gray-300'}`}
+                                onClick={handleAutoHideToggle}
+                            >
+                                <svg
+                                    className="icon"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M4 5h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                    <path d="M4 19h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                                    <path d="m8 11 4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </button>
 
                             {/* 放大按钮 */}
                             <button

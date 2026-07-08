@@ -36,7 +36,7 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
                 <button
                     type="button"
                     onClick={handleRemove}
-                    className="absolute top-1 right-1 z-20 w-4 h-4 bg-gray-600/30 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 focus:outline-none cursor-pointer"
+                    className="absolute top-1 right-1 z-30 w-4 h-4 bg-gray-600/30 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 focus:outline-none cursor-pointer"
                     aria-label={t('remove_attachment')}
                     style={{ transform: 'translate(50%, -50%)' }}
                 >
@@ -121,7 +121,7 @@ const ScrollArrow = memo(({ direction, onClick, t, show }) => {
         <button
             type="button"
             onClick={onClick}
-            className={`cursor-pointer absolute ${direction === 'left' ? 'left-0' : 'right-0'} top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center z-10 justify-center opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110`}
+            className={`cursor-pointer absolute ${direction === 'left' ? 'left-0' : 'right-0'} top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center z-30 justify-center opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110`}
             aria-label={ariaLabel}
         >
             <svg
@@ -166,7 +166,7 @@ const ShadowOverlay = memo(({ side, show }) => {
 
     return (
         <div
-            className={`absolute ${positionClass} top-0 bottom-0 w-8 ${gradientClass} z-10 pointer-events-none`}
+            className={`absolute ${positionClass} top-0 bottom-0 w-8 ${gradientClass} z-20 pointer-events-none`}
         />
     );
 }, (prevProps, nextProps) => {
@@ -269,7 +269,7 @@ const AttachmentShowcase = memo(({ attachmentsMeta, onRemove, msgMode }) => {
         >
             <div
                 ref={containerRef}
-                className={'px-2 py-1 ' + (msgMode ? '' : 'border-b border-gray-200')}
+                className={'relative isolate px-2 py-1 ' + (msgMode ? 'z-0' : 'z-10 border-b border-gray-200')}
             >
                 <div className="relative">
                     <ShadowOverlay side="left" show={showLeftShadow} />

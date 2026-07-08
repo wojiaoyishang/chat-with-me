@@ -179,6 +179,7 @@ const MessageItem = memo(({
     const textOnlyMessageProps = {
         msg,
         msgId,
+        markId,
         isLeaving: leavingMessages.has(msgId),
         speechState,
         onSpeechTextClick,
@@ -235,6 +236,7 @@ const MessageItem = memo(({
                                     <div className="relative z-[2]">
                                         <MarkdownRenderer
                                             contextId={msgId}
+                                            markId={markId}
                                             content={msg.content}
                                             replacement={msg?.extraInfo?.replace}
                                             msg={msg}

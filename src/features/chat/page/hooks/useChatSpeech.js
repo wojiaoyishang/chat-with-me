@@ -44,6 +44,226 @@ import {
     getSpeechTagScore,
 } from '../../speech/speechRuntime.js';
 
+const BROWSER_SPEECH_VOICE_STORAGE_KEY = 'chat-browser-speech-voice-v1';
+
+const getStoredBrowserSpeechVoiceURI = () => {
+    if (typeof window === 'undefined') return '';
+
+    try {
+        return window.localStorage.getItem(BROWSER_SPEECH_VOICE_STORAGE_KEY) || '';
+    } catch (_) {
+        return '';
+    }
+};
+
+const getBrowserSpeechVoiceId = (voice = {}) => String(voice.voiceURI || voice.name || voice.lang || '');
+
+const normalizeBrowserSpeechVoice = (voice = {}) => {
+    const voiceURI = getBrowserSpeechVoiceId(voice);
+    if (!voiceURI) return null;
+
+    return {
+        voiceURI,
+        name: voice.name || voiceURI,
+        lang: voice.lang || '',
+        default: Boolean(voice.default),
+        localService: Boolean(voice.localService),
+    };
+};
+
+const areBrowserSpeechVoicesEqual = (left = [], right = []) => {
+    if (left.length !== right.length) return false;
+    return left.every((item, index) => {
+        const other = right[index];
+        return item.voiceURI === other?.voiceURI &&
+            item.name === other?.name &&
+            item.lang === other?.lang &&
+            item.default === other?.default &&
+            item.localService === other?.localService;
+    });
+};
+
+const SPEECH_TEXT_SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'BUTTON', 'PRE', 'KBD', 'SAMP']);
+const MARKDOWN_MATCH_CHARS = new Set(['`', '*', '_', '~']);
+
+const shouldSkipSpeechTextNode = (node, root) => {
+    if (!node?.nodeValue?.trim()) return true;
+
+    let parent = node.parentElement;
+    while (parent && parent !== root) {
+        if (SPEECH_TEXT_SKIP_TAGS.has(parent.tagName)) return true;
+        if (parent.dataset?.ttsIgnore === 'true') return true;
+        if (parent.dataset?.ttsOverlay === 'true') return true;
+        if (parent.tagName === 'CODE' && parent.closest('pre')) return true;
+        const className = typeof parent.className === 'string' ? parent.className : '';
+        if (/\b(hljs|highlight|code-block|language-[^\s]+)\b/.test(className) && parent.closest('pre')) return true;
+        parent = parent.parentElement;
+    }
+
+    return false;
+};
+
+const getSpeechTextNodes = (root) => {
+    if (!root || typeof document === 'undefined') return [];
+
+    const walker = document.createTreeWalker(
+        root,
+        NodeFilter.SHOW_TEXT,
+        {
+            acceptNode: (node) => shouldSkipSpeechTextNode(node, root)
+                ? NodeFilter.FILTER_REJECT
+                : NodeFilter.FILTER_ACCEPT,
+        },
+    );
+
+    const nodes = [];
+    let node = walker.nextNode();
+    while (node) {
+        nodes.push(node);
+        node = walker.nextNode();
+    }
+    return nodes;
+};
+
+const createSpeechDomTextIndex = (root, options = {}) => {
+    const map = [];
+    let text = '';
+    let lastWasSpace = false;
+
+    getSpeechTextNodes(root).forEach((node) => {
+        const value = node.nodeValue || '';
+
+        for (let offset = 0; offset < value.length; offset += 1) {
+            const char = value[offset];
+            if (/[\u200B-\u200D\uFEFF]/.test(char)) continue;
+            if (options.ignoreMarkdownSyntax && MARKDOWN_MATCH_CHARS.has(char)) continue;
+
+            if (/\s/.test(char)) {
+                if (!lastWasSpace && text.length > 0) {
+                    text += ' ';
+                    map.push({node, offset});
+                    lastWasSpace = true;
+                }
+            } else {
+                text += char;
+                map.push({node, offset});
+                lastWasSpace = false;
+            }
+        }
+    });
+
+    return {text: normalizeSpeechMatchText(text), map};
+};
+
+const findSegmentDomOffsetMatch = (domIndex, segment) => {
+    if (!domIndex?.text || !domIndex?.map?.length || !segment) return null;
+
+    const normalizedStart = Number(segment.normalizedStart);
+    if (!Number.isFinite(normalizedStart)) return null;
+
+    const variants = getSpeechSegmentTextVariants(segment)
+        .map(value => normalizeSpeechMatchText(value))
+        .filter(Boolean)
+        .sort((left, right) => right.length - left.length);
+    if (variants.length === 0) return null;
+
+    const text = domIndex.text;
+    const hintStart = Math.max(0, Math.min(Math.round(normalizedStart), Math.max(0, text.length - 1)));
+    const searchSlack = 160;
+
+    for (const variant of variants) {
+        if (text.slice(hintStart, hintStart + variant.length) === variant) {
+            return {startIndex: hintStart, length: variant.length};
+        }
+
+        const searchStart = Math.max(0, hintStart - searchSlack);
+        const searchEnd = Math.min(text.length, hintStart + searchSlack + variant.length);
+        const foundAt = text.slice(searchStart, searchEnd).indexOf(variant);
+        if (foundAt >= 0) {
+            return {startIndex: searchStart + foundAt, length: variant.length};
+        }
+    }
+
+    return null;
+};
+
+const findElementFromDomOffsetMatch = (domIndex, segment) => {
+    const match = findSegmentDomOffsetMatch(domIndex, segment);
+    if (!match) return null;
+
+    const start = domIndex.map[match.startIndex];
+    const end = domIndex.map[Math.max(match.startIndex, match.startIndex + match.length - 1)];
+    return start?.node?.parentElement || end?.node?.parentElement || null;
+};
+
+const getSpeechBoundaryElementForMatch = (targetElement, container) => {
+    if (!targetElement || !container || targetElement === container) return null;
+
+    const messageRoot = targetElement.closest?.(
+        '[data-tts-message-id], [data-speech-message-id], [data-message-id], [data-msg-id]'
+    ) || container;
+    const isInsideMessage = (element) => element && (element === messageRoot || messageRoot.contains(element));
+
+    const listItem = targetElement.closest?.('li, [role="listitem"]');
+    if (isInsideMessage(listItem)) return listItem;
+
+    if (targetElement.matches?.(SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR)) return targetElement;
+
+    const blockElement = targetElement.closest?.(SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR);
+    if (isInsideMessage(blockElement)) return blockElement;
+
+    if (targetElement.matches?.(SPEECH_HIGHLIGHT_INLINE_SELECTOR)) return targetElement;
+
+    return targetElement;
+};
+
+const serializeSpeechError = (error) => {
+    if (!error) return null;
+
+    if (error instanceof Error) {
+        return {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        };
+    }
+
+    if (typeof error === 'object') {
+        const result = {};
+        ['type', 'error', 'message', 'code', 'name'].forEach((key) => {
+            if (error[key] !== undefined) result[key] = error[key];
+        });
+        return Object.keys(result).length > 0 ? result : String(error);
+    }
+
+    return String(error);
+};
+
+const serializeMediaError = (mediaError) => {
+    if (!mediaError) return null;
+
+    return {
+        code: mediaError.code,
+        message: mediaError.message,
+        MEDIA_ERR_ABORTED: mediaError.MEDIA_ERR_ABORTED,
+        MEDIA_ERR_NETWORK: mediaError.MEDIA_ERR_NETWORK,
+        MEDIA_ERR_DECODE: mediaError.MEDIA_ERR_DECODE,
+        MEDIA_ERR_SRC_NOT_SUPPORTED: mediaError.MEDIA_ERR_SRC_NOT_SUPPORTED,
+    };
+};
+
+const logSpeechPlayError = (phase, details = {}) => {
+    if (typeof console === 'undefined' || typeof console.error !== 'function') return;
+
+    console.error('[ChatSpeech] speech_play_error', {
+        phase,
+        ...details,
+        error: serializeSpeechError(details.error),
+        event: serializeSpeechError(details.event),
+        mediaError: serializeMediaError(details.mediaError),
+    });
+};
+
 export default function useChatSpeech({
     chatMarkId,
     selectedModel,
@@ -67,6 +287,8 @@ export default function useChatSpeech({
     const speechAutoFollowEnabledRef = useRef(false);
     const speechFollowProgrammaticScrollUntilRef = useRef(0);
     const lastSpeechFollowTargetRef = useRef(null);
+    const [browserSpeechVoices, setBrowserSpeechVoices] = useState([]);
+    const [selectedBrowserSpeechVoiceURI, setSelectedBrowserSpeechVoiceURI] = useState(getStoredBrowserSpeechVoiceURI);
     const speechSegmentElementMapRef = useRef({
         key: null,
         byId: new Map(),
@@ -319,6 +541,7 @@ export default function useChatSpeech({
         clearSpeechSegmentElementBindings(searchRoot);
 
         const candidates = collectSpeechTextCandidates(searchRoot, getSpeechSegmentTextVariants(speech.segments[0]));
+        const domTextIndex = createSpeechDomTextIndex(searchRoot);
         let cursor = 0;
         let currentMatch = null;
         let currentMatchCanReuse = false;
@@ -369,6 +592,12 @@ export default function useChatSpeech({
                     matchedElement = bestElement;
                     matchedIndex = bestIndex;
                 }
+            }
+
+            if (!matchedElement) {
+                const offsetElement = findElementFromDomOffsetMatch(domTextIndex, segment);
+                matchedElement = getSpeechBoundaryElementForMatch(offsetElement, searchRoot);
+                matchedIndex = matchedElement ? cursor : -1;
             }
 
             if (!matchedElement) return;
@@ -596,30 +825,7 @@ export default function useChatSpeech({
         return null;
     }, [escapeSelectorValue, findSpeechElementByText, getMappedSpeechSegmentElement, getSpeechMessageElement, getSpeechParentFallbackElement, queryFirstSpeechElement, resolveMountedElement]);
 
-    const getSpeechHighlightBoundaryElement = useCallback((targetElement, container) => {
-        if (!targetElement || !container || targetElement === container) return null;
-
-        const messageRoot = targetElement.closest?.(
-            '[data-tts-message-id], [data-speech-message-id], [data-message-id], [data-msg-id]'
-        ) || container;
-        const isInsideMessage = (element) => element && (element === messageRoot || messageRoot.contains(element));
-
-        // 列表项优先。Markdown 渲染器常把 li 内容拆进 span/strong/em，
-        // 如果直接给内联元素加紫框，列表/无序列表里就容易看不到完整边界。
-        const listItem = targetElement.closest?.('li, [role="listitem"]');
-        if (isInsideMessage(listItem)) return listItem;
-
-        if (targetElement.matches?.(SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR)) return targetElement;
-
-        const blockElement = targetElement.closest?.(SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR);
-        if (isInsideMessage(blockElement)) return blockElement;
-
-        // 兜底：如果只命中了 span / strong / code 等内联碎片，仍然允许加 inline 紫框，
-        // 真正的文本高亮由 SpeechOverlayHighlighter 在紫框内裁剪。
-        if (targetElement.matches?.(SPEECH_HIGHLIGHT_INLINE_SELECTOR)) return targetElement;
-
-        return targetElement;
-    }, []);
+    const getSpeechHighlightBoundaryElement = useCallback(getSpeechBoundaryElementForMatch, []);
 
     const ensureSpeechHighlightStyle = useCallback(() => {
         if (typeof document === 'undefined') return;
@@ -768,6 +974,43 @@ export default function useChatSpeech({
     useEffect(() => {
         speechAutoFollowEnabledRef.current = speechAutoFollowEnabled;
     }, [speechAutoFollowEnabled]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || !window.speechSynthesis) return undefined;
+
+        const synthesis = window.speechSynthesis;
+        let cancelled = false;
+
+        const refreshVoices = () => {
+            if (cancelled) return;
+            const nextVoices = (synthesis.getVoices?.() || [])
+                .map(normalizeBrowserSpeechVoice)
+                .filter(Boolean);
+
+            setBrowserSpeechVoices(prev => (
+                areBrowserSpeechVoicesEqual(prev, nextVoices) ? prev : nextVoices
+            ));
+        };
+
+        refreshVoices();
+        const refreshTimer = window.setTimeout(refreshVoices, 250);
+
+        if (typeof synthesis.addEventListener === 'function') {
+            synthesis.addEventListener('voiceschanged', refreshVoices);
+        } else {
+            synthesis.onvoiceschanged = refreshVoices;
+        }
+
+        return () => {
+            cancelled = true;
+            window.clearTimeout(refreshTimer);
+            if (typeof synthesis.removeEventListener === 'function') {
+                synthesis.removeEventListener('voiceschanged', refreshVoices);
+            } else if (synthesis.onvoiceschanged === refreshVoices) {
+                synthesis.onvoiceschanged = null;
+            }
+        };
+    }, []);
 
     useEffect(() => {
         // 紫色背景改成当前边界元素上的 ::before 伪层：不包裹文本、不改变排版，
@@ -1180,11 +1423,13 @@ export default function useChatSpeech({
         return true;
     }, [chatMarkId]);
 
-    const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
+const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         if (typeof window === 'undefined' || !window.speechSynthesis) return null;
 
         const voices = window.speechSynthesis.getVoices?.() || [];
-        const configuredVoice = speechConfig.voice || speechConfig.speakVoice || speechConfig.browserVoice;
+        const hasBrowserVoiceOption = Object.prototype.hasOwnProperty.call(speechConfig, 'browserVoice');
+        const configuredBrowserVoice = hasBrowserVoiceOption ? speechConfig.browserVoice : selectedBrowserSpeechVoiceURI;
+        const configuredVoice = configuredBrowserVoice || speechConfig.voice || speechConfig.speakVoice;
         const configuredLang = speechConfig.lang || speechConfig.speakLang || navigator.language || 'zh-CN';
 
         if (configuredVoice) {
@@ -1199,7 +1444,7 @@ export default function useChatSpeech({
         return voices.find(item => item.lang === configuredLang) ||
             voices.find(item => item.lang?.toLowerCase?.().startsWith(String(configuredLang).slice(0, 2).toLowerCase())) ||
             null;
-    }, []);
+    }, [selectedBrowserSpeechVoiceURI]);
 
     const speakWithBrowser = useCallback(({messageId, requestId, segments, speechConfig, startSegmentPosition = 0, restartReason = null}) => {
         if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
@@ -1238,12 +1483,28 @@ export default function useChatSpeech({
             .replace(/\s+/g, ' ')
             .trim();
 
+        const stripUnsupportedBrowserSpeechSymbols = (value) => {
+            let text = String(value || '');
+
+            try {
+                text = text.replace(new RegExp('[\\p{Extended_Pictographic}\\p{Emoji_Presentation}\\uFE0E\\uFE0F]', 'gu'), ' ');
+            } catch (_) {
+                text = text.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ' ');
+            }
+
+            return text
+                .replace(/[\u2600-\u27BF]/g, ' ')
+                .replace(/^[\s·•*#>\-–—:：,，.。;；!！?？、]+/, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        };
+
         const getBrowserSpeechCharCount = (value) => Array.from(
             normalizeBrowserSpeechText(value).replace(/[\s。！？!?.,，、；;：:\-—…“”"'`~（）()\[\]{}<>《》]/g, '')
         ).length;
 
         const buildBrowserUtteranceText = (segment = {}) => {
-            const text = normalizeBrowserSpeechText(segment.text);
+            const text = stripUnsupportedBrowserSpeechSymbols(normalizeBrowserSpeechText(segment.text));
             if (!text) return '';
             const visibleLength = getBrowserSpeechCharCount(text);
             const hasTerminalPunctuation = /[。！？!?.…]$/.test(text);
@@ -1255,6 +1516,7 @@ export default function useChatSpeech({
             }
             return text;
         };
+        const hasBrowserVoiceOption = Object.prototype.hasOwnProperty.call(speechConfig, 'browserVoice');
         const browserSpeechOptions = {
             ...speechConfig,
             engine: 'browser',
@@ -1262,6 +1524,7 @@ export default function useChatSpeech({
             lang,
             pitch,
             volume,
+            browserVoice: hasBrowserVoiceOption ? String(speechConfig.browserVoice || '') : (selectedBrowserSpeechVoiceURI || ''),
         };
 
         const emitBrowserSpeakMessage = ({startSegmentPosition = 0, restartReason = null} = {}) => {
@@ -1303,6 +1566,7 @@ export default function useChatSpeech({
             pitch,
             volume,
             lang,
+            speechConfig: browserSpeechOptions,
             playNext: null,
             playFrom: null,
             playToken: 0,
@@ -1312,6 +1576,7 @@ export default function useChatSpeech({
             settleRaf: null,
             currentUtterance: null,
             utteranceKeepAlive: [],
+            defaultVoiceFallbackSegmentIndexes: new Set(),
         };
         speechControllerRef.current = controller;
 
@@ -1325,6 +1590,7 @@ export default function useChatSpeech({
             currentSegmentIndex: -1,
             currentSegmentPosition: -1,
             rate: baseRate,
+            browserVoice: browserSpeechOptions.browserVoice,
         });
 
         const finish = () => {
@@ -1510,7 +1776,8 @@ export default function useChatSpeech({
             utterance.pitch = Math.min(Math.max(controller.pitch, 0), 2);
             utterance.volume = Number.isFinite(controller.volume) ? Math.min(Math.max(controller.volume, 0), 1) : 1;
 
-            const voice = findBrowserSpeechVoice(speechConfig);
+            const shouldUseDefaultVoice = controller.defaultVoiceFallbackSegmentIndexes?.has(segmentIndex);
+            const voice = shouldUseDefaultVoice ? null : findBrowserSpeechVoice(speechConfig);
             if (voice) utterance.voice = voice;
 
             controller.currentUtterance = utterance;
@@ -1526,6 +1793,7 @@ export default function useChatSpeech({
                     currentSegmentIndex: segmentIndex,
                     currentSegmentPosition: segmentIndex,
                     rate: normalizeSpeechRate(controller.rate),
+                    browserVoice: controller.speechConfig?.browserVoice || '',
                 }));
             };
 
@@ -1547,6 +1815,58 @@ export default function useChatSpeech({
                 clearBrowserSpeechSettleWait();
                 releaseFinishedUtteranceLater(utterance);
                 if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken || event?.error === 'interrupted' || event?.error === 'canceled') return;
+
+                if (event?.error === 'synthesis-failed' && utterance.voice && !shouldUseDefaultVoice) {
+                    if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+                        console.warn('[ChatSpeech] browser voice synthesis failed, retrying segment with default voice', {
+                            requestId,
+                            messageId,
+                            segmentId: segment?.id,
+                            segmentIndex,
+                            segmentText: segment?.text,
+                            utteranceText,
+                            voice: {
+                                name: utterance.voice.name,
+                                lang: utterance.voice.lang,
+                                voiceURI: utterance.voice.voiceURI,
+                                localService: utterance.voice.localService,
+                            },
+                            event: serializeSpeechError(event),
+                        });
+                    }
+
+                    controller.defaultVoiceFallbackSegmentIndexes.add(segmentIndex);
+                    controller.nextIndex = segmentIndex;
+                    setSpeechState(prev => ({
+                        ...prev,
+                        status: 'loading',
+                        currentSegmentId: null,
+                        currentSegmentIndex: -1,
+                        currentSegmentPosition: -1,
+                    }));
+                    schedulePlayNext(BROWSER_SPEECH_MIN_GAP_MS);
+                    return;
+                }
+
+                logSpeechPlayError('browser-utterance-error', {
+                    event,
+                    requestId,
+                    messageId,
+                    segmentId: segment?.id,
+                    segmentIndex,
+                    segmentText: segment?.text,
+                    utteranceText,
+                    voice: utterance.voice ? {
+                        name: utterance.voice.name,
+                        lang: utterance.voice.lang,
+                        voiceURI: utterance.voice.voiceURI,
+                        localService: utterance.voice.localService,
+                    } : null,
+                    lang: utterance.lang,
+                    rate: utterance.rate,
+                    pitch: utterance.pitch,
+                    volume: utterance.volume,
+                });
                 toast.error(t('speech_play_error', {message: event?.error || t('unknown_error')}));
                 cancelActiveSpeech(false);
             };
@@ -1563,6 +1883,17 @@ export default function useChatSpeech({
                 }, 160);
             } catch (error) {
                 releaseFinishedUtteranceLater(utterance);
+                logSpeechPlayError('browser-speak-exception', {
+                    error,
+                    requestId,
+                    messageId,
+                    segmentId: segment?.id,
+                    segmentIndex,
+                    segmentText: segment?.text,
+                    utteranceText,
+                    lang: utterance.lang,
+                    rate: utterance.rate,
+                });
                 toast.error(t('speech_play_error', {message: error?.message || t('unknown_error')}));
                 cancelActiveSpeech(false);
             }
@@ -1587,6 +1918,7 @@ export default function useChatSpeech({
                 currentSegmentIndex: -1,
                 currentSegmentPosition: -1,
                 rate: normalizeSpeechRate(controller.rate),
+                browserVoice: controller.speechConfig?.browserVoice || '',
             }));
 
             if (controller.speakTimer) {
@@ -1613,7 +1945,7 @@ export default function useChatSpeech({
         synthesis.resume?.();
         schedulePlayNext(BROWSER_SPEECH_MIN_GAP_MS);
         return true;
-    }, [cancelActiveSpeech, chatMarkId, findBrowserSpeechVoice, normalizeSpeechRate, resetSpeechState, selectedModel?.id, t]);
+    }, [cancelActiveSpeech, chatMarkId, findBrowserSpeechVoice, normalizeSpeechRate, resetSpeechState, selectedBrowserSpeechVoiceURI, selectedModel?.id, t]);
 
     const requestBackendSpeech = useCallback(({
                                                   messageId,
@@ -1903,6 +2235,85 @@ export default function useChatSpeech({
         normalizeSpeechRate,
         pauseActiveSpeech,
         requestBackendSpeech,
+        resolveSpeechSegmentPosition,
+        speakWithBrowser,
+    ]);
+
+    const updateBrowserSpeechVoice = useCallback((value) => {
+        const nextVoiceURI = value ? String(value) : '';
+
+        setSelectedBrowserSpeechVoiceURI(nextVoiceURI);
+        if (typeof window !== 'undefined') {
+            try {
+                if (nextVoiceURI) {
+                    window.localStorage.setItem(BROWSER_SPEECH_VOICE_STORAGE_KEY, nextVoiceURI);
+                } else {
+                    window.localStorage.removeItem(BROWSER_SPEECH_VOICE_STORAGE_KEY);
+                }
+            } catch (_) {
+                // localStorage 可能被隐私模式禁用；不影响本次朗读切换。
+            }
+        }
+
+        const currentController = speechControllerRef.current;
+        const currentSpeech = speechStateRef.current;
+        if (
+            !currentController?.requestId ||
+            currentController.engine !== 'browser' ||
+            !currentSpeech ||
+            !['loading', 'playing', 'paused'].includes(currentSpeech.status)
+        ) {
+            setSpeechState(prev => ({
+                ...prev,
+                browserVoice: nextVoiceURI,
+            }));
+            return true;
+        }
+
+        const segments = currentController.segments || currentSpeech.segments || [];
+        if (!Array.isArray(segments) || segments.length === 0) {
+            setSpeechState(prev => ({...prev, browserVoice: nextVoiceURI}));
+            return false;
+        }
+
+        let restartPosition = resolveSpeechSegmentPosition(segments, {
+            segmentPosition: currentSpeech.currentSegmentPosition,
+            segmentId: currentSpeech.currentSegmentId,
+        });
+
+        if (restartPosition < 0 && Number.isInteger(currentController.currentIndex) && currentController.currentIndex >= 0) {
+            restartPosition = Math.min(currentController.currentIndex, segments.length - 1);
+        }
+
+        if (restartPosition < 0) {
+            restartPosition = Math.min(Math.max(Number(currentController.nextIndex || 1) - 1, 0), segments.length - 1);
+        }
+
+        const wasPaused = currentController.paused || currentSpeech.status === 'paused';
+        const nextSpeechConfig = {
+            ...(currentController.speechConfig || {}),
+            browserVoice: nextVoiceURI,
+        };
+
+        cancelActiveSpeech(true);
+
+        const success = speakWithBrowser({
+            messageId: currentSpeech.messageId,
+            requestId: generateUUID(),
+            segments,
+            speechConfig: nextSpeechConfig,
+            startSegmentPosition: restartPosition,
+            restartReason: 'voice-change',
+        });
+
+        if (success && wasPaused) {
+            window.setTimeout(() => pauseActiveSpeech(), 0);
+        }
+
+        return success;
+    }, [
+        cancelActiveSpeech,
+        pauseActiveSpeech,
         resolveSpeechSegmentPosition,
         speakWithBrowser,
     ]);
@@ -2307,6 +2718,17 @@ export default function useChatSpeech({
             if (isStalePlayback()) return;
 
             cleanupCurrentAudio();
+            logSpeechPlayError('backend-audio-element-error', {
+                requestId: backendState.requestId,
+                messageId: backendState.messageId,
+                segmentId,
+                segmentIndex,
+                segmentPosition,
+                audioUrl,
+                mediaError: audio.error,
+                networkState: audio.networkState,
+                readyState: audio.readyState,
+            });
             toast.error(t('speech_play_error', {message: t('unknown_error')}));
             clearBackendSpeechAudio();
             resetSpeechState();
@@ -2318,6 +2740,18 @@ export default function useChatSpeech({
             if (isStalePlayback()) return;
 
             cleanupCurrentAudio();
+            logSpeechPlayError('backend-audio-play-rejected', {
+                error,
+                requestId: backendState.requestId,
+                messageId: backendState.messageId,
+                segmentId,
+                segmentIndex,
+                segmentPosition,
+                audioUrl,
+                mediaError: audio.error,
+                networkState: audio.networkState,
+                readyState: audio.readyState,
+            });
             toast.error(t('speech_play_error', {message: error?.message || t('unknown_error')}));
             clearBackendSpeechAudio();
             resetSpeechState();
@@ -2459,6 +2893,13 @@ export default function useChatSpeech({
             return enqueueBackendSpeechSegment(mergedPayload, audioUrl, true);
         } catch (error) {
             backendState.chunks.delete(resolvedSegmentId);
+            logSpeechPlayError('backend-audio-blob-finalize-error', {
+                error,
+                requestId: backendState.requestId,
+                messageId: backendState.messageId,
+                segmentId: resolvedSegmentId,
+                payload: mergedPayload,
+            });
             toast.error(t('speech_play_error', {message: error?.message || t('unknown_error')}));
             return false;
         }
@@ -2706,6 +3147,12 @@ export default function useChatSpeech({
                 reply?.({success: true});
                 break;
             case 'Speech-Error':
+                logSpeechPlayError('backend-speech-error-event', {
+                    requestId: payload.requestId || payload.request_id || speechControllerRef.current?.requestId,
+                    messageId: payload.messageId || payload.message_id || payload.msgId || payload.msg_id || speechStateRef.current?.messageId,
+                    payload,
+                    error: payload.value || payload.message || payload.error,
+                });
                 toast.error(t('speech_play_error', {message: payload.value || payload.message || t('unknown_error')}));
                 cancelActiveSpeech(false);
                 reply?.({success: true});
@@ -2744,6 +3191,9 @@ export default function useChatSpeech({
         pauseActiveSpeech,
         resumeActiveSpeech,
         updateSpeechRate,
+        updateBrowserSpeechVoice,
+        browserSpeechVoices,
+        selectedBrowserSpeechVoiceURI,
         seekSpeechSegment,
         disableSpeechAutoFollowByUser,
     };
