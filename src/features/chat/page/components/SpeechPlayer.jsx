@@ -19,10 +19,10 @@ import {
     Volume2,
     ChevronsRight
 } from 'lucide-react';
+import {getLocalSetting, setLocalSetting, TTS_LOCAL_SETTING_KEYS} from '@/lib/tools.jsx';
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 const ACTIVE_STATUSES = new Set(['loading', 'playing', 'paused']);
-const STORAGE_KEY = 'chat-speech-player-position-v3';
 const DESKTOP_DEFAULT_WIDTH_RATIO = 0.52;
 const DESKTOP_MIN_WIDTH = 360;
 const MOBILE_MIN_WIDTH = 288;
@@ -55,6 +55,51 @@ const fallbackText = (t, key, fallback) => {
 const clamp = (value, min, max) => {
     if (max < min) return min;
     return Math.min(Math.max(value, min), max);
+};
+
+const normalizeProgress = (value) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 0;
+    return clamp(parsed > 1 ? parsed / 100 : parsed, 0, 1);
+};
+
+const SpeechProgressRail = ({speechState, className = ''}) => {
+    const totalSegments = Number(speechState?.totalSegments || speechState?.segments?.length || 0);
+    const playbackPosition = Number(speechState?.playbackSegmentPosition ?? speechState?.currentSegmentPosition);
+    const bufferedPosition = Number(speechState?.bufferedSegmentPosition);
+
+    const playbackFallback = totalSegments > 0 && Number.isInteger(playbackPosition) && playbackPosition >= 0
+        ? (playbackPosition + 0.08) / totalSegments
+        : 0;
+    const bufferFallback = totalSegments > 0 && Number.isInteger(bufferedPosition) && bufferedPosition >= 0
+        ? (bufferedPosition + 1) / totalSegments
+        : playbackFallback;
+    const playbackProgress = Math.max(normalizeProgress(speechState?.playbackPercent), playbackFallback);
+    const bufferProgress = Math.max(
+        playbackProgress,
+        normalizeProgress(speechState?.bufferPercent),
+        bufferFallback,
+    );
+
+    return (
+        <div
+            className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[3px] overflow-hidden bg-slate-200/55 ${className}`}
+            role="progressbar"
+            aria-label="Speech playback and buffer progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(playbackProgress * 100)}
+        >
+            <div
+                className="absolute inset-y-0 left-0 bg-indigo-300/70 transition-[width] duration-300 ease-out"
+                style={{width: `${bufferProgress * 100}%`}}
+            />
+            <div
+                className="absolute inset-y-0 left-0 bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.95)] transition-[width] duration-200 ease-out"
+                style={{width: `${playbackProgress * 100}%`}}
+            />
+        </div>
+    );
 };
 
 const getViewportSize = () => ({
@@ -145,13 +190,9 @@ const getInitialPosition = () => {
         return {x: 24, y: 120, width: 720, dockedSide: null, collapsed: false};
     }
 
-    try {
-        const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
-        if (saved && typeof saved === 'object') {
-            return normalizePanelState(saved);
-        }
-    } catch (_) {
-        // ignore invalid cache
+    const saved = getLocalSetting(TTS_LOCAL_SETTING_KEYS.playerPosition, null);
+    if (saved && typeof saved === 'object') {
+        return normalizePanelState(saved);
     }
 
     return normalizePanelState({});
@@ -351,7 +392,7 @@ const SpeechPlayer = memo(({
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(floatingState));
+        setLocalSetting(TTS_LOCAL_SETTING_KEYS.playerPosition, floatingState);
     }, [floatingState]);
 
     const keepPanelInViewport = useCallback(() => {
@@ -920,19 +961,22 @@ const SpeechPlayer = memo(({
                 className="fixed pointer-events-auto touch-none"
                 style={tabStyle}
             >
-                <button
-                    type="button"
-                    onPointerDown={handleCollapsedDragStart}
-                    onClick={handleCollapsedClick}
-                    className={`min-h-16 min-w-12 max-w-24 cursor-grab touch-none select-none bg-white/95 border border-indigo-100 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl flex flex-col items-center justify-center gap-1.5 px-2 py-2 text-indigo-600 hover:bg-indigo-50 active:cursor-grabbing transition-all ${tabSideClass} ring-1 ring-white/60`}
-                    aria-label={collapsedLabel}
-                    title={collapsedLabel}
-                >
-                    <Volume2 size={18} className="shrink-0"/>
-                    <span className="max-w-full truncate whitespace-nowrap rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-indigo-600">
-                        {progressText}
-                    </span>
-                </button>
+                <div className={`relative overflow-hidden border border-indigo-100 bg-white/95 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl ring-1 ring-white/60 ${tabSideClass}`}>
+                    <button
+                        type="button"
+                        onPointerDown={handleCollapsedDragStart}
+                        onClick={handleCollapsedClick}
+                        className="flex min-h-16 min-w-12 max-w-24 cursor-grab touch-none select-none flex-col items-center justify-center gap-1.5 bg-transparent px-2 py-2 text-indigo-600 transition-all hover:bg-indigo-50 active:cursor-grabbing"
+                        aria-label={collapsedLabel}
+                        title={collapsedLabel}
+                    >
+                        <Volume2 size={18} className="shrink-0"/>
+                        <span className="max-w-full truncate whitespace-nowrap rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-indigo-600">
+                            {progressText}
+                        </span>
+                    </button>
+                    <SpeechProgressRail speechState={speechState}/>
+                </div>
             </div>
         );
 
@@ -959,7 +1003,7 @@ const SpeechPlayer = memo(({
                 onMouseEnter={clearCollapseTimer}
                 onMouseLeave={() => !isMobileInteraction && dockedSide && scheduleDockCollapse()}
             >
-                <div className="relative overflow-visible rounded-3xl border border-white/70 bg-white/90 shadow-[0_22px_70px_rgba(15,23,42,0.20)] backdrop-blur-2xl ring-1 ring-indigo-100/70">
+                <div className="relative overflow-visible rounded-3xl">
                     <button
                         type="button"
                         onPointerDown={(event) => handleResizeStart(event, 'left')}
@@ -974,155 +1018,158 @@ const SpeechPlayer = memo(({
                         aria-label={fallbackText(t, 'resize_speech_player_right', '向右调整播放器宽度')}
                         title={fallbackText(t, 'resize_speech_player_right', '向右调整播放器宽度')}
                     />
-                    <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-50/80 via-white/40 to-violet-50/70"/>
-                    <div className="relative px-3 py-3 sm:px-3.5">
-                        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3">
-                            <div className="flex min-w-0 items-center gap-2.5 sm:flex-1 sm:gap-3">
-                                <button
-                                    type="button"
-                                    onPointerDown={handleDragStart}
-                                    className="flex h-10 w-8 flex-shrink-0 touch-none items-center justify-center rounded-2xl text-gray-400 transition-colors hover:bg-white/80 hover:text-gray-700 cursor-grab active:cursor-grabbing"
-                                    aria-label={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
-                                    title={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
-                                >
-                                    <GripVertical size={17}/>
-                                </button>
+                    <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-[0_22px_70px_rgba(15,23,42,0.20)] backdrop-blur-2xl ring-1 ring-indigo-100/70">
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-50/80 via-white/40 to-violet-50/70"/>
+                        <div className="relative px-3 py-3 sm:px-3.5">
+                            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3">
+                                <div className="flex min-w-0 items-center gap-2.5 sm:flex-1 sm:gap-3">
+                                    <button
+                                        type="button"
+                                        onPointerDown={handleDragStart}
+                                        className="flex h-10 w-8 flex-shrink-0 touch-none items-center justify-center rounded-2xl text-gray-400 transition-colors hover:bg-white/80 hover:text-gray-700 cursor-grab active:cursor-grabbing"
+                                        aria-label={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
+                                        title={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
+                                    >
+                                        <GripVertical size={17}/>
+                                    </button>
 
-                                <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25">
-                                    <Volume2 size={18}/>
-                                    {speechState.status === 'playing' && (
-                                        <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white"/>
-                                    )}
+                                    <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25">
+                                        <Volume2 size={18}/>
+                                        {speechState.status === 'playing' && (
+                                            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white"/>
+                                        )}
+                                    </div>
+
+                                    <div className="min-w-0 flex-1 basis-0">
+                                        <div className="flex min-w-0 items-center gap-2">
+                                            <span className="truncate text-sm font-semibold text-gray-900">
+                                                {title}
+                                            </span>
+                                            <span className="flex-shrink-0 rounded-full border border-indigo-100 bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-600">
+                                                {isLoading ? fallbackText(t, 'speech_loading', '准备中') : progressText}
+                                            </span>
+                                        </div>
+                                        <div className="mt-1 truncate text-xs text-gray-500">
+                                            {currentSegment?.text || fallbackText(t, 'speech_waiting_segment', '正在准备朗读内容...')}
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div className="min-w-0 flex-1 basis-0">
-                                    <div className="flex min-w-0 items-center gap-2">
-                                        <span className="truncate text-sm font-semibold text-gray-900">
-                                            {title}
-                                        </span>
-                                        <span className="flex-shrink-0 rounded-full border border-indigo-100 bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-600">
-                                            {isLoading ? fallbackText(t, 'speech_loading', '准备中') : progressText}
-                                        </span>
-                                    </div>
-                                    <div className="mt-1 truncate text-xs text-gray-500">
-                                        {currentSegment?.text || fallbackText(t, 'speech_waiting_segment', '正在准备朗读内容...')}
-                                    </div>
-                                </div>
-                            </div>
+                                <div className="flex min-w-0 flex-wrap items-center justify-center gap-2 sm:justify-end">
+                                    <div className="flex min-w-0 shrink-0 items-center justify-center gap-1.5 rounded-full bg-white/30 p-0.5">
+                                        {canSelectBrowserVoice && (
+                                            <Listbox value={selectedBrowserVoiceValue} onChange={(value) => onBrowserSpeechVoiceChange?.(value)}>
+                                                {({open}) => (
+                                                    <div className="min-w-0 max-w-[190px] shrink">
+                                                        <ListboxButton
+                                                            ref={browserVoiceButtonRef}
+                                                            className="flex h-8 min-w-0 w-full cursor-pointer items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-2 text-left text-xs font-medium text-gray-700 shadow-sm outline-none transition-colors hover:bg-white focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100"
+                                                            aria-label={fallbackText(t, 'speech_voice', '朗读角色')}
+                                                            title={selectedBrowserVoiceLabel}
+                                                        >
+                                                            <Volume2 size={14} className="shrink-0 text-indigo-500"/>
+                                                            <span className="min-w-0 flex-1 truncate">{selectedBrowserVoiceLabel}</span>
+                                                            <ChevronDown size={13} className={`shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}/>
+                                                        </ListboxButton>
+                                                        <BrowserVoiceOptionsPortal
+                                                            open={open}
+                                                            anchorRef={browserVoiceButtonRef}
+                                                            options={browserVoiceOptions}
+                                                            selectedValue={selectedBrowserVoiceValue}
+                                                            defaultLabel={browserVoiceDefaultLabel}
+                                                            t={t}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </Listbox>
+                                        )}
+                                        <div className="relative shrink-0">
+                                            <button
+                                                ref={speedButtonRef}
+                                                type="button"
+                                                onClick={toggleSpeedMenu}
+                                                className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-2.5 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-white"
+                                                aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${rate}x`}
+                                                aria-haspopup="menu"
+                                                aria-expanded={speedMenuOpen}
+                                            >
+                                                <Gauge size={14} className="text-indigo-500"/>
+                                                <span>{rate}x</span>
+                                                <ChevronDown size={13} className={`text-gray-400 transition-transform ${speedMenuOpen ? 'rotate-180' : ''}`}/>
+                                            </button>
+                                        </div>
 
-                            <div className="flex min-w-0 flex-wrap items-center justify-center gap-2 sm:justify-end">
-                                <div className="flex min-w-0 shrink-0 items-center justify-center gap-1.5 rounded-full bg-white/30 p-0.5">
-                                    {canSelectBrowserVoice && (
-                                        <Listbox value={selectedBrowserVoiceValue} onChange={(value) => onBrowserSpeechVoiceChange?.(value)}>
-                                            {({open}) => (
-                                                <div className="min-w-0 max-w-[190px] shrink">
-                                                    <ListboxButton
-                                                        ref={browserVoiceButtonRef}
-                                                        className="flex h-8 min-w-0 w-full cursor-pointer items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-2 text-left text-xs font-medium text-gray-700 shadow-sm outline-none transition-colors hover:bg-white focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100"
-                                                        aria-label={fallbackText(t, 'speech_voice', '朗读角色')}
-                                                        title={selectedBrowserVoiceLabel}
-                                                    >
-                                                        <Volume2 size={14} className="shrink-0 text-indigo-500"/>
-                                                        <span className="min-w-0 flex-1 truncate">{selectedBrowserVoiceLabel}</span>
-                                                        <ChevronDown size={13} className={`shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}/>
-                                                    </ListboxButton>
-                                                    <BrowserVoiceOptionsPortal
-                                                        open={open}
-                                                        anchorRef={browserVoiceButtonRef}
-                                                        options={browserVoiceOptions}
-                                                        selectedValue={selectedBrowserVoiceValue}
-                                                        defaultLabel={browserVoiceDefaultLabel}
-                                                        t={t}
-                                                    />
-                                                </div>
-                                            )}
-                                        </Listbox>
-                                    )}
-                                    <div className="relative shrink-0">
                                         <button
-                                            ref={speedButtonRef}
                                             type="button"
-                                            onClick={toggleSpeedMenu}
-                                            className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-2.5 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-white"
-                                            aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${rate}x`}
-                                            aria-haspopup="menu"
-                                            aria-expanded={speedMenuOpen}
+                                            onClick={() => onAutoFollowToggle?.(!autoFollowEnabled)}
+                                            className={`flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-2 text-xs font-medium shadow-sm transition-colors ${autoFollowEnabled
+                                                ? 'border-indigo-200 bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'
+                                                : 'border-gray-200/80 bg-white/80 text-gray-600 hover:bg-white hover:text-indigo-600'
+                                            }`}
+                                            aria-label={autoFollowLabel}
+                                            title={autoFollowLabel}
+                                            aria-pressed={autoFollowEnabled}
                                         >
-                                            <Gauge size={14} className="text-indigo-500"/>
-                                            <span>{rate}x</span>
-                                            <ChevronDown size={13} className={`text-gray-400 transition-transform ${speedMenuOpen ? 'rotate-180' : ''}`}/>
+                                            <Target size={14} className={autoFollowEnabled ? 'text-indigo-500' : 'text-gray-500'}/>
+                                            <span>{fallbackText(t, 'speech_auto_follow_short', '跟随')}</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={onPrevious}
+                                            disabled={!canGoPrevious}
+                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
+                                            aria-label={fallbackText(t, 'previous_speech_segment', '上一句')}
+                                            title={fallbackText(t, 'previous_speech_segment', '上一句')}
+                                        >
+                                            <SkipBack size={14}/>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={onNext}
+                                            disabled={!canGoNext}
+                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
+                                            aria-label={fallbackText(t, 'next_speech_segment', '下一句')}
+                                            title={fallbackText(t, 'next_speech_segment', '下一句')}
+                                        >
+                                            <SkipForward size={14}/>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={dockToRight}
+                                            className="flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/70 bg-white/70 px-2 text-xs text-gray-500 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
+                                            aria-label={fallbackText(t, 'dock_speech_player', '收起到右侧')}
+                                            title={fallbackText(t, 'dock_speech_player', '收起到右侧')}
+                                        >
+                                            <ChevronsRight size={14} strokeWidth={1.5}/>
                                         </button>
                                     </div>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => onAutoFollowToggle?.(!autoFollowEnabled)}
-                                        className={`flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-2 text-xs font-medium shadow-sm transition-colors ${autoFollowEnabled
-                                            ? 'border-indigo-200 bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'
-                                            : 'border-gray-200/80 bg-white/80 text-gray-600 hover:bg-white hover:text-indigo-600'
-                                        }`}
-                                        aria-label={autoFollowLabel}
-                                        title={autoFollowLabel}
-                                        aria-pressed={autoFollowEnabled}
-                                    >
-                                        <Target size={14} className={autoFollowEnabled ? 'text-indigo-500' : 'text-gray-500'}/>
-                                        <span>{fallbackText(t, 'speech_auto_follow_short', '跟随')}</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={onPrevious}
-                                        disabled={!canGoPrevious}
-                                        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
-                                        aria-label={fallbackText(t, 'previous_speech_segment', '上一句')}
-                                        title={fallbackText(t, 'previous_speech_segment', '上一句')}
-                                    >
-                                        <SkipBack size={14}/>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={onNext}
-                                        disabled={!canGoNext}
-                                        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
-                                        aria-label={fallbackText(t, 'next_speech_segment', '下一句')}
-                                        title={fallbackText(t, 'next_speech_segment', '下一句')}
-                                    >
-                                        <SkipForward size={14}/>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={dockToRight}
-                                        className="flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/70 bg-white/70 px-2 text-xs text-gray-500 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
-                                        aria-label={fallbackText(t, 'dock_speech_player', '收起到右侧')}
-                                        title={fallbackText(t, 'dock_speech_player', '收起到右侧')}
-                                    >
-                                        <ChevronsRight size={14} strokeWidth={1.5}/>
-                                    </button>
-                                </div>
-
-                                <div className="flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-white/30 p-0.5">
-                                    <button
-                                        type="button"
-                                        onClick={isPaused ? onResume : onPause}
-                                        disabled={isLoading}
-                                        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-40"
-                                        aria-label={isPaused ? fallbackText(t, 'resume_speech', '继续') : fallbackText(t, 'pause_speech', '暂停')}
-                                    >
-                                        {isPaused ? <Play size={15}/> : <Pause size={15}/>}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={onStop}
-                                        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-red-50 hover:text-red-600"
-                                        aria-label={fallbackText(t, 'stop_speech', '停止')}
-                                    >
-                                        <Square size={14}/>
-                                    </button>
+                                    <div className="flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-white/30 p-0.5">
+                                        <button
+                                            type="button"
+                                            onClick={isPaused ? onResume : onPause}
+                                            disabled={isLoading}
+                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-40"
+                                            aria-label={isPaused ? fallbackText(t, 'resume_speech', '继续') : fallbackText(t, 'pause_speech', '暂停')}
+                                        >
+                                            {isPaused ? <Play size={15}/> : <Pause size={15}/>}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={onStop}
+                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-red-50 hover:text-red-600"
+                                            aria-label={fallbackText(t, 'stop_speech', '停止')}
+                                        >
+                                            <Square size={14}/>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        <SpeechProgressRail speechState={speechState}/>
                     </div>
                 </div>
             </div>

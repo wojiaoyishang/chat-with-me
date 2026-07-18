@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {toast} from 'sonner';
-import {generateUUID} from '@/lib/tools.jsx';
+import {generateUUID, getLocalSetting, setLocalSetting, TTS_LOCAL_SETTING_KEYS} from '@/lib/tools.jsx';
 import {emitEvent} from '@/context/useEventStore.jsx';
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
@@ -44,16 +44,8 @@ import {
     getSpeechTagScore,
 } from '../../speech/speechRuntime.js';
 
-const BROWSER_SPEECH_VOICE_STORAGE_KEY = 'chat-browser-speech-voice-v1';
-
 const getStoredBrowserSpeechVoiceURI = () => {
-    if (typeof window === 'undefined') return '';
-
-    try {
-        return window.localStorage.getItem(BROWSER_SPEECH_VOICE_STORAGE_KEY) || '';
-    } catch (_) {
-        return '';
-    }
+    return getLocalSetting(TTS_LOCAL_SETTING_KEYS.browserVoice, '') || '';
 };
 
 const getBrowserSpeechVoiceId = (voice = {}) => String(voice.voiceURI || voice.name || voice.lang || '');
@@ -264,6 +256,44 @@ const logSpeechPlayError = (phase, details = {}) => {
     });
 };
 
+const logSpeechCache = (event, details = {}) => {
+    if (typeof console === 'undefined' || typeof console.info !== 'function') return;
+    console.info('[ChatSpeech][TTS Cache]', event, details);
+};
+
+const createSpeechSegmentCacheState = () => ({
+    sessionId: null,
+    messageId: null,
+    engine: null,
+    rate: 1,
+    entries: new Map(),
+    inFlightPositions: new Set(),
+    requestPositionMap: new Map(),
+    activeRequestId: null,
+});
+
+const MESSAGE_SPEECH_CACHE_COMPONENT_KEY = 'chat-speech:cache:v1';
+
+const createMessageSpeechCacheStore = (messageId) => ({
+    messageId,
+    variants: new Map(),
+});
+
+const createMessageSpeechCacheVariant = ({key, engine, rate}) => ({
+    key,
+    engine,
+    rate,
+    entries: new Map(),
+    objectUrls: new Set(),
+    createdAt: Date.now(),
+    lastUsedAt: Date.now(),
+});
+
+const getSortedSpeechCachePositions = (cache) => Array.from(cache?.entries?.keys?.() || [])
+    .map(Number)
+    .filter(value => Number.isInteger(value) && value >= 0)
+    .sort((left, right) => left - right);
+
 export default function useChatSpeech({
     chatMarkId,
     selectedModel,
@@ -283,6 +313,9 @@ export default function useChatSpeech({
     const speechStateRef = useRef(speechState);
     const speechControllerRef = useRef(createInitialSpeechControllerState());
     const backendSpeechAudioRef = useRef(createBackendSpeechAudioState());
+    const speechSegmentCacheRef = useRef(createSpeechSegmentCacheState());
+    const messageSpeechCacheRef = useRef(new Map());
+    const playNextBackendSpeechSegmentRef = useRef(null);
     const [speechAutoFollowEnabled, setSpeechAutoFollowEnabled] = useState(false);
     const speechAutoFollowEnabledRef = useRef(false);
     const speechFollowProgrammaticScrollUntilRef = useRef(0);
@@ -1084,6 +1117,149 @@ export default function useChatSpeech({
         return Math.min(Math.max(parsedDone / parsedTotal, 0), 1);
     }, []);
 
+    const buildMessageSpeechCacheKey = useCallback(({engine, modelId = '', rate, segments = [], speechConfig = {}}) => JSON.stringify({
+        engine,
+        modelId,
+        rate: normalizeSpeechRate(rate),
+        voice: speechConfig.browserVoice || speechConfig.voice || speechConfig.speakVoice || '',
+        lang: speechConfig.lang || speechConfig.speakLang || '',
+        pitch: Number(speechConfig.pitch ?? speechConfig.speakPitch ?? 1) || 1,
+        volume: Number(speechConfig.volume ?? speechConfig.speakVolume ?? 1),
+        segments: segments.map(segment => [segment?.id || '', segment?.text || '']),
+    }), [normalizeSpeechRate]);
+
+    const getMessageSpeechCacheStore = useCallback((messageId) => {
+        const message = messagesRef.current?.[messageId];
+
+        if (
+            message
+            && typeof message.getComponent === 'function'
+            && typeof message.registerComponent === 'function'
+        ) {
+            let store = message.getComponent(MESSAGE_SPEECH_CACHE_COMPONENT_KEY);
+            if (!store) {
+                store = createMessageSpeechCacheStore(messageId);
+                message.registerComponent(MESSAGE_SPEECH_CACHE_COMPONENT_KEY, store);
+            }
+            return store;
+        }
+
+        let store = messageSpeechCacheRef.current.get(messageId);
+        if (!store) {
+            store = createMessageSpeechCacheStore(messageId);
+            messageSpeechCacheRef.current.set(messageId, store);
+        }
+        return store;
+    }, [messagesRef]);
+
+    const getMessageSpeechCacheVariant = useCallback(({messageId, cacheKey, engine, rate}) => {
+        const store = getMessageSpeechCacheStore(messageId);
+        let variant = store.variants.get(cacheKey);
+        const cacheHit = Boolean(variant);
+
+        if (!variant) {
+            variant = createMessageSpeechCacheVariant({key: cacheKey, engine, rate});
+            store.variants.set(cacheKey, variant);
+        }
+        variant.lastUsedAt = Date.now();
+
+        // 调速或切换音色会产生新的变体；只保留最近的少量变体，避免 Blob URL 长期累积。
+        if (store.variants.size > 4) {
+            const staleVariants = Array.from(store.variants.values())
+                .filter(item => item !== variant)
+                .sort((left, right) => left.lastUsedAt - right.lastUsedAt);
+            const stale = staleVariants[0];
+            if (stale) {
+                stale.objectUrls.forEach((url) => {
+                    try {
+                        URL.revokeObjectURL(url);
+                    } catch {
+                        // 忽略重复释放。
+                    }
+                });
+                store.variants.delete(stale.key);
+            }
+        }
+
+        return {store, variant, cacheHit};
+    }, [getMessageSpeechCacheStore]);
+
+    const releaseMessageSpeechCaches = useCallback(() => {
+        const mountedStores = new Map();
+
+        Object.entries(messagesRef.current || {}).forEach(([messageId, message]) => {
+            const store = message?.getComponent?.(MESSAGE_SPEECH_CACHE_COMPONENT_KEY);
+            if (store) mountedStores.set(messageId, {message, store});
+        });
+
+        const stores = new Set([
+            ...messageSpeechCacheRef.current.values(),
+            ...Array.from(mountedStores.values(), item => item.store),
+        ]);
+
+        stores.forEach((store) => {
+            store.variants.forEach((variant) => {
+                variant.objectUrls.forEach((url) => {
+                    try {
+                        URL.revokeObjectURL(url);
+                    } catch {
+                        // 忽略重复释放。
+                    }
+                });
+                variant.objectUrls.clear();
+                variant.entries.clear();
+            });
+            store.variants.clear();
+        });
+
+        mountedStores.forEach(({message, store}) => {
+            if (
+                typeof message.unregisterComponent === 'function'
+                && message.getComponent?.(MESSAGE_SPEECH_CACHE_COMPONENT_KEY) === store
+            ) {
+                message.unregisterComponent(MESSAGE_SPEECH_CACHE_COMPONENT_KEY);
+            }
+        });
+        messageSpeechCacheRef.current.clear();
+    }, [messagesRef]);
+
+
+    const resetSpeechSegmentCache = useCallback((reason = 'reset') => {
+        const previous = speechSegmentCacheRef.current;
+        logSpeechCache('session-cache-reset', {
+            reason,
+            sessionId: previous?.sessionId,
+            messageId: previous?.messageId,
+            engine: previous?.engine,
+            cachedPositions: getSortedSpeechCachePositions(previous),
+            messageCacheRetained: Boolean(previous?.messageCacheVariant),
+        });
+        speechSegmentCacheRef.current = createSpeechSegmentCacheState();
+    }, []);
+
+    const updateCacheProgressState = useCallback((options = {}) => {
+        const cache = speechSegmentCacheRef.current;
+        const positions = getSortedSpeechCachePositions(cache);
+        const bufferedPosition = positions.length > 0 ? positions[positions.length - 1] : -1;
+        const total = Number(options.total ?? speechControllerRef.current?.segments?.length ?? speechStateRef.current?.totalSegments ?? 0);
+        const generatedPositions = backendSpeechAudioRef.current?.generatedSegmentPositions;
+        const generatedList = Array.from(generatedPositions || [])
+            .map(Number)
+            .filter(value => Number.isInteger(value) && value >= 0)
+            .sort((left, right) => left - right);
+        const generatedPosition = generatedList.length > 0 ? generatedList[generatedList.length - 1] : bufferedPosition;
+
+        setSpeechState(prev => ({
+            ...prev,
+            generatedSegmentCount: Math.max(prev.generatedSegmentCount || 0, generatedList.length, positions.length),
+            bufferedSegmentCount: positions.length,
+            generatedSegmentPosition: Math.max(prev.generatedSegmentPosition ?? -1, generatedPosition),
+            bufferedSegmentPosition: bufferedPosition,
+            totalSegments: total || prev.totalSegments,
+            generationPercent: total > 0 ? Math.min(Math.max((generatedPosition + 1) / total, 0), 1) : 0,
+            bufferPercent: total > 0 ? Math.min(Math.max((bufferedPosition + 1) / total, 0), 1) : 0,
+        }));
+    }, []);
 
     const readPayloadNumber = useCallback((payload = {}, keys = [], fallback = -1) => {
         for (const key of keys) {
@@ -1150,13 +1326,41 @@ export default function useChatSpeech({
         return fallback !== undefined && fallback !== null && String(fallback) !== '' ? String(fallback) : null;
     }, [readPayloadString, resolveBackendPayloadSegmentIndex, resolveBackendPayloadSegmentPosition]);
 
-    const getBackendSpeechTotalSegments = useCallback((payload = {}) => {
-        const payloadTotal = Number(payload.total ?? payload.totalSegments);
-        if (Number.isFinite(payloadTotal) && payloadTotal >= 0) return payloadTotal;
-        const stateTotal = Number(speechStateRef.current?.totalSegments);
-        if (Number.isFinite(stateTotal) && stateTotal >= 0) return stateTotal;
+    const mapBackendSpeechPayload = useCallback((payload = {}) => {
+        const requestId = payload?.requestId || payload?.request_id;
+        const cache = speechSegmentCacheRef.current;
+        if (!requestId || requestId !== cache.activeRequestId) return payload;
+
+        const localPosition = resolveBackendPayloadSegmentPosition(payload, -1);
+        const explicitOriginalPosition = readPayloadNumber(payload, [
+            'originalSegmentPosition',
+            'original_segment_position',
+            'sourcePosition',
+            'source_position',
+        ], -1);
+        const segmentPosition = explicitOriginalPosition >= 0
+            ? explicitOriginalPosition
+            : (cache.requestPositionMap.get(localPosition) ?? localPosition);
+        const segment = speechControllerRef.current?.segments?.[segmentPosition];
+
+        return {
+            ...payload,
+            segmentPosition,
+            segment_position: segmentPosition,
+            segmentIndex: segment?.index ?? segmentPosition,
+            segment_index: segment?.index ?? segmentPosition,
+            segmentId: segment?.id || payload.segmentId || payload.segment_id,
+            segment_id: segment?.id || payload.segmentId || payload.segment_id,
+            total: speechControllerRef.current?.segments?.length || payload.total,
+            totalSegments: speechControllerRef.current?.segments?.length || payload.totalSegments,
+        };
+    }, [readPayloadNumber, resolveBackendPayloadSegmentPosition]);
+
+    const getBackendSpeechTotalSegments = useCallback(() => {
         const controllerTotal = speechControllerRef.current?.segments?.length;
-        return Number.isFinite(controllerTotal) ? controllerTotal : 0;
+        if (Number.isFinite(controllerTotal)) return controllerTotal;
+        const stateTotal = Number(speechStateRef.current?.totalSegments);
+        return Number.isFinite(stateTotal) && stateTotal >= 0 ? stateTotal : 0;
     }, []);
 
     const ensureBackendProgressSets = useCallback(() => {
@@ -1190,58 +1394,15 @@ export default function useChatSpeech({
         return backendState;
     }, []);
 
-    const getBackendPlaybackStartPosition = useCallback((fallback = 0) => {
-        const backendState = backendSpeechAudioRef.current;
-        const controllerStart = Number(speechControllerRef.current?.startSegmentPosition);
-        const stateStart = Number(backendState?.startSegmentPosition);
-        if (Number.isInteger(stateStart) && stateStart >= 0) return stateStart;
-        if (Number.isInteger(controllerStart) && controllerStart >= 0) return controllerStart;
-        return Number.isInteger(Number(fallback)) && Number(fallback) >= 0 ? Number(fallback) : 0;
-    }, []);
 
     const resetSpeechState = useCallback(() => {
         setSpeechState(createInitialSpeechState());
     }, []);
 
-    const clearBackendSpeechAudio = useCallback(({stopAudio = true} = {}) => {
+    const clearBackendSpeechAudio = useCallback(({stopAudio = true, releaseCachedAudio = false} = {}) => {
         const backendState = backendSpeechAudioRef.current;
 
         if (backendState?.audio) {
-            try {
-                if (stopAudio) {
-                    backendState.audio.pause();
-                }
-                backendState.audio.removeAttribute?.('src');
-                backendState.audio.load?.();
-            } catch (_) {
-                // 忽略浏览器音频对象释放时的异常。
-            }
-        }
-
-        backendState?.objectUrls?.forEach((url) => {
-            try {
-                URL.revokeObjectURL(url);
-            } catch (_) {
-                // 忽略重复 revoke。
-            }
-        });
-
-        backendSpeechAudioRef.current = createBackendSpeechAudioState();
-    }, []);
-
-    const resetBackendSpeechPlaybackQueue = useCallback(({
-                                                             stopAudio = true,
-                                                             clearChunks = true,
-                                                             bumpEpoch = true,
-                                                         } = {}) => {
-        const backendState = backendSpeechAudioRef.current;
-        if (!backendState) return;
-
-        if (bumpEpoch) {
-            backendState.playbackEpoch = (backendState.playbackEpoch || 0) + 1;
-        }
-
-        if (backendState.audio) {
             try {
                 if (stopAudio) backendState.audio.pause();
                 backendState.audio.removeAttribute?.('src');
@@ -1249,47 +1410,29 @@ export default function useChatSpeech({
             } catch (_) {
                 // 忽略浏览器音频对象释放时的异常。
             }
-            backendState.audio = null;
         }
 
-        backendState.queue = [];
-        backendState.queuedIds.clear?.();
-        backendState.readySegmentsByPosition?.clear?.();
-        backendState.readySegmentIds?.clear?.();
-        backendState.pendingReadyByPosition?.clear?.();
-        backendState.pendingReadyById?.clear?.();
-        backendState.skippedSegmentPositions?.clear?.();
-        backendState.nextPlaybackPosition = getBackendPlaybackStartPosition(0);
-        backendState.playingSegmentPosition = -1;
-        if (clearChunks) backendState.chunks.clear?.();
+        if (releaseCachedAudio) {
+            backendState?.objectUrls?.forEach((url) => {
+                try {
+                    URL.revokeObjectURL(url);
+                } catch (_) {
+                    // 忽略重复 revoke。
+                }
+            });
+        }
 
-        backendState.objectUrls?.forEach((url) => {
-            try {
-                URL.revokeObjectURL(url);
-            } catch (_) {
-                // 忽略重复 revoke。
-            }
-        });
-        backendState.objectUrls.clear?.();
+        backendSpeechAudioRef.current = createBackendSpeechAudioState();
+    }, []);
 
-        backendState.playing = false;
-        backendState.currentSegmentId = null;
-        backendState.currentSegmentIndex = -1;
-        backendState.currentSegmentPosition = -1;
-        backendState.generatedSegmentPositions?.clear?.();
-        backendState.bufferedSegmentPositions?.clear?.();
-        backendState.playedSegmentPositions?.clear?.();
-        backendState.generatedCount = 0;
-        backendState.bufferedCount = 0;
-        backendState.playedCount = 0;
-    }, [getBackendPlaybackStartPosition]);
 
     // v4: 前端不再向后端上报播放 ACK 或播放队列进度。
     // 后端只负责推送音频内容；本地播放进度只更新 ChatPage 自身状态。
 
     useEffect(() => () => {
-        clearBackendSpeechAudio();
-    }, [clearBackendSpeechAudio]);
+        clearBackendSpeechAudio({releaseCachedAudio: false});
+        releaseMessageSpeechCaches();
+    }, [clearBackendSpeechAudio, releaseMessageSpeechCaches]);
 
     const cancelActiveSpeech = useCallback((notifyBackend = false) => {
         const currentController = speechControllerRef.current;
@@ -1302,6 +1445,14 @@ export default function useChatSpeech({
             if (currentController.releaseTimer) {
                 window.clearTimeout(currentController.releaseTimer);
                 currentController.releaseTimer = null;
+            }
+            if (currentController.restartTimer) {
+                window.clearTimeout(currentController.restartTimer);
+                currentController.restartTimer = null;
+            }
+            if (currentController.restartRaf) {
+                window.cancelAnimationFrame(currentController.restartRaf);
+                currentController.restartRaf = null;
             }
         }
         currentController.currentUtterance = null;
@@ -1326,7 +1477,7 @@ export default function useChatSpeech({
                 target: 'TTS',
                 payload: {
                     command: 'Speech-Cancel',
-                    requestId: currentController.requestId,
+                    requestId: currentController.generationRequestId || currentController.requestId,
                     messageId: speechStateRef.current?.messageId,
                     msgId: speechStateRef.current?.messageId,
                 },
@@ -1340,8 +1491,9 @@ export default function useChatSpeech({
             cancelled: false,
             playToken: 0,
         };
+        resetSpeechSegmentCache(notifyBackend ? 'cancel' : 'replace');
         resetSpeechState();
-    }, [chatMarkId, clearBackendSpeechAudio, resetSpeechState]);
+    }, [chatMarkId, clearBackendSpeechAudio, resetSpeechSegmentCache, resetSpeechState]);
 
     const pauseActiveSpeech = useCallback(() => {
         const currentController = speechControllerRef.current;
@@ -1364,7 +1516,7 @@ export default function useChatSpeech({
                 target: 'TTS',
                 payload: {
                     command: 'Speech-Pause',
-                    requestId: currentController.requestId,
+                    requestId: currentController.generationRequestId || currentController.requestId,
                     messageId: speechStateRef.current?.messageId,
                     msgId: speechStateRef.current?.messageId,
                 },
@@ -1408,7 +1560,7 @@ export default function useChatSpeech({
                 target: 'TTS',
                 payload: {
                     command: 'Speech-Resume',
-                    requestId: currentController.requestId,
+                    requestId: currentController.generationRequestId || currentController.requestId,
                     messageId: speechStateRef.current?.messageId,
                     msgId: speechStateRef.current?.messageId,
                 },
@@ -1441,9 +1593,14 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             if (voice) return voice;
         }
 
-        return voices.find(item => item.lang === configuredLang) ||
-            voices.find(item => item.lang?.toLowerCase?.().startsWith(String(configuredLang).slice(0, 2).toLowerCase())) ||
-            null;
+        const normalizedLang = String(configuredLang).toLowerCase();
+        const languagePrefix = normalizedLang.slice(0, 2);
+        const matchingVoices = voices.filter(item => (
+            String(item.lang || '').toLowerCase() === normalizedLang ||
+            String(item.lang || '').toLowerCase().startsWith(languagePrefix)
+        ));
+
+        return matchingVoices.find(item => item.localService) || matchingVoices[0] || null;
     }, [selectedBrowserSpeechVoiceURI]);
 
     const speakWithBrowser = useCallback(({messageId, requestId, segments, speechConfig, startSegmentPosition = 0, restartReason = null}) => {
@@ -1465,7 +1622,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         const volume = Number(speechConfig.volume ?? speechConfig.speakVolume ?? 1);
         const isCjkSpeechLang = /^(zh|ja|ko)(-|_|$)/i.test(String(lang || ''));
         const BROWSER_SPEECH_MIN_GAP_MS = 80;
-        const BROWSER_SPEECH_CANCEL_COOLDOWN_MS = 160;
+        const BROWSER_SPEECH_CANCEL_IDLE_TIMEOUT_MS = 360;
         const BROWSER_UTTERANCE_KEEP_ALIVE_MS = 3000;
         const SHORT_BROWSER_SEGMENT_CHARS = isCjkSpeechLang ? 10 : 18;
         const TINY_BROWSER_SEGMENT_CHARS = isCjkSpeechLang ? 3 : 5;
@@ -1477,6 +1634,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         const BROWSER_SPEECH_NORMAL_TAIL_GAP_MS = 80;
         const BROWSER_SPEECH_SHORT_TAIL_GAP_MS = 160;
         const BROWSER_SPEECH_TINY_TAIL_GAP_MS = 240;
+        const BROWSER_SPEECH_PREFETCH_SEGMENTS = 4;
 
         const normalizeBrowserSpeechText = (value) => String(value || '')
             .replace(/[\u200B-\u200D\uFEFF]/g, '')
@@ -1526,6 +1684,26 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             volume,
             browserVoice: hasBrowserVoiceOption ? String(speechConfig.browserVoice || '') : (selectedBrowserSpeechVoiceURI || ''),
         };
+        const shouldPrefetchBrowserSpeech = true;
+        const finalSpeakableSegmentPosition = segments.reduce((lastPosition, segment, position) => (
+            buildBrowserUtteranceText(segment) ? position : lastPosition
+        ), -1);
+        const browserCacheKey = buildMessageSpeechCacheKey({
+            engine: 'browser',
+            modelId: selectedModel?.id || '',
+            rate: baseRate,
+            segments,
+            speechConfig: browserSpeechOptions,
+        });
+        const {
+            variant: browserMessageCache,
+            cacheHit: browserMessageCacheHit,
+        } = getMessageSpeechCacheVariant({
+            messageId,
+            cacheKey: browserCacheKey,
+            engine: 'browser',
+            rate: baseRate,
+        });
 
         const emitBrowserSpeakMessage = ({startSegmentPosition = 0, restartReason = null} = {}) => {
             // 浏览器内置 TTS 不依赖后端合成结果，但仍通知服务器记录本次朗读请求。
@@ -1554,6 +1732,28 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             });
         };
 
+        speechSegmentCacheRef.current = {
+            ...createSpeechSegmentCacheState(),
+            sessionId: requestId,
+            messageId,
+            engine: 'browser',
+            rate: baseRate,
+            entries: browserMessageCache.entries,
+            messageCacheKey: browserCacheKey,
+            messageCacheVariant: browserMessageCache,
+        };
+        logSpeechCache('session-start', {
+            sessionId: requestId,
+            messageId,
+            engine: 'browser',
+            rate: baseRate,
+            startSegmentPosition: safeStartPosition,
+            totalSegments: segments.length,
+            cacheScope: 'message',
+            messageCacheHit: browserMessageCacheHit,
+            cachedPositions: getSortedSpeechCachePositions(speechSegmentCacheRef.current),
+        });
+
         const controller = {
             requestId,
             engine: 'browser',
@@ -1574,11 +1774,30 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             releaseTimer: null,
             settleTimer: null,
             settleRaf: null,
+            restartTimer: null,
+            restartRaf: null,
             currentUtterance: null,
             utteranceKeepAlive: [],
+            queuedUtterances: new Map(),
+            utteranceCache: speechSegmentCacheRef.current.entries,
+            queueEpoch: 0,
+            prefetchEnabled: shouldPrefetchBrowserSpeech,
+            deferPrefetchUntilStart: shouldPrefetchBrowserSpeech,
+            lastSeekStartedAt: 0,
+            lastSeekTargetPosition: -1,
+            finalSpeakableSegmentPosition,
+            completedSegmentPositions: new Set(),
+            nativeStartRetryCounts: new Map(),
+            nativeRestartMode: 'prefetch',
+            nativeRestartReason: 'initial',
+            restartNativeQueue: null,
             defaultVoiceFallbackSegmentIndexes: new Set(),
         };
         speechControllerRef.current = controller;
+        const cachedBrowserPositions = getSortedSpeechCachePositions(speechSegmentCacheRef.current);
+        const cachedBrowserThrough = cachedBrowserPositions.length > 0
+            ? cachedBrowserPositions[cachedBrowserPositions.length - 1]
+            : -1;
 
         setSpeechState({
             status: 'loading',
@@ -1591,10 +1810,37 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             currentSegmentPosition: -1,
             rate: baseRate,
             browserVoice: browserSpeechOptions.browserVoice,
+            generationStatus: 'generating',
+            generationPhase: shouldPrefetchBrowserSpeech ? 'prefetching' : 'queued',
+            generatedSegmentCount: cachedBrowserPositions.length,
+            bufferedSegmentCount: 0,
+            playedSegmentCount: 0,
+            totalSegments: segments?.length || 0,
+            generatedSegmentPosition: cachedBrowserThrough,
+            bufferedSegmentPosition: -1,
+            playbackStatus: 'waiting',
+            playbackSegmentPosition: -1,
+            generationPercent: segments.length > 0 ? Math.min((cachedBrowserThrough + 1) / segments.length, 1) : 0,
+            bufferPercent: 0,
+            playbackPercent: 0,
         });
 
         const finish = () => {
             if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return;
+            const requiresCompletedFinalSegment = controller.finalSpeakableSegmentPosition >= safeStartPosition;
+            if (
+                requiresCompletedFinalSegment &&
+                !controller.completedSegmentPositions.has(controller.finalSpeakableSegmentPosition)
+            ) {
+                logSpeechCache('browser-finish-blocked-before-playback', {
+                    requestId,
+                    messageId,
+                    finalSpeakableSegmentPosition: controller.finalSpeakableSegmentPosition,
+                    completedPositions: Array.from(controller.completedSegmentPositions).sort((left, right) => left - right),
+                    queuedPositions: Array.from(controller.queuedUtterances.keys()).sort((left, right) => left - right),
+                });
+                return;
+            }
             if (controller.speakTimer) {
                 window.clearTimeout(controller.speakTimer);
                 controller.speakTimer = null;
@@ -1611,12 +1857,32 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 window.cancelAnimationFrame(controller.settleRaf);
                 controller.settleRaf = null;
             }
+            if (controller.restartTimer) {
+                window.clearTimeout(controller.restartTimer);
+                controller.restartTimer = null;
+            }
+            if (controller.restartRaf) {
+                window.cancelAnimationFrame(controller.restartRaf);
+                controller.restartRaf = null;
+            }
             controller.currentUtterance = null;
             controller.utteranceKeepAlive = [];
+            controller.queuedUtterances.clear?.();
 
             setSpeechState(prev => ({
                 ...prev,
                 status: 'ended',
+                generationStatus: 'ended',
+                playbackStatus: 'ended',
+                generatedSegmentCount: segments.length,
+                bufferedSegmentCount: segments.length,
+                playedSegmentCount: segments.length,
+                generatedSegmentPosition: segments.length - 1,
+                bufferedSegmentPosition: segments.length - 1,
+                playbackSegmentPosition: segments.length - 1,
+                generationPercent: segments.length > 0 ? 1 : 0,
+                bufferPercent: segments.length > 0 ? 1 : 0,
+                playbackPercent: segments.length > 0 ? 1 : 0,
                 currentSegmentId: null,
                 currentSegmentIndex: -1,
                 currentSegmentPosition: -1,
@@ -1630,6 +1896,14 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                         cancelled: false,
                         playToken: 0,
                     };
+                    logSpeechCache('message-cache-retained', {
+                        messageId,
+                        engine: 'browser',
+                        cacheKind: 'prepared-utterance-descriptor',
+                        audioCached: false,
+                        cachedPositions: getSortedSpeechCachePositions(speechSegmentCacheRef.current),
+                    });
+                    resetSpeechSegmentCache('playback-ended');
                     resetSpeechState();
                 }
             }, 300);
@@ -1652,6 +1926,17 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             if (controller.settleRaf) {
                 window.cancelAnimationFrame(controller.settleRaf);
                 controller.settleRaf = null;
+            }
+        };
+
+        const clearBrowserQueueRestartWait = () => {
+            if (controller.restartTimer) {
+                window.clearTimeout(controller.restartTimer);
+                controller.restartTimer = null;
+            }
+            if (controller.restartRaf) {
+                window.cancelAnimationFrame(controller.restartRaf);
+                controller.restartRaf = null;
             }
         };
 
@@ -1748,8 +2033,383 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             }, Math.max(0, delay));
         };
 
+        const updateBrowserPreparedProgress = (segmentIndex) => {
+            const preparedPositions = getSortedSpeechCachePositions(speechSegmentCacheRef.current);
+            const nativeQueuedPositions = Array.from(controller.queuedUtterances.keys())
+                .map(Number)
+                .filter(value => Number.isInteger(value) && value >= 0)
+                .sort((left, right) => left - right);
+            const preparedPosition = preparedPositions.length > 0
+                ? preparedPositions[preparedPositions.length - 1]
+                : segmentIndex;
+            const bufferedPosition = nativeQueuedPositions.length > 0
+                ? nativeQueuedPositions[nativeQueuedPositions.length - 1]
+                : -1;
+            setSpeechState(prev => ({
+                ...prev,
+                generationStatus: 'generating',
+                generationPhase: controller.prefetchEnabled ? 'prefetching' : 'queued',
+                generatedSegmentCount: preparedPositions.length,
+                bufferedSegmentCount: nativeQueuedPositions.length,
+                generatedSegmentPosition: preparedPosition,
+                bufferedSegmentPosition: bufferedPosition,
+                generationPercent: segments.length > 0 ? (preparedPosition + 1) / segments.length : 0,
+                bufferPercent: segments.length > 0 ? (bufferedPosition + 1) / segments.length : 0,
+            }));
+        };
+
+        const updateBrowserPlaybackProgress = (segmentIndex, completed = false) => {
+            const playedCount = Math.min(segmentIndex + (completed ? 1 : 0), segments.length);
+            setSpeechState(prev => ({
+                ...prev,
+                playbackStatus: completed ? 'buffering' : 'playing',
+                playbackSegmentPosition: segmentIndex,
+                playedSegmentCount: Math.max(prev.playedSegmentCount || 0, playedCount),
+                playbackPercent: segments.length > 0
+                    ? Math.min((segmentIndex + (completed ? 1 : 0.08)) / segments.length, 1)
+                    : 0,
+            }));
+        };
+
+        const queueBrowserSpeechCandidates = () => {
+            if (
+                controller.cancelled ||
+                controller.paused ||
+                speechControllerRef.current.requestId !== requestId
+            ) return;
+
+            const queueEpoch = controller.queueEpoch;
+            const queueLimit = controller.deferPrefetchUntilStart ? 1 : BROWSER_SPEECH_PREFETCH_SEGMENTS;
+
+            while (
+                controller.queuedUtterances.size < queueLimit &&
+                controller.nextIndex < segments.length
+            ) {
+                const segmentIndex = controller.nextIndex;
+                const segment = segments[segmentIndex];
+                const utteranceText = buildBrowserUtteranceText(segment);
+                controller.nextIndex = segmentIndex + 1;
+
+                if (!utteranceText) continue;
+
+                let cacheEntry = controller.utteranceCache.get(segmentIndex);
+                const cacheHit = Boolean(cacheEntry && cacheEntry.text === utteranceText);
+
+                if (!cacheHit) {
+                    cacheEntry = {
+                        engine: 'browser',
+                        segmentIndex,
+                        segmentId: segment.id,
+                        text: utteranceText,
+                        preparedAt: Date.now(),
+                    };
+                    controller.utteranceCache.set(segmentIndex, cacheEntry);
+                }
+
+                // Web Speech API 不暴露合成后的音频。缓存只能保存已经清洗好的句子描述；
+                // 每次进入新的原生队列 epoch 都创建新 utterance，避免复用刚被 cancel 的对象产生事件竞争或长时间卡顿。
+                const utterance = new SpeechSynthesisUtterance(cacheEntry.text);
+                utterance.lang = controller.lang;
+                utterance.rate = normalizeSpeechRate(controller.rate);
+                utterance.pitch = Math.min(Math.max(controller.pitch, 0), 2);
+                utterance.volume = Number.isFinite(controller.volume) ? Math.min(Math.max(controller.volume, 0), 1) : 1;
+
+                const shouldUseDefaultVoice = controller.defaultVoiceFallbackSegmentIndexes?.has(segmentIndex);
+                const voice = shouldUseDefaultVoice ? null : findBrowserSpeechVoice(controller.speechConfig);
+                utterance.voice = voice || null;
+
+                controller.queuedUtterances.set(segmentIndex, utterance);
+                controller.utteranceKeepAlive = [...(controller.utteranceKeepAlive || []), utterance].slice(-8);
+                updateBrowserPreparedProgress(segmentIndex);
+                logSpeechCache(cacheHit ? 'browser-cache-hit' : 'browser-cache-prepare', {
+                    requestId,
+                    messageId,
+                    segmentPosition: segmentIndex,
+                    cacheKind: 'prepared-utterance-descriptor',
+                    audioCached: false,
+                    requiresNativeSubmit: true,
+                    queueEpoch,
+                    cachedPositions: getSortedSpeechCachePositions(speechSegmentCacheRef.current),
+                    queuedPositions: Array.from(controller.queuedUtterances.keys()).sort((left, right) => left - right),
+                });
+                logSpeechCache('browser-native-submit', {
+                    requestId,
+                    messageId,
+                    segmentPosition: segmentIndex,
+                    queueEpoch,
+                    preparedCacheHit: cacheHit,
+                    voiceName: voice?.name || null,
+                    voiceURI: voice?.voiceURI || null,
+                    voiceLocalService: voice ? Boolean(voice.localService) : null,
+                    isSeekTarget: controller.lastSeekTargetPosition === segmentIndex,
+                    queuedPositions: Array.from(controller.queuedUtterances.keys()).sort((left, right) => left - right),
+                });
+
+                const isStale = () => (
+                    controller.cancelled ||
+                    speechControllerRef.current.requestId !== requestId ||
+                    controller.queueEpoch !== queueEpoch
+                );
+                let utteranceStarted = false;
+
+                const markUtteranceStarted = () => {
+                    if (utteranceStarted || isStale()) return;
+                    utteranceStarted = true;
+                    controller.currentUtterance = utterance;
+                    controller.currentIndex = segmentIndex;
+                    controller.nativeStartRetryCounts.delete(segmentIndex);
+                    const seekLatencyMs = controller.lastSeekTargetPosition === segmentIndex && controller.lastSeekStartedAt > 0
+                        ? Date.now() - controller.lastSeekStartedAt
+                        : null;
+                    setSpeechState(prev => ({
+                        ...prev,
+                        status: controller.paused ? 'paused' : 'playing',
+                        currentSegmentId: segment.id,
+                        currentSegmentIndex: segmentIndex,
+                        currentSegmentPosition: segmentIndex,
+                        rate: normalizeSpeechRate(controller.rate),
+                        browserVoice: controller.speechConfig?.browserVoice || '',
+                    }));
+                    updateBrowserPlaybackProgress(segmentIndex, false);
+                    logSpeechCache('browser-play-position', {
+                        requestId,
+                        messageId,
+                        segmentPosition: segmentIndex,
+                        preparedThrough: Math.max(...getSortedSpeechCachePositions(speechSegmentCacheRef.current), -1),
+                        seekLatencyMs,
+                        queueEpoch,
+                        queuedPositions: Array.from(controller.queuedUtterances.keys()).sort((left, right) => left - right),
+                    });
+
+                    if (controller.lastSeekTargetPosition === segmentIndex) {
+                        controller.lastSeekTargetPosition = -1;
+                        controller.lastSeekStartedAt = 0;
+                    }
+                    if (controller.deferPrefetchUntilStart) {
+                        controller.deferPrefetchUntilStart = false;
+                        window.setTimeout(queueBrowserSpeechCandidates, 0);
+                    }
+                };
+
+                utterance.onstart = markUtteranceStarted;
+
+                utterance.onend = () => {
+                    if (isStale()) return;
+                    controller.queuedUtterances.delete(segmentIndex);
+                    releaseFinishedUtteranceLater(utterance);
+
+                    if (!utteranceStarted) {
+                        const retryCount = (controller.nativeStartRetryCounts.get(segmentIndex) || 0) + 1;
+                        controller.nativeStartRetryCounts.set(segmentIndex, retryCount);
+                        logSpeechCache('browser-native-end-before-start', {
+                            requestId,
+                            messageId,
+                            segmentPosition: segmentIndex,
+                            queueEpoch,
+                            retryCount,
+                            speaking: synthesis.speaking,
+                            pending: synthesis.pending,
+                            queuedPositions: Array.from(controller.queuedUtterances.keys()).sort((left, right) => left - right),
+                        });
+                        controller.restartNativeQueue?.(segmentIndex, {
+                            reason: 'end-before-start',
+                            disablePrefetch: retryCount > 1,
+                        });
+                        return;
+                    }
+
+                    controller.completedSegmentPositions.add(segmentIndex);
+                    updateBrowserPlaybackProgress(segmentIndex, true);
+
+                    setSpeechState(prev => (
+                        prev.currentSegmentIndex === segmentIndex
+                            ? {
+                                ...prev,
+                                currentSegmentId: null,
+                                currentSegmentIndex: -1,
+                                currentSegmentPosition: -1,
+                            }
+                            : prev
+                    ));
+
+                    if (controller.nextIndex >= segments.length && controller.queuedUtterances.size === 0) {
+                        schedulePlayNext(BROWSER_SPEECH_MIN_GAP_MS);
+                        return;
+                    }
+                    queueBrowserSpeechCandidates();
+                };
+
+                utterance.onerror = (event) => {
+                    if (isStale()) {
+                        releaseFinishedUtteranceLater(utterance);
+                        return;
+                    }
+                    controller.queuedUtterances.delete(segmentIndex);
+                    releaseFinishedUtteranceLater(utterance);
+                    if (event?.error === 'interrupted' || event?.error === 'canceled') {
+                        if (!utteranceStarted) {
+                            const retryCount = (controller.nativeStartRetryCounts.get(segmentIndex) || 0) + 1;
+                            controller.nativeStartRetryCounts.set(segmentIndex, retryCount);
+                            logSpeechCache('browser-native-cancel-before-start', {
+                                requestId,
+                                messageId,
+                                segmentPosition: segmentIndex,
+                                queueEpoch,
+                                retryCount,
+                                error: event?.error,
+                            });
+                            controller.restartNativeQueue?.(segmentIndex, {
+                                reason: event?.error || 'cancel-before-start',
+                                disablePrefetch: retryCount > 1,
+                            });
+                        }
+                        return;
+                    }
+
+                    if (event?.error === 'synthesis-failed' && utterance.voice && !shouldUseDefaultVoice) {
+                        controller.defaultVoiceFallbackSegmentIndexes.add(segmentIndex);
+                        controller.playFrom?.(segmentIndex);
+                        return;
+                    }
+
+                    logSpeechPlayError('browser-prefetch-utterance-error', {
+                        event,
+                        requestId,
+                        messageId,
+                        segmentId: segment?.id,
+                        segmentIndex,
+                        segmentText: segment?.text,
+                        utteranceText,
+                    });
+                    toast.error(t('speech_play_error', {message: event?.error || t('unknown_error')}));
+                    cancelActiveSpeech(false);
+                };
+
+                try {
+                    synthesis.resume?.();
+                    synthesis.speak(utterance);
+                } catch (error) {
+                    controller.queuedUtterances.delete(segmentIndex);
+                    releaseFinishedUtteranceLater(utterance);
+                    logSpeechPlayError('browser-prefetch-speak-exception', {
+                        error,
+                        requestId,
+                        messageId,
+                        segmentId: segment?.id,
+                        segmentIndex,
+                        segmentText: segment?.text,
+                    });
+                    toast.error(t('speech_play_error', {message: error?.message || t('unknown_error')}));
+                    cancelActiveSpeech(false);
+                    return;
+                }
+            }
+
+            if (controller.nextIndex >= segments.length && controller.queuedUtterances.size === 0) {
+                finish();
+            }
+        };
+
+        const restartBrowserQueueAfterCancel = () => {
+            clearBrowserQueueRestartWait();
+            const waitStartedAt = Date.now();
+            const restartEpoch = controller.queueEpoch;
+
+            const tryRestart = () => {
+                if (
+                    controller.cancelled ||
+                    controller.paused ||
+                    speechControllerRef.current.requestId !== requestId ||
+                    controller.queueEpoch !== restartEpoch
+                ) {
+                    clearBrowserQueueRestartWait();
+                    return;
+                }
+
+                const idle = !synthesis.speaking && !synthesis.pending;
+                const waitMs = Date.now() - waitStartedAt;
+                if (idle || waitMs >= BROWSER_SPEECH_CANCEL_IDLE_TIMEOUT_MS) {
+                    clearBrowserQueueRestartWait();
+                    synthesis.resume?.();
+                    logSpeechCache('browser-native-queue-restart', {
+                        requestId,
+                        messageId,
+                        queueEpoch: restartEpoch,
+                        targetPosition: controller.nextIndex,
+                        idleObserved: idle,
+                        cancelSettleMs: waitMs,
+                        reason: controller.nativeRestartReason,
+                        mode: controller.nativeRestartMode,
+                    });
+                    if (controller.nativeRestartMode === 'serial') {
+                        schedulePlayNext(0);
+                    } else {
+                        queueBrowserSpeechCandidates();
+                    }
+                    return;
+                }
+
+                controller.restartRaf = window.requestAnimationFrame(tryRestart);
+            };
+
+            controller.restartRaf = window.requestAnimationFrame(tryRestart);
+            controller.restartTimer = window.setTimeout(tryRestart, BROWSER_SPEECH_CANCEL_IDLE_TIMEOUT_MS);
+        };
+
+        const restartBrowserNativeQueue = (targetPosition, {reason = 'restart', disablePrefetch = false} = {}) => {
+            if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return false;
+
+            const nextPosition = Math.min(
+                Math.max(Number(targetPosition) || 0, 0),
+                Math.max(segments.length - 1, 0),
+            );
+            const droppedNativePositions = Array.from(controller.queuedUtterances.keys())
+                .sort((left, right) => left - right);
+            const retiredUtterances = Array.from(controller.queuedUtterances.values());
+
+            controller.queueEpoch += 1;
+            controller.nextIndex = nextPosition;
+            controller.currentIndex = -1;
+            controller.currentUtterance = null;
+            controller.deferPrefetchUntilStart = !disablePrefetch;
+            if (disablePrefetch) controller.prefetchEnabled = false;
+            controller.nativeRestartMode = controller.prefetchEnabled ? 'prefetch' : 'serial';
+            controller.nativeRestartReason = reason;
+            controller.queuedUtterances.clear?.();
+            controller.utteranceKeepAlive = retiredUtterances.slice(-8);
+            controller.playToken = (controller.playToken || 0) + 1;
+
+            if (controller.speakTimer) {
+                window.clearTimeout(controller.speakTimer);
+                controller.speakTimer = null;
+            }
+            clearBrowserSpeechSettleWait();
+            clearBrowserQueueRestartWait();
+
+            logSpeechCache('browser-native-queue-reset', {
+                requestId,
+                messageId,
+                reason,
+                queueEpoch: controller.queueEpoch,
+                targetPosition: nextPosition,
+                mode: controller.nativeRestartMode,
+                droppedNativePositions,
+                preservedPreparedPositions: getSortedSpeechCachePositions(speechSegmentCacheRef.current),
+            });
+
+            synthesis.cancel();
+            synthesis.resume?.();
+            restartBrowserQueueAfterCancel();
+            return true;
+        };
+        controller.restartNativeQueue = restartBrowserNativeQueue;
+
         const playNext = () => {
             if (controller.cancelled || controller.paused || speechControllerRef.current.requestId !== requestId) return;
+            if (controller.prefetchEnabled) {
+                queueBrowserSpeechCandidates();
+                return;
+            }
             if (controller.nextIndex >= segments.length) {
                 finish();
                 return;
@@ -1782,10 +2442,19 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
 
             controller.currentUtterance = utterance;
             controller.utteranceKeepAlive = [...(controller.utteranceKeepAlive || []), utterance].slice(-4);
+            updateBrowserPreparedProgress(segmentIndex);
+            let utteranceStarted = false;
             let utteranceStartedAt = Date.now();
 
             const markSegmentPlaying = () => {
-                if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken) return;
+                if (
+                    utteranceStarted ||
+                    controller.cancelled ||
+                    speechControllerRef.current.requestId !== requestId ||
+                    controller.playToken !== playToken
+                ) return;
+                utteranceStarted = true;
+                controller.nativeStartRetryCounts.delete(segmentIndex);
                 setSpeechState(prev => ({
                     ...prev,
                     status: controller.paused ? 'paused' : 'playing',
@@ -1795,6 +2464,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                     rate: normalizeSpeechRate(controller.rate),
                     browserVoice: controller.speechConfig?.browserVoice || '',
                 }));
+                updateBrowserPlaybackProgress(segmentIndex, false);
             };
 
             utterance.onstart = () => {
@@ -1806,6 +2476,32 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken) return;
                 releaseFinishedUtteranceLater(utterance);
 
+                if (!utteranceStarted) {
+                    const retryCount = (controller.nativeStartRetryCounts.get(segmentIndex) || 0) + 1;
+                    controller.nativeStartRetryCounts.set(segmentIndex, retryCount);
+                    logSpeechCache('browser-serial-end-before-start', {
+                        requestId,
+                        messageId,
+                        segmentPosition: segmentIndex,
+                        retryCount,
+                        speaking: synthesis.speaking,
+                        pending: synthesis.pending,
+                    });
+                    if (retryCount <= 3) {
+                        controller.restartNativeQueue?.(segmentIndex, {
+                            reason: 'serial-end-before-start',
+                            disablePrefetch: true,
+                        });
+                    } else {
+                        toast.error(t('speech_play_error', {message: 'Browser speech engine did not start'}));
+                        cancelActiveSpeech(false);
+                    }
+                    return;
+                }
+
+                controller.completedSegmentPositions.add(segmentIndex);
+                updateBrowserPlaybackProgress(segmentIndex, true);
+
                 waitForBrowserSpeechSettled(segment, utteranceStartedAt, playToken, () => {
                     schedulePlayNext(0);
                 });
@@ -1814,7 +2510,31 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             utterance.onerror = (event) => {
                 clearBrowserSpeechSettleWait();
                 releaseFinishedUtteranceLater(utterance);
-                if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken || event?.error === 'interrupted' || event?.error === 'canceled') return;
+                if (controller.cancelled || speechControllerRef.current.requestId !== requestId || controller.playToken !== playToken) return;
+
+                if (event?.error === 'interrupted' || event?.error === 'canceled') {
+                    if (!utteranceStarted) {
+                        const retryCount = (controller.nativeStartRetryCounts.get(segmentIndex) || 0) + 1;
+                        controller.nativeStartRetryCounts.set(segmentIndex, retryCount);
+                        logSpeechCache('browser-serial-cancel-before-start', {
+                            requestId,
+                            messageId,
+                            segmentPosition: segmentIndex,
+                            retryCount,
+                            error: event?.error,
+                        });
+                        if (retryCount <= 3) {
+                            controller.restartNativeQueue?.(segmentIndex, {
+                                reason: event?.error || 'serial-cancel-before-start',
+                                disablePrefetch: true,
+                            });
+                        } else {
+                            toast.error(t('speech_play_error', {message: 'Browser speech engine did not start'}));
+                            cancelActiveSpeech(false);
+                        }
+                    }
+                    return;
+                }
 
                 if (event?.error === 'synthesis-failed' && utterance.voice && !shouldUseDefaultVoice) {
                     if (typeof console !== 'undefined' && typeof console.warn === 'function') {
@@ -1905,12 +2625,26 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return false;
 
             const nextIndex = Math.min(Math.max(Number(targetIndex) || 0, 0), Math.max(segments.length - 1, 0));
+            const previousQueuedPositions = Array.from(controller.queuedUtterances.keys()).sort((left, right) => left - right);
+            const retiredUtterances = Array.from(controller.queuedUtterances.values());
             controller.paused = false;
             controller.nextIndex = nextIndex;
             controller.currentIndex = -1;
-            // 让旧 utterance 的 onend/onerror 失效，避免 cancel 后又触发顺序播放。
+            Array.from(controller.completedSegmentPositions).forEach((position) => {
+                if (position >= nextIndex) controller.completedSegmentPositions.delete(position);
+            });
+            controller.queueEpoch += 1;
+            controller.deferPrefetchUntilStart = controller.prefetchEnabled;
+            controller.nativeRestartMode = controller.prefetchEnabled ? 'prefetch' : 'serial';
+            controller.nativeRestartReason = 'seek';
+            controller.lastSeekStartedAt = Date.now();
+            controller.lastSeekTargetPosition = nextIndex;
+            controller.queuedUtterances.clear?.();
+            // 让旧 utterance 的 onend/onerror 失效，且不复用被 cancel 的原生对象。
             controller.playToken = (controller.playToken || 0) + 1;
 
+            const cachedPositions = getSortedSpeechCachePositions(speechSegmentCacheRef.current);
+            const bufferedPosition = cachedPositions.length > 0 ? cachedPositions[cachedPositions.length - 1] : -1;
             setSpeechState(prev => ({
                 ...prev,
                 status: 'loading',
@@ -1919,6 +2653,14 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 currentSegmentPosition: -1,
                 rate: normalizeSpeechRate(controller.rate),
                 browserVoice: controller.speechConfig?.browserVoice || '',
+                generatedSegmentCount: cachedPositions.length,
+                bufferedSegmentCount: cachedPositions.length,
+                generatedSegmentPosition: bufferedPosition,
+                bufferedSegmentPosition: bufferedPosition,
+                playbackSegmentPosition: nextIndex - 1,
+                generationPercent: segments.length > 0 ? (bufferedPosition + 1) / segments.length : 0,
+                bufferPercent: segments.length > 0 ? (bufferedPosition + 1) / segments.length : 0,
+                playbackPercent: segments.length > 0 ? nextIndex / segments.length : 0,
             }));
 
             if (controller.speakTimer) {
@@ -1930,22 +2672,170 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 controller.releaseTimer = null;
             }
             clearBrowserSpeechSettleWait();
+            clearBrowserQueueRestartWait();
             controller.currentUtterance = null;
-            controller.utteranceKeepAlive = [];
+            controller.utteranceKeepAlive = retiredUtterances.slice(-8);
 
+            logSpeechCache('browser-seek', {
+                requestId,
+                fromPosition: speechStateRef.current?.currentSegmentPosition,
+                targetPosition: nextIndex,
+                cacheHit: controller.utteranceCache.has(nextIndex),
+                cacheKind: 'prepared-utterance-descriptor',
+                audioCached: false,
+                nativeQueueHitBeforeCancel: previousQueuedPositions.includes(nextIndex),
+                previousQueuedPositions,
+                cachedPositions,
+            });
+            logSpeechCache('browser-native-queue-reset', {
+                requestId,
+                messageId,
+                reason: 'seek',
+                queueEpoch: controller.queueEpoch,
+                droppedNativePositions: previousQueuedPositions,
+                preservedPreparedPositions: cachedPositions,
+            });
             synthesis.cancel();
             synthesis.resume?.();
             emitBrowserSpeakMessage({startSegmentPosition: nextIndex, restartReason: 'seek'});
-            schedulePlayNext(BROWSER_SPEECH_CANCEL_COOLDOWN_MS);
+            restartBrowserQueueAfterCancel();
             return true;
         };
 
         // 某些浏览器语音列表延迟加载；先触发一次，再给系统 TTS 一个很短的冷却时间后播放。
         synthesis.getVoices?.();
         synthesis.resume?.();
-        schedulePlayNext(BROWSER_SPEECH_MIN_GAP_MS);
+        // speakWithBrowser 开头会 cancel 旧会话；等待原生队列确实空闲后再提交首句，
+        // 避免部分设备把新 utterance 直接以 onend/canceled 结束但从未真正播放。
+        controller.nativeRestartMode = controller.prefetchEnabled ? 'prefetch' : 'serial';
+        controller.nativeRestartReason = 'initial';
+        restartBrowserQueueAfterCancel();
         return true;
-    }, [cancelActiveSpeech, chatMarkId, findBrowserSpeechVoice, normalizeSpeechRate, resetSpeechState, selectedBrowserSpeechVoiceURI, selectedModel?.id, t]);
+    }, [
+        buildMessageSpeechCacheKey,
+        cancelActiveSpeech,
+        chatMarkId,
+        findBrowserSpeechVoice,
+        getMessageSpeechCacheVariant,
+        normalizeSpeechRate,
+        resetSpeechSegmentCache,
+        resetSpeechState,
+        selectedBrowserSpeechVoiceURI,
+        selectedModel?.id,
+        t,
+    ]);
+
+    const requestMissingBackendSpeechSegments = useCallback(({
+                                                               startPosition = 0,
+                                                               restartReason = 'prefetch',
+                                                               requestId: preferredRequestId = null,
+                                                           } = {}) => {
+        const controller = speechControllerRef.current;
+        const backendState = backendSpeechAudioRef.current;
+        const cache = speechSegmentCacheRef.current;
+        const segments = controller?.segments || [];
+        if (!controller?.requestId || controller.engine === 'browser' || segments.length === 0) return false;
+
+        const safeStartPosition = Math.min(Math.max(Number(startPosition) || 0, 0), segments.length - 1);
+        const missingPositions = segments
+            .map((_, position) => position)
+            .filter(position => position >= safeStartPosition && !cache.entries.has(position));
+
+        if (missingPositions.length === 0) {
+            logSpeechCache('backend-request-skipped-all-cached', {
+                sessionId: controller.requestId,
+                startPosition: safeStartPosition,
+                cachedPositions: getSortedSpeechCachePositions(cache),
+            });
+            return false;
+        }
+
+        const previousRequestId = cache.activeRequestId;
+        const requestId = preferredRequestId || generateUUID();
+        if (previousRequestId && previousRequestId !== requestId) {
+            emitEvent({
+                type: 'speech',
+                target: 'TTS',
+                payload: {
+                    command: 'Speech-Cancel',
+                    requestId: previousRequestId,
+                    messageId: controller.messageId,
+                    msgId: controller.messageId,
+                },
+                markId: chatMarkId,
+            });
+
+            // 旧任务尚未 ready 的分片不能和新任务混合；只清理本次要重请求的缺失句子。
+            for (const [segmentId, segmentBuffer] of backendState.chunks.entries()) {
+                const position = resolveBackendPayloadSegmentPosition(segmentBuffer?.payload || {}, -1);
+                if (missingPositions.includes(position)) backendState.chunks.delete(segmentId);
+            }
+            missingPositions.forEach((position) => backendState.pendingReadyByPosition?.delete?.(position));
+            backendState.pendingReadyById?.clear?.();
+        }
+
+        cache.activeRequestId = requestId;
+        cache.inFlightPositions = new Set(missingPositions);
+        cache.requestPositionMap = new Map(missingPositions.map((position, localPosition) => [localPosition, position]));
+        controller.generationRequestId = requestId;
+        backendState.activeGenerationRequestId = requestId;
+        backendState.generationEnded = false;
+
+        const requestSegments = missingPositions.map((position, localPosition) => ({
+            ...segments[position],
+            index: localPosition,
+            position: localPosition,
+            originalIndex: segments[position]?.index ?? position,
+            originalPosition: position,
+            sourcePosition: position,
+        }));
+        const rate = normalizeSpeechRate(controller.rate ?? controller.speechConfig?.rate ?? 1);
+        const backendOptions = {
+            ...(controller.speechConfig || {}),
+            rate,
+            speakRate: rate,
+            startSegmentPosition: 0,
+            restartReason,
+            requestedSegmentPositions: missingPositions,
+        };
+
+        logSpeechCache('backend-request-missing', {
+            sessionId: controller.requestId,
+            requestId,
+            restartReason,
+            playingPosition: backendState.playingSegmentPosition,
+            startPosition: safeStartPosition,
+            requestedPositions: missingPositions,
+            cachedPositions: getSortedSpeechCachePositions(cache),
+        });
+
+        setSpeechState(prev => ({
+            ...prev,
+            status: prev.status === 'paused' ? 'paused' : 'loading',
+            generationStatus: 'generating',
+            generationPhase: restartReason,
+        }));
+
+        emitEvent({
+            type: 'speech',
+            target: 'TTS',
+            payload: {
+                command: 'Speak-Message',
+                requestId,
+                msgId: controller.messageId,
+                messageId: controller.messageId,
+                engine: controller.engine,
+                model: selectedModel?.id,
+                options: backendOptions,
+                segments: requestSegments,
+                startSegmentPosition: 0,
+                requestedSegmentPositions: missingPositions,
+                restartReason,
+            },
+            markId: chatMarkId,
+        });
+        return true;
+    }, [chatMarkId, normalizeSpeechRate, resolveBackendPayloadSegmentPosition, selectedModel?.id]);
 
     const requestBackendSpeech = useCallback(({
                                                   messageId,
@@ -1962,21 +2852,47 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             ? Math.min(Math.max(Number(startSegmentPosition), 0), Math.max((segments?.length || 1) - 1, 0))
             : 0;
         const rate = normalizeSpeechRate(speechConfig.rate ?? speechConfig.speakRate ?? 1);
-        const backendOptions = {
-            ...speechConfig,
+        const backendCacheKey = buildMessageSpeechCacheKey({
+            engine,
+            modelId: selectedModel?.id || '',
             rate,
-            startSegmentPosition: safeStartPosition,
-            restartReason,
+            segments,
+            speechConfig,
+        });
+        const {
+            variant: backendMessageCache,
+            cacheHit: backendMessageCacheHit,
+        } = getMessageSpeechCacheVariant({
+            messageId,
+            cacheKey: backendCacheKey,
+            engine,
+            rate,
+        });
+        const cache = {
+            ...createSpeechSegmentCacheState(),
+            sessionId: requestId,
+            messageId,
+            engine,
+            rate,
+            entries: backendMessageCache.entries,
+            messageCacheKey: backendCacheKey,
+            messageCacheVariant: backendMessageCache,
         };
+        speechSegmentCacheRef.current = cache;
+        const cachedPositions = getSortedSpeechCachePositions(cache);
+        const cachedThrough = cachedPositions.length > 0 ? cachedPositions[cachedPositions.length - 1] : -1;
+        const fullyCached = segments.length > 0 && cachedPositions.length >= segments.length;
 
         speechControllerRef.current = {
             requestId,
+            generationRequestId: requestId,
+            messageId,
             engine,
             cancelled: false,
             paused: false,
             rate,
             segments,
-            speechConfig,
+            speechConfig: {...speechConfig, rate, speakRate: rate},
             currentIndex: -1,
             startSegmentPosition: safeStartPosition,
             playToken: 0,
@@ -1985,21 +2901,36 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         backendSpeechAudioRef.current = {
             ...createBackendSpeechAudioState(),
             requestId,
+            activeGenerationRequestId: requestId,
             messageId,
             engine,
-            generatedSegmentPositions: new Set(),
-            bufferedSegmentPositions: new Set(),
+            objectUrls: backendMessageCache.objectUrls,
+            generatedSegmentPositions: new Set(cachedPositions),
+            bufferedSegmentPositions: new Set(cachedPositions),
             playedSegmentPositions: new Set(),
-            generatedCount: 0,
-            bufferedCount: 0,
+            generatedCount: cachedPositions.length,
+            bufferedCount: cachedPositions.length,
             playedCount: 0,
             totalSegments: segments?.length || 0,
             startSegmentPosition: safeStartPosition,
             nextPlaybackPosition: safeStartPosition,
             playingSegmentPosition: -1,
-            readySegmentsByPosition: new Map(),
-            readySegmentIds: new Set(),
+            generationEnded: fullyCached,
+            readySegmentsByPosition: cache.entries,
+            readySegmentIds: new Set(Array.from(cache.entries.values()).map(item => item?.segmentId).filter(Boolean)),
         };
+
+        logSpeechCache('session-start', {
+            sessionId: requestId,
+            messageId,
+            engine,
+            rate,
+            startSegmentPosition: safeStartPosition,
+            totalSegments: segments?.length || 0,
+            cacheScope: 'message',
+            messageCacheHit: backendMessageCacheHit,
+            cachedPositions,
+        });
 
         setSpeechState({
             status: 'loading',
@@ -2011,39 +2942,35 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             currentSegmentIndex: -1,
             currentSegmentPosition: -1,
             rate,
-            generationStatus: 'generating',
-            generationPhase: 'queued',
-            generatedSegmentCount: 0,
-            bufferedSegmentCount: 0,
+            generationStatus: fullyCached ? 'ended' : 'generating',
+            generationPhase: fullyCached ? 'cached' : 'queued',
+            generatedSegmentCount: cachedPositions.length,
+            bufferedSegmentCount: cachedPositions.length,
             playedSegmentCount: 0,
             totalSegments: segments?.length || 0,
-            generatedSegmentPosition: -1,
-            bufferedSegmentPosition: -1,
+            generatedSegmentPosition: cachedThrough,
+            bufferedSegmentPosition: cachedThrough,
             playbackStatus: 'waiting',
-            playbackSegmentPosition: -1,
-            generationPercent: 0,
-            bufferPercent: 0,
-            playbackPercent: 0,
+            playbackSegmentPosition: safeStartPosition - 1,
+            generationPercent: segments?.length > 0 ? Math.min((cachedThrough + 1) / segments.length, 1) : 0,
+            bufferPercent: segments?.length > 0 ? Math.min((cachedThrough + 1) / segments.length, 1) : 0,
+            playbackPercent: segments?.length > 0 ? safeStartPosition / segments.length : 0,
         });
 
-        emitEvent({
-            type: 'speech',
-            target: 'TTS',
-            payload: {
-                command: 'Speak-Message',
-                requestId,
-                msgId: messageId,
-                messageId,
-                engine,
-                model: selectedModel?.id,
-                options: backendOptions,
-                segments,
-                startSegmentPosition: safeStartPosition,
-                restartReason,
-            },
-            markId: chatMarkId,
+        requestMissingBackendSpeechSegments({
+            startPosition: safeStartPosition,
+            restartReason: restartReason || 'initial',
+            requestId,
         });
-    }, [cancelActiveSpeech, chatMarkId, normalizeSpeechRate, selectedModel?.id]);
+        window.setTimeout(() => playNextBackendSpeechSegmentRef.current?.(), 0);
+    }, [
+        buildMessageSpeechCacheKey,
+        cancelActiveSpeech,
+        getMessageSpeechCacheVariant,
+        normalizeSpeechRate,
+        requestMissingBackendSpeechSegments,
+        selectedModel?.id,
+    ]);
 
     const resolveSpeechSegmentPosition = useCallback((segments = [], locator = {}) => {
         if (!Array.isArray(segments) || segments.length === 0) return -1;
@@ -2119,28 +3046,64 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             return currentController.playFrom(targetPosition);
         }
 
-        // 后端 TTS 跳句采用“硬重启”模式：直接清空本地旧音频、生成新 requestId，
-        // 后端收到新的 Speak-Message 后会取消旧流，并从 startSegmentPosition 重新合成。
-        resetBackendSpeechPlaybackQueue({stopAudio: true, clearChunks: true, bumpEpoch: true});
-        const newRequestId = generateUUID();
         const direction = !isAbsolute && typeof directionOrLocator === 'number' ? directionOrLocator : 0;
-        const speechConfig = {
-            ...(currentController.speechConfig || {}),
-            rate: currentSpeech.rate ?? currentController.rate ?? 1,
-        };
+        const restartReason = direction < 0 ? 'previous' : (direction > 0 ? 'next' : 'seek');
+        const cache = speechSegmentCacheRef.current;
 
-        requestBackendSpeech({
-            messageId: currentSpeech.messageId,
-            requestId: newRequestId,
-            segments,
-            engine: currentController.engine,
-            speechConfig,
-            startSegmentPosition: targetPosition,
-            restartReason: direction < 0 ? 'previous' : (direction > 0 ? 'next' : 'seek'),
+        backendState.playbackEpoch = (backendState.playbackEpoch || 0) + 1;
+        if (backendState.audio) {
+            try {
+                backendState.audio.pause();
+                backendState.audio.removeAttribute?.('src');
+                backendState.audio.load?.();
+            } catch (_) {
+                // 停止当前播放器即可，缓存中的 Blob URL 继续保留。
+            }
+        }
+        backendState.audio = null;
+        backendState.playing = false;
+        backendState.currentSegmentId = null;
+        backendState.currentSegmentIndex = -1;
+        backendState.currentSegmentPosition = -1;
+        backendState.playingSegmentPosition = -1;
+        backendState.nextPlaybackPosition = targetPosition;
+        currentController.currentIndex = targetPosition;
+        currentController.paused = false;
+
+        const cacheHit = cache.entries.has(targetPosition);
+        const alreadyGenerating = cache.inFlightPositions.has(targetPosition);
+        logSpeechCache('backend-seek', {
+            sessionId: currentController.requestId,
+            fromPosition: currentPosition,
+            targetPosition,
+            restartReason,
+            cacheHit,
+            alreadyGenerating,
+            cachedPositions: getSortedSpeechCachePositions(cache),
+            generatingPositions: Array.from(cache.inFlightPositions).sort((left, right) => left - right),
         });
 
+        setSpeechState(prev => ({
+            ...prev,
+            status: 'loading',
+            currentSegmentId: null,
+            currentSegmentIndex: -1,
+            currentSegmentPosition: -1,
+            playbackStatus: cacheHit ? 'buffering' : 'waiting',
+            playbackSegmentPosition: targetPosition - 1,
+            playbackPercent: segments.length > 0 ? targetPosition / segments.length : 0,
+        }));
+
+        if (!cacheHit && !alreadyGenerating) {
+            requestMissingBackendSpeechSegments({
+                startPosition: targetPosition,
+                restartReason,
+            });
+        }
+
+        window.setTimeout(() => playNextBackendSpeechSegmentRef.current?.(), 0);
         return true;
-    }, [requestBackendSpeech, resetBackendSpeechPlaybackQueue, resolveSpeechSegmentPosition]);
+    }, [requestMissingBackendSpeechSegments, resolveSpeechSegmentPosition]);
 
 
     const updateSpeechRate = useCallback((value) => {
@@ -2243,17 +3206,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         const nextVoiceURI = value ? String(value) : '';
 
         setSelectedBrowserSpeechVoiceURI(nextVoiceURI);
-        if (typeof window !== 'undefined') {
-            try {
-                if (nextVoiceURI) {
-                    window.localStorage.setItem(BROWSER_SPEECH_VOICE_STORAGE_KEY, nextVoiceURI);
-                } else {
-                    window.localStorage.removeItem(BROWSER_SPEECH_VOICE_STORAGE_KEY);
-                }
-            } catch (_) {
-                // localStorage 可能被隐私模式禁用；不影响本次朗读切换。
-            }
-        }
+        setLocalSetting(TTS_LOCAL_SETTING_KEYS.browserVoice, nextVoiceURI);
 
         const currentController = speechControllerRef.current;
         const currentSpeech = speechStateRef.current;
@@ -2496,11 +3449,19 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                     cancelled: false,
                     playToken: 0,
                 };
+                logSpeechCache('message-cache-retained', {
+                    messageId: speechSegmentCacheRef.current?.messageId,
+                    engine: speechSegmentCacheRef.current?.engine,
+                    cacheKind: 'audio-blob',
+                    audioCached: true,
+                    cachedPositions: getSortedSpeechCachePositions(speechSegmentCacheRef.current),
+                });
                 clearBackendSpeechAudio({stopAudio: false});
+                resetSpeechSegmentCache('playback-ended');
                 resetSpeechState();
             }
         }, 300);
-    }, [clearBackendSpeechAudio, resetSpeechState]);
+    }, [clearBackendSpeechAudio, resetSpeechSegmentCache, resetSpeechState]);
 
     const playNextBackendSpeechSegment = useCallback(() => {
         const backendState = backendSpeechAudioRef.current;
@@ -2519,23 +3480,42 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         // 严格按播放游标消费：后面的句子即使已缓存，也只能等待前一句真实播放结束。
         // 这样 generated/buffered progress 不会驱动 playback currentSegment 跳进度。
         if (!nextItem) {
-            const total = getBackendSpeechTotalSegments({requestId});
-            const laterReadyPositions = Array.from(queueState.readySegmentsByPosition.keys())
-                .map(Number)
-                .filter(position => Number.isInteger(position) && position > nextPosition)
-                .sort((left, right) => left - right);
+            const total = getBackendSpeechTotalSegments();
+            if (nextPosition >= total) {
+                if (backendState.generationEnded || speechSegmentCacheRef.current.inFlightPositions.size === 0) {
+                    finishBackendSpeechPlayback(requestId);
+                }
+                return;
+            }
 
-            // 不再自动跳过缺失 position。
-            // 如果后端明确发送了 chunkCount=0 的 Speech-Segment-Ready，前端会入队一个极短静音段，
-            // 让游标仍然通过 audio.onended 推进；如果这里仍然缺失，说明对应 position 的 Ready/Chunk 都没有正确进入队列，
-            // 继续等待并保留日志，避免从 0 直接跳到 2 造成“不是按播放完成切换”的表现。
-            if (backendState.generationEnded && nextPosition >= total) {
-                finishBackendSpeechPlayback(requestId);
+            const cache = speechSegmentCacheRef.current;
+            const alreadyGenerating = cache.inFlightPositions.has(nextPosition);
+            logSpeechCache('backend-cache-wait', {
+                sessionId: controller.requestId,
+                segmentPosition: nextPosition,
+                alreadyGenerating,
+                cachedPositions: getSortedSpeechCachePositions(cache),
+                generatingPositions: Array.from(cache.inFlightPositions).sort((left, right) => left - right),
+            });
+            setSpeechState(prev => ({
+                ...prev,
+                status: prev.status === 'paused' ? 'paused' : 'loading',
+                playbackStatus: 'waiting',
+            }));
+            if (!alreadyGenerating) {
+                requestMissingBackendSpeechSegments({
+                    startPosition: nextPosition,
+                    restartReason: 'cache-miss',
+                });
             }
             return;
         }
 
-        queueState.readySegmentsByPosition.delete(nextPosition);
+        logSpeechCache('backend-cache-hit', {
+            sessionId: controller.requestId,
+            segmentPosition: nextPosition,
+            cachedPositions: getSortedSpeechCachePositions(speechSegmentCacheRef.current),
+        });
 
         const audio = new Audio(nextItem.audioUrl);
         const rate = normalizeSpeechRate(controller.rate ?? speechStateRef.current?.rate ?? 1);
@@ -2553,8 +3533,14 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         // 后端 TTS 使用被动句子进度模式：本地 Audio 队列只负责播放音频，
         // 不写入 controller.currentIndex，避免上一句/下一句基于前端播放队列自行跳转。
         audio.playbackRate = rate;
+        logSpeechCache('backend-play-position', {
+            sessionId: controller.requestId,
+            generationRequestId: controller.generationRequestId,
+            segmentPosition,
+            synthesizedThrough: Math.max(...getSortedSpeechCachePositions(speechSegmentCacheRef.current), -1),
+        });
 
-        const cleanupCurrentAudio = ({revoke = true} = {}) => {
+        const cleanupCurrentAudio = () => {
             try {
                 if (typeof clearPlaybackTimers === 'function') clearPlaybackTimers();
             } catch (_) {
@@ -2568,17 +3554,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             backendState.currentSegmentIndex = -1;
             backendState.currentSegmentPosition = -1;
             backendState.playingSegmentPosition = -1;
-            backendState.queuedIds.delete(segmentId);
-            backendState.readySegmentIds?.delete?.(segmentId);
-
-            if (revoke && nextItem.revoke !== false && nextItem.audioUrl) {
-                try {
-                    URL.revokeObjectURL(nextItem.audioUrl);
-                } catch (_) {
-                    // 忽略重复释放。
-                }
-                backendState.objectUrls.delete(nextItem.audioUrl);
-            }
+            // 播放完成只释放 Audio 实例，不消费缓存。上一句/下一句会继续复用同一 Blob URL。
         };
 
         const isStalePlayback = () => (
@@ -2724,7 +3700,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 segmentId,
                 segmentIndex,
                 segmentPosition,
-                audioUrl,
+                audioUrl: nextItem.audioUrl,
                 mediaError: audio.error,
                 networkState: audio.networkState,
                 readyState: audio.readyState,
@@ -2747,7 +3723,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 segmentId,
                 segmentIndex,
                 segmentPosition,
-                audioUrl,
+                audioUrl: nextItem.audioUrl,
                 mediaError: audio.error,
                 networkState: audio.networkState,
                 readyState: audio.readyState,
@@ -2765,12 +3741,14 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         getBackendSpeechTotalSegments,
         normalizeProgressPercent,
         normalizeSpeechRate,
+        requestMissingBackendSpeechSegments,
         resetSpeechState,
         resolveBackendPayloadSegmentId,
         resolveBackendPayloadSegmentIndex,
         resolveBackendPayloadSegmentPosition,
         t,
     ]);
+    playNextBackendSpeechSegmentRef.current = playNextBackendSpeechSegment;
 
     const enqueueBackendSpeechSegment = useCallback((payload, audioUrl, revoke = true) => {
         const backendState = backendSpeechAudioRef.current;
@@ -2788,10 +3766,18 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
 
         if (!audioUrl || !requestId || backendState.cancelled) return false;
         if (!Number.isInteger(segmentPosition) || segmentPosition < 0) return false;
-        if (queueState.readySegmentsByPosition.has(segmentPosition)) return true;
-        if (segmentId && queueState.readySegmentIds.has(segmentId)) return true;
+        if (queueState.readySegmentsByPosition.has(segmentPosition) || (segmentId && queueState.readySegmentIds.has(segmentId))) {
+            if (revoke) {
+                try {
+                    URL.revokeObjectURL(audioUrl);
+                } catch (_) {
+                    // 重复结果直接释放。
+                }
+            }
+            logSpeechCache('backend-cache-duplicate', {requestId, segmentPosition});
+            return true;
+        }
 
-        backendState.requestId = requestId;
         backendState.messageId = payload?.messageId || payload?.message_id || payload?.msgId || payload?.msg_id || backendState.messageId;
         backendState.format = normalizeBackendAudioFormat(payload);
         backendState.mime = payload?.mime || backendState.mime;
@@ -2807,6 +3793,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         };
         queueState.readySegmentsByPosition.set(segmentPosition, queueItem);
         queueState.readySegmentIds.add(segmentId);
+        speechSegmentCacheRef.current.inFlightPositions.delete(segmentPosition);
         // 保留 queue 仅用于调试/兼容旧 UI，不再作为播放顺序来源。
         backendState.queue = Array.from(queueState.readySegmentsByPosition.values())
             .sort((left, right) => Number(left.segmentPosition) - Number(right.segmentPosition));
@@ -2814,16 +3801,20 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         ensureBackendProgressSets()?.bufferedSegmentPositions.add(segmentPosition);
         backendState.bufferedCount = Math.max(backendState.bufferedSegmentPositions?.size || 0, backendState.bufferedCount || 0);
         if (revoke) backendState.objectUrls.add(audioUrl);
+        logSpeechCache('backend-cache-ready', {
+            sessionId: speechControllerRef.current.requestId,
+            requestId,
+            segmentPosition,
+            cachedPositions: getSortedSpeechCachePositions(speechSegmentCacheRef.current),
+            remainingPositions: Array.from(speechSegmentCacheRef.current.inFlightPositions).sort((left, right) => left - right),
+        });
 
         const total = getBackendSpeechTotalSegments(payload);
         setSpeechState(prev => ({
             ...prev,
             generationStatus: prev.generationStatus === 'idle' ? 'generating' : prev.generationStatus,
-            bufferedSegmentCount: Math.max(prev.bufferedSegmentCount || 0, backendState.bufferedCount || 0),
-            bufferedSegmentPosition: Math.max(prev.bufferedSegmentPosition ?? -1, segmentPosition),
-            totalSegments: total || prev.totalSegments,
-            bufferPercent: normalizeProgressPercent(payload.bufferedPercent ?? payload.buffered_percent ?? payload.readyPercent ?? payload.ready_percent, backendState.bufferedCount || 0, total || prev.totalSegments),
         }));
+        updateCacheProgressState({total});
 
         playNextBackendSpeechSegment();
         return true;
@@ -2831,11 +3822,11 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         ensureBackendProgressSets,
         ensureBackendPlaybackQueueState,
         getBackendSpeechTotalSegments,
-        normalizeProgressPercent,
         playNextBackendSpeechSegment,
         resolveBackendPayloadSegmentId,
         resolveBackendPayloadSegmentIndex,
         resolveBackendPayloadSegmentPosition,
+        updateCacheProgressState,
     ]);
 
     const finalizeBackendSpeechSegmentFromBuffer = useCallback((readyPayload, segmentBuffer, segmentId) => {
@@ -2920,6 +3911,13 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         const segmentIndex = resolveBackendPayloadSegmentIndex(payload, getBackendSpeechSegmentIndex(payload, segmentPosition));
         const segmentId = resolveBackendPayloadSegmentId(payload, Number.isInteger(segmentPosition) && segmentPosition >= 0 ? `position:${segmentPosition}` : getBackendSpeechSegmentId(payload));
         if (!segmentId) return false;
+        if (Number.isInteger(segmentPosition) && speechSegmentCacheRef.current.entries.has(segmentPosition)) {
+            logSpeechCache('backend-chunk-skipped-cached', {
+                requestId: payload?.requestId || payload?.request_id,
+                segmentPosition,
+            });
+            return true;
+        }
         let segmentBuffer = backendState.chunks.get(segmentId);
 
         if (!segmentBuffer) {
@@ -3009,98 +4007,108 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         const segmentPosition = resolveBackendPayloadSegmentPosition(payload, getBackendSpeechSegmentPosition(payload, -1));
         if (backendState && Number.isInteger(segmentPosition) && segmentPosition >= 0) {
             backendState.generatedSegmentPositions.add(segmentPosition);
-            if (payload.phase === 'segment_ready' || payload.phase === 'ready') {
-                backendState.bufferedSegmentPositions.add(segmentPosition);
-            }
+            backendState.generatedCount = backendState.generatedSegmentPositions.size;
         }
 
-        const total = getBackendSpeechTotalSegments(payload);
-        const generatedCount = Number(payload.generatedCount ?? backendState?.generatedSegmentPositions?.size ?? 0);
-        const readyCount = Number(payload.readyCount ?? backendState?.bufferedSegmentPositions?.size ?? 0);
-        if (backendState) {
-            backendState.generatedCount = Math.max(backendState.generatedCount || 0, generatedCount);
-            backendState.bufferedCount = Math.max(backendState.bufferedCount || 0, readyCount);
-        }
+        const generatedPositions = Array.from(backendState?.generatedSegmentPositions || [])
+            .map(Number)
+            .filter(value => Number.isInteger(value) && value >= 0)
+            .sort((left, right) => left - right);
+        const generatedPosition = generatedPositions.length > 0 ? generatedPositions[generatedPositions.length - 1] : -1;
+        const cachedPositions = getSortedSpeechCachePositions(speechSegmentCacheRef.current);
+        const bufferedPosition = cachedPositions.length > 0 ? cachedPositions[cachedPositions.length - 1] : -1;
+        const total = getBackendSpeechTotalSegments();
+
+        logSpeechCache('backend-synthesis-position', {
+            sessionId: speechControllerRef.current.requestId,
+            requestId: payload.requestId || payload.request_id,
+            phase: payload.phase,
+            segmentPosition,
+            generatedPositions,
+            cachedPositions,
+        });
 
         setSpeechState(prev => ({
             ...prev,
             generationStatus: payload.phase === 'end' ? 'ended' : 'generating',
             generationPhase: payload.phase || prev.generationPhase,
-            generatedSegmentCount: Math.max(prev.generatedSegmentCount || 0, backendState?.generatedCount || generatedCount || 0),
-            bufferedSegmentCount: Math.max(prev.bufferedSegmentCount || 0, backendState?.bufferedCount || readyCount || 0),
+            generatedSegmentCount: generatedPositions.length,
+            bufferedSegmentCount: cachedPositions.length,
             totalSegments: total || prev.totalSegments,
-            generatedSegmentPosition: Math.max(prev.generatedSegmentPosition ?? -1, segmentPosition),
-            generationPercent: normalizeProgressPercent(payload.generatedPercent ?? payload.generated_percent, backendState?.generatedCount || generatedCount || 0, total || prev.totalSegments),
-            bufferPercent: normalizeProgressPercent(payload.readyPercent ?? payload.ready_percent, backendState?.bufferedCount || readyCount || 0, total || prev.totalSegments),
+            generatedSegmentPosition: generatedPosition,
+            bufferedSegmentPosition: bufferedPosition,
+            generationPercent: total > 0 ? Math.min(Math.max((generatedPosition + 1) / total, 0), 1) : 0,
+            bufferPercent: total > 0 ? Math.min(Math.max((bufferedPosition + 1) / total, 0), 1) : 0,
         }));
         return true;
-    }, [ensureBackendProgressSets, getBackendSpeechTotalSegments, normalizeProgressPercent, resolveBackendPayloadSegmentPosition]);
+    }, [ensureBackendProgressSets, getBackendSpeechTotalSegments, resolveBackendPayloadSegmentPosition]);
 
     const handleBackendSpeechBufferProgress = useCallback((payload = {}) => {
-        const backendState = ensureBackendProgressSets();
         const segmentPosition = resolveBackendPayloadSegmentPosition(payload, getBackendSpeechSegmentPosition(payload, -1));
-        if (backendState && Number.isInteger(segmentPosition) && segmentPosition >= 0) {
-            backendState.bufferedSegmentPositions.add(segmentPosition);
-            backendState.bufferedCount = Math.max(backendState.bufferedCount || 0, backendState.bufferedSegmentPositions.size);
-        }
+        const cachedPositions = getSortedSpeechCachePositions(speechSegmentCacheRef.current);
+        const bufferedPosition = cachedPositions.length > 0 ? cachedPositions[cachedPositions.length - 1] : -1;
+        const total = getBackendSpeechTotalSegments();
 
-        const total = getBackendSpeechTotalSegments(payload);
-        const bufferedCount = Number(payload.bufferedCount ?? payload.readyCount ?? backendState?.bufferedCount ?? 0);
-        if (backendState) backendState.bufferedCount = Math.max(backendState.bufferedCount || 0, bufferedCount);
-
+        logSpeechCache('backend-buffer-progress', {
+            sessionId: speechControllerRef.current.requestId,
+            requestId: payload.requestId || payload.request_id,
+            reportedPosition: segmentPosition,
+            cachedPositions,
+        });
         setSpeechState(prev => ({
             ...prev,
-            bufferedSegmentCount: Math.max(prev.bufferedSegmentCount || 0, backendState?.bufferedCount || bufferedCount || 0),
-            bufferedSegmentPosition: Math.max(prev.bufferedSegmentPosition ?? -1, segmentPosition),
+            bufferedSegmentCount: cachedPositions.length,
+            bufferedSegmentPosition: bufferedPosition,
             totalSegments: total || prev.totalSegments,
-            bufferPercent: normalizeProgressPercent(payload.bufferedPercent ?? payload.buffered_percent ?? payload.readyPercent ?? payload.ready_percent, backendState?.bufferedCount || bufferedCount || 0, total || prev.totalSegments),
+            bufferPercent: total > 0 ? Math.min(Math.max((bufferedPosition + 1) / total, 0), 1) : 0,
         }));
         return true;
-    }, [ensureBackendProgressSets, getBackendSpeechTotalSegments, normalizeProgressPercent, resolveBackendPayloadSegmentPosition]);
+    }, [getBackendSpeechTotalSegments, resolveBackendPayloadSegmentPosition]);
 
     const handleBackendSpeechEvent = useCallback((payload, reply) => {
         const requestId = payload?.requestId || payload?.request_id;
-        if (requestId && speechControllerRef.current.requestId && requestId !== speechControllerRef.current.requestId) {
-            reply?.({success: false, value: 'Speech request id mismatch'});
+        const cache = speechSegmentCacheRef.current;
+        const activeRequestId = cache.activeRequestId;
+
+        if (requestId && (!activeRequestId || requestId !== activeRequestId)) {
+            logSpeechCache('backend-stale-event-ignored', {
+                command: payload?.command,
+                requestId,
+                activeRequestId,
+            });
+            reply?.({success: true, value: 'Stale speech event ignored'});
             return;
         }
 
-        switch (payload?.command) {
+        const eventPayload = mapBackendSpeechPayload(payload);
+        switch (eventPayload?.command) {
             case 'Speech-Start': {
-                const requestId = payload.requestId || payload.request_id || speechControllerRef.current.requestId;
-                const messageId = payload.messageId || payload.message_id || payload.msgId || payload.msg_id || speechStateRef.current?.messageId;
+                const messageId = eventPayload.messageId || eventPayload.message_id || eventPayload.msgId || eventPayload.msg_id || speechStateRef.current?.messageId;
                 const backendState = backendSpeechAudioRef.current;
-                backendState.requestId = requestId || backendState.requestId;
+                backendState.activeGenerationRequestId = requestId || backendState.activeGenerationRequestId;
                 backendState.messageId = messageId || backendState.messageId;
-                backendState.engine = payload.engine || backendState.engine;
-                backendState.sampleRate = getBackendSpeechSampleRate(payload, backendState.sampleRate);
-                backendState.channels = getBackendSpeechChannels(payload, backendState.channels);
-                backendState.bitsPerSample = getBackendSpeechBitsPerSample(payload, backendState.bitsPerSample);
-                backendState.format = normalizeBackendAudioFormat(payload);
-                backendState.mime = payload.mime || backendState.mime;
-                const payloadStartPosition = Number(payload.startSegmentPosition ?? payload.start_segment_position ?? payload.startPosition ?? payload.start_position);
-                if (Number.isInteger(payloadStartPosition) && payloadStartPosition >= 0) {
-                    backendState.startSegmentPosition = payloadStartPosition;
-                    if (!Number.isInteger(backendState.nextPlaybackPosition) || backendState.nextPlaybackPosition < payloadStartPosition) {
-                        backendState.nextPlaybackPosition = payloadStartPosition;
-                    }
-                }
+                backendState.engine = eventPayload.engine || backendState.engine;
+                backendState.sampleRate = getBackendSpeechSampleRate(eventPayload, backendState.sampleRate);
+                backendState.channels = getBackendSpeechChannels(eventPayload, backendState.channels);
+                backendState.bitsPerSample = getBackendSpeechBitsPerSample(eventPayload, backendState.bitsPerSample);
+                backendState.format = normalizeBackendAudioFormat(eventPayload);
+                backendState.mime = eventPayload.mime || backendState.mime;
                 ensureBackendPlaybackQueueState();
 
-                const total = getBackendSpeechTotalSegments(payload);
+                logSpeechCache('backend-generation-start', {
+                    sessionId: speechControllerRef.current.requestId,
+                    requestId,
+                    requestedPositions: Array.from(cache.requestPositionMap.values()),
+                });
                 setSpeechState(prev => ({
                     ...prev,
-                    status: 'loading',
-                    requestId: requestId || prev.requestId,
+                    status: prev.status === 'paused' ? 'paused' : 'loading',
                     messageId: messageId || prev.messageId,
                     generationStatus: 'generating',
                     generationPhase: 'start',
-                    playbackStatus: 'waiting',
-                    totalSegments: total || prev.totalSegments,
-                    generationPercent: 0,
-                    bufferPercent: 0,
-                    playbackPercent: 0,
-                    rate: normalizeSpeechRate(payload.rate ?? prev.rate ?? 1),
+                    playbackStatus: backendState.playing ? 'playing' : prev.playbackStatus,
+                    totalSegments: getBackendSpeechTotalSegments(),
+                    rate: normalizeSpeechRate(eventPayload.rate ?? prev.rate ?? 1),
                 }));
                 reply?.({success: true});
                 break;
@@ -3126,59 +4134,70 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 break;
             }
             case 'Speech-Generation-Progress':
-                reply?.({success: handleBackendSpeechGenerationProgress(payload)});
+                reply?.({success: handleBackendSpeechGenerationProgress(eventPayload)});
                 break;
             case 'Speech-Buffer-Progress':
-                reply?.({success: handleBackendSpeechBufferProgress(payload)});
+                reply?.({success: handleBackendSpeechBufferProgress(eventPayload)});
                 break;
-            case 'Speech-End':
+            case 'Speech-End': {
                 backendSpeechAudioRef.current.generationEnded = true;
+                cache.inFlightPositions.clear();
+                const allCached = cache.entries.size >= getBackendSpeechTotalSegments();
+                logSpeechCache('backend-generation-end', {
+                    sessionId: speechControllerRef.current.requestId,
+                    requestId,
+                    allCached,
+                    cachedPositions: getSortedSpeechCachePositions(cache),
+                });
                 setSpeechState(prev => ({
                     ...prev,
-                    generationStatus: 'ended',
+                    generationStatus: allCached ? 'ended' : 'idle',
                     generationPhase: 'end',
-                    generationPercent: prev.totalSegments > 0 ? 1 : prev.generationPercent,
+                    generationPercent: allCached ? 1 : prev.generationPercent,
                 }));
                 playNextBackendSpeechSegment();
                 reply?.({success: true});
                 break;
+            }
             case 'Speech-Cancelled':
-                cancelActiveSpeech(false);
+                cache.inFlightPositions.clear();
+                logSpeechCache('backend-generation-cancelled', {requestId});
                 reply?.({success: true});
                 break;
             case 'Speech-Error':
+                cache.inFlightPositions.clear();
                 logSpeechPlayError('backend-speech-error-event', {
-                    requestId: payload.requestId || payload.request_id || speechControllerRef.current?.requestId,
-                    messageId: payload.messageId || payload.message_id || payload.msgId || payload.msg_id || speechStateRef.current?.messageId,
-                    payload,
-                    error: payload.value || payload.message || payload.error,
+                    requestId,
+                    messageId: eventPayload.messageId || eventPayload.message_id || eventPayload.msgId || eventPayload.msg_id || speechStateRef.current?.messageId,
+                    payload: eventPayload,
+                    error: eventPayload.value || eventPayload.message || eventPayload.error,
                 });
-                toast.error(t('speech_play_error', {message: payload.value || payload.message || t('unknown_error')}));
-                cancelActiveSpeech(false);
+                toast.error(t('speech_play_error', {message: eventPayload.value || eventPayload.message || t('unknown_error')}));
+                setSpeechState(prev => ({...prev, generationStatus: 'idle', generationPhase: 'error'}));
                 reply?.({success: true});
                 break;
             case 'Speech-Audio-Chunk':
-                reply?.({success: handleBackendSpeechAudioChunk(payload)});
+                reply?.({success: handleBackendSpeechAudioChunk(eventPayload)});
                 break;
             case 'Speech-Segment-Ready':
-                reply?.({success: handleBackendSpeechSegmentReady(payload)});
+                reply?.({success: handleBackendSpeechSegmentReady(eventPayload)});
                 break;
             default:
                 reply?.({success: true, value: 'Unknown speech event ignored'});
         }
     }, [
-        applyBackendSpeechPlaybackSegment,
-        cancelActiveSpeech,
         ensureBackendPlaybackQueueState,
+        getBackendSpeechTotalSegments,
         handleBackendSpeechAudioChunk,
         handleBackendSpeechBufferProgress,
         handleBackendSpeechGenerationProgress,
         handleBackendSpeechSegmentReady,
-        getBackendSpeechTotalSegments,
+        mapBackendSpeechPayload,
         normalizeSpeechRate,
         playNextBackendSpeechSegment,
         t,
     ]);
+
     return {
         speechState,
         speechAutoFollowEnabled,

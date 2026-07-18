@@ -33,6 +33,71 @@ const VOICE_WAVEFORM_BARS = 56;
 const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
 const CHATBOX_AUTO_HIDE_SETTING_KEY = 'ChatBoxBottomAutoHide';
 const CHATBOX_COLLAPSED_HEIGHT = 30;
+const CHATBOX_AUTO_HIDE_DELAY_MS = 2200;
+const CHATBOX_INPUT_DRAFT_STORAGE_PREFIX = 'chatbox-input-draft-v1';
+const CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY = 'chatbox:input-drafts:v1';
+
+const getStandaloneDraftStorageKey = (markId) => (
+    `${CHATBOX_INPUT_DRAFT_STORAGE_PREFIX}:${encodeURIComponent(String(markId ?? 'default'))}`
+);
+
+const readStandaloneDraft = (storageKey) => {
+    if (typeof window === 'undefined') return '';
+    try {
+        return window.localStorage.getItem(storageKey) || '';
+    } catch (_) {
+        return '';
+    }
+};
+
+const saveStandaloneDraft = (storageKey, content) => {
+    if (typeof window === 'undefined') return;
+    try {
+        if (content) {
+            window.localStorage.setItem(storageKey, content);
+        } else {
+            window.localStorage.removeItem(storageKey);
+        }
+    } catch (_) {
+        // 输入草稿保存失败不影响正常输入。
+    }
+};
+
+const getMessageDraftStore = (message, create = false) => {
+    if (!message || typeof message.getComponent !== 'function') return null;
+
+    let store = message.getComponent(CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY);
+    if (!store && create && typeof message.registerComponent === 'function') {
+        store = {};
+        message.registerComponent(CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY, store);
+    }
+    return store || null;
+};
+
+const readMessageDraft = (message, mode) => {
+    const store = getMessageDraftStore(message);
+    return Object.prototype.hasOwnProperty.call(store || {}, mode) ? store[mode] : undefined;
+};
+
+const saveMessageDraft = (message, mode, content) => {
+    const store = getMessageDraftStore(message, true);
+    if (!store) return;
+    store[mode] = content;
+};
+
+const clearMessageDraft = (message, mode) => {
+    const store = getMessageDraftStore(message);
+    if (!store) return;
+
+    delete store[mode];
+    if (
+        Object.keys(store).length === 0
+        && typeof message.unregisterComponent === 'function'
+        && message.getComponent(CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY) === store
+    ) {
+        message.unregisterComponent(CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY);
+    }
+};
 
 const normalizeVoiceRecognitionEngine = (value) => (
     String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote'
@@ -132,7 +197,9 @@ function ChatBox({
     const highZClass = isWindowMode ? 'z-[100000]' : '';
 
     // ========== 状态管理 ==========
-    const [messageContent, setMessageContent] = useState('');
+    const [messageContent, setMessageContent] = useState(() => (
+        readStandaloneDraft(getStandaloneDraftStorageKey(markId))
+    ));
     const [toolsStatus, setToolsStatus] = useState({});
 
     // 全屏编辑器
@@ -202,6 +269,13 @@ function ChatBox({
     const activeVoicePointerIdRef = useRef(null);
     const voicePermissionDialogResolverRef = useRef(null);
     const onVoiceRecordingCancelRef = useRef(onVoiceRecordingCancel);
+    const autoHideTimerRef = useRef(null);
+    const currentDraftStorageKeyRef = useRef(getStandaloneDraftStorageKey(markId));
+    const editDraftRef = useRef(null);
+    const isEditMessageRef = useRef(false);
+    const pendingEditClearRef = useRef(false);
+    const standaloneAttachmentsRef = useRef([]);
+    const previousMarkIdRef = useRef(markId);
     const [containerWidth, setContainerWidth] = useState(0);
 
 
@@ -215,11 +289,82 @@ function ChatBox({
 
 
     // ========== 回调函数（使用 useCallback 缓存）==========
+    const updateMessageContent = useCallback((valueOrUpdater, {persist = true} = {}) => {
+        const nextValue = typeof valueOrUpdater === 'function'
+            ? valueOrUpdater(messageContentRef.current)
+            : valueOrUpdater;
+        const normalizedValue = nextValue == null ? '' : String(nextValue);
+
+        messageContentRef.current = normalizedValue;
+        setMessageContent(normalizedValue);
+
+        if (!persist) return normalizedValue;
+
+        const editDraft = editDraftRef.current;
+        if (editDraft) {
+            saveMessageDraft(editDraft.message, editDraft.mode, normalizedValue);
+        } else {
+            saveStandaloneDraft(currentDraftStorageKeyRef.current, normalizedValue);
+        }
+
+        return normalizedValue;
+    }, []);
+
+    const leaveEditMode = useCallback(({promoteToStandalone = false} = {}) => {
+        const nextContent = promoteToStandalone
+            ? messageContentRef.current
+            : readStandaloneDraft(currentDraftStorageKeyRef.current);
+
+        editDraftRef.current = null;
+        isEditMessageRef.current = false;
+        setIsEditMessage(false);
+        setIsForkMode(false);
+        setEditMessageId(null);
+        setAttachments(standaloneAttachmentsRef.current);
+        updateMessageContent(nextContent, {persist: promoteToStandalone});
+    }, [setAttachments, updateMessageContent]);
+
+    // ×：退出编辑/Fork，并把当前内容覆盖到普通输入框中。
+    // 消息上的未完成草稿仍然保留，之后再次编辑/Fork 时可继续恢复。
+    const handleCancelEdit = useCallback(() => {
+        leaveEditMode({promoteToStandalone: true});
+    }, [leaveEditMode]);
+
+    // 垃圾桶：仅退出编辑/Fork，恢复进入编辑前的普通输入内容。
+    // 不删除消息上的未完成草稿，也不把编辑内容带入普通发送。
+    const handleClearEdit = useCallback(() => {
+        leaveEditMode();
+    }, [leaveEditMode]);
+
+    const clearAutoHideTimer = useCallback(() => {
+        if (!autoHideTimerRef.current) return;
+        window.clearTimeout(autoHideTimerRef.current);
+        autoHideTimerRef.current = null;
+    }, []);
+
+    const showCollapsedChatBox = useCallback(({focus = false} = {}) => {
+        clearAutoHideTimer();
+        setIsChatBoxCollapsed(false);
+
+        if (focus) {
+            requestAnimationFrame(() => textareaRef.current?.focus({preventScroll: true}));
+        }
+    }, [clearAutoHideTimer]);
+
+    const handleInputActivity = useCallback(() => {
+        if (!isSmallScreen) {
+            showCollapsedChatBox();
+        }
+    }, [isSmallScreen, showCollapsedChatBox]);
+
     const handleSendMessage = useCallback(() => {
+        const activeEditDraft = editDraftRef.current;
+        const wasEditing = isEditMessageRef.current;
+
         onSendMessage({
             messageContent: messageContentRef.current,
             toolsStatus: toolsStatus,
-            isEditMessage: isEditMessage,
+            isEditMessage: wasEditing,
             editMessageId: editMessageId,
             attachments: attachmentsMeta,
             sendButtonStatus: sendButtonStatusRef.current,
@@ -228,11 +373,16 @@ function ChatBox({
             isFork: isForkMode
         });
         textareaRef.current?.focus();
-        setIsForkMode(false);
-        setIsEditMessage(false);
-    }, [onSendMessage, toolsStatus, isEditMessage, editMessageId, attachmentsMeta, currentRole, isForkMode]);
+
+        if (wasEditing) {
+            if (activeEditDraft) clearMessageDraft(activeEditDraft.message, activeEditDraft.mode);
+            pendingEditClearRef.current = true;
+            leaveEditMode();
+        }
+    }, [onSendMessage, toolsStatus, editMessageId, attachmentsMeta, currentRole, isForkMode, leaveEditMode]);
 
     const handleKeyDown = useCallback((e) => {
+        handleInputActivity();
         if (e.key !== 'Enter') return;
 
         // 移动端 Enter 始终作为普通换行处理，不拦截默认行为，也不触发发送。
@@ -256,16 +406,14 @@ function ChatBox({
             return;
         }
         handleSendMessage();
-    }, [handleSendMessage, isSmallScreen, t, tipMessageIsForNewLine]);
+    }, [handleInputActivity, handleSendMessage, isSmallScreen, t, tipMessageIsForNewLine]);
 
     const handleInputChange = useCallback((newValue) => {
         if (isReadOnly) return;
 
-        // 更新 ref 值，不触发重新渲染
-        messageContentRef.current = newValue;
+        handleInputActivity();
 
-        // 更新状态，触发重新渲染
-        setMessageContent(newValue);
+        updateMessageContent(newValue);
 
         // 防抖处理快捷选项状态更新
         if (selectedQuickOption !== null) {
@@ -274,7 +422,7 @@ function ChatBox({
                 setSelectedQuickOption(null);
             }
         }
-    }, [isReadOnly, selectedQuickOption, quickOptions]);
+    }, [handleInputActivity, isReadOnly, selectedQuickOption, quickOptions, updateMessageContent]);
 
     const handlePaste = useCallback((e) => {
         const clipboardData = e.clipboardData || window.clipboardData;
@@ -296,19 +444,17 @@ function ChatBox({
     const handleOptionClick = useCallback((option) => {
         if (selectedQuickOption === option.id) {
             if (messageContentRef.current === option.value) {
-                messageContentRef.current = '';
-                setMessageContent('');
+                updateMessageContent('');
                 setSelectedQuickOption(null);
             } else {
                 setSelectedQuickOption(null);
             }
         } else {
-            messageContentRef.current = option.value;
-            setMessageContent(option.value);
+            updateMessageContent(option.value);
             setSelectedQuickOption(option.id);
             textareaRef.current?.focus();
         }
-    }, [selectedQuickOption]);
+    }, [selectedQuickOption, updateMessageContent]);
 
     const closeVoicePermissionDialog = useCallback((result = false) => {
         const resolver = voicePermissionDialogResolverRef.current;
@@ -378,17 +524,15 @@ function ChatBox({
         const normalizedText = String(text || '').trim();
         if (!normalizedText) return;
 
-        setMessageContent((previousValue) => {
+        updateMessageContent((previousValue) => {
             const separator = previousValue && !/\s$/.test(previousValue) ? ' ' : '';
-            const nextValue = `${previousValue || ''}${separator}${normalizedText}`;
-            messageContentRef.current = nextValue;
-            return nextValue;
+            return `${previousValue || ''}${separator}${normalizedText}`;
         });
 
         // 语音识别回填文本时不要主动 focus 输入框。
         // 移动端主动 blur，避免识别完成后软键盘被唤起。
         blurTextInputOnMobile();
-    }, [blurTextInputOnMobile]);
+    }, [blurTextInputOnMobile, updateMessageContent]);
 
     const getVoiceRecognitionText = useCallback((result) => {
         if (typeof result === 'string') return result;
@@ -575,11 +719,8 @@ function ChatBox({
         }
     }, [stopVoiceRecording]);
 
-    const showCollapsedChatBox = useCallback(() => {
-        setIsChatBoxCollapsed(false);
-    }, []);
-
     const handleAutoHideToggle = useCallback(() => {
+        clearAutoHideTimer();
         if (isSmallScreen) {
             setIsBottomAutoHideEnabled(true);
             setIsChatBoxCollapsed(true);
@@ -594,19 +735,23 @@ function ChatBox({
             }
             return nextValue;
         });
-    }, [isSmallScreen]);
+    }, [clearAutoHideTimer, isSmallScreen]);
 
     const handleChatBoxMouseEnter = useCallback(() => {
         if (!isSmallScreen && isBottomAutoHideEnabled) {
-            setIsChatBoxCollapsed(false);
+            showCollapsedChatBox();
         }
-    }, [isBottomAutoHideEnabled, isSmallScreen]);
+    }, [isBottomAutoHideEnabled, isSmallScreen, showCollapsedChatBox]);
 
     const handleChatBoxMouseLeave = useCallback(() => {
         if (!isSmallScreen && isBottomAutoHideEnabled) {
-            setIsChatBoxCollapsed(true);
+            clearAutoHideTimer();
+            autoHideTimerRef.current = window.setTimeout(() => {
+                autoHideTimerRef.current = null;
+                setIsChatBoxCollapsed(true);
+            }, CHATBOX_AUTO_HIDE_DELAY_MS);
         }
-    }, [isBottomAutoHideEnabled, isSmallScreen]);
+    }, [clearAutoHideTimer, isBottomAutoHideEnabled, isSmallScreen]);
 
     // ========== 工具初始化函数 ==========
 
@@ -765,7 +910,7 @@ function ChatBox({
                 }
                 break;
             case "Set-MessageContent":
-                setMessageContent(payload.value);
+                updateMessageContent(payload.value);
                 break;
             case "Get-MessageContent":
                 reply({value: messageContentRef.current});
@@ -812,10 +957,25 @@ function ChatBox({
                         }
                     );
                 } else {
+                    if (!isEditMessageRef.current) {
+                        standaloneAttachmentsRef.current = [...attachmentsMeta];
+                    }
+
+                    const draftMode = payload.isFork ? 'fork' : 'edit';
+                    const targetMessage = payload.message || null;
+                    const restoredDraft = readMessageDraft(targetMessage, draftMode);
+
+                    editDraftRef.current = {message: targetMessage, mode: draftMode};
+                    isEditMessageRef.current = Boolean(payload.isEdit);
+                    pendingEditClearRef.current = false;
+
                     setIsEditMessage(Boolean(payload.isEdit));
                     setIsForkMode(Boolean(payload.isFork));
-                    if (payload.attachments) setAttachments(payload.attachments);
-                    if (payload.content) setMessageContent(payload.content);
+                    if (payload.attachments !== undefined) setAttachments(payload.attachments);
+                    updateMessageContent(
+                        restoredDraft !== undefined ? restoredDraft : (payload.content ?? ''),
+                        {persist: false}
+                    );
                     if (payload.msgId) setEditMessageId(payload.msgId);
                     if (payload.role) {
                         const foundRole = roles.find(item => item.name === payload.role)
@@ -825,13 +985,19 @@ function ChatBox({
                             setCurrentRole({name: payload.role, text: "?"});
                         }
                     }
+                    showCollapsedChatBox({focus: true});
                 }
 
                 break;
 
             case "Clear":
-                setAttachments([]);
-                setMessageContent("");
+                if (pendingEditClearRef.current) {
+                    pendingEditClearRef.current = false;
+                    leaveEditMode();
+                } else {
+                    setAttachments([]);
+                    updateMessageContent("");
+                }
                 break;
 
             case "Shot-Message":  // 原地发送消息
@@ -921,9 +1087,14 @@ function ChatBox({
                                         notReplyToWebsocket: true
                                     }).then(data => {
                                         if (!payload.noClear) {
-                                            setIsEditMessage(false);
-                                            setMessageContent("");
-                                            setAttachments([]);
+                                            if (isEditMessageRef.current) {
+                                                const editDraft = editDraftRef.current;
+                                                if (editDraft) clearMessageDraft(editDraft.message, editDraft.mode);
+                                                leaveEditMode();
+                                            } else {
+                                                updateMessageContent("");
+                                                setAttachments([]);
+                                            }
                                         }
                                         reply(data);
                                     })
@@ -941,7 +1112,7 @@ function ChatBox({
 
                 break;
         }
-    }, [chatboxSetup, onSendMessage, setAttachments, toolsStatus, markId]);
+    }, [attachmentsMeta, chatboxSetup, leaveEditMode, markId, onSendMessage, roles, setAttachments, showCollapsedChatBox, toolsStatus, updateMessageContent]);
 
     const renderMenuItems = useExtraToolsMenuItems({
         toolsStatus,
@@ -959,8 +1130,9 @@ function ChatBox({
     useEffect(() => {
         sendButtonStatusRef.current = sendButtonStatus;
         messageContentRef.current = messageContent;
+        isEditMessageRef.current = isEditMessage;
         onVoiceRecordingCancelRef.current = onVoiceRecordingCancel;
-    }, [sendButtonStatus, messageContent, onVoiceRecordingCancel]);
+    }, [sendButtonStatus, messageContent, isEditMessage, onVoiceRecordingCancel]);
 
     // 窗口模式下全屏编辑器填满 windowRef（位置 + 大小）
     useLayoutEffect(() => {
@@ -1017,9 +1189,11 @@ function ChatBox({
     // 桌面端为开关制靠底隐藏；移动端只保留点击隐藏/展开的按钮制。
     useEffect(() => {
         if (!isSmallScreen && !isBottomAutoHideEnabled) {
-            setIsChatBoxCollapsed(false);
+            showCollapsedChatBox();
         }
-    }, [isBottomAutoHideEnabled, isSmallScreen]);
+    }, [isBottomAutoHideEnabled, isSmallScreen, showCollapsedChatBox]);
+
+    useEffect(() => () => clearAutoHideTimer(), [clearAutoHideTimer]);
 
     // 只读/卸载时停止录音并释放麦克风。
     useEffect(() => {
@@ -1069,10 +1243,22 @@ function ChatBox({
         return () => unsubscribe();
     }, [handleEventBroadcast, markId]);
 
-    // 页面切换清理
+    // 页面切换时恢复对应会话的普通输入草稿。
     useEffect(() => {
+        if (previousMarkIdRef.current === markId) return;
+
+        previousMarkIdRef.current = markId;
+        currentDraftStorageKeyRef.current = getStandaloneDraftStorageKey(markId);
+        editDraftRef.current = null;
+        isEditMessageRef.current = false;
+        pendingEditClearRef.current = false;
+        standaloneAttachmentsRef.current = [];
         setIsEditMessage(false);
-    }, [markId]);
+        setIsForkMode(false);
+        setEditMessageId(null);
+        setAttachments([]);
+        updateMessageContent(readStandaloneDraft(currentDraftStorageKeyRef.current), {persist: false});
+    }, [markId, setAttachments, updateMessageContent]);
 
     // 更新附件高度
     useEffect(() => {
@@ -1329,11 +1515,9 @@ function ChatBox({
                     <div className="pt-2 pl-2 pr-2">
                         <EditMessageIndicator
                             isForkMode={isForkMode}
-                            setIsForkMode={setIsForkMode}
                             isEditMessage={isEditMessage}
-                            setIsEditMessage={setIsEditMessage}
-                            setAttachments={setAttachments}
-                            setMessageContent={setMessageContent}
+                            onCancel={handleCancelEdit}
+                            onClear={handleClearEdit}
                             t={t}
                         />
 
@@ -1343,6 +1527,7 @@ function ChatBox({
                             onChange={handleInputChange}
                             onPaste={handlePaste}
                             onKeyDown={handleKeyDown}
+                            onInputActivity={handleInputActivity}
                             isReadOnly={isReadOnly}
                             placeholder={t('input_placeholder')}
                             textareaRef={textareaRef}
@@ -1453,7 +1638,7 @@ function ChatBox({
                     isWindowMode={isWindowMode}
                     modalPosition={modalPosition}
                     messageContent={messageContent}
-                    setMessageContent={setMessageContent}
+                    setMessageContent={updateMessageContent}
                     isReadOnly={isReadOnly}
                     onClose={() => setIsModalOpen(false)}
                     t={t}

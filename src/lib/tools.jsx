@@ -4,6 +4,11 @@ import apiClient from '@/lib/apiClient';
 import {useEffect, useState} from "react";
 import ThreeDotLoading from "@/components/ui/ThreeDotLoading.jsx";
 
+export const TTS_LOCAL_SETTING_KEYS = Object.freeze({
+    browserVoice: 'chat-browser-speech-voice-v1',
+    playerPosition: 'chat-speech-player-position-v3',
+});
+
 export function processSelectedFiles(files) {
     if (!files) {
         return [];

@@ -5,24 +5,18 @@ import {GitBranch, PenLine, Trash2, X} from 'lucide-react';
 const EditMessageIndicator = memo((
     {
         isEditMessage,
-        setIsEditMessage,
         isForkMode,
-        setIsForkMode,
-        setAttachments,
-        setMessageContent,
+        onCancel,
+        onClear,
         t
     }) => {
     const handleCancel = useCallback(() => {
-        setIsEditMessage(false);
-        setIsForkMode(false);
-    }, [setIsEditMessage, setIsForkMode]);
+        onCancel?.();
+    }, [onCancel]);
 
     const handleClear = useCallback(() => {
-        setIsEditMessage(false);
-        setIsForkMode(false);
-        setAttachments([]);
-        setMessageContent('');
-    }, [setIsEditMessage, setIsForkMode, setAttachments, setMessageContent]);
+        onClear?.();
+    }, [onClear]);
 
     if (!isEditMessage) return null;
 
@@ -77,11 +71,9 @@ const EditMessageIndicator = memo((
     return (
         prevProps.isEditMessage === nextProps.isEditMessage &&
         prevProps.isForkMode === nextProps.isForkMode &&
-        prevProps.setIsForkMode === nextProps.setIsForkMode &&
         prevProps.t === nextProps.t &&
-        prevProps.setIsEditMessage === nextProps.setIsEditMessage &&
-        prevProps.setAttachments === nextProps.setAttachments &&
-        prevProps.setMessageContent === nextProps.setMessageContent
+        prevProps.onCancel === nextProps.onCancel &&
+        prevProps.onClear === nextProps.onClear
     );
 });
 

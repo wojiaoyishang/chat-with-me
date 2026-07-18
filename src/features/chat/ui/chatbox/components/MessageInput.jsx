@@ -22,6 +22,7 @@ const MessageInput = memo(({
                                onChange,
                                onPaste,
                                onKeyDown,
+                               onInputActivity,
                                isReadOnly,
                                placeholder,
                                textareaRef,
@@ -196,8 +197,13 @@ const MessageInput = memo(({
     }, [adjustTextareaHeight, isVoiceRecording, isVoiceRecognizing, textareaRef]);
 
     const handleChange = useCallback((e) => {
+        onInputActivity?.();
         onChange(e.target.value);
-    }, [onChange]);
+    }, [onChange, onInputActivity]);
+
+    const handleInputActivity = useCallback(() => {
+        onInputActivity?.();
+    }, [onInputActivity]);
 
     const handlePaste = useCallback((e) => {
         onPaste?.(e);
@@ -264,6 +270,9 @@ const MessageInput = memo(({
             onChange={handleChange}
             onPaste={handlePaste}
             onKeyDown={onKeyDown}
+            onBeforeInput={handleInputActivity}
+            onCompositionStart={handleInputActivity}
+            onFocus={handleInputActivity}
             placeholder={placeholder}
             rows={1}
             readOnly={isReadOnly}
@@ -285,7 +294,8 @@ const MessageInput = memo(({
         prevProps.voiceRecognizingText === nextProps.voiceRecognizingText &&
         prevProps.onChange === nextProps.onChange &&
         prevProps.onPaste === nextProps.onPaste &&
-        prevProps.onKeyDown === nextProps.onKeyDown
+        prevProps.onKeyDown === nextProps.onKeyDown &&
+        prevProps.onInputActivity === nextProps.onInputActivity
     );
 });
 

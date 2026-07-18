@@ -70,6 +70,7 @@ export const handleMessageAction = (action, msg, {markId, msgId}, t) => {
                 payload: {
                     command: 'Set-EditMessage',
                     isEdit: true,
+                    message: msg,
                     attachments: msg.attachments,
                     content: msg.content,
                     msgId,
@@ -130,6 +131,7 @@ export const handleMessageAction = (action, msg, {markId, msgId}, t) => {
                     isEdit: true,
                     isFork: true,
                     isRegenerate: true,
+                    message: msg,
                     attachments: msg.attachments,
                     content: msg.content,
                     msgId,
