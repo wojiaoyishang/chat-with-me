@@ -1,5 +1,5 @@
 import React, {useCallback, useState} from 'react';
-import {Check, ChevronDown, Minus, Square} from 'lucide-react';
+import {Check, ChevronDown, Hand, Minus, Square, ThumbsDown, ThumbsUp} from 'lucide-react';
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
@@ -148,19 +148,21 @@ export const useExtraToolsMenuItems = ({
                                 >
                                     <div className={MOBILE_ACCORDION_PANEL_INNER_CLASS}>
                                         <div className={MOBILE_ACCORDION_CONTENT_CLASS}>
-                                            <DropdownMenuItem
-                                                onSelect={(e) => e.preventDefault()}
-                                                onClick={handleToggleAll}
-                                                className={MOBILE_ACCORDION_ITEM_CLASS}
-                                            >
-                                                <span className={MENU_ITEM_TEXT_CLASS} title={t('select_all')}>{t('select_all')}</span>
-                                                {checkState === 'checked' && <Check className="ml-2 w-4 h-4 shrink-0 text-blue-500"/>}
-                                                {checkState === 'indeterminate' &&
-                                                    <Minus className="ml-2 w-4 h-4 shrink-0 text-blue-500"/>}
-                                                {checkState === 'unchecked' &&
-                                                    <Square className="ml-2 w-4 h-4 shrink-0 text-gray-500"/>}
-                                            </DropdownMenuItem>
-                                            <div className="mt-1 border-t border-gray-100 pt-1">
+                                            {nestedTogglePaths.length > 0 && (
+                                                <DropdownMenuItem
+                                                    onSelect={(e) => e.preventDefault()}
+                                                    onClick={handleToggleAll}
+                                                    className={MOBILE_ACCORDION_ITEM_CLASS}
+                                                >
+                                                    <span className={MENU_ITEM_TEXT_CLASS} title={t('select_all')}>{t('select_all')}</span>
+                                                    {checkState === 'checked' && <Check className="ml-2 w-4 h-4 shrink-0 text-blue-500"/>}
+                                                    {checkState === 'indeterminate' &&
+                                                        <Minus className="ml-2 w-4 h-4 shrink-0 text-blue-500"/>}
+                                                    {checkState === 'unchecked' &&
+                                                        <Square className="ml-2 w-4 h-4 shrink-0 text-gray-500"/>}
+                                                </DropdownMenuItem>
+                                            )}
+                                            <div className={nestedTogglePaths.length > 0 ? "mt-1 border-t border-gray-100 pt-1" : ""}>
                                                 {renderMenuItems(item.children, currentPath)}
                                             </div>
                                         </div>
@@ -193,19 +195,23 @@ export const useExtraToolsMenuItems = ({
 
                             {!isDisabled && (
                                 <>
-                                    <DropdownMenuItem
-                                        onSelect={(e) => e.preventDefault()}
-                                        onClick={handleToggleAll}
-                                        className="flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100"
-                                    >
-                                        <span className={MENU_ITEM_TEXT_CLASS} title={t('select_all')}>{t('select_all')}</span>
-                                        {checkState === 'checked' && <Check className="ml-2 w-4 h-4 shrink-0 text-blue-500"/>}
-                                        {checkState === 'indeterminate' &&
-                                            <Minus className="ml-2 w-4 h-4 shrink-0 text-blue-500"/>}
-                                        {checkState === 'unchecked' &&
-                                            <Square className="ml-2 w-4 h-4 shrink-0 text-gray-500"/>}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator/>
+                                    {nestedTogglePaths.length > 0 && (
+                                        <>
+                                            <DropdownMenuItem
+                                                onSelect={(e) => e.preventDefault()}
+                                                onClick={handleToggleAll}
+                                                className="flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100"
+                                            >
+                                                <span className={MENU_ITEM_TEXT_CLASS} title={t('select_all')}>{t('select_all')}</span>
+                                                {checkState === 'checked' && <Check className="ml-2 w-4 h-4 shrink-0 text-blue-500"/>}
+                                                {checkState === 'indeterminate' &&
+                                                    <Minus className="ml-2 w-4 h-4 shrink-0 text-blue-500"/>}
+                                                {checkState === 'unchecked' &&
+                                                    <Square className="ml-2 w-4 h-4 shrink-0 text-gray-500"/>}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator/>
+                                        </>
+                                    )}
                                     <div className={GROUP_SUB_MENU_SCROLL_CLASS}>
                                         {renderMenuItems(item.children, currentPath)}
                                     </div>
@@ -213,6 +219,64 @@ export const useExtraToolsMenuItems = ({
                             )}
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
+                );
+            }
+
+            if (item.type === 'tool') {
+                const isDisabled = item.disabled;
+                const currentPath = [...parentPath, item.name];
+                const rawMode = getNestedValue(toolsStatus.extra_tools, currentPath);
+                const currentMode = typeof rawMode === 'boolean'
+                    ? (rawMode ? 'allow' : 'deny')
+                    : (['allow', 'deny', 'ask'].includes(rawMode) ? rawMode : 'ask');
+                const modes = [
+                    {value: 'allow', label: t('tool_permission_allow', '允许'), Icon: ThumbsUp},
+                    {value: 'ask', label: t('tool_permission_ask', '询问'), Icon: Hand},
+                    {value: 'deny', label: t('tool_permission_deny', '拒绝'), Icon: ThumbsDown},
+                ];
+                const setMode = (event, mode) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (isDisabled) return;
+                    setToolsStatus(prev => ({
+                        ...prev,
+                        extra_tools: setNestedValue({...prev.extra_tools}, currentPath, mode),
+                    }));
+                };
+
+                return (
+                    <div
+                        key={`tool-${item.name}`}
+                        className={`${isMobileMenu ? 'rounded-lg px-2.5 py-2' : 'px-2 py-1.5'} ${
+                            isDisabled ? 'pointer-events-none opacity-60' : ''
+                        }`}
+                    >
+                        <div className="flex min-w-0 items-center gap-2">
+                            {item.iconData && renderIcon(item.iconType, item.iconData)}
+                            <span className={`${MENU_ITEM_TEXT_CLASS} text-sm text-gray-700`} title={t(item.text)}>{t(item.text)}</span>
+                        </div>
+                        <div className="mt-1.5 grid grid-cols-3 rounded-lg bg-gray-100 p-0.5">
+                            {modes.map(({value, label, Icon}) => {
+                                const selected = currentMode === value;
+                                return (
+                                    <button
+                                        key={value}
+                                        type="button"
+                                        title={label}
+                                        aria-label={`${t(item.text)}：${label}`}
+                                        aria-pressed={selected}
+                                        onClick={(event) => setMode(event, value)}
+                                        className={`flex h-7 min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md px-1.5 text-[11px] transition disabled:cursor-not-allowed ${
+                                            selected ? 'bg-white font-medium text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                                        }`}
+                                    >
+                                        <Icon className="h-3.5 w-3.5 shrink-0"/>
+                                        <span className="truncate">{label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                 );
             }
 

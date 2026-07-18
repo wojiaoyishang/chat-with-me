@@ -17,6 +17,7 @@ import EditMessageIndicator from './chatbox/components/EditMessageIndicator';
 import SendButton from './chatbox/components/SendButton';
 import VoiceInputButton from './chatbox/components/VoiceInputButton';
 import VoicePermissionDialog from './chatbox/components/VoicePermissionDialog';
+import ChatBoxInteractionHost from './chatbox/components/ChatBoxInteractionHost';
 import RoleSelector from './chatbox/components/RoleSelector';
 import FullscreenEditorModal from './chatbox/components/FullscreenEditorModal';
 import {useExtraToolsMenuItems} from './chatbox/components/ExtraToolsMenuItems';
@@ -133,6 +134,33 @@ const applyLocalSettingBackedExtraToolStatus = (status, toolsConfig = []) => {
 
     visit(toolsConfig);
     return result;
+};
+
+
+const collectToolPermissions = (toolsConfig = [], status = {}) => {
+    const permissions = {};
+
+    const visit = (items = [], currentStatus = {}) => {
+        items.forEach((item) => {
+            if (!item?.name) return;
+
+            const value = currentStatus?.[item.name];
+            if (item.type === 'tool') {
+                const mode = typeof value === 'boolean'
+                    ? (value ? 'allow' : 'deny')
+                    : String(value || item.default || 'ask').toLowerCase();
+                permissions[item.name] = ['allow', 'deny', 'ask'].includes(mode) ? mode : 'ask';
+                return;
+            }
+
+            if (item.type === 'group' && item.children) {
+                visit(item.children, value && typeof value === 'object' ? value : {});
+            }
+        });
+    };
+
+    visit(toolsConfig, status);
+    return permissions;
 };
 
 // ========== 主组件 ==========
@@ -357,13 +385,18 @@ function ChatBox({
         }
     }, [isSmallScreen, showCollapsedChatBox]);
 
+    const buildOutboundToolsStatus = useCallback(() => ({
+        ...toolsStatus,
+        tool_permissions: collectToolPermissions(extraTools, toolsStatus.extra_tools || {}),
+    }), [extraTools, toolsStatus]);
+
     const handleSendMessage = useCallback(() => {
         const activeEditDraft = editDraftRef.current;
         const wasEditing = isEditMessageRef.current;
 
         onSendMessage({
             messageContent: messageContentRef.current,
-            toolsStatus: toolsStatus,
+            toolsStatus: buildOutboundToolsStatus(),
             isEditMessage: wasEditing,
             editMessageId: editMessageId,
             attachments: attachmentsMeta,
@@ -379,7 +412,7 @@ function ChatBox({
             pendingEditClearRef.current = true;
             leaveEditMode();
         }
-    }, [onSendMessage, toolsStatus, editMessageId, attachmentsMeta, currentRole, isForkMode, leaveEditMode]);
+    }, [onSendMessage, buildOutboundToolsStatus, editMessageId, attachmentsMeta, currentRole, isForkMode, leaveEditMode]);
 
     const handleKeyDown = useCallback((e) => {
         handleInputActivity();
@@ -762,6 +795,11 @@ function ChatBox({
                 if (!item.name) return;
                 if (item.type === 'toggle') {
                     status[item.name] = !!item.default;
+                } else if (item.type === 'tool') {
+                    const defaultMode = typeof item.default === 'boolean'
+                        ? (item.default ? 'allow' : 'deny')
+                        : String(item.default || 'ask').toLowerCase();
+                    status[item.name] = ['allow', 'deny', 'ask'].includes(defaultMode) ? defaultMode : 'ask';
                 } else if (item.type === 'radio' && item.children?.length > 0) {
                     let defaultValue;
                     if (item.default) {
@@ -945,7 +983,7 @@ function ChatBox({
                     onSendMessage(
                         {
                             messageContent: payload.content,
-                            toolsStatus: toolsStatus,
+                            toolsStatus: buildOutboundToolsStatus(),
                             isEditMessage: true,
                             editMessageId: payload.msgId,
                             attachments: payload.attachments,
@@ -1112,7 +1150,7 @@ function ChatBox({
 
                 break;
         }
-    }, [attachmentsMeta, chatboxSetup, leaveEditMode, markId, onSendMessage, roles, setAttachments, showCollapsedChatBox, toolsStatus, updateMessageContent]);
+    }, [attachmentsMeta, buildOutboundToolsStatus, chatboxSetup, leaveEditMode, markId, onSendMessage, roles, setAttachments, showCollapsedChatBox, toolsStatus, updateMessageContent]);
 
     const renderMenuItems = useExtraToolsMenuItems({
         toolsStatus,
@@ -1245,10 +1283,15 @@ function ChatBox({
 
     // 页面切换时恢复对应会话的普通输入草稿。
     useEffect(() => {
-        if (previousMarkIdRef.current === markId) return;
+        const previousMarkId = previousMarkIdRef.current;
+        if (previousMarkId === markId) return;
+
+        const previousStorageKey = currentDraftStorageKeyRef.current;
+        const nextStorageKey = getStandaloneDraftStorageKey(markId);
+        const isNewConversationAssigned = !previousMarkId && Boolean(markId);
 
         previousMarkIdRef.current = markId;
-        currentDraftStorageKeyRef.current = getStandaloneDraftStorageKey(markId);
+        currentDraftStorageKeyRef.current = nextStorageKey;
         editDraftRef.current = null;
         isEditMessageRef.current = false;
         pendingEditClearRef.current = false;
@@ -1256,8 +1299,18 @@ function ChatBox({
         setIsEditMessage(false);
         setIsForkMode(false);
         setEditMessageId(null);
+
+        // 新对话首次发送时，Get-MarkId 会先让 markId 从空值切换为正式 ID。
+        // 此时保留当前输入与附件，避免随后的 Shot-Message 回读到空内容；
+        // 同时把普通草稿迁移到正式会话键，后端发送 Clear 后会正常删除。
+        if (isNewConversationAssigned) {
+            saveStandaloneDraft(previousStorageKey, '');
+            saveStandaloneDraft(nextStorageKey, messageContentRef.current);
+            return;
+        }
+
         setAttachments([]);
-        updateMessageContent(readStandaloneDraft(currentDraftStorageKeyRef.current), {persist: false});
+        updateMessageContent(readStandaloneDraft(nextStorageKey), {persist: false});
     }, [markId, setAttachments, updateMessageContent]);
 
     // 更新附件高度
@@ -1444,6 +1497,7 @@ function ChatBox({
                 onFolderDetected={onFolderDetected}
                 targetRef={dropTargetRef}
             />
+            <ChatBoxInteractionHost markId={markId}/>
             {isMobileCollapsed && (
                 <div className="mx-auto w-full max-w-225 px-4 py-2 pointer-events-auto">
                     <button
