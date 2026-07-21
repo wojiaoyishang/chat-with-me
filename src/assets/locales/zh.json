@@ -295,6 +295,7 @@
     "tool_approval_title": "需要批准工具调用",
     "tool_approval_description": "智能体希望调用工具。",
     "tool_approval_description_named": "智能体希望调用：{{tools}}",
+    "tool_approval_waiting_status": "等待授权",
     "tool_approval_allow": "同意",
     "tool_approval_deny": "拒绝",
     "tool_approval_allow_same": "同类工具均同意",

@@ -3,6 +3,7 @@ import {
     useEffect,
     useMemo,
 } from 'react';
+import {useTranslation} from 'react-i18next';
 
 import { defaultRenderMarkdown } from '../constants.jsx';
 import {
@@ -22,6 +23,7 @@ import StatusBody from './StatusBody.jsx';
 import StatusHeader from './StatusHeader.jsx';
 
 const STATUS_MARKER_REGEX = /^[ \t]*(\[DONE\]|\[FAILED\])[ \t]*$/gm;
+const TOOL_STATUS_MARKER_REGEX = /^[ \t]*\[TOOL_STATUS:([a-z_]+)\][ \t]*$/gm;
 const BADGE_MARKER_REGEX = /^[ \t]*\[BADGE\s+NAME:([^\]\r\n]*?)\s+COLOR:(#[0-9a-fA-F]{3,8})\][ \t]*$/gm;
 const ACTION_MARKER_REGEX = /^[ \t]*\[ACTION\s+([^\]\r\n]*?)\][ \t]*$/gm;
 const ACTION_FIELD_REGEX = /([A-Z_]+):([\s\S]*?)(?=\s+[A-Z_]+:|$)/g;
@@ -77,6 +79,7 @@ const StatusWidget = memo(({
                                type = '',
                                renderMarkdown = defaultRenderMarkdown,
                            }) => {
+    const {t} = useTranslation();
     const expandedKey = useMemo(() => {
         return getExpandedKey(contextId, id, type);
     }, [contextId, id, type]);
@@ -89,6 +92,7 @@ const StatusWidget = memo(({
         isFailed,
         lastLine,
         progress,
+        toolStatus,
     } = useMemo(() => {
         const safeContent = toSafeString(content);
 
@@ -131,10 +135,13 @@ const StatusWidget = memo(({
 
         const isDone = lastMarker === '[DONE]';
         const isFailed = lastMarker === '[FAILED]';
+        const toolStatusMarkers = [...safeContent.matchAll(TOOL_STATUS_MARKER_REGEX)];
+        const toolStatus = toolStatusMarkers.at(-1)?.[1] ?? null;
 
         let cleanContent = safeContent
             .replace(BADGE_MARKER_REGEX, '')
             .replace(ACTION_MARKER_REGEX, '')
+            .replace(TOOL_STATUS_MARKER_REGEX, '')
             .replace(STATUS_MARKER_REGEX, '')
             .trimEnd();
 
@@ -157,6 +164,7 @@ const StatusWidget = memo(({
             isFailed,
             lastLine,
             progress,
+            toolStatus,
         };
     }, [content, type]);
 
@@ -173,6 +181,7 @@ const StatusWidget = memo(({
     }, [lastLine]);
 
     const isToolCalling = type === 'toolCalling';
+    const isWaitingApproval = toolStatus === 'waiting_approval' && !isDone && !isFailed;
     const isProgressComplete = isToolCalling && progress?.isComplete === true;
     const isFinished = isDone || isFailed || isProgressComplete;
 
@@ -192,7 +201,9 @@ const StatusWidget = memo(({
     }, [expandedKey, isToolCalling, isToolCallingSettled]);
 
     let displayTitle = title;
-    if (isToolCalling) {
+    if (isWaitingApproval) {
+        displayTitle = t('tool_approval_waiting_status', 'Waiting for approval');
+    } else if (isToolCalling) {
         if (isFailed) {
             displayTitle = `${title} Failed`;
         } else if (isDone) {
@@ -228,6 +239,7 @@ const StatusWidget = memo(({
     ) : displayTitle;
 
     let currentColor = activeColor;
+    if (isWaitingApproval) currentColor = 'text-gray-400';
     if (isDone || isProgressComplete) currentColor = doneColor;
     if (isFailed) currentColor = 'text-red-600';
 
@@ -247,9 +259,11 @@ const StatusWidget = memo(({
                 isFinished={isFinished}
                 isProcessing={isProcessing}
                 isToolCalling={isToolCalling}
+                isWaitingApproval={isWaitingApproval}
                 markId={markId}
                 progress={progress}
                 truncatedLastLine={truncatedLastLine}
+                waitingApprovalLabel={t('tool_approval_waiting_status', 'Waiting for approval')}
             />
 
             <StatusBody

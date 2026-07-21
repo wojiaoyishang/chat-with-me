@@ -8,7 +8,8 @@ import {
     Layout,
     Save,
     Settings,
-    Upload
+    Upload,
+    Bell
 } from 'lucide-react';
 import {motion, AnimatePresence} from 'framer-motion';
 import {toast} from "sonner";
@@ -18,6 +19,7 @@ import {onEvent} from "@/context/useEventStore.jsx";
 import {useTranslation} from "react-i18next";
 import {UserProfileCard} from "@/components/setting/UserProfileCard.jsx";
 import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
+import NotificationSettings from "@/features/notification/NotificationSettings.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {
@@ -106,7 +108,7 @@ const SettingPage = ({
     const latestDynamicConfigRequestRef = useRef(0);
     const isSavingDynamicConfigRef = useRef(false);
 
-    const isStaticTab = useCallback((tabId) => ['account', 'interface'].includes(tabId), []);
+    const isStaticTab = useCallback((tabId) => ['account', 'interface', 'notifications'].includes(tabId), []);
 
     const cloneData = useCallback((value) => {
         try {
@@ -134,7 +136,7 @@ const SettingPage = ({
 
     const toggleFullscreen = useCallback(() => setIsFullscreen(prev => !prev), []);
 
-    const isDynamicTab = !['account', 'interface'].includes(activeTab);
+    const isDynamicTab = !['account', 'interface', 'notifications'].includes(activeTab);
     const hasUnsavedChanges = isDynamicTab && !isConfigPristine;
 
     // ==================== 加载动态 Tabs 列表 ====================
@@ -459,6 +461,14 @@ const SettingPage = ({
                 {!isMobile && <span className="text-sm whitespace-nowrap">{t("Settings.Interface")}</span>}
             </button>
 
+            <button
+                onClick={() => handleTabChange('notifications')}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === 'notifications' ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
+            >
+                <Bell className="w-5 h-5 shrink-0"/>
+                {!isMobile && <span className="text-sm whitespace-nowrap">通知</span>}
+            </button>
+
             {(!tabsError && !loadingTabs && dynamicTabs.length > 0) && !isMobile && (
                 <div className="h-px bg-gray-200 my-2 mx-2"/>
             )}
@@ -519,6 +529,14 @@ const SettingPage = ({
                         <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">{t("Settings.Interface")}</p>
                         <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-gray-400 text-sm flex items-center justify-center h-32">No interface settings to display</div>
                     </div>
+                </motion.div>
+            );
+        }
+
+        if (activeTab === 'notifications') {
+            return (
+                <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}}>
+                    <NotificationSettings/>
                 </motion.div>
             );
         }

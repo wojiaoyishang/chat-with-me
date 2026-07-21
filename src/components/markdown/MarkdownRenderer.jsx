@@ -94,6 +94,33 @@ const preprocessContent = (text) => {
         .replace(/\\\)/g, '$');
 };
 
+const CARD_REPLACE_TOKEN_NAMES = [
+    'cardReplace',
+    'card-replace',
+    'card',
+];
+
+const stripDanglingStreamingCardToken = (content) => {
+    if (typeof content !== 'string' || !content) return content;
+
+    const tokenStart = content.lastIndexOf('{{');
+    if (tokenStart < 0) return content;
+
+    const tokenTail = content.slice(tokenStart);
+    if (tokenTail.includes('}}')) return content;
+
+    const tokenBody = tokenTail.slice(2).trimStart();
+    const mayBeCardToken = CARD_REPLACE_TOKEN_NAMES.some((name) => {
+        return name.startsWith(tokenBody)
+            || tokenBody === name
+            || tokenBody.startsWith(`${name} `);
+    });
+
+    // 流式增量可能正好截断在 {{cardReplace ... 中间。此时交给 Markdown
+    // 会把内部控制标记当普通文本显示；等下一段补齐后再正常解析即可。
+    return mayBeCardToken ? content.slice(0, tokenStart) : content;
+};
+
 const toSafeString = (value) => {
     return typeof value === 'string' ? value : String(value ?? '');
 };
@@ -740,8 +767,14 @@ function MarkdownRendererInner({
     ]);
 
     const processedContent = useMemo(() => {
-        return preprocessContent(content);
-    }, [content]);
+        const preprocessed = preprocessContent(content);
+
+        if (msg?.readonly === true) {
+            return stripDanglingStreamingCardToken(preprocessed);
+        }
+
+        return preprocessed;
+    }, [content, msg?.readonly]);
 
     const copyContent = useMemo(() => {
         return resolveMarkdownCopyContent(content, replacement, {

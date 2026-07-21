@@ -290,6 +290,24 @@ backend
 
 表示工具调用失败。
 
+工具需要用户批准时，调用命令仍会先按普通工具卡片逐段流式展示。模型完成命令构建、
+正式进入批准等待后，后端会在同一卡片中追加：
+
+```md
+[TOOL_STATUS:waiting_approval]
+```
+
+前端会隐藏该控制行，并把卡片标题、图标和右侧状态切换为灰色“等待授权”。用户批准后，
+后端会追加：
+
+```md
+[TOOL_STATUS:running]
+```
+
+卡片随即恢复为执行中的活动状态。`preview` 阶段只用于展示工具参数，不会触发文档写入等
+副作用；真正的工具执行仍在批准之后发生。刷新或 WebSocket 重连时，状态从消息
+`replace` 快照恢复，因此不会退回空卡片或错误显示为已完成。
+
 允许出现：`[PROGRESS 0/5]` 用于展示进度条
 
 使用 `[BADGE NAME:Beta COLOR:#7C3AED]` 可以显示徽章
@@ -1104,7 +1122,22 @@ replacement 内容中可以继续包含其他 `cardReplace`：
         {
             "updateDate": "2025-03-18T20:46:00+08:00",  # 更新时间（ISO 8601 格式，带时区 +08:00）前端基于此排序
             "title": "Legacy System Update",  # 对话标题
-            "markId": "mark23"  # 对话ID
+            "markId": "mark23",  # 主对话 ID
+            "conversationKind": "conversation",
+            "children": [
+                {
+                    "sessionId": "agent-session-1",
+                    "markId": "agent-session-1",
+                    "parentMarkId": "mark23",
+                    "name": "资料研究智能体",
+                    "goal": "检索并整理相关资料",
+                    "status": "running",
+                    "model": "qwen",
+                    "roundCount": 1,
+                    "maxRounds": 12,
+                    "lastResponse": "正在整理资料……"
+                }
+            ]
         }
         # ...
     ],
@@ -1123,7 +1156,17 @@ replacement 内容中可以继续包含其他 `cardReplace`：
     "title": "Legacy System Update",
     "model": "Qwen",  # 目前对话使用的模型ID
     "options": []  # 配置项，展示在右侧边栏，参考 DynamicSettings，如果提供将会覆盖模型的默认配置，尽量保持一致，或者为空，因为用户切换模型的时候会忽略这个参数
-    "defaultOptions": {}  # 配置项默认值
+    "defaultOptions": {},  # 配置项默认值
+    "conversationKind": "agent_session",  # 普通会话为 conversation
+    "parentMarkId": "mark23",             # 子会话的父会话 ID
+    "agentSession": {                       # 普通会话为 null
+        "sessionId": "agent-session-1",
+        "name": "资料研究智能体",
+        "goal": "检索并整理相关资料",
+        "status": "idle",
+        "roundCount": 2,
+        "maxRounds": 12
+    }
 }
 ```
 
@@ -3210,3 +3253,205 @@ POST SETTING_TABS_ENDPOINT/default-tool-permissions
 - 没有 `markId` 时返回用户默认权限，用于尚未创建会话的新对话页面。
 - 提供 `markId` 时返回该会话自己的工具权限。
 - 前端在 `markId` 变化时重新请求 ChatBox 配置，并以后端权限覆盖本地保存的工具菜单状态。
+
+# 复杂子智能体会话
+
+复杂子智能体使用真实的 Conversation 和消息链保存，不是一次性的工具输出。前端会把它显示在父会话下方的子菜单中，点击后使用普通聊天页面查看完整记录，并在标题栏显示“子智能体”标识。
+
+模型高级设置新增：
+
+```json
+{
+  "type": "select",
+  "name": "subAgentMode",
+  "text": "子智能体模式",
+  "default": "auto",
+  "options": [
+    {"value": "simple", "label": "简单模式"},
+    {"value": "session", "label": "会话模式"},
+    {"value": "auto", "label": "自动选择"}
+  ]
+}
+```
+
+复杂会话模式向模型提供以下工具：
+
+- `subagent_session_create`：创建一个持久化子会话。
+- `subagent_session_create_many`：批量创建，一次最多 8 个。
+- `subagent_session_send`：向已有子会话发送下一轮消息。
+- `subagent_session_get` / `subagent_session_list`：查询状态。
+- `subagent_session_wait` / `subagent_session_wait_many`：等待一个或多个子会话。`mode=all` 等待全部，`mode=any` 等待任意一个。
+- `subagent_session_cancel`：取消当前子会话运行。
+
+等待采用持久化中断：等待条件未满足时，主 Worker 保存恢复现场并退出；子会话完成或等待超时后重新派发主任务，不通过内存 Future 或轮询长期占用 Worker。此类内部等待不会显示工具批准悬浮窗。
+
+子会话创建时复制父会话工具权限，并禁止再次创建孙级智能体。每次执行前还会应用父会话当前权限作为安全上限：父会话变得更严格会立即限制子会话，父会话变得更宽松不会自动提升子会话权限。
+
+子会话页面为只读查看模式，多轮消息由主智能体通过 `subagent_session_send` 发起。删除父会话会级联删除其子会话；单独删除子会话不会删除父会话。
+
+
+# 用户通知中心
+
+用户通知与聊天消息相互独立。后端注册语义化通知类型并发布通知，前端决定是否订阅以及使用何种组件展示。关闭某类通知提示不会改变对应业务行为，例如关闭“工具调用需要批准”提示后，工具调用仍会等待用户处理。
+
+## 通知类型接口
+
+前端通过以下接口获取后端已经注册的通知类型：
+
+```http
+GET NOTIFICATION_TYPES_ENDPOINT
+```
+
+响应数据：
+
+```json
+{
+  "types": [
+    {
+      "typeId": "tool.approval.required",
+      "category": "tools",
+      "name": "工具调用需要批准",
+      "description": "主智能体或子智能体等待用户批准工具调用时显示。",
+      "defaultSubscribed": true,
+      "persistent": true,
+      "defaultLevel": "warning",
+      "expiresAfter": null
+    }
+  ]
+}
+```
+
+前端设置页面内置“通知”选项卡。通知类型和分组由后端动态提供，订阅状态按当前浏览器保存在本地设置中。
+
+## 待处理通知接口
+
+刷新页面后，前端通过以下接口恢复仍未处理的持久通知：
+
+```http
+GET NOTIFICATION_PENDING_ENDPOINT
+```
+
+响应数据：
+
+```json
+{
+  "notifications": []
+}
+```
+
+## NotificationCenter 广播
+
+通知广播沿用通用广播结构：
+
+```json
+{
+  "type": "widget",
+  "target": "NotificationCenter",
+  "payload": {},
+  "markId": null
+}
+```
+
+### 新增或更新通知
+
+```json
+{
+  "command": "Notification-Upsert",
+  "notification": {
+    "id": "notification-uuid",
+    "typeId": "tool.approval.required",
+    "category": "tools",
+    "level": "warning",
+    "title": "需要批准工具调用",
+    "body": "智能体希望调用：sleep",
+    "source": {
+      "kind": "conversation",
+      "markId": "conversation-id",
+      "messageId": "message-id",
+      "approvalId": "approval-id"
+    },
+    "actions": [
+      {
+        "type": "open-conversation",
+        "label": "查看",
+        "markId": "conversation-id",
+        "focus": {
+          "kind": "tool-approval",
+          "id": "approval-id"
+        }
+      }
+    ],
+    "persistent": true,
+    "status": "pending",
+    "revision": 1,
+    "createdAt": "2026-07-21T10:00:00+00:00"
+  }
+}
+```
+
+### 通知已经处理
+
+```json
+{
+  "command": "Notification-Resolve",
+  "notificationId": "notification-uuid",
+  "revision": 2,
+  "reason": "approval-allow"
+}
+```
+
+### 删除通知
+
+```json
+{
+  "command": "Notification-Remove",
+  "notificationId": "notification-uuid",
+  "revision": 3
+}
+```
+
+### 全量同步
+
+```json
+{
+  "command": "Notification-Sync",
+  "notifications": []
+}
+```
+
+#### 连接与后台恢复语义（2026-07-21）
+
+- WebSocket 每次初次连接或重连成功后，后端都会立即向该连接发送一次
+  `Notification-Sync`，内容为当前用户仍待处理的持久通知。事件结构和命令名未新增，
+  只是补充了连接时的发送时机。
+- 前端在 WebSocket `onopen`、页面从后台返回前台以及窗口重新获得焦点时，也会通过
+  `GET NOTIFICATION_PENDING_ENDPOINT` 合并补拉，避免移动浏览器挂起后台页面后漏掉
+  `Notification-Upsert`。
+- 页面隐藏期间到达的通知会保留“后台到达”标记。回到前台时，即使通知属于当前会话，
+  也不会在可见性切换的一瞬间被自动关闭；用户需要点击处理或手动关闭。
+- 桌面端通知使用右下角卡片；小于 `768px` 的移动端改用顶部安全区内的全宽操作条，
+  并在浏览器支持时同步更新应用角标。文档页中的关联聊天不视为“当前可见会话”，
+  因此工具批准通知仍会展示。
+
+#### 工具批准卡片流式预览（2026-07-21）
+
+本轮改进**没有新增或修改 WebSocket 广播命令、`target` 或 payload 结构**。
+`Notification-Upsert`、`Notification-Resolve`、`Notification-Remove`、
+`Notification-Sync` 以及 ChatBox 的工具批准交互广播均保持兼容。变化仅发生在聊天消息的
+流式 `replace-delta` 内容：工具参数会在批准前以只读预览方式进入原工具卡片，并使用
+`[TOOL_STATUS:waiting_approval]` / `[TOOL_STATUS:running]` 控制卡片视觉状态。
+
+前端按 `notification.id + revision` 去重并忽略旧版本广播。后端工具批准通知使用 `approvalId` 作为去重来源，多浏览器中任意页面处理后，所有页面都会收到 Resolve 广播并关闭对应提示。
+
+## 前端通知组件注册
+
+前端可以为特定通知类型注册专用组件：
+
+```js
+registerNotificationRenderer(
+  "tool.approval.required",
+  ToolApprovalNotification
+);
+```
+
+未注册专用组件的通知使用通用通知卡片展示。通知动作也可以通过 `registerNotificationAction` 扩展。

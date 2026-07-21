@@ -295,6 +295,7 @@
     "tool_approval_title": "Tool approval required",
     "tool_approval_description": "The agent wants to call a tool.",
     "tool_approval_description_named": "The agent wants to call: {{tools}}",
+    "tool_approval_waiting_status": "Waiting for approval",
     "tool_approval_allow": "Allow",
     "tool_approval_deny": "Deny",
     "tool_approval_allow_same": "Always allow this tool",

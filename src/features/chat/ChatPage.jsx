@@ -160,6 +160,7 @@ function ChatPage({
     const [initialSettingValues, setInitialSettingValues] = useState({});
     const [advancedSettingsValues, setAdvancedSettingsValues] = useState({});
     const [settingsInstanceKey, setSettingsInstanceKey] = useState(() => `conversationless-${Date.now()}`);
+    const [conversationMeta, setConversationMeta] = useState(null);
 
     // 删除相关
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -1711,6 +1712,7 @@ function ChatPage({
         setSettingsInstanceKey(`${chatMarkId ?? 'conversationless'}-${Date.now()}`);
         setInitialSettingValues({});
         setAdvancedSettingsValues({});
+        setConversationMeta(null);
 
         if (chatMarkId === null || chatMarkId === undefined) {
             setAdvancedSettings([]);
@@ -1736,6 +1738,7 @@ function ChatPage({
         const requestConversation = async () => {
             try {
                 let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + chatMarkId);
+                setConversationMeta(data);
                 const foundModel = modelsData.find(item => item.id === data.model)
                 if (foundModel) setSelectedModel(foundModel);
                 if (data.options) {
@@ -1951,6 +1954,7 @@ function ChatPage({
                         onToggleWindow={toggleWindowMode}
                         showMinimizeButton={showMinimizeButton}
                         onMinimize={onMinimize}
+                        conversationMeta={conversationMeta}
                     />
 
                     <div className="flex-1 w-full relative overflow-hidden">

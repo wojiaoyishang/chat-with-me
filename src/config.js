@@ -16,5 +16,7 @@ export const apiEndpoint = {
     DOCUMENT_COLLABORA_DIRECTION_ENDPOINT: '/document/redirect',
     SETTING_TABS_ENDPOINT: '/setting/tabs',
     ASR_ENDPOINT: '/asr',
+    NOTIFICATION_TYPES_ENDPOINT: '/notification/types',
+    NOTIFICATION_PENDING_ENDPOINT: '/notification/pending',
 };
 

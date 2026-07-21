@@ -5,6 +5,8 @@ const ToolCallingRightStatus = memo(({
     isDone,
     isFailed,
     isFinished,
+    isWaitingApproval = false,
+    waitingApprovalLabel = 'Waiting for approval',
 }) => {
     if (isFailed) {
         return (
@@ -22,6 +24,22 @@ const ToolCallingRightStatus = memo(({
         );
     }
 
+    if (isWaitingApproval) {
+        return (
+            <div
+                className="flex h-6 flex-shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-100 px-1.5 text-gray-400"
+                aria-label={waitingApprovalLabel}
+                title={waitingApprovalLabel}
+            >
+                <span className="flex items-center gap-1" aria-hidden="true">
+                    <span className="h-1.5 w-1.5 rounded-full bg-current"/>
+                    <span className="h-1.5 w-1.5 rounded-full bg-current"/>
+                    <span className="h-1.5 w-1.5 rounded-full bg-current"/>
+                </span>
+            </div>
+        );
+    }
+
     return (
         <div className="flex h-6 flex-shrink-0 items-center justify-center px-1.5 rounded-full bg-yellow-50/80 border border-yellow-100 text-yellow-600">
             <span className="flex items-center gap-1" aria-label="Tool calling is running">
@@ -35,7 +53,9 @@ const ToolCallingRightStatus = memo(({
     return (
         prev.isDone === next.isDone &&
         prev.isFailed === next.isFailed &&
-        prev.isFinished === next.isFinished
+        prev.isFinished === next.isFinished &&
+        prev.isWaitingApproval === next.isWaitingApproval &&
+        prev.waitingApprovalLabel === next.waitingApprovalLabel
     );
 });
 

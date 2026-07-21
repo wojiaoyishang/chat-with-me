@@ -25,9 +25,11 @@ const StatusHeader = memo(({
                                isFinished,
                                isProcessing,
                                isToolCalling,
+                               isWaitingApproval = false,
                                markId = null,
                                progress,
                                truncatedLastLine,
+                               waitingApprovalLabel = 'Waiting for approval',
                            }) => {
     const previousIsFinishedRef = useRef(isFinished);
     const [isFinishingProgressVisible, setIsFinishingProgressVisible] = useState(false);
@@ -80,7 +82,11 @@ const StatusHeader = memo(({
         };
     }, [isToolCalling, progress, isFinished, isFailed]);
 
-    const shouldShowProgress = Boolean(progress && (!isFinished || isFinishingProgressVisible || justFinishedDuringRender));
+    const shouldShowProgress = Boolean(
+        progress &&
+        !isWaitingApproval &&
+        (!isFinished || isFinishingProgressVisible || justFinishedDuringRender)
+    );
     const shouldFadeProgress = Boolean(progress && isFinished && isFinishingProgressFading && !isFailed);
     const visibleActions = isFinished ? [] : actions;
 
@@ -105,11 +111,13 @@ const StatusHeader = memo(({
     return (
         <div className="flex items-center justify-between gap-2 group">
             <div className={`flex items-center gap-2.5 min-w-0 flex-1 ${shouldShowProgress ? 'overflow-visible' : 'overflow-hidden'}`}>
-                <div className={`${isToolCalling && !isFailed && !isFinished ? 'text-yellow-600' : currentColor} flex-shrink-0`}>
+                <div className={`${isWaitingApproval ? 'text-gray-400' : (isToolCalling && !isFailed && !isFinished ? 'text-yellow-600' : currentColor)} flex-shrink-0`}>
                     {isFailed ? (
                         <X className="w-4 h-4 stroke-[3]"/>
                     ) : isToolCalling && isFinished ? (
                         <Check className="w-4 h-4 stroke-[3]"/>
+                    ) : isWaitingApproval ? (
+                        <Icon className="w-4 h-4"/>
                     ) : isToolCalling ? (
                         <Icon className="w-4 h-4 animate-pulse"/>
                     ) : isDone ? (
@@ -124,7 +132,7 @@ const StatusHeader = memo(({
                 {shouldShowProgress ? (
                     <>
                         <span
-                            className="text-sm font-medium whitespace-nowrap flex-shrink-0 text-gray-800"
+                            className={`text-sm font-medium whitespace-nowrap flex-shrink-0 ${isWaitingApproval ? 'text-gray-500' : 'text-gray-800'}`}
                         >
                             {displayTitle}
                         </span>
@@ -140,12 +148,12 @@ const StatusHeader = memo(({
                     <>
                         <div className="flex items-center gap-2 flex-shrink-0">
                             <span
-                                className={`text-sm font-medium ${isFinished ? 'text-gray-500' : 'text-gray-800'}`}
+                                className={`text-sm font-medium ${isFinished || isWaitingApproval ? 'text-gray-500' : 'text-gray-800'}`}
                             >
                                 {displayTitle}
                             </span>
 
-                            {!isFinished && !isToolCalling && (
+                            {!isFinished && !isToolCalling && !isWaitingApproval && (
                                 <div className={`flex items-center gap-1 ${activeColor}`}>
                                     <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.4s]"/>
                                     <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse [animation-delay:-0.2s]"/>
@@ -181,6 +189,8 @@ const StatusHeader = memo(({
                         isDone={isDone}
                         isFailed={isFailed}
                         isFinished={isFinished}
+                        isWaitingApproval={isWaitingApproval}
+                        waitingApprovalLabel={waitingApprovalLabel}
                     />
                 )}
 
@@ -205,10 +215,12 @@ const StatusHeader = memo(({
         prev.isFinished === next.isFinished &&
         prev.isProcessing === next.isProcessing &&
         prev.isToolCalling === next.isToolCalling &&
+        prev.isWaitingApproval === next.isWaitingApproval &&
         prev.markId === next.markId &&
         prev.progress?.current === next.progress?.current &&
         prev.progress?.total === next.progress?.total &&
-        prev.truncatedLastLine === next.truncatedLastLine
+        prev.truncatedLastLine === next.truncatedLastLine &&
+        prev.waitingApprovalLabel === next.waitingApprovalLabel
     );
 });
 

@@ -11,6 +11,7 @@ import {toast} from "sonner";
 import {useUserStore} from "@/context/userContext.jsx";
 import {motion, AnimatePresence} from 'framer-motion';
 import {useParams} from "react-router-dom";
+import NotificationHost from "@/features/notification/NotificationHost.jsx";
 
 const DashboardPage = ({type = "chat"}) => {
 
@@ -127,6 +128,16 @@ const DashboardPage = ({type = "chat"}) => {
 
     return (
         <div className="flex full-screen-height bg-white relative">
+            <NotificationHost
+                currentMarkId={chatMarkId}
+                isConversationVisible={pageType === "chat"}
+                onOpenConversation={(markId) => {
+                    setPageType("chat");
+                    setChatMarkId(markId);
+                    setDocumentMarkId(null);
+                    updateURL(`/chat/${markId}`);
+                }}
+            />
             {isLoadingError ? (
                 <LoadingFailedScreen/>
             ) : isLoading ? (
