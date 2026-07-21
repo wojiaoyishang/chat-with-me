@@ -163,6 +163,29 @@ const collectToolPermissions = (toolsConfig = [], status = {}) => {
     return permissions;
 };
 
+const applyToolPermissionsToStatus = (toolsConfig = [], status = {}, permissions = {}) => {
+    let result = {...(status || {})};
+
+    const visit = (items = [], parentPath = []) => {
+        items.forEach((item) => {
+            if (!item?.name) return;
+            const currentPath = [...parentPath, item.name];
+
+            if (item.type === 'tool' && Object.prototype.hasOwnProperty.call(permissions, item.name)) {
+                result = setNestedValue(result, currentPath, permissions[item.name]);
+                return;
+            }
+
+            if (item.type === 'group' && item.children) {
+                visit(item.children, currentPath);
+            }
+        });
+    };
+
+    visit(toolsConfig);
+    return result;
+};
+
 // ========== 主组件 ==========
 
 function ChatBox({
@@ -229,6 +252,7 @@ function ChatBox({
         readStandaloneDraft(getStandaloneDraftStorageKey(markId))
     ));
     const [toolsStatus, setToolsStatus] = useState({});
+    const [runtimeToolPermissions, setRuntimeToolPermissions] = useState({});
 
     // 全屏编辑器
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -304,6 +328,10 @@ function ChatBox({
     const pendingEditClearRef = useRef(false);
     const standaloneAttachmentsRef = useRef([]);
     const previousMarkIdRef = useRef(markId);
+    const toolPermissionRevisionRef = useRef(0);
+    const conversationToolPermissionsRef = useRef({});
+    const runtimeToolPermissionRevisionRef = useRef(0);
+    const runtimeToolPermissionStreamIdRef = useRef(null);
     const [containerWidth, setContainerWidth] = useState(0);
 
 
@@ -390,9 +418,63 @@ function ChatBox({
         tool_permissions: collectToolPermissions(extraTools, toolsStatus.extra_tools || {}),
     }), [extraTools, toolsStatus]);
 
+    const applyConversationToolPermissions = useCallback((permissions, revision = 0) => {
+        const normalizedRevision = Number(revision) || 0;
+        if (normalizedRevision < toolPermissionRevisionRef.current) return;
+        toolPermissionRevisionRef.current = normalizedRevision;
+        conversationToolPermissionsRef.current = {...(permissions || {})};
+        setToolsStatus(prev => ({
+            ...prev,
+            extra_tools: applyToolPermissionsToStatus(
+                extraTools,
+                prev.extra_tools || {},
+                permissions || {}
+            ),
+        }));
+    }, [extraTools]);
+
+    const syncToolPermission = useCallback((toolName, mode) => {
+        setRuntimeToolPermissions(prev => {
+            if (!Object.prototype.hasOwnProperty.call(prev, toolName)) return prev;
+            const next = {...prev};
+            delete next[toolName];
+            return next;
+        });
+
+        if (!markId) return;
+        emitEvent({
+            type: 'agent',
+            target: 'ToolPermission',
+            markId,
+            payload: {
+                command: 'Set-Tool-Permission',
+                toolName,
+                mode,
+                scope: 'conversation',
+                applyToPending: true,
+                revision: toolPermissionRevisionRef.current,
+            },
+        }).then((response) => {
+            if (response?.success === false) {
+                console.error('Set tool permission failed:', response?.value);
+                return;
+            }
+            const value = response?.value;
+            if (value?.permissions) {
+                applyConversationToolPermissions(value.permissions, value.revision);
+            }
+        }).catch((error) => {
+            console.error('Set tool permission failed:', error);
+        });
+    }, [applyConversationToolPermissions, markId]);
+
     const handleSendMessage = useCallback(() => {
         const activeEditDraft = editDraftRef.current;
         const wasEditing = isEditMessageRef.current;
+
+        runtimeToolPermissionRevisionRef.current = 0;
+        runtimeToolPermissionStreamIdRef.current = null;
+        setRuntimeToolPermissions({});
 
         onSendMessage({
             messageContent: messageContentRef.current,
@@ -867,10 +949,21 @@ function ChatBox({
             console.error('Failed to parse saved extra_tools status:', error);
         }
 
-        const mergedExtraStatus = applyLocalSettingBackedExtraToolStatus(
+        let mergedExtraStatus = applyLocalSettingBackedExtraToolStatus(
             deepMerge(defaultExtraStatus, savedExtraStatus),
             allExtraTools
         );
+
+        const serverToolPermissions = data.toolPermissions?.values || {};
+        if (Object.keys(serverToolPermissions).length > 0) {
+            mergedExtraStatus = applyToolPermissionsToStatus(
+                configuredExtraTools,
+                mergedExtraStatus,
+                serverToolPermissions
+            );
+            toolPermissionRevisionRef.current = Number(data.toolPermissions?.revision) || 0;
+            conversationToolPermissionsRef.current = {...serverToolPermissions};
+        }
 
         if (data.builtin_tools) {
             data.builtin_tools.forEach(tool => {
@@ -939,6 +1032,11 @@ function ChatBox({
                 const validStates = ['disabled', 'normal', 'loading', 'generating'];
                 if (validStates.includes(payload.value)) {
                     setSendButtonStatus(payload.value);
+                    if (payload.value === 'normal') {
+                        runtimeToolPermissionRevisionRef.current = 0;
+                        runtimeToolPermissionStreamIdRef.current = null;
+                        setRuntimeToolPermissions({});
+                    }
                     reply({value: payload.value});
                 } else {
                     reply({value: sendButtonStatusRef.current});
@@ -1155,6 +1253,8 @@ function ChatBox({
     const renderMenuItems = useExtraToolsMenuItems({
         toolsStatus,
         setToolsStatus,
+        runtimeToolPermissions,
+        onToolPermissionChange: syncToolPermission,
         highZClass,
         t,
         isMobileMenu: isSmallScreen,
@@ -1163,6 +1263,62 @@ function ChatBox({
     });
 
     // ========== 副作用 ==========
+
+    useEffect(() => {
+        toolPermissionRevisionRef.current = 0;
+        conversationToolPermissionsRef.current = {};
+        runtimeToolPermissionRevisionRef.current = 0;
+        runtimeToolPermissionStreamIdRef.current = null;
+        setRuntimeToolPermissions({});
+    }, [markId]);
+
+    useEffect(() => {
+        if (Object.keys(conversationToolPermissionsRef.current).length === 0) return;
+        setToolsStatus(prev => ({
+            ...prev,
+            extra_tools: applyToolPermissionsToStatus(
+                extraTools,
+                prev.extra_tools || {},
+                conversationToolPermissionsRef.current
+            ),
+        }));
+    }, [extraTools]);
+
+    useEffect(() => onEvent({
+        type: 'agent',
+        target: 'ToolPermission',
+        markId,
+    }).then(({payload}) => {
+        if (payload?.command !== 'Tool-Permission-Changed') return;
+
+        if (payload.scope === 'conversation') {
+            applyConversationToolPermissions(payload.permissions || {}, payload.revision);
+            return;
+        }
+
+        if (payload.scope === 'run') {
+            const revision = Number(payload.revision) || 0;
+            const streamId = payload.streamId || null;
+            if (payload.cleared) {
+                if (
+                    runtimeToolPermissionStreamIdRef.current
+                    && streamId
+                    && runtimeToolPermissionStreamIdRef.current !== streamId
+                ) return;
+                runtimeToolPermissionRevisionRef.current = 0;
+                runtimeToolPermissionStreamIdRef.current = null;
+                setRuntimeToolPermissions({});
+                return;
+            }
+            if (
+                runtimeToolPermissionStreamIdRef.current === streamId
+                && revision < runtimeToolPermissionRevisionRef.current
+            ) return;
+            runtimeToolPermissionRevisionRef.current = revision;
+            runtimeToolPermissionStreamIdRef.current = streamId;
+            setRuntimeToolPermissions(payload.permissions || {});
+        }
+    }), [applyConversationToolPermissions, markId]);
 
     // 更新引用值
     useEffect(() => {
@@ -1250,24 +1406,33 @@ function ChatBox({
         };
     }, [markId]);
 
-    // 加载工具配置
+    // 加载工具配置。markId 变化时重新读取服务器权威的会话工具权限；
+    // 新对话尚无 markId 时读取用户级默认权限。
     useEffect(() => {
-        if (toolsLoadedStatus === 0) {
-            if (apiEndpoint.CHATBOX_ENDPOINT.trim() === '') {
-                setToolsLoadedStatus(-1);
-                return;
-            }
-            apiClient
-                .get(apiEndpoint.CHATBOX_ENDPOINT)
-                .then(data => {
-                    chatboxSetup(data);
-                    setToolsLoadedStatus(1);
-                })
-                .catch(() => {
-                    setToolsLoadedStatus(3);
-                });
+        if (apiEndpoint.CHATBOX_ENDPOINT.trim() === '') {
+            setToolsLoadedStatus(-1);
+            return undefined;
         }
-    }, [toolsLoadedStatus, chatboxSetup]);
+
+        let cancelled = false;
+        setToolsLoadedStatus(0);
+        apiClient
+            .get(apiEndpoint.CHATBOX_ENDPOINT, {
+                params: markId ? {markId} : undefined,
+            })
+            .then(data => {
+                if (cancelled) return;
+                chatboxSetup(data);
+                setToolsLoadedStatus(1);
+            })
+            .catch(() => {
+                if (!cancelled) setToolsLoadedStatus(3);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [chatboxSetup, markId]);
 
     // 监听事件广播
     useEffect(() => {
@@ -1514,7 +1679,7 @@ function ChatBox({
             )}
             <div
                 ref={rootRef}
-                className="relative isolate mx-auto flex w-full max-w-225 flex-col overflow-hidden px-4 py-4 pointer-events-auto transition-transform duration-300 ease-in-out"
+                className="pointer-events-none relative isolate mx-auto flex w-full max-w-225 flex-col overflow-hidden px-4 py-4 transition-transform duration-300 ease-in-out"
                 onMouseEnter={handleChatBoxMouseEnter}
                 onMouseLeave={handleChatBoxMouseLeave}
                 style={{
@@ -1531,7 +1696,7 @@ function ChatBox({
                         type="button"
                         aria-label={collapsedButtonLabel}
                         title={collapsedButtonLabel}
-                        className="absolute left-1/2 top-1 z-[4] flex h-6 -translate-x-1/2 items-center gap-1 rounded-full border border-gray-200 bg-white/95 px-3 text-xs font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 cursor-pointer"
+                        className="pointer-events-auto absolute left-1/2 top-1 z-[4] flex h-6 -translate-x-1/2 items-center gap-1 rounded-full border border-gray-200 bg-white/95 px-3 text-xs font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 cursor-pointer"
                         onMouseEnter={showCollapsedChatBox}
                         onClick={showCollapsedChatBox}
                     >

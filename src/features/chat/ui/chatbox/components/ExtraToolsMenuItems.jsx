@@ -41,6 +41,8 @@ const MOBILE_ACCORDION_ROOT_SCOPE = '__root__';
 export const useExtraToolsMenuItems = ({
     toolsStatus,
     setToolsStatus,
+    runtimeToolPermissions = {},
+    onToolPermissionChange,
     highZClass,
     t,
     isMobileMenu = false,
@@ -226,9 +228,10 @@ export const useExtraToolsMenuItems = ({
                 const isDisabled = item.disabled;
                 const currentPath = [...parentPath, item.name];
                 const rawMode = getNestedValue(toolsStatus.extra_tools, currentPath);
-                const currentMode = typeof rawMode === 'boolean'
+                const persistedMode = typeof rawMode === 'boolean'
                     ? (rawMode ? 'allow' : 'deny')
                     : (['allow', 'deny', 'ask'].includes(rawMode) ? rawMode : 'ask');
+                const currentMode = runtimeToolPermissions[item.name] || persistedMode;
                 const modes = [
                     {value: 'allow', label: t('tool_permission_allow', '允许'), Icon: ThumbsUp},
                     {value: 'ask', label: t('tool_permission_ask', '询问'), Icon: Hand},
@@ -242,6 +245,7 @@ export const useExtraToolsMenuItems = ({
                         ...prev,
                         extra_tools: setNestedValue({...prev.extra_tools}, currentPath, mode),
                     }));
+                    onToolPermissionChange?.(item.name, mode);
                 };
 
                 return (
@@ -449,7 +453,7 @@ export const useExtraToolsMenuItems = ({
 
             return null;
         });
-    }, [toolsStatus.extra_tools, setToolsStatus, highZClass, isMobileMenu, menuCollisionPadding, renderIcon, subMenuSide, t, isMobileSectionOpen, toggleMobileSection, getMobileSectionScope]);
+    }, [toolsStatus.extra_tools, setToolsStatus, runtimeToolPermissions, onToolPermissionChange, highZClass, isMobileMenu, menuCollisionPadding, renderIcon, subMenuSide, t, isMobileSectionOpen, toggleMobileSection, getMobileSectionScope]);
 
     return renderMenuItems;
 };

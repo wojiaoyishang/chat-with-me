@@ -14,6 +14,7 @@ import {motion, AnimatePresence} from 'framer-motion';
 import {toast} from "sonner";
 import {useIsMobile} from "@/lib/tools.jsx";
 import {useUserStore} from "@/context/userContext.jsx";
+import {onEvent} from "@/context/useEventStore.jsx";
 import {useTranslation} from "react-i18next";
 import {UserProfileCard} from "@/components/setting/UserProfileCard.jsx";
 import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
@@ -103,6 +104,7 @@ const SettingPage = ({
     const abortControllerRef = useRef(null);
     const isFirstOnChangeRef = useRef(false);
     const latestDynamicConfigRequestRef = useRef(0);
+    const isSavingDynamicConfigRef = useRef(false);
 
     const isStaticTab = useCallback((tabId) => ['account', 'interface'].includes(tabId), []);
 
@@ -213,6 +215,34 @@ const SettingPage = ({
         if (open) loadDynamicTabs();
     }, [open]);
 
+    useEffect(() => {
+        if (!open) return undefined;
+        const unsubscribe = onEvent({
+            type: "agent",
+            target: "ToolPermission",
+            acceptReply: false,
+        }).then(({payload}) => {
+            if (payload?.command !== "Default-Tool-Permissions-Changed") return;
+            if (activeTab !== "default-tool-permissions" || isSavingDynamicConfigRef.current) return;
+
+            const nextValues = {
+                defaultToolPermissions: {
+                    revision: Number(payload.revision) || 0,
+                    baseRevision: Number(payload.revision) || 0,
+                    fallbackMode: payload.fallbackMode || "ask",
+                    permissions: payload.permissions || {},
+                },
+            };
+            if (!isConfigPristine) {
+                toast.info("默认工具设置已在其他页面更新；保存前请重新加载。");
+                return;
+            }
+            setDynamicValues(cloneData(nextValues));
+            setOriginalDynamicValues(cloneData(nextValues));
+        });
+        return () => unsubscribe();
+    }, [activeTab, cloneData, isConfigPristine, open]);
+
     // ==================== Tab 切换 ====================
     const handleTabChange = useCallback((newTab) => {
         if (newTab === activeTab) return;
@@ -254,17 +284,29 @@ const SettingPage = ({
     // ==================== 保存 ====================
     const handleSave = useCallback(async () => {
         if (!isDynamicTab) return;
+        isSavingDynamicConfigRef.current = true;
         try {
-            await apiClient.post(`${apiEndpoint.SETTING_TABS_ENDPOINT}/${activeTab}`, dynamicValues);
+            const response = await apiClient.post(`${apiEndpoint.SETTING_TABS_ENDPOINT}/${activeTab}`, dynamicValues);
+            const savedValues = cloneData(response?.defaultOptions || response?.values || dynamicValues);
             toast.success(t("save_success"));
 
-            const savedClone = JSON.parse(JSON.stringify(dynamicValues));
-            setOriginalDynamicValues(savedClone);
+            setDynamicValues(savedValues);
+            setOriginalDynamicValues(cloneData(savedValues));
             setIsConfigPristine(true);
         } catch (error) {
+            if (error?.code === 409 && error?.data?.defaultOptions) {
+                const latest = cloneData(error.data.defaultOptions);
+                setDynamicValues(latest);
+                setOriginalDynamicValues(cloneData(latest));
+                setIsConfigPristine(true);
+                toast.error(error.message || "设置已在其他页面修改，已加载服务器最新状态。");
+                return;
+            }
             toast.error(t("save_error", {"message": error?.message}));
+        } finally {
+            isSavingDynamicConfigRef.current = false;
         }
-    }, [isDynamicTab, activeTab, dynamicValues, t]);
+    }, [isDynamicTab, activeTab, dynamicValues, t, cloneData]);
 
     // ==================== 关闭窗口 ====================
     const handleClose = useCallback(() => {

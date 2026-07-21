@@ -93,6 +93,7 @@ const ChatBoxHeader = memo(({
                                 isTransitioning,
                             }) => {
     const { t } = useTranslation();
+    const hasVisibleContent = quickOptions.length > 0 || showTipMessage || isReadOnly;
 
     // 使用useMemo缓存小屏幕布局的快捷选项按钮
     const mobileQuickOptionButtons = useMemo(() => {
@@ -149,7 +150,7 @@ const ChatBoxHeader = memo(({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
         >
-            <div className="space-y-2 pb-3">
+            <div className="pointer-events-auto space-y-2 pb-3">
                 {/* 快捷选项区域 */}
                 <div className="flex items-center w-full">
                     <div className="flex-1 overflow-x-auto overscroll-x-contain scrollbar-hide px-1">
@@ -191,7 +192,7 @@ const ChatBoxHeader = memo(({
 
     // 大屏幕布局
     const desktopLayout = useMemo(() => (
-        <div className="flex items-center justify-between pb-3">
+        <div className="pointer-events-auto flex items-center justify-between pb-3">
             {/* 快捷选项区域 */}
             <Transition
                 show={!isTransitioning}
@@ -219,6 +220,7 @@ const ChatBoxHeader = memo(({
         </div>
     ), [isTransitioning, desktopQuickOptions, tipMessageBadge, readOnlyBadge]);
 
+    if (!hasVisibleContent) return null;
     return isSmallScreen ? mobileLayout : desktopLayout;
 }, (prevProps, nextProps) => {
     // 自定义比较函数，优化组件重新渲染

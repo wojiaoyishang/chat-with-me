@@ -787,7 +787,7 @@ replacement 内容中可以继续包含其他 `cardReplace`：
 }
 ```
 
-当状态为 `ask` 且智能体准备执行该工具时，后端会通过 ChatBox 交互广播展示批准悬浮窗。用户可以只批准/拒绝本次调用，也可以对当前响应内的同类工具统一允许或拒绝。
+当状态为 `ask` 且智能体准备执行该工具时，后端会通过 ChatBox 交互广播展示批准悬浮窗。用户可以只批准/拒绝本次调用，也可以把同类工具统一设为允许或拒绝。后者会直接更新当前 conversation 的工具权限，因此同一会话后续消息继续沿用该状态。
 
 发送消息时，前端除保留嵌套的 `extra_tools` 状态外，还会自动生成扁平的 `toolsStatus.tool_permissions`。后端应优先读取该字段，避免普通 radio 字符串、嵌套分组或同名配置影响工具权限判断：
 
@@ -2017,7 +2017,7 @@ code 设置为 401 。
 
 #### 响应工具调用批准
 
-前端 `toolApproval` 交互组件发出。`scope=once` 只处理本次调用；`scope=tool` 会在当前模型响应剩余生命周期内对本次询问的同类工具采用相同决定。
+前端 `toolApproval` 交互组件发出。`scope=once` 只处理本次调用；`scope=conversation` 会把本次询问的同类工具直接写入当前会话权限，并同步覆盖当前仍在运行的生成任务。服务器随后广播 `Tool-Permission-Changed`，使同一会话中的后续消息和所有浏览器保持一致。
 
 ```python
 {
@@ -2028,7 +2028,7 @@ code 设置为 401 。
         "command": "Resolve-Tool-Approval",
         "approvalId": "approval-id",
         "decision": "allow",  # allow / deny
-        "scope": "once"       # once / tool
+        "scope": "once"       # once / conversation
     }
 }
 ```
@@ -2041,12 +2041,82 @@ code 设置为 401 。
     "value": {
         "approvalId": "approval-id",
         "decision": "allow",
-        "scope": "once"
+        "scope": "once",
+        "conversationPermissions": {},
+        "runPermissions": {},
+        "revision": 0
     }
 }
 ```
 
 同一个批准请求可能同时显示在多个浏览器中。服务器通过 Redis 原子竞争只接受第一个有效决定；其他页面会收到 `resolved=True` 的失败回复并关闭交互。批准状态和恢复参数保存在 Redis 中，等待期间 Worker 不保持内存 Future；刷新、切换会话或 Worker 重启后，前端通过 `Messages-Loaded` 对账即可重新展示或恢复任务。
+
+## ToolPermission 事件 (target=ToolPermission)
+
+### type=agent
+
+工具权限由服务器维护权威状态。前端可以乐观更新界面，但应以后端回复和 `Tool-Permission-Changed` 广播为准。权限优先级为：当前批准决定 > 当前 run 同步状态 > 当前会话权限 > 消息发送时携带的权限快照 > 工具默认值。“同类工具均允许/拒绝”写入会话权限，并同时同步当前 run，任务结束时只清除 run 副本，不清除会话状态。
+
+### 设置工具权限
+
+用户在工具菜单中切换“允许 / 询问 / 拒绝”时发出。`scope=conversation` 会保存到当前会话，并同步覆盖当前仍在运行的生成任务；`applyToPending=true` 时，已经等待中的同名工具会立即重新计算：全部允许则继续执行，存在拒绝则拒绝，仍有其他询问工具则继续等待。
+
+```python
+{
+    "type": "agent",
+    "target": "ToolPermission",
+    "markId": "chat-mark-id",
+    "payload": {
+        "command": "Set-Tool-Permission",
+        "toolName": "sleep",
+        "mode": "ask",              # allow / ask / deny
+        "scope": "conversation",
+        "applyToPending": True,
+        "revision": 12               # 前端已知版本，仅用于诊断；服务器生成权威版本
+    }
+}
+```
+
+成功回复：
+
+```python
+{
+    "success": True,
+    "value": {
+        "toolName": "sleep",
+        "mode": "ask",
+        "scope": "conversation",
+        "permissions": {"sleep": "ask"},
+        "revision": 13,
+        "resolvedApprovalIds": [],
+        "updatedRunIds": ["redis-stream-id"]
+    }
+}
+```
+
+### 工具权限状态广播
+
+服务器向当前用户的所有浏览器广播。`scope=conversation` 是会话持久状态；`scope=run` 是当前生成任务的同步副本。“同类工具均允许/拒绝”会先产生 conversation 级广播，再为当前生成任务产生同值的 run 级广播。任务结束后服务器发送 `cleared=true`，前端只清除 run 副本并继续显示会话权限。
+
+```python
+{
+    "type": "agent",
+    "target": "ToolPermission",
+    "markId": "chat-mark-id",
+    "payload": {
+        "command": "Tool-Permission-Changed",
+        "scope": "run",             # conversation / run
+        "streamId": "redis-stream-id",
+        "permissions": {"sleep": "allow"},
+        "changed": {"sleep": "allow"},
+        "revision": 3,
+        "updatedBy": "websocket-uuid",
+        "cleared": False
+    }
+}
+```
+
+多浏览器不区分主页面，服务器是唯一权威来源。会话权限和 run 权限均带单调递增的 `revision`；前端忽略小于当前版本的旧广播。刷新或切回会话时，`Messages-Loaded` 会重新下发会话权限、仍在运行的 run 权限以及待批准交互。
 
 ## Sidebar 事件 (target=Sidebar)
 
@@ -3002,3 +3072,141 @@ const config = [
   },
 ];
 ```
+# 默认工具权限设置
+
+设置页签由后端 `GET SETTING_TABS_ENDPOINT` 动态提供。后端可以返回以下页签：
+
+```json
+{
+  "id": "default-tool-permissions",
+  "name": "默认工具",
+  "preview": "/public/model.svg"
+}
+```
+
+前端随后请求：
+
+```text
+GET SETTING_TABS_ENDPOINT/default-tool-permissions
+```
+
+该页签使用 `DynamicSettings` 的 `toolPermissionMatrix` 类型。工具目录、分组、显示名称和可选状态均由后端提供，前端不硬编码工具名称。
+
+```json
+{
+  "options": [
+    {
+      "type": "toolPermissionMatrix",
+      "name": "defaultToolPermissions",
+      "text": "默认工具状态",
+      "tips": "只用于初始化之后新建的会话",
+      "searchable": true,
+      "allowGroupActions": true,
+      "modes": [
+        {"name": "allow", "text": "允许"},
+        {"name": "ask", "text": "询问"},
+        {"name": "deny", "text": "拒绝"}
+      ],
+      "groups": [
+        {
+          "id": "machine",
+          "name": "设备与代码",
+          "tools": [
+            {
+              "name": "machine_execute_python_code",
+              "text": "执行 Python",
+              "description": "执行 Python 代码",
+              "default": "ask",
+              "locked": false,
+              "allowedModes": ["allow", "ask", "deny"]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "defaultOptions": {
+    "defaultToolPermissions": {
+      "revision": 1,
+      "baseRevision": 1,
+      "fallbackMode": "ask",
+      "permissions": {
+        "machine_execute_python_code": "ask"
+      }
+    }
+  }
+}
+```
+
+控件支持：
+
+- 按工具显示名称、工具 ID 和说明搜索。
+- 单独设置某个工具为 `allow`、`ask` 或 `deny`。
+- 一键修改某个工具组中的全部工具状态。
+- 使用 `locked` 和 `allowedModes` 限制不可修改的工具。
+
+保存使用：
+
+```text
+POST SETTING_TABS_ENDPOINT/default-tool-permissions
+```
+
+请求体为当前 DynamicSettings 值：
+
+```json
+{
+  "defaultToolPermissions": {
+    "baseRevision": 1,
+    "fallbackMode": "ask",
+    "permissions": {
+      "machine_execute_python_code": "allow"
+    }
+  }
+}
+```
+
+`baseRevision` 与服务器版本不一致时，后端返回 `code=409` 和最新 `defaultOptions`，前端会加载服务器状态，避免多页面静默覆盖。
+
+默认工具权限只用于创建新会话。后端创建 Conversation 时应复制当前用户默认权限为会话级权限；修改默认设置不会改变已有会话。
+
+## 默认工具权限变更广播
+
+保存成功后，后端向该用户所有 WebSocket 发送：
+
+```json
+{
+  "type": "agent",
+  "target": "ToolPermission",
+  "payload": {
+    "command": "Default-Tool-Permissions-Changed",
+    "revision": 2,
+    "baseRevision": 2,
+    "fallbackMode": "ask",
+    "permissions": {
+      "machine_execute_python_code": "allow"
+    }
+  }
+}
+```
+
+该广播不携带 `markId`，因为它表示用户级默认策略，而不是某个已有会话的权限。设置页面在没有未保存修改时会自动同步；存在本地未保存修改时只提示用户，不直接覆盖。
+
+## ChatBox 工具权限初始化
+
+`CHATBOX_ENDPOINT` 可以接收可选的 `markId` 参数，并返回：
+
+```json
+{
+  "toolPermissions": {
+    "revision": 1,
+    "fallbackMode": "ask",
+    "values": {
+      "machine_execute_python_code": "ask"
+    }
+  }
+}
+```
+
+- 没有 `markId` 时返回用户默认权限，用于尚未创建会话的新对话页面。
+- 提供 `markId` 时返回该会话自己的工具权限。
+- 前端在 `markId` 变化时重新请求 ChatBox 配置，并以后端权限覆盖本地保存的工具菜单状态。

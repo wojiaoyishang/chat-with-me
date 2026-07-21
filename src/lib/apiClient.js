@@ -34,6 +34,7 @@ apiClient.interceptors.response.use(
                 const error = new Error(msg || "Request failed.");
                 error.code = code;
                 error.message = msg;
+                error.data = data;
                 throw error;
             }
         } else {
@@ -44,6 +45,7 @@ apiClient.interceptors.response.use(
     (error) => {
         error.code = error.response?.data?.code || error.code;
         error.message = error.response?.data?.msg || error.message;
+        error.data = error.response?.data?.data || error.data;
         if (error?.code === 401 && !error.config.skipAuthCheck) {
             const currentUrl = window.location.href;
             setTimeout(() => {

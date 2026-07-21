@@ -99,11 +99,11 @@ const ToolApprovalInteraction = ({interaction, onDismiss}) => {
             </div>
 
             <div className="mt-2 flex items-center justify-center gap-4 text-[11px] text-gray-400">
-                <button type="button" disabled={submitting} onClick={() => resolve('deny', 'tool')} className="cursor-pointer transition hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50">
+                <button type="button" disabled={submitting} onClick={() => resolve('deny', 'conversation')} className="cursor-pointer transition hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50">
                     {t('tool_approval_deny_same')}
                 </button>
                 <span className="h-3 w-px bg-gray-200"/>
-                <button type="button" disabled={submitting} onClick={() => resolve('allow', 'tool')} className="cursor-pointer transition hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50">
+                <button type="button" disabled={submitting} onClick={() => resolve('allow', 'conversation')} className="cursor-pointer transition hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50">
                     {t('tool_approval_allow_same')}
                 </button>
             </div>
