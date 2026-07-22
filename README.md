@@ -2092,7 +2092,7 @@ code 设置为 401 。
 }
 ```
 
-同一个批准请求可能同时显示在多个浏览器中。服务器通过 Redis 原子竞争只接受第一个有效决定；其他页面会收到 `resolved=True` 的失败回复并关闭交互。批准状态和恢复参数保存在 Redis 中，等待期间 Worker 不保持内存 Future；刷新、切换会话或 Worker 重启后，前端通过 `Messages-Loaded` 对账即可重新展示或恢复任务。
+同一个批准请求可能同时显示在多个浏览器中。服务器通过 Redis 原子竞争只接受第一个有效决定；其他页面会收到 `resolved=True` 的失败回复并关闭交互。批准状态和恢复参数保存在 Redis 中。自 2026-07-21 起，创建批准请求的 Worker 会最多保留当前 Agent 上下文 10 分钟并以短周期轮询批准记录：用户在窗口期内同意或拒绝时，由原 Worker 直接继续，不重新加载整段会话；超过 10 分钟后 Worker 退出并恢复为原有的持久化重派机制。刷新、切换会话或 Worker 重启后，前端仍通过 `Messages-Loaded` 对账重新展示或恢复任务。
 
 ## ToolPermission 事件 (target=ToolPermission)
 
@@ -3279,13 +3279,14 @@ POST SETTING_TABS_ENDPOINT/default-tool-permissions
 - `subagent_session_create`：创建一个持久化子会话。
 - `subagent_session_create_many`：批量创建，一次最多 8 个。
 - `subagent_session_send`：向已有子会话发送下一轮消息。
-- `subagent_session_get` / `subagent_session_list`：查询状态。
+- `subagent_session_get`：按需查询状态或结构化结果槽。
+- `subagent_session_list`：默认递归列出当前会话拥有的全部后代子智能体，同时返回扁平列表和树结构。
 - `subagent_session_wait` / `subagent_session_wait_many`：等待一个或多个子会话。`mode=all` 等待全部，`mode=any` 等待任意一个。
 - `subagent_session_cancel`：取消当前子会话运行。
 
 等待采用持久化中断：等待条件未满足时，主 Worker 保存恢复现场并退出；子会话完成或等待超时后重新派发主任务，不通过内存 Future 或轮询长期占用 Worker。此类内部等待不会显示工具批准悬浮窗。
 
-子会话创建时复制父会话工具权限，并禁止再次创建孙级智能体。每次执行前还会应用父会话当前权限作为安全上限：父会话变得更严格会立即限制子会话，父会话变得更宽松不会自动提升子会话权限。
+子会话创建时复制父会话工具权限，并可按 `allow_nested_subagents` 与 `max_subagent_depth` 继续创建下级持久化子智能体。每次执行前仍会应用父会话当前权限作为安全上限；每个子智能体只能管理自己直接创建的下一级会话，不能越权操作兄弟分支。
 
 子会话页面为只读查看模式，多轮消息由主智能体通过 `subagent_session_send` 发起。删除父会话会级联删除其子会话；单独删除子会话不会删除父会话。
 
@@ -3441,6 +3442,38 @@ GET NOTIFICATION_PENDING_ENDPOINT
 流式 `replace-delta` 内容：工具参数会在批准前以只读预览方式进入原工具卡片，并使用
 `[TOOL_STATUS:waiting_approval]` / `[TOOL_STATUS:running]` 控制卡片视觉状态。
 
+#### 工具批准 10 分钟原 Worker 恢复窗口（2026-07-21）
+
+本轮仍然**没有新增或修改 WebSocket 广播命令、`target` 或 payload 字段**。变化仅涉及
+已有广播的触发时机和后端任务调度：
+
+- 批准交互卡片、消息快照和 Redis Stream 的 `awaiting_approval` 状态会先完成持久化，
+  后台工具授权通知随后才发布，避免极快点击用旧的 pending 快照覆盖已接受的决定。
+- `Resolve-Tool-Approval` 的成功回复以及 ChatBox `Dismiss-Interaction` 仍在决定被
+  Redis 接受后立即发送，不等待工具开始执行。
+- 创建批准请求的 Worker 最多原地等待 10 分钟。窗口期内批准后，原 Worker 直接把同一
+  工具卡片从 `waiting_approval` 切回 `running` 并继续执行。
+- 后端会为窗口到期注册一次兜底检查；只有原 Worker 未继续且流仍处于
+  `awaiting_approval` / `resuming_approval` 时，才重新派发 `llm_generate`。
+- 超过 10 分钟仍未决定时，原 Worker 释放；之后的同意或拒绝继续使用原有持久化恢复流程。
+
+#### 子智能体卡片 Markdown 标记兼容（2026-07-21）
+
+刷新历史消息时，如果显式 `type=agent` 的替换内容或其嵌套 Markdown 替换仍保留首行
+`[markdown]`，前端会把它作为协议类型标记移除，不再显示为子智能体或主智能体工具卡片
+正文。该修复兼容已经存入数据库的历史消息，不要求后端迁移旧数据。
+
+
+#### 工具授权预解析回归修复（2026-07-21）
+
+本轮**没有新增或修改 WebSocket 广播命令、`target` 或 payload 字段**。
+修复发生在后端批准前的工具名检查：普通 `normal` 工具调用只会按实际函数名匹配权限，
+不会再把解析失败或空检查结果降级成名为 `normal` 的伪工具。因此 ChatBox 授权交互中的
+`toolNames` / `approvalToolNames` 将保持真实工具名；无效调用不会生成“调用 normal 工具”的批准卡片。
+
+批准前检查现在是只读预解析，不会创建工具日志卡片，也不会把
+`[TITLE:解析调用失败]` 写入流式 replacement。真正的语法错误仍由正式执行解析阶段统一处理。
+
 前端按 `notification.id + revision` 去重并忽略旧版本广播。后端工具批准通知使用 `approvalId` 作为去重来源，多浏览器中任意页面处理后，所有页面都会收到 Resolve 广播并关闭对应提示。
 
 ## 前端通知组件注册
@@ -3455,3 +3488,208 @@ registerNotificationRenderer(
 ```
 
 未注册专用组件的通知使用通用通知卡片展示。通知动作也可以通过 `registerNotificationAction` 扩展。
+
+#### 持久化子智能体等待恢复的流交接（2026-07-21）
+
+本轮**没有新增 WebSocket 广播命令、`target` 或 payload 字段**，但补充了已有
+`ChatPage / Re-Messages-Loaded` 广播的发送时机：当主智能体因
+`subagent_session_wait` / `subagent_session_wait_many` 暂停，并在子智能体完成或等待超时后
+重新派发主任务时，后端会再次广播 `Re-Messages-Loaded`。前端收到后沿用现有逻辑重新发送
+`Messages-Loaded`，使已经退出的 WebSocket 流采集器重新挂载到仍未结束的 Redis Stream；
+仍然存活的采集器会由后端的 `stream_cancellation_events` 去重，不会重复追加消息。
+
+恢复采用两阶段交接：
+
+1. 旧 Worker 先持久化等待卡片、完整 `messageSnapshot`、replacement 表以及
+   `approvalPauseStreamId`，然后写入内部就绪标记；
+2. 新 Worker 只在该就绪点之后接管，并在继续发送 replacement 增量前，先发送一次完整的
+   前端 replacement 基线。
+
+Redis Stream 内部新增的 `stream_resume` 数据包仅用于唤醒阻塞中的采集器，不属于前端广播
+协议，也不会渲染成聊天内容。前端 Markdown 渲染器会在流式状态下递归隐藏 replacement 开头
+完整或尚未传完的 `[markdown]` 协议标记，避免恢复交接时把控制行短暂显示为正文。
+
+#### 子智能体 wait 完成与主智能体首包之间的连续状态（2026-07-21）
+
+本轮**没有新增或修改 WebSocket 广播命令、`target` 或 payload 字段**。已有
+`ChatPage / Re-Messages-Loaded` 的命令和数据结构保持不变；变化只涉及 Redis Stream 中聊天
+replacement 的状态标记和恢复任务内部时序。
+
+`subagent_session_wait` / `subagent_session_wait_many` 不再在恢复 Worker 取得工具结果后立刻把
+主工具卡片写成 `[DONE]`。卡片现在按以下顺序变化：
+
+1. 主 Worker 持久暂停前写入 `[TOOL_STATUS:waiting_subagent]`，工具日志从真实开始等待的时间计时；
+2. 子智能体完成或等待超时时，在恢复任务进入 Celery 队列前立即写入
+   `[TOOL_STATUS:resuming_subagent]`，因此排队、上下文重建和模型首 Token 等待期间都有明确反馈；
+3. 恢复 Worker 复用原有工具日志，不再重复插入 `[TITLE:调用工具 subagent_session_wait]`、
+   `[START]` 或零秒 `[DONE]`；
+4. 只有下一轮主模型的第一个实际分片到达时，等待工具日志与外层工具卡片才一起完成。若恢复失败，
+   则按失败状态闭合。
+
+后端同时移除了恢复任务启动时一次不会被使用的重复 `build_messages`，只在 wait 工具结果写入后
+重建一次上下文，以缩短实际首包延迟。前端工具日志解析器兼容历史消息中相邻粘连的协议标记，
+例如 `[DONE:...][TITLE:...]`，这些标记会被拆分并作为元数据处理，不会暴露在卡片正文中。
+
+#### AI 对话树工具广播（2026-07-22）
+
+本轮新增两个 `target="ChatPage"` 的消息广播。它们用于同步由主智能体工具直接完成的
+编辑、Fork、切换分支和删除子智能体操作。前端不得把这些事件渲染成 Markdown 正文。
+
+##### `Conversation-Tree-Changed`
+
+当后端通过统一对话树服务修改活动消息链后广播：
+
+```json
+{
+  "type": "message",
+  "target": "ChatPage",
+  "markId": "子智能体会话 ID",
+  "payload": {
+    "command": "Conversation-Tree-Changed",
+    "operation": "message.revised | message.forked | message.appended | branch.switched",
+    "treeRevision": 13,
+    "details": {
+      "sourceMessageId": "可选，原消息 ID",
+      "newMessageId": "可选，新消息 ID",
+      "assistantMessageId": "可选，新助手消息 ID",
+      "parentMessageId": "可选，分支父消息 ID",
+      "activeMessageId": "可选，当前活动子消息 ID"
+    }
+  }
+}
+```
+
+前端收到后重新加载当前会话的活动消息链。`treeRevision` 是单调递增的乐观并发版本；
+AI 工具可以在写操作中传入 `expected_tree_revision`，版本不一致时后端返回
+`TREE_REVISION_CONFLICT`，不会覆盖较新的树结构。
+
+##### `Conversation-Deleted`
+
+删除子智能体及其完整对话树后广播：
+
+```json
+{
+  "type": "message",
+  "target": "ChatPage",
+  "markId": "已删除的子智能体会话 ID",
+  "payload": {
+    "command": "Conversation-Deleted",
+    "markId": "已删除的子智能体会话 ID",
+    "parentMarkId": "父会话 ID"
+  }
+}
+```
+
+当前正打开该会话的页面收到事件后返回 `/chat`。侧边栏仍会同时收到既有的
+`Sidebar / Reload-Conversations` 广播。
+
+##### 消息身份与运行时指令
+
+- 子智能体对话中的 `role=user` 消息可由 AI 发送。消息的 `extraInfo.actor` 保存真实调用者，
+  前端展示 `actor.name` 和 `actor.avatar`，不再默认展示真人用户身份。
+- `runtimeDirectives` 是一次模型调用的内部指令，不属于持久化消息，也不通过 WebSocket 广播。
+  用户显式创建的 `role=system` 消息仍保存在消息树中并正常展示。
+
+
+## 嵌套复杂子智能体与工具注解（v9）
+
+### 对话列表层级结构
+
+`GET CHAT_CONVERSATIONS_ENDPOINT` 中的 `children` 现在是递归树，而不是仅一层数组。
+每个子智能体节点都可以继续包含 `children`：
+
+```json
+{
+  "markId": "root-conversation",
+  "title": "主会话",
+  "children": [
+    {
+      "markId": "agent-level-1",
+      "parentMarkId": "root-conversation",
+      "rootMarkId": "root-conversation",
+      "ancestorMarkIds": ["root-conversation"],
+      "depth": 1,
+      "maxSubagentDepth": 4,
+      "allowNestedSubagents": true,
+      "childCount": 1,
+      "descendantCount": 1,
+      "children": [
+        {
+          "markId": "agent-level-2",
+          "parentMarkId": "agent-level-1",
+          "rootMarkId": "root-conversation",
+          "ancestorMarkIds": ["root-conversation", "agent-level-1"],
+          "depth": 2,
+          "maxSubagentDepth": 4,
+          "allowNestedSubagents": true,
+          "children": []
+        }
+      ]
+    }
+  ]
+}
+```
+
+侧边栏必须递归渲染 `children`，并在当前选中任意深度的子会话时自动展开完整祖先路径。
+删除中间节点时，后端会级联删除其全部后代；前端应从本地树中递归移除该节点。
+
+### 子会话详情
+
+`GET CHAT_CONVERSATIONS_ENDPOINT/{markId}` 对复杂子智能体额外返回：
+
+```json
+{
+  "conversationKind": "agent_session",
+  "parentMarkId": "agent-level-1",
+  "rootMarkId": "root-conversation",
+  "ancestorMarkIds": ["root-conversation", "agent-level-1"],
+  "agentSession": {
+    "depth": 2,
+    "maxSubagentDepth": 4,
+    "allowNestedSubagents": true,
+    "children": []
+  }
+}
+```
+
+标题栏可展示当前绝对层级，以及该会话是否还能创建下级子智能体。
+
+### `subagent_session_create` 新参数
+
+- `response_contract`: `result | full`。`result` 使用独立结果槽。
+- `append_result_instruction`: 默认 `true`。仅在 `response_contract=result` 时，把结果槽交付要求追加到父级提供的可见消息末尾；它不是 system 消息，也不是隐藏运行时提示词。
+- `initial_role`: `system | user | assistant`。默认只有 `user` 自动触发生成。
+- `generate`: `null` 时按角色决定；也可显式覆盖。
+- `allow_nested_subagents`: 是否允许新会话继续创建下级持久化子智能体。
+- `max_subagent_depth`: 根会话为 0，首层子智能体为 1，后端硬上限为 8。
+
+工具签名使用 `Annotated` 与 `Literal` 提供参数含义和枚举值。模型在工具列表和工具详情中可以动态看到这些说明。
+
+### `subagent_session_list`
+
+```text
+subagent_session_list(
+  scope="descendants",
+  include_closed=true,
+  max_depth=null
+)
+```
+
+返回：
+
+- `flatSessions`: 按层级遍历的扁平会话列表。
+- `tree`: 递归子智能体树。
+- `parentMarkId`: 当前调用者会话。
+- `count`: 返回节点数量。
+
+子智能体调用该工具时，只能看到自己拥有的直接子级或后代，不会看到兄弟会话。
+
+### 广播事件
+
+本版本没有新增广播事件。嵌套会话创建、状态更新和删除继续复用：
+
+- `Sidebar / Reload-Conversations`
+- `Conversation-Tree-Changed`
+- `Conversation-Deleted`
+
+后端会把嵌套会话活动时间向所有祖先会话传播，因此侧边栏根会话的排序也会随深层子智能体活动更新。

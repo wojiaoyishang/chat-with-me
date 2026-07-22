@@ -85,14 +85,52 @@ const ConversationMenu = ({markId, onDelete}) => {
     );
 };
 
+const normalizeAgentSession = (session) => ({
+    ...session,
+    updateDate: new Date(session.updatedAt || session.updateDate || Date.now()),
+    children: (session.children || []).map(normalizeAgentSession),
+});
+
 const toConversation = (conversation) => ({
     ...conversation,
     updateDate: new Date(conversation.updateDate),
-    children: (conversation.children || []).map((child) => ({
-        ...child,
-        updateDate: new Date(child.updatedAt || child.updateDate || Date.now()),
-    })),
+    children: (conversation.children || []).map(normalizeAgentSession),
 });
+
+const mapAgentTree = (nodes, updater) => (
+    (nodes || []).map((node) => {
+        const nextNode = updater(node);
+        return {
+            ...nextNode,
+            children: mapAgentTree(nextNode.children || [], updater),
+        };
+    })
+);
+
+const removeAgentNode = (nodes, markId) => (
+    (nodes || [])
+        .filter((node) => node.markId !== markId)
+        .map((node) => ({
+            ...node,
+            children: removeAgentNode(node.children || [], markId),
+        }))
+);
+
+const findAgentPath = (nodes, markId, path = []) => {
+    for (const node of nodes || []) {
+        const nextPath = [...path, node.markId];
+        if (node.markId === markId) return nextPath;
+        const nested = findAgentPath(node.children || [], markId, nextPath);
+        if (nested) return nested;
+    }
+    return null;
+};
+
+const countAgentDescendants = (nodes) => (
+    (nodes || []).reduce((total, node) => (
+        total + 1 + countAgentDescendants(node.children || [])
+    ), 0)
+);
 
 const STATUS_META = {
     queued: {label: '排队中', dot: 'bg-slate-400'},
@@ -105,17 +143,42 @@ const STATUS_META = {
     closed: {label: '已关闭', dot: 'bg-zinc-400'},
 };
 
-const AgentSessionRow = ({child, selectedMarkId, onSelect, onDelete}) => {
+const AgentSessionRow = ({
+                             child,
+                             selectedMarkId,
+                             onSelect,
+                             onDelete,
+                             expandedNodes,
+                             setExpandedNodes,
+                         }) => {
     const isSelected = child.markId === selectedMarkId;
     const status = STATUS_META[child.status] || STATUS_META.idle;
+    const hasChildren = (child.children || []).length > 0;
+    const isExpanded = expandedNodes[child.markId] === true;
 
     return (
         <li data-markid={child.markId}>
             <div
-                className={`ml-5 flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors ${
+                className={`flex items-center gap-1 rounded-lg px-1.5 py-1.5 transition-colors ${
                     isSelected ? 'bg-blue-50 text-blue-800' : 'text-gray-700 hover:bg-gray-100'
                 }`}
             >
+                {hasChildren ? (
+                    <button
+                        onClick={() => setExpandedNodes((previous) => ({
+                            ...previous,
+                            [child.markId]: !isExpanded,
+                        }))}
+                        className="cursor-pointer rounded p-0.5 text-gray-400 hover:bg-white/70 hover:text-gray-700"
+                        aria-label={isExpanded ? '收起下级子智能体' : '展开下级子智能体'}
+                    >
+                        {isExpanded
+                            ? <ChevronDown className="h-3.5 w-3.5"/>
+                            : <ChevronRight className="h-3.5 w-3.5"/>}
+                    </button>
+                ) : (
+                    <span className="w-4 shrink-0"/>
+                )}
                 <div className="relative shrink-0">
                     <Bot className="h-4 w-4 text-indigo-500"/>
                     <span className={`absolute -right-0.5 -bottom-0.5 h-1.5 w-1.5 rounded-full ring-1 ring-white ${status.dot}`}/>
@@ -131,12 +194,35 @@ const AgentSessionRow = ({child, selectedMarkId, onSelect, onDelete}) => {
                         <span>{status.label}</span>
                         <span>·</span>
                         <span>{Number(child.roundCount || 0)} 轮</span>
+                        <span>·</span>
+                        <span>第 {Number(child.depth || 1)} 层</span>
+                        {hasChildren && (
+                            <>
+                                <span>·</span>
+                                <span>{countAgentDescendants(child.children)} 个后代</span>
+                            </>
+                        )}
                     </span>
                 </button>
                 {isSelected && (
                     <ConversationMenu markId={child.markId} onDelete={onDelete}/>
                 )}
             </div>
+            {hasChildren && isExpanded && (
+                <ul className="ml-3 space-y-0.5 border-l border-gray-200 pl-1">
+                    {child.children.map((nestedChild) => (
+                        <AgentSessionRow
+                            key={nestedChild.markId}
+                            child={nestedChild}
+                            selectedMarkId={selectedMarkId}
+                            onSelect={onSelect}
+                            onDelete={onDelete}
+                            expandedNodes={expandedNodes}
+                            setExpandedNodes={setExpandedNodes}
+                        />
+                    ))}
+                </ul>
+            )}
         </li>
     );
 };
@@ -151,10 +237,9 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
     const [limit] = useState(20);
     const [total, setTotal] = useState(0);
     const [hasMore, setHasMore] = useState(false);
-    const [expandedParents, setExpandedParents] = useState({});
+    const [expandedNodes, setExpandedNodes] = useState({});
     const [oldPositions, setOldPositions] = useState(null);
     const [titleTransitioning, setTitleTransitioning] = useState({});
-    const [titleCache, setTitleCache] = useState({});
 
     const capturePositions = () => {
         const positions = {};
@@ -201,7 +286,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                 }
                 return {
                     ...conversation,
-                    children: conversation.children.map((child) => (
+                    children: mapAgentTree(conversation.children, (child) => (
                         child.markId === markId
                             ? {...child, updateDate: newDate || new Date()}
                             : child
@@ -213,12 +298,11 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
             capturePositions();
             setConversations((previous) => previous.map((conversation) => {
                 if (conversation.markId === markId) {
-                    setTitleCache((cache) => ({...cache, [markId]: conversation.title}));
                     return {...conversation, title: newTitle || conversation.title};
                 }
                 return {
                     ...conversation,
-                    children: conversation.children.map((child) => (
+                    children: mapAgentTree(conversation.children, (child) => (
                         child.markId === markId
                             ? {...child, name: newTitle || child.name}
                             : child
@@ -228,11 +312,6 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
             setTitleTransitioning((previous) => ({...previous, [markId]: true}));
             window.setTimeout(() => {
                 setTitleTransitioning((previous) => {
-                    const next = {...previous};
-                    delete next[markId];
-                    return next;
-                });
-                setTitleCache((previous) => {
                     const next = {...previous};
                     delete next[markId];
                     return next;
@@ -247,11 +326,18 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
 
     useEffect(() => {
         if (!selectedMarkId) return;
-        const parent = conversations.find((conversation) => (
-            conversation.children.some((child) => child.markId === selectedMarkId)
-        ));
-        if (parent) {
-            setExpandedParents((previous) => ({...previous, [parent.markId]: true}));
+        for (const conversation of conversations) {
+            const path = findAgentPath(conversation.children, selectedMarkId);
+            if (!path) continue;
+            const toExpand = [conversation.markId, ...path.slice(0, -1)];
+            setExpandedNodes((previous) => {
+                const next = {...previous};
+                toExpand.forEach((markId) => {
+                    next[markId] = true;
+                });
+                return next;
+            });
+            break;
         }
     }, [selectedMarkId, conversations]);
 
@@ -283,7 +369,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
             .filter((conversation) => conversation.markId !== deletedMarkId)
             .map((conversation) => ({
                 ...conversation,
-                children: conversation.children.filter((child) => child.markId !== deletedMarkId),
+                children: removeAgentNode(conversation.children, deletedMarkId),
             })));
         onDelete?.(deletedMarkId);
     };
@@ -332,9 +418,10 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                         <ul className="space-y-1">
                             {items.map((conversation) => {
                                 const isSelected = conversation.markId === selectedMarkId;
-                                const isExpanded = expandedParents[conversation.markId] === true;
+                                const isExpanded = expandedNodes[conversation.markId] === true;
                                 const hasChildren = conversation.children.length > 0;
                                 const transitioning = titleTransitioning[conversation.markId];
+                                const descendantCount = countAgentDescendants(conversation.children);
                                 return (
                                     <React.Fragment key={conversation.markId}>
                                         <li data-markid={conversation.markId}>
@@ -343,7 +430,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                                             }`}>
                                                 {hasChildren && (
                                                     <button
-                                                        onClick={() => setExpandedParents((previous) => ({
+                                                        onClick={() => setExpandedNodes((previous) => ({
                                                             ...previous,
                                                             [conversation.markId]: !isExpanded,
                                                         }))}
@@ -366,7 +453,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                                                     </span>
                                                     {hasChildren && (
                                                         <span className="block text-[11px] text-gray-400">
-                                                            {conversation.children.length} 个子智能体会话
+                                                            {descendantCount} 个子智能体会话
                                                         </span>
                                                     )}
                                                 </button>
@@ -379,7 +466,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                                             </div>
                                         </li>
                                         {hasChildren && isExpanded && (
-                                            <ul className="space-y-0.5 border-l border-gray-200 ml-3 pl-1">
+                                            <ul className="ml-3 space-y-0.5 border-l border-gray-200 pl-1">
                                                 {conversation.children.map((child) => (
                                                     <AgentSessionRow
                                                         key={child.markId}
@@ -387,6 +474,8 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                                                         selectedMarkId={selectedMarkId}
                                                         onSelect={onSelect}
                                                         onDelete={handleDeleteConversation}
+                                                        expandedNodes={expandedNodes}
+                                                        setExpandedNodes={setExpandedNodes}
                                                     />
                                                 ))}
                                             </ul>

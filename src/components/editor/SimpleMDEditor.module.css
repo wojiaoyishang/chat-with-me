@@ -11,17 +11,39 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-height: 0;
     width: 100%;
-    gap: 12px;
+    overflow: hidden;
 }
 
 .editorWrapper :global(textarea) {
-    min-height: 600px;
+    min-height: 0;
 }
 
 .editorWrapper :global(.w-md-editor) {
-    padding: 5px;
-    height: 100%;;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    padding: 0;
+    box-shadow: none;
+}
+
+.editorWrapper :global(.w-md-editor-content),
+.editorWrapper :global(.w-md-editor-area),
+.editorWrapper :global(.w-md-editor-text) {
+    min-height: 0;
+}
+
+.editorWrapper :global(.w-md-editor-content) {
+    flex: 1;
+    overflow: hidden;
+}
+
+.editorWrapper :global(.w-md-editor-area),
+.editorWrapper :global(.w-md-editor-text) {
+    height: 100%;
 }
 
 .editorWrapper :global(.w-md-editor-toolbar) {

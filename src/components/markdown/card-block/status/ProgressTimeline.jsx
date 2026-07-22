@@ -22,8 +22,9 @@ const ProgressTimeline = memo(({
     const steps = Array.from({length: total}, (_, index) => index + 1);
     const compactSteps = getCompactProgressSteps(current, total);
     const progressPercent = getVisualProgressPercent(current, total);
-    const shouldBreathe = !isFailed && current > 0;
-    const latestCompletedStep = current > 0 ? Math.min(current, total) : null;
+    const isComplete = current >= total;
+    const shouldBreathe = !isFailed && current > 0 && !isComplete;
+    const latestCompletedStep = current > 0 && !isComplete ? Math.min(current, total) : null;
 
     const tone = isFailed
         ? {

@@ -1545,6 +1545,17 @@ function ChatPage({
                             });
                         });
                         break;
+                    case "Conversation-Tree-Changed":
+                        // AI 工具或其他客户端修改了对话树。统一重新加载当前活动分支，
+                        // 避免本地 messagesOrder 与后端 treeRevision 不一致。
+                        setRandomMark(generateUUID());
+                        reply({success: true, treeRevision: payload.treeRevision});
+                        break;
+                    case "Conversation-Deleted":
+                        // 当前页面对应的子智能体会话已经被删除，返回会话列表。
+                        reply({success: true});
+                        window.location.assign('/chat');
+                        break;
                     case "Reload-Messages":
                         setRandomMark(generateUUID());
                         break;
@@ -2017,8 +2028,8 @@ function ChatPage({
                             onFolderDetected={handleFolderDetected}
                             onHeightChange={handleChatBoxHeightChange}
                             dropTargetRef={chatPageRef}
+                            editorHostRef={chatPageRef}
                             selectedModel={selectedModel}
-                            windowRef={windowRef}
                             isWindowMode={isWindowMode}
                             onVoiceRecordingStart={handleVoiceRecordingStart}
                             onVoicePcmReady={handleVoicePcmReady}

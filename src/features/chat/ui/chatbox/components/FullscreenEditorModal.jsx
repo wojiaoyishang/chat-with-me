@@ -1,63 +1,76 @@
-import React, {memo} from 'react';
+import React, {memo, useEffect} from 'react';
+import {createPortal} from 'react-dom';
 import {motion} from 'framer-motion';
 import {X} from 'lucide-react';
 
 import SimpleMDEditor from '@/components/editor/SimpleMDEditor.jsx';
-import {isMobile} from '@/lib/tools.jsx';
 
 const FullscreenEditorModal = memo(({
                                         isOpen,
-                                        isWindowMode,
-                                        modalPosition,
+                                        portalTargetRef,
                                         messageContent,
                                         setMessageContent,
                                         isReadOnly,
                                         onClose,
                                         t,
                                     }) => {
-    if (!isOpen) return null;
+    useEffect(() => {
+        if (!isOpen) return undefined;
 
-    return (
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                onClose();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
+
+    if (!isOpen || typeof document === 'undefined') return null;
+
+    const portalTarget = portalTargetRef?.current || document.body;
+    const positionClass = portalTarget === document.body ? 'fixed' : 'absolute';
+
+    return createPortal(
         <div
-            className={isWindowMode
-                ? 'pointer-events-auto'
-                : 'fixed inset-0 flex items-center justify-center pointer-events-auto'
-            }
-            style={isWindowMode
-                ? modalPosition
-                : {
-                    zIndex: 50,
-                    marginLeft: !isMobile() ? 'var(--sidebar-width)' : '0',
-                    transition: 'margin-left 0.3s ease-in-out',
-                }
-            }
+            className={`${positionClass} inset-0 z-[100] overflow-hidden bg-white pointer-events-auto`}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('zoom_in_input_box')}
         >
             <motion.div
-                initial={{opacity: 0, x: 10}}
-                animate={{opacity: 1, x: 0}}
-                className="h-full w-full mx-auto"
+                initial={{opacity: 0, scale: 0.995}}
+                animate={{opacity: 1, scale: 1}}
+                transition={{duration: 0.16, ease: 'easeOut'}}
+                className="flex h-full min-h-0 w-full flex-col bg-white"
             >
-                <div
-                    className="bg-white z-10001 w-full h-full p-0.5 relative"
-                    onClick={e => e.stopPropagation()}
-                >
+                <header className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-4">
+                    <span className="truncate text-sm font-medium text-gray-700">
+                        {t('zoom_in_input_box')}
+                    </span>
                     <button
+                        type="button"
                         onClick={onClose}
-                        className="absolute z-50 top-0 right-0 m-2 rounded-full bg-gray-200 text-gray-500 hover:text-gray-700 cursor-pointer"
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer"
                         aria-label={t('close')}
+                        title={t('close')}
                     >
-                        <X className="w-5 h-5"/>
+                        <X className="h-5 w-5"/>
                     </button>
-                    <div className="h-full p-5">
-                        <SimpleMDEditor
-                            text={messageContent}
-                            setText={setMessageContent}
-                            readOnly={isReadOnly}
-                        />
-                    </div>
+                </header>
+
+                <div className="min-h-0 flex-1 overflow-hidden p-3 sm:p-4">
+                    <SimpleMDEditor
+                        text={messageContent}
+                        setText={setMessageContent}
+                        readOnly={isReadOnly}
+                    />
                 </div>
             </motion.div>
-        </div>
+        </div>,
+        portalTarget
     );
 });
 

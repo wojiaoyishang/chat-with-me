@@ -34,6 +34,7 @@ const VOICE_WAVEFORM_BARS = 56;
 const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
 const CHATBOX_AUTO_HIDE_SETTING_KEY = 'ChatBoxBottomAutoHide';
 const CHATBOX_COLLAPSED_HEIGHT = 30;
+const CHATBOX_COLLAPSE_OVERSHOOT_PX = 24;
 const CHATBOX_AUTO_HIDE_DELAY_MS = 2200;
 const CHATBOX_INPUT_DRAFT_STORAGE_PREFIX = 'chatbox-input-draft-v1';
 const CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY = 'chatbox:input-drafts:v1';
@@ -205,7 +206,7 @@ function ChatBox({
                      onFolderDetected,
                      onHeightChange,
                      dropTargetRef,
-                     windowRef,
+                     editorHostRef,
                      selectedModel,
                      isWindowMode = false,
                      onVoicePcmReady,
@@ -257,9 +258,6 @@ function ChatBox({
     // 全屏编辑器
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // 窗口模式下全屏编辑器填满 windowRef 的位置/尺寸
-    const [modalPosition, setModalPosition] = useState({});
-
     // 是否只读
     const [isReadOnly, setIsReadOnly] = useState(readOnly);
 
@@ -292,6 +290,7 @@ function ChatBox({
         Boolean(getLocalSetting(CHATBOX_AUTO_HIDE_SETTING_KEY, false))
     ));
     const [isChatBoxCollapsed, setIsChatBoxCollapsed] = useState(false);
+    const [collapsedTranslateY, setCollapsedTranslateY] = useState(0);
 
     // 语音输入相关
     const [isVoiceRecording, setIsVoiceRecording] = useState(false);
@@ -322,6 +321,9 @@ function ChatBox({
     const voicePermissionDialogResolverRef = useRef(null);
     const onVoiceRecordingCancelRef = useRef(onVoiceRecordingCancel);
     const autoHideTimerRef = useRef(null);
+    const isInputFocusedRef = useRef(false);
+    const isPointerInsideChatBoxRef = useRef(false);
+    const isModalOpenRef = useRef(false);
     const currentDraftStorageKeyRef = useRef(getStandaloneDraftStorageKey(markId));
     const editDraftRef = useRef(null);
     const isEditMessageRef = useRef(false);
@@ -406,6 +408,49 @@ function ChatBox({
             requestAnimationFrame(() => textareaRef.current?.focus({preventScroll: true}));
         }
     }, [clearAutoHideTimer]);
+
+    const scheduleAutoHide = useCallback(() => {
+        clearAutoHideTimer();
+        if (isSmallScreen || !isBottomAutoHideEnabled) return;
+
+        autoHideTimerRef.current = window.setTimeout(() => {
+            autoHideTimerRef.current = null;
+
+            // 聚焦中的输入框不能随 ChatBox 一起做 transform 隐藏，否则浏览器会
+            // 自动滚动以保持焦点可见，造成 ChatBox 卡在半隐藏状态。
+            if (isInputFocusedRef.current || isModalOpenRef.current) return;
+
+            setIsChatBoxCollapsed(true);
+        }, CHATBOX_AUTO_HIDE_DELAY_MS);
+    }, [clearAutoHideTimer, isBottomAutoHideEnabled, isSmallScreen]);
+
+    const handleMessageInputFocus = useCallback(() => {
+        isInputFocusedRef.current = true;
+        showCollapsedChatBox();
+    }, [showCollapsedChatBox]);
+
+    const handleMessageInputBlur = useCallback(() => {
+        isInputFocusedRef.current = false;
+        if (!isPointerInsideChatBoxRef.current) {
+            scheduleAutoHide();
+        }
+    }, [scheduleAutoHide]);
+
+    const openFullscreenEditor = useCallback(() => {
+        isModalOpenRef.current = true;
+        clearAutoHideTimer();
+        setIsChatBoxCollapsed(false);
+        setIsModalOpen(true);
+    }, [clearAutoHideTimer]);
+
+    const closeFullscreenEditor = useCallback(() => {
+        isModalOpenRef.current = false;
+        setIsModalOpen(false);
+
+        if (!isPointerInsideChatBoxRef.current && !isInputFocusedRef.current) {
+            scheduleAutoHide();
+        }
+    }, [scheduleAutoHide]);
 
     const handleInputActivity = useCallback(() => {
         if (!isSmallScreen) {
@@ -838,7 +883,7 @@ function ChatBox({
         clearAutoHideTimer();
         if (isSmallScreen) {
             setIsBottomAutoHideEnabled(true);
-            setIsChatBoxCollapsed(true);
+            setIsChatBoxCollapsed(!isInputFocusedRef.current && !isModalOpenRef.current);
             return;
         }
 
@@ -853,20 +898,16 @@ function ChatBox({
     }, [clearAutoHideTimer, isSmallScreen]);
 
     const handleChatBoxMouseEnter = useCallback(() => {
+        isPointerInsideChatBoxRef.current = true;
         if (!isSmallScreen && isBottomAutoHideEnabled) {
             showCollapsedChatBox();
         }
     }, [isBottomAutoHideEnabled, isSmallScreen, showCollapsedChatBox]);
 
     const handleChatBoxMouseLeave = useCallback(() => {
-        if (!isSmallScreen && isBottomAutoHideEnabled) {
-            clearAutoHideTimer();
-            autoHideTimerRef.current = window.setTimeout(() => {
-                autoHideTimerRef.current = null;
-                setIsChatBoxCollapsed(true);
-            }, CHATBOX_AUTO_HIDE_DELAY_MS);
-        }
-    }, [clearAutoHideTimer, isBottomAutoHideEnabled, isSmallScreen]);
+        isPointerInsideChatBoxRef.current = false;
+        scheduleAutoHide();
+    }, [scheduleAutoHide]);
 
     // ========== 工具初始化函数 ==========
 
@@ -1328,40 +1369,6 @@ function ChatBox({
         onVoiceRecordingCancelRef.current = onVoiceRecordingCancel;
     }, [sendButtonStatus, messageContent, isEditMessage, onVoiceRecordingCancel]);
 
-    // 窗口模式下全屏编辑器填满 windowRef（位置 + 大小）
-    useLayoutEffect(() => {
-        if (!isModalOpen || !isWindowMode || !windowRef?.current) {
-            setModalPosition({});
-            return;
-        }
-
-        const updatePosition = () => {
-            const rect = windowRef.current.getBoundingClientRect();
-            setModalPosition({
-                position: 'fixed',
-                top: `${rect.top}px`,
-                left: `${rect.left}px`,
-                width: `${rect.width}px`,
-                height: `${rect.height}px`,
-                zIndex: 100001,
-            });
-        };
-
-        updatePosition();
-
-        const observer = new ResizeObserver(updatePosition);
-        observer.observe(windowRef.current);
-
-        // 滚动时也要更新位置（防止窗口滚动导致偏移）
-        const handleScroll = () => updatePosition();
-        window.addEventListener('scroll', handleScroll, true);
-
-        return () => {
-            observer.disconnect();
-            window.removeEventListener('scroll', handleScroll, true);
-        };
-    }, [isModalOpen, isWindowMode, windowRef]);
-
     // 响应式屏幕检测：复用 useIsMobile，保持桌面/移动端语音交互分支一致。
     useEffect(() => {
         const isSmall = Boolean(isMobileDevice);
@@ -1491,6 +1498,82 @@ function ChatBox({
         window.addEventListener('resize', updateHeight);
         return () => window.removeEventListener('resize', updateHeight);
     }, [attachmentsMeta]);
+
+    // 桌面端折叠位移必须覆盖 ChatBox 自身高度、它到 ChatPage 底部的间隙，
+    // 并额外越过边界一小段安全距离。折叠把手已独立渲染，因此 ChatBox 主体无需再保留
+    // collapsedHeight；这样可规避圆角、阴影、缩放和小数像素造成的残边。
+    useLayoutEffect(() => {
+        if (isSmallScreen) {
+            setCollapsedTranslateY(0);
+            return undefined;
+        }
+
+        const root = rootRef.current;
+        if (!root) return undefined;
+
+        const host = editorHostRef?.current || null;
+        let animationFrameId = null;
+
+        const readCurrentTranslateY = () => {
+            const transform = window.getComputedStyle(root).transform;
+            if (!transform || transform === 'none') return 0;
+
+            try {
+                return new window.DOMMatrixReadOnly(transform).m42 || 0;
+            } catch (_) {
+                const matrix3dMatch = transform.match(/^matrix3d\((.+)\)$/);
+                if (matrix3dMatch) {
+                    return Number(matrix3dMatch[1].split(',')[13]) || 0;
+                }
+
+                const matrixMatch = transform.match(/^matrix\((.+)\)$/);
+                return matrixMatch ? (Number(matrixMatch[1].split(',')[5]) || 0) : 0;
+            }
+        };
+
+        const measureCollapsedTranslate = () => {
+            animationFrameId = null;
+
+            const rootRect = root.getBoundingClientRect();
+            const hostBottom = host?.getBoundingClientRect?.().bottom ?? window.innerHeight;
+            const currentTranslateY = readCurrentTranslateY();
+            const untransformedRootBottom = rootRect.bottom - currentTranslateY;
+            const bottomGap = Math.max(0, hostBottom - untransformedRootBottom);
+            const nextTranslateY = Math.max(
+                0,
+                rootRect.height + bottomGap + CHATBOX_COLLAPSE_OVERSHOOT_PX,
+            );
+
+            setCollapsedTranslateY((previousValue) => (
+                Math.abs(previousValue - nextTranslateY) < 0.5
+                    ? previousValue
+                    : nextTranslateY
+            ));
+        };
+
+        const scheduleMeasurement = () => {
+            if (animationFrameId !== null) {
+                window.cancelAnimationFrame(animationFrameId);
+            }
+            animationFrameId = window.requestAnimationFrame(measureCollapsedTranslate);
+        };
+
+        // 首次同步测量，避免自动隐藏开启时出现一帧错误位移。
+        measureCollapsedTranslate();
+
+        const observer = new ResizeObserver(scheduleMeasurement);
+        observer.observe(root);
+        if (host && host !== root) observer.observe(host);
+        window.addEventListener('resize', scheduleMeasurement);
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('resize', scheduleMeasurement);
+            if (animationFrameId !== null) {
+                window.cancelAnimationFrame(animationFrameId);
+            }
+        };
+    }, [editorHostRef, isSmallScreen]);
 
     // ChatBox 宽
     useLayoutEffect(() => {
@@ -1677,33 +1760,39 @@ function ChatBox({
                     </button>
                 </div>
             )}
+            {!isSmallScreen && isChatBoxCollapsed && (
+                <button
+                    type="button"
+                    aria-label={collapsedButtonLabel}
+                    title={collapsedButtonLabel}
+                    className="pointer-events-auto absolute left-1/2 -bottom-8 z-[5] flex h-5 w-16 -translate-x-1/2 items-center justify-center rounded-full opacity-40 transition-opacity duration-150 hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer"
+                    onMouseEnter={showCollapsedChatBox}
+                    onClick={showCollapsedChatBox}
+                >
+                    <span className="h-1 w-10 rounded-full bg-gray-400/80 shadow-sm"/>
+                </button>
+            )}
             <div
                 ref={rootRef}
-                className="pointer-events-none relative isolate mx-auto flex w-full max-w-225 flex-col overflow-hidden px-4 py-4 transition-transform duration-300 ease-in-out"
+                aria-hidden={!isSmallScreen && isChatBoxCollapsed ? true : undefined}
+                className="pointer-events-none relative isolate mx-auto flex w-full max-w-225 flex-col overflow-hidden px-4 py-4"
                 onMouseEnter={handleChatBoxMouseEnter}
                 onMouseLeave={handleChatBoxMouseLeave}
                 style={{
-                    transitionProperty: 'max-height, transform',
-                    transitionDuration: '0.3s',
-                    transitionTimingFunction: 'ease-in-out',
+                    transitionProperty: 'max-height, transform, opacity',
+                    transitionDuration: '0.3s, 0.34s, 0.14s',
+                    transitionTimingFunction: 'ease-in-out, cubic-bezier(0.4, 0, 0.2, 1), ease-out',
+                    transitionDelay: !isSmallScreen && isChatBoxCollapsed
+                        ? '0s, 0s, 0.2s'
+                        : '0s, 0s, 0s',
                     maxHeight: rootMaxHeightStyle,
                     display: isMobileCollapsed ? 'none' : undefined,
-                    transform: !isSmallScreen && isChatBoxCollapsed ? `translateY(calc(100% - ${CHATBOX_COLLAPSED_HEIGHT}px))` : 'translateY(0)',
+                    opacity: !isSmallScreen && isChatBoxCollapsed ? 0 : 1,
+                    transform: !isSmallScreen && isChatBoxCollapsed
+                        ? `translateY(${collapsedTranslateY}px)`
+                        : 'translateY(0)',
                 }}
             >
-                {!isSmallScreen && isChatBoxCollapsed && (
-                    <button
-                        type="button"
-                        aria-label={collapsedButtonLabel}
-                        title={collapsedButtonLabel}
-                        className="pointer-events-auto absolute left-1/2 top-1 z-[4] flex h-6 -translate-x-1/2 items-center gap-1 rounded-full border border-gray-200 bg-white/95 px-3 text-xs font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 cursor-pointer"
-                        onMouseEnter={showCollapsedChatBox}
-                        onClick={showCollapsedChatBox}
-                    >
-                        <span className="h-1.5 w-8 rounded-full bg-gray-300"/>
-                        <span className="sm:hidden">{collapsedButtonLabel}</span>
-                    </button>
-                )}
                 <ChatBoxHeader {...chatBoxHeaderProps} />
                 <div
                     className="border-1 relative flex min-h-0 flex-col overflow-hidden rounded-2xl bg-white transition-shadow duration-200 ease-in-out hover:shadow-lg focus-within:shadow-lg pointer-events-auto">
@@ -1747,6 +1836,8 @@ function ChatBox({
                             onPaste={handlePaste}
                             onKeyDown={handleKeyDown}
                             onInputActivity={handleInputActivity}
+                            onFocus={handleMessageInputFocus}
+                            onBlur={handleMessageInputBlur}
                             isReadOnly={isReadOnly}
                             placeholder={t('input_placeholder')}
                             textareaRef={textareaRef}
@@ -1810,7 +1901,7 @@ function ChatBox({
                                 type="button"
                                 aria-label={t('zoom_in_input_box')}
                                 className="p-2.5 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-offset-2 transition-colors cursor-pointer"
-                                onClick={() => setIsModalOpen(true)}
+                                onClick={openFullscreenEditor}
                             >
                                 <svg
                                     t="1758849161791"
@@ -1852,22 +1943,21 @@ function ChatBox({
 
                 </div>
 
-                <FullscreenEditorModal
-                    isOpen={isModalOpen}
-                    isWindowMode={isWindowMode}
-                    modalPosition={modalPosition}
-                    messageContent={messageContent}
-                    setMessageContent={updateMessageContent}
-                    isReadOnly={isReadOnly}
-                    onClose={() => setIsModalOpen(false)}
-                    t={t}
-                />
-                <VoicePermissionDialog
-                    dialog={voicePermissionDialog}
-                    onConfirm={() => closeVoicePermissionDialog(true)}
-                    onCancel={() => closeVoicePermissionDialog(false)}
-                />
             </div>
+            <FullscreenEditorModal
+                isOpen={isModalOpen}
+                portalTargetRef={editorHostRef}
+                messageContent={messageContent}
+                setMessageContent={updateMessageContent}
+                isReadOnly={isReadOnly}
+                onClose={closeFullscreenEditor}
+                t={t}
+            />
+            <VoicePermissionDialog
+                dialog={voicePermissionDialog}
+                onConfirm={() => closeVoicePermissionDialog(true)}
+                onCancel={() => closeVoicePermissionDialog(false)}
+            />
         </>
     );
 }
@@ -1911,6 +2001,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         prevProps.onFolderDetected === nextProps.onFolderDetected &&
         prevProps.onHeightChange === nextProps.onHeightChange &&
         prevProps.dropTargetRef === nextProps.dropTargetRef &&
+        prevProps.editorHostRef === nextProps.editorHostRef &&
         prevProps.selectedModel === nextProps.selectedModel &&
         prevProps.isWindowMode === nextProps.isWindowMode &&
         prevProps.onVoicePcmReady === nextProps.onVoicePcmReady &&

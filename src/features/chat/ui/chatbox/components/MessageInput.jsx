@@ -23,6 +23,8 @@ const MessageInput = memo(({
                                onPaste,
                                onKeyDown,
                                onInputActivity,
+                               onFocus,
+                               onBlur,
                                isReadOnly,
                                placeholder,
                                textareaRef,
@@ -205,6 +207,15 @@ const MessageInput = memo(({
         onInputActivity?.();
     }, [onInputActivity]);
 
+    const handleFocus = useCallback((event) => {
+        onInputActivity?.();
+        onFocus?.(event);
+    }, [onFocus, onInputActivity]);
+
+    const handleBlur = useCallback((event) => {
+        onBlur?.(event);
+    }, [onBlur]);
+
     const handlePaste = useCallback((e) => {
         onPaste?.(e);
 
@@ -272,7 +283,8 @@ const MessageInput = memo(({
             onKeyDown={onKeyDown}
             onBeforeInput={handleInputActivity}
             onCompositionStart={handleInputActivity}
-            onFocus={handleInputActivity}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             placeholder={placeholder}
             rows={1}
             readOnly={isReadOnly}
@@ -295,7 +307,9 @@ const MessageInput = memo(({
         prevProps.onChange === nextProps.onChange &&
         prevProps.onPaste === nextProps.onPaste &&
         prevProps.onKeyDown === nextProps.onKeyDown &&
-        prevProps.onInputActivity === nextProps.onInputActivity
+        prevProps.onInputActivity === nextProps.onInputActivity &&
+        prevProps.onFocus === nextProps.onFocus &&
+        prevProps.onBlur === nextProps.onBlur
     );
 });
 

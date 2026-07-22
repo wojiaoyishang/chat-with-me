@@ -25,35 +25,30 @@ export const stripProgressMarkers = (content) => {
 };
 
 export const getLatestProgressMarker = (content) => {
-    const lines = toSafeString(content).split(/\r?\n/);
+    const safeContent = toSafeString(content);
+    const matches = [...safeContent.matchAll(new RegExp(PROGRESS_LINE_RE.source, 'gi'))];
+    const match = matches.at(-1);
 
-    for (let index = lines.length - 1; index >= 0; index -= 1) {
-        const line = lines[index].trim();
-        const match = line.match(PROGRESS_LINE_RE);
-
-        if (!match) {
-            continue;
-        }
-
-        const rawCurrent = Number.parseInt(match[1], 10);
-        const rawTotal = Number.parseInt(match[2], 10);
-
-        if (!Number.isFinite(rawCurrent) || !Number.isFinite(rawTotal) || rawTotal <= 0) {
-            return null;
-        }
-
-        const total = rawTotal;
-        const current = Math.min(Math.max(rawCurrent, 0), total);
-
-        return {
-            current,
-            total,
-            isNotStarted: current === 0,
-            isComplete: current >= total,
-        };
+    if (!match) {
+        return null;
     }
 
-    return null;
+    const rawCurrent = Number.parseInt(match[1], 10);
+    const rawTotal = Number.parseInt(match[2], 10);
+
+    if (!Number.isFinite(rawCurrent) || !Number.isFinite(rawTotal) || rawTotal <= 0) {
+        return null;
+    }
+
+    const total = rawTotal;
+    const current = Math.min(Math.max(rawCurrent, 0), total);
+
+    return {
+        current,
+        total,
+        isNotStarted: current === 0,
+        isComplete: current >= total,
+    };
 };
 
 export const getParagraphsForPreview = (content) => {

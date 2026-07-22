@@ -32,6 +32,8 @@ const ChatHeader = memo(({
     const modelListRef = useRef(null);
     const isAgentSession = conversationMeta?.conversationKind === 'agent_session';
     const agentSessionName = conversationMeta?.agentSession?.name;
+    const agentSessionDepth = Number(conversationMeta?.agentSession?.depth || 1);
+    const nestedAllowed = conversationMeta?.agentSession?.allowNestedSubagents !== false;
 
     useEffect(() => {
         if (isModelPopoverOpen) {
@@ -90,7 +92,7 @@ const ChatHeader = memo(({
                                 </span>
                                 {isAgentSession && (
                                     <span className="block truncate text-left text-[11px] font-normal text-gray-400">
-                                        {selectedModel?.name || t('no_models')} · 独立子会话
+                                        {selectedModel?.name || t('no_models')} · 第 {agentSessionDepth} 层 · {nestedAllowed ? '可创建下级' : '叶子会话'}
                                     </span>
                                 )}
                             </span>

@@ -11,6 +11,8 @@ import {
     normalizeHighlightLanguage,
 } from '../highlight.js';
 import { toSafeString } from '../utils.js';
+import OutputToolbar from './OutputToolbar.jsx';
+import useFollowOutputScroll from './useFollowOutputScroll.js';
 
 const TOOL_COMMAND_CODE_RE = /^\s*\[CODE:([^\]]+)]\s*(?:\r?\n|$)/i;
 
@@ -43,6 +45,18 @@ const ToolCommandBlock = memo(({content = '', id}) => {
     } = useMemo(() => {
         return parseToolCommandContent(content);
     }, [content]);
+
+    const {
+        handleScroll,
+        handleTouchMove,
+        handleWheel,
+        isFollowing,
+        resumeFollowing,
+        scrollContainerRef,
+        toggleFollowing,
+    } = useFollowOutputScroll({
+        contentKey: codeString,
+    });
 
     useLayoutEffect(() => {
         if (!codeString || !codeRef.current || language === 'text') {
@@ -94,19 +108,35 @@ const ToolCommandBlock = memo(({content = '', id}) => {
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/65 via-sky-50/20 to-sky-100/45"/>
             <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-sky-200/30 blur-2xl"/>
 
-            <div className="pretty-scrollbar relative max-h-[260px] overflow-auto">
-                <pre
-                    className="m-0 min-w-max bg-transparent px-3 py-2.5 text-[11px] leading-5 text-slate-700"
-                    style={{background: 'transparent'}}
+            <div className="relative overflow-hidden">
+                <OutputToolbar
+                    copyContent={codeString}
+                    isFollowing={isFollowing}
+                    onScrollToBottom={resumeFollowing}
+                    onToggleFollowing={toggleFollowing}
+                    tone="sky"
+                />
+
+                <div
+                    ref={scrollContainerRef}
+                    onScroll={handleScroll}
+                    onTouchMove={handleTouchMove}
+                    onWheel={handleWheel}
+                    className="pretty-scrollbar relative max-h-[260px] overflow-auto [scrollbar-gutter:stable]"
                 >
-                    <code
-                        ref={codeRef}
-                        className={`hljs block bg-transparent font-mono text-[11px] leading-5 text-inherit ${language ? `language-${language}` : ''}`}
-                        style={{background: 'transparent', color: 'inherit', padding: 0}}
+                    <pre
+                        className="m-0 min-w-max bg-transparent px-3 py-2.5 text-[11px] leading-5 text-slate-700"
+                        style={{background: 'transparent'}}
                     >
-                        {codeString}
-                    </code>
-                </pre>
+                        <code
+                            ref={codeRef}
+                            className={`hljs block bg-transparent font-mono text-[11px] leading-5 text-inherit ${language ? `language-${language}` : ''}`}
+                            style={{background: 'transparent', color: 'inherit', padding: 0}}
+                        >
+                            {codeString}
+                        </code>
+                    </pre>
+                </div>
             </div>
         </div>
     );

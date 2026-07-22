@@ -65,6 +65,15 @@
     "copy_message": "复制消息",
     "message_copied": "消息复制成功！",
     "message_not_copied": "消息复制失败： {{message}}",
+    "tool_output_copy": "复制调用内容",
+    "tool_output_copy_short": "复制",
+    "tool_output_copied": "已复制",
+    "tool_output_pause_follow": "暂停自动滚动",
+    "tool_output_resume_follow": "继续自动滚动",
+    "tool_output_following": "自动跟随",
+    "tool_output_follow_paused": "已暂停",
+    "tool_output_scroll_bottom": "滚动到底部并继续跟随",
+    "tool_output_to_bottom": "到底部",
     "regenerate_message": "重新生成",
     "message_info": "详细信息",
     "select_all": "选择全部",
@@ -299,5 +308,7 @@
     "tool_approval_allow": "同意",
     "tool_approval_deny": "拒绝",
     "tool_approval_allow_same": "同类工具均同意",
-    "tool_approval_deny_same": "同类工具均拒绝"
+    "tool_approval_deny_same": "同类工具均拒绝",
+    "tool_subagent_waiting_status": "等待子智能体",
+    "tool_subagent_resuming_status": "子智能体已完成，正在恢复"
 }

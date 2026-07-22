@@ -22,8 +22,8 @@ import {
 import StatusBody from './StatusBody.jsx';
 import StatusHeader from './StatusHeader.jsx';
 
-const STATUS_MARKER_REGEX = /^[ \t]*(\[DONE\]|\[FAILED\])[ \t]*$/gm;
-const TOOL_STATUS_MARKER_REGEX = /^[ \t]*\[TOOL_STATUS:([a-z_]+)\][ \t]*$/gm;
+const STATUS_MARKER_REGEX = /\[(DONE|FAILED)(?::[^\]\r\n]+)?\]/gi;
+const TOOL_STATUS_MARKER_REGEX = /\[TOOL_STATUS:([a-z_]+)\]/gi;
 const BADGE_MARKER_REGEX = /^[ \t]*\[BADGE\s+NAME:([^\]\r\n]*?)\s+COLOR:(#[0-9a-fA-F]{3,8})\][ \t]*$/gm;
 const ACTION_MARKER_REGEX = /^[ \t]*\[ACTION\s+([^\]\r\n]*?)\][ \t]*$/gm;
 const ACTION_FIELD_REGEX = /([A-Z_]+):([\s\S]*?)(?=\s+[A-Z_]+:|$)/g;
@@ -127,16 +127,16 @@ const StatusWidget = memo(({
             })
             .filter(Boolean);
 
-        // [DONE] / [FAILED] 允许出现在中间任意一行。
-        // 状态以最后一次出现的显式结束标记为准。
-        // 只匹配“整行就是标记”的情况，避免误判正文里的普通文本。
+        // replacement 增量可能在任意边界合并，结束标记不一定仍独占一行。
+        // 工具卡片内容由后端协议生成，因此直接读取最后一个显式结束标记，
+        // 可以避免相邻标记或历史快照中的粘连导致状态一直停留在 running。
         const markers = [...safeContent.matchAll(STATUS_MARKER_REGEX)];
-        const lastMarker = markers.at(-1)?.[1] ?? null;
+        const lastMarker = markers.at(-1)?.[1]?.toUpperCase() ?? null;
 
-        const isDone = lastMarker === '[DONE]';
-        const isFailed = lastMarker === '[FAILED]';
+        const isDone = lastMarker === 'DONE';
+        const isFailed = lastMarker === 'FAILED';
         const toolStatusMarkers = [...safeContent.matchAll(TOOL_STATUS_MARKER_REGEX)];
-        const toolStatus = toolStatusMarkers.at(-1)?.[1] ?? null;
+        const toolStatus = toolStatusMarkers.at(-1)?.[1]?.toLowerCase() ?? null;
 
         let cleanContent = safeContent
             .replace(BADGE_MARKER_REGEX, '')
@@ -182,12 +182,15 @@ const StatusWidget = memo(({
 
     const isToolCalling = type === 'toolCalling';
     const isWaitingApproval = toolStatus === 'waiting_approval' && !isDone && !isFailed;
+    const isWaitingSubagent = toolStatus === 'waiting_subagent' && !isDone && !isFailed;
+    const isResumingSubagent = toolStatus === 'resuming_subagent' && !isDone && !isFailed;
+    const isWaitingToolState = isWaitingApproval || isWaitingSubagent;
     const isProgressComplete = isToolCalling && progress?.isComplete === true;
     const isFinished = isDone || isFailed || isProgressComplete;
 
-    // 自动展开/收起只以显式结束标记为准：没有 [DONE]/[FAILED] 就认为工具仍在调用中。
-    // 如果用户手动点过展开按钮，则后续自动逻辑不再覆盖用户选择。
-    const isToolCallingSettled = isDone || isFailed;
+    // 显式结束标记是主信号；批处理进度达到 total 也应立即收敛为完成，
+    // 避免结束增量延迟到达时卡片仍表现为正在调用。用户手动展开/收起仍有最高优先级。
+    const isToolCallingSettled = isFinished;
     const shouldAutoExpandToolCalling = isToolCalling && !isToolCallingSettled;
 
     useExpandedState(expandedKey, isToolCalling ? shouldAutoExpandToolCalling : defaultExpanded);
@@ -203,6 +206,10 @@ const StatusWidget = memo(({
     let displayTitle = title;
     if (isWaitingApproval) {
         displayTitle = t('tool_approval_waiting_status', 'Waiting for approval');
+    } else if (isWaitingSubagent) {
+        displayTitle = t('tool_subagent_waiting_status', 'Waiting for sub-agent');
+    } else if (isResumingSubagent) {
+        displayTitle = t('tool_subagent_resuming_status', 'Sub-agent finished, resuming');
     } else if (isToolCalling) {
         if (isFailed) {
             displayTitle = `${title} Failed`;
@@ -239,7 +246,8 @@ const StatusWidget = memo(({
     ) : displayTitle;
 
     let currentColor = activeColor;
-    if (isWaitingApproval) currentColor = 'text-gray-400';
+    if (isWaitingToolState) currentColor = 'text-gray-400';
+    if (isResumingSubagent) currentColor = 'text-sky-600';
     if (isDone || isProgressComplete) currentColor = doneColor;
     if (isFailed) currentColor = 'text-red-600';
 
@@ -259,11 +267,17 @@ const StatusWidget = memo(({
                 isFinished={isFinished}
                 isProcessing={isProcessing}
                 isToolCalling={isToolCalling}
-                isWaitingApproval={isWaitingApproval}
+                isWaitingApproval={isWaitingToolState}
+                isResumingTool={isResumingSubagent}
                 markId={markId}
                 progress={progress}
                 truncatedLastLine={truncatedLastLine}
-                waitingApprovalLabel={t('tool_approval_waiting_status', 'Waiting for approval')}
+                waitingApprovalLabel={
+                    isWaitingSubagent
+                        ? t('tool_subagent_waiting_status', 'Waiting for sub-agent')
+                        : t('tool_approval_waiting_status', 'Waiting for approval')
+                }
+                resumingLabel={t('tool_subagent_resuming_status', 'Sub-agent finished, resuming')}
             />
 
             <StatusBody

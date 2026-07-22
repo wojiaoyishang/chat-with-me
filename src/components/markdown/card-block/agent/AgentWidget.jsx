@@ -15,6 +15,42 @@ import {
 import AgentBody from './AgentBody.jsx';
 import AgentHeader from './AgentHeader.jsx';
 
+const MARKDOWN_PROTOCOL_MARKER = '[markdown]';
+
+const stripLeadingMarkdownMarker = (content) => {
+    const normalized = toSafeString(content).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const lines = normalized.split('\n');
+
+    for (let index = 0; index < lines.length; index += 1) {
+        if (lines[index].trim() === '') {
+            continue;
+        }
+
+        const originalLine = lines[index];
+        const leadingWhitespaceLength = originalLine.length - originalLine.trimStart().length;
+        const leadingWhitespace = originalLine.slice(0, leadingWhitespaceLength);
+        const body = originalLine.slice(leadingWhitespaceLength);
+        const lowerBody = body.toLowerCase();
+
+        if (lowerBody.startsWith(MARKDOWN_PROTOCOL_MARKER)) {
+            lines[index] = leadingWhitespace + body.slice(MARKDOWN_PROTOCOL_MARKER.length).replace(/^\s+/, '');
+            return lines.join('\n');
+        }
+
+        // A resumed replacement may arrive as `[mark` followed by the remainder in
+        // the next websocket delta.  Agent cards never treat that protocol prefix as
+        // user-visible text, so keep it hidden until the marker is complete.
+        if (body.startsWith('[') && MARKDOWN_PROTOCOL_MARKER.startsWith(lowerBody)) {
+            lines[index] = '';
+            return lines.join('\n');
+        }
+
+        return normalized;
+    }
+
+    return normalized;
+};
+
 const AgentWidget = memo(({
                               content = '',
                               Icon = Bot,
@@ -39,7 +75,10 @@ const AgentWidget = memo(({
         lastLine,
         hasContent,
     } = useMemo(() => {
-        const safeContent = toSafeString(content);
+        // Historical/persisted sub-agent replacements may keep the generic
+        // [markdown] renderer marker even though the outer token is explicitly
+        // type=agent. It is protocol metadata, not part of the agent response.
+        const safeContent = stripLeadingMarkdownMarker(content);
         const trimmedRaw = safeContent.trim();
 
         const isDone = trimmedRaw.endsWith('[AGENT-DONE]');

@@ -17,7 +17,7 @@ import './CodeBlock.css';
 
 import {BASE_BACKEND_URL} from '@/config';
 
-const TYPE_MARKER_RE = /^\[([a-zA-Z][\w-]*)\]$/;
+const TYPE_MARKER_RE = /^\s*\[([a-zA-Z][\w-]*)\]\s*$/;
 
 const CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE = /:{2,3}\s*(card|card-replace)\s*\{([^}]*)\}\s*:{2,3}/g;
 const CARD_REPLACE_BLOCK_DIRECTIVE_RE = /:{3}\s*(card|card-replace)\s*\{([^}]*)\}\s*\n[\s\S]*?\n:{3}/g;
@@ -129,6 +129,48 @@ const normalizeLineBreaks = (content) => {
     return toSafeString(content).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 };
 
+const MARKDOWN_PROTOCOL_MARKER = '[markdown]';
+
+const stripLeadingMarkdownProtocolMarker = (content, isStreaming = false) => {
+    const normalizedContent = normalizeLineBreaks(content);
+    const lines = normalizedContent.split('\n');
+
+    for (let index = 0; index < lines.length; index += 1) {
+        if (lines[index].trim() === '') {
+            continue;
+        }
+
+        const originalLine = lines[index];
+        const leadingWhitespaceLength = originalLine.length - originalLine.trimStart().length;
+        const leadingWhitespace = originalLine.slice(0, leadingWhitespaceLength);
+        const body = originalLine.slice(leadingWhitespaceLength);
+        const lowerBody = body.toLowerCase();
+
+        if (lowerBody.startsWith(MARKDOWN_PROTOCOL_MARKER)) {
+            // The renderer marker is transport metadata.  Be tolerant of a resumed
+            // stream joining the first content token onto the same line.
+            lines[index] = leadingWhitespace + body.slice(MARKDOWN_PROTOCOL_MARKER.length).replace(/^\s+/, '');
+            return lines.join('\n');
+        }
+
+        if (
+            isStreaming
+            && body.startsWith('[')
+            && MARKDOWN_PROTOCOL_MARKER.startsWith(lowerBody)
+        ) {
+            // A Redis/WebSocket chunk can end at `[mark...`.  Rendering that prefix
+            // leaks the internal marker; keep the preceding blank lines and wait for
+            // the next replacement delta to complete it.
+            lines[index] = '';
+            return lines.join('\n');
+        }
+
+        return normalizedContent;
+    }
+
+    return normalizedContent;
+};
+
 const inferTypeFromFirstNonEmptyLine = (content) => {
     const normalizedContent = normalizeLineBreaks(content);
     const lines = normalizedContent.split('\n');
@@ -168,7 +210,33 @@ const inferTypeFromFirstNonEmptyLine = (content) => {
     };
 };
 
-const normalizeReplacementEntry = (replacement, id, tokenType) => {
+const stripRedundantExplicitTypeMarker = (content, explicitType) => {
+    const normalizedContent = normalizeLineBreaks(content);
+    const normalizedType = String(explicitType || '').trim().toLowerCase();
+
+    if (!normalizedType) {
+        return normalizedContent;
+    }
+
+    const lines = normalizedContent.split('\n');
+    for (let i = 0; i < lines.length; i += 1) {
+        if (lines[i] === '') {
+            continue;
+        }
+
+        const match = TYPE_MARKER_RE.exec(lines[i]);
+        if (match && match[1].toLowerCase() === normalizedType) {
+            const nextLines = [...lines];
+            nextLines.splice(i, 1);
+            return nextLines.join('\n');
+        }
+        return normalizedContent;
+    }
+
+    return normalizedContent;
+};
+
+const normalizeReplacementEntry = (replacement, id, tokenType, isStreaming = false) => {
     const normalizedId = String(id || '');
     const explicitTokenType = typeof tokenType === 'string' && tokenType.length > 0
         ? tokenType
@@ -206,12 +274,14 @@ const normalizeReplacementEntry = (replacement, id, tokenType) => {
         rawContent = String(entry);
     }
 
+    rawContent = stripLeadingMarkdownProtocolMarker(rawContent, isStreaming);
+
     if (explicitTokenType) {
         return {
             exists: true,
             id: normalizedId,
             type: explicitTokenType,
-            content: toSafeString(rawContent),
+            content: stripRedundantExplicitTypeMarker(rawContent, explicitTokenType),
             inferredType: false,
         };
     }
@@ -221,7 +291,7 @@ const normalizeReplacementEntry = (replacement, id, tokenType) => {
             exists: true,
             id: normalizedId,
             type: entryType,
-            content: toSafeString(rawContent),
+            content: stripRedundantExplicitTypeMarker(rawContent, entryType),
             inferredType: false,
         };
     }
@@ -484,6 +554,7 @@ const createComponents = ({
                               depth = 0,
                               maxDepth = 10,
                               visitedIds = [],
+                              isStreaming = false,
                           }) => {
     const getCurrentReplacement = () => {
         return replacementRef?.current || {};
@@ -499,6 +570,7 @@ const createComponents = ({
                 depth={extra.depth ?? depth + 1}
                 maxDepth={maxDepth}
                 visitedIds={extra.visitedIds ?? visitedIds}
+                isStreaming={isStreaming}
             />
         );
     };
@@ -700,6 +772,7 @@ const createComponents = ({
                 currentReplacement,
                 finalId,
                 tokenType,
+                isStreaming,
             );
 
             // 情况 5：有 id，但 replacement 找不到
@@ -739,10 +812,12 @@ function MarkdownRendererInner({
                                    maxDepth = 10,
                                    visitedIds = [],
                                    msg = null,
+                                   isStreaming: isStreamingProp = null,
                                    copyContentComponentName = MARKDOWN_COPY_CONTENT_COMPONENT_NAME,
                                }) {
     const replacementRef = useRef(replacement);
     replacementRef.current = replacement;
+    const isStreaming = isStreamingProp ?? msg?.readonly === true;
 
     const visitedKey = useMemo(() => {
         return getVisitedKey(visitedIds);
@@ -756,6 +831,7 @@ function MarkdownRendererInner({
             depth,
             maxDepth,
             visitedIds,
+            isStreaming,
         });
     }, [
         contextId,
@@ -764,6 +840,7 @@ function MarkdownRendererInner({
         depth,
         maxDepth,
         visitedKey,
+        isStreaming,
     ]);
 
     const processedContent = useMemo(() => {
@@ -848,6 +925,7 @@ const MarkdownRenderer = memo(MarkdownRendererInner, (prev, next) => {
         prev.depth === next.depth &&
         prev.maxDepth === next.maxDepth &&
         prev.msg === next.msg &&
+        prev.isStreaming === next.isStreaming &&
         prev.copyContentComponentName === next.copyContentComponentName &&
         areVisitedIdsEqual(prev.visitedIds, next.visitedIds)
     );

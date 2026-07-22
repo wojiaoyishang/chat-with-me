@@ -65,6 +65,15 @@
     "copy_message": "Copy Message",
     "message_copied": "Message Copied!",
     "message_not_copied": "Message not Copied: {{message}}",
+    "tool_output_copy": "Copy tool output",
+    "tool_output_copy_short": "Copy",
+    "tool_output_copied": "Copied",
+    "tool_output_pause_follow": "Pause auto-scroll",
+    "tool_output_resume_follow": "Resume auto-scroll",
+    "tool_output_following": "Auto-follow",
+    "tool_output_follow_paused": "Paused",
+    "tool_output_scroll_bottom": "Scroll to bottom and resume following",
+    "tool_output_to_bottom": "Bottom",
     "regenerate_message": "Regenerate",
     "message_info": "Message's Info",
     "select_all": "Select All",
@@ -299,5 +308,7 @@
     "tool_approval_allow": "Allow",
     "tool_approval_deny": "Deny",
     "tool_approval_allow_same": "Always allow this tool",
-    "tool_approval_deny_same": "Always deny this tool"
+    "tool_approval_deny_same": "Always deny this tool",
+    "tool_subagent_waiting_status": "Waiting for sub-agent",
+    "tool_subagent_resuming_status": "Sub-agent finished, resuming"
 }

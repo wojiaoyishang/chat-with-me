@@ -11,8 +11,11 @@ import {
 } from 'lucide-react';
 
 import { toSafeString } from '../utils.js';
+import OutputToolbar from './OutputToolbar.jsx';
+import useFollowOutputScroll from './useFollowOutputScroll.js';
 
-const TOOL_LOG_TITLE_RE = /^\s*\[TITLE:([^\]]+)]\s*(?:\r?\n|$)/i;
+const TOOL_LOG_TITLE_RE = /^\s*\[TITLE:([^\]]+)]\s*$/i;
+const TOOL_LOG_PROTOCOL_BOUNDARY_RE = /]\s*(?=\[(?:TITLE:|START(?::|])|DONE(?::|])|FAILED(?::|])|TERMINAL]|\/TERMINAL]))/gi;
 const TOOL_LOG_META_LINE_WITH_VALUE_RE = /^\s*\[(START|DONE|FAILED)(?::([^\]]+))?]\s*$/i;
 const TOOL_LOG_TERMINAL_OPEN_LINE_RE = /^\s*\[TERMINAL]\s*$/i;
 const TOOL_LOG_TERMINAL_CLOSE_LINE_RE = /^\s*\[\/TERMINAL]\s*$/i;
@@ -112,10 +115,18 @@ const parseToolLogBodySegments = (body) => {
 };
 
 const parseToolLogContent = (content) => {
-    const safeContent = toSafeString(content).replace(/^\uFEFF/, '').trimEnd();
+    // Redis replacement deltas can be coalesced at an arbitrary boundary. Historical
+    // messages may therefore contain adjacent protocol markers such as
+    // [DONE:...][TITLE:...]. Normalize only recognized tool-log markers before the
+    // line parser so protocol text never leaks into the visible body.
+    const safeContent = toSafeString(content)
+        .replace(/^\uFEFF/, '')
+        .replace(TOOL_LOG_PROTOCOL_BOUNDARY_RE, ']\n')
+        .trimEnd();
     const lines = safeContent.split(/\r?\n/);
 
     let status = 'running';
+    let titleText = '';
     let startTimeText = '';
     let doneTimeText = '';
     let failedTimeText = '';
@@ -133,6 +144,19 @@ const parseToolLogContent = (content) => {
         if (TOOL_LOG_TERMINAL_CLOSE_LINE_RE.test(line)) {
             isInsideTerminal = false;
             contentLines.push(line);
+            continue;
+        }
+
+        const titleMatch = !isInsideTerminal
+            ? line.match(TOOL_LOG_TITLE_RE)
+            : null;
+
+        if (titleMatch) {
+            // Keep the first title. A duplicate title can exist in legacy messages
+            // created by a resumed wait tool, but it is still protocol metadata.
+            if (!titleText) {
+                titleText = titleMatch[1].trim();
+            }
             continue;
         }
 
@@ -165,18 +189,15 @@ const parseToolLogContent = (content) => {
     }
 
     const contentWithoutStatus = contentLines.join('\n').trimEnd();
-    const titleMatch = contentWithoutStatus.match(TOOL_LOG_TITLE_RE);
 
     const startTimeMs = parseTimeToMs(startTimeText);
     const doneTimeMs = parseTimeToMs(doneTimeText);
     const failedTimeMs = parseTimeToMs(failedTimeText);
 
-    if (titleMatch) {
-        const body = contentWithoutStatus.slice(titleMatch[0].length).trimStart();
-
+    if (titleText) {
         return {
-            title: titleMatch[1].trim() || 'Tool Log',
-            bodySegments: parseToolLogBodySegments(body),
+            title: titleText || 'Tool Log',
+            bodySegments: parseToolLogBodySegments(contentWithoutStatus.trimStart()),
             status,
             startTimeMs,
             doneTimeMs,
@@ -302,7 +323,7 @@ const ToolLogTerminalBlock = memo(({content}) => {
                 </span>
             </div>
 
-            <pre className="m-0 max-h-[240px] overflow-auto whitespace-pre-wrap break-words px-3 py-2 font-mono text-[11px] leading-5 text-neutral-100 [scrollbar-gutter:stable] selection:bg-neutral-100 selection:text-neutral-950 pretty-scrollbar">{content}</pre>
+            <pre className="pretty-scrollbar m-0 overflow-x-auto whitespace-pre-wrap break-words px-3 py-2 font-mono text-[11px] leading-5 text-neutral-100 selection:bg-neutral-100 selection:text-neutral-950">{content}</pre>
         </div>
     );
 });
@@ -367,9 +388,29 @@ const ToolLogBlock = memo(({content = '', id}) => {
     }, [content]);
 
     const hasBody = bodySegments.length > 0;
+    const copyContent = useMemo(() => {
+        const bodyText = bodySegments
+            .map((segment) => segment.content)
+            .filter(Boolean)
+            .join('\n\n');
+
+        return bodyText ? `${title}\n${bodyText}` : title;
+    }, [bodySegments, title]);
     const isDone = status === 'done';
     const isFailed = status === 'failed';
     const isRunning = status === 'running';
+
+    const {
+        handleScroll,
+        handleTouchMove,
+        handleWheel,
+        isFollowing,
+        resumeFollowing,
+        scrollContainerRef,
+        toggleFollowing,
+    } = useFollowOutputScroll({
+        contentKey: content,
+    });
 
     const endTimeMs = isDone
         ? doneTimeMs
@@ -405,17 +446,32 @@ const ToolLogBlock = memo(({content = '', id}) => {
             </div>
 
             {hasBody && (
-                <div className={`mt-1.5 -mx-2.5 max-h-[300px] overflow-auto border-t px-2.5 py-1.5 [scrollbar-gutter:stable] ${tone.bodyWrap} pretty-scrollbar`}>
-                    <div className="space-y-1.5">
-                        {bodySegments.map((segment, index) => {
-                            return (
-                                <ToolLogBodySegment
-                                    key={`${segment.type}-${index}`}
-                                    segment={segment}
-                                    tone={tone}
-                                />
-                            );
-                        })}
+                <div className={`mt-1.5 -mx-2.5 overflow-hidden border-t ${tone.bodyWrap}`}>
+                    <OutputToolbar
+                        copyContent={copyContent}
+                        isFollowing={isFollowing}
+                        onScrollToBottom={resumeFollowing}
+                        onToggleFollowing={toggleFollowing}
+                    />
+
+                    <div
+                        ref={scrollContainerRef}
+                        onScroll={handleScroll}
+                        onTouchMove={handleTouchMove}
+                        onWheel={handleWheel}
+                        className="pretty-scrollbar max-h-[300px] overflow-auto px-2.5 py-1.5 [scrollbar-gutter:stable]"
+                    >
+                        <div className="space-y-1.5">
+                            {bodySegments.map((segment, index) => {
+                                return (
+                                    <ToolLogBodySegment
+                                        key={`${segment.type}-${index}`}
+                                        segment={segment}
+                                        tone={tone}
+                                    />
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             )}
