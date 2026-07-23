@@ -33,6 +33,8 @@ const MessageActions = memo(({
             <div className="shrink-0">
                 <MessagePaginator
                     msg={msg}
+                    msgId={msgId}
+                    markId={markId}
                     messages={messages}
                     isRight={isRight}
                     onSwitchMessage={onSwitchMessage}

@@ -1,7 +1,13 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useImmer} from 'use-immer';
 import {produce} from 'immer';
-import {generateUUID, getLocalSetting, useIsMobile} from '@/lib/tools.jsx';
+import {
+    generateUUID,
+    getLocalSetting,
+    MESSAGE_NAVIGATOR_SETTING_KEY,
+    useIsMobile,
+    useLocalSetting,
+} from '@/lib/tools.jsx';
 import {toast} from 'sonner';
 import {motion} from 'framer-motion';
 import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
@@ -9,6 +15,9 @@ import {useTranslation} from 'react-i18next';
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
+import MessageOverviewDialog from '@/features/chat/page/components/MessageOverviewDialog.jsx';
+import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
+
 import {
     ChatBox,
     ChatHeader,
@@ -32,6 +41,9 @@ import {
 
 const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
 const VOICE_RECOGNITION_LANGUAGE_SETTING_KEY = 'VoiceRecognitionLanguage';
+const MESSAGE_SUMMARY_PAGE_SIZE = 500;
+const HISTORY_JUMP_BEFORE = 12;
+const HISTORY_JUMP_AFTER = 32;
 
 const normalizeVoiceRecognitionEngine = (value) => {
     return String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote';
@@ -147,6 +159,21 @@ function ChatPage({
     const messagesRef = useRef({});
     const messagesOrderRef = useRef([]);
 
+    const [showQuickUserMessageNavigator] = useLocalSetting(
+        MESSAGE_NAVIGATOR_SETTING_KEY,
+        true
+    );
+    const [messageSummaries, setMessageSummaries] = useState([]);
+    const [messageSummaryLoading, setMessageSummaryLoading] = useState(false);
+    const [messageSummaryFingerprint, setMessageSummaryFingerprint] = useState(null);
+    const [messageOverviewOpen, setMessageOverviewOpen] = useState(false);
+    const [activeVisibleMessageId, setActiveVisibleMessageId] = useState(null);
+    const [highlightedMessageId, setHighlightedMessageId] = useState(null);
+    const [isMessageNavigatorWide, setIsMessageNavigatorWide] = useState(true);
+    const summaryRequestVersionRef = useRef(0);
+    const historyNavigationLockedRef = useRef(false);
+    const restoreLatestMessagesRef = useRef(null);
+
     const isMobile = useIsMobile();
     const [previewModel, setPreviewModel] = useState(null);
     const [isNewMarkId, setIsNewMarkId] = useState(false);
@@ -207,6 +234,69 @@ function ChatPage({
         updateStreamingStatus,
         handleChatBoxHeightChange,
     } = useChatScroll(messagesContainerRef);
+
+    const decorateMessages = useCallback((sourceMessages = {}) => produce(sourceMessages, (draft) => {
+        Object.keys(draft || {}).forEach((key) => {
+            const msgDraft = draft[key];
+            if (!msgDraft || typeof msgDraft !== 'object') return;
+            if (typeof msgDraft.registerComponent === 'function') return;
+
+            const mountPoints = {};
+            msgDraft.registerComponent = (componentKey, componentRef) => {
+                mountPoints[componentKey] = componentRef;
+            };
+            msgDraft.unregisterComponent = (componentKey) => {
+                delete mountPoints[componentKey];
+            };
+            msgDraft.getComponent = (componentKey) => mountPoints[componentKey];
+        });
+    }), []);
+
+    const loadMessageSummaries = useCallback(async ({silent = false} = {}) => {
+        if (!chatMarkId) {
+            setMessageSummaries([]);
+            setMessageSummaryFingerprint(null);
+            return [];
+        }
+
+        const requestVersion = summaryRequestVersionRef.current + 1;
+        summaryRequestVersionRef.current = requestVersion;
+        if (!silent) setMessageSummaryLoading(true);
+
+        try {
+            const collected = [];
+            let cursor = 0;
+            let fingerprint = null;
+            do {
+                const data = await apiClient.get(apiEndpoint.CHAT_MESSAGE_SUMMARIES_ENDPOINT, {
+                    params: {
+                        markId: chatMarkId,
+                        scope: 'active',
+                        cursor,
+                        limit: MESSAGE_SUMMARY_PAGE_SIZE,
+                        previewChars: 120,
+                    }
+                });
+                if (requestVersion !== summaryRequestVersionRef.current) return [];
+                collected.push(...(data.items || []));
+                fingerprint = data.orderFingerprint || fingerprint;
+                cursor = data.nextCursor;
+            } while (cursor !== null && cursor !== undefined);
+
+            setMessageSummaries(collected);
+            setMessageSummaryFingerprint(fingerprint);
+            return collected;
+        } catch (error) {
+            if (!silent) {
+                toast.error(t('load_message_summaries_failed') || error?.message || '加载消息概览失败');
+            }
+            return [];
+        } finally {
+            if (requestVersion === summaryRequestVersionRef.current) {
+                setMessageSummaryLoading(false);
+            }
+        }
+    }, [chatMarkId, t]);
 
     // ========== Popover 相关函数 ==========
     const scrollToSelectedItem = useCallback((modelListRef) => {
@@ -505,7 +595,7 @@ function ChatPage({
     const userAutoScrollUnlockUntilRef = useRef(0);
 
     const isUserAutoScrollUnlocked = useCallback(() => {
-        return Date.now() < userAutoScrollUnlockUntilRef.current;
+        return historyNavigationLockedRef.current || Date.now() < userAutoScrollUnlockUntilRef.current;
     }, []);
 
     const markProgrammaticScroll = useCallback((duration = 450) => {
@@ -525,6 +615,7 @@ function ChatPage({
     }, [isAutoScrollEnabledRef, pendingScrollRef, setShowScrollToBottomButton]);
 
     const relockAutoScrollAtBottom = useCallback(() => {
+        if (historyNavigationLockedRef.current) return;
         userAutoScrollUnlockUntilRef.current = 0;
         isAutoScrollEnabledRef.current = true;
         pendingScrollRef.current = false;
@@ -587,6 +678,10 @@ function ChatPage({
     ]);
 
     const handleManualScrollToBottomClick = useCallback(() => {
+        if (historyNavigationLockedRef.current && restoreLatestMessagesRef.current) {
+            restoreLatestMessagesRef.current();
+            return;
+        }
         userAutoScrollUnlockUntilRef.current = 0;
         isAutoScrollEnabledRef.current = true;
         pendingScrollRef.current = true;
@@ -799,7 +894,10 @@ function ChatPage({
                     })
                     .then(data => {
                         const wasAutoScroll = isAutoScrollEnabledRef.current;
-                        const newMessages = {...messagesRef.current, ...data.messages};
+                        const newMessages = {
+                            ...messagesRef.current,
+                            ...decorateMessages(data.messages || {}),
+                        };
                         setMessages(newMessages);
                         messagesRef.current = newMessages;
                         let newOrder;
@@ -820,7 +918,145 @@ function ChatPage({
         } catch (err) {
             throw err;
         }
-    }, [chatMarkId, checkScrollPosition, messagesOrder, setMessages]);
+    }, [chatMarkId, checkScrollPosition, decorateMessages, messagesOrder, setMessages]);
+
+    const scrollToRenderedMessage = useCallback((messageId, behavior = 'smooth') => {
+        const container = messagesContainerRef.current;
+        if (!container || !messageId) return false;
+        const escaped = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(String(messageId)) : String(messageId);
+        const element = container.querySelector(`[data-message-id="${escaped}"]`);
+        if (!element) return false;
+
+        historyNavigationLockedRef.current = true;
+        isAutoScrollEnabledRef.current = false;
+        pendingScrollRef.current = false;
+        setShowScrollToBottomButton(true);
+        setActiveVisibleMessageId(String(messageId));
+        setHighlightedMessageId(String(messageId));
+        element.scrollIntoView({behavior, block: 'center'});
+        window.setTimeout(() => {
+            setHighlightedMessageId(current => current === String(messageId) ? null : current);
+        }, 1800);
+        return true;
+    }, [isAutoScrollEnabledRef, pendingScrollRef, setShowScrollToBottomButton]);
+
+    const restoreLatestMessages = useCallback(async () => {
+        if (!chatMarkId) return false;
+        try {
+            const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
+                params: {markId: chatMarkId}
+            });
+            const decorated = decorateMessages(data.messages || {});
+            const nextMessages = {...messagesRef.current, ...decorated};
+            const nextOrder = data.haveMore
+                ? ['<PREV_MORE>', ...(data.messagesOrder || [])]
+                : [...(data.messagesOrder || [])];
+
+            messagesRef.current = nextMessages;
+            messagesOrderRef.current = nextOrder;
+            setMessages(nextMessages);
+            setMessagesOrder(nextOrder);
+            historyNavigationLockedRef.current = false;
+            userAutoScrollUnlockUntilRef.current = 0;
+            isAutoScrollEnabledRef.current = true;
+            pendingScrollRef.current = true;
+            setHighlightedMessageId(null);
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    markProgrammaticScroll(700);
+                    executePendingScroll();
+                    checkScrollPosition(true);
+                });
+            });
+            return true;
+        } catch (error) {
+            toast.error(t('load_messages_error', {message: error?.message || t('unknown_error')}));
+            return false;
+        }
+    }, [
+        chatMarkId,
+        checkScrollPosition,
+        decorateMessages,
+        executePendingScroll,
+        isAutoScrollEnabledRef,
+        markProgrammaticScroll,
+        pendingScrollRef,
+        setMessages,
+        t,
+    ]);
+
+    useEffect(() => {
+        restoreLatestMessagesRef.current = restoreLatestMessages;
+        return () => {
+            if (restoreLatestMessagesRef.current === restoreLatestMessages) {
+                restoreLatestMessagesRef.current = null;
+            }
+        };
+    }, [restoreLatestMessages]);
+
+    const jumpToMessage = useCallback(async (messageId) => {
+        if (!messageId) return false;
+        setMessageOverviewOpen(false);
+
+        if (scrollToRenderedMessage(messageId)) return true;
+
+        const summaryIndex = messageSummaries.findIndex(item => item.messageId === messageId);
+        if (summaryIndex < 0) {
+            toast.error(t('jump_to_message_failed') || '跳转消息失败');
+            return false;
+        }
+
+        const start = Math.max(0, summaryIndex - HISTORY_JUMP_BEFORE);
+        const end = Math.min(messageSummaries.length, summaryIndex + HISTORY_JUMP_AFTER + 1);
+        const messageIds = messageSummaries.slice(start, end).map(item => item.messageId);
+
+        try {
+            const data = await apiClient.post(apiEndpoint.CHAT_MESSAGES_BATCH_ENDPOINT, {
+                markId: chatMarkId,
+                messageIds,
+                expectedOrderFingerprint: messageSummaryFingerprint,
+                requireContiguous: true,
+            });
+            const decorated = decorateMessages(data.messages || {});
+            const nextMessages = {...messagesRef.current, ...decorated};
+            const nextOrder = data.haveMoreBefore
+                ? ['<PREV_MORE>', ...(data.messagesOrder || [])]
+                : [...(data.messagesOrder || [])];
+
+            messagesRef.current = nextMessages;
+            messagesOrderRef.current = nextOrder;
+            setMessages(nextMessages);
+            setMessagesOrder(nextOrder);
+            historyNavigationLockedRef.current = true;
+            isAutoScrollEnabledRef.current = false;
+            pendingScrollRef.current = false;
+            setShowScrollToBottomButton(true);
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => scrollToRenderedMessage(messageId, 'auto'));
+            });
+            return true;
+        } catch (error) {
+            if (Number(error?.code) === 409) {
+                await loadMessageSummaries();
+            }
+            toast.error(error?.message || t('jump_to_message_failed') || '跳转消息失败');
+            return false;
+        }
+    }, [
+        chatMarkId,
+        decorateMessages,
+        isAutoScrollEnabledRef,
+        loadMessageSummaries,
+        messageSummaries,
+        messageSummaryFingerprint,
+        pendingScrollRef,
+        scrollToRenderedMessage,
+        setMessages,
+        setShowScrollToBottomButton,
+        t,
+    ]);
 
     const loadSwitchMessage = useCallback(async (msgId, newMsgId) => {
         if (!(msgId in messagesRef.current)) return false;
@@ -850,7 +1086,10 @@ function ChatPage({
                 const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                     params: {markId: chatMarkId, nextId: loadStartId},
                 });
-                finalMessagesMap = {...finalMessagesMap, ...data.messages};
+                finalMessagesMap = {
+                    ...finalMessagesMap,
+                    ...decorateMessages(data.messages || {}),
+                };
                 const insertPoint = messagesOrderRef.current.indexOf(msgId) + 1;
                 const newOrder = [
                     ...messagesOrderRef.current.slice(0, insertPoint),
@@ -908,26 +1147,40 @@ function ChatPage({
         messagesRef.current = nextMessagesState;
         setMessages(nextMessagesState);
         return true;
-    }, [chatMarkId, t, setMessages]);
+    }, [chatMarkId, decorateMessages, t, setMessages]);
 
-    const switchMessage = useCallback(async (msg, msgId, delta) => {
-        const msgId_index = msg.messages.indexOf(msg.nextMessage);
-        const newMsgId = msg.messages[msgId_index + delta];
-        const sendSwitchRequest = () => {
-            emitEvent({
-                type: "message",
-                target: "ChatPage",
-                payload: {
-                    command: "Switch-Message",
-                    msgId,
-                    nextMessage: newMsgId
-                },
-                markId: chatMarkId
-            });
-        };
-        await loadSwitchMessage(msgId, newMsgId);
-        sendSwitchRequest();
-    }, [chatMarkId, loadSwitchMessage]);
+    const switchMessage = useCallback(async (msg, msgId, targetMessageOrDelta, options = {}) => {
+        const currentIndex = msg.messages.indexOf(msg.nextMessage);
+        const newMsgId = typeof targetMessageOrDelta === 'number'
+            ? msg.messages[currentIndex + targetMessageOrDelta]
+            : targetMessageOrDelta;
+
+        if (!newMsgId || newMsgId === msg.nextMessage) return true;
+
+        const response = await emitEvent({
+            type: "message",
+            target: "ChatPage",
+            payload: {
+                command: "Switch-Message",
+                msgId,
+                nextMessage: newMsgId,
+                expectedCurrentChildId: options.expectedCurrentChildId,
+                expectedOrderFingerprint: options.expectedOrderFingerprint,
+            },
+            markId: chatMarkId
+        });
+
+        if (!response?.success) {
+            const error = new Error(response?.value || t('switch_message_failed') || '切换消息失败');
+            error.code = response?.code;
+            throw error;
+        }
+
+        const loaded = await loadSwitchMessage(msgId, newMsgId);
+        if (!loaded) return false;
+        loadMessageSummaries({silent: true});
+        return true;
+    }, [chatMarkId, loadMessageSummaries, loadSwitchMessage, t]);
 
     const emitMessagesLoaded = () => {
         setTimeout(() => {
@@ -1137,6 +1390,93 @@ function ChatPage({
         requestScrollToBottom,
     ]);
 
+
+    useEffect(() => {
+        setMessageSummaries([]);
+        setMessageSummaryFingerprint(null);
+        setActiveVisibleMessageId(null);
+        setMessageOverviewOpen(false);
+        historyNavigationLockedRef.current = false;
+        summaryRequestVersionRef.current += 1;
+    }, [chatMarkId]);
+
+    useEffect(() => {
+        if (chatMarkId && showQuickUserMessageNavigator) {
+            loadMessageSummaries({silent: true});
+        }
+    }, [chatMarkId, loadMessageSummaries, showQuickUserMessageNavigator]);
+
+    const handleOpenMessageOverview = useCallback(() => {
+        setMessageOverviewOpen(true);
+        if (!messageSummaryLoading) {
+            loadMessageSummaries({silent: messageSummaries.length > 0});
+        }
+    }, [loadMessageSummaries, messageSummaries.length, messageSummaryLoading]);
+
+    useEffect(() => {
+        if (!chatMarkId || (!showQuickUserMessageNavigator && !messageOverviewOpen)) return undefined;
+        const timer = window.setTimeout(() => {
+            loadMessageSummaries({silent: true});
+        }, 350);
+        return () => window.clearTimeout(timer);
+    }, [
+        chatMarkId,
+        loadMessageSummaries,
+        messageOverviewOpen,
+        messagesOrder.length,
+        showQuickUserMessageNavigator,
+    ]);
+
+    useEffect(() => {
+        const host = chatPageRef.current;
+        if (!host) return undefined;
+        const measure = () => setIsMessageNavigatorWide(host.clientWidth >= 720);
+        measure();
+        const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+        observer?.observe(host);
+        window.addEventListener('resize', measure);
+        return () => {
+            observer?.disconnect();
+            window.removeEventListener('resize', measure);
+        };
+    }, [isWindowMode]);
+
+    useEffect(() => {
+        const container = messagesContainerRef.current;
+        if (!container) return undefined;
+        let frameId = null;
+
+        const updateActiveMessage = () => {
+            if (frameId !== null) cancelAnimationFrame(frameId);
+            frameId = requestAnimationFrame(() => {
+                const containerRect = container.getBoundingClientRect();
+                const center = containerRect.top + containerRect.height / 2;
+                let closestId = null;
+                let closestDistance = Number.POSITIVE_INFINITY;
+                container.querySelectorAll('[data-message-id]').forEach((element) => {
+                    const rect = element.getBoundingClientRect();
+                    if (rect.bottom < containerRect.top || rect.top > containerRect.bottom) return;
+                    const messageCenter = rect.top + rect.height / 2;
+                    const distance = Math.abs(messageCenter - center);
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestId = element.getAttribute('data-message-id');
+                    }
+                });
+                if (closestId) setActiveVisibleMessageId(current => current === closestId ? current : closestId);
+            });
+        };
+
+        updateActiveMessage();
+        container.addEventListener('scroll', updateActiveMessage, {passive: true});
+        const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateActiveMessage) : null;
+        resizeObserver?.observe(container);
+        return () => {
+            if (frameId !== null) cancelAnimationFrame(frameId);
+            container.removeEventListener('scroll', updateActiveMessage);
+            resizeObserver?.disconnect();
+        };
+    }, [messagesOrder]);
 
 
     useEffect(() => {
@@ -1785,35 +2125,7 @@ function ChatPage({
                     params: {markId: chatMarkId}
                 });
 
-                const messages = produce(messagesData.messages, (draft) => {
-                    Object.keys(draft).forEach(key => {
-                        const msgDraft = draft[key];
-
-                        // 防御：确保是有效消息对象
-                        if (!msgDraft || typeof msgDraft !== 'object') return;
-
-                        // === 幂等判断，防止重复注入 ===
-                        if (typeof msgDraft.registerComponent === 'function') return;
-
-                        // 真正的存储容器（闭包变量，不会被 Immer freeze/revoke）
-                        const mountPoints = {};
-
-                        // 添加注册函数
-                        msgDraft.registerComponent = (componentKey, componentRef) => {
-                            mountPoints[componentKey] = componentRef;
-                        };
-
-                        // 添加注销函数
-                        msgDraft.unregisterComponent = (componentKey) => {
-                            delete mountPoints[componentKey];
-                        };
-
-                        // 添加获取函数
-                        msgDraft.getComponent = (componentKey) => {
-                            return mountPoints[componentKey];
-                        };
-                    });
-                });
+                const messages = decorateMessages(messagesData.messages || {});
 
                 setMessages(messages);
                 messagesRef.current = messages;
@@ -1822,6 +2134,7 @@ function ChatPage({
                 if (messagesData.haveMore) initOrder = ["<PREV_MORE>", ...messagesData.messagesOrder];
                 setMessagesOrder(initOrder);
                 messagesOrderRef.current = initOrder;
+                historyNavigationLockedRef.current = false;
 
                 setTimeout(() => {
                     setTimeout(() => {
@@ -1942,7 +2255,12 @@ function ChatPage({
                         }
                 }
             >
-                <div className="flex-1 flex flex-col relative h-full w-full overflow-hidden" ref={chatPageRef}>
+                <div
+                    className="flex-1 flex flex-col relative h-full w-full overflow-hidden"
+                    ref={chatPageRef}
+                    data-chat-page-root="true"
+                    data-chat-mark-id={chatMarkId || ''}
+                >
                     <ChatHeader
                         models={models}
                         selectedModel={selectedModel}
@@ -1955,6 +2273,8 @@ function ChatPage({
                         handleModelItemMouseEnter={handleModelItemMouseEnter}
                         scrollToSelectedItem={scrollToSelectedItem}
                         handleSidebarToggle={handleSidebarToggle}
+                        onOpenMessageOverview={handleOpenMessageOverview}
+                        messageOverviewDisabled={!chatMarkId}
                         isWindowMode={isWindowMode}
                         handleDragMouseDown={handleDragMouseDown}
                         handleDragTouchStart={handleDragTouchStart}
@@ -1983,8 +2303,23 @@ function ChatPage({
                                 markId={chatMarkId}
                                 speechState={speechState}
                                 onSpeechTextClick={handleSpeechTextClick}
+                                highlightedMessageId={highlightedMessageId}
                             />
                         </div>
+
+                        <QuickUserMessageNavigator
+                            items={messageSummaries}
+                            activeMessageId={activeVisibleMessageId}
+                            onSelect={jumpToMessage}
+                            visible={Boolean(
+                                chatMarkId &&
+                                showQuickUserMessageNavigator &&
+                                !isMobile &&
+                                isMessageNavigatorWide
+                            )}
+                            t={t}
+                        />
+
                         {isLoading && <LoadingScreen t={t}/>}
                         {isLoadingError && <LoadingFailedScreen t={t}/>}
                     </div>
@@ -2036,6 +2371,18 @@ function ChatPage({
                             onVoiceRecordingCancel={handleVoiceRecordingCancel}
                         />
                     </div>
+
+                    <MessageOverviewDialog
+                        open={messageOverviewOpen}
+                        hostElement={chatPageRef.current}
+                        items={messageSummaries}
+                        loading={messageSummaryLoading}
+                        activeMessageId={activeVisibleMessageId}
+                        onClose={() => setMessageOverviewOpen(false)}
+                        onSelect={jumpToMessage}
+                        onRefresh={() => loadMessageSummaries()}
+                        t={t}
+                    />
 
                     <footer
                         className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center ml-5 mr-5">

@@ -13,7 +13,18 @@ import {
 } from 'lucide-react';
 import {motion, AnimatePresence} from 'framer-motion';
 import {toast} from "sonner";
-import {useIsMobile} from "@/lib/tools.jsx";
+import {
+    CONVERSATION_LIST_COMPACT_SETTING_KEY,
+    CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY,
+    MESSAGE_NAVIGATOR_SETTING_KEY,
+    UnifiedErrorScreen,
+    UnifiedLoadingScreen,
+    createFilePicker,
+    fileUpload,
+    processSelectedFiles,
+    useIsMobile,
+    useLocalSetting,
+} from "@/lib/tools.jsx";
 import {useUserStore} from "@/context/userContext.jsx";
 import {onEvent} from "@/context/useEventStore.jsx";
 import {useTranslation} from "react-i18next";
@@ -23,14 +34,6 @@ import NotificationSettings from "@/features/notification/NotificationSettings.j
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {
-    UnifiedLoadingScreen,
-    UnifiedErrorScreen,
-    processSelectedFiles,
-    fileUpload,
-    createFilePicker,
-} from "@/lib/tools.jsx";
-
-import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -38,6 +41,29 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {Switch} from "@/components/ui/switch";
+import {Separator} from "@/components/ui/separator";
+import {Badge} from "@/components/ui/badge";
+
+// ==================== 界面设置通用项 ====================
+const InterfaceSettingItem = ({title, description, checked, onCheckedChange, badge}) => (
+    <div className="flex items-start gap-4 py-4">
+        <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+                <h3 className="text-sm font-medium text-foreground">{title}</h3>
+                {badge && <Badge variant="secondary" className="text-[10px]">{badge}</Badge>}
+            </div>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
+        </div>
+        <Switch
+            checked={Boolean(checked)}
+            onCheckedChange={onCheckedChange}
+            aria-label={title}
+            className="mt-0.5"
+        />
+    </div>
+);
 
 // ==================== 图片上传进度弹窗 ====================
 const ImageUploadProgressDialog = ({ open, progress, fileName, onCancel, t }) => {
@@ -85,6 +111,18 @@ const SettingPage = ({
                          handleLogout
                      }) => {
     const isMobile = useIsMobile();
+    const [showQuickUserMessageNavigator, setShowQuickUserMessageNavigator] = useLocalSetting(
+        MESSAGE_NAVIGATOR_SETTING_KEY,
+        true
+    );
+    const [compactConversationList, setCompactConversationList] = useLocalSetting(
+        CONVERSATION_LIST_COMPACT_SETTING_KEY,
+        false
+    );
+    const [showConversationTimestamps, setShowConversationTimestamps] = useLocalSetting(
+        CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY,
+        true
+    );
     const {user} = useUserStore();
     const [isFullscreen, setIsFullscreen] = useState(false);
     const {t} = useTranslation();
@@ -524,11 +562,49 @@ const SettingPage = ({
 
         if (activeTab === 'interface') {
             return (
-                <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="max-w-3xl mx-auto">
+                <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="mx-auto max-w-3xl space-y-6">
                     <div>
-                        <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">{t("Settings.Interface")}</p>
-                        <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-gray-400 text-sm flex items-center justify-center h-32">No interface settings to display</div>
+                        <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                            {t("Settings.Interface")}
+                        </p>
+                        <Card className="gap-0 py-0 shadow-sm">
+                            <CardHeader className="border-b py-5">
+                                <CardTitle className="text-base">{t('conversation_list_appearance')}</CardTitle>
+                                <CardDescription>{t('conversation_list_appearance_tip')}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="px-5">
+                                <InterfaceSettingItem
+                                    title={t('compact_conversation_list_setting')}
+                                    description={t('compact_conversation_list_setting_tip')}
+                                    checked={compactConversationList}
+                                    onCheckedChange={setCompactConversationList}
+                                />
+                                <Separator/>
+                                <InterfaceSettingItem
+                                    title={t('conversation_timestamps_setting')}
+                                    description={t('conversation_timestamps_setting_tip')}
+                                    checked={showConversationTimestamps}
+                                    onCheckedChange={setShowConversationTimestamps}
+                                />
+                            </CardContent>
+                        </Card>
                     </div>
+
+                    <Card className="gap-0 py-0 shadow-sm">
+                        <CardHeader className="border-b py-5">
+                            <CardTitle className="text-base">{t('chat_page_appearance')}</CardTitle>
+                            <CardDescription>{t('chat_page_appearance_tip')}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="px-5">
+                            <InterfaceSettingItem
+                                title={t('quick_user_message_navigator_setting')}
+                                description={t('quick_user_message_navigator_setting_tip')}
+                                checked={showQuickUserMessageNavigator}
+                                onCheckedChange={setShowQuickUserMessageNavigator}
+                                badge={t('desktop_only')}
+                            />
+                        </CardContent>
+                    </Card>
                 </motion.div>
             );
         }

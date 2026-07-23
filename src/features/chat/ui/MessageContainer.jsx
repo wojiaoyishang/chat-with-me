@@ -14,7 +14,8 @@ const MessageContainer = forwardRef(({
                                          onSwitchMessage,
                                          markId,
                                          speechState,
-                                         onSpeechTextClick
+                                         onSpeechTextClick,
+                                         highlightedMessageId = null
                                      }, ref) => {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [switchingMessageId, setSwitchingMessageId] = useState(null);
@@ -130,6 +131,7 @@ const MessageContainer = forwardRef(({
                 leavingMessages={leavingMessages}
                 speechState={speechState}
                 onSpeechTextClick={onSpeechTextClick}
+                highlighted={highlightedMessageId === msgId}
                 t={t}
             />
         );
@@ -148,7 +150,8 @@ const MessageContainer = forwardRef(({
         leavingMessages,
         t,
         speechState,
-        onSpeechTextClick
+        onSpeechTextClick,
+        highlightedMessageId
     ]);
 
     return (

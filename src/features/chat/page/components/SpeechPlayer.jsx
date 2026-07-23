@@ -208,8 +208,26 @@ const getIsMobileInteraction = () => {
     return Boolean(hasCoarsePointer || hasNoHover || isSmallScreen);
 };
 
-const BrowserVoiceOptionsPortal = ({open, anchorRef, options, selectedValue, defaultLabel, t}) => {
+const BrowserVoiceOptionsPortal = ({
+    open,
+    anchorRef,
+    menuRef,
+    options,
+    selectedValue,
+    defaultLabel,
+    onOpenChange,
+    onPointerEnter,
+    onPointerLeave,
+    t,
+}) => {
     const [position, setPosition] = useState(null);
+
+    useEffect(() => {
+        onOpenChange?.(Boolean(open));
+        return () => {
+            if (open) onOpenChange?.(false);
+        };
+    }, [onOpenChange, open]);
 
     useEffect(() => {
         if (!open || !anchorRef.current) return undefined;
@@ -299,6 +317,7 @@ const BrowserVoiceOptionsPortal = ({open, anchorRef, options, selectedValue, def
 
     return createPortal(
         <ListboxOptions
+            ref={menuRef}
             static
             className="fixed overflow-auto overscroll-contain rounded-xl border border-gray-200 bg-white p-1 shadow-2xl shadow-slate-900/15 ring-1 ring-black/5 outline-none"
             style={{
@@ -310,6 +329,8 @@ const BrowserVoiceOptionsPortal = ({open, anchorRef, options, selectedValue, def
                 transformOrigin: position.placement === 'top' ? 'bottom left' : 'top left',
             }}
             onPointerDown={(event) => event.stopPropagation()}
+            onMouseEnter={onPointerEnter}
+            onMouseLeave={onPointerLeave}
         >
             <ListboxOption
                 value=""
@@ -363,9 +384,14 @@ const SpeechPlayer = memo(({
     const panelRef = useRef(null);
     const speedButtonRef = useRef(null);
     const browserVoiceButtonRef = useRef(null);
+    const browserVoiceMenuRef = useRef(null);
     const speedMenuRef = useRef(null);
     const collapseTimerRef = useRef(null);
+    const panelPointerInsideRef = useRef(false);
+    const secondaryMenuOpenRef = useRef(false);
+    const wasSecondaryMenuOpenRef = useRef(false);
     const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
+    const [browserVoiceMenuOpen, setBrowserVoiceMenuOpen] = useState(false);
     const [speedMenuPosition, setSpeedMenuPosition] = useState({top: 0, left: 0});
     const interactionRef = useRef({active: false, type: null});
     const suppressCollapsedClickRef = useRef(false);
@@ -544,13 +570,52 @@ const SpeechPlayer = memo(({
     }, []);
 
     const scheduleDockCollapse = useCallback(() => {
-        if (isMobileInteraction) return;
+        if (isMobileInteraction || panelPointerInsideRef.current || secondaryMenuOpenRef.current) return;
 
         clearCollapseTimer();
         collapseTimerRef.current = window.setTimeout(() => {
+            if (panelPointerInsideRef.current || secondaryMenuOpenRef.current) return;
             setFloatingState(prev => prev.dockedSide ? {...prev, collapsed: true} : prev);
         }, 380);
     }, [clearCollapseTimer, isMobileInteraction]);
+
+    const handlePanelMouseEnter = useCallback(() => {
+        panelPointerInsideRef.current = true;
+        clearCollapseTimer();
+    }, [clearCollapseTimer]);
+
+    const handlePanelMouseLeave = useCallback(() => {
+        panelPointerInsideRef.current = false;
+        scheduleDockCollapse();
+    }, [scheduleDockCollapse]);
+
+    const handleBrowserVoiceMenuOpenChange = useCallback((open) => {
+        setBrowserVoiceMenuOpen(Boolean(open));
+    }, []);
+
+    useEffect(() => {
+        const hasOpenSecondaryMenu = speedMenuOpen || browserVoiceMenuOpen;
+        const wasOpen = wasSecondaryMenuOpenRef.current;
+        secondaryMenuOpenRef.current = hasOpenSecondaryMenu;
+        wasSecondaryMenuOpenRef.current = hasOpenSecondaryMenu;
+
+        if (hasOpenSecondaryMenu) {
+            clearCollapseTimer();
+            setFloatingState(prev => prev.collapsed ? {...prev, collapsed: false} : prev);
+            return;
+        }
+
+        if (wasOpen && !isMobileInteraction && floatingState.dockedSide && !panelPointerInsideRef.current) {
+            scheduleDockCollapse();
+        }
+    }, [
+        browserVoiceMenuOpen,
+        clearCollapseTimer,
+        floatingState.dockedSide,
+        isMobileInteraction,
+        scheduleDockCollapse,
+        speedMenuOpen,
+    ]);
 
     const updateDragPosition = useCallback((clientX, clientY) => {
         const viewport = getViewportSize();
@@ -846,6 +911,7 @@ const SpeechPlayer = memo(({
             if (interactionRef.current.active) return;
             if (panelRef.current?.contains(event.target)) return;
             if (speedMenuRef.current?.contains(event.target)) return;
+            if (browserVoiceMenuRef.current?.contains(event.target)) return;
             collapseToDock();
         };
 
@@ -907,6 +973,10 @@ const SpeechPlayer = memo(({
             className="fixed rounded-2xl border border-gray-200 bg-white/[0.98] p-1.5 shadow-2xl shadow-slate-900/15 ring-1 ring-black/5 backdrop-blur-xl"
             style={{top: speedMenuPosition.top, left: speedMenuPosition.left, width: 152, zIndex: PLAYER_Z_INDEX + 2}}
             onPointerDown={(event) => event.stopPropagation()}
+            onMouseEnter={clearCollapseTimer}
+            onMouseLeave={() => {
+                if (!speedMenuOpen) scheduleDockCollapse();
+            }}
             role="menu"
             aria-label={fallbackText(t, 'speech_speed', '播放速度')}
         >
@@ -1000,8 +1070,8 @@ const SpeechPlayer = memo(({
                 ref={panelRef}
                 className="fixed pointer-events-auto"
                 style={panelStyle}
-                onMouseEnter={clearCollapseTimer}
-                onMouseLeave={() => !isMobileInteraction && dockedSide && scheduleDockCollapse()}
+                onMouseEnter={handlePanelMouseEnter}
+                onMouseLeave={handlePanelMouseLeave}
             >
                 <div className="relative overflow-visible rounded-3xl">
                     <button
@@ -1074,9 +1144,15 @@ const SpeechPlayer = memo(({
                                                         <BrowserVoiceOptionsPortal
                                                             open={open}
                                                             anchorRef={browserVoiceButtonRef}
+                                                            menuRef={browserVoiceMenuRef}
                                                             options={browserVoiceOptions}
                                                             selectedValue={selectedBrowserVoiceValue}
                                                             defaultLabel={browserVoiceDefaultLabel}
+                                                            onOpenChange={handleBrowserVoiceMenuOpenChange}
+                                                            onPointerEnter={clearCollapseTimer}
+                                                            onPointerLeave={() => {
+                                                                if (!open) scheduleDockCollapse();
+                                                            }}
                                                             t={t}
                                                         />
                                                     </div>

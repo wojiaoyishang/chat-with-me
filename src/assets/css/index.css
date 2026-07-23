@@ -252,4 +252,33 @@
   body {
     @apply bg-background text-foreground;
     }
+
+  :where(
+    button:not(:disabled),
+    a[href],
+    summary,
+    label[for],
+    select:not(:disabled),
+    [role="button"]:not([aria-disabled="true"]),
+    [role="menuitem"]:not([data-disabled]),
+    [role="option"]:not([aria-disabled="true"]),
+    input[type="button"]:not(:disabled),
+    input[type="submit"]:not(:disabled),
+    input[type="reset"]:not(:disabled),
+    input[type="checkbox"]:not(:disabled),
+    input[type="radio"]:not(:disabled),
+    input[type="file"]:not(:disabled)
+  ) {
+    cursor: pointer;
+  }
+
+  :where(
+    button:disabled,
+    select:disabled,
+    [role="button"][aria-disabled="true"],
+    [role="menuitem"][data-disabled],
+    [role="option"][aria-disabled="true"]
+  ) {
+    cursor: not-allowed;
+  }
 }

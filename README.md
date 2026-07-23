@@ -1249,6 +1249,111 @@ replacement 内容中可以继续包含其他 `cardReplace`：
 前端会发送 DELETE CHAT_MESSAGES_ENDPOINT/{msgId}?markId={markId} ，收到这个消息后端应该执行删除消息操作，
 前端会自行删除，不等待服务器响应。
 
+## CHAT_MESSAGE_SUMMARIES_ENDPOINT - 消息摘要接口
+
+用于右侧快速用户消息导航、顶部消息概览和消息分支选择器。该接口只返回轻量摘要，不展开 `extraInfo.replace`，大型工具调用内容应替换为简短占位。
+
+前端发送 GET 请求，支持参数：
+
+- `markId`：对话 ID，必填。
+- `scope`：`active` 或 `children`。
+  - `active` 返回当前活动消息链的摘要。
+  - `children` 返回指定父消息下所有可选择的子消息摘要。
+- `parentMessageId`：`scope=children` 时必填。
+- `cursor`：分页起点，默认 `0`。
+- `limit`：单页数量，默认 `200`，最大 `500`。
+- `previewChars`：摘要字符数，默认 `80`，最大 `300`。
+- `includeRoot`：是否包含虚拟根消息，默认 `false`。
+
+响应示例：
+
+```json
+{
+  "markId": "conversation-id",
+  "scope": "active",
+  "treeRevision": 12,
+  "orderFingerprint": "sha256...",
+  "total": 120,
+  "items": [
+    {
+      "messageId": "message-id",
+      "orderIndex": 15,
+      "role": "user",
+      "position": "right",
+      "actor": {
+        "type": "user",
+        "id": "user-id",
+        "name": "用户名",
+        "avatar": null
+      },
+      "preview": "消息内容前若干字符……",
+      "createdAt": "2026-07-23T10:20:00",
+      "prevMessageId": "previous-id",
+      "nextMessageId": "next-id",
+      "branchCount": 16,
+      "activeChildId": "active-child-id"
+    }
+  ],
+  "nextCursor": null
+}
+```
+
+`scope=children` 时还会返回：
+
+```json
+{
+  "parentMessageId": "parent-id",
+  "activeMessageId": "active-child-id"
+}
+```
+
+`orderFingerprint` 表示当前活动消息链版本。前端在批量读取或直接切换分支时会带回该值，用于检测弹窗打开之后消息树是否已经变化。
+
+## CHAT_MESSAGES_BATCH_ENDPOINT - 批量消息读取接口
+
+用于从消息概览快速跳转到尚未加载的历史位置。前端发送 POST 请求：
+
+```json
+{
+  "markId": "conversation-id",
+  "messageIds": ["message-1", "message-2", "message-3"],
+  "expectedOrderFingerprint": "sha256...",
+  "requireContiguous": true
+}
+```
+
+约束：
+
+- 单次最多读取 100 条消息。
+- 所有消息必须属于当前用户的当前会话。
+- `requireContiguous=true` 时，消息必须是活动链中的连续片段。
+- `expectedOrderFingerprint` 不匹配时返回 HTTP 409，前端会重新获取摘要。
+
+响应示例：
+
+```json
+{
+  "messages": {
+    "message-1": {}
+  },
+  "messagesOrder": ["message-1", "message-2", "message-3"],
+  "haveMoreBefore": true,
+  "haveMoreAfter": true,
+  "orderFingerprint": "sha256...",
+  "treeRevision": 12
+}
+```
+
+## 快速用户消息导航界面设置
+
+本地设置键：
+
+```text
+ShowQuickUserMessageNavigator
+```
+
+默认值为 `true`。该设置只控制桌面端 ChatPage 右侧的滚轮式用户消息导航条；移动端和过窄窗口不会显示该导航条。顶部消息概览按钮始终保留，不受此设置影响。
+
 ## DASHBOARD_ENDPOINT - 仪表盘配置（主页配置）
 
 默认 GET 请求这个接口，后端需要返回：
@@ -3693,3 +3798,53 @@ subagent_session_list(
 - `Conversation-Deleted`
 
 后端会把嵌套会话活动时间向所有祖先会话传播，因此侧边栏根会话的排序也会随深层子智能体活动更新。
+
+## 会话列表轻量管理功能（2026-07-23）
+
+### 修改会话元数据
+
+```http
+PATCH /chat/conversations/{markId}
+Content-Type: application/json
+```
+
+请求体支持按需提交以下字段：
+
+```json
+{
+  "title": "新的会话名称",
+  "pinned": true
+}
+```
+
+- `title`：去除首尾空格后不能为空，最大 100 个字符。普通会话与子智能体会话均可重命名。
+- `pinned`：仅根会话可用。置顶状态保存在 `Conversation.extraInfo.ui` 中，不需要数据库迁移。
+- 重命名和置顶不会修改会话的 `updatedAt`，因此不会伪造最近活跃时间。
+- 根会话列表始终先返回置顶项；置顶项按最近置顶时间排序，其余会话按最近活跃时间排序。
+
+响应示例：
+
+```json
+{
+  "markId": "conversation-id",
+  "title": "新的会话名称",
+  "pinned": true,
+  "pinnedAt": "2026-07-23T12:00:00+00:00",
+  "updateDate": "2026-07-23T10:30:00+00:00"
+}
+```
+
+`GET /chat/conversations` 与 `GET /chat/conversations/{markId}` 新增：
+
+- `createdAt`
+- `pinned`
+- `pinnedAt`
+
+### 会话列表界面设置
+
+本地 `LocalSetting` 新增：
+
+- `CompactConversationList`：紧凑会话列表，默认 `false`。
+- `ShowConversationTimestamps`：显示最近活跃时间，默认 `true`。
+
+设置页使用 shadcn `Card`、`Switch`、`Separator` 和 `Badge` 组织界面设置。侧边栏同时支持对当前已加载会话进行标题搜索、清空搜索、置顶分组、重命名和取消置顶。

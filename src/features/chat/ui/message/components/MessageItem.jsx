@@ -28,6 +28,7 @@ const MessageItem = memo(({
                               leavingMessages,
                               speechState,
                               onSpeechTextClick,
+                              highlighted = false,
                               t
                           }) => {
     const isRight = msg.position === 'right';
@@ -353,7 +354,9 @@ const MessageItem = memo(({
         <div
             key={msgId}
             ref={rootRef}
-            className={`flex flex-col w-full transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'} ${animationClass}`}
+            data-message-id={msgId}
+            data-message-role={msg?.role || (isMid ? 'system' : (isRight ? 'user' : 'assistant'))}
+            className={`flex flex-col w-full rounded-2xl transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'} ${animationClass} ${highlighted ? 'ring-2 ring-blue-400/80 ring-offset-4 ring-offset-white' : ''}`}
             onClickCapture={handleRootClickCapture}
             onClick={handleRootClick}
             {...hoverHandlers}
@@ -382,6 +385,7 @@ const MessageItem = memo(({
         prevProps.messages[prevProps.msgId] === nextProps.messages[nextProps.msgId] &&
         prevProps.animationClass === nextProps.animationClass &&
         prevProps.isFading === nextProps.isFading &&
+        prevProps.highlighted === nextProps.highlighted &&
         prevProps.leavingMessages.has(prevProps.msgId) === nextProps.leavingMessages.has(nextProps.msgId) &&
         (prevProps.speechState?.messageId === prevProps.msgId ? `${prevProps.speechState?.status || ''}:${prevProps.speechState?.currentSegmentId || ''}:${prevProps.speechState?.currentSegmentPosition ?? ''}` : '') ===
         (nextProps.speechState?.messageId === nextProps.msgId ? `${nextProps.speechState?.status || ''}:${nextProps.speechState?.currentSegmentId || ''}:${nextProps.speechState?.currentSegmentPosition ?? ''}` : '')

@@ -388,6 +388,9 @@ const ToolLogBlock = memo(({content = '', id}) => {
     }, [content]);
 
     const hasBody = bodySegments.length > 0;
+    const hasCodeProcess = useMemo(() => {
+        return bodySegments.some((segment) => segment.type === 'terminal');
+    }, [bodySegments]);
     const copyContent = useMemo(() => {
         const bodyText = bodySegments
             .map((segment) => segment.content)
@@ -447,12 +450,14 @@ const ToolLogBlock = memo(({content = '', id}) => {
 
             {hasBody && (
                 <div className={`mt-1.5 -mx-2.5 overflow-hidden border-t ${tone.bodyWrap}`}>
-                    <OutputToolbar
-                        copyContent={copyContent}
-                        isFollowing={isFollowing}
-                        onScrollToBottom={resumeFollowing}
-                        onToggleFollowing={toggleFollowing}
-                    />
+                    {hasCodeProcess && (
+                        <OutputToolbar
+                            copyContent={copyContent}
+                            isFollowing={isFollowing}
+                            onScrollToBottom={resumeFollowing}
+                            onToggleFollowing={toggleFollowing}
+                        />
+                    )}
 
                     <div
                         ref={scrollContainerRef}

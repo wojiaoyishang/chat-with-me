@@ -4,6 +4,11 @@ import apiClient from '@/lib/apiClient';
 import {useEffect, useState} from "react";
 import ThreeDotLoading from "@/components/ui/ThreeDotLoading.jsx";
 
+export const LOCAL_SETTING_CHANGE_EVENT = 'chat-local-setting-change';
+export const MESSAGE_NAVIGATOR_SETTING_KEY = 'ShowQuickUserMessageNavigator';
+export const CONVERSATION_LIST_COMPACT_SETTING_KEY = 'CompactConversationList';
+export const CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY = 'ShowConversationTimestamps';
+
 export const TTS_LOCAL_SETTING_KEYS = Object.freeze({
     browserVoice: 'chat-browser-speech-voice-v1',
     playerPosition: 'chat-speech-player-position-v3',
@@ -209,6 +214,12 @@ export function setLocalSetting(key, value) {
         // 保存回 localStorage
         localStorage.setItem('LocalSetting', JSON.stringify(currentSettings));
 
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent(LOCAL_SETTING_CHANGE_EVENT, {
+                detail: {key, value}
+            }));
+        }
+
         console.log(`Setting ${key} saved successfully`);
     } catch (error) {
         console.error('Error saving setting:', error);
@@ -239,6 +250,37 @@ export function getLocalSetting(key, defaultValue = null) {
         return defaultValue;
     }
 }
+
+export function useLocalSetting(key, defaultValue = null) {
+    const [value, setValue] = useState(() => getLocalSetting(key, defaultValue));
+
+    useEffect(() => {
+        const syncSetting = (event) => {
+            if (event?.type === LOCAL_SETTING_CHANGE_EVENT) {
+                if (event.detail?.key !== key) return;
+                setValue(event.detail.value);
+                return;
+            }
+            setValue(getLocalSetting(key, defaultValue));
+        };
+
+        window.addEventListener(LOCAL_SETTING_CHANGE_EVENT, syncSetting);
+        window.addEventListener('storage', syncSetting);
+        return () => {
+            window.removeEventListener(LOCAL_SETTING_CHANGE_EVENT, syncSetting);
+            window.removeEventListener('storage', syncSetting);
+        };
+    }, [key, defaultValue]);
+
+    const updateValue = (nextValue) => {
+        const resolved = typeof nextValue === 'function' ? nextValue(value) : nextValue;
+        setLocalSetting(key, resolved);
+        setValue(resolved);
+    };
+
+    return [value, updateValue];
+}
+
 
 export function copyTextToClipboard(text) {
     return new Promise((resolve, reject) => {

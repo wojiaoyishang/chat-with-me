@@ -6,6 +6,8 @@ export const apiEndpoint = {
     CHATBOX_ENDPOINT: '/chat/chatbox',
     UPLOAD_ENDPOINT: '/upload/',
     CHAT_MESSAGES_ENDPOINT: '/chat/messages',
+    CHAT_MESSAGE_SUMMARIES_ENDPOINT: '/chat/messages/summaries',
+    CHAT_MESSAGES_BATCH_ENDPOINT: '/chat/messages/batch',
     CHAT_MODELS_ENDPOINT: '/chat/models',
     CHAT_CONVERSATIONS_ENDPOINT: '/chat/conversations',
     DASHBOARD_ENDPOINT: '/dashboard',
