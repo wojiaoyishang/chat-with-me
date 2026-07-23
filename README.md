@@ -505,6 +505,24 @@ backend
 普通 Markdown 内容
 ```
 
+Markdown replacement 默认只负责展示，不会进入消息朗读内容。需要允许 TTS 朗读时，
+在 replacement 的第一个非空行使用 `tts` 标志：
+
+```md
+[markdown tts]
+# 可朗读标题
+
+这段内容会按照 `cardReplace` 在消息正文中的位置加入 TTS 句子队列。
+```
+
+规则：
+
+- `tts` 只对 `markdown` 类型生效，协议头本身不会显示、复制或朗读；
+- 未标记的 `[markdown]`、工具日志、思考过程和代码执行卡片不会进入 TTS；
+- 嵌套 replacement 必须各自声明 `[markdown tts]`，外层权限不会自动传给内层；
+- 浏览器 TTS 与后端 TTS 使用同一份前端拆分后的句子列表；
+- 历史消息无需迁移，协议标记保存在原有 `extraInfo.replace` 中。
+
 ---
 
 ### `text`

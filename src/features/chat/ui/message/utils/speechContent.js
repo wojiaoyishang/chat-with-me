@@ -1,4 +1,12 @@
-const CARD_REPLACE_PATTERN = /\{\{\s*cardReplace\b[^}]*\}\}/g;
+import {
+    getCardReplaceIdFromAttributes,
+    normalizeReplacementEntry,
+    parseCardReplaceAttributes,
+} from '@/components/markdown/replacementProtocol.js';
+
+const CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE = /:{2,3}\s*(card|card-replace)\s*\{([^}]*)\}\s*:{2,3}/g;
+const CARD_REPLACE_BLOCK_DIRECTIVE_RE = /:{3}\s*(card|card-replace)\s*\{([^}]*)\}\s*\n[\s\S]*?\n:{3}/g;
+const CARD_REPLACE_MUSTACHE_RE = /\{\{\s*(cardReplace|card-replace|card)\s+([^{}]*?)\s*\}\}/g;
 const FENCED_CODE_PATTERN = /(^|\n)[ \t]*(?:```|~~~)[^\n]*\n[\s\S]*?\n[ \t]*(?:```|~~~)[ \t]*(?=\n|$)/g;
 const INLINE_CODE_PATTERN = /`([^`]+)`/g;
 const HTML_TAG_PATTERN = /<[^>]+>/g;
@@ -11,7 +19,6 @@ const CLOSING_SENTENCE_CHARS = new Set([
 const MARKDOWN_ORDERED_LIST_PATTERN = /^\s{0,3}\d{1,4}$/;
 const ASCII_ELLIPSIS = '...';
 const CJK_ELLIPSIS_CHAR = '…';
-
 
 export const normalizeSpeechText = (value = '') => String(value ?? '')
     .replace(/[\u200B-\u200D\uFEFF]/g, '')
@@ -32,12 +39,167 @@ const getNormalizedPrefixLength = (source, rawIndex) => {
 
 export const canSpeakMessage = (msg) => msg?.allowSpeak === true;
 
+const isReplaceDirective = (directiveName, attributes, replacement) => {
+    const normalizedName = String(directiveName || '').toLowerCase();
+    if (normalizedName === 'card-replace' || normalizedName === 'cardreplace') return true;
+
+    if (normalizedName !== 'card') return false;
+    if (String(attributes?.type || '').trim().toLowerCase() === 'replace') return true;
+
+    const id = getCardReplaceIdFromAttributes(attributes);
+    return Boolean(
+        id
+        && replacement
+        && typeof replacement === 'object'
+        && Object.prototype.hasOwnProperty.call(replacement, id),
+    );
+};
+
+const collectCardReplaceDirectiveMatches = (source) => {
+    const matches = [];
+    const directiveRegexes = [
+        CARD_REPLACE_BLOCK_DIRECTIVE_RE,
+        CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE,
+        CARD_REPLACE_MUSTACHE_RE,
+    ];
+
+    directiveRegexes.forEach((directiveRegex) => {
+        directiveRegex.lastIndex = 0;
+        let match;
+
+        while ((match = directiveRegex.exec(source)) !== null) {
+            matches.push({
+                start: match.index,
+                end: match.index + match[0].length,
+                directiveName: match[1],
+                rawAttributes: match[2],
+            });
+
+            // All current directive patterns consume at least one character, but
+            // keep this guard so a future protocol regex cannot loop forever.
+            if (match[0].length === 0) directiveRegex.lastIndex += 1;
+        }
+    });
+
+    matches.sort((left, right) => {
+        if (left.start !== right.start) return left.start - right.start;
+        return (right.end - right.start) - (left.end - left.start);
+    });
+
+    const nonOverlapping = [];
+    let consumedUntil = -1;
+
+    matches.forEach((match) => {
+        if (match.start < consumedUntil) return;
+        nonOverlapping.push(match);
+        consumedUntil = match.end;
+    });
+
+    return nonOverlapping;
+};
+
+const resolveReplacementSpeechContent = (
+    directiveName,
+    rawAttributes,
+    replacement,
+    options,
+) => {
+    const {
+        depth,
+        maxDepth,
+        visitedIds,
+    } = options;
+    const attributes = parseCardReplaceAttributes(rawAttributes);
+
+    if (!isReplaceDirective(directiveName, attributes, replacement)) return '';
+
+    const replacementId = getCardReplaceIdFromAttributes(attributes);
+    if (!replacementId || visitedIds.includes(replacementId)) return '';
+
+    const rawTokenType = String(attributes.type || '').trim();
+    const tokenType = rawTokenType.toLowerCase() === 'replace' ? '' : rawTokenType;
+    const normalized = normalizeReplacementEntry(
+        replacement,
+        replacementId,
+        tokenType,
+        false,
+    );
+
+    if (!normalized.exists) return '';
+
+    const normalizedType = String(normalized.type || '').toLowerCase();
+    const includeOwnText = normalizedType === 'markdown' && normalized.allowTts === true;
+
+    // A non-TTS wrapper must not make its own prose speakable, but it also must
+    // not hide explicitly authorised descendants. Tool-call output commonly has
+    // this shape: [markdown] wrapper -> [markdown tts] child replacement.
+    return resolveMarkdownSpeechContent(normalized.content, replacement, {
+        depth: depth + 1,
+        maxDepth,
+        visitedIds: [...visitedIds, replacementId],
+        includeOwnText,
+    });
+};
+
+export const resolveMarkdownSpeechContent = (content, replacement = {}, options = {}) => {
+    const {
+        depth = 0,
+        maxDepth = 10,
+        visitedIds = [],
+        includeOwnText = true,
+    } = options;
+    const source = String(content ?? '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    if (!source) return '';
+
+    if (depth >= maxDepth) {
+        if (!includeOwnText) return '';
+
+        return source
+            .replace(CARD_REPLACE_BLOCK_DIRECTIVE_RE, ' ')
+            .replace(CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE, ' ')
+            .replace(CARD_REPLACE_MUSTACHE_RE, ' ');
+    }
+
+    const directiveMatches = collectCardReplaceDirectiveMatches(source);
+    if (directiveMatches.length === 0) return includeOwnText ? source : '';
+
+    let cursor = 0;
+    let result = '';
+
+    directiveMatches.forEach((match) => {
+        if (includeOwnText && match.start > cursor) {
+            result += source.slice(cursor, match.start);
+        }
+
+        const nestedContent = resolveReplacementSpeechContent(
+            match.directiveName,
+            match.rawAttributes,
+            replacement,
+            {depth, maxDepth, visitedIds},
+        );
+
+        if (nestedContent) {
+            result += `\n${nestedContent}\n`;
+        }
+
+        cursor = match.end;
+    });
+
+    if (includeOwnText && cursor < source.length) {
+        result += source.slice(cursor);
+    }
+
+    return result;
+};
+
 export const getSpeakableContent = (msg) => {
-    const raw = String(msg?.content || '');
+    const raw = resolveMarkdownSpeechContent(
+        String(msg?.content || ''),
+        msg?.extraInfo?.replace || {},
+    );
 
     return raw
-        // cardReplace 的正文来自 replacement，朗读主内容时直接跳过占位符，不读取 replacement。
-        .replace(CARD_REPLACE_PATTERN, ' ')
         // 跳过 fenced code block；表格不跳过，只清理表格分隔行。
         .replace(FENCED_CODE_PATTERN, '\n')
         .replace(INLINE_CODE_PATTERN, '$1')

@@ -60,6 +60,7 @@ UnknownBlock.displayName = 'UnknownBlock';
 const CardBlock = memo(({
     content = '',
     id,
+    allowTts = false,
     markId = null,
     type = 'markdown',
     contextId = '',
@@ -69,6 +70,7 @@ const CardBlock = memo(({
     const commonProps = {
         content,
         id,
+        allowTts,
         markId,
         type,
         contextId,
@@ -200,6 +202,7 @@ const CardBlock = memo(({
         prev.contextId !== next.contextId ||
         prev.content !== next.content ||
         prev.id !== next.id ||
+        prev.allowTts !== next.allowTts ||
         prev.markId !== next.markId ||
         prev.type !== next.type
     ) {

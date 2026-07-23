@@ -28,6 +28,8 @@ const DESKTOP_MIN_WIDTH = 360;
 const MOBILE_MIN_WIDTH = 288;
 const DESKTOP_MAX_WIDTH = 880;
 const MOBILE_BREAKPOINT = 640;
+const COMPACT_PANEL_WIDTH = 680;
+const VERY_COMPACT_PANEL_WIDTH = 430;
 const PLAYER_Z_INDEX = 2147483600;
 const SIDE_SNAP_DISTANCE = 28;
 const MOBILE_SIDE_SNAP_DISTANCE = 56;
@@ -397,6 +399,10 @@ const SpeechPlayer = memo(({
     const suppressCollapsedClickRef = useRef(false);
     const [floatingState, setFloatingState] = useState(getInitialPosition);
     const [isMobileInteraction, setIsMobileInteraction] = useState(getIsMobileInteraction);
+    const [measuredPanelWidth, setMeasuredPanelWidth] = useState(null);
+    const effectivePanelWidth = measuredPanelWidth ?? floatingState.width ?? DESKTOP_MIN_WIDTH;
+    const isCompactPanel = effectivePanelWidth < COMPACT_PANEL_WIDTH;
+    const isVeryCompactPanel = effectivePanelWidth < VERY_COMPACT_PANEL_WIDTH;
 
     const currentSegment = useMemo(() => {
         const segments = speechState?.segments || [];
@@ -456,7 +462,29 @@ const SpeechPlayer = memo(({
         if (!isVisible) return undefined;
         const frame = window.requestAnimationFrame(keepPanelInViewport);
         return () => window.cancelAnimationFrame(frame);
-    }, [isVisible, keepPanelInViewport, currentSegment?.text, speedMenuOpen]);
+    }, [isVisible, keepPanelInViewport, currentSegment?.text, speedMenuOpen, isCompactPanel]);
+
+    useEffect(() => {
+        if (!isVisible || (floatingState.dockedSide && floatingState.collapsed)) return undefined;
+
+        const panel = panelRef.current;
+        if (!panel) return undefined;
+
+        const updateWidth = (width) => {
+            if (!Number.isFinite(width) || width <= 0) return;
+            setMeasuredPanelWidth(prev => (prev !== null && Math.abs(prev - width) < 0.5 ? prev : width));
+        };
+
+        updateWidth(panel.getBoundingClientRect().width);
+        if (typeof ResizeObserver === 'undefined') return undefined;
+
+        const observer = new ResizeObserver((entries) => {
+            const width = entries[0]?.contentRect?.width;
+            updateWidth(width);
+        });
+        observer.observe(panel);
+        return () => observer.disconnect();
+    }, [floatingState.collapsed, floatingState.dockedSide, isVisible]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return undefined;
@@ -1091,8 +1119,11 @@ const SpeechPlayer = memo(({
                     <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-[0_22px_70px_rgba(15,23,42,0.20)] backdrop-blur-2xl ring-1 ring-indigo-100/70">
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-50/80 via-white/40 to-violet-50/70"/>
                         <div className="relative px-3 py-3 sm:px-3.5">
-                            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3">
-                                <div className="flex min-w-0 items-center gap-2.5 sm:flex-1 sm:gap-3">
+                            <div className={isCompactPanel
+                                ? 'flex flex-col gap-2.5'
+                                : 'flex items-center gap-3'
+                            }>
+                                <div className={`flex min-w-0 items-center gap-2.5 sm:gap-3 ${isCompactPanel ? 'w-full' : 'flex-1'}`}>
                                     <button
                                         type="button"
                                         onPointerDown={handleDragStart}
@@ -1125,12 +1156,15 @@ const SpeechPlayer = memo(({
                                     </div>
                                 </div>
 
-                                <div className="flex min-w-0 flex-wrap items-center justify-center gap-2 sm:justify-end">
-                                    <div className="flex min-w-0 shrink-0 items-center justify-center gap-1.5 rounded-full bg-white/30 p-0.5">
+                                <div className={isCompactPanel
+                                    ? 'grid w-full min-w-0 grid-cols-1 gap-2'
+                                    : 'flex min-w-0 items-center justify-end gap-2'
+                                }>
+                                    <div className={`flex min-w-0 items-center gap-1.5 rounded-2xl bg-white/30 p-0.5 ${isCompactPanel ? 'w-full' : 'shrink-0'}`}>
                                         {canSelectBrowserVoice && (
                                             <Listbox value={selectedBrowserVoiceValue} onChange={(value) => onBrowserSpeechVoiceChange?.(value)}>
                                                 {({open}) => (
-                                                    <div className="min-w-0 max-w-[190px] shrink">
+                                                    <div className={isCompactPanel ? 'min-w-0 flex-1' : 'min-w-0 max-w-[190px] shrink'}>
                                                         <ListboxButton
                                                             ref={browserVoiceButtonRef}
                                                             className="flex h-8 min-w-0 w-full cursor-pointer items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-2 text-left text-xs font-medium text-gray-700 shadow-sm outline-none transition-colors hover:bg-white focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100"
@@ -1187,30 +1221,11 @@ const SpeechPlayer = memo(({
                                             aria-pressed={autoFollowEnabled}
                                         >
                                             <Target size={14} className={autoFollowEnabled ? 'text-indigo-500' : 'text-gray-500'}/>
-                                            <span>{fallbackText(t, 'speech_auto_follow_short', '跟随')}</span>
+                                            <span className={isVeryCompactPanel ? 'sr-only' : 'whitespace-nowrap'}>
+                                                {fallbackText(t, 'speech_auto_follow_short', '跟随')}
+                                            </span>
                                         </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={onPrevious}
-                                            disabled={!canGoPrevious}
-                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
-                                            aria-label={fallbackText(t, 'previous_speech_segment', '上一句')}
-                                            title={fallbackText(t, 'previous_speech_segment', '上一句')}
-                                        >
-                                            <SkipBack size={14}/>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={onNext}
-                                            disabled={!canGoNext}
-                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
-                                            aria-label={fallbackText(t, 'next_speech_segment', '下一句')}
-                                            title={fallbackText(t, 'next_speech_segment', '下一句')}
-                                        >
-                                            <SkipForward size={14}/>
-                                        </button>
 
                                         <button
                                             type="button"
@@ -1223,7 +1238,17 @@ const SpeechPlayer = memo(({
                                         </button>
                                     </div>
 
-                                    <div className="flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-white/30 p-0.5">
+                                    <div className={`flex shrink-0 items-center justify-center gap-1.5 rounded-2xl bg-white/30 p-0.5 ${isCompactPanel ? 'w-full' : ''}`}>
+                                        <button
+                                            type="button"
+                                            onClick={onPrevious}
+                                            disabled={!canGoPrevious}
+                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
+                                            aria-label={fallbackText(t, 'previous_speech_segment', '上一句')}
+                                            title={fallbackText(t, 'previous_speech_segment', '上一句')}
+                                        >
+                                            <SkipBack size={14}/>
+                                        </button>
                                         <button
                                             type="button"
                                             onClick={isPaused ? onResume : onPause}
@@ -1232,6 +1257,16 @@ const SpeechPlayer = memo(({
                                             aria-label={isPaused ? fallbackText(t, 'resume_speech', '继续') : fallbackText(t, 'pause_speech', '暂停')}
                                         >
                                             {isPaused ? <Play size={15}/> : <Pause size={15}/>}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={onNext}
+                                            disabled={!canGoNext}
+                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
+                                            aria-label={fallbackText(t, 'next_speech_segment', '下一句')}
+                                            title={fallbackText(t, 'next_speech_segment', '下一句')}
+                                        >
+                                            <SkipForward size={14}/>
                                         </button>
                                         <button
                                             type="button"

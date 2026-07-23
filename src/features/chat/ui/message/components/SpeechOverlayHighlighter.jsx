@@ -23,7 +23,6 @@ const SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR = [
     'h6',
 ].join(',');
 const SPEECH_HIGHLIGHT_INLINE_SELECTOR = 'a, span, strong, em, b, i, code, mark, small';
-const CHAT_SPEECH_FRAME_SELECTOR = '.chat-speech-auto-highlight, [data-chat-speech-auto-highlight="true"]';
 
 const EMPTY_HIGHLIGHT = Object.freeze({rects: [], frame: null, boundaryType: null});
 const RECT_EPSILON = 0.5;
@@ -431,14 +430,6 @@ const getSpeechBoundaryElement = (root, range) => {
     const rangeElements = getRangeElements(range).filter(element => root.contains(element) && messageRoot.contains(element));
     if (rangeElements.length === 0) return null;
 
-    // 优先复用 ChatPage 标在真实 DOM 边界上的伪层锚点。
-    // 这样黄色 overlay 的裁剪范围与紫色 ::before 使用同一个 li/p 边界，避免两套定位体系产生偏移。
-    const activeFrame = getClosestInside(rangeElements, CHAT_SPEECH_FRAME_SELECTOR, root, messageRoot);
-    if (activeFrame) {
-        const boundaryType = activeFrame.getAttribute('data-chat-speech-highlight-boundary') || 'block';
-        return {element: activeFrame, boundaryType};
-    }
-
     // 列表项优先，避免短文本命中后紫框退化到整条消息。
     const listItem = getClosestInside(rangeElements, 'li, [role="listitem"]', root, messageRoot);
     if (listItem) return {element: listItem, boundaryType: 'list'};
@@ -647,6 +638,10 @@ const SpeechOverlayHighlighter = memo(({containerRef, msgId, speechState}) => {
                     height: frame.height,
                 }}
             >
+                <div
+                    className="absolute inset-0 rounded-[0.55rem] bg-indigo-500/15 ring-1 ring-indigo-400/10 transition-all duration-150"
+                    data-tts-overlay-sentence-frame="true"
+                />
                 {rects.map((rect, index) => (
                     <div
                         key={`${currentSegment.id || currentOrderedIndex}-${index}`}

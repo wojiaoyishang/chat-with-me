@@ -11,62 +11,24 @@ import {
 
 import CodeBlock from './CodeBlock.jsx';
 import CardBlock from './card-block/CardBlock.jsx';
+import {
+    getCardReplaceIdFromAttributes,
+    normalizeReplacementEntry,
+    normalizeReplacementLineBreaks,
+    parseCardReplaceAttributes,
+    parseReplacementProtocol,
+} from './replacementProtocol.js';
 
 import 'katex/dist/katex.min.css';
 import './CodeBlock.css';
 
 import {BASE_BACKEND_URL} from '@/config';
 
-const TYPE_MARKER_RE = /^\s*\[([a-zA-Z][\w-]*)\]\s*$/;
-
 const CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE = /:{2,3}\s*(card|card-replace)\s*\{([^}]*)\}\s*:{2,3}/g;
 const CARD_REPLACE_BLOCK_DIRECTIVE_RE = /:{3}\s*(card|card-replace)\s*\{([^}]*)\}\s*\n[\s\S]*?\n:{3}/g;
 const CARD_REPLACE_MUSTACHE_RE = /\{\{\s*(cardReplace|card-replace|card)\s+([^{}]*?)\s*\}\}/g;
 
 export const MARKDOWN_COPY_CONTENT_COMPONENT_NAME = 'markdownCopyContent';
-
-const parseDirectiveAttributes = (attributes = '') => {
-    const result = {};
-    const source = String(attributes || '').trim();
-    const attrRegex = /([^\s=]+)(?:=("([^"]*)"|'([^']*)'|([^\s}]+)))?/g;
-    let match;
-
-    while ((match = attrRegex.exec(source)) !== null) {
-        const key = match[1];
-        const value = match[3] ?? match[4] ?? match[5] ?? '';
-
-        if (!key) {
-            continue;
-        }
-
-        if (value === '' && !key.includes('=')) {
-            result.__tokens = [...(result.__tokens || []), key];
-            continue;
-        }
-
-        result[key] = value;
-    }
-
-    if (!result.id && Array.isArray(result.__tokens)) {
-        const positionalId = result.__tokens.find(token => token && token !== 'replace');
-
-        if (positionalId) {
-            result.id = positionalId;
-        }
-    }
-
-    return result;
-};
-
-const getReplacementIdFromAttributes = (attributes = {}) => {
-    return String(
-        attributes.id
-        || attributes.cardId
-        || attributes.replaceId
-        || attributes.name
-        || '',
-    ).trim();
-};
 
 const getVisitedKey = (visitedIds) => {
     if (!Array.isArray(visitedIds) || visitedIds.length === 0) {
@@ -125,188 +87,7 @@ const toSafeString = (value) => {
     return typeof value === 'string' ? value : String(value ?? '');
 };
 
-const normalizeLineBreaks = (content) => {
-    return toSafeString(content).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-};
-
-const MARKDOWN_PROTOCOL_MARKER = '[markdown]';
-
-const stripLeadingMarkdownProtocolMarker = (content, isStreaming = false) => {
-    const normalizedContent = normalizeLineBreaks(content);
-    const lines = normalizedContent.split('\n');
-
-    for (let index = 0; index < lines.length; index += 1) {
-        if (lines[index].trim() === '') {
-            continue;
-        }
-
-        const originalLine = lines[index];
-        const leadingWhitespaceLength = originalLine.length - originalLine.trimStart().length;
-        const leadingWhitespace = originalLine.slice(0, leadingWhitespaceLength);
-        const body = originalLine.slice(leadingWhitespaceLength);
-        const lowerBody = body.toLowerCase();
-
-        if (lowerBody.startsWith(MARKDOWN_PROTOCOL_MARKER)) {
-            // The renderer marker is transport metadata.  Be tolerant of a resumed
-            // stream joining the first content token onto the same line.
-            lines[index] = leadingWhitespace + body.slice(MARKDOWN_PROTOCOL_MARKER.length).replace(/^\s+/, '');
-            return lines.join('\n');
-        }
-
-        if (
-            isStreaming
-            && body.startsWith('[')
-            && MARKDOWN_PROTOCOL_MARKER.startsWith(lowerBody)
-        ) {
-            // A Redis/WebSocket chunk can end at `[mark...`.  Rendering that prefix
-            // leaks the internal marker; keep the preceding blank lines and wait for
-            // the next replacement delta to complete it.
-            lines[index] = '';
-            return lines.join('\n');
-        }
-
-        return normalizedContent;
-    }
-
-    return normalizedContent;
-};
-
-const inferTypeFromFirstNonEmptyLine = (content) => {
-    const normalizedContent = normalizeLineBreaks(content);
-    const lines = normalizedContent.split('\n');
-
-    for (let i = 0; i < lines.length; i += 1) {
-        const line = lines[i];
-
-        // 严格空行才跳过；包含空格的行不算空行，不会被跳过
-        if (line === '') {
-            continue;
-        }
-
-        const match = TYPE_MARKER_RE.exec(line);
-
-        if (!match) {
-            return {
-                type: 'markdown',
-                content: normalizedContent,
-                inferred: false,
-            };
-        }
-
-        const nextLines = [...lines];
-        nextLines.splice(i, 1);
-
-        return {
-            type: match[1],
-            content: nextLines.join('\n'),
-            inferred: true,
-        };
-    }
-
-    return {
-        type: 'markdown',
-        content: normalizedContent,
-        inferred: false,
-    };
-};
-
-const stripRedundantExplicitTypeMarker = (content, explicitType) => {
-    const normalizedContent = normalizeLineBreaks(content);
-    const normalizedType = String(explicitType || '').trim().toLowerCase();
-
-    if (!normalizedType) {
-        return normalizedContent;
-    }
-
-    const lines = normalizedContent.split('\n');
-    for (let i = 0; i < lines.length; i += 1) {
-        if (lines[i] === '') {
-            continue;
-        }
-
-        const match = TYPE_MARKER_RE.exec(lines[i]);
-        if (match && match[1].toLowerCase() === normalizedType) {
-            const nextLines = [...lines];
-            nextLines.splice(i, 1);
-            return nextLines.join('\n');
-        }
-        return normalizedContent;
-    }
-
-    return normalizedContent;
-};
-
-const normalizeReplacementEntry = (replacement, id, tokenType, isStreaming = false) => {
-    const normalizedId = String(id || '');
-    const explicitTokenType = typeof tokenType === 'string' && tokenType.length > 0
-        ? tokenType
-        : '';
-
-    if (!replacement || typeof replacement !== 'object') {
-        return {
-            exists: false,
-            id: normalizedId,
-            type: explicitTokenType || 'markdown',
-            content: '',
-        };
-    }
-
-    const entry = replacement[normalizedId];
-
-    if (entry == null) {
-        return {
-            exists: false,
-            id: normalizedId,
-            type: explicitTokenType || 'markdown',
-            content: '',
-        };
-    }
-
-    let rawContent = '';
-    let entryType = '';
-
-    if (typeof entry === 'string') {
-        rawContent = entry;
-    } else if (typeof entry === 'object') {
-        rawContent = entry.content ?? entry.frontend ?? entry.value ?? '';
-        entryType = entry.type || '';
-    } else {
-        rawContent = String(entry);
-    }
-
-    rawContent = stripLeadingMarkdownProtocolMarker(rawContent, isStreaming);
-
-    if (explicitTokenType) {
-        return {
-            exists: true,
-            id: normalizedId,
-            type: explicitTokenType,
-            content: stripRedundantExplicitTypeMarker(rawContent, explicitTokenType),
-            inferredType: false,
-        };
-    }
-
-    if (entryType) {
-        return {
-            exists: true,
-            id: normalizedId,
-            type: entryType,
-            content: stripRedundantExplicitTypeMarker(rawContent, entryType),
-            inferredType: false,
-        };
-    }
-
-    const inferred = inferTypeFromFirstNonEmptyLine(rawContent);
-
-    return {
-        exists: true,
-        id: normalizedId,
-        type: inferred.type,
-        content: inferred.content,
-        inferredType: inferred.inferred,
-    };
-};
-
+const normalizeLineBreaks = normalizeReplacementLineBreaks;
 
 const normalizeCopyText = (content) => {
     return normalizeLineBreaks(content).replace(/\n{3,}/g, '\n\n');
@@ -328,27 +109,9 @@ const COPY_TEXT_FIELD_PRIORITY = [
     'children',
 ];
 
-const TYPE_ONLY_LINE_RE = /^\s*\[([a-zA-Z][\w-]*)\]\s*$/;
-
 const stripCopyTypeMarker = (content) => {
-    const normalizedContent = normalizeLineBreaks(content);
-    const lines = normalizedContent.split('\n');
-
-    for (let i = 0; i < lines.length; i += 1) {
-        if (lines[i] === '') {
-            continue;
-        }
-
-        if (!TYPE_ONLY_LINE_RE.test(lines[i])) {
-            return normalizedContent;
-        }
-
-        const nextLines = [...lines];
-        nextLines.splice(i, 1);
-        return nextLines.join('\n');
-    }
-
-    return normalizedContent;
+    const parsed = parseReplacementProtocol(content);
+    return parsed.hadMarker ? parsed.content : normalizeLineBreaks(content);
 };
 
 const extractCopyTextFromReplacementValue = (value, seenObjects = new WeakSet()) => {
@@ -444,8 +207,8 @@ const replaceCopyDirectives = (source, directiveRegex, replacement, options) => 
     directiveRegex.lastIndex = 0;
 
     return source.replace(directiveRegex, (match, directiveName, rawAttributes) => {
-        const attributes = parseDirectiveAttributes(rawAttributes);
-        const finalId = getReplacementIdFromAttributes(attributes);
+        const attributes = parseCardReplaceAttributes(rawAttributes);
+        const finalId = getCardReplaceIdFromAttributes(attributes);
         const hasReplacementEntry = Boolean(
             finalId &&
             replacement &&
@@ -728,20 +491,22 @@ const createComponents = ({
                 console.error(`[MarkdownRenderer] cardReplace 出现循环引用，id: ${finalId}`);
 
                 return (
-                    <CardBlock
-                        id={finalId}
-                        type="error"
-                        content={`cardReplace 出现循环引用，id: ${finalId}`}
-                        contextId={contextId}
-                        markId={markId}
-                        replacement={currentReplacement}
-                        renderMarkdown={(markdownContent) => {
-                            return renderNestedMarkdown(markdownContent, {
-                                depth: depth + 1,
-                                visitedIds,
-                            });
-                        }}
-                    />
+                    <div className="contents" data-tts-ignore="true">
+                        <CardBlock
+                            id={finalId}
+                            type="error"
+                            content={`cardReplace 出现循环引用，id: ${finalId}`}
+                            contextId={contextId}
+                            markId={markId}
+                            replacement={currentReplacement}
+                            renderMarkdown={(markdownContent) => {
+                                return renderNestedMarkdown(markdownContent, {
+                                    depth: depth + 1,
+                                    visitedIds,
+                                });
+                            }}
+                        />
+                    </div>
                 );
             }
 
@@ -751,20 +516,22 @@ const createComponents = ({
                 console.error(`[MarkdownRenderer] cardReplace 嵌套过深，id: ${finalId}`);
 
                 return (
-                    <CardBlock
-                        id={finalId}
-                        type="error"
-                        content={`cardReplace 嵌套过深，id: ${finalId}`}
-                        contextId={contextId}
-                        markId={markId}
-                        replacement={currentReplacement}
-                        renderMarkdown={(markdownContent) => {
-                            return renderNestedMarkdown(markdownContent, {
-                                depth: depth + 1,
-                                visitedIds,
-                            });
-                        }}
-                    />
+                    <div className="contents" data-tts-ignore="true">
+                        <CardBlock
+                            id={finalId}
+                            type="error"
+                            content={`cardReplace 嵌套过深，id: ${finalId}`}
+                            contextId={contextId}
+                            markId={markId}
+                            replacement={currentReplacement}
+                            renderMarkdown={(markdownContent) => {
+                                return renderNestedMarkdown(markdownContent, {
+                                    depth: depth + 1,
+                                    visitedIds,
+                                });
+                            }}
+                        />
+                    </div>
                 );
             }
 
@@ -784,20 +551,28 @@ const createComponents = ({
             const nextVisitedIds = [...visitedIds, finalId];
 
             return (
-                <CardBlock
-                    id={finalId}
-                    type={normalized.type}
-                    content={normalized.content}
-                    contextId={contextId}
-                    markId={markId}
-                    replacement={currentReplacement}
-                    renderMarkdown={(markdownContent) => {
-                        return renderNestedMarkdown(markdownContent, {
-                            depth: depth + 1,
-                            visitedIds: nextVisitedIds,
-                        });
-                    }}
-                />
+                <div
+                    className="contents"
+                    data-tts-source-id={finalId}
+                    data-tts-source-type="replacement"
+                    data-tts-ignore={normalized.allowTts ? undefined : 'true'}
+                >
+                    <CardBlock
+                        id={finalId}
+                        type={normalized.type}
+                        content={normalized.content}
+                        allowTts={normalized.allowTts}
+                        contextId={contextId}
+                        markId={markId}
+                        replacement={currentReplacement}
+                        renderMarkdown={(markdownContent) => {
+                            return renderNestedMarkdown(markdownContent, {
+                                depth: depth + 1,
+                                visitedIds: nextVisitedIds,
+                            });
+                        }}
+                    />
+                </div>
             );
         },
     };

@@ -359,7 +359,17 @@
   "chat_page_appearance_tip": "Control navigation and visual helpers that only affect the chat area.",
   "desktop_only": "Desktop",
   "more": "More",
-  "conversation_actions": "Conversation actions",
   "loading": "Loading",
-  "new_conversation": "New Conversation"
+  "new_conversation": "New Conversation",
+  "tool_approval_multiple_title": "Approve {{count}} tool calls",
+  "tool_approval_atomic_description": "Approve or deny each tool independently. Denied tools are skipped while the remaining approved tools continue.",
+  "tool_approval_ignore_badge": "Ignore result",
+  "tool_approval_batch_badge": "Batch",
+  "tool_approval_order_badge": "Order",
+  "tool_approval_allowed": "Allowed",
+  "tool_approval_denied": "Denied",
+  "tool_approval_cancelled": "Cancelled",
+  "tool_approval_deny_group": "Deny",
+  "tool_approval_group_description": "Approve or deny each tool independently. Denied tools are skipped while the remaining approved tools continue.",
+  "tool_approval_command_summary": "Call summary"
 }

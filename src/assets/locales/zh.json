@@ -359,6 +359,16 @@
   "chat_page_appearance_tip": "控制仅影响聊天区域的导航与视觉辅助功能。",
   "desktop_only": "桌面端",
   "more": "更多",
-  "conversation_actions": "会话操作",
-  "loading": "加载中"
+  "loading": "加载中",
+  "tool_approval_multiple_title": "需要批准 {{count}} 个工具调用",
+  "tool_approval_atomic_description": "可逐项批准或拒绝。被拒绝的工具会跳过，其余已批准工具继续执行。",
+  "tool_approval_ignore_badge": "忽略结果",
+  "tool_approval_batch_badge": "并发批量",
+  "tool_approval_order_badge": "顺序批量",
+  "tool_approval_allowed": "已同意",
+  "tool_approval_denied": "已拒绝",
+  "tool_approval_cancelled": "已取消",
+  "tool_approval_deny_group": "拒绝",
+  "tool_approval_group_description": "可逐项批准或拒绝。被拒绝的工具会跳过，其余已批准工具继续执行。",
+  "tool_approval_command_summary": "调用摘要"
 }

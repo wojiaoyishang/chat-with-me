@@ -81,10 +81,31 @@ const MARKDOWN_MATCH_CHARS = new Set(['`', '*', '_', '~']);
 const shouldSkipSpeechTextNode = (node, root) => {
     if (!node?.nodeValue?.trim()) return true;
 
+    const nearestReplacementSource = node.parentElement?.closest?.(
+        '[data-tts-source-type="replacement"]',
+    );
+    const isInsideExplicitlySpeakableReplacement = Boolean(
+        nearestReplacementSource
+        && nearestReplacementSource.dataset?.ttsIgnore !== 'true'
+        && (!root || root.contains(nearestReplacementSource)),
+    );
+
     let parent = node.parentElement;
     while (parent && parent !== root) {
         if (SPEECH_TEXT_SKIP_TAGS.has(parent.tagName)) return true;
-        if (parent.dataset?.ttsIgnore === 'true') return true;
+        if (parent.dataset?.ttsIgnore === 'true') {
+            // A speakable replacement may be nested inside a non-speakable
+            // transport/tool wrapper. The nearest replacement boundary owns the
+            // decision for its own descendants; ignored ancestors above that
+            // boundary must not suppress its text.
+            const ignoredAncestorWrapsSpeakableSource = (
+                isInsideExplicitlySpeakableReplacement
+                && parent !== nearestReplacementSource
+                && parent.contains(nearestReplacementSource)
+            );
+
+            if (!ignoredAncestorWrapsSpeakableSource) return true;
+        }
         if (parent.dataset?.ttsOverlay === 'true') return true;
         if (parent.tagName === 'CODE' && parent.closest('pre')) return true;
         const className = typeof parent.className === 'string' ? parent.className : '';
@@ -179,13 +200,51 @@ const findSegmentDomOffsetMatch = (domIndex, segment) => {
     return null;
 };
 
-const findElementFromDomOffsetMatch = (domIndex, segment) => {
+const findElementFromDomOffsetMatch = (domIndex, segment, container = null) => {
     const match = findSegmentDomOffsetMatch(domIndex, segment);
     if (!match) return null;
 
     const start = domIndex.map[match.startIndex];
     const end = domIndex.map[Math.max(match.startIndex, match.startIndex + match.length - 1)];
-    return start?.node?.parentElement || end?.node?.parentElement || null;
+    const startElement = start?.node?.parentElement || null;
+    const endElement = end?.node?.parentElement || null;
+
+    if (!container || typeof document === 'undefined' || !start?.node || !end?.node) {
+        return startElement || endElement;
+    }
+
+    // Inline Markdown (for example: text + <code> + text) splits one spoken
+    // sentence across multiple DOM nodes. Returning only the first text node's
+    // parent can therefore bind the purple frame to the inline code itself or
+    // to a neighbouring paragraph. Build a real DOM Range and resolve the
+    // smallest stable li/p/heading boundary that contains the whole sentence.
+    try {
+        const range = document.createRange();
+        range.setStart(start.node, start.offset);
+        range.setEnd(end.node, end.offset + 1);
+
+        const commonAncestor = range.commonAncestorContainer;
+        const commonElement = typeof Node !== 'undefined' && commonAncestor?.nodeType === Node.TEXT_NODE
+            ? commonAncestor.parentElement
+            : commonAncestor;
+        const candidates = [commonElement, startElement, endElement].filter(Boolean);
+
+        for (const candidate of candidates) {
+            const boundary = getSpeechBoundaryElementForMatch(candidate, container);
+            if (!boundary) continue;
+
+            const containsStart = !startElement || boundary === startElement || boundary.contains(startElement);
+            const containsEnd = !endElement || boundary === endElement || boundary.contains(endElement);
+            if (containsStart && containsEnd) return boundary;
+        }
+    } catch (_) {
+        // Range construction is only a positioning aid. Fall back to the first
+        // matched text element if the DOM changed during a streaming render.
+    }
+
+    return getSpeechBoundaryElementForMatch(startElement || endElement, container)
+        || startElement
+        || endElement;
 };
 
 const getSpeechBoundaryElementForMatch = (targetElement, container) => {
@@ -628,8 +687,7 @@ export default function useChatSpeech({
             }
 
             if (!matchedElement) {
-                const offsetElement = findElementFromDomOffsetMatch(domTextIndex, segment);
-                matchedElement = getSpeechBoundaryElementForMatch(offsetElement, searchRoot);
+                matchedElement = findElementFromDomOffsetMatch(domTextIndex, segment, searchRoot);
                 matchedIndex = matchedElement ? cursor : -1;
             }
 
@@ -792,6 +850,15 @@ export default function useChatSpeech({
         const messageElement = getSpeechMessageElement(container, messageId);
         const searchRoot = messageElement || container;
 
+        // normalizedStart is generated from the exact speech source and is the
+        // same locator used by the yellow text-range overlay. Prefer its DOM
+        // Range boundary before heuristic element scoring so both highlight
+        // layers always point at the same sentence, including inline <code>.
+        const offsetBoundaryElement = currentSegment
+            ? findElementFromDomOffsetMatch(createSpeechDomTextIndex(searchRoot), currentSegment, searchRoot)
+            : null;
+        if (offsetBoundaryElement) return offsetBoundaryElement;
+
         const exactSelectors = [];
         const segmentIdsForSelectors = Array.from(new Set([currentSegmentId, canonicalSegmentId].filter(Boolean).map(String)));
         segmentIdsForSelectors.forEach((segmentIdForSelector) => {
@@ -836,27 +903,12 @@ export default function useChatSpeech({
             }
         }
 
-        const mappedElement = getMappedSpeechSegmentElement(container, speech);
-        if (mappedElement) return mappedElement;
-
-        const textElement = findSpeechElementByText(searchRoot, currentSegment);
-        if (textElement) return textElement;
-
-        const activeElement = queryFirstSpeechElement(searchRoot, [
-            '[data-speech-current="true"]',
-            '[data-speech-active="true"]',
-            '.speech-current',
-            '.speech-segment-current',
-            '.speech-highlight-active',
-            '.speech-highlight',
-        ]);
-        if (activeElement) return activeElement;
-
-        const fallbackParentElement = getSpeechParentFallbackElement(container, speech, messageElement);
-        if (fallbackParentElement) return fallbackParentElement;
-
+        // 紫色句子背景不再使用候选元素评分、相邻分段或父级元素回退。
+        // 这些启发式路径在行内 code、重复文本或流式 DOM 更新时可能把当前句
+        // 绑定到后续段落。精确 Range / 显式绑定均失败时宁可不添加 DOM 锚点，
+        // 实际紫色背景由 SpeechOverlayHighlighter 使用与黄色文字相同的 Range 绘制。
         return null;
-    }, [escapeSelectorValue, findSpeechElementByText, getMappedSpeechSegmentElement, getSpeechMessageElement, getSpeechParentFallbackElement, queryFirstSpeechElement, resolveMountedElement]);
+    }, [escapeSelectorValue, getSpeechMessageElement, queryFirstSpeechElement, resolveMountedElement]);
 
     const getSpeechHighlightBoundaryElement = useCallback(getSpeechBoundaryElementForMatch, []);
 
@@ -875,13 +927,8 @@ export default function useChatSpeech({
                 isolation: isolate;
             }
             .${SPEECH_AUTO_HIGHLIGHT_CLASS}::before {
-                content: '';
-                position: absolute;
-                pointer-events: none;
-                z-index: -1;
-                border-radius: 0.55rem;
-                background: rgba(99, 102, 241, 0.20);
-                transition: background-color 160ms ease, opacity 160ms ease, inset 160ms ease;
+                content: none;
+                display: none;
             }
             .${SPEECH_AUTO_HIGHLIGHT_CLASS}[data-chat-speech-highlight-boundary="block"]::before {
                 inset: -0.16rem -0.36rem;
