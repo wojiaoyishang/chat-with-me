@@ -4,6 +4,7 @@ import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.t
 import {Button} from '@/components/ui/button.tsx';
 import ModelItem from './ModelItem.jsx';
 import ModelPreviewCard from './ModelPreviewCard.jsx';
+import StorySelectorButton from '@/features/story/StorySelectorButton.jsx';
 
 const ChatHeader = memo(({
                              models,
@@ -30,6 +31,8 @@ const ChatHeader = memo(({
                              showMinimizeButton = false,
                              onMinimize,
                              conversationMeta,
+                             stories = [],
+                             onOpenStory,
                          }) => {
     const modelListRef = useRef(null);
     const isAgentSession = conversationMeta?.conversationKind === 'agent_session';
@@ -145,6 +148,13 @@ const ChatHeader = memo(({
             )}
 
             <div className="flex items-center gap-2">
+                <StorySelectorButton
+                    stories={stories}
+                    onOpenStory={onOpenStory}
+                    t={t}
+                    isWindowMode={isWindowMode}
+                />
+
                 <Button
                     variant="ghost"
                     size="icon"

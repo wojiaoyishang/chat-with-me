@@ -10,6 +10,7 @@ export const apiEndpoint = {
     CHAT_MESSAGES_BATCH_ENDPOINT: '/chat/messages/batch',
     CHAT_MODELS_ENDPOINT: '/chat/models',
     CHAT_CONVERSATIONS_ENDPOINT: '/chat/conversations',
+    CHAT_STORIES_ENDPOINT: '/chat/stories',
     DASHBOARD_ENDPOINT: '/dashboard',
     LOGIN_ENDPOINT: '/user/login',
     LOGOUT_ENDPOINT: '/user/logout',

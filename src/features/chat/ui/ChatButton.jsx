@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {useTranslation} from "react-i18next";
 
 /**
@@ -30,6 +30,10 @@ function ToggleButton({
     const {t} = useTranslation();
     const [currentIsActive, setCurrentIsActive] = useState(isActive);
 
+    useEffect(() => {
+        setCurrentIsActive(Boolean(isActive));
+    }, [isActive]);
+
     function handleClick(e) {
         if (disabled) return;
         const newActive = !currentIsActive;
@@ -38,7 +42,7 @@ function ToggleButton({
     }
 
     const baseClasses = `
-    px-4 py-1 rounded-full text-sm font-medium transition-colors
+    shrink-0 whitespace-nowrap px-4 py-1 rounded-full text-sm font-medium transition-colors
     focus:outline-none focus:ring-2 flex items-center gap-2
     ${className}
   `;

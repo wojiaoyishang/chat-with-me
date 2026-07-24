@@ -24,7 +24,7 @@
 
 ![输入图片说明](public/dashboard.png)
 
-</div> 
+</div>
 
 # 项目简介
 
@@ -710,6 +710,25 @@ replacement 内容中可以继续包含其他 `cardReplace`：
 
 #### 支持的菜单类型
 
+##### 0. `tool-region` — 工具区域包装标记
+
+`tool-region` 是后端用于把所有智能体工具声明为一个布局区域的特殊包装节点。它本身不产生工具状态，也不会加入 `toolsStatus.extra_tools`；前端只把其 `children` 当作一个独立滚动区域计算。语音输入、附件等其他扩展菜单项可以放在该区域之外，因此工具数量增加时不会带动整个 ChatBox 菜单滚动。
+
+```python
+{
+    "type": "tool-region",
+    "name": "conversation-tools",
+    "marker": "__CHATBOX_TOOL_REGION__",
+    "scrollMode": "inner",
+    "text": "conversation_tools",
+    "children": [
+        # group / tool ...
+    ]
+}
+```
+
+兼容规则：新前端在没有收到 `tool-region` 时会把全部 `extra_tools` 当作一个后备工具区域；旧前端无法识别该类型，因此后端升级时应同步升级前端。
+
 ##### 1. `toggle` — 开关型（布尔值）
 
 - 点击切换 `true/false` 状态
@@ -1200,7 +1219,7 @@ replacement 内容中可以继续包含其他 `cardReplace`：
         'description': 'Built by qwen',  # 介绍
         'avatar': '/src/assets/AI.png',  # 模型头像
         'tags': ["Code", "Chat"],  # 模型标签
-        'options': []  # 模型默认的高级设置，参考 DynamicSettings 
+        'options': []  # 模型默认的高级设置，参考 DynamicSettings
     },
     ...
 ]
@@ -1976,7 +1995,7 @@ code 设置为 401 。
 
 ```python
 {
-    "value": "disabled",  # 任选一，如果是其他的就是默认获取按钮状态（为空也许） 'disabled' , 'normal', 'loading', 'generating' 
+    "value": "disabled",  # 任选一，如果是其他的就是默认获取按钮状态（为空也许） 'disabled' , 'normal', 'loading', 'generating'
 }
 ```
 
@@ -2164,7 +2183,7 @@ code 设置为 401 。
     "orderReplace": False,  # 如果为 True 将为替换模式，直接替换掉原位的顺序，而不是插入之后直接去掉末尾
     "noClear": False,  # 是否不要自动清空输入框
     "isEdit": False  # 指定是编辑模式则会进行消息是否存在检测，如果不存在会触发 Messages-Loaded 事件
-}  
+}
 ```
 
 实际上这个实现的原理也是依靠内部的广播，只不过节约了后端手动操作的时间和步骤，
@@ -2259,6 +2278,34 @@ code 设置为 401 。
     }
 }
 ```
+
+### 批量设置当前 Conversation 工具权限
+
+独立的“本对话工具”窗口会在用户点击应用时批量提交变更。该命令只修改当前 `markId` 对应的 Conversation，不会修改设置页中的默认工具。后端会一次性增加会话权限版本、持久化 Conversation 快照，并把同一批权限同步到当前仍在运行的任务。
+
+```python
+{
+    "type": "agent",
+    "target": "ToolPermission",
+    "markId": "chat-mark-id",
+    "payload": {
+        "command": "Set-Tool-Permissions",
+        "permissions": {
+            "webSearch": "ask",
+            "writeFile": "deny"
+        },
+        "scope": "conversation",
+        "applyToPending": True,
+        "revision": 12
+    }
+}
+```
+
+成功回复的 `value` 包含完整 `permissions`、新 `revision`、`changed`、`resolvedApprovalIds` 和 `updatedRunIds`。窗口中的“启用”对应 `allow` 或 `ask`，“停用”对应 `deny`；重新启用时默认优先恢复该工具上次的启用模式。
+
+### 默认工具设置的折叠规则
+
+“设置 → 默认工具”中的每个工具集初始均为折叠状态。只有两种情况会展开：用户手动点击工具集标题，或搜索命中该工具集/其内部工具。搜索产生的展开是派生状态，不会覆盖用户手动展开集合；清空搜索后恢复搜索前的手动展开状态。
 
 ### 工具权限状态广播
 
@@ -2357,7 +2404,7 @@ code 设置为 401 。
     "prevChatMarkId": "xxx",  # 上一个页面聊天 ID
     "documentMarkId": "xxx", # 目前文档ID
     "prevDocumentMarkId": "xxx"
-}  
+}
 ```
 
 ## Context 事件 (target=Context)
@@ -4046,3 +4093,38 @@ AI 的 Markdown 确认反馈
 任务运行期间，输入框有正文时发送按钮仍显示发送图标并发送 `Task-Interrupt`；输入框为空时保留原有停止生成按钮。任务补充当前不接受附件。
 
 当同一页面存在多个活动任务时，输入框会显示任务目标选择器；所有插话命令都携带明确的 `taskRunId`，避免主智能体、简单智能体和 Session 智能体之间串扰。
+
+## 故事模式（Story Mode）
+
+### 新卡片类型
+
+- `story`：正文中的故事入口卡片。故事是用户级独立资源，不隶属于单一 Conversation。replacement 内容至少包含 `storyId`、`title`、`status`、`partCount`、`editableConversationIds` 和当前会话的 `canEdit`。点击后打开全屏故事阅读器。
+
+示例：
+
+```markdown
+{{cardReplace id=story-card-101 type=story}}
+```
+
+### 故事实时事件
+
+事件使用 `type=story`、`target=ChatPage`，按用户全局广播（`markId` 为空），因此同一用户打开的其他 Conversation 也能实时收到故事变化：
+
+- `Story-Created`
+- `Story-Part-Appended`
+- `Story-Part-Updated`
+- `Story-State-Changed`
+- `Story-Permissions-Changed`
+- `Story-Deleted`
+
+前端刷新后必须通过 `/chat/stories` 和 `/chat/stories/{storyId}` 读取用户级完整快照；请求可携带当前 `markId`，用于返回 `canEdit`。广播仅用于实时增量更新。复杂子智能体通过祖先 Conversation 继承编辑权限。
+
+### 阅读器
+
+- 全屏沉浸展示；移动端强制使用图片在上、文字在下。
+- 支持五档文字大小，偏好保存在设备本地。
+- TTS 复用聊天正文朗读引擎；当前篇幅结束后可自动切换下一篇幅。
+- 阅读设置 Popover 使用高于全屏阅读器的层级；字号、自动切篇与 TTS 外挂字幕可在故事内直接调整。
+- TTS 外挂字幕是独立于悬浮播放器的通用朗读覆盖层；隐藏或折叠播放器不会隐藏字幕。字幕默认显示在屏幕下方中央，可直接拖动，拖动时使用四向移动光标，右键可在九宫格中快速定位。TTS 悬浮窗中的字幕设置支持位置、最大宽高、字体大小、背景不透明度与行高；位置与样式会保存在本地，聊天正文和故事阅读器共享。字幕中心点可移动到整个视口范围，不额外保留屏幕边距。
+- 当前朗读分段会在正文中使用黄色高亮；语速、浏览器音色与字幕开关会在切换故事篇幅后保持。
+- 故事篇幅的小标题可为空，前端只在存在标题时渲染标题区域。

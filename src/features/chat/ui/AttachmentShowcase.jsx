@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { Transition } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
@@ -121,7 +121,7 @@ const ScrollArrow = memo(({ direction, onClick, t, show }) => {
         <button
             type="button"
             onClick={onClick}
-            className={`cursor-pointer absolute ${direction === 'left' ? 'left-0' : 'right-0'} top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center z-30 justify-center opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110`}
+            className={`cursor-pointer absolute ${direction === 'left' ? 'left-0' : 'right-0'} inset-y-0 my-auto h-7 w-7 rounded-full bg-white shadow-md ring-1 ring-black/5 flex items-center z-30 justify-center opacity-80 hover:opacity-100 transition-all duration-200 hover:scale-110`}
             aria-label={ariaLabel}
         >
             <svg
@@ -191,13 +191,15 @@ const AttachmentShowcase = memo(({ attachmentsMeta, onRemove, msgMode }) => {
 
     // 使用useCallback缓存函数，避免每次渲染都创建新函数
     const checkScrollShadows = useCallback(() => {
-        if (!scrollContainerRef.current) return;
+        const container = scrollContainerRef.current;
+        if (!container) return;
 
-        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-        const maxScrollLeft = scrollWidth - clientWidth;
+        const { scrollLeft, scrollWidth, clientWidth } = container;
+        const maxScrollLeft = Math.max(0, scrollWidth - clientWidth);
+        const hasOverflow = maxScrollLeft > 1;
 
-        setShowLeftShadow(scrollLeft > 0);
-        setShowRightShadow(scrollLeft < maxScrollLeft - 1);
+        setShowLeftShadow(hasOverflow && scrollLeft > 1);
+        setShowRightShadow(hasOverflow && scrollLeft < maxScrollLeft - 1);
     }, []);
 
     const scrollAttachments = useCallback((direction) => {
@@ -238,19 +240,37 @@ const AttachmentShowcase = memo(({ attachmentsMeta, onRemove, msgMode }) => {
         ));
     }, [attachmentsMeta, onRemove, msgMode, t]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         const container = scrollContainerRef.current;
-        if (!container) return;
+        if (!container) return undefined;
 
-        checkScrollShadows();
-        container.addEventListener('scroll', checkScrollShadows);
-        window.addEventListener('resize', checkScrollShadows);
+        let frameId = window.requestAnimationFrame(checkScrollShadows);
+        const scheduleCheck = () => {
+            window.cancelAnimationFrame(frameId);
+            frameId = window.requestAnimationFrame(checkScrollShadows);
+        };
+
+        container.addEventListener('scroll', scheduleCheck, { passive: true });
+        window.addEventListener('resize', scheduleCheck);
+
+        const resizeObserver = typeof ResizeObserver !== 'undefined'
+            ? new ResizeObserver(scheduleCheck)
+            : null;
+        resizeObserver?.observe(container);
+        if (container.parentElement) resizeObserver?.observe(container.parentElement);
 
         return () => {
-            container.removeEventListener('scroll', checkScrollShadows);
-            window.removeEventListener('resize', checkScrollShadows);
+            window.cancelAnimationFrame(frameId);
+            container.removeEventListener('scroll', scheduleCheck);
+            window.removeEventListener('resize', scheduleCheck);
+            resizeObserver?.disconnect();
         };
-    }, [checkScrollShadows]);
+    }, [attachmentsMeta, checkScrollShadows]);
+
+    useEffect(() => {
+        const frameId = window.requestAnimationFrame(checkScrollShadows);
+        return () => window.cancelAnimationFrame(frameId);
+    }, [attachmentItems, checkScrollShadows]);
 
     if (!attachmentsMeta || attachmentsMeta.length === 0) {
         return emptyState;
@@ -269,15 +289,15 @@ const AttachmentShowcase = memo(({ attachmentsMeta, onRemove, msgMode }) => {
         >
             <div
                 ref={containerRef}
-                className={'relative isolate px-2 py-1 ' + (msgMode ? 'z-0' : 'z-10 border-b border-gray-200')}
+                className={'relative isolate overflow-visible px-2 py-1 ' + (msgMode ? 'z-0' : 'z-10 border-b border-gray-200')}
             >
-                <div className="relative">
+                <div className="relative min-h-12 overflow-visible">
                     <ShadowOverlay side="left" show={showLeftShadow} />
                     <ShadowOverlay side="right" show={showRightShadow} />
 
                     <div
                         ref={scrollContainerRef}
-                        className="flex flex-nowrap gap-2 overflow-x-auto scrollbar-hide overscroll-x-contain p-1"
+                        className="flex min-h-12 flex-nowrap items-center gap-2 overflow-x-auto scrollbar-hide overscroll-x-contain p-1"
                         style={{
                             WebkitOverflowScrolling: 'touch',
                             scrollbarWidth: 'none',

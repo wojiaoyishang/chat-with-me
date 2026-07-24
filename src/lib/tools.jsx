@@ -12,6 +12,10 @@ export const CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY = 'ShowConversationTimesta
 export const TTS_LOCAL_SETTING_KEYS = Object.freeze({
     browserVoice: 'chat-browser-speech-voice-v1',
     playerPosition: 'chat-speech-player-position-v3',
+    rate: 'chat-speech-rate-v1',
+    subtitles: 'chat-speech-subtitles-v1',
+    subtitlePosition: 'chat-speech-subtitle-position-v1',
+    subtitleStyle: 'chat-speech-subtitle-style-v1',
 });
 
 export function processSelectedFiles(files) {

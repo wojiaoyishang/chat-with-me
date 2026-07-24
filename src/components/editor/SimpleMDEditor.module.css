@@ -73,3 +73,9 @@
 .editorWrapper :global(.w-md-editor-toolbar li > button:hover) {
     background-color: #e0e0e0;
 }
+
+.editorWrapper :global(.w-md-editor-text-input) {
+    pointer-events: auto !important;
+    user-select: text !important;
+    caret-color: currentColor;
+}

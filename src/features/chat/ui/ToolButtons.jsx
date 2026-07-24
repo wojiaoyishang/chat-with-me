@@ -1,7 +1,6 @@
-import React, {useState, useMemo, useCallback, useEffect, memo} from 'react';
-import {Transition} from '@headlessui/react';
+import React, {useState, useMemo, useCallback, memo} from 'react';
 import {IoMdAdd} from 'react-icons/io';
-import {Check, ChevronDown, Mic, RotateCw, Search, Earth, Puzzle, MoreHorizontal} from 'lucide-react';
+import {Check, ChevronDown, Mic, RotateCw, Search, Earth, Puzzle, MoreHorizontal, Settings2} from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -174,6 +173,8 @@ const ToolButtons = memo(({
                               isMobileMenu = false,
                               mobileOpenSections: controlledMobileOpenSections,
                               setMobileOpenSections: controlledSetMobileOpenSections,
+                              onManageConversationTools,
+                              conversationToolsDisabled = false,
                           }) => {
     const [open, setOpen] = useState(false);
     const [builtinOpen, setBuiltinOpen] = useState(false);
@@ -186,12 +187,21 @@ const ToolButtons = memo(({
     const setMobileOpenSections = controlledSetMobileOpenSections ?? setInternalMobileOpenSections;
 
     const highZClass = isWindowMode ? 'z-[100000]' : '';
-    const desktopMenuContentClass = `bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar min-w-[12rem] w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
-    const mobileMenuContentClass = `bg-white p-0 shadow-lg rounded-md overflow-hidden w-64 max-w-[calc(100vw-1rem)] ${highZClass}`;
+    const desktopMenuContentClass = `bg-white p-0 shadow-lg rounded-md overflow-hidden w-max min-w-[13.5rem] max-w-[min(18rem,calc(100vw-1rem))] ${highZClass}`;
+    const desktopBuiltinMenuContentClass = `bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar min-w-[12rem] w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
+    const mobileMenuContentClass = `bg-white p-0 shadow-lg rounded-md overflow-hidden w-max min-w-[13.5rem] max-w-[min(16rem,calc(100vw-1rem))] ${highZClass}`;
     const mobileBuiltinMenuContentClass = `bg-white p-0 shadow-lg rounded-md overflow-hidden w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
     const menuContentClass = isMobileMenu ? mobileMenuContentClass : desktopMenuContentClass;
     const desktopSubMenuContentClass = `bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar min-w-[14rem] w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
     const menuCollisionPadding = isMobileMenu ? 8 : 12;
+    const toolRegion = useMemo(
+        () => extraTools.find(item => item?.type === 'tool-region') || null,
+        [extraTools]
+    );
+    const toolRegionItems = toolRegion?.children || extraTools;
+    const nonRegionExtraTools = toolRegion
+        ? extraTools.filter(item => item !== toolRegion)
+        : [];
 
     const handleToggle = useCallback((toolName, e, newIsActive) => {
         setToolsStatus(prev => ({
@@ -227,16 +237,6 @@ const ToolButtons = memo(({
             setMobileOpenSections({});
         }
     }, [isMobileMenu, setMobileOpenSections]);
-
-    useEffect(() => {
-        if (!isMobileMenu) return;
-
-        if (toolsLoadedStatus === 1) {
-            setToolsLoadedStatus(2);
-        } else if (toolsLoadedStatus === 3) {
-            setToolsLoadedStatus(4);
-        }
-    }, [isMobileMenu, setToolsLoadedStatus, toolsLoadedStatus]);
 
     const voiceRecognitionEngineOptions = useMemo(() => [
         {
@@ -427,7 +427,7 @@ const ToolButtons = memo(({
     // ============================================================
 
     return (
-        <div className="flex items-center space-x-1">
+        <div className="flex h-7 max-h-7 min-w-0 flex-1 flex-nowrap items-center gap-1 overflow-hidden">
             {/* "+" 按钮触发额外工具菜单 */}
             <DropdownMenu modal={false} open={open} onOpenChange={handleExtraMenuOpenChange}>
                 <DropdownMenuTrigger asChild>
@@ -440,44 +440,69 @@ const ToolButtons = memo(({
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                    align={isMobileMenu ? 'start' : 'start'}
+                    align="start"
                     side={isMobileMenu ? 'top' : undefined}
                     sideOffset={6}
                     avoidCollisions
                     collisionPadding={menuCollisionPadding}
                     className={menuContentClass}
                 >
-                    {isMobileMenu ? (
-                        <div className="flex max-h-[60vh] flex-col">
-                            <div className="min-h-0 overflow-y-auto p-1 pretty-scrollbar">
-                                {voiceRecognitionEngineMenu}
-                                {extraTools.length > 0 ? (
-                                    renderMenuItems(extraTools)
-                                ) : attachmentTools.length === 0 ? (
-                                    <div className="px-2 py-1.5 text-sm text-gray-500">
+                    <div className="flex max-h-[min(72vh,640px)] min-h-0 flex-col">
+                        <div className="shrink-0 border-b border-gray-100 p-1">
+                            {voiceRecognitionEngineMenu}
+                            {nonRegionExtraTools.length > 0 && renderMenuItems(nonRegionExtraTools)}
+                        </div>
+
+                        <section
+                            data-tool-region={toolRegion?.marker || '__CHATBOX_TOOL_REGION_FALLBACK__'}
+                            data-scroll-mode={toolRegion?.scrollMode || 'inner'}
+                            className="flex min-h-0 flex-1 flex-col bg-white"
+                        >
+                            <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-3 py-2">
+                                <div className="min-w-0">
+                                    <div className="truncate text-xs font-semibold text-gray-700">
+                                        {t('conversation_tools', '本对话工具')}
+                                    </div>
+                                    <div className="mt-0.5 text-[11px] text-gray-400">
+                                        {t('conversation_tools_scroll_hint', '工具列表在此区域内独立滚动')}
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    disabled={conversationToolsDisabled}
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        if (conversationToolsDisabled) return;
+                                        setOpen(false);
+                                        onManageConversationTools?.();
+                                    }}
+                                    className="ml-2 inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
+                                    aria-label={t('manage_conversation_tools', '管理本对话工具')}
+                                >
+                                    <Settings2 className="h-4 w-4"/>
+                                </button>
+                            </div>
+                            <div
+                                className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1 pretty-scrollbar"
+                                style={{maxHeight: 'min(420px, calc(100vh - 220px))'}}
+                            >
+                                {toolRegionItems.length > 0 ? (
+                                    renderMenuItems(toolRegionItems)
+                                ) : (
+                                    <div className="px-2 py-4 text-center text-sm text-gray-500">
                                         {t('no_tools_available')}
                                     </div>
-                                ) : null}
+                                )}
                             </div>
-                            {attachmentTools.length > 0 && (
-                                <div className="shrink-0 border-t border-gray-100 bg-white p-1">
-                                    {renderMenuItems(attachmentTools)}
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <>
-                            {voiceRecognitionEngineMenu}
-                            {extraTools.length > 0 ? (
-                                renderMenuItems(extraTools)
-                            ) : attachmentTools.length === 0 ? (
-                                <div className="px-2 py-1.5 text-sm text-gray-500">
-                                    {t('no_tools_available')}
-                                </div>
-                            ) : null}
-                            {attachmentTools.length > 0 && renderMenuItems(attachmentTools)}
-                        </>
-                    )}
+                        </section>
+
+                        {attachmentTools.length > 0 && (
+                            <div className="shrink-0 border-t border-gray-100 bg-white p-1">
+                                {renderMenuItems(attachmentTools)}
+                            </div>
+                        )}
+                    </div>
                 </DropdownMenuContent>
             </DropdownMenu>
 
@@ -517,97 +542,63 @@ const ToolButtons = memo(({
                 </DropdownMenu>
             )}
 
-            {/* 内置工具按钮区域：移动端使用独立菜单，桌面端保持原有展示逻辑 */}
+            {/* 内置工具按钮区域：保持单行、单实例渲染，避免状态切换时动画重叠导致瞬时换行。 */}
             {!isMobileMenu && (
-                <div className="relative">
-                    {/* 加载中动画 */}
-                    <Transition
-                        show={toolsLoadedStatus === 0}
-                        enter="transition-opacity duration-500"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="transition-opacity duration-500"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                        afterLeave={() => setToolsLoadedStatus(toolsLoadedStatus === 3 ? 4 : 2)}
-                    >
-                        <Transition.Child as="div">
+                <div className="flex h-7 min-w-0 flex-1 items-center overflow-hidden">
+                    {(toolsLoadedStatus === 0 || toolsLoadedStatus === 1) && (
+                        <div className="flex h-7 shrink-0 items-center">
                             <ThreeDotLoading />
-                        </Transition.Child>
-                    </Transition>
+                        </div>
+                    )}
 
-                    {/* 加载失败提示 */}
-                    <Transition
-                        show={toolsLoadedStatus === 4}
-                        enter="transition-opacity duration-500"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="transition-opacity duration-500"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                        afterLeave={() => setToolsLoadedStatus(0)}
-                    >
-                        <Transition.Child as="div">
-                            <div className="flex items-center space-x-2 p-1">
-                                <span className="text-red-500 text-sm mb-0.5">
-                                    {t('tool_load_failed')}
-                                </span>
-                                <button
-                                    onClick={() => setToolsLoadedStatus(5)}
-                                    className="text-blue-500 hover:text-blue-700 text-sm flex items-center cursor-pointer"
-                                    aria-label={t('reload_tools')}
-                                >
-                                    <RotateCw className="w-4 h-4 mr-1" />
-                                    {t('reload_tools')}
-                                </button>
-                            </div>
-                        </Transition.Child>
-                    </Transition>
+                    {(toolsLoadedStatus === 3 || toolsLoadedStatus === 4) && (
+                        <div className="flex h-7 min-w-0 items-center gap-2 overflow-hidden px-1">
+                            <span className="truncate text-sm text-red-500">
+                                {t('tool_load_failed')}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => setToolsLoadedStatus(0)}
+                                className="inline-flex shrink-0 cursor-pointer items-center text-sm text-blue-500 hover:text-blue-700"
+                                aria-label={t('reload_tools')}
+                            >
+                                <RotateCw className="mr-1 h-4 w-4" />
+                                {t('reload_tools')}
+                            </button>
+                        </div>
+                    )}
 
-                    {/* 加载成功后的工具按钮 */}
-                    <Transition
-                        show={toolsLoadedStatus === 2}
-                        enter="transition-opacity duration-500"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="transition-opacity duration-500"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <Transition.Child as="div">
-                            {isCompact ? (
-                                /* 紧凑模式：更多按钮弹出菜单 */
-                                <DropdownMenu modal={false} open={builtinOpen} onOpenChange={setBuiltinOpen}>
-                                    <DropdownMenuTrigger asChild>
-                                        <button
-                                            type="button"
-                                            className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
-                                            aria-label={t('more_tools') ?? '更多内置工具'}
-                                        >
-                                            <MoreHorizontal className="w-4 h-4" />
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                        align="start"
-                                        side={undefined}
-                                        sideOffset={6}
-                                        avoidCollisions
-                                        collisionPadding={menuCollisionPadding}
-                                        className={desktopMenuContentClass}
+                    {(toolsLoadedStatus === 2 || toolsLoadedStatus === -1) && hasBuiltinTools && (
+                        isCompact ? (
+                            <DropdownMenu modal={false} open={builtinOpen} onOpenChange={setBuiltinOpen}>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        type="button"
+                                        className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-gray-100"
+                                        aria-label={t('more_tools') ?? '更多内置工具'}
                                     >
-                                        <div className="flex flex-col gap-1">
-                                            {builtinToolButtons}
-                                        </div>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            ) : (
-                                /* 正常模式：横向显示所有按钮 */
-                                <div className="flex flex-wrap gap-1">
-                                    {builtinToolButtons}
-                                </div>
-                            )}
-                        </Transition.Child>
-                    </Transition>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="start"
+                                    side={undefined}
+                                    sideOffset={6}
+                                    avoidCollisions
+                                    collisionPadding={menuCollisionPadding}
+                                    className={desktopBuiltinMenuContentClass}
+                                >
+                                    <div className="flex flex-col gap-1">
+                                        {builtinToolButtons}
+                                    </div>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <div className="flex min-w-0 flex-nowrap items-center gap-1 overflow-hidden">
+                                {builtinToolButtons}
+                            </div>
+                        )
+                    )}
                 </div>
             )}
         </div>

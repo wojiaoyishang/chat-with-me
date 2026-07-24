@@ -7,6 +7,7 @@ import {
     ListboxOptions,
 } from '@headlessui/react';
 import {
+    Captions,
     ChevronDown,
     Gauge,
     GripVertical,
@@ -17,9 +18,25 @@ import {
     Square,
     Target,
     Volume2,
-    ChevronsRight
+    ChevronsRight,
+    RotateCcw,
+    Settings2
 } from 'lucide-react';
 import {getLocalSetting, setLocalSetting, TTS_LOCAL_SETTING_KEYS} from '@/lib/tools.jsx';
+import {
+    readSubtitlePosition,
+    readSubtitleStyle,
+    resetSubtitleAppearance,
+    saveSubtitlePosition,
+    saveSubtitleStyle,
+    showSubtitlePreview,
+    SUBTITLE_POSITION_CHANGE_EVENT,
+    SUBTITLE_QUICK_POSITIONS,
+    SUBTITLE_STYLE_CHANGE_EVENT,
+    SUBTITLE_STYLE_LIMITS,
+    normalizeSubtitlePosition,
+    normalizeSubtitleStyle,
+} from '@/features/chat/speech/subtitleSettings.js';
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 const ACTIVE_STATUSES = new Set(['loading', 'playing', 'paused']);
@@ -366,11 +383,235 @@ const BrowserVoiceOptionsPortal = ({
     );
 };
 
+
+const getSubtitleQuickPositionLabel = (t, id) => {
+    const labels = {
+        'top-left': ['speech_subtitle_position_top_left', '左上'],
+        'top-center': ['speech_subtitle_position_top_center', '顶部居中'],
+        'top-right': ['speech_subtitle_position_top_right', '右上'],
+        'middle-left': ['speech_subtitle_position_middle_left', '左侧居中'],
+        center: ['speech_subtitle_position_center', '屏幕中央'],
+        'middle-right': ['speech_subtitle_position_middle_right', '右侧居中'],
+        'bottom-left': ['speech_subtitle_position_bottom_left', '左下'],
+        'bottom-center': ['speech_subtitle_position_bottom_center', '底部居中'],
+        'bottom-right': ['speech_subtitle_position_bottom_right', '右下'],
+    };
+    const [key, fallback] = labels[id] || labels['bottom-center'];
+    return fallbackText(t, key, fallback);
+};
+
+const SubtitleSettingRow = ({label, value, min, max, step, suffix, onChange}) => (
+    <label className="block rounded-xl border border-gray-100 bg-gray-50/70 px-2.5 py-2">
+        <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px]">
+            <span className="font-medium text-gray-600">{label}</span>
+            <span className="tabular-nums text-gray-400">{value}{suffix}</span>
+        </div>
+        <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            onChange={(event) => onChange?.(Number(event.target.value))}
+            className="h-2 w-full cursor-pointer accent-amber-500"
+        />
+    </label>
+);
+
+const SubtitleSettingsMenuPortal = ({
+    open,
+    anchorRef,
+    menuRef,
+    position,
+    settings,
+    onPositionSelect,
+    onSettingsChange,
+    onReset,
+    onPointerEnter,
+    onPointerLeave,
+    t,
+}) => {
+    const [menuPosition, setMenuPosition] = useState(null);
+
+    useEffect(() => {
+        if (!open || typeof window === 'undefined') return undefined;
+
+        let rafId = null;
+        const updatePosition = () => {
+            const rect = anchorRef.current?.getBoundingClientRect();
+            if (!rect) return;
+
+            const viewport = getVisualViewportMetrics();
+            const padding = 8;
+            const gap = 7;
+            const width = Math.max(180, Math.min(320, viewport.width - padding * 2));
+            const estimatedHeight = 570;
+            const viewportLeft = viewport.offsetLeft;
+            const viewportTop = viewport.offsetTop;
+            const viewportRight = viewportLeft + viewport.width;
+            const viewportBottom = viewportTop + viewport.height;
+            const availableBelow = viewportBottom - rect.bottom - padding - gap;
+            const availableAbove = rect.top - viewportTop - padding - gap;
+            const openAbove = availableBelow < Math.min(estimatedHeight, 360) && availableAbove > availableBelow;
+            const rawTop = openAbove ? rect.top - gap - Math.min(estimatedHeight, availableAbove) : rect.bottom + gap;
+            const rawLeft = rect.left + rect.width / 2 - width / 2;
+            const left = clamp(rawLeft, viewportLeft + padding, Math.max(viewportLeft + padding, viewportRight - width - padding));
+            const maxHeight = Math.max(180, viewport.height - padding * 2);
+            const top = clamp(rawTop, viewportTop + padding, Math.max(viewportTop + padding, viewportBottom - Math.min(estimatedHeight, maxHeight) - padding));
+
+            setMenuPosition({top, left, width, maxHeight, openAbove});
+        };
+        const schedule = () => {
+            if (rafId !== null) window.cancelAnimationFrame(rafId);
+            rafId = window.requestAnimationFrame(updatePosition);
+        };
+
+        updatePosition();
+        window.addEventListener('resize', schedule);
+        window.addEventListener('scroll', schedule, true);
+        window.visualViewport?.addEventListener?.('resize', schedule);
+        window.visualViewport?.addEventListener?.('scroll', schedule);
+        return () => {
+            if (rafId !== null) window.cancelAnimationFrame(rafId);
+            window.removeEventListener('resize', schedule);
+            window.removeEventListener('scroll', schedule, true);
+            window.visualViewport?.removeEventListener?.('resize', schedule);
+            window.visualViewport?.removeEventListener?.('scroll', schedule);
+        };
+    }, [anchorRef, open]);
+
+    if (!open || !menuPosition || typeof document === 'undefined') return null;
+
+    const updateSetting = (key, value) => onSettingsChange?.({...settings, [key]: value});
+
+    return createPortal(
+        <div
+            ref={menuRef}
+            className="fixed overflow-y-auto overscroll-contain rounded-2xl border border-gray-200 bg-white/[0.98] p-3 shadow-2xl shadow-slate-900/20 ring-1 ring-black/5 backdrop-blur-xl"
+            style={{
+                top: menuPosition.top,
+                left: menuPosition.left,
+                width: menuPosition.width,
+                maxHeight: menuPosition.maxHeight,
+                zIndex: PLAYER_Z_INDEX + 3,
+                transformOrigin: menuPosition.openAbove ? 'bottom center' : 'top center',
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+            onMouseEnter={onPointerEnter}
+            onMouseLeave={onPointerLeave}
+            role="dialog"
+            aria-label={fallbackText(t, 'speech_subtitle_settings', '字幕设置')}
+        >
+            <div className="mb-3 flex items-start justify-between gap-3 px-0.5">
+                <div>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-800">
+                        <Settings2 size={15} className="text-amber-500"/>
+                        {fallbackText(t, 'speech_subtitle_settings', '字幕设置')}
+                    </div>
+                    <div className="mt-0.5 text-[11px] leading-relaxed text-gray-400">
+                        {fallbackText(t, 'speech_subtitle_settings_hint', '调整字幕位置、尺寸和文字样式')}
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onClick={onReset}
+                    className="flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 text-[11px] text-gray-500 transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700"
+                    title={fallbackText(t, 'speech_subtitle_reset', '恢复字幕默认设置')}
+                >
+                    <RotateCcw size={13}/>
+                    {fallbackText(t, 'reset', '重置')}
+                </button>
+            </div>
+
+            <div className="mb-3">
+                <div className="mb-1.5 px-0.5 text-[11px] font-medium text-gray-600">
+                    {fallbackText(t, 'speech_subtitle_position_setting', '字幕位置')}
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                    {SUBTITLE_QUICK_POSITIONS.map(item => {
+                        const active = Math.abs(position.x - item.x) < 0.04 && Math.abs(position.y - item.y) < 0.04;
+                        const label = getSubtitleQuickPositionLabel(t, item.id);
+                        return (
+                            <button
+                                key={item.id}
+                                type="button"
+                                role="radio"
+                                aria-checked={active}
+                                onClick={() => onPositionSelect?.(item)}
+                                className={`group flex min-h-11 items-center justify-center rounded-xl border transition-colors active:scale-[0.98] ${active
+                                    ? 'border-amber-300 bg-amber-50 text-amber-700 ring-1 ring-amber-100'
+                                    : 'border-gray-200 bg-gray-50/80 text-gray-500 hover:border-amber-200 hover:bg-amber-50/70 hover:text-amber-700'
+                                }`}
+                                aria-label={label}
+                                title={label}
+                            >
+                                <span className="relative h-5 w-8 rounded border border-current/25 bg-white/75">
+                                    <span
+                                        className={`absolute h-1.5 w-1.5 rounded-full ${active ? 'bg-amber-500' : 'bg-current/70'}`}
+                                        style={{
+                                            left: `${15 + item.column * 35}%`,
+                                            top: `${15 + item.row * 35}%`,
+                                            transform: 'translate(-50%, -50%)',
+                                        }}
+                                    />
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+                <div className="mt-1.5 px-0.5 text-[10px] leading-relaxed text-gray-400">
+                    {fallbackText(t, 'speech_subtitle_no_edge_padding_hint', '拖动位置不保留屏幕边距，字幕自身尺寸由下方设置限制')}
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <SubtitleSettingRow
+                    label={fallbackText(t, 'speech_subtitle_max_width', '最大宽度')}
+                    value={settings.maxWidthVw}
+                    {...SUBTITLE_STYLE_LIMITS.maxWidthVw}
+                    suffix="vw"
+                    onChange={(value) => updateSetting('maxWidthVw', value)}
+                />
+                <SubtitleSettingRow
+                    label={fallbackText(t, 'speech_subtitle_max_height', '最大高度')}
+                    value={settings.maxHeightVh}
+                    {...SUBTITLE_STYLE_LIMITS.maxHeightVh}
+                    suffix="vh"
+                    onChange={(value) => updateSetting('maxHeightVh', value)}
+                />
+                <SubtitleSettingRow
+                    label={fallbackText(t, 'speech_subtitle_font_size', '字体大小')}
+                    value={settings.fontSizePx}
+                    {...SUBTITLE_STYLE_LIMITS.fontSizePx}
+                    suffix="px"
+                    onChange={(value) => updateSetting('fontSizePx', value)}
+                />
+                <SubtitleSettingRow
+                    label={fallbackText(t, 'speech_subtitle_background_opacity', '背景透明度')}
+                    value={settings.backgroundOpacity}
+                    {...SUBTITLE_STYLE_LIMITS.backgroundOpacity}
+                    suffix="%"
+                    onChange={(value) => updateSetting('backgroundOpacity', value)}
+                />
+                <SubtitleSettingRow
+                    label={fallbackText(t, 'speech_subtitle_line_height', '行高')}
+                    value={settings.lineHeight}
+                    {...SUBTITLE_STYLE_LIMITS.lineHeight}
+                    suffix=""
+                    onChange={(value) => updateSetting('lineHeight', value)}
+                />
+            </div>
+        </div>,
+        document.body,
+    );
+};
 const SpeechPlayer = memo(({
                                speechState,
                                message,
                                autoFollowEnabled = false,
                                onAutoFollowToggle,
+                               subtitlesEnabled = true,
+                               onSubtitlesToggle,
                                onPause,
                                onResume,
                                onStop,
@@ -385,6 +626,8 @@ const SpeechPlayer = memo(({
     const isVisible = ACTIVE_STATUSES.has(speechState?.status);
     const panelRef = useRef(null);
     const speedButtonRef = useRef(null);
+    const subtitlePositionButtonRef = useRef(null);
+    const subtitlePositionMenuRef = useRef(null);
     const browserVoiceButtonRef = useRef(null);
     const browserVoiceMenuRef = useRef(null);
     const speedMenuRef = useRef(null);
@@ -393,6 +636,10 @@ const SpeechPlayer = memo(({
     const secondaryMenuOpenRef = useRef(false);
     const wasSecondaryMenuOpenRef = useRef(false);
     const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
+    const [subtitlePositionMenuOpen, setSubtitlePositionMenuOpen] = useState(false);
+    const [subtitlePreviewHovered, setSubtitlePreviewHovered] = useState(false);
+    const [subtitlePosition, setSubtitlePosition] = useState(readSubtitlePosition);
+    const [subtitleStyle, setSubtitleStyle] = useState(readSubtitleStyle);
     const [browserVoiceMenuOpen, setBrowserVoiceMenuOpen] = useState(false);
     const [speedMenuPosition, setSpeedMenuPosition] = useState({top: 0, left: 0});
     const interactionRef = useRef({active: false, type: null});
@@ -426,6 +673,24 @@ const SpeechPlayer = memo(({
         if (typeof window === 'undefined') return;
         setLocalSetting(TTS_LOCAL_SETTING_KEYS.playerPosition, floatingState);
     }, [floatingState]);
+
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+        const handlePositionChange = (event) => setSubtitlePosition(normalizeSubtitlePosition(event?.detail));
+        const handleStyleChange = (event) => setSubtitleStyle(normalizeSubtitleStyle(event?.detail));
+        window.addEventListener(SUBTITLE_POSITION_CHANGE_EVENT, handlePositionChange);
+        window.addEventListener(SUBTITLE_STYLE_CHANGE_EVENT, handleStyleChange);
+        return () => {
+            window.removeEventListener(SUBTITLE_POSITION_CHANGE_EVENT, handlePositionChange);
+            window.removeEventListener(SUBTITLE_STYLE_CHANGE_EVENT, handleStyleChange);
+        };
+    }, []);
+
+    useEffect(() => {
+        showSubtitlePreview(subtitlePreviewHovered || subtitlePositionMenuOpen);
+        return () => showSubtitlePreview(false);
+    }, [subtitlePositionMenuOpen, subtitlePreviewHovered]);
 
     const keepPanelInViewport = useCallback(() => {
         if (typeof window === 'undefined') return;
@@ -462,7 +727,7 @@ const SpeechPlayer = memo(({
         if (!isVisible) return undefined;
         const frame = window.requestAnimationFrame(keepPanelInViewport);
         return () => window.cancelAnimationFrame(frame);
-    }, [isVisible, keepPanelInViewport, currentSegment?.text, speedMenuOpen, isCompactPanel]);
+    }, [isVisible, keepPanelInViewport, currentSegment?.text, speedMenuOpen, subtitlePositionMenuOpen, isCompactPanel]);
 
     useEffect(() => {
         if (!isVisible || (floatingState.dockedSide && floatingState.collapsed)) return undefined;
@@ -575,6 +840,7 @@ const SpeechPlayer = memo(({
             const target = event.target;
             if (panelRef.current?.contains(target)) return;
             if (speedMenuRef.current?.contains(target)) return;
+            if (subtitlePositionMenuRef.current?.contains(target)) return;
             setSpeedMenuOpen(false);
         };
 
@@ -589,6 +855,43 @@ const SpeechPlayer = memo(({
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [speedMenuOpen]);
+
+    useEffect(() => {
+        if (!subtitlePositionMenuOpen) return undefined;
+
+        const handlePointerDown = (event) => {
+            const target = event.target;
+            if (subtitlePositionButtonRef.current?.contains(target)) return;
+            if (subtitlePositionMenuRef.current?.contains(target)) return;
+            setSubtitlePositionMenuOpen(false);
+        };
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') setSubtitlePositionMenuOpen(false);
+        };
+
+        window.addEventListener('pointerdown', handlePointerDown, true);
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('pointerdown', handlePointerDown, true);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [subtitlePositionMenuOpen]);
+
+    const selectSubtitlePosition = useCallback((item) => {
+        const next = saveSubtitlePosition({x: item.x, y: item.y});
+        setSubtitlePosition(next);
+    }, []);
+
+    const updateSubtitleStyle = useCallback((value) => {
+        const next = saveSubtitleStyle(value);
+        setSubtitleStyle(next);
+    }, []);
+
+    const resetSubtitleSettings = useCallback(() => {
+        const next = resetSubtitleAppearance();
+        setSubtitlePosition(next.position);
+        setSubtitleStyle(next.style);
+    }, []);
 
     const clearCollapseTimer = useCallback(() => {
         if (collapseTimerRef.current) {
@@ -622,7 +925,7 @@ const SpeechPlayer = memo(({
     }, []);
 
     useEffect(() => {
-        const hasOpenSecondaryMenu = speedMenuOpen || browserVoiceMenuOpen;
+        const hasOpenSecondaryMenu = speedMenuOpen || browserVoiceMenuOpen || subtitlePositionMenuOpen;
         const wasOpen = wasSecondaryMenuOpenRef.current;
         secondaryMenuOpenRef.current = hasOpenSecondaryMenu;
         wasSecondaryMenuOpenRef.current = hasOpenSecondaryMenu;
@@ -643,6 +946,7 @@ const SpeechPlayer = memo(({
         isMobileInteraction,
         scheduleDockCollapse,
         speedMenuOpen,
+        subtitlePositionMenuOpen,
     ]);
 
     const updateDragPosition = useCallback((clientX, clientY) => {
@@ -940,6 +1244,7 @@ const SpeechPlayer = memo(({
             if (panelRef.current?.contains(event.target)) return;
             if (speedMenuRef.current?.contains(event.target)) return;
             if (browserVoiceMenuRef.current?.contains(event.target)) return;
+            if (subtitlePositionMenuRef.current?.contains(event.target)) return;
             collapseToDock();
         };
 
@@ -984,6 +1289,10 @@ const SpeechPlayer = memo(({
     const autoFollowLabel = autoFollowEnabled
         ? fallbackText(t, 'speech_auto_follow_on', '已开启跟随朗读，点击关闭')
         : fallbackText(t, 'speech_auto_follow_off', '跟随当前朗读位置');
+    const subtitlesLabel = subtitlesEnabled
+        ? fallbackText(t, 'speech_subtitles_on', '已开启外挂字幕，点击关闭')
+        : fallbackText(t, 'speech_subtitles_off', '显示外挂字幕');
+    const subtitleSettingsLabel = fallbackText(t, 'speech_subtitle_settings', '字幕设置');
     const browserVoiceDefaultLabel = fallbackText(t, 'speech_voice_browser_default', '浏览器默认');
     const selectedBrowserVoiceLabel = selectedBrowserVoiceValue
         ? (() => {
@@ -1041,6 +1350,29 @@ const SpeechPlayer = memo(({
         ? createPortal(renderSpeedMenu(), document.body)
         : null;
 
+
+    const subtitlePositionMenuPortal = (
+        <SubtitleSettingsMenuPortal
+            open={subtitlePositionMenuOpen}
+            anchorRef={subtitlePositionButtonRef}
+            menuRef={subtitlePositionMenuRef}
+            position={subtitlePosition}
+            settings={subtitleStyle}
+            onPositionSelect={selectSubtitlePosition}
+            onSettingsChange={updateSubtitleStyle}
+            onReset={resetSubtitleSettings}
+            onPointerEnter={() => {
+                setSubtitlePreviewHovered(true);
+                clearCollapseTimer();
+            }}
+            onPointerLeave={() => {
+                setSubtitlePreviewHovered(false);
+                if (!subtitlePositionMenuOpen) scheduleDockCollapse();
+            }}
+            t={t}
+        />
+    );
+
     if (isCollapsed) {
         const tabStyle = {
             top: `${floatingState.y}px`,
@@ -1088,7 +1420,7 @@ const SpeechPlayer = memo(({
         top: `${floatingState.y}px`,
         width: `${floatingState.width}px`,
         maxWidth: 'calc(100vw - 16px)',
-        maxHeight: 'calc(100dvh - 24px)',
+        maxHeight: 'calc(100dvh - max(24px, env(safe-area-inset-bottom)))',
         zIndex: PLAYER_Z_INDEX,
     };
 
@@ -1160,7 +1492,7 @@ const SpeechPlayer = memo(({
                                     ? 'grid w-full min-w-0 grid-cols-1 gap-2'
                                     : 'flex min-w-0 items-center justify-end gap-2'
                                 }>
-                                    <div className={`flex min-w-0 items-center gap-1.5 rounded-2xl bg-white/30 p-0.5 ${isCompactPanel ? 'w-full' : 'shrink-0'}`}>
+                                    <div className={`flex min-w-0 items-center gap-1.5 rounded-2xl bg-white/30 p-0.5 ${isCompactPanel ? 'w-full overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden' : 'shrink-0'}`}>
                                         {canSelectBrowserVoice && (
                                             <Listbox value={selectedBrowserVoiceValue} onChange={(value) => onBrowserSpeechVoiceChange?.(value)}>
                                                 {({open}) => (
@@ -1227,6 +1559,54 @@ const SpeechPlayer = memo(({
                                         </button>
 
 
+                                        <div
+                                            className="flex shrink-0 items-center rounded-full"
+                                            onMouseEnter={() => setSubtitlePreviewHovered(true)}
+                                            onMouseLeave={() => setSubtitlePreviewHovered(false)}
+                                            onFocusCapture={() => setSubtitlePreviewHovered(true)}
+                                            onBlurCapture={(event) => {
+                                                if (!event.currentTarget.contains(event.relatedTarget)) {
+                                                    setSubtitlePreviewHovered(false);
+                                                }
+                                            }}
+                                        >
+                                            <button
+                                                type="button"
+                                                onClick={() => onSubtitlesToggle?.(!subtitlesEnabled)}
+                                                className={`flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-l-full border px-2 text-xs font-medium shadow-sm transition-colors sm:h-8 ${subtitlesEnabled
+                                                    ? 'border-amber-200 bg-amber-50 text-amber-700 ring-1 ring-amber-100'
+                                                    : 'border-gray-200/80 bg-white/80 text-gray-600 hover:bg-white hover:text-amber-700'
+                                                }`}
+                                                aria-label={subtitlesLabel}
+                                                title={subtitlesLabel}
+                                                aria-pressed={subtitlesEnabled}
+                                            >
+                                                <Captions size={14} className={subtitlesEnabled ? 'text-amber-600' : 'text-gray-500'}/>
+                                                <span className={isVeryCompactPanel ? 'sr-only' : 'whitespace-nowrap'}>
+                                                    {fallbackText(t, 'speech_subtitles_short', '字幕')}
+                                                </span>
+                                            </button>
+                                            <button
+                                                ref={subtitlePositionButtonRef}
+                                                type="button"
+                                                onClick={() => {
+                                                    setSpeedMenuOpen(false);
+                                                    setSubtitlePositionMenuOpen(open => !open);
+                                                }}
+                                                className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-r-full border border-l-0 shadow-sm transition-colors sm:h-8 sm:w-8 ${subtitlePositionMenuOpen
+                                                    ? 'border-amber-300 bg-amber-100 text-amber-700'
+                                                    : 'border-gray-200/80 bg-white/80 text-gray-500 hover:bg-amber-50 hover:text-amber-700'
+                                                }`}
+                                                aria-label={subtitleSettingsLabel}
+                                                title={subtitleSettingsLabel}
+                                                aria-haspopup="dialog"
+                                                aria-expanded={subtitlePositionMenuOpen}
+                                            >
+                                                <Settings2 size={14}/>
+                                            </button>
+                                        </div>
+
+
                                         <button
                                             type="button"
                                             onClick={dockToRight}
@@ -1285,6 +1665,7 @@ const SpeechPlayer = memo(({
                 </div>
             </div>
             {speedMenuPortal}
+            {subtitlePositionMenuPortal}
         </>
     );
 

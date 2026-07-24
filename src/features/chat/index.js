@@ -8,6 +8,7 @@ export {default as ChatHeader} from './page/components/ChatHeader.jsx';
 export {default as RightSidebar} from './page/components/RightSidebar.jsx';
 export {default as ScrollToBottomButton} from './page/components/ScrollToBottomButton.jsx';
 export {default as SpeechPlayer} from './page/components/SpeechPlayer.jsx';
+export {default as SpeechSubtitleOverlay} from './page/components/SpeechSubtitleOverlay.jsx';
 export {default as ResizeHandles} from './page/components/ResizeHandles.jsx';
 export {LoadingFailedScreen, LoadingScreen} from './page/components/LoadingScreens.jsx';
 

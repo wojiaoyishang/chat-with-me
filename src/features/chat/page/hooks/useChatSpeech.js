@@ -48,6 +48,20 @@ const getStoredBrowserSpeechVoiceURI = () => {
     return getLocalSetting(TTS_LOCAL_SETTING_KEYS.browserVoice, '') || '';
 };
 
+const getStoredSpeechRate = () => {
+    const value = Number(getLocalSetting(TTS_LOCAL_SETTING_KEYS.rate, 1));
+    return Number.isFinite(value) && value > 0 ? value : 1;
+};
+
+const getStoredSpeechSubtitlesEnabled = () => (
+    getLocalSetting(TTS_LOCAL_SETTING_KEYS.subtitles, true) !== false
+);
+
+const createPersistentSpeechState = () => ({
+    ...createInitialSpeechState(),
+    rate: getStoredSpeechRate(),
+});
+
 const getBrowserSpeechVoiceId = (voice = {}) => String(voice.voiceURI || voice.name || voice.lang || '');
 
 const normalizeBrowserSpeechVoice = (voice = {}) => {
@@ -368,7 +382,7 @@ export default function useChatSpeech({
     setShowScrollToBottomButton,
 }) {
     // 语音朗读相关：由 useChatSpeech 统一处理播放状态和当前高亮句子。
-    const [speechState, setSpeechState] = useState(createInitialSpeechState);
+    const [speechState, setSpeechState] = useState(createPersistentSpeechState);
     const speechStateRef = useRef(speechState);
     const speechControllerRef = useRef(createInitialSpeechControllerState());
     const backendSpeechAudioRef = useRef(createBackendSpeechAudioState());
@@ -376,6 +390,7 @@ export default function useChatSpeech({
     const messageSpeechCacheRef = useRef(new Map());
     const playNextBackendSpeechSegmentRef = useRef(null);
     const [speechAutoFollowEnabled, setSpeechAutoFollowEnabled] = useState(false);
+    const [speechSubtitlesEnabled, setSpeechSubtitlesEnabled] = useState(getStoredSpeechSubtitlesEnabled);
     const speechAutoFollowEnabledRef = useRef(false);
     const speechFollowProgrammaticScrollUntilRef = useRef(0);
     const lastSpeechFollowTargetRef = useRef(null);
@@ -1443,7 +1458,7 @@ export default function useChatSpeech({
 
 
     const resetSpeechState = useCallback(() => {
-        setSpeechState(createInitialSpeechState());
+        setSpeechState(createPersistentSpeechState());
     }, []);
 
     const clearBackendSpeechAudio = useCallback(({stopAudio = true, releaseCachedAudio = false} = {}) => {
@@ -3155,6 +3170,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
 
     const updateSpeechRate = useCallback((value) => {
         const nextRate = normalizeSpeechRate(value);
+        setLocalSetting(TTS_LOCAL_SETTING_KEYS.rate, nextRate);
         const currentController = speechControllerRef.current;
         const currentSpeech = speechStateRef.current;
 
@@ -3248,6 +3264,13 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         resolveSpeechSegmentPosition,
         speakWithBrowser,
     ]);
+
+    const updateSpeechSubtitlesEnabled = useCallback((enabled) => {
+        const nextEnabled = Boolean(enabled);
+        setSpeechSubtitlesEnabled(nextEnabled);
+        setLocalSetting(TTS_LOCAL_SETTING_KEYS.subtitles, nextEnabled);
+        return nextEnabled;
+    }, []);
 
     const updateBrowserSpeechVoice = useCallback((value) => {
         const nextVoiceURI = value ? String(value) : '';
@@ -3419,7 +3442,11 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             return;
         }
 
+        const persistedRate = getStoredSpeechRate();
         const speechConfig = {
+            rate: persistedRate,
+            speakRate: persistedRate,
+            browserVoice: selectedBrowserSpeechVoiceURI || getStoredBrowserSpeechVoiceURI(),
             ...(payload?.options || {}),
         };
         const engine = advancedSettingsValues.speakEngine || 'browser';
@@ -3433,8 +3460,37 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
 
         requestBackendSpeech({messageId, requestId, segments, engine, speechConfig});
         reply?.({success: true});
-    }, [advancedSettingsValues, cancelActiveSpeech, requestBackendSpeech, speakWithBrowser, t]);
+    }, [advancedSettingsValues, cancelActiveSpeech, requestBackendSpeech, selectedBrowserSpeechVoiceURI, speakWithBrowser, t]);
 
+
+    const handleSpeakContentRequest = useCallback(({messageId, text, options = {}} = {}) => {
+        const resolvedMessageId = String(messageId || '').trim();
+        const sourceText = String(text || '').trim();
+        if (!resolvedMessageId || !sourceText) return false;
+
+        const currentSpeech = speechStateRef.current;
+        if (currentSpeech?.messageId === resolvedMessageId && ['loading', 'playing', 'paused'].includes(currentSpeech?.status)) {
+            cancelActiveSpeech(true);
+            return true;
+        }
+
+        const segments = getSpeakableSegments({content: sourceText, allowSpeak: true}, resolvedMessageId);
+        if (segments.length === 0) return false;
+        const engine = advancedSettingsValues.speakEngine || 'browser';
+        const requestId = generateUUID();
+        const persistedRate = getStoredSpeechRate();
+        const speechConfig = {
+            rate: persistedRate,
+            speakRate: persistedRate,
+            browserVoice: selectedBrowserSpeechVoiceURI || getStoredBrowserSpeechVoiceURI(),
+            ...options,
+        };
+        if (engine === 'browser') {
+            return speakWithBrowser({messageId: resolvedMessageId, requestId, segments, speechConfig});
+        }
+        requestBackendSpeech({messageId: resolvedMessageId, requestId, segments, engine, speechConfig});
+        return true;
+    }, [advancedSettingsValues, cancelActiveSpeech, requestBackendSpeech, selectedBrowserSpeechVoiceURI, speakWithBrowser]);
 
     const applyBackendSpeechPlaybackSegment = useCallback((payload = {}) => {
         const segmentPosition = resolveBackendPayloadSegmentPosition(payload, getBackendSpeechSegmentPosition(payload, -1));
@@ -4248,15 +4304,18 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
     return {
         speechState,
         speechAutoFollowEnabled,
+        speechSubtitlesEnabled,
         speechFollowProgrammaticScrollUntilRef,
         handleSpeechAutoFollowToggle,
         handleSpeechTextClick,
         handleSpeakMessageRequest,
+        handleSpeakContentRequest,
         handleBackendSpeechEvent,
         cancelActiveSpeech,
         pauseActiveSpeech,
         resumeActiveSpeech,
         updateSpeechRate,
+        updateSpeechSubtitlesEnabled,
         updateBrowserSpeechVoice,
         browserSpeechVoices,
         selectedBrowserSpeechVoiceURI,

@@ -1696,6 +1696,7 @@ function ToolPermissionMatrixItem({item, path}) {
             {name: "deny", text: "拒绝"},
         ];
     const [query, setQuery] = useState("");
+    const [manualExpandedGroups, setManualExpandedGroups] = useState(() => new Set());
     const normalizedQuery = query.trim().toLowerCase();
 
     const resolveMode = useCallback((tool) => {
@@ -1729,16 +1730,30 @@ function ToolPermissionMatrixItem({item, path}) {
         return result;
     }, {allow: 0, ask: 0, deny: 0});
 
-    const visibleGroups = groups.map(group => ({
-        ...group,
-        sourceTools: group.tools || [],
-        tools: (group.tools || []).filter(tool => {
-            if (!normalizedQuery) return true;
-            return [tool.name, tool.text, tool.description]
-                .filter(Boolean)
-                .some(text => String(text).toLowerCase().includes(normalizedQuery));
-        }),
-    })).filter(group => group.tools.length > 0);
+    const visibleGroups = groups.map(group => {
+        const sourceTools = group.tools || [];
+        const groupMatches = normalizedQuery && [group.id, group.name]
+            .filter(Boolean)
+            .some(text => String(text).toLowerCase().includes(normalizedQuery));
+        return {
+            ...group,
+            sourceTools,
+            tools: !normalizedQuery || groupMatches
+                ? sourceTools
+                : sourceTools.filter(tool => [tool.name, tool.text, tool.description]
+                    .filter(Boolean)
+                    .some(text => String(text).toLowerCase().includes(normalizedQuery))),
+        };
+    }).filter(group => group.tools.length > 0);
+
+    const toggleGroupExpanded = useCallback((groupId) => {
+        setManualExpandedGroups(previous => {
+            const next = new Set(previous);
+            if (next.has(groupId)) next.delete(groupId);
+            else next.add(groupId);
+            return next;
+        });
+    }, []);
 
     return (
         <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0 py-4 px-3 sm:px-4">
@@ -1771,71 +1786,86 @@ function ToolPermissionMatrixItem({item, path}) {
             </div>
 
             <div className="space-y-4">
-                {visibleGroups.map(group => (
-                    <section key={group.id} className="overflow-hidden rounded-2xl border border-[#d8dee4] dark:border-[#30363d] bg-white dark:bg-[#0d1117]">
-                        <header className="flex flex-col gap-3 border-b border-[#d8dee4] dark:border-[#30363d] bg-[#f6f8fa] dark:bg-[#161b22] px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <div className="text-sm font-semibold">{group.name}</div>
-                                <div className="mt-0.5 text-xs text-[#656d76] dark:text-[#8b949e]">共 {(group.sourceTools || group.tools || []).length} 个工具{normalizedQuery ? `，当前显示 ${(group.tools || []).length} 个` : ""}</div>
-                            </div>
-                            {item.allowGroupActions !== false && (
-                                <div className="flex flex-wrap gap-1.5">
-                                    {modes.map(mode => {
-                                        const Icon = TOOL_PERMISSION_ICONS[mode.name] || CircleHelp;
+                {visibleGroups.map(group => {
+                    const isExpanded = Boolean(normalizedQuery) || manualExpandedGroups.has(group.id);
+                    return (
+                        <section key={group.id} className="overflow-hidden rounded-2xl border border-[#d8dee4] dark:border-[#30363d] bg-white dark:bg-[#0d1117]">
+                            <header className="flex flex-col gap-3 bg-[#f6f8fa] dark:bg-[#161b22] px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                <button
+                                    type="button"
+                                    onClick={() => toggleGroupExpanded(group.id)}
+                                    aria-expanded={isExpanded}
+                                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left"
+                                >
+                                    <ChevronDown className={`h-4 w-4 shrink-0 text-[#8c959f] transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                                    <span className="min-w-0">
+                                        <span className="block truncate text-sm font-semibold">{group.name}</span>
+                                        <span className="mt-0.5 block text-xs font-normal text-[#656d76] dark:text-[#8b949e]">
+                                            共 {(group.sourceTools || group.tools || []).length} 个工具{normalizedQuery ? `，当前显示 ${(group.tools || []).length} 个` : ""}
+                                        </span>
+                                    </span>
+                                </button>
+                                {item.allowGroupActions !== false && (
+                                    <div className="flex flex-wrap gap-1.5" onClick={event => event.stopPropagation()}>
+                                        {modes.map(mode => {
+                                            const Icon = TOOL_PERMISSION_ICONS[mode.name] || CircleHelp;
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={mode.name}
+                                                    onClick={() => setGroupMode(group, mode.name)}
+                                                    className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition hover:brightness-95 ${TOOL_PERMISSION_STYLES[mode.name] || ""}`}
+                                                >
+                                                    <Icon className="h-3.5 w-3.5" />
+                                                    全部{mode.text}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </header>
+                            {isExpanded && (
+                                <div className="divide-y divide-[#eaeef2] border-t border-[#d8dee4] dark:divide-[#21262d] dark:border-[#30363d]">
+                                    {(group.tools || []).map(tool => {
+                                        const selectedMode = resolveMode(tool);
                                         return (
-                                            <button
-                                                type="button"
-                                                key={mode.name}
-                                                onClick={() => setGroupMode(group, mode.name)}
-                                                className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition hover:brightness-95 ${TOOL_PERMISSION_STYLES[mode.name] || ""}`}
-                                            >
-                                                <Icon className="h-3.5 w-3.5" />
-                                                全部{mode.text}
-                                            </button>
+                                            <div key={tool.name} className="flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2 text-sm font-medium">
+                                                        <span className="truncate">{tool.text || tool.name}</span>
+                                                        {tool.locked && <LockKeyhole className="h-3.5 w-3.5 text-[#8c959f]" />}
+                                                    </div>
+                                                    <div className="mt-0.5 break-all font-mono text-[11px] text-[#8c959f]">{tool.name}</div>
+                                                    {tool.description && <div className="mt-1 text-xs leading-5 text-[#656d76] dark:text-[#8b949e]">{tool.description}</div>}
+                                                </div>
+                                                <div className="flex shrink-0 rounded-xl border border-[#d0d7de] dark:border-[#30363d] bg-[#f6f8fa] dark:bg-[#161b22] p-1">
+                                                    {modes.map(mode => {
+                                                        const Icon = TOOL_PERMISSION_ICONS[mode.name] || CircleHelp;
+                                                        const disabled = tool.locked || !(tool.allowedModes || ["allow", "ask", "deny"]).includes(mode.name);
+                                                        const selected = selectedMode === mode.name;
+                                                        return (
+                                                            <button
+                                                                type="button"
+                                                                key={mode.name}
+                                                                disabled={disabled}
+                                                                onClick={() => setToolMode(tool, mode.name)}
+                                                                title={mode.text}
+                                                                className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-lg px-2 text-xs font-medium transition ${disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"} ${selected ? (TOOL_PERMISSION_STYLES[mode.name] || "") : "border border-transparent text-[#656d76] hover:bg-white dark:text-[#8b949e] dark:hover:bg-[#0d1117]"}`}
+                                                            >
+                                                                <Icon className="h-4 w-4" />
+                                                                <span className="hidden md:inline">{mode.text}</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
                                         );
                                     })}
                                 </div>
                             )}
-                        </header>
-                        <div className="divide-y divide-[#eaeef2] dark:divide-[#21262d]">
-                            {(group.tools || []).map(tool => {
-                                const selectedMode = resolveMode(tool);
-                                return (
-                                    <div key={tool.name} className="flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2 text-sm font-medium">
-                                                <span className="truncate">{tool.text || tool.name}</span>
-                                                {tool.locked && <LockKeyhole className="h-3.5 w-3.5 text-[#8c959f]" />}
-                                            </div>
-                                            <div className="mt-0.5 break-all font-mono text-[11px] text-[#8c959f]">{tool.name}</div>
-                                            {tool.description && <div className="mt-1 text-xs leading-5 text-[#656d76] dark:text-[#8b949e]">{tool.description}</div>}
-                                        </div>
-                                        <div className="flex shrink-0 rounded-xl border border-[#d0d7de] dark:border-[#30363d] bg-[#f6f8fa] dark:bg-[#161b22] p-1">
-                                            {modes.map(mode => {
-                                                const Icon = TOOL_PERMISSION_ICONS[mode.name] || CircleHelp;
-                                                const disabled = tool.locked || !(tool.allowedModes || ["allow", "ask", "deny"]).includes(mode.name);
-                                                const selected = selectedMode === mode.name;
-                                                return (
-                                                    <button
-                                                        type="button"
-                                                        key={mode.name}
-                                                        disabled={disabled}
-                                                        onClick={() => setToolMode(tool, mode.name)}
-                                                        title={mode.text}
-                                                        className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-lg px-2 text-xs font-medium transition ${disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"} ${selected ? (TOOL_PERMISSION_STYLES[mode.name] || "") : "border border-transparent text-[#656d76] hover:bg-white dark:text-[#8b949e] dark:hover:bg-[#0d1117]"}`}
-                                                    >
-                                                        <Icon className="h-4 w-4" />
-                                                        <span className="hidden md:inline">{mode.text}</span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </section>
-                ))}
+                        </section>
+                    );
+                })}
                 {visibleGroups.length === 0 && (
                     <div className="rounded-2xl border border-dashed border-[#d0d7de] dark:border-[#30363d] px-4 py-10 text-center text-sm text-[#656d76] dark:text-[#8b949e]">
                         没有找到匹配的工具

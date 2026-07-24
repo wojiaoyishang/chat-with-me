@@ -21,6 +21,7 @@ import ChatBoxInteractionHost from './chatbox/components/ChatBoxInteractionHost'
 import RoleSelector from './chatbox/components/RoleSelector';
 import FullscreenEditorModal from './chatbox/components/FullscreenEditorModal';
 import {useExtraToolsMenuItems} from './chatbox/components/ExtraToolsMenuItems';
+import ConversationToolsDialog from '@/features/tools/components/ConversationToolsDialog';
 import {deepMerge, setNestedValue} from './chatbox/utils/toolState';
 import {
     createPcm16kRecorder,
@@ -110,7 +111,12 @@ const applyLocalSettingBackedExtraToolStatus = (status, toolsConfig = []) => {
 
     const visit = (items = [], parentPath = []) => {
         items.forEach((item) => {
-            if (!item?.name) return;
+            if (!item) return;
+            if (item.type === 'tool-region') {
+                visit(item.children || [], parentPath);
+                return;
+            }
+            if (!item.name) return;
             const currentPath = [...parentPath, item.name];
 
             if (item.type === 'radio' && item.name === VOICE_RECOGNITION_ENGINE_SETTING_KEY) {
@@ -143,7 +149,12 @@ const collectToolPermissions = (toolsConfig = [], status = {}) => {
 
     const visit = (items = [], currentStatus = {}) => {
         items.forEach((item) => {
-            if (!item?.name) return;
+            if (!item) return;
+            if (item.type === 'tool-region') {
+                visit(item.children || [], currentStatus);
+                return;
+            }
+            if (!item.name) return;
 
             const value = currentStatus?.[item.name];
             if (item.type === 'tool') {
@@ -164,12 +175,43 @@ const collectToolPermissions = (toolsConfig = [], status = {}) => {
     return permissions;
 };
 
+const extractLocalOnlyExtraToolStatus = (toolsConfig = [], status = {}) => {
+    const visit = (items = [], currentStatus = {}) => {
+        const result = {};
+        items.forEach((item) => {
+            if (!item) return;
+            if (item.type === 'tool-region') {
+                Object.assign(result, visit(item.children || [], currentStatus));
+                return;
+            }
+            if (!item.name || item.type === 'tool') return;
+            const value = currentStatus?.[item.name];
+            if (item.type === 'group') {
+                const child = visit(item.children || [], value && typeof value === 'object' ? value : {});
+                if (Object.keys(child).length > 0) result[item.name] = child;
+                return;
+            }
+            if (item.type === 'toggle' || item.type === 'radio') {
+                if (value !== undefined) result[item.name] = value;
+            }
+        });
+        return result;
+    };
+    return visit(toolsConfig, status);
+};
+
+
 const applyToolPermissionsToStatus = (toolsConfig = [], status = {}, permissions = {}) => {
     let result = {...(status || {})};
 
     const visit = (items = [], parentPath = []) => {
         items.forEach((item) => {
-            if (!item?.name) return;
+            if (!item) return;
+            if (item.type === 'tool-region') {
+                visit(item.children || [], parentPath);
+                return;
+            }
+            if (!item.name) return;
             const currentPath = [...parentPath, item.name];
 
             if (item.type === 'tool' && Object.prototype.hasOwnProperty.call(permissions, item.name)) {
@@ -254,6 +296,8 @@ function ChatBox({
     ));
     const [toolsStatus, setToolsStatus] = useState({});
     const [runtimeToolPermissions, setRuntimeToolPermissions] = useState({});
+    const [conversationToolDefaults, setConversationToolDefaults] = useState({});
+    const [conversationToolsDialogOpen, setConversationToolsDialogOpen] = useState(false);
 
     // 全屏编辑器
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -518,6 +562,42 @@ function ChatBox({
             console.error('Set tool permission failed:', error);
         });
     }, [applyConversationToolPermissions, markId]);
+
+    const syncToolPermissions = useCallback(async (updates) => {
+        if (!markId || !updates || Object.keys(updates).length === 0) return true;
+        try {
+            const response = await emitEvent({
+                type: 'agent',
+                target: 'ToolPermission',
+                markId,
+                payload: {
+                    command: 'Set-Tool-Permissions',
+                    permissions: updates,
+                    scope: 'conversation',
+                    applyToPending: true,
+                    revision: toolPermissionRevisionRef.current,
+                },
+            });
+            if (response?.success === false) {
+                toast.error(response?.value || t('conversation_tools_save_failed', '保存本对话工具失败。'));
+                return false;
+            }
+            const value = response?.value;
+            if (value?.permissions) {
+                applyConversationToolPermissions(value.permissions, value.revision);
+            }
+            toast.success(t('conversation_tools_saved', '已更新本对话工具。'));
+            return true;
+        } catch (error) {
+            console.error('Set conversation tool permissions failed:', error);
+            toast.error(t('conversation_tools_save_failed', '保存本对话工具失败。'));
+            return false;
+        }
+    }, [applyConversationToolPermissions, markId, t]);
+
+    const currentConversationToolPermissions = useMemo(() => (
+        collectToolPermissions(extraTools, toolsStatus.extra_tools || {})
+    ), [extraTools, toolsStatus.extra_tools]);
 
     const handleSendMessage = useCallback(async () => {
         const activeEditDraft = editDraftRef.current;
@@ -984,6 +1064,11 @@ function ChatBox({
         const processItems = (items) => {
             const status = {};
             items.forEach(item => {
+                if (!item) return;
+                if (item.type === 'tool-region') {
+                    Object.assign(status, processItems(item.children || []));
+                    return;
+                }
                 if (!item.name) return;
                 if (item.type === 'toggle') {
                     status[item.name] = !!item.default;
@@ -1053,7 +1138,10 @@ function ChatBox({
         try {
             const saved = localStorage.getItem('extraToolsConfig');
             if (saved) {
-                savedExtraStatus = JSON.parse(saved);
+                savedExtraStatus = extractLocalOnlyExtraToolStatus(
+                    allExtraTools,
+                    JSON.parse(saved)
+                );
             }
         } catch (error) {
             console.error('Failed to parse saved extra_tools status:', error);
@@ -1065,6 +1153,7 @@ function ChatBox({
         );
 
         const serverToolPermissions = data.toolPermissions?.values || {};
+        setConversationToolDefaults({...((data.toolPermissions?.defaultValues) || {})});
         if (Object.keys(serverToolPermissions).length > 0) {
             mergedExtraStatus = applyToolPermissionsToStatus(
                 configuredExtraTools,
@@ -1191,13 +1280,9 @@ function ChatBox({
                 reply({value: messageContentRef.current});
                 break;
             case "Setup-ChatBox":
-                if (payload.value.builtin_tools || payload.value.extra_tools) {
-                    setToolsLoadedStatus(-1);
-                }
-                setTimeout(() => {
-                    chatboxSetup(payload.value);
-                    setToolsLoadedStatus(2);
-                }, 500);
+                // 原子替换工具配置，保持上一帧工具栏高度，避免发送瞬间出现额外一行。
+                chatboxSetup(payload.value);
+                setToolsLoadedStatus(2);
                 break;
             case "Set-QuickOptions":
                 setIsTransitioning(true);
@@ -1409,6 +1494,8 @@ function ChatBox({
         runtimeToolPermissionRevisionRef.current = 0;
         runtimeToolPermissionStreamIdRef.current = null;
         setRuntimeToolPermissions({});
+        setConversationToolDefaults({});
+        setConversationToolsDialogOpen(false);
         activeTaskModeRef.current = null;
         activeTaskModesRef.current = new Map();
         setActiveTaskMode(null);
@@ -1534,7 +1621,7 @@ function ChatBox({
             .then(data => {
                 if (cancelled) return;
                 chatboxSetup(data);
-                setToolsLoadedStatus(1);
+                setToolsLoadedStatus(2);
             })
             .catch(() => {
                 if (!cancelled) setToolsLoadedStatus(3);
@@ -1589,18 +1676,32 @@ function ChatBox({
         updateMessageContent(readStandaloneDraft(nextStorageKey), {persist: false});
     }, [markId, setAttachments, updateMessageContent]);
 
-    // 更新附件高度
-    useEffect(() => {
+    // 更新附件高度。附件数量、容器宽度和过渡动画都会改变实际高度，
+    // 使用 ResizeObserver 避免 rootMaxHeight 沿用旧值而裁掉附件滚动按钮。
+    useLayoutEffect(() => {
+        const container = attachmentRef.current;
+        if (!container) return undefined;
+
+        let frameId = 0;
         const updateHeight = () => {
-            if (attachmentRef.current) {
-                requestAnimationFrame(() => {
-                    setAttachmentHeight(attachmentRef.current?.scrollHeight);
-                });
-            }
+            window.cancelAnimationFrame(frameId);
+            frameId = window.requestAnimationFrame(() => {
+                setAttachmentHeight(container.scrollHeight || 0);
+            });
         };
+
         updateHeight();
         window.addEventListener('resize', updateHeight);
-        return () => window.removeEventListener('resize', updateHeight);
+        const resizeObserver = typeof ResizeObserver !== 'undefined'
+            ? new ResizeObserver(updateHeight)
+            : null;
+        resizeObserver?.observe(container);
+
+        return () => {
+            window.cancelAnimationFrame(frameId);
+            window.removeEventListener('resize', updateHeight);
+            resizeObserver?.disconnect();
+        };
     }, [attachmentsMeta]);
 
     // 桌面端折叠位移必须覆盖 ChatBox 自身高度、它到 ChatPage 底部的间隙，
@@ -1745,14 +1846,16 @@ function ChatBox({
 
     // 保存额外工具状态到本地存储
     useEffect(() => {
-        if (Object.keys(toolsStatus.extra_tools || {}).length > 0) {
-            try {
-                localStorage.setItem('extraToolsConfig', JSON.stringify(toolsStatus.extra_tools));
-            } catch (error) {
-                console.error('Failed to save extra_tools status to localStorage:', error);
-            }
+        const localOnlyStatus = extractLocalOnlyExtraToolStatus(
+            [...extraTools, ...attachmentTools],
+            toolsStatus.extra_tools || {}
+        );
+        try {
+            localStorage.setItem('extraToolsConfig', JSON.stringify(localOnlyStatus));
+        } catch (error) {
+            console.error('Failed to save extra_tools status to localStorage:', error);
         }
-    }, [toolsStatus.extra_tools]);
+    }, [attachmentTools, extraTools, toolsStatus.extra_tools]);
 
     // ========== 使用 useMemo 缓存不需要频繁计算的 props ==========
 
@@ -1822,8 +1925,10 @@ function ChatBox({
         isMobileMenu: isSmallScreen,
         mobileOpenSections: mobileOpenMenuSections,
         setMobileOpenSections: setMobileOpenMenuSections,
+        onManageConversationTools: () => setConversationToolsDialogOpen(true),
+        conversationToolsDisabled: isReadOnly || !markId,
     }), [toolsLoadedStatus, extraTools, attachmentTools, tools, toolsStatus,
-        setToolsStatus, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth, voiceInputNode, isSmallScreen, mobileOpenMenuSections]);
+        setToolsStatus, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth, voiceInputNode, isSmallScreen, mobileOpenMenuSections, isReadOnly, markId]);
 
     const autoHideButtonLabel = isSmallScreen
         ? t('chatbox_hide')
@@ -1838,6 +1943,16 @@ function ChatBox({
 
     return (
         <>
+            <ConversationToolsDialog
+                open={conversationToolsDialogOpen}
+                onOpenChange={setConversationToolsDialogOpen}
+                toolsConfig={extraTools}
+                currentPermissions={currentConversationToolPermissions}
+                defaultPermissions={conversationToolDefaults}
+                onApply={syncToolPermissions}
+                disabled={isReadOnly || !markId}
+                t={t}
+            />
             <DropFileLayer
                 onDropFiles={(files, items) => {
                     if (ignoreAttachmentTools) {
@@ -1972,9 +2087,11 @@ function ChatBox({
                     </div>
 
                     {/* 工具按钮和发送按钮 */}
-                    <div className="flex shrink-0 items-center justify-between px-4 pb-3">
-                        <ToolButtons {...toolButtonsProps}/>
-                        <div className="flex items-center space-x-2">
+                    <div className="flex min-h-10 shrink-0 flex-nowrap items-center justify-between gap-2 px-4 pb-3">
+                        <div className="h-7 min-w-0 flex-1 overflow-hidden">
+                            <ToolButtons {...toolButtonsProps}/>
+                        </div>
+                        <div className="flex shrink-0 items-center space-x-2">
 
                             {/* 靠底隐藏按钮 */}
                             <button

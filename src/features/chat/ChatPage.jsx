@@ -17,6 +17,7 @@ import {apiEndpoint} from '@/config.js';
 import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
 import MessageOverviewDialog from '@/features/chat/page/components/MessageOverviewDialog.jsx';
 import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
+import StoryReader from '@/features/story/StoryReader.jsx';
 
 import {
     ChatBox,
@@ -28,6 +29,7 @@ import {
     RightSidebar,
     ScrollToBottomButton,
     SpeechPlayer,
+    SpeechSubtitleOverlay,
     getNodeMergeKey,
     getRelationshipMergeKey,
     mergeNetworkData,
@@ -188,6 +190,9 @@ function ChatPage({
     const [advancedSettingsValues, setAdvancedSettingsValues] = useState({});
     const [settingsInstanceKey, setSettingsInstanceKey] = useState(() => `conversationless-${Date.now()}`);
     const [conversationMeta, setConversationMeta] = useState(null);
+    const [stories, setStories] = useState([]);
+    const [storyReaderOpen, setStoryReaderOpen] = useState(false);
+    const [activeStory, setActiveStory] = useState(null);
 
     // 删除相关
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -692,15 +697,18 @@ function ChatPage({
     const {
         speechState,
         speechAutoFollowEnabled,
+        speechSubtitlesEnabled,
         speechFollowProgrammaticScrollUntilRef,
         handleSpeechAutoFollowToggle,
         handleSpeechTextClick,
         handleSpeakMessageRequest,
+        handleSpeakContentRequest,
         handleBackendSpeechEvent,
         cancelActiveSpeech,
         pauseActiveSpeech,
         resumeActiveSpeech,
         updateSpeechRate,
+        updateSpeechSubtitlesEnabled,
         updateBrowserSpeechVoice,
         browserSpeechVoices,
         selectedBrowserSpeechVoiceURI,
@@ -720,6 +728,110 @@ function ChatPage({
         checkScrollPosition,
         setShowScrollToBottomButton,
     });
+
+
+    const loadStories = useCallback(async () => {
+        if (!chatMarkId) {
+            setStories([]);
+            return [];
+        }
+        try {
+            const data = await apiClient.get(apiEndpoint.CHAT_STORIES_ENDPOINT, {params: {markId: chatMarkId}});
+            const values = Array.isArray(data?.stories) ? data.stories : [];
+            setStories(values);
+            return values;
+        } catch (error) {
+            console.error('Load stories failed:', error);
+            return [];
+        }
+    }, [chatMarkId]);
+
+    const openStory = useCallback(async (storyId) => {
+        if (!chatMarkId || !storyId) return;
+        try {
+            const data = await apiClient.get(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {
+                params: {markId: chatMarkId, includeParts: true},
+            });
+            if (data?.story) {
+                setActiveStory(data.story);
+                setStoryReaderOpen(true);
+            }
+        } catch (error) {
+            toast.error(t('story_load_failed', {defaultValue: '无法打开故事：{{message}}', message: error?.message || t('unknown_error')}));
+        }
+    }, [chatMarkId, t]);
+
+    const speakStoryPart = useCallback((story, part) => {
+        if (!story || !part) return false;
+        const text = [part.title, part.bodyMarkdown].filter(Boolean).join('\n\n');
+        return handleSpeakContentRequest({
+            messageId: `story:${story.storyId}:part:${part.partId}`,
+            text,
+        });
+    }, [handleSpeakContentRequest]);
+
+    useEffect(() => {
+        loadStories();
+        setStoryReaderOpen(false);
+        setActiveStory(null);
+    }, [chatMarkId, loadStories]);
+
+    useEffect(() => onEvent({type: 'story', target: 'ChatPage', markId: chatMarkId}).then(({payload}) => {
+        const command = payload?.command;
+        const value = payload?.value || {};
+        if (command === 'Open-Story') {
+            openStory(value.storyId);
+            return;
+        }
+        if (command === 'Story-Deleted') {
+            const deletedId = Number(value.storyId);
+            setStories(current => current.filter(item => Number(item.storyId) !== deletedId));
+            setActiveStory(current => {
+                if (Number(current?.storyId) === deletedId) {
+                    setStoryReaderOpen(false);
+                    return null;
+                }
+                return current;
+            });
+            return;
+        }
+        const incomingStory = value.story || value;
+        if (!incomingStory?.storyId) return;
+
+        // canEdit 取决于接收方当前 Conversation。全局广播不携带该字段，
+        // 因此增量合并时保留本地值，并在创建/权限变化后刷新用户级快照。
+        if (command === 'Story-Created' || command === 'Story-Permissions-Changed') {
+            void loadStories();
+        }
+
+        setStories(current => {
+            const index = current.findIndex(item => Number(item.storyId) === Number(incomingStory.storyId));
+            if (index < 0) return [incomingStory, ...current];
+            const next = [...current];
+            const merged = {...next[index], ...incomingStory};
+            if (incomingStory.canEdit === undefined && next[index].canEdit !== undefined) {
+                merged.canEdit = next[index].canEdit;
+            }
+            next[index] = merged;
+            return next;
+        });
+        setActiveStory(current => {
+            if (Number(current?.storyId) !== Number(incomingStory.storyId)) return current;
+            const next = {...current, ...incomingStory};
+            if (incomingStory.canEdit === undefined && current.canEdit !== undefined) {
+                next.canEdit = current.canEdit;
+            }
+            if (command === 'Story-Part-Appended' && value.part) {
+                const existing = Array.isArray(current.parts) ? current.parts : [];
+                next.parts = [...existing.filter(item => item.partId !== value.part.partId), value.part].sort((a,b) => a.sequence-b.sequence);
+            } else if (command === 'Story-Part-Updated' && value.part) {
+                next.parts = (current.parts || []).map(item => item.partId === value.part.partId ? value.part : item);
+            } else if (command === 'Story-Permissions-Changed') {
+                void openStory(incomingStory.storyId);
+            }
+            return next;
+        });
+    }), [chatMarkId, loadStories, openStory]);
 
 
 
@@ -2286,6 +2398,8 @@ function ChatPage({
                         showMinimizeButton={showMinimizeButton}
                         onMinimize={onMinimize}
                         conversationMeta={conversationMeta}
+                        stories={stories}
+                        onOpenStory={openStory}
                     />
 
                     <div className="flex-1 w-full relative overflow-hidden">
@@ -2331,11 +2445,18 @@ function ChatPage({
                     />
 
                     <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
+                        <SpeechSubtitleOverlay
+                            speechState={speechState}
+                            enabled={speechSubtitlesEnabled}
+                            t={t}
+                        />
                         <SpeechPlayer
                             speechState={speechState}
                             message={speechState?.messageId ? messages?.[speechState.messageId] : null}
                             autoFollowEnabled={speechAutoFollowEnabled}
                             onAutoFollowToggle={handleSpeechAutoFollowToggle}
+                            subtitlesEnabled={speechSubtitlesEnabled}
+                            onSubtitlesToggle={updateSpeechSubtitlesEnabled}
                             onPause={pauseActiveSpeech}
                             onResume={resumeActiveSpeech}
                             onStop={() => cancelActiveSpeech(true)}
@@ -2422,6 +2543,24 @@ function ChatPage({
                     }}
                 />
             )}
+
+
+            <StoryReader
+                story={activeStory}
+                open={storyReaderOpen}
+                onClose={() => {
+                    cancelActiveSpeech(true);
+                    setStoryReaderOpen(false);
+                }}
+                onSpeakPart={speakStoryPart}
+                onStopSpeech={() => cancelActiveSpeech(true)}
+                onPauseSpeech={pauseActiveSpeech}
+                onResumeSpeech={resumeActiveSpeech}
+                speechState={speechState}
+                subtitlesEnabled={speechSubtitlesEnabled}
+                onSubtitlesToggle={updateSpeechSubtitlesEnabled}
+                t={t}
+            />
 
             <DeleteConfirmDialog
                 open={showDeleteConfirm}

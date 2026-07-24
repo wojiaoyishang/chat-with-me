@@ -21,6 +21,7 @@ import StatusWidget from './status/StatusWidget.jsx';
 import TaskChecklistCard from './task/TaskChecklistCard.jsx';
 import TaskModeWidget from './task/TaskModeWidget.jsx';
 import TaskUserMessageCard from './task/TaskUserMessageCard.jsx';
+import StoryCard from '@/features/story/StoryCard.jsx';
 
 const CARD_TYPES_WITH_NESTED_MARKDOWN = new Set([
     'markdown',
@@ -198,6 +199,14 @@ const CardBlock = memo(({
             return (
                 <TaskChecklistCard
                     content={content}
+                />
+            );
+
+        case 'story':
+            return (
+                <StoryCard
+                    content={content}
+                    markId={markId}
                 />
             );
 

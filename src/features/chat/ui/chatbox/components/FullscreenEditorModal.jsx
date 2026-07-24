@@ -1,4 +1,4 @@
-import React, {memo, useEffect} from 'react';
+import React, {memo, useCallback, useEffect, useRef} from 'react';
 import {createPortal} from 'react-dom';
 import {motion} from 'framer-motion';
 import {X} from 'lucide-react';
@@ -14,19 +14,55 @@ const FullscreenEditorModal = memo(({
                                         onClose,
                                         t,
                                     }) => {
-    useEffect(() => {
-        if (!isOpen) return undefined;
+    const dialogRef = useRef(null);
 
-        const handleKeyDown = (event) => {
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                onClose();
+    useEffect(() => {
+        if (!isOpen || isReadOnly) return undefined;
+
+        let frameId = null;
+        let retryTimer = null;
+
+        const focusEditor = () => {
+            const textarea = dialogRef.current?.querySelector(
+                'textarea.w-md-editor-text-input, .w-md-editor-text-input, textarea'
+            );
+
+            if (textarea) {
+                textarea.focus({preventScroll: true});
+                const length = textarea.value?.length ?? 0;
+                textarea.setSelectionRange?.(length, length);
+                return;
             }
+
+            // @uiw/react-md-editor mounts its textarea after the modal frame. A short
+            // retry avoids a visible modal that cannot receive keyboard input.
+            retryTimer = window.setTimeout(focusEditor, 40);
         };
 
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose]);
+        frameId = window.requestAnimationFrame(focusEditor);
+        return () => {
+            if (frameId !== null) window.cancelAnimationFrame(frameId);
+            if (retryTimer !== null) window.clearTimeout(retryTimer);
+        };
+    }, [isOpen, isReadOnly]);
+
+    const handleDialogKeyDown = useCallback((event) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopPropagation();
+            onClose();
+            return;
+        }
+
+        // Portal events continue bubbling through the ChatBox React tree. Do not let
+        // chat-level Enter, shortcut or window handlers consume editor keystrokes.
+        event.stopPropagation();
+    }, [onClose]);
+
+    const handleEditorChange = useCallback((nextValue) => {
+        if (isReadOnly) return;
+        setMessageContent(nextValue ?? '');
+    }, [isReadOnly, setMessageContent]);
 
     if (!isOpen || typeof document === 'undefined') return null;
 
@@ -35,10 +71,14 @@ const FullscreenEditorModal = memo(({
 
     return createPortal(
         <div
+            ref={dialogRef}
             className={`${positionClass} inset-0 z-[100] overflow-hidden bg-white pointer-events-auto`}
             role="dialog"
             aria-modal="true"
             aria-label={t('zoom_in_input_box')}
+            onKeyDown={handleDialogKeyDown}
+            onPointerDown={(event) => event.stopPropagation()}
+            onMouseDown={(event) => event.stopPropagation()}
         >
             <motion.div
                 initial={{opacity: 0, scale: 0.995}}
@@ -64,8 +104,15 @@ const FullscreenEditorModal = memo(({
                 <div className="min-h-0 flex-1 overflow-hidden p-3 sm:p-4">
                     <SimpleMDEditor
                         text={messageContent}
-                        setText={setMessageContent}
+                        setText={handleEditorChange}
                         readOnly={isReadOnly}
+                        autoFocus
+                        onEditorKeyDown={(event) => {
+                            if (event.key === 'Escape') {
+                                event.preventDefault();
+                                onClose();
+                            }
+                        }}
                     />
                 </div>
             </motion.div>
