@@ -286,6 +286,9 @@ function ChatBox({
 
     // 按钮
     const [sendButtonStatus, setSendButtonStatus] = useState('normal');
+    const [activeTaskMode, setActiveTaskMode] = useState(null);
+    const [activeTaskModeOptions, setActiveTaskModeOptions] = useState([]);
+    const [isTaskInterruptPending, setIsTaskInterruptPending] = useState(false);
     const [isBottomAutoHideEnabled, setIsBottomAutoHideEnabled] = useState(() => (
         Boolean(getLocalSetting(CHATBOX_AUTO_HIDE_SETTING_KEY, false))
     ));
@@ -340,6 +343,9 @@ function ChatBox({
     // 使用 useRef 缓存频繁变化的值，避免触发重新渲染
     const messageContentRef = useRef(messageContent);
     const sendButtonStatusRef = useRef(sendButtonStatus);
+    const activeTaskModeRef = useRef(activeTaskMode);
+    const activeTaskModesRef = useRef(new Map());
+    const taskInterruptPendingRef = useRef(false);
 
     // 发送消息角色身份相关
     const [roles, setRoles] = useState([]);
@@ -513,16 +519,62 @@ function ChatBox({
         });
     }, [applyConversationToolPermissions, markId]);
 
-    const handleSendMessage = useCallback(() => {
+    const handleSendMessage = useCallback(async () => {
         const activeEditDraft = editDraftRef.current;
         const wasEditing = isEditMessageRef.current;
+        const currentContent = messageContentRef.current;
+        const taskMode = activeTaskModeRef.current;
+        const isTaskInterruption = (
+            sendButtonStatusRef.current === 'generating'
+            && taskMode?.active
+            && !wasEditing
+            && Boolean(currentContent.trim())
+        );
+
+        if (isTaskInterruption) {
+            if (attachmentsMeta.length > 0) {
+                toast.warning(t('task_mode_interrupt_no_attachments', '任务补充暂不支持附件，请先移除附件。'));
+                return;
+            }
+            if (taskInterruptPendingRef.current) return;
+
+            taskInterruptPendingRef.current = true;
+            setIsTaskInterruptPending(true);
+            try {
+                const response = await emitEvent({
+                    type: 'message',
+                    target: 'ChatPage',
+                    markId,
+                    payload: {
+                        command: 'Task-Interrupt',
+                        taskRunId: taskMode.taskRunId,
+                        content: currentContent,
+                        requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                    },
+                });
+                if (response?.success === false) {
+                    toast.error(response?.value || t('task_mode_interrupt_failed', '无法补充任务要求。'));
+                    return;
+                }
+                updateMessageContent('');
+                toast.success(t('task_mode_interrupt_sent', '已将补充要求加入当前任务。'));
+            } catch (error) {
+                console.error('Task interruption failed:', error);
+                toast.error(t('task_mode_interrupt_failed', '无法补充任务要求。'));
+            } finally {
+                taskInterruptPendingRef.current = false;
+                setIsTaskInterruptPending(false);
+                textareaRef.current?.focus();
+            }
+            return;
+        }
 
         runtimeToolPermissionRevisionRef.current = 0;
         runtimeToolPermissionStreamIdRef.current = null;
         setRuntimeToolPermissions({});
 
         onSendMessage({
-            messageContent: messageContentRef.current,
+            messageContent: currentContent,
             toolsStatus: buildOutboundToolsStatus(),
             isEditMessage: wasEditing,
             editMessageId: editMessageId,
@@ -539,7 +591,18 @@ function ChatBox({
             pendingEditClearRef.current = true;
             leaveEditMode();
         }
-    }, [onSendMessage, buildOutboundToolsStatus, editMessageId, attachmentsMeta, currentRole, isForkMode, leaveEditMode]);
+    }, [
+        onSendMessage,
+        buildOutboundToolsStatus,
+        editMessageId,
+        attachmentsMeta,
+        currentRole,
+        isForkMode,
+        leaveEditMode,
+        markId,
+        t,
+        updateMessageContent,
+    ]);
 
     const handleKeyDown = useCallback((e) => {
         handleInputActivity();
@@ -561,7 +624,13 @@ function ChatBox({
         }
 
         e.preventDefault();
-        if (sendButtonStatusRef.current !== 'normal') {
+        const canInterruptTask = (
+            sendButtonStatusRef.current === 'generating'
+            && activeTaskModeRef.current?.active
+            && Boolean(messageContentRef.current.trim())
+            && !taskInterruptPendingRef.current
+        );
+        if (sendButtonStatusRef.current !== 'normal' && !canInterruptTask) {
             toast.warning(t('is_generating_try_later'));
             return;
         }
@@ -1086,6 +1155,35 @@ function ChatBox({
                     setIsReadOnly(Boolean(payload.readOnly));
                 }
                 break;
+            case "Task-Mode-State": {
+                const value = payload.value || {};
+                const taskRunId = value.taskRunId;
+                const nextTasks = new Map(activeTaskModesRef.current);
+                if (taskRunId) {
+                    if (value.active) nextTasks.set(taskRunId, value);
+                    else nextTasks.delete(taskRunId);
+                }
+                activeTaskModesRef.current = nextTasks;
+                const options = [...nextTasks.values()];
+                setActiveTaskModeOptions(options);
+
+                let selected = activeTaskModeRef.current;
+                if (value.active && (!selected || selected.taskRunId === taskRunId)) {
+                    selected = value;
+                } else if (!selected || !nextTasks.has(selected.taskRunId)) {
+                    selected = options.at(-1) || null;
+                } else {
+                    selected = nextTasks.get(selected.taskRunId) || selected;
+                }
+                activeTaskModeRef.current = selected;
+                setActiveTaskMode(selected);
+                if (!selected) {
+                    taskInterruptPendingRef.current = false;
+                    setIsTaskInterruptPending(false);
+                }
+                reply({value});
+                break;
+            }
             case "Set-MessageContent":
                 updateMessageContent(payload.value);
                 break;
@@ -1311,6 +1409,12 @@ function ChatBox({
         runtimeToolPermissionRevisionRef.current = 0;
         runtimeToolPermissionStreamIdRef.current = null;
         setRuntimeToolPermissions({});
+        activeTaskModeRef.current = null;
+        activeTaskModesRef.current = new Map();
+        setActiveTaskMode(null);
+        setActiveTaskModeOptions([]);
+        taskInterruptPendingRef.current = false;
+        setIsTaskInterruptPending(false);
     }, [markId]);
 
     useEffect(() => {
@@ -1930,12 +2034,34 @@ function ChatBox({
                                 onRoleChange={setCurrentRole}
                             />
 
+                            {activeTaskModeOptions.length > 1 && (
+                                <select
+                                    value={activeTaskMode?.taskRunId || ''}
+                                    onChange={(event) => {
+                                        const selected = activeTaskModesRef.current.get(event.target.value) || null;
+                                        activeTaskModeRef.current = selected;
+                                        setActiveTaskMode(selected);
+                                    }}
+                                    className="max-w-36 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 outline-none focus:border-blue-400"
+                                    aria-label={t('task_mode_target', '选择任务目标')}
+                                    title={t('task_mode_target', '选择任务目标')}
+                                >
+                                    {activeTaskModeOptions.map(task => (
+                                        <option key={task.taskRunId} value={task.taskRunId}>
+                                            {task.title || task.taskRunId}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+
                             {/* 发送按钮 */}
                             <SendButton
                                 status={sendButtonStatus}
                                 messageContent={messageContent}
                                 attachmentsMeta={attachmentsMeta}
                                 onClick={handleSendMessage}
+                                taskModeActive={Boolean(activeTaskMode?.active)}
+                                taskInterruptPending={isTaskInterruptPending}
                                 t={t}
                             />
                         </div>

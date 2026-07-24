@@ -18,6 +18,9 @@ import ToolLogBlock from './blocks/ToolLogBlock.jsx';
 import './cardBlockAnimations.css';
 import { defaultRenderMarkdown } from './constants.jsx';
 import StatusWidget from './status/StatusWidget.jsx';
+import TaskChecklistCard from './task/TaskChecklistCard.jsx';
+import TaskModeWidget from './task/TaskModeWidget.jsx';
+import TaskUserMessageCard from './task/TaskUserMessageCard.jsx';
 
 const CARD_TYPES_WITH_NESTED_MARKDOWN = new Set([
     'markdown',
@@ -27,6 +30,7 @@ const CARD_TYPES_WITH_NESTED_MARKDOWN = new Set([
     'coding',
     'doc',
     'agent',
+    'taskMode',
 ]);
 
 const shouldCompareRenderContext = (type) => {
@@ -180,6 +184,27 @@ const CardBlock = memo(({
             return (
                 <AgentWidget
                     {...commonProps}
+                />
+            );
+
+        case 'taskMode':
+            return (
+                <TaskModeWidget
+                    {...commonProps}
+                />
+            );
+
+        case 'taskChecklist':
+            return (
+                <TaskChecklistCard
+                    content={content}
+                />
+            );
+
+        case 'taskUserMessage':
+            return (
+                <TaskUserMessageCard
+                    content={content}
                 />
             );
 

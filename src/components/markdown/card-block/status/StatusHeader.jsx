@@ -28,6 +28,7 @@ const StatusHeader = memo(({
                                isWaitingApproval = false,
                                isResumingTool = false,
                                markId = null,
+                               metaText = '',
                                progress,
                                truncatedLastLine,
                                waitingApprovalLabel = 'Waiting for approval',
@@ -97,18 +98,32 @@ const StatusHeader = memo(({
         event.preventDefault();
         event.stopPropagation();
 
-        if (action.command === 'cancelBackgroundTool') {
-            emitEvent({
-                type: 'message',
-                target: 'ChatPage',
-                payload: {
-                    command: 'Cancel-Background-Tool',
-                    msgId: contextId,
-                    toolCallingId: action.toolId,
-                },
-                markId,
-            });
-        }
+        const commandPayloads = {
+            cancelBackgroundTool: {
+                command: 'Cancel-Background-Tool',
+                msgId: contextId,
+                toolCallingId: action.toolId,
+            },
+            resumeTask: {
+                command: 'Task-Resume',
+                taskRunId: action.taskRunId,
+                requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+            },
+            cancelTask: {
+                command: 'Task-Cancel',
+                taskRunId: action.taskRunId,
+                requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+            },
+        };
+        const commandPayload = commandPayloads[action.command];
+        if (!commandPayload) return;
+
+        emitEvent({
+            type: 'message',
+            target: 'ChatPage',
+            payload: commandPayload,
+            markId,
+        });
     };
 
     return (
@@ -136,11 +151,18 @@ const StatusHeader = memo(({
 
                 {shouldShowProgress ? (
                     <>
-                        <span
-                            className={`text-sm font-medium whitespace-nowrap flex-shrink-0 ${isWaitingApproval ? 'text-gray-500' : (isResumingTool ? 'text-sky-700' : 'text-gray-800')}`}
-                        >
-                            {displayTitle}
-                        </span>
+                        <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
+                            <span
+                                className={`text-sm font-medium ${isWaitingApproval ? 'text-gray-500' : (isResumingTool ? 'text-sky-700' : 'text-gray-800')}`}
+                            >
+                                {displayTitle}
+                            </span>
+                            {metaText ? (
+                                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-normal text-gray-500">
+                                    {metaText}
+                                </span>
+                            ) : null}
+                        </div>
 
                         <ProgressTimeline
                             progress={progress}
@@ -157,6 +179,12 @@ const StatusHeader = memo(({
                             >
                                 {displayTitle}
                             </span>
+
+                            {metaText ? (
+                                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-normal text-gray-500">
+                                    {metaText}
+                                </span>
+                            ) : null}
 
                             {!isFinished && !isToolCalling && !isWaitingApproval && (
                                 <div className={`flex items-center gap-1 ${activeColor}`}>
@@ -182,7 +210,7 @@ const StatusHeader = memo(({
                         key={`${action.command}-${action.toolId || action.name}`}
                         type="button"
                         onClick={(event) => handleActionClick(event, action)}
-                        disabled={!markId || (action.command === 'cancelBackgroundTool' && !action.toolId)}
+                        disabled={!markId || (action.command === 'cancelBackgroundTool' ? !action.toolId : !action.taskRunId)}
                         className="shrink-0 cursor-pointer rounded-sm bg-orange-500/15 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {action.name}
@@ -225,6 +253,7 @@ const StatusHeader = memo(({
         prev.isWaitingApproval === next.isWaitingApproval &&
         prev.isResumingTool === next.isResumingTool &&
         prev.markId === next.markId &&
+        prev.metaText === next.metaText &&
         prev.progress?.current === next.progress?.current &&
         prev.progress?.total === next.progress?.total &&
         prev.truncatedLastLine === next.truncatedLastLine &&

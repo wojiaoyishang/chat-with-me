@@ -3866,3 +3866,183 @@ Content-Type: application/json
 - `ShowConversationTimestamps`：显示最近活跃时间，默认 `true`。
 
 设置页使用 shadcn `Card`、`Switch`、`Separator` 和 `Badge` 组织界面设置。侧边栏同时支持对当前已加载会话进行标题搜索、清空搜索、置顶分组、重命名和取消置顶。
+
+## 任务模式卡片与事件协议（2026-07-24）
+
+任务模式继续复用既有 `{{cardReplace ...}}` replacement 流，不新增第二套消息渲染或实时传输协议。
+
+### `taskMode` 卡片
+
+消息正文占位符：
+
+```markdown
+{{cardReplace id=task-mode-<taskRunId> type=taskMode}}
+```
+
+replacement 内容使用以下标记：
+
+```markdown
+[TASK_STATUS:running]
+[TITLE:正在分析项目结构...]
+[TASK_RUN_ID:<taskRunId>]
+[TASK_STARTED_AT:1784890000000]
+[TASK_ENDED_AT:1784890065000]
+[TASK_RECOVERABLE:true]
+[TASK_ERROR:最近一次错误摘要]
+{{cardReplace id=task-body-<taskRunId> type=markdown}}
+[TASK_SEGMENT_DONE:true]
+[DONE]
+```
+
+- `TASK_STATUS` 支持 `entering`、`running`、`retrying`、`recovering`、`recoverable_failed`、`completed`、`cancelled`。
+- `TITLE` 是折叠卡片标题；运行态自带动画。
+- `TASK_RUN_ID` 是插话、继续和终止操作的稳定目标 ID。
+- `TASK_STARTED_AT`、`TASK_ENDED_AT` 使用毫秒时间戳，前端显示“任务耗时”；运行中每秒刷新，完成、取消或历史分段后冻结。
+- `TASK_RECOVERABLE:true` 时显示“继续任务”。
+- `TASK_ERROR` 仅展示脱敏错误摘要。
+- `TASK_SEGMENT_DONE:true` 表示该卡片已封存为之前的任务历史，不再显示运行动画或操作按钮。
+- 内嵌 `task-body` replacement 继续使用普通 Markdown、thinking、toolCalling、agent 等已有卡片。
+- 卡片默认折叠，用户手动展开/折叠状态继续使用现有 `expandedStore`。
+- 任务卡外层使用独立的上下间距与轻量水平内边距，避免与前置 Markdown 反馈、用户补充气泡或后续清单紧贴。
+
+### `taskChecklist` 卡片
+
+消息正文占位符：
+
+```markdown
+{{cardReplace id=task-checklist-<taskRunId> type=taskChecklist}}
+```
+
+replacement 是原子更新的 JSON：
+
+```json
+{
+  "version": 1,
+  "taskRunId": "<taskRunId>",
+  "status": "running",
+  "items": [
+    {
+      "id": "task-abc123",
+      "text": "实现后端状态机",
+      "status": "in_progress",
+      "reason": ""
+    }
+  ]
+}
+```
+
+任务项状态支持：`pending`、`in_progress`、`completed`、`invalidated`。删除操作由后端从当前 JSON 中移除对应项。
+
+- `items` 为空时，前端不渲染任务清单卡；模型首次调用 `task_list_add` 后卡片自动出现。
+- 任务模式提示词要求模型进入模式后的第一件事就建立主要阶段清单，避免执行中途才首次出现清单。
+- 模型完成任一任务项后，必须在开始下一项或调用无关工具前立即标记 `complete`；执行中发现新任务时，必须先添加到清单再执行。
+- `task_done` 默认 `confirmed=false`，首次调用只进行完成前审查；只有清单全部为 `completed`/`invalidated` 且模型显式传入 `confirmed=true` 后才真正退出。
+
+### `taskUserMessage` 用户补充气泡
+
+用户在任务执行期间发送的附加要求被 Worker 在安全边界消费后，会显示在折叠任务卡之外的正文时间线中：
+
+```markdown
+{{cardReplace id=task-user-message-<requestId> type=taskUserMessage}}
+```
+
+replacement JSON：
+
+```json
+{
+  "version": 1,
+  "taskRunId": "<taskRunId>",
+  "requestId": "<requestId>",
+  "content": "优先复用现有组件。",
+  "createdAt": 1784890000
+}
+```
+
+气泡出现表示该补充要求已经正式加入下一轮模型上下文。后端 replacement 保持为空，避免上下文同步时重复向模型注入同一条用户要求。`requestId` 同时作为稳定去重依据，恢复执行不会重复显示气泡。
+
+收到补充要求时，同一个 Task Run 会切换到新的展示分段，但不会重新进入任务模式：
+
+```text
+之前的任务卡（封存为“之前的任务历史”）
+
+──────── 新的任务要求 ────────
+用户补充气泡
+
+AI 的 Markdown 确认反馈
+
+新的“正在执行任务...”折叠卡
+任务清单
+```
+
+模型在消费补充要求后的下一步必须调用 `task_feedback`，明确确认收到的要求和计划调整。在这次确认反馈完成前，后端会拒绝标题、清单和完成操作，确保用户气泡与 AI 反馈之间不会缺失确认说明。
+
+### 完成后的输出路由
+
+模型必须使用 `task_done(summary=完整最终结果)` 完成任务：
+
+1. `summary` 写入前置 `[markdown tts]` 反馈卡；
+2. 任务运行状态切换为 `completed`，任务模式退出；
+3. 工具后的下一轮模型输出恢复到进入任务模式前的普通正文目标；
+4. 普通正文只输出简洁收尾，不重复反馈卡中的完整结果。
+
+### 服务端广播事件
+
+目标：`type=widget`、`target=ChatBox`
+
+```json
+{
+  "command": "Task-Mode-State",
+  "value": {
+    "taskRunId": "<taskRunId>",
+    "messageId": "<messageId>",
+    "status": "running",
+    "title": "正在分析项目结构...",
+    "active": true,
+    "recoverable": false,
+    "lastError": "",
+    "startedAt": 1784890000,
+    "finishedAt": null
+  }
+}
+```
+
+该事件控制输入框是否把“生成中发送文本”解释为任务插话。页面重连时，活动 Stream 也会重新发送当前状态。
+
+### 客户端任务命令
+
+目标：`type=message`、`target=ChatPage`
+
+用户补充要求：
+
+```json
+{
+  "command": "Task-Interrupt",
+  "taskRunId": "<taskRunId>",
+  "content": "优先复用现有组件，不要新增数据库表。",
+  "requestId": "<uuid>"
+}
+```
+
+继续可恢复任务：
+
+```json
+{
+  "command": "Task-Resume",
+  "taskRunId": "<taskRunId>",
+  "requestId": "<uuid>"
+}
+```
+
+终止任务：
+
+```json
+{
+  "command": "Task-Cancel",
+  "taskRunId": "<taskRunId>",
+  "requestId": "<uuid>"
+}
+```
+
+任务运行期间，输入框有正文时发送按钮仍显示发送图标并发送 `Task-Interrupt`；输入框为空时保留原有停止生成按钮。任务补充当前不接受附件。
+
+当同一页面存在多个活动任务时，输入框会显示任务目标选择器；所有插话命令都携带明确的 `taskRunId`，避免主智能体、简单智能体和 Session 智能体之间串扰。
