@@ -1,5 +1,5 @@
 import {memo, useEffect, useMemo, useState} from 'react';
-import {ListChecks} from 'lucide-react';
+import {ListChecks, PictureInPicture2} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
 
 import {defaultRenderMarkdown} from '../constants.jsx';
@@ -7,6 +7,7 @@ import {getExpandedKey} from '../expandedStore.js';
 import useExpandedState from '../useExpandedState.js';
 import StatusBody from '../status/StatusBody.jsx';
 import StatusHeader from '../status/StatusHeader.jsx';
+import TaskMonitorWindow from './TaskMonitorWindow.jsx';
 import {getLastLineForPreview, stripCardReplaceTokensForPreview, toSafeString} from '../utils.js';
 
 const TASK_STATUS_REGEX = /\[TASK_STATUS:([^\]\r\n]+)\]/gi;
@@ -46,6 +47,7 @@ const TaskModeWidget = memo(({
 }) => {
     const {t} = useTranslation();
     const [now, setNow] = useState(() => Date.now());
+    const [monitorOpen, setMonitorOpen] = useState(false);
     const expandedKey = useMemo(() => getExpandedKey(contextId, id, type), [contextId, id, type]);
     useExpandedState(expandedKey, false);
 
@@ -76,7 +78,7 @@ const TaskModeWidget = memo(({
             .replace(DONE_REGEX, '')
             .trim();
 
-        const isFinished = segmentDone || hasDoneMarker || status === 'completed' || status === 'cancelled';
+        const isFinished = segmentDone || hasDoneMarker || status === 'completed' || status === 'cancelled' || status === 'failed';
         const isFailed = status === 'recoverable_failed' || status === 'failed';
         const actions = [];
 
@@ -134,6 +136,22 @@ const TaskModeWidget = memo(({
                 ? 'text-sky-600'
                 : 'text-blue-600';
 
+    const monitorButton = (
+        <button
+            type="button"
+            onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setMonitorOpen(true);
+            }}
+            className={`rounded-md p-1.5 transition-colors ${monitorOpen ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'}`}
+            title={t('task_monitor_open', '在独立窗口中监视')}
+            aria-label={t('task_monitor_open', '在独立窗口中监视')}
+        >
+            <PictureInPicture2 className="h-4 w-4"/>
+        </button>
+    );
+
     return (
         <div className="my-3 w-full px-1 py-1.5 sm:px-1.5">
             <StatusHeader
@@ -152,6 +170,7 @@ const TaskModeWidget = memo(({
                 isToolCalling={false}
                 markId={markId}
                 metaText={elapsedText}
+                rightAccessory={monitorButton}
                 truncatedLastLine={parsed.truncatedLastLine}
             />
             <StatusBody
@@ -160,6 +179,21 @@ const TaskModeWidget = memo(({
                 isFailed={parsed.isFailed}
                 isFinished={parsed.isFinished}
                 renderMarkdown={renderMarkdown}
+            />
+            <TaskMonitorWindow
+                actions={parsed.actions}
+                cleanContent={parsed.cleanContent}
+                elapsedText={elapsedText}
+                error={parsed.error}
+                isFailed={parsed.isFailed}
+                isFinished={parsed.isFinished}
+                markId={markId}
+                onClose={() => setMonitorOpen(false)}
+                open={monitorOpen}
+                renderMarkdown={renderMarkdown}
+                status={parsed.status}
+                title={parsed.title}
+                t={t}
             />
         </div>
     );

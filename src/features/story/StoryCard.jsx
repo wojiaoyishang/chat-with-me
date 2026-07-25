@@ -1,4 +1,4 @@
-import {memo, useEffect, useMemo, useState} from 'react';
+import {memo, useCallback, useEffect, useMemo, useState} from 'react';
 import {BookOpen, Loader2, Play, Sparkles} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
 
@@ -18,22 +18,44 @@ const StoryCard = memo(({content = '', markId = null}) => {
     const {t} = useTranslation();
     const initial = useMemo(() => parseStory(content), [content]);
     const [story, setStory] = useState(initial);
+    const [accessChecked, setAccessChecked] = useState(!markId);
+    const [hiddenByPermission, setHiddenByPermission] = useState(initial?.canEdit === false);
     const storyId = Number(initial?.storyId || story?.storyId || 0);
 
     useEffect(() => setStory(initial), [initial]);
 
+    const refreshStory = useCallback(async () => {
+        if (!markId || !storyId) return null;
+        try {
+            const data = await apiClient.get(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {
+                params: {markId, includeParts: false},
+            });
+            if (data?.story) {
+                setStory(data.story);
+                setHiddenByPermission(false);
+                return data.story;
+            }
+            return null;
+        } catch (error) {
+            if (Number(error?.code) === 404) setHiddenByPermission(true);
+            return null;
+        } finally {
+            setAccessChecked(true);
+        }
+    }, [markId, storyId]);
+
     useEffect(() => {
-        if (!markId || !storyId) return undefined;
         let cancelled = false;
-        apiClient.get(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {
-            params: {markId, includeParts: false},
-        }).then(data => {
-            if (!cancelled && data?.story) setStory(data.story);
-        }).catch(error => {
-            if (Number(error?.code) === 404) setStory(current => ({...current, deleted: true, status: 'deleted'}));
+        if (!markId || !storyId) {
+            setAccessChecked(true);
+            return undefined;
+        }
+        setAccessChecked(false);
+        void refreshStory().then(() => {
+            if (cancelled) return;
         });
         return () => { cancelled = true; };
-    }, [markId, storyId]);
+    }, [markId, storyId, refreshStory]);
 
     useEffect(() => {
         if (!storyId) return undefined;
@@ -43,6 +65,9 @@ const StoryCard = memo(({content = '', markId = null}) => {
             if (Number(nextStory?.storyId || value?.storyId) !== storyId) return;
             if (payload.command === 'Story-Deleted') {
                 setStory(current => ({...current, deleted: true, status: 'deleted'}));
+                setHiddenByPermission(true);
+            } else if (payload.command === 'Story-Permissions-Changed') {
+                void refreshStory();
             } else {
                 setStory(current => {
                     const merged = {...current, ...nextStory};
@@ -53,9 +78,9 @@ const StoryCard = memo(({content = '', markId = null}) => {
                 });
             }
         });
-    }, [markId, storyId]);
+    }, [markId, storyId, refreshStory]);
 
-    if (!storyId) return null;
+    if (!storyId || !accessChecked || hiddenByPermission) return null;
 
     const openStory = () => {
         if (story?.deleted) return;

@@ -435,5 +435,16 @@
   "speech_subtitle_max_height": "最大高度",
   "speech_subtitle_font_size": "字体大小",
   "speech_subtitle_background_opacity": "背景不透明度",
-  "speech_subtitle_line_height": "行高"
+  "speech_subtitle_line_height": "行高",
+  "task_monitor_open": "在独立窗口中监视",
+  "task_monitor_title": "任务过程监视器",
+  "task_monitor_running": "正在执行",
+  "task_monitor_finished": "任务已结束",
+  "task_monitor_failed": "任务失败",
+  "task_monitor_recovering": "正在恢复",
+  "task_monitor_waiting": "等待任务过程输出…",
+  "task_monitor_reset_position": "恢复窗口位置",
+  "task_monitor_auto_bottom_disable": "关闭自动置底",
+  "task_monitor_auto_bottom_enable": "开启自动置底",
+  "task_monitor_reset_window": "恢复窗口位置和大小"
 }

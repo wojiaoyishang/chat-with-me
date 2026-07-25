@@ -761,6 +761,47 @@ function ChatPage({
         }
     }, [chatMarkId, t]);
 
+    const renameStory = useCallback(async (storyId, title) => {
+        if (!chatMarkId || !storyId) return null;
+        try {
+            const data = await apiClient.patch(
+                `${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`,
+                {title},
+                {params: {markId: chatMarkId}},
+            );
+            const nextStory = data?.story;
+            if (nextStory) {
+                setStories(current => current.map(item => Number(item.storyId) === Number(storyId) ? {...item, ...nextStory} : item));
+                setActiveStory(current => Number(current?.storyId) === Number(storyId) ? {...current, ...nextStory} : current);
+            }
+            toast.success(t('story_rename_success', '故事已重命名'));
+            return nextStory;
+        } catch (error) {
+            toast.error(t('story_rename_failed', {defaultValue: '重命名失败：{{message}}', message: error?.message || t('unknown_error')}));
+            throw error;
+        }
+    }, [chatMarkId, t]);
+
+    const deleteStory = useCallback(async (storyId) => {
+        if (!chatMarkId || !storyId) return false;
+        try {
+            await apiClient.delete(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {params: {markId: chatMarkId}});
+            setStories(current => current.filter(item => Number(item.storyId) !== Number(storyId)));
+            setActiveStory(current => {
+                if (Number(current?.storyId) === Number(storyId)) {
+                    setStoryReaderOpen(false);
+                    return null;
+                }
+                return current;
+            });
+            toast.success(t('story_delete_success', '故事已删除'));
+            return true;
+        } catch (error) {
+            toast.error(t('story_delete_failed', {defaultValue: '删除失败：{{message}}', message: error?.message || t('unknown_error')}));
+            throw error;
+        }
+    }, [chatMarkId, t]);
+
     const speakStoryPart = useCallback((story, part) => {
         if (!story || !part) return false;
         const text = [part.title, part.bodyMarkdown].filter(Boolean).join('\n\n');
@@ -798,15 +839,26 @@ function ChatPage({
         const incomingStory = value.story || value;
         if (!incomingStory?.storyId) return;
 
-        // canEdit 取决于接收方当前 Conversation。全局广播不携带该字段，
-        // 因此增量合并时保留本地值，并在创建/权限变化后刷新用户级快照。
-        if (command === 'Story-Created' || command === 'Story-Permissions-Changed') {
-            void loadStories();
+        // 故事广播是用户级的，但展示必须服从当前 Conversation 的编辑权限。
+        // 创建、权限变化和重命名后重新读取当前会话的可见快照；其他增量
+        // 只允许更新已经存在于当前列表中的故事，绝不把无权限故事插入列表。
+        if (command === 'Story-Created' || command === 'Story-Permissions-Changed' || command === 'Story-Renamed') {
+            void loadStories().then(values => {
+                setActiveStory(current => {
+                    if (!current?.storyId) return current;
+                    const visible = values.some(item => Number(item.storyId) === Number(current.storyId));
+                    if (!visible) {
+                        setStoryReaderOpen(false);
+                        return null;
+                    }
+                    return current;
+                });
+            });
         }
 
         setStories(current => {
             const index = current.findIndex(item => Number(item.storyId) === Number(incomingStory.storyId));
-            if (index < 0) return [incomingStory, ...current];
+            if (index < 0) return current;
             const next = [...current];
             const merged = {...next[index], ...incomingStory};
             if (incomingStory.canEdit === undefined && next[index].canEdit !== undefined) {
@@ -826,8 +878,6 @@ function ChatPage({
                 next.parts = [...existing.filter(item => item.partId !== value.part.partId), value.part].sort((a,b) => a.sequence-b.sequence);
             } else if (command === 'Story-Part-Updated' && value.part) {
                 next.parts = (current.parts || []).map(item => item.partId === value.part.partId ? value.part : item);
-            } else if (command === 'Story-Permissions-Changed') {
-                void openStory(incomingStory.storyId);
             }
             return next;
         });
@@ -2400,6 +2450,8 @@ function ChatPage({
                         conversationMeta={conversationMeta}
                         stories={stories}
                         onOpenStory={openStory}
+                        onRenameStory={renameStory}
+                        onDeleteStory={deleteStory}
                     />
 
                     <div className="flex-1 w-full relative overflow-hidden">

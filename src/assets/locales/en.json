@@ -436,5 +436,16 @@
   "speech_subtitle_max_height": "Maximum height",
   "speech_subtitle_font_size": "Font size",
   "speech_subtitle_background_opacity": "Background opacity",
-  "speech_subtitle_line_height": "Line height"
+  "speech_subtitle_line_height": "Line height",
+  "task_monitor_open": "Monitor in floating window",
+  "task_monitor_title": "Task process monitor",
+  "task_monitor_running": "Running",
+  "task_monitor_finished": "Finished",
+  "task_monitor_failed": "Failed",
+  "task_monitor_recovering": "Recovering",
+  "task_monitor_waiting": "Waiting for task output…",
+  "task_monitor_reset_position": "Reset window position",
+  "task_monitor_auto_bottom_disable": "Disable auto-scroll to bottom",
+  "task_monitor_auto_bottom_enable": "Enable auto-scroll to bottom",
+  "task_monitor_reset_window": "Reset window position and size"
 }

@@ -33,6 +33,8 @@ const ChatHeader = memo(({
                              conversationMeta,
                              stories = [],
                              onOpenStory,
+                             onRenameStory,
+                             onDeleteStory,
                          }) => {
     const modelListRef = useRef(null);
     const isAgentSession = conversationMeta?.conversationKind === 'agent_session';
@@ -151,6 +153,8 @@ const ChatHeader = memo(({
                 <StorySelectorButton
                     stories={stories}
                     onOpenStory={onOpenStory}
+                    onRenameStory={onRenameStory}
+                    onDeleteStory={onDeleteStory}
                     t={t}
                     isWindowMode={isWindowMode}
                 />

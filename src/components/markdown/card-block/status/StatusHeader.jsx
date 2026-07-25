@@ -30,6 +30,7 @@ const StatusHeader = memo(({
                                markId = null,
                                metaText = '',
                                progress,
+                               rightAccessory = null,
                                truncatedLastLine,
                                waitingApprovalLabel = 'Waiting for approval',
                                resumingLabel = 'Sub-agent finished, resuming',
@@ -217,6 +218,8 @@ const StatusHeader = memo(({
                     </button>
                 ))}
 
+                {rightAccessory}
+
                 {isToolCalling && !isFinished && (
                     <ToolCallingRightStatus
                         isDone={isDone}
@@ -256,6 +259,7 @@ const StatusHeader = memo(({
         prev.metaText === next.metaText &&
         prev.progress?.current === next.progress?.current &&
         prev.progress?.total === next.progress?.total &&
+        prev.rightAccessory === next.rightAccessory &&
         prev.truncatedLastLine === next.truncatedLastLine &&
         prev.waitingApprovalLabel === next.waitingApprovalLabel &&
         prev.resumingLabel === next.resumingLabel
