@@ -13,6 +13,8 @@ import {getLastLineForPreview, stripCardReplaceTokensForPreview, toSafeString} f
 const TASK_STATUS_REGEX = /\[TASK_STATUS:([^\]\r\n]+)\]/gi;
 const TASK_TITLE_REGEX = /\[TITLE:([^\]\r\n]*)\]/gi;
 const TASK_RUN_ID_REGEX = /\[TASK_RUN_ID:([^\]\r\n]+)\]/gi;
+const WORKSPACE_ID_REGEX = /\[WORKSPACE_ID:([^\]\r\n]+)\]/gi;
+const WORKSPACE_NAME_REGEX = /\[WORKSPACE_NAME:([^\]\r\n]*)\]/gi;
 const TASK_RECOVERABLE_REGEX = /\[TASK_RECOVERABLE:true\]/gi;
 const TASK_ERROR_REGEX = /\[TASK_ERROR:([^\]\r\n]*)\]/gi;
 const TASK_STARTED_AT_REGEX = /\[TASK_STARTED_AT:(\d+)\]/gi;
@@ -56,6 +58,8 @@ const TaskModeWidget = memo(({
         const status = getLastMarkerValue(safeContent, TASK_STATUS_REGEX, 'running').toLowerCase();
         const title = getLastMarkerValue(safeContent, TASK_TITLE_REGEX, t('task_mode_entering', '正在进入任务模式...'));
         const taskRunId = getLastMarkerValue(safeContent, TASK_RUN_ID_REGEX);
+        const workspaceId = getLastMarkerValue(safeContent, WORKSPACE_ID_REGEX);
+        const workspaceName = getLastMarkerValue(safeContent, WORKSPACE_NAME_REGEX);
         const error = getLastMarkerValue(safeContent, TASK_ERROR_REGEX);
         const startedAt = Number(getLastMarkerValue(safeContent, TASK_STARTED_AT_REGEX, '0')) || 0;
         const endedAt = Number(getLastMarkerValue(safeContent, TASK_ENDED_AT_REGEX, '0')) || 0;
@@ -70,6 +74,8 @@ const TaskModeWidget = memo(({
             .replace(TASK_STATUS_REGEX, '')
             .replace(TASK_TITLE_REGEX, '')
             .replace(TASK_RUN_ID_REGEX, '')
+            .replace(WORKSPACE_ID_REGEX, '')
+            .replace(WORKSPACE_NAME_REGEX, '')
             .replace(TASK_RECOVERABLE_REGEX, '')
             .replace(TASK_ERROR_REGEX, '')
             .replace(TASK_STARTED_AT_REGEX, '')
@@ -109,10 +115,13 @@ const TaskModeWidget = memo(({
             segmentDone,
             startedAt,
             status,
+            taskRunId,
             title: segmentDone
                 ? `${title}${t('task_mode_previous_history_suffix', '（之前的任务历史）')}`
                 : title,
             truncatedLastLine: error || preview,
+            workspaceId,
+            workspaceName,
         };
     }, [content, t]);
 
@@ -192,7 +201,9 @@ const TaskModeWidget = memo(({
                 open={monitorOpen}
                 renderMarkdown={renderMarkdown}
                 status={parsed.status}
+                taskRunId={parsed.taskRunId}
                 title={parsed.title}
+                workspaceName={parsed.workspaceName}
                 t={t}
             />
         </div>

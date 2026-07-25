@@ -1,6 +1,6 @@
 import React, {useState, useMemo, useCallback, memo} from 'react';
 import {IoMdAdd} from 'react-icons/io';
-import {Check, ChevronDown, Mic, RotateCw, Search, Earth, Puzzle, MoreHorizontal, Settings2} from 'lucide-react';
+import {Check, ChevronDown, Mic, RotateCw, Search, Earth, Puzzle, MoreHorizontal, Settings2, MapPinned} from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -175,6 +175,8 @@ const ToolButtons = memo(({
                               setMobileOpenSections: controlledSetMobileOpenSections,
                               onManageConversationTools,
                               conversationToolsDisabled = false,
+                              onManageWorkspace,
+                              workspaceSettingsDisabled = false,
                           }) => {
     const [open, setOpen] = useState(false);
     const [builtinOpen, setBuiltinOpen] = useState(false);
@@ -467,21 +469,39 @@ const ToolButtons = memo(({
                                         {t('conversation_tools_scroll_hint', '工具列表在此区域内独立滚动')}
                                     </div>
                                 </div>
-                                <button
-                                    type="button"
-                                    disabled={conversationToolsDisabled}
-                                    onClick={(event) => {
-                                        event.preventDefault();
-                                        event.stopPropagation();
-                                        if (conversationToolsDisabled) return;
-                                        setOpen(false);
-                                        onManageConversationTools?.();
-                                    }}
-                                    className="ml-2 inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
-                                    aria-label={t('manage_conversation_tools', '管理本对话工具')}
-                                >
-                                    <Settings2 className="h-4 w-4"/>
-                                </button>
+                                <div className="ml-2 flex shrink-0 items-center gap-1">
+                                    <button
+                                        type="button"
+                                        disabled={workspaceSettingsDisabled}
+                                        onClick={(event) => {
+                                            event.preventDefault();
+                                            event.stopPropagation();
+                                            if (workspaceSettingsDisabled) return;
+                                            setOpen(false);
+                                            onManageWorkspace?.();
+                                        }}
+                                        className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
+                                        aria-label={t('workspace_behavior_settings', 'Workspace 行为')}
+                                        title={t('workspace_behavior_settings', 'Workspace 行为')}
+                                    >
+                                        <MapPinned className="h-4 w-4"/>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={conversationToolsDisabled}
+                                        onClick={(event) => {
+                                            event.preventDefault();
+                                            event.stopPropagation();
+                                            if (conversationToolsDisabled) return;
+                                            setOpen(false);
+                                            onManageConversationTools?.();
+                                        }}
+                                        className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
+                                        aria-label={t('manage_conversation_tools', '管理本对话工具')}
+                                    >
+                                        <Settings2 className="h-4 w-4"/>
+                                    </button>
+                                </div>
                             </div>
                             <div
                                 className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1 pretty-scrollbar"

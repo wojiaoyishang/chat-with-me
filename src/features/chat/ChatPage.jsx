@@ -18,6 +18,7 @@ import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
 import MessageOverviewDialog from '@/features/chat/page/components/MessageOverviewDialog.jsx';
 import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
 import StoryReader from '@/features/story/StoryReader.jsx';
+import {clearWorkspaceTransfers, upsertWorkspaceTransfer} from '@/features/workspace/useWorkspaceTransferStore.js';
 
 import {
     ChatBox,
@@ -180,6 +181,7 @@ function ChatPage({
     const [previewModel, setPreviewModel] = useState(null);
     const [isNewMarkId, setIsNewMarkId] = useState(false);
     const isNewMarkIdRef = useRef(false);
+    const previousChatMarkIdRef = useRef(chatMarkId);
     const [isFirstMessageSend, setIsFirstMessageSend] = useState(false);
 
     const [models, setModels] = useState([]);
@@ -1029,6 +1031,10 @@ function ChatPage({
             })
                 .then((payload) => {
                     if (payload.success) {
+                        // Mark this synchronously before the parent updates chatMarkId.
+                        // The chatMarkId effect uses it to preserve the pending Workspace
+                        // and advanced settings selected for the conversation being created.
+                        isNewMarkIdRef.current = true;
                         setIsNewMarkId(true);
                         onNewChatMarkId(payload.value);
                         sendMessage(payload.value);
@@ -1934,6 +1940,38 @@ function ChatPage({
                             if (payload.reply) reply({ success: false });
                         }
                         break;
+                    case "Workspace-Transfer-State": {
+                        const transfer = payload.value;
+                        if (transfer && typeof transfer === 'object' && transfer.transferId) {
+                            upsertWorkspaceTransfer(transfer);
+                            const artifactId = transfer.artifactId || transfer.serverId;
+                            if (artifactId) {
+                                setAttachments(current => current.map(attachment => {
+                                    const currentArtifactId = attachment.artifactId || attachment.serverId;
+                                    return currentArtifactId === artifactId
+                                        ? {...attachment, workspaceTransfer: transfer}
+                                        : attachment;
+                                }));
+                                const newMessages = produce(messagesRef.current, draft => {
+                                    Object.values(draft).forEach(message => {
+                                        if (!Array.isArray(message?.attachments)) return;
+                                        message.attachments = message.attachments.map(attachment => {
+                                            const currentArtifactId = attachment.artifactId || attachment.serverId;
+                                            return currentArtifactId === artifactId
+                                                ? {...attachment, workspaceTransfer: transfer}
+                                                : attachment;
+                                        });
+                                    });
+                                });
+                                setMessages(newMessages);
+                                messagesRef.current = newMessages;
+                            }
+                            if (payload.reply) reply({success: true});
+                        } else if (payload.reply) {
+                            reply({success: false});
+                        }
+                        break;
+                    }
                     case "Set-MessageAttachments":
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
@@ -2222,9 +2260,27 @@ function ChatPage({
     }, [isNewMarkId]);
 
     useEffect(() => {
+        const previousMarkId = previousChatMarkIdRef.current;
+        const isCreatingConversation = (
+            !previousMarkId
+            && Boolean(chatMarkId)
+            && isNewMarkIdRef.current
+        );
+        previousChatMarkIdRef.current = chatMarkId;
+
+        clearWorkspaceTransfers();
         setSettingsInstanceKey(`${chatMarkId ?? 'conversationless'}-${Date.now()}`);
-        setInitialSettingValues({});
-        setAdvancedSettingsValues({});
+
+        // A new conversation receives its markId before the first Message-Send
+        // finishes. Do not erase the pending Workspace/options during that
+        // transition; they are the values sent with and persisted by the first
+        // message. A real conversation switch still resets stale state first.
+        if (!isCreatingConversation) {
+            setInitialSettingValues({});
+            setAdvancedSettingsValues({});
+        } else {
+            setInitialSettingValues(null);
+        }
         setConversationMeta(null);
 
         if (chatMarkId === null || chatMarkId === undefined) {
@@ -2243,7 +2299,26 @@ function ChatPage({
     }, [chatMarkId, setMessages]);
 
     useEffect(() => {
+        if (!chatMarkId) return undefined;
+        let cancelled = false;
+        apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(chatMarkId)}`)
+            .then((items) => {
+                if (cancelled || !Array.isArray(items)) return;
+                items.slice().reverse().forEach(upsertWorkspaceTransfer);
+            })
+            .catch(() => {
+                // Workspace may not be initialized yet; chat loading should remain unaffected.
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [chatMarkId]);
+
+    useEffect(() => {
         if (isNewMarkIdRef.current) {
+            // The first message already carries the pending settings. Avoid a
+            // racing GET that can replace them with defaults before persistence.
+            isNewMarkIdRef.current = false;
             setIsNewMarkId(false);
             return;
         }
@@ -2542,6 +2617,11 @@ function ChatPage({
                             onVoiceRecordingStart={handleVoiceRecordingStart}
                             onVoicePcmReady={handleVoicePcmReady}
                             onVoiceRecordingCancel={handleVoiceRecordingCancel}
+                            selectedWorkspaceId={advancedSettingsValues?.workspaceId || null}
+                            onWorkspaceChange={(workspaceId) => {
+                                setAdvancedSettingsValues(current => ({...current, workspaceId}));
+                                setInitialSettingValues(null);
+                            }}
                         />
                     </div>
 

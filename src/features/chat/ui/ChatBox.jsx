@@ -22,6 +22,7 @@ import RoleSelector from './chatbox/components/RoleSelector';
 import FullscreenEditorModal from './chatbox/components/FullscreenEditorModal';
 import {useExtraToolsMenuItems} from './chatbox/components/ExtraToolsMenuItems';
 import ConversationToolsDialog from '@/features/tools/components/ConversationToolsDialog';
+import WorkspaceSettingsDialog from '@/features/workspace/WorkspaceSettingsDialog.jsx';
 import {deepMerge, setNestedValue} from './chatbox/utils/toolState';
 import {
     createPcm16kRecorder,
@@ -254,6 +255,8 @@ function ChatBox({
                      onVoicePcmReady,
                      onVoiceRecordingStart,
                      onVoiceRecordingCancel,
+                     selectedWorkspaceId = null,
+                     onWorkspaceChange,
                  }) {
     const {t} = useTranslation();
     const voiceText = useMemo(() => {
@@ -298,6 +301,7 @@ function ChatBox({
     const [runtimeToolPermissions, setRuntimeToolPermissions] = useState({});
     const [conversationToolDefaults, setConversationToolDefaults] = useState({});
     const [conversationToolsDialogOpen, setConversationToolsDialogOpen] = useState(false);
+    const [workspaceSettingsDialogOpen, setWorkspaceSettingsDialogOpen] = useState(false);
 
     // 全屏编辑器
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -379,6 +383,8 @@ function ChatBox({
     const previousMarkIdRef = useRef(markId);
     const toolPermissionRevisionRef = useRef(0);
     const conversationToolPermissionsRef = useRef({});
+    const pendingConversationToolPermissionsRef = useRef({});
+    const pendingConversationMarkIdRef = useRef(null);
     const runtimeToolPermissionRevisionRef = useRef(0);
     const runtimeToolPermissionStreamIdRef = useRef(null);
     const [containerWidth, setContainerWidth] = useState(0);
@@ -564,7 +570,21 @@ function ChatBox({
     }, [applyConversationToolPermissions, markId]);
 
     const syncToolPermissions = useCallback(async (updates) => {
-        if (!markId || !updates || Object.keys(updates).length === 0) return true;
+        if (!updates || Object.keys(updates).length === 0) return true;
+
+        // 新建对话尚未分配 markId 时，先把权限保存在当前 ChatBox 状态中。
+        // 首条消息会通过 toolsStatus 一并提交，后端据此创建会话级工具权限。
+        if (!markId) {
+            const nextPermissions = {
+                ...collectToolPermissions(extraTools, toolsStatus.extra_tools || {}),
+                ...updates,
+            };
+            pendingConversationToolPermissionsRef.current = {...nextPermissions};
+            applyConversationToolPermissions(nextPermissions, toolPermissionRevisionRef.current);
+            toast.success(t('conversation_tools_pending_saved', '已设置新对话工具，将在发送首条消息时生效。'));
+            return true;
+        }
+
         try {
             const response = await emitEvent({
                 type: 'agent',
@@ -593,7 +613,7 @@ function ChatBox({
             toast.error(t('conversation_tools_save_failed', '保存本对话工具失败。'));
             return false;
         }
-    }, [applyConversationToolPermissions, markId, t]);
+    }, [applyConversationToolPermissions, extraTools, markId, t, toolsStatus.extra_tools]);
 
     const currentConversationToolPermissions = useMemo(() => (
         collectToolPermissions(extraTools, toolsStatus.extra_tools || {})
@@ -1153,15 +1173,31 @@ function ChatBox({
         );
 
         const serverToolPermissions = data.toolPermissions?.values || {};
+        const permissionSource = data.toolPermissions?.source || 'default';
+        const pendingMatchesConversation = Boolean(
+            markId
+            && pendingConversationMarkIdRef.current === markId
+            && Object.keys(pendingConversationToolPermissionsRef.current).length > 0
+        );
+        const effectiveToolPermissions = (
+            pendingMatchesConversation && permissionSource !== 'conversation'
+                ? pendingConversationToolPermissionsRef.current
+                : serverToolPermissions
+        );
+
         setConversationToolDefaults({...((data.toolPermissions?.defaultValues) || {})});
-        if (Object.keys(serverToolPermissions).length > 0) {
+        if (Object.keys(effectiveToolPermissions).length > 0) {
             mergedExtraStatus = applyToolPermissionsToStatus(
                 configuredExtraTools,
                 mergedExtraStatus,
-                serverToolPermissions
+                effectiveToolPermissions
             );
             toolPermissionRevisionRef.current = Number(data.toolPermissions?.revision) || 0;
-            conversationToolPermissionsRef.current = {...serverToolPermissions};
+            conversationToolPermissionsRef.current = {...effectiveToolPermissions};
+        }
+        if (pendingMatchesConversation && permissionSource === 'conversation') {
+            pendingConversationToolPermissionsRef.current = {};
+            pendingConversationMarkIdRef.current = null;
         }
 
         if (data.builtin_tools) {
@@ -1217,7 +1253,7 @@ function ChatBox({
             }
         }
 
-    }, [FilePickerCallback, PicPickerCallback, initializeExtraTools]);
+    }, [FilePickerCallback, PicPickerCallback, initializeExtraTools, markId]);
 
     // ========== 事件处理函数 ==========
 
@@ -1489,8 +1525,22 @@ function ChatBox({
     // ========== 副作用 ==========
 
     useEffect(() => {
+        const previousMarkId = previousMarkIdRef.current;
+        const isNewConversationAssigned = !previousMarkId && Boolean(markId);
+        const pendingPermissions = pendingConversationToolPermissionsRef.current;
+
         toolPermissionRevisionRef.current = 0;
-        conversationToolPermissionsRef.current = {};
+        if (isNewConversationAssigned && Object.keys(pendingPermissions).length > 0) {
+            // Get-MarkId runs before the first Message-Send is persisted. Keep
+            // the new-conversation tool selection attached to the assigned ID
+            // so an early ChatBox setup response cannot replace it with defaults.
+            pendingConversationMarkIdRef.current = markId;
+            conversationToolPermissionsRef.current = {...pendingPermissions};
+        } else {
+            conversationToolPermissionsRef.current = {};
+            pendingConversationToolPermissionsRef.current = {};
+            pendingConversationMarkIdRef.current = null;
+        }
         runtimeToolPermissionRevisionRef.current = 0;
         runtimeToolPermissionStreamIdRef.current = null;
         setRuntimeToolPermissions({});
@@ -1844,6 +1894,16 @@ function ChatBox({
         }
     }, [isChatBoxCollapsed, onHeightChange]);
 
+    // Keep the complete pending permission map while the conversation has no
+    // markId yet. This includes direct toggles as well as dialog-based changes.
+    useEffect(() => {
+        if (markId) return;
+        pendingConversationToolPermissionsRef.current = collectToolPermissions(
+            extraTools,
+            toolsStatus.extra_tools || {}
+        );
+    }, [extraTools, markId, toolsStatus.extra_tools]);
+
     // 保存额外工具状态到本地存储
     useEffect(() => {
         const localOnlyStatus = extractLocalOnlyExtraToolStatus(
@@ -1926,9 +1986,11 @@ function ChatBox({
         mobileOpenSections: mobileOpenMenuSections,
         setMobileOpenSections: setMobileOpenMenuSections,
         onManageConversationTools: () => setConversationToolsDialogOpen(true),
-        conversationToolsDisabled: isReadOnly || !markId,
+        conversationToolsDisabled: isReadOnly,
+        onManageWorkspace: () => setWorkspaceSettingsDialogOpen(true),
+        workspaceSettingsDisabled: isReadOnly,
     }), [toolsLoadedStatus, extraTools, attachmentTools, tools, toolsStatus,
-        setToolsStatus, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth, voiceInputNode, isSmallScreen, mobileOpenMenuSections, isReadOnly, markId]);
+        setToolsStatus, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth, voiceInputNode, isSmallScreen, mobileOpenMenuSections, isReadOnly]);
 
     const autoHideButtonLabel = isSmallScreen
         ? t('chatbox_hide')
@@ -1950,7 +2012,15 @@ function ChatBox({
                 currentPermissions={currentConversationToolPermissions}
                 defaultPermissions={conversationToolDefaults}
                 onApply={syncToolPermissions}
-                disabled={isReadOnly || !markId}
+                disabled={isReadOnly}
+                t={t}
+            />
+            <WorkspaceSettingsDialog
+                open={workspaceSettingsDialogOpen}
+                onOpenChange={setWorkspaceSettingsDialogOpen}
+                markId={markId}
+                selectedWorkspaceId={selectedWorkspaceId}
+                onWorkspaceChange={onWorkspaceChange}
                 t={t}
             />
             <DropFileLayer
@@ -2246,6 +2316,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         prevProps.dropTargetRef === nextProps.dropTargetRef &&
         prevProps.editorHostRef === nextProps.editorHostRef &&
         prevProps.selectedModel === nextProps.selectedModel &&
+        prevProps.selectedWorkspaceId === nextProps.selectedWorkspaceId &&
         prevProps.isWindowMode === nextProps.isWindowMode &&
         prevProps.onVoicePcmReady === nextProps.onVoicePcmReady &&
         prevProps.onVoiceRecordingStart === nextProps.onVoiceRecordingStart &&

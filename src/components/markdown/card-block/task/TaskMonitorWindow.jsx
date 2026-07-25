@@ -3,6 +3,7 @@ import {
     useCallback,
     useEffect,
     useLayoutEffect,
+    useMemo,
     useRef,
     useState,
 } from 'react';
@@ -13,12 +14,12 @@ import {
     CircleAlert,
     GripHorizontal,
     ListChecks,
-    RotateCcw,
     Square,
     X,
 } from 'lucide-react';
 
 import {emitEvent} from '@/context/useEventStore.jsx';
+import {useWorkspaceTransferStore} from '@/features/workspace/useWorkspaceTransferStore.js';
 
 const WINDOW_MARGIN = 12;
 const DEFAULT_BOTTOM_GAP = 92;
@@ -26,6 +27,7 @@ const DEFAULT_WINDOW_SIZE = {width: 440, height: 560};
 const MIN_WINDOW_SIZE = {width: 320, height: 256};
 const WINDOW_SIZE_STORAGE_KEY = 'task-monitor-window-size-v1';
 const MOBILE_MEDIA_QUERY = '(max-width: 767px)';
+const EMPTY_TRANSFER_IDS = Object.freeze([]);
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), Math.max(min, max));
 
@@ -76,11 +78,21 @@ const TaskMonitorWindow = memo(({
     open = false,
     renderMarkdown,
     status = 'running',
+    taskRunId = '',
     title = '',
+    workspaceName = '',
     t,
 }) => {
     const windowRef = useRef(null);
     const scrollRef = useRef(null);
+    const contentRef = useRef(null);
+    const autoFollowBottomRef = useRef(true);
+    const programmaticScrollRef = useRef(false);
+    const lastScrollTopRef = useRef(0);
+    const touchStartYRef = useRef(null);
+    const scheduledScrollFramesRef = useRef([]);
+    const programmaticResetFrameRef = useRef(null);
+    const wasOpenRef = useRef(false);
     const dragStateRef = useRef(null);
     const resizeStateRef = useRef(null);
     const [position, setPosition] = useState(null);
@@ -92,6 +104,14 @@ const TaskMonitorWindow = memo(({
     const [isMobile, setIsMobile] = useState(() => (
         typeof window !== 'undefined' ? window.matchMedia(MOBILE_MEDIA_QUERY).matches : false
     ));
+    const taskTransferIds = useWorkspaceTransferStore(state => (
+        taskRunId ? state.taskTransferIds[taskRunId] || EMPTY_TRANSFER_IDS : EMPTY_TRANSFER_IDS
+    ));
+    const transfersById = useWorkspaceTransferStore(state => state.transfersById);
+    const transfers = useMemo(
+        () => taskTransferIds.map((id) => transfersById[id]).filter(Boolean),
+        [taskTransferIds, transfersById],
+    );
 
     const getClampedSize = useCallback((nextSize) => {
         if (typeof window === 'undefined') return nextSize;
@@ -110,10 +130,57 @@ const TaskMonitorWindow = memo(({
         };
     }, [getClampedSize, size]);
 
+    const cancelScheduledBottomScroll = useCallback(() => {
+        if (typeof window === 'undefined') return;
+        scheduledScrollFramesRef.current.forEach(frame => window.cancelAnimationFrame(frame));
+        scheduledScrollFramesRef.current = [];
+    }, []);
+
     const scrollToBottom = useCallback(() => {
         const element = scrollRef.current;
-        if (element) element.scrollTop = element.scrollHeight;
+        if (!element) return;
+        programmaticScrollRef.current = true;
+        element.scrollTop = Math.max(0, element.scrollHeight - element.clientHeight);
+        lastScrollTopRef.current = element.scrollTop;
+        if (typeof window !== 'undefined') {
+            if (programmaticResetFrameRef.current !== null) {
+                window.cancelAnimationFrame(programmaticResetFrameRef.current);
+            }
+            programmaticResetFrameRef.current = window.requestAnimationFrame(() => {
+                programmaticScrollRef.current = false;
+                programmaticResetFrameRef.current = null;
+            });
+        } else {
+            programmaticScrollRef.current = false;
+        }
     }, []);
+
+    const keepBottomPinned = useCallback(() => {
+        if (typeof window === 'undefined' || !open || !autoFollowBottomRef.current) return;
+        cancelScheduledBottomScroll();
+        const schedule = (remaining) => {
+            const frame = window.requestAnimationFrame(() => {
+                scheduledScrollFramesRef.current = scheduledScrollFramesRef.current.filter(id => id !== frame);
+                if (!open || !autoFollowBottomRef.current) return;
+                scrollToBottom();
+                if (remaining > 1) schedule(remaining - 1);
+            });
+            scheduledScrollFramesRef.current.push(frame);
+        };
+        // Markdown、图片和进度组件可能分多帧完成布局，连续校准可避免停在旧的 scrollHeight。
+        schedule(3);
+    }, [cancelScheduledBottomScroll, open, scrollToBottom]);
+
+    const disableAutoFollowBottom = useCallback(() => {
+        autoFollowBottomRef.current = false;
+        programmaticScrollRef.current = false;
+        if (typeof window !== 'undefined' && programmaticResetFrameRef.current !== null) {
+            window.cancelAnimationFrame(programmaticResetFrameRef.current);
+            programmaticResetFrameRef.current = null;
+        }
+        setAutoFollowBottom(false);
+        cancelScheduledBottomScroll();
+    }, [cancelScheduledBottomScroll]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return undefined;
@@ -170,10 +237,55 @@ const TaskMonitorWindow = memo(({
     }, [fitPositionToViewport, getClampedSize, onClose, open]);
 
     useEffect(() => {
-        if (!open || !autoFollowBottom) return undefined;
-        const frame = window.requestAnimationFrame(scrollToBottom);
-        return () => window.cancelAnimationFrame(frame);
-    }, [autoFollowBottom, cleanContent, error, open, scrollToBottom, status]);
+        autoFollowBottomRef.current = autoFollowBottom;
+        if (autoFollowBottom) keepBottomPinned();
+    }, [autoFollowBottom, keepBottomPinned]);
+
+    useLayoutEffect(() => {
+        if (!open || !autoFollowBottom) return;
+        keepBottomPinned();
+    }, [autoFollowBottom, cleanContent, error, keepBottomPinned, open, status, transfers]);
+
+    useEffect(() => {
+        if (open && !wasOpenRef.current) {
+            autoFollowBottomRef.current = true;
+            setAutoFollowBottom(true);
+            keepBottomPinned();
+        }
+        wasOpenRef.current = open;
+    }, [keepBottomPinned, open]);
+
+    useEffect(() => {
+        if (!open) return undefined;
+        const content = contentRef.current;
+        if (!content) return undefined;
+
+        const handleLayoutChange = () => keepBottomPinned();
+        const resizeObserver = typeof ResizeObserver !== 'undefined'
+            ? new ResizeObserver(handleLayoutChange)
+            : null;
+        const mutationObserver = typeof MutationObserver !== 'undefined'
+            ? new MutationObserver(handleLayoutChange)
+            : null;
+
+        resizeObserver?.observe(content);
+        mutationObserver?.observe(content, {childList: true, subtree: true, characterData: true});
+        content.addEventListener('load', handleLayoutChange, true);
+        keepBottomPinned();
+
+        return () => {
+            resizeObserver?.disconnect();
+            mutationObserver?.disconnect();
+            content.removeEventListener('load', handleLayoutChange, true);
+        };
+    }, [keepBottomPinned, open]);
+
+    useEffect(() => () => {
+        cancelScheduledBottomScroll();
+        if (typeof window !== 'undefined' && programmaticResetFrameRef.current !== null) {
+            window.cancelAnimationFrame(programmaticResetFrameRef.current);
+        }
+    }, [cancelScheduledBottomScroll]);
 
     useEffect(() => {
         if (!open) {
@@ -318,24 +430,54 @@ const TaskMonitorWindow = memo(({
         emitEvent({type: 'message', target: 'ChatPage', payload, markId});
     };
 
-    const resetPositionAndSize = () => {
-        if (isMobile || typeof window === 'undefined') return;
-        const fittedSize = getClampedSize(DEFAULT_WINDOW_SIZE);
-        sizeRef.current = fittedSize;
-        setSize(fittedSize);
-        persistWindowSize(fittedSize);
-        setPosition({
-            x: Math.max(WINDOW_MARGIN, window.innerWidth - fittedSize.width - WINDOW_MARGIN),
-            y: Math.max(WINDOW_MARGIN, window.innerHeight - fittedSize.height - DEFAULT_BOTTOM_GAP),
-        });
+    const toggleAutoFollowBottom = () => {
+        if (autoFollowBottomRef.current) {
+            disableAutoFollowBottom();
+            return;
+        }
+        autoFollowBottomRef.current = true;
+        setAutoFollowBottom(true);
+        keepBottomPinned();
     };
 
-    const toggleAutoFollowBottom = () => {
-        setAutoFollowBottom(current => {
-            const next = !current;
-            if (next) window.requestAnimationFrame(scrollToBottom);
-            return next;
-        });
+    const handleScroll = (event) => {
+        const element = event.currentTarget;
+        const nextScrollTop = element.scrollTop;
+        if (
+            autoFollowBottomRef.current
+            && !programmaticScrollRef.current
+            && nextScrollTop < lastScrollTopRef.current - 1
+        ) {
+            disableAutoFollowBottom();
+        }
+        lastScrollTopRef.current = nextScrollTop;
+    };
+
+    const handleWheel = (event) => {
+        if (event.deltaY < 0 && autoFollowBottomRef.current) disableAutoFollowBottom();
+    };
+
+    const handleTouchStart = (event) => {
+        touchStartYRef.current = event.touches?.[0]?.clientY ?? null;
+    };
+
+    const handleTouchMove = (event) => {
+        const currentY = event.touches?.[0]?.clientY;
+        if (
+            currentY !== undefined
+            && touchStartYRef.current !== null
+            && currentY > touchStartYRef.current + 4
+            && autoFollowBottomRef.current
+        ) {
+            disableAutoFollowBottom();
+        }
+        if (currentY !== undefined) touchStartYRef.current = currentY;
+    };
+
+    const handleScrollKeyDown = (event) => {
+        if (['ArrowUp', 'PageUp', 'Home'].includes(event.key) && autoFollowBottomRef.current) {
+            disableAutoFollowBottom();
+        }
     };
 
     if (!open || typeof document === 'undefined') return null;
@@ -385,6 +527,7 @@ const TaskMonitorWindow = memo(({
                             {statusLabel}
                         </span>
                         {elapsedText ? <span className="truncate text-[11px] text-gray-500">{elapsedText}</span> : null}
+                        {workspaceName ? <span className="truncate text-[11px] text-blue-600" title={workspaceName}>{workspaceName}</span> : null}
                     </div>
                 </div>
                 <button
@@ -401,17 +544,6 @@ const TaskMonitorWindow = memo(({
                 >
                     <ArrowDownToLine className="h-4 w-4"/>
                 </button>
-                {!isMobile ? (
-                    <button
-                        type="button"
-                        onClick={resetPositionAndSize}
-                        className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-white hover:text-gray-800"
-                        title={t('task_monitor_reset_window', '恢复窗口位置和大小')}
-                        aria-label={t('task_monitor_reset_window', '恢复窗口位置和大小')}
-                    >
-                        <RotateCcw className="h-4 w-4"/>
-                    </button>
-                ) : null}
                 <button
                     type="button"
                     onClick={onClose}
@@ -425,13 +557,60 @@ const TaskMonitorWindow = memo(({
 
             <div
                 ref={scrollRef}
-                className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 pretty-scrollbar"
-                onScroll={(event) => {
-                    const element = event.currentTarget;
-                    const isNearBottom = element.scrollHeight - element.scrollTop - element.clientHeight < 48;
-                    setAutoFollowBottom(current => current === isNearBottom ? current : isNearBottom);
-                }}
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 pretty-scrollbar [overflow-anchor:none]"
+                onScroll={handleScroll}
+                onWheel={handleWheel}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onKeyDown={handleScrollKeyDown}
+                tabIndex={0}
             >
+                <div ref={contentRef}>
+                {transfers.length > 0 ? (
+                    <div className="mb-3 space-y-2">
+                        {transfers.map((transfer) => {
+                            const progress = Number.isFinite(Number(transfer.progress))
+                                ? Math.round(Number(transfer.progress) * 100)
+                                : null;
+                            const completed = transfer.status === 'completed';
+                            const failed = transfer.status === 'failed';
+                            const stageText = ({
+                                preparing: t('workspace_transfer_preparing', '准备文件'),
+                                transferring: t('workspace_transfer_transferring', '传输文件'),
+                                verifying: t('workspace_transfer_verifying', '校验文件'),
+                                extracting: t('workspace_transfer_extracting', '安全解压'),
+                                applying: t('workspace_transfer_applying', '写入 Workspace'),
+                                completed: t('workspace_transfer_completed', '传输完成'),
+                                failed: t('workspace_transfer_failed', '传输失败'),
+                            })[transfer.stage] || t('workspace_transfer_running', '处理文件');
+                            return (
+                                <div key={transfer.transferId} className={`rounded-xl border px-3 py-2 ${failed ? 'border-red-200 bg-red-50' : completed ? 'border-emerald-200 bg-emerald-50' : 'border-blue-200 bg-blue-50'}`}>
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <span className="min-w-0 flex-1 truncate font-medium text-gray-800">
+                                            {transfer.filename || transfer.targetPath || t('workspace_transfer_file', 'Workspace 文件')}
+                                        </span>
+                                        <span className={failed ? 'text-red-600' : completed ? 'text-emerald-700' : 'text-blue-700'}>
+                                            {stageText}{progress !== null && !completed ? ` · ${progress}%` : ''}
+                                        </span>
+                                    </div>
+                                    {transfer.workspaceName || transfer.targetPath ? (
+                                        <div className="mt-1 truncate text-[10px] text-gray-500">
+                                            {[transfer.workspaceName, transfer.targetPath].filter(Boolean).join(' · ')}
+                                        </div>
+                                    ) : null}
+                                    {!completed && !failed ? (
+                                        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/80">
+                                            <div className="h-full rounded-full bg-blue-500 transition-[width] duration-300" style={{width: `${progress ?? 8}%`}}/>
+                                        </div>
+                                    ) : null}
+                                    {failed && transfer.errorMessage ? (
+                                        <div className="mt-1 text-[11px] text-red-700">{transfer.errorMessage}</div>
+                                    ) : null}
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : null}
                 {cleanContent ? (
                     <div className="task-monitor-content min-w-0">{renderMarkdown(cleanContent)}</div>
                 ) : (
@@ -444,6 +623,7 @@ const TaskMonitorWindow = memo(({
                         {error}
                     </div>
                 ) : null}
+                </div>
             </div>
 
             {actions.length > 0 ? (

@@ -85,9 +85,12 @@ export function fileUpload(uploadFile, onProgressUpdate, onComplete, onError) {
             const attachment = {
                 preview: data.preview,
                 previewType: data.previewType,
-                name: uploadFile.name,
-                size: uploadFile.file.size,
+                name: data.name || uploadFile.name,
+                size: data.size ?? uploadFile.file.size,
                 serverId: data.serverId,
+                artifactId: data.artifactId || data.serverId,
+                sha256: data.sha256 || null,
+                artifactStatus: data.artifactStatus || 'ready',
                 downloadUrl: data.downloadUrl,
             };
 

@@ -41,21 +41,24 @@ const RightSidebar = memo(({
     }, [isOpen, containerRef, lockedMode]);
 
     const sidebarContent = useCallback(() => {
-        if (!advancedSettings || advancedSettings.length === 0) {
-            return (
-                <div className="p-4 text-gray-400 text-sm flex items-center justify-center">
-                    {t('no_settings')}
-                </div>
-            );
-        }
-
+        const hasDynamicSettings = Array.isArray(advancedSettings) && advancedSettings.length > 0;
         return (
-            <DynamicSettings
-                key={dynamicSettingsKey}
-                config={advancedSettings}
-                initialValues={initialSettingValues}
-                onChange={onSettingChange ?? null}
-            />
+            <div className="pb-4">
+                {hasDynamicSettings ? (
+                    <div>
+                        <DynamicSettings
+                            key={dynamicSettingsKey}
+                            config={advancedSettings}
+                            initialValues={initialSettingValues}
+                            onChange={onSettingChange ?? null}
+                        />
+                    </div>
+                ) : (
+                    <div className="p-4 text-gray-400 text-sm flex items-center justify-center">
+                        {t('no_settings')}
+                    </div>
+                )}
+            </div>
         );
     }, [advancedSettings, dynamicSettingsKey, initialSettingValues, onSettingChange, t]);
 

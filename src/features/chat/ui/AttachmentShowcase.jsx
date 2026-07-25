@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { Transition } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
+import {CircleCheck, CircleX, Loader2, X} from 'lucide-react';
+import {selectArtifactTransfer, useWorkspaceTransferStore} from '@/features/workspace/useWorkspaceTransferStore.js';
 
 // 将格式化文件大小的函数移到组件外部，避免每次渲染都重新创建
 const formatFileSize = (bytes) => {
@@ -19,6 +20,26 @@ const formatFileSize = (bytes) => {
  * 使用memo包裹，避免不必要的重新渲染
  */
 const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
+    const artifactId = attachment.artifactId || attachment.serverId;
+    const storeTransfer = useWorkspaceTransferStore(state => selectArtifactTransfer(state, artifactId));
+    const transfer = attachment.workspaceTransfer || storeTransfer;
+    const transferProgress = Number.isFinite(Number(transfer?.progress))
+        ? Math.round(Number(transfer.progress) * 100)
+        : null;
+    const transferStatusText = transfer?.status === 'completed'
+        ? t('workspace_transfer_completed', '已完成 Workspace 文件传输')
+        : transfer?.status === 'failed'
+            ? t('workspace_transfer_failed', 'Workspace 文件传输失败')
+            : transfer
+                ? ({
+                    preparing: t('workspace_transfer_preparing', 'AI 正在准备文件'),
+                    transferring: t('workspace_transfer_transferring', 'AI 正在传输文件'),
+                    verifying: t('workspace_transfer_verifying', 'AI 正在校验文件'),
+                    extracting: t('workspace_transfer_extracting', 'AI 正在安全解压'),
+                    applying: t('workspace_transfer_applying', 'AI 正在写入 Workspace'),
+                }[transfer.stage] || t('workspace_transfer_running', 'AI 正在处理文件'))
+                : '';
+
     const handleRemove = useCallback((e) => {
         e.stopPropagation();
         onRemove(attachment);
@@ -75,13 +96,33 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
                     )}
                 </div>
 
-                <div className="ml-2 pr-2 min-w-[120px] max-w-[155px]">
+                <div className="ml-2 min-w-[140px] max-w-[190px] pr-2 py-1.5">
                     <div className="text-sm font-medium text-gray-800 truncate max-w-[180px]">
                         {attachment.name}
                     </div>
-                    <div className="text-xs text-gray-500">
-                        {formatFileSize(attachment.size)}
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <span>{formatFileSize(attachment.size)}</span>
+                        {transfer?.status === 'completed' ? <CircleCheck className="h-3 w-3 text-emerald-600"/> : null}
+                        {transfer?.status === 'failed' ? <CircleX className="h-3 w-3 text-red-500"/> : null}
+                        {transfer && !['completed', 'failed', 'cancelled'].includes(transfer.status)
+                            ? <Loader2 className="h-3 w-3 animate-spin text-blue-600"/>
+                            : null}
                     </div>
+                    {transfer ? (
+                        <div className="mt-1 min-w-0">
+                            <div className={`truncate text-[10px] ${transfer.status === 'failed' ? 'text-red-600' : transfer.status === 'completed' ? 'text-emerald-700' : 'text-blue-700'}`}>
+                                {transferStatusText}{transferProgress !== null && transfer.status !== 'completed' ? ` · ${transferProgress}%` : ''}
+                            </div>
+                            {transfer.status !== 'completed' && transfer.status !== 'failed' ? (
+                                <div className="mt-1 h-1 overflow-hidden rounded-full bg-blue-100">
+                                    <div
+                                        className="h-full rounded-full bg-blue-500 transition-[width] duration-300"
+                                        style={{width: `${transferProgress ?? 8}%`}}
+                                    />
+                                </div>
+                            ) : null}
+                        </div>
+                    ) : null}
                 </div>
             </div>
         </div>
@@ -98,6 +139,11 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
         prevAttachment.name === nextAttachment.name &&
         prevAttachment.size === nextAttachment.size &&
         prevAttachment.downloadUrl === nextAttachment.downloadUrl &&
+        (prevAttachment.artifactId || prevAttachment.serverId) === (nextAttachment.artifactId || nextAttachment.serverId) &&
+        prevAttachment.workspaceTransfer?.transferId === nextAttachment.workspaceTransfer?.transferId &&
+        prevAttachment.workspaceTransfer?.status === nextAttachment.workspaceTransfer?.status &&
+        prevAttachment.workspaceTransfer?.stage === nextAttachment.workspaceTransfer?.stage &&
+        prevAttachment.workspaceTransfer?.progress === nextAttachment.workspaceTransfer?.progress &&
         prevProps.msgMode === nextProps.msgMode &&
         prevProps.onRemove === nextProps.onRemove &&
         prevProps.t === nextProps.t
@@ -346,7 +392,12 @@ const AttachmentShowcase = memo(({ attachmentsMeta, onRemove, msgMode }) => {
             prevAttachment.previewType !== nextAttachment.previewType ||
             prevAttachment.name !== nextAttachment.name ||
             prevAttachment.size !== nextAttachment.size ||
-            prevAttachment.downloadUrl !== nextAttachment.downloadUrl
+            prevAttachment.downloadUrl !== nextAttachment.downloadUrl ||
+            (prevAttachment.artifactId || prevAttachment.serverId) !== (nextAttachment.artifactId || nextAttachment.serverId) ||
+            prevAttachment.workspaceTransfer?.transferId !== nextAttachment.workspaceTransfer?.transferId ||
+            prevAttachment.workspaceTransfer?.status !== nextAttachment.workspaceTransfer?.status ||
+            prevAttachment.workspaceTransfer?.stage !== nextAttachment.workspaceTransfer?.stage ||
+            prevAttachment.workspaceTransfer?.progress !== nextAttachment.workspaceTransfer?.progress
         ) {
             return false;
         }
