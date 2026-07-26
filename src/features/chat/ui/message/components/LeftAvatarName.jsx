@@ -1,4 +1,5 @@
 import React, {memo} from 'react';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 
 const LeftAvatarName = memo(({msg, isLeaving}) => {
@@ -9,7 +10,7 @@ const LeftAvatarName = memo(({msg, isLeaving}) => {
             className={`flex items-center gap-2 mb-1 transition-opacity duration-300 ${isLeaving ? 'opacity-0' : 'opacity-100'}`}
         >
             <Avatar className="h-10 w-10">
-                <AvatarImage src={msg?.avatar} alt={displayName}/>
+                <AvatarImage src={resolveResourceUrl(msg?.avatar)} alt={displayName}/>
                 <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
             </Avatar>
             {displayName && (

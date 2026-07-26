@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import {Input} from '@/components/ui/input';
 import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 
 export default function StorySelectorButton({
     stories = [],
@@ -101,7 +102,7 @@ export default function StorySelectorButton({
                                     >
                                         <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-amber-100">
                                             {story.coverImageUrl
-                                                ? <img src={story.coverImageUrl} alt="" className="h-full w-full object-cover"/>
+                                                ? <img src={resolveResourceUrl(story.coverImageUrl)} alt="" className="h-full w-full object-cover"/>
                                                 : <BookOpen className="m-2.5 h-5 w-5 text-amber-600"/>}
                                         </div>
                                         <div className="min-w-0 flex-1">

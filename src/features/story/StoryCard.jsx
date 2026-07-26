@@ -5,6 +5,7 @@ import {useTranslation} from 'react-i18next';
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 
 const parseStory = (content) => {
     try {
@@ -95,7 +96,7 @@ const StoryCard = memo(({content = '', markId = null}) => {
 
     const generating = story?.status === 'generating' || story?.status === 'draft';
     const paused = story?.status === 'failed' || story?.status === 'cancelled';
-    const cover = story?.coverImageUrl;
+    const cover = resolveResourceUrl(story?.coverImageUrl);
 
     return (
         <button

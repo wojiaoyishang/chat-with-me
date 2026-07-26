@@ -19,6 +19,7 @@ import {fileUpload, processSelectedFiles, UnifiedLoadingScreen} from "@/lib/tool
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {toast} from "sonner";
+import {resolveResourceUrl} from "@/lib/virtualUrl.js";
 
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
@@ -75,7 +76,7 @@ const DocumentCard = memo(({onSettingsClick, onCardClick, item}) => {
     const {t} = useTranslation();
 
     const title = item.title;
-    const previewImage = item.preview;
+    const previewImage = resolveResourceUrl(item.preview);
 
     const handleSettingsClick = (e) => {
         e.stopPropagation();

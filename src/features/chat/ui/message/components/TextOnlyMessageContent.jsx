@@ -1,4 +1,5 @@
 import React, {memo, useRef} from 'react';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import KnowledgeGraphViewer from './KnowledgeGraphViewer.jsx';
@@ -31,7 +32,7 @@ const TextOnlyMessageContent = memo(({msg, msgId, markId, isLeaving, speechState
                         {...restAvatarClickProps}
                         className={`h-10 w-10 cursor-pointer select-none touch-manipulation ${avatarClickClassName}`}
                     >
-                        <AvatarImage src={msg.avatar} alt={displayName}/>
+                        <AvatarImage src={resolveResourceUrl(msg.avatar)} alt={displayName}/>
                         <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
                     </Avatar>
                 </div>

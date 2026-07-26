@@ -1,4 +1,5 @@
 import React, {memo, useMemo} from 'react';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {Check} from 'lucide-react';
 import {
     DropdownMenu,
@@ -31,7 +32,7 @@ const RoleAvatar = memo(({role, selectedModel, className = 'h-11 w-11'}) => {
 
     return (
         <Avatar className={className}>
-            <AvatarImage src={avatar} alt={text}/>
+            <AvatarImage src={resolveResourceUrl(avatar)} alt={text}/>
             <AvatarFallback className="bg-gray-200 text-gray-700 font-medium">
                 {text?.charAt(0).toUpperCase() || 'S'}
             </AvatarFallback>
@@ -57,7 +58,7 @@ const RoleSelector = memo(({roles, currentRole, selectedModel, highZClass, onRol
                     className="rounded-full hover:bg-gray-200 focus:outline-none focus:ring-offset-2 transition-colors cursor-pointer"
                 >
                     <Avatar className="h-11 w-11">
-                        <AvatarImage src={currentDisplay.avatar} alt={currentDisplay.text}/>
+                        <AvatarImage src={resolveResourceUrl(currentDisplay.avatar)} alt={currentDisplay.text}/>
                         <AvatarFallback className="bg-gray-200 text-gray-700 font-medium">
                             {currentDisplay.text?.charAt(0).toUpperCase() || 'S'}
                         </AvatarFallback>

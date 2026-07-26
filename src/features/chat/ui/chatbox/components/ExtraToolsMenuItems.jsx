@@ -8,6 +8,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {setLocalSetting} from '@/lib/tools.jsx';
 
 import {
@@ -81,7 +82,7 @@ export const useExtraToolsMenuItems = ({
                 />
             );
         } else if (iconType === 'image') {
-            return <img src={iconData} alt="" className={MENU_ICON_CLASS}/>;
+            return <img src={resolveResourceUrl(iconData)} alt="" className={MENU_ICON_CLASS}/>;
         }
         return null;
     }, []);

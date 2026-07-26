@@ -1,4 +1,5 @@
 import React, {memo, useMemo} from 'react';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {CircleCheck} from 'lucide-react';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar.tsx';
 
@@ -13,7 +14,7 @@ const ModelItem = memo(({
     const itemContent = useMemo(() => (
         <>
             <Avatar className="h-6 w-6">
-                <AvatarImage src={model.avatar} alt={model.name}/>
+                <AvatarImage src={resolveResourceUrl(model.avatar)} alt={model.name}/>
                 <AvatarFallback>{model.name[0]}</AvatarFallback>
             </Avatar>
             <div className="ml-2 text-left">

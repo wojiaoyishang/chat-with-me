@@ -4,6 +4,7 @@ import {Button} from '@/components/ui/button.tsx';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.tsx';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import SpeechOverlayHighlighter from '@/features/chat/ui/message/components/SpeechOverlayHighlighter.jsx';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 
 const FONT_SCALES = {small: .88, compact: .95, normal: 1, large: 1.15, extraLarge: 1.32};
 const FONT_LABELS = {small: '小', compact: '较小', normal: '标准', large: '较大', extraLarge: '大'};
@@ -155,7 +156,7 @@ export default function StoryReader({story, open, onClose, onChangePart, onSpeak
                     <article className={`mx-auto grid max-w-6xl gap-7 ${layout==='image_left'||layout==='image_right'?'items-center lg:grid-cols-[minmax(0,45%)_minmax(0,55%)]':'grid-cols-1'}`}>
                         {part.imageUrl && (
                             <figure className={`overflow-hidden rounded-3xl bg-amber-100 shadow-lg ${layout==='image_right'?'lg:order-2':''}`}>
-                                <img src={part.imageUrl} alt={part.imageAlt || ''} className="max-h-[64vh] w-full object-contain"/>
+                                <img src={resolveResourceUrl(part.imageUrl)} alt={part.imageAlt || ''} className="max-h-[64vh] w-full object-contain"/>
                             </figure>
                         )}
                         <div

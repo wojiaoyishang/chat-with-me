@@ -1,4 +1,5 @@
 import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {ChevronDown, ChevronUp} from 'lucide-react';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
@@ -172,7 +173,7 @@ const MessageItem = memo(({
             {...avatarTriggerProps}
             className={`${className} cursor-pointer select-none touch-manipulation`}
         >
-            <AvatarImage src={msg.avatar} alt={displayName}/>
+            <AvatarImage src={resolveResourceUrl(msg.avatar)} alt={displayName}/>
             <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
         </Avatar>
     );

@@ -20,7 +20,8 @@ import {fileUpload} from "@/lib/tools.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {useUserStore} from "@/context/userContext.jsx";
-import {ButtonContentWrapper} from "@/components/ui/ButtonContentWrapper.jsx"; // 确保引入了上传工具
+import {ButtonContentWrapper} from "@/components/ui/ButtonContentWrapper.jsx";
+import {resolveResourceUrl} from "@/lib/virtualUrl.js"; // 确保引入了上传工具
 
 // ==========================================
 // 独立的用户资料卡片组件
@@ -68,6 +69,7 @@ export const UserProfileCard = ({handleLogout}) => {
             setIsEditing(false);
             setTempName(originalName);
             setPreviewAvatar(user?.avatar);
+            setPreviewAvatarServerId(null);
             setIsAvatarChanged(false);
         } else {
             setIsEditing(true);
@@ -98,6 +100,7 @@ export const UserProfileCard = ({handleLogout}) => {
 
                 // 保存后重置脏状态但保留新数据
                 setIsAvatarChanged(false);
+                setPreviewAvatarServerId(null);
                 setIsEditing(false);
 
                 toast.success(t("Settings.profile_update_success"));
@@ -159,7 +162,7 @@ export const UserProfileCard = ({handleLogout}) => {
                     <div className="relative shrink-0">
                         <Avatar
                             className={`h-20 w-20 border-2 transition-all duration-300 ${isEditing ? 'border-blue-400 ring-4 ring-blue-50' : 'border-transparent'}`}>
-                            <AvatarImage src={previewAvatar} className="object-cover"/>
+                            <AvatarImage src={resolveResourceUrl(previewAvatar)} className="object-cover"/>
                             <AvatarFallback
                                 className="bg-gradient-to-br from-yellow-400 to-orange-500 text-2xl font-bold text-white">
                                 {originalName[0]}

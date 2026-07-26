@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useRef, useCallback} from 'react';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut, Trash, MessageSquare} from 'lucide-react';
 import {getLocalSetting, setLocalSetting, updateURL} from "@/lib/tools.jsx";
 import {Transition} from '@headlessui/react';
@@ -132,7 +133,7 @@ const Sidebar = ({chatMarkId, setChatMarkId, pageType, setPageType, settings, se
 
     let logoElement;
     if (settings?.logoType === 'image' && settings?.logo) {
-        logoElement = <img src={settings.logo} alt="Logo" className="h-8 w-auto"/>;
+        logoElement = <img src={resolveResourceUrl(settings.logo)} alt="Logo" className="h-8 w-auto"/>;
     } else {
         const text = (settings?.logoType === 'text' && settings?.logo) ? settings.logo : 'Logo';
         logoElement = <h1 className="text-xl font-bold text-gray-800">{text}</h1>;
@@ -251,7 +252,7 @@ const Sidebar = ({chatMarkId, setChatMarkId, pageType, setPageType, settings, se
                     <div className="border-t p-4 bg-white">
                         <div className="flex items-center gap-3 group">
                             <Avatar className="h-10 w-10 flex-shrink-0">
-                                <AvatarImage src={user.avatar} alt={user.nickname}/>
+                                <AvatarImage src={resolveResourceUrl(user.avatar)} alt={user.nickname}/>
                                 <AvatarFallback className="bg-gray-200 text-gray-700 font-medium">
                                     {user.nickname[0]}
                                 </AvatarFallback>

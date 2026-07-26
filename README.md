@@ -1217,7 +1217,7 @@ replacement 内容中可以继续包含其他 `cardReplace`：
         'id': 'qwen',  # 模型ID，消息发送时会携带这个模型ID
         'name': 'Qwen',  # 显示的名字
         'description': 'Built by qwen',  # 介绍
-        'avatar': '/src/assets/AI.png',  # 模型头像
+        'avatar': 'cwm://public/avatar/default.svg',  # 模型头像
         'tags': ["Code", "Chat"],  # 模型标签
         'options': []  # 模型默认的高级设置，参考 DynamicSettings
     },
@@ -1254,7 +1254,7 @@ replacement 内容中可以继续包含其他 `cardReplace`：
     "content": "",  # 内容（必须，在有附件的情况下可以没有）
     "role": "",  # 角色信息，后端多用 system/user/assistant
     "name": "AI Assistant",  # 昵称（必须）
-    "avatar": "/src/assets/AI.png",  # 头像
+    "avatar": "cwm://public/avatar/default.svg",  # 头像
     "messages": ["ID1", "ID2", "ID3"],  # 如果没有是空列表（必须）
     "nextMessage": "ID1",  # 目前选择的 下一条对话的ID，如果没有是 None（必须）
     "attachments": [],  # 附件内容，可选，如果和 content 两个都没有前端将无法渲染出消息占位
@@ -1399,7 +1399,7 @@ ShowQuickUserMessageNavigator
 {
     "sidebar": {  # 侧边栏配置
         "logoType": "image",  # LOGO类型，支持 image 和 text
-        "logo": "/public/logo.png"  # 如果是 image 展示这个地址的图片，否则展示该字段的文字
+        "logo": "http://localhost:5173/api/public/logo.png"  # 如果是 image 展示这个地址的图片，否则展示该字段的文字
     }
 }
 ```
@@ -1503,7 +1503,7 @@ code 设置为 401 。
     {
         "id": "models",   # Tab ID
         "name": "模型设置",   # Tab 的名称
-        "preview": "/public/model.svg"  # Tab 的图标
+        "preview": "cwm://public/model.svg"  # Tab 的图标
     }
 ]
 ```
@@ -3293,7 +3293,7 @@ const config = [
 {
   "id": "default-tool-permissions",
   "name": "默认工具",
-  "preview": "/public/model.svg"
+  "preview": "cwm://public/model.svg"
 }
 ```
 
@@ -4369,3 +4369,126 @@ Workspace 设置中的禁止访问区域使用可增删的简洁列表。每行�
 Policy v2 保存在现有 `extraInfo` 中，不需要数据库迁移。旧 `deniedPaths` 仍可由旧客户端提交，后端会将其转换为 Glob deny 规则；新客户端以 `accessPolicy` 为准，同时回写可兼容表达的 `deniedPaths`。
 
 本次没有新增或修改 WebSocket 广播命令、`target` 或 payload 结构。
+
+## 附件默认图标与统一虚拟资源 URL（2026-07-26）
+
+### 附件缩略图与默认图标
+
+上传附件现在先按扩展名和文件签名分类。处理规则如下：
+
+- Word、Excel、PowerPoint 及对应 OpenDocument 格式继续通过办公套件异步生成 PNG 缩略图；
+- 图片文件直接使用图片本身作为预览；
+- ZIP、RAR、7z、PDF、文本、代码、音频、视频、字体、数据库、电子书、二进制文件等不启动办公套件缩略图任务，直接使用对应默认 SVG 图标；
+- Office 缩略图生成失败或任务异常时，数据库中原有默认图标保持不变，前端不会得到失效的预览地址；
+- `/upload/preview/{serverId}` 在没有缩略图文件时也会按附件类型返回默认 SVG，而不会把原始 Word、ZIP 等二进制文件伪装成图片返回。
+
+默认图标集中存放在后端 `public/icons/`。目录内包含图标映射说明和许可证文件。上传接口和历史附件转换统一返回 `previewType: "image"`，图标 URL 与真实缩略图 URL 对前端使用同一渲染路径。
+
+### 唯一的内部虚拟 URL 协议
+
+内部资源统一使用 `cwm://`，不再接受旧自定义 scheme、后端绝对地址或 `/api/...` 相对地址作为数据库内部资源引用：
+
+```text
+cwm://artifact/{serverId}
+cwm://artifact/{serverId}/preview
+cwm://public/{path}
+cwm://document/{markId}/preview
+cwm://workspace/{virtualPath}
+cwm://host/posix/{absolutePath}
+cwm://host/windows/{drive}/{absolutePath}
+cwm://host/unc/{server}/{share}/{path}
+```
+
+各格式的职责：
+
+- `cwm://artifact/{serverId}`：聊天附件源文件，可作为下载链接或文件型工具输入；
+- `cwm://artifact/{serverId}/preview`：附件缩略图或图片预览；
+- `cwm://public/{path}`：后端随应用分发的公共资源，例如 `cwm://public/icons/archive.svg`；
+- `cwm://document/{markId}/preview`：在线文档预览；
+- `cwm://workspace/{virtualPath}`：当前 Workspace 上下文中的文件或目录，只能交给 Workspace 工具，不能直接由浏览器渲染；
+- `cwm://host/...`：宿主计算机工具返回的绝对路径，按 POSIX、Windows 盘符或 UNC 三种根类型编码，只能继续传给宿主计算机工具。
+
+外部 `http://` 和 `https://` 地址继续原样保留，适用于 CDN 或第三方资源。前端 `src/lib/virtualUrl.js` 是浏览器侧唯一解析入口：组件在设置 `<img src>`、头像、下载地址或 Markdown URL 时调用解析器，应用状态和 API 数据本身继续保存虚拟 URL。
+
+### Markdown、故事模式和工具参数
+
+Markdown 的 `urlTransform` 只解析规范的 `cwm://` URL，再交给 React Markdown 的默认安全转换。故事封面和篇幅插图也保存虚拟 URL，并在 `StoryCard`、`StoryReader`、故事选择器中渲染时解析。
+
+故事模式内部图片推荐使用：
+
+```text
+cwm://artifact/{serverId}/preview
+```
+
+也允许外部 HTTP(S) CDN 图片，以及可渲染的 `cwm://public/...`、`cwm://document/.../preview`。`cwm://workspace/...` 和 `cwm://host/...` 都不能作为故事图片；附件源文件 URL 也不能直接作为故事图片。
+
+工具参数按资源类型处理：
+
+- Workspace 工具的路径参数接受 `cwm://workspace/...`，并继续接受当前 Workspace 内的虚拟相对路径；
+- MCP 文件或 URL 参数中的 `cwm://artifact/...` 会在权限校验后临时解析为带签名的本地 HTTP 地址；
+- MCP 参数中的 `cwm://public/...` 和 `cwm://document/.../preview` 会临时解析为后端可访问地址；
+- 宿主计算机文件工具的 `path`、`cwd` 参数接受 `cwm://host/...`，返回的路径、日志目录和临时目录也会重新虚拟化；
+- Workspace 与 Host URL 都不会传给外部 MCP，避免丢失运行上下文或绕过访问策略；
+- 工具返回给模型的附件、Workspace 路径和宿主机路径保持为 `cwm://`，不会把部署地址或裸绝对路径作为稳定引用。
+
+### 数据库存储与迁移
+
+数据库资源字段现在只允许两类值：
+
+1. 完整外部 `http://` 或 `https://` URL；
+2. 规范的 `cwm://` 内部资源 URL。
+
+不再在运行时执行“非 HTTP 字符串自动拼接后端地址”。这类隐式拼接会让同一资源因部署域名、反向代理前缀和 Worker 环境不同而产生不同结果，也无法区分后端内部资源与前端构建资源。
+
+升级后需要运行：
+
+```bash
+python init.database.py
+```
+
+初始化脚本会一次性迁移 Upload、Document、Story、StoryPart、User、AIModel、Conversation，以及所有动态 `messages_N` 表中的头像和已知资源字段。可识别的旧内部地址会转换为 `cwm://`；外部 HTTP(S) 地址保持不变；无法判断的非 HTTP 资源字段会中止迁移并列出位置，要求人工明确改成外部 URL 或虚拟 URL。运行时没有旧格式兼容层。
+
+本次没有新增或修改 WebSocket 广播命令、`target` 或 payload 结构；故事和附件广播中的 URL 字段只改变值的表示形式。
+
+## 头像虚拟 URL 与附件图标视觉修正（2026-07-26）
+
+用户资料接口继续接收 `avatarServerId`，但后端不再把上传记录中可能残留旧格式的 `previewUrl` 直接写入用户资料。保存时会校验附件归属和图片类型，并根据稳定的 `serverId` 重新生成：
+
+```text
+cwm://artifact/{serverId}/preview
+```
+
+因此旧上传记录中的后端相对预览路径不会再触发资源 URL 校验异常，也不能通过他人的附件 ID 或非图片附件设置头像。前端保存或取消资料编辑后会清空临时 `avatarServerId`，避免后续仅修改昵称时重复提交旧头像。
+
+默认附件 SVG 使用透明外层画布、带分类色的圆角底板和统一内部留白。附件列表识别 `cwm://public/icons/...` 后采用 `object-contain` 和额外 padding；真实图片与办公套件生成的缩略图仍采用裁切预览，不受默认图标样式影响。
+
+本次没有新增或修改 WebSocket 广播命令、`target` 或 payload 结构。
+
+
+
+## 内建头像与图片资源统一解析（2026-07-26）
+
+所有由后端返回、可能出现在 `<img>`、头像或图片型按钮中的内部资源均使用 `cwm://`：
+
+```text
+cwm://public/logo.svg
+cwm://public/model.svg
+cwm://public/tools.svg
+cwm://public/tts.svg
+cwm://public/asr.svg
+cwm://public/developer.svg
+cwm://public/avatar/default.svg
+cwm://public/avatar/qwen.svg
+cwm://public/avatar/deepseek.svg
+cwm://public/avatar/gemini.svg
+cwm://public/avatar/zhipu.svg
+cwm://public/avatar/minimax.svg
+```
+
+后端 `public/` 目录必须随增量包一并部署。内建模型头像由 `avatar_type=builtin` 与 `avatar_builtin` 动态推导，不再依赖数据库中可能过期的 `extraInfo.avatar`。自定义上传头像仍保存为 `cwm://artifact/{serverId}/preview`。
+
+前端 `AvatarImage` 组件统一调用 `resolveResourceUrl()`；动态设置图片预览、Sidebar Logo、聊天按钮、工具菜单和工具按钮中的图片型图标也必须通过同一解析器。业务组件不得自行拼接 `/api/public/...`、`/upload/preview/...` 或后端地址。
+
+Dashboard Logo 接口固定返回 `http://localhost:5173/api/public/logo.png`，前端将完整 HTTP URL 原样用于 Sidebar Logo。该例外只影响 Dashboard Logo，不会改写或覆盖部署中已有的 `public/logo.png`；设置页 Tab 图标和内建开发者角色头像仍使用规范虚拟 URL。
+
+`useful.generate_image` 生成图片后只保存附件并返回工具结果，不再通过 `frontend_tool_callback` 自动向消息正文插入 Markdown 图片。模型仍可根据工具结果中的 `cwm://artifact/{serverId}/preview` 在后续正文中主动引用图片。

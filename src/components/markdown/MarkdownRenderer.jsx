@@ -22,7 +22,7 @@ import {
 import 'katex/dist/katex.min.css';
 import './CodeBlock.css';
 
-import {BASE_BACKEND_URL} from '@/config';
+import {resolveCwmUrl} from '@/lib/virtualUrl.js';
 
 const CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE = /:{2,3}\s*(card|card-replace)\s*\{([^}]*)\}\s*:{2,3}/g;
 const CARD_REPLACE_BLOCK_DIRECTIVE_RE = /:{3}\s*(card|card-replace)\s*\{([^}]*)\}\s*\n[\s\S]*?\n:{3}/g;
@@ -39,10 +39,8 @@ const getVisitedKey = (visitedIds) => {
 };
 
 const allowCustomScheme = (uri, key, node) => {
-    if (typeof uri === 'string' && uri.startsWith('backend://')) {
-        return uri.replace('backend://', BASE_BACKEND_URL);
-    }
-
+    const resolved = resolveCwmUrl(uri);
+    if (resolved !== null) return resolved;
     return defaultUrlTransform(uri, key, node);
 };
 

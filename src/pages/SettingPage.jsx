@@ -45,6 +45,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Switch} from "@/components/ui/switch";
 import {Separator} from "@/components/ui/separator";
 import {Badge} from "@/components/ui/badge";
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 
 // ==================== 界面设置通用项 ====================
 const InterfaceSettingItem = ({title, description, checked, onCheckedChange, badge}) => (
@@ -533,7 +534,7 @@ const SettingPage = ({
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === tab.id ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
                         >
                             <img
-                                src={tab.preview}
+                                src={resolveResourceUrl(tab.preview)}
                                 alt={tab.name}
                                 className="w-5 h-5 shrink-0 transition-colors"
                                 onError={(e) => { e.target.style.display = 'none'; }}

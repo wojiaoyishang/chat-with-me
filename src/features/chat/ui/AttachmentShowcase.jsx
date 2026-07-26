@@ -3,6 +3,7 @@ import { Transition } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
 import {CircleCheck, CircleX, Loader2, X} from 'lucide-react';
 import {selectArtifactTransfer, useWorkspaceTransferStore} from '@/features/workspace/useWorkspaceTransferStore.js';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 
 // 将格式化文件大小的函数移到组件外部，避免每次渲染都重新创建
 const formatFileSize = (bytes) => {
@@ -15,12 +16,21 @@ const formatFileSize = (bytes) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
+const isDefaultFileIcon = (attachment) => {
+    if (attachment?.previewType === 'icon') return true;
+    const preview = String(attachment?.preview || '').trim().toLowerCase();
+    return preview.startsWith('cwm://public/icons/');
+};
+
 /**
  * 单个附件项组件
  * 使用memo包裹，避免不必要的重新渲染
  */
 const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
     const artifactId = attachment.artifactId || attachment.serverId;
+    const resolvedPreviewUrl = attachment.previewType === 'svg' ? attachment.preview : resolveResourceUrl(attachment.preview);
+    const resolvedDownloadUrl = resolveResourceUrl(attachment.downloadUrl);
+    const usesDefaultIcon = isDefaultFileIcon(attachment);
     const storeTransfer = useWorkspaceTransferStore(state => selectArtifactTransfer(state, artifactId));
     const transfer = attachment.workspaceTransfer || storeTransfer;
     const transferProgress = Number.isFinite(Number(transfer?.progress))
@@ -46,10 +56,10 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
     }, [attachment, onRemove]);
 
     const handleClick = useCallback(() => {
-        if (attachment.downloadUrl) {
-            window.open(attachment.downloadUrl, '_blank');
+        if (resolvedDownloadUrl) {
+            window.open(resolvedDownloadUrl, '_blank', 'noopener,noreferrer');
         }
-    }, [attachment.downloadUrl]);
+    }, [resolvedDownloadUrl]);
 
     return (
         <div key={index} className="relative flex-shrink-0">
@@ -67,11 +77,15 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
 
             <div
                 className={`flex items-center bg-gray-100 rounded-lg overflow-hidden ${
-                    attachment.downloadUrl ? 'cursor-pointer hover:shadow-sm transition-shadow' : ''
+                    resolvedDownloadUrl ? 'cursor-pointer hover:shadow-sm transition-shadow' : ''
                 }`}
                 onClick={handleClick}
             >
-                <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center overflow-hidden bg-white">
+                <div
+                    className={`w-10 h-10 flex-shrink-0 flex items-center justify-center overflow-hidden ${
+                        usesDefaultIcon ? 'bg-slate-100/80 p-1' : 'bg-gray-100'
+                    }`}
+                >
                     {attachment.previewType === 'svg' ? (
                         <div className="w-full h-full flex items-center justify-center">
                             <span
@@ -85,13 +99,11 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
                         </div>
                     ) : (
                         <img
-                            src={attachment.preview}
+                            src={resolvedPreviewUrl}
                             alt={t('attachment_preview')}
-                            className="w-full h-full object-cover"
-                            style={{
-                                objectFit: 'cover',
-                                objectPosition: 'center center',
-                            }}
+                            className={usesDefaultIcon
+                                ? 'w-full h-full rounded-md object-contain'
+                                : 'w-full h-full object-cover'}
                         />
                     )}
                 </div>

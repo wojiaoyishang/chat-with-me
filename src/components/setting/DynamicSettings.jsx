@@ -34,6 +34,7 @@ import {
 import { Info, Slash, Plus, Copy, Trash2, ChevronDown, Upload, X, GripVertical, ArrowUp, ArrowDown, Search, CheckCircle2, CircleHelp, Ban, LockKeyhole } from "lucide-react";
 import {createPortal} from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import {resolveResourceUrl} from "@/lib/virtualUrl.js";
 
 import {
     DndContext,
@@ -299,7 +300,7 @@ function ImageItem({item, path}) {
             <div className="w-full h-full rounded-2xl border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] flex items-center justify-center overflow-hidden transition-all group-hover:border-[#2563eb] dark:group-hover:border-[#3b82f6]">
                 {val ? (
                     <img
-                        src={val}
+                        src={resolveResourceUrl(val)}
                         alt=""
                         className="w-full h-full object-cover"
                     />

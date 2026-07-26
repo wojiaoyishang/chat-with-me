@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {useTranslation} from "react-i18next";
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 
 /**
  * ToggleSearchButton 组件
@@ -77,7 +78,7 @@ function ToggleButton({
         } else if (iconType === 'image' && iconData) {
             return (
                 <img
-                    src={iconData}
+                    src={resolveResourceUrl(iconData)}
                     className={`w-4.5 h-4.5 ${iconColor}`}
                     width="20"
                     height="20"

@@ -12,6 +12,7 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {getLocalSetting, setLocalSetting} from '@/lib/tools.jsx';
 
 import ToggleButton from './ChatButton.jsx';
@@ -86,7 +87,7 @@ const BuiltinToolIcon = ({tool, isActive = false, t, className = ''}) => {
     if (tool.iconType === 'image') {
         return (
             <img
-                src={iconData}
+                src={resolveResourceUrl(iconData)}
                 className={iconClassName}
                 width="18"
                 height="18"
