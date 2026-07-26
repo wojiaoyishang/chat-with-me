@@ -45,7 +45,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Switch} from "@/components/ui/switch";
 import {Separator} from "@/components/ui/separator";
 import {Badge} from "@/components/ui/badge";
-import {resolveResourceUrl} from '@/lib/virtualUrl.js';
+import {artifactPreviewVirtualUrl, resolveResourceUrl} from '@/lib/virtualUrl.js';
 
 // ==================== 界面设置通用项 ====================
 const InterfaceSettingItem = ({title, description, checked, onCheckedChange, badge}) => (
@@ -109,6 +109,7 @@ const ImageUploadProgressDialog = ({ open, progress, fileName, onCancel, t }) =>
 const SettingPage = ({
                          open,
                          onClose,
+                         onRefreshRequested,
                          handleLogout
                      }) => {
     const isMobile = useIsMobile();
@@ -146,8 +147,32 @@ const SettingPage = ({
     const isFirstOnChangeRef = useRef(false);
     const latestDynamicConfigRequestRef = useRef(0);
     const isSavingDynamicConfigRef = useRef(false);
+    const pendingRefreshScopesRef = useRef(new Set());
 
     const isStaticTab = useCallback((tabId) => ['account', 'interface', 'notifications'].includes(tabId), []);
+
+    const normalizeRefreshScopes = useCallback((value) => {
+        const rawScopes = Array.isArray(value) ? value : (typeof value === 'string' ? [value] : []);
+        return [...new Set(rawScopes
+            .map((scope) => String(scope || '').trim())
+            .filter(Boolean))];
+    }, []);
+
+    const markTabRefreshOnClose = useCallback((tabId) => {
+        const tab = dynamicTabs.find((item) => item?.id === tabId);
+        normalizeRefreshScopes(tab?.refreshOnClose).forEach((scope) => {
+            pendingRefreshScopesRef.current.add(scope);
+        });
+    }, [dynamicTabs, normalizeRefreshScopes]);
+
+    const closeSettings = useCallback(() => {
+        const refreshScopes = [...pendingRefreshScopesRef.current];
+        pendingRefreshScopesRef.current.clear();
+        onClose();
+        if (refreshScopes.length > 0 && typeof onRefreshRequested === 'function') {
+            onRefreshRequested(refreshScopes);
+        }
+    }, [onClose, onRefreshRequested]);
 
     const cloneData = useCallback((value) => {
         try {
@@ -253,7 +278,9 @@ const SettingPage = ({
     };
 
     useEffect(() => {
-        if (open) loadDynamicTabs();
+        if (!open) return;
+        pendingRefreshScopesRef.current.clear();
+        loadDynamicTabs();
     }, [open]);
 
     useEffect(() => {
@@ -334,6 +361,7 @@ const SettingPage = ({
             setDynamicValues(savedValues);
             setOriginalDynamicValues(cloneData(savedValues));
             setIsConfigPristine(true);
+            markTabRefreshOnClose(activeTab);
         } catch (error) {
             if (error?.code === 409 && error?.data?.defaultOptions) {
                 const latest = cloneData(error.data.defaultOptions);
@@ -347,7 +375,7 @@ const SettingPage = ({
         } finally {
             isSavingDynamicConfigRef.current = false;
         }
-    }, [isDynamicTab, activeTab, dynamicValues, t, cloneData]);
+    }, [isDynamicTab, activeTab, dynamicValues, t, cloneData, markTabRefreshOnClose]);
 
     // ==================== 关闭窗口 ====================
     const handleClose = useCallback(() => {
@@ -356,8 +384,8 @@ const SettingPage = ({
             setShowUnsavedDialog(true);
             return;
         }
-        onClose();
-    }, [isDynamicTab, hasUnsavedChanges, onClose]);
+        closeSettings();
+    }, [isDynamicTab, hasUnsavedChanges, closeSettings]);
 
     // ==================== 未保存确认处理（已修复按钮文字闪烁 + 关闭后重置为默认值） ====================
     const handleUnsavedDialogOpenChange = useCallback((isOpen) => {
@@ -396,7 +424,7 @@ const SettingPage = ({
             }
 
             setTimeout(() => {
-                onClose();
+                closeSettings();
                 setLoadingDynamicConfig(false);
                 isProgrammaticCloseRef.current = false;
             }, 150);
@@ -454,7 +482,7 @@ const SettingPage = ({
                     setUploadDialogOpen(false);
                     uploadCleanupRef.current = null;
                     toast.success(t("upload_success") || "上传成功");
-                    const imageUrl = attachment.preview || '';
+                    const imageUrl = artifactPreviewVirtualUrl(attachment.serverId) || attachment.preview || '';
                     resolve(imageUrl);
                 };
 

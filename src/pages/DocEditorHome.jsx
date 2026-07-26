@@ -425,7 +425,8 @@ const DocEditorHome = ({
                            chatMarkId,
                            documentMarkId,
                            onNewChatMarkId,
-                           onNewDocumentMarkId
+                           onNewDocumentMarkId,
+                           settingsRefreshVersions,
                        }) => {
     const {t} = useTranslation();
 
@@ -792,6 +793,7 @@ const DocEditorHome = ({
         <>
             <ChatWithEditor url={docEditorUrl} chatMarkId={chatMarkId}
                             documentMarkId={documentMarkId}
+                            settingsRefreshVersions={settingsRefreshVersions}
                             setDocModifiedStatus={setDocModifiedStatus}
                             onNewChatMarkId={onNewChatMarkId}/>
             <DiscardChangesDialog

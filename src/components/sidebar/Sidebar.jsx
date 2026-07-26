@@ -25,7 +25,16 @@ import { setOnChange } from './sidebarRegistry';
 
 import ConversationsList from './ConversationsList.jsx'
 
-const Sidebar = ({chatMarkId, setChatMarkId, pageType, setPageType, settings, setRandomUUID, onChatMarkIdSelect}) => {
+const Sidebar = ({
+    chatMarkId,
+    setChatMarkId,
+    pageType,
+    setPageType,
+    settings,
+    setRandomUUID,
+    onChatMarkIdSelect,
+    onSettingsRefresh,
+}) => {
     const {t} = useTranslation();
     const navigate = useNavigate();
     const isMobile = useIsMobile();
@@ -141,7 +150,12 @@ const Sidebar = ({chatMarkId, setChatMarkId, pageType, setPageType, settings, se
 
     return (
         <>
-            <SettingPage open={settingsOpen} onClose={() => setSettingsOpen(false)} handleLogout={handleLogout}/>
+            <SettingPage
+                open={settingsOpen}
+                onClose={() => setSettingsOpen(false)}
+                onRefreshRequested={onSettingsRefresh}
+                handleLogout={handleLogout}
+            />
 
             <div className="fixed md:relative top-0 left-0 h-full bg-white shadow-lg z-40 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
                  style={{width: 'var(--sidebar-width)'}}>

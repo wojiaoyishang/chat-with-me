@@ -554,7 +554,7 @@ function ListItem({ item, path }) {
         const defaultItem = { id: editableId, internalId };
         if (item.children) {
             item.children.forEach((child) => {
-                if (child.type === "info") return;
+                if (["info", "heading", "presetButtons"].includes(child.type)) return;
                 if (child.name) {
                     defaultItem[child.name] = child.default ?? (child.nullable ? null : undefined);
                 }
@@ -672,6 +672,7 @@ function ListItem({ item, path }) {
 function SwitchItem({item, path}) {
     const {t} = useTranslation();
     const {values, update} = useSettings();
+    const disabled = !!item.disabled;
     const rawVal = deepGet(values, path);
     const nullable = !!item.nullable;
     const [isNull, setIsNull] = useState(rawVal === null);
@@ -695,16 +696,20 @@ function SwitchItem({item, path}) {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
-                        onClick={toggleNull}
+                        className={`h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] transition-colors text-sm font-medium ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136]"}`}
+                        onClick={disabled ? undefined : toggleNull}
+                        disabled={disabled}
                     >
                         {t("ds.default")}
                     </motion.button>
                 ) : (
                     <Switch
-                        className="cursor-pointer"
+                        className={disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
                         checked={val}
-                        onCheckedChange={(v) => update(path, v)}
+                        disabled={disabled}
+                        onCheckedChange={(v) => {
+                            if (!disabled) update(path, v);
+                        }}
                     />
                 )}
             </AnimatePresence>
@@ -1877,6 +1882,62 @@ function ToolPermissionMatrixItem({item, path}) {
     );
 }
 
+// ─── Preset Buttons ────────────────────────────────────────────────
+function PresetButtonsItem({item, path}) {
+    const {values, update} = useSettings();
+    const [appliedId, setAppliedId] = useState(null);
+    const parentPath = path.slice(0, -1);
+    const presets = Array.isArray(item.presets) ? item.presets : [];
+
+    const applyPreset = useCallback((preset) => {
+        const current = deepGet(values, parentPath);
+        const patch = preset?.values && typeof preset.values === "object" ? preset.values : {};
+        const next = {
+            ...(current && typeof current === "object" ? current : {}),
+            ...JSON.parse(JSON.stringify(patch)),
+        };
+        update(parentPath, next);
+        setAppliedId(preset.id || preset.label || null);
+    }, [parentPath, update, values]);
+
+    return (
+        <div className="w-full px-3 sm:px-4 pt-1 pb-3">
+            <div className="mb-2 flex items-center gap-1.5 text-sm font-medium">
+                <span>{item.text}</span>
+                <TipWrapper tips={item.tips}/>
+            </div>
+            <div className="w-full rounded-xl border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa]/70 dark:bg-[#25282c]/70 p-3">
+                <div className="flex flex-wrap gap-2">
+                    {presets.map((preset) => {
+                        const id = preset.id || preset.label;
+                        const active = appliedId === id;
+                        return (
+                            <button
+                                key={id}
+                                type="button"
+                                onClick={() => applyPreset(preset)}
+                                title={preset.description || preset.label}
+                                className={`inline-flex min-h-8 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${active
+                                    ? "border-[#2563eb] bg-[#2563eb] text-white"
+                                    : "border-[#d0d7de] dark:border-[#3a3f45] bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] hover:border-[#2563eb] hover:text-[#2563eb]"
+                                }`}
+                            >
+                                {active && <CheckCircle2 size={14}/>} 
+                                <span>{preset.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+                {appliedId && (
+                    <div className="mt-2 text-xs text-[#656d76] dark:text-[#9ca3af]">
+                        已填充预设值；保存前仍可修改上方任意字段。
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
 // ─── Item Renderer ─────────────────────────────────────────────────
 function SettingItemRenderer({item, path}) {
     const { values } = useSettings();
@@ -1916,6 +1977,7 @@ function SettingItemRenderer({item, path}) {
         case "custom": return <CustomItem item={item} path={path} />;
         case "tags": return <TagsItem item={item} path={path} />;
         case "toolPermissionMatrix": return <ToolPermissionMatrixItem item={item} path={path} />;
+        case "presetButtons": return <PresetButtonsItem item={item} path={path} />;
         default: return null;
     }
 }
@@ -1977,7 +2039,7 @@ export default function DynamicSettings({
 function buildDefaults(config, initialValues) {
     const result = {};
     for (const item of config) {
-        if (item.type === "heading" || item.type === "info") continue;
+        if (item.type === "heading" || item.type === "info" || item.type === "presetButtons") continue;
         if (item.type === "list" && item.name) {
             const initList = initialValues?.[item.name];
             // 为每个列表项补充稳定的 internalId

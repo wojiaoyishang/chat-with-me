@@ -3,7 +3,14 @@ import ChatPage from '@/pages/ChatPage.jsx';
 import CollaboraOnlineEditor from '@/components/editor/CollaboraOnlineEditor.jsx';
 import {useIsMobile} from "@/lib/tools.jsx";
 
-const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, onNewChatMarkId}) => {
+const ChatWithEditor = ({
+    url,
+    chatMarkId,
+    documentMarkId,
+    setDocModifiedStatus,
+    onNewChatMarkId,
+    settingsRefreshVersions,
+}) => {
 
     const isMobile = useIsMobile();
     const [isMounted, setIsMounted] = useState(false);
@@ -242,6 +249,7 @@ const ChatWithEditor = ({url, chatMarkId, documentMarkId, setDocModifiedStatus, 
                         onMinimize={handleMinimizeChat}
                         visible={chatVisible}
                         onWindowModeChange={handleWindowModeChange}
+                        settingsRefreshVersions={settingsRefreshVersions}
                     />
                 </div>
             </aside>

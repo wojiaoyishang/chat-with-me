@@ -1399,7 +1399,7 @@ ShowQuickUserMessageNavigator
 {
     "sidebar": {  # 侧边栏配置
         "logoType": "image",  # LOGO类型，支持 image 和 text
-        "logo": "http://localhost:5173/api/public/logo.png"  # 如果是 image 展示这个地址的图片，否则展示该字段的文字
+        "logo": "cwm://public/logo.svg"  # 如果是 image 展示这个地址的图片，否则展示该字段的文字
     }
 }
 ```
@@ -4489,6 +4489,48 @@ cwm://public/avatar/minimax.svg
 
 前端 `AvatarImage` 组件统一调用 `resolveResourceUrl()`；动态设置图片预览、Sidebar Logo、聊天按钮、工具菜单和工具按钮中的图片型图标也必须通过同一解析器。业务组件不得自行拼接 `/api/public/...`、`/upload/preview/...` 或后端地址。
 
-Dashboard Logo 接口固定返回 `http://localhost:5173/api/public/logo.png`，前端将完整 HTTP URL 原样用于 Sidebar Logo。该例外只影响 Dashboard Logo，不会改写或覆盖部署中已有的 `public/logo.png`；设置页 Tab 图标和内建开发者角色头像仍使用规范虚拟 URL。
+Dashboard Logo 接口现在返回 `cwm://public/logo.svg`。设置页 Tab 图标和内建开发者角色头像同样返回规范虚拟 URL。旧的 `/logo.png`、`/src/assets/AI.png`、直接 `/public/...` 资源值不再由后端产生，也不作为持久化资源格式。
 
-`useful.generate_image` 生成图片后只保存附件并返回工具结果，不再通过 `frontend_tool_callback` 自动向消息正文插入 Markdown 图片。模型仍可根据工具结果中的 `cwm://artifact/{serverId}/preview` 在后续正文中主动引用图片。
+## 动态设置页关闭刷新标记（2026-07-26）
+
+后端 `/setting/tabs` 的动态页签条目可以声明：
+
+```json
+{
+  "id": "models",
+  "refreshOnClose": ["chat.models"]
+}
+```
+
+`refreshOnClose` 是字符串数组，用于说明该页签成功保存后，在设置窗口关闭时前端需要定向刷新哪些运行时资源。当前内建 scope：
+
+- `chat.models`：重新请求 `/chat/models`，更新主页和文档编辑器聊天面板中的模型名称、头像、标签、思考控制能力及模型选项；
+- `chat.runtime-options`：重新请求 `/chat/models` 中携带的会话运行选项，当前用于 TTS 设置。ASR 请求本身不缓存模型列表，因此无需声明关闭刷新。
+
+前端只在动态页签保存成功后记录对应 scope；未保存修改、保存失败或放弃修改不会新增刷新标记。用户可以在一个设置会话中连续保存多个页签，关闭设置窗口时会对 scope 去重并统一刷新，不会刷新整个页面，也不会重新加载聊天消息。
+
+刷新版本由 `DashboardPage` 持有，并同时传给普通聊天页及文档编辑器中的聊天面板。模型列表刷新会尽量按模型 ID 保持当前选择；模型名称、头像等后端动态字段会替换为最新对象。如果原模型已被删除，则回退到当前可用模型列表的第一项。
+
+该机制是前端本地状态更新，不新增 WebSocket 广播命令、target 或 payload。
+
+## 类 OpenAI 思考能力拆分与动态预设（2026-07-26）
+
+模型设置不再用单个 `thinking_control_mode` 同时推断所有行为。以下能力分别配置、互不隐式绑定：
+
+- `thinking_control_method`：不支持动态切换、软提示词切换或自定义请求字段；
+- `thinking_request_field_path`：请求体中的点号字段路径，例如 `enable_thinking`、`thinking.type`、`reasoning_effort`；
+- `thinking_request_enabled_value` / `thinking_request_disabled_value`：以 JSON 文本配置启停值；
+- `thinking_request_disabled_behavior`：关闭时发送配置值，或者完全省略字段；
+- `thinking_prompt_enabled` / `thinking_prompt_disabled`：软切换时使用的独立提示词；
+- `thinking_response_field_paths`：按顺序读取流式 `delta` 或非流式 `message` 中的思考字段；
+- `tool_thinking_replay_mode`：不支持提供、Assistant 自定义消息字段或临时软提示词；
+- `tool_thinking_message_field_path`：工具轮 Assistant 消息中回传思考的字段；
+- `tool_thinking_request_field_path` 及其启停值：用于 `preserve_thinking` 一类额外请求参数；
+- `tool_thinking_prompt_template`：软续传模板，使用 `{reasoning}` 插入本轮思考；
+- `openai_extra_params`：手写类 OpenAI 客户端固定合并到 `/chat/completions` 请求体的其他厂商参数。
+
+`provideThinkingInToolCall` 的对话默认值改为 `true`。实际生效需要同时满足：对话开关开启，且当前模型的 `tool_thinking_replay_mode` 不是 `none`。模型声明“不支持提供”时，前端保留用户的开启偏好但禁用该开关，后端仍会再次校验，避免仅依赖界面状态。
+
+动态设置新增通用 `presetButtons` 类型。列表项内的预设按钮会把 `values` 浅合并到当前列表对象，不提交预设本身，也不修改未包含在 `values` 中的地址、密钥、模型 ID 或价格字段。模型页当前提供 DeepSeek 兼容、Qwen 百炼兼容、OpenAI `reasoning_effort`、纯软提示词和不支持思考等快速填充；填充后所有字段仍可单独编辑。
+
+模型选择变化时，聊天页同步替换该模型返回的动态会话设置 schema，因此“在工具调用时提供思考”的禁用状态和说明会立即跟随所选模型变化。该功能不新增 WebSocket 广播，也不需要数据库表结构迁移。

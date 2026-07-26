@@ -143,6 +143,7 @@ function ChatPage({
                       onMinimize,                   // 最小化按钮点击回调
                       visible = true,               // 是否显示整个 ChatPage（默认为 true，变化时带动画）
                       onWindowModeChange,           // 窗口化模式变化回调
+                      settingsRefreshVersions = {}, // 设置页关闭后按 scope 触发的定向刷新版本
                   }) {
     const {t, i18n} = useTranslation();
     const chatPageRef = useRef(null);
@@ -186,6 +187,7 @@ function ChatPage({
 
     const [models, setModels] = useState([]);
     const [selectedModel, setSelectedModel] = useState({name: t("no_models")});
+    const selectedModelRef = useRef(selectedModel);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [advancedSettings, setAdvancedSettings] = useState([]);
     const [initialSettingValues, setInitialSettingValues] = useState({});
@@ -195,6 +197,10 @@ function ChatPage({
     const [stories, setStories] = useState([]);
     const [storyReaderOpen, setStoryReaderOpen] = useState(false);
     const [activeStory, setActiveStory] = useState(null);
+
+    useEffect(() => {
+        selectedModelRef.current = selectedModel;
+    }, [selectedModel]);
 
     // 删除相关
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -329,6 +335,7 @@ function ChatPage({
     }, [selectedModel]);
     const handleModelItemClick = useCallback((model) => {
         setSelectedModel(model);
+        setAdvancedSettings(Array.isArray(model?.options) ? model.options : []);
         if (!isMobile) {
             setIsModelPopoverOpen(false);
         } else {
@@ -2314,6 +2321,50 @@ function ChatPage({
         };
     }, [chatMarkId]);
 
+    const loadAvailableModels = useCallback(async ({preserveSelection = false} = {}) => {
+        try {
+            const modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
+                params: {markId: chatMarkId}
+            });
+            const normalizedModels = Array.isArray(modelsData) ? modelsData : [];
+            setModels(normalizedModels);
+
+            if (normalizedModels.length === 0) {
+                const emptyModel = {name: t("no_models")};
+                selectedModelRef.current = emptyModel;
+                setSelectedModel(emptyModel);
+                setAdvancedSettings([]);
+                return normalizedModels;
+            }
+
+            const currentModelId = preserveSelection ? selectedModelRef.current?.id : null;
+            const nextModel = (currentModelId
+                ? normalizedModels.find((item) => item.id === currentModelId)
+                : null) || normalizedModels[0];
+
+            selectedModelRef.current = nextModel;
+            setSelectedModel(nextModel);
+            setAdvancedSettings(Array.isArray(nextModel?.options) ? nextModel.options : []);
+            return normalizedModels;
+        } catch (error) {
+            toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
+            return [];
+        }
+    }, [chatMarkId, t]);
+
+    const modelSettingsRefreshRevision = Number(settingsRefreshVersions?.['chat.models'] || 0);
+    const runtimeOptionsRefreshRevision = Number(settingsRefreshVersions?.['chat.runtime-options'] || 0);
+    const lastSettingsModelRefreshRef = useRef(
+        `${modelSettingsRefreshRevision}:${runtimeOptionsRefreshRevision}`
+    );
+
+    useEffect(() => {
+        const refreshKey = `${modelSettingsRefreshRevision}:${runtimeOptionsRefreshRevision}`;
+        if (lastSettingsModelRefreshRef.current === refreshKey) return;
+        lastSettingsModelRefreshRef.current = refreshKey;
+        loadAvailableModels({preserveSelection: true});
+    }, [loadAvailableModels, modelSettingsRefreshRevision, runtimeOptionsRefreshRevision]);
+
     useEffect(() => {
         if (isNewMarkIdRef.current) {
             // The first message already carries the pending settings. Avoid a
@@ -2341,20 +2392,7 @@ function ChatPage({
             }
         }
         const requestModels = async () => {
-            try {
-                modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
-                    params: {markId: chatMarkId}
-                });
-                setModels(modelsData);
-                if (modelsData.length > 0) {
-                    setSelectedModel(modelsData[0]);
-                    if (modelsData[0].options) {
-                        setAdvancedSettings(modelsData[0].options);
-                    }
-                }
-            } catch (error) {
-                toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
-            }
+            modelsData = await loadAvailableModels({preserveSelection: false});
         };
         const requestMessages = async () => {
             try {
@@ -2436,7 +2474,7 @@ function ChatPage({
         }
         setIsLoadingError(false);
         setIsFirstMessageSend(true);
-    }, [chatMarkId, randomMark, setMessages, t]);
+    }, [chatMarkId, randomMark, setMessages, t, loadAvailableModels]);
 
     const handleSidebarToggle = useCallback(() => {
         setIsSidebarOpen(prev => !prev);

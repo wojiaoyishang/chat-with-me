@@ -27,12 +27,28 @@ const DashboardPage = ({type = "chat"}) => {
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [sidebarSettings, setSidebarSettings] = useState({});
     const [randomUUID, setRandomUUID] = useState();
+    const [settingsRefreshVersions, setSettingsRefreshVersions] = useState({});
 
     const [pageType, setPageType] = useState(type);
 
     const {user, setUser, clearUser} = useUserStore();
 
     const {t} = useTranslation();
+
+    const handleSettingsRefresh = useCallback((scopes = []) => {
+        const normalizedScopes = [...new Set((Array.isArray(scopes) ? scopes : [scopes])
+            .map((scope) => String(scope || '').trim())
+            .filter(Boolean))];
+        if (normalizedScopes.length === 0) return;
+
+        setSettingsRefreshVersions((current) => {
+            const next = {...current};
+            normalizedScopes.forEach((scope) => {
+                next[scope] = Number(next[scope] || 0) + 1;
+            });
+            return next;
+        });
+    }, []);
 
     // 页面加载动画层
     useEffect(() => {
@@ -147,6 +163,7 @@ const DashboardPage = ({type = "chat"}) => {
 
                     <Sidebar chatMarkId={chatMarkId} setChatMarkId={setChatMarkId} settings={sidebarSettings}
                              pageType={pageType} setPageType={setPageType} setRandomUUID={setRandomUUID}
+                             onSettingsRefresh={handleSettingsRefresh}
                              onChatMarkIdSelect={(newChatMarkId) => {
                                  handleMarkIdSelect({
                                      newChatMarkId: newChatMarkId,
@@ -174,6 +191,7 @@ const DashboardPage = ({type = "chat"}) => {
                                                   });
                                               }}
                                               showWindowButton={false}
+                                              settingsRefreshVersions={settingsRefreshVersions}
                                     />
                                 </motion.div>
                             )}
@@ -195,6 +213,7 @@ const DashboardPage = ({type = "chat"}) => {
                                                            newDocumentMarkId: documentMarkId,
                                                        });
                                                    }}
+                                                   settingsRefreshVersions={settingsRefreshVersions}
                                                    onNewDocumentMarkId={(newDocumentMarkId) => {
                                                        handleMarkIdSelect({
                                                            newChatMarkId: chatMarkId,

@@ -52,3 +52,10 @@ export const resolveResourceUrl = (value) => {
     const resolved = resolveCwmUrl(value);
     return resolved === null ? value : resolved;
 };
+
+
+export const artifactPreviewVirtualUrl = (serverId) => {
+    const value = String(serverId || '').trim();
+    if (!IDENTIFIER_RE.test(value)) return '';
+    return `cwm://artifact/${encodeURIComponent(value)}/preview`;
+};
