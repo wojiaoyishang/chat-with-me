@@ -508,5 +508,21 @@
   "workspace_security_node_modules": "node_modules",
   "workspace_security_python_cache": "__pycache__",
   "workspace_security_custom_placeholder": "Other Glob, e.g. **/.cache/**",
-  "workspace_security_empty_warning": "No denied-path rules are configured. The AI can access every file inside the mounted folders."
+  "workspace_security_empty_warning": "No denied-access rules are configured.",
+  "workspace_security_rules_hint_v2": "Deny folders or files with path, Glob, or regular-expression matching and choose which operations are affected.",
+  "workspace_policy_add_rule": "Add rule",
+  "workspace_policy_match_path": "Path",
+  "workspace_policy_match_regex": "Regex",
+  "workspace_policy_scope_all": "All operations",
+  "workspace_policy_scope_inspect": "Browse and read",
+  "workspace_policy_scope_modify": "Modify and delete",
+  "workspace_policy_scope_transfer": "Import and export",
+  "workspace_policy_scope_execute": "Command working dir",
+  "workspace_policy_pattern_required": "Denied-access rules cannot be empty",
+  "workspace_policy_regex_invalid": "Invalid regular expression",
+  "workspace_policy_ignore_hint": "node_modules and __pycache__ are ignored only during browsing and full-text search by default; explicitly reading a file remains allowed. The shortcuts add them to the denied-access list.",
+  "workspace_command_permissions": "Allowed commands",
+  "workspace_command_permissions_hint": "Only project commands that are configured and enabled here may run through code_run or code_validate.",
+  "workspace_commands_after_save": "Save first to detect project commands, then edit again to enable only the commands you need. New workspaces deny command execution by default.",
+  "workspace_no_commands": "No configurable commands were detected for this project."
 }

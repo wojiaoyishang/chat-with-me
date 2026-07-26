@@ -1,14 +1,15 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {
-    MapPinned,
     Folder,
     Loader2,
+    MapPinned,
     Pencil,
     Plus,
     RefreshCw,
     RotateCcw,
     Save,
     ShieldCheck,
+    Terminal,
     Trash2,
     X,
 } from 'lucide-react';
@@ -18,7 +19,6 @@ import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
-import {Checkbox} from '@/components/ui/checkbox';
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -34,53 +34,70 @@ import {
 import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
 import FolderBrowserDialog from './components/FolderBrowserDialog.jsx';
 
-const SECURITY_PRESETS = [
-    {
-        id: 'git',
-        labelKey: 'workspace_security_git',
-        fallback: 'Git 元数据',
-        patterns: ['.git', '.git/**', '**/.git', '**/.git/**'],
-    },
-    {
-        id: 'env',
-        labelKey: 'workspace_security_env',
-        fallback: '环境变量文件',
-        patterns: ['.env', '.env.*', '**/.env', '**/.env.*'],
-    },
-    {
-        id: 'keys',
-        labelKey: 'workspace_security_keys',
-        fallback: '密钥文件',
-        patterns: ['*.pem', '*.key', '**/*.pem', '**/*.key'],
-    },
-    {
-        id: 'secrets',
-        labelKey: 'workspace_security_secrets',
-        fallback: 'Secrets 目录',
-        patterns: ['secrets', 'secrets/**', '**/secrets', '**/secrets/**'],
-    },
-    {
-        id: 'node-modules',
-        labelKey: 'workspace_security_node_modules',
-        fallback: 'node_modules',
-        patterns: ['node_modules', 'node_modules/**', '**/node_modules', '**/node_modules/**'],
-    },
-    {
-        id: 'python-cache',
-        labelKey: 'workspace_security_python_cache',
-        fallback: '__pycache__',
-        patterns: ['__pycache__', '__pycache__/**', '**/__pycache__', '**/__pycache__/**'],
-    },
+const ACCESS_OPERATIONS = [
+    'list', 'search', 'read', 'create', 'write', 'delete', 'rename', 'import', 'export', 'execute',
 ];
 
-const PRESET_PATTERNS = new Set(SECURITY_PRESETS.flatMap((item) => item.patterns));
-
-const normalizePatterns = (patterns) => {
-    const seen = new Set();
-    return (Array.isArray(patterns) ? patterns : [])
-        .map((item) => String(item || '').replace(/\\/g, '/').trim())
-        .filter((item) => item && !seen.has(item) && seen.add(item));
+const OPERATION_PRESETS = {
+    all: ACCESS_OPERATIONS,
+    inspect: ['list', 'search', 'read'],
+    modify: ['create', 'write', 'delete', 'rename'],
+    transfer: ['import', 'export'],
+    execute: ['execute'],
 };
+
+const cloneValue = (value) => JSON.parse(JSON.stringify(value ?? null));
+
+const normalizeOperations = (value) => {
+    const items = Array.isArray(value) ? value : ACCESS_OPERATIONS;
+    return ACCESS_OPERATIONS.filter((item) => items.includes(item));
+};
+
+const operationPresetFor = (operations) => {
+    const normalized = normalizeOperations(operations);
+    const key = Object.keys(OPERATION_PRESETS).find((item) => {
+        const candidate = OPERATION_PRESETS[item];
+        return candidate.length === normalized.length && candidate.every((operation) => normalized.includes(operation));
+    });
+    return key || 'all';
+};
+
+const normalizeAccessRule = (rule, index = 0) => ({
+    id: String(rule?.id || `access-${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`),
+    name: String(rule?.name || rule?.matcher?.pattern || ''),
+    enabled: rule?.enabled !== false,
+    effect: rule?.effect === 'allow' ? 'allow' : 'deny',
+    matcher: {
+        type: ['path', 'glob', 'regex', 'exact'].includes(rule?.matcher?.type) ? rule.matcher.type : 'path',
+        pattern: String(rule?.matcher?.pattern || '').replace(/\\/g, '/'),
+    },
+    operations: normalizeOperations(rule?.operations),
+    mounts: Array.isArray(rule?.mounts) ? rule.mounts : [],
+    priority: Number(rule?.priority || 0),
+    _order: Number.isFinite(rule?._order) ? rule._order : index,
+});
+
+const splitAccessPolicy = (policy) => {
+    const rules = (Array.isArray(policy?.rules) ? policy.rules : []).map(normalizeAccessRule);
+    return {
+        defaultEffect: policy?.defaultEffect === 'deny' ? 'deny' : 'allow',
+        deniedRules: rules.filter((rule) => rule.effect === 'deny' && rule.enabled),
+        preservedRules: rules.filter((rule) => rule.effect !== 'deny' || !rule.enabled),
+    };
+};
+
+const commandPolicyPayload = (allowedCommandIds) => ({
+    version: 1,
+    defaultEffect: 'deny',
+    rules: [...allowedCommandIds].sort().map((commandId) => ({
+        id: `command-allow-${commandId}`,
+        name: commandId,
+        enabled: true,
+        effect: 'allow',
+        matcher: {type: 'exact', pattern: commandId},
+        priority: 0,
+    })),
+});
 
 const safeAlias = (name, index) => {
     const normalized = String(name || '')
@@ -98,26 +115,27 @@ const cleanDisplayPath = (value) => String(value || '')
 const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceId, onWorkspaceChange, t}) => {
     const [workspaces, setWorkspaces] = useState([]);
     const [roots, setRoots] = useState([]);
-    const [defaultDeniedPaths, setDefaultDeniedPaths] = useState([]);
+    const [defaultAccessPolicy, setDefaultAccessPolicy] = useState({version: 2, defaultEffect: 'allow', rules: []});
+    const [defaultVisibilityPolicy, setDefaultVisibilityPolicy] = useState({version: 1, ignoredRules: []});
+    const [quickAccessRules, setQuickAccessRules] = useState([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [name, setName] = useState('');
     const [readOnly, setReadOnly] = useState(false);
     const [mounts, setMounts] = useState([]);
-    const [deniedPaths, setDeniedPaths] = useState([]);
-    const [customPattern, setCustomPattern] = useState('');
+    const [accessDefaultEffect, setAccessDefaultEffect] = useState('allow');
+    const [accessRules, setAccessRules] = useState([]);
+    const [preservedAccessRules, setPreservedAccessRules] = useState([]);
+    const [visibilityPolicy, setVisibilityPolicy] = useState({version: 1, ignoredRules: []});
+    const [configuredCommands, setConfiguredCommands] = useState([]);
+    const [allowedCommands, setAllowedCommands] = useState([]);
     const [browserOpen, setBrowserOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
 
     const selected = useMemo(
         () => workspaces.find((item) => item.id === selectedWorkspaceId) || null,
         [selectedWorkspaceId, workspaces],
-    );
-
-    const customDeniedPaths = useMemo(
-        () => deniedPaths.filter((item) => !PRESET_PATTERNS.has(item)),
-        [deniedPaths],
     );
 
     const load = useCallback(async () => {
@@ -130,7 +148,9 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
             ]);
             setWorkspaces(Array.isArray(workspaceData) ? workspaceData : []);
             setRoots(Array.isArray(rootData) ? rootData : []);
-            setDefaultDeniedPaths(normalizePatterns(policyData?.deniedPaths));
+            setDefaultAccessPolicy(cloneValue(policyData?.accessPolicy) || {version: 2, defaultEffect: 'allow', rules: []});
+            setDefaultVisibilityPolicy(cloneValue(policyData?.visibilityPolicy) || {version: 1, ignoredRules: []});
+            setQuickAccessRules((Array.isArray(policyData?.quickAccessRules) ? policyData.quickAccessRules : []).map(normalizeAccessRule));
         } catch (error) {
             toast.error(error?.message || t('workspace_load_failed', '读取 Workspace 失败'));
         } finally {
@@ -157,13 +177,22 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
         }
     };
 
+    const applyAccessPolicy = (policy) => {
+        const split = splitAccessPolicy(policy);
+        setAccessDefaultEffect(split.defaultEffect);
+        setAccessRules(split.deniedRules);
+        setPreservedAccessRules(split.preservedRules);
+    };
+
     const beginCreate = () => {
         setEditingId('new');
         setName('');
         setReadOnly(false);
         setMounts([]);
-        setDeniedPaths([...defaultDeniedPaths]);
-        setCustomPattern('');
+        applyAccessPolicy(defaultAccessPolicy);
+        setVisibilityPolicy(cloneValue(defaultVisibilityPolicy) || {version: 1, ignoredRules: []});
+        setConfiguredCommands([]);
+        setAllowedCommands([]);
     };
 
     const beginEdit = (workspace) => {
@@ -174,8 +203,10 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
             ...item,
             displayPath: cleanDisplayPath(item.displayPath),
         })));
-        setDeniedPaths(normalizePatterns(workspace.deniedPaths));
-        setCustomPattern('');
+        applyAccessPolicy(workspace.accessPolicy || defaultAccessPolicy);
+        setVisibilityPolicy(cloneValue(workspace.visibilityPolicy || defaultVisibilityPolicy));
+        setConfiguredCommands(Array.isArray(workspace.configuredCommands) ? workspace.configuredCommands : []);
+        setAllowedCommands(Array.isArray(workspace.allowedCommands) ? workspace.allowedCommands : []);
     };
 
     const stopEditing = () => {
@@ -183,8 +214,12 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
         setName('');
         setReadOnly(false);
         setMounts([]);
-        setDeniedPaths([]);
-        setCustomPattern('');
+        setAccessDefaultEffect('allow');
+        setAccessRules([]);
+        setPreservedAccessRules([]);
+        setVisibilityPolicy({version: 1, ignoredRules: []});
+        setConfiguredCommands([]);
+        setAllowedCommands([]);
     };
 
     const addMount = (folder) => {
@@ -207,20 +242,53 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
         }]);
     };
 
-    const togglePreset = (preset, enabled) => {
-        setDeniedPaths((current) => {
-            const next = enabled
-                ? [...current, ...preset.patterns]
-                : current.filter((item) => !preset.patterns.includes(item));
-            return normalizePatterns(next);
-        });
+    const updateAccessRule = (index, patch) => {
+        setAccessRules((current) => current.map((item, itemIndex) => (
+            itemIndex === index ? {...item, ...patch} : item
+        )));
     };
 
-    const addCustomPattern = () => {
-        const values = customPattern.split(/[\n,]+/).map((item) => item.trim()).filter(Boolean);
-        if (values.length === 0) return;
-        setDeniedPaths((current) => normalizePatterns([...current, ...values]));
-        setCustomPattern('');
+    const addAccessRule = (template = null) => {
+        const nextOrder = Math.max(
+            -1,
+            ...accessRules.map((item) => item._order ?? -1),
+            ...preservedAccessRules.map((item) => item._order ?? -1),
+        ) + 1;
+        const rule = {
+            ...normalizeAccessRule(template || {
+                name: '',
+                effect: 'deny',
+                matcher: {type: 'path', pattern: ''},
+                operations: ACCESS_OPERATIONS,
+            }, nextOrder),
+            _order: nextOrder,
+        };
+        const duplicate = accessRules.some((item) => (
+            item.matcher.type === rule.matcher.type && item.matcher.pattern === rule.matcher.pattern && rule.matcher.pattern
+        ));
+        if (!duplicate) setAccessRules((current) => [...current, rule]);
+    };
+
+    const resetAccessRules = () => applyAccessPolicy(defaultAccessPolicy);
+
+    const validateAccessRules = () => {
+        for (const rule of accessRules) {
+            const pattern = rule.matcher.pattern.trim();
+            if (!pattern) {
+                toast.error(t('workspace_policy_pattern_required', '禁止访问规则不能为空'));
+                return false;
+            }
+            if (rule.matcher.type === 'regex') {
+                try {
+                    // Backend remains authoritative and applies stricter safety checks.
+                    new RegExp(pattern);
+                } catch {
+                    toast.error(t('workspace_policy_regex_invalid', `无效正则：${pattern}`));
+                    return false;
+                }
+            }
+        }
+        return true;
     };
 
     const save = async () => {
@@ -232,12 +300,30 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
             toast.error(t('workspace_mount_invalid', '请替换旧目录并检查虚拟挂载名'));
             return;
         }
+        if (!validateAccessRules()) return;
         setSaving(true);
         try {
+            const accessPolicy = {
+                version: 2,
+                defaultEffect: accessDefaultEffect,
+                rules: [...preservedAccessRules, ...accessRules]
+                    .sort((left, right) => (left._order ?? 0) - (right._order ?? 0))
+                    .map((item) => {
+                        const {_order, ...rule} = item;
+                        return {
+                            ...rule,
+                            name: rule.name || rule.matcher.pattern,
+                            enabled: rule.effect === 'deny' ? true : rule.enabled,
+                            matcher: {...rule.matcher, pattern: rule.matcher.pattern.trim()},
+                            operations: normalizeOperations(rule.operations),
+                        };
+                    }),
+            };
             const payload = {
                 name: name.trim(),
                 readOnly,
-                deniedPaths: normalizePatterns(deniedPaths),
+                accessPolicy,
+                visibilityPolicy,
                 mounts: mounts.map((item) => ({
                     id: item.id || undefined,
                     rootId: item.rootId,
@@ -246,6 +332,9 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
                     readOnly: Boolean(item.readOnly),
                 })),
             };
+            if (editingId !== 'new' && configuredCommands.length > 0) {
+                payload.commandPolicy = commandPolicyPayload(allowedCommands);
+            }
             const saved = editingId === 'new'
                 ? await apiClient.post(`${apiEndpoint.WORKSPACES_ENDPOINT}/`, payload)
                 : await apiClient.patch(`${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(editingId)}`, payload);
@@ -282,7 +371,7 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
     return (
         <>
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="max-h-[92vh] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+                <DialogContent className="max-h-[92vh] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-w-3xl">
                     <DialogHeader className="border-b px-4 py-3 pr-12 text-left">
                         <DialogTitle className="flex items-center gap-2 text-base">
                             <MapPinned className="h-4 w-4 text-blue-600"/>
@@ -315,7 +404,7 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2 pt-3">
                                 <Button type="button" size="sm" onClick={beginCreate}>
                                     <Plus/> {t('workspace_new', '新建')}
                                 </Button>
@@ -406,72 +495,116 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
                                 <section className="space-y-3">
                                     <div className="flex items-start gap-2">
                                         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-blue-600"/>
-                                        <div>
-                                            <div className="text-sm font-medium">{t('workspace_security_rules', '禁止访问规则')}</div>
+                                        <div className="min-w-0">
+                                            <div className="text-sm font-medium">{t('workspace_security_rules', '禁止访问列表')}</div>
                                             <div className="text-xs text-muted-foreground">
-                                                {t('workspace_security_rules_hint', '这些 Glob 规则同时作用于读取、写入、导入和导出。可按 Workspace 单独调整。')}
+                                                {t('workspace_security_rules_hint_v2', '可禁止目录或文件；支持路径、Glob 和正则，并可限定生效操作。')}
                                             </div>
                                         </div>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            className="ml-auto shrink-0"
-                                            onClick={() => setDeniedPaths([...defaultDeniedPaths])}
-                                        >
+                                        <Button type="button" variant="ghost" size="sm" className="ml-auto shrink-0" onClick={resetAccessRules}>
                                             <RotateCcw/> {t('workspace_security_reset', '恢复默认')}
                                         </Button>
                                     </div>
-                                    <div className="grid gap-2 sm:grid-cols-2">
-                                        {SECURITY_PRESETS.map((preset) => {
-                                            const checked = preset.patterns.every((pattern) => deniedPaths.includes(pattern));
-                                            return (
-                                                <label key={preset.id} className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted/40">
-                                                    <Checkbox checked={checked} onCheckedChange={(value) => togglePreset(preset, Boolean(value))}/>
-                                                    <span>{t(preset.labelKey, preset.fallback)}</span>
-                                                </label>
-                                            );
-                                        })}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="flex gap-2">
-                                            <Input
-                                                value={customPattern}
-                                                onChange={(event) => setCustomPattern(event.target.value)}
-                                                onKeyDown={(event) => {
-                                                    if (event.key === 'Enter') {
-                                                        event.preventDefault();
-                                                        addCustomPattern();
-                                                    }
-                                                }}
-                                                placeholder={t('workspace_security_custom_placeholder', '其他 Glob，例如 **/.cache/**')}
-                                                className="h-9 text-xs"
-                                            />
-                                            <Button type="button" variant="outline" size="sm" onClick={addCustomPattern} disabled={!customPattern.trim()}>
-                                                {t('add', '添加')}
+
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Button type="button" variant="outline" size="sm" onClick={() => addAccessRule()}>
+                                            <Plus/> {t('workspace_policy_add_rule', '添加规则')}
+                                        </Button>
+                                        {quickAccessRules.map((rule) => (
+                                            <Button key={rule.id} type="button" variant="ghost" size="sm" onClick={() => addAccessRule(rule)}>
+                                                + {rule.name}
                                             </Button>
+                                        ))}
+                                    </div>
+
+                                    <div className="divide-y rounded-md border">
+                                        {accessRules.length === 0 ? (
+                                            <div className="px-3 py-5 text-center text-xs text-muted-foreground">
+                                                {t('workspace_security_empty_warning', '当前没有禁止访问规则。')}
+                                            </div>
+                                        ) : accessRules.map((rule, index) => (
+                                            <div key={rule.id} className="grid gap-2 px-3 py-2.5 sm:grid-cols-[7.5rem_minmax(0,1fr)_7.5rem_auto] sm:items-center">
+                                                <Select
+                                                    value={rule.matcher.type === 'exact' ? 'path' : rule.matcher.type}
+                                                    onValueChange={(value) => updateAccessRule(index, {matcher: {...rule.matcher, type: value}})}
+                                                >
+                                                    <SelectTrigger className="h-8 text-xs"><SelectValue/></SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="path">{t('workspace_policy_match_path', '路径')}</SelectItem>
+                                                        <SelectItem value="glob">Glob</SelectItem>
+                                                        <SelectItem value="regex">{t('workspace_policy_match_regex', '正则')}</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <Input
+                                                    value={rule.matcher.pattern}
+                                                    onChange={(event) => updateAccessRule(index, {
+                                                        matcher: {...rule.matcher, pattern: event.target.value},
+                                                        name: event.target.value,
+                                                    })}
+                                                    placeholder={rule.matcher.type === 'regex' ? '(^|/)private(/|$)' : 'config/private'}
+                                                    className="h-8 font-mono text-xs"
+                                                />
+                                                <Select
+                                                    value={operationPresetFor(rule.operations)}
+                                                    onValueChange={(value) => updateAccessRule(index, {operations: OPERATION_PRESETS[value]})}
+                                                >
+                                                    <SelectTrigger className="h-8 text-xs"><SelectValue/></SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="all">{t('workspace_policy_scope_all', '全部操作')}</SelectItem>
+                                                        <SelectItem value="inspect">{t('workspace_policy_scope_inspect', '浏览读取')}</SelectItem>
+                                                        <SelectItem value="modify">{t('workspace_policy_scope_modify', '修改删除')}</SelectItem>
+                                                        <SelectItem value="transfer">{t('workspace_policy_scope_transfer', '导入导出')}</SelectItem>
+                                                        <SelectItem value="execute">{t('workspace_policy_scope_execute', '命令目录')}</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                    onClick={() => setAccessRules((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                                                >
+                                                    <X className="h-3.5 w-3.5"/>
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="text-[11px] text-muted-foreground">
+                                        {t('workspace_policy_ignore_hint', 'node_modules 与 __pycache__ 默认只在目录浏览和全文搜索中忽略；明确读取文件仍允许。快捷按钮会把它们加入禁止访问列表。')}
+                                    </div>
+                                </section>
+
+                                <Separator/>
+                                <section className="space-y-3">
+                                    <div className="flex items-start gap-2">
+                                        <Terminal className="mt-0.5 h-4 w-4 shrink-0 text-blue-600"/>
+                                        <div>
+                                            <div className="text-sm font-medium">{t('workspace_command_permissions', '允许执行的命令')}</div>
+                                            <div className="text-xs text-muted-foreground">
+                                                {t('workspace_command_permissions_hint', '只有项目已配置且这里开启的命令才能通过 code_run 或 code_validate 执行。')}
+                                            </div>
                                         </div>
-                                        {customDeniedPaths.length > 0 ? (
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {customDeniedPaths.map((pattern) => (
-                                                    <Badge key={pattern} variant="outline" className="gap-1 font-mono text-[11px]">
-                                                        {pattern}
-                                                        <button
-                                                            type="button"
-                                                            aria-label={t('delete', '删除')}
-                                                            onClick={() => setDeniedPaths((current) => current.filter((item) => item !== pattern))}
-                                                        >
-                                                            <X className="h-3 w-3"/>
-                                                        </button>
-                                                    </Badge>
-                                                ))}
+                                    </div>
+                                    <div className="divide-y rounded-md border">
+                                        {configuredCommands.length === 0 ? (
+                                            <div className="px-3 py-5 text-center text-xs text-muted-foreground">
+                                                {editingId === 'new'
+                                                    ? t('workspace_commands_after_save', '保存后会识别项目命令；再次编辑后按需开启，默认不允许执行。')
+                                                    : t('workspace_no_commands', '当前项目没有识别到可配置命令。')}
                                             </div>
-                                        ) : null}
-                                        {deniedPaths.length === 0 ? (
-                                            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                                                {t('workspace_security_empty_warning', '当前未配置禁止访问规则，AI 可以访问所有已挂载目录中的文件。')}
-                                            </div>
-                                        ) : null}
+                                        ) : configuredCommands.map((commandId) => (
+                                            <label key={commandId} className="flex items-center gap-3 px-3 py-2.5">
+                                                <code className="min-w-0 flex-1 truncate text-xs">{commandId}</code>
+                                                <Switch
+                                                    checked={allowedCommands.includes(commandId)}
+                                                    onCheckedChange={(checked) => setAllowedCommands((current) => (
+                                                        checked
+                                                            ? [...new Set([...current, commandId])]
+                                                            : current.filter((item) => item !== commandId)
+                                                    ))}
+                                                />
+                                            </label>
+                                        ))}
                                     </div>
                                 </section>
                             </>

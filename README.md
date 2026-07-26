@@ -4128,3 +4128,244 @@ AI 的 Markdown 确认反馈
 - TTS 外挂字幕是独立于悬浮播放器的通用朗读覆盖层；隐藏或折叠播放器不会隐藏字幕。字幕默认显示在屏幕下方中央，可直接拖动，拖动时使用四向移动光标，右键可在九宫格中快速定位。TTS 悬浮窗中的字幕设置支持位置、最大宽高、字体大小、背景不透明度与行高；位置与样式会保存在本地，聊天正文和故事阅读器共享。字幕中心点可移动到整个视口范围，不额外保留屏幕边距。
 - 当前朗读分段会在正文中使用黄色高亮；语速、浏览器音色与字幕开关会在切换故事篇幅后保持。
 - 故事篇幅的小标题可为空，前端只在存在标题时渲染标题区域。
+
+## 模型级内建功能与思考切换接口（2026-07-25）
+
+### `/chat/models` 模型能力字段
+
+模型列表中的每个模型新增以下字段：
+
+```json
+{
+  "id": "model-id",
+  "thinking_control_mode": "none | prompt | enable_thinking | thinking_type",
+  "available_builtin_tools": ["enable_thinking"]
+}
+```
+
+- `thinking_control_mode=none` 时，`available_builtin_tools` 必须为空数组。
+- 其他思考切换方式会声明 `enable_thinking` 内建功能。
+- 前端不得根据模型名称或服务商猜测能力，只能使用后端返回的 `available_builtin_tools`。
+
+### `/chatbox` 内建功能目录
+
+`/chatbox` 返回的 `builtin_tools` 是全局展示目录，不代表当前模型一定支持对应功能。前端必须计算：
+
+```text
+可见内建按钮 = /chatbox builtin_tools ∩ 当前模型 available_builtin_tools
+```
+
+桌面端按钮、移动端内建功能菜单和消息发送负载必须使用同一份过滤结果。模型没有可用内建功能时，移动端整个内建功能入口隐藏。
+
+### `Message-Send` 请求规则
+
+`payload.toolsStatus.builtin_tools` 只能包含当前所选模型声明支持的内建功能。后端会按照 `payload.model` 再次过滤，因此旧客户端或错误负载提交的无效功能不会传给 Worker。
+
+前端按模型 ID 暂存内建按钮状态：切换到不支持的模型时按钮消失且不会发送该状态；切回原模型时恢复该模型在当前页面中的选择。
+
+### 广播兼容性
+
+本次变更没有新增 WebSocket 广播命令。`go_thinking()` 与 `set_thinking(enable=...)` 作为普通 `interrupt` 工具调用参与现有工具调用流；思考状态仅存在于当前 TaskRun 的 Worker 运行时，不要求前端同步或持久化广播状态。
+
+### 后台模型配置：思考切换方式
+
+模型设置只暴露一个 `thinking_control_mode` 下拉字段，默认值为 `none`：
+
+| 值 | 界面含义 | 请求行为 |
+| --- | --- | --- |
+| `none` | 不支持切换思考 | 不显示深度思考按钮，不向模型提供思考控制工具 |
+| `prompt` | 提示词软切换 | 不添加专用请求字段，通过临时系统指令切换直接响应/集中思考 |
+| `enable_thinking` | `enable_thinking` 布尔字段 | 每轮请求发送 `enable_thinking: true/false` |
+| `thinking_type` | `thinking.type` 结构字段 | 每轮请求发送 `thinking: {"type": "enabled/disabled"}` |
+
+旧模型记录中的 `add_enable_thinking` 和 `enable_thinking_type` 会由后端兼容映射，但新前端只应读写 `thinking_control_mode`。
+
+### 任务模式思考控制工具
+
+仅当当前模型声明支持思考切换时，系统提示词和“模型调用设置”工具集才会提供：
+
+- `go_thinking()`：只让下一次成功的模型请求启用思考，完成后自动恢复。
+- `set_thinking(enable=True|False)`：在当前 TaskRun 内持续开启或关闭，任务结束后不写回模型或会话配置。
+
+两者必须使用现有 `interrupt` 工具流。模型不支持切换时，即使因历史上下文误调用，后端也只返回明确的“不支持切换”工具结果，不改变运行状态。
+
+`order(...)` 和 `batch(...)` 只能作为最外层分组，不能递归或相互嵌套。推荐对子调用使用显式参数名，参数名会作为结果标识；纯位置参数仅作兼容并自动命名为 `t0`、`t1`，位置参数与命名参数不能混用。
+
+## 任务模式 Skill 引导与自动关闭首轮思考（2026-07-25）
+
+### `/chatbox` 对话设置新增字段
+
+后端返回的 Conversation 设置目录在“任务模式设置”中新增：
+
+```json
+{
+  "type": "switch",
+  "name": "autoDisableTaskThinking",
+  "text": "自动关闭任务模式思考",
+  "default": true
+}
+```
+
+前端继续使用现有动态 Conversation 设置渲染机制，不需要为该字段新增专用组件。
+
+字段语义：
+
+- 默认值为 `true`；
+- 仅当用户发送本次请求时已经开启“深度思考”，并且 `task_start()` 成功创建新的 TaskRun 时生效；
+- 读取 `task-mode` Skill、查看工具集或调用普通工具不会触发自动关闭；
+- `task_start()` 成功所在的模型轮结束后，后端只关闭用户请求带入的持续思考一次；
+- 重复调用 `task_start()`、后续 `task_*` 工具调用和后续用户轮次都不会再次触发自动关闭；
+- 模型后续显式调用 `go_thinking()` 或 `set_thinking(...)` 仍然有效；
+- 同一轮显式请求的 `go_thinking()` 不会被自动关闭逻辑清除；
+- 用户发送请求时未开启思考，则该设置不做任何修改。
+
+该状态由后端 Worker 管理。前端只负责保存并提交 Conversation option，不需要监听额外的思考状态事件。
+
+### 任务模式提示词与 Skill
+
+主系统提示词只保留 Task Skill 引导：复杂任务在调用 `task_*` 工具或开始实际执行前，必须调用：
+
+```python
+skill_get_detail(skill_name="task-mode")
+```
+
+完整任务流程、任务清单维护、反馈、思考时机、`order` / `batch` 规则、失败恢复、两阶段完成和 One-Shot 示例均位于 `skills/task-mode/SKILL.md`。
+
+当本次请求开启思考时，主引导会额外要求模型在首次任务模式引导轮把计划写入可见正文，至少说明主要阶段和紧接着要执行的下一步，不能只把计划保留在隐藏思考中。
+
+Task Skill 使用 Jinja 渲染，当前 Conversation 会向模板统一提供安全的 `model_config` 字典，不直接暴露 API Key 或 Base URL：
+
+```json
+{
+  "model_config": {
+    "id": "模型配置 ID",
+    "model_id": "提供商模型 ID",
+    "name": "模型显示名称",
+    "provider": "openai 或 litellm",
+    "type": "llm 或 vlm",
+    "thinking": {
+      "control_supported": true,
+      "control_mode": "prompt | enable_thinking | thinking_type | none",
+      "request_enabled": true,
+      "auto_disable_task": true,
+      "auto_disable_task_armed": true
+    }
+  }
+}
+```
+
+Jinja 中通过 `model_config.thinking.request_enabled`、`model_config.thinking.control_supported` 等路径读取状态。
+
+不支持切换思考的模型不会获得 `go_thinking` / `set_thinking` 使用说明。
+
+### 广播兼容性
+
+本次没有新增或修改 WebSocket 广播命令、`target` 或 payload 结构。`autoDisableTaskThinking` 只属于 `/chatbox` 返回的 Conversation 设置规范，并随现有 `Message-Send.payload.options` 提交；运行时仍复用原有模型调用和 `interrupt` 工具调用链。
+
+## 任务模式上下文与无效工具调用收尾（2026-07-25）
+
+### TaskRun 模型上下文
+
+TaskRun 的内部 `taskRunId` 继续用于前端任务卡、Redis 恢复和既有 Task Mode 广播；它不再出现在模型可见的 `task_start()` 工具结果中。模型只需要根据后端注入的权威状态确认自己已经处于同一个任务模式，不应保存、复用或比较内部 TaskRun ID。
+
+后端会在任务模式的每一轮模型调用前刷新一条权威运行状态，内容包括当前标题、最近反馈、任务清单及清单项状态。清单项 ID 仍会提供给模型，因为现有 `task_list_operate(task_id=...)` 工具需要该稳定引用。
+
+首次进入 TaskRun 时，上下文从当前助手消息的外层内容重建，以保留可见计划、`task-mode` Skill 内容、`task_start()` 调用及成功结果。Worker 从检查点恢复时，已有历史由 checkpoint 提供，只追加当前 Task Body 的未检查点增量，避免重复历史或遗漏恢复后的新工具结果。
+
+### 无效工具调用展示
+
+当模型已经打开工具调用块，但未使用正确结束标签（例如误写 `</tool_state>` 或流结束时缺少 `</tool_call>`）时：
+
+- 后端不会执行该工具；
+- 已创建的 Tool Calling 卡片通过现有 replacement 流标记为失败；
+- 卡片内显示“工具调用格式错误”日志；
+- 原始 `<tool_call>` 文本不会再次作为普通 Markdown 泄漏到卡片下方；
+- 下一轮模型会收到明确纠错指令，并被告知该工具没有执行。
+
+本次没有新增或修改 WebSocket 广播命令、`target` 或 payload 结构。失败展示继续复用既有消息文本流、`cardReplace` replacement 和 Tool Calling 卡片状态标记。
+
+## Workspace Policy v2：访问列表与命令权限（2026-07-26）
+
+### `/workspaces` 管理接口
+
+Workspace 创建、更新和详情数据在保留旧字段 `allowedPaths`、`deniedPaths`、`commandProfile` 的同时，新增以下策略字段：
+
+```json
+{
+  "accessPolicy": {
+    "version": 2,
+    "defaultEffect": "allow",
+    "rules": [
+      {
+        "id": "rule-id",
+        "name": "禁止访问私有配置",
+        "enabled": true,
+        "effect": "deny",
+        "matcher": {
+          "type": "path | glob | regex | exact",
+          "pattern": "config/private"
+        },
+        "operations": ["list", "search", "read", "create", "write", "delete", "rename", "import", "export", "execute"],
+        "mounts": [],
+        "priority": 0
+      }
+    ]
+  },
+  "visibilityPolicy": {
+    "version": 1,
+    "ignoredRules": []
+  },
+  "commandPolicy": {
+    "version": 1,
+    "defaultEffect": "deny",
+    "rules": []
+  },
+  "configuredCommands": ["pytest", "npm_build"],
+  "allowedCommands": ["pytest"]
+}
+```
+
+访问规则支持：
+
+- `path`：匹配指定虚拟路径及其所有后代；
+- `glob`：使用 Glob 匹配虚拟路径；
+- `regex`：匹配标准化后的 POSIX 虚拟路径；
+- `exact`：只匹配完整值，主要用于命令 ID；
+- `operations`：可分别约束浏览、搜索、读取、创建、写入、删除、重命名、导入、导出和命令工作目录；
+- `mounts`：为空时对所有虚拟挂载生效，非空时只作用于指定挂载；
+- `priority`：数值越高越先匹配，同优先级按规则顺序决定。
+
+路径越界、宿主绝对路径、盘符、`..`、符号链接逃逸和只读挂载限制仍属于不可绕过的沙箱边界，不受用户规则覆盖。
+
+### 默认规则和简洁前端
+
+新建 Workspace 的默认禁止访问规则仅保留：
+
+- Git 元数据目录 `.git`；
+- 环境变量文件 `.env`、`.env.*`。
+
+密钥文件、`Secrets` 目录、`node_modules` 和 `__pycache__` 不再默认禁止访问。旧版本中恰好等于完整旧默认值的 Workspace 会在读取 Policy v2 时自动移除这些可选默认项；用户自行定制过的旧 `deniedPaths` 仍按原规则保留。
+
+Workspace 设置中的禁止访问区域使用可增删的简洁列表。每行只配置匹配方式、路径表达式和生效操作。`node_modules`、`__pycache__` 以快捷添加按钮提供，点击后才会加入禁止访问列表。
+
+`node_modules` 和 `__pycache__` 默认属于 `visibilityPolicy` 的浏览/搜索忽略项：递归目录树和全文搜索会跳过它们，但用户或模型明确指定文件路径时仍可读取，除非用户通过快捷按钮或自定义规则将其加入禁止访问列表。
+
+### 命令权限
+
+`commandProfile` 与 `commandPolicy` 分工如下：
+
+- `commandProfile` 定义后端识别出的可信命令模板、参数能力、工作目录和超时时间；
+- `commandPolicy` 决定当前 Workspace 是否允许启动这些已配置命令；
+- 未出现在 `commandProfile` 中的命令，即使策略误写为允许也不能执行；
+- 命令策略默认拒绝，前端通过开关生成精确的 allow 规则；
+- `code_workspace_info.availableCommands` 只向模型暴露同时通过两层校验的命令；模型可见的 `commandProfile` 也会过滤掉未允许命令；
+- `code_run` 与 `code_validate` 都会在启动进程前重新执行命令策略校验；其结果中的 Workspace 信息同样不暴露被禁用命令；
+- 命令工作目录还必须通过 `accessPolicy` 的 `execute` 操作规则和既有虚拟挂载沙箱校验。
+
+新建 Workspace 保存后，后端根据挂载项目识别 `configuredCommands`。新 Workspace 默认不允许执行任何命令；再次编辑 Workspace 时，可以在“允许执行的命令”区域按需开启。没有开启的命令不能由 `code_run` 或自动验证流程启动。为兼容旧数据，尚未持久化 `commandPolicy` 的旧 Workspace 继续按原行为允许其已配置可信命令，用户保存新命令设置后即切换为显式 allow 列表。
+
+### 兼容性
+
+Policy v2 保存在现有 `extraInfo` 中，不需要数据库迁移。旧 `deniedPaths` 仍可由旧客户端提交，后端会将其转换为 Glob deny 规则；新客户端以 `accessPolicy` 为准，同时回写可兼容表达的 `deniedPaths`。
+
+本次没有新增或修改 WebSocket 广播命令、`target` 或 payload 结构。

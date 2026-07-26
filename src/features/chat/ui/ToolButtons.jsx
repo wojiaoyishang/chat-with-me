@@ -166,6 +166,7 @@ const ToolButtons = memo(({
                               tools,
                               toolsStatus,
                               setToolsStatus,
+                              onBuiltinToolToggle,
                               t,
                               isWindowMode = false,
                               containerWidth = 0,
@@ -206,11 +207,15 @@ const ToolButtons = memo(({
         : [];
 
     const handleToggle = useCallback((toolName, e, newIsActive) => {
+        if (typeof onBuiltinToolToggle === 'function') {
+            onBuiltinToolToggle(toolName, newIsActive);
+            return;
+        }
         setToolsStatus(prev => ({
             ...prev,
             builtin_tools: { ...prev.builtin_tools, [toolName]: newIsActive }
         }));
-    }, [setToolsStatus]);
+    }, [onBuiltinToolToggle, setToolsStatus]);
 
     const handleVoiceRecognitionEngineChange = useCallback((engine) => {
         const normalizedEngine = normalizeVoiceRecognitionEngine(engine);

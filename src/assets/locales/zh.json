@@ -507,5 +507,21 @@
   "workspace_security_node_modules": "node_modules",
   "workspace_security_python_cache": "__pycache__",
   "workspace_security_custom_placeholder": "其他 Glob，例如 **/.cache/**",
-  "workspace_security_empty_warning": "当前未配置禁止访问规则，AI 可以访问所有已挂载目录中的文件。"
+  "workspace_security_empty_warning": "当前没有禁止访问规则。",
+  "workspace_security_rules_hint_v2": "可禁止目录或文件；支持路径、Glob 和正则，并可限定生效操作。",
+  "workspace_policy_add_rule": "添加规则",
+  "workspace_policy_match_path": "路径",
+  "workspace_policy_match_regex": "正则",
+  "workspace_policy_scope_all": "全部操作",
+  "workspace_policy_scope_inspect": "浏览读取",
+  "workspace_policy_scope_modify": "修改删除",
+  "workspace_policy_scope_transfer": "导入导出",
+  "workspace_policy_scope_execute": "命令目录",
+  "workspace_policy_pattern_required": "禁止访问规则不能为空",
+  "workspace_policy_regex_invalid": "正则表达式无效",
+  "workspace_policy_ignore_hint": "node_modules 与 __pycache__ 默认只在目录浏览和全文搜索中忽略；明确读取文件仍允许。快捷按钮会把它们加入禁止访问列表。",
+  "workspace_command_permissions": "允许执行的命令",
+  "workspace_command_permissions_hint": "只有项目已配置且这里开启的命令才能通过 code_run 或 code_validate 执行。",
+  "workspace_commands_after_save": "保存后会识别项目命令；再次编辑后按需开启，默认不允许执行。",
+  "workspace_no_commands": "当前项目没有识别到可配置命令。"
 }

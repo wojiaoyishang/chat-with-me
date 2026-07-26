@@ -316,6 +316,7 @@ function ChatBox({
 
     // 工具按钮相关
     const [tools, setTools] = useState([]);
+    const builtinToolStateByModelRef = useRef({});
     const [extraTools, setExtraTools] = useState([]);
     const [attachmentTools, setAttachmentTools] = useState([]);
 
@@ -514,10 +515,60 @@ function ChatBox({
         }
     }, [isSmallScreen, showCollapsedChatBox]);
 
-    const buildOutboundToolsStatus = useCallback(() => ({
+    const selectedModelId = selectedModel?.id || '';
+    const availableBuiltinToolNames = useMemo(
+        () => new Set(Array.isArray(selectedModel?.available_builtin_tools)
+            ? selectedModel.available_builtin_tools
+            : []),
+        [selectedModel?.available_builtin_tools]
+    );
+    const visibleBuiltinTools = useMemo(
+        () => tools.filter(tool => availableBuiltinToolNames.has(tool.name)),
+        [availableBuiltinToolNames, tools]
+    );
+    const activeBuiltinToolStatus = useMemo(() => {
+        const saved = selectedModelId
+            ? (builtinToolStateByModelRef.current[selectedModelId] || {})
+            : {};
+        const status = {};
+        visibleBuiltinTools.forEach(tool => {
+            status[tool.name] = Object.prototype.hasOwnProperty.call(saved, tool.name)
+                ? Boolean(saved[tool.name])
+                : Boolean(tool?.isActive);
+        });
+        return status;
+    }, [selectedModelId, visibleBuiltinTools, toolsStatus.builtin_tools]);
+    const activeToolsStatus = useMemo(() => ({
         ...toolsStatus,
-        tool_permissions: collectToolPermissions(extraTools, toolsStatus.extra_tools || {}),
-    }), [extraTools, toolsStatus]);
+        builtin_tools: activeBuiltinToolStatus,
+    }), [activeBuiltinToolStatus, toolsStatus]);
+
+    const handleBuiltinToolToggle = useCallback((toolName, newIsActive) => {
+        if (!availableBuiltinToolNames.has(toolName)) return;
+        const nextValue = Boolean(newIsActive);
+        if (selectedModelId) {
+            builtinToolStateByModelRef.current[selectedModelId] = {
+                ...(builtinToolStateByModelRef.current[selectedModelId] || {}),
+                [toolName]: nextValue,
+            };
+        }
+        setToolsStatus(prev => ({
+            ...prev,
+            builtin_tools: {...(prev.builtin_tools || {}), [toolName]: nextValue},
+        }));
+    }, [availableBuiltinToolNames, selectedModelId]);
+
+    const buildOutboundToolsStatus = useCallback(() => {
+        const builtinTools = {};
+        visibleBuiltinTools.forEach(tool => {
+            builtinTools[tool.name] = Boolean(activeBuiltinToolStatus[tool.name]);
+        });
+        return {
+            ...toolsStatus,
+            builtin_tools: builtinTools,
+            tool_permissions: collectToolPermissions(extraTools, toolsStatus.extra_tools || {}),
+        };
+    }, [activeBuiltinToolStatus, extraTools, toolsStatus, visibleBuiltinTools]);
 
     const applyConversationToolPermissions = useCallback((permissions, revision = 0) => {
         const normalizedRevision = Number(revision) || 0;
@@ -1973,9 +2024,10 @@ function ChatBox({
         toolsLoadedStatus,
         extraTools,
         attachmentTools,
-        tools,
-        toolsStatus,
+        tools: visibleBuiltinTools,
+        toolsStatus: activeToolsStatus,
         setToolsStatus,
+        onBuiltinToolToggle: handleBuiltinToolToggle,
         setToolsLoadedStatus,
         renderMenuItems, // 传递函数
         t,
@@ -1989,8 +2041,8 @@ function ChatBox({
         conversationToolsDisabled: isReadOnly,
         onManageWorkspace: () => setWorkspaceSettingsDialogOpen(true),
         workspaceSettingsDisabled: isReadOnly,
-    }), [toolsLoadedStatus, extraTools, attachmentTools, tools, toolsStatus,
-        setToolsStatus, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth, voiceInputNode, isSmallScreen, mobileOpenMenuSections, isReadOnly]);
+    }), [toolsLoadedStatus, extraTools, attachmentTools, visibleBuiltinTools, activeToolsStatus,
+        setToolsStatus, handleBuiltinToolToggle, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth, voiceInputNode, isSmallScreen, mobileOpenMenuSections, isReadOnly]);
 
     const autoHideButtonLabel = isSmallScreen
         ? t('chatbox_hide')
