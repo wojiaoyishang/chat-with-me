@@ -112,15 +112,21 @@ function AutoScrollText({children, className = "", title, scrollSpeed = 36}) {
         if (!container || !content) return;
 
         const nextDistance = Math.ceil(content.scrollWidth - container.clientWidth);
-        setScrollDistance(nextDistance > 1 ? nextDistance : 0);
-    }, [children]);
+        const normalizedDistance = nextDistance > 1 ? nextDistance : 0;
+        setScrollDistance((currentDistance) => (
+            currentDistance === normalizedDistance ? currentDistance : normalizedDistance
+        ));
+    }, []);
 
     useEffect(() => {
+        // 大型动态设置页可能包含上百个标签。仅在用户实际悬停/聚焦时
+        // 才测量并监听尺寸，避免首次渲染同步读取大量布局并创建观察器。
+        if (!isHovered) return undefined;
+
         const container = containerRef.current;
         const content = contentRef.current;
         if (!container || !content) return;
 
-        measureOverflow();
         const rafId = window.requestAnimationFrame(measureOverflow);
         const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measureOverflow) : null;
 
@@ -133,7 +139,15 @@ function AutoScrollText({children, className = "", title, scrollSpeed = 36}) {
             resizeObserver?.disconnect();
             window.removeEventListener("resize", measureOverflow);
         };
-    }, [measureOverflow]);
+    }, [isHovered, measureOverflow]);
+
+    const handleInteractionStart = useCallback(() => {
+        setIsHovered(true);
+    }, []);
+
+    const handleInteractionEnd = useCallback(() => {
+        setIsHovered(false);
+    }, []);
 
     const shouldScroll = isHovered && scrollDistance > 0;
     const duration = scrollDistance > 0
@@ -145,10 +159,10 @@ function AutoScrollText({children, className = "", title, scrollSpeed = 36}) {
             ref={containerRef}
             title={title}
             className={`relative block min-w-0 max-w-full overflow-hidden whitespace-nowrap ${className || ""}`}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            onFocus={() => setIsHovered(true)}
-            onBlur={() => setIsHovered(false)}
+            onMouseEnter={handleInteractionStart}
+            onMouseLeave={handleInteractionEnd}
+            onFocus={handleInteractionStart}
+            onBlur={handleInteractionEnd}
         >
             <motion.span
                 ref={contentRef}
@@ -1991,34 +2005,30 @@ export default function DynamicSettings({
                                             onImageUpload,
                                         }) {
     const [values, setValues] = useState(() => buildDefaults(config, initialValues));
+    const valuesRef = useRef(values);
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
-    const hasInitialCalledRef = useRef(false);
     const previousConfigRef = useRef(config);
 
     const update = useCallback((path, value) => {
-        setValues((prev) => {
-            const next = deepSet(prev, path, value);
-            setTimeout(() => onChangeRef.current?.(next), 0);
-            return next;
-        });
+        // onChange 只能由真实的控件交互触发。不要把副作用放进 React 的
+        // setState updater：StrictMode 会重复调用 updater 来检查纯函数，
+        // 之前会因此产生重复回调，并把组件初始化误判为用户修改。
+        const next = deepSet(valuesRef.current, path, value);
+        valuesRef.current = next;
+        setValues(next);
+        onChangeRef.current?.(next);
     }, []);
 
     useEffect(() => {
         if (previousConfigRef.current === config) return;
 
         previousConfigRef.current = config;
-        hasInitialCalledRef.current = false;
-        setValues(buildDefaults(config, initialValues));
+        const next = buildDefaults(config, initialValues);
+        valuesRef.current = next;
+        setValues(next);
+        // 配置初始化/切换不是用户编辑，不主动调用 onChange。
     }, [config, initialValues]);
-
-    useEffect(() => {
-        if (hasInitialCalledRef.current) {
-            setTimeout(() => onChangeRef.current?.(values), 0);
-            return;
-        }
-        hasInitialCalledRef.current = true;
-    }, [values]);
 
     const ctx = useMemo(() => ({ values, update, onImageUpload }), [values, update, onImageUpload]);
 

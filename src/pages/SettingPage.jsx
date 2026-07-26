@@ -144,10 +144,11 @@ const SettingPage = ({
     const [dynamicConfigError, setDynamicConfigError] = useState(false);
 
     const abortControllerRef = useRef(null);
-    const isFirstOnChangeRef = useRef(false);
     const latestDynamicConfigRequestRef = useRef(0);
     const isSavingDynamicConfigRef = useRef(false);
     const pendingRefreshScopesRef = useRef(new Set());
+    const tabsLoadedRef = useRef(false);
+    const tabsLoadingRef = useRef(false);
 
     const isStaticTab = useCallback((tabId) => ['account', 'interface', 'notifications'].includes(tabId), []);
 
@@ -175,11 +176,15 @@ const SettingPage = ({
     }, [onClose, onRefreshRequested]);
 
     const cloneData = useCallback((value) => {
+        const normalizedValue = value ?? {};
         try {
-            return JSON.parse(JSON.stringify(value ?? {}));
+            if (typeof structuredClone === 'function') {
+                return structuredClone(normalizedValue);
+            }
+            return JSON.parse(JSON.stringify(normalizedValue));
         } catch (error) {
             console.warn('Failed to clone settings data:', error);
-            return value ?? {};
+            return normalizedValue;
         }
     }, []);
 
@@ -204,25 +209,32 @@ const SettingPage = ({
     const hasUnsavedChanges = isDynamicTab && !isConfigPristine;
 
     // ==================== 加载动态 Tabs 列表 ====================
-    const loadDynamicTabs = async () => {
+    const loadDynamicTabs = useCallback(async ({force = false, silent = false} = {}) => {
+        if (tabsLoadingRef.current || (tabsLoadedRef.current && !force)) return;
+
+        tabsLoadingRef.current = true;
         try {
             setLoadingTabs(true);
             setTabsError(false);
             const response = await apiClient.get(apiEndpoint.SETTING_TABS_ENDPOINT);
             const tabs = Array.isArray(response) ? response : [];
             setDynamicTabs(tabs);
+            tabsLoadedRef.current = true;
         } catch (error) {
             console.error("Failed to load setting tabs:", error);
-            setDynamicTabs([]);
+            if (!tabsLoadedRef.current) setDynamicTabs([]);
             setTabsError(true);
-            toast.error(t("load_tabs_error") || "Failed to load settings tabs");
+            if (!silent) {
+                toast.error(t("load_tabs_error") || "Failed to load settings tabs");
+            }
         } finally {
+            tabsLoadingRef.current = false;
             setLoadingTabs(false);
         }
-    };
+    }, [t]);
 
     // ==================== 加载单个动态 Tab 配置 ====================
-    const loadDynamicConfig = async (tabId) => {
+    const loadDynamicConfig = useCallback(async (tabId) => {
         if (!tabId || isStaticTab(tabId)) return;
 
         if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -249,14 +261,13 @@ const SettingPage = ({
 
             const options = Array.isArray(response?.options) ? response.options : [];
             const initial = cloneData(response?.defaultOptions || {});
-            const initialClone = cloneData(initial);
 
             setDynamicConfig({...(response || {}), options});
             setDynamicValues(initial);
-            setOriginalDynamicValues(initialClone);
+            // 后续修改始终通过不可变更新生成新对象，因此这里可以共享初始快照，
+            // 避免加载大型模型配置时在主线程连续执行两次深拷贝。
+            setOriginalDynamicValues(initial);
             setIsConfigPristine(true);
-
-            isFirstOnChangeRef.current = true;
 
         } catch (error) {
             if (error?.name === 'AbortError' || controller.signal.aborted || latestDynamicConfigRequestRef.current !== requestId) return;
@@ -275,13 +286,37 @@ const SettingPage = ({
                 }
             }
         }
-    };
+    }, [cloneData, isStaticTab, t]);
 
     useEffect(() => {
         if (!open) return;
         pendingRefreshScopesRef.current.clear();
         loadDynamicTabs();
-    }, [open]);
+    }, [loadDynamicTabs, open]);
+
+    // 已成功加载的动态配置在关闭后保留，重新打开时不再重复重建。
+    // 只有上次加载失败或尚未拿到配置时，才在入场动画结束后自动补载。
+    useEffect(() => {
+        if (!open || !isDynamicTab || loadingDynamicConfig) return undefined;
+        if (dynamicConfig && !dynamicConfigError) return undefined;
+
+        const timerId = window.setTimeout(() => loadDynamicConfig(activeTab), 220);
+        return () => window.clearTimeout(timerId);
+    }, [activeTab, dynamicConfig, dynamicConfigError, isDynamicTab, loadDynamicConfig, loadingDynamicConfig, open]);
+
+    // SettingPage 始终挂载在侧边栏中。浏览器空闲时预取一次动态标签，
+    // 绝大多数情况下用户真正打开设置时已经可以直接使用缓存。
+    useEffect(() => {
+        const preload = () => loadDynamicTabs({silent: true});
+
+        if (typeof window.requestIdleCallback === 'function') {
+            const idleId = window.requestIdleCallback(preload, {timeout: 1200});
+            return () => window.cancelIdleCallback?.(idleId);
+        }
+
+        const timerId = window.setTimeout(preload, 300);
+        return () => window.clearTimeout(timerId);
+    }, [loadDynamicTabs]);
 
     useEffect(() => {
         if (!open) return undefined;
@@ -319,7 +354,6 @@ const SettingPage = ({
             setPendingAction('tabChange');
             setPendingTabId(newTab);
             setShowUnsavedDialog(true);
-            isFirstOnChangeRef.current = false;
             return;
         }
 
@@ -331,7 +365,6 @@ const SettingPage = ({
 
         setActiveTab(newTab);
         setIsConfigPristine(true);
-        isFirstOnChangeRef.current = false;
 
         if (!isStaticTab(newTab)) {
             loadDynamicConfig(newTab);
@@ -417,7 +450,8 @@ const SettingPage = ({
         }
 
         if (action === 'close') {
-            // 关闭时丢弃未保存修改；重新打开时会按当前 activeTab 重新拉取后端配置。
+            // 关闭时丢弃未保存修改；重新打开时直接使用已恢复的原始快照，
+            // 避免在弹窗入场动画期间重复请求和重建大型动态设置页。
             if (isDynamicTab && originalDynamicValues) {
                 setDynamicValues(cloneData(originalDynamicValues));
                 setIsConfigPristine(true);
@@ -437,14 +471,9 @@ const SettingPage = ({
 
     // ==================== DynamicSettings onChange ====================
     const handleDynamicValuesChange = useCallback((newValues) => {
+        // DynamicSettings 只会在真实用户交互时回调；初始化和重新挂载不会
+        // 再触发这里，因此任何回调都代表存在待保存的编辑。
         setDynamicValues(newValues);
-
-        if (isFirstOnChangeRef.current) {
-            isFirstOnChangeRef.current = false;
-            setIsConfigPristine(true);
-            return;
-        }
-
         setIsConfigPristine(false);
     }, []);
 
@@ -540,24 +569,20 @@ const SettingPage = ({
                 <div className="h-px bg-gray-200 my-2 mx-2"/>
             )}
 
-            <AnimatePresence mode="wait">
-                {loadingTabs ? <SidebarSkeleton/> : tabsError ? (
+            {loadingTabs ? <SidebarSkeleton/> : tabsError ? (
                     <div className="px-3 py-3 mt-2">
                         <UnifiedErrorScreen
                             title={t("load_error")}
                             subtitle={t("retry_after_network")}
                             retryText={t("retry")}
-                            onRetry={loadDynamicTabs}
+                            onRetry={() => loadDynamicTabs({force: true})}
                             compact
                         />
                     </div>
                 ) : dynamicTabs.length > 0 ? (
                     dynamicTabs.map((tab) => (
-                        <motion.button
+                        <button
                             key={tab.id}
-                            initial={{opacity: 0, x: -10}}
-                            animate={{opacity: 1, x: 0}}
-                            transition={{duration: 0.2}}
                             onClick={() => handleTabChange(tab.id)}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === tab.id ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
                         >
@@ -568,10 +593,9 @@ const SettingPage = ({
                                 onError={(e) => { e.target.style.display = 'none'; }}
                             />
                             {!isMobile && <span className="text-sm whitespace-nowrap">{tab.name}</span>}
-                        </motion.button>
+                        </button>
                     ))
                 ) : null}
-            </AnimatePresence>
         </div>
     );
 
@@ -669,22 +693,6 @@ const SettingPage = ({
         );
     };
 
-    useEffect(() => {
-        if (!open) return;
-
-        // 每次打开都强制重置动态配置状态（无论上次停在哪个 tab）
-        if (isDynamicTab) {
-            loadDynamicConfig(activeTab);
-        } else {
-            // account / interface 也重置一下
-            setDynamicConfig(null);
-            setDynamicValues({});
-            setOriginalDynamicValues({});
-            setIsConfigPristine(true);
-            isFirstOnChangeRef.current = false;
-        }
-    }, [open]);
-
     return (
         <AnimatePresence>
             {open && (
@@ -693,20 +701,31 @@ const SettingPage = ({
                         initial={{opacity: 0}}
                         animate={{opacity: 1}}
                         exit={{opacity: 0}}
+                        transition={{duration: 0.14, ease: "easeOut"}}
                         onClick={handleClose}
-                        className="absolute inset-0 bg-black/40 backdrop-blur-sm cursor-pointer"
+                        className="absolute inset-0 bg-black/45 cursor-pointer"
+                        style={{willChange: "opacity"}}
                     />
 
                     <motion.div
-                        layout
                         initial={isMobile ? {y: "100%"} : {opacity: 0, scale: 0.95, y: 20}}
-                        animate={isFullscreen || isMobile ?
-                            {width: "100%", height: "100%", borderRadius: 0, scale: 1, y: 0, opacity: 1} :
-                            {width: "900px", height: "600px", borderRadius: "12px", scale: 1, y: 0, opacity: 1}
-                        }
+                        animate={{scale: 1, y: 0, opacity: 1}}
                         exit={isMobile ? {y: "100%"} : {opacity: 0, scale: 0.95, y: 20}}
-                        transition={{type: "spring", damping: 25, stiffness: 300}}
-                        className="relative bg-white shadow-2xl flex flex-col overflow-hidden cursor-default"
+                        transition={isMobile
+                            ? {duration: 0.22, ease: [0.22, 1, 0.36, 1]}
+                            : {duration: 0.18, ease: [0.22, 1, 0.36, 1]}}
+                        className={`relative bg-white shadow-2xl flex flex-col overflow-hidden cursor-default ${
+                            isFullscreen || isMobile
+                                ? 'w-full h-full'
+                                : ''
+                        }`}
+                        style={{
+                            width: isFullscreen || isMobile ? '100%' : 'min(900px, calc(100vw - 2rem))',
+                            height: isFullscreen || isMobile ? '100%' : 'min(600px, calc(100vh - 2rem))',
+                            borderRadius: isFullscreen || isMobile ? 0 : 12,
+                            contain: "layout paint",
+                            willChange: "transform, opacity",
+                        }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* 顶部导航栏 */}
