@@ -7,8 +7,19 @@ const MAX_COLLAPSED_MARKERS = 25;
 const MARKER_WIDTHS_BY_DISTANCE = [34, 28, 22, 16, 12];
 const COLLAPSE_DELAY_MS = 220;
 const NAVIGATOR_IDLE_DELAY_MS = 2600;
+const MARKER_SLOT_HEIGHT_PX = 20;
+const WHEEL_ACCELERATION = 0.07;
+const WHEEL_FRICTION = 0.86;
+const WHEEL_MAX_VELOCITY = 22;
+const WHEEL_STOP_VELOCITY = 0.12;
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const normalizeWheelDelta = (event) => {
+    if (event.deltaMode === 1) return event.deltaY * 16;
+    if (event.deltaMode === 2) return event.deltaY * 220;
+    return event.deltaY;
+};
 
 const QuickUserMessageNavigator = memo(({
     items = [],
@@ -17,41 +28,58 @@ const QuickUserMessageNavigator = memo(({
     visible = true,
     t,
 }) => {
-    const wheelLockedUntilRef = useRef(0);
+    const wheelVelocityRef = useRef(0);
+    const wheelOffsetRef = useRef(0);
+    const wheelFrameRef = useRef(null);
+    const wheelLastFrameTimeRef = useRef(0);
+    const cursorIndexRef = useRef(0);
+    const markerStackRef = useRef(null);
     const collapseTimerRef = useRef(null);
     const idleTimerRef = useRef(null);
     const activityFrameRef = useRef(null);
     const [isExpanded, setIsExpanded] = useState(false);
     const [isAwake, setIsAwake] = useState(true);
     const userItems = useMemo(() => items.filter(item => item?.role === 'user'), [items]);
+    const itemIndexById = useMemo(() => new Map(
+        items.map((item, index) => [item?.messageId, index]),
+    ), [items]);
+    const userIndexById = useMemo(() => new Map(
+        userItems.map((item, index) => [item?.messageId, index]),
+    ), [userItems]);
     const effectiveActiveMessageId = useMemo(() => {
-        const activeItem = items.find(item => item.messageId === activeMessageId);
+        const activeItemIndex = itemIndexById.get(activeMessageId);
+        const activeItem = activeItemIndex === undefined ? null : items[activeItemIndex];
         if (!activeItem) return activeMessageId;
 
         const activeOrderIndex = Number(activeItem.orderIndex ?? -1);
-        let nearestUserId = null;
-        for (const item of userItems) {
-            if (Number(item.orderIndex ?? -1) > activeOrderIndex) break;
-            nearestUserId = item.messageId;
+        let low = 0;
+        let high = userItems.length - 1;
+        let nearestUserIndex = -1;
+        while (low <= high) {
+            const middle = Math.floor((low + high) / 2);
+            if (Number(userItems[middle]?.orderIndex ?? -1) <= activeOrderIndex) {
+                nearestUserIndex = middle;
+                low = middle + 1;
+            } else {
+                high = middle - 1;
+            }
         }
-        return nearestUserId || activeMessageId;
-    }, [activeMessageId, items, userItems]);
+        return userItems[nearestUserIndex]?.messageId || activeMessageId;
+    }, [activeMessageId, itemIndexById, items, userItems]);
 
     const activeIndex = useMemo(
-        () => Math.max(0, userItems.findIndex(item => item.messageId === effectiveActiveMessageId)),
-        [effectiveActiveMessageId, userItems]
+        () => Math.max(0, userIndexById.get(effectiveActiveMessageId) ?? -1),
+        [effectiveActiveMessageId, userIndexById]
     );
     const [cursorIndex, setCursorIndex] = useState(activeIndex);
 
     const activeItemIndex = useMemo(() => {
-        const exactIndex = items.findIndex(item => item?.messageId === activeMessageId);
-        if (exactIndex >= 0) return exactIndex;
+        const exactIndex = itemIndexById.get(activeMessageId);
+        if (exactIndex !== undefined) return exactIndex;
+        return Math.max(0, itemIndexById.get(effectiveActiveMessageId) ?? -1);
+    }, [activeMessageId, effectiveActiveMessageId, itemIndexById]);
 
-        const activeUserIndex = items.findIndex(item => item?.messageId === effectiveActiveMessageId);
-        return Math.max(0, activeUserIndex);
-    }, [activeMessageId, effectiveActiveMessageId, items]);
-
-    const collapsedMarkers = useMemo(() => {
+    const collapsedMarkerBuckets = useMemo(() => {
         if (items.length === 0) return [];
         const markerCount = Math.min(MAX_COLLAPSED_MARKERS, items.length);
 
@@ -65,19 +93,47 @@ const QuickUserMessageNavigator = memo(({
 
             return {
                 key: `${startIndex}-${endIndex}`,
-                containsActive: activeItemIndex >= startIndex && activeItemIndex < endIndex,
+                startIndex,
+                endIndex,
                 containsUser: bucket.some(item => item?.role === 'user'),
             };
         });
-    }, [activeItemIndex, items]);
+    }, [items]);
+    const collapsedMarkers = useMemo(() => collapsedMarkerBuckets.map(bucket => ({
+        ...bucket,
+        containsActive: activeItemIndex >= bucket.startIndex && activeItemIndex < bucket.endIndex,
+    })), [activeItemIndex, collapsedMarkerBuckets]);
+
+    const applyWheelOffset = useCallback((offset) => {
+        if (!markerStackRef.current) return;
+        markerStackRef.current.style.transform = `translate3d(0, ${-offset}px, 0)`;
+    }, []);
+
+    const stopWheelAnimation = useCallback((resetOffset = false) => {
+        if (wheelFrameRef.current) {
+            window.cancelAnimationFrame(wheelFrameRef.current);
+            wheelFrameRef.current = null;
+        }
+        wheelVelocityRef.current = 0;
+        wheelLastFrameTimeRef.current = 0;
+        if (resetOffset) {
+            wheelOffsetRef.current = 0;
+            applyWheelOffset(0);
+        }
+    }, [applyWheelOffset]);
 
     useEffect(() => {
+        stopWheelAnimation(true);
+        cursorIndexRef.current = activeIndex;
         setCursorIndex(activeIndex);
-    }, [activeIndex]);
+    }, [activeIndex, stopWheelAnimation]);
 
     useEffect(() => {
-        setCursorIndex(current => clamp(current, 0, Math.max(0, userItems.length - 1)));
-    }, [userItems.length]);
+        const nextIndex = clamp(cursorIndexRef.current, 0, Math.max(0, userItems.length - 1));
+        cursorIndexRef.current = nextIndex;
+        setCursorIndex(nextIndex);
+        stopWheelAnimation(true);
+    }, [stopWheelAnimation, userItems.length]);
 
     const clearIdleTimer = useCallback(() => {
         if (!idleTimerRef.current) return;
@@ -142,7 +198,8 @@ const QuickUserMessageNavigator = memo(({
         if (collapseTimerRef.current) window.clearTimeout(collapseTimerRef.current);
         clearIdleTimer();
         if (activityFrameRef.current) window.cancelAnimationFrame(activityFrameRef.current);
-    }, [clearIdleTimer]);
+        stopWheelAnimation(false);
+    }, [clearIdleTimer, stopWheelAnimation]);
 
     const visibleSlots = useMemo(() => {
         const half = Math.floor(MAX_VISIBLE_MARKERS / 2);
@@ -179,17 +236,82 @@ const QuickUserMessageNavigator = memo(({
         }, COLLAPSE_DELAY_MS);
     };
 
+    const runWheelAnimation = useCallback((timestamp) => {
+        const lastTimestamp = wheelLastFrameTimeRef.current || timestamp;
+        const frameScale = clamp((timestamp - lastTimestamp) / (1000 / 60), 0.5, 2);
+        wheelLastFrameTimeRef.current = timestamp;
+
+        let velocity = wheelVelocityRef.current;
+        let offset = wheelOffsetRef.current + velocity * frameScale;
+        let nextIndex = cursorIndexRef.current;
+        const lastIndex = Math.max(0, userItems.length - 1);
+
+        while (offset >= MARKER_SLOT_HEIGHT_PX && nextIndex < lastIndex) {
+            offset -= MARKER_SLOT_HEIGHT_PX;
+            nextIndex += 1;
+        }
+        while (offset <= -MARKER_SLOT_HEIGHT_PX && nextIndex > 0) {
+            offset += MARKER_SLOT_HEIGHT_PX;
+            nextIndex -= 1;
+        }
+
+        if ((nextIndex === lastIndex && offset > 0) || (nextIndex === 0 && offset < 0)) {
+            offset = 0;
+            velocity = 0;
+        }
+
+        if (nextIndex !== cursorIndexRef.current) {
+            cursorIndexRef.current = nextIndex;
+            setCursorIndex(nextIndex);
+        }
+
+        velocity *= Math.pow(WHEEL_FRICTION, frameScale);
+
+        if (Math.abs(velocity) < WHEEL_STOP_VELOCITY) {
+            if (Math.abs(offset) >= MARKER_SLOT_HEIGHT_PX / 2) {
+                const direction = offset > 0 ? 1 : -1;
+                const settledIndex = clamp(nextIndex + direction, 0, lastIndex);
+                if (settledIndex !== nextIndex) {
+                    offset -= direction * MARKER_SLOT_HEIGHT_PX;
+                    cursorIndexRef.current = settledIndex;
+                    setCursorIndex(settledIndex);
+                }
+            }
+
+            offset *= 0.68;
+            if (Math.abs(offset) < 0.35) {
+                wheelOffsetRef.current = 0;
+                wheelVelocityRef.current = 0;
+                wheelLastFrameTimeRef.current = 0;
+                wheelFrameRef.current = null;
+                applyWheelOffset(0);
+                return;
+            }
+        }
+
+        wheelOffsetRef.current = offset;
+        wheelVelocityRef.current = velocity;
+        applyWheelOffset(offset);
+        wheelFrameRef.current = window.requestAnimationFrame(runWheelAnimation);
+    }, [applyWheelOffset, userItems.length]);
+
     const handleWheel = (event) => {
-        if (userItems.length <= 1 || Math.abs(event.deltaY) < 2) return;
+        if (userItems.length <= 1 || Math.abs(event.deltaY) < 0.5) return;
         event.preventDefault();
         event.stopPropagation();
+        wakeNavigator(false);
 
-        const now = Date.now();
-        if (now < wheelLockedUntilRef.current) return;
-        wheelLockedUntilRef.current = now + 70;
+        const delta = normalizeWheelDelta(event);
+        wheelVelocityRef.current = clamp(
+            wheelVelocityRef.current + delta * WHEEL_ACCELERATION,
+            -WHEEL_MAX_VELOCITY,
+            WHEEL_MAX_VELOCITY,
+        );
 
-        const direction = event.deltaY > 0 ? 1 : -1;
-        setCursorIndex(current => clamp(current + direction, 0, userItems.length - 1));
+        if (!wheelFrameRef.current) {
+            wheelLastFrameTimeRef.current = 0;
+            wheelFrameRef.current = window.requestAnimationFrame(runWheelAnimation);
+        }
     };
 
     if (!visible || userItems.length === 0) return null;
@@ -276,10 +398,14 @@ const QuickUserMessageNavigator = memo(({
                             : 'pointer-events-none translate-x-5 scale-95 opacity-0'
                     }`}
                     onWheel={handleWheel}
+                    onPointerDown={() => stopWheelAnimation(true)}
                     aria-hidden={!isExpanded}
                 >
                     <div className="pointer-events-none absolute bottom-3 left-1/2 top-3 -translate-x-1/2 border-l border-dashed border-border"/>
-                    <div className="relative z-[1] flex flex-col items-center">
+                    <div
+                        ref={markerStackRef}
+                        className="relative z-[1] flex flex-col items-center will-change-transform"
+                    >
                         {visibleSlots.map(({item, absoluteIndex, offset}, slotIndex) => {
                             if (!item) {
                                 return <div key={`empty-${slotIndex}`} className="h-5 w-full" aria-hidden="true"/>;

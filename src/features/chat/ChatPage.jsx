@@ -45,8 +45,10 @@ import {
 const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
 const VOICE_RECOGNITION_LANGUAGE_SETTING_KEY = 'VoiceRecognitionLanguage';
 const MESSAGE_SUMMARY_PAGE_SIZE = 500;
+const HISTORY_PAGE_SIZE = 20;
 const HISTORY_JUMP_BEFORE = 12;
 const HISTORY_JUMP_AFTER = 32;
+const HISTORY_AUTO_LOAD_ROOT_MARGIN = '260px 0px 0px 0px';
 
 const normalizeVoiceRecognitionEngine = (value) => {
     return String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote';
@@ -131,6 +133,51 @@ const translateWithFallback = (t, key, fallback, options) => {
     return translated && translated !== key ? translated : fallback;
 };
 
+const getReplacementPayloadContent = (entry) => {
+    if (typeof entry === 'string') return entry;
+    if (!entry || typeof entry !== 'object') return '';
+    return entry.frontend ?? entry.content ?? entry.value ?? '';
+};
+
+const collectTaskInterruptReceipts = (messageOrReplacementUpdates) => {
+    const receipts = [];
+    const seen = new Set();
+
+    Object.values(messageOrReplacementUpdates || {}).forEach((outerValue) => {
+        if (!outerValue || typeof outerValue !== 'object') return;
+
+        const replacementMap = outerValue?.extraInfo?.replace
+            || outerValue?.extra_info?.replace
+            || outerValue;
+
+        if (!replacementMap || typeof replacementMap !== 'object') return;
+
+        Object.values(replacementMap).forEach((entry) => {
+            const rawContent = String(getReplacementPayloadContent(entry) || '').trim();
+            if (!rawContent.startsWith('{')) return;
+
+            try {
+                const parsed = JSON.parse(rawContent);
+                const items = Array.isArray(parsed?.items) ? parsed.items : [parsed];
+
+                items.forEach((item) => {
+                    const requestId = String(item?.requestId || '').trim();
+                    if (!requestId || seen.has(requestId)) return;
+                    seen.add(requestId);
+                    receipts.push({
+                        requestId,
+                        taskRunId: String(item?.taskRunId || parsed?.taskRunId || '').trim(),
+                    });
+                });
+            } catch {
+                // 普通 replacement 内容不一定是 JSON，忽略即可。
+            }
+        });
+    });
+
+    return receipts;
+};
+
 
 // ========== 主组件 ==========
 function ChatPage({
@@ -162,6 +209,8 @@ function ChatPage({
     const [messages, setMessages] = useImmer({});
     const messagesRef = useRef({});
     const messagesOrderRef = useRef([]);
+    const [taskInterruptPreviews, setTaskInterruptPreviews] = useState([]);
+    const taskInterruptDividerShownRef = useRef(new Set());
 
     const [showQuickUserMessageNavigator] = useLocalSetting(
         MESSAGE_NAVIGATOR_SETTING_KEY,
@@ -169,19 +218,26 @@ function ChatPage({
     );
     const [messageSummaries, setMessageSummaries] = useState([]);
     const [messageSummaryLoading, setMessageSummaryLoading] = useState(false);
-    const [messageSummaryFingerprint, setMessageSummaryFingerprint] = useState(null);
     const [messageOverviewOpen, setMessageOverviewOpen] = useState(false);
     const [activeVisibleMessageId, setActiveVisibleMessageId] = useState(null);
     const [highlightedMessageId, setHighlightedMessageId] = useState(null);
     const [isMessageNavigatorWide, setIsMessageNavigatorWide] = useState(true);
     const summaryRequestVersionRef = useRef(0);
+    const messageSummariesRef = useRef([]);
+    const messageSummaryFingerprintRef = useRef(null);
+    const messageSummaryTailIdRef = useRef(null);
     const historyNavigationLockedRef = useRef(false);
     const restoreLatestMessagesRef = useRef(null);
+    const historyLoadInFlightRef = useRef(null);
+    const [isLoadingMoreHistory, setIsLoadingMoreHistory] = useState(false);
+    const [historyAutoLoadReady, setHistoryAutoLoadReady] = useState(false);
 
     const isMobile = useIsMobile();
     const [previewModel, setPreviewModel] = useState(null);
     const [isNewMarkId, setIsNewMarkId] = useState(false);
     const isNewMarkIdRef = useRef(false);
+    const activeChatMarkIdRef = useRef(chatMarkId);
+    activeChatMarkIdRef.current = chatMarkId;
     const previousChatMarkIdRef = useRef(chatMarkId);
     const [isFirstMessageSend, setIsFirstMessageSend] = useState(false);
 
@@ -265,10 +321,12 @@ function ChatPage({
         });
     }), []);
 
-    const loadMessageSummaries = useCallback(async ({silent = false} = {}) => {
+    const loadMessageSummaries = useCallback(async ({silent = false, append = false} = {}) => {
         if (!chatMarkId) {
             setMessageSummaries([]);
-            setMessageSummaryFingerprint(null);
+            messageSummariesRef.current = [];
+            messageSummaryFingerprintRef.current = null;
+            messageSummaryTailIdRef.current = null;
             return [];
         }
 
@@ -278,7 +336,11 @@ function ChatPage({
 
         try {
             const collected = [];
-            let cursor = 0;
+            const existingItems = append ? messageSummariesRef.current : [];
+            const lastExistingItem = existingItems[existingItems.length - 1];
+            let cursor = append && Number.isFinite(Number(lastExistingItem?.orderIndex))
+                ? Number(lastExistingItem.orderIndex) + 1
+                : 0;
             let fingerprint = null;
             do {
                 const data = await apiClient.get(apiEndpoint.CHAT_MESSAGE_SUMMARIES_ENDPOINT, {
@@ -296,9 +358,26 @@ function ChatPage({
                 cursor = data.nextCursor;
             } while (cursor !== null && cursor !== undefined);
 
-            setMessageSummaries(collected);
-            setMessageSummaryFingerprint(fingerprint);
-            return collected;
+            if (append && collected.length === 0) {
+                if (fingerprint) {
+                    messageSummaryFingerprintRef.current = fingerprint;
+                }
+                return existingItems;
+            }
+
+            const existingMessageIds = new Set(existingItems.map(item => item.messageId));
+            const nextItems = append
+                ? [
+                    ...existingItems,
+                    ...collected.filter(item => !existingMessageIds.has(item.messageId)),
+                ]
+                : collected;
+
+            setMessageSummaries(nextItems);
+            messageSummariesRef.current = nextItems;
+            messageSummaryFingerprintRef.current = fingerprint;
+            messageSummaryTailIdRef.current = nextItems[nextItems.length - 1]?.messageId || null;
+            return nextItems;
         } catch (error) {
             if (!silent) {
                 toast.error(t('load_message_summaries_failed') || error?.message || '加载消息概览失败');
@@ -691,6 +770,111 @@ function ChatPage({
         smoothScrollToBottom,
     ]);
 
+    const handleTaskInterruptPreview = useCallback((preview) => {
+        const requestId = String(preview?.requestId || '').trim();
+        const taskRunId = String(preview?.taskRunId || '').trim();
+        const content = String(preview?.content || '').trim();
+        if (!requestId || !taskRunId || !content) return;
+
+        const hasRenderedDivider = taskInterruptDividerShownRef.current.has(taskRunId)
+            || collectTaskInterruptReceipts(messagesRef.current)
+                .some((item) => item.taskRunId === taskRunId);
+        const showDivider = !hasRenderedDivider;
+        if (showDivider) taskInterruptDividerShownRef.current.add(taskRunId);
+
+        setTaskInterruptPreviews((current) => {
+            if (current.some((item) => item.requestId === requestId)) return current;
+            return [...current, {
+                requestId,
+                taskRunId,
+                content,
+                createdAt: preview?.createdAt || Date.now(),
+                pending: true,
+                showDivider,
+            }];
+        });
+
+        scrollToBottomAfterRender(isAutoScrollEnabledRef.current, {delay: 0});
+    }, [isAutoScrollEnabledRef, scrollToBottomAfterRender]);
+
+    const handleTaskInterruptResult = useCallback(({requestId, success}) => {
+        const normalizedRequestId = String(requestId || '').trim();
+        if (!normalizedRequestId) return;
+
+        setTaskInterruptPreviews((current) => {
+            if (!success) {
+                const failedItem = current.find((item) => item.requestId === normalizedRequestId);
+                const remaining = current.filter((item) => item.requestId !== normalizedRequestId);
+                if (!failedItem?.showDivider) return remaining;
+
+                const nextGroupIndex = remaining.findIndex(
+                    (item) => item.taskRunId === failedItem.taskRunId
+                );
+                if (nextGroupIndex >= 0) {
+                    return remaining.map((item, index) => (
+                        index === nextGroupIndex ? {...item, showDivider: true} : item
+                    ));
+                }
+
+                const hasRenderedDivider = collectTaskInterruptReceipts(messagesRef.current)
+                    .some((item) => item.taskRunId === failedItem.taskRunId);
+                if (!hasRenderedDivider) {
+                    taskInterruptDividerShownRef.current.delete(failedItem.taskRunId);
+                }
+                return remaining;
+            }
+            return current.map((item) => (
+                item.requestId === normalizedRequestId
+                    ? {...item, pending: false}
+                    : item
+            ));
+        });
+    }, []);
+
+    const handleTaskInterruptClear = useCallback((taskRunId) => {
+        const normalizedTaskRunId = String(taskRunId || '').trim();
+        if (!normalizedTaskRunId) return;
+        setTaskInterruptPreviews((current) => (
+            current.filter((item) => item.taskRunId !== normalizedTaskRunId)
+        ));
+        taskInterruptDividerShownRef.current.delete(normalizedTaskRunId);
+    }, []);
+
+    const acknowledgeTaskInterruptReplacements = useCallback((updates) => {
+        const receipts = collectTaskInterruptReceipts(updates);
+        if (receipts.length === 0) return;
+
+        const receivedIds = new Set(receipts.map((item) => item.requestId));
+        const receivedTaskRunIds = new Set(
+            receipts.map((item) => item.taskRunId).filter(Boolean)
+        );
+        receivedTaskRunIds.forEach((taskRunId) => {
+            taskInterruptDividerShownRef.current.add(taskRunId);
+        });
+
+        // Worker 会先推送 replacement，再把对应 card token 追加到正文。
+        // 先隐藏乐观分组的分割线，避免与正式卡片重叠；稍后再撤销已对账气泡，
+        // 避免两条流事件之间出现内容短暂消失。
+        setTaskInterruptPreviews((current) => (
+            current.map((item) => (
+                receivedTaskRunIds.has(item.taskRunId)
+                    ? {...item, showDivider: false}
+                    : item
+            ))
+        ));
+
+        globalThis.setTimeout(() => {
+            setTaskInterruptPreviews((current) => (
+                current.filter((item) => !receivedIds.has(item.requestId))
+            ));
+        }, 80);
+    }, []);
+
+    useEffect(() => {
+        setTaskInterruptPreviews([]);
+        taskInterruptDividerShownRef.current.clear();
+    }, [chatMarkId]);
+
     const handleManualScrollToBottomClick = useCallback(() => {
         if (historyNavigationLockedRef.current && restoreLatestMessagesRef.current) {
             restoreLatestMessagesRef.current();
@@ -1058,42 +1242,105 @@ function ChatPage({
     }, [chatMarkId, documentMarkId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType, t, uploadFiles, onNewChatMarkId]);
 
     const loadMoreHistory = useCallback(async () => {
-        try {
-            return new Promise((resolve, reject) => {
-                apiClient
-                    .get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                        params: {
-                            markId: chatMarkId,
-                            prevId: messagesOrder[1]
-                        }
-                    })
-                    .then(data => {
-                        const wasAutoScroll = isAutoScrollEnabledRef.current;
-                        const newMessages = {
-                            ...messagesRef.current,
-                            ...decorateMessages(data.messages || {}),
-                        };
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-                        let newOrder;
-                        if (data.haveMore) {
-                            newOrder = ['<PREV_MORE>', ...data.messagesOrder, ...messagesOrder.slice(1)];
-                        } else {
-                            newOrder = [...data.messagesOrder, ...messagesOrder.slice(1)];
-                        }
-                        setMessagesOrder(newOrder);
-                        messagesOrderRef.current = newOrder;
-                        if (!wasAutoScroll) {
-                            checkScrollPosition(true);
-                        }
-                        resolve(true);
-                    })
-                    .catch(error => reject(error));
+        if (historyLoadInFlightRef.current) return historyLoadInFlightRef.current;
+
+        const currentOrder = messagesOrderRef.current;
+        const firstLoadedMessageId = currentOrder[0] === '<PREV_MORE>' ? currentOrder[1] : null;
+        if (!chatMarkId || !firstLoadedMessageId) return false;
+
+        const container = messagesContainerRef.current;
+        const previousScrollHeight = container?.scrollHeight ?? 0;
+        const previousScrollTop = container?.scrollTop ?? 0;
+
+        isAutoScrollEnabledRef.current = false;
+        pendingScrollRef.current = false;
+        setIsLoadingMoreHistory(true);
+
+        const request = (async () => {
+            const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
+                params: {
+                    markId: chatMarkId,
+                    prevId: firstLoadedMessageId,
+                    limit: HISTORY_PAGE_SIZE,
+                }
             });
-        } catch (err) {
-            throw err;
+            if (activeChatMarkIdRef.current !== chatMarkId) return false;
+
+            const latestOrder = messagesOrderRef.current;
+            const loadedOrder = latestOrder[0] === '<PREV_MORE>' ? latestOrder.slice(1) : latestOrder;
+            const loadedIds = new Set(loadedOrder);
+            const prependedOrder = (data.messagesOrder || []).filter(messageId => !loadedIds.has(messageId));
+            const nextOrder = data.haveMore
+                ? ['<PREV_MORE>', ...prependedOrder, ...loadedOrder]
+                : [...prependedOrder, ...loadedOrder];
+            const nextMessages = {
+                ...messagesRef.current,
+                ...decorateMessages(data.messages || {}),
+            };
+
+            messagesRef.current = nextMessages;
+            messagesOrderRef.current = nextOrder;
+            setMessages(nextMessages);
+            setMessagesOrder(nextOrder);
+
+            await new Promise(resolve => {
+                requestAnimationFrame(() => requestAnimationFrame(resolve));
+            });
+
+            if (container && messagesContainerRef.current === container) {
+                const addedHeight = Math.max(0, container.scrollHeight - previousScrollHeight);
+                markProgrammaticScroll(350);
+                container.scrollTop = previousScrollTop + addedHeight;
+                userScrollStateRef.current.lastScrollTop = container.scrollTop;
+                checkScrollPosition(true);
+            }
+            return true;
+        })().finally(() => {
+            if (historyLoadInFlightRef.current === request) {
+                historyLoadInFlightRef.current = null;
+            }
+            if (activeChatMarkIdRef.current === chatMarkId) {
+                setIsLoadingMoreHistory(false);
+            }
+        });
+
+        historyLoadInFlightRef.current = request;
+        return request;
+    }, [
+        chatMarkId,
+        checkScrollPosition,
+        decorateMessages,
+        isAutoScrollEnabledRef,
+        markProgrammaticScroll,
+        pendingScrollRef,
+        setMessages,
+    ]);
+
+    useEffect(() => {
+        if (!historyAutoLoadReady || !chatMarkId || messagesOrder[0] !== '<PREV_MORE>') {
+            return undefined;
         }
-    }, [chatMarkId, checkScrollPosition, decorateMessages, messagesOrder, setMessages]);
+
+        const container = messagesContainerRef.current;
+        const sentinel = container?.querySelector('[data-history-load-sentinel="true"]');
+        if (!container || !sentinel || typeof IntersectionObserver === 'undefined') {
+            return undefined;
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            if (!entries.some(entry => entry.isIntersecting)) return;
+            loadMoreHistory().catch((error) => {
+                toast.error(t('load_more_error', {message: error?.message || t('unknown_error')}));
+            });
+        }, {
+            root: container,
+            rootMargin: HISTORY_AUTO_LOAD_ROOT_MARGIN,
+            threshold: 0.01,
+        });
+
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [chatMarkId, historyAutoLoadReady, loadMoreHistory, messagesOrder, t]);
 
     const scrollToRenderedMessage = useCallback((messageId, behavior = 'smooth') => {
         const container = messagesContainerRef.current;
@@ -1119,7 +1366,7 @@ function ChatPage({
         if (!chatMarkId) return false;
         try {
             const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                params: {markId: chatMarkId}
+                params: {markId: chatMarkId, limit: HISTORY_PAGE_SIZE}
             });
             const decorated = decorateMessages(data.messages || {});
             const nextMessages = {...messagesRef.current, ...decorated};
@@ -1142,6 +1389,7 @@ function ChatPage({
                     markProgrammaticScroll(700);
                     executePendingScroll();
                     checkScrollPosition(true);
+                    setHistoryAutoLoadReady(true);
                 });
             });
             return true;
@@ -1176,21 +1424,19 @@ function ChatPage({
 
         if (scrollToRenderedMessage(messageId)) return true;
 
-        const summaryIndex = messageSummaries.findIndex(item => item.messageId === messageId);
-        if (summaryIndex < 0) {
-            toast.error(t('jump_to_message_failed') || '跳转消息失败');
-            return false;
-        }
+        const loadTargetWindow = async (summaryItems, expectedOrderFingerprint) => {
+            const summaryIndex = summaryItems.findIndex(item => item.messageId === messageId);
+            if (summaryIndex < 0) {
+                throw new Error(t('jump_to_message_failed') || '跳转消息失败');
+            }
 
-        const start = Math.max(0, summaryIndex - HISTORY_JUMP_BEFORE);
-        const end = Math.min(messageSummaries.length, summaryIndex + HISTORY_JUMP_AFTER + 1);
-        const messageIds = messageSummaries.slice(start, end).map(item => item.messageId);
-
-        try {
+            const start = Math.max(0, summaryIndex - HISTORY_JUMP_BEFORE);
+            const end = Math.min(summaryItems.length, summaryIndex + HISTORY_JUMP_AFTER + 1);
+            const messageIds = summaryItems.slice(start, end).map(item => item.messageId);
             const data = await apiClient.post(apiEndpoint.CHAT_MESSAGES_BATCH_ENDPOINT, {
                 markId: chatMarkId,
                 messageIds,
-                expectedOrderFingerprint: messageSummaryFingerprint,
+                expectedOrderFingerprint,
                 requireContiguous: true,
             });
             const decorated = decorateMessages(data.messages || {});
@@ -1206,16 +1452,35 @@ function ChatPage({
             historyNavigationLockedRef.current = true;
             isAutoScrollEnabledRef.current = false;
             pendingScrollRef.current = false;
+            setHistoryAutoLoadReady(true);
             setShowScrollToBottomButton(true);
-
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => scrollToRenderedMessage(messageId, 'auto'));
-            });
-            return true;
-        } catch (error) {
-            if (Number(error?.code) === 409) {
-                await loadMessageSummaries();
+            if (data.orderFingerprint) {
+                messageSummaryFingerprintRef.current = data.orderFingerprint;
             }
+
+            await new Promise(resolve => {
+                requestAnimationFrame(() => requestAnimationFrame(resolve));
+            });
+            if (!scrollToRenderedMessage(messageId, 'auto')) {
+                throw new Error(t('jump_to_message_failed') || '跳转消息失败');
+            }
+            return true;
+        };
+
+        try {
+            let summaryItems = messageSummariesRef.current;
+            if (!summaryItems.some(item => item.messageId === messageId)) {
+                summaryItems = await loadMessageSummaries();
+            }
+
+            try {
+                return await loadTargetWindow(summaryItems, messageSummaryFingerprintRef.current);
+            } catch (error) {
+                if (Number(error?.code) !== 409) throw error;
+                const refreshedItems = await loadMessageSummaries({silent: true});
+                return await loadTargetWindow(refreshedItems, messageSummaryFingerprintRef.current);
+            }
+        } catch (error) {
             toast.error(error?.message || t('jump_to_message_failed') || '跳转消息失败');
             return false;
         }
@@ -1224,8 +1489,6 @@ function ChatPage({
         decorateMessages,
         isAutoScrollEnabledRef,
         loadMessageSummaries,
-        messageSummaries,
-        messageSummaryFingerprint,
         pendingScrollRef,
         scrollToRenderedMessage,
         setMessages,
@@ -1568,9 +1831,14 @@ function ChatPage({
 
     useEffect(() => {
         setMessageSummaries([]);
-        setMessageSummaryFingerprint(null);
+        messageSummariesRef.current = [];
+        messageSummaryFingerprintRef.current = null;
+        messageSummaryTailIdRef.current = null;
         setActiveVisibleMessageId(null);
         setMessageOverviewOpen(false);
+        setHistoryAutoLoadReady(false);
+        setIsLoadingMoreHistory(false);
+        historyLoadInFlightRef.current = null;
         historyNavigationLockedRef.current = false;
         summaryRequestVersionRef.current += 1;
     }, [chatMarkId]);
@@ -1583,22 +1851,43 @@ function ChatPage({
 
     const handleOpenMessageOverview = useCallback(() => {
         setMessageOverviewOpen(true);
-        if (!messageSummaryLoading) {
-            loadMessageSummaries({silent: messageSummaries.length > 0});
+        if (!messageSummaryLoading && messageSummariesRef.current.length === 0) {
+            loadMessageSummaries();
         }
-    }, [loadMessageSummaries, messageSummaries.length, messageSummaryLoading]);
+    }, [loadMessageSummaries, messageSummaryLoading]);
 
     useEffect(() => {
-        if (!chatMarkId || (!showQuickUserMessageNavigator && !messageOverviewOpen)) return undefined;
+        if (
+            !chatMarkId
+            || (!showQuickUserMessageNavigator && !messageOverviewOpen)
+            || messageSummaryLoading
+            || messageSummariesRef.current.length === 0
+        ) return undefined;
+
+        const renderedOrder = messagesOrder.filter(messageId => messageId !== '<PREV_MORE>');
+        const renderedTailId = renderedOrder[renderedOrder.length - 1] || null;
+        if (!renderedTailId || renderedTailId === messageSummaryTailIdRef.current) return undefined;
+
+        let cancelled = false;
         const timer = window.setTimeout(() => {
-            loadMessageSummaries({silent: true});
+            loadMessageSummaries({silent: true, append: true}).then((items) => {
+                if (cancelled) return;
+                const loadedTailId = items[items.length - 1]?.messageId || null;
+                if (loadedTailId !== renderedTailId) {
+                    loadMessageSummaries({silent: true});
+                }
+            });
         }, 350);
-        return () => window.clearTimeout(timer);
+        return () => {
+            cancelled = true;
+            window.clearTimeout(timer);
+        };
     }, [
         chatMarkId,
         loadMessageSummaries,
         messageOverviewOpen,
-        messagesOrder.length,
+        messageSummaryLoading,
+        messagesOrder,
         showQuickUserMessageNavigator,
     ]);
 
@@ -1625,20 +1914,29 @@ function ChatPage({
             if (frameId !== null) cancelAnimationFrame(frameId);
             frameId = requestAnimationFrame(() => {
                 const containerRect = container.getBoundingClientRect();
-                const center = containerRect.top + containerRect.height / 2;
-                let closestId = null;
-                let closestDistance = Number.POSITIVE_INFINITY;
-                container.querySelectorAll('[data-message-id]').forEach((element) => {
-                    const rect = element.getBoundingClientRect();
-                    if (rect.bottom < containerRect.top || rect.top > containerRect.bottom) return;
-                    const messageCenter = rect.top + rect.height / 2;
-                    const distance = Math.abs(messageCenter - center);
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        closestId = element.getAttribute('data-message-id');
+                const centerX = containerRect.left + containerRect.width / 2;
+                const centerY = containerRect.top + containerRect.height / 2;
+                const probeOffsets = [0, -48, 48, -96, 96, -160, 160];
+                let activeId = null;
+
+                for (const offset of probeOffsets) {
+                    const probeY = Math.min(
+                        containerRect.bottom - 1,
+                        Math.max(containerRect.top + 1, centerY + offset),
+                    );
+                    const elements = document.elementsFromPoint(centerX, probeY);
+                    const messageElement = elements
+                        .map(element => element.closest?.('[data-message-id]'))
+                        .find(element => element && container.contains(element));
+                    if (messageElement) {
+                        activeId = messageElement.getAttribute('data-message-id');
+                        break;
                     }
-                });
-                if (closestId) setActiveVisibleMessageId(current => current === closestId ? current : closestId);
+                }
+
+                if (activeId) {
+                    setActiveVisibleMessageId(current => current === activeId ? current : activeId);
+                }
             });
         };
 
@@ -1781,6 +2079,7 @@ function ChatPage({
                                 }
                             }
 
+                            acknowledgeTaskInterruptReplacements(payload.value);
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
 
@@ -1851,6 +2150,7 @@ function ChatPage({
                                     }
                                 }
                             });
+                            acknowledgeTaskInterruptReplacements(payload.value);
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
                             scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
@@ -2096,6 +2396,13 @@ function ChatPage({
                         // AI 工具或其他客户端修改了对话树。统一重新加载当前活动分支，
                         // 避免本地 messagesOrder 与后端 treeRevision 不一致。
                         setRandomMark(generateUUID());
+                        if (
+                            messageSummariesRef.current.length > 0
+                            || showQuickUserMessageNavigator
+                            || messageOverviewOpen
+                        ) {
+                            loadMessageSummaries({silent: true});
+                        }
                         reply({success: true, treeRevision: payload.treeRevision});
                         break;
                     case "Conversation-Deleted":
@@ -2254,7 +2561,7 @@ function ChatPage({
             unsubscribe2();
             unsubscribe3();
         };
-    }, [chatMarkId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent]);
+    }, [acknowledgeTaskInterruptReplacements, chatMarkId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, showQuickUserMessageNavigator, messageOverviewOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent]);
 
     useEffect(() => {
         return () => {
@@ -2396,8 +2703,9 @@ function ChatPage({
         };
         const requestMessages = async () => {
             try {
+                setHistoryAutoLoadReady(false);
                 const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                    params: {markId: chatMarkId}
+                    params: {markId: chatMarkId, limit: HISTORY_PAGE_SIZE}
                 });
 
                 const messages = decorateMessages(messagesData.messages || {});
@@ -2453,6 +2761,9 @@ function ChatPage({
                             top: scrollHeight,
                             behavior: 'auto'
                         });
+                    }
+                    if (activeChatMarkIdRef.current === chatMarkId) {
+                        setHistoryAutoLoadReady(true);
                     }
                 }, 200);
             }
@@ -2578,11 +2889,13 @@ function ChatPage({
                                 messagesOrder={messagesOrder}
                                 messages={messages}
                                 onLoadMore={loadMoreHistory}
+                                isLoadingMore={isLoadingMoreHistory}
                                 onSwitchMessage={switchMessage}
                                 markId={chatMarkId}
                                 speechState={speechState}
                                 onSpeechTextClick={handleSpeechTextClick}
                                 highlightedMessageId={highlightedMessageId}
+                                taskInterruptPreviews={taskInterruptPreviews}
                             />
                         </div>
 
@@ -2655,6 +2968,9 @@ function ChatPage({
                             onVoiceRecordingStart={handleVoiceRecordingStart}
                             onVoicePcmReady={handleVoicePcmReady}
                             onVoiceRecordingCancel={handleVoiceRecordingCancel}
+                            onTaskInterruptPreview={handleTaskInterruptPreview}
+                            onTaskInterruptResult={handleTaskInterruptResult}
+                            onTaskInterruptClear={handleTaskInterruptClear}
                             selectedWorkspaceId={advancedSettingsValues?.workspaceId || null}
                             onWorkspaceChange={(workspaceId) => {
                                 setAdvancedSettingsValues(current => ({...current, workspaceId}));

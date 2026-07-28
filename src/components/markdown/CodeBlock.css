@@ -1,69 +1,185 @@
-/* CodeBlock.css */
 .code-container {
-    font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
-    font-size: 14px;
-    line-height: 1.5;
-    margin: 16px 0;
+    --code-border: #e5e7eb;
+    --code-toolbar-bg: rgba(249, 250, 251, 0.96);
+    --code-body-bg: #ffffff;
+    --code-gutter-bg: #f9fafb;
+    --code-text: #24292f;
+    --code-muted: #8b949e;
+    position: relative;
+    isolation: isolate;
+    overflow: visible;
+    margin: 14px 0;
+    border: 1px solid var(--code-border);
+    border-radius: 8px;
+    background: var(--code-body-bg);
+    font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+    font-size: 13px;
+    line-height: 1.55;
 }
+
 .code-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
     display: flex;
+    min-height: 34px;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    padding: 4px 12px;
-    background-color: #f6f8fa;
-    border: 1px solid #e1e4e8;
-    border-radius: 6px 6px 0 0;
+    padding: 0 7px 0 11px;
+    border-bottom: 1px solid var(--code-border);
+    border-radius: 8px 8px 0 0;
+    background: var(--code-toolbar-bg);
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.025);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
+
 .language-badge {
-    color: #24292f;
-    font-size: 12px;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-.copy-button {
-    background: none;
-    border: none;
-    color: #586069;
-    cursor: pointer;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.copy-button:hover { color: #24292f; }
-.copy-button.copied { color: #22863a; }
-.code-area {
-    display: flex;
-    background-color: #ffffff;
-    border: 1px solid #e1e4e8;
-    border-top: none;
-    border-radius: 0 0 6px 6px;
+    min-width: 0;
     overflow: hidden;
+    color: #6b7280;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.035em;
+    line-height: 1;
+    text-overflow: ellipsis;
+    text-transform: lowercase;
+    white-space: nowrap;
 }
+
+.copy-button {
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease, transform 120ms ease;
+}
+
+.copy-button:hover:not(:disabled) {
+    background: rgba(15, 23, 42, 0.06);
+    color: #111827;
+}
+
+.copy-button:active:not(:disabled) {
+    transform: scale(0.92);
+}
+
+.copy-button:focus-visible {
+    outline: 2px solid rgba(59, 130, 246, 0.45);
+    outline-offset: 1px;
+}
+
+.copy-button:disabled {
+    cursor: default;
+    opacity: 0.35;
+}
+
+.copy-button.copied {
+    color: #15803d;
+}
+
+.code-area {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    overflow: visible;
+    border-radius: 0 0 8px 8px;
+    background: var(--code-body-bg);
+}
+
 .line-numbers {
+    min-width: 3.25em;
+    padding: 10px 9px 10px 8px;
+    border-right: 1px solid var(--code-border);
+    background: var(--code-gutter-bg);
+    color: var(--code-muted);
+    font-size: 12px;
+    line-height: inherit;
     text-align: right;
-    padding: 12px 8px;
+    white-space: pre;
     user-select: none;
-    color: #959da5;
-    background-color: #fbfbfb;
-    min-width: 40px;
-    flex-shrink: 0;
-    border-right: 1px solid #eaecef;
 }
-.line-number {
-    display: block;
-    height: 1.5em;
-    font-size: 14px;
-}
+
 .code-preview {
+    min-width: 0;
     margin: 0;
-    padding: 12px;
-    background: transparent !important;
+    padding: 10px 12px;
     overflow-x: auto;
-    flex: 1;
+    overscroll-behavior-x: contain;
+    background: transparent !important;
+    color: var(--code-text);
+    font: inherit;
+    line-height: inherit;
+    tab-size: 4;
+    scrollbar-gutter: stable;
 }
+
 .code-preview code {
     display: block;
+    min-width: max-content;
+    padding: 0 !important;
+    background: transparent !important;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
     white-space: pre;
-    color: #24292f;
+}
+
+.dark .code-container {
+    --code-border: #30363d;
+    --code-toolbar-bg: rgba(22, 27, 34, 0.96);
+    --code-body-bg: #0d1117;
+    --code-gutter-bg: #161b22;
+    --code-text: #c9d1d9;
+    --code-muted: #6e7681;
+}
+
+.dark .language-badge,
+.dark .copy-button {
+    color: #8b949e;
+}
+
+.dark .copy-button:hover:not(:disabled) {
+    background: rgba(240, 246, 252, 0.09);
+    color: #f0f6fc;
+}
+
+.dark .copy-button.copied {
+    color: #3fb950;
+}
+
+@media (max-width: 640px) {
+    .code-container {
+        margin: 12px 0;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    .code-toolbar {
+        min-height: 32px;
+        border-radius: 7px 7px 0 0;
+    }
+
+    .line-numbers {
+        min-width: 3em;
+        padding-right: 7px;
+    }
+
+    .code-preview {
+        padding: 9px 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .copy-button {
+        transition: none;
+    }
 }

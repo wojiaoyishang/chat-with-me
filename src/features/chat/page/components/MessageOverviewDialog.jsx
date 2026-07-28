@@ -1,5 +1,6 @@
 import React, {memo, useEffect, useMemo, useRef} from 'react';
 import {Loader2, RotateCcw, X} from 'lucide-react';
+import {Virtuoso} from 'react-virtuoso';
 import {Button} from '@/components/ui/button';
 import {
     Dialog,
@@ -22,20 +23,27 @@ const MessageOverviewDialog = memo(({
     onRefresh,
     t,
 }) => {
-    const listRef = useRef(null);
+    const virtuosoRef = useRef(null);
     const roleCounts = useMemo(() => items.reduce((acc, item) => {
         const role = item?.role || 'assistant';
         acc[role] = (acc[role] || 0) + 1;
         return acc;
     }, {}), [items]);
+    const activeItemIndex = useMemo(
+        () => items.findIndex(item => item.messageId === activeMessageId),
+        [activeMessageId, items],
+    );
 
     useEffect(() => {
-        if (!open || !activeMessageId || !listRef.current) return;
-        const escaped = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(activeMessageId) : activeMessageId;
+        if (!open || activeItemIndex < 0 || !virtuosoRef.current) return;
         requestAnimationFrame(() => {
-            listRef.current?.querySelector(`[data-summary-message-id="${escaped}"]`)?.scrollIntoView?.({block: 'center'});
+            virtuosoRef.current?.scrollToIndex?.({
+                index: activeItemIndex,
+                align: 'center',
+                behavior: 'auto',
+            });
         });
-    }, [activeMessageId, open, items]);
+    }, [activeItemIndex, open]);
 
     return (
         <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose?.()}>
@@ -67,7 +75,7 @@ const MessageOverviewDialog = memo(({
                     </DialogClose>
                 </DialogHeader>
 
-                <div ref={listRef} className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-3 sm:p-4">
+                <div className="min-h-0 flex-1">
                     {loading && items.length === 0 ? (
                         <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                             <Loader2 className="mr-2 size-5 animate-spin"/>
@@ -77,16 +85,27 @@ const MessageOverviewDialog = memo(({
                         <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                             {t?.('no_message_summaries') || '暂无可展示的消息'}
                         </div>
-                    ) : items.map(item => (
-                        <div key={item.messageId} data-summary-message-id={item.messageId} className="scroll-my-16">
-                            <MessageSummaryItem
-                                item={item}
-                                variant="map"
-                                active={item.messageId === activeMessageId}
-                                onClick={() => onSelect?.(item.messageId)}
-                            />
-                        </div>
-                    ))}
+                    ) : (
+                        <Virtuoso
+                            ref={virtuosoRef}
+                            data={items}
+                            className="h-full pretty-scrollbar"
+                            increaseViewportBy={320}
+                            itemContent={(_index, item) => (
+                                <div
+                                    data-summary-message-id={item.messageId}
+                                    className="px-3 py-1 sm:px-4"
+                                >
+                                    <MessageSummaryItem
+                                        item={item}
+                                        variant="map"
+                                        active={item.messageId === activeMessageId}
+                                        onClick={() => onSelect?.(item.messageId)}
+                                    />
+                                </div>
+                            )}
+                        />
+                    )}
                 </div>
             </DialogContent>
         </Dialog>

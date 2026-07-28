@@ -1,8 +1,9 @@
-import React, {forwardRef, memo, useCallback, useState} from 'react';
+import React, {forwardRef, memo, useCallback, useMemo, useState} from 'react';
 import {toast} from 'sonner';
 import {useTranslation} from 'react-i18next';
 import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
 import MessageItem from './message/components/MessageItem.jsx';
+import TaskInterruptPreviewGroup from '@/components/markdown/card-block/task/TaskInterruptPreviewGroup.jsx';
 import useMessageAnimation from './message/hooks/useMessageAnimation.js';
 import useMessageEvents from './message/hooks/useMessageEvents.js';
 import './message/styles/messageAnimations.js';
@@ -11,13 +12,14 @@ const MessageContainer = forwardRef(({
                                          messagesOrder = [],
                                          messages = {},
                                          onLoadMore,
+                                         isLoadingMore = false,
                                          onSwitchMessage,
                                          markId,
                                          speechState,
                                          onSpeechTextClick,
-                                         highlightedMessageId = null
+                                         highlightedMessageId = null,
+                                         taskInterruptPreviews = []
                                      }, ref) => {
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [switchingMessageId, setSwitchingMessageId] = useState(null);
     const {t} = useTranslation();
 
@@ -28,13 +30,16 @@ const MessageContainer = forwardRef(({
         setFadeMessages,
         getMessageAnimationClass
     } = useMessageAnimation(messagesOrder);
+    const switchingMessageIndex = useMemo(
+        () => switchingMessageId ? messagesOrder.indexOf(switchingMessageId) : -1,
+        [messagesOrder, switchingMessageId],
+    );
 
     useMessageEvents(markId, setSwitchingMessageId);
 
     const handleLoadMore = useCallback(async () => {
         if (isLoadingMore || !onLoadMore) return;
 
-        setIsLoadingMore(true);
         try {
             const result = await onLoadMore();
             if (result === false) {
@@ -42,14 +47,13 @@ const MessageContainer = forwardRef(({
             }
         } catch (error) {
             toast.error(t('load_more_error', {message: error?.message || t('unknown_error')}));
-        } finally {
-            setIsLoadingMore(false);
         }
     }, [isLoadingMore, onLoadMore, t]);
 
     const renderLoadMore = useCallback((msgId) => (
         <div
             key={msgId}
+            data-history-load-sentinel="true"
             className={`flex justify-center w-full py-4 transition-all duration-300 ease-in-out ${leavingMessages.has(msgId)
                 ? 'opacity-0 -translate-y-2'
                 : enteringMessages.has(msgId)
@@ -58,15 +62,16 @@ const MessageContainer = forwardRef(({
             }`}
         >
             {isLoadingMore ? (
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
                     <div className="w-5 h-5 border-t-2 border-gray-400 border-solid rounded-full animate-spin"/>
+                    <span>{t('loading_more_messages', '正在加载更早消息…')}</span>
                 </div>
             ) : (
                 <button
                     onClick={handleLoadMore}
                     className="px-5 py-2 text-gray-600 text-sm font-medium bg-transparent border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 transition-colors duration-200 cursor-pointer"
                 >
-                    {t('load_more')}
+                    {t('load_more_auto_hint', '继续上划自动加载更早消息')}
                 </button>
             )}
         </div>
@@ -90,7 +95,7 @@ const MessageContainer = forwardRef(({
     ), [fadeMessages, enteringMessages, t]);
 
     const renderMessage = useCallback((msgId, index) => {
-        if (messagesOrder.slice(0, index).some(id => switchingMessageId === id)) return null;
+        if (switchingMessageIndex >= 0 && index > switchingMessageIndex) return null;
 
         if (msgId === '<PREV_MORE>') return renderLoadMore(msgId);
 
@@ -138,6 +143,7 @@ const MessageContainer = forwardRef(({
     }, [
         messagesOrder,
         switchingMessageId,
+        switchingMessageIndex,
         messages,
         renderLoadMore,
         renderSwitchingLoader,
@@ -160,6 +166,7 @@ const MessageContainer = forwardRef(({
             className="w-full max-w-220 mx-auto px-4 py-6 flex flex-col gap-6 pb-60"
         >
             {messagesOrder.map((msgId, index) => renderMessage(msgId, index))}
+            <TaskInterruptPreviewGroup previews={taskInterruptPreviews}/>
         </div>
     );
 });

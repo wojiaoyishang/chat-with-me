@@ -255,6 +255,9 @@ function ChatBox({
                      onVoicePcmReady,
                      onVoiceRecordingStart,
                      onVoiceRecordingCancel,
+                     onTaskInterruptPreview,
+                     onTaskInterruptResult,
+                     onTaskInterruptClear,
                      selectedWorkspaceId = null,
                      onWorkspaceChange,
                  }) {
@@ -689,8 +692,19 @@ function ChatBox({
             }
             if (taskInterruptPendingRef.current) return;
 
+            const requestId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+            const preview = {
+                requestId,
+                taskRunId: taskMode.taskRunId,
+                content: currentContent,
+                createdAt: Date.now(),
+            };
+
             taskInterruptPendingRef.current = true;
             setIsTaskInterruptPending(true);
+            onTaskInterruptPreview?.(preview);
+            updateMessageContent('');
+
             try {
                 const response = await emitEvent({
                     type: 'message',
@@ -700,17 +714,21 @@ function ChatBox({
                         command: 'Task-Interrupt',
                         taskRunId: taskMode.taskRunId,
                         content: currentContent,
-                        requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                        requestId,
                     },
                 });
                 if (response?.success === false) {
+                    onTaskInterruptResult?.({requestId, taskRunId: taskMode.taskRunId, success: false});
+                    if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
                     toast.error(response?.value || t('task_mode_interrupt_failed', '无法补充任务要求。'));
                     return;
                 }
-                updateMessageContent('');
+                onTaskInterruptResult?.({requestId, taskRunId: taskMode.taskRunId, success: true});
                 toast.success(t('task_mode_interrupt_sent', '已将补充要求加入当前任务。'));
             } catch (error) {
                 console.error('Task interruption failed:', error);
+                onTaskInterruptResult?.({requestId, taskRunId: taskMode.taskRunId, success: false});
+                if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
                 toast.error(t('task_mode_interrupt_failed', '无法补充任务要求。'));
             } finally {
                 taskInterruptPendingRef.current = false;
@@ -744,6 +762,8 @@ function ChatBox({
         }
     }, [
         onSendMessage,
+        onTaskInterruptPreview,
+        onTaskInterruptResult,
         buildOutboundToolsStatus,
         editMessageId,
         attachmentsMeta,
@@ -1357,6 +1377,9 @@ function ChatBox({
                     taskInterruptPendingRef.current = false;
                     setIsTaskInterruptPending(false);
                 }
+                if (taskRunId && !value.active) {
+                    onTaskInterruptClear?.(taskRunId);
+                }
                 reply({value});
                 break;
             }
@@ -1559,7 +1582,7 @@ function ChatBox({
 
                 break;
         }
-    }, [attachmentsMeta, buildOutboundToolsStatus, chatboxSetup, leaveEditMode, markId, onSendMessage, roles, setAttachments, showCollapsedChatBox, toolsStatus, updateMessageContent]);
+    }, [attachmentsMeta, buildOutboundToolsStatus, chatboxSetup, leaveEditMode, markId, onSendMessage, onTaskInterruptClear, roles, setAttachments, showCollapsedChatBox, toolsStatus, updateMessageContent]);
 
     const renderMenuItems = useExtraToolsMenuItems({
         toolsStatus,
@@ -2372,6 +2395,9 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         prevProps.isWindowMode === nextProps.isWindowMode &&
         prevProps.onVoicePcmReady === nextProps.onVoicePcmReady &&
         prevProps.onVoiceRecordingStart === nextProps.onVoiceRecordingStart &&
-        prevProps.onVoiceRecordingCancel === nextProps.onVoiceRecordingCancel
+        prevProps.onVoiceRecordingCancel === nextProps.onVoiceRecordingCancel &&
+        prevProps.onTaskInterruptPreview === nextProps.onTaskInterruptPreview &&
+        prevProps.onTaskInterruptResult === nextProps.onTaskInterruptResult &&
+        prevProps.onTaskInterruptClear === nextProps.onTaskInterruptClear
     );
 });

@@ -1,33 +1,36 @@
-import React, { useState, useMemo, useLayoutEffect, useRef, memo } from 'react';
+import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Check, Copy} from 'lucide-react';
+import {useTranslation} from 'react-i18next';
+
+import {copyTextToClipboard} from '@/lib/tools.jsx';
 import './CodeBlock.css';
 
-// 使用 import.meta.glob 静态收集所有语言模块
+// 使用 import.meta.glob 静态收集所有语言模块。
 const languageModules = import.meta.glob('/node_modules/highlight.js/es/languages/*.js');
 
-// 全局失败语言缓存（使用 window 以确保跨组件共享）
+const MAX_HIGHLIGHT_CHARACTERS = 120_000;
+const MAX_HIGHLIGHT_LINES = 2_500;
+const MAX_LINE_NUMBER_COUNT = 5_000;
+const COPY_RESET_DELAY_MS = 1_800;
+
+// 全局失败语言缓存（跨 CodeBlock 复用，避免重复加载失败模块）。
 if (!window.hljsFailedLanguages) {
     window.hljsFailedLanguages = new Set();
 }
 
-// 全局 hljs 实例和加载 promise
 let hljs = null;
 let loadingPromise = null;
 
 const loadHljs = () => {
-    if (hljs) {
-        return Promise.resolve(hljs);
-    }
+    if (hljs) return Promise.resolve(hljs);
 
     if (!loadingPromise) {
         loadingPromise = import('highlight.js/lib/core')
             .then((module) => {
                 hljs = module.default;
-
-                // 兜底：即使外部传入了 nohighlight / language-text，也跳过高亮
                 hljs.configure({
-                    noHighlightRe: /\b(?:no-?highlight|language-text|language-plain|language-plaintext|language-txt|language-none)\b/i
+                    noHighlightRe: /\b(?:no-?highlight|language-text|language-plain|language-plaintext|language-txt|language-none)\b/i,
                 });
-
                 return hljs;
             })
             .finally(() => {
@@ -38,153 +41,181 @@ const loadHljs = () => {
     return loadingPromise;
 };
 
-// 这些语言视为纯文本，不进行 highlight.js 高亮
 const NO_HIGHLIGHT_LANGS = new Set([
     'text',
     'txt',
     'plain',
     'plaintext',
-    'none'
+    'none',
 ]);
 
 const normalizeLanguage = (language) => {
     const lang = language?.toLowerCase?.().trim();
-
-    if (!lang || NO_HIGHLIGHT_LANGS.has(lang)) {
-        return '';
-    }
-
+    if (!lang || NO_HIGHLIGHT_LANGS.has(lang)) return '';
     return lang;
 };
 
-const CodeBlock = memo(({ codeString = '', language }) => {
+const scheduleIdleWork = (callback) => {
+    if (typeof window.requestIdleCallback === 'function') {
+        const handle = window.requestIdleCallback(callback, {timeout: 280});
+        return () => window.cancelIdleCallback?.(handle);
+    }
+
+    const handle = window.setTimeout(callback, 32);
+    return () => window.clearTimeout(handle);
+};
+
+const CodeBlock = memo(({codeString = '', language}) => {
+    const {t} = useTranslation();
     const [copied, setCopied] = useState(false);
     const codeRef = useRef(null);
+    const copyResetTimerRef = useRef(null);
 
-    const normalizedLanguage = useMemo(() => {
-        return normalizeLanguage(language);
-    }, [language]);
+    const normalizedLanguage = useMemo(() => normalizeLanguage(language), [language]);
+    const displayLanguage = useMemo(
+        () => String(language || 'text').trim().toLowerCase() || 'text',
+        [language],
+    );
 
-    // 高亮逻辑，使用 useLayoutEffect 以在绘制前尽可能同步高亮
-    useLayoutEffect(() => {
-        if (!codeString || !codeRef.current || !normalizedLanguage) {
-            return;
+    const lineCount = useMemo(() => {
+        if (!codeString) return 0;
+
+        let count = 1;
+        let cursor = -1;
+        while ((cursor = codeString.indexOf('\n', cursor + 1)) !== -1) {
+            count += 1;
         }
+        return codeString.endsWith('\n') ? Math.max(0, count - 1) : count;
+    }, [codeString]);
+
+    const showLineNumbers = lineCount > 0 && lineCount <= MAX_LINE_NUMBER_COUNT;
+
+    // 单个文本节点替代逐行 React 节点，超长代码则省略行号栏。
+    const lineNumbersText = useMemo(() => {
+        if (!showLineNumbers) return '';
+        return Array.from({length: lineCount}, (_, index) => index + 1).join('\n');
+    }, [lineCount, showLineNumbers]);
+
+    const shouldHighlight = Boolean(
+        normalizedLanguage
+        && codeString.length <= MAX_HIGHLIGHT_CHARACTERS
+        && lineCount <= MAX_HIGHLIGHT_LINES,
+    );
+
+    // 高亮延后到浏览器空闲时执行；流式代码更新会取消旧任务，只处理最新内容。
+    useEffect(() => {
+        const codeElement = codeRef.current;
+        if (!codeElement) return undefined;
+
+        // highlight.js 会改写 innerHTML；每次先恢复最新纯文本，避免语言切换或流式更新残留旧节点。
+        if (codeElement.dataset.highlighted) {
+            delete codeElement.dataset.highlighted;
+        }
+        codeElement.textContent = codeString;
+
+        if (!codeString || !shouldHighlight) return undefined;
 
         let cancelled = false;
-
-        const doHighlight = async () => {
+        const cancelIdleWork = scheduleIdleWork(async () => {
             const hljsInst = await loadHljs();
-
-            if (cancelled || !codeRef.current) {
-                return;
-            }
+            if (cancelled || !codeRef.current) return;
 
             if (
-                !hljsInst.getLanguage(normalizedLanguage) &&
-                !window.hljsFailedLanguages.has(normalizedLanguage)
+                !hljsInst.getLanguage(normalizedLanguage)
+                && !window.hljsFailedLanguages.has(normalizedLanguage)
             ) {
-                // 映射语言表
-                const mapping_language = {
-                    html: 'xml'
-                };
+                const mappedLanguage = normalizedLanguage === 'html' ? 'xml' : normalizedLanguage;
+                const languagePath = `/node_modules/highlight.js/es/languages/${mappedLanguage}.js`;
+                const loadModule = languageModules[languagePath];
 
-                const realLanguage = mapping_language[normalizedLanguage] || normalizedLanguage;
-                const langPath = `/node_modules/highlight.js/es/languages/${realLanguage}.js`;
-                const loadModule = languageModules[langPath];
+                if (!loadModule) {
+                    window.hljsFailedLanguages.add(normalizedLanguage);
+                    return;
+                }
 
-                if (loadModule) {
-                    try {
-                        const mod = await loadModule();
-
-                        if (cancelled || !codeRef.current) {
-                            return;
-                        }
-
-                        hljsInst.registerLanguage(normalizedLanguage, mod.default);
-                    } catch (err) {
-                        console.error(`Failed to load language module for: ${normalizedLanguage}`, err);
-                        window.hljsFailedLanguages.add(normalizedLanguage);
-                        return;
-                    }
-                } else {
+                try {
+                    const module = await loadModule();
+                    if (cancelled || !codeRef.current) return;
+                    hljsInst.registerLanguage(normalizedLanguage, module.default);
+                } catch (error) {
+                    console.error(`Failed to load language module for: ${normalizedLanguage}`, error);
                     window.hljsFailedLanguages.add(normalizedLanguage);
                     return;
                 }
             }
 
-            // 如果语言已经记录为加载失败，则不要继续 highlightElement
-            // 否则 highlight.js 仍然会因为找不到语言而输出 WARN
-            if (window.hljsFailedLanguages.has(normalizedLanguage)) {
-                return;
-            }
+            if (window.hljsFailedLanguages.has(normalizedLanguage) || !codeRef.current) return;
 
-            // 在高亮前重置高亮状态，以允许重新高亮
-            if (codeRef.current?.dataset?.highlighted) {
+            if (codeRef.current.dataset.highlighted) {
                 delete codeRef.current.dataset.highlighted;
             }
 
-            // 高亮元素
             try {
                 hljsInst.highlightElement(codeRef.current);
-            } catch (err) {
-                console.error('Highlight failed:', err);
+            } catch (error) {
+                console.error('Highlight failed:', error);
             }
-        };
-
-        doHighlight();
+        });
 
         return () => {
             cancelled = true;
+            cancelIdleWork();
         };
-    }, [codeString, normalizedLanguage]);
+    }, [codeString, normalizedLanguage, shouldHighlight]);
 
-    // 计算行数
-    const lineCount = useMemo(() => {
-        if (!codeString) return 0;
-
-        const lines = codeString.split('\n');
-
-        if (lines.length > 1 && lines[lines.length - 1] === '') {
-            return lines.length - 1;
+    useEffect(() => () => {
+        if (copyResetTimerRef.current) {
+            window.clearTimeout(copyResetTimerRef.current);
         }
+    }, []);
 
-        return lines.length;
-    }, [codeString]);
-
-    const handleCopy = async () => {
+    const handleCopy = useCallback(async () => {
         if (!codeString) return;
 
         try {
-            await navigator.clipboard.writeText(codeString);
+            await copyTextToClipboard(codeString);
             setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error('Copy failed:', err);
+            if (copyResetTimerRef.current) {
+                window.clearTimeout(copyResetTimerRef.current);
+            }
+            copyResetTimerRef.current = window.setTimeout(() => {
+                setCopied(false);
+                copyResetTimerRef.current = null;
+            }, COPY_RESET_DELAY_MS);
+        } catch (error) {
+            console.error('Copy failed:', error);
         }
-    };
+    }, [codeString]);
+
+    const copyLabel = copied
+        ? t('code_block_copied', '已复制')
+        : t('code_block_copy', '复制代码');
+    const codeBlockLabel = `${displayLanguage} ${t('code_block_label', '代码块')}`;
 
     return (
-        <div className="code-container">
-            <div className="code-toolbar">
-                <div className="language-badge">{language || 'text'}</div>
+        <section className="code-container" aria-label={codeBlockLabel}>
+            <header className="code-toolbar">
+                <span className="language-badge" title={displayLanguage}>
+                    {displayLanguage}
+                </span>
                 <button
-                    className={`copy-button rounded-md ${copied ? 'copied' : ''}`}
+                    type="button"
+                    className={`copy-button ${copied ? 'copied' : ''}`}
                     onClick={handleCopy}
                     disabled={!codeString}
+                    aria-label={copyLabel}
+                    title={copyLabel}
                 >
-                    {copied ? '已复制' : '复制'}
+                    {copied
+                        ? <Check size={15} strokeWidth={2} aria-hidden="true"/>
+                        : <Copy size={15} strokeWidth={1.8} aria-hidden="true"/>}
                 </button>
-            </div>
+            </header>
 
             <div className="code-area">
-                {lineCount > 0 && (
-                    <div className="line-numbers">
-                        {Array.from({ length: lineCount }).map((_, i) => (
-                            <span key={i} className="line-number">
-                                {i + 1}
-                            </span>
-                        ))}
+                {showLineNumbers && (
+                    <div className="line-numbers" aria-hidden="true">
+                        {lineNumbersText}
                     </div>
                 )}
 
@@ -192,7 +223,7 @@ const CodeBlock = memo(({ codeString = '', language }) => {
                     <code
                         ref={codeRef}
                         className={
-                            normalizedLanguage
+                            shouldHighlight
                                 ? `hljs language-${normalizedLanguage}`
                                 : 'hljs nohighlight'
                         }
@@ -201,8 +232,10 @@ const CodeBlock = memo(({ codeString = '', language }) => {
                     </code>
                 </pre>
             </div>
-        </div>
+        </section>
     );
 });
+
+CodeBlock.displayName = 'CodeBlock';
 
 export default CodeBlock;

@@ -358,6 +358,7 @@ const MessageItem = memo(({
             data-message-id={msgId}
             data-message-role={msg?.role || (isMid ? 'system' : (isRight ? 'user' : 'assistant'))}
             className={`flex flex-col w-full rounded-2xl transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'} ${animationClass} ${highlighted ? 'ring-2 ring-blue-400/80 ring-offset-4 ring-offset-white' : ''}`}
+            style={{contentVisibility: 'auto', containIntrinsicSize: 'auto 260px'}}
             onClickCapture={handleRootClickCapture}
             onClick={handleRootClick}
             {...hoverHandlers}

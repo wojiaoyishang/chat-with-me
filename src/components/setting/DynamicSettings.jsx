@@ -231,6 +231,8 @@ function SettingRow({
                         noTopPadding = false,
                         noLeftRightPadding = false,
                         fullWidth = false,
+                        controlFillAvailable = false,
+                        controlCompact = false,
                         nullable = false,
                         isNull = false,
                         onToggleNull = () => {},
@@ -246,9 +248,12 @@ function SettingRow({
 
     return (
         <div
-            className={`${className || ""} flex flex-col sm:flex-row sm:items-center sm:justify-between min-h-[42px] gap-2.5 sm:gap-3 last-of-type:border-b-0 ${expanded ? "flex-wrap" : ""} ${noTopPadding ? "pt-0 -mt-2.5" : ""} ${noLeftRightPadding ? "" : "py-3 px-3 sm:px-4"}`}
+            className={`${className || ""} flex ${controlCompact ? "flex-nowrap" : "flex-wrap"} items-center justify-between min-h-[42px] gap-x-3 gap-y-2.5 last-of-type:border-b-0 ${expanded ? "items-start" : ""} ${noTopPadding ? "pt-0 -mt-2.5" : ""} ${noLeftRightPadding ? "" : "py-3 px-3 sm:px-4"}`}
         >
-            <div className="flex items-center gap-1.5 min-w-0 w-full sm:flex-1">
+            <div
+                className="flex items-center gap-1.5 min-w-0 max-w-full flex-1"
+                style={{flexBasis: "max-content"}}
+            >
                 <TipWrapper tips={tips} nullable={nullable} isNull={isNull} onToggleNull={onToggleNull}>
                     <AutoScrollText className="text-sm font-medium flex-1 min-w-0" title={text}>
                         {text}
@@ -256,7 +261,13 @@ function SettingRow({
                     </AutoScrollText>
                 </TipWrapper>
             </div>
-            <div className="flex items-center justify-start sm:justify-end flex-shrink-0 w-full sm:w-auto min-w-0">
+            <div
+                className={controlFillAvailable
+                    ? "flex items-center justify-start sm:justify-end min-w-0 max-w-full flex-[1_1_180px] w-full sm:min-w-[180px] sm:ml-auto"
+                    : controlCompact
+                        ? "flex items-center justify-end min-w-0 max-w-full flex-none ml-auto"
+                        : "flex items-center justify-start sm:justify-end min-w-0 max-w-full flex-[1_1_auto] sm:flex-[0_1_auto] w-full sm:w-auto sm:ml-auto"}
+            >
                 {children}
             </div>
         </div>
@@ -702,7 +713,15 @@ function SwitchItem({item, path}) {
     };
 
     return (
-        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+        <SettingRow
+            text={item.text}
+            tips={item.tips}
+            nullable={nullable}
+            isNull={isNull}
+            onToggleNull={toggleNull}
+            required={item.required}
+            controlCompact
+        >
             <AnimatePresence mode="wait">
                 {isNull ? (
                     <motion.button
@@ -782,11 +801,37 @@ function NumberSliderItem({item, path}) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium"
+            className="h-8 flex-none whitespace-nowrap px-4 border border-black/15 dark:border-white/20 rounded-md bg-white dark:bg-black text-black dark:text-white cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-sm font-medium"
             onClick={toggleNull}
         >
             {t("ds.default")}
         </motion.button>
+    );
+
+    const numberInput = (
+        <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg overflow-hidden bg-white dark:bg-[#1c1e21] w-[88px] flex-none">
+            <input
+                className="w-full min-w-0 h-8 px-2.5 text-center text-sm font-sans outline-none bg-transparent text-[#1a1d21] dark:text-[#e4e7eb]"
+                type="text"
+                inputMode={item.integer ? "numeric" : "decimal"}
+                value={displayVal}
+                onChange={(e) => handleChange(e.target.value)}
+            />
+            <div className="flex flex-col border-l border-[#e1e4e8] dark:border-[#3a3f45]">
+                <button
+                    className="w-6 h-4 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-[10px] leading-none transition-colors cursor-pointer active:bg-[#e5e7eb]"
+                    onClick={() => handleChange(val + upDownStep)}
+                >
+                    ＋
+                </button>
+                <button
+                    className="w-6 h-4 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-[10px] leading-none transition-colors cursor-pointer active:bg-[#e5e7eb]"
+                    onClick={() => handleChange(val - upDownStep)}
+                >
+                    −
+                </button>
+            </div>
+        </div>
     );
 
     const setModeContent = (
@@ -795,63 +840,40 @@ function NumberSliderItem({item, path}) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="w-full sm:w-auto flex-shrink-0"
+            className={hasRange
+                ? "w-full min-w-0 flex items-center gap-3"
+                : "flex-none"}
         >
-            <div className="flex items-center border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg overflow-hidden bg-white dark:bg-[#1c1e21] w-full sm:w-[88px]">
-                <input
-                    className="w-full h-8 px-2.5 text-center text-sm font-sans outline-none bg-transparent text-[#1a1d21] dark:text-[#e4e7eb]"
-                    type="text"
-                    inputMode={item.integer ? "numeric" : "decimal"}
-                    value={displayVal}
-                    onChange={(e) => handleChange(e.target.value)}
-                />
-                <div className="flex flex-col border-l border-[#e1e4e8] dark:border-[#3a3f45]">
-                    <button
-                        className="w-6 h-4 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-[10px] leading-none transition-colors cursor-pointer active:bg-[#e5e7eb]"
-                        onClick={() => handleChange(val + upDownStep)}
-                    >
-                        ＋
-                    </button>
-                    <button
-                        className="w-6 h-4 flex items-center justify-center bg-[#f8f9fa] dark:bg-[#25282c] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] text-[#1a1d21] dark:text-[#e4e7eb] text-[10px] leading-none transition-colors cursor-pointer active:bg-[#e5e7eb]"
-                        onClick={() => handleChange(val - upDownStep)}
-                    >
-                        −
-                    </button>
+            {hasRange && (
+                <div ref={sliderRef} className="flex-1 min-w-[120px] py-1">
+                    <Slider
+                        min={item.min}
+                        max={item.max}
+                        step={step}
+                        value={[val]}
+                        onValueChange={([v]) => handleChange(v)}
+                    />
                 </div>
-            </div>
+            )}
+            {numberInput}
         </motion.div>
     );
 
-    if (!hasRange) {
-        return (
-            <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
-                <AnimatePresence mode="wait">
-                    {isNull ? nullModeContent : setModeContent}
-                </AnimatePresence>
-            </SettingRow>
-        );
-    }
-
     return (
-        <>
-            <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
-                <AnimatePresence mode="wait">
-                    {isNull ? nullModeContent : setModeContent}
-                </AnimatePresence>
-            </SettingRow>
-            {!isNull && (
-                <AnimatePresence>
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }}>
-                        <SettingRow fullWidth>
-                            <div ref={sliderRef} className="w-full">
-                                <Slider min={item.min} max={item.max} step={step} value={[val]} onValueChange={([v]) => handleChange(v)} />
-                            </div>
-                        </SettingRow>
-                    </motion.div>
-                </AnimatePresence>
-            )}
-        </>
+        <SettingRow
+            text={item.text}
+            tips={item.tips}
+            nullable={nullable}
+            isNull={isNull}
+            onToggleNull={toggleNull}
+            required={item.required}
+            controlFillAvailable={hasRange && !isNull}
+            controlCompact={isNull}
+        >
+            <AnimatePresence mode="wait">
+                {isNull ? nullModeContent : setModeContent}
+            </AnimatePresence>
+        </SettingRow>
     );
 }
 
@@ -1271,7 +1293,7 @@ function SelectItem({item, path}) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium w-full sm:w-auto"
+            className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors text-sm font-medium w-full"
             onClick={toggleNull}
         >
             {t("ds.default")}
@@ -1280,17 +1302,17 @@ function SelectItem({item, path}) {
 
     if (isNull) {
         return (
-            <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+            <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required} controlFillAvailable>
                 {nullModeContent}
             </SettingRow>
         );
     }
 
     return (
-        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required}>
+        <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required} controlFillAvailable>
             <Listbox value={val} onChange={(v) => update(path, v)}>
                 {({ open }) => (
-                    <div className="w-full sm:w-auto">
+                    <div className="w-full">
                         <ListboxButton
                             ref={buttonRef}
                             className="flex items-center gap-1.5 h-8 px-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer text-sm font-sans w-full sm:min-w-[140px] text-left transition-colors hover:border-[#2563eb] dark:hover:border-[#3b82f6] outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
@@ -1314,8 +1336,427 @@ function SelectItem({item, path}) {
     );
 }
 
+// ─── JSON Key/Value Item ───────────────────────────────────────────
+const JSON_VALUE_TYPE_OPTIONS = [
+    {value: "string", label: "文本"},
+    {value: "number", label: "数字"},
+    {value: "boolean", label: "布尔值"},
+    {value: "null", label: "Null"},
+    {value: "json", label: "对象 / 数组"},
+];
+
+function inferJsonValueType(value) {
+    if (value === null) return "null";
+    if (typeof value === "boolean") return "boolean";
+    if (typeof value === "number") return "number";
+    if (typeof value === "string") return "string";
+    return "json";
+}
+
+function defaultJsonValueForType(type) {
+    if (type === "number") return 0;
+    if (type === "boolean") return true;
+    if (type === "null") return null;
+    if (type === "json") return {};
+    return "";
+}
+
+function formatJsonValueDraft(value, type) {
+    if (type === "json") return JSON.stringify(value ?? {}, null, 0);
+    if (type === "null") return "null";
+    if (type === "boolean") return value ? "true" : "false";
+    return String(value ?? "");
+}
+
+function JsonKeyValueRow({entryKey, value, objectValue, onCommitObject, t}) {
+    const inferredType = inferJsonValueType(value);
+    const [draftKey, setDraftKey] = useState(entryKey);
+    const [valueType, setValueType] = useState(inferredType);
+    const initialDraftValue = formatJsonValueDraft(value, inferredType);
+    const [draftValue, setDraftValue] = useState(() => initialDraftValue);
+    const [error, setError] = useState("");
+    const lastCommittedValueRef = useRef(initialDraftValue);
+
+    useEffect(() => {
+        const nextType = inferJsonValueType(value);
+        const nextDraftValue = formatJsonValueDraft(value, nextType);
+        setDraftKey(entryKey);
+        setValueType(nextType);
+        // 本行刚刚提交的合法值会由父级重新传回。此时不重写输入框，
+        // 避免单行 JSON 被自动压缩后导致光标跳动。
+        if (nextDraftValue !== lastCommittedValueRef.current) {
+            lastCommittedValueRef.current = nextDraftValue;
+            setDraftValue(nextDraftValue);
+        }
+        setError("");
+    }, [entryKey, value]);
+
+    const commitKey = () => {
+        const nextKey = draftKey.trim();
+        if (!nextKey) {
+            setError("键名不能为空");
+            setDraftKey(entryKey);
+            return;
+        }
+        if (nextKey !== entryKey && Object.prototype.hasOwnProperty.call(objectValue, nextKey)) {
+            setError("键名已存在");
+            setDraftKey(entryKey);
+            return;
+        }
+        if (nextKey === entryKey) return;
+
+        const next = {};
+        Object.entries(objectValue).forEach(([key, currentValue]) => {
+            next[key === entryKey ? nextKey : key] = currentValue;
+        });
+        setError("");
+        onCommitObject(next);
+    };
+
+    const commitTypedValue = (nextDraft, type = valueType) => {
+        setDraftValue(nextDraft);
+        try {
+            let parsed;
+            if (type === "number") {
+                if (nextDraft.trim() === "") throw new Error("请输入数字");
+                parsed = Number(nextDraft);
+                if (!Number.isFinite(parsed)) throw new Error("数字格式错误");
+            } else if (type === "boolean") {
+                parsed = nextDraft === "true";
+            } else if (type === "null") {
+                parsed = null;
+            } else if (type === "json") {
+                parsed = JSON.parse(nextDraft || "{}");
+                if (!parsed || typeof parsed !== "object") {
+                    throw new Error("请输入对象或数组");
+                }
+            } else {
+                parsed = nextDraft;
+            }
+
+            setError("");
+            lastCommittedValueRef.current = formatJsonValueDraft(parsed, type);
+            onCommitObject({...objectValue, [entryKey]: parsed});
+        } catch (err) {
+            setError(err?.message || "值格式错误");
+        }
+    };
+
+    const changeType = (nextType) => {
+        const nextValue = defaultJsonValueForType(nextType);
+        const nextDraftValue = formatJsonValueDraft(nextValue, nextType);
+        setValueType(nextType);
+        setDraftValue(nextDraftValue);
+        lastCommittedValueRef.current = nextDraftValue;
+        setError("");
+        onCommitObject({...objectValue, [entryKey]: nextValue});
+    };
+
+    const removeEntry = () => {
+        const next = {...objectValue};
+        delete next[entryKey];
+        onCommitObject(next);
+    };
+
+    return (
+        <div className="rounded-lg border border-black/10 bg-white p-1.5 dark:border-white/15 dark:bg-black">
+            <div className="grid grid-cols-1 gap-1.5 md:grid-cols-[minmax(110px,0.8fr)_104px_minmax(150px,1.5fr)_30px] md:items-center">
+                <input
+                    className="h-8 min-w-0 rounded-md border border-black/15 bg-white px-2.5 text-sm font-medium text-black outline-none transition-colors focus:border-black dark:border-white/20 dark:bg-black dark:text-white dark:focus:border-white"
+                    value={draftKey}
+                    placeholder={t("ds.key") || "键名"}
+                    onChange={(event) => setDraftKey(event.target.value)}
+                    onBlur={commitKey}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            event.currentTarget.blur();
+                        }
+                    }}
+                />
+
+                <select
+                    className="h-8 min-w-0 rounded-md border border-black/15 bg-white px-2 text-sm text-black outline-none transition-colors focus:border-black dark:border-white/20 dark:bg-black dark:text-white dark:focus:border-white"
+                    value={valueType}
+                    onChange={(event) => changeType(event.target.value)}
+                >
+                    {JSON_VALUE_TYPE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                </select>
+
+                {valueType === "boolean" ? (
+                    <select
+                        className="h-8 min-w-0 rounded-md border border-black/15 bg-white px-2.5 text-sm text-black outline-none transition-colors focus:border-black dark:border-white/20 dark:bg-black dark:text-white dark:focus:border-white"
+                        value={draftValue}
+                        onChange={(event) => commitTypedValue(event.target.value, "boolean")}
+                    >
+                        <option value="true">true</option>
+                        <option value="false">false</option>
+                    </select>
+                ) : valueType === "null" ? (
+                    <div className="flex h-8 items-center rounded-md border border-dashed border-black/20 px-2.5 font-mono text-sm text-black/60 dark:border-white/25 dark:text-white/60">
+                        null
+                    </div>
+                ) : (
+                    <input
+                        className={`h-8 min-w-0 rounded-md border bg-white px-2.5 text-sm text-black outline-none transition-colors dark:bg-black dark:text-white ${valueType === "json" ? "font-mono text-xs" : "font-sans"} ${error ? "border-black dark:border-white" : "border-black/15 focus:border-black dark:border-white/20 dark:focus:border-white"}`}
+                        value={draftValue}
+                        type={valueType === "number" ? "number" : "text"}
+                        step={valueType === "number" ? "any" : undefined}
+                        placeholder={valueType === "json" ? '{"enabled":true}' : (t("ds.value") || "值")}
+                        onChange={(event) => commitTypedValue(event.target.value)}
+                        spellCheck={valueType !== "json"}
+                    />
+                )}
+
+                <button
+                    type="button"
+                    className="flex h-8 w-full items-center justify-center rounded-md text-black/65 transition-colors hover:bg-black/5 hover:text-black dark:text-white/65 dark:hover:bg-white/10 dark:hover:text-white md:w-8"
+                    onClick={removeEntry}
+                    aria-label={`${t("ds.delete") || "删除"} ${entryKey}`}
+                >
+                    <X size={16}/>
+                </button>
+            </div>
+            {error && <div className="mt-1 text-[11px] text-black/70 dark:text-white/70">{error}</div>}
+        </div>
+    );
+}
+
+function useNarrowSettingsContainer(threshold = 620) {
+    const containerRef = useRef(null);
+    const [isNarrow, setIsNarrow] = useState(() => (
+        typeof window !== "undefined" && window.innerWidth < threshold + 120
+    ));
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return undefined;
+
+        const updateWidthState = () => {
+            const nextIsNarrow = container.getBoundingClientRect().width < threshold;
+            setIsNarrow((current) => current === nextIsNarrow ? current : nextIsNarrow);
+        };
+
+        updateWidthState();
+
+        const resizeObserver = typeof ResizeObserver !== "undefined"
+            ? new ResizeObserver(updateWidthState)
+            : null;
+        resizeObserver?.observe(container);
+        window.addEventListener("resize", updateWidthState);
+
+        return () => {
+            resizeObserver?.disconnect();
+            window.removeEventListener("resize", updateWidthState);
+        };
+    }, [threshold]);
+
+    return [containerRef, isNarrow];
+}
+
+function JsonItem({item, path}) {
+    const {t} = useTranslation();
+    const {values, update} = useSettings();
+    const rawValue = deepGet(values, path);
+    const nullable = !!item.nullable;
+    const [isNull, setIsNull] = useState(rawValue === null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [containerRef, isNarrow] = useNarrowSettingsContainer();
+    const objectValue = isNull
+        ? {}
+        : (rawValue && typeof rawValue === "object" && !Array.isArray(rawValue)
+            ? rawValue
+            : (item.default ?? {}));
+    const [newKey, setNewKey] = useState("");
+    const [newType, setNewType] = useState("string");
+    const [addError, setAddError] = useState("");
+    const entries = Object.entries(objectValue);
+
+    useEffect(() => {
+        setIsNull(rawValue === null);
+    }, [rawValue]);
+
+    useEffect(() => {
+        if (!isNarrow) setDialogOpen(false);
+    }, [isNarrow]);
+
+    const commitObject = useCallback((next) => {
+        update(path, next);
+    }, [path, update]);
+
+    const toggleNull = () => {
+        setIsNull((current) => {
+            const nextIsNull = !current;
+            update(path, nextIsNull ? null : (item.default ?? {}));
+            if (nextIsNull) setDialogOpen(false);
+            return nextIsNull;
+        });
+    };
+
+    const addEntry = () => {
+        const key = newKey.trim();
+        if (!key) {
+            setAddError("键名不能为空");
+            return;
+        }
+        if (Object.prototype.hasOwnProperty.call(objectValue, key)) {
+            setAddError("键名已存在");
+            return;
+        }
+        setAddError("");
+        commitObject({...objectValue, [key]: defaultJsonValueForType(newType)});
+        setNewKey("");
+    };
+
+    const defaultButton = (
+        <button
+            type="button"
+            className="h-8 whitespace-nowrap rounded-md border border-black/15 bg-white px-3 text-sm font-medium text-black transition-colors hover:bg-black/5 dark:border-white/20 dark:bg-black dark:text-white dark:hover:bg-white/10"
+            onClick={toggleNull}
+        >
+            {t("ds.default")}
+        </button>
+    );
+
+    const editorContent = (
+        <div className="p-2.5 sm:p-3">
+            {entries.length > 0 ? (
+                <div className="mb-2 grid gap-1.5">
+                    {entries.map(([key, value]) => (
+                        <JsonKeyValueRow
+                            key={key}
+                            entryKey={key}
+                            value={value}
+                            objectValue={objectValue}
+                            onCommitObject={commitObject}
+                            t={t}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <div className="mb-2 rounded-lg border border-dashed border-black/15 bg-black/[0.02] py-3 text-center text-xs text-black/45 dark:border-white/20 dark:bg-white/[0.04] dark:text-white/45">
+                    {t("ds.noData")}
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-[minmax(0,1fr)_112px_auto]">
+                <input
+                    className={`h-8 min-w-0 rounded-md border bg-white px-2.5 text-sm text-black outline-none transition-colors dark:bg-black dark:text-white ${addError ? "border-black dark:border-white" : "border-black/15 focus:border-black dark:border-white/20 dark:focus:border-white"}`}
+                    placeholder={t("ds.key") || "键名"}
+                    value={newKey}
+                    onChange={(event) => {
+                        setNewKey(event.target.value);
+                        if (addError) setAddError("");
+                    }}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            addEntry();
+                        }
+                    }}
+                />
+                <select
+                    className="h-8 rounded-md border border-black/15 bg-white px-2 text-sm text-black outline-none transition-colors focus:border-black dark:border-white/20 dark:bg-black dark:text-white dark:focus:border-white"
+                    value={newType}
+                    onChange={(event) => setNewType(event.target.value)}
+                >
+                    {JSON_VALUE_TYPE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                </select>
+                <button
+                    type="button"
+                    className="h-8 w-full whitespace-nowrap rounded-md bg-black px-3 text-sm font-medium text-white transition-colors hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 sm:w-auto"
+                    onClick={addEntry}
+                >
+                    {t("ds.addParam")}
+                </button>
+            </div>
+            <div className="mt-1 text-[11px] text-black/55 dark:text-white/55">
+                {addError || "对象和数组值可在单行中直接填写 JSON。"}
+            </div>
+        </div>
+    );
+
+    const titleContent = (
+        <div className="flex min-w-0 max-w-full items-center gap-1.5">
+            <TipWrapper tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull}>
+                <AutoScrollText className="min-w-0 flex-1 text-sm font-semibold" title={item.text}>
+                    {item.text}
+                    {item.required && <span className="ml-0.5 text-base leading-none text-red-500">*</span>}
+                </AutoScrollText>
+            </TipWrapper>
+        </div>
+    );
+
+    return (
+        <div ref={containerRef} className="w-full">
+            {isNarrow ? (
+                <SettingRow
+                    text={item.text}
+                    tips={item.tips}
+                    nullable={nullable}
+                    isNull={isNull}
+                    onToggleNull={toggleNull}
+                    required={item.required}
+                    controlCompact
+                    className="border-b border-black/10 dark:border-white/15"
+                >
+                    {isNull ? defaultButton : (
+                        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                            <DialogTrigger asChild>
+                                <button
+                                    type="button"
+                                    className="inline-flex h-8 shrink-0 items-center gap-2 whitespace-nowrap rounded-md border border-black/15 bg-white px-3 text-sm font-medium text-black transition-colors hover:bg-black/5 dark:border-white/20 dark:bg-black dark:text-white dark:hover:bg-white/10"
+                                >
+                                    <span>{entries.length > 0 ? "编辑参数" : "添加参数"}</span>
+                                    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1.5 text-[11px] font-semibold text-white dark:bg-white dark:text-black">
+                                        {entries.length}
+                                    </span>
+                                </button>
+                            </DialogTrigger>
+                            <DialogContent className="z-[999] w-[min(94vw,760px)] max-w-none overflow-hidden rounded-2xl border-black/15 bg-white p-0 text-black shadow-[0_20px_60px_rgba(0,0,0,0.28)] dark:border-white/20 dark:bg-black dark:text-white">
+                                <DialogHeader className="border-b border-black/10 bg-black/[0.025] px-4 py-3 pr-12 text-left dark:border-white/15 dark:bg-white/[0.06]">
+                                    <DialogTitle className="flex min-w-0 items-center gap-2 text-base font-semibold">
+                                        <AutoScrollText className="min-w-0 flex-1" title={item.text}>{item.text}</AutoScrollText>
+                                        <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-black px-1.5 text-[11px] font-semibold text-white dark:bg-white dark:text-black">
+                                            {entries.length}
+                                        </span>
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <div className="max-h-[min(72vh,680px)] overflow-y-auto overscroll-contain">
+                                    {editorContent}
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                    )}
+                </SettingRow>
+            ) : (
+                <SettingRow fullWidth className="border-b border-black/10 py-2 last:border-b-0 dark:border-white/15">
+                    <div className="w-full overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm dark:border-white/15 dark:bg-black">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-black/10 bg-black/[0.025] px-2.5 py-2 dark:border-white/15 dark:bg-white/[0.06] sm:px-3">
+                            {titleContent}
+                            {!isNull && (
+                                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1.5 text-[11px] font-semibold text-white dark:bg-white dark:text-black">
+                                    {entries.length}
+                                </span>
+                            )}
+                        </div>
+
+                        {isNull ? (
+                            <div className="p-2.5 sm:p-3">{defaultButton}</div>
+                        ) : editorContent}
+                    </div>
+                </SettingRow>
+            )}
+        </div>
+    );
+}
+
 // ─── Custom Item ───────────────────────────────────────────────────
-function CustomItem({item, path}) {
+function LegacyCustomItem({item, path}) {
     const {t} = useTranslation();
     const {values, update} = useSettings();
     const rawVal = deepGet(values, path);
@@ -1477,6 +1918,27 @@ function CustomItem({item, path}) {
             </div>
         </SettingRow>
     );
+}
+
+// ─── Registered Custom Components ────────────────────────────────
+// 后端只下发稳定的组件标识；具体 UI 实现由前端注册表负责。
+// 这样“自定义请求参数”不会再被误认为通用 JSON 字段，同时也便于
+// 后续继续增加专用动态设置组件，而无需扩展基础 item.type 枚举。
+const CUSTOM_SETTING_COMPONENTS = {
+    requestJsonKeyValue: JsonItem,
+};
+
+function CustomItem({item, path}) {
+    const RegisteredComponent = item.component
+        ? CUSTOM_SETTING_COMPONENTS[item.component]
+        : null;
+
+    if (RegisteredComponent) {
+        return <RegisteredComponent item={item} path={path} />;
+    }
+
+    // 保留旧 custom 配置的字符串键值对行为，避免已有动态设置失效。
+    return <LegacyCustomItem item={item} path={path} />;
 }
 
 // ─── Tags Item ─────
@@ -1989,6 +2451,7 @@ function SettingItemRenderer({item, path}) {
         case "radio": return <RadioItem item={item} path={path} />;
         case "select": return <SelectItem item={item} path={path} />;
         case "custom": return <CustomItem item={item} path={path} />;
+        case "json": return <JsonItem item={item} path={path} />;
         case "tags": return <TagsItem item={item} path={path} />;
         case "toolPermissionMatrix": return <ToolPermissionMatrixItem item={item} path={path} />;
         case "presetButtons": return <PresetButtonsItem item={item} path={path} />;

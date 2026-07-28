@@ -20,7 +20,6 @@ import {
 } from './replacementProtocol.js';
 
 import 'katex/dist/katex.min.css';
-import './CodeBlock.css';
 
 import {resolveCwmUrl} from '@/lib/virtualUrl.js';
 

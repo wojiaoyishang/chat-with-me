@@ -3027,6 +3027,8 @@ export default function Demo() {
 }
 ```
 
+动态设置面板在窄宽度下仍会让标题、提示图标与开关保持同一行；标题区域可收缩并使用既有悬停滚动展示完整文本，开关本身不会被挤到独立一行。
+
 ### text
 
 文本输入。设置 `multiline: true` 时会使用弹窗编辑多行文本。
@@ -4001,11 +4003,14 @@ replacement JSON：
   "taskRunId": "<taskRunId>",
   "requestId": "<requestId>",
   "content": "优先复用现有组件。",
-  "createdAt": 1784890000
+  "createdAt": 1784890000,
+  "showDivider": true
 }
 ```
 
-气泡出现表示该补充要求已经正式加入下一轮模型上下文。后端 replacement 保持为空，避免上下文同步时重复向模型注入同一条用户要求。`requestId` 同时作为稳定去重依据，恢复执行不会重复显示气泡。
+`showDivider` 只在同一个 Task Run 的第一条补充要求中为 `true`，后续气泡均为 `false`，因此用户连续或分次发送多条补充时都只显示一条“新的任务要求”分割线。旧 replacement 未提供该字段时按 `true` 兼容渲染。
+
+前端发送 `Task-Interrupt` 时会先按 `requestId` 乐观插入用户补充气泡，不等待 Worker 开始下一轮；请求失败时撤销气泡并在输入框仍为空时恢复原文。服务端正式 `taskUserMessage` replacement 到达后，前端使用同一 `requestId` 对账并移除本地预览，避免出现重复气泡。正式气泡出现表示该补充要求已经加入下一轮模型上下文。后端 replacement 保持为空，避免上下文同步时重复向模型注入同一条用户要求。恢复执行也不会重复显示同一气泡。
 
 收到补充要求时，同一个 Task Run 会切换到新的展示分段，但不会重新进入任务模式：
 
@@ -4090,7 +4095,7 @@ AI 的 Markdown 确认反馈
 }
 ```
 
-任务运行期间，输入框有正文时发送按钮仍显示发送图标并发送 `Task-Interrupt`；输入框为空时保留原有停止生成按钮。任务补充当前不接受附件。
+任务运行期间，输入框有正文时发送按钮仍显示发送图标并发送 `Task-Interrupt`；输入框为空时保留原有停止生成按钮。补充要求在发送动作发生后立即显示本地预览，不需要等待一轮 AI 响应。任务补充当前不接受附件。
 
 当同一页面存在多个活动任务时，输入框会显示任务目标选择器；所有插话命令都携带明确的 `taskRunId`，避免主智能体、简单智能体和 Session 智能体之间串扰。
 
@@ -4257,6 +4262,26 @@ Task Skill 使用 Jinja 渲染，当前 Conversation 会向模板统一提供安
 Jinja 中通过 `model_config.thinking.request_enabled`、`model_config.thinking.control_supported` 等路径读取状态。
 
 不支持切换思考的模型不会获得 `go_thinking` / `set_thinking` 使用说明。
+
+### Workspace 非任务模式访问开关（2026-07-28）
+
+“任务模式设置”新增 Conversation option：
+
+```json
+{
+  "type": "switch",
+  "name": "workspaceTaskModeOnly",
+  "text": "Workspace 仅限任务模式",
+  "default": false
+}
+```
+
+字段语义：
+
+- 默认关闭限制，因此普通对话和任务模式都可以执行已启用的 Workspace 工具；
+- 开启后，工具说明仍可查看，但 `code_*`、`workspace_*` 与 `artifact_inspect` 的实际执行必须先成功进入 TaskRun；
+- 非任务模式使用当前 Conversation 的 `workspaceId`；已经进入任务模式时继续使用 `task_start()` 固定的 Workspace，不能在任务中静默切换；
+- 该字段复用现有 Conversation `options` 保存和 `Message-Send.payload.options` 下发链路，不新增数据库字段或广播协议。
 
 ### 广播兼容性
 
