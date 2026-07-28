@@ -20,6 +20,12 @@ import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
 
 
 const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
+
+const releaseFocusAfterActivation = (target) => {
+    if (!target || typeof target.blur !== 'function') return;
+    requestAnimationFrame(() => target.blur());
+};
+
 const MOBILE_ACCORDION_PANEL_CLASS = 'grid transition-[grid-template-rows,opacity,margin] duration-200 ease-out';
 const getMobileAccordionPanelClass = (isOpen) => `${MOBILE_ACCORDION_PANEL_CLASS} ${
     isOpen ? 'grid-rows-[1fr] opacity-100 mt-1 mb-1' : 'grid-rows-[0fr] opacity-0 mt-0 mb-0 pointer-events-none'
@@ -135,9 +141,11 @@ const BuiltinToolMenuItem = memo(({tool, isActive, onToggle, t}) => {
             onSelect={(event) => event.preventDefault()}
             onClick={(event) => {
                 if (isDisabled) return;
+                const target = event.currentTarget;
                 onToggle(event, !isActive);
+                releaseFocusAfterActivation(target);
             }}
-            className={`flex min-w-0 items-center rounded-lg px-2.5 py-2 text-sm transition-colors duration-150 ${
+            className={`flex min-w-0 items-center rounded-lg px-2.5 py-2 text-sm outline-none ring-0 transition-colors duration-150 focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${
                 isDisabled
                     ? 'cursor-not-allowed opacity-50'
                     : isActive
@@ -541,7 +549,9 @@ const ToolButtons = memo(({
                     <DropdownMenuTrigger asChild>
                         <button
                             type="button"
-                            className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={(event) => releaseFocusAfterActivation(event.currentTarget)}
                             aria-label={t('builtin_tools', {defaultValue: 'Built-in tools'})}
                             disabled={toolsLoadedStatus === 1 || toolsLoadedStatus === 3}
                         >
@@ -600,7 +610,9 @@ const ToolButtons = memo(({
                                 <DropdownMenuTrigger asChild>
                                     <button
                                         type="button"
-                                        className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-gray-100"
+                                        className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+                                        onMouseDown={(event) => event.preventDefault()}
+                                        onClick={(event) => releaseFocusAfterActivation(event.currentTarget)}
                                         aria-label={t('more_tools') ?? '更多内置工具'}
                                     >
                                         <MoreHorizontal className="h-4 w-4" />

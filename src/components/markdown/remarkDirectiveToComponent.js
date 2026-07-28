@@ -51,9 +51,9 @@ function hasMeaningfulChildren(children) {
     });
 }
 
-function createParagraphFromChildren(children, originalParagraph) {
+function createBlockFromChildren(children, originalBlock) {
     return {
-        ...originalParagraph,
+        ...originalBlock,
         children,
     };
 }
@@ -116,7 +116,7 @@ function splitTextNodeByCardReplace(node) {
 
 export function remarkCardReplace() {
     return function transformer(tree) {
-        visit(tree, 'paragraph', (paragraphNode, paragraphIndex, paragraphParent) => {
+        visit(tree, (node) => node.type === 'paragraph' || node.type === 'heading', (paragraphNode, paragraphIndex, paragraphParent) => {
             if (!paragraphParent || typeof paragraphIndex !== 'number') return;
             if (!Array.isArray(paragraphNode.children)) return;
 
@@ -149,7 +149,7 @@ export function remarkCardReplace() {
                 }
 
                 replacementNodes.push(
-                    createParagraphFromChildren(paragraphBuffer, paragraphNode)
+                    createBlockFromChildren(paragraphBuffer, paragraphNode)
                 );
 
                 paragraphBuffer = [];

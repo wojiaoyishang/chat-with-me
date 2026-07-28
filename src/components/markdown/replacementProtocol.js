@@ -9,6 +9,130 @@ export const normalizeReplacementLineBreaks = (value) => String(value ?? '')
     .replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n');
 
+const CARD_REPLACE_COMPLETE_TOKEN_RE = /\{\{\s*(?:cardReplace|card-replace|card)\s+[^{}]*?\s*\}\}/g;
+const MARKDOWN_FENCE_RE = /^ {0,3}(`{3,}|~{3,})(.*)$/;
+
+const isInsideInlineCode = (line, index) => {
+    let activeDelimiterLength = 0;
+    let cursor = 0;
+
+    while (cursor < index) {
+        if (line[cursor] !== '`') {
+            cursor += 1;
+            continue;
+        }
+
+        let end = cursor + 1;
+        while (end < index && line[end] === '`') {
+            end += 1;
+        }
+
+        const delimiterLength = end - cursor;
+        if (activeDelimiterLength === 0) {
+            activeDelimiterLength = delimiterLength;
+        } else if (delimiterLength === activeDelimiterLength) {
+            activeDelimiterLength = 0;
+        }
+
+        cursor = end;
+    }
+
+    return activeDelimiterLength > 0;
+};
+
+const appendBlankLine = (lines) => {
+    if (lines.length > 0 && lines[lines.length - 1] !== '') {
+        lines.push('');
+    }
+};
+
+/**
+ * Keep card replacement controls as Markdown block boundaries.
+ *
+ * Streaming can concatenate a completed marker directly with a heading, e.g.
+ * `{{cardReplace id=42:11}}# Title`.  Without an explicit line break Markdown
+ * parses both pieces into the same block, allowing the rendered card to overlap
+ * or inherit heading layout.  This normalizer isolates complete markers while
+ * leaving fenced and inline code untouched.
+ */
+export const normalizeCardReplaceBlockBoundaries = (value) => {
+    const normalized = normalizeReplacementLineBreaks(value);
+    const sourceLines = normalized.split('\n');
+    const outputLines = [];
+    let activeFence = null;
+
+    for (const line of sourceLines) {
+        const fenceMatch = MARKDOWN_FENCE_RE.exec(line);
+
+        if (activeFence) {
+            outputLines.push(line);
+
+            if (
+                fenceMatch
+                && fenceMatch[1][0] === activeFence.character
+                && fenceMatch[1].length >= activeFence.length
+                && String(fenceMatch[2] || '').trim() === ''
+            ) {
+                activeFence = null;
+            }
+
+            continue;
+        }
+
+        if (fenceMatch) {
+            activeFence = {
+                character: fenceMatch[1][0],
+                length: fenceMatch[1].length,
+            };
+            outputLines.push(line);
+            continue;
+        }
+
+        CARD_REPLACE_COMPLETE_TOKEN_RE.lastIndex = 0;
+        const matches = [];
+        let match;
+
+        while ((match = CARD_REPLACE_COMPLETE_TOKEN_RE.exec(line)) !== null) {
+            if (!isInsideInlineCode(line, match.index)) {
+                matches.push({
+                    start: match.index,
+                    end: match.index + match[0].length,
+                    token: match[0],
+                });
+            }
+        }
+
+        if (matches.length === 0) {
+            outputLines.push(line);
+            continue;
+        }
+
+        let cursor = 0;
+        for (const tokenMatch of matches) {
+            const before = line.slice(cursor, tokenMatch.start);
+            if (before.trim() !== '') {
+                outputLines.push(before);
+            }
+
+            appendBlankLine(outputLines);
+            outputLines.push(tokenMatch.token.trim());
+            outputLines.push('');
+            cursor = tokenMatch.end;
+        }
+
+        const after = line.slice(cursor);
+        if (after.trim() !== '') {
+            outputLines.push(after);
+        }
+    }
+
+    while (outputLines.length > 0 && outputLines[outputLines.length - 1] === '') {
+        outputLines.pop();
+    }
+
+    return outputLines.join('\n');
+};
+
 const parseFlags = (value = '') => {
     const flags = new Set();
 

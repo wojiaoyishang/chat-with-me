@@ -13,6 +13,7 @@ import CodeBlock from './CodeBlock.jsx';
 import CardBlock from './card-block/CardBlock.jsx';
 import {
     getCardReplaceIdFromAttributes,
+    normalizeCardReplaceBlockBoundaries,
     normalizeReplacementEntry,
     normalizeReplacementLineBreaks,
     parseCardReplaceAttributes,
@@ -46,7 +47,7 @@ const allowCustomScheme = (uri, key, node) => {
 const preprocessContent = (text) => {
     if (typeof text !== 'string') return text;
 
-    return text
+    return normalizeCardReplaceBlockBoundaries(text)
         .replace(/\\\[/g, '$$$')
         .replace(/\\\]/g, '$$$')
         .replace(/\\\(/g, '$')
@@ -459,20 +460,22 @@ const createComponents = ({
             // 允许渲染，正文为空
             if (!finalId && tokenType) {
                 return (
-                    <CardBlock
-                        id=""
-                        type={tokenType}
-                        content=""
-                        contextId={contextId}
-                        markId={markId}
-                        replacement={currentReplacement}
-                        renderMarkdown={(markdownContent) => {
-                            return renderNestedMarkdown(markdownContent, {
-                                depth: depth + 1,
-                                visitedIds,
-                            });
-                        }}
-                    />
+                    <div className="block w-full clear-both" data-tts-ignore="true">
+                        <CardBlock
+                            id=""
+                            type={tokenType}
+                            content=""
+                            contextId={contextId}
+                            markId={markId}
+                            replacement={currentReplacement}
+                            renderMarkdown={(markdownContent) => {
+                                return renderNestedMarkdown(markdownContent, {
+                                    depth: depth + 1,
+                                    visitedIds,
+                                });
+                            }}
+                        />
+                    </div>
                 );
             }
 
@@ -488,7 +491,7 @@ const createComponents = ({
                 console.error(`[MarkdownRenderer] cardReplace 出现循环引用，id: ${finalId}`);
 
                 return (
-                    <div className="contents" data-tts-ignore="true">
+                    <div className="block w-full clear-both" data-tts-ignore="true">
                         <CardBlock
                             id={finalId}
                             type="error"
@@ -513,7 +516,7 @@ const createComponents = ({
                 console.error(`[MarkdownRenderer] cardReplace 嵌套过深，id: ${finalId}`);
 
                 return (
-                    <div className="contents" data-tts-ignore="true">
+                    <div className="block w-full clear-both" data-tts-ignore="true">
                         <CardBlock
                             id={finalId}
                             type="error"
@@ -549,7 +552,7 @@ const createComponents = ({
 
             return (
                 <div
-                    className="contents"
+                    className="block w-full clear-both"
                     data-tts-source-id={finalId}
                     data-tts-source-type="replacement"
                     data-tts-ignore={normalized.allowTts ? undefined : 'true'}

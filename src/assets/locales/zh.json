@@ -528,5 +528,9 @@
   "workspace_command_permissions": "允许执行的命令",
   "workspace_command_permissions_hint": "只有项目已配置且这里开启的命令才能通过 code_run 或 code_validate 执行。",
   "workspace_commands_after_save": "保存后会识别项目命令；再次编辑后按需开启，默认不允许执行。",
-  "workspace_no_commands": "当前项目没有识别到可配置命令。"
+  "workspace_no_commands": "当前项目没有识别到可配置命令。",
+  "attachment_vision_enabled": "此图片会提供给 AI 识别，点击关闭",
+  "attachment_vision_disabled": "此图片仅作为普通附件，点击允许 AI 识别",
+  "attachment_vision_disable_action": "禁止 AI 识别此图片",
+  "attachment_vision_enable_action": "允许 AI 识别此图片"
 }

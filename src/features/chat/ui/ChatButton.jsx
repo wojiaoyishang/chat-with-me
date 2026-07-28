@@ -37,14 +37,18 @@ function ToggleButton({
 
     function handleClick(e) {
         if (disabled) return;
+        const button = e.currentTarget;
         const newActive = !currentIsActive;
         setCurrentIsActive(newActive);
         onClick?.(e, newActive);
+
+        // 无论鼠标还是 Enter 激活，操作完成后都释放焦点，避免焦点黑边及后续 Enter 重复触发。
+        requestAnimationFrame(() => button.blur());
     }
 
     const baseClasses = `
-    shrink-0 whitespace-nowrap px-4 py-1 rounded-full text-sm font-medium transition-colors
-    focus:outline-none focus:ring-2 flex items-center gap-2
+    shrink-0 whitespace-nowrap appearance-none border-0 px-4 py-1 rounded-full text-sm font-medium transition-colors
+    outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 flex items-center gap-2
     ${className}
   `;
 
@@ -57,8 +61,8 @@ function ToggleButton({
     const stateClasses = disabled
         ? 'cursor-not-allowed opacity-80 text-gray-400'
         : currentIsActive
-            ? 'text-white hover:bg-opacity-75 focus:ring-opacity-50 shadow-lg border-1 border-gray-600 cursor-pointer'
-            : 'text-gray-700 hover:bg-gray-200 focus:ring-gray-300 cursor-pointer';
+            ? 'text-white hover:bg-opacity-75 shadow-sm cursor-pointer'
+            : 'text-gray-700 hover:bg-gray-200 cursor-pointer';
 
     const iconColor = currentIsActive ? 'text-white' : 'text-gray-600';
 
@@ -94,6 +98,7 @@ function ToggleButton({
     return (
         <button
             type="button"
+            onMouseDown={(event) => event.preventDefault()}
             onClick={handleClick}
             disabled={disabled}
             aria-pressed={currentIsActive}

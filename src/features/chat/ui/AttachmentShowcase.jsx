@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { Transition } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
-import {CircleCheck, CircleX, Loader2, X} from 'lucide-react';
+import {CircleCheck, CircleX, Eye, EyeOff, Loader2, X} from 'lucide-react';
 import {selectArtifactTransfer, useWorkspaceTransferStore} from '@/features/workspace/useWorkspaceTransferStore.js';
 import {resolveResourceUrl} from '@/lib/virtualUrl.js';
+import {isAttachmentVisionEnabled, isImageAttachment} from '../attachmentVision.js';
 
 // 将格式化文件大小的函数移到组件外部，避免每次渲染都重新创建
 const formatFileSize = (bytes) => {
@@ -26,7 +27,15 @@ const isDefaultFileIcon = (attachment) => {
  * 单个附件项组件
  * 使用memo包裹，避免不必要的重新渲染
  */
-const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
+const AttachmentItem = memo(({
+    attachment,
+    index,
+    onRemove,
+    onVisionToggle,
+    visionSupported,
+    msgMode,
+    t,
+}) => {
     const artifactId = attachment.artifactId || attachment.serverId;
     const resolvedPreviewUrl = attachment.previewType === 'svg' ? attachment.preview : resolveResourceUrl(attachment.preview);
     const resolvedDownloadUrl = resolveResourceUrl(attachment.downloadUrl);
@@ -49,6 +58,9 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
                     applying: t('workspace_transfer_applying', 'AI 正在写入 Workspace'),
                 }[transfer.stage] || t('workspace_transfer_running', 'AI 正在处理文件'))
                 : '';
+    const imageAttachment = isImageAttachment(attachment);
+    const visionEnabled = isAttachmentVisionEnabled(attachment);
+    const showVisionToggle = !msgMode && visionSupported && imageAttachment;
 
     const handleRemove = useCallback((e) => {
         e.stopPropagation();
@@ -60,6 +72,12 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
             window.open(resolvedDownloadUrl, '_blank', 'noopener,noreferrer');
         }
     }, [resolvedDownloadUrl]);
+
+    const handleVisionToggle = useCallback((event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onVisionToggle?.(attachment, !visionEnabled);
+    }, [attachment, onVisionToggle, visionEnabled]);
 
     return (
         <div key={index} className="relative flex-shrink-0">
@@ -76,8 +94,8 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
             )}
 
             <div
-                className={`flex items-center bg-gray-100 rounded-lg overflow-hidden ${
-                    resolvedDownloadUrl ? 'cursor-pointer hover:shadow-sm transition-shadow' : ''
+                className={`relative flex items-center overflow-hidden rounded-lg bg-gray-100 ${
+                    resolvedDownloadUrl ? 'cursor-pointer transition-shadow hover:shadow-sm' : ''
                 }`}
                 onClick={handleClick}
             >
@@ -108,7 +126,7 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
                     )}
                 </div>
 
-                <div className="ml-2 min-w-[140px] max-w-[190px] pr-2 py-1.5">
+                <div className={`ml-2 min-w-[140px] max-w-[190px] py-1.5 ${showVisionToggle ? 'pr-8' : 'pr-2'}`}>
                     <div className="text-sm font-medium text-gray-800 truncate max-w-[180px]">
                         {attachment.name}
                     </div>
@@ -136,6 +154,29 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
                         </div>
                     ) : null}
                 </div>
+
+                {showVisionToggle ? (
+                    <button
+                        type="button"
+                        onClick={handleVisionToggle}
+                        className={`absolute bottom-0 right-0 z-20 flex h-6 w-7 items-center justify-center rounded-tl-md border-l border-t transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-neutral-400 ${
+                            visionEnabled
+                                ? 'border-neutral-500/60 bg-neutral-600 text-white hover:bg-neutral-700 dark:border-neutral-300/60 dark:bg-neutral-300 dark:text-neutral-900 dark:hover:bg-neutral-200'
+                                : 'border-neutral-500/35 bg-neutral-300/90 text-neutral-700 hover:bg-neutral-400/80 dark:border-neutral-400/35 dark:bg-neutral-600/85 dark:text-neutral-100 dark:hover:bg-neutral-500/85'
+                        }`}
+                        title={visionEnabled
+                            ? t('attachment_vision_enabled', '此图片会提供给 AI 识别，点击关闭')
+                            : t('attachment_vision_disabled', '此图片仅作为普通附件，点击允许 AI 识别')}
+                        aria-label={visionEnabled
+                            ? t('attachment_vision_disable_action', '禁止 AI 识别此图片')
+                            : t('attachment_vision_enable_action', '允许 AI 识别此图片')}
+                        aria-pressed={visionEnabled}
+                    >
+                        {visionEnabled
+                            ? <Eye className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true"/>
+                            : <EyeOff className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true"/>}
+                    </button>
+                ) : null}
             </div>
         </div>
     );
@@ -151,6 +192,9 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
         prevAttachment.name === nextAttachment.name &&
         prevAttachment.size === nextAttachment.size &&
         prevAttachment.downloadUrl === nextAttachment.downloadUrl &&
+        prevAttachment.fileType === nextAttachment.fileType &&
+        prevAttachment.mimeType === nextAttachment.mimeType &&
+        prevAttachment.visionEnabled === nextAttachment.visionEnabled &&
         (prevAttachment.artifactId || prevAttachment.serverId) === (nextAttachment.artifactId || nextAttachment.serverId) &&
         prevAttachment.workspaceTransfer?.transferId === nextAttachment.workspaceTransfer?.transferId &&
         prevAttachment.workspaceTransfer?.status === nextAttachment.workspaceTransfer?.status &&
@@ -158,6 +202,8 @@ const AttachmentItem = memo(({ attachment, index, onRemove, msgMode, t }) => {
         prevAttachment.workspaceTransfer?.progress === nextAttachment.workspaceTransfer?.progress &&
         prevProps.msgMode === nextProps.msgMode &&
         prevProps.onRemove === nextProps.onRemove &&
+        prevProps.onVisionToggle === nextProps.onVisionToggle &&
+        prevProps.visionSupported === nextProps.visionSupported &&
         prevProps.t === nextProps.t
     );
 });
@@ -239,7 +285,13 @@ ShadowOverlay.displayName = 'ShadowOverlay';
  * msgMode 决定是否处于消息上方
  * 使用React.memo优化性能
  */
-const AttachmentShowcase = memo(({ attachmentsMeta, onRemove, msgMode }) => {
+const AttachmentShowcase = memo(({
+    attachmentsMeta,
+    onRemove,
+    onVisionToggle,
+    visionSupported = false,
+    msgMode,
+}) => {
     const { t } = useTranslation();
 
     const containerRef = useRef(null);
@@ -292,11 +344,13 @@ const AttachmentShowcase = memo(({ attachmentsMeta, onRemove, msgMode }) => {
                 attachment={attachment}
                 index={index}
                 onRemove={onRemove}
+                onVisionToggle={onVisionToggle}
+                visionSupported={visionSupported}
                 msgMode={msgMode}
                 t={t}
             />
         ));
-    }, [attachmentsMeta, onRemove, msgMode, t]);
+    }, [attachmentsMeta, onRemove, onVisionToggle, visionSupported, msgMode, t]);
 
     useLayoutEffect(() => {
         const container = scrollContainerRef.current;
@@ -405,6 +459,9 @@ const AttachmentShowcase = memo(({ attachmentsMeta, onRemove, msgMode }) => {
             prevAttachment.name !== nextAttachment.name ||
             prevAttachment.size !== nextAttachment.size ||
             prevAttachment.downloadUrl !== nextAttachment.downloadUrl ||
+            prevAttachment.fileType !== nextAttachment.fileType ||
+            prevAttachment.mimeType !== nextAttachment.mimeType ||
+            prevAttachment.visionEnabled !== nextAttachment.visionEnabled ||
             (prevAttachment.artifactId || prevAttachment.serverId) !== (nextAttachment.artifactId || nextAttachment.serverId) ||
             prevAttachment.workspaceTransfer?.transferId !== nextAttachment.workspaceTransfer?.transferId ||
             prevAttachment.workspaceTransfer?.status !== nextAttachment.workspaceTransfer?.status ||
@@ -418,7 +475,9 @@ const AttachmentShowcase = memo(({ attachmentsMeta, onRemove, msgMode }) => {
     // 检查其他props是否变化
     return (
         prevProps.msgMode === nextProps.msgMode &&
-        prevProps.onRemove === nextProps.onRemove
+        prevProps.onRemove === nextProps.onRemove &&
+        prevProps.onVisionToggle === nextProps.onVisionToggle &&
+        prevProps.visionSupported === nextProps.visionSupported
     );
 });
 

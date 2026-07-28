@@ -529,5 +529,9 @@
   "workspace_command_permissions": "Allowed commands",
   "workspace_command_permissions_hint": "Only project commands that are configured and enabled here may run through code_run or code_validate.",
   "workspace_commands_after_save": "Save first to detect project commands, then edit again to enable only the commands you need. New workspaces deny command execution by default.",
-  "workspace_no_commands": "No configurable commands were detected for this project."
+  "workspace_no_commands": "No configurable commands were detected for this project.",
+  "attachment_vision_enabled": "This image will be provided to the AI for visual recognition. Click to disable.",
+  "attachment_vision_disabled": "This image is only a regular attachment. Click to allow AI visual recognition.",
+  "attachment_vision_disable_action": "Prevent the AI from recognizing this image",
+  "attachment_vision_enable_action": "Allow the AI to recognize this image"
 }

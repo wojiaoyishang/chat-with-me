@@ -18,6 +18,8 @@ import SendButton from './chatbox/components/SendButton';
 import VoiceInputButton from './chatbox/components/VoiceInputButton';
 import VoicePermissionDialog from './chatbox/components/VoicePermissionDialog';
 import ChatBoxInteractionHost from './chatbox/components/ChatBoxInteractionHost';
+import {getAttachmentId} from '../attachmentVision.js';
+import {modelSupportsVision} from '../modelCapabilities.js';
 import RoleSelector from './chatbox/components/RoleSelector';
 import FullscreenEditorModal from './chatbox/components/FullscreenEditorModal';
 import {useExtraToolsMenuItems} from './chatbox/components/ExtraToolsMenuItems';
@@ -519,6 +521,18 @@ function ChatBox({
     }, [isSmallScreen, showCollapsedChatBox]);
 
     const selectedModelId = selectedModel?.id || '';
+    const selectedModelSupportsVision = modelSupportsVision(selectedModel);
+    const handleAttachmentVisionToggle = useCallback((attachment, enabled) => {
+        const attachmentId = getAttachmentId(attachment);
+        if (!attachmentId) return;
+
+        setAttachments(current => current.map(item => {
+            const currentId = getAttachmentId(item);
+            return currentId === attachmentId
+                ? {...item, visionEnabled: Boolean(enabled)}
+                : item;
+        }));
+    }, [setAttachments]);
     const availableBuiltinToolNames = useMemo(
         () => new Set(Array.isArray(selectedModel?.available_builtin_tools)
             ? selectedModel.available_builtin_tools
@@ -2180,7 +2194,12 @@ function ChatBox({
                             paddingBottom: attachmentsMeta.length > 0 ? '0.375rem' : 0,
                         }}
                     >
-                        <AttachmentShowcase attachmentsMeta={attachmentsMeta} onRemove={onAttachmentRemove}/>
+                        <AttachmentShowcase
+                            attachmentsMeta={attachmentsMeta}
+                            onRemove={onAttachmentRemove}
+                            onVisionToggle={handleAttachmentVisionToggle}
+                            visionSupported={selectedModelSupportsVision}
+                        />
                     </div>
 
                     {/* 消息编辑状态提示 */}
@@ -2365,9 +2384,15 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         const prevAttachment = prevAttachmentsMeta[i];
         const nextAttachment = nextAttachmentsMeta[i];
         if (
-            prevAttachment.id !== nextAttachment.id ||
+            getAttachmentId(prevAttachment) !== getAttachmentId(nextAttachment) ||
             prevAttachment.name !== nextAttachment.name ||
-            prevAttachment.preview !== nextAttachment.preview
+            prevAttachment.preview !== nextAttachment.preview ||
+            prevAttachment.downloadUrl !== nextAttachment.downloadUrl ||
+            prevAttachment.fileType !== nextAttachment.fileType ||
+            prevAttachment.mimeType !== nextAttachment.mimeType ||
+            prevAttachment.visionEnabled !== nextAttachment.visionEnabled ||
+            prevAttachment.artifactStatus !== nextAttachment.artifactStatus ||
+            prevAttachment.workspaceTransfer !== nextAttachment.workspaceTransfer
         ) {
             return false;
         }

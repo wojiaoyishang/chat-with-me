@@ -5,6 +5,8 @@
     --code-gutter-bg: #f9fafb;
     --code-text: #24292f;
     --code-muted: #8b949e;
+    --code-font-size: 13px;
+    --code-line-height: 20px;
     position: relative;
     isolation: isolate;
     overflow: visible;
@@ -13,8 +15,8 @@
     border-radius: 8px;
     background: var(--code-body-bg);
     font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-    font-size: 13px;
-    line-height: 1.55;
+    font-size: var(--code-font-size);
+    line-height: var(--code-line-height);
 }
 
 .code-toolbar {
@@ -101,8 +103,9 @@
     border-right: 1px solid var(--code-border);
     background: var(--code-gutter-bg);
     color: var(--code-muted);
-    font-size: 12px;
-    line-height: inherit;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    line-height: var(--code-line-height);
     text-align: right;
     white-space: pre;
     user-select: none;
@@ -117,7 +120,7 @@
     background: transparent !important;
     color: var(--code-text);
     font: inherit;
-    line-height: inherit;
+    line-height: var(--code-line-height);
     tab-size: 4;
     scrollbar-gutter: stable;
 }
@@ -129,7 +132,7 @@
     background: transparent !important;
     color: inherit;
     font: inherit;
-    line-height: inherit;
+    line-height: var(--code-line-height);
     white-space: pre;
 }
 
@@ -160,7 +163,8 @@
     .code-container {
         margin: 12px 0;
         border-radius: 7px;
-        font-size: 12.5px;
+        --code-font-size: 12.5px;
+        --code-line-height: 19px;
     }
 
     .code-toolbar {

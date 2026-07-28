@@ -92,7 +92,12 @@ export function fileUpload(uploadFile, onProgressUpdate, onComplete, onError) {
                 sha256: data.sha256 || null,
                 artifactStatus: data.artifactStatus || 'ready',
                 downloadUrl: data.downloadUrl,
+                fileType: data.fileType || (uploadFile.file.type?.startsWith('image/') ? 'image' : 'file'),
             };
+
+            if (attachment.fileType === 'image') {
+                attachment.visionEnabled = true;
+            }
 
             onComplete(uploadFile.id, attachment);
         })

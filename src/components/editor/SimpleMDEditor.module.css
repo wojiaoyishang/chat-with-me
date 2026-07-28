@@ -14,6 +14,7 @@
     min-height: 0;
     width: 100%;
     overflow: hidden;
+    cursor: text;
 }
 
 .editorWrapper :global(textarea) {
@@ -22,7 +23,7 @@
 
 .editorWrapper :global(.w-md-editor) {
     display: flex;
-    flex: 1;
+    flex: 1 1 auto;
     flex-direction: column;
     min-height: 0;
     height: 100%;
@@ -37,13 +38,62 @@
 }
 
 .editorWrapper :global(.w-md-editor-content) {
-    flex: 1;
+    display: flex;
+    flex: 1 1 auto;
     overflow: hidden;
 }
 
 .editorWrapper :global(.w-md-editor-area),
+.editorWrapper :global(.w-md-editor-input) {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    cursor: text;
+}
+
 .editorWrapper :global(.w-md-editor-text) {
-    height: 100%;
+    position: relative !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    height: 100% !important;
+    cursor: text;
+}
+
+/*
+ * @uiw/react-md-editor layers a transparent textarea over a highlighted pre.
+ * In a flex/full-height layout its input area can become taller than the text
+ * layer, leaving a visually editable but non-interactive strip. Make both
+ * layers cover the same complete hit area and keep the display layer inert.
+ */
+.editorWrapper :global(.w-md-editor-text-input) {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 2 !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    resize: none !important;
+    overflow: auto !important;
+    pointer-events: auto !important;
+    user-select: text !important;
+    caret-color: currentColor;
+    cursor: text !important;
+}
+
+.editorWrapper :global(.w-md-editor-text-pre) {
+    position: relative !important;
+    z-index: 1 !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    pointer-events: none !important;
+}
+
+.editorWrapper :global(.w-md-editor-text-pre > code) {
+    display: block;
+    min-height: 100%;
 }
 
 .editorWrapper :global(.w-md-editor-toolbar) {
@@ -55,6 +105,7 @@
     gap: 8px;
     align-items: center;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    cursor: default;
 }
 
 .editorWrapper :global(.w-md-editor-toolbar li > button) {
@@ -72,10 +123,4 @@
 
 .editorWrapper :global(.w-md-editor-toolbar li > button:hover) {
     background-color: #e0e0e0;
-}
-
-.editorWrapper :global(.w-md-editor-text-input) {
-    pointer-events: auto !important;
-    user-select: text !important;
-    caret-color: currentColor;
 }

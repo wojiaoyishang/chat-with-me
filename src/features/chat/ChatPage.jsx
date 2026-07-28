@@ -19,6 +19,8 @@ import MessageOverviewDialog from '@/features/chat/page/components/MessageOvervi
 import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
 import StoryReader from '@/features/story/StoryReader.jsx';
 import {clearWorkspaceTransfers, upsertWorkspaceTransfer} from '@/features/workspace/useWorkspaceTransferStore.js';
+import {getVisionAttachmentIds} from './attachmentVision.js';
+import {normalizeRemoteChatModel} from './modelCapabilities.js';
 
 import {
     ChatBox,
@@ -1185,6 +1187,7 @@ function ChatPage({
                     content: messageContent,
                     toolsStatus: toolsStatus,
                     attachments: attachments,
+                    visionAttachmentIds: getVisionAttachmentIds(attachments),
                     isEdit: isEditMessage,
                     model: selectedModel.id,
                     sendButtonStatus: sendButtonStatus,
@@ -2633,7 +2636,13 @@ function ChatPage({
             const modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
                 params: {markId: chatMarkId}
             });
-            const normalizedModels = Array.isArray(modelsData) ? modelsData : [];
+            // Bind model capabilities to the remotely fetched model objects.
+            // ChatBox receives selectedModel directly from this list, so keeping
+            // support_vision here makes the eye toggle react to model refreshes
+            // and model switches without a second settings request.
+            const normalizedModels = Array.isArray(modelsData)
+                ? modelsData.map(normalizeRemoteChatModel)
+                : [];
             setModels(normalizedModels);
 
             if (normalizedModels.length === 0) {
@@ -2754,13 +2763,11 @@ function ChatPage({
                 setIsLoading(false);
                 setTimeout(() => {
                     if (messagesContainerRef.current) {
-                        const container = messagesContainerRef.current;
-                        const {scrollHeight} = container;
-                        markProgrammaticScroll(700);
-                        container.scrollTo({
-                            top: scrollHeight,
-                            behavior: 'auto'
-                        });
+                        userAutoScrollUnlockUntilRef.current = 0;
+                        isAutoScrollEnabledRef.current = true;
+                        pendingScrollRef.current = true;
+                        markProgrammaticScroll(1400);
+                        executePendingScroll();
                     }
                     if (activeChatMarkIdRef.current === chatMarkId) {
                         setHistoryAutoLoadReady(true);
@@ -2785,7 +2792,17 @@ function ChatPage({
         }
         setIsLoadingError(false);
         setIsFirstMessageSend(true);
-    }, [chatMarkId, randomMark, setMessages, t, loadAvailableModels]);
+    }, [
+        chatMarkId,
+        executePendingScroll,
+        isAutoScrollEnabledRef,
+        loadAvailableModels,
+        markProgrammaticScroll,
+        pendingScrollRef,
+        randomMark,
+        setMessages,
+        t,
+    ]);
 
     const handleSidebarToggle = useCallback(() => {
         setIsSidebarOpen(prev => !prev);
@@ -2881,7 +2898,7 @@ function ChatPage({
                     <div className="flex-1 w-full relative overflow-hidden">
                         <div
                             ref={messagesContainerRef}
-                            className="h-full overflow-y-auto pb-20 scroll-smooth pretty-scrollbar"
+                            className="h-full overflow-y-auto pb-20 pretty-scrollbar"
                             style={{maxHeight: 'calc(120vh - 256px)'}}
                         >
                             <MessageContainer
