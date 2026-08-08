@@ -2046,6 +2046,15 @@ function ChatPage({
                                     if (oldMessage && typeof oldMessage === 'object') {
                                         const mergedMessage = {...oldMessage, ...incomingValue};
 
+                                        // extraInfo 是增量协议的一部分。流式阶段可能只更新审计信息，
+                                        // 不能覆盖已经累积的 replacement/task/context 等字段。
+                                        if (oldMessage.extraInfo || incomingValue.extraInfo) {
+                                            mergedMessage.extraInfo = {
+                                                ...(oldMessage.extraInfo || {}),
+                                                ...(incomingValue.extraInfo || {}),
+                                            };
+                                        }
+
                                         // network 必须做增量合并，避免流式 Add-Message 的短快照覆盖 Add-MessageNetwork 已追加的数据。
                                         if (oldMessage.network || incomingValue.network) {
                                             mergedMessage.network = mergeNetworkData(oldMessage.network, incomingValue.network);
@@ -2395,6 +2404,51 @@ function ChatPage({
                             });
                         });
                         break;
+                    case "Context-State-Changed": {
+                        const messageStates = payload.messageStates && typeof payload.messageStates === 'object'
+                            ? payload.messageStates
+                            : {};
+                        const replacementStates = payload.replacementStates && typeof payload.replacementStates === 'object'
+                            ? payload.replacementStates
+                            : {};
+
+                        const newMessages = produce(messagesRef.current, draft => {
+                            for (const [messageId, state] of Object.entries(messageStates)) {
+                                if (!draft[messageId]) continue;
+                                draft[messageId].contextState = state && typeof state === 'object' ? state : {};
+                            }
+
+                            for (const [messageId, replacements] of Object.entries(replacementStates)) {
+                                const message = draft[messageId];
+                                if (!message || !replacements || typeof replacements !== 'object') continue;
+                                if (!message.extraInfo || typeof message.extraInfo !== 'object') message.extraInfo = {};
+                                if (!message.extraInfo.replace || typeof message.extraInfo.replace !== 'object') {
+                                    message.extraInfo.replace = {};
+                                }
+
+                                for (const [replacementId, contextStatus] of Object.entries(replacements)) {
+                                    const current = message.extraInfo.replace[replacementId];
+                                    if (current && typeof current === 'object') {
+                                        current.contextStatus = contextStatus && typeof contextStatus === 'object'
+                                            ? contextStatus
+                                            : {};
+                                    } else {
+                                        message.extraInfo.replace[replacementId] = {
+                                            frontend: typeof current === 'string' ? current : '',
+                                            contextStatus: contextStatus && typeof contextStatus === 'object'
+                                                ? contextStatus
+                                                : {},
+                                        };
+                                    }
+                                }
+                            }
+                        });
+
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+                        if (payload.reply) reply({success: true});
+                        break;
+                    }
                     case "Conversation-Tree-Changed":
                         // AI 工具或其他客户端修改了对话树。统一重新加载当前活动分支，
                         // 避免本地 messagesOrder 与后端 treeRevision 不一致。

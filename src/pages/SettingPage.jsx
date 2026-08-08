@@ -125,7 +125,7 @@ const SettingPage = ({
         CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY,
         true
     );
-    const {user} = useUserStore();
+    const {user, setUser} = useUserStore();
     const [isFullscreen, setIsFullscreen] = useState(false);
     const {t} = useTranslation();
 
@@ -394,6 +394,9 @@ const SettingPage = ({
             setDynamicValues(savedValues);
             setOriginalDynamicValues(cloneData(savedValues));
             setIsConfigPristine(true);
+            if (response?.user && typeof response.user === 'object') {
+                setUser(response.user);
+            }
             markTabRefreshOnClose(activeTab);
         } catch (error) {
             if (error?.code === 409 && error?.data?.defaultOptions) {
@@ -408,7 +411,7 @@ const SettingPage = ({
         } finally {
             isSavingDynamicConfigRef.current = false;
         }
-    }, [isDynamicTab, activeTab, dynamicValues, t, cloneData, markTabRefreshOnClose]);
+    }, [isDynamicTab, activeTab, dynamicValues, t, cloneData, markTabRefreshOnClose, setUser]);
 
     // ==================== 关闭窗口 ====================
     const handleClose = useCallback(() => {

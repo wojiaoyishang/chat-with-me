@@ -21,6 +21,8 @@ import {
 } from '../utils.js';
 import StatusBody from './StatusBody.jsx';
 import StatusHeader from './StatusHeader.jsx';
+import IgnoredContextIndicator from '@/features/chat/ui/message/components/IgnoredContextIndicator.jsx';
+import CompactedContextIndicator from '@/features/chat/ui/message/components/CompactedContextIndicator.jsx';
 
 const STATUS_MARKER_REGEX = /\[(DONE|FAILED)(?::[^\]\r\n]+)?\]/gi;
 const TOOL_STATUS_MARKER_REGEX = /\[TOOL_STATUS:([a-z_]+)\]/gi;
@@ -77,6 +79,9 @@ const StatusWidget = memo(({
                                defaultExpanded = false,
                                contextId = '',
                                type = '',
+                               replacement = {},
+                               contextStatus = null,
+                               messageContextState = null,
                                renderMarkdown = defaultRenderMarkdown,
                            }) => {
     const {t} = useTranslation();
@@ -245,6 +250,66 @@ const StatusWidget = memo(({
         </span>
     ) : displayTitle;
 
+
+    const toolContextIndicator = useMemo(() => {
+        if (!isToolCalling || !isFinished) return null;
+
+        const toolCallingSuffix = '-toolCalling';
+        const rawId = String(id || '');
+        const toolCallingId = rawId.endsWith(toolCallingSuffix)
+            ? rawId.slice(0, -toolCallingSuffix.length)
+            : rawId;
+        if (!toolCallingId) return null;
+
+        const resultReplacementId = `tool-result-${toolCallingId}`;
+        const resultEntry = replacement && typeof replacement === 'object'
+            ? replacement[resultReplacementId]
+            : null;
+        const resultStatus = resultEntry && typeof resultEntry === 'object'
+            ? (resultEntry.contextStatus || resultEntry.context_status || null)
+            : null;
+        const rootStatus = contextStatus && typeof contextStatus === 'object' ? contextStatus : null;
+
+        const normalizedStatus = String(
+            resultStatus?.status || rootStatus?.status || '',
+        ).toLowerCase();
+        const messageCompacted = Array.isArray(messageContextState?.compactions)
+            && messageContextState.compactions.length > 0;
+
+        if (normalizedStatus === 'forgotten' || normalizedStatus === 'ignored') {
+            return (
+                <IgnoredContextIndicator
+                    markId={markId}
+                    messageId={contextId}
+                    replacementId={resultReplacementId}
+                    label={t('context_state_tool_forgotten', '工具上下文已忽略')}
+                />
+            );
+        }
+
+        if (normalizedStatus === 'compacted' || messageCompacted) {
+            return (
+                <CompactedContextIndicator
+                    markId={markId}
+                    messageId={contextId}
+                    replacementId={resultReplacementId}
+                    label={t('context_state_tool_compacted', '工具上下文已压缩')}
+                />
+            );
+        }
+
+        return null;
+    }, [
+        contextId,
+        contextStatus,
+        id,
+        isFinished,
+        isToolCalling,
+        markId,
+        messageContextState,
+        replacement,
+    ]);
+
     let currentColor = activeColor;
     if (isWaitingToolState) currentColor = 'text-gray-400';
     if (isResumingSubagent) currentColor = 'text-sky-600';
@@ -272,6 +337,7 @@ const StatusWidget = memo(({
                 markId={markId}
                 progress={progress}
                 truncatedLastLine={truncatedLastLine}
+                titleAccessory={toolContextIndicator}
                 waitingApprovalLabel={
                     isWaitingSubagent
                         ? t('tool_subagent_waiting_status', 'Waiting for sub-agent')
@@ -303,6 +369,9 @@ const StatusWidget = memo(({
         prev.title === next.title &&
         prev.defaultExpanded === next.defaultExpanded &&
         prev.type === next.type &&
+        prev.replacement === next.replacement &&
+        prev.contextStatus === next.contextStatus &&
+        prev.messageContextState === next.messageContextState &&
         prev.renderMarkdown === next.renderMarkdown
     );
 });

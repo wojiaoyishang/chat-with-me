@@ -539,5 +539,12 @@
   "message_usage_output": "Output tokens",
   "message_usage_peak_prompt": "Peak prompt",
   "message_usage_last_prompt": "Last prompt",
-  "message_usage_cached_input": "Cached input"
+  "context_debug_button": "Inspect LLM context",
+  "context_debug_setting": "Show debug buttons",
+  "context_state_compacted": "Compacted",
+  "context_state_forgotten": "Ignored",
+  "message_usage_cached_input": "Cached input",
+  "context_state_summary": "Context",
+  "context_state_tool_compacted": "Tool context compacted",
+  "context_state_tool_forgotten": "Tool result ignored"
 }

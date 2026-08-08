@@ -30,6 +30,7 @@ const StatusHeader = memo(({
                                markId = null,
                                metaText = '',
                                progress,
+                               titleAccessory = null,
                                rightAccessory = null,
                                truncatedLastLine,
                                waitingApprovalLabel = 'Waiting for approval',
@@ -158,6 +159,7 @@ const StatusHeader = memo(({
                             >
                                 {displayTitle}
                             </span>
+                            {titleAccessory}
                             {metaText ? (
                                 <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-normal text-gray-500">
                                     {metaText}
@@ -180,6 +182,7 @@ const StatusHeader = memo(({
                             >
                                 {displayTitle}
                             </span>
+                            {titleAccessory}
 
                             {metaText ? (
                                 <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-normal text-gray-500">
@@ -257,6 +260,7 @@ const StatusHeader = memo(({
         prev.isResumingTool === next.isResumingTool &&
         prev.markId === next.markId &&
         prev.metaText === next.metaText &&
+        prev.titleAccessory === next.titleAccessory &&
         prev.progress?.current === next.progress?.current &&
         prev.progress?.total === next.progress?.total &&
         prev.rightAccessory === next.rightAccessory &&

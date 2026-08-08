@@ -238,6 +238,7 @@ const getReplacementEntryValue = (entry) => {
             content: entry,
             entryType: '',
             allowTts: false,
+            contextStatus: null,
         };
     }
 
@@ -246,6 +247,7 @@ const getReplacementEntryValue = (entry) => {
             content: entry.content ?? entry.frontend ?? entry.value ?? '',
             entryType: entry.type || '',
             allowTts: entry.allowTts === true || entry.tts === true,
+            contextStatus: entry.contextStatus ?? entry.context_status ?? null,
         };
     }
 
@@ -253,6 +255,7 @@ const getReplacementEntryValue = (entry) => {
         content: String(entry ?? ''),
         entryType: '',
         allowTts: false,
+        contextStatus: null,
     };
 };
 
@@ -272,6 +275,7 @@ export const normalizeReplacementEntry = (
             type: explicitTokenType || 'markdown',
             flags: new Set(),
             allowTts: false,
+            contextStatus: null,
             content: '',
             incompleteProtocol: false,
         };
@@ -285,6 +289,7 @@ export const normalizeReplacementEntry = (
             type: explicitTokenType || 'markdown',
             flags: new Set(),
             allowTts: false,
+            contextStatus: null,
             content: '',
             incompleteProtocol: false,
         };
@@ -318,6 +323,7 @@ export const normalizeReplacementEntry = (
         type: resolvedType,
         flags: protocol.flags,
         allowTts,
+        contextStatus: extracted.contextStatus,
         content: shouldStripProtocol ? protocol.content : normalizedRawContent,
         inferredType: !hasExternalType && protocol.hadMarker,
         incompleteProtocol: protocol.incomplete,

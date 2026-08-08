@@ -11,6 +11,7 @@ import {
 
 import CodeBlock from './CodeBlock.jsx';
 import CardBlock from './card-block/CardBlock.jsx';
+import ReplacementContextBadge from '@/features/chat/ui/message/components/ReplacementContextBadge.jsx';
 import {
     getCardReplaceIdFromAttributes,
     normalizeCardReplaceBlockBoundaries,
@@ -23,6 +24,7 @@ import {
 import 'katex/dist/katex.min.css';
 
 import {resolveCwmUrl} from '@/lib/virtualUrl.js';
+import {isUniversalModalLink, openUniversalModalLink} from '@/components/modal/universalModal.js';
 
 const CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE = /:{2,3}\s*(card|card-replace)\s*\{([^}]*)\}\s*:{2,3}/g;
 const CARD_REPLACE_BLOCK_DIRECTIVE_RE = /:{3}\s*(card|card-replace)\s*\{([^}]*)\}\s*\n[\s\S]*?\n:{3}/g;
@@ -39,6 +41,7 @@ const getVisitedKey = (visitedIds) => {
 };
 
 const allowCustomScheme = (uri, key, node) => {
+    if (isUniversalModalLink(uri)) return uri;
     const resolved = resolveCwmUrl(uri);
     if (resolved !== null) return resolved;
     return defaultUrlTransform(uri, key, node);
@@ -316,6 +319,7 @@ const createComponents = ({
                               maxDepth = 10,
                               visitedIds = [],
                               isStreaming = false,
+                              messageContextState = null,
                           }) => {
     const getCurrentReplacement = () => {
         return replacementRef?.current || {};
@@ -332,6 +336,7 @@ const createComponents = ({
                 maxDepth={maxDepth}
                 visitedIds={extra.visitedIds ?? visitedIds}
                 isStreaming={isStreaming}
+                messageContextState={messageContextState}
             />
         );
     };
@@ -375,16 +380,24 @@ const createComponents = ({
             </blockquote>
         ),
 
-        a: ({href, children}) => (
-            <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-            >
-                {children}
-            </a>
-        ),
+        a: ({href, children}) => {
+            const modalLink = isUniversalModalLink(href);
+            return (
+                <a
+                    href={href}
+                    target={modalLink ? undefined : '_blank'}
+                    rel={modalLink ? undefined : 'noopener noreferrer'}
+                    className="text-blue-600 hover:underline"
+                    onClick={modalLink ? (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        openUniversalModalLink(href);
+                    } : undefined}
+                >
+                    {children}
+                </a>
+            );
+        },
 
         code({className, children, isCodeBlock, ...props}) {
             const match = /language-(.+)/.exec(className || '');
@@ -557,6 +570,13 @@ const createComponents = ({
                     data-tts-source-type="replacement"
                     data-tts-ignore={normalized.allowTts ? undefined : 'true'}
                 >
+                    <ReplacementContextBadge
+                        markId={markId}
+                        messageId={contextId}
+                        replacementId={finalId}
+                        status={normalized.contextStatus}
+                        messageState={messageContextState}
+                    />
                     <CardBlock
                         id={finalId}
                         type={normalized.type}
@@ -565,6 +585,8 @@ const createComponents = ({
                         contextId={contextId}
                         markId={markId}
                         replacement={currentReplacement}
+                        contextStatus={normalized.contextStatus}
+                        messageContextState={messageContextState}
                         renderMarkdown={(markdownContent) => {
                             return renderNestedMarkdown(markdownContent, {
                                 depth: depth + 1,
@@ -587,12 +609,14 @@ function MarkdownRendererInner({
                                    maxDepth = 10,
                                    visitedIds = [],
                                    msg = null,
+                                   messageContextState: messageContextStateProp = null,
                                    isStreaming: isStreamingProp = null,
                                    copyContentComponentName = MARKDOWN_COPY_CONTENT_COMPONENT_NAME,
                                }) {
     const replacementRef = useRef(replacement);
     replacementRef.current = replacement;
     const isStreaming = isStreamingProp ?? msg?.readonly === true;
+    const messageContextState = messageContextStateProp ?? msg?.contextState ?? null;
 
     const visitedKey = useMemo(() => {
         return getVisitedKey(visitedIds);
@@ -607,6 +631,7 @@ function MarkdownRendererInner({
             maxDepth,
             visitedIds,
             isStreaming,
+            messageContextState,
         });
     }, [
         contextId,
@@ -616,6 +641,7 @@ function MarkdownRendererInner({
         maxDepth,
         visitedKey,
         isStreaming,
+        messageContextState,
     ]);
 
     const processedContent = useMemo(() => {
@@ -700,6 +726,7 @@ const MarkdownRenderer = memo(MarkdownRendererInner, (prev, next) => {
         prev.depth === next.depth &&
         prev.maxDepth === next.maxDepth &&
         prev.msg === next.msg &&
+        prev.messageContextState === next.messageContextState &&
         prev.isStreaming === next.isStreaming &&
         prev.copyContentComponentName === next.copyContentComponentName &&
         areVisitedIdsEqual(prev.visitedIds, next.visitedIds)

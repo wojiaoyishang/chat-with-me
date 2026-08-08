@@ -11,6 +11,9 @@ import MessageAvatarMenu from './MessageAvatarMenu.jsx';
 import TextOnlyMessageContent from './TextOnlyMessageContent.jsx';
 import SpeechOverlayHighlighter from './SpeechOverlayHighlighter.jsx';
 import {useIsMobile} from '@/lib/tools.jsx';
+import MessageContextBadges from './MessageContextBadges.jsx';
+import IgnoredContextIndicator from './IgnoredContextIndicator.jsx';
+import CompactedContextIndicator from './CompactedContextIndicator.jsx';
 
 const MID_COLLAPSED_CONTENT_MAX_HEIGHT = 360;
 const MID_OVERFLOW_TOLERANCE = 18;
@@ -47,6 +50,9 @@ const MessageItem = memo(({
     const [isMobileActive, setIsMobileActive] = useState(false);
     const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
     const isMobile = useIsMobile();
+    const isMessageForgotten = msg?.contextState?.forgotten === true;
+    const messageCompactions = Array.isArray(msg?.contextState?.compactions) ? msg.contextState.compactions : [];
+    const isMessageCompacted = messageCompactions.length > 0;
 
     const [isHovered, setIsHovered] = useState(false);
     const canRevealActions = !readonly && (isRight || isMid);
@@ -160,11 +166,29 @@ const MessageItem = memo(({
     };
 
     const renderLeftAvatarName = () => (
-        <div
-            {...avatarTriggerProps}
-            className="inline-flex cursor-pointer select-none touch-manipulation"
-        >
-            <LeftAvatarName msg={msg} isLeaving={leavingMessages.has(msgId)}/>
+        <div className="flex items-center gap-1">
+            <div
+                {...avatarTriggerProps}
+                className="inline-flex cursor-pointer select-none touch-manipulation"
+            >
+                <LeftAvatarName msg={msg} isLeaving={leavingMessages.has(msgId)}/>
+            </div>
+            {isMessageCompacted && (
+                <CompactedContextIndicator
+                    markId={markId}
+                    messageId={msgId}
+                    label={`${getLabel('context_state_compacted', '已压缩')}${messageCompactions.length > 1 ? ` ×${messageCompactions.length}` : ''}`}
+                    className="mb-1"
+                />
+            )}
+            {isMessageForgotten && (
+                <IgnoredContextIndicator
+                    markId={markId}
+                    messageId={msgId}
+                    label={getLabel('context_state_forgotten', '已忽略')}
+                    className="mb-1"
+                />
+            )}
         </div>
     );
 
@@ -364,6 +388,14 @@ const MessageItem = memo(({
             {...hoverHandlers}
         >
             {renderMessageContent()}
+
+            <MessageContextBadges
+                markId={markId}
+                messageId={msgId}
+                state={msg?.contextState}
+                align={isRight ? 'right' : 'left'}
+                showForgotten={isRight || isMid}
+            />
 
             {!isMid && <MessageActions {...actionProps}/>}            
             <MessageAvatarMenu

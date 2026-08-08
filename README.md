@@ -4559,3 +4559,321 @@ Dashboard Logo 接口现在返回 `cwm://public/logo.svg`。设置页 Tab 图标
 动态设置新增通用 `presetButtons` 类型。列表项内的预设按钮会把 `values` 浅合并到当前列表对象，不提交预设本身，也不修改未包含在 `values` 中的地址、密钥、模型 ID 或价格字段。模型页当前提供 DeepSeek 兼容、Qwen 百炼兼容、OpenAI `reasoning_effort`、纯软提示词和不支持思考等快速填充；填充后所有字段仍可单独编辑。
 
 模型选择变化时，聊天页同步替换该模型返回的动态会话设置 schema，因此“在工具调用时提供思考”的禁用状态和说明会立即跟随所选模型变化。该功能不新增 WebSocket 广播，也不需要数据库表结构迁移。
+
+## Context Manager 状态与按需调试协议（2026-08-08）
+
+Context Manager 的前端可观测性分为两层：**正常产品状态**与**显式调试信息**。两者不得混用。
+
+### 正常消息加载中的轻量状态
+
+普通聊天历史与实时消息只携带轻量 Context 状态，不携带完整的 LLM Runtime Context。消息对象可附加：
+
+```json
+{
+  "contextState": {
+    "forgotten": false,
+    "compactions": []
+  }
+}
+```
+
+`cardReplace` 对应的 replacement 对象可附加：
+
+```json
+{
+  "contextStatus": {
+    "status": "forgotten"
+  }
+}
+```
+
+这些字段用于正常 UI 展示，**不受“显示调试按钮”设置影响**：
+
+- 左侧消息被压缩后，在消息名称后显示淡灰色压缩图标；hover/focus 后展开为“已压缩”，点击后按需读取状态详情；
+- 左侧消息被忽略后，在消息名称后显示淡灰色眼睛图标；hover/focus 后展开为“已忽略”，点击后按需读取状态详情；
+- 中间消息和右侧消息不在正文周围常驻显示“已压缩” Badge；其压缩状态放入“详细信息/消息摘要”中，以“已压缩”超链接展示，点击后打开同一个 Context 状态详情窗口；
+- 被忽略的中间/右侧消息仍使用轻量淡灰色眼睛状态，不受调试设置影响；
+- 工具调用的上下文状态按一次 `toolCalling` 聚合：嵌套的 tool command / tool result / replacement 不重复显示图标；当调用结束后，只在 `Tool Calling Finished` 标题右侧显示一个淡灰色状态图标，hover/focus 才展开文字，点击后按需读取状态详情；
+- 点击任何压缩或忽略状态后，才按需读取当前后端实际保留的语义表示。
+
+原始聊天消息不会因为上述状态而由前端删除。
+
+### `Context-State-Changed` 实时广播
+
+Context Manager 在压缩、忽略或恢复影响到已经显示的消息时，后端发送轻量广播：
+
+```json
+{
+  "type": "message",
+  "target": "ChatPage",
+  "markId": "conversation-mark-id",
+  "payload": {
+    "command": "Context-State-Changed",
+    "messageStates": {
+      "message-id": {
+        "forgotten": true,
+        "compactions": []
+      }
+    },
+    "replacementStates": {
+      "message-id": {
+        "replacement-id": {
+          "status": "forgotten"
+        }
+      }
+    }
+  }
+}
+```
+
+`messageStates` 与 `replacementStates` 可以只出现其中一个。该事件只同步状态元数据，不广播完整摘要、完整 replacement backend 内容或完整 LLM messages。`ChatPage` 收到后就地更新对应消息，避免为了 Badge 状态重新加载整段历史。
+
+### Context 状态详情 API
+
+压缩/忽略状态属于正常产品能力。用户点击状态标记时，前端才调用：
+
+```http
+GET /api/chat/context/state-detail
+```
+
+查询参数：
+
+```text
+markId       必填，会话 ID
+messageId    必填，消息 ID
+replacementId 可选；提供时查看指定 cardReplace/tool replacement
+presentation 可选；`modal` 时返回通用弹窗描述符
+```
+
+该接口**不要求开启调试设置**。它返回当前状态下压缩/忽略后实际保留给后端语义上下文的内容，而不是删除后的原始记录。
+
+### LLM Runtime Context 调试 API
+
+完整 LLM 上下文属于显式调试能力，默认不加载。设置中的：
+
+```text
+调试 → 显示调试按钮
+```
+
+开启后，每条消息操作区才显示调试按钮。只有用户点击按钮时前端才调用：
+
+```http
+GET /api/chat/context/debug
+```
+
+查询参数：
+
+```text
+markId       必填
+messageId    必填
+replacementId 可选
+presentation 可选；`modal` 时返回通用弹窗描述符
+```
+
+后端也会检查当前用户的调试设置；未启用时应返回 HTTP 403。返回内容是**当前模型、当前 Conversation 分支与当前 Context Manager 状态下动态重建的 LLM 输入视图**，不是过去某次请求的历史快照。
+
+普通聊天渲染、历史加载、WebSocket 增量生成均不得主动请求此接口。
+
+### 动态调试设置接口
+
+后端 `/setting/tabs` 会返回动态页签：
+
+```text
+debug / 调试
+```
+
+前端通过既有动态设置协议读取和保存：
+
+```http
+GET  /api/setting/tabs/debug
+POST /api/setting/tabs/debug
+```
+
+当前字段：
+
+```json
+{
+  "showContextDebugButtons": false
+}
+```
+
+保存成功后前端同步更新 User Store，因此调试按钮应立即出现或消失，无需刷新页面。
+
+只读消息/只读会话不显示消息级 LLM 调试按钮，即使 `showContextDebugButtons=true`。只读状态优先级高于调试显示设置；Context 压缩/忽略状态仍按正常产品状态规则展示。对于中间/右侧只读消息，如果存在压缩状态，允许保留只读的“详细信息/消息摘要”入口以访问压缩超链接，但不会因此显示任何调试按钮或可修改消息的操作。
+
+### 性能约束
+
+Context 可观测性必须遵循以下约束：
+
+1. 普通消息加载只携带 `contextState` / `contextStatus` 等轻量状态；
+2. `Context-State-Changed` 只广播轻量状态；
+3. 状态详情仅在点击压缩/忽略标记时 GET；
+4. 完整 LLM 调试数据仅在调试开关开启且用户点击消息调试按钮时 GET；
+5. 前端新增依赖的 REST API、WebSocket 广播命令或 payload 字段时，应同步更新本 `README.md` 对应协议说明。
+
+### Context 状态展示约定
+
+Context 状态属于正常产品 UI，而不是 Debug UI。展示位置按消息布局区分：左侧消息将压缩/忽略状态紧跟在名称后；中间和右侧消息的压缩状态只进入“详细信息/消息摘要”，避免在气泡外额外占据一行。工具调用使用同样的轻量图标语义。上述位置调整不新增 API 或 WebSocket 事件，仍复用 `state-detail` 按需详情接口。
+
+
+## 后端驱动通用弹窗协议（2026-08-08）
+
+为了保持 Chat-With-Me “多写后端、少写前端”的扩展方式，前端提供一个全局 `UniversalModalHost`。业务功能不应再为每一种后端详情单独创建 React Dialog；后端可以通过统一描述符控制弹窗标题、说明、宽度、内容块和安全动作。
+
+前端公开接口位于：
+
+```text
+src/components/modal/universalModal.js
+```
+
+主要接口：
+
+```js
+openUniversalModal(descriptor)
+openRemoteUniversalModal(endpoint, params)
+openUniversalModalLink(href)
+```
+
+`openRemoteUniversalModal()` 只有在用户真正点击入口时才发出 HTTP 请求。普通聊天加载不会预取弹窗数据。
+
+### `cwm.modal.v1` 描述符
+
+后端返回的弹窗描述符格式：
+
+```json
+{
+  "schema": "cwm.modal.v1",
+  "title": "上下文状态详情",
+  "description": "可选说明",
+  "size": "lg",
+  "dismissible": true,
+  "blocks": [
+    {"type": "badges", "items": [{"label": "compacted", "variant": "secondary"}]},
+    {"type": "keyValue", "title": "定位", "items": [{"label": "Message ID", "value": "...", "mono": true}]},
+    {"type": "code", "title": "后端输入", "language": "context", "content": "..."},
+    {"type": "markdown", "title": "说明", "content": "..."},
+    {"type": "text", "content": "..."},
+    {"type": "list", "items": [{"text": "..."}]},
+    {"type": "divider"}
+  ],
+  "actions": [
+    {"type": "close", "label": "关闭", "variant": "outline"}
+  ]
+}
+```
+
+`size` 当前支持 `sm / md / lg / xl / full`。前端只实现安全的声明式内容与动作，不执行后端下发的 JavaScript。
+
+后端通用 helper 位于：
+
+```text
+application/ui/modal.py
+```
+
+可复用：
+
+```python
+build_modal_descriptor(...)
+encode_modal_inline_url(...)
+encode_modal_fetch_url(...)
+markdown_modal_link(...)
+```
+
+### Markdown 特殊弹窗链接
+
+后端可以直接在 Markdown 中输出特殊链接；前端 MarkdownRenderer 会拦截并交给全局弹窗，不跳转新页面。
+
+远程按需加载：
+
+```text
+cwm://modal/fetch/<base64url-json>
+```
+
+其中 payload 示例：
+
+```json
+{
+  "endpoint": "/chat/context/state-detail",
+  "params": {
+    "markId": "...",
+    "messageId": "...",
+    "presentation": "modal"
+  },
+  "method": "get"
+}
+```
+
+后端推荐不要手写编码，直接：
+
+```python
+markdown_modal_link(
+    "查看详情",
+    "/chat/context/state-detail",
+    params={
+        "markId": mark_id,
+        "messageId": message_id,
+        "presentation": "modal",
+    },
+)
+```
+
+小型静态弹窗也可使用：
+
+```text
+cwm://modal/inline/<base64url-cwm.modal.v1>
+```
+
+前端对 `fetch` 地址做安全限制：只接受 API client 下的相对路径，不允许绝对 URL、`://` 或 `..`，且 Markdown 特殊弹窗链接仅允许 GET。需要产生副作用的 POST/DELETE 等操作必须继续由专用、显式的前端动作触发，不能藏在弹窗链接里。普通 `http/https` Markdown 链接仍按外部链接处理。
+
+当前 Context 状态详情和 LLM Debug 已切换到这套通用弹窗；旧的功能专用 Dialog 不再参与运行路径。
+
+### 消息“更多/信息”审计摘要
+
+消息信息支持旧纯文本与新的后端驱动审计两种模式。是否启用结构化审计由消息的 `extraInfo` 控制：
+
+```json
+{
+  "enable_audit_info": true,
+  "audit_info": {
+    "title": "消息审计",
+    "sections": []
+  }
+}
+```
+
+兼容规则：
+
+- `enable_audit_info === true` 且 `audit_info` 合法时，前端使用结构化审计渲染；
+- 字段缺失、为 false 或结构无效时，继续显示数据库中的旧纯文本 `tip/info`；
+- 新消息不需要再生成一份重复的旧审计文本；旧消息无需迁移。
+
+`audit_info.sections[].items[]` 是后端声明的审计行。常用字段：
+
+```json
+{
+  "label": "累计输入 Token",
+  "value": 30514,
+  "format": "token",
+  "prefix": "",
+  "suffix": "",
+  "approximate": false,
+  "emphasis": false,
+  "copyable": false,
+  "href": null
+}
+```
+
+当前前端支持的通用 `format` 包括：`text / number / datetime / token / percent / price / cache / code / badge / link`。另外支持三个由后端显式声明的消息级动态标记：
+
+- `message_id`：使用当前消息 ID；
+- `message_created_at`：使用当前消息的数据库创建时间；
+- `context_state`：使用当前轻量 `contextState` 渲染“活动 / 已忽略 / 已压缩”，可操作状态点击后继续走 `/chat/context/state-detail` 通用弹窗。
+
+`context_state` 的设计使审计描述无需在每次压缩、恢复或忽略后重写；现有 `Context-State-Changed` 广播只更新轻量状态，审计窗口会立即读取最新状态。
+
+左侧、中间、右侧消息共用同一个结构化审计 Renderer，只是入口位置不同。桌面端审计使用约 `22rem` 的紧凑 Popover，并保留 viewport collision 检测与约 `12px` 的浏览器边界。为避免 Popover 打开时浏览器/FocusScope 自动把焦点移入审计内容，桌面审计显式阻止 `open auto focus`；点击入口后焦点保持在原消息操作区域，不自动跳到审计卡片或其中的链接。审计卡片设置更紧凑的稳定最大高度（最多约 `20rem`，同时不超过当前 `100dvh - 3rem`），超出高度后只在卡片内部纵向滚动；滚动区域统一复用项目全局 `pretty-scrollbar` 样式，并继续使用 overscroll containment / stable scrollbar gutter，避免长审计内容把浮层顶出视图或因滚动条出现造成横向抖动。内容行使用固定 label 列 + 弹性 value 列的 CSS Grid，value 统一右对齐并使用 tabular numbers，后端不得通过插入空格实现视觉对齐。长值应截断或通过 copy/modal 查看详情。
+
+移动端（`< 768px`）如果 `enable_audit_info=true`，结构化消息审计不再使用悬浮 Popover，而是打开独立的审计 Dialog 层：宽高受当前移动端 viewport / `100dvh` 约束，正文可滚动，右上角始终提供关闭按钮，并为底部 safe-area 留出空间。该移动端 Dialog 只改变审计容器，不改变 `audit_info` 的后端协议与 Renderer。历史纯文本 Tips 仍使用原有兼容路径。
+
+审计只携带已经存在的轻量消息元数据。完整 LLM 输入、完整压缩内容、Tool Result 等大数据继续使用 `cwm://modal/...` 或现有 Context API 在用户点击后按需获取，普通聊天路径不得预加载这些内容。
+

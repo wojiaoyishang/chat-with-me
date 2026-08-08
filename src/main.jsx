@@ -17,6 +17,7 @@ import ContextEvent from "@/context/ContextEvent.jsx";
 import DashboardPage from "@/pages/DashboardPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import ChatWithEditor from "@/pages/ChatWithEditor.jsx";
+import UniversalModalHost from '@/components/modal/UniversalModalHost.jsx';
 
 const router = createBrowserRouter([
     {
@@ -56,6 +57,7 @@ ReactDOM.createRoot(root).render(
         <ContextEvent />  {/* 跨页面事件 */}
         <MyToaster/>  {/* 跨页面的吐司组件 */}
         <FatalErrorPopoverElement/>  {/* 错误提示 */}
+        <UniversalModalHost/>  {/* 后端驱动的通用弹窗 */}
         <WebSocketProvider>
             <RouterProvider router={router}/>
         </WebSocketProvider>

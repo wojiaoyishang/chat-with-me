@@ -8,7 +8,8 @@ import {
     Trash,
     StepForward,
     Volume2,
-    Square
+    Square,
+    Bug
 } from 'lucide-react';
 import {
     Tooltip,
@@ -18,12 +19,16 @@ import {
 import {handleMessageAction} from '../utils/messageActions.js';
 import {canSpeakMessage} from '../utils/speechContent.js';
 import TooltipInfo from './TooltipInfo.jsx';
+import {openRemoteUniversalModal} from '@/components/modal/universalModal.js';
+import {apiEndpoint} from '@/config.js';
+import {useUserStore} from '@/context/userContext.jsx';
 
 const isActiveSpeechStatus = (status) => ['loading', 'playing', 'paused'].includes(status);
 const toolButtonClassName = 'shrink-0 p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer';
 
 const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) => {
     const {t} = useTranslation();
+    const showContextDebugButtons = useUserStore(state => Boolean(state.user?.showContextDebugButtons));
     const actionContext = {msgId, markId};
     const canSpeak = !readonly && canSpeakMessage(msg);
     const isSpeakingThisMessage = canSpeak && speechState?.messageId === msgId && isActiveSpeechStatus(speechState?.status);
@@ -182,9 +187,33 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
                 </Tooltip>
             )}
 
+            {!readonly && showContextDebugButtons && (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <button
+                            type="button"
+                            onClick={() => openRemoteUniversalModal(
+                                apiEndpoint.CHAT_CONTEXT_DEBUG_ENDPOINT,
+                                {markId, messageId: msgId, presentation: 'modal'},
+                            )}
+                            className={toolButtonClassName}
+                            aria-label={t('context_debug_button')}
+                        >
+                            <Bug size={16} className="text-violet-600 hover:text-violet-800"/>
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        {t('context_debug_button')}
+                    </TooltipContent>
+                </Tooltip>
+            )}
+
             <TooltipInfo
                 tip={msg.tip}
-                usageStats={msg?.extraInfo?.usage_stats || msg?.extra_info?.usage_stats}
+                contextState={msg?.contextState}
+                markId={markId}
+                messageId={msgId}
+                msg={msg}
                 t={t}
             />
         </div>

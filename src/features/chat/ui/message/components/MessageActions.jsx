@@ -20,7 +20,9 @@ const MessageActions = memo(({
     const isRight = msg.position === 'right';
     const isMid = msg.position === 'mid';
     const showPaginator = messages?.[msg?.prevMessage]?.messages?.length > 1;
-    const shouldShowTools = !readonly;
+    const readonlyCompactions = Array.isArray(msg?.contextState?.compactions) ? msg.contextState.compactions : [];
+    const hasReadonlyContextSummary = readonly && (isRight || isMid) && readonlyCompactions.length > 0;
+    const shouldShowTools = !readonly || hasReadonlyContextSummary;
     const revealOnInteraction = isRight || isMid;
     const toolVisibilityClassName = revealOnInteraction
         ? (isActionActive ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none')

@@ -70,6 +70,8 @@ const CardBlock = memo(({
     type = 'markdown',
     contextId = '',
     replacement,
+    contextStatus = null,
+    messageContextState = null,
     renderMarkdown = defaultRenderMarkdown,
 }) => {
     const commonProps = {
@@ -80,6 +82,8 @@ const CardBlock = memo(({
         type,
         contextId,
         replacement,
+        contextStatus,
+        messageContextState,
         renderMarkdown,
     };
 
@@ -238,7 +242,9 @@ const CardBlock = memo(({
         prev.id !== next.id ||
         prev.allowTts !== next.allowTts ||
         prev.markId !== next.markId ||
-        prev.type !== next.type
+        prev.type !== next.type ||
+        prev.contextStatus !== next.contextStatus ||
+        prev.messageContextState !== next.messageContextState
     ) {
         return false;
     }
