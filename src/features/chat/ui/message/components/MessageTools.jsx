@@ -182,7 +182,11 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
                 </Tooltip>
             )}
 
-            <TooltipInfo tip={msg.tip} t={t}/>
+            <TooltipInfo
+                tip={msg.tip}
+                usageStats={msg?.extraInfo?.usage_stats || msg?.extra_info?.usage_stats}
+                t={t}
+            />
         </div>
     );
 });

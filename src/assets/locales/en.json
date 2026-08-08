@@ -533,5 +533,11 @@
   "attachment_vision_enabled": "This image will be provided to the AI for visual recognition. Click to disable.",
   "attachment_vision_disabled": "This image is only a regular attachment. Click to allow AI visual recognition.",
   "attachment_vision_disable_action": "Prevent the AI from recognizing this image",
-  "attachment_vision_enable_action": "Allow the AI to recognize this image"
+  "attachment_vision_enable_action": "Allow the AI to recognize this image",
+  "message_usage_requests": "Model requests",
+  "message_usage_cumulative_input": "Cumulative input",
+  "message_usage_output": "Output tokens",
+  "message_usage_peak_prompt": "Peak prompt",
+  "message_usage_last_prompt": "Last prompt",
+  "message_usage_cached_input": "Cached input"
 }

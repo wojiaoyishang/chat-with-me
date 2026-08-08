@@ -532,5 +532,11 @@
   "attachment_vision_enabled": "此图片会提供给 AI 识别，点击关闭",
   "attachment_vision_disabled": "此图片仅作为普通附件，点击允许 AI 识别",
   "attachment_vision_disable_action": "禁止 AI 识别此图片",
-  "attachment_vision_enable_action": "允许 AI 识别此图片"
+  "attachment_vision_enable_action": "允许 AI 识别此图片",
+  "message_usage_requests": "模型请求",
+  "message_usage_cumulative_input": "累计输入 Token",
+  "message_usage_output": "输出 Token",
+  "message_usage_peak_prompt": "最大单次 Prompt",
+  "message_usage_last_prompt": "最后一次 Prompt",
+  "message_usage_cached_input": "缓存输入"
 }
