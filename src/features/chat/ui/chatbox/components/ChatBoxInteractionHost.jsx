@@ -237,7 +237,7 @@ const ToolApprovalInteraction = ({interaction, onDismiss}) => {
                         )}
                     </div>
                 ) : (
-                    <div className="mt-3 max-h-[min(48vh,25rem)] space-y-2 overflow-y-auto pr-1 [scrollbar-gutter:stable]">
+                    <div className="pretty-scrollbar mt-3 max-h-[min(48vh,25rem)] space-y-2 overflow-y-auto pr-1 [scrollbar-gutter:stable]">
                         {items.map((item, index) => {
                             const pending = item.status === 'pending';
                             const submitting = submittingIds.has(item.itemId || '__approval__');
@@ -330,7 +330,7 @@ const ChatBoxInteractionHost = ({markId}) => {
 
     return (
         <div className="pointer-events-none mx-auto w-full max-w-225 px-4">
-            <div className="pointer-events-auto ml-auto flex max-h-[min(62vh,36rem)] w-full max-w-lg flex-col gap-2 overflow-y-auto pb-1 pr-1 [scrollbar-gutter:stable]">
+            <div className="pretty-scrollbar pointer-events-auto ml-auto flex max-h-[min(62vh,36rem)] w-full max-w-lg flex-col gap-2 overflow-y-auto pb-1 pr-1 [scrollbar-gutter:stable]">
                 {visible.map(interaction => {
                     const Renderer = interactionRenderers.get(interaction.kind);
                     return Renderer ? (

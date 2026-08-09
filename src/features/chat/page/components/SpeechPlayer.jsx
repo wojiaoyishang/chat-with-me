@@ -338,7 +338,7 @@ const BrowserVoiceOptionsPortal = ({
         <ListboxOptions
             ref={menuRef}
             static
-            className="fixed overflow-auto overscroll-contain rounded-xl border border-gray-200 bg-white p-1 shadow-2xl shadow-slate-900/15 ring-1 ring-black/5 outline-none"
+            className="pretty-scrollbar fixed overflow-auto overscroll-contain rounded-xl border border-gray-200 bg-white p-1 shadow-2xl shadow-slate-900/15 ring-1 ring-black/5 outline-none"
             style={{
                 top: `${position.top}px`,
                 left: `${position.left}px`,
@@ -487,7 +487,7 @@ const SubtitleSettingsMenuPortal = ({
     return createPortal(
         <div
             ref={menuRef}
-            className="fixed overflow-y-auto overscroll-contain rounded-2xl border border-gray-200 bg-white/[0.98] p-3 shadow-2xl shadow-slate-900/20 ring-1 ring-black/5 backdrop-blur-xl"
+            className="pretty-scrollbar fixed overflow-y-auto overscroll-contain rounded-2xl border border-gray-200 bg-white/[0.98] p-3 shadow-2xl shadow-slate-900/20 ring-1 ring-black/5 backdrop-blur-xl"
             style={{
                 top: menuPosition.top,
                 left: menuPosition.left,

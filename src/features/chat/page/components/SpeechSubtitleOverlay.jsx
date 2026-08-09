@@ -272,7 +272,7 @@ const SpeechSubtitleOverlay = memo(({speechState, enabled = true, t}) => {
                         data-dragging={isDragging ? 'true' : 'false'}
                         role="status"
                         tabIndex={0}
-                        className="pointer-events-auto touch-none select-none overflow-y-auto overscroll-contain rounded-xl px-3 py-2 text-center font-medium text-white shadow-2xl outline-none backdrop-blur-sm transition-[box-shadow,background-color] focus-visible:ring-2 focus-visible:ring-amber-300 data-[dragging=true]:ring-2 data-[dragging=true]:ring-amber-300 sm:px-4 sm:py-2.5"
+                        className="pretty-scrollbar pointer-events-auto touch-none select-none overflow-y-auto overscroll-contain rounded-xl px-3 py-2 text-center font-medium text-white shadow-2xl outline-none backdrop-blur-sm transition-[box-shadow,background-color] focus-visible:ring-2 focus-visible:ring-amber-300 data-[dragging=true]:ring-2 data-[dragging=true]:ring-amber-300 sm:px-4 sm:py-2.5"
                         style={{
                             transform: 'translate(-50%, -50%)',
                             width: 'max-content',

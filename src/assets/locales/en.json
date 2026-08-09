@@ -546,5 +546,7 @@
   "message_usage_cached_input": "Cached input",
   "context_state_summary": "Context",
   "context_state_tool_compacted": "Tool context compacted",
-  "context_state_tool_forgotten": "Tool result ignored"
+  "context_state_tool_forgotten": "Tool result ignored",
+  "context_compaction_running": "Organizing context",
+  "context_compaction_completed": "Context organized"
 }

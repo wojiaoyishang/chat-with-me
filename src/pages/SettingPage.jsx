@@ -777,7 +777,7 @@ const SettingPage = ({
 
                         <div className="flex flex-1 overflow-hidden">
                             {renderSidebar()}
-                            <div className="flex-1 overflow-y-auto bg-white p-4 md:p-6">
+                            <div className="pretty-scrollbar flex-1 overflow-y-auto bg-white p-4 md:p-6">
                                 {renderContent()}
                             </div>
                         </div>

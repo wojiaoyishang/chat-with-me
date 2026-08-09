@@ -1,5 +1,5 @@
 import React, {memo, useEffect, useMemo, useRef} from 'react';
-import {Bot, ChevronDown, MapPinned, Maximize2, Minimize2, Minus, PanelRight} from 'lucide-react';
+import {Bot, Check, ChevronDown, LoaderCircle, MapPinned, Maximize2, Minimize2, Minus, PanelRight} from 'lucide-react';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.tsx';
 import {Button} from '@/components/ui/button.tsx';
 import ModelItem from './ModelItem.jsx';
@@ -31,6 +31,7 @@ const ChatHeader = memo(({
                              showMinimizeButton = false,
                              onMinimize,
                              conversationMeta,
+                             contextCompactionState = {},
                              stories = [],
                              onOpenStory,
                              onRenameStory,
@@ -41,6 +42,9 @@ const ChatHeader = memo(({
     const agentSessionName = conversationMeta?.agentSession?.name;
     const agentSessionDepth = Number(conversationMeta?.agentSession?.depth || 1);
     const nestedAllowed = conversationMeta?.agentSession?.allowNestedSubagents !== false;
+    const compactionStatus = String(contextCompactionState?.status || '').toLowerCase();
+    const compactionRunning = ['planning', 'compressing', 'committing'].includes(compactionStatus);
+    const compactionCompleted = compactionStatus === 'completed';
 
     useEffect(() => {
         if (isModelPopoverOpen) {
@@ -77,7 +81,7 @@ const ChatHeader = memo(({
     }, [models, isMobile, handleModelItemClick, handleModelItemMouseEnter, selectedModel, t]);
 
     return (
-        <header className="w-full bg-white flex items-center justify-between p-4 h-14">
+        <header className="relative w-full bg-white flex items-center justify-between p-4 h-14">
             <Popover
                 open={isAgentSession ? false : isModelPopoverOpen}
                 onOpenChange={isAgentSession ? undefined : handlePopoverOpenChange}
@@ -134,6 +138,26 @@ const ChatHeader = memo(({
                     </div>
                 </PopoverContent>
             </Popover>
+
+            {(compactionRunning || compactionCompleted) && (
+                <div
+                    className="pointer-events-none absolute left-1/2 top-1/2 z-10 flex max-w-[42vw] -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full bg-gray-50/95 px-2.5 py-1 text-[11px] font-medium text-gray-500 shadow-sm ring-1 ring-gray-200/70"
+                    title={compactionRunning
+                        ? t('context_compaction_running')
+                        : t('context_compaction_completed')}
+                >
+                    {compactionRunning ? (
+                        <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin"/>
+                    ) : (
+                        <Check className="h-3.5 w-3.5 shrink-0"/>
+                    )}
+                    <span className={isMobile ? 'sr-only' : 'truncate'}>
+                        {compactionRunning
+                            ? t('context_compaction_running')
+                            : t('context_compaction_completed')}
+                    </span>
+                </div>
+            )}
 
             {isWindowMode && (
                 <div

@@ -134,7 +134,7 @@ const FileUploadProgress = memo(({ uploadFiles, onRetry, onCancel }) => {
             leaveTo="opacity-0 transform translate-y-2"
         >
             <div ref={containerRef} className="px-2 py-1.5 border-b border-gray-200">
-                <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+                <div className="pretty-scrollbar space-y-2 max-h-40 overflow-y-auto pr-2">
                     {fileItems}
                 </div>
             </div>

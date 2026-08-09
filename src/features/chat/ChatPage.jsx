@@ -252,6 +252,8 @@ function ChatPage({
     const [advancedSettingsValues, setAdvancedSettingsValues] = useState({});
     const [settingsInstanceKey, setSettingsInstanceKey] = useState(() => `conversationless-${Date.now()}`);
     const [conversationMeta, setConversationMeta] = useState(null);
+    const [contextCompactionState, setContextCompactionState] = useState({});
+    const contextCompactionClearTimerRef = useRef(null);
     const [stories, setStories] = useState([]);
     const [storyReaderOpen, setStoryReaderOpen] = useState(false);
     const [activeStory, setActiveStory] = useState(null);
@@ -259,6 +261,34 @@ function ChatPage({
     useEffect(() => {
         selectedModelRef.current = selectedModel;
     }, [selectedModel]);
+
+    useEffect(() => () => {
+        if (contextCompactionClearTimerRef.current) {
+            clearTimeout(contextCompactionClearTimerRef.current);
+            contextCompactionClearTimerRef.current = null;
+        }
+    }, []);
+
+    const applyContextCompactionState = useCallback((nextState) => {
+        const normalized = nextState && typeof nextState === 'object' ? nextState : {};
+        if (contextCompactionClearTimerRef.current) {
+            clearTimeout(contextCompactionClearTimerRef.current);
+            contextCompactionClearTimerRef.current = null;
+        }
+        setContextCompactionState(normalized);
+        const status = String(normalized?.status || '').toLowerCase();
+        if (['completed', 'failed', 'discarded'].includes(status)) {
+            const delay = status === 'completed' ? 1800 : 800;
+            contextCompactionClearTimerRef.current = setTimeout(() => {
+                setContextCompactionState((current) => (
+                    current?.jobId && normalized?.jobId && current.jobId !== normalized.jobId
+                        ? current
+                        : {}
+                ));
+                contextCompactionClearTimerRef.current = null;
+            }, delay);
+        }
+    }, []);
 
     // 删除相关
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -2404,6 +2434,11 @@ function ChatPage({
                             });
                         });
                         break;
+                    case "Context-Compaction-State": {
+                        applyContextCompactionState(payload.value || {});
+                        reply({success: true});
+                        break;
+                    }
                     case "Context-State-Changed": {
                         const messageStates = payload.messageStates && typeof payload.messageStates === 'object'
                             ? payload.messageStates
@@ -2618,7 +2653,7 @@ function ChatPage({
             unsubscribe2();
             unsubscribe3();
         };
-    }, [acknowledgeTaskInterruptReplacements, chatMarkId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, showQuickUserMessageNavigator, messageOverviewOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent]);
+    }, [acknowledgeTaskInterruptReplacements, chatMarkId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, showQuickUserMessageNavigator, messageOverviewOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState]);
 
     useEffect(() => {
         return () => {
@@ -2653,6 +2688,7 @@ function ChatPage({
             setInitialSettingValues(null);
         }
         setConversationMeta(null);
+        applyContextCompactionState({});
 
         if (chatMarkId === null || chatMarkId === undefined) {
             setAdvancedSettings([]);
@@ -2667,7 +2703,7 @@ function ChatPage({
                 toast.dismiss(id);
             });
         }
-    }, [chatMarkId, setMessages]);
+    }, [chatMarkId, setMessages, applyContextCompactionState]);
 
     useEffect(() => {
         if (!chatMarkId) return undefined;
@@ -2748,6 +2784,7 @@ function ChatPage({
             try {
                 let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + chatMarkId);
                 setConversationMeta(data);
+                applyContextCompactionState(data?.contextCompactionState || {});
                 const foundModel = modelsData.find(item => item.id === data.model)
                 if (foundModel) setSelectedModel(foundModel);
                 if (data.options) {
@@ -2943,6 +2980,7 @@ function ChatPage({
                         showMinimizeButton={showMinimizeButton}
                         onMinimize={onMinimize}
                         conversationMeta={conversationMeta}
+                        contextCompactionState={contextCompactionState}
                         stories={stories}
                         onOpenStory={openStory}
                         onRenameStory={renameStory}

@@ -138,7 +138,7 @@ const BranchMessageSelectorDialog = memo(({
                 </Button>
             </CardHeader>
 
-            <div ref={listRef} className="max-h-[min(60vh,28rem)] overflow-y-auto p-3">
+            <div ref={listRef} className="pretty-scrollbar max-h-[min(60vh,28rem)] overflow-y-auto p-3">
                 {loading && items.length === 0 ? (
                     <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
                         <Loader2 className="mr-2 size-5 animate-spin"/>

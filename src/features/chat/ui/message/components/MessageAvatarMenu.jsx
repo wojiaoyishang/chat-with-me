@@ -77,7 +77,7 @@ const MessageAvatarMenu = memo(({
                         aria-modal="true"
                         aria-label={getLabel('message_menu', '消息菜单')}
                         data-message-menu-panel="true"
-                        className="w-full max-h-[min(82vh,40rem)] overflow-y-auto overscroll-contain rounded-t-3xl border border-gray-100 bg-white px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl sm:max-w-md sm:rounded-3xl sm:mb-6 sm:pb-5"
+                        className="pretty-scrollbar w-full max-h-[min(82vh,40rem)] overflow-y-auto overscroll-contain rounded-t-3xl border border-gray-100 bg-white px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl sm:max-w-md sm:rounded-3xl sm:mb-6 sm:pb-5"
                         initial={{y: '100%', opacity: 0.98}}
                         animate={{y: 0, opacity: 1}}
                         exit={{y: '100%', opacity: 0.98}}
@@ -137,7 +137,7 @@ const MessageAvatarMenu = memo(({
                             <div className="mb-2 text-xs font-medium text-gray-500">
                                 {getLabel('more_actions', '更多操作')}
                             </div>
-                            <div className="max-w-full overflow-x-auto overscroll-x-contain pb-1 [-webkit-overflow-scrolling:touch]">
+                            <div className="pretty-scrollbar max-w-full overflow-x-auto overscroll-x-contain pb-1 [-webkit-overflow-scrolling:touch]">
                                 <MessageTools
                                     msg={msg}
                                     msgId={msgId}

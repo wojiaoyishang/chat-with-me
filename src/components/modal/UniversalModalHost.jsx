@@ -75,7 +75,7 @@ const CodeBlock = ({block}) => (
             {block.language && <span className="text-[10px] uppercase text-muted-foreground">{block.language}</span>}
         </div>
         <pre
-            className="overflow-auto whitespace-pre-wrap break-words rounded-lg border bg-muted/20 p-3 font-mono text-xs leading-relaxed"
+            className="pretty-scrollbar overflow-auto whitespace-pre-wrap break-words rounded-lg border bg-muted/20 p-3 font-mono text-xs leading-relaxed"
             style={{maxHeight: block.maxHeight || '22rem'}}
         >
             {String(block.content ?? '') || '(empty)'}
@@ -179,7 +179,7 @@ const UniversalModalHost = () => {
                     )}
                 </DialogHeader>
 
-                <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                <div className="pretty-scrollbar min-h-0 flex-1 overflow-y-auto pr-1">
                     {loading ? (
                         <div className="flex min-h-44 items-center justify-center gap-2 text-sm text-muted-foreground">
                             <Loader2 className="h-4 w-4 animate-spin"/> 正在按需加载服务器内容…

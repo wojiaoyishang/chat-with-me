@@ -4877,3 +4877,78 @@ cwm://modal/inline/<base64url-cwm.modal.v1>
 
 审计只携带已经存在的轻量消息元数据。完整 LLM 输入、完整压缩内容、Tool Result 等大数据继续使用 `cwm://modal/...` 或现有 Context API 在用户点击后按需获取，普通聊天路径不得预加载这些内容。
 
+
+## 自动 Context Compaction 与临时 Recall
+
+对话设置由后端动态 schema 提供。当前 Context 自动管理相关字段：
+
+```text
+contextAutoCompaction
+contextForceCompactionEachRound
+contextAutoCompactionTriggerRatio
+contextAutoCompactionTargetRatio
+contextAutoCompactionKeepRecentTurns
+contextAutoCompactionBudgetTokens
+contextCompactionModel
+contextRecallEnabled
+contextRecallMaxTokens
+```
+
+`contextForceCompactionEachRound=true` 仅在 `contextAutoCompaction=true` 时生效。它绕过普通 Token 触发阈值和最近轮次保护，让每个新的用户生成轮都**尝试**启动一次后台压缩（当前用户请求仍始终排除在 source 之外）；如果上一压缩任务仍持有 lease、没有位于保护区之外的可压缩历史，或摘要没有产生实际 Token 收益，则安全跳过，不阻塞正常聊天。
+
+自动压缩使用 committed-context 语义：一个生成 Worker 在第一轮模型请求之前冻结当前已提交的 Context revision。后台压缩即使在该回答尚未结束时提交成功，也不会改变正在运行的 Worker；用户在压缩期间可以继续发送新消息，这些正常对话继续读取最后一个 committed revision。新的压缩 Artifact 只从后续新创建的生成 Worker 开始可见。
+
+### `Context-Compaction-State` 广播
+
+自动压缩的任务状态使用独立 WebSocket 命令，不与消息级 `Context-State-Changed` 混用：
+
+```json
+{
+  "command": "Context-Compaction-State",
+  "value": {
+    "jobId": "...",
+    "status": "compressing",
+    "automatic": true,
+    "mode": "raw",
+    "baseRevision": 3,
+    "runtimeTokens": 78000,
+    "targetTokens": 64000,
+    "force": false,
+    "updatedAt": "..."
+  }
+}
+```
+
+状态可能包括 `compressing / committing / completed / failed / discarded`。完成事件可额外携带 `artifactId / contextRevision / coveredMessages / tokenBefore / tokenAfter / compactionDepth` 等轻量审计字段，但广播永远不包含压缩摘要正文。
+
+职责划分：
+
+- `Context-Compaction-State`：ChatPage 标题栏的后台任务状态；
+- `Context-State-Changed`：具体消息/工具的压缩、忽略轻量状态。
+
+ChatPage 标题栏在 `compressing/committing` 时显示轻量的“正在整理上下文”状态，用户仍可正常聊天；`completed` 短暂显示“上下文已整理”后自动隐藏。失败/丢弃不作为阻塞错误展示。
+
+读取单个 Conversation 时，后端可以附带：
+
+```json
+{
+  "contextCompactionState": {
+    "jobId": "...",
+    "status": "compressing"
+  }
+}
+```
+
+它仅用于页面刷新后的状态恢复，不包含 Context 正文。
+
+### 临时 Recall 生命周期
+
+`context_recall` 找回的完整原始历史属于当前生成 Worker 的 ephemeral Runtime Overlay，而不是 durable message/tool result。它可以在同一生成轮后续工具循环中被模型使用；最终 Assistant 回复完成、Worker 生命周期结束后自动消失。数据库只保留很小的 last-recall 来源元数据，方便下一轮使用 `scope=last_recall` 精确再次检索，不复制召回正文。
+
+因此前端不需要维护 Recall 正文，也不需要发送“清理召回”的 API。消息审计只可能收到召回次数/Token 等轻量统计；需要查看来源时仍应使用通用按需 Modal 机制。
+
+## 弹出层滚动条规范
+
+所有 Dialog、AlertDialog、Popover、Dropdown Menu、Select 下拉层，以及通过 Portal / fixed layer 打开的可滚动浮层，统一复用全局 `pretty-scrollbar` 样式。弹出层内部如果存在独立的 `overflow-auto`、`overflow-y-auto` 或 `overflow-x-auto` 滚动容器，也必须将 `pretty-scrollbar` 直接添加到实际产生滚动条的容器上；仅在外层 Dialog/Popover 上添加样式不足以影响内部独立滚动区域。
+
+通用 UI primitives (`DialogContent`、`AlertDialogContent`、`PopoverContent`、`DropdownMenuContent`、`SelectContent`) 默认携带 `pretty-scrollbar`，新功能应优先复用这些 primitives。自定义 Portal / fixed 浮层仍需在自己的实际滚动容器上显式加入 `pretty-scrollbar`。刻意隐藏滚动条的横向交互区（如 `scrollbar-hide` / `scrollbar-width:none`）不受此规则影响。
