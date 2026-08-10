@@ -320,6 +320,8 @@ const createComponents = ({
                               visitedIds = [],
                               isStreaming = false,
                               messageContextState = null,
+                              messageReadonly = false,
+                              messageIsLatest = true,
                           }) => {
     const getCurrentReplacement = () => {
         return replacementRef?.current || {};
@@ -337,6 +339,7 @@ const createComponents = ({
                 visitedIds={extra.visitedIds ?? visitedIds}
                 isStreaming={isStreaming}
                 messageContextState={messageContextState}
+                messageIsLatest={messageIsLatest}
             />
         );
     };
@@ -481,6 +484,7 @@ const createComponents = ({
                             contextId={contextId}
                             markId={markId}
                             replacement={currentReplacement}
+                            messageIsLatest={messageIsLatest}
                             renderMarkdown={(markdownContent) => {
                                 return renderNestedMarkdown(markdownContent, {
                                     depth: depth + 1,
@@ -512,6 +516,7 @@ const createComponents = ({
                             contextId={contextId}
                             markId={markId}
                             replacement={currentReplacement}
+                            messageIsLatest={messageIsLatest}
                             renderMarkdown={(markdownContent) => {
                                 return renderNestedMarkdown(markdownContent, {
                                     depth: depth + 1,
@@ -537,6 +542,7 @@ const createComponents = ({
                             contextId={contextId}
                             markId={markId}
                             replacement={currentReplacement}
+                            messageIsLatest={messageIsLatest}
                             renderMarkdown={(markdownContent) => {
                                 return renderNestedMarkdown(markdownContent, {
                                     depth: depth + 1,
@@ -587,6 +593,8 @@ const createComponents = ({
                         replacement={currentReplacement}
                         contextStatus={normalized.contextStatus}
                         messageContextState={messageContextState}
+                        messageReadonly={messageReadonly}
+                        messageIsLatest={messageIsLatest}
                         renderMarkdown={(markdownContent) => {
                             return renderNestedMarkdown(markdownContent, {
                                 depth: depth + 1,
@@ -611,12 +619,18 @@ function MarkdownRendererInner({
                                    msg = null,
                                    messageContextState: messageContextStateProp = null,
                                    isStreaming: isStreamingProp = null,
+                                   messageIsLatest: messageIsLatestProp = null,
                                    copyContentComponentName = MARKDOWN_COPY_CONTENT_COMPONENT_NAME,
                                }) {
     const replacementRef = useRef(replacement);
     replacementRef.current = replacement;
     const isStreaming = isStreamingProp ?? msg?.readonly === true;
     const messageContextState = messageContextStateProp ?? msg?.contextState ?? null;
+    const messageReadonly = msg?.readonly === true || Boolean(isStreamingProp);
+    // Active-branch tail detection. After a page reload, an older active widget may
+    // still be actionable, but it must not auto-open an immersive selector over the
+    // latest conversation. Users can still reopen it explicitly from its inline launcher.
+    const messageIsLatest = messageIsLatestProp ?? (msg ? msg?.nextMessage == null : true);
 
     const visitedKey = useMemo(() => {
         return getVisitedKey(visitedIds);
@@ -632,6 +646,8 @@ function MarkdownRendererInner({
             visitedIds,
             isStreaming,
             messageContextState,
+            messageReadonly,
+            messageIsLatest,
         });
     }, [
         contextId,
@@ -642,6 +658,8 @@ function MarkdownRendererInner({
         visitedKey,
         isStreaming,
         messageContextState,
+        messageReadonly,
+        messageIsLatest,
     ]);
 
     const processedContent = useMemo(() => {
@@ -728,6 +746,7 @@ const MarkdownRenderer = memo(MarkdownRendererInner, (prev, next) => {
         prev.msg === next.msg &&
         prev.messageContextState === next.messageContextState &&
         prev.isStreaming === next.isStreaming &&
+        prev.messageIsLatest === next.messageIsLatest &&
         prev.copyContentComponentName === next.copyContentComponentName &&
         areVisitedIdsEqual(prev.visitedIds, next.visitedIds)
     );

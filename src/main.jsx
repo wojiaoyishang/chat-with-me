@@ -18,6 +18,7 @@ import DashboardPage from "@/pages/DashboardPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import ChatWithEditor from "@/pages/ChatWithEditor.jsx";
 import UniversalModalHost from '@/components/modal/UniversalModalHost.jsx';
+import {subscribeBrowserRoutePop} from '@/lib/browserHistoryLayers.js';
 
 const router = createBrowserRouter([
     {
@@ -52,6 +53,25 @@ const router = createBrowserRouter([
 
 const root = document.getElementById("root");
 
+const HistorySynchronizedRouter = () => {
+    React.useEffect(() => subscribeBrowserRoutePop(({url}) => {
+        const target = String(url || `${window.location.pathname}${window.location.search}${window.location.hash}`);
+        const routerLocation = router.state.location;
+        const routerTarget = `${routerLocation?.pathname || ''}${routerLocation?.search || ''}${routerLocation?.hash || ''}`;
+
+        // Legacy page navigation still has a few direct history.pushState paths.
+        // If a POP exposes a browser URL the Router did not observe, reconcile it
+        // without reloading/remounting the whole dashboard. DashboardPage also
+        // mirrors native POP location into its local chat/doc selection state.
+        if (routerTarget !== target) {
+            void Promise.resolve(router.navigate(target, {replace: true}))
+                .catch((error) => console.error('Failed to synchronize browser history with router', error));
+        }
+    }), []);
+
+    return <RouterProvider router={router}/>;
+};
+
 ReactDOM.createRoot(root).render(
     <StrictMode>
         <ContextEvent />  {/* 跨页面事件 */}
@@ -59,7 +79,7 @@ ReactDOM.createRoot(root).render(
         <FatalErrorPopoverElement/>  {/* 错误提示 */}
         <UniversalModalHost/>  {/* 后端驱动的通用弹窗 */}
         <WebSocketProvider>
-            <RouterProvider router={router}/>
+            <HistorySynchronizedRouter/>
         </WebSocketProvider>
     </StrictMode>
 );

@@ -13,6 +13,29 @@ import {motion, AnimatePresence} from 'framer-motion';
 import {useParams} from "react-router-dom";
 import NotificationHost from "@/features/notification/NotificationHost.jsx";
 
+const readDashboardLocation = () => {
+    if (typeof window === 'undefined') return null;
+
+    const base = String(import.meta.env.BASE_URL || '/');
+    const normalizedBase = base === '/' ? '' : `/${base.replace(/^\/+|\/+$/g, '')}`;
+    let pathname = window.location.pathname || '/';
+    if (normalizedBase && pathname.startsWith(normalizedBase)) {
+        pathname = pathname.slice(normalizedBase.length) || '/';
+    }
+
+    const parts = pathname.split('/').filter(Boolean).map((part) => {
+        try { return decodeURIComponent(part); } catch { return part; }
+    });
+
+    if (parts[0] === 'chat') {
+        return {pageType: 'chat', chatMarkId: parts[1] || null, documentMarkId: null};
+    }
+    if (parts[0] === 'doc') {
+        return {pageType: 'doc', documentMarkId: parts[1] || null, chatMarkId: parts[2] || null};
+    }
+    return null;
+};
+
 const DashboardPage = ({type = "chat"}) => {
 
     const urlParams = useParams();
@@ -34,6 +57,19 @@ const DashboardPage = ({type = "chat"}) => {
     const {user, setUser, clearUser} = useUserStore();
 
     const {t} = useTranslation();
+
+    useEffect(() => {
+        const syncFromBrowserHistory = () => {
+            const next = readDashboardLocation();
+            if (!next) return;
+            setPageType(next.pageType);
+            setChatMarkId(next.chatMarkId);
+            setDocumentMarkId(next.documentMarkId);
+        };
+
+        window.addEventListener('popstate', syncFromBrowserHistory);
+        return () => window.removeEventListener('popstate', syncFromBrowserHistory);
+    }, []);
 
     const handleSettingsRefresh = useCallback((scopes = []) => {
         const normalizedScopes = [...new Set((Array.isArray(scopes) ? scopes : [scopes])

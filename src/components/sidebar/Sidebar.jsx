@@ -22,6 +22,7 @@ import {useNavigate} from 'react-router-dom';
 import SettingPage from "@/pages/SettingPage.jsx";
 import {motion, AnimatePresence} from 'framer-motion';
 import { setOnChange } from './sidebarRegistry';
+import {useBrowserBackLayer} from '@/lib/browserHistoryLayers.js';
 
 import ConversationsList from './ConversationsList.jsx'
 
@@ -79,6 +80,11 @@ const Sidebar = ({
     useEffect(() => {
         document.documentElement.style.setProperty('--sidebar-width', isOpen ? '16rem' : '0px');
     }, [isOpen]);
+
+    useBrowserBackLayer(Boolean(isMobile && isOpen), () => {
+        handleSetIsOpen(false);
+        return true;
+    }, {kind: 'mobile-main-sidebar'});
 
     // 移动端滑动
     useEffect(() => {

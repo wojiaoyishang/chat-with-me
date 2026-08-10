@@ -3,11 +3,36 @@ import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useBrowserBackLayer } from "@/lib/browserHistoryLayers.js"
 
 function AlertDialog({
+  open,
+  defaultOpen,
+  onOpenChange,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
-  return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
+  const controlled = open !== undefined
+  const [internalOpen, setInternalOpen] = React.useState(Boolean(defaultOpen))
+  const actualOpen = controlled ? Boolean(open) : internalOpen
+
+  const handleOpenChange = React.useCallback((nextOpen: boolean) => {
+    if (!controlled) setInternalOpen(nextOpen)
+    onOpenChange?.(nextOpen)
+  }, [controlled, onOpenChange])
+
+  useBrowserBackLayer(actualOpen, () => {
+    handleOpenChange(false)
+    return true
+  }, {kind: "alert-dialog"})
+
+  return (
+    <AlertDialogPrimitive.Root
+      data-slot="alert-dialog"
+      open={actualOpen}
+      onOpenChange={handleOpenChange}
+      {...props}
+    />
+  )
 }
 
 function AlertDialogTrigger({

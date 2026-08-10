@@ -4952,3 +4952,345 @@ ChatPage 标题栏在 `compressing/committing` 时显示轻量的“正在整理
 所有 Dialog、AlertDialog、Popover、Dropdown Menu、Select 下拉层，以及通过 Portal / fixed layer 打开的可滚动浮层，统一复用全局 `pretty-scrollbar` 样式。弹出层内部如果存在独立的 `overflow-auto`、`overflow-y-auto` 或 `overflow-x-auto` 滚动容器，也必须将 `pretty-scrollbar` 直接添加到实际产生滚动条的容器上；仅在外层 Dialog/Popover 上添加样式不足以影响内部独立滚动区域。
 
 通用 UI primitives (`DialogContent`、`AlertDialogContent`、`PopoverContent`、`DropdownMenuContent`、`SelectContent`) 默认携带 `pretty-scrollbar`，新功能应优先复用这些 primitives。自定义 Portal / fixed 浮层仍需在自己的实际滚动容器上显式加入 `pretty-scrollbar`。刻意隐藏滚动条的横向交互区（如 `scrollbar-hide` / `scrollbar-width:none`）不受此规则影响。
+
+## AI 小组件 / WidgetSession
+
+AI 可调用的交互 UI 统一归入后端 `widgets`（“小组件”）工具集。第一版支持：
+
+```text
+widget_card_deck   卡片滑动
+widget_input       输入问询
+widget_choice      选项问询
+widget_confirm     判断问询
+```
+
+这些工具共用同一套后端 `WidgetSession` 生命周期，前端只负责根据 replacement 中的 `type=widget` descriptor 渲染，不区分具体业务（商品、旅行、方案等）。当前 replacement 形式：
+
+```text
+{{cardReplace id=widget-<uuid> type=widget}}
+```
+
+对应 replacement 的 `frontend` 为 JSON：
+
+```json
+{
+  "widgetId": "...",
+  "widgetType": "card_deck",
+  "originMessageId": "...",
+  "replacementId": "widget-...",
+  "status": "active",
+  "continuation": "immediate",
+  "deliveryStatus": "waiting",
+  "revision": 1,
+  "descriptor": {},
+  "state": {},
+  "result": {}
+}
+```
+
+`WidgetSession` 以后端数据库为唯一 Source of Truth。前端本地状态只用于交互响应；页面刷新、重连或另一台设备接管时均以后端状态为准。
+
+### Widget action API
+
+用户的滑动、按钮、键盘或其它输入最终都必须映射为统一 Widget Action，而不能只修改本地 `currentIndex`：
+
+```text
+POST /chat/widgets/{widgetId}/action
+```
+
+请求：
+
+```json
+{
+  "markId": "conversation-id",
+  "action": "left",
+  "payload": {},
+  "interactionId": "unique-request-id",
+  "expectedRevision": 3,
+  "clientId": "frontend-instance-id"
+}
+```
+
+- `interactionId` 用于幂等，重试不得重复执行同一操作；
+- `expectedRevision` 用于 optimistic concurrency；另一端已经更新组件时后端返回 `409` 和最新 `widget`；
+- 所有组件共享该接口，不为 `card/input/choice/confirm` 分别增加 API。
+
+权威状态也可按需读取：
+
+```text
+GET /chat/widgets/{widgetId}?markId=...
+```
+
+### 多端实时同步
+
+每次成功操作后后端广播统一事件：
+
+```json
+{
+  "command": "Widget-State-Changed",
+  "value": {
+    "widgetId": "...",
+    "widgetType": "card_deck",
+    "originMessageId": "...",
+    "replacementId": "widget-...",
+    "revision": 4,
+    "status": "active",
+    "descriptor": {},
+    "state": {},
+    "result": {}
+  }
+}
+```
+
+ChatPage 用 `originMessageId + replacementId` 直接更新当前消息 replacement，因此 PC、手机、平板会立即看到相同卡片位置/选择结果。WebSocket 只负责增量实时同步；刷新仍从持久消息 replacement / Widget GET API 恢复，不能依赖广播历史。
+
+### continuation / 回调语义
+
+Widget 不使用 busy wait。AI 创建小组件后当前 Agent 轮结束并释放 Worker，用户何时操作都可以。
+
+- `immediate`：组件完成后后端创建新的 `is_progenerate` Worker，从原 Assistant 消息继续生成；不会伪造一条 User Message；
+- `next_user_turn`：不立即调用 AI，结果在用户下一次主动发消息时以 `<CWM_WIDGET_RESULTS>` Runtime Overlay 注入一次；
+- `none`：只持久化交互结果，不自动提供给模型。
+
+Widget 的 durable `result` 与“是否已经递送给模型”是两个概念。`deliveryStatus=pending` 的 semantic result 被某一生成轮成功消费后变为 `delivered`，以后不重复加入 Context。
+
+### Card Deck 交互
+
+`card_deck` 使用触感式 5:7 卡牌堆 UI。触摸/鼠标横向拖动、左右辅助按钮和桌面键盘 `← / →` 都只执行 `classify`，把当前卡片归入后端定义的左/右分类 Pocket；分类不会立即完成 Widget，也不会触发 AI continuation。用户必须在主牌堆模式点击后端定义的提交按钮，才执行 `submit` 并完成 Deck。
+
+左右 Pocket 是持久化分类结果的入口。点击 Pocket 后进入对应分类的二级牌堆工作区，默认顶部就是该分类中最新放入的卡片，后方继续显示同分类的实体牌堆。左侧分类页只保留“分类牌堆 + 右侧放回备选区”，顶部卡向右拖执行 `unclassify`；右侧分类页镜像为“左侧放回备选区 + 分类牌堆”，顶部卡向左拖执行 `unclassify`。移走顶部卡后下一张从后层自然抽到前景。二级页面底部只显示明显的“返回主牌堆”，不得显示“完成选择”。
+
+组件处于 Assistant `readonly=true`（仍在生成）时不得交互；完成/历史消息只展示 durable 结果。卡片的 `detailHref` 可继续复用现有 `cwm://modal/...` 通用弹窗协议。所有手势、按钮和键盘输入最终都必须走同一 Widget Action API，不允许形成仅存在于前端的独立状态。
+
+## Widget presentation policy
+
+交互小组件的业务状态仍以后端 `WidgetSession` 为 Source of Truth；本节只定义前端 presentation 行为。
+
+### Full-width widgets
+
+所有 `type=widget` replacement 都应占满消息正文的可用聊天宽度。组件 renderer 不应自行添加 `max-w-sm/md/lg/xl` 等业务无关宽度限制。Card Deck 的当前卡片、下一张预览、Input、Choice 和 Confirm 都在该宽度内布局。
+
+### Card images
+
+Card Deck 卡片可以从以下任一字段读取图片：
+
+```json
+{
+  "image": "cwm://artifact/example/preview",
+  "imageUrl": "https://example.com/image.jpg",
+  "media": {"type": "image", "url": "https://example.com/image.jpg"}
+}
+```
+
+Card Deck 图片只渲染 `cwm://...`、`https://...`。`cwm://` 必须使用项目现有 virtual URL resolver 转换，禁止为 Widget 单独实现另一套 CWM 路径规则。其它 URL scheme 视为无效图片。
+
+### Backend-authoritative Widget presentation
+
+Widget 的展示位置由后端最终 descriptor 完全决定。前端不再读取 `allowWidgetFullscreenImmersion` / `allowWidgetFloatingInquiry` 来二次裁决，也不再为缺失的 presentation 字段自行补默认值。Conversation Settings 仍由后端 schema 下发并随 `options` 回传，用于后端在创建 Widget 前进行权限裁决。
+
+Card Deck 只有在后端最终返回：
+
+```json
+{
+  "immersive": true
+}
+```
+
+时才进入全屏沉浸；字段缺失或为 `false` 一律以内嵌方式展示。沉浸模式仍 Portal 到浏览器视口中央，背景 blur/dim，active 状态下不提供 Escape/点击遮罩关闭入口，完成选择后恢复消息内 durable 状态。
+
+`input / choice / confirm` 只有在后端最终返回：
+
+```json
+{
+  "floatInChatBox": true
+}
+```
+
+时才 Portal 到 ChatBox 上方；字段缺失或为 `false` 一律嵌入消息正文。**问询类 Widget 的后端工具默认值为内嵌展示**，因此普通 input / choice / confirm 默认不会占用 ChatBox 上方区域。
+
+会话设置仍包括：
+
+```text
+allowWidgetFullscreenImmersion = true
+allowWidgetFloatingInquiry = true
+```
+
+但这两个字段是后端权限开关，不是前端 renderer 的 gating 条件。关闭某项后，后端必须把对应请求强制裁决为 `false`，并在模型工具提示中告知 LLM 当前会话不能请求该展示方式。前端只渲染后端已经裁决完成的 descriptor。
+
+### Continue-generation append-only text streaming
+
+对于 `isProgenerate=true` 的继续生成/恢复流，历史接口已经把原 Assistant Message 正文加载到 ChatPage，因此该正文是浏览器当前的 baseline。后端不得为了恢复 Worker 状态而再次把 baseline 作为 `Add-MessageContent` 发给前端，也不得在 continuation 首包执行 `Set-MessageContent` 清空原正文。
+
+继续生成的根正文协议为：
+
+```text
+persisted Assistant content (already rendered)
+        +
+Add-MessageContent(new delta)
+        +
+Add-MessageContent(new delta)
+        ...
+```
+
+`Set-MessageContent` 只用于需要整体替换正文的场景（例如新 Assistant placeholder 被真实正文替换、显式编辑/快照恢复）；`Add-MessageContent` 用于已有正文后的增量追加。Widget `continuation=immediate`、手动继续生成以及其它 `isProgenerate=true` 的同消息恢复路径都遵循相同规则。
+
+前端现有 `Add-MessageContent` reducer 已满足该协议，不需要为 continuation 保存另一份本地全文。刷新/重连继续依赖服务端持久 snapshot cursor 和 Redis Stream cursor，只回放持久快照之后的增量。
+
+
+## Tactile Decision Deck presentation
+
+`card_deck` now uses a tactile 5:7 playing-card interaction instead of a dashboard-style content panel. The deck remains full chat width, while the physical card stays centered at a responsive playing-card size. `style="auto"` is the default: a valid image renders a full-bleed `poster` with bottom gradient typography; no image (or image load failure) falls back to a centered `text` card. Explicit `poster` and `text` are also supported. Widget images render only from `cwm://...` or `https://...`; `cwm://` continues through the existing virtual URL resolver.
+
+The Card Deck is multi-select and two-phase. Swiping left/right only classifies the current card into the corresponding side pocket and persists that draft state to WidgetSession; it never invokes AI continuation. The user must press the backend-defined submit button to complete. Both side pockets show classified counts and can be opened as a secondary card-stack workspace. In a left-pocket workspace the classified stack stays on the left/center and only a pending-return pocket is shown on the right; dragging the top card right returns it to pending. The right-pocket workspace mirrors this: pending-return pocket on the left, classified stack on the right/center, and dragging left returns the top card to pending. Removing the top card reveals the next physical card in that category stack.
+
+The side pockets are physical destinations, not action buttons. The current card animates toward the measured pocket position and shrinks into the stack, while the next cards remain visibly layered behind it. This keeps the interaction in one spatial "card table" instead of opening a separate dashboard/modal for review.
+
+
+### Tactile Deck motion refinement
+
+Card Deck 的牌堆动画统一使用项目已存在的 `framer-motion`，不再通过 `HTMLElement.animate()` 手工完成“飞走后再切状态”。主 Deck 使用稳定 card key + `AnimatePresence` + spring transform；主动拖拽卡不再使用 shared `layoutId` 投影，避免桌面端拖拽过程中 layout projection 与滚动容器相互修正造成页面跳动。拖拽开始时前端会冻结桌面端相关滚动容器的当前位置并禁止文本选择，拖拽结束立即恢复；Deck 根节点同时裁剪横向 transform overflow，避免卡片拖出容器时扩大页面滚动范围。
+
+当前牌飞向真实 Pocket 坐标时，后方第二张同步从缩小/下沉态抽到前景，第三张补到第二层。进入分类 Pocket 后切换为明确的二级“分类牌堆”工作区：顶部显示牌堆名称与数量，后方至少保留多层实体牌堆。左侧分类只呈现分类牌堆 + 右侧“放回备选”区域，向右拖顶部牌即可 `unclassify`；右侧分类完全镜像，向左拖回备选。顶部卡移走后下一张从后方牌堆弹簧抽出，不再使用上滑、左右重分类或前后 Chevron 翻页。
+
+底部主 CTA 按模式切换：主 Deck 显示后端定义的“完成选择”，分类二级页面只显示明显的“返回主牌堆”。该调整不新增 REST API、WebSocket 事件或 Widget payload 字段。
+
+### Card Deck deterministic swipe / flight direction
+
+Card Deck swipe classification uses distance as the primary intent signal. Release velocity may only assist when it points in the same direction as the visible drag offset. The frontend captures the resting card rectangle on pointer-down and computes Pocket flight vectors from that stable origin, never from the transient dragged rectangle. Flight vectors are semantically clamped so left/right classifications and secondary-stack return gestures cannot animate toward the opposite side even when layout measurement is stale.
+
+### Card Deck fixed-height workspace and physical pockets
+
+The main deck is the height authority for the card workspace. The frontend measures the stable main-deck height and freezes that same height while a left/right classified stack is open. Secondary stack views render inside this fixed, overflow-clipped workspace, so opening a stack does not increase the message height or introduce a new document scrollbar.
+
+Left/right classification destinations are physical miniature 5:7 card stacks rather than dashed drop zones. If a category contains cards, its newest classified card is rendered as the top miniature `CardFace`, with two subtle card backs underneath and a count badge. During a drag, crossing the attraction hint distance makes the semantic target stack lift toward the center, scale slightly, and show a soft magnet halo while the active card subtly tilts toward it. Final classification still uses the deterministic direction rules described above.
+
+Opening a physical pocket uses a Framer Motion shared `layoutId` only between the pocket's non-draggable top preview and the secondary workspace's front card. This lets the clicked miniature card expand smoothly from the side stack into the center while the rest of the classified stack fans in behind it. The actively dragged main-deck card continues to avoid shared layout projection, preserving the desktop drag-stability fix. The pending-return destination inside a secondary stack is also a real miniature stack and participates in the same attraction feedback.
+
+### Card Pocket reverse pull
+
+The physical left/right category stacks are bidirectional interaction surfaces. On the main deck, the newest card in the left category can be dragged rightward back into pending; the newest card in the right category can be dragged leftward back into pending. A reverse drag uses the existing `unclassify` action and never completes the widget or invokes AI continuation.
+
+While the miniature top card is pulled toward the center, the pending deck subtly leans toward the source pocket and strengthens its landing shadow. Releasing before the one-way commit threshold springs the card back into its category stack. Crossing the threshold continues the card toward the measured central 5:7 landing slot and scales it toward the main-card size. The side direction is semantic and clamped: left-pocket returns can only travel right and right-pocket returns can only travel left.
+
+The top preview remains clickable to open the secondary category stack. Dragging suppresses the subsequent click for a short interval so a reverse pull cannot accidentally navigate into the secondary workspace. This behavior reuses the existing `unclassify` protocol and adds no backend payload fields.
+
+
+### Pocket reverse-pull handoff and direct reclassification
+
+The tactile Card Deck now treats a committed reverse pull as a continuous handoff rather than releasing the dragged card back to its drag constraint. Once the side-pocket card crosses a commit threshold, the frontend freezes the exact pointer-up transform until the authoritative parent flight snapshot is mounted. This removes the one-frame visual sequence where a card reached the centre, sprang back toward its source pocket, and then moved again after the server revision arrived.
+
+The left pocket also supports a second, farther drag destination. Dragging its latest card rightward to the centre returns it to `pending` using the existing `unclassify` action. Continuing the same drag far enough toward the right pocket directly sends `reclassify { category: "right" }`, so a mistakenly rejected card can be moved straight into the selected pile without an intermediate pending-card pass. The right pocket remains a left-drag-to-pending gesture in this revision. During the long left-to-right drag, the right physical pocket becomes the magnetic target; server-updated destination state is temporarily filtered until the flight lands so the same card is not rendered twice. No new REST/WebSocket protocol or backend migration is required.
+
+### Card drag feel
+
+Tactile Card Deck cards follow the pointer directly while they are actively dragged. Magnetic feedback is visual-only during pointer-down (the target pocket moves/highlights and the card may tilt/lift slightly); spring/snap motion begins only after pointer release. This avoids elastic drag resistance while preserving the physical pocket interaction.
+
+### Native cross-pocket drag layer
+
+Cross-pocket dragging of the physical side stacks no longer relies on a Motion `drag` component. Pointer-down captures the pointer with the browser Pointer Events API and renders a fixed, `pointer-events:none` card clone into `document.body`. The clone follows `clientX/clientY` directly, so crossing the center deck or the opposite clickable pocket cannot retarget pointer-up to those controls. React state only tracks semantic attraction targets; per-frame pointer movement updates the overlay transform directly.
+
+A movement under the click threshold opens the pocket. A real drag never falls through to pocket navigation. On release, the overlay uses the native Web Animations API to fly from the exact pointer release position to pending or the opposite pocket while the existing `unclassify/reclassify` action runs in parallel. The server-side Widget state remains authoritative; `externalFlight` is a frontend-only transient flag used to suppress duplicate Motion flights while the overlay lands. No new backend protocol or package dependency is introduced.
+
+### Card Deck Canvas interaction scene
+
+Card Deck 的交互区现在使用原生 Canvas 2D，而不是让多个 DOM / Framer Motion draggable card 互相穿越。Canvas 只负责卡牌物理空间：主牌堆、左右分类牌堆、二级牌堆、拖拽、磁吸提示、抽牌和飞牌；标题、完成选择、返回和其它普通 UI 继续保留为 DOM。
+
+Canvas 使用单一 Pointer Events 状态机进行 hit-test。只有“按下且未超过移动阈值再松开”才被解释为点击左右牌堆；一旦进入 dragging，后续 pointer 生命周期只会被解释为拖放，因此跨越另一牌堆不会误打开二级界面。拖动卡始终最后绘制，固定在最上层。
+
+拖动过程中卡片坐标 1:1 使用 pointer 位移，不添加 dragElastic / spring 阻力。磁吸反馈通过目标牌堆轻微迎合、放大和阴影变化表达；真正吸入目标只发生在 pointerup 后。后端状态更新期间 Canvas 会把 committed card 保留在目标位置，直到对应 widget revision 已确认它进入 pending / left / right，避免服务端同步期间视觉回弹。
+
+卡片图片仅支持 `cwm://` 与 `https://`。`cwm://` 通过项目现有 virtual URL resolver 解析后加载到 Canvas；图片采用 cover 裁剪，并继续支持 `imagePosition`。无图片或加载失败时使用居中的 text card。
+
+### Native Canvas Card Deck: compact bidirectional review
+
+The Canvas Card Deck review scene is now bidirectional. In a left-category review, the pending stack on the right can be dragged left to classify its top card into the current category; in a right-category review the interaction is mirrored. Moving a classified top card back to pending still uses `unclassify`, while pending-to-current-category uses the existing `classify` action. Both directions share the same Canvas pointer state machine, magnetic feedback, committed-flight de-duplication and server-authoritative revision flow.
+
+Side pockets are larger and expose up to four staggered card layers so they read as physical card piles. The Canvas height is no longer width-only: it is constrained by both container width and the current visual viewport height, so browser zoom or a short desktop viewport scales the deck down instead of pushing the submit/return control below the screen. The footer is also tightened to keep the entire widget compact, with primary and review scenes sharing the same fixed Canvas height.
+The Card Deck frame header/footer spacing is also tightened so outer DOM chrome does not reintroduce vertical overflow after the Canvas scene has been compacted.
+
+
+## Canvas Card Deck: stable pile hand-off + real pocket layers
+
+- Card pile transitions no longer add/remove the outer Widget busy footer, so a classify/unclassify/reclassify revision does not change the Card Deck DOM height.
+- The Canvas Card Deck disables browser scroll anchoring for its scene and preserves scrollable ancestor positions across card flight + server revision hand-off, preventing the chat/page from jumping vertically while a card changes piles.
+- Opening and closing a secondary pile also preserves the current scroll position.
+- Small left/right/pending piles now draw real underlying card faces for every visible layer instead of neutral white placeholder backs. Empty piles alone keep the neutral empty-card treatment.
+- Visible pocket layers are compressed into a compact fan so the stack remains readable without increasing widget height.
+
+### Canvas Card Deck: dense side stacks
+
+Classification pockets use compact, capped card-to-card offsets. Small piles no longer expand to fill the entire fan area; larger piles compress their spacing as depth increases while keeping real card previews visible.
+
+### Card Deck pause / resume and immersive touch isolation
+
+Active Card Decks can be locally paused without submitting. The Canvas footer exposes an `退出选择` control that only closes the active presentation; it does not call the Widget action API, complete the Widget, or invoke AI continuation. The message body then renders a full-width blurred deck launcher with a centred `继续卡片选择` button. Resuming reuses the authoritative WidgetSession draft and preserves the last secondary category view when possible.
+
+The secondary review scene no longer renders instructional drag prose and keeps its primary classified stack geometrically centred, with pending isolated on the opposite side. While an immersive Card Deck is open, the existing page behind the portal is made inert and non-interactive, body/html scrolling and overscroll gestures are locked, and pointer/touch/wheel propagation is stopped at the immersive root so mobile swipe gestures do not leak into sidebar navigation.
+
+### Card Deck ambient gestures and immersive history behaviour
+
+Canvas Card Deck supports ambient blank-space pile gestures on both desktop and mobile. A horizontal gesture that starts on otherwise empty canvas space in the left half can pull the latest left-classified card inward; the right half mirrors this for the right pile. These gestures use the same Canvas drag/drop state machine as direct card dragging, so crossing other card hit areas never opens a pile accidentally. Blank taps do nothing.
+
+On mobile, edge piles use small deterministic rotations and vertical offsets to look like a loose physical handful of cards, while their count badge is rendered above the exposed edge. The central decision card remains the dominant visual object.
+
+Immersive Card Deck auto-open is history-aware. During normal Markdown rendering the active-branch tail is inferred from `msg.nextMessage`. When an active immersive Card Deck is mounted from an older message (for example after a page refresh), it starts in the inline paused launcher instead of automatically opening the fullscreen Portal. The user may still explicitly reopen it. Inline/non-immersive decks are unaffected.
+
+### Canvas Card Deck momentum gestures
+
+The Canvas Card Deck uses a velocity-aware fling model for both blank-half pile gestures and direct card drags. During pointer-down the card still follows raw pointer displacement 1:1; no spring or elastic resistance is applied. The renderer keeps a short rolling window of pointer samples and derives horizontal release velocity from the most recent motion.
+
+Drop intent is resolved from a projected horizontal landing position rather than release position alone. A quick inward gesture from the left/right blank half can therefore pull the newest side-pile card into pending, while a stronger fling can carry it directly across pending into the opposite classification pile. The central pending card and secondary review/pending cards use the same projection rule, so the table has one consistent physical interaction model.
+
+Projection is guarded by pointer-type-specific minimum fling velocity and a capped maximum travel distance. Target-pocket attraction during drag reflects the currently projected landing target. Release animation duration scales with fling speed so high-velocity throws settle quickly while slow placements retain the normal soft landing. No backend action, WebSocket protocol, descriptor, or database change is introduced.
+
+### Canvas Card Deck: centre-stack translucency and inline scroll guard
+
+The foreground decision card stays fully opaque, while the large centre stack cards behind it are intentionally translucent. This keeps the pending stack readable as a physical placeholder without creating a visually abrupt solid block when a card is flung across piles. Secondary review stacks use the same foreground/ghost-stack hierarchy.
+
+Inline (non-immersive) Card Decks own scroll gestures while the user is interacting inside the component. The embedded deck boundary uses `touch-action: none`, overscroll isolation, non-passive `wheel`/`touchmove` cancellation, pointer propagation isolation, and focused keyboard scroll-key suppression. Unlike immersive mode this does not make the rest of the page inert; normal chat/page scrolling resumes outside the deck boundary. No backend protocol changes are required.
+
+### Widget response messages
+
+Widget 的最终提交现在按真实聊天时间线显示为 User Message，而不是把 AI 回复继续追加到创建 Widget 的旧 Assistant 消息中。
+
+后端发送的 Widget User Message 使用：
+
+```json
+{
+  "extraInfo": {
+    "message_type": "widget_response",
+    "widget_response": {
+      "batchId": "...",
+      "count": 2,
+      "items": []
+    }
+  }
+}
+```
+
+`MessageItem` 检测到该消息类型后使用 `WidgetResponseMessage` 渲染专用右侧用户气泡，并隐藏正文中的 `<CWM_WIDGET_RESPONSE>` 模型语义文本。单个结果显示对应组件的标题/摘要；如果用户在同一条 Assistant 回复期间完成多个 Widget，后端会把它们合并到同一条 User Message，气泡内按多项列表显示。
+
+Widget 原位置的 `CompletedWidget` 会根据 `deliveryStatus` 显示“等待当前回复结束后发送”或“已作为用户消息发送”。这只是状态反馈；消息排队和批量合并以服务端 WidgetSession/Conversation 为权威。
+
+> The Widget response-message rules above supersede the older Widget `continuation=immediate/next_user_turn` documentation. Append-only continuation still applies to genuine same-Assistant continue-generation paths, but Widget submissions no longer use that path.
+
+
+### Widget partial Card Deck submission
+
+Card Deck 的“完成选择”提交当前草稿，不要求所有候选都完成分类，也不要求 selected 至少有一项。未处理卡片通过 Widget Result 的 `pending` 返回。问询类 `input / choice / confirm` 默认内嵌消息正文；只有后端 descriptor 明确给出 `floatInChatBox: true` 才 Portal 到 ChatBox。
+
+### Card Deck three-pile labels and embedded scrolling
+
+Card Deck presentation consumes three backend-controlled labels: `leftLabel`, `middleLabel`, and `rightLabel` (fallbacks: `放弃`, `待选择`, `喜欢`). The Widget Result user-bubble payload may also contain `leftLabel/middleLabel/rightLabel`, `left/middle/right`, and their counts; legacy selected/rejected/pending count fields remain supported.
+
+Embedded (`immersive !== true`) Card Decks deliberately allow native vertical page/chat scrolling. Their Canvas uses `touch-action: pan-y` and only captures/prevents the pointer after a horizontal card gesture is established. Immersive Card Decks keep full background gesture isolation.
+
+The Card Deck submit button does not infer completeness from pending cards. Submitting zero, partial, or fully classified drafts is allowed; backend validation remains authoritative.
+
+### Browser Back navigation and UI-layer history
+
+Browser/mobile Back now follows the visible interaction stack before leaving the current page. A shared `browserHistoryLayers` utility gives transient UI surfaces same-URL history entries without turning them into routes. The mobile main sidebar, conversation settings/sidebar, immersive Card Deck, generic `Dialog`, and generic `AlertDialog` participate in the stack. Nested surfaces close in LIFO order; normal close buttons collapse their synthetic entry so the next Back action is not wasted on an already-closed layer.
+
+`SettingPage` keeps its unsaved-change protection: Back first opens the existing confirmation dialog and re-arms the settings history layer underneath it. Back on the confirmation closes only that dialog; a later Back can request settings close again.
+
+`DashboardPage` also mirrors native `popstate` URLs back into `pageType`, `chatMarkId`, and `documentMarkId`. This fixes legacy `updateURL()` navigation where the address bar could move backward while the dashboard continued rendering the conversation/document selected after that URL. The root router performs a lightweight POP reconciliation only when React Router did not observe the browser URL; it does not reload the page or remount the dashboard.

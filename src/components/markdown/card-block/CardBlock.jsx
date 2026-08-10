@@ -22,6 +22,7 @@ import TaskChecklistCard from './task/TaskChecklistCard.jsx';
 import TaskModeWidget from './task/TaskModeWidget.jsx';
 import TaskUserMessageCard from './task/TaskUserMessageCard.jsx';
 import StoryCard from '@/features/story/StoryCard.jsx';
+import WidgetHost from './widget/WidgetHost.jsx';
 
 const CARD_TYPES_WITH_NESTED_MARKDOWN = new Set([
     'markdown',
@@ -72,6 +73,8 @@ const CardBlock = memo(({
     replacement,
     contextStatus = null,
     messageContextState = null,
+    messageReadonly = false,
+    messageIsLatest = true,
     renderMarkdown = defaultRenderMarkdown,
 }) => {
     const commonProps = {
@@ -84,6 +87,8 @@ const CardBlock = memo(({
         replacement,
         contextStatus,
         messageContextState,
+        messageReadonly,
+        messageIsLatest,
         renderMarkdown,
     };
 
@@ -214,6 +219,16 @@ const CardBlock = memo(({
                 />
             );
 
+        case 'widget':
+            return (
+                <WidgetHost
+                    content={content}
+                    markId={markId}
+                    messageReadonly={messageReadonly}
+                    messageIsLatest={messageIsLatest}
+                />
+            );
+
         case 'taskUserMessage':
             return (
                 <TaskUserMessageCard
@@ -244,7 +259,9 @@ const CardBlock = memo(({
         prev.markId !== next.markId ||
         prev.type !== next.type ||
         prev.contextStatus !== next.contextStatus ||
-        prev.messageContextState !== next.messageContextState
+        prev.messageContextState !== next.messageContextState ||
+        prev.messageReadonly !== next.messageReadonly ||
+        prev.messageIsLatest !== next.messageIsLatest
     ) {
         return false;
     }

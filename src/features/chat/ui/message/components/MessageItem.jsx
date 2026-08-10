@@ -14,6 +14,7 @@ import {useIsMobile} from '@/lib/tools.jsx';
 import MessageContextBadges from './MessageContextBadges.jsx';
 import IgnoredContextIndicator from './IgnoredContextIndicator.jsx';
 import CompactedContextIndicator from './CompactedContextIndicator.jsx';
+import WidgetResponseMessage from './WidgetResponseMessage.jsx';
 
 const MID_COLLAPSED_CONTENT_MAX_HEIGHT = 360;
 const MID_OVERFLOW_TOLERANCE = 18;
@@ -53,6 +54,14 @@ const MessageItem = memo(({
     const isMessageForgotten = msg?.contextState?.forgotten === true;
     const messageCompactions = Array.isArray(msg?.contextState?.compactions) ? msg.contextState.compactions : [];
     const isMessageCompacted = messageCompactions.length > 0;
+    const messageExtraInfo = msg?.extraInfo || msg?.extra_info || {};
+    const widgetResponsePayload = messageExtraInfo?.widget_response;
+    const isWidgetResponseMessage = Boolean(
+        isRight
+        && messageExtraInfo?.message_type === 'widget_response'
+        && widgetResponsePayload
+        && typeof widgetResponsePayload === 'object'
+    );
 
     const [isHovered, setIsHovered] = useState(false);
     const canRevealActions = !readonly && (isRight || isMid);
@@ -297,6 +306,18 @@ const MessageItem = memo(({
                         </div>
                     </div>
                 </div>
+            );
+        }
+
+        if (isWidgetResponseMessage) {
+            return (
+                <>
+                    <div className="flex max-w-full items-start justify-end gap-2 pl-7">
+                        <WidgetResponseMessage response={widgetResponsePayload}/>
+                        {renderRightAvatar('h-10 w-10 flex-shrink-0 mt-0.5')}
+                    </div>
+                    <KnowledgeGraphViewer key={msgId} msg={msg}/>
+                </>
             );
         }
 

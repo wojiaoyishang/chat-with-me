@@ -164,7 +164,7 @@ const UniversalModalHost = () => {
             if (!nextOpen) close();
         }}>
             <DialogContent
-                className="z-[360] flex max-h-[90vh] max-w-none flex-col overflow-hidden"
+                className="z-[11010] flex max-h-[90vh] max-w-none flex-col overflow-hidden"
                 style={SIZE_STYLE[size]}
                 showCloseButton={descriptor?.dismissible !== false}
                 onEscapeKeyDown={descriptor?.dismissible === false ? (event) => event.preventDefault() : undefined}

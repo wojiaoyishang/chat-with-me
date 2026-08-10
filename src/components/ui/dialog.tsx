@@ -4,11 +4,36 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useBrowserBackLayer } from "@/lib/browserHistoryLayers.js"
 
 function Dialog({
+  open,
+  defaultOpen,
+  onOpenChange,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />
+  const controlled = open !== undefined
+  const [internalOpen, setInternalOpen] = React.useState(Boolean(defaultOpen))
+  const actualOpen = controlled ? Boolean(open) : internalOpen
+
+  const handleOpenChange = React.useCallback((nextOpen: boolean) => {
+    if (!controlled) setInternalOpen(nextOpen)
+    onOpenChange?.(nextOpen)
+  }, [controlled, onOpenChange])
+
+  useBrowserBackLayer(actualOpen, () => {
+    handleOpenChange(false)
+    return true
+  }, {kind: "dialog"})
+
+  return (
+    <DialogPrimitive.Root
+      data-slot="dialog"
+      open={actualOpen}
+      onOpenChange={handleOpenChange}
+      {...props}
+    />
+  )
 }
 
 function DialogTrigger({

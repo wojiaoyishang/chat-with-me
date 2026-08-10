@@ -30,6 +30,7 @@ import {onEvent} from "@/context/useEventStore.jsx";
 import {useTranslation} from "react-i18next";
 import {UserProfileCard} from "@/components/setting/UserProfileCard.jsx";
 import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
+import {useBrowserBackLayer} from "@/lib/browserHistoryLayers.js";
 import NotificationSettings from "@/features/notification/NotificationSettings.jsx";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
@@ -422,6 +423,19 @@ const SettingPage = ({
         }
         closeSettings();
     }, [isDynamicTab, hasUnsavedChanges, closeSettings]);
+
+    const handleBrowserBackSettings = useCallback(() => {
+        if (isDynamicTab && hasUnsavedChanges) {
+            setPendingAction('close');
+            setShowUnsavedDialog(true);
+            // Keep the settings layer active underneath the confirmation dialog.
+            return false;
+        }
+        closeSettings();
+        return true;
+    }, [isDynamicTab, hasUnsavedChanges, closeSettings]);
+
+    useBrowserBackLayer(Boolean(open), handleBrowserBackSettings, {kind: 'settings-layer'});
 
     // ==================== 未保存确认处理（已修复按钮文字闪烁 + 关闭后重置为默认值） ====================
     const handleUnsavedDialogOpenChange = useCallback((isOpen) => {

@@ -21,6 +21,8 @@ import StoryReader from '@/features/story/StoryReader.jsx';
 import {clearWorkspaceTransfers, upsertWorkspaceTransfer} from '@/features/workspace/useWorkspaceTransferStore.js';
 import {getVisionAttachmentIds} from './attachmentVision.js';
 import {normalizeRemoteChatModel} from './modelCapabilities.js';
+import {WidgetPresentationProvider} from './widgets/WidgetPresentationContext.jsx';
+import {useBrowserBackLayer} from '@/lib/browserHistoryLayers.js';
 
 import {
     ChatBox,
@@ -250,6 +252,7 @@ function ChatPage({
     const [advancedSettings, setAdvancedSettings] = useState([]);
     const [initialSettingValues, setInitialSettingValues] = useState({});
     const [advancedSettingsValues, setAdvancedSettingsValues] = useState({});
+    const [widgetChatBoxHostElement, setWidgetChatBoxHostElement] = useState(null);
     const [settingsInstanceKey, setSettingsInstanceKey] = useState(() => `conversationless-${Date.now()}`);
     const [conversationMeta, setConversationMeta] = useState(null);
     const [contextCompactionState, setContextCompactionState] = useState({});
@@ -2434,6 +2437,35 @@ function ChatPage({
                             });
                         });
                         break;
+                    case "Widget-State-Changed": {
+                        const widget = payload.value && typeof payload.value === 'object' ? payload.value : {};
+                        const messageId = String(widget.originMessageId || '');
+                        const replacementId = String(widget.replacementId || '');
+                        if (messageId && replacementId) {
+                            const newMessages = produce(messagesRef.current, draft => {
+                                const message = draft[messageId];
+                                if (!message) return;
+                                if (!message.extraInfo || typeof message.extraInfo !== 'object') message.extraInfo = {};
+                                if (!message.extraInfo.replace || typeof message.extraInfo.replace !== 'object') {
+                                    message.extraInfo.replace = {};
+                                }
+                                const current = message.extraInfo.replace[replacementId];
+                                if (current && typeof current === 'object') {
+                                    current.frontend = JSON.stringify(widget);
+                                    current.type = 'widget';
+                                } else {
+                                    message.extraInfo.replace[replacementId] = {
+                                        frontend: JSON.stringify(widget),
+                                        type: 'widget',
+                                    };
+                                }
+                            });
+                            setMessages(newMessages);
+                            messagesRef.current = newMessages;
+                        }
+                        if (payload.reply) reply({success: true});
+                        break;
+                    }
                     case "Context-Compaction-State": {
                         applyContextCompactionState(payload.value || {});
                         reply({success: true});
@@ -2899,8 +2931,16 @@ function ChatPage({
         setIsSidebarOpen(prev => !prev);
     }, []);
 
+    useBrowserBackLayer(isSidebarOpen, () => {
+        setIsSidebarOpen(false);
+        return true;
+    }, {kind: 'chat-sidebar'});
+
     return (
-        <>
+        <WidgetPresentationProvider
+            chatBoxHostElement={widgetChatBoxHostElement}
+        >
+            <>
             <motion.div
                 ref={windowRef}
                 className={`flex overflow-hidden bg-white ${
@@ -3055,6 +3095,11 @@ function ChatPage({
                             onBrowserSpeechVoiceChange={updateBrowserSpeechVoice}
                             t={t}
                         />
+                        <div
+                            ref={setWidgetChatBoxHostElement}
+                            data-widget-chatbox-floating-host="true"
+                            className="pointer-events-auto relative z-20 mx-auto w-full max-w-225 px-4"
+                        />
                         <ChatBox
                             onSendMessage={handleSendMessage}
                             markId={chatMarkId}
@@ -3194,7 +3239,8 @@ function ChatPage({
                     setShowDeleteConfirm(false);
                 }}
             />
-        </>
+            </>
+        </WidgetPresentationProvider>
     );
 }
 
