@@ -260,7 +260,7 @@ function ChatBox({
                      onTaskInterruptPreview,
                      onTaskInterruptResult,
                      onTaskInterruptClear,
-                     selectedWorkspaceId = null,
+                     selectedWorkspaceIds = [],
                      onWorkspaceChange,
                  }) {
     const {t} = useTranslation();
@@ -2108,7 +2108,7 @@ function ChatBox({
                 open={workspaceSettingsDialogOpen}
                 onOpenChange={setWorkspaceSettingsDialogOpen}
                 markId={markId}
-                selectedWorkspaceId={selectedWorkspaceId}
+                selectedWorkspaceIds={selectedWorkspaceIds}
                 onWorkspaceChange={onWorkspaceChange}
                 t={t}
             />
@@ -2416,7 +2416,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         prevProps.dropTargetRef === nextProps.dropTargetRef &&
         prevProps.editorHostRef === nextProps.editorHostRef &&
         prevProps.selectedModel === nextProps.selectedModel &&
-        prevProps.selectedWorkspaceId === nextProps.selectedWorkspaceId &&
+        JSON.stringify(prevProps.selectedWorkspaceIds || []) === JSON.stringify(nextProps.selectedWorkspaceIds || []) &&
         prevProps.isWindowMode === nextProps.isWindowMode &&
         prevProps.onVoicePcmReady === nextProps.onVoicePcmReady &&
         prevProps.onVoiceRecordingStart === nextProps.onVoiceRecordingStart &&

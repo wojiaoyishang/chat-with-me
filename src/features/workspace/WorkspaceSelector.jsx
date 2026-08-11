@@ -27,14 +27,22 @@ const WorkspaceSelector = ({markId, selectedWorkspaceId, onChange, t}) => {
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/`);
-            setWorkspaces(Array.isArray(data) ? data : []);
+            const pairedUrl = markId
+                ? `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired?markId=${encodeURIComponent(markId)}`
+                : `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired`;
+            const [localData, remoteData] = await Promise.all([
+                apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/`),
+                apiClient.get(pairedUrl),
+            ]);
+            const local = Array.isArray(localData) ? localData : [];
+            const remote = Array.isArray(remoteData) ? remoteData : [];
+            setWorkspaces([...local, ...remote].sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''))));
         } catch (error) {
             toast.error(error?.message || t('workspace_load_failed', '读取 Workspace 失败'));
         } finally {
             setLoading(false);
         }
-    }, [t]);
+    }, [markId, t]);
 
     useEffect(() => {
         load();
@@ -86,7 +94,11 @@ const WorkspaceSelector = ({markId, selectedWorkspaceId, onChange, t}) => {
         if (!selected || !window.confirm(t('workspace_delete_confirm', '确定删除这个 Workspace 配置吗？不会删除本机文件。'))) return;
         setSaving(true);
         try {
-            await apiClient.delete(`${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(selected.id)}`);
+            if (selected.kind === 'remote') {
+                await apiClient.delete(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired/${encodeURIComponent(selected.agentId)}`);
+            } else {
+                await apiClient.delete(`${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(selected.id)}`);
+            }
             setWorkspaces((current) => current.filter((item) => item.id !== selected.id));
             await selectWorkspace(null);
         } catch (error) {
@@ -124,7 +136,7 @@ const WorkspaceSelector = ({markId, selectedWorkspaceId, onChange, t}) => {
                     <SelectItem value="__none__">{t('workspace_not_selected', '不启用代码 Workspace')}</SelectItem>
                     {workspaces.map((workspace) => (
                         <SelectItem key={workspace.id} value={workspace.id}>
-                            {workspace.name}{workspace.readOnly ? ` · ${t('workspace_read_only', '只读')}` : ''}
+                            {workspace.kind === 'remote' ? `远程 · ${workspace.name}${workspace.online ? '' : ' · 离线'}` : workspace.name}{workspace.readOnly ? ` · ${t('workspace_read_only', '只读')}` : ''}
                         </SelectItem>
                     ))}
                 </SelectContent>
@@ -132,7 +144,9 @@ const WorkspaceSelector = ({markId, selectedWorkspaceId, onChange, t}) => {
 
             {selected ? (
                 <div className="mt-2 rounded-lg bg-white/80 px-2.5 py-2 text-[11px] text-gray-500">
-                    <div className="truncate" title={selected.rootPath}>{selected.rootPath}</div>
+                    <div className="truncate" title={selected.kind === 'remote' ? selected.rootLabel : selected.rootPath}>
+                        {selected.kind === 'remote' ? (selected.rootLabel || '远端根目录') : selected.rootPath}
+                    </div>
                     <div className="mt-1">{t('workspace_task_fixed_hint', '任务开始后将固定使用此 Workspace')}</div>
                 </div>
             ) : null}

@@ -1,6 +1,8 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {
     Folder,
+    KeyRound,
+    Link2,
     Loader2,
     MapPinned,
     Pencil,
@@ -11,6 +13,7 @@ import {
     ShieldCheck,
     Terminal,
     Trash2,
+    Unlink,
     X,
 } from 'lucide-react';
 import {toast} from 'sonner';
@@ -19,6 +22,7 @@ import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
+import {Checkbox} from '@/components/ui/checkbox';
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
@@ -112,7 +116,7 @@ const cleanDisplayPath = (value) => String(value || '')
     .replace(/\\\//g, '\\')
     .replace(/\/\\/g, '\\');
 
-const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceId, onWorkspaceChange, t}) => {
+const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceIds = [], onWorkspaceChange, t}) => {
     const [workspaces, setWorkspaces] = useState([]);
     const [roots, setRoots] = useState([]);
     const [defaultAccessPolicy, setDefaultAccessPolicy] = useState({version: 2, defaultEffect: 'allow', rules: []});
@@ -130,23 +134,45 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
     const [visibilityPolicy, setVisibilityPolicy] = useState({version: 1, ignoredRules: []});
     const [configuredCommands, setConfiguredCommands] = useState([]);
     const [allowedCommands, setAllowedCommands] = useState([]);
+    const [shellAllowed, setShellAllowed] = useState(false);
     const [browserOpen, setBrowserOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
+    const [pairingCode, setPairingCode] = useState('');
+    const [pairing, setPairing] = useState(false);
+    const [focusedWorkspaceId, setFocusedWorkspaceId] = useState(null);
 
-    const selected = useMemo(
-        () => workspaces.find((item) => item.id === selectedWorkspaceId) || null,
-        [selectedWorkspaceId, workspaces],
-    );
+    const selectedIds = useMemo(() => {
+        const raw = Array.isArray(selectedWorkspaceIds) ? selectedWorkspaceIds : [];
+        return [...new Set(raw.map((item) => String(item || '').trim()).filter(Boolean))];
+    }, [selectedWorkspaceIds]);
+    const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+    const selected = useMemo(() => {
+        const focused = workspaces.find((item) => item.id === focusedWorkspaceId);
+        if (focused) return focused;
+        return workspaces.find((item) => selectedIdSet.has(item.id)) || null;
+    }, [focusedWorkspaceId, selectedIdSet, workspaces]);
+
+    useEffect(() => {
+        if (focusedWorkspaceId && workspaces.some((item) => item.id === focusedWorkspaceId)) return;
+        const next = workspaces.find((item) => selectedIdSet.has(item.id)) || workspaces[0] || null;
+        setFocusedWorkspaceId(next?.id || null);
+    }, [focusedWorkspaceId, selectedIdSet, workspaces]);
 
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const [workspaceData, rootData, policyData] = await Promise.all([
+            const pairedUrl = markId
+                ? `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired?markId=${encodeURIComponent(markId)}`
+                : `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired`;
+            const [workspaceData, rootData, policyData, pairedRemoteData] = await Promise.all([
                 apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/`),
                 apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/mount-roots`),
                 apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/policy-defaults`),
+                apiClient.get(pairedUrl),
             ]);
-            setWorkspaces(Array.isArray(workspaceData) ? workspaceData : []);
+            const localWorkspaces = Array.isArray(workspaceData) ? workspaceData : [];
+            const pairedRemote = Array.isArray(pairedRemoteData) ? pairedRemoteData : [];
+            setWorkspaces([...localWorkspaces, ...pairedRemote].sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''))));
             setRoots(Array.isArray(rootData) ? rootData : []);
             setDefaultAccessPolicy(cloneValue(policyData?.accessPolicy) || {version: 2, defaultEffect: 'allow', rules: []});
             setDefaultVisibilityPolicy(cloneValue(policyData?.visibilityPolicy) || {version: 1, ignoredRules: []});
@@ -156,24 +182,90 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
         } finally {
             setLoading(false);
         }
-    }, [t]);
+    }, [markId, t]);
 
     useEffect(() => {
         if (open) load();
     }, [load, open]);
 
-    const selectWorkspace = async (workspaceId) => {
-        const nextId = workspaceId || null;
-        onWorkspaceChange?.(nextId);
-        if (!markId) return;
+    const persistWorkspaceSelection = async (nextWorkspaceIds) => {
+        const nextIds = [...new Set((Array.isArray(nextWorkspaceIds) ? nextWorkspaceIds : [])
+            .map((item) => String(item || '').trim()).filter(Boolean))];
+        const previousIds = selectedIds;
+        onWorkspaceChange?.(nextIds);
+        if (!markId) return true;
         try {
             await apiClient.put(
                 `${apiEndpoint.WORKSPACES_ENDPOINT}/conversation/${encodeURIComponent(markId)}`,
-                {workspaceId: nextId},
+                {workspaceIds: nextIds},
             );
+            return true;
         } catch (error) {
-            onWorkspaceChange?.(selectedWorkspaceId || null);
-            toast.error(error?.message || t('workspace_select_failed', '切换 Workspace 失败'));
+            onWorkspaceChange?.(previousIds);
+            toast.error(error?.message || t('workspace_select_failed', '更新 Workspace 挂载失败'));
+            return false;
+        }
+    };
+
+    const toggleWorkspace = async (workspaceId, checked) => {
+        const id = String(workspaceId || '').trim();
+        if (!id) return;
+        const nextIds = checked
+            ? [...selectedIds.filter((item) => item !== id), id]
+            : selectedIds.filter((item) => item !== id);
+        setFocusedWorkspaceId(id);
+        await persistWorkspaceSelection(nextIds);
+    };
+
+    const pairRemoteWorkspace = async () => {
+        const code = pairingCode.trim();
+        if (!code) {
+            toast.error('请输入目标机 Agent 显示的配对码');
+            return;
+        }
+        setPairing(true);
+        try {
+            const paired = await apiClient.post(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/pair`, {pairingCode: code});
+            setPairingCode('');
+            const pairedWorkspaces = Array.isArray(paired?.workspaces) ? paired.workspaces : (paired?.id ? [paired] : []);
+            if (pairedWorkspaces.length === 0) throw new Error('目标机没有提供可访问的 Workspace 根目录');
+            setWorkspaces((current) => {
+                const agentId = paired?.agentId || pairedWorkspaces[0]?.agentId;
+                const next = current.filter((item) => !agentId || item.agentId !== agentId).concat(pairedWorkspaces);
+                return next.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+            });
+            const primary = pairedWorkspaces.find((item) => item.id === paired?.primaryWorkspaceId)
+                || pairedWorkspaces.find((item) => item.primaryRoot)
+                || pairedWorkspaces[0];
+            await persistWorkspaceSelection([...selectedIds, primary.id]);
+            setFocusedWorkspaceId(primary.id);
+            beginEdit(primary);
+            toast.success(`已全局配对 ${paired?.name || primary.agentName || '远程 Workspace'}，发现 ${pairedWorkspaces.length} 个可访问根目录；已挂载默认根，请继续保存权限。`);
+        } catch (error) {
+            setPairingCode('');
+            toast.error(error?.message || '远程 Workspace 配对失败');
+        } finally {
+            setPairing(false);
+        }
+    };
+
+    const unpairRemoteWorkspace = async (workspace) => {
+        if (!workspace?.agentId) return;
+        setSaving(true);
+        try {
+            await apiClient.delete(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired/${encodeURIComponent(workspace.agentId)}`);
+            const removedIds = new Set(workspaces.filter((item) => item.agentId === workspace.agentId).map((item) => item.id));
+            setWorkspaces((current) => current.filter((item) => item.agentId !== workspace.agentId));
+            if (selectedIds.some((id) => removedIds.has(id))) {
+                await persistWorkspaceSelection(selectedIds.filter((item) => !removedIds.has(item)));
+            }
+            if (removedIds.has(focusedWorkspaceId)) setFocusedWorkspaceId(null);
+            if (removedIds.has(editingId)) stopEditing();
+            toast.success('已解除全局配对；其他会话也将不再提供这个远程 Workspace。');
+        } catch (error) {
+            toast.error(error?.message || '解除远程 Workspace 配对失败');
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -193,6 +285,7 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
         setVisibilityPolicy(cloneValue(defaultVisibilityPolicy) || {version: 1, ignoredRules: []});
         setConfiguredCommands([]);
         setAllowedCommands([]);
+        setShellAllowed(false);
     };
 
     const beginEdit = (workspace) => {
@@ -207,6 +300,7 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
         setVisibilityPolicy(cloneValue(workspace.visibilityPolicy || defaultVisibilityPolicy));
         setConfiguredCommands(Array.isArray(workspace.configuredCommands) ? workspace.configuredCommands : []);
         setAllowedCommands(Array.isArray(workspace.allowedCommands) ? workspace.allowedCommands : []);
+        setShellAllowed(Boolean(workspace.shellAllowed));
     };
 
     const stopEditing = () => {
@@ -220,6 +314,7 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
         setVisibilityPolicy({version: 1, ignoredRules: []});
         setConfiguredCommands([]);
         setAllowedCommands([]);
+        setShellAllowed(false);
     };
 
     const addMount = (folder) => {
@@ -292,11 +387,12 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
     };
 
     const save = async () => {
-        if (!name.trim() || mounts.length === 0) {
+        const editingRemote = editingId !== 'new' && String(editingId || '').startsWith('remote:');
+        if (!editingRemote && (!name.trim() || mounts.length === 0)) {
             toast.error(t('workspace_name_mount_required', '请填写名称并至少添加一个目录'));
             return;
         }
-        if (mounts.some((item) => !item.rootId || item.rootId === 'legacy' || !item.alias?.trim())) {
+        if (!editingRemote && mounts.some((item) => !item.rootId || item.rootId === 'legacy' || !item.alias?.trim())) {
             toast.error(t('workspace_mount_invalid', '请替换旧目录并检查虚拟挂载名'));
             return;
         }
@@ -319,30 +415,50 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
                         };
                     }),
             };
-            const payload = {
-                name: name.trim(),
-                readOnly,
-                accessPolicy,
-                visibilityPolicy,
-                mounts: mounts.map((item) => ({
-                    id: item.id || undefined,
-                    rootId: item.rootId,
-                    relativePath: item.relativePath || '.',
-                    alias: item.alias.trim(),
-                    readOnly: Boolean(item.readOnly),
-                })),
-            };
-            if (editingId !== 'new' && configuredCommands.length > 0) {
-                payload.commandPolicy = commandPolicyPayload(allowedCommands);
+            let saved;
+            if (editingRemote) {
+                const payload = {
+                    readOnly,
+                    accessPolicy,
+                    visibilityPolicy,
+                    commandPolicy: commandPolicyPayload(allowedCommands),
+                    shellAllowed,
+                };
+                const editingWorkspace = workspaces.find((item) => item.id === editingId);
+                const remoteAgentId = editingWorkspace?.agentId || String(editingId).slice('remote:'.length).split(':')[0];
+                const remoteRootId = editingWorkspace?.rootId || String(editingId).slice('remote:'.length).split(':').slice(1).join(':');
+                const policyUrl = `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired/${encodeURIComponent(remoteAgentId)}/workspace`
+                    + (remoteRootId ? `?rootId=${encodeURIComponent(remoteRootId)}` : '');
+                saved = await apiClient.patch(policyUrl, payload);
+            } else {
+                const payload = {
+                    name: name.trim(),
+                    readOnly,
+                    accessPolicy,
+                    visibilityPolicy,
+                    mounts: mounts.map((item) => ({
+                        id: item.id || undefined,
+                        rootId: item.rootId,
+                        relativePath: item.relativePath || '.',
+                        alias: item.alias.trim(),
+                        readOnly: Boolean(item.readOnly),
+                    })),
+                };
+                if (editingId !== 'new' && configuredCommands.length > 0) {
+                    payload.commandPolicy = commandPolicyPayload(allowedCommands);
+                }
+                saved = editingId === 'new'
+                    ? await apiClient.post(`${apiEndpoint.WORKSPACES_ENDPOINT}/`, payload)
+                    : await apiClient.patch(`${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(editingId)}`, payload);
             }
-            const saved = editingId === 'new'
-                ? await apiClient.post(`${apiEndpoint.WORKSPACES_ENDPOINT}/`, payload)
-                : await apiClient.patch(`${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(editingId)}`, payload);
             setWorkspaces((current) => {
                 const next = current.filter((item) => item.id !== saved.id).concat(saved);
                 return next.sort((a, b) => a.name.localeCompare(b.name));
             });
-            await selectWorkspace(saved.id);
+            if (editingId === 'new' && !selectedIdSet.has(saved.id)) {
+                await persistWorkspaceSelection([...selectedIds, saved.id]);
+            }
+            setFocusedWorkspaceId(saved.id);
             stopEditing();
             toast.success(t('workspace_saved', 'Workspace 已保存'));
         } catch (error) {
@@ -358,7 +474,10 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
         try {
             await apiClient.delete(`${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(selected.id)}`);
             setWorkspaces((current) => current.filter((item) => item.id !== selected.id));
-            await selectWorkspace(null);
+            if (selectedIdSet.has(selected.id)) {
+                await persistWorkspaceSelection(selectedIds.filter((item) => item !== selected.id));
+            }
+            setFocusedWorkspaceId(null);
             stopEditing();
             setDeleteOpen(false);
         } catch (error) {
@@ -378,32 +497,110 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
                             {t('workspace_behavior_settings', 'Workspace 行为')}
                         </DialogTitle>
                         <DialogDescription className="text-xs">
-                            {t('workspace_behavior_description', '选择当前 Workspace，并配置 AI 可见的虚拟目录和访问规则。')}
+                            {t('workspace_behavior_description', '为当前会话挂载一个或多个 Workspace，并分别配置 AI 可见目录和访问规则。')}
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 pretty-scrollbar">
                         <section className="space-y-2">
                             <div className="flex items-center gap-2">
-                                <Label className="text-sm">{t('workspace_current', '当前 Workspace')}</Label>
+                                <Label className="text-sm">当前会话挂载 Workspace</Label>
+                                <Badge variant="secondary">已选 {selectedIds.length}</Badge>
                                 <Button variant="ghost" size="icon" className="ml-auto h-8 w-8" onClick={load} disabled={loading}>
                                     {loading ? <Loader2 className="animate-spin"/> : <RefreshCw/>}
                                 </Button>
                             </div>
-                            <Select
-                                value={selectedWorkspaceId || '__none__'}
-                                onValueChange={(value) => selectWorkspace(value === '__none__' ? '' : value)}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder={t('workspace_not_selected', '不启用代码 Workspace')}/>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="__none__">{t('workspace_not_selected', '不启用代码 Workspace')}</SelectItem>
-                                    {workspaces.map((item) => (
-                                        <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div className="max-h-56 overflow-y-auto rounded-lg border bg-background pretty-scrollbar">
+                                {workspaces.length === 0 ? (
+                                    <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+                                        暂无 Workspace。可以新建本机 Workspace，或在下方输入配对码添加远程 Workspace。
+                                    </div>
+                                ) : workspaces.map((item) => {
+                                    const checked = selectedIdSet.has(item.id);
+                                    const focused = selected?.id === item.id;
+                                    return (
+                                        <div
+                                            key={item.id}
+                                            className={`flex items-center gap-2 border-b px-3 py-2.5 last:border-b-0 ${focused ? 'bg-blue-50/70' : 'hover:bg-muted/40'}`}
+                                            onClick={() => setFocusedWorkspaceId(item.id)}
+                                        >
+                                            <Checkbox
+                                                checked={checked}
+                                                onCheckedChange={(value) => toggleWorkspace(item.id, value === true)}
+                                                onClick={(event) => event.stopPropagation()}
+                                                aria-label={`${checked ? '取消挂载' : '挂载'} ${item.name}`}
+                                            />
+                                            {item.kind === 'remote' ? (
+                                                <Terminal className="h-4 w-4 shrink-0 text-violet-600"/>
+                                            ) : (
+                                                <Folder className="h-4 w-4 shrink-0 text-amber-500"/>
+                                            )}
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex min-w-0 items-center gap-1.5">
+                                                    <span className="truncate text-sm font-medium">{item.kind === 'remote' ? `远程 · ${item.name}` : item.name}</span>
+                                                    {item.readOnly ? <Badge variant="outline" className="shrink-0 text-[10px]">只读</Badge> : null}
+                                                    {item.kind === 'remote' && !item.online ? <Badge variant="outline" className="shrink-0 text-[10px]">离线</Badge> : null}
+                                                    {item.kind === 'remote' && !item.permissionsConfigured ? <Badge variant="destructive" className="shrink-0 text-[10px]">未授权</Badge> : null}
+                                                </div>
+                                                <div className="mt-0.5 truncate text-[11px] text-muted-foreground" title={item.kind === 'remote' ? item.rootLabel : item.rootPath}>
+                                                    {item.kind === 'remote' ? (item.rootLabel || '远端根目录') : (item.rootPath || (item.mounts || []).map((mount) => `/${mount.alias}`).join(' · '))}
+                                                </div>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-7 w-7 shrink-0"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    setFocusedWorkspaceId(item.id);
+                                                    beginEdit(item);
+                                                }}
+                                                aria-label={`编辑 ${item.name}`}
+                                            >
+                                                <Pencil className="h-3.5 w-3.5"/>
+                                            </Button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="text-[11px] leading-relaxed text-muted-foreground">
+                                可同时勾选多个 Workspace。只选一个时 AI 可像以前一样直接操作；选择多个时 AI 会先识别 Workspace，并在每次文件或命令调用中指定目标。
+                            </div>
+
+                            <div className="rounded-lg border border-dashed border-blue-500/25 bg-blue-500/[0.03] p-3">
+                                <div className="flex items-start gap-2">
+                                    <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600"/>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="text-sm font-medium">配对远程 Workspace</div>
+                                        <div className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
+                                            只输入目标机 Agent 显示的配对码。配对成功后远端 Workspace 会加入上方列表并自动挂载到当前会话；以后其他会话也可以直接勾选它。认证秘钥始终只在目标机与服务器之间使用。
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-2.5 flex gap-2">
+                                    <div className="relative min-w-0 flex-1">
+                                        <KeyRound className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"/>
+                                        <Input
+                                            value={pairingCode}
+                                            onChange={(event) => setPairingCode(event.target.value)}
+                                            onKeyDown={(event) => {
+                                                if (event.key === 'Enter' && pairingCode.trim() && !pairing) pairRemoteWorkspace();
+                                            }}
+                                            autoComplete="off"
+                                            spellCheck={false}
+                                            placeholder="Pairing Code"
+                                            className="h-9 pl-8 font-mono text-xs"
+                                            disabled={pairing}
+                                        />
+                                    </div>
+                                    <Button type="button" size="sm" onClick={pairRemoteWorkspace} disabled={pairing || !pairingCode.trim()}>
+                                        {pairing ? <Loader2 className="animate-spin"/> : <Link2/>}
+                                        {pairing ? '配对中' : '配对'}
+                                    </Button>
+                                </div>
+                            </div>
+
                             <div className="flex flex-wrap items-center gap-2 pt-3">
                                 <Button type="button" size="sm" onClick={beginCreate}>
                                     <Plus/> {t('workspace_new', '新建')}
@@ -411,9 +608,15 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
                                 <Button type="button" size="sm" variant="outline" disabled={!selected} onClick={() => selected && beginEdit(selected)}>
                                     <Pencil/> {t('edit', '编辑')}
                                 </Button>
-                                <Button type="button" size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={!selected} onClick={() => setDeleteOpen(true)}>
-                                    <Trash2/> {t('delete', '删除')}
-                                </Button>
+                                {selected?.kind === 'remote' ? (
+                                    <Button type="button" size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={saving} onClick={() => unpairRemoteWorkspace(selected)}>
+                                        <Unlink/> 解除全局配对
+                                    </Button>
+                                ) : (
+                                    <Button type="button" size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={!selected} onClick={() => setDeleteOpen(true)}>
+                                        <Trash2/> {t('delete', '删除')}
+                                    </Button>
+                                )}
                                 {selected ? (
                                     <div className="ml-auto flex max-w-full flex-wrap justify-end gap-1">
                                         {(selected.mounts || []).map((mount) => (
@@ -431,7 +634,12 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
                                     <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
                                         <div className="space-y-1.5">
                                             <Label>{t('workspace_name', '名称')}</Label>
-                                            <Input value={name} onChange={(event) => setName(event.target.value)} placeholder={t('workspace_name_placeholder', 'Workspace 名称')}/>
+                                            <Input
+                                                value={name}
+                                                onChange={(event) => setName(event.target.value)}
+                                                disabled={String(editingId || '').startsWith('remote:')}
+                                                placeholder={t('workspace_name_placeholder', 'Workspace 名称')}
+                                            />
                                         </div>
                                         <div className="flex h-9 items-center justify-between gap-3 rounded-md border px-3 sm:min-w-44">
                                             <span className="text-sm">{t('workspace_whole_read_only', '整个 Workspace 只读')}</span>
@@ -442,9 +650,13 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2">
                                             <Label className="text-sm">{t('workspace_ai_mounts', 'AI 可访问目录')}</Label>
-                                            <Button type="button" size="sm" variant="outline" className="ml-auto" onClick={() => setBrowserOpen(true)}>
-                                                <Plus/> {t('workspace_add_folder', '添加目录')}
-                                            </Button>
+                                            {!String(editingId || '').startsWith('remote:') ? (
+                                                <Button type="button" size="sm" variant="outline" className="ml-auto" onClick={() => setBrowserOpen(true)}>
+                                                    <Plus/> {t('workspace_add_folder', '添加目录')}
+                                                </Button>
+                                            ) : (
+                                                <Badge className="ml-auto" variant="secondary">远端根目录固定</Badge>
+                                            )}
                                         </div>
                                         <div className="divide-y rounded-md border">
                                             {mounts.length === 0 ? (
@@ -459,32 +671,38 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
                                                             <div className="truncate text-sm" title={cleanDisplayPath(mount.displayPath)}>{cleanDisplayPath(mount.displayPath) || mount.relativePath}</div>
                                                             <div className="text-[11px] text-muted-foreground">{mount.rootName || mount.rootId}</div>
                                                         </div>
-                                                        <Button
-                                                            type="button"
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                                                            onClick={() => setMounts((current) => current.filter((_, itemIndex) => itemIndex !== index))}
-                                                        >
-                                                            <X className="h-3.5 w-3.5"/>
-                                                        </Button>
+                                                        {!String(editingId || '').startsWith('remote:') && (
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                                                onClick={() => setMounts((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                                                            >
+                                                                <X className="h-3.5 w-3.5"/>
+                                                            </Button>
+                                                        )}
                                                     </div>
-                                                    <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-                                                        <Input
-                                                            value={mount.alias || ''}
-                                                            onChange={(event) => setMounts((current) => current.map((item, itemIndex) => itemIndex === index ? {...item, alias: event.target.value} : item))}
-                                                            placeholder={t('workspace_virtual_alias', '虚拟目录名')}
-                                                            className="h-8 text-xs"
-                                                        />
-                                                        <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                            <Switch
-                                                                checked={Boolean(mount.readOnly)}
-                                                                disabled={readOnly || Boolean(roots.find((root) => root.id === mount.rootId)?.readOnly)}
-                                                                onCheckedChange={(checked) => setMounts((current) => current.map((item, itemIndex) => itemIndex === index ? {...item, readOnly: checked} : item))}
+                                                    {!String(editingId || '').startsWith('remote:') ? (
+                                                        <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                                                            <Input
+                                                                value={mount.alias || ''}
+                                                                onChange={(event) => setMounts((current) => current.map((item, itemIndex) => itemIndex === index ? {...item, alias: event.target.value} : item))}
+                                                                placeholder={t('workspace_virtual_alias', '虚拟目录名')}
+                                                                className="h-8 text-xs"
                                                             />
-                                                            {t('workspace_read_only', '只读')}
-                                                        </label>
-                                                    </div>
+                                                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                                <Switch
+                                                                    checked={Boolean(mount.readOnly)}
+                                                                    disabled={readOnly || Boolean(roots.find((root) => root.id === mount.rootId)?.readOnly)}
+                                                                    onCheckedChange={(checked) => setMounts((current) => current.map((item, itemIndex) => itemIndex === index ? {...item, readOnly: checked} : item))}
+                                                                />
+                                                                {t('workspace_read_only', '只读')}
+                                                            </label>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-[11px] text-muted-foreground">远端挂载名固定为 /workspace；路径权限由下方访问规则控制。</div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -585,6 +803,15 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
                                             </div>
                                         </div>
                                     </div>
+                                    {String(editingId || '').startsWith('remote:') && (
+                                        <div className="flex items-center justify-between gap-3 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2.5">
+                                            <div className="min-w-0">
+                                                <div className="text-sm font-medium">允许任意 Shell 命令</div>
+                                                <div className="mt-0.5 text-[11px] text-muted-foreground">开启后 code_shell 可执行目标机账号权限范围内的任意 Shell；默认关闭。</div>
+                                            </div>
+                                            <Switch checked={shellAllowed} onCheckedChange={setShellAllowed}/>
+                                        </div>
+                                    )}
                                     <div className="divide-y rounded-md border">
                                         {configuredCommands.length === 0 ? (
                                             <div className="px-3 py-5 text-center text-xs text-muted-foreground">
@@ -610,7 +837,11 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
                             </>
                         ) : selected ? (
                             <div className="rounded-md border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
-                                {t('workspace_task_fixed_hint', '任务开始后将固定使用此 Workspace')}
+                                {selected?.kind === 'remote'
+                                    ? (selected?.permissionsConfigured
+                                        ? `该远程 Workspace 已全局配对。${selected?.online ? '当前在线' : '当前离线'}；所有会话均可挂载它，并共用这套已保存权限。`
+                                        : `该远程 Workspace 已全局配对。${selected?.online ? '当前在线' : '当前离线'}；尚未保存权限，AI 调用会被拒绝。请点击“编辑”完成全局权限设置。`)
+                                    : t('workspace_task_fixed_hint', '任务开始后会冻结当前会话已挂载的全部 Workspace')}
                             </div>
                         ) : null}
                     </div>

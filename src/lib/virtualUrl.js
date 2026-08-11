@@ -14,9 +14,38 @@ const decodeSegments = (path) => {
 const encodeSegments = (segments) => segments.map(segment => encodeURIComponent(segment)).join('/');
 const IDENTIFIER_RE = /^[A-Za-z0-9._-]+$/;
 
+const BROWSER_RENDERABLE_AUTHORITIES = new Set(['artifact', 'public', 'document']);
+const TOOL_ONLY_AUTHORITIES = new Set(['workspace', 'host']);
+
+
+export const classifyCwmUrl = (value) => {
+    if (typeof value !== 'string') return null;
+    const raw = value.trim();
+    if (!raw.toLowerCase().startsWith('cwm://')) return null;
+    if (/[?#]/.test(raw)) return {kind: 'invalid', authority: ''};
+
+    const match = /^cwm:\/\/([a-z]+)(?:\/(.*))?$/i.exec(raw);
+    if (!match) return {kind: 'invalid', authority: ''};
+    const authority = match[1].toLowerCase();
+    if (BROWSER_RENDERABLE_AUTHORITIES.has(authority)) {
+        return {kind: 'browser-renderable', authority};
+    }
+    if (TOOL_ONLY_AUTHORITIES.has(authority)) {
+        return {kind: 'tool-only', authority};
+    }
+    return {kind: 'invalid', authority};
+};
+
+export const isBrowserRenderableCwmUrl = (value) => classifyCwmUrl(value)?.kind === 'browser-renderable';
+export const isToolOnlyCwmUrl = (value) => classifyCwmUrl(value)?.kind === 'tool-only';
+
 /**
  * Resolve the canonical cwm:// resource scheme to a browser URL.
  * Returns null for non-cwm URLs and an empty string for invalid/tool-only cwm URLs.
+ *
+ * IMPORTANT: resolving is a browser-rendering operation. cwm://workspace/... and
+ * cwm://host/... are opaque/lazy tool resources and MUST NOT trigger network I/O
+ * merely because a React component rendered them.
  */
 export const resolveCwmUrl = (value) => {
     if (typeof value !== 'string') return null;
@@ -44,7 +73,7 @@ export const resolveCwmUrl = (value) => {
         return `${base}/document/preview/${encodeURIComponent(segments[0])}`;
     }
 
-    // cwm://workspace/... is contextual and tool-only; it has no stable browser target.
+    // cwm://workspace/... and cwm://host/... are tool-only/lazy; they have no browser target.
     return '';
 };
 

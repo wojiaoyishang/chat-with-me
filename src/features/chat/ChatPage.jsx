@@ -2296,6 +2296,8 @@ function ChatPage({
                         const transfer = payload.value;
                         if (transfer && typeof transfer === 'object' && transfer.transferId) {
                             upsertWorkspaceTransfer(transfer);
+                            // Workspace 文件传输属于 AI 的工具执行过程。
+                            // 前端继续维护附件/任务卡片中的传输状态，但不再用 Toast 打扰用户。
                             const artifactId = transfer.artifactId || transfer.serverId;
                             if (artifactId) {
                                 setAttachments(current => current.map(attachment => {
@@ -3125,9 +3127,16 @@ function ChatPage({
                             onTaskInterruptPreview={handleTaskInterruptPreview}
                             onTaskInterruptResult={handleTaskInterruptResult}
                             onTaskInterruptClear={handleTaskInterruptClear}
-                            selectedWorkspaceId={advancedSettingsValues?.workspaceId || null}
-                            onWorkspaceChange={(workspaceId) => {
-                                setAdvancedSettingsValues(current => ({...current, workspaceId}));
+                            selectedWorkspaceIds={Array.isArray(advancedSettingsValues?.workspaceIds)
+                                ? advancedSettingsValues.workspaceIds
+                                : (advancedSettingsValues?.workspaceId ? [advancedSettingsValues.workspaceId] : [])}
+                            onWorkspaceChange={(workspaceIds) => {
+                                const normalized = Array.isArray(workspaceIds) ? workspaceIds : [];
+                                setAdvancedSettingsValues(current => ({
+                                    ...current,
+                                    workspaceIds: normalized,
+                                    workspaceId: normalized.length === 1 ? normalized[0] : null,
+                                }));
                                 setInitialSettingValues(null);
                             }}
                         />
@@ -3159,6 +3168,7 @@ function ChatPage({
                     advancedSettings={advancedSettings}
                     initialSettingValues={initialSettingValues || advancedSettingsValues}
                     settingsInstanceKey={settingsInstanceKey}
+                    markId={chatMarkId}
                     onSettingChange={(values) => {
                         setAdvancedSettingsValues(values);
                         setInitialSettingValues(null);

@@ -147,8 +147,11 @@ const Sidebar = ({
     };
 
     let logoElement;
-    if (settings?.logoType === 'image' && settings?.logo) {
-        logoElement = <img src={resolveResourceUrl(settings.logo)} alt="Logo" className="h-8 w-auto"/>;
+    const resolvedLogo = settings?.logoType === 'image' && settings?.logo
+        ? resolveResourceUrl(settings.logo)
+        : '';
+    if (settings?.logoType === 'image' && resolvedLogo) {
+        logoElement = <img src={resolvedLogo} alt="Logo" className="h-8 w-auto"/>;
     } else {
         const text = (settings?.logoType === 'text' && settings?.logo) ? settings.logo : 'Logo';
         logoElement = <h1 className="text-xl font-bold text-gray-800">{text}</h1>;

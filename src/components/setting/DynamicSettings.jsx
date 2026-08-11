@@ -31,10 +31,13 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import { Info, Slash, Plus, Copy, Trash2, ChevronDown, Upload, X, GripVertical, ArrowUp, ArrowDown, Search, CheckCircle2, CircleHelp, Ban, LockKeyhole } from "lucide-react";
+import { Info, Slash, Plus, Copy, Trash2, ChevronDown, Upload, X, GripVertical, ArrowUp, ArrowDown, Search, CheckCircle2, CircleHelp, Ban, LockKeyhole, RefreshCw, Wifi, WifiOff, Server } from "lucide-react";
 import {createPortal} from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {resolveResourceUrl} from "@/lib/virtualUrl.js";
+import apiClient from "@/lib/apiClient.js";
+import {apiEndpoint} from "@/config.js";
+import {toast} from "sonner";
 
 import {
     DndContext,
@@ -1920,12 +1923,139 @@ function LegacyCustomItem({item, path}) {
     );
 }
 
+// ─── Remote Workspace Components ─────────────────────────────────
+function RemoteWorkspaceStatusBadge({online}) {
+    return (
+        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${online
+            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+            : "bg-black/5 text-black/55 dark:bg-white/10 dark:text-white/55"}`}>
+            {online ? <Wifi size={12}/> : <WifiOff size={12}/>}
+            {online ? "已连接" : "离线"}
+        </span>
+    );
+}
+
+function RemoteWorkspaceConnectionCard({connection, compact = false}) {
+    const lastSeen = connection?.lastSeen
+        ? new Date(Number(connection.lastSeen) * 1000).toLocaleString()
+        : "—";
+    return (
+        <div className="rounded-xl border border-black/10 bg-white p-3 shadow-sm dark:border-white/15 dark:bg-black">
+            <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0">
+                    <div className="flex min-w-0 items-center gap-2">
+                        <Server size={15} className="shrink-0 text-black/55 dark:text-white/55"/>
+                        <span className="truncate text-sm font-semibold" title={connection?.name || "Remote Workspace"}>
+                            {connection?.name || "Remote Workspace"}
+                        </span>
+                    </div>
+                    {!compact && (
+                        <div className="mt-1 text-[11px] text-black/45 dark:text-white/45">
+                            <div className="truncate">
+                                {connection?.platform || "未知平台"}
+                                {Array.isArray(connection?.roots) && connection.roots.length > 1
+                                    ? ` · ${connection.roots.length} 个根目录`
+                                    : (connection?.rootLabel ? ` · ${connection.rootLabel}` : "")}
+                            </div>
+                            {Array.isArray(connection?.roots) && connection.roots.length > 1 && (
+                                <div className="mt-1 space-y-0.5">
+                                    {connection.roots.map((root) => (
+                                        <div key={root.id} className="truncate font-mono" title={root.displayPath || root.alias}>
+                                            {root.alias || 'workspace'} → {root.displayPath || '远端根目录'}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+                <RemoteWorkspaceStatusBadge online={!!connection?.online}/>
+            </div>
+            <div className="mt-3 rounded-lg bg-black/[0.035] px-2.5 py-2 text-xs dark:bg-white/[0.06]">
+                <div className="text-[10px] uppercase tracking-wide text-black/40 dark:text-white/40">连接 IP</div>
+                <div className="mt-0.5 break-all font-mono text-[12px]">{connection?.ip || "—"}</div>
+            </div>
+            {!compact && (
+                <div className="mt-2 text-[11px] text-black/45 dark:text-white/45">最后在线：{lastSeen}</div>
+            )}
+        </div>
+    );
+}
+
+function useRemoteWorkspaceConnections(pollMs = 10000) {
+    const [connections, setConnections] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    const refresh = useCallback(async ({quiet = false} = {}) => {
+        if (!quiet) setLoading(true);
+        try {
+            const data = await apiClient.get(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/connections`);
+            setConnections(Array.isArray(data) ? data : []);
+            setError("");
+        } catch (err) {
+            setError(err?.message || "读取远程 Workspace 失败。");
+        } finally {
+            if (!quiet) setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        refresh();
+        const timer = window.setInterval(() => refresh({quiet: true}), pollMs);
+        return () => window.clearInterval(timer);
+    }, [pollMs, refresh]);
+
+    return {connections, loading, error, refresh};
+}
+
+function RemoteWorkspaceConnectionsItem({item}) {
+    const {connections, loading, error, refresh} = useRemoteWorkspaceConnections();
+    return (
+        <SettingRow fullWidth className="border-b border-black/10 py-2 last:border-b-0 dark:border-white/15">
+            <div className="w-full">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                        <div className="text-sm font-semibold">{item.text || "远程连接"}</div>
+                        <div className="mt-0.5 text-xs text-black/45 dark:text-white/45">
+                            此处只显示连接状态，不展示配对码，也不会展示目标机动态生成的认证秘钥。
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => refresh()}
+                        disabled={loading}
+                        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-black/10 px-2.5 text-xs font-medium hover:bg-black/5 disabled:opacity-50 dark:border-white/15 dark:hover:bg-white/10"
+                    >
+                        <RefreshCw size={13} className={loading ? "animate-spin" : ""}/>
+                        刷新
+                    </button>
+                </div>
+                {error ? (
+                    <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-xs text-red-600 dark:text-red-300">{error}</div>
+                ) : loading && connections.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-black/10 px-3 py-5 text-center text-xs text-black/45 dark:border-white/15 dark:text-white/45">正在读取远程连接…</div>
+                ) : connections.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-black/10 px-3 py-5 text-center text-xs text-black/45 dark:border-white/15 dark:text-white/45">暂无已登记的远程 Workspace。启动远端 Agent 后会自动出现在这里。</div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
+                        {connections.map((connection) => (
+                            <RemoteWorkspaceConnectionCard key={connection.id} connection={connection}/>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </SettingRow>
+    );
+}
+
 // ─── Registered Custom Components ────────────────────────────────
 // 后端只下发稳定的组件标识；具体 UI 实现由前端注册表负责。
 // 这样“自定义请求参数”不会再被误认为通用 JSON 字段，同时也便于
 // 后续继续增加专用动态设置组件，而无需扩展基础 item.type 枚举。
 const CUSTOM_SETTING_COMPONENTS = {
     requestJsonKeyValue: JsonItem,
+    remoteWorkspaceConnections: RemoteWorkspaceConnectionsItem,
 };
 
 function CustomItem({item, path}) {
@@ -2466,6 +2596,7 @@ export default function DynamicSettings({
                                             initialValues,
                                             className,
                                             onImageUpload,
+                                            runtimeContext,
                                         }) {
     const [values, setValues] = useState(() => buildDefaults(config, initialValues));
     const valuesRef = useRef(values);
@@ -2493,7 +2624,10 @@ export default function DynamicSettings({
         // 配置初始化/切换不是用户编辑，不主动调用 onChange。
     }, [config, initialValues]);
 
-    const ctx = useMemo(() => ({ values, update, onImageUpload }), [values, update, onImageUpload]);
+    const ctx = useMemo(
+        () => ({ values, update, onImageUpload, runtimeContext }),
+        [values, update, onImageUpload, runtimeContext],
+    );
 
     return (
         <SettingsContext.Provider value={ctx}>

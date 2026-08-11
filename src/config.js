@@ -15,6 +15,7 @@ export const apiEndpoint = {
     CHAT_STORIES_ENDPOINT: '/chat/stories',
     CHAT_WIDGETS_ENDPOINT: '/chat/widgets',
     WORKSPACES_ENDPOINT: '/workspace',
+    REMOTE_WORKSPACES_ENDPOINT: '/workspace/remote',
     DASHBOARD_ENDPOINT: '/dashboard',
     LOGIN_ENDPOINT: '/user/login',
     LOGOUT_ENDPOINT: '/user/logout',

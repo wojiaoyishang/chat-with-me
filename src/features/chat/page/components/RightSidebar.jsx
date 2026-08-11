@@ -36,6 +36,7 @@ const RightSidebar = memo(({
                                advancedSettings,
                                initialSettingValues,
                                settingsInstanceKey,
+                               markId,
                                onSettingChange,
                                t,
                                containerRef,
@@ -181,6 +182,7 @@ const RightSidebar = memo(({
                             config={advancedSettings}
                             initialValues={initialSettingValues}
                             onChange={onSettingChange ?? null}
+                            runtimeContext={{surface: 'conversation', markId}}
                         />
                     </div>
                 ) : (
@@ -190,7 +192,7 @@ const RightSidebar = memo(({
                 )}
             </div>
         );
-    }, [advancedSettings, dynamicSettingsKey, initialSettingValues, onSettingChange, t]);
+    }, [advancedSettings, dynamicSettingsKey, initialSettingValues, markId, onSettingChange, t]);
 
     if (lockedMode === null) return null;
 
