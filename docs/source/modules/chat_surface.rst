@@ -1,16 +1,17 @@
 Chat Surface 模块
-=================
+================================================================================
 
 .. js:module:: src/features/chat/ChatPage
+   :no-index:
 
 ``ChatPage`` 当前负责 Conversation 加载、消息树、流式 Event、编辑/重生成、摘要、Context、Story、
 Workspace 和语音装配，是后续拆分的重要边界。
 
 关键子目录
-----------
+--------------------------------------------------------------------------------
 
 ``page/components``
-   Header、加载页、消息概览、模型预览和导航。
+   Header、加载页、Runtime Inspector、模型预览和导航。
 
 ``page/hooks``
    Speech、Window Mode、Upload 等复杂生命周期。
@@ -22,7 +23,7 @@ Workspace 和语音装配，是后续拆分的重要边界。
    ChatBox、Message、ToolButtons 和输入交互。
 
 新增代码规则
-------------
+--------------------------------------------------------------------------------
 
 * 纯数据合并进入 utils；
 * 生命周期进入 Hook；

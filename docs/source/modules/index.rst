@@ -18,3 +18,4 @@
    message_summaries
    speech_runtime
    widget_runtime
+   runtime_inspector

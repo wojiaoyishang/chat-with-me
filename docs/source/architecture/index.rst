@@ -16,3 +16,4 @@
    surfaces
    rendering_widgets
    voice_runtime
+   runtime_inspector

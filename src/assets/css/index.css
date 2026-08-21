@@ -3,37 +3,63 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Global scrollbar contract.  Every native scroll region shares the same
+ * appearance; .hide-scrollbar remains the explicit opt-out. */
+:root {
+    --pretty-scrollbar-thumb: rgba(100, 116, 139, 0.42);
+    --pretty-scrollbar-thumb-hover: rgba(71, 85, 105, 0.68);
+    --pretty-scrollbar-track: transparent;
+}
+
+.dark {
+    --pretty-scrollbar-thumb: rgba(148, 163, 184, 0.36);
+    --pretty-scrollbar-thumb-hover: rgba(203, 213, 225, 0.58);
+}
+
+* {
+    scrollbar-color: var(--pretty-scrollbar-thumb) var(--pretty-scrollbar-track);
+    scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--pretty-scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+    min-height: 28px;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: var(--pretty-scrollbar-thumb);
+    background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--pretty-scrollbar-thumb-hover);
+    background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
 }
 
 .hide-scrollbar {
-    -ms-overflow-style: none;  /* IE 和 Edge */
-    scrollbar-width: none;     /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
-.pretty-scrollbar::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-}
-
-.pretty-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.pretty-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 3px; /* 可适当减小圆角 */
-    transition: background-color 0.2s ease;
-}
-
-.pretty-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #94a3b8;
-}
-
+/* Kept as a semantic marker for components that intentionally expose scrolling.
+ * Visual styling is global; this class only stabilizes layout when a bar appears. */
 .pretty-scrollbar {
-    scrollbar-color: #cbd5e1 transparent;
-    scrollbar-width: thin; /* 可选值：auto | thin | none */
+    scrollbar-gutter: stable;
 }
 
 @keyframes gradient-x {

@@ -547,5 +547,6 @@
   "context_state_tool_compacted": "工具上下文已压缩",
   "context_state_tool_forgotten": "工具结果已忽略",
   "context_compaction_running": "正在整理上下文",
-  "context_compaction_completed": "上下文已整理"
+  "context_compaction_completed": "上下文已整理",
+  "runtime_inspector": "运行时检查器"
 }

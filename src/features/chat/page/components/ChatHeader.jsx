@@ -1,5 +1,5 @@
 import React, {memo, useEffect, useMemo, useRef} from 'react';
-import {Bot, Check, ChevronDown, LoaderCircle, MapPinned, Maximize2, Minimize2, Minus, PanelRight} from 'lucide-react';
+import {Bot, Check, ChevronDown, LoaderCircle, Activity, Maximize2, Minimize2, Minus, PanelRight} from 'lucide-react';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.tsx';
 import {Button} from '@/components/ui/button.tsx';
 import ModelItem from './ModelItem.jsx';
@@ -18,8 +18,8 @@ const ChatHeader = memo(({
                              handleModelItemMouseEnter,
                              scrollToSelectedItem,
                              handleSidebarToggle,
-                             onOpenMessageOverview,
-                             messageOverviewDisabled = false,
+                             onOpenRuntimeInspector,
+                             runtimeInspectorDisabled = false,
                              isWindowMode,
                              handleDragMouseDown,
                              handleDragTouchStart,
@@ -186,13 +186,13 @@ const ChatHeader = memo(({
                 <Button
                     variant="ghost"
                     size="icon"
-                    onClick={onOpenMessageOverview}
-                    disabled={messageOverviewDisabled}
+                    onClick={onOpenRuntimeInspector}
+                    disabled={runtimeInspectorDisabled}
                     className="cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
-                    aria-label={t('message_overview') || '消息概览'}
-                    title={t('message_overview') || '消息概览'}
+                    aria-label={t('runtime_inspector') || '运行时检查器'}
+                    title={t('runtime_inspector') || '运行时检查器'}
                 >
-                    <MapPinned className="h-5 w-5 text-gray-600"/>
+                    <Activity className="h-5 w-5 text-gray-600"/>
                 </Button>
 
                 <Button

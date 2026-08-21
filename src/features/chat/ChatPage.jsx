@@ -15,7 +15,7 @@ import {useTranslation} from 'react-i18next';
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
-import MessageOverviewDialog from '@/features/chat/page/components/MessageOverviewDialog.jsx';
+import RuntimeInspectorDialog from '@/features/chat/page/components/RuntimeInspectorDialog.jsx';
 import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
 import StoryReader from '@/features/story/StoryReader.jsx';
 import {clearWorkspaceTransfers, upsertWorkspaceTransfer} from '@/features/workspace/useWorkspaceTransferStore.js';
@@ -226,7 +226,11 @@ function ChatPage({
     );
     const [messageSummaries, setMessageSummaries] = useState([]);
     const [messageSummaryLoading, setMessageSummaryLoading] = useState(false);
-    const [messageOverviewOpen, setMessageOverviewOpen] = useState(false);
+    const [runtimeInspectorOpen, setRuntimeInspectorOpen] = useState(false);
+    const [runtimeInspectorDocument, setRuntimeInspectorDocument] = useState(null);
+    const [runtimeInspectorLoading, setRuntimeInspectorLoading] = useState(false);
+    const [runtimeInspectorError, setRuntimeInspectorError] = useState('');
+    const runtimeInspectorRequestVersionRef = useRef(0);
     const [activeVisibleMessageId, setActiveVisibleMessageId] = useState(null);
     const [highlightedMessageId, setHighlightedMessageId] = useState(null);
     const [isMessageNavigatorWide, setIsMessageNavigatorWide] = useState(true);
@@ -421,6 +425,37 @@ function ChatPage({
             }
         }
     }, [conversationId, t]);
+
+    const loadRuntimeInspector = useCallback(async ({silent = false, focusMessageId = null} = {}) => {
+        if (!conversationId) {
+            setRuntimeInspectorDocument(null);
+            setRuntimeInspectorError('');
+            return null;
+        }
+        const requestVersion = runtimeInspectorRequestVersionRef.current + 1;
+        runtimeInspectorRequestVersionRef.current = requestVersion;
+        if (!silent) setRuntimeInspectorLoading(true);
+        setRuntimeInspectorError('');
+        try {
+            const data = await apiClient.get(apiEndpoint.CHAT_RUNTIME_INSPECTOR_ENDPOINT, {
+                params: {
+                    conversationId,
+                    ...(focusMessageId ? {focusMessageId} : {}),
+                },
+            });
+            if (requestVersion !== runtimeInspectorRequestVersionRef.current) return null;
+            setRuntimeInspectorDocument(data || null);
+            return data || null;
+        } catch (error) {
+            if (requestVersion !== runtimeInspectorRequestVersionRef.current) return null;
+            setRuntimeInspectorError(error?.message || '加载 Runtime Inspector 失败');
+            return null;
+        } finally {
+            if (requestVersion === runtimeInspectorRequestVersionRef.current) {
+                setRuntimeInspectorLoading(false);
+            }
+        }
+    }, [conversationId]);
 
     // ========== Popover 相关函数 ==========
     const scrollToSelectedItem = useCallback((modelListRef) => {
@@ -1459,7 +1494,7 @@ function ChatPage({
 
     const jumpToMessage = useCallback(async (messageId) => {
         if (!messageId) return false;
-        setMessageOverviewOpen(false);
+        setRuntimeInspectorOpen(false);
 
         if (scrollToRenderedMessage(messageId)) return true;
 
@@ -1870,7 +1905,10 @@ function ChatPage({
         messageSummaryFingerprintRef.current = null;
         messageSummaryTailIdRef.current = null;
         setActiveVisibleMessageId(null);
-        setMessageOverviewOpen(false);
+        setRuntimeInspectorOpen(false);
+        setRuntimeInspectorDocument(null);
+        setRuntimeInspectorError('');
+        runtimeInspectorRequestVersionRef.current += 1;
         setHistoryAutoLoadReady(false);
         setIsLoadingMoreHistory(false);
         historyLoadInFlightRef.current = null;
@@ -1884,19 +1922,20 @@ function ChatPage({
         }
     }, [conversationId, loadMessageSummaries, showQuickUserMessageNavigator]);
 
-    const handleOpenMessageOverview = useCallback(() => {
-        setMessageOverviewOpen(true);
+    const handleOpenRuntimeInspector = useCallback(() => {
+        setRuntimeInspectorOpen(true);
+        loadRuntimeInspector({focusMessageId: activeVisibleMessageId});
         if (!messageSummaryLoading) {
             loadMessageSummaries({
                 silent: messageSummariesRef.current.length > 0,
             });
         }
-    }, [loadMessageSummaries, messageSummaryLoading]);
+    }, [activeVisibleMessageId, loadMessageSummaries, loadRuntimeInspector, messageSummaryLoading]);
 
     useEffect(() => {
         if (
             !conversationId
-            || (!showQuickUserMessageNavigator && !messageOverviewOpen)
+            || (!showQuickUserMessageNavigator && !runtimeInspectorOpen)
             || messageSummaryLoading
             || messageSummariesRef.current.length === 0
         ) return undefined;
@@ -1922,7 +1961,7 @@ function ChatPage({
     }, [
         conversationId,
         loadMessageSummaries,
-        messageOverviewOpen,
+        runtimeInspectorOpen,
         messageSummaryLoading,
         messagesOrder,
         showQuickUserMessageNavigator,
@@ -2475,9 +2514,12 @@ function ChatPage({
                         if (
                             messageSummariesRef.current.length > 0
                             || showQuickUserMessageNavigator
-                            || messageOverviewOpen
+                            || runtimeInspectorOpen
                         ) {
                             loadMessageSummaries({silent: true});
+                        }
+                        if (runtimeInspectorOpen) {
+                            loadRuntimeInspector({silent: true});
                         }
                         if (payload.reply) reply({success: true});
                         break;
@@ -2488,9 +2530,12 @@ function ChatPage({
                         if (
                             messageSummariesRef.current.length > 0
                             || showQuickUserMessageNavigator
-                            || messageOverviewOpen
+                            || runtimeInspectorOpen
                         ) {
                             loadMessageSummaries({silent: true});
+                        }
+                        if (runtimeInspectorOpen) {
+                            loadRuntimeInspector({silent: true});
                         }
                         reply({success: true, treeRevision: payload.treeRevision});
                         break;
@@ -2648,7 +2693,7 @@ function ChatPage({
             unsubscribe2();
             unsubscribe3();
         };
-    }, [acknowledgeTaskInterruptReplacements, conversationId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, showQuickUserMessageNavigator, messageOverviewOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState]);
+    }, [acknowledgeTaskInterruptReplacements, conversationId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, loadRuntimeInspector, showQuickUserMessageNavigator, runtimeInspectorOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState]);
 
     useEffect(() => {
         return () => {
@@ -2970,8 +3015,8 @@ function ChatPage({
                         handleModelItemMouseEnter={handleModelItemMouseEnter}
                         scrollToSelectedItem={scrollToSelectedItem}
                         handleSidebarToggle={handleSidebarToggle}
-                        onOpenMessageOverview={handleOpenMessageOverview}
-                        messageOverviewDisabled={!conversationId}
+                        onOpenRuntimeInspector={handleOpenRuntimeInspector}
+                        runtimeInspectorDisabled={!conversationId}
                         isWindowMode={isWindowMode}
                         handleDragMouseDown={handleDragMouseDown}
                         handleDragTouchStart={handleDragTouchStart}
@@ -3103,16 +3148,15 @@ function ChatPage({
                         />
                     </div>
 
-                    <MessageOverviewDialog
-                        open={messageOverviewOpen}
-                        hostElement={chatPageRef.current}
-                        items={messageSummaries}
-                        loading={messageSummaryLoading}
+                    <RuntimeInspectorDialog
+                        open={runtimeInspectorOpen}
+                        document={runtimeInspectorDocument}
+                        loading={runtimeInspectorLoading}
+                        error={runtimeInspectorError}
                         activeMessageId={activeVisibleMessageId}
-                        onClose={() => setMessageOverviewOpen(false)}
-                        onSelect={jumpToMessage}
-                        onRefresh={() => loadMessageSummaries()}
-                        t={t}
+                        onClose={() => setRuntimeInspectorOpen(false)}
+                        onJumpToMessage={jumpToMessage}
+                        onRefresh={() => loadRuntimeInspector({focusMessageId: activeVisibleMessageId})}
                     />
 
                     <footer
