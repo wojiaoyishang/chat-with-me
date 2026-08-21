@@ -116,7 +116,7 @@ const cleanDisplayPath = (value) => String(value || '')
     .replace(/\\\//g, '\\')
     .replace(/\/\\/g, '\\');
 
-const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceIds = [], onWorkspaceChange, t}) => {
+const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWorkspaceIds = [], onWorkspaceChange, t}) => {
     const [workspaces, setWorkspaces] = useState([]);
     const [roots, setRoots] = useState([]);
     const [defaultAccessPolicy, setDefaultAccessPolicy] = useState({version: 2, defaultEffect: 'allow', rules: []});
@@ -161,8 +161,8 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const pairedUrl = markId
-                ? `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired?markId=${encodeURIComponent(markId)}`
+            const pairedUrl = conversationId
+                ? `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired?conversationId=${encodeURIComponent(conversationId)}`
                 : `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired`;
             const [workspaceData, rootData, policyData, pairedRemoteData] = await Promise.all([
                 apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/`),
@@ -182,7 +182,7 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
         } finally {
             setLoading(false);
         }
-    }, [markId, t]);
+    }, [conversationId, t]);
 
     useEffect(() => {
         if (open) load();
@@ -193,10 +193,10 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, markId, selectedWorkspaceI
             .map((item) => String(item || '').trim()).filter(Boolean))];
         const previousIds = selectedIds;
         onWorkspaceChange?.(nextIds);
-        if (!markId) return true;
+        if (!conversationId) return true;
         try {
             await apiClient.put(
-                `${apiEndpoint.WORKSPACES_ENDPOINT}/conversation/${encodeURIComponent(markId)}`,
+                `${apiEndpoint.WORKSPACES_ENDPOINT}/conversation/${encodeURIComponent(conversationId)}`,
                 {workspaceIds: nextIds},
             );
             return true;

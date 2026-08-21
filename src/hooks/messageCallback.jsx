@@ -1,18 +1,6 @@
-import {emitEvent} from "@/context/useEventStore.jsx"
-/*
-* 全局 websocket 事件处理
-*/
-export default function globalMessageCallback(message) {
-    const {type, target, payload, markId, id, isReply} = message;  // 解构
+import {dispatchIncomingEvent} from '@/context/useEventStore.jsx';
 
-    emitEvent({
-        type: type,
-        target: target,
-        payload: payload,
-        markId: markId,
-        id: id,
-        isReply: isReply,
-        fromWebsocket: true  // 标记是否从 Websocket 来的
-    });
-
+/** Dispatch one decoded CWM Protocol v1 event envelope. */
+export default function globalMessageCallback(envelope) {
+    dispatchIncomingEvent(envelope);
 }

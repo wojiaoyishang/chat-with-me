@@ -73,7 +73,7 @@ const TaskMonitorWindow = memo(({
     error = '',
     isFailed = false,
     isFinished = false,
-    markId = null,
+    conversationId = null,
     onClose,
     open = false,
     renderMarkdown,
@@ -413,21 +413,25 @@ const TaskMonitorWindow = memo(({
     const handleAction = (event, action) => {
         event.preventDefault();
         event.stopPropagation();
-        const commandPayloads = {
+        const actions = {
             resumeTask: {
-                command: 'Task-Resume',
-                taskRunId: action.taskRunId,
-                requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                event: 'task.resume',
+                payload: {
+                    taskRunId: action.taskRunId,
+                    requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                },
             },
             cancelTask: {
-                command: 'Task-Cancel',
-                taskRunId: action.taskRunId,
-                requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                event: 'task.cancel',
+                payload: {
+                    taskRunId: action.taskRunId,
+                    requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                },
             },
         };
-        const payload = commandPayloads[action.command];
-        if (!payload || !markId) return;
-        emitEvent({type: 'message', target: 'ChatPage', payload, markId});
+        const request = actions[action.command];
+        if (!request || !conversationId) return;
+        emitEvent({...request, conversationId});
     };
 
     const toggleAutoFollowBottom = () => {
@@ -633,7 +637,7 @@ const TaskMonitorWindow = memo(({
                             key={`${action.command}-${action.taskRunId || action.name}`}
                             type="button"
                             onClick={event => handleAction(event, action)}
-                            disabled={!markId || !action.taskRunId}
+                            disabled={!conversationId || !action.taskRunId}
                             className="rounded-lg bg-orange-500/15 px-3 py-1.5 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {action.name}

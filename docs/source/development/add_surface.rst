@@ -1,0 +1,29 @@
+新增 Surface
+===========
+
+步骤
+----
+
+#. 定义用户任务和输入/输出方式；
+#. 列出要消费和产生的 Event；
+#. 创建 ``features/<domain>``；
+#. 把复杂状态封装 Hook/Store；
+#. 页面只装配 Surface；
+#. 为 Loading、Empty、Error、Offline、Read-only 提供状态；
+#. 支持键盘、触摸和屏幕阅读器；
+#. 增加 ErrorBoundary、测试和文档。
+
+Surface API
+-----------
+
+理想 Surface Props 只包含公共资源 ID、Runtime 操作和展示配置，不接收 WebSocket 实例或后端
+command。
+
+实时更新
+--------
+
+流式 Event 进入专用 reducer/Store，按 ``turnId/runId`` 拒绝迟到更新，并在终态后通过 HTTP 校准。
+
+.. tip::
+
+   新的“适老购物助手”应是 Shopping Surface + Skill/Tools，而不是复制一套 ChatPage 和协议。

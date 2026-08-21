@@ -1,37 +1,22 @@
 import {useEffect} from 'react';
 import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
 
-const useMessageEvents = (markId, setSwitchingMessageId) => {
+const useMessageEvents = (conversationId, setSwitchingMessageId) => {
     useEffect(() => {
         const unsubscribe = onEvent({
-            type: 'widget',
-            target: 'ChatPage',
-            markId,
-        }).then(({
-                     payload,
-                     reply
-                 }) => {
-            switch (payload.command) {
-                case 'Set-SwitchingMessage':
-                    setSwitchingMessageId(payload.value);
+            event: 'message.switching.changed',
+            conversationId,
+        }).then(({payload, reply}) => {
+            setSwitchingMessageId(payload.value);
 
-                    emitEvent({
-                        type: 'widget',
-                        target: 'ChatBox',
-                        payload: {
-                            command: 'Set-EditMessage',
-                            isEdit: false
-                        },
-                        markId,
-                        fromWebsocket: true,
-                        notReplyToWebsocket: true
-                    });
+            emitEvent({
+                event: 'composer.edit.set',
+                payload: {isEdit: false},
+                conversationId,
+                localOnly: true,
+            });
 
-                    reply({success: true});
-                    break;
-                default:
-                    break;
-            }
+            reply({success: true});
         });
 
         return () => {
@@ -41,7 +26,7 @@ const useMessageEvents = (markId, setSwitchingMessageId) => {
                 unsubscribe.cancel();
             }
         };
-    }, [markId, setSwitchingMessageId]);
+    }, [conversationId, setSwitchingMessageId]);
 };
 
 export default useMessageEvents;

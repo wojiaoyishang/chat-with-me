@@ -17,9 +17,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {handleMessageAction} from '../utils/messageActions.js';
 
-const MessageMenuButton = memo(({msg, msgId, markId}) => {
+const MessageMenuButton = memo(({msg, msgId, conversationId}) => {
     const {t} = useTranslation();
-    const actionContext = {msgId, markId};
+    const actionContext = {msgId, conversationId};
 
     return (
         <DropdownMenu>

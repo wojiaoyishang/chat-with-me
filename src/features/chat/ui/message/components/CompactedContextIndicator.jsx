@@ -3,7 +3,7 @@ import {Archive} from 'lucide-react';
 import ContextStateIndicator from './ContextStateIndicator.jsx';
 
 const CompactedContextIndicator = memo(({
-    markId,
+    conversationId,
     messageId,
     replacementId = null,
     label = '已压缩',
@@ -11,7 +11,7 @@ const CompactedContextIndicator = memo(({
 }) => (
     <ContextStateIndicator
         icon={Archive}
-        markId={markId}
+        conversationId={conversationId}
         messageId={messageId}
         replacementId={replacementId}
         label={label}

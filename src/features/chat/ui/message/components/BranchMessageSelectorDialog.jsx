@@ -10,7 +10,7 @@ import MessageSummaryItem from '@/features/chat/page/components/MessageSummaryIt
 
 const BranchMessageSelectorDialog = memo(({
     open,
-    markId,
+    conversationId,
     parentMessageId,
     currentMessageId,
     onClose,
@@ -26,7 +26,7 @@ const BranchMessageSelectorDialog = memo(({
     const listRef = useRef(null);
 
     const loadItems = useCallback(async () => {
-        if (!open || !markId || !parentMessageId) return;
+        if (!open || !conversationId || !parentMessageId) return;
         const requestVersion = requestVersionRef.current + 1;
         requestVersionRef.current = requestVersion;
         setLoading(true);
@@ -38,7 +38,7 @@ const BranchMessageSelectorDialog = memo(({
             do {
                 const data = await apiClient.get(apiEndpoint.CHAT_MESSAGE_SUMMARIES_ENDPOINT, {
                     params: {
-                        markId,
+                        conversationId,
                         scope: 'children',
                         parentMessageId,
                         cursor,
@@ -61,7 +61,7 @@ const BranchMessageSelectorDialog = memo(({
         } finally {
             if (requestVersion === requestVersionRef.current) setLoading(false);
         }
-    }, [currentMessageId, markId, open, parentMessageId, t]);
+    }, [currentMessageId, conversationId, open, parentMessageId, t]);
 
     useEffect(() => {
         if (open) loadItems();

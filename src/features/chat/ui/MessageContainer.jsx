@@ -14,7 +14,7 @@ const MessageContainer = forwardRef(({
                                          onLoadMore,
                                          isLoadingMore = false,
                                          onSwitchMessage,
-                                         markId,
+                                         conversationId,
                                          speechState,
                                          onSpeechTextClick,
                                          highlightedMessageId = null,
@@ -35,7 +35,7 @@ const MessageContainer = forwardRef(({
         [messagesOrder, switchingMessageId],
     );
 
-    useMessageEvents(markId, setSwitchingMessageId);
+    useMessageEvents(conversationId, setSwitchingMessageId);
 
     const handleLoadMore = useCallback(async () => {
         if (isLoadingMore || !onLoadMore) return;
@@ -125,7 +125,7 @@ const MessageContainer = forwardRef(({
                 key={msgId}
                 msgId={msgId}
                 msg={msg}
-                markId={markId}
+                conversationId={conversationId}
                 messages={messages}
                 isFading={isFading}
                 animationClass={animationClass}
@@ -150,7 +150,7 @@ const MessageContainer = forwardRef(({
         fadeMessages,
         enteringMessages,
         getMessageAnimationClass,
-        markId,
+        conversationId,
         onSwitchMessage,
         setFadeMessages,
         leavingMessages,

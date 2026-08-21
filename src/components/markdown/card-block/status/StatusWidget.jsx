@@ -73,7 +73,7 @@ const StatusWidget = memo(({
                                doneColor,
                                Icon,
                                id,
-                               markId = null,
+                               conversationId = null,
                                isProcessing = false,
                                title,
                                defaultExpanded = false,
@@ -279,7 +279,7 @@ const StatusWidget = memo(({
         if (normalizedStatus === 'forgotten' || normalizedStatus === 'ignored') {
             return (
                 <IgnoredContextIndicator
-                    markId={markId}
+                    conversationId={conversationId}
                     messageId={contextId}
                     replacementId={resultReplacementId}
                     label={t('context_state_tool_forgotten', '工具上下文已忽略')}
@@ -290,7 +290,7 @@ const StatusWidget = memo(({
         if (normalizedStatus === 'compacted' || messageCompacted) {
             return (
                 <CompactedContextIndicator
-                    markId={markId}
+                    conversationId={conversationId}
                     messageId={contextId}
                     replacementId={resultReplacementId}
                     label={t('context_state_tool_compacted', '工具上下文已压缩')}
@@ -305,7 +305,7 @@ const StatusWidget = memo(({
         id,
         isFinished,
         isToolCalling,
-        markId,
+        conversationId,
         messageContextState,
         replacement,
     ]);
@@ -334,7 +334,7 @@ const StatusWidget = memo(({
                 isToolCalling={isToolCalling}
                 isWaitingApproval={isWaitingToolState}
                 isResumingTool={isResumingSubagent}
-                markId={markId}
+                conversationId={conversationId}
                 progress={progress}
                 truncatedLastLine={truncatedLastLine}
                 titleAccessory={toolContextIndicator}
@@ -364,7 +364,7 @@ const StatusWidget = memo(({
         prev.doneColor === next.doneColor &&
         prev.Icon === next.Icon &&
         prev.id === next.id &&
-        prev.markId === next.markId &&
+        prev.conversationId === next.conversationId &&
         prev.isProcessing === next.isProcessing &&
         prev.title === next.title &&
         prev.defaultExpanded === next.defaultExpanded &&

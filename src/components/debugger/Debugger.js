@@ -1,6 +1,6 @@
 // components/GlobalEventLogger.jsx
 import {useEffect} from 'react';
-import {emitEvent, useEventStore} from "@/context/useEventStore.jsx";
+import {useEventStore} from "@/context/useEventStore.jsx";
 
 // 全局事件监听器（仅用于调试/开发）
 function GlobalEventLogger() {
@@ -10,10 +10,11 @@ function GlobalEventLogger() {
         const unsubscribe = useEventStore.subscribe((state) => {
             const event = state.event;
 
-            if (event.isReply) {
+            if (!event) return;
+            if (event.reply_to) {
                 console.info('%c[REPLY] ←', 'color: blue; font-weight: bold;', event);
             } else {
-                console.warn('%c[COMMAND] →', 'color: green; font-weight: bold;', event);
+                console.warn('%c[EVENT] →', 'color: green; font-weight: bold;', event);
             }
 
         });

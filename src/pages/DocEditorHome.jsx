@@ -214,7 +214,7 @@ const EditDocumentModal = memo(({show, onClose, documentData, onSave, onDelete})
 
     const handleSave = () => {
         if (documentData && documentName !== documentData.title) {
-            onSave(documentData.markId, documentName);
+            onSave(documentData.documentId, documentName);
         }
         onClose();
     };
@@ -288,7 +288,7 @@ const EditDocumentModal = memo(({show, onClose, documentData, onSave, onDelete})
                     <AlertDialogFooter>
                         <AlertDialogCancel className="cursor-pointer">{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={() => {
-                            onDelete(documentData.markId);
+                            onDelete(documentData.documentId);
                             setIsDeleteConfirmOpen(false);
                             onClose();
                         }} className="cursor-pointer">{t('delete')}</AlertDialogAction>
@@ -422,10 +422,10 @@ const DiscardChangesDialog = ({open, onOpenChange, onConfirm, t}) => {
 
 // 编辑器主页组件
 const DocEditorHome = ({
-                           chatMarkId,
-                           documentMarkId,
-                           onNewChatMarkId,
-                           onNewDocumentMarkId,
+                           conversationId,
+                           documentId,
+                           onNewConversationId,
+                           onNewDocumentId,
                            settingsRefreshVersions,
                        }) => {
     const {t} = useTranslation();
@@ -518,12 +518,12 @@ const DocEditorHome = ({
                 }
             });
 
-            // 假设响应包含新创建的 markId 和其他信息
+            // 假设响应包含新创建的 documentId 和其他信息
             const newItem = {
                 updateDate: data.updateDate,
                 createDate: data.createDate,
                 title: data.title,
-                markId: data.markId, // 假设 API 返回 markId
+                documentId: data.documentId, // 假设 API 返回 documentId
                 type: 'document',
                 preview: data?.preview || null,
             };
@@ -545,9 +545,9 @@ const DocEditorHome = ({
         setIsEditModalOpen(true);
     };
 
-    const handleSaveDocumentEdit = async (markId, newTitle) => {
+    const handleSaveDocumentEdit = async (documentId, newTitle) => {
         try {
-            await apiClient.post(`${apiEndpoint.DOCUMENT_ENDPOINT}/${markId}`, {
+            await apiClient.post(`${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}`, {
                     title: newTitle,
                 },
                 {
@@ -558,7 +558,7 @@ const DocEditorHome = ({
 
             setDocumentCards(prev => // 原 setMainTemplates
                 prev.map(item =>
-                    item.markId === markId ? {...item, title: newTitle, updateDate: new Date().toISOString()} : item
+                    item.documentId === documentId ? {...item, title: newTitle, updateDate: new Date().toISOString()} : item
                 )
             );
 
@@ -570,11 +570,11 @@ const DocEditorHome = ({
         }
     };
 
-    const handleDeleteDocument = async (markId) => {
+    const handleDeleteDocument = async (documentId) => {
         try {
-            await apiClient.delete(`${apiEndpoint.DOCUMENT_ENDPOINT}/${markId}`);
+            await apiClient.delete(`${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}`);
 
-            setDocumentCards(prev => prev.filter(item => item.markId !== markId)); // 原 setMainTemplates
+            setDocumentCards(prev => prev.filter(item => item.documentId !== documentId)); // 原 setMainTemplates
 
             toast.success(t("document_delete_success"));
             setIsEditModalOpen(false);
@@ -585,9 +585,9 @@ const DocEditorHome = ({
     };
 
     // 打开编辑器
-    const handleOpenDocEditor = useCallback((newDocumentMarkId) => {
+    const handleOpenDocEditor = useCallback((newDocumentId) => {
 
-        apiClient.get(`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentMarkId}`)
+        apiClient.get(`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}`)
             .then((data) => {
                 setTimeout(() => {
                     setDocEditorUrl(data.url);
@@ -597,8 +597,8 @@ const DocEditorHome = ({
                 toast.error(t("document_home.open_error", {message: error?.message || 'Failed to open document'}));
             });
 
-        // 设置 documentMarkId
-        onNewDocumentMarkId(newDocumentMarkId);
+        // 设置 documentId
+        onNewDocumentId(newDocumentId);
 
     }, [])
 
@@ -606,8 +606,8 @@ const DocEditorHome = ({
     const handleCloseDocEditorConfirm = useCallback(() => {
         setIsDiscardConfirmOpen(false);
         setIsOpenDocEditorOpen(false);
-        onNewChatMarkId(null);
-        onNewDocumentMarkId(null);
+        onNewConversationId(null);
+        onNewDocumentId(null);
     }, [])
 
     const handleCloseDocEditor = useCallback(() => {
@@ -639,7 +639,7 @@ const DocEditorHome = ({
                     updateDate: item.updateDate,
                     createDate: item.createDate || item.updateDate,
                     title: item.title,
-                    markId: item.markId,   // 这里的 markId 是 documentMarkId
+                    documentId: item.documentId,   // 这里的 documentId 是 documentId
                     type: 'document',
                     preview: item?.preview,
                 }));
@@ -682,12 +682,12 @@ const DocEditorHome = ({
 
     // 查一下有没有 documentId 如果有就打开编辑器
     useEffect(() => {
-        if (documentMarkId && !docEditorUrl) {
-            handleOpenDocEditor(documentMarkId);
-        } else if (documentMarkId && docEditorUrl) {
+        if (documentId && !docEditorUrl) {
+            handleOpenDocEditor(documentId);
+        } else if (documentId && docEditorUrl) {
             setIsOpenDocEditorOpen(true);
         }
-    }, [documentMarkId, docEditorUrl]);
+    }, [documentId, docEditorUrl]);
 
     // 渲染元素
     const uploadingFileCards = uploadFiles.map(file => (
@@ -732,10 +732,10 @@ const DocEditorHome = ({
         ...uploadingFileCards,
         ...documentCards.map(item => ( // 原 mainTemplates.map
             <DocumentCard // 原 TemplateCard
-                key={item.markId}
+                key={item.documentId}
                 item={item}
                 onCardClick={(item) => {
-                    handleOpenDocEditor(item.markId);
+                    handleOpenDocEditor(item.documentId);
                 }}
                 onSettingsClick={handleOpenEditModal}
             />
@@ -791,11 +791,11 @@ const DocEditorHome = ({
 
     ) : (
         <>
-            <ChatWithEditor url={docEditorUrl} chatMarkId={chatMarkId}
-                            documentMarkId={documentMarkId}
+            <ChatWithEditor url={docEditorUrl} conversationId={conversationId}
+                            documentId={documentId}
                             settingsRefreshVersions={settingsRefreshVersions}
                             setDocModifiedStatus={setDocModifiedStatus}
-                            onNewChatMarkId={onNewChatMarkId}/>
+                            onNewConversationId={onNewConversationId}/>
             <DiscardChangesDialog
                 open={isDiscardConfirmOpen}
                 onOpenChange={setIsDiscardConfirmOpen}

@@ -17,7 +17,7 @@ const isToolReplacement = (replacementId) => {
  * status card so one invocation renders exactly one indicator beside
  * "Tool Calling Finished" instead of repeating on nested command/result cards.
  */
-const ReplacementContextBadge = memo(({markId, messageId, replacementId, status}) => {
+const ReplacementContextBadge = memo(({conversationId, messageId, replacementId, status}) => {
     if (isToolReplacement(replacementId)) return null;
     const effectiveStatus = status && typeof status === 'object' ? status : null;
     if (!effectiveStatus) return null;
@@ -29,7 +29,7 @@ const ReplacementContextBadge = memo(({markId, messageId, replacementId, status}
         return (
             <div className="mb-1 flex justify-start" data-tts-ignore="true">
                 <IgnoredContextIndicator
-                    markId={markId}
+                    conversationId={conversationId}
                     messageId={messageId}
                     replacementId={replacementId}
                     label="已忽略"
@@ -41,7 +41,7 @@ const ReplacementContextBadge = memo(({markId, messageId, replacementId, status}
     return (
         <div className="mb-1 flex justify-start" data-tts-ignore="true">
             <CompactedContextIndicator
-                markId={markId}
+                conversationId={conversationId}
                 messageId={messageId}
                 replacementId={replacementId}
                 label="已压缩"

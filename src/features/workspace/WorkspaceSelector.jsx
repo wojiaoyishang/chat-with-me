@@ -12,7 +12,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
-const WorkspaceSelector = ({markId, selectedWorkspaceId, onChange, t}) => {
+const WorkspaceSelector = ({conversationId, selectedWorkspaceId, onChange, t}) => {
     const [workspaces, setWorkspaces] = useState([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -27,8 +27,8 @@ const WorkspaceSelector = ({markId, selectedWorkspaceId, onChange, t}) => {
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const pairedUrl = markId
-                ? `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired?markId=${encodeURIComponent(markId)}`
+            const pairedUrl = conversationId
+                ? `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired?conversationId=${encodeURIComponent(conversationId)}`
                 : `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired`;
             const [localData, remoteData] = await Promise.all([
                 apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/`),
@@ -42,7 +42,7 @@ const WorkspaceSelector = ({markId, selectedWorkspaceId, onChange, t}) => {
         } finally {
             setLoading(false);
         }
-    }, [markId, t]);
+    }, [conversationId, t]);
 
     useEffect(() => {
         load();
@@ -51,11 +51,11 @@ const WorkspaceSelector = ({markId, selectedWorkspaceId, onChange, t}) => {
     const selectWorkspace = async (workspaceId) => {
         const nextId = workspaceId || null;
         onChange?.(nextId);
-        if (!markId) return;
+        if (!conversationId) return;
         setSaving(true);
         try {
             await apiClient.put(
-                `${apiEndpoint.WORKSPACES_ENDPOINT}/conversation/${encodeURIComponent(markId)}`,
+                `${apiEndpoint.WORKSPACES_ENDPOINT}/conversation/${encodeURIComponent(conversationId)}`,
                 {workspaceId: nextId},
             );
         } catch (error) {

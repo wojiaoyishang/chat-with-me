@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {toast} from 'sonner';
-import apiClient from '@/lib/apiClient.js';
+import apiClient, {isAuthRedirectError} from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import {onEvent} from '@/context/useEventStore.jsx';
 import {useIsMobile} from '@/lib/tools.jsx';
@@ -28,7 +28,7 @@ const notificationTimestamp = (notification) => Number(
 );
 
 const NotificationHost = ({
-    currentMarkId,
+    currentConversationId,
     isConversationVisible = true,
     onOpenConversation,
 }) => {
@@ -118,8 +118,8 @@ const NotificationHost = ({
 
     const openNotification = useCallback((notification) => {
         const action = (notification.actions || []).find((item) => item.type === 'open-conversation');
-        const markId = action?.markId || notification.source?.markId;
-        if (markId) onOpenConversation?.(markId, notification);
+        const conversationId = action?.conversationId || notification.source?.conversationId;
+        if (conversationId) onOpenConversation?.(conversationId, notification);
         dismissToast(notification.id, notification.revision);
     }, [dismissToast, onOpenConversation]);
 
@@ -139,31 +139,33 @@ const NotificationHost = ({
             // Do not clear an upsert that arrived after the HTTP snapshot was taken.
             mergeNotifications(pending);
         }).catch((error) => {
-            console.warn('Failed to initialize notifications:', error);
+            if (!isAuthRedirectError(error)) {
+                console.warn('Failed to initialize notifications:', error);
+            }
         });
         return () => { active = false; };
     }, [mergeNotifications, rememberBackgroundNotifications, setTypes]);
 
     useEffect(() => {
-        const unsubscribe = onEvent({type: 'widget', target: 'NotificationCenter'}).then(({payload}) => {
-            switch (payload?.command) {
-                case 'Notification-Upsert':
+        const unsubscribe = onEvent({event: 'notification.*'}).then(({event, payload}) => {
+            switch (event) {
+                case 'notification.upsert':
                     rememberBackgroundNotifications([payload.notification], hiddenSinceRef.current);
                     upsertNotification(payload.notification);
                     break;
-                case 'Notification-Resolve':
+                case 'notification.resolve':
                     hiddenRevisionRef.current.delete(payload.notificationId);
                     backgroundRevisionRef.current.delete(payload.notificationId);
                     hideToast(payload.notificationId);
                     resolveNotification(payload.notificationId, payload.revision);
                     break;
-                case 'Notification-Remove':
+                case 'notification.remove':
                     hiddenRevisionRef.current.delete(payload.notificationId);
                     backgroundRevisionRef.current.delete(payload.notificationId);
                     hideToast(payload.notificationId);
                     removeNotification(payload.notificationId, payload.revision);
                     break;
-                case 'Notification-Sync': {
+                case 'notification.sync': {
                     const items = payload.notifications || [];
                     rememberBackgroundNotifications(items, hiddenSinceRef.current);
                     replaceNotifications(items);
@@ -184,7 +186,7 @@ const NotificationHost = ({
     ]);
 
     useEffect(() => {
-        const unsubscribe = onEvent({type: 'websocket', target: 'onopen'}).then(() => {
+        const unsubscribe = onEvent({event: 'transport.connected'}).then(() => {
             syncPendingNotifications({backgroundSince: hiddenSinceRef.current}).catch((error) => {
                 console.warn('Failed to reconcile notifications after websocket reconnect:', error);
             });
@@ -255,11 +257,11 @@ const NotificationHost = ({
 
             const backgroundRevision = Number(backgroundRevisionRef.current.get(notification.id) || 0);
             const needsBackgroundAttention = backgroundRevision >= revision;
-            const sourceMarkId = notification.source?.markId;
+            const sourceConversationId = notification.source?.conversationId;
             const isCurrentVisibleConversation = (
                 isConversationVisible
-                && sourceMarkId
-                && sourceMarkId === currentMarkId
+                && sourceConversationId
+                && sourceConversationId === currentConversationId
                 && visibilityState === 'visible'
                 && !needsBackgroundAttention
             );
@@ -290,7 +292,7 @@ const NotificationHost = ({
             });
         }
     }, [
-        currentMarkId,
+        currentConversationId,
         dismissToast,
         hideToast,
         isConversationVisible,

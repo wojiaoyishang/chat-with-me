@@ -5,7 +5,7 @@ import MessageTools from './MessageTools.jsx';
 const MessageActions = memo(({
                                  msg,
                                  msgId,
-                                 markId,
+                                 conversationId,
                                  messages,
                                  onSwitchMessage,
                                  switchingMessageId,
@@ -36,7 +36,7 @@ const MessageActions = memo(({
                 <MessagePaginator
                     msg={msg}
                     msgId={msgId}
-                    markId={markId}
+                    conversationId={conversationId}
                     messages={messages}
                     isRight={isRight}
                     onSwitchMessage={onSwitchMessage}
@@ -59,7 +59,7 @@ const MessageActions = memo(({
                 <MessageTools
                     msg={msg}
                     msgId={msgId}
-                    markId={markId}
+                    conversationId={conversationId}
                     readonly={readonly}
                     speechState={speechState}
                 />

@@ -5,7 +5,7 @@ import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
 import KnowledgeGraphViewer from './KnowledgeGraphViewer.jsx';
 import SpeechOverlayHighlighter from './SpeechOverlayHighlighter.jsx';
 
-const TextOnlyMessageContent = memo(({msg, msgId, markId, isLeaving, speechState, onSpeechTextClick, avatarClickProps = {}}) => {
+const TextOnlyMessageContent = memo(({msg, msgId, conversationId, isLeaving, speechState, onSpeechTextClick, avatarClickProps = {}}) => {
     const isRight = msg.position === 'right';
     const displayName = msg.name || 'U';
     const contentRef = useRef(null);
@@ -54,7 +54,7 @@ const TextOnlyMessageContent = memo(({msg, msgId, markId, isLeaving, speechState
                     <div className="relative z-[2]">
                         <MarkdownRenderer
                             contextId={msgId}
-                            markId={markId}
+                            conversationId={conversationId}
                             content={msg.content}
                             replacement={msg?.extraInfo?.replace}
                             msg={msg}

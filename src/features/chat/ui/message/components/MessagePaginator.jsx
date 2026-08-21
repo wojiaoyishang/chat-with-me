@@ -8,7 +8,7 @@ import BranchMessageSelectorDialog from './BranchMessageSelectorDialog.jsx';
 const MessagePaginator = memo(({
                                    msg,
                                    msgId,
-                                   markId,
+                                   conversationId,
                                    messages,
                                    isRight,
                                    onSwitchMessage,
@@ -110,7 +110,7 @@ const MessagePaginator = memo(({
 
                 <BranchMessageSelectorDialog
                     open={selectorOpen}
-                    markId={markId}
+                    conversationId={conversationId}
                     parentMessageId={prevMsgId}
                     currentMessageId={activeMessageId}
                     onClose={() => setSelectorOpen(false)}

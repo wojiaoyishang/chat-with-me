@@ -67,7 +67,7 @@ const CardBlock = memo(({
     content = '',
     id,
     allowTts = false,
-    markId = null,
+    conversationId = null,
     type = 'markdown',
     contextId = '',
     replacement,
@@ -81,7 +81,7 @@ const CardBlock = memo(({
         content,
         id,
         allowTts,
-        markId,
+        conversationId,
         type,
         contextId,
         replacement,
@@ -215,7 +215,7 @@ const CardBlock = memo(({
             return (
                 <StoryCard
                     content={content}
-                    markId={markId}
+                    conversationId={conversationId}
                 />
             );
 
@@ -223,7 +223,7 @@ const CardBlock = memo(({
             return (
                 <WidgetHost
                     content={content}
-                    markId={markId}
+                    conversationId={conversationId}
                     messageReadonly={messageReadonly}
                     messageIsLatest={messageIsLatest}
                 />
@@ -256,7 +256,7 @@ const CardBlock = memo(({
         prev.content !== next.content ||
         prev.id !== next.id ||
         prev.allowTts !== next.allowTts ||
-        prev.markId !== next.markId ||
+        prev.conversationId !== next.conversationId ||
         prev.type !== next.type ||
         prev.contextStatus !== next.contextStatus ||
         prev.messageContextState !== next.messageContextState ||

@@ -82,7 +82,7 @@
   "regenerate_message": "Regenerate",
   "message_info": "Message's Info",
   "select_all": "Select All",
-  "get_markid_error": "Can't request MarkID: {{message}}",
+  "get_conversation_id_error": "Can't request Conversation ID: {{message}}",
   "close_sidebar": "Close Sidebar",
   "open_sidebar": "Open Sidebar",
   "no_models": "No available Models",

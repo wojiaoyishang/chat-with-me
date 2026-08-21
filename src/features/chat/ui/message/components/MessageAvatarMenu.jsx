@@ -13,7 +13,7 @@ const MessageAvatarMenu = memo(({
                                     onClose,
                                     msg,
                                     msgId,
-                                    markId,
+                                    conversationId,
                                     readonly,
                                     speechState,
                                     displayName,
@@ -24,7 +24,7 @@ const MessageAvatarMenu = memo(({
         return value && value !== key ? value : fallback;
     }, [t]);
 
-    const actionContext = {msgId, markId};
+    const actionContext = {msgId, conversationId};
     const canSpeak = !readonly && canSpeakMessage(msg);
     const isSpeakingThisMessage = canSpeak && speechState?.messageId === msgId && isActiveSpeechStatus(speechState?.status);
 
@@ -141,7 +141,7 @@ const MessageAvatarMenu = memo(({
                                 <MessageTools
                                     msg={msg}
                                     msgId={msgId}
-                                    markId={markId}
+                                    conversationId={conversationId}
                                     readonly={readonly}
                                     speechState={speechState}
                                 />

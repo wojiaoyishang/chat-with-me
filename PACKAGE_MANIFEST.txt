@@ -1,0 +1,111 @@
+CWM Frontend Protocol v1 Increment
+Date: 2026-08-21
+
+BREAKING CHANGE:
+  This increment removes the legacy target/command/markId JSON WebSocket protocol.
+  Apply the matching frontend and backend increments together.
+
+Apply:
+  1. Back up the project and development database.
+  2. Extract this ZIP directly into the corresponding project root.
+  3. Run clean_project.bat.
+  4. Run npm ci in your normal networked development environment.
+  5. Run npm run test:protocol and npm run build.
+
+Validated in the build workspace:
+  - 5 frontend protocol tests passed.
+  - 190 JS/JSX/TS/TSX source files passed TypeScript syntax transpilation.
+  - JavaScript/Python event and raw-media frames decoded in both directions.
+
+Included files:
+  CWM_INCREMENT_README.md
+  README.md
+  clean_project.bat
+  docs/Makefile
+  docs/legacy/README_pre_protocol_v1.md
+  docs/make.bat
+  docs/requirements.txt
+  docs/source/_static/.gitkeep
+  docs/source/_templates/.gitkeep
+  docs/source/architecture/event_flow.rst
+  docs/source/architecture/index.rst
+  docs/source/architecture/overview.rst
+  docs/source/architecture/surfaces.rst
+  docs/source/conf.py
+  docs/source/development/adding_event.rst
+  docs/source/development/debugging.rst
+  docs/source/development/index.rst
+  docs/source/development/testing.rst
+  docs/source/index.rst
+  docs/source/modules/event_store.rst
+  docs/source/modules/index.rst
+  docs/source/modules/protocol.rst
+  docs/source/modules/transport.rst
+  docs/source/protocol/binary_transport.rst
+  docs/source/protocol/event_runtime.rst
+  docs/source/protocol/identifiers.rst
+  docs/source/protocol/index.rst
+  docs/source/protocol/media.rst
+  docs/source/welcome/index.rst
+  docs/source/welcome/overview.rst
+  docs/source/welcome/quickstart.rst
+  package.json
+  src/assets/locales/en.json
+  src/assets/locales/zh.json
+  src/components/debugger/Debugger.js
+  src/components/markdown/MarkdownRenderer.jsx
+  src/components/markdown/card-block/CardBlock.jsx
+  src/components/markdown/card-block/status/StatusHeader.jsx
+  src/components/markdown/card-block/status/StatusWidget.jsx
+  src/components/markdown/card-block/task/TaskModeWidget.jsx
+  src/components/markdown/card-block/task/TaskMonitorWindow.jsx
+  src/components/markdown/card-block/widget/WidgetHost.jsx
+  src/components/sidebar/ConversationsList.jsx
+  src/components/sidebar/Sidebar.jsx
+  src/context/ContextEvent.jsx
+  src/context/WebSocketContext.jsx
+  src/context/useEventStore.jsx
+  src/features/chat/ChatPage.jsx
+  src/features/chat/page/components/RightSidebar.jsx
+  src/features/chat/page/hooks/useChatSpeech.js
+  src/features/chat/page/hooks/useFileUpload.js
+  src/features/chat/page/utils/networkMerge.js
+  src/features/chat/ui/ChatBox.jsx
+  src/features/chat/ui/MessageContainer.jsx
+  src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx
+  src/features/chat/ui/message/components/BranchMessageSelectorDialog.jsx
+  src/features/chat/ui/message/components/CompactedContextIndicator.jsx
+  src/features/chat/ui/message/components/ContextInspectorDialog.jsx
+  src/features/chat/ui/message/components/ContextStateIndicator.jsx
+  src/features/chat/ui/message/components/IgnoredContextIndicator.jsx
+  src/features/chat/ui/message/components/MessageActions.jsx
+  src/features/chat/ui/message/components/MessageAvatarMenu.jsx
+  src/features/chat/ui/message/components/MessageContextBadges.jsx
+  src/features/chat/ui/message/components/MessageItem.jsx
+  src/features/chat/ui/message/components/MessageMenuButton.jsx
+  src/features/chat/ui/message/components/MessagePaginator.jsx
+  src/features/chat/ui/message/components/MessageTools.jsx
+  src/features/chat/ui/message/components/ReplacementContextBadge.jsx
+  src/features/chat/ui/message/components/TextOnlyMessageContent.jsx
+  src/features/chat/ui/message/components/TooltipInfo.jsx
+  src/features/chat/ui/message/hooks/useMessageEvents.js
+  src/features/chat/ui/message/utils/messageActions.js
+  src/features/notification/NotificationHost.jsx
+  src/features/story/StoryCard.jsx
+  src/features/workspace/WorkspaceSelector.jsx
+  src/features/workspace/WorkspaceSettingsDialog.jsx
+  src/hooks/messageCallback.jsx
+  src/main.jsx
+  src/pages/ChatWithEditor.jsx
+  src/pages/DashboardPage.jsx
+  src/pages/DocEditorHome.jsx
+  src/pages/SettingPage.jsx
+  src/runtime/protocol/events.js
+  src/runtime/protocol/frame.js
+  src/runtime/protocol/msgpack.js
+  src/runtime/transport/WebSocketTransport.js
+  src/runtime/transport/channel.js
+  tests/protocol.test.mjs
+
+Deleted/replaced paths:
+  (none)

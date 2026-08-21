@@ -313,7 +313,7 @@ export const createMarkdownCopyContentComponent = (copyContent) => {
 
 const createComponents = ({
                               contextId = '',
-                              markId = null,
+                              conversationId = null,
                               replacementRef,
                               depth = 0,
                               maxDepth = 10,
@@ -333,7 +333,7 @@ const createComponents = ({
                 contextId={contextId}
                 content={nestedContent}
                 replacement={getCurrentReplacement()}
-                markId={markId}
+                conversationId={conversationId}
                 depth={extra.depth ?? depth + 1}
                 maxDepth={maxDepth}
                 visitedIds={extra.visitedIds ?? visitedIds}
@@ -482,7 +482,7 @@ const createComponents = ({
                             type={tokenType}
                             content=""
                             contextId={contextId}
-                            markId={markId}
+                            conversationId={conversationId}
                             replacement={currentReplacement}
                             messageIsLatest={messageIsLatest}
                             renderMarkdown={(markdownContent) => {
@@ -514,7 +514,7 @@ const createComponents = ({
                             type="error"
                             content={`cardReplace 出现循环引用，id: ${finalId}`}
                             contextId={contextId}
-                            markId={markId}
+                            conversationId={conversationId}
                             replacement={currentReplacement}
                             messageIsLatest={messageIsLatest}
                             renderMarkdown={(markdownContent) => {
@@ -540,7 +540,7 @@ const createComponents = ({
                             type="error"
                             content={`cardReplace 嵌套过深，id: ${finalId}`}
                             contextId={contextId}
-                            markId={markId}
+                            conversationId={conversationId}
                             replacement={currentReplacement}
                             messageIsLatest={messageIsLatest}
                             renderMarkdown={(markdownContent) => {
@@ -577,7 +577,7 @@ const createComponents = ({
                     data-tts-ignore={normalized.allowTts ? undefined : 'true'}
                 >
                     <ReplacementContextBadge
-                        markId={markId}
+                        conversationId={conversationId}
                         messageId={contextId}
                         replacementId={finalId}
                         status={normalized.contextStatus}
@@ -589,7 +589,7 @@ const createComponents = ({
                         content={normalized.content}
                         allowTts={normalized.allowTts}
                         contextId={contextId}
-                        markId={markId}
+                        conversationId={conversationId}
                         replacement={currentReplacement}
                         contextStatus={normalized.contextStatus}
                         messageContextState={messageContextState}
@@ -610,7 +610,7 @@ const createComponents = ({
 
 function MarkdownRendererInner({
                                    contextId = '',
-                                   markId = null,
+                                   conversationId = null,
                                    content,
                                    replacement = {},
                                    depth = 0,
@@ -639,7 +639,7 @@ function MarkdownRendererInner({
     const components = useMemo(() => {
         return createComponents({
             contextId,
-            markId,
+            conversationId,
             replacementRef,
             depth,
             maxDepth,
@@ -651,7 +651,7 @@ function MarkdownRendererInner({
         });
     }, [
         contextId,
-        markId,
+        conversationId,
         replacementRef,
         depth,
         maxDepth,

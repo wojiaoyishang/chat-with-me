@@ -7,42 +7,36 @@ import {getCopyContent} from './copyContent.js';
  * 处理消息操作。
  * 子组件直接传入 msg，仅额外传入组件无法从 msg 推导出的上下文信息。
  */
-export const handleMessageAction = (action, msg, {markId, msgId}, t) => {
+export const handleMessageAction = (action, msg, {conversationId, msgId}, t) => {
     switch (action) {
         case 'speak':
             emitEvent({
-                type: 'message',
-                target: 'ChatPage',
+                event: 'speech.play.requested',
                 payload: {
-                    command: 'Speak-Message',
                     msgId
                 },
-                markId,
-                fromWebsocket: true
+                conversationId,
+                localOnly: true,
             });
             break;
         case 'stopSpeak':
             emitEvent({
-                type: 'message',
-                target: 'ChatPage',
+                event: 'speech.stop.requested',
                 payload: {
-                    command: 'Stop-Speech',
                     msgId
                 },
-                markId,
-                fromWebsocket: true
+                conversationId,
+                localOnly: true,
             });
             break;
         case 'cancelBackgroundTools':
             emitEvent({
-                type: 'message',
-                target: 'ChatPage',
+                event: 'run.background_tools.cancel',
                 payload: {
-                    command: 'Cancel-Background-Tools',
                     msgId,
-                    streamId: msg.backgroundTools?.streamId
+                    runId: msg.backgroundTools?.runId
                 },
-                markId
+                conversationId
             }).then((payload) => {
                 if (payload?.success) {
                     toast.success(t('background_tools_cancel_requested'));
@@ -53,22 +47,18 @@ export const handleMessageAction = (action, msg, {markId, msgId}, t) => {
             break;
         case 'delete':
             emitEvent({
-                type: 'message',
-                target: 'ChatPage',
+                event: 'message.delete.requested',
                 payload: {
-                    command: 'Delete-Message',
                     value: msgId
                 },
-                markId,
-                fromWebsocket: true
+                conversationId,
+                localOnly: true,
             });
             break;
         case 'edit':
             emitEvent({
-                type: 'widget',
-                target: 'ChatBox',
+                event: 'composer.edit.set',
                 payload: {
-                    command: 'Set-EditMessage',
                     isEdit: true,
                     message: msg,
                     attachments: msg.attachments,
@@ -76,8 +66,8 @@ export const handleMessageAction = (action, msg, {markId, msgId}, t) => {
                     msgId,
                     role: msg.role
                 },
-                markId,
-                fromWebsocket: true
+                conversationId,
+                localOnly: true,
             });
             break;
         case 'copy':
@@ -89,10 +79,8 @@ export const handleMessageAction = (action, msg, {markId, msgId}, t) => {
             break;
         case 'regenerate':
             emitEvent({
-                type: 'widget',
-                target: 'ChatBox',
+                event: 'composer.edit.set',
                 payload: {
-                    command: 'Set-EditMessage',
                     isEdit: true,
                     immediate: true,
                     isRegenerate: true,
@@ -101,16 +89,14 @@ export const handleMessageAction = (action, msg, {markId, msgId}, t) => {
                     msgId,
                     role: msg.role
                 },
-                markId,
-                fromWebsocket: true
+                conversationId,
+                localOnly: true,
             });
             break;
         case 'progenerate':
             emitEvent({
-                type: 'widget',
-                target: 'ChatBox',
+                event: 'composer.edit.set',
                 payload: {
-                    command: 'Set-EditMessage',
                     isEdit: true,
                     immediate: true,
                     isProgenerate: true,
@@ -118,16 +104,14 @@ export const handleMessageAction = (action, msg, {markId, msgId}, t) => {
                     msgId,
                     role: msg.role
                 },
-                markId,
-                fromWebsocket: true
+                conversationId,
+                localOnly: true,
             });
             break;
         case 'fork':
             emitEvent({
-                type: 'widget',
-                target: 'ChatBox',
+                event: 'composer.edit.set',
                 payload: {
-                    command: 'Set-EditMessage',
                     isEdit: true,
                     isFork: true,
                     isRegenerate: true,
@@ -137,8 +121,8 @@ export const handleMessageAction = (action, msg, {markId, msgId}, t) => {
                     msgId,
                     role: msg.role
                 },
-                markId,
-                fromWebsocket: true
+                conversationId,
+                localOnly: true,
             });
             break;
         default:

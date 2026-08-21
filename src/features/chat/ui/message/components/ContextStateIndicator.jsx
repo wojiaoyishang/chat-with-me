@@ -12,14 +12,14 @@ import {openRemoteUniversalModal} from '@/components/modal/universalModal.js';
  */
 const ContextStateIndicator = memo(({
     icon: Icon,
-    markId,
+    conversationId,
     messageId,
     replacementId = null,
     label,
     state = 'status',
     className = '',
 }) => {
-    if (!Icon || !markId || !messageId) return null;
+    if (!Icon || !conversationId || !messageId) return null;
 
     const resolvedLabel = label || '上下文状态';
 
@@ -35,7 +35,7 @@ const ContextStateIndicator = memo(({
                 openRemoteUniversalModal(
                     apiEndpoint.CHAT_CONTEXT_STATE_DETAIL_ENDPOINT,
                     {
-                        markId,
+                        conversationId,
                         messageId,
                         ...(replacementId ? {replacementId} : {}),
                         presentation: 'modal',

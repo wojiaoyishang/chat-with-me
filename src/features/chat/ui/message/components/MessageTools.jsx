@@ -26,10 +26,10 @@ import {useUserStore} from '@/context/userContext.jsx';
 const isActiveSpeechStatus = (status) => ['loading', 'playing', 'paused'].includes(status);
 const toolButtonClassName = 'shrink-0 p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer';
 
-const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) => {
+const MessageTools = memo(({msg, msgId, conversationId, readonly = false, speechState}) => {
     const {t} = useTranslation();
     const showContextDebugButtons = useUserStore(state => Boolean(state.user?.showContextDebugButtons));
-    const actionContext = {msgId, markId};
+    const actionContext = {msgId, conversationId};
     const canSpeak = !readonly && canSpeakMessage(msg);
     const isSpeakingThisMessage = canSpeak && speechState?.messageId === msgId && isActiveSpeechStatus(speechState?.status);
     const backgroundTools = msg.backgroundTools || {};
@@ -194,7 +194,7 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
                             type="button"
                             onClick={() => openRemoteUniversalModal(
                                 apiEndpoint.CHAT_CONTEXT_DEBUG_ENDPOINT,
-                                {markId, messageId: msgId, presentation: 'modal'},
+                                {conversationId, messageId: msgId, presentation: 'modal'},
                             )}
                             className={toolButtonClassName}
                             aria-label={t('context_debug_button')}
@@ -211,7 +211,7 @@ const MessageTools = memo(({msg, msgId, markId, readonly = false, speechState}) 
             <TooltipInfo
                 tip={msg.tip}
                 contextState={msg?.contextState}
-                markId={markId}
+                conversationId={conversationId}
                 messageId={msgId}
                 msg={msg}
                 t={t}

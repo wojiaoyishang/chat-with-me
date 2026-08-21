@@ -1,5 +1,5 @@
 // 知识图谱流式合并工具
-// 说明：流式过程中 Add-Message 可能会携带较短的 network 快照。
+// 说明：流式过程中 message.created 可能会携带较短的 network 快照。
 // 如果直接浅合并，会把已经追加出来的节点/关系覆盖掉，导致图谱闪现后消失。
 export const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj || {}, key);
 

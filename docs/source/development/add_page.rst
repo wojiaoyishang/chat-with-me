@@ -1,0 +1,33 @@
+新增页面或路由
+==============
+
+步骤
+----
+
+#. 在 ``src/pages`` 创建页面装配组件。
+#. 在 ``main.jsx`` Router 增加路径和 ``errorElement``。
+#. 明确 URL 中使用的公共 ID。
+#. 认证页面等待用户初始化，不提前请求受保护资源。
+#. 复杂业务下沉 ``features/<domain>``，页面只组合。
+#. 更新浏览器历史同步规则和文档。
+
+示例
+----
+
+.. code-block:: jsx
+
+   {
+       path: '/reminders',
+       element: <ReminderPage/>,
+       errorElement: <RouteErrorPage/>,
+   }
+
+路由状态
+--------
+
+优先使用 Router navigate，不新增直接 ``history.pushState``。必须兼容旧路径时，通过
+``browserHistoryLayers`` 统一订阅和清理。
+
+.. important::
+
+   Conversation 和 Document ID 要分别放在参数名中，不能重新使用 ``markId`` 或通用 ``id``。

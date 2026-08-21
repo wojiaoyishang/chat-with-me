@@ -27,7 +27,7 @@ const StatusHeader = memo(({
                                isToolCalling,
                                isWaitingApproval = false,
                                isResumingTool = false,
-                               markId = null,
+                               conversationId = null,
                                metaText = '',
                                progress,
                                titleAccessory = null,
@@ -100,32 +100,29 @@ const StatusHeader = memo(({
         event.preventDefault();
         event.stopPropagation();
 
-        const commandPayloads = {
+        const actions = {
             cancelBackgroundTool: {
-                command: 'Cancel-Background-Tool',
-                msgId: contextId,
-                toolCallingId: action.toolId,
+                event: 'run.background_tool.cancel',
+                payload: {msgId: contextId, toolCallingId: action.toolId},
             },
             resumeTask: {
-                command: 'Task-Resume',
-                taskRunId: action.taskRunId,
-                requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                event: 'task.resume',
+                payload: {
+                    taskRunId: action.taskRunId,
+                    requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                },
             },
             cancelTask: {
-                command: 'Task-Cancel',
-                taskRunId: action.taskRunId,
-                requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                event: 'task.cancel',
+                payload: {
+                    taskRunId: action.taskRunId,
+                    requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                },
             },
         };
-        const commandPayload = commandPayloads[action.command];
-        if (!commandPayload) return;
-
-        emitEvent({
-            type: 'message',
-            target: 'ChatPage',
-            payload: commandPayload,
-            markId,
-        });
+        const request = actions[action.command];
+        if (!request) return;
+        emitEvent({...request, conversationId});
     };
 
     return (
@@ -214,7 +211,7 @@ const StatusHeader = memo(({
                         key={`${action.command}-${action.toolId || action.name}`}
                         type="button"
                         onClick={(event) => handleActionClick(event, action)}
-                        disabled={!markId || (action.command === 'cancelBackgroundTool' ? !action.toolId : !action.taskRunId)}
+                        disabled={!conversationId || (action.command === 'cancelBackgroundTool' ? !action.toolId : !action.taskRunId)}
                         className="shrink-0 cursor-pointer rounded-sm bg-orange-500/15 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {action.name}
@@ -258,7 +255,7 @@ const StatusHeader = memo(({
         prev.isToolCalling === next.isToolCalling &&
         prev.isWaitingApproval === next.isWaitingApproval &&
         prev.isResumingTool === next.isResumingTool &&
-        prev.markId === next.markId &&
+        prev.conversationId === next.conversationId &&
         prev.metaText === next.metaText &&
         prev.titleAccessory === next.titleAccessory &&
         prev.progress?.current === next.progress?.current &&

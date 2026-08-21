@@ -43,7 +43,7 @@ const TaskModeWidget = memo(({
     content = '',
     contextId = '',
     id,
-    markId = null,
+    conversationId = null,
     renderMarkdown = defaultRenderMarkdown,
     type = 'taskMode',
 }) => {
@@ -177,7 +177,7 @@ const TaskModeWidget = memo(({
                 isFinished={parsed.isFinished}
                 isProcessing={false}
                 isToolCalling={false}
-                markId={markId}
+                conversationId={conversationId}
                 metaText={elapsedText}
                 rightAccessory={monitorButton}
                 truncatedLastLine={parsed.truncatedLastLine}
@@ -196,7 +196,7 @@ const TaskModeWidget = memo(({
                 error={parsed.error}
                 isFailed={parsed.isFailed}
                 isFinished={parsed.isFinished}
-                markId={markId}
+                conversationId={conversationId}
                 onClose={() => setMonitorOpen(false)}
                 open={monitorOpen}
                 renderMarkdown={renderMarkdown}
@@ -212,7 +212,7 @@ const TaskModeWidget = memo(({
     prev.content === next.content
     && prev.contextId === next.contextId
     && prev.id === next.id
-    && prev.markId === next.markId
+    && prev.conversationId === next.conversationId
     && prev.renderMarkdown === next.renderMarkdown
     && prev.type === next.type
 ));

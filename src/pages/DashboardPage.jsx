@@ -2,7 +2,7 @@ import React, {useEffect, useState, useRef, useCallback} from 'react';
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
 import ChatPage from '@/pages/ChatPage.jsx';
 import {generateUUID, UnifiedErrorScreen, UnifiedLoadingScreen, updateURL, useIsMobile} from "@/lib/tools.jsx";
-import apiClient from "@/lib/apiClient.js";
+import apiClient, {isAuthRedirectError} from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {useTranslation} from "react-i18next";
 import DocEditorHome from "@/pages/DocEditorHome.jsx";
@@ -28,10 +28,10 @@ const readDashboardLocation = () => {
     });
 
     if (parts[0] === 'chat') {
-        return {pageType: 'chat', chatMarkId: parts[1] || null, documentMarkId: null};
+        return {pageType: 'chat', conversationId: parts[1] || null, documentId: null};
     }
     if (parts[0] === 'doc') {
-        return {pageType: 'doc', documentMarkId: parts[1] || null, chatMarkId: parts[2] || null};
+        return {pageType: 'doc', documentId: parts[1] || null, conversationId: parts[2] || null};
     }
     return null;
 };
@@ -40,14 +40,15 @@ const DashboardPage = ({type = "chat"}) => {
 
     const urlParams = useParams();
 
-    const prevChatMarkIdRef = useRef("");
-    const prevDocumentMarkIdRef = useRef("");
+    const previousConversationIdRef = useRef("");
+    const previousDocumentIdRef = useRef("");
 
-    const [chatMarkId, setChatMarkId] = useState(urlParams.chatMarkId);
-    const [documentMarkId, setDocumentMarkId] = useState(urlParams.documentMarkId);
+    const [conversationId, setConversationId] = useState(urlParams.conversationId);
+    const [documentId, setDocumentId] = useState(urlParams.documentId);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingError, setIsLoadingError] = useState(false);
+    const [isAuthRedirecting, setIsAuthRedirecting] = useState(false);
     const [sidebarSettings, setSidebarSettings] = useState({});
     const [randomUUID, setRandomUUID] = useState();
     const [settingsRefreshVersions, setSettingsRefreshVersions] = useState({});
@@ -63,8 +64,8 @@ const DashboardPage = ({type = "chat"}) => {
             const next = readDashboardLocation();
             if (!next) return;
             setPageType(next.pageType);
-            setChatMarkId(next.chatMarkId);
-            setDocumentMarkId(next.documentMarkId);
+            setConversationId(next.conversationId);
+            setDocumentId(next.documentId);
         };
 
         window.addEventListener('popstate', syncFromBrowserHistory);
@@ -117,8 +118,12 @@ const DashboardPage = ({type = "chat"}) => {
                 await loadDashboard();
                 await loadUserInfo();
             } catch (error) {
-                toast.error(t("load_page_error", {message: error?.message || t("unknown_error")}))
-                setIsLoadingError(true);
+                if (isAuthRedirectError(error)) {
+                    setIsAuthRedirecting(true);
+                } else {
+                    toast.error(t("load_page_error", {message: error?.message || t("unknown_error")}));
+                    setIsLoadingError(true);
+                }
             } finally {
                 setIsLoading(false);
             }
@@ -146,64 +151,64 @@ const DashboardPage = ({type = "chat"}) => {
     useEffect(() => {
 
         emitEvent({
-            type: "page",
-            target: "Dashboard",
+            event: 'dashboard.selection.change',
             payload: {
-                command: "Dashboard-Change",
                 pageType: pageType,
-                chatMarkId: chatMarkId,
-                prevChatMarkId: prevChatMarkIdRef.current,
-                documentMarkId: documentMarkId,
-                prevDocumentMarkId: prevDocumentMarkIdRef.current
+                conversationId: conversationId,
+                previousConversationId: previousConversationIdRef.current,
+                documentId: documentId,
+                previousDocumentId: previousDocumentIdRef.current
             }
         })
 
-        prevChatMarkIdRef.current = chatMarkId;
-        prevDocumentMarkIdRef.current = documentMarkId;
-    }, [pageType, chatMarkId, documentMarkId]);
+        previousConversationIdRef.current = conversationId;
+        previousDocumentIdRef.current = documentId;
+    }, [pageType, conversationId, documentId]);
 
-    // 处理聊天 MarkId 变化，组件中不能直接call这个函数，不然不知道是设为空还是真的没有提供
-    const handleMarkIdSelect = useCallback(({newChatMarkId, newDocumentMarkId}) => {
+    // 处理聊天 ConversationId 变化，组件中不能直接call这个函数，不然不知道是设为空还是真的没有提供
+    const handleConversationIdSelect = useCallback(({newConversationId, newDocumentId}) => {
 
-        const urlNewChatMarkId = newChatMarkId ? `/${newChatMarkId}` : "";
-        const urlNewDocumentMarkId = newDocumentMarkId ? `/${newDocumentMarkId}` : '';
+        const urlNewConversationId = newConversationId ? `/${newConversationId}` : "";
+        const urlNewDocumentId = newDocumentId ? `/${newDocumentId}` : '';
 
-        setChatMarkId(newChatMarkId);
-        setDocumentMarkId(newDocumentMarkId);
+        setConversationId(newConversationId);
+        setDocumentId(newDocumentId);
 
         if (pageType === "chat") {
-            updateURL(`/chat${urlNewChatMarkId}`);
+            updateURL(`/chat${urlNewConversationId}`);
         } else if (pageType === "doc") {
-            updateURL(`/doc${urlNewDocumentMarkId}${urlNewChatMarkId}`);
+            updateURL(`/doc${urlNewDocumentId}${urlNewConversationId}`);
         }
     }, [pageType])
 
     return (
         <div className="flex full-screen-height bg-white relative">
-            <NotificationHost
-                currentMarkId={chatMarkId}
-                isConversationVisible={pageType === "chat"}
-                onOpenConversation={(markId) => {
-                    setPageType("chat");
-                    setChatMarkId(markId);
-                    setDocumentMarkId(null);
-                    updateURL(`/chat/${markId}`);
-                }}
-            />
+            {!isLoading && !isLoadingError && !isAuthRedirecting && (
+                <NotificationHost
+                    currentConversationId={conversationId}
+                    isConversationVisible={pageType === "chat"}
+                    onOpenConversation={(conversationId) => {
+                        setPageType("chat");
+                        setConversationId(conversationId);
+                        setDocumentId(null);
+                        updateURL(`/chat/${conversationId}`);
+                    }}
+                />
+            )}
             {isLoadingError ? (
                 <LoadingFailedScreen/>
-            ) : isLoading ? (
+            ) : isLoading || isAuthRedirecting ? (
                 <LoadingScreen/>
             ) : (
                 <>
 
-                    <Sidebar chatMarkId={chatMarkId} setChatMarkId={setChatMarkId} settings={sidebarSettings}
+                    <Sidebar conversationId={conversationId} setConversationId={setConversationId} settings={sidebarSettings}
                              pageType={pageType} setPageType={setPageType} setRandomUUID={setRandomUUID}
                              onSettingsRefresh={handleSettingsRefresh}
-                             onChatMarkIdSelect={(newChatMarkId) => {
-                                 handleMarkIdSelect({
-                                     newChatMarkId: newChatMarkId,
-                                     newDocumentMarkId: documentMarkId,
+                             onConversationIdSelect={(newConversationId) => {
+                                 handleConversationIdSelect({
+                                     newConversationId: newConversationId,
+                                     newDocumentId: documentId,
                                  });
                              }}/>
 
@@ -219,11 +224,11 @@ const DashboardPage = ({type = "chat"}) => {
                                     className="absolute inset-0"
                                 >
                                     <ChatPage key={randomUUID}
-                                              chatMarkId={chatMarkId}
-                                              onNewChatMarkId={(newChatMarkId) => {
-                                                  handleMarkIdSelect({
-                                                      newChatMarkId: newChatMarkId,
-                                                      newDocumentMarkId: documentMarkId,
+                                              conversationId={conversationId}
+                                              onNewConversationId={(newConversationId) => {
+                                                  handleConversationIdSelect({
+                                                      newConversationId: newConversationId,
+                                                      newDocumentId: documentId,
                                                   });
                                               }}
                                               showWindowButton={false}
@@ -241,19 +246,19 @@ const DashboardPage = ({type = "chat"}) => {
                                     className="absolute inset-0"
                                 >
                                     <DocEditorHome key={randomUUID}
-                                                   documentMarkId={documentMarkId}
-                                                   chatMarkId={chatMarkId}
-                                                   onNewChatMarkId={(newChatMarkId) => {
-                                                       handleMarkIdSelect({
-                                                           newChatMarkId: newChatMarkId,
-                                                           newDocumentMarkId: documentMarkId,
+                                                   documentId={documentId}
+                                                   conversationId={conversationId}
+                                                   onNewConversationId={(newConversationId) => {
+                                                       handleConversationIdSelect({
+                                                           newConversationId: newConversationId,
+                                                           newDocumentId: documentId,
                                                        });
                                                    }}
                                                    settingsRefreshVersions={settingsRefreshVersions}
-                                                   onNewDocumentMarkId={(newDocumentMarkId) => {
-                                                       handleMarkIdSelect({
-                                                           newChatMarkId: chatMarkId,
-                                                           newDocumentMarkId: newDocumentMarkId,
+                                                   onNewDocumentId={(newDocumentId) => {
+                                                       handleConversationIdSelect({
+                                                           newConversationId: conversationId,
+                                                           newDocumentId: newDocumentId,
                                                        });
                                                    }}
                                     />

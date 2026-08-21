@@ -73,7 +73,7 @@ const ArtifactList = ({items}) => {
 const ContextInspectorDialog = memo(({
     open,
     onOpenChange,
-    markId,
+    conversationId,
     messageId,
     replacementId = null,
     mode = 'status',
@@ -87,12 +87,12 @@ const ContextInspectorDialog = memo(({
         : apiEndpoint.CHAT_CONTEXT_STATE_DETAIL_ENDPOINT;
 
     const requestKey = useMemo(
-        () => `${mode}:${markId || ''}:${messageId || ''}:${replacementId || ''}`,
-        [markId, messageId, mode, replacementId],
+        () => `${mode}:${conversationId || ''}:${messageId || ''}:${replacementId || ''}`,
+        [conversationId, messageId, mode, replacementId],
     );
 
     useEffect(() => {
-        if (!open || !markId || !messageId) return undefined;
+        if (!open || !conversationId || !messageId) return undefined;
         const controller = new AbortController();
         setLoading(true);
         setData(null);
@@ -100,7 +100,7 @@ const ContextInspectorDialog = memo(({
 
         apiClient.get(endpoint, {
             params: {
-                markId,
+                conversationId,
                 messageId,
                 ...(replacementId ? {replacementId} : {}),
             },
@@ -115,7 +115,7 @@ const ContextInspectorDialog = memo(({
         });
 
         return () => controller.abort();
-    }, [endpoint, markId, messageId, open, replacementId, requestKey]);
+    }, [endpoint, conversationId, messageId, open, replacementId, requestKey]);
 
     const isDebug = mode === 'debug';
     const title = isDebug ? 'LLM 上下文调试' : '上下文状态详情';

@@ -22,7 +22,7 @@ const MID_OVERFLOW_TOLERANCE = 18;
 const MessageItem = memo(({
                               msgId,
                               msg,
-                              markId,
+                              conversationId,
                               messages,
                               isFading,
                               animationClass,
@@ -79,7 +79,7 @@ const MessageItem = memo(({
     const actionProps = {
         msg,
         msgId,
-        markId,
+        conversationId,
         messages,
         onSwitchMessage,
         switchingMessageId,
@@ -184,7 +184,7 @@ const MessageItem = memo(({
             </div>
             {isMessageCompacted && (
                 <CompactedContextIndicator
-                    markId={markId}
+                    conversationId={conversationId}
                     messageId={msgId}
                     label={`${getLabel('context_state_compacted', '已压缩')}${messageCompactions.length > 1 ? ` ×${messageCompactions.length}` : ''}`}
                     className="mb-1"
@@ -192,7 +192,7 @@ const MessageItem = memo(({
             )}
             {isMessageForgotten && (
                 <IgnoredContextIndicator
-                    markId={markId}
+                    conversationId={conversationId}
                     messageId={msgId}
                     label={getLabel('context_state_forgotten', '已忽略')}
                     className="mb-1"
@@ -214,7 +214,7 @@ const MessageItem = memo(({
     const textOnlyMessageProps = {
         msg,
         msgId,
-        markId,
+        conversationId,
         isLeaving: leavingMessages.has(msgId),
         speechState,
         onSpeechTextClick,
@@ -271,7 +271,7 @@ const MessageItem = memo(({
                                     <div className="relative z-[2]">
                                         <MarkdownRenderer
                                             contextId={msgId}
-                                            markId={markId}
+                                            conversationId={conversationId}
                                             content={msg.content}
                                             replacement={msg?.extraInfo?.replace}
                                             msg={msg}
@@ -411,7 +411,7 @@ const MessageItem = memo(({
             {renderMessageContent()}
 
             <MessageContextBadges
-                markId={markId}
+                conversationId={conversationId}
                 messageId={msgId}
                 state={msg?.contextState}
                 align={isRight ? 'right' : 'left'}
@@ -424,7 +424,7 @@ const MessageItem = memo(({
                 onClose={closeAvatarMenu}
                 msg={msg}
                 msgId={msgId}
-                markId={markId}
+                conversationId={conversationId}
                 readonly={readonly}
                 speechState={speechState}
                 displayName={displayName}
@@ -435,7 +435,7 @@ const MessageItem = memo(({
 }, (prevProps, nextProps) => {
     return (
         prevProps.msgId === nextProps.msgId &&
-        prevProps.markId === nextProps.markId &&
+        prevProps.conversationId === nextProps.conversationId &&
         prevProps.msg === nextProps.msg &&
         prevProps.messages[prevProps.msgId] === nextProps.messages[nextProps.msgId] &&
         prevProps.animationClass === nextProps.animationClass &&

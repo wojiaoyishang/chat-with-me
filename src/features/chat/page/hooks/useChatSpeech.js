@@ -368,7 +368,7 @@ const getSortedSpeechCachePositions = (cache) => Array.from(cache?.entries?.keys
     .sort((left, right) => left - right);
 
 export default function useChatSpeech({
-    chatMarkId,
+    conversationId,
     selectedModel,
     advancedSettingsValues,
     t,
@@ -1535,15 +1535,13 @@ export default function useChatSpeech({
             currentController.engine !== 'browser'
         ) {
             emitEvent({
-                type: 'speech',
-                target: 'TTS',
+                event: 'speech.cancel',
                 payload: {
-                    command: 'Speech-Cancel',
                     requestId: currentController.generationRequestId || currentController.requestId,
                     messageId: speechStateRef.current?.messageId,
                     msgId: speechStateRef.current?.messageId,
                 },
-                markId: chatMarkId,
+                conversationId: conversationId,
             });
         }
 
@@ -1555,7 +1553,7 @@ export default function useChatSpeech({
         };
         resetSpeechSegmentCache(notifyBackend ? 'cancel' : 'replace');
         resetSpeechState();
-    }, [chatMarkId, clearBackendSpeechAudio, resetSpeechSegmentCache, resetSpeechState]);
+    }, [conversationId, clearBackendSpeechAudio, resetSpeechSegmentCache, resetSpeechState]);
 
     const pauseActiveSpeech = useCallback(() => {
         const currentController = speechControllerRef.current;
@@ -1574,15 +1572,13 @@ export default function useChatSpeech({
             }
 
             emitEvent({
-                type: 'speech',
-                target: 'TTS',
+                event: 'speech.pause',
                 payload: {
-                    command: 'Speech-Pause',
                     requestId: currentController.generationRequestId || currentController.requestId,
                     messageId: speechStateRef.current?.messageId,
                     msgId: speechStateRef.current?.messageId,
                 },
-                markId: chatMarkId,
+                conversationId: conversationId,
             });
         }
 
@@ -1591,7 +1587,7 @@ export default function useChatSpeech({
             status: prev.status === 'idle' ? prev.status : 'paused',
         }));
         return true;
-    }, [chatMarkId]);
+    }, [conversationId]);
 
     const resumeActiveSpeech = useCallback(() => {
         const currentController = speechControllerRef.current;
@@ -1618,15 +1614,13 @@ export default function useChatSpeech({
             }
 
             emitEvent({
-                type: 'speech',
-                target: 'TTS',
+                event: 'speech.resume',
                 payload: {
-                    command: 'Speech-Resume',
                     requestId: currentController.generationRequestId || currentController.requestId,
                     messageId: speechStateRef.current?.messageId,
                     msgId: speechStateRef.current?.messageId,
                 },
-                markId: chatMarkId,
+                conversationId: conversationId,
             });
         }
 
@@ -1635,7 +1629,7 @@ export default function useChatSpeech({
             status: prev.status === 'idle' ? prev.status : 'playing',
         }));
         return true;
-    }, [chatMarkId]);
+    }, [conversationId]);
 
 const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         if (typeof window === 'undefined' || !window.speechSynthesis) return null;
@@ -1771,10 +1765,8 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             // 浏览器内置 TTS 不依赖后端合成结果，但仍通知服务器记录本次朗读请求。
             // 这里刻意不 await / 不读取 reply，避免阻塞 speechSynthesis.speak。
             emitEvent({
-                type: 'speech',
-                target: 'TTS',
+                event: 'speech.synthesize',
                 payload: {
-                    command: 'Speak-Message',
                     requestId,
                     msgId: messageId,
                     messageId,
@@ -1790,7 +1782,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                     startSegmentPosition,
                     restartReason,
                 },
-                markId: chatMarkId,
+                conversationId: conversationId,
             });
         };
 
@@ -2776,7 +2768,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
     }, [
         buildMessageSpeechCacheKey,
         cancelActiveSpeech,
-        chatMarkId,
+        conversationId,
         findBrowserSpeechVoice,
         getMessageSpeechCacheVariant,
         normalizeSpeechRate,
@@ -2816,15 +2808,13 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         const requestId = preferredRequestId || generateUUID();
         if (previousRequestId && previousRequestId !== requestId) {
             emitEvent({
-                type: 'speech',
-                target: 'TTS',
+                event: 'speech.cancel',
                 payload: {
-                    command: 'Speech-Cancel',
                     requestId: previousRequestId,
                     messageId: controller.messageId,
                     msgId: controller.messageId,
                 },
-                markId: chatMarkId,
+                conversationId: conversationId,
             });
 
             // 旧任务尚未 ready 的分片不能和新任务混合；只清理本次要重请求的缺失句子。
@@ -2879,10 +2869,8 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         }));
 
         emitEvent({
-            type: 'speech',
-            target: 'TTS',
+            event: 'speech.synthesize',
             payload: {
-                command: 'Speak-Message',
                 requestId,
                 msgId: controller.messageId,
                 messageId: controller.messageId,
@@ -2894,10 +2882,10 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 requestedSegmentPositions: missingPositions,
                 restartReason,
             },
-            markId: chatMarkId,
+            conversationId: conversationId,
         });
         return true;
-    }, [chatMarkId, normalizeSpeechRate, resolveBackendPayloadSegmentPosition, selectedModel?.id]);
+    }, [conversationId, normalizeSpeechRate, resolveBackendPayloadSegmentPosition, selectedModel?.id]);
 
     const requestBackendSpeech = useCallback(({
                                                   messageId,
@@ -3977,7 +3965,14 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         }
 
         try {
-            const byteArrays = chunkEntries.map(([, audio]) => decodeBase64ToUint8Array(audio));
+            const byteArrays = chunkEntries.map(([, audio]) => {
+                if (audio instanceof Uint8Array) return audio;
+                if (audio instanceof ArrayBuffer) return new Uint8Array(audio);
+                if (ArrayBuffer.isView(audio)) {
+                    return new Uint8Array(audio.buffer, audio.byteOffset, audio.byteLength);
+                }
+                return decodeBase64ToUint8Array(audio);
+            });
             const blob = createBackendSpeechBlob(byteArrays, mergedPayload);
             const audioUrl = URL.createObjectURL(blob);
             backendState.chunks.delete(resolvedSegmentId);
@@ -4007,7 +4002,8 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
     ]);
 
     const handleBackendSpeechAudioChunk = useCallback((payload) => {
-        if (!payload?.audio) return false;
+        const audioChunk = payload?.body || payload?.audio;
+        if (!audioChunk) return false;
 
         const backendState = backendSpeechAudioRef.current;
         const segmentPosition = resolveBackendPayloadSegmentPosition(payload, getBackendSpeechSegmentPosition(payload, -1));
@@ -4032,7 +4028,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         }
 
         const chunkIndex = Number(payload.chunkIndex ?? payload.chunk_index ?? segmentBuffer.chunks.size);
-        segmentBuffer.chunks.set(Number.isFinite(chunkIndex) ? chunkIndex : segmentBuffer.chunks.size, payload.audio);
+        segmentBuffer.chunks.set(Number.isFinite(chunkIndex) ? chunkIndex : segmentBuffer.chunks.size, audioChunk);
         segmentBuffer.payload = {
             ...segmentBuffer.payload,
             ...payload,
@@ -4168,14 +4164,14 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         return true;
     }, [getBackendSpeechTotalSegments, resolveBackendPayloadSegmentPosition]);
 
-    const handleBackendSpeechEvent = useCallback((payload, reply) => {
+    const handleBackendSpeechEvent = useCallback((eventName, payload, reply) => {
         const requestId = payload?.requestId || payload?.request_id;
         const cache = speechSegmentCacheRef.current;
         const activeRequestId = cache.activeRequestId;
 
         if (requestId && (!activeRequestId || requestId !== activeRequestId)) {
             logSpeechCache('backend-stale-event-ignored', {
-                command: payload?.command,
+                event: eventName,
                 requestId,
                 activeRequestId,
             });
@@ -4184,8 +4180,8 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         }
 
         const eventPayload = mapBackendSpeechPayload(payload);
-        switch (eventPayload?.command) {
-            case 'Speech-Start': {
+        switch (eventName) {
+            case 'speech.started': {
                 const messageId = eventPayload.messageId || eventPayload.message_id || eventPayload.msgId || eventPayload.msg_id || speechStateRef.current?.messageId;
                 const backendState = backendSpeechAudioRef.current;
                 backendState.activeGenerationRequestId = requestId || backendState.activeGenerationRequestId;
@@ -4216,7 +4212,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 reply?.({success: true});
                 break;
             }
-            case 'Speech-Paused': {
+            case 'speech.paused': {
                 speechControllerRef.current.paused = true;
                 const backendAudio = backendSpeechAudioRef.current?.audio;
                 if (backendAudio && !backendAudio.paused) backendAudio.pause();
@@ -4224,7 +4220,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 reply?.({success: true});
                 break;
             }
-            case 'Speech-Resumed': {
+            case 'speech.resumed': {
                 speechControllerRef.current.paused = false;
                 const backendAudio = backendSpeechAudioRef.current?.audio;
                 if (backendAudio && backendAudio.paused) {
@@ -4236,13 +4232,13 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 reply?.({success: true});
                 break;
             }
-            case 'Speech-Generation-Progress':
+            case 'speech.generation.progress':
                 reply?.({success: handleBackendSpeechGenerationProgress(eventPayload)});
                 break;
-            case 'Speech-Buffer-Progress':
+            case 'speech.buffer.progress':
                 reply?.({success: handleBackendSpeechBufferProgress(eventPayload)});
                 break;
-            case 'Speech-End': {
+            case 'speech.ended': {
                 backendSpeechAudioRef.current.generationEnded = true;
                 cache.inFlightPositions.clear();
                 const allCached = cache.entries.size >= getBackendSpeechTotalSegments();
@@ -4262,12 +4258,12 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 reply?.({success: true});
                 break;
             }
-            case 'Speech-Cancelled':
+            case 'speech.cancelled':
                 cache.inFlightPositions.clear();
                 logSpeechCache('backend-generation-cancelled', {requestId});
                 reply?.({success: true});
                 break;
-            case 'Speech-Error':
+            case 'speech.failed':
                 cache.inFlightPositions.clear();
                 logSpeechPlayError('backend-speech-error-event', {
                     requestId,
@@ -4279,10 +4275,10 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 setSpeechState(prev => ({...prev, generationStatus: 'idle', generationPhase: 'error'}));
                 reply?.({success: true});
                 break;
-            case 'Speech-Audio-Chunk':
+            case 'speech.audio.chunk':
                 reply?.({success: handleBackendSpeechAudioChunk(eventPayload)});
                 break;
-            case 'Speech-Segment-Ready':
+            case 'speech.segment.ready':
                 reply?.({success: handleBackendSpeechSegmentReady(eventPayload)});
                 break;
             default:

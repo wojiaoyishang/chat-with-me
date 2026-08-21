@@ -1,0 +1,43 @@
+Surface 架构
+===========
+
+Surface 是用户和 Agent 交互的可见边界。多个 Surface 共享 Runtime，但有不同交互方式。
+
+Chat Surface
+------------
+
+渲染消息树、分支、Thinking、Tool、Attachment、Context 和输入框；消费 Message/Turn Event。
+
+Voice Surface
+-------------
+
+负责录音、监听、识别、播放、字幕、暂停和打断；不应依赖 Chat DOM 细节。
+
+Widget Surface
+--------------
+
+根据结构化定义渲染 Choice、Confirm、Input、Card Deck 等组件，并把用户动作转换为 Event。
+
+Document Surface
+----------------
+
+装配 Collabora Editor 和 Conversation，使用 Document Scope 处理光标、选区和插入操作。
+
+未来 Shopping Surface
+----------------------
+
+商品卡片和左右滑选择应复用 Widget/Card Deck 与 Voice，而不是创建一套独立聊天协议。
+
+拆分原则
+--------
+
+* Surface 只消费/产生 Event；
+* 共享逻辑下沉 Hook/Runtime；
+* Provider 细节不进入组件；
+* 页面只装配 Surface 和 URL；
+* 复杂 Surface 有自己的 ErrorBoundary。
+
+.. tip::
+
+   判断代码是否属于 Surface：如果换成移动端或语音设备后仍需保留，它更可能属于 Runtime；如果
+   只描述当前 React 视觉和手势，则属于 Surface。

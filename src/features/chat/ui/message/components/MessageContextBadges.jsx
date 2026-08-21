@@ -9,7 +9,7 @@ import IgnoredContextIndicator from './IgnoredContextIndicator.jsx';
  * - middle/right messages expose compaction as a link inside message details.
  */
 const MessageContextBadges = memo(({
-    markId,
+    conversationId,
     messageId,
     state,
     align = 'left',
@@ -24,7 +24,7 @@ const MessageContextBadges = memo(({
     return (
         <div className={`mt-1 flex w-full flex-wrap items-center gap-1.5 ${align === 'right' ? 'justify-end pr-12' : 'justify-start pl-2 lg:pl-10'}`}>
             <IgnoredContextIndicator
-                markId={markId}
+                conversationId={conversationId}
                 messageId={messageId}
                 label="已忽略"
             />

@@ -1,392 +1,280 @@
 import {create} from 'zustand';
 
-import {sendWebSocketMessage} from "@/context/WebSocketContext.jsx";
 import {generateUUID} from '@/lib/tools.jsx';
+import {sendRealtimeEvent} from '@/runtime/transport/channel.js';
+import {eventMatchesPattern, normalizeEventName, normalizeEventPattern} from '@/runtime/protocol/events.js';
+import {normalizeEventDirections, shouldDeliverEventToListener} from '@/runtime/protocol/subscriptions.js';
 
-const createDebugLogger = () => {
-    if (typeof DEBUG_MODE === 'undefined' || !DEBUG_MODE) return null;
+const listeners = new Map();
+const uniqueListeners = new Set();
+const replyWaiters = new Map();
+const replyBacklog = new Map();
+const processedEventIds = [];
+const MAX_PROCESSED_IDS = 500;
+const DEFAULT_REPLY_TIMEOUT_MS = 10_000;
 
-    return {
-        logEmit: (event, stack) => {
-            const {type, target, payload, markId, isReply, id} = event;
+const debugEnabled = () => typeof DEBUG_MODE !== 'undefined' && Boolean(DEBUG_MODE);
 
-            const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
-
-            console.groupCollapsed(
-                `%c[EVENT EMIT] %c${timestamp} %cEVENT`,
-                'color: #0066ff; font-weight: bold',
-                'color: #666; font-style: italic',
-                'color: #009933; font-weight: bold'
-            );
-
-            console.log(
-                `%cType:%c ${type} %c| %cTarget:%c ${target} %c| %cMark ID:%c ${markId || 'N/A'} %c| %cID:%c ${id || 'N/A'}`,
-                'font-weight: bold', 'color: #0066ff',
-                'color: #ccc',
-                'font-weight: bold', 'color: #0066ff',
-                'color: #ccc',
-                'font-weight: bold', 'color: #0066ff',
-                'color: #ccc',
-                'font-weight: bold', 'color: #0066ff'
-            );
-
-            if (payload?.command) {
-                console.log(
-                    `%cCommand:%c ${payload.command}`,
-                    'font-weight: bold', 'color: #ff6600; font-size: 1.1em'
-                );
-            }
-
-            console.log('%cPayload:', 'font-weight: bold; color: #6600cc');
-            console.log(payload);
-
-            if (stack) {
-                console.log('%cCall Stack:', 'font-weight: bold; color: #cc0000');
-                console.group();
-                console.trace(stack);
-                console.groupEnd();
-            }
-
-            console.groupEnd();
-        },
-
-        logReceive: (event, listenerStack) => {
-            const {type, target, payload, markId, isReply, id} = event;
-
-            const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
-
-            console.groupCollapsed(
-                `%c[EVENT RECEIVE] %c${timestamp} %cEVENT`,
-                'color: #009933; font-weight: bold',
-                'color: #666; font-style: italic',
-                'color: #009933; font-weight: bold'
-            );
-
-            console.log(
-                `%cType:%c ${type} %c| %cTarget:%c ${target} %c| %cMark ID:%c ${markId || 'N/A'} %c| %cID:%c ${id || 'N/A'}`,
-                'font-weight: bold', 'color: #0066ff',
-                'color: #ccc',
-                'font-weight: bold', 'color: #0066ff',
-                'color: #ccc',
-                'font-weight: bold', 'color: #0066ff',
-                'color: #ccc',
-                'font-weight: bold', 'color: #0066ff'
-            );
-
-            if (payload?.command) {
-                console.log(
-                    `%cCommand:%c ${payload.command}`,
-                    'font-weight: bold', 'color: #ff6600; font-size: 1.1em'
-                );
-            }
-
-            console.log('%cPayload:', 'font-weight: bold; color: #6600cc');
-            console.log(payload);
-
-            if (listenerStack) {
-                console.log('%cRegistered at:', 'font-weight: bold; color: #cc0000');
-                console.group();
-                console.log(listenerStack);
-                console.groupEnd();
-            }
-
-            console.groupEnd();
-        }
-    };
-};
-
-// =======================
-// 全局事件存储
-// =======================
-export const useEventStore = create((set, get) => {
-    const debugLogger = createDebugLogger();
-    // 存储回复监听器 { [eventId]: resolveFunction }
-    const replyListeners = new Map();
-
-    return {
-        listeners: {},
-        processedEventIds: [],   // 普通事件（非回复）的已处理 ID
-        processedReplyIds: [],   // 回复事件的已处理 ID
-        uniqueListeners: new Set(),
-
-        // 内部方法：注册回复监听器
-        _registerReplyListener: (id, resolve) => {
-            replyListeners.set(id, resolve);
-        },
-
-        // 内部方法：移除回复监听器
-        _removeReplyListener: (id) => {
-            replyListeners.delete(id);
-        },
-
-        // 内部方法：检查回复监听器是否存在
-        _hasReplyListener: (id) => {
-            return replyListeners.has(id);
-        },
-
-        addListener: (type, target, callback, listenerMarkId, acceptReply = false, onlyEmpty = false, unique = null) => {
-            const registrationStack = debugLogger
-                ? new Error('Listener registered at:').stack.split('\n').slice(2).join('\n')
-                : null;
-
-            if (unique !== null) {
-                const {uniqueListeners} = get();
-                if (uniqueListeners.has(unique)) {
-                    console.warn(`Unique listener for "${unique}" already registered. Registration skipped.`);
-                    return () => {
-                    };
-                }
-            }
-
-            set(state => {
-                const newListeners = {...state.listeners};
-                if (!newListeners[type]) newListeners[type] = {};
-                if (!newListeners[type][target]) newListeners[type][target] = [];
-
-                const exists = newListeners[type][target].some(l => l.callback === callback);
-                if (!exists) {
-                    newListeners[type][target] = [
-                        ...newListeners[type][target],
-                        {
-                            callback,
-                            active: true,
-                            markId: listenerMarkId,
-                            acceptReply,
-                            onlyEmpty,
-                            registrationStack
-                        }
-                    ];
-                }
-
-                let newState = {listeners: newListeners};
-                if (unique !== null) {
-                    newState.uniqueListeners = new Set([...state.uniqueListeners, unique]);
-                }
-
-                return newState;
-            });
-
-            return () => {
-                set(state => {
-                    const newListeners = {...state.listeners};
-                    if (newListeners[type]?.[target]) {
-                        newListeners[type][target] = newListeners[type][target]
-                            .map(l => l.callback === callback ? {...l, active: false} : l)
-                            .filter(l => l.active);
-
-                        if (newListeners[type][target].length === 0) {
-                            delete newListeners[type][target];
-                            if (Object.keys(newListeners[type]).length === 0) {
-                                delete newListeners[type];
-                            }
-                        }
-                    }
-                    return {listeners: newListeners};
-                });
-
-                if (unique !== null) {
-                    set(state => {
-                        const newUniqueListeners = new Set(state.uniqueListeners);
-                        newUniqueListeners.delete(unique);
-                        return {uniqueListeners: newUniqueListeners};
-                    });
-                }
-            };
-        },
-
-        _emit: (event, emitStack = null) => {
-            let {
-                type = null,
-                target = null,
-                markId: eventMarkId = null,
-                isReply = false,
-                payload,
-                id = null,
-                fromWebsocket = false,
-                notReplyToWebsocket = false
-            } = event;
-
-            const {listeners, processedEventIds, processedReplyIds} = get();
-
-            // 生成唯一ID（如果未提供）
-            if (!id) {
-                id = generateUUID();
-                event.id = id;
-            }
-
-            // 非WebSocket事件且不是来自WebSocket的事件才发送
-            if (type !== 'websocket' && !fromWebsocket) {
-                sendWebSocketMessage({
-                    ...(type && {type}),
-                    ...(target && {target}),
-                    payload,
-                    ...(eventMarkId && {markId: eventMarkId}),
-                    isReply,
-                    id
-                });
-            }
-
-            if (debugLogger) {
-                if (!isReply) {
-                    debugLogger.logEmit(event, emitStack);
-                } else {
-                    debugLogger.logReceive(event, emitStack);
-                }
-            }
-
-            // 处理回复事件：检查是否有等待此ID的回复监听器
-            if (isReply) {
-                const resolveFn = replyListeners.get(id);
-                if (resolveFn) {
-                    const safeReply = () => {
-                        console.warn('Cannot reply to a reply event');
-                    };
-                    resolveFn(payload, eventMarkId, true, id, safeReply, undefined);
-                    replyListeners.delete(id);
-                }
-            }
-
-            // ==================== 关键修改部分 ====================
-            // 分别检测普通事件和回复事件的重复
-            if (isReply) {
-                if (processedReplyIds.includes(id)) {
-                    console.warn(`Duplicate reply event ignored: ${id}`);
-                    return;
-                }
-            } else {
-                if (processedEventIds.includes(id)) {
-                    console.warn(`Duplicate event ignored: ${id}`);
-                    return;
-                }
-            }
-
-            // 分别加入对应的已处理列表（防止内存无限增长）
-            set(state => ({
-                ...(isReply
-                        ? {processedReplyIds: [...state.processedReplyIds, id].slice(-100)}
-                        : {processedEventIds: [...state.processedEventIds, id].slice(-100)}
-                )
-            }));
-            // ====================================================
-
-            // 标准事件分发
-            const targetListeners = [...(listeners[type]?.[target] || [])];
-            targetListeners.forEach(listener => {
-                if (!listener.active) return;
-                if (listener.acceptReply !== isReply) return;
-                if (listener.markId != null && eventMarkId != null && listener.markId !== eventMarkId) return;
-                if (listener.markId == null && listener.onlyEmpty && eventMarkId != null) return;
-
-                const reply = (data) => {
-                    get()._emit({
-                        payload: data,
-                        isReply: true,
-                        id: id,
-                        ...(notReplyToWebsocket && {fromWebsocket: notReplyToWebsocket})
-                    }, new Error('Reply initiated at:').stack);
-                };
-
-                Promise.resolve().then(() => {
-                    if (!listener.active || (isReply && !listener.acceptReply)) return;
-                    try {
-                        listener.callback({
-                            payload: payload,
-                            eventMarkId: eventMarkId,
-                            isReply: isReply,
-                            id: id,
-                            reply: reply,
-                            markId: listener.markId,
-                        });
-                    } catch (error) {
-                        console.groupCollapsed(
-                            `%c[EVENT ERROR] %c${type}/${target}`,
-                            'color: #cc0000; font-weight: bold',
-                            'color: #666'
-                        );
-                        console.error(`Error in event listener:`, error);
-                        console.log('Event payload:', payload);
-                        console.log('Event markId:', eventMarkId);
-                        console.log('Listener markId:', listener.markId);
-                        console.log('Is Reply:', isReply);
-                        console.log('Listener registered at:');
-                        console.log(listener.registrationStack || 'N/A');
-                        console.groupEnd();
-                    }
-                });
-            });
-        }
-    };
+const createEnvelope = ({
+    event,
+    payload = {},
+    conversationId = null,
+    documentId = null,
+    turnId = null,
+    runId = null,
+    streamId = null,
+    traceId = null,
+    replyTo = null,
+    eventId = null,
+    sequence = 0,
+    timestampMs = null,
+}) => ({
+    version: 1,
+    event_id: eventId || generateUUID(),
+    event: normalizeEventName(event),
+    conversation_id: conversationId || null,
+    document_id: documentId || null,
+    turn_id: turnId || null,
+    run_id: runId || null,
+    stream_id: streamId || null,
+    trace_id: traceId || generateUUID(),
+    timestamp_ms: timestampMs ?? Date.now(),
+    sequence: Number.isFinite(Number(sequence)) ? Math.max(0, Number(sequence)) : 0,
+    reply_to: replyTo || null,
+    payload: payload && typeof payload === 'object' ? payload : {value: payload},
 });
 
-// =======================
-// 增强的事件发射函数
-// =======================
-export let emitEvent = ({
-                            type,
-                            target,
-                            payload,
-                            markId = null,
-                            isReply = false,
-                            id = null,
-                            fromWebsocket = false,
-                            notReplyToWebsocket = false,
-                            onTimeout = null
-                        }) => {
-    const emitStack = typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE
-        ? new Error('Event emitted at:').stack
-        : null;
+const matchesEvent = (patterns, event) => patterns.some((pattern) => eventMatchesPattern(pattern, event));
 
-    const event = {type, target, payload, markId, isReply, id, fromWebsocket, notReplyToWebsocket};
+const logEvent = (direction, envelope) => {
+    if (!debugEnabled()) return;
+    const style = direction === 'incoming' ? 'color:#079447;font-weight:bold' : 'color:#175cd3;font-weight:bold';
+    console.groupCollapsed(`%c[CWM ${direction.toUpperCase()}] %c${envelope.event}`, style, 'color:inherit;font-weight:bold');
+    console.log('event_id:', envelope.event_id);
+    console.log('conversation_id:', envelope.conversation_id);
+    console.log('turn_id:', envelope.turn_id);
+    console.log('run_id:', envelope.run_id);
+    console.log('reply_to:', envelope.reply_to);
+    console.log('payload:', envelope.payload);
+    console.groupEnd();
+};
 
-    const state = useEventStore.getState();
-    state._emit(event, emitStack);
+export const useEventStore = create(() => ({
+    event: null,
+    direction: null,
+    processedCount: 0,
+}));
 
-    const eventId = event.id;
+const rememberEvent = (eventId) => {
+    if (!eventId) return false;
+    if (processedEventIds.includes(eventId)) return true;
+    processedEventIds.push(eventId);
+    if (processedEventIds.length > MAX_PROCESSED_IDS) processedEventIds.splice(0, processedEventIds.length - MAX_PROCESSED_IDS);
+    return false;
+};
 
-    const thenable = {
-        then: (callback) => {
-            if (isReply) {
-                return Promise.reject(new Error('Cannot wait for reply on a reply event'));
-            }
+const settleReply = (envelope) => {
+    if (!envelope.reply_to) return false;
+    const waiter = replyWaiters.get(envelope.reply_to);
+    if (waiter) {
+        clearTimeout(waiter.timeoutId);
+        replyWaiters.delete(envelope.reply_to);
+        waiter.resolve(envelope.payload);
+    } else {
+        replyBacklog.set(envelope.reply_to, envelope.payload);
+        window.setTimeout(() => replyBacklog.delete(envelope.reply_to), DEFAULT_REPLY_TIMEOUT_MS);
+    }
+    return true;
+};
 
-            return new Promise((resolve, reject) => {
-                const wrappedResolve = (payload, markId, isReply, id, reply, listenerMarkId) => {
-                    try {
-                        const result = callback(payload, markId, isReply, id, reply, listenerMarkId);
-                        resolve(result);
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
+const dispatchEnvelope = (envelope, {direction = 'local', localOnly = false} = {}) => {
+    if (!envelope?.event || !envelope?.event_id) throw new TypeError('Invalid CWM event envelope');
+    if (rememberEvent(envelope.event_id)) return;
 
-                state._registerReplyListener(eventId, wrappedResolve);
+    logEvent(direction, envelope);
+    useEventStore.setState({
+        event: envelope,
+        direction,
+        processedCount: processedEventIds.length,
+    });
+    settleReply(envelope);
 
-                setTimeout(() => {
-                    if (state._hasReplyListener(eventId)) {
-                        state._removeReplyListener(eventId);
-                        console.warn(`Timeout: No reply received for event ID ${eventId} after 10 seconds`);
-                        if (onTimeout) onTimeout();
-                        reject(new Error('Timeout waiting for reply'));
-                    }
-                }, 10000);
+    for (const registration of [...listeners.values()]) {
+        if (!registration.active || !matchesEvent(registration.events, envelope.event)) continue;
+        if (!shouldDeliverEventToListener({
+            direction,
+            replyTo: envelope.reply_to,
+            listenerDirections: registration.directions,
+            includeReplies: registration.includeReplies,
+        })) continue;
+        if (registration.conversationId) {
+            const isGlobal = !envelope.conversation_id;
+            if ((!isGlobal || !registration.includeGlobal) && registration.conversationId !== envelope.conversation_id) continue;
+        }
+        if (registration.documentId) {
+            const isGlobal = !envelope.document_id;
+            if ((!isGlobal || !registration.includeGlobal) && registration.documentId !== envelope.document_id) continue;
+        }
+        if (registration.onlyWithoutConversation && envelope.conversation_id) continue;
+
+        const reply = (payload, event = `${envelope.event}.result`) => {
+            const replyEnvelope = createEnvelope({
+                event,
+                payload,
+                conversationId: envelope.conversation_id,
+                documentId: envelope.document_id,
+                turnId: envelope.turn_id,
+                runId: envelope.run_id,
+                streamId: envelope.stream_id,
+                traceId: envelope.trace_id,
+                replyTo: envelope.event_id,
             });
-        }
-    };
+            dispatchEnvelope(replyEnvelope, {
+                direction: localOnly ? 'local' : 'outgoing',
+                localOnly,
+            });
+            if (!localOnly) sendRealtimeEvent(replyEnvelope);
+            return replyEnvelope;
+        };
 
-    return thenable;
+        Promise.resolve().then(() => {
+            if (!registration.active) return;
+            try {
+                registration.callback({
+                    payload: envelope.payload,
+                    event: envelope.event,
+                    eventName: envelope.event,
+                    eventConversationId: envelope.conversation_id,
+                    eventDocumentId: envelope.document_id,
+                    eventTurnId: envelope.turn_id,
+                    eventRunId: envelope.run_id,
+                    eventStreamId: envelope.stream_id,
+                    eventTraceId: envelope.trace_id,
+                    eventReplyTo: envelope.reply_to,
+                    eventSequence: envelope.sequence,
+                    eventDirection: direction,
+                    id: envelope.event_id,
+                    eventId: envelope.event_id,
+                    reply,
+                    envelope,
+                });
+            } catch (error) {
+                console.error(`[CWM event listener failed] ${envelope.event}`, error, registration.stack);
+            }
+        });
+    }
 };
 
-if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) {
-    window.emitEvent = emitEvent;
-}
+export const dispatchIncomingEvent = (envelope) => dispatchEnvelope(envelope, {direction: 'incoming', localOnly: false});
 
-// =======================
-// 事件监听函数
-// =======================
-export let onEvent = ({type, target, markId, acceptReply = false, onlyEmpty = false, unique = null}) => {
+const waitForReply = (eventId, timeoutMs, onTimeout) => {
+    if (replyBacklog.has(eventId)) {
+        const payload = replyBacklog.get(eventId);
+        replyBacklog.delete(eventId);
+        return Promise.resolve(payload);
+    }
+    return new Promise((resolve, reject) => {
+        const timeoutId = window.setTimeout(() => {
+            replyWaiters.delete(eventId);
+            onTimeout?.();
+            reject(new Error(`Timeout waiting for reply to event ${eventId}`));
+        }, timeoutMs);
+        replyWaiters.set(eventId, {resolve, reject, timeoutId});
+    });
+};
+
+/**
+ * Emit one semantic event. The returned thenable waits for an event whose
+ * ``reply_to`` references the generated ``event_id``.
+ */
+export const emitEvent = ({
+    event,
+    payload = {},
+    conversationId = null,
+    documentId = null,
+    turnId = null,
+    runId = null,
+    streamId = null,
+    traceId = null,
+    replyTo = null,
+    eventId = null,
+    sequence = 0,
+    localOnly = false,
+    timeoutMs = DEFAULT_REPLY_TIMEOUT_MS,
+    onTimeout = null,
+}) => {
+    const envelope = createEnvelope({
+        event,
+        payload,
+        conversationId,
+        documentId,
+        turnId,
+        runId,
+        streamId,
+        traceId,
+        replyTo,
+        eventId,
+        sequence,
+    });
+    dispatchEnvelope(envelope, {direction: localOnly ? 'local' : 'outgoing', localOnly});
+    if (!localOnly) sendRealtimeEvent(envelope);
+
     return {
-        then: (callback) => {
-            return useEventStore.getState().addListener(type, target, callback, markId, acceptReply, onlyEmpty, unique);
-        }
+        eventId: envelope.event_id,
+        envelope,
+        then: (onFulfilled, onRejected) => waitForReply(envelope.event_id, timeoutMs, onTimeout).then(onFulfilled, onRejected),
+        catch: (onRejected) => waitForReply(envelope.event_id, timeoutMs, onTimeout).catch(onRejected),
+        finally: (onFinally) => waitForReply(envelope.event_id, timeoutMs, onTimeout).finally(onFinally),
     };
 };
+
+/** Register a semantic event listener. Wildcards and direction filters are supported. */
+export const onEvent = ({
+    event,
+    conversationId = null,
+    documentId = null,
+    onlyWithoutConversation = false,
+    includeGlobal = false,
+    direction = null,
+    directions = null,
+    includeReplies = false,
+    unique = null,
+}) => ({
+    then: (callback) => {
+        const normalizedEvents = (Array.isArray(event) ? event : [event]).map((item) => (
+            normalizeEventPattern(item)
+        ));
+        const normalizedDirections = normalizeEventDirections(directions ?? direction);
+        if (unique && uniqueListeners.has(unique)) {
+            console.warn(`Unique listener "${unique}" is already registered.`);
+            return () => {};
+        }
+        const id = generateUUID();
+        const registration = {
+            id,
+            events: normalizedEvents,
+            callback,
+            conversationId,
+            documentId,
+            onlyWithoutConversation,
+            includeGlobal,
+            directions: normalizedDirections,
+            includeReplies: includeReplies === true,
+            active: true,
+            stack: debugEnabled() ? new Error('Listener registered at').stack : null,
+            unique,
+        };
+        listeners.set(id, registration);
+        if (unique) uniqueListeners.add(unique);
+        return () => {
+            registration.active = false;
+            listeners.delete(id);
+            if (unique) uniqueListeners.delete(unique);
+        };
+    },
+});
+
+if (debugEnabled()) {
+    window.emitCwmEvent = emitEvent;
+    window.cwmEventStore = useEventStore;
+}

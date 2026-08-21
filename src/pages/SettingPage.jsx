@@ -322,11 +322,8 @@ const SettingPage = ({
     useEffect(() => {
         if (!open) return undefined;
         const unsubscribe = onEvent({
-            type: "agent",
-            target: "ToolPermission",
-            acceptReply: false,
+            event: 'tool.default_permissions.changed',
         }).then(({payload}) => {
-            if (payload?.command !== "Default-Tool-Permissions-Changed") return;
             if (activeTab !== "default-tool-permissions" || isSavingDynamicConfigRef.current) return;
 
             const nextValues = {

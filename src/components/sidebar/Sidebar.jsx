@@ -27,13 +27,13 @@ import {useBrowserBackLayer} from '@/lib/browserHistoryLayers.js';
 import ConversationsList from './ConversationsList.jsx'
 
 const Sidebar = ({
-    chatMarkId,
-    setChatMarkId,
+    conversationId,
+    setConversationId,
     pageType,
     setPageType,
     settings,
     setRandomUUID,
-    onChatMarkIdSelect,
+    onConversationIdSelect,
     onSettingsRefresh,
 }) => {
     const {t} = useTranslation();
@@ -109,16 +109,16 @@ const Sidebar = ({
 
     // 事件监听（保持不变）
     useEffect(() => {
-        const unsubscribe = onEvent({type: "widget", target: "Sidebar"}).then(({payload, eventMarkId}) => {
-            switch (payload.command) {
-                case "Reload-Conversations":
+        const unsubscribe = onEvent({event: 'sidebar.*'}).then(({event, payload, eventConversationId}) => {
+            switch (event) {
+                case 'sidebar.conversations.reload':
                     conversationsListRef.current?.reload();
                     break;
-                case "Update-ConversationDate":
-                    conversationsListRef.current?.updateDate(eventMarkId, payload.value ? new Date(payload.value) : new Date());
+                case 'sidebar.conversation.date_changed':
+                    conversationsListRef.current?.updateDate(eventConversationId, payload.value ? new Date(payload.value) : new Date());
                     break;
-                case "Update-ConversationTitle":
-                    conversationsListRef.current?.updateTitle(eventMarkId, payload.value);
+                case 'sidebar.conversation.title_changed':
+                    conversationsListRef.current?.updateTitle(eventConversationId, payload.value);
                     break;
                 default:
                     break;
@@ -127,9 +127,9 @@ const Sidebar = ({
         return () => unsubscribe();
     }, []);
 
-    const handleDeleteConversation = (deletedMarkId) => {
-        if (chatMarkId === deletedMarkId) {
-            setChatMarkId(null);
+    const handleDeleteConversation = (deletedConversationId) => {
+        if (conversationId === deletedConversationId) {
+            setConversationId(null);
             setPageType('chat');
             updateURL('/chat');
         }
@@ -186,7 +186,7 @@ const Sidebar = ({
                         <div className="flex flex-col gap-2">
                             <button
                                 onClick={() => {
-                                    onChatMarkIdSelect(null);
+                                    onConversationIdSelect(null);
                                 }}
                                 className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer w-full justify-start"
                             >
@@ -230,7 +230,7 @@ const Sidebar = ({
                         <div className="flex flex-col gap-2">
                             <motion.button
                                 onClick={() => {
-                                    setChatMarkId(null);
+                                    setConversationId(null);
                                     updateURL('/chat');
                                     setPageType('chat');
                                 }}
@@ -247,7 +247,7 @@ const Sidebar = ({
                                 onClick={() => {
                                     updateURL('/doc');
                                     setPageType('doc');
-                                    setChatMarkId(null);
+                                    setConversationId(null);
                                 }}
                                 className={`flex items-center p-2 rounded-lg transition-colors cursor-pointer w-full justify-start ${
                                     pageType === 'doc' ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
@@ -265,8 +265,8 @@ const Sidebar = ({
                     <div className="flex-1 p-4 overflow-y-auto hide-scrollbar">
                         <ConversationsList
                             ref={conversationsListRef}
-                            selectedMarkId={chatMarkId}
-                            onSelect={onChatMarkIdSelect}
+                            selectedConversationId={conversationId}
+                            onSelect={onConversationIdSelect}
                             onDelete={handleDeleteConversation}
                         />
                     </div>

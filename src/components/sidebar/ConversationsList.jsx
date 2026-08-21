@@ -80,20 +80,20 @@ const mapAgentTree = (nodes, updater) => (
     })
 );
 
-const removeAgentNode = (nodes, markId) => (
+const removeAgentNode = (nodes, conversationId) => (
     (nodes || [])
-        .filter((node) => node.markId !== markId)
+        .filter((node) => node.conversationId !== conversationId)
         .map((node) => ({
             ...node,
-            children: removeAgentNode(node.children || [], markId),
+            children: removeAgentNode(node.children || [], conversationId),
         }))
 );
 
-const findAgentPath = (nodes, markId, path = []) => {
+const findAgentPath = (nodes, conversationId, path = []) => {
     for (const node of nodes || []) {
-        const nextPath = [...path, node.markId];
-        if (node.markId === markId) return nextPath;
-        const nested = findAgentPath(node.children || [], markId, nextPath);
+        const nextPath = [...path, node.conversationId];
+        if (node.conversationId === conversationId) return nextPath;
+        const nested = findAgentPath(node.children || [], conversationId, nextPath);
         if (nested) return nested;
     }
     return null;
@@ -114,8 +114,8 @@ const agentTreeContains = (nodes, normalizedQuery) => (
 
 const mergeConversationPages = (previous, incoming, reset) => {
     if (reset) return incoming;
-    const merged = new Map(previous.map((item) => [item.markId, item]));
-    incoming.forEach((item) => merged.set(item.markId, item));
+    const merged = new Map(previous.map((item) => [item.conversationId, item]));
+    incoming.forEach((item) => merged.set(item.conversationId, item));
     return Array.from(merged.values());
 };
 
@@ -144,7 +144,7 @@ const ConversationMenu = ({conversation, canPin = false, onDelete, onChange, cla
     }, [conversation.name, conversation.title, showRenameDialog]);
 
     const patchConversation = async (payload) => (
-        apiClient.patch(`${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/${conversation.markId}`, payload)
+        apiClient.patch(`${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/${conversation.conversationId}`, payload)
     );
 
     const handleRename = async (event) => {
@@ -154,7 +154,7 @@ const ConversationMenu = ({conversation, canPin = false, onDelete, onChange, cla
         setIsSaving(true);
         try {
             const response = await patchConversation({title});
-            onChange?.(conversation.markId, {
+            onChange?.(conversation.conversationId, {
                 title: response.title || title,
                 name: response.title || title,
             });
@@ -175,7 +175,7 @@ const ConversationMenu = ({conversation, canPin = false, onDelete, onChange, cla
         const nextPinned = !conversation.pinned;
         try {
             const response = await patchConversation({pinned: nextPinned});
-            onChange?.(conversation.markId, {
+            onChange?.(conversation.conversationId, {
                 pinned: Boolean(response.pinned),
                 pinnedAt: response.pinnedAt ? new Date(response.pinnedAt) : null,
             });
@@ -192,8 +192,8 @@ const ConversationMenu = ({conversation, canPin = false, onDelete, onChange, cla
     const handleConfirmDelete = async () => {
         setIsDeleting(true);
         try {
-            await apiClient.delete(`${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/${conversation.markId}`);
-            onDelete?.(conversation.markId);
+            await apiClient.delete(`${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/${conversation.conversationId}`);
+            onDelete?.(conversation.conversationId);
             toast.success(t('delete_success'));
             setShowDeleteConfirm(false);
         } catch (error) {
@@ -355,7 +355,7 @@ const STATUS_META = {
 
 const AgentSessionRow = ({
                              child,
-                             selectedMarkId,
+                             selectedConversationId,
                              onSelect,
                              onDelete,
                              onChange,
@@ -366,13 +366,13 @@ const AgentSessionRow = ({
                              showTimestamps = false,
                              locale,
                          }) => {
-    const isSelected = child.markId === selectedMarkId;
+    const isSelected = child.conversationId === selectedConversationId;
     const status = STATUS_META[child.status] || STATUS_META.idle;
     const hasChildren = (child.children || []).length > 0;
-    const isExpanded = forceExpanded || expandedNodes[child.markId] === true;
+    const isExpanded = forceExpanded || expandedNodes[child.conversationId] === true;
 
     return (
-        <li data-markid={child.markId}>
+        <li data-conversation-id={child.conversationId}>
             <div
                 className={`group flex items-center gap-1 rounded-lg px-1.5 transition-colors ${
                     compact ? 'py-1' : 'py-1.5'
@@ -385,7 +385,7 @@ const AgentSessionRow = ({
                         size="icon-sm"
                         onClick={() => setExpandedNodes((previous) => ({
                             ...previous,
-                            [child.markId]: !isExpanded,
+                            [child.conversationId]: !isExpanded,
                         }))}
                         className="h-6 w-6 text-muted-foreground"
                         aria-label={isExpanded ? '收起下级子智能体' : '展开下级子智能体'}
@@ -401,7 +401,7 @@ const AgentSessionRow = ({
                     <Bot className="h-4 w-4 text-indigo-500"/>
                     <span className={`absolute -right-0.5 -bottom-0.5 h-1.5 w-1.5 rounded-full ring-1 ring-background ${status.dot}`}/>
                 </div>
-                <button onClick={() => onSelect(child.markId)} className="min-w-0 flex-1 cursor-pointer text-left">
+                <button onClick={() => onSelect(child.conversationId)} className="min-w-0 flex-1 cursor-pointer text-left">
                     <span className={`block truncate font-medium ${compact ? 'text-xs' : 'text-sm'}`}>
                         {child.name || child.title || '复杂子智能体'}
                     </span>
@@ -434,9 +434,9 @@ const AgentSessionRow = ({
                 <ul className="ml-3 space-y-0.5 border-l border-border pl-1">
                     {child.children.map((nestedChild) => (
                         <AgentSessionRow
-                            key={nestedChild.markId}
+                            key={nestedChild.conversationId}
                             child={nestedChild}
-                            selectedMarkId={selectedMarkId}
+                            selectedConversationId={selectedConversationId}
                             onSelect={onSelect}
                             onDelete={onDelete}
                             onChange={onChange}
@@ -454,7 +454,7 @@ const AgentSessionRow = ({
     );
 };
 
-const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref) => {
+const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationId}, ref) => {
     const {t, i18n} = useTranslation();
     const listRef = useRef(null);
     const [conversations, setConversations] = useState([]);
@@ -490,15 +490,15 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
         }
     }, [limit, offset]);
 
-    const handleConversationChange = useCallback((markId, patch) => {
+    const handleConversationChange = useCallback((conversationId, patch) => {
         setConversations((previous) => previous.map((conversation) => {
-            if (conversation.markId === markId) {
+            if (conversation.conversationId === conversationId) {
                 return {...conversation, ...patch};
             }
             return {
                 ...conversation,
                 children: mapAgentTree(conversation.children, (child) => (
-                    child.markId === markId ? {...child, ...patch} : child
+                    child.conversationId === conversationId ? {...child, ...patch} : child
                 )),
             };
         }));
@@ -506,11 +506,11 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
 
     useImperativeHandle(ref, () => ({
         reload: () => loadConversations(true),
-        updateDate: (markId, newDate) => {
-            handleConversationChange(markId, {updateDate: newDate || new Date()});
+        updateDate: (conversationId, newDate) => {
+            handleConversationChange(conversationId, {updateDate: newDate || new Date()});
         },
-        updateTitle: (markId, newTitle) => {
-            handleConversationChange(markId, {title: newTitle, name: newTitle});
+        updateTitle: (conversationId, newTitle) => {
+            handleConversationChange(conversationId, {title: newTitle, name: newTitle});
         },
     }), [handleConversationChange, loadConversations]);
 
@@ -521,21 +521,21 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
     }, []);
 
     useEffect(() => {
-        if (!selectedMarkId) return;
+        if (!selectedConversationId) return;
         for (const conversation of conversations) {
-            const path = findAgentPath(conversation.children, selectedMarkId);
+            const path = findAgentPath(conversation.children, selectedConversationId);
             if (!path) continue;
-            const toExpand = [conversation.markId, ...path.slice(0, -1)];
+            const toExpand = [conversation.conversationId, ...path.slice(0, -1)];
             setExpandedNodes((previous) => {
                 const next = {...previous};
-                toExpand.forEach((markId) => {
-                    next[markId] = true;
+                toExpand.forEach((conversationId) => {
+                    next[conversationId] = true;
                 });
                 return next;
             });
             break;
         }
-    }, [selectedMarkId, conversations]);
+    }, [selectedConversationId, conversations]);
 
     const normalizedQuery = query.trim().toLocaleLowerCase();
     const filteredConversations = useMemo(() => {
@@ -575,29 +575,29 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
         return groups;
     }, [filteredConversations]);
 
-    const handleDeleteConversation = (deletedMarkId) => {
-        const deletedRoot = conversations.some((conversation) => conversation.markId === deletedMarkId);
+    const handleDeleteConversation = (deletedConversationId) => {
+        const deletedRoot = conversations.some((conversation) => conversation.conversationId === deletedConversationId);
         setConversations((previous) => previous
-            .filter((conversation) => conversation.markId !== deletedMarkId)
+            .filter((conversation) => conversation.conversationId !== deletedConversationId)
             .map((conversation) => ({
                 ...conversation,
-                children: removeAgentNode(conversation.children, deletedMarkId),
+                children: removeAgentNode(conversation.children, deletedConversationId),
             })));
         if (deletedRoot) {
             setTotal((previous) => Math.max(0, previous - 1));
         }
-        onDelete?.(deletedMarkId);
+        onDelete?.(deletedConversationId);
     };
 
     const renderConversation = (conversation) => {
-        const isSelected = conversation.markId === selectedMarkId;
+        const isSelected = conversation.conversationId === selectedConversationId;
         const hasChildren = conversation.children.length > 0;
-        const isExpanded = Boolean(normalizedQuery) || expandedNodes[conversation.markId] === true;
+        const isExpanded = Boolean(normalizedQuery) || expandedNodes[conversation.conversationId] === true;
         const descendantCount = countAgentDescendants(conversation.children);
 
         return (
-            <React.Fragment key={conversation.markId}>
-                <li data-markid={conversation.markId}>
+            <React.Fragment key={conversation.conversationId}>
+                <li data-conversation-id={conversation.conversationId}>
                     <div className={`group flex w-full items-center rounded-lg px-1.5 transition-colors ${
                         compact ? 'py-1' : 'py-1.5'
                     } ${isSelected ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'}`}>
@@ -608,7 +608,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                                 size="icon-sm"
                                 onClick={() => setExpandedNodes((previous) => ({
                                     ...previous,
-                                    [conversation.markId]: !isExpanded,
+                                    [conversation.conversationId]: !isExpanded,
                                 }))}
                                 className="mr-0.5 h-6 w-6 text-muted-foreground"
                                 aria-label={isExpanded ? '收起子智能体' : '展开子智能体'}
@@ -622,7 +622,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                             <Pin className="mr-1 h-3.5 w-3.5 shrink-0 fill-primary/15 text-primary/70"/>
                         )}
                         <button
-                            onClick={() => onSelect?.(conversation.markId)}
+                            onClick={() => onSelect?.(conversation.conversationId)}
                             className="min-w-0 flex-1 cursor-pointer text-left"
                         >
                             <span className={`block truncate font-medium ${compact ? 'text-sm' : 'text-[15px]'}`}>
@@ -652,9 +652,9 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedMarkId}, ref)
                     <ul className="ml-3 space-y-0.5 border-l border-border pl-1">
                         {conversation.children.map((child) => (
                             <AgentSessionRow
-                                key={child.markId}
+                                key={child.conversationId}
                                 child={child}
-                                selectedMarkId={selectedMarkId}
+                                selectedConversationId={selectedConversationId}
                                 onSelect={onSelect}
                                 onDelete={handleDeleteConversation}
                                 onChange={handleConversationChange}

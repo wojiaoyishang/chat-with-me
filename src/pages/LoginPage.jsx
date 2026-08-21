@@ -38,7 +38,10 @@ const LoginPage = () => {
             setIsSuccess(true);
             // 读取 URL 参数中的 redirect，如果没有则默认为 '/'
             const urlParams = new URLSearchParams(window.location.search);
-            const redirectUrl = urlParams.get('redirect') || '/';
+            const redirectParam = urlParams.get('redirect') || '/';
+            const redirectUrl = redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+                ? redirectParam
+                : '/';
             // 延迟 1 秒后跳转，以展示成功图标
             setTimeout(() => {
                 window.location.href = redirectUrl;

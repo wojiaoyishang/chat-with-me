@@ -1764,7 +1764,7 @@ const ConfirmWidget = ({widget, interactive, busy, act}) => {
     );
 };
 
-const WidgetHost = memo(({content = '', markId = null, messageReadonly = false, messageIsLatest = true}) => {
+const WidgetHost = memo(({content = '', conversationId = null, messageReadonly = false, messageIsLatest = true}) => {
     const presentation = useWidgetPresentation();
     const parsed = useMemo(() => parseWidget(content), [content]);
     const [widget, setWidget] = useState(parsed);
@@ -1853,13 +1853,13 @@ const WidgetHost = memo(({content = '', markId = null, messageReadonly = false, 
     }, {kind: 'immersive-card-deck'});
 
     const act = useCallback(async (action, payload = {}) => {
-        if (!widget?.widgetId || !markId || busy) return null;
+        if (!widget?.widgetId || !conversationId || busy) return null;
         setBusy(true);
         try {
             const data = await apiClient.post(
                 `${apiEndpoint.CHAT_WIDGETS_ENDPOINT}/${encodeURIComponent(widget.widgetId)}/action`,
                 {
-                    markId,
+                    conversationId,
                     action,
                     payload,
                     interactionId: generateUUID(),
@@ -1876,7 +1876,7 @@ const WidgetHost = memo(({content = '', markId = null, messageReadonly = false, 
         } finally {
             setBusy(false);
         }
-    }, [busy, markId, widget]);
+    }, [busy, conversationId, widget]);
 
     if (!widget?.widgetId || !widget?.widgetType) {
         return (
@@ -2002,7 +2002,7 @@ const WidgetHost = memo(({content = '', markId = null, messageReadonly = false, 
     return renderFrame();
 }, (prev, next) => (
     prev.content === next.content
-    && prev.markId === next.markId
+    && prev.conversationId === next.conversationId
     && prev.messageReadonly === next.messageReadonly
     && prev.messageIsLatest === next.messageIsLatest
 ));

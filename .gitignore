@@ -23,4 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
+build
+_build
+
 __pycache__

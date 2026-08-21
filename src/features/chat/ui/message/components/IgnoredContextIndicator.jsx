@@ -3,7 +3,7 @@ import {EyeOff} from 'lucide-react';
 import ContextStateIndicator from './ContextStateIndicator.jsx';
 
 const IgnoredContextIndicator = memo(({
-    markId,
+    conversationId,
     messageId,
     replacementId = null,
     label = '已忽略',
@@ -11,7 +11,7 @@ const IgnoredContextIndicator = memo(({
 }) => (
     <ContextStateIndicator
         icon={EyeOff}
-        markId={markId}
+        conversationId={conversationId}
         messageId={messageId}
         replacementId={replacementId}
         label={label}

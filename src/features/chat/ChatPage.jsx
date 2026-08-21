@@ -23,6 +23,10 @@ import {getVisionAttachmentIds} from './attachmentVision.js';
 import {normalizeRemoteChatModel} from './modelCapabilities.js';
 import {WidgetPresentationProvider} from './widgets/WidgetPresentationContext.jsx';
 import {useBrowserBackLayer} from '@/lib/browserHistoryLayers.js';
+import {
+    getMessageSummaryAppendCursor,
+    mergeMessageSummaryItems,
+} from '@/features/chat/page/utils/messageSummaries.js';
 
 import {
     ChatBox,
@@ -185,10 +189,10 @@ const collectTaskInterruptReceipts = (messageOrReplacementUpdates) => {
 
 // ========== 主组件 ==========
 function ChatPage({
-                      chatMarkId,
-                      documentMarkId,
+                      conversationId,
+                      documentId,
                       pageType,
-                      onNewChatMarkId,
+                      onNewConversationId,
                       showWindowButton = true,
                       showMinimizeButton = false,   // 是否显示最小化按钮（默认为 false）
                       onMinimize,                   // 最小化按钮点击回调
@@ -199,8 +203,8 @@ function ChatPage({
     const {t, i18n} = useTranslation();
     const chatPageRef = useRef(null);
     const messagesContainerRef = useRef(null);
-    const currentMessageSendRequestIDRef = useRef(generateUUID());
-    const currentMessagesLoadedRequestIDRef = useRef(generateUUID());
+    const currentTurnIdempotencyKeyRef = useRef(generateUUID());
+    const messagesLoadedIdempotencyKeyRef = useRef(generateUUID());
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
@@ -238,11 +242,11 @@ function ChatPage({
 
     const isMobile = useIsMobile();
     const [previewModel, setPreviewModel] = useState(null);
-    const [isNewMarkId, setIsNewMarkId] = useState(false);
-    const isNewMarkIdRef = useRef(false);
-    const activeChatMarkIdRef = useRef(chatMarkId);
-    activeChatMarkIdRef.current = chatMarkId;
-    const previousChatMarkIdRef = useRef(chatMarkId);
+    const [isNewConversationId, setIsNewConversationId] = useState(false);
+    const isNewConversationIdRef = useRef(false);
+    const activeConversationIdRef = useRef(conversationId);
+    activeConversationIdRef.current = conversationId;
+    const previousConversationIdRef = useRef(conversationId);
     const [isFirstMessageSend, setIsFirstMessageSend] = useState(false);
 
     const [models, setModels] = useState([]);
@@ -357,7 +361,7 @@ function ChatPage({
     }), []);
 
     const loadMessageSummaries = useCallback(async ({silent = false, append = false} = {}) => {
-        if (!chatMarkId) {
+        if (!conversationId) {
             setMessageSummaries([]);
             messageSummariesRef.current = [];
             messageSummaryFingerprintRef.current = null;
@@ -372,15 +376,14 @@ function ChatPage({
         try {
             const collected = [];
             const existingItems = append ? messageSummariesRef.current : [];
-            const lastExistingItem = existingItems[existingItems.length - 1];
-            let cursor = append && Number.isFinite(Number(lastExistingItem?.orderIndex))
-                ? Number(lastExistingItem.orderIndex) + 1
+            let cursor = append
+                ? getMessageSummaryAppendCursor(existingItems)
                 : 0;
             let fingerprint = null;
             do {
                 const data = await apiClient.get(apiEndpoint.CHAT_MESSAGE_SUMMARIES_ENDPOINT, {
                     params: {
-                        markId: chatMarkId,
+                        conversationId: conversationId,
                         scope: 'active',
                         cursor,
                         limit: MESSAGE_SUMMARY_PAGE_SIZE,
@@ -400,13 +403,7 @@ function ChatPage({
                 return existingItems;
             }
 
-            const existingMessageIds = new Set(existingItems.map(item => item.messageId));
-            const nextItems = append
-                ? [
-                    ...existingItems,
-                    ...collected.filter(item => !existingMessageIds.has(item.messageId)),
-                ]
-                : collected;
+            const nextItems = mergeMessageSummaryItems(existingItems, collected, {append});
 
             setMessageSummaries(nextItems);
             messageSummariesRef.current = nextItems;
@@ -423,7 +420,7 @@ function ChatPage({
                 setMessageSummaryLoading(false);
             }
         }
-    }, [chatMarkId, t]);
+    }, [conversationId, t]);
 
     // ========== Popover 相关函数 ==========
     const scrollToSelectedItem = useCallback((modelListRef) => {
@@ -475,7 +472,7 @@ function ChatPage({
         handleFilePicker,
         handlePicPicker,
         handleSelectedFiles,
-    } = useFileUpload({chatMarkId, t});
+    } = useFileUpload({conversationId, t});
 
     const getDefaultVoiceRecognitionEngine = useCallback(() => {
         return normalizeVoiceRecognitionEngine(
@@ -908,7 +905,7 @@ function ChatPage({
     useEffect(() => {
         setTaskInterruptPreviews([]);
         taskInterruptDividerShownRef.current.clear();
-    }, [chatMarkId]);
+    }, [conversationId]);
 
     const handleManualScrollToBottomClick = useCallback(() => {
         if (historyNavigationLockedRef.current && restoreLatestMessagesRef.current) {
@@ -943,7 +940,7 @@ function ChatPage({
         seekSpeechSegment,
         disableSpeechAutoFollowByUser,
     } = useChatSpeech({
-        chatMarkId,
+        conversationId,
         selectedModel,
         advancedSettingsValues,
         t,
@@ -959,12 +956,12 @@ function ChatPage({
 
 
     const loadStories = useCallback(async () => {
-        if (!chatMarkId) {
+        if (!conversationId) {
             setStories([]);
             return [];
         }
         try {
-            const data = await apiClient.get(apiEndpoint.CHAT_STORIES_ENDPOINT, {params: {markId: chatMarkId}});
+            const data = await apiClient.get(apiEndpoint.CHAT_STORIES_ENDPOINT, {params: {conversationId: conversationId}});
             const values = Array.isArray(data?.stories) ? data.stories : [];
             setStories(values);
             return values;
@@ -972,13 +969,13 @@ function ChatPage({
             console.error('Load stories failed:', error);
             return [];
         }
-    }, [chatMarkId]);
+    }, [conversationId]);
 
     const openStory = useCallback(async (storyId) => {
-        if (!chatMarkId || !storyId) return;
+        if (!conversationId || !storyId) return;
         try {
             const data = await apiClient.get(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {
-                params: {markId: chatMarkId, includeParts: true},
+                params: {conversationId: conversationId, includeParts: true},
             });
             if (data?.story) {
                 setActiveStory(data.story);
@@ -987,15 +984,15 @@ function ChatPage({
         } catch (error) {
             toast.error(t('story_load_failed', {defaultValue: '无法打开故事：{{message}}', message: error?.message || t('unknown_error')}));
         }
-    }, [chatMarkId, t]);
+    }, [conversationId, t]);
 
     const renameStory = useCallback(async (storyId, title) => {
-        if (!chatMarkId || !storyId) return null;
+        if (!conversationId || !storyId) return null;
         try {
             const data = await apiClient.patch(
                 `${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`,
                 {title},
-                {params: {markId: chatMarkId}},
+                {params: {conversationId: conversationId}},
             );
             const nextStory = data?.story;
             if (nextStory) {
@@ -1008,12 +1005,12 @@ function ChatPage({
             toast.error(t('story_rename_failed', {defaultValue: '重命名失败：{{message}}', message: error?.message || t('unknown_error')}));
             throw error;
         }
-    }, [chatMarkId, t]);
+    }, [conversationId, t]);
 
     const deleteStory = useCallback(async (storyId) => {
-        if (!chatMarkId || !storyId) return false;
+        if (!conversationId || !storyId) return false;
         try {
-            await apiClient.delete(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {params: {markId: chatMarkId}});
+            await apiClient.delete(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {params: {conversationId: conversationId}});
             setStories(current => current.filter(item => Number(item.storyId) !== Number(storyId)));
             setActiveStory(current => {
                 if (Number(current?.storyId) === Number(storyId)) {
@@ -1028,7 +1025,7 @@ function ChatPage({
             toast.error(t('story_delete_failed', {defaultValue: '删除失败：{{message}}', message: error?.message || t('unknown_error')}));
             throw error;
         }
-    }, [chatMarkId, t]);
+    }, [conversationId, t]);
 
     const speakStoryPart = useCallback((story, part) => {
         if (!story || !part) return false;
@@ -1043,16 +1040,19 @@ function ChatPage({
         loadStories();
         setStoryReaderOpen(false);
         setActiveStory(null);
-    }, [chatMarkId, loadStories]);
+    }, [conversationId, loadStories]);
 
-    useEffect(() => onEvent({type: 'story', target: 'ChatPage', markId: chatMarkId}).then(({payload}) => {
-        const command = payload?.command;
+    useEffect(() => onEvent({
+        event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'],
+        conversationId,
+        includeGlobal: true,
+    }).then(({event, payload}) => {
         const value = payload?.value || {};
-        if (command === 'Open-Story') {
+        if (event === 'story.open') {
             openStory(value.storyId);
             return;
         }
-        if (command === 'Story-Deleted') {
+        if (event === 'story.deleted') {
             const deletedId = Number(value.storyId);
             setStories(current => current.filter(item => Number(item.storyId) !== deletedId));
             setActiveStory(current => {
@@ -1064,13 +1064,17 @@ function ChatPage({
             });
             return;
         }
+
         const incomingStory = value.story || value;
         if (!incomingStory?.storyId) return;
+        const operation = payload?.operation || null;
 
-        // 故事广播是用户级的，但展示必须服从当前 Conversation 的编辑权限。
-        // 创建、权限变化和重命名后重新读取当前会话的可见快照；其他增量
-        // 只允许更新已经存在于当前列表中的故事，绝不把无权限故事插入列表。
-        if (command === 'Story-Created' || command === 'Story-Permissions-Changed' || command === 'Story-Renamed') {
+        // 故事广播是用户级资源事件；是否可见、是否可编辑仍由当前
+        // Conversation 的服务端快照决定，不能从发送方权限推断。
+        if (
+            event === 'story.permissions.changed'
+            || ['created', 'renamed'].includes(operation)
+        ) {
             void loadStories().then(values => {
                 setActiveStory(current => {
                     if (!current?.storyId) return current;
@@ -1101,15 +1105,16 @@ function ChatPage({
             if (incomingStory.canEdit === undefined && current.canEdit !== undefined) {
                 next.canEdit = current.canEdit;
             }
-            if (command === 'Story-Part-Appended' && value.part) {
+            if (operation === 'part_appended' && value.part) {
                 const existing = Array.isArray(current.parts) ? current.parts : [];
-                next.parts = [...existing.filter(item => item.partId !== value.part.partId), value.part].sort((a,b) => a.sequence-b.sequence);
-            } else if (command === 'Story-Part-Updated' && value.part) {
+                next.parts = [...existing.filter(item => item.partId !== value.part.partId), value.part]
+                    .sort((a, b) => a.sequence - b.sequence);
+            } else if (operation === 'part_updated' && value.part) {
                 next.parts = (current.parts || []).map(item => item.partId === value.part.partId ? value.part : item);
             }
             return next;
         });
-    }), [chatMarkId, loadStories, openStory]);
+    }), [conversationId, loadStories, openStory]);
 
 
 
@@ -1202,21 +1207,20 @@ function ChatPage({
             toast.error(t("file_upload_not_complete"));
             return;
         }
-        const sendMessage = (markId) => {
+        const sendMessage = (conversationId) => {
             if (isFirstMessageSend) {
                 emitEvent({
-                    type: "widget",
-                    target: "Sidebar",
-                    payload: {command: "Update-ConversationDate"},
-                    markId: markId,
+                    event: 'sidebar.conversation.date_changed',
+                    localOnly: true,
+                    payload: {},
+                    conversationId: conversationId,
                 });
                 setIsFirstMessageSend(false);
             }
             const eventPayload = {
-                type: "message",
-                target: "ChatPage",
+                event: 'turn.start',
+                turnId: generateUUID(),
                 payload: {
-                    command: "Message-Send",
                     content: messageContent,
                     toolsStatus: toolsStatus,
                     attachments: attachments,
@@ -1230,59 +1234,58 @@ function ChatPage({
                     role: role,
                     options: advancedSettingsValues,
                     pageType: pageType,
-                    documentMarkId: documentMarkId,
-                    requestId: currentMessageSendRequestIDRef.current
+                    documentId: documentId,
+                    idempotencyKey: currentTurnIdempotencyKeyRef.current
                 },
-                markId: markId
+                conversationId: conversationId,
+                documentId: documentId,
             };
             if (isEditMessage) {
                 eventPayload.payload.msgId = editMessageId;
             }
             emitEvent(eventPayload).then((payload) => {
                 if (payload.success) {
-                    currentMessageSendRequestIDRef.current = generateUUID();
+                    currentTurnIdempotencyKeyRef.current = generateUUID();
                 } else {
                     toast.error(t("send_message_error", {message: payload.value}));
                 }
             });
             setAttachments([]);
         };
-        if (!chatMarkId) {
+        if (!conversationId) {
             emitEvent({
-                type: "page",
-                target: "ChatPage",
+                event: 'conversation.create',
                 payload: {
-                    command: "Get-MarkId",
-                    requestId: currentMessageSendRequestIDRef.current
+                    idempotencyKey: currentTurnIdempotencyKeyRef.current
                 }
             })
                 .then((payload) => {
                     if (payload.success) {
-                        // Mark this synchronously before the parent updates chatMarkId.
-                        // The chatMarkId effect uses it to preserve the pending Workspace
+                        // Mark this synchronously before the parent updates conversationId.
+                        // The conversationId effect uses it to preserve the pending Workspace
                         // and advanced settings selected for the conversation being created.
-                        isNewMarkIdRef.current = true;
-                        setIsNewMarkId(true);
-                        onNewChatMarkId(payload.value);
+                        isNewConversationIdRef.current = true;
+                        setIsNewConversationId(true);
+                        onNewConversationId(payload.value);
                         sendMessage(payload.value);
                     } else {
                         throw new Error(payload.value);
                     }
                 })
                 .catch((error) => {
-                    toast.error(t("get_markid_error", {message: error?.message}));
+                    toast.error(t("get_conversation_id_error", {message: error?.message}));
                 });
         } else {
-            sendMessage(chatMarkId);
+            sendMessage(conversationId);
         }
-    }, [chatMarkId, documentMarkId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType, t, uploadFiles, onNewChatMarkId]);
+    }, [conversationId, documentId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType, t, uploadFiles, onNewConversationId]);
 
     const loadMoreHistory = useCallback(async () => {
         if (historyLoadInFlightRef.current) return historyLoadInFlightRef.current;
 
         const currentOrder = messagesOrderRef.current;
         const firstLoadedMessageId = currentOrder[0] === '<PREV_MORE>' ? currentOrder[1] : null;
-        if (!chatMarkId || !firstLoadedMessageId) return false;
+        if (!conversationId || !firstLoadedMessageId) return false;
 
         const container = messagesContainerRef.current;
         const previousScrollHeight = container?.scrollHeight ?? 0;
@@ -1295,12 +1298,12 @@ function ChatPage({
         const request = (async () => {
             const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                 params: {
-                    markId: chatMarkId,
+                    conversationId: conversationId,
                     prevId: firstLoadedMessageId,
                     limit: HISTORY_PAGE_SIZE,
                 }
             });
-            if (activeChatMarkIdRef.current !== chatMarkId) return false;
+            if (activeConversationIdRef.current !== conversationId) return false;
 
             const latestOrder = messagesOrderRef.current;
             const loadedOrder = latestOrder[0] === '<PREV_MORE>' ? latestOrder.slice(1) : latestOrder;
@@ -1335,7 +1338,7 @@ function ChatPage({
             if (historyLoadInFlightRef.current === request) {
                 historyLoadInFlightRef.current = null;
             }
-            if (activeChatMarkIdRef.current === chatMarkId) {
+            if (activeConversationIdRef.current === conversationId) {
                 setIsLoadingMoreHistory(false);
             }
         });
@@ -1343,7 +1346,7 @@ function ChatPage({
         historyLoadInFlightRef.current = request;
         return request;
     }, [
-        chatMarkId,
+        conversationId,
         checkScrollPosition,
         decorateMessages,
         isAutoScrollEnabledRef,
@@ -1353,7 +1356,7 @@ function ChatPage({
     ]);
 
     useEffect(() => {
-        if (!historyAutoLoadReady || !chatMarkId || messagesOrder[0] !== '<PREV_MORE>') {
+        if (!historyAutoLoadReady || !conversationId || messagesOrder[0] !== '<PREV_MORE>') {
             return undefined;
         }
 
@@ -1376,7 +1379,7 @@ function ChatPage({
 
         observer.observe(sentinel);
         return () => observer.disconnect();
-    }, [chatMarkId, historyAutoLoadReady, loadMoreHistory, messagesOrder, t]);
+    }, [conversationId, historyAutoLoadReady, loadMoreHistory, messagesOrder, t]);
 
     const scrollToRenderedMessage = useCallback((messageId, behavior = 'smooth') => {
         const container = messagesContainerRef.current;
@@ -1399,10 +1402,10 @@ function ChatPage({
     }, [isAutoScrollEnabledRef, pendingScrollRef, setShowScrollToBottomButton]);
 
     const restoreLatestMessages = useCallback(async () => {
-        if (!chatMarkId) return false;
+        if (!conversationId) return false;
         try {
             const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                params: {markId: chatMarkId, limit: HISTORY_PAGE_SIZE}
+                params: {conversationId: conversationId, limit: HISTORY_PAGE_SIZE}
             });
             const decorated = decorateMessages(data.messages || {});
             const nextMessages = {...messagesRef.current, ...decorated};
@@ -1434,7 +1437,7 @@ function ChatPage({
             return false;
         }
     }, [
-        chatMarkId,
+        conversationId,
         checkScrollPosition,
         decorateMessages,
         executePendingScroll,
@@ -1470,7 +1473,7 @@ function ChatPage({
             const end = Math.min(summaryItems.length, summaryIndex + HISTORY_JUMP_AFTER + 1);
             const messageIds = summaryItems.slice(start, end).map(item => item.messageId);
             const data = await apiClient.post(apiEndpoint.CHAT_MESSAGES_BATCH_ENDPOINT, {
-                markId: chatMarkId,
+                conversationId: conversationId,
                 messageIds,
                 expectedOrderFingerprint,
                 requireContiguous: true,
@@ -1521,7 +1524,7 @@ function ChatPage({
             return false;
         }
     }, [
-        chatMarkId,
+        conversationId,
         decorateMessages,
         isAutoScrollEnabledRef,
         loadMessageSummaries,
@@ -1558,7 +1561,7 @@ function ChatPage({
         if (needsLoad) {
             try {
                 const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                    params: {markId: chatMarkId, nextId: loadStartId},
+                    params: {conversationId: conversationId, nextId: loadStartId},
                 });
                 finalMessagesMap = {
                     ...finalMessagesMap,
@@ -1621,7 +1624,7 @@ function ChatPage({
         messagesRef.current = nextMessagesState;
         setMessages(nextMessagesState);
         return true;
-    }, [chatMarkId, decorateMessages, t, setMessages]);
+    }, [conversationId, decorateMessages, t, setMessages]);
 
     const switchMessage = useCallback(async (msg, msgId, targetMessageOrDelta, options = {}) => {
         const currentIndex = msg.messages.indexOf(msg.nextMessage);
@@ -1632,16 +1635,14 @@ function ChatPage({
         if (!newMsgId || newMsgId === msg.nextMessage) return true;
 
         const response = await emitEvent({
-            type: "message",
-            target: "ChatPage",
+            event: 'conversation.branch.switch',
             payload: {
-                command: "Switch-Message",
                 msgId,
                 nextMessage: newMsgId,
                 expectedCurrentChildId: options.expectedCurrentChildId,
                 expectedOrderFingerprint: options.expectedOrderFingerprint,
             },
-            markId: chatMarkId
+            conversationId: conversationId
         });
 
         if (!response?.success) {
@@ -1654,26 +1655,24 @@ function ChatPage({
         if (!loaded) return false;
         loadMessageSummaries({silent: true});
         return true;
-    }, [chatMarkId, loadMessageSummaries, loadSwitchMessage, t]);
+    }, [conversationId, loadMessageSummaries, loadSwitchMessage, t]);
 
     const emitMessagesLoaded = () => {
         setTimeout(() => {
             isMessageLoadedRef.current = true;
             emitEvent({
-                type: "message",
-                target: "ChatPage",
+                event: 'conversation.messages.loaded',
                 payload: {
-                    command: "Messages-Loaded",
-                    requestId: currentMessagesLoadedRequestIDRef.current,
+                    idempotencyKey: messagesLoadedIdempotencyKeyRef.current,
                     messagesOrder: messagesOrderRef.current[0] === '<PREV_MORE>' ? messagesOrderRef.current.slice(1) : messagesOrderRef.current
                 },
-                markId: chatMarkId,
+                conversationId: conversationId,
                 onTimeout: () => {
                     toast.warning(t("cannot_load_tasks"));
                 }
             }).then((payload) => {
                 if (payload.success) {
-                    currentMessagesLoadedRequestIDRef.current = generateUUID();
+                    messagesLoadedIdempotencyKeyRef.current = generateUUID();
                 } else {
                     console.error("Cannot to load the tasks,", payload.value);
                 }
@@ -1877,24 +1876,26 @@ function ChatPage({
         historyLoadInFlightRef.current = null;
         historyNavigationLockedRef.current = false;
         summaryRequestVersionRef.current += 1;
-    }, [chatMarkId]);
+    }, [conversationId]);
 
     useEffect(() => {
-        if (chatMarkId && showQuickUserMessageNavigator) {
+        if (conversationId && showQuickUserMessageNavigator) {
             loadMessageSummaries({silent: true});
         }
-    }, [chatMarkId, loadMessageSummaries, showQuickUserMessageNavigator]);
+    }, [conversationId, loadMessageSummaries, showQuickUserMessageNavigator]);
 
     const handleOpenMessageOverview = useCallback(() => {
         setMessageOverviewOpen(true);
-        if (!messageSummaryLoading && messageSummariesRef.current.length === 0) {
-            loadMessageSummaries();
+        if (!messageSummaryLoading) {
+            loadMessageSummaries({
+                silent: messageSummariesRef.current.length > 0,
+            });
         }
     }, [loadMessageSummaries, messageSummaryLoading]);
 
     useEffect(() => {
         if (
-            !chatMarkId
+            !conversationId
             || (!showQuickUserMessageNavigator && !messageOverviewOpen)
             || messageSummaryLoading
             || messageSummariesRef.current.length === 0
@@ -1919,7 +1920,7 @@ function ChatPage({
             window.clearTimeout(timer);
         };
     }, [
-        chatMarkId,
+        conversationId,
         loadMessageSummaries,
         messageOverviewOpen,
         messageSummaryLoading,
@@ -1990,42 +1991,62 @@ function ChatPage({
 
     useEffect(() => {
         const unsubscribe1 = onEvent({
-            type: "message",
-            target: "ChatPage",
-            markId: chatMarkId
+            event: [
+                'message.*',
+                'conversation.tree.changed',
+                'conversation.deleted',
+                'conversation.messages.reload_requested',
+                'conversation.messages.reconciled',
+                'turn.completed',
+                'turn.cancelled',
+                'turn.failed',
+                'context.state.changed',
+                'context.compaction_state.changed',
+                'workspace.transfer.state_changed',
+                'widget.state.changed',
+                'speech.play.requested',
+                'speech.stop.requested',
+                'speech.pause.requested',
+                'speech.resume.requested',
+                'speech.rate.set',
+                'speech.segment.previous',
+                'speech.segment.next',
+                'speech.segment.seek',
+            ],
+            conversationId,
         })
-            .then(({payload, reply}) => {
-                switch (payload.command) {
-                    case "Speak-Message":
+            .then(({event, payload, reply}) => {
+                switch (event) {
+                    case 'speech.play.requested':
                         handleSpeakMessageRequest(payload, reply);
                         break;
-                    case "Stop-Speech":
+                    case 'speech.stop.requested':
                         cancelActiveSpeech(true);
                         reply({success: true});
                         break;
-                    case "Pause-Speech":
+                    case 'speech.pause.requested':
                         reply({success: pauseActiveSpeech()});
                         break;
-                    case "Resume-Speech":
+                    case 'speech.resume.requested':
                         reply({success: resumeActiveSpeech()});
                         break;
-                    case "Set-SpeechRate":
+                    case 'speech.rate.set':
                         updateSpeechRate(payload.value ?? payload.rate);
                         reply({success: true});
                         break;
-                    case "Previous-SpeechSegment":
+                    case 'speech.segment.previous':
                         reply({success: seekSpeechSegment(-1)});
                         break;
-                    case "Next-SpeechSegment":
+                    case 'speech.segment.next':
                         reply({success: seekSpeechSegment(1)});
                         break;
-                    case "Seek-SpeechSegment":
+                    case 'speech.segment.seek':
                         reply({success: seekSpeechSegment({
                                 segmentId: payload.segmentId,
                                 segmentPosition: payload.segmentPosition,
                             }, {absolute: true})});
                         break;
-                    case "Delete-Message":
+                    case 'message.delete.requested':
                         if (payload.value) {
                             const msgId = payload.value;
                             const silent = payload.silent === true;
@@ -2038,7 +2059,7 @@ function ChatPage({
 
                             if (silent) {
                                 apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + msgId,
-                                    {params: {markId: chatMarkId}})
+                                    {params: {conversationId: conversationId}})
                                     .then((data) => {
                                         deleteMessageLocally(msgId);
                                     })
@@ -2055,7 +2076,7 @@ function ChatPage({
                             reply({success: false});
                         }
                         break;
-                    case "Add-Message":
+                    case 'message.created':
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             let newMessages = {...messagesRef.current};
@@ -2088,7 +2109,7 @@ function ChatPage({
                                             };
                                         }
 
-                                        // network 必须做增量合并，避免流式 Add-Message 的短快照覆盖 Add-MessageNetwork 已追加的数据。
+                                        // network 必须做增量合并，避免message.created 的短快照覆盖 message.knowledge.network_added 已追加的数据。
                                         if (oldMessage.network || incomingValue.network) {
                                             mergedMessage.network = mergeNetworkData(oldMessage.network, incomingValue.network);
                                         }
@@ -2133,7 +2154,7 @@ function ChatPage({
                             reply({success: true});
                         }
                         break;
-                    case "MessagesOrder-Meta":
+                    case 'message.order.changed':
                         if (Array.isArray(payload.value) && payload.value.length > 0) {
                             scrollToBottomAfterRender(isAutoScrollEnabledRef.current, {delay: 50});
                             setMessagesOrder(payload.value);
@@ -2143,7 +2164,7 @@ function ChatPage({
                             reply({value: messagesOrderRef.current});
                         }
                         break;
-                    case "Set-MessageContent":
+                    case 'message.content.set':
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
@@ -2162,7 +2183,7 @@ function ChatPage({
                             reply({success: false});
                         }
                         break;
-                    case "Add-MessageContent":
+                    case 'message.content.delta':
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
@@ -2181,7 +2202,7 @@ function ChatPage({
                             reply({success: false});
                         }
                         break;
-                    case "Set-MessageReplace":
+                    case 'message.replacement.set':
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             const newMessages = produce(messagesRef.current, draft => {
@@ -2204,7 +2225,7 @@ function ChatPage({
                             reply({success: false});
                         }
                         break;
-                    case "Add-MessageReplaceContent":
+                    case 'message.replacement.delta':
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
@@ -2232,67 +2253,7 @@ function ChatPage({
                             if (payload.reply) reply({success: false});
                         }
                         break;
-                    case "Insert-MessageReplaceContent":
-                        if (payload.value && typeof payload.value === 'object') {
-                            const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            updateStreamingStatus();
-
-                            const newMessages = produce(messagesRef.current, draft => {
-                                for (const [msgId, insertFields] of Object.entries(payload.value)) {
-                                    if (draft[msgId] && insertFields && typeof insertFields === 'object') {
-                                        if (!draft[msgId].extraInfo) {
-                                            draft[msgId].extraInfo = {};
-                                        }
-
-                                        if (!draft[msgId].extraInfo.replace) {
-                                            draft[msgId].extraInfo.replace = {};
-                                        }
-
-                                        for (const [key, insertConfig] of Object.entries(insertFields)) {
-                                            if (
-                                                insertConfig &&
-                                                typeof insertConfig === 'object' &&
-                                                typeof insertConfig.content === 'string' &&
-                                                typeof insertConfig.position === 'number'
-                                            ) {
-                                                const currentValue = draft[msgId].extraInfo.replace[key] || '';
-                                                const { content, position } = insertConfig;
-
-                                                let insertIndex;
-
-                                                if (position >= 0) {
-                                                    insertIndex = position;
-                                                } else {
-                                                    insertIndex = currentValue.length + position;
-                                                }
-
-                                                // 防止越界
-                                                insertIndex = Math.max(
-                                                    0,
-                                                    Math.min(insertIndex, currentValue.length)
-                                                );
-
-                                                draft[msgId].extraInfo.replace[key] =
-                                                    currentValue.slice(0, insertIndex) +
-                                                    content +
-                                                    currentValue.slice(insertIndex);
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-
-                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
-
-                            if (payload.reply) reply({ success: true });
-                        } else {
-                            if (payload.reply) reply({ success: false });
-                        }
-                        break;
-                    case "Workspace-Transfer-State": {
+                    case 'workspace.transfer.state_changed': {
                         const transfer = payload.value;
                         if (transfer && typeof transfer === 'object' && transfer.transferId) {
                             upsertWorkspaceTransfer(transfer);
@@ -2326,7 +2287,7 @@ function ChatPage({
                         }
                         break;
                     }
-                    case "Set-MessageAttachments":
+                    case 'message.attachments.set':
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             const newMessages = produce(messagesRef.current, draft => {
@@ -2344,7 +2305,7 @@ function ChatPage({
                             reply({success: false});
                         }
                         break;
-                    case "Set-MessageBackgroundTools":
+                    case 'message.background_tools.set':
                         if (payload.value && typeof payload.value === 'object') {
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, backgroundTools] of Object.entries(payload.value)) {
@@ -2360,7 +2321,7 @@ function ChatPage({
                             reply({success: false});
                         }
                         break;
-                    case "Add-Message-Messages":
+                    case 'message.children.changed':
                         if (payload.msgId && payload.value) {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             if (!messagesRef.current[payload.msgId]) {
@@ -2381,27 +2342,21 @@ function ChatPage({
                             messagesRef.current = newMessages;
                             if (messagesRef.current[payload.value].nextMessage) {
                                 emitEvent({
-                                    type: "widget",
-                                    target: "ChatPage",
+                                    event: 'message.switching.changed',
                                     payload: {
-                                        command: "Set-SwitchingMessage",
                                         value: payload.value
                                     },
-                                    markId: chatMarkId,
-                                    fromWebsocket: true,
-                                    notReplyToWebsocket: true
+                                    conversationId: conversationId,
+                                    localOnly: true,
                                 }).then(() => {
                                     loadSwitchMessage(payload.msgId, payload.value).then(() => {
                                         emitEvent({
-                                            type: "widget",
-                                            target: "ChatPage",
+                                            event: 'message.switching.changed',
                                             payload: {
-                                                command: "Set-SwitchingMessage",
                                                 value: null
                                             },
-                                            markId: chatMarkId,
-                                            fromWebsocket: true,
-                                            notReplyToWebsocket: true
+                                            conversationId: conversationId,
+                                            localOnly: true,
                                         })
                                         scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
                                     });
@@ -2412,34 +2367,28 @@ function ChatPage({
                             reply({success: true});
                         }
                         break;
-                    case "Load-Switch-Message":
+                    case 'message.branch.loaded':
                         emitEvent({
-                            type: "widget",
-                            target: "ChatPage",
+                            event: 'message.switching.changed',
                             payload: {
-                                command: "Set-SwitchingMessage",
                                 value: payload.nextMessage
                             },
-                            markId: chatMarkId,
-                            fromWebsocket: true,
-                            notReplyToWebsocket: true
+                            conversationId: conversationId,
+                            localOnly: true,
                         }).then(() => {
                             loadSwitchMessage(payload.msgId, payload.nextMessage).then(() => {
                                 emitEvent({
-                                    type: "widget",
-                                    target: "ChatPage",
+                                    event: 'message.switching.changed',
                                     payload: {
-                                        command: "Set-SwitchingMessage",
                                         value: null
                                     },
-                                    markId: chatMarkId,
-                                    fromWebsocket: true,
-                                    notReplyToWebsocket: true
+                                    conversationId: conversationId,
+                                    localOnly: true,
                                 })
                             });
                         });
                         break;
-                    case "Widget-State-Changed": {
+                    case 'widget.state.changed': {
                         const widget = payload.value && typeof payload.value === 'object' ? payload.value : {};
                         const messageId = String(widget.originMessageId || '');
                         const replacementId = String(widget.replacementId || '');
@@ -2468,12 +2417,12 @@ function ChatPage({
                         if (payload.reply) reply({success: true});
                         break;
                     }
-                    case "Context-Compaction-State": {
+                    case 'context.compaction_state.changed': {
                         applyContextCompactionState(payload.value || {});
                         reply({success: true});
                         break;
                     }
-                    case "Context-State-Changed": {
+                    case 'context.state.changed': {
                         const messageStates = payload.messageStates && typeof payload.messageStates === 'object'
                             ? payload.messageStates
                             : {};
@@ -2518,7 +2467,21 @@ function ChatPage({
                         if (payload.reply) reply({success: true});
                         break;
                     }
-                    case "Conversation-Tree-Changed":
+                    case 'turn.completed':
+                    case 'turn.cancelled':
+                    case 'turn.failed':
+                        // 后端只会在最终消息写入数据库之后发送终态 Turn 事件。
+                        // 重新读取摘要，替换生成开始时缓存下来的空 Assistant 占位。
+                        if (
+                            messageSummariesRef.current.length > 0
+                            || showQuickUserMessageNavigator
+                            || messageOverviewOpen
+                        ) {
+                            loadMessageSummaries({silent: true});
+                        }
+                        if (payload.reply) reply({success: true});
+                        break;
+                    case 'conversation.tree.changed':
                         // AI 工具或其他客户端修改了对话树。统一重新加载当前活动分支，
                         // 避免本地 messagesOrder 与后端 treeRevision 不一致。
                         setRandomMark(generateUUID());
@@ -2531,18 +2494,18 @@ function ChatPage({
                         }
                         reply({success: true, treeRevision: payload.treeRevision});
                         break;
-                    case "Conversation-Deleted":
+                    case 'conversation.deleted':
                         // 当前页面对应的子智能体会话已经被删除，返回会话列表。
                         reply({success: true});
                         window.location.assign('/chat');
                         break;
-                    case "Reload-Messages":
+                    case 'conversation.messages.reload_requested':
                         setRandomMark(generateUUID());
                         break;
-                    case "Re-Messages-Loaded":
+                    case 'conversation.messages.reconciled':
                         emitMessagesLoaded();
                         break;
-                    case "Add-MessageNodes":
+                    case 'message.knowledge.nodes_added':
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
@@ -2564,7 +2527,7 @@ function ChatPage({
                             reply({success: false});
                         }
                         break;
-                    case "Add-MessageNetwork":
+                    case 'message.knowledge.network_added':
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
@@ -2588,7 +2551,7 @@ function ChatPage({
                             reply({success: false});
                         }
                         break;
-                    case "Del-MessageNetwork":
+                    case 'message.knowledge.network_removed':
                         if (payload.value && typeof payload.value === 'object') {
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
@@ -2636,7 +2599,7 @@ function ChatPage({
                             reply({success: false});
                         }
                         break;
-                    case "Focus-MessageNetwork":
+                    case 'message.knowledge.focused':
                         if (payload.value && typeof payload.value === 'object') {
                             for (const [msgId, nodeIds] of Object.entries(payload.value)) {
                                 const msg = messagesRef.current[msgId];
@@ -2669,25 +2632,23 @@ function ChatPage({
                 }
             });
         const unsubscribe2 = onEvent({
-            type: "websocket",
-            target: "onopen",
-            markId: chatMarkId
+            event: 'transport.connected',
         }).then(() => {
             if (isMessageLoadedRef.current) emitMessagesLoaded();
         });
         const unsubscribe3 = onEvent({
-            type: "speech",
-            target: "ChatPage",
-            markId: chatMarkId
-        }).then(({payload, reply}) => {
-            handleBackendSpeechEvent(payload, reply);
+            event: 'speech.*',
+            conversationId,
+            direction: 'incoming',
+        }).then(({event, payload, reply}) => {
+            handleBackendSpeechEvent(event, payload, reply);
         });
         return () => {
             unsubscribe1();
             unsubscribe2();
             unsubscribe3();
         };
-    }, [acknowledgeTaskInterruptReplacements, chatMarkId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, showQuickUserMessageNavigator, messageOverviewOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState]);
+    }, [acknowledgeTaskInterruptReplacements, conversationId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, showQuickUserMessageNavigator, messageOverviewOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState]);
 
     useEffect(() => {
         return () => {
@@ -2696,22 +2657,22 @@ function ChatPage({
     }, [cancelActiveSpeech]);
 
     useEffect(() => {
-        isNewMarkIdRef.current = isNewMarkId;
-    }, [isNewMarkId]);
+        isNewConversationIdRef.current = isNewConversationId;
+    }, [isNewConversationId]);
 
     useEffect(() => {
-        const previousMarkId = previousChatMarkIdRef.current;
+        const previousConversationId = previousConversationIdRef.current;
         const isCreatingConversation = (
-            !previousMarkId
-            && Boolean(chatMarkId)
-            && isNewMarkIdRef.current
+            !previousConversationId
+            && Boolean(conversationId)
+            && isNewConversationIdRef.current
         );
-        previousChatMarkIdRef.current = chatMarkId;
+        previousConversationIdRef.current = conversationId;
 
         clearWorkspaceTransfers();
-        setSettingsInstanceKey(`${chatMarkId ?? 'conversationless'}-${Date.now()}`);
+        setSettingsInstanceKey(`${conversationId ?? 'conversationless'}-${Date.now()}`);
 
-        // A new conversation receives its markId before the first Message-Send
+        // A new conversation receives its conversationId before the first turn.start
         // finishes. Do not erase the pending Workspace/options during that
         // transition; they are the values sent with and persisted by the first
         // message. A real conversation switch still resets stale state first.
@@ -2724,7 +2685,7 @@ function ChatPage({
         setConversationMeta(null);
         applyContextCompactionState({});
 
-        if (chatMarkId === null || chatMarkId === undefined) {
+        if (conversationId === null || conversationId === undefined) {
             setAdvancedSettings([]);
             const emptyMessages = {};
             setMessages(emptyMessages);
@@ -2737,12 +2698,12 @@ function ChatPage({
                 toast.dismiss(id);
             });
         }
-    }, [chatMarkId, setMessages, applyContextCompactionState]);
+    }, [conversationId, setMessages, applyContextCompactionState]);
 
     useEffect(() => {
-        if (!chatMarkId) return undefined;
+        if (!conversationId) return undefined;
         let cancelled = false;
-        apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(chatMarkId)}`)
+        apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}`)
             .then((items) => {
                 if (cancelled || !Array.isArray(items)) return;
                 items.slice().reverse().forEach(upsertWorkspaceTransfer);
@@ -2753,12 +2714,12 @@ function ChatPage({
         return () => {
             cancelled = true;
         };
-    }, [chatMarkId]);
+    }, [conversationId]);
 
     const loadAvailableModels = useCallback(async ({preserveSelection = false} = {}) => {
         try {
             const modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
-                params: {markId: chatMarkId}
+                params: {conversationId: conversationId}
             });
             // Bind model capabilities to the remotely fetched model objects.
             // ChatBox receives selectedModel directly from this list, so keeping
@@ -2790,7 +2751,7 @@ function ChatPage({
             toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
             return [];
         }
-    }, [chatMarkId, t]);
+    }, [conversationId, t]);
 
     const modelSettingsRefreshRevision = Number(settingsRefreshVersions?.['chat.models'] || 0);
     const runtimeOptionsRefreshRevision = Number(settingsRefreshVersions?.['chat.runtime-options'] || 0);
@@ -2806,17 +2767,17 @@ function ChatPage({
     }, [loadAvailableModels, modelSettingsRefreshRevision, runtimeOptionsRefreshRevision]);
 
     useEffect(() => {
-        if (isNewMarkIdRef.current) {
+        if (isNewConversationIdRef.current) {
             // The first message already carries the pending settings. Avoid a
             // racing GET that can replace them with defaults before persistence.
-            isNewMarkIdRef.current = false;
-            setIsNewMarkId(false);
+            isNewConversationIdRef.current = false;
+            setIsNewConversationId(false);
             return;
         }
         let modelsData = [];
         const requestConversation = async () => {
             try {
-                let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + chatMarkId);
+                let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + conversationId);
                 setConversationMeta(data);
                 applyContextCompactionState(data?.contextCompactionState || {});
                 const foundModel = modelsData.find(item => item.id === data.model)
@@ -2839,7 +2800,7 @@ function ChatPage({
             try {
                 setHistoryAutoLoadReady(false);
                 const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                    params: {markId: chatMarkId, limit: HISTORY_PAGE_SIZE}
+                    params: {conversationId: conversationId, limit: HISTORY_PAGE_SIZE}
                 });
 
                 const messages = decorateMessages(messagesData.messages || {});
@@ -2894,7 +2855,7 @@ function ChatPage({
                         markProgrammaticScroll(1400);
                         executePendingScroll();
                     }
-                    if (activeChatMarkIdRef.current === chatMarkId) {
+                    if (activeConversationIdRef.current === conversationId) {
                         setHistoryAutoLoadReady(true);
                     }
                 }, 200);
@@ -2908,7 +2869,7 @@ function ChatPage({
             await requestMessages();
             isLoadingDataRef.current = false;
         };
-        if (chatMarkId && !isLoadingDataRef.current) {
+        if (conversationId && !isLoadingDataRef.current) {
             setIsLoading(true);
             loadData();
         } else {
@@ -2918,7 +2879,7 @@ function ChatPage({
         setIsLoadingError(false);
         setIsFirstMessageSend(true);
     }, [
-        chatMarkId,
+        conversationId,
         executePendingScroll,
         isAutoScrollEnabledRef,
         loadAvailableModels,
@@ -2995,7 +2956,7 @@ function ChatPage({
                     className="flex-1 flex flex-col relative h-full w-full overflow-hidden"
                     ref={chatPageRef}
                     data-chat-page-root="true"
-                    data-chat-mark-id={chatMarkId || ''}
+                    data-cwm-conversation-id={conversationId || ''}
                 >
                     <ChatHeader
                         models={models}
@@ -3010,7 +2971,7 @@ function ChatPage({
                         scrollToSelectedItem={scrollToSelectedItem}
                         handleSidebarToggle={handleSidebarToggle}
                         onOpenMessageOverview={handleOpenMessageOverview}
-                        messageOverviewDisabled={!chatMarkId}
+                        messageOverviewDisabled={!conversationId}
                         isWindowMode={isWindowMode}
                         handleDragMouseDown={handleDragMouseDown}
                         handleDragTouchStart={handleDragTouchStart}
@@ -3036,13 +2997,13 @@ function ChatPage({
                             style={{maxHeight: 'calc(120vh - 256px)'}}
                         >
                             <MessageContainer
-                                key={chatMarkId}
+                                key={conversationId}
                                 messagesOrder={messagesOrder}
                                 messages={messages}
                                 onLoadMore={loadMoreHistory}
                                 isLoadingMore={isLoadingMoreHistory}
                                 onSwitchMessage={switchMessage}
-                                markId={chatMarkId}
+                                conversationId={conversationId}
                                 speechState={speechState}
                                 onSpeechTextClick={handleSpeechTextClick}
                                 highlightedMessageId={highlightedMessageId}
@@ -3055,7 +3016,7 @@ function ChatPage({
                             activeMessageId={activeVisibleMessageId}
                             onSelect={jumpToMessage}
                             visible={Boolean(
-                                chatMarkId &&
+                                conversationId &&
                                 showQuickUserMessageNavigator &&
                                 !isMobile &&
                                 isMessageNavigatorWide
@@ -3104,7 +3065,7 @@ function ChatPage({
                         />
                         <ChatBox
                             onSendMessage={handleSendMessage}
-                            markId={chatMarkId}
+                            conversationId={conversationId}
                             attachmentsMeta={attachments}
                             setAttachments={setAttachments}
                             onAttachmentRemove={onAttachmentRemove}
@@ -3168,7 +3129,7 @@ function ChatPage({
                     advancedSettings={advancedSettings}
                     initialSettingValues={initialSettingValues || advancedSettingsValues}
                     settingsInstanceKey={settingsInstanceKey}
-                    markId={chatMarkId}
+                    conversationId={conversationId}
                     onSettingChange={(values) => {
                         setAdvancedSettingsValues(values);
                         setInitialSettingValues(null);
@@ -3235,7 +3196,7 @@ function ChatPage({
                     setIsDeletingMessage(true);
 
                     apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId,
-                        {params: {markId: chatMarkId}}
+                        {params: {conversationId: conversationId}}
                     )
                         .then((data) => {
                             deleteMessageLocally(pendingDeleteMsgId);

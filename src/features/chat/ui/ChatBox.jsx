@@ -43,8 +43,8 @@ const CHATBOX_AUTO_HIDE_DELAY_MS = 2200;
 const CHATBOX_INPUT_DRAFT_STORAGE_PREFIX = 'chatbox-input-draft-v1';
 const CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY = 'chatbox:input-drafts:v1';
 
-const getStandaloneDraftStorageKey = (markId) => (
-    `${CHATBOX_INPUT_DRAFT_STORAGE_PREFIX}:${encodeURIComponent(String(markId ?? 'default'))}`
+const getStandaloneDraftStorageKey = (conversationId) => (
+    `${CHATBOX_INPUT_DRAFT_STORAGE_PREFIX}:${encodeURIComponent(String(conversationId ?? 'default'))}`
 );
 
 const readStandaloneDraft = (storageKey) => {
@@ -239,7 +239,7 @@ function ChatBox({
                      readOnly = false,
                      FilePickerCallback,
                      PicPickerCallback,
-                     markId,
+                     conversationId,
                      attachmentsMeta = [],
                      setAttachments,
                      uploadFiles = [],
@@ -300,7 +300,7 @@ function ChatBox({
 
     // ========== 状态管理 ==========
     const [messageContent, setMessageContent] = useState(() => (
-        readStandaloneDraft(getStandaloneDraftStorageKey(markId))
+        readStandaloneDraft(getStandaloneDraftStorageKey(conversationId))
     ));
     const [toolsStatus, setToolsStatus] = useState({});
     const [runtimeToolPermissions, setRuntimeToolPermissions] = useState({});
@@ -381,18 +381,18 @@ function ChatBox({
     const isInputFocusedRef = useRef(false);
     const isPointerInsideChatBoxRef = useRef(false);
     const isModalOpenRef = useRef(false);
-    const currentDraftStorageKeyRef = useRef(getStandaloneDraftStorageKey(markId));
+    const currentDraftStorageKeyRef = useRef(getStandaloneDraftStorageKey(conversationId));
     const editDraftRef = useRef(null);
     const isEditMessageRef = useRef(false);
     const pendingEditClearRef = useRef(false);
     const standaloneAttachmentsRef = useRef([]);
-    const previousMarkIdRef = useRef(markId);
+    const previousConversationIdRef = useRef(conversationId);
     const toolPermissionRevisionRef = useRef(0);
     const conversationToolPermissionsRef = useRef({});
     const pendingConversationToolPermissionsRef = useRef({});
-    const pendingConversationMarkIdRef = useRef(null);
+    const pendingConversationConversationIdRef = useRef(null);
     const runtimeToolPermissionRevisionRef = useRef(0);
-    const runtimeToolPermissionStreamIdRef = useRef(null);
+    const runtimeToolPermissionRunIdRef = useRef(null);
     const [containerWidth, setContainerWidth] = useState(0);
 
 
@@ -610,13 +610,11 @@ function ChatBox({
             return next;
         });
 
-        if (!markId) return;
+        if (!conversationId) return;
         emitEvent({
-            type: 'agent',
-            target: 'ToolPermission',
-            markId,
+            event: 'tool.permission.set',
+            conversationId,
             payload: {
-                command: 'Set-Tool-Permission',
                 toolName,
                 mode,
                 scope: 'conversation',
@@ -635,14 +633,14 @@ function ChatBox({
         }).catch((error) => {
             console.error('Set tool permission failed:', error);
         });
-    }, [applyConversationToolPermissions, markId]);
+    }, [applyConversationToolPermissions, conversationId]);
 
     const syncToolPermissions = useCallback(async (updates) => {
         if (!updates || Object.keys(updates).length === 0) return true;
 
-        // 新建对话尚未分配 markId 时，先把权限保存在当前 ChatBox 状态中。
+        // 新建对话尚未分配 conversationId 时，先把权限保存在当前 ChatBox 状态中。
         // 首条消息会通过 toolsStatus 一并提交，后端据此创建会话级工具权限。
-        if (!markId) {
+        if (!conversationId) {
             const nextPermissions = {
                 ...collectToolPermissions(extraTools, toolsStatus.extra_tools || {}),
                 ...updates,
@@ -655,11 +653,9 @@ function ChatBox({
 
         try {
             const response = await emitEvent({
-                type: 'agent',
-                target: 'ToolPermission',
-                markId,
+                event: 'tool.permissions.set',
+                conversationId,
                 payload: {
-                    command: 'Set-Tool-Permissions',
                     permissions: updates,
                     scope: 'conversation',
                     applyToPending: true,
@@ -681,7 +677,7 @@ function ChatBox({
             toast.error(t('conversation_tools_save_failed', '保存本对话工具失败。'));
             return false;
         }
-    }, [applyConversationToolPermissions, extraTools, markId, t, toolsStatus.extra_tools]);
+    }, [applyConversationToolPermissions, extraTools, conversationId, t, toolsStatus.extra_tools]);
 
     const currentConversationToolPermissions = useMemo(() => (
         collectToolPermissions(extraTools, toolsStatus.extra_tools || {})
@@ -721,11 +717,9 @@ function ChatBox({
 
             try {
                 const response = await emitEvent({
-                    type: 'message',
-                    target: 'ChatPage',
-                    markId,
+                    event: 'task.interrupt',
+                    conversationId,
                     payload: {
-                        command: 'Task-Interrupt',
                         taskRunId: taskMode.taskRunId,
                         content: currentContent,
                         requestId,
@@ -753,7 +747,7 @@ function ChatBox({
         }
 
         runtimeToolPermissionRevisionRef.current = 0;
-        runtimeToolPermissionStreamIdRef.current = null;
+        runtimeToolPermissionRunIdRef.current = null;
         setRuntimeToolPermissions({});
 
         onSendMessage({
@@ -784,7 +778,7 @@ function ChatBox({
         currentRole,
         isForkMode,
         leaveEditMode,
-        markId,
+        conversationId,
         t,
         updateMessageContent,
     ]);
@@ -960,7 +954,7 @@ function ChatBox({
 
         const voicePayload = {
             ...payload,
-            markId,
+            conversationId,
         };
 
         if (typeof onVoicePcmReady === 'function') {
@@ -971,7 +965,7 @@ function ChatBox({
 
         console.debug('[ChatBox] voice pcm16k ready:', voicePayload);
         return null;
-    }, [appendVoiceRecognitionText, getVoiceRecognitionText, markId, onVoicePcmReady]);
+    }, [appendVoiceRecognitionText, getVoiceRecognitionText, conversationId, onVoicePcmReady]);
 
     const startVoiceRecording = useCallback(async () => {
         if (isReadOnly || voiceActionPending || isVoiceRecognizing || voiceRecorderRef.current) return false;
@@ -990,7 +984,7 @@ function ChatBox({
 
             if (typeof onVoiceRecordingStart === 'function') {
                 await onVoiceRecordingStart({
-                    markId,
+                    conversationId,
                     isMobile: isSmallScreen,
                     sampleRate: 16000,
                     channels: 1,
@@ -1020,7 +1014,7 @@ function ChatBox({
         } finally {
             setVoiceActionPending(false);
         }
-    }, [getMicrophoneRequestOptions, isReadOnly, isSmallScreen, isVoiceRecognizing, markId, onVoiceRecordingStart, voiceActionPending]);
+    }, [getMicrophoneRequestOptions, isReadOnly, isSmallScreen, isVoiceRecognizing, conversationId, onVoiceRecordingStart, voiceActionPending]);
 
     const stopVoiceRecording = useCallback(async ({emitPcm = true} = {}) => {
         const recorder = voiceRecorderRef.current;
@@ -1038,7 +1032,7 @@ function ChatBox({
         try {
             if (!emitPcm) {
                 await recorder.cancel();
-                await onVoiceRecordingCancel?.({markId});
+                await onVoiceRecordingCancel?.({conversationId});
                 return null;
             }
 
@@ -1046,7 +1040,7 @@ function ChatBox({
             await handleVoicePcmReady(payload);
             return payload;
         } catch (error) {
-            await onVoiceRecordingCancel?.({markId});
+            await onVoiceRecordingCancel?.({conversationId});
             console.error('Failed to stop voice recording:', error);
             toast.error(voiceText.recordingFailed);
             return null;
@@ -1055,7 +1049,7 @@ function ChatBox({
             setVoiceActionPending(false);
             blurTextInputOnMobile();
         }
-    }, [blurTextInputOnMobile, handleVoicePcmReady, markId, onVoiceRecordingCancel, voiceText.recordingFailed]);
+    }, [blurTextInputOnMobile, handleVoicePcmReady, conversationId, onVoiceRecordingCancel, voiceText.recordingFailed]);
 
     const handleVoiceButtonClick = useCallback(async () => {
         if (isReadOnly || voiceActionPending || isVoiceRecognizing) return;
@@ -1260,8 +1254,8 @@ function ChatBox({
         const serverToolPermissions = data.toolPermissions?.values || {};
         const permissionSource = data.toolPermissions?.source || 'default';
         const pendingMatchesConversation = Boolean(
-            markId
-            && pendingConversationMarkIdRef.current === markId
+            conversationId
+            && pendingConversationConversationIdRef.current === conversationId
             && Object.keys(pendingConversationToolPermissionsRef.current).length > 0
         );
         const effectiveToolPermissions = (
@@ -1282,7 +1276,7 @@ function ChatBox({
         }
         if (pendingMatchesConversation && permissionSource === 'conversation') {
             pendingConversationToolPermissionsRef.current = {};
-            pendingConversationMarkIdRef.current = null;
+            pendingConversationConversationIdRef.current = null;
         }
 
         if (data.builtin_tools) {
@@ -1338,23 +1332,19 @@ function ChatBox({
             }
         }
 
-    }, [FilePickerCallback, PicPickerCallback, initializeExtraTools, markId]);
+    }, [FilePickerCallback, PicPickerCallback, initializeExtraTools, conversationId]);
 
     // ========== 事件处理函数 ==========
 
-    const handleEventBroadcast = useCallback(({
-                                                  payload: payload,
-                                                  reply: reply
-                                              }) => {
-        // 事件处理逻辑
-        switch (payload.command) {
-            case "SendButton-Status":
+    const handleEventBroadcast = useCallback(({event, payload, reply}) => {
+        switch (event) {
+            case 'composer.status.changed':
                 const validStates = ['disabled', 'normal', 'loading', 'generating'];
                 if (validStates.includes(payload.value)) {
                     setSendButtonStatus(payload.value);
                     if (payload.value === 'normal') {
                         runtimeToolPermissionRevisionRef.current = 0;
-                        runtimeToolPermissionStreamIdRef.current = null;
+                        runtimeToolPermissionRunIdRef.current = null;
                         setRuntimeToolPermissions({});
                     }
                     reply({value: payload.value});
@@ -1365,7 +1355,7 @@ function ChatBox({
                     setIsReadOnly(Boolean(payload.readOnly));
                 }
                 break;
-            case "Task-Mode-State": {
+            case 'task.state.changed': {
                 const value = payload.value || {};
                 const taskRunId = value.taskRunId;
                 const nextTasks = new Map(activeTaskModesRef.current);
@@ -1397,25 +1387,25 @@ function ChatBox({
                 reply({value});
                 break;
             }
-            case "Set-MessageContent":
+            case 'composer.content.set':
                 updateMessageContent(payload.value);
                 break;
-            case "Get-MessageContent":
+            case 'composer.content.get':
                 reply({value: messageContentRef.current});
                 break;
-            case "Setup-ChatBox":
+            case 'composer.setup':
                 // 原子替换工具配置，保持上一帧工具栏高度，避免发送瞬间出现额外一行。
                 chatboxSetup(payload.value);
                 setToolsLoadedStatus(2);
                 break;
-            case "Set-QuickOptions":
+            case 'composer.quick_options.set':
                 setIsTransitioning(true);
                 setTimeout(() => {
                     setQuickOptions(payload.value);
                     setIsTransitioning(false);
                 }, 500);
                 break;
-            case "Attachment-Meta":
+            case 'message.attachments.set':
                 if (payload.value) {
                     setAttachments(payload.value);
                     reply({value: payload.value});
@@ -1424,7 +1414,7 @@ function ChatBox({
                 }
                 break;
 
-            case "Set-EditMessage":
+            case 'composer.edit.set':
                 if (payload.immediate) {  // 马上发送的逻辑
                     onSendMessage(
                         {
@@ -1474,7 +1464,7 @@ function ChatBox({
 
                 break;
 
-            case "Clear":
+            case 'composer.clear':
                 if (pendingEditClearRef.current) {
                     pendingEditClearRef.current = false;
                     leaveEditMode();
@@ -1484,18 +1474,15 @@ function ChatBox({
                 }
                 break;
 
-            case "Shot-Message":  // 原地发送消息
+            case 'composer.message.seeded':  // 原地发送消息
                 if (payload.msgId && payload.value && payload.value.name) {
 
                     emitEvent({
-                        type: "message",
-                        target: "ChatPage",
+                        event: 'message.order.changed',
                         payload: {
-                            command: "MessagesOrder-Meta"
-                        },
-                        markId: markId,
-                        fromWebsocket: true,  // 不要发到 ws 去
-                        notReplyToWebsocket: true
+                            },
+                        conversationId: conversationId,
+                        localOnly: true,
                     }).then((messagesOrder) => {
                         messagesOrder = messagesOrder.value;
 
@@ -1508,18 +1495,15 @@ function ChatBox({
                         if (!payload.value.messages) payload.value.messages = [];
 
                         emitEvent({
-                            type: "message",
-                            target: "ChatPage",
+                            event: 'message.created',
                             payload: {
-                                command: "Add-Message",
                                 value: {
                                     [payload.msgId]: payload.value
                                 },
                                 isEdit: payload.isEdit
                             },
-                            markId: markId,
-                            fromWebsocket: true,  // 不要发到 ws 去
-                            notReplyToWebsocket: true
+                            conversationId: conversationId,
+                            localOnly: true,
                         }).then((data) => {
 
                             if (!data.success) {
@@ -1545,30 +1529,24 @@ function ChatBox({
                                 }
 
                                 emitEvent({
-                                    type: "message",
-                                    target: "ChatPage",
+                                    event: 'message.order.changed',
                                     payload: {
-                                        command: "MessagesOrder-Meta",
                                         value: newMessagesOrder
                                     },
-                                    markId: markId,
-                                    fromWebsocket: true,  // 不要发到 ws 去
-                                    notReplyToWebsocket: true
+                                    conversationId: conversationId,
+                                    localOnly: true,
                                 }).then(data => {
 
                                     // 修改消息链
                                     emitEvent({
-                                        type: "message",
-                                        target: "ChatPage",
+                                        event: 'message.children.changed',
                                         payload: {
-                                            command: "Add-Message-Messages",
                                             msgId: payload.value.prevMessage,
                                             value: payload.msgId,
                                             switch: true
                                         },
-                                        markId: markId,
-                                        fromWebsocket: true,  // 不要发到 ws 去
-                                        notReplyToWebsocket: true
+                                        conversationId: conversationId,
+                                        localOnly: true,
                                     }).then(data => {
                                         if (!payload.noClear) {
                                             if (isEditMessageRef.current) {
@@ -1596,7 +1574,7 @@ function ChatBox({
 
                 break;
         }
-    }, [attachmentsMeta, buildOutboundToolsStatus, chatboxSetup, leaveEditMode, markId, onSendMessage, onTaskInterruptClear, roles, setAttachments, showCollapsedChatBox, toolsStatus, updateMessageContent]);
+    }, [attachmentsMeta, buildOutboundToolsStatus, chatboxSetup, leaveEditMode, conversationId, onSendMessage, onTaskInterruptClear, roles, setAttachments, showCollapsedChatBox, toolsStatus, updateMessageContent]);
 
     const renderMenuItems = useExtraToolsMenuItems({
         toolsStatus,
@@ -1613,24 +1591,24 @@ function ChatBox({
     // ========== 副作用 ==========
 
     useEffect(() => {
-        const previousMarkId = previousMarkIdRef.current;
-        const isNewConversationAssigned = !previousMarkId && Boolean(markId);
+        const previousConversationId = previousConversationIdRef.current;
+        const isNewConversationAssigned = !previousConversationId && Boolean(conversationId);
         const pendingPermissions = pendingConversationToolPermissionsRef.current;
 
         toolPermissionRevisionRef.current = 0;
         if (isNewConversationAssigned && Object.keys(pendingPermissions).length > 0) {
-            // Get-MarkId runs before the first Message-Send is persisted. Keep
+            // conversation.create runs before the first turn.start is persisted. Keep
             // the new-conversation tool selection attached to the assigned ID
             // so an early ChatBox setup response cannot replace it with defaults.
-            pendingConversationMarkIdRef.current = markId;
+            pendingConversationConversationIdRef.current = conversationId;
             conversationToolPermissionsRef.current = {...pendingPermissions};
         } else {
             conversationToolPermissionsRef.current = {};
             pendingConversationToolPermissionsRef.current = {};
-            pendingConversationMarkIdRef.current = null;
+            pendingConversationConversationIdRef.current = null;
         }
         runtimeToolPermissionRevisionRef.current = 0;
-        runtimeToolPermissionStreamIdRef.current = null;
+        runtimeToolPermissionRunIdRef.current = null;
         setRuntimeToolPermissions({});
         setConversationToolDefaults({});
         setConversationToolsDialogOpen(false);
@@ -1640,7 +1618,7 @@ function ChatBox({
         setActiveTaskModeOptions([]);
         taskInterruptPendingRef.current = false;
         setIsTaskInterruptPending(false);
-    }, [markId]);
+    }, [conversationId]);
 
     useEffect(() => {
         if (Object.keys(conversationToolPermissionsRef.current).length === 0) return;
@@ -1655,12 +1633,9 @@ function ChatBox({
     }, [extraTools]);
 
     useEffect(() => onEvent({
-        type: 'agent',
-        target: 'ToolPermission',
-        markId,
-    }).then(({payload}) => {
-        if (payload?.command !== 'Tool-Permission-Changed') return;
-
+        event: 'tool.permission.changed',
+        conversationId,
+    }).then(({payload, eventRunId}) => {
         if (payload.scope === 'conversation') {
             applyConversationToolPermissions(payload.permissions || {}, payload.revision);
             return;
@@ -1668,27 +1643,27 @@ function ChatBox({
 
         if (payload.scope === 'run') {
             const revision = Number(payload.revision) || 0;
-            const streamId = payload.streamId || null;
+            const runId = eventRunId || payload.runId || null;
             if (payload.cleared) {
                 if (
-                    runtimeToolPermissionStreamIdRef.current
-                    && streamId
-                    && runtimeToolPermissionStreamIdRef.current !== streamId
+                    runtimeToolPermissionRunIdRef.current
+                    && runId
+                    && runtimeToolPermissionRunIdRef.current !== runId
                 ) return;
                 runtimeToolPermissionRevisionRef.current = 0;
-                runtimeToolPermissionStreamIdRef.current = null;
+                runtimeToolPermissionRunIdRef.current = null;
                 setRuntimeToolPermissions({});
                 return;
             }
             if (
-                runtimeToolPermissionStreamIdRef.current === streamId
+                runtimeToolPermissionRunIdRef.current === runId
                 && revision < runtimeToolPermissionRevisionRef.current
             ) return;
             runtimeToolPermissionRevisionRef.current = revision;
-            runtimeToolPermissionStreamIdRef.current = streamId;
+            runtimeToolPermissionRunIdRef.current = runId;
             setRuntimeToolPermissions(payload.permissions || {});
         }
-    }), [applyConversationToolPermissions, markId]);
+    }), [applyConversationToolPermissions, conversationId]);
 
     // 更新引用值
     useEffect(() => {
@@ -1738,12 +1713,12 @@ function ChatBox({
         return () => {
             voiceRecorderRef.current?.cancel?.();
             voiceRecorderRef.current = null;
-            onVoiceRecordingCancelRef.current?.({markId});
+            onVoiceRecordingCancelRef.current?.({conversationId});
         };
-    }, [markId]);
+    }, [conversationId]);
 
-    // 加载工具配置。markId 变化时重新读取服务器权威的会话工具权限；
-    // 新对话尚无 markId 时读取用户级默认权限。
+    // 加载工具配置。conversationId 变化时重新读取服务器权威的会话工具权限；
+    // 新对话尚无 conversationId 时读取用户级默认权限。
     useEffect(() => {
         if (apiEndpoint.CHATBOX_ENDPOINT.trim() === '') {
             setToolsLoadedStatus(-1);
@@ -1754,7 +1729,7 @@ function ChatBox({
         setToolsLoadedStatus(0);
         apiClient
             .get(apiEndpoint.CHATBOX_ENDPOINT, {
-                params: markId ? {markId} : undefined,
+                params: conversationId ? {conversationId} : undefined,
             })
             .then(data => {
                 if (cancelled) return;
@@ -1768,30 +1743,32 @@ function ChatBox({
         return () => {
             cancelled = true;
         };
-    }, [chatboxSetup, markId]);
+    }, [chatboxSetup, conversationId]);
 
     // 监听事件广播
     useEffect(() => {
         const unsubscribe = onEvent({
-            type: "widget",
-            target: "ChatBox",
-            markId: markId,
-            acceptReply: false,
-            onlyEmpty: Boolean(!markId)
+            event: [
+                'composer.*',
+                'task.state.changed',
+                'message.attachments.set',
+            ],
+            conversationId,
+            onlyWithoutConversation: Boolean(!conversationId),
         }).then(handleEventBroadcast);
         return () => unsubscribe();
-    }, [handleEventBroadcast, markId]);
+    }, [handleEventBroadcast, conversationId]);
 
     // 页面切换时恢复对应会话的普通输入草稿。
     useEffect(() => {
-        const previousMarkId = previousMarkIdRef.current;
-        if (previousMarkId === markId) return;
+        const previousConversationId = previousConversationIdRef.current;
+        if (previousConversationId === conversationId) return;
 
         const previousStorageKey = currentDraftStorageKeyRef.current;
-        const nextStorageKey = getStandaloneDraftStorageKey(markId);
-        const isNewConversationAssigned = !previousMarkId && Boolean(markId);
+        const nextStorageKey = getStandaloneDraftStorageKey(conversationId);
+        const isNewConversationAssigned = !previousConversationId && Boolean(conversationId);
 
-        previousMarkIdRef.current = markId;
+        previousConversationIdRef.current = conversationId;
         currentDraftStorageKeyRef.current = nextStorageKey;
         editDraftRef.current = null;
         isEditMessageRef.current = false;
@@ -1801,7 +1778,7 @@ function ChatBox({
         setIsForkMode(false);
         setEditMessageId(null);
 
-        // 新对话首次发送时，Get-MarkId 会先让 markId 从空值切换为正式 ID。
+        // 新对话首次发送时，conversation.create 会先让 conversationId 从空值切换为正式 ID。
         // 此时保留当前输入与附件，避免随后的 Shot-Message 回读到空内容；
         // 同时把普通草稿迁移到正式会话键，后端发送 Clear 后会正常删除。
         if (isNewConversationAssigned) {
@@ -1812,7 +1789,7 @@ function ChatBox({
 
         setAttachments([]);
         updateMessageContent(readStandaloneDraft(nextStorageKey), {persist: false});
-    }, [markId, setAttachments, updateMessageContent]);
+    }, [conversationId, setAttachments, updateMessageContent]);
 
     // 更新附件高度。附件数量、容器宽度和过渡动画都会改变实际高度，
     // 使用 ResizeObserver 避免 rootMaxHeight 沿用旧值而裁掉附件滚动按钮。
@@ -1983,14 +1960,14 @@ function ChatBox({
     }, [isChatBoxCollapsed, onHeightChange]);
 
     // Keep the complete pending permission map while the conversation has no
-    // markId yet. This includes direct toggles as well as dialog-based changes.
+    // conversationId yet. This includes direct toggles as well as dialog-based changes.
     useEffect(() => {
-        if (markId) return;
+        if (conversationId) return;
         pendingConversationToolPermissionsRef.current = collectToolPermissions(
             extraTools,
             toolsStatus.extra_tools || {}
         );
-    }, [extraTools, markId, toolsStatus.extra_tools]);
+    }, [extraTools, conversationId, toolsStatus.extra_tools]);
 
     // 保存额外工具状态到本地存储
     useEffect(() => {
@@ -2107,7 +2084,7 @@ function ChatBox({
             <WorkspaceSettingsDialog
                 open={workspaceSettingsDialogOpen}
                 onOpenChange={setWorkspaceSettingsDialogOpen}
-                markId={markId}
+                conversationId={conversationId}
                 selectedWorkspaceIds={selectedWorkspaceIds}
                 onWorkspaceChange={onWorkspaceChange}
                 t={t}
@@ -2123,7 +2100,7 @@ function ChatBox({
                 onFolderDetected={onFolderDetected}
                 targetRef={dropTargetRef}
             />
-            <ChatBoxInteractionHost markId={markId}/>
+            <ChatBoxInteractionHost conversationId={conversationId}/>
             {isMobileCollapsed && (
                 <div className="mx-auto w-full max-w-225 px-4 py-2 pointer-events-auto">
                     <button
@@ -2401,7 +2378,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
     // 检查其他 props
     return (
         prevProps.readOnly === nextProps.readOnly &&
-        prevProps.markId === nextProps.markId &&
+        prevProps.conversationId === nextProps.conversationId &&
         prevProps.uploadFiles === nextProps.uploadFiles &&
         prevProps.onSendMessage === nextProps.onSendMessage &&
         prevProps.FilePickerCallback === nextProps.FilePickerCallback &&

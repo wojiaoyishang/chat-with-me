@@ -3,7 +3,7 @@ import {toast} from 'sonner';
 import {createFilePicker, fileUpload, processSelectedFiles} from '@/lib/tools.jsx';
 import {emitEvent} from '@/context/useEventStore.jsx';
 
-const useFileUpload = ({chatMarkId, t}) => {
+const useFileUpload = ({conversationId, t}) => {
     const isProcessingRef = useRef(false);
     const uploadIntervals = useRef(new Map());
     const [uploadFiles, setUploadFiles] = useState([]);
@@ -21,22 +21,18 @@ const useFileUpload = ({chatMarkId, t}) => {
                 if (item.kind === 'string' && item.type === 'text/plain') {
                     item.getAsString(function (text) {
                         emitEvent({
-                            type: 'widget',
-                            target: 'ChatBox',
-                            payload: {command: 'Get-MessageContent'},
-                            markId: chatMarkId,
-                            fromWebsocket: true,
-                            notReplyToWebsocket: true
+                            event: 'composer.content.get',
+                            payload: {},
+                            conversationId: conversationId,
+                            localOnly: true,
                         }).then(payload => {
                             emitEvent({
-                                type: 'widget',
-                                target: 'ChatBox',
+                                event: 'composer.content.set',
                                 payload: {
-                                    command: 'Set-MessageContent',
                                     value: payload.value + text
                                 },
-                                markId: chatMarkId,
-                                fromWebsocket: true
+                                conversationId: conversationId,
+                                localOnly: true,
                             });
                         });
                     });
@@ -93,7 +89,7 @@ const useFileUpload = ({chatMarkId, t}) => {
         setTimeout(() => {
             isProcessingRef.current = false;
         }, 500);
-    }, [chatMarkId, t]);
+    }, [conversationId, t]);
 
     const onAttachmentRemove = useCallback((attachment) => {
         setAttachments(prev => prev.filter(att => att.serverId !== attachment.serverId));

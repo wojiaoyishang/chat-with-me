@@ -5,10 +5,10 @@ import {useIsMobile} from "@/lib/tools.jsx";
 
 const ChatWithEditor = ({
     url,
-    chatMarkId,
-    documentMarkId,
+    conversationId,
+    documentId,
     setDocModifiedStatus,
-    onNewChatMarkId,
+    onNewConversationId,
     settingsRefreshVersions,
 }) => {
 
@@ -240,10 +240,10 @@ const ChatWithEditor = ({
             >
                 <div className="flex-1 overflow-hidden">
                     <ChatPage
-                        chatMarkId={chatMarkId}
-                        documentMarkId={documentMarkId}
+                        conversationId={conversationId}
+                        documentId={documentId}
                         pageType="doc"
-                        onNewChatMarkId={onNewChatMarkId}
+                        onNewConversationId={onNewConversationId}
                         showWindowButton={true}
                         showMinimizeButton={true}
                         onMinimize={handleMinimizeChat}

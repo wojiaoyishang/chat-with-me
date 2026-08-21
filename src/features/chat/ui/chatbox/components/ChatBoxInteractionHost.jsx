@@ -158,11 +158,9 @@ const ToolApprovalInteraction = ({interaction, onDismiss}) => {
         setSubmittingIds(prev => new Set(prev).add(submittingKey));
         try {
             const payload = await emitEvent({
-                type: 'agent',
-                target: 'AgentApproval',
-                markId: interaction.markId,
+                event: 'tool.approval.resolve',
+                conversationId: interaction.conversationId,
                 payload: {
-                    command: 'Resolve-Tool-Approval',
                     approvalId,
                     itemId: itemId || undefined,
                     decision,
@@ -185,7 +183,7 @@ const ToolApprovalInteraction = ({interaction, onDismiss}) => {
                 return next;
             });
         }
-    }, [approvalId, interaction.id, interaction.markId, onDismiss, submittingIds]);
+    }, [approvalId, interaction.id, interaction.conversationId, onDismiss, submittingIds]);
 
     const groupBadge = groupType === 'batch'
         ? t('tool_approval_batch_badge', 'Batch')
@@ -287,7 +285,7 @@ const ToolApprovalInteraction = ({interaction, onDismiss}) => {
 
 registerChatBoxInteraction('toolApproval', ToolApprovalInteraction);
 
-const ChatBoxInteractionHost = ({markId}) => {
+const ChatBoxInteractionHost = ({conversationId}) => {
     const [interactions, setInteractions] = useState([]);
     const [, setRegistryVersion] = useState(0);
 
@@ -303,27 +301,26 @@ const ChatBoxInteractionHost = ({markId}) => {
 
     useEffect(() => {
         setInteractions([]);
-    }, [markId]);
+    }, [conversationId]);
 
-    useEffect(() => onEvent({type: 'widget', target: 'ChatBox', markId}).then(({payload}) => {
-        const command = payload?.command;
-        if (command === 'Show-Interaction') {
+    useEffect(() => onEvent({event: 'interaction.*', conversationId}).then(({event, payload}) => {
+        if (event === 'interaction.show') {
             const value = payload.value;
             if (!value?.id || !value?.kind) return;
             setInteractions(prev => [
                 ...prev.filter(item => item.id !== value.id),
-                {...value, markId},
+                {...value, conversationId},
             ]);
-        } else if (command === 'Update-Interaction') {
+        } else if (event === 'interaction.update') {
             const value = payload.value;
             if (!value?.id) return;
-            setInteractions(prev => prev.map(item => item.id === value.id ? {...item, ...value, markId} : item));
-        } else if (command === 'Dismiss-Interaction') {
+            setInteractions(prev => prev.map(item => item.id === value.id ? {...item, ...value, conversationId} : item));
+        } else if (event === 'interaction.dismiss') {
             dismiss(payload.id || payload.value?.id);
-        } else if (command === 'Clear-Interactions') {
+        } else if (event === 'interaction.clear') {
             setInteractions([]);
         }
-    }), [dismiss, markId]);
+    }), [dismiss, conversationId]);
 
     const visible = useMemo(() => interactions.filter(item => interactionRenderers.has(item.kind)), [interactions]);
     if (visible.length === 0) return null;

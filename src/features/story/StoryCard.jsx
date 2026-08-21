@@ -15,21 +15,21 @@ const parseStory = (content) => {
     }
 };
 
-const StoryCard = memo(({content = '', markId = null}) => {
+const StoryCard = memo(({content = '', conversationId = null}) => {
     const {t} = useTranslation();
     const initial = useMemo(() => parseStory(content), [content]);
     const [story, setStory] = useState(initial);
-    const [accessChecked, setAccessChecked] = useState(!markId);
+    const [accessChecked, setAccessChecked] = useState(!conversationId);
     const [hiddenByPermission, setHiddenByPermission] = useState(initial?.canEdit === false);
     const storyId = Number(initial?.storyId || story?.storyId || 0);
 
     useEffect(() => setStory(initial), [initial]);
 
     const refreshStory = useCallback(async () => {
-        if (!markId || !storyId) return null;
+        if (!conversationId || !storyId) return null;
         try {
             const data = await apiClient.get(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {
-                params: {markId, includeParts: false},
+                params: {conversationId, includeParts: false},
             });
             if (data?.story) {
                 setStory(data.story);
@@ -43,11 +43,11 @@ const StoryCard = memo(({content = '', markId = null}) => {
         } finally {
             setAccessChecked(true);
         }
-    }, [markId, storyId]);
+    }, [conversationId, storyId]);
 
     useEffect(() => {
         let cancelled = false;
-        if (!markId || !storyId) {
+        if (!conversationId || !storyId) {
             setAccessChecked(true);
             return undefined;
         }
@@ -56,20 +56,20 @@ const StoryCard = memo(({content = '', markId = null}) => {
             if (cancelled) return;
         });
         return () => { cancelled = true; };
-    }, [markId, storyId, refreshStory]);
+    }, [conversationId, storyId, refreshStory]);
 
     useEffect(() => {
         if (!storyId) return undefined;
-        return onEvent({type: 'story', target: 'ChatPage', markId}).then(({payload}) => {
+        return onEvent({event: 'story.*', conversationId, includeGlobal: true}).then(({event, payload}) => {
             const value = payload?.value || {};
             const nextStory = value.story || value;
             if (Number(nextStory?.storyId || value?.storyId) !== storyId) return;
-            if (payload.command === 'Story-Deleted') {
+            if (event === 'story.deleted') {
                 setStory(current => ({...current, deleted: true, status: 'deleted'}));
                 setHiddenByPermission(true);
-            } else if (payload.command === 'Story-Permissions-Changed') {
+            } else if (event === 'story.permissions.changed') {
                 void refreshStory();
-            } else {
+            } else if (event === 'story.changed') {
                 setStory(current => {
                     const merged = {...current, ...nextStory};
                     if (nextStory?.canEdit === undefined && current?.canEdit !== undefined) {
@@ -79,18 +79,17 @@ const StoryCard = memo(({content = '', markId = null}) => {
                 });
             }
         });
-    }, [markId, storyId, refreshStory]);
+    }, [conversationId, storyId, refreshStory]);
 
     if (!storyId || !accessChecked || hiddenByPermission) return null;
 
     const openStory = () => {
         if (story?.deleted) return;
         emitEvent({
-            type: 'story',
-            target: 'ChatPage',
-            payload: {command: 'Open-Story', value: {storyId}},
-            markId,
-            fromWebsocket: true,
+            event: 'story.open',
+            payload: {value: {storyId}},
+            conversationId,
+            localOnly: true,
         });
     };
 
@@ -130,7 +129,7 @@ const StoryCard = memo(({content = '', markId = null}) => {
             </div>
         </button>
     );
-}, (prev, next) => prev.content === next.content && prev.markId === next.markId);
+}, (prev, next) => prev.content === next.content && prev.conversationId === next.conversationId);
 
 StoryCard.displayName = 'StoryCard';
 export default StoryCard;

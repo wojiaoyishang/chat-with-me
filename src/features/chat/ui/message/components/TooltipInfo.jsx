@@ -59,7 +59,7 @@ const contextDisplay = (contextState) => {
 const TooltipInfo = memo(({
     tip,
     contextState,
-    markId,
+    conversationId,
     messageId,
     msg = null,
     t,
@@ -85,7 +85,7 @@ const TooltipInfo = memo(({
         setDetailsOpen(false);
         openRemoteUniversalModal(
             apiEndpoint.CHAT_CONTEXT_STATE_DETAIL_ENDPOINT,
-            {markId, messageId, presentation: 'modal'},
+            {conversationId, messageId, presentation: 'modal'},
         );
     };
 
