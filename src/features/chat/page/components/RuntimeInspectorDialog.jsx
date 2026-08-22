@@ -31,6 +31,37 @@ import MessageSummaryItem from './MessageSummaryItem.jsx';
 
 const formatNumber = (value) => Number(value || 0).toLocaleString();
 
+
+const usageSourceLabels = {
+    provider: 'SERVER',
+    derived: 'DERIVED',
+    estimated: 'ESTIMATED',
+    unavailable: 'N/A',
+};
+
+const UsageMetric = ({label, metric}) => {
+    const value = metric?.value;
+    const source = String(metric?.source || 'unavailable');
+    const approximate = metric?.approximate === true || source === 'estimated';
+    const sourceClass = source === 'provider'
+        ? 'border-emerald-300/60 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+        : source === 'estimated'
+            ? 'border-amber-300/60 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+            : 'border-border bg-muted/40 text-muted-foreground';
+    return (
+        <div className="rounded-xl border p-3">
+            <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-muted-foreground">{label}</span>
+                <span className={`rounded-full border px-1.5 py-0.5 text-[9px] font-semibold tracking-wide ${sourceClass}`}>
+                    {usageSourceLabels[source] || source.toUpperCase()}
+                </span>
+            </div>
+            <div className="mt-1 text-lg font-semibold tabular-nums">
+                {value == null ? '—' : `${approximate ? '≈' : ''}${formatNumber(value)}`}
+            </div>
+        </div>
+    );
+};
 const roleClasses = {
     system: 'border-amber-200 bg-amber-50/50 text-amber-900',
     user: 'border-blue-200 bg-blue-50/45 text-blue-900',
@@ -182,9 +213,30 @@ const ModelCallBrowser = ({section}) => {
             <div className="pretty-scrollbar min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable] sm:p-4 lg:p-5">
                 <section className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     <div className="rounded-xl border p-3"><div className="text-xs text-muted-foreground">消息</div><div className="mt-1 text-lg font-semibold">{formatNumber(selected?.summary?.messageCount)}</div></div>
-                    <div className="rounded-xl border p-3"><div className="text-xs text-muted-foreground">估算 Prompt</div><div className="mt-1 text-lg font-semibold">{formatNumber(selected?.summary?.estimatedPromptTokens)}</div></div>
-                    <div className="rounded-xl border p-3"><div className="text-xs text-muted-foreground">Provider Token</div><div className="mt-1 text-lg font-semibold">{formatNumber(selected?.promptTokens)}</div></div>
+                    <UsageMetric label="输入 Token" metric={selected?.usage?.inputTokens}/>
+                    <UsageMetric label="输出 Token" metric={selected?.usage?.outputTokens}/>
                     <div className="rounded-xl border p-3"><div className="text-xs text-muted-foreground">Context Rev</div><div className="mt-1 text-lg font-semibold">{selected?.contextRevision ?? '-'}</div></div>
+                </section>
+
+                <section className="space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                        <h3 className="flex items-center gap-2 text-sm font-semibold"><Activity className="size-4"/>Token Usage</h3>
+                        <span className="text-xs text-muted-foreground">SERVER 优先；Provider 未返回的字段才估算</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+                        <UsageMetric label="总 Token" metric={selected?.usage?.totalTokens}/>
+                        <UsageMetric label="缓存输入" metric={selected?.usage?.cachedInputTokens}/>
+                        <UsageMetric label="推理 Token" metric={selected?.usage?.reasoningTokens}/>
+                        <UsageMetric label="音频输入" metric={selected?.usage?.audioInputTokens}/>
+                        <UsageMetric label="音频输出" metric={selected?.usage?.audioOutputTokens}/>
+                        <div className="rounded-xl border p-3"><div className="text-xs text-muted-foreground">Provider API</div><div className="mt-1 truncate text-sm font-semibold" title={selected?.providerApi || ''}>{selected?.providerApi || '—'}</div></div>
+                    </div>
+                    {selected?.usage?.raw ? (
+                        <details className="rounded-xl border p-3">
+                            <summary className="cursor-pointer select-none text-sm font-medium">Provider 原始 Usage</summary>
+                            <div className="mt-3"><JsonBlock value={selected.usage.raw} title="Raw Provider Usage" maxHeight="max-h-72"/></div>
+                        </details>
+                    ) : null}
                 </section>
 
                 <section className="space-y-2">
@@ -230,8 +282,13 @@ const ModelCallBrowser = ({section}) => {
                 </details>
                 <details className="rounded-xl border p-3">
                     <summary className="cursor-pointer select-none text-sm font-medium">Raw Request</summary>
-                    <p className="mt-2 text-xs text-muted-foreground">这是 CWM 送入 Provider Adapter 前的结构化快照，不代表供应商内部不可见指令。</p>
-                    <div className="mt-3"><JsonBlock value={selected.rawRequest} title="CWM Provider Adapter Input"/></div>
+                    <p className="mt-2 text-xs text-muted-foreground">Standard Capture 会由 Manifest 动态重建请求；Full Capture 才保存完整 Wire Request。不会显示供应商内部不可见指令。</p>
+                    <div className="mt-3"><JsonBlock value={selected.rawRequest} title="CWM Provider Input"/></div>
+                </details>
+                <details className="rounded-xl border p-3">
+                    <summary className="cursor-pointer select-none text-sm font-medium">Provider Raw Records（{selected?.providerRecords?.length || 0}）</summary>
+                    <p className="mt-2 text-xs text-muted-foreground">请求元数据、响应身份、真实 usage 与错误由 Model Call Recorder 自动记录。</p>
+                    <div className="mt-3"><JsonBlock value={selected.providerRecords || []} title="Provider Records"/></div>
                 </details>
             </div>
         </div>

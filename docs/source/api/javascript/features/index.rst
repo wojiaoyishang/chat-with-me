@@ -16,7 +16,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 15
      - 0
-     - 244
+     - 245
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 4
@@ -78,6 +78,11 @@
      - 0
      - 21
      - ``src/features/chat/page/components/RightSidebar.jsx``
+   * - :doc:`src/features/chat/page/components/RuntimeInspectorDialog </api/javascript/features/chat/page/components/RuntimeInspectorDialog>`
+     - 10
+     - 0
+     - 47
+     - ``src/features/chat/page/components/RuntimeInspectorDialog.jsx``
    * - :doc:`src/features/chat/page/components/ScrollToBottomButton </api/javascript/features/chat/page/components/ScrollToBottomButton>`
      - 0
      - 0
@@ -481,6 +486,7 @@
    /api/javascript/features/chat/page/components/QuickUserMessageNavigator
    /api/javascript/features/chat/page/components/ResizeHandles
    /api/javascript/features/chat/page/components/RightSidebar
+   /api/javascript/features/chat/page/components/RuntimeInspectorDialog
    /api/javascript/features/chat/page/components/ScrollToBottomButton
    /api/javascript/features/chat/page/components/SpeechPlayer
    /api/javascript/features/chat/page/components/SpeechSubtitleOverlay

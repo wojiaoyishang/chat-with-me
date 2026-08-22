@@ -103,6 +103,12 @@ const TooltipInfo = memo(({
 
     const renderAuditValue = (item, key) => {
         const format = String(item?.format || 'text');
+        const toneClass = ({
+            success: 'text-emerald-600 dark:text-emerald-400',
+            danger: 'text-red-600 dark:text-red-400',
+            warning: 'text-amber-600 dark:text-amber-400',
+            info: 'text-sky-600 dark:text-sky-400',
+        })[String(item?.tone || '')] || '';
         let value = item?.value;
         let node = null;
 
@@ -185,7 +191,7 @@ const TooltipInfo = memo(({
                     key={key}
                     type="button"
                     title={String(copyValue)}
-                    className={`min-w-0 max-w-full justify-self-end truncate text-right ${item?.emphasis ? 'font-semibold' : ''}`}
+                    className={`min-w-0 max-w-full justify-self-end truncate text-right ${toneClass} ${item?.emphasis ? 'font-semibold' : ''}`}
                     onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -201,7 +207,7 @@ const TooltipInfo = memo(({
             <div
                 key={key}
                 title={typeof value === 'string' && value.length > 32 ? value : undefined}
-                className={`min-w-0 max-w-full justify-self-end truncate text-right ${item?.emphasis ? 'font-semibold' : ''}`}
+                className={`min-w-0 max-w-full justify-self-end truncate text-right ${toneClass} ${item?.emphasis ? 'font-semibold' : ''}`}
             >
                 {node}
             </div>

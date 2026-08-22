@@ -7,40 +7,39 @@ Runtime Inspector 模块
 .. js:function:: RuntimeInspectorDialog(props)
    :no-index:
 
-   Runtime Inspector 的响应式顶层 Dialog。它只处理选中 Tab、刷新、关闭、消息跳转以及通用 Section
-   分发，不负责生成 Context/Prompt/Tool 业务数据。
+   Runtime Inspector 响应式顶层窗口。处理 Tab、刷新、关闭和消息跳转，不负责 ModelCall/Context/Tool 业务推导。
 
 .. js:function:: RuntimeSectionRenderer(props)
    :no-index:
 
-   根据后端 ``section.type`` 从固定 Registry 选择 Renderer。未知类型使用 JSON fallback，保证后端增加
-   新字段时旧前端不会直接崩溃。
+   按后端 ``section.type`` 选择固定 Renderer；未知类型安全退化成 JSON Viewer。
 
 .. js:function:: ModelCallBrowser(props)
    :no-index:
 
-   浏览某次模型请求。支持 Model Call 选择、消息角色/来源统计、CWM Model Messages、Provider 消息载荷、
-   工具执行统计、Request Parameters 和 Raw Adapter Input。主内容区使用受约束 Flex 滚动，长卡片不会被裁掉。
+   展示 Model Call 的动态重建消息、Provider Payload、Provider Records、Raw Request、真实/估算 Token Usage 和工具执行统计。
 
-.. js:function:: ContextBrowser(props)
+.. js:function:: UsageMetric(props)
    :no-index:
 
-   显示 Context revision、Persistent Context、Compaction Artifact、forgotten messages 和自动压缩状态，
-   并允许从 Artifact 的 source message 快速定位回聊天记录。
-
-.. js:function:: RawMessageBrowser(props)
-   :no-index:
-
-   搜索并显示活动分支的数据库原始消息，同时标注 compacted/forgotten 状态和消息元数据。
+   展示一个 Usage 指标及 ``SERVER / DERIVED / ESTIMATED / N/A`` 来源。Estimated 数据使用近似语义。
 
 .. js:function:: ToolBrowser(props)
    :no-index:
 
-   按 Model Call 展示工具目录。支持“全部启用 / 已进入上下文 / 已获取详情”快速筛选和名称搜索，并在
-   存在结构化 Provider Schema 时直接展开 description 和 parameters。
+   按 Model Call 浏览工具目录，支持全部启用、已进入上下文、已获取详情和工具名搜索。
+
+.. js:function:: ContextBrowser(props)
+   :no-index:
+
+   展示 Context revision、Persistent Context、Compaction Artifact、forgotten messages，并支持跳回源消息。
+
+.. js:function:: RawMessageBrowser(props)
+   :no-index:
+
+   展示当前活动分支数据库消息，不读取或复制 Model Call Storage。
 
 .. js:function:: BriefBrowser(props)
    :no-index:
 
-   “简要模式”的虚拟化摘要列表。复用 ``MessageSummaryItem`` 和 ChatPage 现有跳转能力，取代旧独立
-   ``MessageOverviewDialog`` 的入口职责。
+   简要模式虚拟化消息摘要列表，复用 ChatPage 现有快速跳转逻辑。
