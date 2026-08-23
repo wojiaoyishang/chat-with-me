@@ -16,4 +16,6 @@
    surfaces
    rendering_widgets
    voice_runtime
+   realtime_voice
+   turn_admission
    runtime_inspector

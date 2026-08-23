@@ -1,5 +1,5 @@
 import React, {memo, useEffect, useMemo, useState} from 'react';
-import {normalizeSpeechText} from '../utils/speechContent.js';
+import {getSpeakableSegments, normalizeSpeechText} from '../utils/speechContent.js';
 
 const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'BUTTON', 'PRE', 'KBD', 'SAMP']);
 const MARKDOWN_MATCH_CHARS = new Set(['`', '*', '_', '~']);
@@ -596,7 +596,7 @@ const resolveCurrentSegmentInfo = (segments = [], currentSegmentId, currentSegme
     return {segment: null, index: -1};
 };
 
-const SpeechOverlayHighlighter = memo(({containerRef, msgId, speechState}) => {
+const SpeechOverlayHighlighter = memo(({containerRef, msgId, msg, speechState}) => {
     const isCurrentMessage = speechState?.messageId === msgId;
     const currentSegmentId = isCurrentMessage ? speechState?.currentSegmentId : null;
     const currentSegmentIndex = isCurrentMessage ? speechState?.currentSegmentIndex : -1;
@@ -617,45 +617,103 @@ const SpeechOverlayHighlighter = memo(({containerRef, msgId, speechState}) => {
         deps: [speechState?.status],
     });
 
-    if (!currentSegment || currentOrderedIndex < 0 || !frame || rects.length === 0) return null;
+    const voiceDelivery = msg?.extraInfo?.voice_delivery || msg?.extra_info?.voice_delivery;
+    const hasInterruption = voiceDelivery?.status === 'interrupted';
+    const interruptionSegments = useMemo(
+        () => hasInterruption ? getSpeakableSegments(msg, msgId) : [],
+        [hasInterruption, msg, msgId]
+    );
+    const rawInterruptionPosition = Number(voiceDelivery?.cursor?.segmentPosition);
+    const interruptionPosition = Number.isInteger(rawInterruptionPosition) && rawInterruptionPosition >= 0
+        ? Math.min(rawInterruptionPosition, interruptionSegments.length)
+        : -1;
+    const interruptionAnchorIndex = interruptionSegments.length > 0 && interruptionPosition >= 0
+        ? Math.min(interruptionPosition, interruptionSegments.length - 1)
+        : -1;
+    const interruptionHighlight = useSegmentHighlightRects({
+        containerRef,
+        segments: interruptionSegments,
+        currentSegmentIndex: interruptionAnchorIndex,
+        deps: [voiceDelivery?.interruptedAt, voiceDelivery?.cursor?.segmentId],
+    });
+
+    const hasLiveHighlight = Boolean(
+        currentSegment && currentOrderedIndex >= 0 && frame && rects.length > 0
+    );
+    const hasInterruptionMarker = Boolean(
+        hasInterruption && interruptionPosition >= 0 && interruptionHighlight?.frame
+    );
+
+    if (!hasLiveHighlight && !hasInterruptionMarker) return null;
+
+    const interruptionTop = hasInterruptionMarker
+        ? (interruptionPosition >= interruptionSegments.length
+            ? interruptionHighlight.frame.top + interruptionHighlight.frame.height + 5
+            : Math.max(interruptionHighlight.frame.top - 5, 0))
+        : 0;
 
     return (
-        <div
-            data-tts-overlay="true"
-            data-tts-overlay-segment-index={currentOrderedIndex}
-            data-tts-overlay-segment-id={currentSegment.id ?? ''}
-            className="absolute inset-0 pointer-events-none z-[1] overflow-visible"
-            aria-hidden="true"
-        >
-            <div
-                className="absolute pointer-events-none overflow-hidden transition-all duration-150"
-                data-tts-overlay-frame-type={boundaryType || 'inline'}
-                data-tts-overlay-ordered-index={currentOrderedIndex}
-                style={{
-                    left: frame.left,
-                    top: frame.top,
-                    width: frame.width,
-                    height: frame.height,
-                }}
-            >
+        <>
+            {hasLiveHighlight && (
                 <div
-                    className="absolute inset-0 rounded-[0.55rem] bg-indigo-500/15 ring-1 ring-indigo-400/10 transition-all duration-150"
-                    data-tts-overlay-sentence-frame="true"
-                />
-                {rects.map((rect, index) => (
+                    data-tts-overlay="true"
+                    data-tts-overlay-segment-index={currentOrderedIndex}
+                    data-tts-overlay-segment-id={currentSegment.id ?? ''}
+                    className="absolute inset-0 pointer-events-none z-[1] overflow-visible"
+                    aria-hidden="true"
+                >
                     <div
-                        key={`${currentSegment.id || currentOrderedIndex}-${index}`}
-                        className="absolute rounded bg-yellow-200/60 ring-1 ring-yellow-300/40 transition-all duration-150"
+                        className="absolute pointer-events-none overflow-hidden transition-all duration-150"
+                        data-tts-overlay-frame-type={boundaryType || 'inline'}
+                        data-tts-overlay-ordered-index={currentOrderedIndex}
                         style={{
-                            left: rect.left - frame.left - 2,
-                            top: rect.top - frame.top + 1,
-                            width: rect.width + 4,
-                            height: Math.max(rect.height - 2, 12),
+                            left: frame.left,
+                            top: frame.top,
+                            width: frame.width,
+                            height: frame.height,
                         }}
-                    />
-                ))}
-            </div>
-        </div>
+                    >
+                        <div
+                            className="absolute inset-0 rounded-[0.55rem] bg-indigo-500/15 ring-1 ring-indigo-400/10 transition-all duration-150"
+                            data-tts-overlay-sentence-frame="true"
+                        />
+                        {rects.map((rect, index) => (
+                            <div
+                                key={`${currentSegment.id || currentOrderedIndex}-${index}`}
+                                className="absolute rounded bg-yellow-200/60 ring-1 ring-yellow-300/40 transition-all duration-150"
+                                style={{
+                                    left: rect.left - frame.left - 2,
+                                    top: rect.top - frame.top + 1,
+                                    width: rect.width + 4,
+                                    height: Math.max(rect.height - 2, 12),
+                                }}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {hasInterruptionMarker && (
+                <div
+                    data-tts-overlay="true"
+                    data-voice-delivery-interrupted="true"
+                    className="absolute inset-0 pointer-events-none z-[3] overflow-visible"
+                    role="note"
+                    aria-label="语音在此被打断"
+                >
+                    <div
+                        className="absolute left-0 right-0 flex items-center gap-2 text-[11px] font-medium text-orange-600"
+                        style={{top: interruptionTop, transform: 'translateY(-50%)'}}
+                    >
+                        <span className="h-px flex-1 bg-orange-300/80"/>
+                        <span className="shrink-0 rounded-full bg-white/95 px-2 py-0.5 shadow-sm ring-1 ring-orange-200">
+                            语音在此被打断
+                        </span>
+                        <span className="h-px flex-1 bg-orange-300/80"/>
+                    </div>
+                </div>
+            )}
+        </>
     );
 });
 

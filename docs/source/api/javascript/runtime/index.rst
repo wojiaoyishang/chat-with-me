@@ -43,6 +43,11 @@
      - 0
      - 0
      - ``src/runtime/transport/channel.js``
+   * - :doc:`src/runtime/voice/RealtimeVoiceTransport </api/javascript/runtime/voice/RealtimeVoiceTransport>`
+     - 1
+     - 10
+     - 5
+     - ``src/runtime/voice/RealtimeVoiceTransport.js``
 
 .. toctree::
    :hidden:
@@ -54,4 +59,5 @@
    /api/javascript/runtime/protocol/subscriptions
    /api/javascript/runtime/transport/WebSocketTransport
    /api/javascript/runtime/transport/channel
+   /api/javascript/runtime/voice/RealtimeVoiceTransport
 

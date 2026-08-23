@@ -1,5 +1,5 @@
 src/runtime/protocol/events 模块
-==============================
+================================================================================
 
 .. js:module:: src/runtime/protocol/events
 
@@ -11,7 +11,7 @@ CWM Protocol v1 semantic event catalog. Validate one concrete semantic event nam
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/runtime/protocol/events.js``
 * **模块标识**：``src/runtime/protocol/events``
@@ -20,7 +20,7 @@ CWM Protocol v1 semantic event catalog. Validate one concrete semantic event nam
 * **局部函数与匿名回调**：0
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/runtime/protocol/events.js:312:529:FUNCTION
 
@@ -39,7 +39,7 @@ CWM Protocol v1 semantic event catalog. Validate one concrete semantic event nam
 
    根据执行分支返回结果；代表性返回表达式为 ``event``。
 
-   **显式抛出**：``new TypeError(\`Invalid semantic event name: ${value}\`)``。
+   **显式抛出**：``new TypeError(\x60Invalid semantic event name: ${value}\x60)``。
 
    **主要协作调用**：``String``、``event.trim``、``EVENT_NAME_PATTERN.test``。
 
@@ -60,7 +60,7 @@ CWM Protocol v1 semantic event catalog. Validate one concrete semantic event nam
 
    根据执行分支返回结果；代表性返回表达式为 ``pattern``。
 
-   **显式抛出**：``new TypeError(\`Invalid semantic event pattern: ${value}\`)``。
+   **显式抛出**：``new TypeError(\x60Invalid semantic event pattern: ${value}\x60)``。
 
    **主要协作调用**：``String``、``pattern.trim``、``EVENT_NAME_PATTERN.test``、``EVENT_WILDCARD_PATTERN.test``。
 

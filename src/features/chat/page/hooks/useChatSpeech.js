@@ -1499,6 +1499,15 @@ export default function useChatSpeech({
     const cancelActiveSpeech = useCallback((notifyBackend = false) => {
         const currentController = speechControllerRef.current;
         currentController.cancelled = true;
+        // Invalidate every native/browser callback before touching SpeechSynthesis.
+        // cancel() may synchronously or asynchronously dispatch stale onend/onerror
+        // callbacks on different browsers.
+        currentController.queueEpoch = (currentController.queueEpoch || 0) + 1;
+        currentController.playToken = (currentController.playToken || 0) + 1;
+        currentController.bargeInSuspended = false;
+        currentController.bargeInResumePosition = null;
+        currentController.queuedUtterances?.clear?.();
+
         if (typeof window !== 'undefined') {
             if (currentController.speakTimer) {
                 window.clearTimeout(currentController.speakTimer);
@@ -1507,6 +1516,14 @@ export default function useChatSpeech({
             if (currentController.releaseTimer) {
                 window.clearTimeout(currentController.releaseTimer);
                 currentController.releaseTimer = null;
+            }
+            if (currentController.settleTimer) {
+                window.clearTimeout(currentController.settleTimer);
+                currentController.settleTimer = null;
+            }
+            if (currentController.settleRaf) {
+                window.cancelAnimationFrame(currentController.settleRaf);
+                currentController.settleRaf = null;
             }
             if (currentController.restartTimer) {
                 window.clearTimeout(currentController.restartTimer);
@@ -1521,9 +1538,10 @@ export default function useChatSpeech({
         currentController.utteranceKeepAlive = [];
 
         if (typeof window !== 'undefined' && window.speechSynthesis) {
+            // Do not resume immediately after cancel. A cancel -> resume race can
+            // wake the old native queue and makes confirmed barge-in keep talking.
+            // Explicit playback/restart paths call resume() immediately before speak().
             window.speechSynthesis.cancel();
-            // cancel() 不会保证退出 paused 状态。下一次主动播放前恢复一次，避免新 utterance 入队后不出声。
-            window.speechSynthesis.resume?.();
         }
 
         clearBackendSpeechAudio();
@@ -1545,23 +1563,82 @@ export default function useChatSpeech({
             });
         }
 
-        speechControllerRef.current = {
-            requestId: null,
-            engine: null,
-            cancelled: false,
-            playToken: 0,
-        };
+        speechControllerRef.current = createInitialSpeechControllerState();
         resetSpeechSegmentCache(notifyBackend ? 'cancel' : 'replace');
         resetSpeechState();
     }, [conversationId, clearBackendSpeechAudio, resetSpeechSegmentCache, resetSpeechState]);
 
-    const pauseActiveSpeech = useCallback(() => {
+    const pauseActiveSpeech = useCallback((options = {}) => {
         const currentController = speechControllerRef.current;
         if (!currentController?.requestId) return false;
+        const bargeIn = options?.bargeIn === true;
 
         if (currentController.engine === 'browser') {
             currentController.paused = true;
-            if (typeof window !== 'undefined' && window.speechSynthesis) {
+            if (bargeIn) {
+                const segments = currentController.segments || speechStateRef.current?.segments || [];
+                const currentPosition = Number(speechStateRef.current?.currentSegmentPosition);
+                const currentIndex = Number(currentController.currentIndex);
+                const playbackPosition = Number(speechStateRef.current?.playbackSegmentPosition);
+                const nextIndex = Number(currentController.nextIndex);
+                let resumePosition = Number.isInteger(currentPosition) && currentPosition >= 0
+                    ? currentPosition
+                    : (Number.isInteger(currentIndex) && currentIndex >= 0
+                        ? currentIndex
+                        : (Number.isInteger(playbackPosition) && playbackPosition >= -1
+                            ? playbackPosition + 1
+                            : (Number.isInteger(nextIndex) ? nextIndex : 0)));
+                if (segments.length > 0) {
+                    resumePosition = Math.min(Math.max(resumePosition, 0), segments.length - 1);
+                } else {
+                    resumePosition = 0;
+                }
+
+                currentController.bargeInSuspended = true;
+                currentController.bargeInResumePosition = resumePosition;
+                currentController.queueEpoch = (currentController.queueEpoch || 0) + 1;
+                currentController.playToken = (currentController.playToken || 0) + 1;
+                const retiredUtterances = Array.from(currentController.queuedUtterances?.values?.() || []);
+                currentController.queuedUtterances?.clear?.();
+
+                if (typeof window !== 'undefined') {
+                    if (currentController.speakTimer) {
+                        window.clearTimeout(currentController.speakTimer);
+                        currentController.speakTimer = null;
+                    }
+                    if (currentController.releaseTimer) {
+                        window.clearTimeout(currentController.releaseTimer);
+                        currentController.releaseTimer = null;
+                    }
+                    if (currentController.settleTimer) {
+                        window.clearTimeout(currentController.settleTimer);
+                        currentController.settleTimer = null;
+                    }
+                    if (currentController.settleRaf) {
+                        window.cancelAnimationFrame(currentController.settleRaf);
+                        currentController.settleRaf = null;
+                    }
+                    if (currentController.restartTimer) {
+                        window.clearTimeout(currentController.restartTimer);
+                        currentController.restartTimer = null;
+                    }
+                    if (currentController.restartRaf) {
+                        window.cancelAnimationFrame(currentController.restartRaf);
+                        currentController.restartRaf = null;
+                    }
+                }
+                currentController.currentUtterance = null;
+                currentController.utteranceKeepAlive = retiredUtterances.slice(-8);
+
+                // Browser SpeechSynthesis.pause() is not a reliable immediate mute
+                // boundary. For a barge-in candidate, hard-suspend the native queue
+                // and retain only the logical segment position. A rejected candidate
+                // reuses controller.playFrom() to replay the interrupted segment.
+                if (typeof window !== 'undefined' && window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
+            } else if (typeof window !== 'undefined' && window.speechSynthesis) {
+                // Manual pause keeps the native queue intact.
                 window.speechSynthesis.pause();
             }
         } else {
@@ -1594,6 +1671,20 @@ export default function useChatSpeech({
         if (!currentController?.requestId) return false;
 
         if (currentController.engine === 'browser') {
+            if (currentController.bargeInSuspended) {
+                const resumePosition = Number.isInteger(currentController.bargeInResumePosition)
+                    ? currentController.bargeInResumePosition
+                    : 0;
+                currentController.bargeInSuspended = false;
+                currentController.bargeInResumePosition = null;
+                currentController.paused = false;
+                // Reuse the existing seek/restart mechanism. This intentionally
+                // replays the interrupted segment for a false-positive VAD.
+                if (typeof currentController.playFrom === 'function') {
+                    return currentController.playFrom(resumePosition);
+                }
+            }
+
             currentController.paused = false;
             if (typeof window !== 'undefined' && window.speechSynthesis) {
                 window.speechSynthesis.resume();
@@ -1813,6 +1904,8 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             engine: 'browser',
             cancelled: false,
             paused: false,
+            bargeInSuspended: false,
+            bargeInResumePosition: null,
             segments,
             nextIndex: safeStartPosition,
             currentIndex: -1,
@@ -3437,7 +3530,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             browserVoice: selectedBrowserSpeechVoiceURI || getStoredBrowserSpeechVoiceURI(),
             ...(payload?.options || {}),
         };
-        const engine = advancedSettingsValues.speakEngine || 'browser';
+        const engine = payload?.engine || advancedSettingsValues.speakEngine || 'browser';
         const requestId = payload?.requestId || generateUUID();
 
         if (engine === 'browser') {

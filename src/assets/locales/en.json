@@ -549,5 +549,8 @@
   "context_state_tool_forgotten": "Tool result ignored",
   "context_compaction_running": "Organizing context",
   "context_compaction_completed": "Context organized",
-  "runtime_inspector": "Runtime Inspector"
+  "runtime_inspector": "Runtime Inspector",
+  "loading_models": "Loading models...",
+  "loading_conversation": "Loading conversation...",
+  "interrupt_and_send": "Interrupt current response and send"
 }

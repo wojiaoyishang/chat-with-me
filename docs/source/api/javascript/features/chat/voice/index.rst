@@ -1,9 +1,9 @@
-src/config 模块
+src/features/chat/voice/index 模块
 ================================================================================
 
-.. js:module:: src/config
+.. js:module:: src/features/chat/voice/index
 
-该模块实现 CWM 前端中的组件、Hook、状态或辅助逻辑。
+该模块实现聊天 Surface、消息树、语音、输入区或消息交互。
 
 .. note::
 
@@ -13,8 +13,8 @@ src/config 模块
 源码与职责
 --------------------------------------------------------------------------------
 
-* **源码文件**：``src/config.js``
-* **模块标识**：``src/config``
+* **源码文件**：``src/features/chat/voice/index.js``
+* **模块标识**：``src/features/chat/voice/index``
 * **顶层函数/组件/Hook**：0
 * **类**：0
 * **局部函数与匿名回调**：0

@@ -16,7 +16,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 15
      - 0
-     - 245
+     - 250
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 4
@@ -176,7 +176,7 @@
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 13
      - 0
-     - 152
+     - 153
      - ``src/features/chat/ui/ChatBox.jsx``
    * - :doc:`src/features/chat/ui/ChatBoxHeader </api/javascript/features/chat/ui/ChatBoxHeader>`
      - 0
@@ -264,9 +264,9 @@
      - 3
      - ``src/features/chat/ui/chatbox/utils/toolState.js``
    * - :doc:`src/features/chat/ui/chatbox/utils/voiceRecorder </api/javascript/features/chat/ui/chatbox/utils/voiceRecorder>`
-     - 14
+     - 15
      - 1
-     - 8
+     - 11
      - ``src/features/chat/ui/chatbox/utils/voiceRecorder.js``
    * - :doc:`src/features/chat/ui/message/components/BranchMessageSelectorDialog </api/javascript/features/chat/ui/message/components/BranchMessageSelectorDialog>`
      - 0
@@ -393,6 +393,26 @@
      - 0
      - 5
      - ``src/features/chat/ui/message/utils/speechContent.js``
+   * - :doc:`src/features/chat/voice/RealtimeVoiceButton </api/javascript/features/chat/voice/RealtimeVoiceButton>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/chat/voice/RealtimeVoiceButton.jsx``
+   * - :doc:`src/features/chat/voice/RealtimeVoiceSurface </api/javascript/features/chat/voice/RealtimeVoiceSurface>`
+     - 4
+     - 0
+     - 5
+     - ``src/features/chat/voice/RealtimeVoiceSurface.jsx``
+   * - :doc:`src/features/chat/voice/index </api/javascript/features/chat/voice/index>`
+     - 0
+     - 0
+     - 0
+     - ``src/features/chat/voice/index.js``
+   * - :doc:`src/features/chat/voice/useRealtimeVoiceConversation </api/javascript/features/chat/voice/useRealtimeVoiceConversation>`
+     - 3
+     - 0
+     - 30
+     - ``src/features/chat/voice/useRealtimeVoiceConversation.js``
    * - :doc:`src/features/chat/widgets/WidgetPresentationContext </api/javascript/features/chat/widgets/WidgetPresentationContext>`
      - 2
      - 0
@@ -549,6 +569,10 @@
    /api/javascript/features/chat/ui/message/utils/copyContent
    /api/javascript/features/chat/ui/message/utils/messageActions
    /api/javascript/features/chat/ui/message/utils/speechContent
+   /api/javascript/features/chat/voice/RealtimeVoiceButton
+   /api/javascript/features/chat/voice/RealtimeVoiceSurface
+   /api/javascript/features/chat/voice/index
+   /api/javascript/features/chat/voice/useRealtimeVoiceConversation
    /api/javascript/features/chat/widgets/WidgetPresentationContext
    /api/javascript/features/notification/NotificationHost
    /api/javascript/features/notification/NotificationSettings

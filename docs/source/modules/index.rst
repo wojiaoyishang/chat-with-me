@@ -17,5 +17,7 @@
    chat_surface
    message_summaries
    speech_runtime
+   realtime_voice
+   turn_admission
    widget_runtime
    runtime_inspector

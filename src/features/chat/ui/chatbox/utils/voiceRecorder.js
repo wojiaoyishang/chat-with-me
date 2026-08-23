@@ -282,3 +282,133 @@ export const createPcm16kRecorder = async (stream, {
         },
     };
 };
+
+/**
+ * Continuous 16kHz PCM streamer for realtime voice sessions.
+ *
+ * Unlike createPcm16kRecorder this helper never accumulates the entire call.
+ * It emits short PCM chunks and a conservative local VAD signal. The VAD is
+ * only a barge-in/compatibility candidate; the backend/provider remains the
+ * authority that commits a user turn.
+ */
+export const createRealtimePcm16kStreamer = async (stream, {
+    onPcmChunk,
+    onWaveform,
+    onSpeechStart,
+    onSpeechEnd,
+    waveformBars = 28,
+    vadThreshold = 0.018,
+    vadStartFrames = 2,
+    vadEndFrames = 7,
+    bargeInActive,
+    bargeInVadThreshold = 0.012,
+    bargeInVadStartFrames = 1,
+} = {}) => {
+    const AudioContextClass = getAudioContextClass();
+    if (!AudioContextClass) {
+        stopStream(stream);
+        throw new Error('This browser does not support Web Audio recording.');
+    }
+    const audioContext = new AudioContextClass();
+    if (audioContext.state === 'suspended') await audioContext.resume();
+    const source = audioContext.createMediaStreamSource(stream);
+    const processor = audioContext.createScriptProcessor(2048, 1, 1);
+    let closed = false;
+    let muted = false;
+    let speechActive = false;
+    let speechFrames = 0;
+    let silenceFrames = 0;
+    let samplePosition = 0;
+    let levels = createSilentWaveformLevels(waveformBars);
+
+    const resetVad = () => {
+        speechActive = false;
+        speechFrames = 0;
+        silenceFrames = 0;
+    };
+
+    const setMuted = (nextMuted) => {
+        muted = Boolean(nextMuted);
+        stream?.getAudioTracks?.().forEach(track => {
+            track.enabled = !muted;
+        });
+        resetVad();
+        if (muted) {
+            levels = createSilentWaveformLevels(waveformBars);
+            onWaveform?.(levels, 0);
+        }
+    };
+
+    processor.onaudioprocess = (event) => {
+        if (closed) return;
+        const samples = event.inputBuffer.getChannelData(0);
+        const pcm16 = encodePcm16k(samples, audioContext.sampleRate);
+        const durationMs = Math.round((pcm16.length / TARGET_SAMPLE_RATE) * 1000);
+        const timestampMs = Math.round((samplePosition / TARGET_SAMPLE_RATE) * 1000);
+        samplePosition += pcm16.length;
+
+        // A muted microphone is a hard input boundary, not merely a transport
+        // optimization. Do not emit PCM, local VAD or waveform activity while
+        // muted; otherwise the Voice Surface still behaves as if it can hear.
+        if (muted) return;
+
+        onPcmChunk?.(pcm16.buffer.slice(pcm16.byteOffset, pcm16.byteOffset + pcm16.byteLength), {
+            durationMs,
+            timestampMs,
+        });
+
+        let sum = 0;
+        for (let i = 0; i < samples.length; i += 1) sum += samples[i] * samples[i];
+        const rms = samples.length ? Math.sqrt(sum / samples.length) : 0;
+        const bargeMode = Boolean(bargeInActive?.());
+        const activeThreshold = bargeMode
+            ? Math.min(vadThreshold, bargeInVadThreshold)
+            : vadThreshold;
+        const activeStartFrames = bargeMode
+            ? Math.min(vadStartFrames, Math.max(1, bargeInVadStartFrames))
+            : vadStartFrames;
+        const speaking = rms >= activeThreshold;
+        if (speaking) {
+            speechFrames += 1;
+            silenceFrames = 0;
+            if (!speechActive && speechFrames >= activeStartFrames) {
+                speechActive = true;
+                onSpeechStart?.({rms, timestampMs});
+            }
+        } else {
+            speechFrames = 0;
+            if (speechActive) {
+                silenceFrames += 1;
+                if (silenceFrames >= vadEndFrames) {
+                    speechActive = false;
+                    silenceFrames = 0;
+                    onSpeechEnd?.({rms, timestampMs});
+                }
+            }
+        }
+
+        if (onWaveform) {
+            levels = smoothWaveformLevels(levels, buildWaveformLevels(samples, waveformBars));
+            onWaveform(levels, rms);
+        }
+    };
+    source.connect(processor);
+    processor.connect(audioContext.destination);
+
+    const stop = async () => {
+        if (closed) return;
+        closed = true;
+        try { processor.disconnect(); } catch (_) {}
+        try { source.disconnect(); } catch (_) {}
+        stopStream(stream);
+        try { await audioContext.close(); } catch (_) {}
+        onWaveform?.(createSilentWaveformLevels(waveformBars), 0);
+    };
+
+    return {
+        stop,
+        setMuted,
+        get muted() { return muted; },
+        get speechActive() { return speechActive; },
+    };
+};

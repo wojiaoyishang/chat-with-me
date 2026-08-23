@@ -26,7 +26,7 @@ const TextOnlyMessageContent = memo(({msg, msgId, conversationId, isLeaving, spe
                         }`}
                     >
                         <div className="relative z-[2]">{msg.content}</div>
-                        <SpeechOverlayHighlighter containerRef={contentRef} msgId={msgId} speechState={speechState}/>
+                        <SpeechOverlayHighlighter containerRef={contentRef} msgId={msgId} msg={msg} speechState={speechState}/>
                     </div>
                     <Avatar
                         {...restAvatarClickProps}
@@ -60,7 +60,7 @@ const TextOnlyMessageContent = memo(({msg, msgId, conversationId, isLeaving, spe
                             msg={msg}
                         />
                     </div>
-                    <SpeechOverlayHighlighter containerRef={contentRef} msgId={msgId} speechState={speechState}/>
+                    <SpeechOverlayHighlighter containerRef={contentRef} msgId={msgId} msg={msg} speechState={speechState}/>
                 </div>
             </div>
         </div>

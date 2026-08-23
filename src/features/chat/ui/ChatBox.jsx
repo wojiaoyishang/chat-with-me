@@ -17,6 +17,7 @@ import EditMessageIndicator from './chatbox/components/EditMessageIndicator';
 import SendButton from './chatbox/components/SendButton';
 import VoiceInputButton from './chatbox/components/VoiceInputButton';
 import VoicePermissionDialog from './chatbox/components/VoicePermissionDialog';
+import {RealtimeVoiceButton} from '../voice/index.js';
 import ChatBoxInteractionHost from './chatbox/components/ChatBoxInteractionHost';
 import {getAttachmentId} from '../attachmentVision.js';
 import {modelSupportsVision} from '../modelCapabilities.js';
@@ -257,6 +258,7 @@ function ChatBox({
                      onVoicePcmReady,
                      onVoiceRecordingStart,
                      onVoiceRecordingCancel,
+                     onRealtimeVoiceStart,
                      onTaskInterruptPreview,
                      onTaskInterruptResult,
                      onTaskInterruptClear,
@@ -750,13 +752,21 @@ function ChatBox({
         runtimeToolPermissionRunIdRef.current = null;
         setRuntimeToolPermissions({});
 
+        const hasNewInput = Boolean(currentContent.trim()) || attachmentsMeta.length > 0 || wasEditing;
+        const interruptAndSend = sendButtonStatusRef.current === 'generating' && hasNewInput;
+
         onSendMessage({
             messageContent: currentContent,
             toolsStatus: buildOutboundToolsStatus(),
             isEditMessage: wasEditing,
             editMessageId: editMessageId,
             attachments: attachmentsMeta,
-            sendButtonStatus: sendButtonStatusRef.current,
+            // ``generating`` retains its original meaning: explicit stop.  A new
+            // user Turn while generation is active is instead admitted as a normal
+            // Turn with an interrupt policy.
+            sendButtonStatus: interruptAndSend ? 'normal' : sendButtonStatusRef.current,
+            admissionPolicy: interruptAndSend ? 'interrupt' : 'auto',
+            inputSource: 'chat',
             isRegenerate: false,
             role: currentRole?.name,
             isFork: isForkMode
@@ -803,18 +813,23 @@ function ChatBox({
         }
 
         e.preventDefault();
+        const hasPendingInput = Boolean(messageContentRef.current.trim()) || attachmentsMeta.length > 0;
         const canInterruptTask = (
             sendButtonStatusRef.current === 'generating'
             && activeTaskModeRef.current?.active
             && Boolean(messageContentRef.current.trim())
             && !taskInterruptPendingRef.current
         );
-        if (sendButtonStatusRef.current !== 'normal' && !canInterruptTask) {
+        const canInterruptAndSend = (
+            sendButtonStatusRef.current === 'generating'
+            && hasPendingInput
+        );
+        if (sendButtonStatusRef.current !== 'normal' && !canInterruptTask && !canInterruptAndSend) {
             toast.warning(t('is_generating_try_later'));
             return;
         }
         handleSendMessage();
-    }, [handleInputActivity, handleSendMessage, isSmallScreen, t, tipMessageIsForNewLine]);
+    }, [attachmentsMeta.length, handleInputActivity, handleSendMessage, isSmallScreen, t, tipMessageIsForNewLine]);
 
     const handleInputChange = useCallback((newValue) => {
         if (isReadOnly) return;
@@ -1423,7 +1438,9 @@ function ChatBox({
                             isEditMessage: true,
                             editMessageId: payload.msgId,
                             attachments: payload.attachments,
-                            sendButtonStatus: sendButtonStatusRef.current,
+                            sendButtonStatus: sendButtonStatusRef.current === 'generating' ? 'normal' : sendButtonStatusRef.current,
+                            admissionPolicy: sendButtonStatusRef.current === 'generating' ? 'interrupt' : 'auto',
+                            inputSource: 'chat',
                             isRegenerate: payload.isRegenerate,
                             isProgenerate: payload.isProgenerate,
                             role: payload.role,
@@ -2312,6 +2329,14 @@ function ChatBox({
                                 </select>
                             )}
 
+                            <RealtimeVoiceButton
+                                disabled={isReadOnly || !selectedModel?.id || ['loading', 'disabled'].includes(sendButtonStatus)}
+                                onClick={() => onRealtimeVoiceStart?.({
+                                    toolsStatus: activeToolsStatus,
+                                    composerStatus: sendButtonStatus,
+                                })}
+                            />
+
                             {/* 发送按钮 */}
                             <SendButton
                                 status={sendButtonStatus}
@@ -2398,6 +2423,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         prevProps.onVoicePcmReady === nextProps.onVoicePcmReady &&
         prevProps.onVoiceRecordingStart === nextProps.onVoiceRecordingStart &&
         prevProps.onVoiceRecordingCancel === nextProps.onVoiceRecordingCancel &&
+        prevProps.onRealtimeVoiceStart === nextProps.onRealtimeVoiceStart &&
         prevProps.onTaskInterruptPreview === nextProps.onTaskInterruptPreview &&
         prevProps.onTaskInterruptResult === nextProps.onTaskInterruptResult &&
         prevProps.onTaskInterruptClear === nextProps.onTaskInterruptClear

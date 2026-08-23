@@ -548,5 +548,8 @@
   "context_state_tool_forgotten": "工具结果已忽略",
   "context_compaction_running": "正在整理上下文",
   "context_compaction_completed": "上下文已整理",
-  "runtime_inspector": "运行时检查器"
+  "runtime_inspector": "运行时检查器",
+  "loading_models": "正在加载模型...",
+  "loading_conversation": "正在加载会话...",
+  "interrupt_and_send": "打断当前回答并发送"
 }

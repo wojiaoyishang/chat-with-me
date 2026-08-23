@@ -2,8 +2,10 @@ import React, {memo, useMemo} from 'react';
 
 const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, taskModeActive = false, taskInterruptPending = false, t}) => {
     const sendButtonStyle = useMemo(() => {
-        const isEmpty = !messageContent.trim() && attachmentsMeta.length === 0 && status === 'normal';
+        const hasInput = Boolean(messageContent.trim()) || attachmentsMeta.length > 0;
+        const isEmpty = !hasInput && status === 'normal';
         const canSendTaskInterruption = status === 'generating' && taskModeActive && Boolean(messageContent.trim());
+        const canInterruptAndSend = status === 'generating' && hasInput;
         const baseIcon = (
             <svg
                 t="1758800079268"
@@ -73,9 +75,11 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, task
                 };
             case 'generating':
                 return {
-                    state: canSendTaskInterruption ? 'task-interrupt' : 'generating',
+                    state: canSendTaskInterruption
+                        ? 'task-interrupt'
+                        : (canInterruptAndSend ? 'interrupt-send' : 'generating'),
                     className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
-                    icon: canSendTaskInterruption ? baseIcon : (
+                    icon: (canSendTaskInterruption || canInterruptAndSend) ? baseIcon : (
                         <div className="relative w-6 h-6">
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <div className="w-4 h-4 bg-white rounded"></div>
@@ -99,7 +103,13 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, task
             type="button"
             onClick={onClick}
             disabled={sendButtonStyle.disabled}
-            aria-label={status === 'generating' && taskModeActive && messageContent.trim() ? t('task_mode_interrupt_send', '发送任务补充') : t('send_message')}
+            aria-label={
+                status === 'generating' && taskModeActive && messageContent.trim()
+                    ? t('task_mode_interrupt_send', '发送任务补充')
+                    : (status === 'generating' && (messageContent.trim() || attachmentsMeta.length > 0)
+                        ? t('interrupt_and_send', '打断当前回答并发送')
+                        : t('send_message'))
+            }
             className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${sendButtonStyle.className}`}
         >
             {sendButtonStyle.icon}

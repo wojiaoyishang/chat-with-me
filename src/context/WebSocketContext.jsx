@@ -34,6 +34,7 @@ export const WebSocketProvider = ({children}) => {
     const initialConnectionRef = useRef(true);
     const mountedRef = useRef(true);
     const [isConnected, setIsConnected] = useState(false);
+    const [connectionId, setConnectionId] = useState(null);
     const [messages, setMessages] = useState([]);
 
     const createConnection = async (isRetry = false) => {
@@ -58,6 +59,9 @@ export const WebSocketProvider = ({children}) => {
                 flushRealtimeEvents();
             },
             onEvent: (envelope) => {
+                if (envelope.event === EventName.TRANSPORT_CONNECTED && envelope.payload?.connectionId) {
+                    setConnectionId(envelope.payload.connectionId);
+                }
                 globalMessageCallback(envelope);
                 if (mountedRef.current) setMessages((current) => [...current.slice(-99), envelope]);
             },
@@ -87,7 +91,10 @@ export const WebSocketProvider = ({children}) => {
                 if (globalTransport === transport) globalTransport = null;
                 if (transportRef.current === transport) transportRef.current = null;
                 if (getRealtimeTransport() === transport) setRealtimeTransport(null);
-                if (mountedRef.current) setIsConnected(false);
+                if (mountedRef.current) {
+                    setIsConnected(false);
+                    setConnectionId(null);
+                }
                 emitEvent({
                     event: EventName.TRANSPORT_DISCONNECTED,
                     payload: {code: event.code, reason: event.reason || ''},
@@ -155,6 +162,7 @@ export const WebSocketProvider = ({children}) => {
     return (
         <WebSocketContext.Provider value={{
             isConnected,
+            connectionId,
             messages,
             transport: transportRef.current,
             sendMessage: sendWebSocketMessage,

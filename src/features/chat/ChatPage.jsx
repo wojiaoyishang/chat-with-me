@@ -22,6 +22,7 @@ import {clearWorkspaceTransfers, upsertWorkspaceTransfer} from '@/features/works
 import {getVisionAttachmentIds} from './attachmentVision.js';
 import {normalizeRemoteChatModel} from './modelCapabilities.js';
 import {WidgetPresentationProvider} from './widgets/WidgetPresentationContext.jsx';
+import {RealtimeVoiceSurface, useRealtimeVoiceConversation} from './voice/index.js';
 import {useBrowserBackLayer} from '@/lib/browserHistoryLayers.js';
 import {
     getMessageSummaryAppendCursor,
@@ -57,6 +58,7 @@ const HISTORY_PAGE_SIZE = 20;
 const HISTORY_JUMP_BEFORE = 12;
 const HISTORY_JUMP_AFTER = 32;
 const HISTORY_AUTO_LOAD_ROOT_MARGIN = '260px 0px 0px 0px';
+const CHAT_BOOTSTRAP_TIMEOUT_MS = 30000;
 
 const normalizeVoiceRecognitionEngine = (value) => {
     return String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote';
@@ -207,6 +209,8 @@ function ChatPage({
     const messagesLoadedIdempotencyKeyRef = useRef(generateUUID());
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
+    const [loadingStage, setLoadingStage] = useState('messages');
+    const loadingStageRef = useRef('messages');
     const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
     const [randomMark, setRandomMark] = useState(null);
     const errorToastsIds = useRef(new Map());
@@ -989,6 +993,14 @@ function ChatPage({
         setShowScrollToBottomButton,
     });
 
+    const realtimeVoice = useRealtimeVoiceConversation({
+        conversationId,
+        speechState,
+        handleSpeakMessageRequest,
+        pauseActiveSpeech,
+        resumeActiveSpeech,
+        cancelActiveSpeech,
+    });
 
     const loadStories = useCallback(async () => {
         if (!conversationId) {
@@ -1235,7 +1247,9 @@ function ChatPage({
             isProgenerate = false,
             isRegenerate = false,
             isFork = false,
-            role
+            role,
+            admissionPolicy = 'auto',
+            inputSource = 'chat'
         }
     ) => {
         if (uploadFiles.length !== 0) {
@@ -1270,6 +1284,8 @@ function ChatPage({
                     options: advancedSettingsValues,
                     pageType: pageType,
                     documentId: documentId,
+                    admissionPolicy: admissionPolicy,
+                    inputSource: inputSource,
                     idempotencyKey: currentTurnIdempotencyKeyRef.current
                 },
                 conversationId: conversationId,
@@ -1314,6 +1330,53 @@ function ChatPage({
             sendMessage(conversationId);
         }
     }, [conversationId, documentId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType, t, uploadFiles, onNewConversationId]);
+
+    const handleRealtimeVoiceStart = useCallback(async ({toolsStatus = {}, composerStatus = 'normal'} = {}) => {
+        if (!selectedModel?.id) {
+            toast.error(t('no_models', {defaultValue: '没有可用模型'}));
+            return;
+        }
+        if (uploadFiles.length !== 0) {
+            toast.error(t('file_upload_not_complete'));
+            return;
+        }
+        if (composerStatus === 'loading' || composerStatus === 'disabled') {
+            toast.error(t('realtime_voice_composer_busy', {defaultValue: '当前对话正在切换状态，暂时无法启动实时语音。'}));
+            return;
+        }
+
+        const startForConversation = async (targetConversationId) => {
+            await realtimeVoice.start({
+                conversationId: targetConversationId,
+                model: selectedModel.id,
+                toolsStatus,
+                options: advancedSettingsValues,
+                pageType,
+                documentId,
+                ttsEngine: advancedSettingsValues?.speakEngine || 'browser',
+                composerStatus,
+            });
+        };
+
+        try {
+            if (conversationId) {
+                await startForConversation(conversationId);
+                return;
+            }
+            const payload = await emitEvent({
+                event: 'conversation.create',
+                payload: {idempotencyKey: currentTurnIdempotencyKeyRef.current},
+            });
+            // emitEvent is a thenable; await resolves its reply payload.
+            if (!payload?.success) throw new Error(payload?.value || 'Unable to create conversation');
+            isNewConversationIdRef.current = true;
+            setIsNewConversationId(true);
+            onNewConversationId(payload.value);
+            await startForConversation(payload.value);
+        } catch (error) {
+            toast.error(error?.message || '无法启动实时语音');
+        }
+    }, [advancedSettingsValues, conversationId, documentId, onNewConversationId, pageType, realtimeVoice, selectedModel, t, uploadFiles.length]);
 
     const loadMoreHistory = useCallback(async () => {
         if (historyLoadInFlightRef.current) return historyLoadInFlightRef.current;
@@ -2761,10 +2824,11 @@ function ChatPage({
         };
     }, [conversationId]);
 
-    const loadAvailableModels = useCallback(async ({preserveSelection = false} = {}) => {
+    const loadAvailableModels = useCallback(async ({preserveSelection = false, timeoutMs = null} = {}) => {
         try {
             const modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
-                params: {conversationId: conversationId}
+                params: {conversationId: conversationId},
+                ...(Number.isFinite(timeoutMs) ? {timeout: timeoutMs} : {}),
             });
             // Bind model capabilities to the remotely fetched model objects.
             // ChatBox receives selectedModel directly from this list, so keeping
@@ -2821,8 +2885,12 @@ function ChatPage({
         }
         let modelsData = [];
         const requestConversation = async () => {
+            loadingStageRef.current = 'conversation';
+            setLoadingStage('conversation');
             try {
-                let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + conversationId);
+                let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + conversationId, {
+                    timeout: CHAT_BOOTSTRAP_TIMEOUT_MS,
+                });
                 setConversationMeta(data);
                 applyContextCompactionState(data?.contextCompactionState || {});
                 const foundModel = modelsData.find(item => item.id === data.model)
@@ -2839,13 +2907,21 @@ function ChatPage({
             }
         }
         const requestModels = async () => {
-            modelsData = await loadAvailableModels({preserveSelection: false});
+            loadingStageRef.current = 'models';
+            setLoadingStage('models');
+            modelsData = await loadAvailableModels({
+                preserveSelection: false,
+                timeoutMs: CHAT_BOOTSTRAP_TIMEOUT_MS,
+            });
         };
         const requestMessages = async () => {
+            loadingStageRef.current = 'messages';
+            setLoadingStage('messages');
             try {
                 setHistoryAutoLoadReady(false);
                 const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                    params: {conversationId: conversationId, limit: HISTORY_PAGE_SIZE}
+                    params: {conversationId: conversationId, limit: HISTORY_PAGE_SIZE},
+                    timeout: CHAT_BOOTSTRAP_TIMEOUT_MS,
                 });
 
                 const messages = decorateMessages(messagesData.messages || {});
@@ -2909,10 +2985,23 @@ function ChatPage({
         const loadData = async () => {
             isLoadingDataRef.current = true;
             setIsLoading(true);
-            await requestModels();
-            await requestConversation();
-            await requestMessages();
-            isLoadingDataRef.current = false;
+            const startedAt = performance.now();
+            try {
+                await requestModels();
+                await requestConversation();
+                await requestMessages();
+            } catch (error) {
+                console.error('[Chat bootstrap] unexpected failure', {
+                    conversationId,
+                    stage: loadingStageRef.current,
+                    elapsedMs: Math.round(performance.now() - startedAt),
+                    error,
+                });
+                setIsLoadingError(true);
+            } finally {
+                isLoadingDataRef.current = false;
+                setIsLoading(false);
+            }
         };
         if (conversationId && !isLoadingDataRef.current) {
             setIsLoading(true);
@@ -3069,7 +3158,7 @@ function ChatPage({
                             t={t}
                         />
 
-                        {isLoading && <LoadingScreen t={t}/>}
+                        {isLoading && <LoadingScreen t={t} stage={loadingStage}/>}
                         {isLoadingError && <LoadingFailedScreen t={t}/>}
                     </div>
 
@@ -3130,6 +3219,7 @@ function ChatPage({
                             onVoiceRecordingStart={handleVoiceRecordingStart}
                             onVoicePcmReady={handleVoicePcmReady}
                             onVoiceRecordingCancel={handleVoiceRecordingCancel}
+                            onRealtimeVoiceStart={handleRealtimeVoiceStart}
                             onTaskInterruptPreview={handleTaskInterruptPreview}
                             onTaskInterruptResult={handleTaskInterruptResult}
                             onTaskInterruptClear={handleTaskInterruptClear}
@@ -3147,6 +3237,14 @@ function ChatPage({
                             }}
                         />
                     </div>
+
+                    <RealtimeVoiceSurface
+                        state={realtimeVoice.state}
+                        onEnd={() => realtimeVoice.stop()}
+                        onMinimize={() => realtimeVoice.setMinimized(true)}
+                        onRestore={() => realtimeVoice.setMinimized(false)}
+                        onToggleMute={realtimeVoice.toggleMute}
+                    />
 
                     <RuntimeInspectorDialog
                         open={runtimeInspectorOpen}

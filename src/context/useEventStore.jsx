@@ -4,6 +4,7 @@ import {generateUUID} from '@/lib/tools.jsx';
 import {sendRealtimeEvent} from '@/runtime/transport/channel.js';
 import {eventMatchesPattern, normalizeEventName, normalizeEventPattern} from '@/runtime/protocol/events.js';
 import {normalizeEventDirections, shouldDeliverEventToListener} from '@/runtime/protocol/subscriptions.js';
+import {getIncomingEventSchedulerStats, scheduleIncomingEventCallback} from '@/runtime/transport/EventDispatchScheduler.js';
 
 const listeners = new Map();
 const uniqueListeners = new Set();
@@ -99,6 +100,7 @@ const dispatchEnvelope = (envelope, {direction = 'local', localOnly = false} = {
     });
     settleReply(envelope);
 
+    const listenerJobs = [];
     for (const registration of [...listeners.values()]) {
         if (!registration.active || !matchesEvent(registration.events, envelope.event)) continue;
         if (!shouldDeliverEventToListener({
@@ -137,10 +139,10 @@ const dispatchEnvelope = (envelope, {direction = 'local', localOnly = false} = {
             return replyEnvelope;
         };
 
-        Promise.resolve().then(() => {
+        listenerJobs.push(() => {
             if (!registration.active) return;
             try {
-                registration.callback({
+                const result = registration.callback({
                     payload: envelope.payload,
                     event: envelope.event,
                     eventName: envelope.event,
@@ -158,10 +160,30 @@ const dispatchEnvelope = (envelope, {direction = 'local', localOnly = false} = {
                     reply,
                     envelope,
                 });
+                if (result && typeof result.then === 'function') {
+                    Promise.resolve(result).catch((error) => {
+                        console.error(`[CWM async event listener failed] ${envelope.event}`, error, registration.stack);
+                    });
+                }
             } catch (error) {
                 console.error(`[CWM event listener failed] ${envelope.event}`, error, registration.stack);
             }
         });
+    }
+
+    if (listenerJobs.length) {
+        const invokeEnvelopeListeners = () => {
+            for (const job of listenerJobs) job();
+        };
+        if (direction === 'incoming') {
+            scheduleIncomingEventCallback({
+                event: envelope.event,
+                replyTo: envelope.reply_to,
+                callback: invokeEnvelopeListeners,
+            });
+        } else {
+            Promise.resolve().then(invokeEnvelopeListeners);
+        }
     }
 };
 
@@ -277,4 +299,5 @@ export const onEvent = ({
 if (debugEnabled()) {
     window.emitCwmEvent = emitEvent;
     window.cwmEventStore = useEventStore;
+    window.getCwmEventSchedulerStats = getIncomingEventSchedulerStats;
 }

@@ -1,6 +1,7 @@
 
 export const BASE_BACKEND_URL = '/api'
 export const WEBSOCKET_URL = '/ws'
+export const REALTIME_VOICE_WEBSOCKET_URL = '/ws/realtime'
 
 export const apiEndpoint = {
     CHATBOX_ENDPOINT: '/chat/chatbox',

@@ -277,7 +277,7 @@ const MessageItem = memo(({
                                             msg={msg}
                                         />
                                     </div>
-                                    <SpeechOverlayHighlighter containerRef={markdownRef} msgId={msgId} speechState={speechState}/>
+                                    <SpeechOverlayHighlighter containerRef={markdownRef} msgId={msgId} msg={msg} speechState={speechState}/>
                                 </div>
 
                                 {hasAttachments && (

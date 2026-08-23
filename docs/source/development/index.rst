@@ -19,3 +19,9 @@
    debugging
    documentation
    release_checklist
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+
+   adding_event

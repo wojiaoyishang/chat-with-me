@@ -1,5 +1,5 @@
 src/features/chat/page/hooks/useChatSpeech 模块
-=============================================
+==================================================================================================
 
 .. js:module:: src/features/chat/page/hooks/useChatSpeech
 
@@ -11,7 +11,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/page/hooks/useChatSpeech.js``
 * **模块标识**：``src/features/chat/page/hooks/useChatSpeech``
@@ -20,12 +20,12 @@ src/features/chat/page/hooks/useChatSpeech 模块
 * **局部函数与匿名回调**：241
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``sonner``、``@/lib/tools.jsx``、``@/context/useEventStore.jsx``、``@/lib/apiClient.js``、``@/config.js``、``../../ui/message/utils/speechContent.js``、``../../speech/playbackTiming.js``、``../../speech/speechState.js``、``../../speech/speechRuntime.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:1749:1834:FUNCTION
 
@@ -41,7 +41,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``getLocalSetting(TTS_LOCAL_SETTING_KEYS.browserVoice, '') \|\| ''``。
+   根据执行分支返回结果；代表性返回表达式为 ``getLocalSetting(TTS_LOCAL_SETTING_KEYS.browserVoice, '') || ''``。
 
    **主要协作调用**：``getLocalSetting``。
 
@@ -133,7 +133,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``{ voiceURI, name: voice.name \|\| voiceURI, lang: voice.lang \|\| '', default: Boolean(voice.default), localService: Boolean(voice.localService), }``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``{ voiceURI, name: voice.name || voiceURI, lang: voice.lang || '', default: Boolean(voice.default), localService: Boolean(voice.localService), }``。
 
    **主要协作调用**：``getBrowserSpeechVoiceId``、``Boolean``。
 
@@ -181,7 +181,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``true``、``false``。
 
-   **主要协作调用**：``node?.nodeValue?.trim``、``node.parentElement?.closest``、``Boolean``、``root.contains``、``SPEECH_TEXT_SKIP_TAGS.has``、``parent.contains``、``parent.closest``、``/\b(hljs\|highlight\|code-block\|language-[^\s]+)\b/.test``。
+   **主要协作调用**：``node?.nodeValue?.trim``、``node.parentElement?.closest``、``Boolean``、``root.contains``、``SPEECH_TEXT_SKIP_TAGS.has``、``parent.contains``、``parent.closest``、``/\b(hljs|highlight|code-block|language-[^\s]+)\b/.test``。
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:5017:5529:FUNCTION
 
@@ -277,7 +277,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``startElement \|\| endElement``、``boundary``、``getSpeechBoundaryElementForMatch(startElement \|\| endElement, container) \|\| startElement \|\| endElement``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``startElement || endElement``、``boundary``、``getSpeechBoundaryElementForMatch(startElement || endElement, container) || startElement || endElement``。
 
    **副作用**
 
@@ -460,11 +460,11 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``Array.from(cache?.entries?.keys?.() \|\| []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort``、``Array.from(cache?.entries?.keys?.() \|\| []) .map(Number) .filter``、``Array.from(cache?.entries?.keys?.() \|\| []) .map``、``Array.from``、``cache?.entries?.keys``。
+   **主要协作调用**：``Array.from(cache?.entries?.keys?.() || []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort``、``Array.from(cache?.entries?.keys?.() || []) .map(Number) .filter``、``Array.from(cache?.entries?.keys?.() || []) .map``、``Array.from``、``cache?.entries?.keys``。
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:13270:188835:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:13270:188854:FUNCTION
 
 .. js:function:: useChatSpeech({ conversationId, selectedModel, advancedSettingsValues, t, messagesRef, messagesContainerRef, user…)
 
@@ -475,7 +475,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
    **参数**
 
    ``{ conversationId, selectedModel, advancedSettingsValues, t, messagesRef, messagesContainerRef, user…``
-      调用方传入的 `` conversationId, selectedModel, advancedSettingsValues, t, messagesRef, messagesContainerRef, user…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``conversationId, selectedModel, advancedSettingsValues, t, messagesRef, messagesContainerRef, user…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -494,7 +494,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
    **内部回调数量**：75。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -661,13 +661,13 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:13181:13227:FUNCTION
 
-.. rubric:: ``Array.from(cache?.entries?.keys?.() \|\| []) .map(Number) .filter callback @ 367``
+.. rubric:: ``Array.from(cache?.entries?.keys?.() || []) .map(Number) .filter callback @ 367``
 
 .. code-block:: javascript
 
    Array.from(cache?.entries?.keys?.() || []) .map(Number) .filter callback @ 367(value)
 
-作为 ``Array.from(cache?.entries?.keys?.() \|\| []) .map(Number) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``Array.from(cache?.entries?.keys?.() || []) .map(Number) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``367``—``367`` 行；所属函数 ``getSortedSpeechCachePositions``。
 
@@ -684,13 +684,13 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:13239:13268:FUNCTION
 
-.. rubric:: ``Array.from(cache?.entries?.keys?.() \|\| []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort callback @ 368``
+.. rubric:: ``Array.from(cache?.entries?.keys?.() || []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort callback @ 368``
 
 .. code-block:: javascript
 
    Array.from(cache?.entries?.keys?.() || []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort callback @ 368(left, right)
 
-作为 ``Array.from(cache?.entries?.keys?.() \|\| []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``Array.from(cache?.entries?.keys?.() || []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``368``—``368`` 行；所属函数 ``getSortedSpeechCachePositions``。
 
@@ -1123,19 +1123,19 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``root.querySelectorAll?.(\`[${SPEECH_SEGMENT_BINDING_ATTR}="true"]\`).forEach``、``root.querySelectorAll``。
+**主要协作调用**：``root.querySelectorAll?.(\x60[${SPEECH_SEGMENT_BINDING_ATTR}="true"]\x60).forEach``、``root.querySelectorAll``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:23563:23954:FUNCTION
 
-.. rubric:: ``root.querySelectorAll?.(\`[${SPEECH_SEGMENT_BINDING_ATTR}="true"]\`).forEach callback @ 603``
+.. rubric:: ``root.querySelectorAll?.(\x60[${SPEECH_SEGMENT_BINDING_ATTR}="true"]\x60).forEach callback @ 603``
 
 .. code-block:: javascript
 
    root.querySelectorAll?.(`[${SPEECH_SEGMENT_BINDING_ATTR}="true"]`).forEach callback @ 603(element)
 
-作为 ``root.querySelectorAll?.(\`[${SPEECH_SEGMENT_BINDING_ATTR}="true"]\`).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``root.querySelectorAll?.(\x60[${SPEECH_SEGMENT_BINDING_ATTR}="true"]\x60).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``603``—``609`` 行；所属函数 ``useCallback callback @ 600``。
 
@@ -1515,19 +1515,19 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``root.querySelectorAll?.(\`.${SPEECH_AUTO_HIGHLIGHT_CLASS}, [${SPEECH_AUTO_HIGHLIGHT_ATTR}="true"]\`).forEach``、``root.querySelectorAll``。
+**主要协作调用**：``root.querySelectorAll?.(\x60.${SPEECH_AUTO_HIGHLIGHT_CLASS}, [${SPEECH_AUTO_HIGHLIGHT_ATTR}="true"]\x60).forEach``、``root.querySelectorAll``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:39831:40079:FUNCTION
 
-.. rubric:: ``root.querySelectorAll?.(\`.${SPEECH_AUTO_HIGHLIGHT_CLASS}, [${SPEECH_AUTO_HIGHLIGHT_ATTR}="true"]\`).forEach callback @ 973``
+.. rubric:: ``root.querySelectorAll?.(\x60.${SPEECH_AUTO_HIGHLIGHT_CLASS}, [${SPEECH_AUTO_HIGHLIGHT_ATTR}="true"]\x60).forEach callback @ 973``
 
 .. code-block:: javascript
 
    root.querySelectorAll?.(`.${SPEECH_AUTO_HIGHLIGHT_CLASS}, [${SPEECH_AUTO_HIGHLIGHT_ATTR}="true"]`).forEach callback @ 973(element)
 
-作为 ``root.querySelectorAll?.(\`.${SPEECH_AUTO_HIGHLIGHT_CLASS}, [${SPEECH_AUTO_HIGHLIGHT_ATTR}="true"]\`).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``root.querySelectorAll?.(\x60.${SPEECH_AUTO_HIGHLIGHT_CLASS}, [${SPEECH_AUTO_HIGHLIGHT_ATTR}="true"]\x60).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``973``—``977`` 行；所属函数 ``useCallback callback @ 970``。
 
@@ -1752,7 +1752,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``(synthesis.getVoices?.() \|\| []) .map(normalizeBrowserSpeechVoice) .filter``、``(synthesis.getVoices?.() \|\| []) .map``、``synthesis.getVoices``、``setBrowserSpeechVoices``。
+**主要协作调用**：``(synthesis.getVoices?.() || []) .map(normalizeBrowserSpeechVoice) .filter``、``(synthesis.getVoices?.() || []) .map``、``synthesis.getVoices``、``setBrowserSpeechVoices``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
@@ -1940,7 +1940,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 **参数**
 
 ``{engine, modelId = '', rate, segments = [], speechConfig = {}}``
-   调用方传入的 ``engine, modelId = '', rate, segments = , speechConfig = `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``engine, modelId = '', rate, segments = , speechConfig =`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -2124,19 +2124,19 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 * 创建、使用或释放浏览器二进制资源。
 
-**主要协作调用**：``Object.entries(messagesRef.current \|\| {}).forEach``、``Object.entries``、``messageSpeechCacheRef.current.values``、``Array.from``、``mountedStores.values``、``stores.forEach``、``mountedStores.forEach``、``messageSpeechCacheRef.current.clear``。
+**主要协作调用**：``Object.entries(messagesRef.current || {}).forEach``、``Object.entries``、``messageSpeechCacheRef.current.values``、``Array.from``、``mountedStores.values``、``stores.forEach``、``mountedStores.forEach``、``messageSpeechCacheRef.current.clear``。
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:51293:51488:FUNCTION
 
-.. rubric:: ``Object.entries(messagesRef.current \|\| {}).forEach callback @ 1252``
+.. rubric:: ``Object.entries(messagesRef.current || {}).forEach callback @ 1252``
 
 .. code-block:: javascript
 
    Object.entries(messagesRef.current || {}).forEach callback @ 1252([messageId, message])
 
-作为 ``Object.entries(messagesRef.current \|\| {}).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``Object.entries(messagesRef.current || {}).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``1252``—``1255`` 行；所属函数 ``useCallback callback @ 1249``。
 
@@ -2324,19 +2324,19 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``getSortedSpeechCachePositions``、``Number``、``Array.from(generatedPositions \|\| []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort``、``Array.from(generatedPositions \|\| []) .map(Number) .filter``、``Array.from(generatedPositions \|\| []) .map``、``Array.from``、``setSpeechState``。
+**主要协作调用**：``getSortedSpeechCachePositions``、``Number``、``Array.from(generatedPositions || []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort``、``Array.from(generatedPositions || []) .map(Number) .filter``、``Array.from(generatedPositions || []) .map``、``Array.from``、``setSpeechState``。
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:53746:53792:FUNCTION
 
-.. rubric:: ``Array.from(generatedPositions \|\| []) .map(Number) .filter callback @ 1310``
+.. rubric:: ``Array.from(generatedPositions || []) .map(Number) .filter callback @ 1310``
 
 .. code-block:: javascript
 
    Array.from(generatedPositions || []) .map(Number) .filter callback @ 1310(value)
 
-作为 ``Array.from(generatedPositions \|\| []) .map(Number) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``Array.from(generatedPositions || []) .map(Number) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``1310``—``1310`` 行；所属函数 ``useCallback callback @ 1302``。
 
@@ -2353,13 +2353,13 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:53812:53841:FUNCTION
 
-.. rubric:: ``Array.from(generatedPositions \|\| []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort callback @ 1311``
+.. rubric:: ``Array.from(generatedPositions || []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort callback @ 1311``
 
 .. code-block:: javascript
 
    Array.from(generatedPositions || []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort callback @ 1311(left, right)
 
-作为 ``Array.from(generatedPositions \|\| []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``Array.from(generatedPositions || []) .map(Number) .filter(value => Number.isInteger(value) && value >= 0) .sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``1311``—``1311`` 行；所属函数 ``useCallback callback @ 1302``。
 
@@ -2530,7 +2530,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``explicit``、``String(resolved)``、``\`position:${position}\```、``\`index:${index}\```。
+根据执行分支返回结果；代表性返回表达式为 ``explicit``、``String(resolved)``、``\x60position:${position}\x60``、``\x60index:${index}\x60``。
 
 **主要协作调用**：``readPayloadString``、``resolveBackendPayloadSegmentPosition``、``resolveBackendPayloadSegmentIndex``、``resolveSpeechSegmentIdByLocator``、``String``、``Number.isInteger``。
 
@@ -2936,7 +2936,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``voice``、``matchingVoices.find(item => item.localService) \|\| matchingVoices[0] \|\| null``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``voice``、``matchingVoices.find(item => item.localService) || matchingVoices[0] || null``。
 
 **副作用**
 
@@ -2988,7 +2988,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String(item.lang \|\| '').toLowerCase``、``String``、``String(item.lang \|\| '').toLowerCase().startsWith``。
+**主要协作调用**：``String(item.lang || '').toLowerCase``、``String``、``String(item.lang || '').toLowerCase().startsWith``。
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:69132:69157:FUNCTION
 
@@ -3038,7 +3038,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 * 发送本地或远程 CWM 事件/媒体帧。
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``toast.error``、``t``、``cancelActiveSpeech``、``Number.isInteger``、``Number``、``Math.min``、``Math.max``、``normalizeSpeechRate``、``/^(zh\|ja\|ko)(-\|_\|$)/i.test``、``String``、``Object.prototype.hasOwnProperty.call``、``segments.reduce``。
+**主要协作调用**：``toast.error``、``t``、``cancelActiveSpeech``、``Number.isInteger``、``Number``、``Math.min``、``Math.max``、``normalizeSpeechRate``、``/^(zh|ja|ko)(-|_|$)/i.test``、``String``、``Object.prototype.hasOwnProperty.call``、``segments.reduce``。
 
 **内部回调数量**：21。这些回调也会在本页逐项说明。
 
@@ -3063,7 +3063,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String(value \|\| '') .replace(/[\u200B-\u200D\uFEFF]/g, '') .replace(/\s+/g, ' ') .trim``、``String(value \|\| '') .replace(/[\u200B-\u200D\uFEFF]/g, '') .replace``、``String(value \|\| '') .replace``、``String``。
+**主要协作调用**：``String(value || '') .replace(/[\u200B-\u200D\uFEFF]/g, '') .replace(/\s+/g, ' ') .trim``、``String(value || '') .replace(/[\u200B-\u200D\uFEFF]/g, '') .replace``、``String(value || '') .replace``、``String``。
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:71360:71891:FUNCTION
 
@@ -3130,7 +3130,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``''``、``\`${text}${isCjkSpeechLang ? '。' : '.'}\```、``text``。
+根据执行分支返回结果；代表性返回表达式为 ``''``、``\x60${text}${isCjkSpeechLang ? '。' : '.'}\x60``、``text``。
 
 **主要协作调用**：``stripUnsupportedBrowserSpeechSymbols``、``normalizeBrowserSpeechText``、``getBrowserSpeechCharCount``、``/[。！？!?.…]$/.test``。
 
@@ -3358,19 +3358,19 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``(controller.utteranceKeepAlive \|\| []).filter``。
+**主要协作调用**：``(controller.utteranceKeepAlive || []).filter``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
 .. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:82662:82688:FUNCTION
 
-.. rubric:: ``(controller.utteranceKeepAlive \|\| []).filter callback @ 1969``
+.. rubric:: ``(controller.utteranceKeepAlive || []).filter callback @ 1969``
 
 .. code-block:: javascript
 
    (controller.utteranceKeepAlive || []).filter callback @ 1969(item)
 
-作为 ``(controller.utteranceKeepAlive \|\| []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(controller.utteranceKeepAlive || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``1969``—``1969`` 行；所属函数 ``window.setTimeout callback @ 1968``。
 
@@ -4199,7 +4199,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 * 发起 HTTP 请求或访问外部服务。
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``queueBrowserSpeechCandidates``、``finish``、``buildBrowserUtteranceText``、``schedulePlayNext``、``normalizeSpeechRate``、``Math.min``、``Math.max``、``Number.isFinite``、``controller.defaultVoiceFallbackSegmentIndexes?.has``、``findBrowserSpeechVoice``、``[...(controller.utteranceKeepAlive \|\| []), utterance].slice``、``updateBrowserPreparedProgress``。
+**主要协作调用**：``queueBrowserSpeechCandidates``、``finish``、``buildBrowserUtteranceText``、``schedulePlayNext``、``normalizeSpeechRate``、``Math.min``、``Math.max``、``Number.isFinite``、``controller.defaultVoiceFallbackSegmentIndexes?.has``、``findBrowserSpeechVoice``、``[...(controller.utteranceKeepAlive || []), utterance].slice``、``updateBrowserPreparedProgress``。
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
@@ -4531,7 +4531,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 **参数**
 
 ``{ startPosition = 0, restartReason = 'prefetch', requestId: preferredRequestId = null, }``（默认值 ``{}``）
-   调用方传入的 `` startPosition = 0, restartReason = 'prefetch', requestId: preferredRequestId = null, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``startPosition = 0, restartReason = 'prefetch', requestId: preferredRequestId = null,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -4700,7 +4700,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 **参数**
 
 ``{ messageId, requestId, segments, engine, speechConfig, startSegmentPosition = 0, restartReason = n…``
-   调用方传入的 `` messageId, requestId, segments, engine, speechConfig, startSegmentPosition = 0, restartReason = n…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``messageId, requestId, segments, engine, speechConfig, startSegmentPosition = 0, restartReason = n…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -5261,7 +5261,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``isActiveSpeechStatus``、``target.closest``、``rebuildSpeechSegmentElementMap``、``getSpeechMessageElement``、``findSpeechSeekBoundElement``、``getSpeechBoundSegmentPositions``、``Math.min``、``seekSpeechSegment``、``event.preventDefault``、``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:145843:147620:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:145843:147639:FUNCTION
 
 .. rubric:: ``useCallback callback @ 3402``
 
@@ -5287,7 +5287,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``reply``、``['loading', 'playing', 'paused'].includes``、``cancelActiveSpeech``、``toast.error``、``t``、``getSpeakableSegments``、``toast.warning``、``getStoredSpeechRate``、``getStoredBrowserSpeechVoiceURI``、``generateUUID``、``speakWithBrowser``、``requestBackendSpeech``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:147795:149113:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:147814:149132:FUNCTION
 
 .. rubric:: ``useCallback callback @ 3454``
 
@@ -5302,15 +5302,15 @@ src/features/chat/page/hooks/useChatSpeech 模块
 **参数**
 
 ``{messageId, text, options = {}}``（默认值 ``{}``）
-   调用方传入的 ``messageId, text, options = `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``messageId, text, options =`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
 根据执行分支返回结果；代表性返回表达式为 ``false``、``true``、``speakWithBrowser({messageId: resolvedMessageId, requestId, segments, speechConfig})``。
 
-**主要协作调用**：``String(messageId \|\| '').trim``、``String``、``String(text \|\| '').trim``、``['loading', 'playing', 'paused'].includes``、``cancelActiveSpeech``、``getSpeakableSegments``、``generateUUID``、``getStoredSpeechRate``、``getStoredBrowserSpeechVoiceURI``、``speakWithBrowser``、``requestBackendSpeech``。
+**主要协作调用**：``String(messageId || '').trim``、``String``、``String(text || '').trim``、``['loading', 'playing', 'paused'].includes``、``cancelActiveSpeech``、``getSpeakableSegments``、``generateUUID``、``getStoredSpeechRate``、``getStoredBrowserSpeechVoiceURI``、``speakWithBrowser``、``requestBackendSpeech``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:149292:151191:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:149311:151210:FUNCTION
 
 .. rubric:: ``useCallback callback @ 3483``
 
@@ -5335,7 +5335,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:150446:151183:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:150465:151202:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 3501``
 
@@ -5358,7 +5358,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``Math.max``、``normalizeProgressPercent``、``normalizeSpeechRate``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:151522:152776:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:151541:152795:FUNCTION
 
 .. rubric:: ``useCallback callback @ 3524``
 
@@ -5387,7 +5387,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:151562:151863:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:151581:151882:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 3525``
 
@@ -5408,7 +5408,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:151893:152763:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:151912:152782:FUNCTION
 
 .. rubric:: ``window.setTimeout callback @ 3535``
 
@@ -5430,7 +5430,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``logSpeechCache``、``getSortedSpeechCachePositions``、``clearBackendSpeechAudio``、``resetSpeechSegmentCache``、``resetSpeechState``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:152903:164166:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:152922:164185:FUNCTION
 
 .. rubric:: ``useCallback callback @ 3557``
 
@@ -5459,7 +5459,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **内部回调数量**：14。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:154473:154502:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:154492:154521:FUNCTION
 
 .. rubric:: ``Array.from(cache.inFlightPositions).sort callback @ 3589``
 
@@ -5483,7 +5483,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:154548:154714:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:154567:154733:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 3591``
 
@@ -5504,7 +5504,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:156485:157101:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:156504:157120:FUNCTION
 
 .. rubric:: ``cleanupCurrentAudio``
 
@@ -5526,7 +5526,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``clearPlaybackTimers``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:157135:157322:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:157154:157341:FUNCTION
 
 .. rubric:: ``isStalePlayback``
 
@@ -5546,7 +5546,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:157875:158348:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:157894:158367:FUNCTION
 
 .. rubric:: ``clearPlaybackTimers``
 
@@ -5572,7 +5572,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``window.clearTimeout``、``window.cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:158398:159535:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:158417:159554:FUNCTION
 
 .. rubric:: ``applyPlaybackSegmentWhenAudible``
 
@@ -5598,7 +5598,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``isStalePlayback``、``Number``、``Number.isFinite``、``applyBackendSpeechPlaybackSegment``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:159586:160564:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:159605:160583:FUNCTION
 
 .. rubric:: ``schedulePlaybackSegmentHighlight``
 
@@ -5626,7 +5626,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:159774:160379:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:159793:160398:FUNCTION
 
 .. rubric:: ``syncHighlight``
 
@@ -5652,7 +5652,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``isStalePlayback``、``Date.now``、``applyPlaybackSegmentWhenAudible``、``window.requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:160429:160522:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:160448:160541:FUNCTION
 
 .. rubric:: ``window.setTimeout callback @ 3735``
 
@@ -5674,7 +5674,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``syncHighlight``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:160589:160679:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:160608:160698:FUNCTION
 
 .. rubric:: ``anonymous callback @ 3741``
 
@@ -5696,7 +5696,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``isStalePlayback``、``schedulePlaybackSegmentHighlight``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:160707:160816:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:160726:160835:FUNCTION
 
 .. rubric:: ``anonymous callback @ 3745``
 
@@ -5718,7 +5718,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``isStalePlayback``、``schedulePlaybackSegmentHighlight``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:160847:160924:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:160866:160943:FUNCTION
 
 .. rubric:: ``anonymous callback @ 3750``
 
@@ -5740,7 +5740,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``applyPlaybackSegmentWhenAudible``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:160950:162557:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:160969:162576:FUNCTION
 
 .. rubric:: ``anonymous callback @ 3754``
 
@@ -5768,7 +5768,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:161711:162146:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:161730:162165:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 3767``
 
@@ -5791,7 +5791,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``Math.max``、``normalizeProgressPercent``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:162403:162513:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:162422:162532:FUNCTION
 
 .. rubric:: ``window.setTimeout callback @ 3778``
 
@@ -5813,7 +5813,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``playNextBackendSpeechSegment``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:162583:163285:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:162602:163304:FUNCTION
 
 .. rubric:: ``anonymous callback @ 3784``
 
@@ -5835,7 +5835,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``isStalePlayback``、``cleanupCurrentAudio``、``logSpeechPlayError``、``toast.error``、``t``、``clearBackendSpeechAudio``、``resetSpeechState``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:163314:163403:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:163333:163422:FUNCTION
 
 .. rubric:: ``audio.play().then callback @ 3804``
 
@@ -5857,7 +5857,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``isStalePlayback``、``schedulePlaybackSegmentHighlight``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:163411:164158:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:163430:164177:FUNCTION
 
 .. rubric:: ``audio.play().then(() => { if (!isStalePlayback()) schedulePlaybackSegmentHighlight(); }).catch callback @ 3806``
 
@@ -5880,7 +5880,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``isStalePlayback``、``cleanupCurrentAudio``、``logSpeechPlayError``、``toast.error``、``t``、``clearBackendSpeechAudio``、``resetSpeechState``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:164809:168540:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:164828:168559:FUNCTION
 
 .. rubric:: ``useCallback callback @ 3844``
 
@@ -5915,7 +5915,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:167402:167479:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:167421:167498:FUNCTION
 
 .. rubric:: ``Array.from(queueState.readySegmentsByPosition.values()) .sort callback @ 3890``
 
@@ -5941,7 +5941,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:168152:168181:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:168171:168200:FUNCTION
 
 .. rubric:: ``Array.from(speechSegmentCacheRef.current.inFlightPositions).sort callback @ 3900``
 
@@ -5965,7 +5965,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:168282:168427:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:168301:168446:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 3904``
 
@@ -5986,7 +5986,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:168932:172954:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:168951:172973:FUNCTION
 
 .. rubric:: ``useCallback callback @ 3923``
 
@@ -6021,7 +6021,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:170517:170566:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:170536:170585:FUNCTION
 
 .. rubric:: ``Array.from(segmentBuffer.chunks.entries()) .sort callback @ 3946``
 
@@ -6047,7 +6047,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:171544:171933:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:171563:171952:FUNCTION
 
 .. rubric:: ``chunkEntries.map callback @ 3968``
 
@@ -6070,7 +6070,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``ArrayBuffer.isView``、``decodeBase64ToUint8Array``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:173239:175593:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:173258:175612:FUNCTION
 
 .. rubric:: ``useCallback callback @ 4004``
 
@@ -6097,7 +6097,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``resolveBackendPayloadSegmentPosition``、``getBackendSpeechSegmentPosition``、``resolveBackendPayloadSegmentIndex``、``getBackendSpeechSegmentIndex``、``resolveBackendPayloadSegmentId``、``Number.isInteger``、``getBackendSpeechSegmentId``、``speechSegmentCacheRef.current.entries.has``、``logSpeechCache``、``backendState.chunks.get``、``backendState.chunks.set``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:175880:177827:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:175899:177846:FUNCTION
 
 .. rubric:: ``useCallback callback @ 4061``
 
@@ -6124,7 +6124,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``ensureBackendPlaybackQueueState``、``resolveBackendPayloadSegmentPosition``、``getBackendSpeechSegmentPosition``、``resolveBackendPayloadSegmentId``、``Number.isInteger``、``getBackendSpeechSegmentId``、``backendState.chunks.get``、``backendState.chunks.entries``、``Number``、``queueState?.pendingReadyByPosition?.set``、``queueState?.pendingReadyById?.set``、``finalizeBackendSpeechSegmentFromBuffer``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:178077:180215:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:178096:180234:FUNCTION
 
 .. rubric:: ``useCallback callback @ 4104``
 
@@ -6145,19 +6145,19 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``true``。
 
-**主要协作调用**：``ensureBackendProgressSets``、``resolveBackendPayloadSegmentPosition``、``getBackendSpeechSegmentPosition``、``Number.isInteger``、``backendState.generatedSegmentPositions.add``、``Array.from(backendState?.generatedSegmentPositions \|\| []) .map(Number) .filter(value => Number.isInteger(value) && valu…``、``Array.from(backendState?.generatedSegmentPositions \|\| []) .map(Number) .filter``、``Array.from(backendState?.generatedSegmentPositions \|\| []) .map``、``Array.from``、``getSortedSpeechCachePositions``、``getBackendSpeechTotalSegments``、``logSpeechCache``。
+**主要协作调用**：``ensureBackendProgressSets``、``resolveBackendPayloadSegmentPosition``、``getBackendSpeechSegmentPosition``、``Number.isInteger``、``backendState.generatedSegmentPositions.add``、``Array.from(backendState?.generatedSegmentPositions || []) .map(Number) .filter(value => Number.isInteger(value) && valu…``、``Array.from(backendState?.generatedSegmentPositions || []) .map(Number) .filter``、``Array.from(backendState?.generatedSegmentPositions || []) .map``、``Array.from``、``getSortedSpeechCachePositions``、``getBackendSpeechTotalSegments``、``logSpeechCache``。
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:178678:178724:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:178697:178743:FUNCTION
 
-.. rubric:: ``Array.from(backendState?.generatedSegmentPositions \|\| []) .map(Number) .filter callback @ 4114``
+.. rubric:: ``Array.from(backendState?.generatedSegmentPositions || []) .map(Number) .filter callback @ 4114``
 
 .. code-block:: javascript
 
    Array.from(backendState?.generatedSegmentPositions || []) .map(Number) .filter callback @ 4114(value)
 
-作为 ``Array.from(backendState?.generatedSegmentPositions \|\| []) .map(Number) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``Array.from(backendState?.generatedSegmentPositions || []) .map(Number) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``4114``—``4114`` 行；所属函数 ``useCallback callback @ 4104``。
 
@@ -6172,15 +6172,15 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``Number.isInteger``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:178744:178773:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:178763:178792:FUNCTION
 
-.. rubric:: ``Array.from(backendState?.generatedSegmentPositions \|\| []) .map(Number) .filter(value => Number.isInteger(value) && valu… callback @ 4115``
+.. rubric:: ``Array.from(backendState?.generatedSegmentPositions || []) .map(Number) .filter(value => Number.isInteger(value) && valu… callback @ 4115``
 
 .. code-block:: javascript
 
    Array.from(backendState?.generatedSegmentPositions || []) .map(Number) .filter(value => Number.isInteger(value) && valu… callback @ 4115(left, right)
 
-实现 ``Array.from(backendState?.generatedSegmentPositions \|\| []) .map(Number) .filter(value => Number.isInteger(value) && valu…`` 对应的前端处理。
+实现 ``Array.from(backendState?.generatedSegmentPositions || []) .map(Number) .filter(value => Number.isInteger(value) && valu…`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``4115``—``4115`` 行；所属函数 ``useCallback callback @ 4104``。
 
@@ -6196,7 +6196,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:179501:180186:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:179520:180205:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 4130``
 
@@ -6219,7 +6219,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``Math.min``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:180375:181412:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:180394:181431:FUNCTION
 
 .. rubric:: ``useCallback callback @ 4145``
 
@@ -6244,7 +6244,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:181071:181383:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:181090:181402:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 4157``
 
@@ -6267,7 +6267,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``Math.min``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:181536:187818:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:181555:187837:FUNCTION
 
 .. rubric:: ``useCallback callback @ 4167``
 
@@ -6298,7 +6298,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:183576:184113:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:183595:184132:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 4202``
 
@@ -6321,7 +6321,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 **主要协作调用**：``getBackendSpeechTotalSegments``、``normalizeSpeechRate``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:184476:184513:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:184495:184532:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 4219``
 
@@ -6342,7 +6342,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:184876:184884:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:184895:184903:FUNCTION
 
 .. rubric:: ``backendAudio.play?.().catch callback @ 4227``
 
@@ -6362,7 +6362,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:185013:185051:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:185032:185070:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 4231``
 
@@ -6383,7 +6383,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:186003:186252:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:186022:186271:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 4251``
 
@@ -6404,7 +6404,7 @@ src/features/chat/page/hooks/useChatSpeech 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:187272:187343:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useChatSpeech.js:187291:187362:FUNCTION
 
 .. rubric:: ``setSpeechState callback @ 4275``
 

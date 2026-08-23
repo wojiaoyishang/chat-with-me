@@ -6,6 +6,12 @@ export class WebSocketTransport {
         this.handlers = handlers;
         this.socket = null;
         this.connectPromise = null;
+        this.connectionId = null;
+    }
+
+    setHandlers(handlers = {}) {
+        this.handlers = handlers;
+        return this;
     }
 
     get isOpen() {
@@ -45,7 +51,7 @@ export class WebSocketTransport {
                 this.socket = null;
                 this.connectPromise = null;
                 this.handlers.onClose?.(event, this);
-                if (!settled) reject(new Error(`WebSocket closed during connection (${event.code})`));
+                if (!settled) reject(new Error(`WebSocket closed during connection (${event.code}${event.reason ? `: ${event.reason}` : ''})`));
             };
         });
         return this.connectPromise;

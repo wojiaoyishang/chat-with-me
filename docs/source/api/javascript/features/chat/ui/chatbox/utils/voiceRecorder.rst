@@ -1,5 +1,5 @@
 src/features/chat/ui/chatbox/utils/voiceRecorder 模块
-===================================================
+==============================================================================================================
 
 .. js:module:: src/features/chat/ui/chatbox/utils/voiceRecorder
 
@@ -11,16 +11,16 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/chatbox/utils/voiceRecorder.js``
 * **模块标识**：``src/features/chat/ui/chatbox/utils/voiceRecorder``
-* **顶层函数/组件/Hook**：14
+* **顶层函数/组件/Hook**：15
 * **类**：1
-* **局部函数与匿名回调**：8
+* **局部函数与匿名回调**：11
 
 类
---
+--------------------------------------------------------------------------------
 
 .. js:class:: VoicePermissionFlowCancelledError()
 
@@ -50,7 +50,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
       **主要协作调用**：``super``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/ui/chatbox/utils/voiceRecorder.js:450:662:FUNCTION
 
@@ -67,7 +67,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``Boolean( error?.isVoicePermissionFlowCancelled \|\| error?.code === 'VOICE_PERMISSION_FLOW_CANCELLED' \|\| error?.name === 'VoicePermissionFlowCancelledError' )``。
+   根据执行分支返回结果；代表性返回表达式为 ``Boolean( error?.isVoicePermissionFlowCancelled || error?.code === 'VOICE_PERMISSION_FLOW_CANCELLED' || error?.name === 'VoicePermissionFlowCancelledError' )``。
 
    **主要协作调用**：``Boolean``。
 
@@ -85,7 +85,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``window.AudioContext \|\| window.webkitAudioContext \|\| null``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``window.AudioContext || window.webkitAudioContext || null``。
 
    **副作用**
 
@@ -106,7 +106,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``'prompt'``、``permission?.state \|\| 'prompt'``。
+   根据执行分支返回结果；代表性返回表达式为 ``'prompt'``、``permission?.state || 'prompt'``。
 
    **主要协作调用**：``navigator.permissions.query``。
 
@@ -142,7 +142,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
    **参数**
 
    ``{ permissionIntroMessage = 'Voice input needs microphone access. Please choose Allow in the browser…``（默认值 ``{}``）
-      调用方传入的 `` permissionIntroMessage = 'Voice input needs microphone access. Please choose Allow in the browser…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``permissionIntroMessage = 'Voice input needs microphone access. Please choose Allow in the browser…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -326,7 +326,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``nextLevels``、``nextLevels.map((level, index) => { const previous = previousLevels[index] \|\| 0; // 上升快、回落慢，仍然完全由真实采样驱动。 const factor = level > previous ? 0.72 : 0.42; return previous + (level - p…``。
+   根据执行分支返回结果；代表性返回表达式为 ``nextLevels``、``nextLevels.map((level, index) => { const previous = previousLevels[index] || 0; // 上升快、回落慢，仍然完全由真实采样驱动。 const factor = level > previous ? 0.72 : 0.42; return previous + (level - p…``。
 
    **主要协作调用**：``nextLevels.map``。
 
@@ -346,7 +346,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
       调用方传入的 ``stream`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    ``{ onWaveform, waveformBars = DEFAULT_WAVEFORM_BARS, }``（默认值 ``{}``）
-      调用方传入的 `` onWaveform, waveformBars = DEFAULT_WAVEFORM_BARS, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``onWaveform, waveformBars = DEFAULT_WAVEFORM_BARS,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -363,8 +363,38 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/utils/voiceRecorder.js:9969:12880:FUNCTION
+
+.. js:function:: createRealtimePcm16kStreamer(stream, { onPcmChunk, onWaveform, onSpeechStart, onSpeechEnd, waveformBars = 28, vadThreshold = 0.018, vadS…)
+
+   创建与 ``Realtime Pcm16k Streamer`` 相关的数据或状态。
+
+   **性质**：异步函数；导出 API；源码第 ``294``—``374`` 行。
+
+   **参数**
+
+   ``stream``
+      调用方传入的 ``stream`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``{ onPcmChunk, onWaveform, onSpeechStart, onSpeechEnd, waveformBars = 28, vadThreshold = 0.018, vadS…``（默认值 ``{}``）
+      调用方传入的 ``onPcmChunk, onWaveform, onSpeechStart, onSpeechEnd, waveformBars = 28, vadThreshold = 0.018, vadS…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``{stop, get speechActive() { return speechActive; }}``。
+
+   **副作用**
+
+   * 创建或控制浏览器实时媒体资源。
+
+   **显式抛出**：``new Error('This browser does not support Web Audio recording.')``。
+
+   **主要协作调用**：``getAudioContextClass``、``stopStream``、``audioContext.resume``、``audioContext.createMediaStreamSource``、``audioContext.createScriptProcessor``、``createSilentWaveformLevels``、``source.connect``、``processor.connect``。
+
+   **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -550,3 +580,68 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
 **主要协作调用**：``cleanup``、``onWaveform``、``createSilentWaveformLevels``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/utils/voiceRecorder.js:10843:12387:FUNCTION
+
+.. rubric:: ``anonymous callback @ 320``
+
+.. code-block:: javascript
+
+   anonymous callback @ 320(event)
+
+实现 ``anonymous`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``320``—``359`` 行；所属函数 ``createRealtimePcm16kStreamer``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+**主要协作调用**：``event.inputBuffer.getChannelData``、``encodePcm16k``、``Math.round``、``onPcmChunk``、``pcm16.buffer.slice``、``Math.sqrt``、``onSpeechStart``、``onSpeechEnd``、``smoothWaveformLevels``、``buildWaveformLevels``、``onWaveform``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/utils/voiceRecorder.js:12486:12812:FUNCTION
+
+.. rubric:: ``stop``
+
+.. code-block:: javascript
+
+   async stop()
+
+停止与 ``stop`` 相关的数据或状态。
+
+**性质**：异步局部函数；源码第 ``363``—``371`` 行；所属函数 ``createRealtimePcm16kStreamer``。
+
+**参数**
+
+无。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+**主要协作调用**：``processor.disconnect``、``source.disconnect``、``stopStream``、``audioContext.close``、``onWaveform``、``createSilentWaveformLevels``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/utils/voiceRecorder.js:12832:12876:FUNCTION
+
+.. rubric:: ``speechActive``
+
+.. code-block:: javascript
+
+   speechActive()
+
+实现 ``speechActive`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``373``—``373`` 行；所属函数 ``createRealtimePcm16kStreamer``。
+
+**参数**
+
+无。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``speechActive``。
