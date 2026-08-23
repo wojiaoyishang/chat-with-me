@@ -4,7 +4,7 @@ import {generateUUID, getLocalSetting, setLocalSetting, TTS_LOCAL_SETTING_KEYS} 
 import {emitEvent} from '@/context/useEventStore.jsx';
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
-import {getSpeakableSegments} from '../../ui/message/utils/speechContent.js';
+import {getSpeakableSegments, getStreamingSpeakableSegments} from '../../ui/message/utils/speechContent.js';
 import {
     TTS_HIGHLIGHT_MAX_SYNC_WAIT_MS,
     TTS_HIGHLIGHT_MIN_CURRENT_TIME,
@@ -388,6 +388,10 @@ export default function useChatSpeech({
     const backendSpeechAudioRef = useRef(createBackendSpeechAudioState());
     const speechSegmentCacheRef = useRef(createSpeechSegmentCacheState());
     const messageSpeechCacheRef = useRef(new Map());
+    // Streaming TTS is a thin session layer over the existing browser/backend
+    // speech controllers. It only decides when stable message segments may be
+    // appended; synthesis, playback, seek, cancel and barge-in remain unchanged.
+    const streamingSpeechRef = useRef(null);
     const playNextBackendSpeechSegmentRef = useRef(null);
     const [speechAutoFollowEnabled, setSpeechAutoFollowEnabled] = useState(false);
     const [speechSubtitlesEnabled, setSpeechSubtitlesEnabled] = useState(getStoredSpeechSubtitlesEnabled);
@@ -1496,8 +1500,17 @@ export default function useChatSpeech({
         releaseMessageSpeechCaches();
     }, [clearBackendSpeechAudio, releaseMessageSpeechCaches]);
 
-    const cancelActiveSpeech = useCallback((notifyBackend = false) => {
+    const cancelActiveSpeech = useCallback((notifyBackend = false, {preserveStreamingSession = false} = {}) => {
         const currentController = speechControllerRef.current;
+        const streamingSession = streamingSpeechRef.current;
+        if (
+            !preserveStreamingSession
+            && streamingSession?.started
+            && streamingSession.requestId
+            && streamingSession.requestId === currentController?.requestId
+        ) {
+            streamingSession.cancelled = true;
+        }
         currentController.cancelled = true;
         // Invalidate every native/browser callback before touching SpeechSynthesis.
         // cancel() may synchronously or asynchronously dispatch stale onend/onerror
@@ -1750,7 +1763,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         return matchingVoices.find(item => item.localService) || matchingVoices[0] || null;
     }, [selectedBrowserSpeechVoiceURI]);
 
-    const speakWithBrowser = useCallback(({messageId, requestId, segments, speechConfig, startSegmentPosition = 0, restartReason = null}) => {
+    const speakWithBrowser = useCallback(({messageId, requestId, segments, speechConfig, startSegmentPosition = 0, restartReason = null, streaming = false}) => {
         if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
             toast.error(t('browser_speech_not_supported'));
             return false;
@@ -1901,6 +1914,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
 
         const controller = {
             requestId,
+            messageId,
             engine: 'browser',
             cancelled: false,
             paused: false,
@@ -1933,6 +1947,10 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             lastSeekStartedAt: 0,
             lastSeekTargetPosition: -1,
             finalSpeakableSegmentPosition,
+            streaming: Boolean(streaming),
+            streamingFinalized: !streaming,
+            appendSegments: null,
+            finalizeStreaming: null,
             completedSegmentPositions: new Set(),
             nativeStartRetryCounts: new Map(),
             nativeRestartMode: 'prefetch',
@@ -1974,6 +1992,19 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
 
         const finish = () => {
             if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return;
+            if (controller.streaming && !controller.streamingFinalized) {
+                setSpeechState(prev => ({
+                    ...prev,
+                    status: prev.status === 'paused' ? 'paused' : 'loading',
+                    generationStatus: 'generating',
+                    generationPhase: 'stream-wait',
+                    playbackStatus: 'waiting',
+                    currentSegmentId: null,
+                    currentSegmentIndex: -1,
+                    currentSegmentPosition: -1,
+                }));
+                return;
+            }
             const requiresCompletedFinalSegment = controller.finalSpeakableSegmentPosition >= safeStartPosition;
             if (
                 requiresCompletedFinalSegment &&
@@ -2766,6 +2797,53 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             }
         };
 
+        controller.appendSegments = (incomingSegments = []) => {
+            if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return false;
+            const appendable = Array.isArray(incomingSegments) ? incomingSegments.filter(Boolean) : [];
+            if (appendable.length === 0) return false;
+
+            const startPosition = segments.length;
+            appendable.forEach((segment, offset) => {
+                segments.push({...segment, index: startPosition + offset, position: startPosition + offset});
+            });
+            controller.finalSpeakableSegmentPosition = segments.reduce((lastPosition, segment, position) => (
+                buildBrowserUtteranceText(segment) ? position : lastPosition
+            ), -1);
+
+            setSpeechState(prev => ({
+                ...prev,
+                status: prev.status === 'paused' ? 'paused' : 'loading',
+                segments: [...segments],
+                totalSegments: segments.length,
+                generationStatus: 'generating',
+                generationPhase: 'stream-append',
+                generationPercent: segments.length > 0
+                    ? Math.min(((prev.generatedSegmentPosition ?? -1) + 1) / segments.length, 1)
+                    : 0,
+                bufferPercent: segments.length > 0
+                    ? Math.min(((prev.bufferedSegmentPosition ?? -1) + 1) / segments.length, 1)
+                    : 0,
+                playbackPercent: segments.length > 0
+                    ? Math.min(Math.max((prev.playbackSegmentPosition ?? -1) + 1, 0) / segments.length, 1)
+                    : 0,
+            }));
+
+            if (!controller.paused) {
+                if (controller.prefetchEnabled) queueBrowserSpeechCandidates();
+                else schedulePlayNext(0);
+            }
+            return true;
+        };
+        controller.finalizeStreaming = () => {
+            if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return false;
+            controller.streamingFinalized = true;
+            setSpeechState(prev => ({...prev, generationPhase: 'stream-final'}));
+            if (!controller.paused) {
+                if (controller.prefetchEnabled) queueBrowserSpeechCandidates();
+                else schedulePlayNext(0);
+            }
+            return true;
+        };
         controller.playNext = () => schedulePlayNext(0);
         emitBrowserSpeakMessage({startSegmentPosition: safeStartPosition, restartReason});
         controller.playFrom = (targetIndex) => {
@@ -2899,7 +2977,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
 
         const previousRequestId = cache.activeRequestId;
         const requestId = preferredRequestId || generateUUID();
-        if (previousRequestId && previousRequestId !== requestId) {
+        if (previousRequestId && previousRequestId !== requestId && cache.inFlightPositions.size > 0) {
             emitEvent({
                 event: 'speech.cancel',
                 payload: {
@@ -2988,6 +3066,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                                                   speechConfig,
                                                   startSegmentPosition = 0,
                                                   restartReason = null,
+                                                  streaming = false,
                                               }) => {
         cancelActiveSpeech(false);
 
@@ -3039,6 +3118,10 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             currentIndex: -1,
             startSegmentPosition: safeStartPosition,
             playToken: 0,
+            streaming: Boolean(streaming),
+            streamingFinalized: !streaming,
+            appendSegments: null,
+            finalizeStreaming: null,
         };
 
         backendSpeechAudioRef.current = {
@@ -3099,6 +3182,54 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             bufferPercent: segments?.length > 0 ? Math.min((cachedThrough + 1) / segments.length, 1) : 0,
             playbackPercent: segments?.length > 0 ? safeStartPosition / segments.length : 0,
         });
+
+        const controller = speechControllerRef.current;
+        controller.appendSegments = (incomingSegments = []) => {
+            if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return false;
+            const appendable = Array.isArray(incomingSegments) ? incomingSegments.filter(Boolean) : [];
+            if (appendable.length === 0) return false;
+            const startPosition = segments.length;
+            appendable.forEach((segment, offset) => {
+                segments.push({...segment, index: startPosition + offset, position: startPosition + offset});
+            });
+            backendSpeechAudioRef.current.totalSegments = segments.length;
+            setSpeechState(prev => ({
+                ...prev,
+                status: prev.status === 'paused' ? 'paused' : 'loading',
+                segments: [...segments],
+                totalSegments: segments.length,
+                generationStatus: 'generating',
+                generationPhase: 'stream-append',
+            }));
+
+            // Never cancel an in-flight synthesis just because the LLM produced
+            // another sentence. The existing request completes first; speech.ended
+            // requests the newly appended tail.
+            if (speechSegmentCacheRef.current.inFlightPositions.size === 0) {
+                requestMissingBackendSpeechSegments({
+                    startPosition,
+                    restartReason: 'stream-append',
+                });
+            }
+            window.setTimeout(() => playNextBackendSpeechSegmentRef.current?.(), 0);
+            return true;
+        };
+        controller.finalizeStreaming = () => {
+            if (controller.cancelled || speechControllerRef.current.requestId !== requestId) return false;
+            controller.streamingFinalized = true;
+            setSpeechState(prev => ({...prev, generationPhase: 'stream-final'}));
+            if (speechSegmentCacheRef.current.inFlightPositions.size === 0) {
+                const firstMissing = segments.findIndex((_, position) => !speechSegmentCacheRef.current.entries.has(position));
+                if (firstMissing >= 0) {
+                    requestMissingBackendSpeechSegments({
+                        startPosition: firstMissing,
+                        restartReason: 'stream-final',
+                    });
+                }
+            }
+            window.setTimeout(() => playNextBackendSpeechSegmentRef.current?.(), 0);
+            return true;
+        };
 
         requestMissingBackendSpeechSegments({
             startPosition: safeStartPosition,
@@ -3302,12 +3433,26 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         const messageId = currentSpeech.messageId;
         const engine = currentController.engine || currentSpeech.engine || 'browser';
         const wasPaused = currentController.paused || currentSpeech.status === 'paused';
+        const streamingSession = streamingSpeechRef.current;
+        const preserveStreaming = Boolean(
+            currentController.streaming
+            && !currentController.streamingFinalized
+            && streamingSession
+            && !streamingSession.cancelled
+            && !streamingSession.finalized
+            && streamingSession.requestId === currentController.requestId
+        );
 
         // 速率变化采用硬重启：旧音频的速度、时长、已缓存队列都不再可信，必须丢弃并重合成。
-        // 这样不会出现前端 Audio.playbackRate 与后端 TTS 真实语速不一致的问题。
-        cancelActiveSpeech(true);
+        // 若当前是仍在增长的 streaming session，只替换底层播放 request；逻辑 session
+        // 和已经接受的稳定 segment 保留，后续 LLM segment 继续 append 到新 controller。
+        cancelActiveSpeech(true, {preserveStreamingSession: preserveStreaming});
 
         const newRequestId = generateUUID();
+        if (preserveStreaming) {
+            streamingSession.requestId = newRequestId;
+            streamingSession.speechConfig = nextSpeechConfig;
+        }
         if (engine === 'browser') {
             const success = speakWithBrowser({
                 messageId,
@@ -3316,7 +3461,11 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 speechConfig: nextSpeechConfig,
                 startSegmentPosition: restartPosition,
                 restartReason: 'rate-change',
+                streaming: preserveStreaming,
             });
+            if (!success && preserveStreaming) {
+                streamingSession.cancelled = true;
+            }
             if (success && wasPaused) {
                 window.setTimeout(() => pauseActiveSpeech(), 0);
             }
@@ -3331,6 +3480,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             speechConfig: nextSpeechConfig,
             startSegmentPosition: restartPosition,
             restartReason: 'rate-change',
+            streaming: preserveStreaming,
         });
 
         if (wasPaused) {
@@ -3398,18 +3548,36 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             ...(currentController.speechConfig || {}),
             browserVoice: nextVoiceURI,
         };
+        const streamingSession = streamingSpeechRef.current;
+        const preserveStreaming = Boolean(
+            currentController.streaming
+            && !currentController.streamingFinalized
+            && streamingSession
+            && !streamingSession.cancelled
+            && !streamingSession.finalized
+            && streamingSession.requestId === currentController.requestId
+        );
 
-        cancelActiveSpeech(true);
+        cancelActiveSpeech(true, {preserveStreamingSession: preserveStreaming});
 
+        const newRequestId = generateUUID();
+        if (preserveStreaming) {
+            streamingSession.requestId = newRequestId;
+            streamingSession.speechConfig = nextSpeechConfig;
+        }
         const success = speakWithBrowser({
             messageId: currentSpeech.messageId,
-            requestId: generateUUID(),
+            requestId: newRequestId,
             segments,
             speechConfig: nextSpeechConfig,
             startSegmentPosition: restartPosition,
             restartReason: 'voice-change',
+            streaming: preserveStreaming,
         });
 
+        if (!success && preserveStreaming) {
+            streamingSession.cancelled = true;
+        }
         if (success && wasPaused) {
             window.setTimeout(() => pauseActiveSpeech(), 0);
         }
@@ -3573,6 +3741,184 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         return true;
     }, [advancedSettingsValues, cancelActiveSpeech, requestBackendSpeech, selectedBrowserSpeechVoiceURI, speakWithBrowser]);
 
+    const beginStreamingSpeech = useCallback(({messageId, engine, options = {}, turnId = null} = {}) => {
+        const resolvedMessageId = String(messageId || '').trim();
+        if (!resolvedMessageId) return false;
+
+        const previousSession = streamingSpeechRef.current;
+        if (previousSession?.messageId && previousSession.messageId !== resolvedMessageId) {
+            previousSession.cancelled = true;
+            if (
+                previousSession.started
+                && speechControllerRef.current?.requestId === previousSession.requestId
+            ) {
+                cancelActiveSpeech(true);
+            }
+        }
+
+        const persistedRate = getStoredSpeechRate();
+        const speechConfig = {
+            rate: persistedRate,
+            speakRate: persistedRate,
+            browserVoice: selectedBrowserSpeechVoiceURI || getStoredBrowserSpeechVoiceURI(),
+            ...options,
+        };
+        const resolvedEngine = engine || advancedSettingsValues.speakEngine || 'browser';
+        const message = messagesRef.current?.[resolvedMessageId];
+
+        streamingSpeechRef.current = {
+            messageId: resolvedMessageId,
+            turnId: turnId || null,
+            requestId: generateUUID(),
+            engine: resolvedEngine,
+            speechConfig,
+            acceptedSegments: [],
+            started: false,
+            finalizeRequested: false,
+            finalized: false,
+            cancelled: false,
+            disabled: message?.allowSpeak === false,
+            diverged: false,
+        };
+        return message?.allowSpeak !== false;
+    }, [advancedSettingsValues.speakEngine, cancelActiveSpeech, messagesRef, selectedBrowserSpeechVoiceURI]);
+
+    const syncStreamingSpeech = useCallback(() => {
+        const session = streamingSpeechRef.current;
+        if (!session || session.cancelled || session.finalized) return false;
+
+        const message = messagesRef.current?.[session.messageId];
+        if (!message) return false;
+
+        // Eligibility is decided by the pre-created Message contract. Unknown
+        // legacy/intermediate snapshots wait; an explicit false permanently keeps
+        // this streaming session silent.
+        if (message.allowSpeak === false) {
+            session.disabled = true;
+            if (session.started && speechControllerRef.current?.requestId === session.requestId) {
+                cancelActiveSpeech(true);
+            }
+            return false;
+        }
+        if (message.allowSpeak !== true) return false;
+        session.disabled = false;
+
+        // turn.completed is a control-lane signal and may overtake the final
+        // message.* callback. readonly=false is the local stream barrier proving
+        // that the terminal message snapshot has caught up before the trailing
+        // incomplete sentence is flushed to TTS.
+        const finalBarrierReached = session.finalizeRequested && message.readonly === false;
+        const candidates = getStreamingSpeakableSegments(
+            message,
+            session.messageId,
+            {final: finalBarrierReached},
+        );
+        const accepted = session.acceptedSegments;
+
+        const prefixMatches = accepted.every((segment, position) => (
+            candidates[position]
+            && String(candidates[position].text || '') === String(segment.text || '')
+        ));
+        if (!prefixMatches) {
+            // Stable segments are append-only by contract. Replacement rewrites or
+            // provider content resets must never make already-heard speech replay.
+            session.diverged = true;
+            return false;
+        }
+
+        const newSegments = candidates.slice(accepted.length);
+        if (newSegments.length > 0) {
+            if (!session.started) {
+                const initialSegments = newSegments.map(segment => ({...segment}));
+                session.started = true;
+                const success = session.engine === 'browser'
+                    ? speakWithBrowser({
+                        messageId: session.messageId,
+                        requestId: session.requestId,
+                        segments: initialSegments,
+                        speechConfig: session.speechConfig,
+                        streaming: true,
+                    })
+                    : (requestBackendSpeech({
+                        messageId: session.messageId,
+                        requestId: session.requestId,
+                        segments: initialSegments,
+                        engine: session.engine,
+                        speechConfig: session.speechConfig,
+                        streaming: true,
+                    }), true);
+
+                if (!success) {
+                    session.started = false;
+                    return false;
+                }
+                session.acceptedSegments = candidates.map(segment => ({...segment}));
+            } else {
+                const controller = speechControllerRef.current;
+                if (controller?.requestId !== session.requestId || typeof controller.appendSegments !== 'function') {
+                    return false;
+                }
+                if (controller.appendSegments(newSegments.map(segment => ({...segment})))) {
+                    session.acceptedSegments = candidates.map(segment => ({...segment}));
+                }
+            }
+        }
+
+        if (finalBarrierReached && !session.finalized) {
+            session.finalized = true;
+            if (session.started) {
+                const controller = speechControllerRef.current;
+                if (controller?.requestId === session.requestId) {
+                    controller.finalizeStreaming?.();
+                }
+            }
+        }
+        return newSegments.length > 0 || finalBarrierReached;
+    }, [cancelActiveSpeech, messagesRef, requestBackendSpeech, speakWithBrowser]);
+
+    const requestStreamingSpeechFinalize = useCallback(({messageId, turnId = null} = {}) => {
+        const session = streamingSpeechRef.current;
+        if (!session || session.cancelled) return false;
+        if (messageId && String(messageId) !== session.messageId) return false;
+        if (turnId && session.turnId && String(turnId) !== String(session.turnId)) return false;
+        session.finalizeRequested = true;
+        return syncStreamingSpeech();
+    }, [syncStreamingSpeech]);
+
+    const cancelStreamingSpeech = useCallback(({messageId = null, turnId = null, cancelPlayback = true} = {}) => {
+        const session = streamingSpeechRef.current;
+        if (!session) return false;
+        if (messageId && String(messageId) !== session.messageId) return false;
+        if (turnId && session.turnId && String(turnId) !== String(session.turnId)) return false;
+
+        session.cancelled = true;
+        if (
+            cancelPlayback
+            && session.started
+            && speechControllerRef.current?.requestId === session.requestId
+        ) {
+            cancelActiveSpeech(true);
+        }
+        streamingSpeechRef.current = null;
+        return true;
+    }, [cancelActiveSpeech]);
+
+    const getStreamingSpeechSnapshot = useCallback(() => {
+        const session = streamingSpeechRef.current;
+        if (!session) return null;
+        return {
+            messageId: session.messageId,
+            turnId: session.turnId,
+            requestId: session.requestId,
+            acceptedSegmentCount: session.acceptedSegments?.length || 0,
+            started: Boolean(session.started),
+            finalizeRequested: Boolean(session.finalizeRequested),
+            finalized: Boolean(session.finalized),
+            cancelled: Boolean(session.cancelled),
+            disabled: Boolean(session.disabled),
+        };
+    }, []);
+
     const applyBackendSpeechPlaybackSegment = useCallback((payload = {}) => {
         const segmentPosition = resolveBackendPayloadSegmentPosition(payload, getBackendSpeechSegmentPosition(payload, -1));
         const segmentIndex = resolveBackendPayloadSegmentIndex(payload, getBackendSpeechSegmentIndex(payload, segmentPosition));
@@ -3615,6 +3961,20 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
     ]);
 
     const finishBackendSpeechPlayback = useCallback((requestId) => {
+        const controller = speechControllerRef.current;
+        if (controller?.requestId === requestId && controller.streaming && !controller.streamingFinalized) {
+            setSpeechState(prev => ({
+                ...prev,
+                status: prev.status === 'paused' ? 'paused' : 'loading',
+                generationStatus: 'generating',
+                generationPhase: 'stream-wait',
+                playbackStatus: 'waiting',
+                currentSegmentId: null,
+                currentSegmentIndex: -1,
+                currentSegmentPosition: -1,
+            }));
+            return;
+        }
         setSpeechState(prev => ({
             ...prev,
             status: 'ended',
@@ -3666,6 +4026,16 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         if (!nextItem) {
             const total = getBackendSpeechTotalSegments();
             if (nextPosition >= total) {
+                if (controller.streaming && !controller.streamingFinalized) {
+                    setSpeechState(prev => ({
+                        ...prev,
+                        status: prev.status === 'paused' ? 'paused' : 'loading',
+                        generationStatus: 'generating',
+                        generationPhase: 'stream-wait',
+                        playbackStatus: 'waiting',
+                    }));
+                    return;
+                }
                 if (backendState.generationEnded || speechSegmentCacheRef.current.inFlightPositions.size === 0) {
                     finishBackendSpeechPlayback(requestId);
                 }
@@ -4334,19 +4704,29 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
             case 'speech.ended': {
                 backendSpeechAudioRef.current.generationEnded = true;
                 cache.inFlightPositions.clear();
-                const allCached = cache.entries.size >= getBackendSpeechTotalSegments();
+                const controller = speechControllerRef.current;
+                const controllerSegments = controller?.segments || [];
+                const firstMissing = controllerSegments.findIndex((_, position) => !cache.entries.has(position));
+                const allCached = firstMissing < 0;
                 logSpeechCache('backend-generation-end', {
-                    sessionId: speechControllerRef.current.requestId,
+                    sessionId: controller.requestId,
                     requestId,
                     allCached,
                     cachedPositions: getSortedSpeechCachePositions(cache),
                 });
                 setSpeechState(prev => ({
                     ...prev,
-                    generationStatus: allCached ? 'ended' : 'idle',
-                    generationPhase: 'end',
-                    generationPercent: allCached ? 1 : prev.generationPercent,
+                    generationStatus: allCached && (!controller.streaming || controller.streamingFinalized) ? 'ended' : 'generating',
+                    generationPhase: allCached ? (controller.streaming && !controller.streamingFinalized ? 'stream-wait' : 'end') : 'stream-append',
+                    generationPercent: allCached && (!controller.streaming || controller.streamingFinalized) ? 1 : prev.generationPercent,
                 }));
+
+                if (controller.streaming && firstMissing >= 0) {
+                    requestMissingBackendSpeechSegments({
+                        startPosition: firstMissing,
+                        restartReason: controller.streamingFinalized ? 'stream-final' : 'stream-append',
+                    });
+                }
                 playNextBackendSpeechSegment();
                 reply?.({success: true});
                 break;
@@ -4387,6 +4767,7 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         mapBackendSpeechPayload,
         normalizeSpeechRate,
         playNextBackendSpeechSegment,
+        requestMissingBackendSpeechSegments,
         t,
     ]);
 
@@ -4399,6 +4780,11 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         handleSpeechTextClick,
         handleSpeakMessageRequest,
         handleSpeakContentRequest,
+        beginStreamingSpeech,
+        syncStreamingSpeech,
+        requestStreamingSpeechFinalize,
+        cancelStreamingSpeech,
+        getStreamingSpeechSnapshot,
         handleBackendSpeechEvent,
         cancelActiveSpeech,
         pauseActiveSpeech,

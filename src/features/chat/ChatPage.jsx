@@ -967,6 +967,11 @@ function ChatPage({
         handleSpeechTextClick,
         handleSpeakMessageRequest,
         handleSpeakContentRequest,
+        beginStreamingSpeech,
+        syncStreamingSpeech,
+        requestStreamingSpeechFinalize,
+        cancelStreamingSpeech,
+        getStreamingSpeechSnapshot,
         handleBackendSpeechEvent,
         cancelActiveSpeech,
         pauseActiveSpeech,
@@ -996,11 +1001,21 @@ function ChatPage({
     const realtimeVoice = useRealtimeVoiceConversation({
         conversationId,
         speechState,
-        handleSpeakMessageRequest,
+        beginStreamingSpeech,
+        requestStreamingSpeechFinalize,
+        cancelStreamingSpeech,
+        getStreamingSpeechSnapshot,
         pauseActiveSpeech,
         resumeActiveSpeech,
         cancelActiveSpeech,
     });
+
+    // Message deltas, replacement deltas and the final readonly=false snapshot all
+    // converge through the existing message state. Streaming TTS only needs one
+    // synchronization point instead of adding another websocket/event pipeline.
+    useEffect(() => {
+        syncStreamingSpeech();
+    }, [messages, syncStreamingSpeech]);
 
     const loadStories = useCallback(async () => {
         if (!conversationId) {
@@ -1359,6 +1374,9 @@ function ChatPage({
         };
 
         try {
+            // Desktop Realtime Voice is an embedded right dock. Reuse the existing
+            // conversation sidebar slot instead of squeezing two right-side panels.
+            setIsSidebarOpen(false);
             if (conversationId) {
                 await startForConversation(conversationId);
                 return;
@@ -3087,7 +3105,7 @@ function ChatPage({
                 }
             >
                 <div
-                    className="flex-1 flex flex-col relative h-full w-full overflow-hidden"
+                    className="flex-1 min-w-0 flex flex-col relative h-full w-full overflow-hidden"
                     ref={chatPageRef}
                     data-chat-page-root="true"
                     data-cwm-conversation-id={conversationId || ''}
@@ -3238,14 +3256,6 @@ function ChatPage({
                         />
                     </div>
 
-                    <RealtimeVoiceSurface
-                        state={realtimeVoice.state}
-                        onEnd={() => realtimeVoice.stop()}
-                        onMinimize={() => realtimeVoice.setMinimized(true)}
-                        onRestore={() => realtimeVoice.setMinimized(false)}
-                        onToggleMute={realtimeVoice.toggleMute}
-                    />
-
                     <RuntimeInspectorDialog
                         open={runtimeInspectorOpen}
                         document={runtimeInspectorDocument}
@@ -3264,6 +3274,14 @@ function ChatPage({
                         </span>
                     </footer>
                 </div>
+
+                <RealtimeVoiceSurface
+                    state={realtimeVoice.state}
+                    onEnd={() => realtimeVoice.stop()}
+                    onMinimize={() => realtimeVoice.setMinimized(true)}
+                    onRestore={() => realtimeVoice.setMinimized(false)}
+                    onToggleMute={realtimeVoice.toggleMute}
+                />
 
                 <RightSidebar
                     isOpen={isSidebarOpen}

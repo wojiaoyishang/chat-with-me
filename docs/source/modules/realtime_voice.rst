@@ -28,7 +28,8 @@ Realtime Voice 前端模块
    :no-index:
 
 ``createRealtimePcm16kStreamer``
-   从麦克风持续生成 16 kHz PCM16 Chunk 和本地 RMS/VAD Candidate，不保存完整通话音频。
+   从麦克风持续生成 16 kHz PCM16 Chunk，不保存完整通话音频；同一 MediaStream 交给 Silero V5 做
+   acoustic speech detection，RMS 仅用于波形。Silero 只产生 barge probe，Candidate 仍由 ASR 证据提升。
 
 
 ``RealtimeVoiceTransport.connect``
@@ -43,5 +44,5 @@ Realtime Voice 前端模块
    事件同步 ChatBox；启动阶段失败且未提交 Turn 时回退为 ``normal``。
 
 ``useRealtimeVoiceConversation.start``
-   使用 Lifecycle Token 约束 Connect、协议协商和麦克风授权三个异步阶段。任何阶段超时、失败或被用户
-   手动结束时，晚到结果都会被丢弃，媒体资源被关闭，并恢复尚未提交 Turn 的 Composer 状态。
+   使用 Lifecycle Token 约束麦克风验证、Media Ticket、Connect 与协议协商。首次启动先取得物理 Track 并等待
+   Web Audio 首帧，再建立媒体通道；任何阶段 Track 结束、超时、失败或被用户手动结束时，晚到结果都会被丢弃。

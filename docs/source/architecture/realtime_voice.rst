@@ -7,11 +7,18 @@ Turn 与 Runtime Inspector。
 界面策略
 --------------------------------------------------------------------------------
 
-桌面端使用大型 Focus Surface；移动端使用 ``100dvh`` 沉浸式全屏。用户可以最小化 Voice Surface
-返回 Chat，Realtime Session 和麦克风继续运行。
+桌面端将 Voice Surface 作为 Chat 根布局中的右侧 Dock 直接嵌入，而不是再覆盖一层居中的 Modal。
+Chat 历史继续留在左侧，Voice Dock 使用固定的窄侧栏语义呈现当前通话状态、波形、最近一句和通话控制，
+交互形态接近视频通话侧窗。启动 Voice 时会先关闭现有 Conversation Settings 右栏，避免同时挤压两块右侧面板。
 
-Voice Surface 只突出四类信息：当前状态、实时转写、当前语音波形/交互以及结束/返回控制。Conversation
-历史、Widget 与 Tool 结果仍由 Chat Surface 承担。
+移动端仍使用 ``100dvh`` 沉浸式全屏，并在右上角保留缩小按钮；缩小后只显示浮动恢复入口。桌面端同样
+允许缩小/恢复，但非缩小时始终参与 Flex 布局并占用真实宽度，因此不会遮住 Chat 内容。Realtime Session
+和麦克风在最小化期间继续运行。
+
+Voice Surface 只突出四类信息：当前状态、实时转写/最近一句、当前语音波形/交互以及结束/返回控制。
+Conversation 历史、Widget 与 Tool 结果仍由 Chat Surface 承担。``最近一句`` 只显示用户输入：讲话期间直接复用
+现有 ASR Partial Transcript，Final 后保留最后一条用户转写。Assistant Streaming TTS 不写入该区域，AI 是否正在
+讲话继续由 Surface 主状态和波形表达。这样 Voice Dock 不会同时重复 Chat 中已经可见的 Assistant 正文。
 
 协议指示器
 --------------------------------------------------------------------------------
@@ -22,7 +29,7 @@ Voice Surface 只突出四类信息：当前状态、实时转写、当前语音
 * ``HYBRID REALTIME / COMPATIBILITY / DEGRADED``；
 * Conversation Model 与 API 类型；
 * ASR streaming/batch、endpoint；
-* TTS browser/server after-turn；
+* TTS browser/server streaming-segments；
 * Barge-in Cursor Accuracy；
 * Fallback reason。
 
@@ -32,44 +39,87 @@ Voice Surface 只突出四类信息：当前状态、实时转写、当前语音
 ``RealtimeVoiceTransport`` 使用独立 ``/ws/realtime`` Binary WebSocket。``createRealtimePcm16kStreamer``
 持续输出 PCM16 16 kHz mono Chunk，不累计整个会话的音频。
 
-本地 VAD 只承担两项职责：
+Realtime streamer 不再用 RMS/连续帧阈值自己实现语音活动判断。它复用已经打开的同一个
+``MediaStream``，把 ``@ricky0123/vad-web`` 的 Silero V5 作为本地 Speech Detector；VAD 不再申请第二路
+麦克风，也不拥有 Track 生命周期。RMS 只保留给波形显示。
 
-#. AI 正在播放/思考时快速产生 Barge-in Candidate 并立即静音当前输出；Barge-in 使用更低的启动阈值和
-   单帧启动，普通 Listening 仍使用原来的保守阈值；
-#. Backend 协商为 ``client_vad/manual/batch`` 时，在 Speech End 发送 ``voice.input.commit``。
+Silero 只产生 ``barge probe``：AI 正在播放/思考时冻结当前 Playback Cursor，并把一次性的 probe metadata
+附在现有 ``voice.input.audio`` Media Frame（batch/client-VAD 还会在原 ``voice.input.commit`` 上兜底携带）。
+**Probe 本身不会暂停 TTS，也不会发送 ``voice.barge_in.candidate``。** 后端只有在既有 ASR Partial/Final
+已经产生可用文本，并满足 Provider 提供的 stability/confidence 条件时，才把 probe 提升成原有 Candidate，
+随后走 Confirmed/Rejected。整个判断不包含中文字符数、语气词白名单或语言专用词表。
+
+默认使用 Silero V5，当前调优值为 ``positiveSpeechThreshold=0.65``、``negativeSpeechThreshold=0.42``、
+``minSpeechMs=180``、``redemptionMs=420``、``preSpeechPadMs=120``。这些值只属于 acoustic detection，
+业务代码不要重新叠加一套 RMS VAD。
 
 .. important::
 
    本地 VAD 不是 Durable Turn Truth。真正的 User Message 只有收到 Backend/Provider Final Transcript 后
-   才创建。
+   才创建；真正的 Barge-in 也必须先有 ASR 证据。
+
+Assistant Message 前置契约
+--------------------------------------------------------------------------------
+
+Realtime Voice 不为 TTS 单独维护一份“可朗读配置”。标准 ``turn.start`` 在 Worker 开始生成之前就创建
+Assistant Placeholder，并由同一条 Message 一次性携带当前能够确定的完整前置契约：角色、树位置、
+显示名称/头像、附件初值、``readonly``、``allowRegenerate``，以及 ``allowFork`` / ``allowSpeak`` /
+``allowProgenerate`` 等能力。能力字段继续持久化在已有 ``extra_info`` 中并映射成前端 Message 属性，
+因此没有新增 Message Type、数据库表或专用 Voice Setting。
+
+``turn.started`` 只在该 Placeholder 已经持久化之后发出。控制 lane 可能比 ``message.created`` stream lane
+更早到前端，所以 Voice Runtime 可以先 arm 一个逻辑 Streaming Speech Session；真正开始朗读前仍必须等
+同一个 Message Snapshot 到达并明确 ``allowSpeak === true``。``allowSpeak === false`` 从第一段开始就阻止
+TTS，而不是等整条消息生成完成后再撤销。最终 Worker Patch 只补充正文、Replace、Tip、Audit 等必须到
+生成阶段才能得到的终态信息，不能用缺省能力值覆盖 Placeholder 已经确定的契约。
+
+流式 TTS
+--------------------------------------------------------------------------------
+
+Streaming TTS 是现有 ``useChatSpeech`` 的增量能力，不是第二套播放器。Realtime Voice 复用现有
+``turn.started``、Message stream、speech segment、Browser SpeechSynthesis、Backend ``speech.synthesize``、
+requestId/cache/cancel 与 Barge-in 机制：
+
+#. ``turn.started`` 提前 arm 当前 Assistant Message；
+#. ChatPage 原有 Message State 每次吸收 ``message.*`` 增量后调用同一个 Speech Runtime 同步；
+#. 只有已经形成稳定句号/问号/感叹号/分号或换行边界的 segment 才 append 到现有播放 Controller；
+#. 尚未闭合的尾句不会提前朗读，未闭合 fenced code block 也不会进入 TTS；
+#. ``turn.completed`` 只提出 finalize 请求，不能直接朗读本地尾巴。由于 control lane 可能超越 stream lane，
+   必须等该消息现有 ``readonly=false`` 终态 Patch 到达，确认本地 Message stream 已追平后再 flush 最后尾句。
+
+Browser TTS 在读完当前已生成 segment 后保留同一个 Controller 等待后续 append；Backend TTS 也继续
+使用原有分段合成与缓存。如果一批 ``speech.synthesize`` 仍在生成，新 segment 只进入已有 session，等
+``speech.ended`` 后再请求缺失尾段，不取消正在生成的前一批音频。用户修改语速或 Browser Voice 时只
+重启底层 request，并保留未结束的 Streaming Speech Session，后续 segment 仍继续 append。
 
 Barge-in
 --------------------------------------------------------------------------------
 
-Candidate 时前端立即冻结现有 ``useChatSpeech`` 播放并上报 segment 级 Playback Cursor。这里复用现有
-Speech Runtime，不新增第二套播放器：Backend ``<audio>`` 使用原 pause；Browser ``SpeechSynthesis`` 因
-``pause()`` 在不同浏览器上不保证立刻静音，所以 Candidate 会硬取消原生队列，但保留当前 Speech Session
-和恢复位置。
+Silero ``onSpeechRealStart`` 只冻结 segment 级 Playback Cursor 并建立本地 probe，不触碰播放器。这样
+键盘、风扇、扬声器残余回声即使偶尔被 acoustic detector 命中，也不会让 Browser TTS 重读当前句。
 
-前端在本地 Speech End 时复用同一个 ``voice.barge_in.candidate`` 事件发送 ``phase=speech_end``。后端的
-Rejected 的时间判断绝不能从 Speech Start 固定计时：batch/client-VAD 直接等待 ``commit`` 的 Final/Empty
-结果，不使用 wall-clock rejection；只有 provider-controlled streaming endpoint 需要兜底超时时，才从 Speech End
-开始计时。否则用户说得稍长或 ASR 稍慢就会错误恢复 TTS。前端也禁止在本地 VAD 仍处于 Speech Active 时
-执行 Rejected Resume。
+Streaming ASR 的 Partial/Final 一旦提供可用文本，后端才复用现有 ``voice.barge_in.candidate`` 把 probe
+提升为正式 Candidate。Candidate 到达前端后才暂停当前输出；后端紧接着按现有协议 Confirmed，普通 Agent Run
+被取消、当前 Streaming Speech Session 永久结束并持久化 Playback Cursor。Batch/client-VAD 没有 Partial 时，
+Speech End 仍复用 ``voice.input.commit``，Final/Empty 决定 Confirmed/Rejected。没有新增控制事件。
 
-后端 ASR 确认后返回 ``voice.barge_in.confirmed``，前端把该 Speech Session 永久取消；真正的误触发在
-Speech End 后仍没有 ASR 证据才会 ``rejected``，此时 Backend TTS 继续原 Audio，Browser TTS 复用已有
-``playFrom()`` 恢复逻辑。普通手动 Pause/Resume 仍保持原语义。
+Provider-controlled endpoint 的 Rejected 兜底仍只能从 Speech End 后计时；batch/client-VAD/manual 等待明确
+Final/Empty，不使用固定 Speech Start 超时。前端仅在真正收到 Candidate 后才可能恢复被暂停的 TTS，纯 probe
+被 Rejected 时不会调用 resume，因此不会因一次 acoustic false positive 重读整句。
 
 Playback Cursor 的 ``segmentPosition`` 使用零基位置，表示“第一个不能保证已经完整听到的 segment”。为了保持实时通道
 轻量，前端只额外带上该边界 segment 的短文本和总 segment 数，不回传整段已朗读前缀。Confirmed 后后端
 把边界写入原 Assistant Message 的 ``extra_info.voice_delivery``，并复用 ``message.created`` 全量消息快照
 刷新 Chat。完整 Assistant 生成结果不会被截断或覆盖。``SpeechOverlayHighlighter`` 复用同一 segment 定位
-逻辑，在消息正文对应位置持续显示“语音在此被打断”，因此刷新页面后仍能看到同一个交付边界。
+逻辑，在消息正文对应位置持续显示“语音在此被打断”，因此刷新页面后仍能看到同一个交付边界。这个标记是
+render-time overlay insertion，不是自定义 Card ``replace``，也不会改写 Message Content。Marker 会在相邻正文之间预留
+明确的视觉间隔，避免 Badge 覆盖第一句未交付文本。
 
 V1 Cursor 只有 segment 精度，因此 UI 和 Debug 面板必须标记 ``segment``，不能显示为精确字符位置。
-下一轮模型上下文也保留完整 Assistant 历史，但会附加持久化的 Voice Delivery Marker，明确说明边界之后
-的内容没有被交付给用户，不能假设用户已经听到。
+生成过程中打断时 ``segmentPosition`` 允许等于当时已知的稳定 segment 数；这只表示 TTS 已追平当前
+已生成前缀，不代表整条 Assistant Message 已交付。Cursor 因此同时携带 ``messageFinalized`` / ``streaming``，
+后端只有在 Message 已终态时才可以把“游标等于总 segment 数”解释成完整交付。下一轮模型上下文仍保留
+完整 Assistant 历史，但会附加持久化的 Voice Delivery Marker，明确说明边界之后的内容没有被交付给用户。
 
 
 麦克风静音
@@ -82,6 +132,18 @@ Surface 不能再进入 ``user_speaking``，也不能产生新的 Barge-in Candi
 若用户在一句话中途静音，前端复用现有 ``voice.input.commit`` 并携带 ``discard=true``。后端清空 batch buffer，
 Streaming ASR 则关闭当前 provider input session 并走原 ``start()`` 初始化路径建立一个干净 session；不会新增
 ``voice.input.mute`` 协议事件。恢复麦克风后继续使用同一个 streamer/session，新的 PCM 在 ASR 重连期间按原机制缓冲。
+
+Silero 资源加载
+--------------------------------------------------------------------------------
+
+前端依赖 ``@ricky0123/vad-web==0.0.30`` 与 ``onnxruntime-web==1.22.0``。默认从固定版本 jsDelivr 路径加载
+``silero_vad_v5.onnx``、VAD Worklet 和 ORT WASM/MJS；CDN 只提供模型/运行时静态资源，麦克风音频仍沿现有
+Realtime Media Channel 发送，不会上传到 CDN。需要 CSP/内网部署时可设置：
+
+* ``VITE_SILERO_VAD_ASSET_BASE``：包含 VAD Worklet 与 ``silero_vad_v5.onnx`` 的目录；
+* ``VITE_ONNXRUNTIME_WASM_BASE``：包含 ORT ``*.wasm`` / ``*.mjs`` 的目录。
+
+这两个目录可以直接由应用静态资源服务器托管，不需要改 Voice Runtime 逻辑。
 
 降级
 --------------------------------------------------------------------------------
@@ -115,10 +177,11 @@ Provider-specific 分支。
 启动阶段与超时
 --------------------------------------------------------------------------------
 
-Voice Surface 将启动过程拆成 ``connecting``、``negotiating``、``requesting_microphone`` 和
-``listening``。Realtime WebSocket 默认 8 秒连接截止时间，``voice.session.start`` 默认 20 秒 Reply
-截止时间。超时会进入可关闭的 Error Surface，不会永久停留在 Connecting。后端确认 Session 后，
-ASR Provider 可以继续在后台建连；开启协议指示器时会看到 ``connectionState=initializing/ready/fallback``。
+Voice Surface 将启动过程拆成 ``requesting_microphone``、``authorizing``、``connecting``、``negotiating`` 和
+``listening``。首次点击时先立即取得物理麦克风，并等待 Web Audio 的首个真实处理帧与 live Track；验证成功后
+暂时硬静音同一 Track，再请求 Media Ticket / 建立 WebSocket / 协商 Session，最后从一个干净的 Silero 边界恢复采集。
+这样不会出现媒体 Socket 已连接、但首次麦克风实际上没有产出数据的半初始化状态。Realtime WebSocket 默认 8 秒
+连接截止时间，``voice.session.start`` 默认 20 秒 Reply 截止时间；任一阶段 Track ``ended`` 都会终止当前 Voice Runtime。
 
 手动结束会立即关闭 Surface、停止麦克风和当前朗读；网络清理在后续完成。异步 Start 的晚到 Reply
 和麦克风授权结果会被 Lifecycle Token 丢弃，不能重新打开用户已经结束的 Session。
@@ -142,8 +205,8 @@ Realtime Voice 使用两条物理 WebSocket，但只让主 ``/ws`` 承担完整�
 前端先通过主 Event Runtime 请求 ``voice.media_ticket.request``；取得短期一次性 Ticket 后，才创建
 ``/ws/realtime?ticket=...`` 媒体连接。
 
-启动状态因此按顺序显示 ``authorizing``（正在授权媒体通道）、``connecting``（正在连接实时语音）、
-``negotiating``（正在协商语音协议）和 ``requesting_microphone``。如果 Ticket 请求失败，应优先检查主
+启动状态因此按顺序显示 ``requesting_microphone``（验证物理输入）、``authorizing``（正在授权媒体通道）、
+``connecting``（正在连接实时语音）和 ``negotiating``（正在协商语音协议）。如果 Ticket 请求失败，应优先检查主
 WebSocket/登录 Session；如果 Ticket 已签发而媒体握手失败，则检查 Realtime Gateway、反向代理和 Ticket
 消费日志。
 

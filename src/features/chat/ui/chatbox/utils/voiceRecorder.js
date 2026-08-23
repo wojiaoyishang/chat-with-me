@@ -1,3 +1,5 @@
+import {MicVAD} from '@ricky0123/vad-web';
+
 const TARGET_SAMPLE_RATE = 16000;
 const DEFAULT_WAVEFORM_BARS = 56;
 
@@ -296,43 +298,161 @@ export const createRealtimePcm16kStreamer = async (stream, {
     onWaveform,
     onSpeechStart,
     onSpeechEnd,
+    onInputEnded,
     waveformBars = 28,
-    vadThreshold = 0.018,
-    vadStartFrames = 2,
-    vadEndFrames = 7,
-    bargeInActive,
-    bargeInVadThreshold = 0.012,
-    bargeInVadStartFrames = 1,
+    vadOptions = {},
 } = {}) => {
     const AudioContextClass = getAudioContextClass();
     if (!AudioContextClass) {
         stopStream(stream);
         throw new Error('This browser does not support Web Audio recording.');
     }
+
+    const audioTracks = stream?.getAudioTracks?.() || [];
+    if (audioTracks.length === 0 || !audioTracks.some(track => track.readyState === 'live')) {
+        stopStream(stream);
+        throw new Error('麦克风没有可用的实时音轨，请检查录音设备后重试。');
+    }
+
     const audioContext = new AudioContextClass();
     if (audioContext.state === 'suspended') await audioContext.resume();
     const source = audioContext.createMediaStreamSource(stream);
     const processor = audioContext.createScriptProcessor(2048, 1, 1);
+
     let closed = false;
     let muted = false;
     let speechActive = false;
-    let speechFrames = 0;
-    let silenceFrames = 0;
     let samplePosition = 0;
     let levels = createSilentWaveformLevels(waveformBars);
+    let lastVadProbability = 0;
+    let peakVadProbability = 0;
+    let speechStartedAt = 0;
+    let readySettled = false;
+    let resolveReady;
+    let rejectReady;
+    const ready = new Promise((resolve, reject) => {
+        resolveReady = resolve;
+        rejectReady = reject;
+    });
 
-    const resetVad = () => {
-        speechActive = false;
-        speechFrames = 0;
-        silenceFrames = 0;
+    const markReady = () => {
+        if (readySettled) return;
+        readySettled = true;
+        resolveReady?.({sampleRate: audioContext.sampleRate});
+    };
+    const failReady = (message) => {
+        if (readySettled) return;
+        readySettled = true;
+        rejectReady?.(new Error(message));
+    };
+
+    const handleTrackEnded = () => {
+        const wasReady = readySettled;
+        failReady('麦克风音轨在录音初始化完成前已结束。');
+        if (wasReady && !closed) onInputEnded?.();
+    };
+    audioTracks.forEach(track => track.addEventListener?.('ended', handleTrackEnded));
+
+    const vadAssetBase = String(
+        import.meta.env.VITE_SILERO_VAD_ASSET_BASE
+        || 'https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.30/dist/'
+    );
+    const onnxAssetBase = String(
+        import.meta.env.VITE_ONNXRUNTIME_WASM_BASE
+        || 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/'
+    );
+
+    // The existing MediaStream remains the single microphone owner. MicVAD gets
+    // a view of that stream and its pause/resume hooks deliberately never stop or
+    // reacquire tracks; the surrounding realtime runtime owns that lifecycle.
+    let vad;
+    try {
+        vad = await MicVAD.new({
+            baseAssetPath: vadAssetBase,
+            onnxWASMBasePath: onnxAssetBase,
+            positiveSpeechThreshold: 0.65,
+            negativeSpeechThreshold: 0.42,
+            minSpeechMs: 180,
+            redemptionMs: 420,
+            preSpeechPadMs: 120,
+            ...vadOptions,
+            // Lifecycle-critical options are intentionally not overridable here.
+            // The surrounding realtime recorder is the only MediaStream owner.
+            model: 'v5',
+            startOnLoad: false,
+            getStream: async () => stream,
+            pauseStream: async () => {},
+            resumeStream: async () => stream,
+            submitUserSpeechOnPause: false,
+            onFrameProcessed: (probabilities, frame) => {
+                const probability = Math.max(0, Math.min(1, Number(probabilities?.isSpeech || 0)));
+                lastVadProbability = probability;
+                peakVadProbability = Math.max(peakVadProbability * 0.985, probability);
+                vadOptions?.onFrameProcessed?.(probabilities, frame);
+            },
+            onSpeechRealStart: () => {
+                if (closed || muted || speechActive) return;
+                speechActive = true;
+                speechStartedAt = Date.now();
+                onSpeechStart?.({
+                    detector: 'silero_v5',
+                    speechProbability: lastVadProbability,
+                    peakSpeechProbability: peakVadProbability,
+                    startedAt: speechStartedAt,
+                });
+                vadOptions?.onSpeechRealStart?.();
+            },
+            onSpeechEnd: (audio) => {
+                if (closed || muted) return;
+                const endedAt = Date.now();
+                const wasActive = speechActive;
+                speechActive = false;
+                if (wasActive) {
+                    onSpeechEnd?.({
+                        detector: 'silero_v5',
+                        speechProbability: lastVadProbability,
+                        peakSpeechProbability: peakVadProbability,
+                        durationMs: speechStartedAt ? Math.max(0, endedAt - speechStartedAt) : null,
+                        endedAt,
+                    });
+                }
+                speechStartedAt = 0;
+                peakVadProbability = 0;
+                vadOptions?.onSpeechEnd?.(audio);
+            },
+            onVADMisfire: () => {
+                speechActive = false;
+                speechStartedAt = 0;
+                peakVadProbability = 0;
+                vadOptions?.onVADMisfire?.();
+            },
+        });
+    } catch (error) {
+        audioTracks.forEach(track => track.removeEventListener?.('ended', handleTrackEnded));
+        try { processor.disconnect(); } catch (_) {}
+        try { source.disconnect(); } catch (_) {}
+        stopStream(stream);
+        try { await audioContext.close(); } catch (_) {}
+        throw error;
+    }
+
+    const setVadListening = (enabled) => {
+        if (closed) return;
+        const action = enabled ? vad.start() : vad.pause();
+        Promise.resolve(action).catch(error => {
+            console.warn('[CWM Voice] Silero VAD lifecycle failed', error);
+        });
     };
 
     const setMuted = (nextMuted) => {
         muted = Boolean(nextMuted);
-        stream?.getAudioTracks?.().forEach(track => {
+        audioTracks.forEach(track => {
             track.enabled = !muted;
         });
-        resetVad();
+        speechActive = false;
+        speechStartedAt = 0;
+        peakVadProbability = 0;
+        setVadListening(!muted);
         if (muted) {
             levels = createSilentWaveformLevels(waveformBars);
             onWaveform?.(levels, 0);
@@ -341,63 +461,44 @@ export const createRealtimePcm16kStreamer = async (stream, {
 
     processor.onaudioprocess = (event) => {
         if (closed) return;
+        markReady();
         const samples = event.inputBuffer.getChannelData(0);
         const pcm16 = encodePcm16k(samples, audioContext.sampleRate);
         const durationMs = Math.round((pcm16.length / TARGET_SAMPLE_RATE) * 1000);
         const timestampMs = Math.round((samplePosition / TARGET_SAMPLE_RATE) * 1000);
         samplePosition += pcm16.length;
 
-        // A muted microphone is a hard input boundary, not merely a transport
-        // optimization. Do not emit PCM, local VAD or waveform activity while
-        // muted; otherwise the Voice Surface still behaves as if it can hear.
         if (muted) return;
 
         onPcmChunk?.(pcm16.buffer.slice(pcm16.byteOffset, pcm16.byteOffset + pcm16.byteLength), {
             durationMs,
             timestampMs,
+            vad: {
+                detector: 'silero_v5',
+                speechProbability: lastVadProbability,
+                peakSpeechProbability: peakVadProbability,
+                speechActive,
+            },
         });
 
-        let sum = 0;
-        for (let i = 0; i < samples.length; i += 1) sum += samples[i] * samples[i];
-        const rms = samples.length ? Math.sqrt(sum / samples.length) : 0;
-        const bargeMode = Boolean(bargeInActive?.());
-        const activeThreshold = bargeMode
-            ? Math.min(vadThreshold, bargeInVadThreshold)
-            : vadThreshold;
-        const activeStartFrames = bargeMode
-            ? Math.min(vadStartFrames, Math.max(1, bargeInVadStartFrames))
-            : vadStartFrames;
-        const speaking = rms >= activeThreshold;
-        if (speaking) {
-            speechFrames += 1;
-            silenceFrames = 0;
-            if (!speechActive && speechFrames >= activeStartFrames) {
-                speechActive = true;
-                onSpeechStart?.({rms, timestampMs});
-            }
-        } else {
-            speechFrames = 0;
-            if (speechActive) {
-                silenceFrames += 1;
-                if (silenceFrames >= vadEndFrames) {
-                    speechActive = false;
-                    silenceFrames = 0;
-                    onSpeechEnd?.({rms, timestampMs});
-                }
-            }
-        }
-
         if (onWaveform) {
+            let sum = 0;
+            for (let i = 0; i < samples.length; i += 1) sum += samples[i] * samples[i];
+            const rms = samples.length ? Math.sqrt(sum / samples.length) : 0;
             levels = smoothWaveformLevels(levels, buildWaveformLevels(samples, waveformBars));
             onWaveform(levels, rms);
         }
     };
     source.connect(processor);
     processor.connect(audioContext.destination);
+    await vad.start();
 
     const stop = async () => {
         if (closed) return;
         closed = true;
+        failReady('麦克风采集已停止。');
+        audioTracks.forEach(track => track.removeEventListener?.('ended', handleTrackEnded));
+        try { await vad.destroy(); } catch (_) {}
         try { processor.disconnect(); } catch (_) {}
         try { source.disconnect(); } catch (_) {}
         stopStream(stream);
@@ -406,9 +507,18 @@ export const createRealtimePcm16kStreamer = async (stream, {
     };
 
     return {
+        ready,
         stop,
         setMuted,
+        get inputLive() { return audioTracks.some(track => track.readyState === 'live'); },
         get muted() { return muted; },
         get speechActive() { return speechActive; },
+        get vadStats() {
+            return {
+                detector: 'silero_v5',
+                speechProbability: lastVadProbability,
+                peakSpeechProbability: peakVadProbability,
+            };
+        },
     };
 };

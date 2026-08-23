@@ -193,13 +193,27 @@ export const resolveMarkdownSpeechContent = (content, replacement = {}, options 
     return result;
 };
 
-export const getSpeakableContent = (msg) => {
-    const raw = resolveMarkdownSpeechContent(
-        String(msg?.content || ''),
-        msg?.extraInfo?.replace || {},
-    );
+const stripIncompleteFencedCodeTail = (value) => {
+    const source = String(value || '');
+    const fencePattern = /^[ \t]*(?<fence>```|~~~)[^\n]*(?:\n|$)/gm;
+    let openFence = null;
+    let match;
 
-    return raw
+    while ((match = fencePattern.exec(source)) !== null) {
+        const marker = match.groups?.fence || match[0].trim().slice(0, 3);
+        if (!openFence) {
+            openFence = {marker, start: match.index};
+        } else if (openFence.marker === marker) {
+            openFence = null;
+        }
+        if (match[0].length === 0) fencePattern.lastIndex += 1;
+    }
+
+    return openFence ? source.slice(0, openFence.start) : source;
+};
+
+const cleanSpeakableMarkdown = (value, {preserveTrailingBoundary = false} = {}) => {
+    const cleaned = String(value || '')
         // 跳过 fenced code block；表格不跳过，只清理表格分隔行。
         .replace(FENCED_CODE_PATTERN, '\n')
         .replace(INLINE_CODE_PATTERN, '$1')
@@ -213,9 +227,24 @@ export const getSpeakableContent = (msg) => {
         .replace(HTML_TAG_PATTERN, ' ')
         .replace(/\r\n/g, '\n')
         .replace(/[ \t]+/g, ' ')
-        .replace(/\n{3,}/g, '\n\n')
-        .trim();
+        .replace(/\n{3,}/g, '\n\n');
+
+    // Streaming needs the final newline to remain observable: a completed list
+    // item/paragraph is a stable speech boundary even when it has no punctuation.
+    return preserveTrailingBoundary ? cleaned.replace(/^\s+/, '') : cleaned.trim();
 };
+
+export const getSpeakableContent = (msg) => cleanSpeakableMarkdown(resolveMarkdownSpeechContent(
+    String(msg?.content || ''),
+    msg?.extraInfo?.replace || {},
+));
+
+const getStreamingSpeakableContent = (msg) => cleanSpeakableMarkdown(stripIncompleteFencedCodeTail(
+    resolveMarkdownSpeechContent(
+        String(msg?.content || ''),
+        msg?.extraInfo?.replace || {},
+    ),
+), {preserveTrailingBoundary: true});
 
 const isDigit = (char) => /\d/.test(char || '');
 
@@ -328,7 +357,7 @@ const createSpeechSegment = (source, rawStart, rawEnd, msgId, index, occurrenceM
     };
 };
 
-const splitSourceIntoSpeechSlices = (source) => {
+const splitSourceIntoSpeechSlices = (source, {includeTrailing = true} = {}) => {
     const slices = [];
     let segmentStart = 0;
     let index = 0;
@@ -359,7 +388,7 @@ const splitSourceIntoSpeechSlices = (source) => {
         index += 1;
     }
 
-    if (segmentStart < source.length) {
+    if (includeTrailing && segmentStart < source.length) {
         slices.push({
             rawStart: segmentStart,
             rawEnd: source.length,
@@ -406,3 +435,28 @@ export const splitSpeakableSegments = (text, msgId) => {
 };
 
 export const getSpeakableSegments = (msg, msgId) => splitSpeakableSegments(getSpeakableContent(msg), msgId);
+
+export const getStreamingSpeakableSegments = (msg, msgId, {final = false} = {}) => {
+    const source = getStreamingSpeakableContent(msg);
+    const segments = [];
+    const occurrenceMap = new Map();
+
+    splitSourceIntoSpeechSlices(source, {includeTrailing: Boolean(final)}).forEach((slice) => {
+        const segment = createSpeechSegment(
+            source,
+            slice.rawStart,
+            slice.rawEnd,
+            msgId,
+            segments.length,
+            occurrenceMap,
+        );
+        if (segment) segments.push(segment);
+    });
+
+    // Final messages keep the same fallback behavior as manual TTS. Streaming
+    // messages deliberately wait for a stable sentence/newline boundary.
+    if (final && segments.length === 0 && normalizeWhitespace(source)) {
+        return splitSpeakableSegments(source, msgId);
+    }
+    return segments;
+};

@@ -26,6 +26,9 @@ const SPEECH_HIGHLIGHT_INLINE_SELECTOR = 'a, span, strong, em, b, i, code, mark,
 
 const EMPTY_HIGHLIGHT = Object.freeze({rects: [], frame: null, boundaryType: null});
 const RECT_EPSILON = 0.5;
+const INTERRUPTION_MARKER_HALF_HEIGHT = 10;
+const INTERRUPTION_MARKER_CONTENT_GAP = 8;
+const INTERRUPTION_MARKER_MIN_FLOW_GAP = 24;
 
 const rectsEqual = (a, b) => {
     if (!a && !b) return true;
@@ -596,6 +599,68 @@ const resolveCurrentSegmentInfo = (segments = [], currentSegmentId, currentSegme
     return {segment: null, index: -1};
 };
 
+const getFirstRect = (highlight) => {
+    const rects = Array.isArray(highlight?.rects) ? highlight.rects : [];
+    return rects.length > 0 ? rects[0] : null;
+};
+
+const getLastRect = (highlight) => {
+    const rects = Array.isArray(highlight?.rects) ? highlight.rects : [];
+    return rects.length > 0 ? rects[rects.length - 1] : null;
+};
+
+const resolveInterruptionMarkerLayout = ({beforeHighlight, afterHighlight, position, segmentCount, rootWidth}) => {
+    const beforeRect = getLastRect(beforeHighlight);
+    const afterRect = getFirstRect(afterHighlight);
+
+    if (!beforeRect && !afterRect) return null;
+
+    // Prefer a real divider only when the rendered Markdown already has enough
+    // vertical whitespace between the two sentence ranges. This keeps the marker
+    // in the visual flow without drawing a horizontal rule through either line.
+    if (beforeRect && afterRect) {
+        const beforeBottom = beforeRect.top + beforeRect.height;
+        const availableGap = afterRect.top - beforeBottom;
+        if (availableGap >= INTERRUPTION_MARKER_MIN_FLOW_GAP) {
+            return {
+                mode: 'divider',
+                top: beforeBottom + (availableGap / 2),
+            };
+        }
+
+        // Same-line / tightly wrapped sentence boundaries do not have a real row
+        // where a full-width divider can live. Anchor a compact pill to the exact
+        // delivered text boundary instead of borrowing the enclosing <p> frame.
+        const preferredLeft = beforeRect.left + beforeRect.width + INTERRUPTION_MARKER_CONTENT_GAP;
+        const maxLeft = Number.isFinite(rootWidth) && rootWidth > 0
+            ? Math.max(0, rootWidth - 58)
+            : preferredLeft;
+        return {
+            mode: 'compact',
+            top: beforeRect.top + (beforeRect.height / 2),
+            left: Math.max(0, Math.min(preferredLeft, maxLeft)),
+        };
+    }
+
+    if (beforeRect || position >= segmentCount) {
+        const anchor = beforeRect || getLastRect(afterHighlight);
+        if (!anchor) return null;
+        return {
+            mode: 'divider',
+            top: anchor.top + anchor.height + INTERRUPTION_MARKER_HALF_HEIGHT + INTERRUPTION_MARKER_CONTENT_GAP,
+        };
+    }
+
+    const anchor = afterRect;
+    return {
+        mode: 'divider',
+        top: Math.max(
+            anchor.top - INTERRUPTION_MARKER_HALF_HEIGHT - INTERRUPTION_MARKER_CONTENT_GAP,
+            0,
+        ),
+    };
+};
+
 const SpeechOverlayHighlighter = memo(({containerRef, msgId, msg, speechState}) => {
     const isCurrentMessage = speechState?.messageId === msgId;
     const currentSegmentId = isCurrentMessage ? speechState?.currentSegmentId : null;
@@ -627,30 +692,48 @@ const SpeechOverlayHighlighter = memo(({containerRef, msgId, msg, speechState}) 
     const interruptionPosition = Number.isInteger(rawInterruptionPosition) && rawInterruptionPosition >= 0
         ? Math.min(rawInterruptionPosition, interruptionSegments.length)
         : -1;
-    const interruptionAnchorIndex = interruptionSegments.length > 0 && interruptionPosition >= 0
-        ? Math.min(interruptionPosition, interruptionSegments.length - 1)
+    const interruptionBeforeIndex = interruptionPosition > 0
+        ? Math.min(interruptionPosition - 1, interruptionSegments.length - 1)
         : -1;
-    const interruptionHighlight = useSegmentHighlightRects({
+    const interruptionAfterIndex = interruptionPosition >= 0 && interruptionPosition < interruptionSegments.length
+        ? interruptionPosition
+        : -1;
+    const interruptionBeforeHighlight = useSegmentHighlightRects({
         containerRef,
         segments: interruptionSegments,
-        currentSegmentIndex: interruptionAnchorIndex,
+        currentSegmentIndex: interruptionBeforeIndex,
         deps: [voiceDelivery?.interruptedAt, voiceDelivery?.cursor?.segmentId],
     });
+    const interruptionAfterHighlight = useSegmentHighlightRects({
+        containerRef,
+        segments: interruptionSegments,
+        currentSegmentIndex: interruptionAfterIndex,
+        deps: [voiceDelivery?.interruptedAt, voiceDelivery?.cursor?.segmentId],
+    });
+    const interruptionMarkerLayout = useMemo(() => resolveInterruptionMarkerLayout({
+        beforeHighlight: interruptionBeforeHighlight,
+        afterHighlight: interruptionAfterHighlight,
+        position: interruptionPosition,
+        segmentCount: interruptionSegments.length,
+        rootWidth: Math.max(
+            Number(containerRef?.current?.scrollWidth || 0),
+            Number(containerRef?.current?.clientWidth || 0),
+        ),
+    }), [
+        interruptionAfterHighlight,
+        interruptionBeforeHighlight,
+        interruptionPosition,
+        interruptionSegments.length,
+    ]);
 
     const hasLiveHighlight = Boolean(
         currentSegment && currentOrderedIndex >= 0 && frame && rects.length > 0
     );
     const hasInterruptionMarker = Boolean(
-        hasInterruption && interruptionPosition >= 0 && interruptionHighlight?.frame
+        hasInterruption && interruptionPosition >= 0 && interruptionMarkerLayout
     );
 
     if (!hasLiveHighlight && !hasInterruptionMarker) return null;
-
-    const interruptionTop = hasInterruptionMarker
-        ? (interruptionPosition >= interruptionSegments.length
-            ? interruptionHighlight.frame.top + interruptionHighlight.frame.height + 5
-            : Math.max(interruptionHighlight.frame.top - 5, 0))
-        : 0;
 
     return (
         <>
@@ -701,16 +784,28 @@ const SpeechOverlayHighlighter = memo(({containerRef, msgId, msg, speechState}) 
                     role="note"
                     aria-label="语音在此被打断"
                 >
-                    <div
-                        className="absolute left-0 right-0 flex items-center gap-2 text-[11px] font-medium text-orange-600"
-                        style={{top: interruptionTop, transform: 'translateY(-50%)'}}
-                    >
-                        <span className="h-px flex-1 bg-orange-300/80"/>
-                        <span className="shrink-0 rounded-full bg-white/95 px-2 py-0.5 shadow-sm ring-1 ring-orange-200">
-                            语音在此被打断
+                    {interruptionMarkerLayout.mode === 'divider' ? (
+                        <div
+                            className="absolute left-0 right-0 flex items-center gap-2 text-[11px] font-medium text-orange-600"
+                            style={{top: interruptionMarkerLayout.top, transform: 'translateY(-50%)'}}
+                        >
+                            <span className="h-px flex-1 bg-orange-300/80"/>
+                            <span className="shrink-0 rounded-full bg-white/95 px-2.5 py-0.5 shadow-sm ring-1 ring-orange-200 dark:bg-slate-950/95 dark:ring-orange-800">
+                                语音在此被打断
+                            </span>
+                            <span className="h-px flex-1 bg-orange-300/80"/>
+                        </div>
+                    ) : (
+                        <span
+                            className="absolute -translate-y-1/2 whitespace-nowrap rounded-full bg-white/95 px-1.5 py-0.5 text-[10px] font-medium text-orange-600 shadow-sm ring-1 ring-orange-200 dark:bg-slate-950/95 dark:ring-orange-800"
+                            style={{
+                                top: interruptionMarkerLayout.top,
+                                left: interruptionMarkerLayout.left,
+                            }}
+                        >
+                            已打断
                         </span>
-                        <span className="h-px flex-1 bg-orange-300/80"/>
-                    </div>
+                    )}
                 </div>
             )}
         </>

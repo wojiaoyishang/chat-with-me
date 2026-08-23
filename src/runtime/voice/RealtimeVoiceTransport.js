@@ -105,7 +105,7 @@ export class RealtimeVoiceTransport {
         return envelope;
     }
 
-    sendAudio({conversationId, streamId, pcm, durationMs = null, timestampMs = null}) {
+    sendAudio({conversationId, streamId, pcm, durationMs = null, timestampMs = null, metadata = null}) {
         const header = {
             version: 1,
             event_id: generateUUID(),
@@ -122,7 +122,10 @@ export class RealtimeVoiceTransport {
             codec: 'pcm16',
             sample_rate: 16000,
             channels: 1,
-            metadata: durationMs == null ? {} : {durationMs},
+            metadata: {
+                ...(durationMs == null ? {} : {durationMs}),
+                ...(metadata && typeof metadata === 'object' ? metadata : {}),
+            },
         };
         this.transport.sendMedia(header, pcm);
     }
