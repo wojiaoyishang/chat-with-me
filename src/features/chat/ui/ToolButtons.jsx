@@ -1,6 +1,6 @@
 import React, {useState, useMemo, useCallback, memo} from 'react';
 import {IoMdAdd} from 'react-icons/io';
-import {Check, ChevronDown, Mic, RotateCw, Search, Earth, Puzzle, MoreHorizontal, Settings2, MapPinned} from 'lucide-react';
+import {Check, ChevronDown, Mic, RotateCw, Search, Earth, Puzzle, MoreHorizontal, Settings2, MapPinned, LoaderCircle} from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -185,6 +185,7 @@ const ToolButtons = memo(({
                               setMobileOpenSections: controlledSetMobileOpenSections,
                               onManageConversationTools,
                               conversationToolsDisabled = false,
+                              conversationToolsSyncing = false,
                               onManageWorkspace,
                               workspaceSettingsDisabled = false,
                           }) => {
@@ -450,9 +451,15 @@ const ToolButtons = memo(({
                     <button
                         type="button"
                         className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
-                        aria-label={t('extra_tools')}
+                        aria-label={conversationToolsSyncing
+                            ? t('conversation_tools_syncing', '正在同步工具状态…')
+                            : t('extra_tools')}
+                        aria-busy={conversationToolsSyncing}
+                        title={conversationToolsSyncing ? t('conversation_tools_syncing', '正在同步工具状态…') : undefined}
                     >
-                        <IoMdAdd />
+                        {conversationToolsSyncing
+                            ? <LoaderCircle className="h-4 w-4 animate-spin text-blue-500"/>
+                            : <IoMdAdd />}
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -476,8 +483,14 @@ const ToolButtons = memo(({
                         >
                             <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-3 py-2">
                                 <div className="min-w-0">
-                                    <div className="truncate text-xs font-semibold text-gray-700">
-                                        {t('conversation_tools', '本对话工具')}
+                                    <div className="flex min-w-0 items-center gap-1.5 truncate text-xs font-semibold text-gray-700">
+                                        <span className="truncate">{t('conversation_tools', '本对话工具')}</span>
+                                        {conversationToolsSyncing && (
+                                            <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-medium text-blue-500" role="status" aria-live="polite">
+                                                <LoaderCircle className="h-3 w-3 animate-spin"/>
+                                                {t('syncing', '同步中')}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="mt-0.5 text-[11px] text-gray-400">
                                         {t('conversation_tools_scroll_hint', '工具列表在此区域内独立滚动')}

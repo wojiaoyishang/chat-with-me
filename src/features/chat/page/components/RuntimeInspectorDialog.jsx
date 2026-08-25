@@ -114,15 +114,24 @@ const ModelMessageCard = memo(({message}) => {
     }, [hasProviderPayload, message?.providerPayload]);
     return (
         <article className={`overflow-hidden rounded-xl border ${className}`}>
-            <div className="flex flex-wrap items-center gap-2 border-b border-current/10 px-3 py-2 text-xs">
-                <Badge variant="outline" className="bg-background/70 font-mono">{role}</Badge>
-                <Badge variant="secondary">{sourceLabels[source] || source}</Badge>
-                {message?.databaseId && (
-                    <span className="max-w-full truncate font-mono text-muted-foreground">db:{message.databaseId}</span>
-                )}
-                <span className="ml-auto tabular-nums text-muted-foreground">
-                    ~{formatNumber(message?.estimatedTokens)} tokens
-                </span>
+            <div className="border-b border-current/10 px-3 py-2 text-xs">
+                <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="bg-background/70 font-mono">{role}</Badge>
+                    <Badge variant="secondary">{sourceLabels[source] || source}</Badge>
+                    {message?.apiProtocol && <Badge variant="outline" className="font-mono">{message.apiProtocol}</Badge>}
+                    {message?.databaseId && (
+                        <span className="max-w-full truncate font-mono text-muted-foreground">db:{message.databaseId}</span>
+                    )}
+                    <span className="ml-auto tabular-nums text-muted-foreground">
+                        ~{formatNumber(message?.estimatedTokens)} tokens
+                    </span>
+                </div>
+                <div className="mt-1.5 min-w-0 space-y-0.5 font-mono text-[10px] leading-relaxed text-muted-foreground">
+                    <div className="break-all">调用模块：{message?.moduleSource || '旧记录未捕获'}</div>
+                    {message?.serializerModule && message.serializerModule !== message?.moduleSource ? (
+                        <div className="break-all opacity-80">消息序列化：{message.serializerModule}{message?.serializerType ? `.${message.serializerType}` : ''}</div>
+                    ) : null}
+                </div>
             </div>
             <pre className="pretty-scrollbar max-h-96 overflow-auto whitespace-pre-wrap break-words px-3 py-3 text-xs leading-relaxed font-mono text-foreground [scrollbar-gutter:stable]">
                 {String(message?.content || '') || '(empty)'}
@@ -192,6 +201,36 @@ const ModelCallSelector = ({calls, selectedId, onSelect}) => (
         })}
     </div>
 );
+
+const ResponsesContinuationPanel = ({continuation}) => {
+    if (!continuation) return null;
+    const linked = continuation.strategy === 'provider_linked';
+    return (
+        <section className="space-y-3 rounded-xl border p-3 sm:p-4">
+            <div className="flex flex-wrap items-center gap-2">
+                <h3 className="flex items-center gap-2 text-sm font-semibold"><Layers3 className="size-4"/>Responses Continuation</h3>
+                <Badge variant={linked ? 'default' : 'secondary'}>{linked ? 'Provider Linked' : 'CWM Managed'}</Badge>
+                {continuation.configuredMode ? <Badge variant="outline">mode: {continuation.configuredMode}</Badge> : null}
+            </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+                {linked
+                    ? '本次请求通过 previous_response_id 续接 Provider 端状态；HTTP input 只包含该锚点之后的新内容。下方 CWM Context Projection 仍显示完整逻辑上下文，但并不代表这些历史被再次发送。'
+                    : '本次请求由 CWM 自己管理上下文，因此 Responses input 会携带当前需要的完整模型上下文。DeepSeek 等不支持 previous_response_id 的 Provider 会固定使用该策略。'}
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div className="rounded-lg border p-2.5"><div className="text-[11px] text-muted-foreground">CWM 上下文消息</div><div className="mt-1 font-semibold tabular-nums">{continuation.cwmContextMessageCount ?? '—'}</div></div>
+                <div className="rounded-lg border p-2.5"><div className="text-[11px] text-muted-foreground">选中增量消息</div><div className="mt-1 font-semibold tabular-nums">{continuation.selectedMessageCount ?? '—'}</div></div>
+                <div className="rounded-lg border p-2.5"><div className="text-[11px] text-muted-foreground">实际 input items</div><div className="mt-1 font-semibold tabular-nums">{continuation.providerInputItemCount ?? '—'}</div></div>
+                <div className="rounded-lg border p-2.5"><div className="text-[11px] text-muted-foreground">previous_response_id</div><div className="mt-1 truncate font-mono text-[11px]" title={continuation.previousResponseId || ''}>{continuation.previousResponseId || '未使用'}</div></div>
+            </div>
+            {!linked && continuation.fallbackReason ? (
+                <div className="rounded-lg border border-amber-300/60 bg-amber-500/5 px-3 py-2 text-xs leading-relaxed text-amber-800 dark:text-amber-200">
+                    回退/选择原因：{continuation.fallbackReason}
+                </div>
+            ) : null}
+        </section>
+    );
+};
 
 const ModelCallBrowser = ({section}) => {
     const calls = Array.isArray(section?.modelCalls) ? section.modelCalls : [];
@@ -264,11 +303,16 @@ const ModelCallBrowser = ({section}) => {
                     <Badge variant="outline">{selected?.status || 'captured'}</Badge>
                 </div>
 
+                <ResponsesContinuationPanel continuation={selected?.responsesContinuation}/>
+
                 <section className="space-y-2">
                     <div className="flex items-center justify-between gap-3">
-                        <h3 className="flex items-center gap-2 text-sm font-semibold"><MessageSquareText className="size-4"/>模型实际消息</h3>
-                        <span className="text-xs text-muted-foreground">Provider Adapter 输入边界</span>
+                        <h3 className="flex items-center gap-2 text-sm font-semibold"><MessageSquareText className="size-4"/>CWM Context Projection</h3>
+                        <span className="text-xs text-muted-foreground">完整逻辑上下文，不等同于本次 HTTP input</span>
                     </div>
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                        这里展示 CWM 在本次 Model Call 中维护的完整模型可见上下文。Responses API 使用 Provider Linked continuation 时，Provider 已持有的历史不会再次出现在实际 HTTP input 中。
+                    </p>
                     <div className="space-y-2">
                         {(selected.messages || []).map((message, index) => (
                             <ModelMessageCard key={`${selected.modelCallId}-${index}`} message={message}/>
@@ -281,9 +325,13 @@ const ModelCallBrowser = ({section}) => {
                     <div className="mt-3"><JsonBlock value={selected.parameters} title="Parameters" maxHeight="max-h-80"/></div>
                 </details>
                 <details className="rounded-xl border p-3">
-                    <summary className="cursor-pointer select-none text-sm font-medium">Raw Request</summary>
-                    <p className="mt-2 text-xs text-muted-foreground">Standard Capture 会由 Manifest 动态重建请求；Full Capture 才保存完整 Wire Request。不会显示供应商内部不可见指令。</p>
-                    <div className="mt-3"><JsonBlock value={selected.rawRequest} title="CWM Provider Input"/></div>
+                    <summary className="cursor-pointer select-none text-sm font-medium">实际 Provider 请求</summary>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                        {selected?.providerRequest?.exact
+                            ? 'Full Capture：这里显示经过敏感字段脱敏后的真实 Wire Request。'
+                            : 'Standard Capture：这里显示真实请求形状的安全摘要；input/messages 正文不重复存储，但 count、previous_response_id 与其他请求字段来自实际 HTTP/SDK 边界。'}
+                    </p>
+                    <div className="mt-3"><JsonBlock value={selected?.providerRequest?.payload ?? selected.rawRequest} title={selected?.providerRequest?.exact ? 'Actual Wire Request' : 'Actual Provider Request · Safe Summary'}/></div>
                 </details>
                 <details className="rounded-xl border p-3">
                     <summary className="cursor-pointer select-none text-sm font-medium">Provider Raw Records（{selected?.providerRecords?.length || 0}）</summary>

@@ -558,5 +558,17 @@
   "runtime_inspector": "Runtime Inspector",
   "loading_models": "Loading models...",
   "loading_conversation": "Loading conversation...",
-  "interrupt_and_send": "Interrupt current response and send"
+  "interrupt_and_send": "Interrupt current response and send",
+  "conversation_tools_syncing": "Syncing tool status…",
+  "enable_all_tools": "Enable all",
+  "disable_all_tools": "Disable all",
+  "save_draft_and_exit_editing": "Save draft and exit editing",
+  "discard_edit_draft": "Discard edit draft",
+  "stash_edit_draft_and_exit": "Stash draft and exit editing",
+  "syncing": "Syncing",
+  "conversation_tools_pending_saved": "New-conversation tools saved locally and will apply to the first message.",
+  "enable_toolset_all": "Enable every tool in this set",
+  "disable_toolset_all": "Disable every tool in this set",
+  "enable_toolset_short": "Enable set",
+  "disable_toolset_short": "Disable set"
 }

@@ -1,6 +1,6 @@
 import React, {memo, useCallback} from 'react';
 import {Transition} from '@headlessui/react';
-import {GitBranch, PenLine, Trash2, X} from 'lucide-react';
+import {Archive, GitBranch, PenLine, X} from 'lucide-react';
 
 const EditMessageIndicator = memo((
     {
@@ -51,7 +51,8 @@ const EditMessageIndicator = memo((
                         type="button"
                         onClick={handleCancel}
                         className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
-                        aria-label={t('cancel_editing')}
+                        aria-label={t('save_draft_and_exit_editing', '保存草稿并退出编辑')}
+                        title={t('save_draft_and_exit_editing', '保存草稿并退出编辑')}
                     >
                         <X className="w-4 h-4"/>
                     </button>
@@ -59,9 +60,10 @@ const EditMessageIndicator = memo((
                         type="button"
                         onClick={handleClear}
                         className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
-                        aria-label={t('cancel_editing')}
+                        aria-label={t('stash_edit_draft_and_exit', '暂存草稿并退出编辑')}
+                        title={t('stash_edit_draft_and_exit', '暂存草稿并退出编辑')}
                     >
-                        <Trash2 className="w-4 h-4"/>
+                        <Archive className="w-4 h-4"/>
                     </button>
                 </div>
             </div>

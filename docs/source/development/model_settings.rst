@@ -73,3 +73,26 @@ List 支持以下新增可选字段：
    }
 
 没有 ``addTemplates`` 的普通 List 保持原行为：点击“添加”直接创建默认项。
+
+Responses API 模型模板
+--------------------------------------------------------------------------------
+
+V10 的“添加模型”候选增加独立 Responses 模板：
+
+* ``OpenAI (Responses API)``；
+* ``DeepSeek (Responses API)``；
+* ``Qwen (Responses API)``；
+* ``Grok (Responses API)``。
+
+模板和 ``Completions API`` 候选并存。Direct HTTP 模型的 ``base_url`` 仍显示为完整目标 URL；
+``provider=litellm`` 仍显示 LiteLLM API Base，并保持严格透传。
+
+当后端 Schema 返回 ``api_protocol=responses`` 时，模型高级设置会显示 Responses Context Mode、
+``previous_response_id`` Capability、Store/Encrypted Reasoning 等协议字段。前端不得根据厂商名猜这些能力。
+
+新建模型后的定位
+--------------------------------------------------------------------------------
+
+通过模板或普通“添加”创建新的 List 项后，``DynamicSettings`` 会让新卡片自动展开，并在 Dialog 关闭、布局
+稳定后调用 ``scrollIntoView`` 平滑滚动到新卡片。该行为依赖前端生成的稳定 ``internalId``，不会根据模型
+业务 ``id`` 查找 DOM，因此用户修改模型 ID 或拖拽排序不会破坏后续设置编辑。

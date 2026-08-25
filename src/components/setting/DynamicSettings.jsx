@@ -387,6 +387,32 @@ const SortableCard = memo(({
 
     const [isOpen, setIsOpen] = useState(initialOpen);
     const duplicate = isDuplicate(stableId);
+    const cardNodeRef = useRef(null);
+    const setCardNodeRef = useCallback((node) => {
+        cardNodeRef.current = node;
+        setNodeRef(node);
+    }, [setNodeRef]);
+
+    useEffect(() => {
+        if (!initialOpen) return undefined;
+        // The template dialog closes in the same render that mounts the new card.
+        // Wait two frames so layout/expand animation has a stable destination, then
+        // scroll the nearest settings container to the newly created model.
+        let secondFrame = null;
+        const firstFrame = window.requestAnimationFrame(() => {
+            secondFrame = window.requestAnimationFrame(() => {
+                cardNodeRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                    inline: "nearest",
+                });
+            });
+        });
+        return () => {
+            window.cancelAnimationFrame(firstFrame);
+            if (secondFrame != null) window.cancelAnimationFrame(secondFrame);
+        };
+    }, [initialOpen, stableId]);
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -424,7 +450,8 @@ const SortableCard = memo(({
 
     return (
         <div
-            ref={setNodeRef}
+            ref={setCardNodeRef}
+            data-setting-entry-id={stableId}
             style={style}
             className={`mb-3 sm:mb-4 border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] shadow-sm transition-colors ${
                 duplicate

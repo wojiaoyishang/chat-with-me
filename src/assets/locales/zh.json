@@ -557,5 +557,17 @@
   "runtime_inspector": "运行时检查器",
   "loading_models": "正在加载模型...",
   "loading_conversation": "正在加载会话...",
-  "interrupt_and_send": "打断当前回答并发送"
+  "interrupt_and_send": "打断当前回答并发送",
+  "conversation_tools_syncing": "正在同步工具状态…",
+  "enable_all_tools": "全部启用",
+  "disable_all_tools": "全部禁用",
+  "save_draft_and_exit_editing": "保存草稿并退出编辑",
+  "discard_edit_draft": "放弃编辑草稿",
+  "stash_edit_draft_and_exit": "暂存草稿并退出编辑",
+  "syncing": "同步中",
+  "conversation_tools_pending_saved": "已设置新对话工具，将在发送首条消息时生效。",
+  "enable_toolset_all": "全开此工具集",
+  "disable_toolset_all": "全关此工具集",
+  "enable_toolset_short": "全开",
+  "disable_toolset_short": "全关"
 }

@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Check, ChevronDown, CircleHelp, RotateCcw, Search, ShieldCheck, Wrench} from 'lucide-react';
+import {Check, ChevronDown, CircleHelp, LoaderCircle, Power, PowerOff, RotateCcw, Search, ShieldCheck, Wrench} from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -71,6 +71,7 @@ const ConversationToolsDialog = ({
     defaultPermissions = {},
     onApply,
     disabled = false,
+    syncing = false,
     t,
 }) => {
     const [query, setQuery] = useState('');
@@ -121,6 +122,10 @@ const ConversationToolsDialog = ({
 
     const enabledCount = allTools.reduce((count, tool) => count + (ENABLED_MODES.has(draft[tool.name]) ? 1 : 0), 0);
     const changed = allTools.some(tool => normalizeMode(draft[tool.name]) !== normalizeMode(initial[tool.name]));
+    const mutableTools = useMemo(() => allTools.filter(tool => !tool.disabled), [allTools]);
+    const allMutableEnabled = mutableTools.length > 0 && mutableTools.every(tool => ENABLED_MODES.has(draft[tool.name]));
+    const allMutableDisabled = mutableTools.length > 0 && mutableTools.every(tool => !ENABLED_MODES.has(draft[tool.name]));
+    const controlsDisabled = disabled || saving;
 
     const toggleGroup = (groupId) => {
         setExpanded((previous) => {
@@ -145,20 +150,107 @@ const ConversationToolsDialog = ({
         });
     };
 
-    const setGroupEnabled = (group, enabled) => {
-        setDraft((previous) => {
-            const next = {...previous};
-            group.tools.forEach((tool) => {
-                const currentMode = normalizeMode(next[tool.name], 'ask');
-                if (enabled) {
-                    next[tool.name] = resolveEnabledMode(tool.name, currentMode, defaultPermissions, lastEnabledModes);
-                } else {
-                    if (ENABLED_MODES.has(currentMode)) lastEnabledModes.current[tool.name] = currentMode;
-                    next[tool.name] = 'deny';
-                }
-            });
-            return next;
+    const buildAllDraft = (enabled, source = draft) => {
+        const next = {...source};
+        mutableTools.forEach((tool) => {
+            const currentMode = normalizeMode(next[tool.name], 'ask');
+            if (enabled) {
+                next[tool.name] = ENABLED_MODES.has(currentMode)
+                    ? currentMode
+                    : resolveEnabledMode(tool.name, currentMode, defaultPermissions, lastEnabledModes);
+            } else {
+                if (ENABLED_MODES.has(currentMode)) lastEnabledModes.current[tool.name] = currentMode;
+                next[tool.name] = 'deny';
+            }
         });
+        return next;
+    };
+
+    const applyAll = async (enabled) => {
+        if (controlsDisabled || mutableTools.length === 0) return;
+        const previous = draft;
+        const next = buildAllDraft(enabled, previous);
+        const updates = {};
+        mutableTools.forEach((tool) => {
+            const nextMode = normalizeMode(next[tool.name], 'ask');
+            if (nextMode !== normalizeMode(initial[tool.name], 'ask')) updates[tool.name] = nextMode;
+        });
+
+        setDraft(next);
+        if (Object.keys(updates).length === 0) return;
+        setSaving(true);
+        try {
+            const succeeded = await onApply?.(updates);
+            if (succeeded === false) {
+                setDraft(previous);
+                return;
+            }
+            // The batch action is deliberately one-click: successful server sync
+            // becomes the new dialog baseline without closing the window.
+            setInitial(next);
+        } catch (error) {
+            console.error('Bulk conversation tool update failed:', error);
+            setDraft(previous);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const applyGroup = async (group, enabled) => {
+        if (controlsDisabled) return;
+        const sourceTools = group.sourceTools || group.tools || [];
+        const mutableGroupTools = sourceTools.filter(tool => !tool.disabled);
+        if (mutableGroupTools.length === 0) return;
+
+        const previous = draft;
+        const next = {...previous};
+        mutableGroupTools.forEach((tool) => {
+            const currentMode = normalizeMode(next[tool.name], 'ask');
+            if (enabled) {
+                next[tool.name] = ENABLED_MODES.has(currentMode)
+                    ? currentMode
+                    : resolveEnabledMode(
+                        tool.name,
+                        currentMode,
+                        defaultPermissions,
+                        lastEnabledModes,
+                    );
+            } else {
+                if (ENABLED_MODES.has(currentMode)) lastEnabledModes.current[tool.name] = currentMode;
+                next[tool.name] = 'deny';
+            }
+        });
+
+        const updates = {};
+        mutableGroupTools.forEach((tool) => {
+            const nextMode = normalizeMode(next[tool.name], 'ask');
+            if (nextMode !== normalizeMode(initial[tool.name], 'ask')) updates[tool.name] = nextMode;
+        });
+
+        setDraft(next);
+        if (Object.keys(updates).length === 0) return;
+        setSaving(true);
+        try {
+            const succeeded = await onApply?.(updates);
+            if (succeeded === false) {
+                setDraft(previous);
+                return;
+            }
+            // Commit only this toolset into the dialog baseline. Any unsaved edits
+            // in other groups stay dirty and are not sent as a side effect.
+            setInitial((previousInitial) => {
+                const nextInitial = {...previousInitial};
+                mutableGroupTools.forEach((tool) => {
+                    nextInitial[tool.name] = normalizeMode(next[tool.name], 'ask');
+                });
+                return nextInitial;
+            });
+        } catch (error) {
+            console.error('Toolset bulk conversation update failed:', error);
+            setDraft(previous);
+        } finally {
+            setSaving(false);
+        }
     };
 
     const setEnabledMode = (toolName, mode) => {
@@ -196,10 +288,18 @@ const ConversationToolsDialog = ({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="flex max-h-[min(84vh,760px)] w-[min(94vw,760px)] max-w-none flex-col gap-0 overflow-hidden p-0">
                 <DialogHeader className="shrink-0 border-b border-gray-100 px-5 py-4 text-left">
-                    <DialogTitle className="flex items-center gap-2">
-                        <Wrench className="h-5 w-5 text-blue-600"/>
-                        {t('conversation_tools', '本对话工具')}
-                    </DialogTitle>
+                    <div className="flex items-center justify-between gap-3">
+                        <DialogTitle className="flex items-center gap-2">
+                            <Wrench className="h-5 w-5 text-blue-600"/>
+                            {t('conversation_tools', '本对话工具')}
+                        </DialogTitle>
+                        {(saving || syncing) && (
+                            <div className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-blue-600" role="status" aria-live="polite">
+                                <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
+                                {t('conversation_tools_syncing', '正在同步工具状态…')}
+                            </div>
+                        )}
+                    </div>
                     <DialogDescription>
                         {t('conversation_tools_description', '只影响当前对话；正在执行的工具不会被中断，新状态从后续工具调用开始生效。')}
                     </DialogDescription>
@@ -217,14 +317,35 @@ const ConversationToolsDialog = ({
                     </div>
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
                         <span>{t('conversation_tools_enabled_count', {defaultValue: '已启用 {{enabled}} / {{total}}', enabled: enabledCount, total: allTools.length})}</span>
-                        <button
-                            type="button"
-                            onClick={restoreDefaults}
-                            className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-blue-600 hover:bg-blue-50"
-                        >
-                            <RotateCcw className="h-3.5 w-3.5"/>
-                            {t('restore_default_tools', '恢复默认工具')}
-                        </button>
+                        <div className="flex flex-wrap items-center justify-end gap-1.5">
+                            <button
+                                type="button"
+                                disabled={controlsDisabled || mutableTools.length === 0 || allMutableEnabled}
+                                onClick={() => applyAll(true)}
+                                className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-emerald-600 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <Power className="h-3.5 w-3.5"/>
+                                {t('enable_all_tools', '全部启用')}
+                            </button>
+                            <button
+                                type="button"
+                                disabled={controlsDisabled || mutableTools.length === 0 || allMutableDisabled}
+                                onClick={() => applyAll(false)}
+                                className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <PowerOff className="h-3.5 w-3.5"/>
+                                {t('disable_all_tools', '全部禁用')}
+                            </button>
+                            <button
+                                type="button"
+                                disabled={controlsDisabled}
+                                onClick={restoreDefaults}
+                                className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-blue-600 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <RotateCcw className="h-3.5 w-3.5"/>
+                                {t('restore_default_tools', '恢复默认工具')}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -233,8 +354,10 @@ const ConversationToolsDialog = ({
                         {visibleGroups.map((group) => {
                             const isExpanded = Boolean(normalizedQuery) || expanded.has(group.id);
                             const sourceTools = group.sourceTools || group.tools;
+                            const mutableSourceTools = sourceTools.filter(tool => !tool.disabled);
                             const groupEnabledCount = sourceTools.filter(tool => ENABLED_MODES.has(draft[tool.name])).length;
-                            const allEnabled = sourceTools.length > 0 && groupEnabledCount === sourceTools.length;
+                            const allEnabled = mutableSourceTools.length > 0 && mutableSourceTools.every(tool => ENABLED_MODES.has(draft[tool.name]));
+                            const allDisabled = mutableSourceTools.length > 0 && mutableSourceTools.every(tool => !ENABLED_MODES.has(draft[tool.name]));
                             return (
                                 <section key={group.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                                     <div className="flex items-center gap-3 bg-gray-50 px-3 py-3">
@@ -248,12 +371,30 @@ const ConversationToolsDialog = ({
                                             <span className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-800">{t(group.name)}</span>
                                             <span className="shrink-0 text-xs text-gray-400">{groupEnabledCount}/{sourceTools.length}</span>
                                         </button>
-                                        <Switch
-                                            checked={allEnabled}
-                                            disabled={disabled}
-                                            onCheckedChange={checked => setGroupEnabled({...group, tools: sourceTools}, checked)}
-                                            aria-label={t('toggle_tool_group', '启用或停用整个工具集')}
-                                        />
+                                        <div className="flex shrink-0 items-center gap-1">
+                                            <button
+                                                type="button"
+                                                disabled={controlsDisabled || mutableSourceTools.length === 0 || allEnabled}
+                                                onClick={() => applyGroup({...group, sourceTools}, true)}
+                                                title={t('enable_toolset_all', '全开此工具集')}
+                                                aria-label={`${t(group.name)}：${t('enable_toolset_all', '全开此工具集')}`}
+                                                className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-emerald-600 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-40"
+                                            >
+                                                <Power className="h-3.5 w-3.5"/>
+                                                {t('enable_toolset_short', '全开')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled={controlsDisabled || mutableSourceTools.length === 0 || allDisabled}
+                                                onClick={() => applyGroup({...group, sourceTools}, false)}
+                                                title={t('disable_toolset_all', '全关此工具集')}
+                                                aria-label={`${t(group.name)}：${t('disable_toolset_all', '全关此工具集')}`}
+                                                className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
+                                            >
+                                                <PowerOff className="h-3.5 w-3.5"/>
+                                                {t('disable_toolset_short', '全关')}
+                                            </button>
+                                        </div>
                                     </div>
                                     {isExpanded && (
                                         <div className="divide-y divide-gray-100">
@@ -270,16 +411,18 @@ const ConversationToolsDialog = ({
                                                                 <div className="mt-2 flex flex-wrap gap-1.5">
                                                                     <button
                                                                         type="button"
+                                                                        disabled={controlsDisabled || tool.disabled}
                                                                         onClick={() => setEnabledMode(tool.name, 'ask')}
-                                                                        className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[11px] ${mode === 'ask' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                                                                        className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[11px] ${mode === 'ask' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'} disabled:cursor-not-allowed disabled:opacity-50`}
                                                                     >
                                                                         <CircleHelp className="h-3 w-3"/>
                                                                         {t('tool_permission_ask', '调用前询问')}
                                                                     </button>
                                                                     <button
                                                                         type="button"
+                                                                        disabled={controlsDisabled || tool.disabled}
                                                                         onClick={() => setEnabledMode(tool.name, 'allow')}
-                                                                        className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[11px] ${mode === 'allow' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                                                                        className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[11px] ${mode === 'allow' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'} disabled:cursor-not-allowed disabled:opacity-50`}
                                                                     >
                                                                         <ShieldCheck className="h-3 w-3"/>
                                                                         {t('tool_permission_allow', '自动允许')}
@@ -291,7 +434,7 @@ const ConversationToolsDialog = ({
                                                             {enabled && <Check className="mt-0.5 h-4 w-4 text-emerald-500"/>}
                                                             <Switch
                                                                 checked={enabled}
-                                                                disabled={disabled || tool.disabled}
+                                                                disabled={controlsDisabled || tool.disabled}
                                                                 onCheckedChange={checked => setToolEnabled(tool, checked)}
                                                                 aria-label={`${t(tool.text || tool.name)}：${enabled ? t('enabled', '已启用') : t('disabled', '已停用')}`}
                                                             />
@@ -316,7 +459,7 @@ const ConversationToolsDialog = ({
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                         {t('cancel', '取消')}
                     </Button>
-                    <Button type="button" disabled={!changed || saving || disabled} onClick={apply}>
+                    <Button type="button" disabled={!changed || controlsDisabled} onClick={apply}>
                         {saving ? t('saving', '正在保存…') : t('apply_to_conversation', '应用到本对话')}
                     </Button>
                 </DialogFooter>

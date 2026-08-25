@@ -20,6 +20,18 @@ import VoicePermissionDialog from './chatbox/components/VoicePermissionDialog';
 import {RealtimeVoiceButton} from '../voice/index.js';
 import ChatBoxInteractionHost from './chatbox/components/ChatBoxInteractionHost';
 import {getAttachmentId} from '../attachmentVision.js';
+import {
+    clearComposerDraft,
+    moveComposerConversationDrafts,
+    readComposerDraft,
+    saveComposerSnapshot,
+} from '../composer/draftStore.js';
+import {
+    clearMountedComposerDraft,
+    mountComposerDraft,
+    newestComposerDraft,
+    readMountedComposerDraft,
+} from '../composer/messageDraftMount.js';
 import {modelSupportsVision} from '../modelCapabilities.js';
 import RoleSelector from './chatbox/components/RoleSelector';
 import FullscreenEditorModal from './chatbox/components/FullscreenEditorModal';
@@ -41,71 +53,6 @@ const CHATBOX_AUTO_HIDE_SETTING_KEY = 'ChatBoxBottomAutoHide';
 const CHATBOX_COLLAPSED_HEIGHT = 30;
 const CHATBOX_COLLAPSE_OVERSHOOT_PX = 24;
 const CHATBOX_AUTO_HIDE_DELAY_MS = 2200;
-const CHATBOX_INPUT_DRAFT_STORAGE_PREFIX = 'chatbox-input-draft-v1';
-const CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY = 'chatbox:input-drafts:v1';
-
-const getStandaloneDraftStorageKey = (conversationId) => (
-    `${CHATBOX_INPUT_DRAFT_STORAGE_PREFIX}:${encodeURIComponent(String(conversationId ?? 'default'))}`
-);
-
-const readStandaloneDraft = (storageKey) => {
-    if (typeof window === 'undefined') return '';
-    try {
-        return window.localStorage.getItem(storageKey) || '';
-    } catch (_) {
-        return '';
-    }
-};
-
-const saveStandaloneDraft = (storageKey, content) => {
-    if (typeof window === 'undefined') return;
-    try {
-        if (content) {
-            window.localStorage.setItem(storageKey, content);
-        } else {
-            window.localStorage.removeItem(storageKey);
-        }
-    } catch (_) {
-        // 输入草稿保存失败不影响正常输入。
-    }
-};
-
-const getMessageDraftStore = (message, create = false) => {
-    if (!message || typeof message.getComponent !== 'function') return null;
-
-    let store = message.getComponent(CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY);
-    if (!store && create && typeof message.registerComponent === 'function') {
-        store = {};
-        message.registerComponent(CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY, store);
-    }
-    return store || null;
-};
-
-const readMessageDraft = (message, mode) => {
-    const store = getMessageDraftStore(message);
-    return Object.prototype.hasOwnProperty.call(store || {}, mode) ? store[mode] : undefined;
-};
-
-const saveMessageDraft = (message, mode, content) => {
-    const store = getMessageDraftStore(message, true);
-    if (!store) return;
-    store[mode] = content;
-};
-
-const clearMessageDraft = (message, mode) => {
-    const store = getMessageDraftStore(message);
-    if (!store) return;
-
-    delete store[mode];
-    if (
-        Object.keys(store).length === 0
-        && typeof message.unregisterComponent === 'function'
-        && message.getComponent(CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY) === store
-    ) {
-        message.unregisterComponent(CHATBOX_MESSAGE_DRAFTS_COMPONENT_KEY);
-    }
-};
-
 const normalizeVoiceRecognitionEngine = (value) => (
     String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote'
 );
@@ -299,12 +246,14 @@ function ChatBox({
 
     // ========== 状态管理 ==========
     const [messageContent, setMessageContent] = useState(() => (
-        readStandaloneDraft(getStandaloneDraftStorageKey(conversationId))
+        readComposerDraft({conversationId, mode: 'normal'})?.content || ''
     ));
     const [toolsStatus, setToolsStatus] = useState({});
     const [runtimeToolPermissions, setRuntimeToolPermissions] = useState({});
     const [conversationToolDefaults, setConversationToolDefaults] = useState({});
     const [conversationToolsDialogOpen, setConversationToolsDialogOpen] = useState(false);
+    const [pendingToolPermissionNames, setPendingToolPermissionNames] = useState(() => new Set());
+    const [conversationToolSyncCount, setConversationToolSyncCount] = useState(0);
     const [workspaceSettingsDialogOpen, setWorkspaceSettingsDialogOpen] = useState(false);
 
     // 全屏编辑器
@@ -380,13 +329,18 @@ function ChatBox({
     const isInputFocusedRef = useRef(false);
     const isPointerInsideChatBoxRef = useRef(false);
     const isModalOpenRef = useRef(false);
-    const currentDraftStorageKeyRef = useRef(getStandaloneDraftStorageKey(conversationId));
+    const draftConversationIdRef = useRef(conversationId);
     const editDraftRef = useRef(null);
+    const pendingEditCommitRef = useRef(null);
+    const pendingNormalCommitRef = useRef(null);
+    const suppressAttachmentDraftPersistRef = useRef(true);
     const isEditMessageRef = useRef(false);
     const pendingEditClearRef = useRef(false);
-    const standaloneAttachmentsRef = useRef([]);
+    const hasHydratedDraftRef = useRef(false);
     const previousConversationIdRef = useRef(conversationId);
     const toolPermissionRevisionRef = useRef(0);
+    const toolPermissionSyncQueueRef = useRef(Promise.resolve());
+    const toolPermissionPendingCountsRef = useRef(new Map());
     const conversationToolPermissionsRef = useRef({});
     const pendingConversationToolPermissionsRef = useRef({});
     const pendingConversationConversationIdRef = useRef(null);
@@ -408,6 +362,59 @@ function ChatBox({
 
 
     // ========== 回调函数（使用 useCallback 缓存）==========
+    const currentRoleRef = useRef(currentRole);
+    const rolesRef = useRef(roles);
+    const attachmentsMetaRef = useRef(attachmentsMeta);
+
+    const getActiveDraftIdentity = useCallback(() => {
+        const editDraft = editDraftRef.current;
+        if (editDraft) {
+            return {
+                conversationId: draftConversationIdRef.current,
+                mode: editDraft.mode,
+                messageId: editDraft.messageId,
+            };
+        }
+        return {conversationId: draftConversationIdRef.current, mode: 'normal', messageId: null};
+    }, []);
+
+    const persistActiveDraft = useCallback((overrides = {}) => {
+        const identity = getActiveDraftIdentity();
+        const savedDraft = saveComposerSnapshot({
+            ...identity,
+            content: overrides.content ?? messageContentRef.current,
+            attachments: overrides.attachments ?? attachmentsMetaRef.current,
+            roleName: overrides.roleName ?? currentRoleRef.current?.name ?? null,
+        });
+
+        // Edit/Fork drafts have two browser-only layers:
+        // 1) the durable local Draft Store for refresh recovery;
+        // 2) the message mount point for immediate per-message recovery while the
+        //    current message object stays alive. Neither layer is synchronized to
+        //    the backend before the user actually sends the edited/forked Turn.
+        const editDraft = editDraftRef.current;
+        if (
+            savedDraft
+            && identity.mode !== 'normal'
+            && editDraft?.message
+            && editDraft.mode === identity.mode
+            && String(editDraft.messageId ?? '') === String(identity.messageId ?? '')
+        ) {
+            mountComposerDraft(editDraft.message, editDraft.mode, savedDraft);
+        }
+        return savedDraft;
+    }, [getActiveDraftIdentity]);
+
+    const resolveDraftRole = useCallback((roleName) => {
+        const availableRoles = rolesRef.current || [];
+        if (roleName) {
+            const matched = availableRoles.find(item => item.name === roleName);
+            if (matched) return matched;
+            return {name: roleName, text: '?'};
+        }
+        return availableRoles.find(item => item.default) || availableRoles[0] || null;
+    }, []);
+
     const updateMessageContent = useCallback((valueOrUpdater, {persist = true} = {}) => {
         const nextValue = typeof valueOrUpdater === 'function'
             ? valueOrUpdater(messageContentRef.current)
@@ -417,40 +424,44 @@ function ChatBox({
         messageContentRef.current = normalizedValue;
         setMessageContent(normalizedValue);
 
-        if (!persist) return normalizedValue;
-
-        const editDraft = editDraftRef.current;
-        if (editDraft) {
-            saveMessageDraft(editDraft.message, editDraft.mode, normalizedValue);
-        } else {
-            saveStandaloneDraft(currentDraftStorageKeyRef.current, normalizedValue);
-        }
-
+        if (persist) persistActiveDraft({content: normalizedValue});
         return normalizedValue;
-    }, []);
+    }, [persistActiveDraft]);
 
-    const leaveEditMode = useCallback(({promoteToStandalone = false} = {}) => {
-        const nextContent = promoteToStandalone
-            ? messageContentRef.current
-            : readStandaloneDraft(currentDraftStorageKeyRef.current);
+    const restoreNormalDraft = useCallback(() => {
+        const draft = readComposerDraft({
+            conversationId: draftConversationIdRef.current,
+            mode: 'normal',
+        }) || {content: '', attachments: [], roleName: null};
 
+        suppressAttachmentDraftPersistRef.current = true;
         editDraftRef.current = null;
         isEditMessageRef.current = false;
         setIsEditMessage(false);
         setIsForkMode(false);
         setEditMessageId(null);
-        setAttachments(standaloneAttachmentsRef.current);
-        updateMessageContent(nextContent, {persist: promoteToStandalone});
-    }, [setAttachments, updateMessageContent]);
+        setAttachments(draft.attachments || []);
+        const nextRole = resolveDraftRole(draft.roleName);
+        currentRoleRef.current = nextRole;
+        setCurrentRole(nextRole);
+        updateMessageContent(draft.content || '', {persist: false});
+    }, [resolveDraftRole, setAttachments, updateMessageContent]);
 
-    // ×：退出编辑/Fork，并把当前内容覆盖到普通输入框中。
-    // 消息上的未完成草稿仍然保留，之后再次编辑/Fork 时可继续恢复。
+    const leaveEditMode = useCallback(() => {
+        // Leaving Edit/Fork is an interruption, not a destructive discard. Persist
+        // the in-progress draft to both the message mount point and local Draft Store
+        // before restoring the independent normal composer draft.
+        if (editDraftRef.current) persistActiveDraft();
+        restoreNormalDraft();
+    }, [persistActiveDraft, restoreNormalDraft]);
+
+    // ×：中断当前 Edit/Fork，保留消息级草稿并恢复普通输入草稿。
     const handleCancelEdit = useCallback(() => {
-        leaveEditMode({promoteToStandalone: true});
+        leaveEditMode();
     }, [leaveEditMode]);
 
-    // 垃圾桶：仅退出编辑/Fork，恢复进入编辑前的普通输入内容。
-    // 不删除消息上的未完成草稿，也不把编辑内容带入普通发送。
+    // 取消按钮同样只是“暂存并退出”。真正提交成功后才清理消息上的
+    // Edit/Fork 草稿，避免误点或切换操作导致用户编辑内容永久丢失。
     const handleClearEdit = useCallback(() => {
         leaveEditMode();
     }, [leaveEditMode]);
@@ -579,27 +590,90 @@ function ChatBox({
         visibleBuiltinTools.forEach(tool => {
             builtinTools[tool.name] = Boolean(activeBuiltinToolStatus[tool.name]);
         });
+        const localPermissions = collectToolPermissions(extraTools, toolsStatus.extra_tools || {});
+        const authoritativePermissions = conversationId
+            ? conversationToolPermissionsRef.current
+            : localPermissions;
         return {
             ...toolsStatus,
             builtin_tools: builtinTools,
-            tool_permissions: collectToolPermissions(extraTools, toolsStatus.extra_tools || {}),
+            // Existing conversations always send the last server-confirmed permission
+            // snapshot.  `handleSendMessage` waits for the mutation queue first, so a
+            // failed optimistic toggle can never leak into turn.start through a stale
+            // React render closure. New conversations have no server snapshot yet and
+            // therefore submit their browser-local selection with the first Turn.
+            tool_permissions: Object.keys(authoritativePermissions || {}).length > 0
+                ? {...authoritativePermissions}
+                : localPermissions,
         };
-    }, [activeBuiltinToolStatus, extraTools, toolsStatus, visibleBuiltinTools]);
+    }, [activeBuiltinToolStatus, conversationId, extraTools, toolsStatus, visibleBuiltinTools]);
 
-    const applyConversationToolPermissions = useCallback((permissions, revision = 0) => {
+    const applyConversationToolPermissions = useCallback((permissions, revision = 0, {preservePending = true} = {}) => {
         const normalizedRevision = Number(revision) || 0;
         if (normalizedRevision < toolPermissionRevisionRef.current) return;
         toolPermissionRevisionRef.current = normalizedRevision;
         conversationToolPermissionsRef.current = {...(permissions || {})};
-        setToolsStatus(prev => ({
-            ...prev,
-            extra_tools: applyToolPermissionsToStatus(
-                extraTools,
-                prev.extra_tools || {},
-                permissions || {}
-            ),
-        }));
+        setToolsStatus(prev => {
+            const displayedPermissions = {...(permissions || {})};
+            if (preservePending && toolPermissionPendingCountsRef.current.size > 0) {
+                const optimisticPermissions = collectToolPermissions(extraTools, prev.extra_tools || {});
+                toolPermissionPendingCountsRef.current.forEach((count, toolName) => {
+                    if (count > 0 && optimisticPermissions[toolName] !== undefined) {
+                        displayedPermissions[toolName] = optimisticPermissions[toolName];
+                    }
+                });
+            }
+            return {
+                ...prev,
+                extra_tools: applyToolPermissionsToStatus(
+                    extraTools,
+                    prev.extra_tools || {},
+                    displayedPermissions
+                ),
+            };
+        });
     }, [extraTools]);
+
+    const setToolPermissionPending = useCallback((toolNames, pending) => {
+        const names = [...new Set((toolNames || []).filter(Boolean))];
+        if (names.length === 0) return;
+        const counts = toolPermissionPendingCountsRef.current;
+        names.forEach((name) => {
+            const current = counts.get(name) || 0;
+            const next = pending ? current + 1 : Math.max(0, current - 1);
+            if (next > 0) counts.set(name, next);
+            else counts.delete(name);
+        });
+        setPendingToolPermissionNames(new Set(counts.keys()));
+    }, []);
+
+    const enqueueConversationToolSync = useCallback((toolNames, operation) => {
+        const names = [...new Set((toolNames || []).filter(Boolean))];
+        setToolPermissionPending(names, true);
+        setConversationToolSyncCount(previous => previous + 1);
+
+        const runPromise = toolPermissionSyncQueueRef.current
+            .catch(() => undefined)
+            .then(operation);
+        toolPermissionSyncQueueRef.current = runPromise.then(() => undefined, () => undefined);
+
+        return runPromise.finally(() => {
+            setToolPermissionPending(names, false);
+            setConversationToolSyncCount(previous => Math.max(0, previous - 1));
+        });
+    }, [setToolPermissionPending]);
+
+    const waitForConversationToolSync = useCallback(async () => {
+        await toolPermissionSyncQueueRef.current.catch(() => undefined);
+    }, []);
+
+    const restoreAuthoritativeToolPermissions = useCallback(({preservePending = false} = {}) => {
+        applyConversationToolPermissions(
+            conversationToolPermissionsRef.current,
+            toolPermissionRevisionRef.current,
+            {preservePending}
+        );
+    }, [applyConversationToolPermissions]);
 
     const syncToolPermission = useCallback((toolName, mode) => {
         setRuntimeToolPermissions(prev => {
@@ -609,30 +683,40 @@ function ChatBox({
             return next;
         });
 
-        if (!conversationId) return;
-        emitEvent({
-            event: 'tool.permission.set',
-            conversationId,
-            payload: {
-                toolName,
-                mode,
-                scope: 'conversation',
-                applyToPending: true,
-                revision: toolPermissionRevisionRef.current,
-            },
-        }).then((response) => {
-            if (response?.success === false) {
-                console.error('Set tool permission failed:', response?.value);
-                return;
+        if (!conversationId) return Promise.resolve(true);
+        const requestConversationId = conversationId;
+        return enqueueConversationToolSync([toolName], async () => {
+            try {
+                const response = await emitEvent({
+                    event: 'tool.permission.set',
+                    conversationId: requestConversationId,
+                    payload: {
+                        toolName,
+                        mode,
+                        scope: 'conversation',
+                        applyToPending: true,
+                        revision: toolPermissionRevisionRef.current,
+                    },
+                });
+                if (response?.success === false) {
+                    throw new Error(response?.value || t('conversation_tools_save_failed', '保存本对话工具失败。'));
+                }
+                const value = response?.value;
+                if (draftConversationIdRef.current === requestConversationId && value?.permissions) {
+                    applyConversationToolPermissions(value.permissions, value.revision);
+                }
+                return true;
+            } catch (error) {
+                console.error('Set tool permission failed:', error);
+                if (draftConversationIdRef.current === requestConversationId) {
+                    const hasNewerPendingMutation = (toolPermissionPendingCountsRef.current.get(toolName) || 0) > 1;
+                    restoreAuthoritativeToolPermissions({preservePending: hasNewerPendingMutation});
+                    toast.error(error?.message || t('conversation_tools_save_failed', '保存本对话工具失败。'));
+                }
+                return false;
             }
-            const value = response?.value;
-            if (value?.permissions) {
-                applyConversationToolPermissions(value.permissions, value.revision);
-            }
-        }).catch((error) => {
-            console.error('Set tool permission failed:', error);
         });
-    }, [applyConversationToolPermissions, conversationId]);
+    }, [applyConversationToolPermissions, conversationId, enqueueConversationToolSync, restoreAuthoritativeToolPermissions, t]);
 
     const syncToolPermissions = useCallback(async (updates) => {
         if (!updates || Object.keys(updates).length === 0) return true;
@@ -650,33 +734,44 @@ function ChatBox({
             return true;
         }
 
-        try {
-            const response = await emitEvent({
-                event: 'tool.permissions.set',
-                conversationId,
-                payload: {
-                    permissions: updates,
-                    scope: 'conversation',
-                    applyToPending: true,
-                    revision: toolPermissionRevisionRef.current,
-                },
-            });
-            if (response?.success === false) {
-                toast.error(response?.value || t('conversation_tools_save_failed', '保存本对话工具失败。'));
+        const requestConversationId = conversationId;
+        const toolNames = Object.keys(updates);
+        return await enqueueConversationToolSync(toolNames, async () => {
+            try {
+                const response = await emitEvent({
+                    event: 'tool.permissions.set',
+                    conversationId: requestConversationId,
+                    payload: {
+                        permissions: updates,
+                        scope: 'conversation',
+                        applyToPending: true,
+                        revision: toolPermissionRevisionRef.current,
+                    },
+                });
+                if (response?.success === false) {
+                    throw new Error(response?.value || t('conversation_tools_save_failed', '保存本对话工具失败。'));
+                }
+                const value = response?.value;
+                if (draftConversationIdRef.current === requestConversationId && value?.permissions) {
+                    applyConversationToolPermissions(value.permissions, value.revision);
+                }
+                if (draftConversationIdRef.current === requestConversationId) {
+                    toast.success(t('conversation_tools_saved', '已更新本对话工具。'));
+                }
+                return true;
+            } catch (error) {
+                console.error('Set conversation tool permissions failed:', error);
+                if (draftConversationIdRef.current === requestConversationId) {
+                    const hasNewerPendingMutation = toolNames.some(
+                        name => (toolPermissionPendingCountsRef.current.get(name) || 0) > 1
+                    );
+                    restoreAuthoritativeToolPermissions({preservePending: hasNewerPendingMutation});
+                    toast.error(error?.message || t('conversation_tools_save_failed', '保存本对话工具失败。'));
+                }
                 return false;
             }
-            const value = response?.value;
-            if (value?.permissions) {
-                applyConversationToolPermissions(value.permissions, value.revision);
-            }
-            toast.success(t('conversation_tools_saved', '已更新本对话工具。'));
-            return true;
-        } catch (error) {
-            console.error('Set conversation tool permissions failed:', error);
-            toast.error(t('conversation_tools_save_failed', '保存本对话工具失败。'));
-            return false;
-        }
-    }, [applyConversationToolPermissions, extraTools, conversationId, t, toolsStatus.extra_tools]);
+        });
+    }, [applyConversationToolPermissions, conversationId, enqueueConversationToolSync, extraTools, restoreAuthoritativeToolPermissions, t, toolsStatus.extra_tools]);
 
     const currentConversationToolPermissions = useMemo(() => (
         collectToolPermissions(extraTools, toolsStatus.extra_tools || {})
@@ -694,6 +789,11 @@ function ChatBox({
             && Boolean(currentContent.trim())
         );
 
+        // Conversation tool permissions are server-authoritative.  Do not race a
+        // new Turn ahead of a pending permission mutation; the UI remains optimistic
+        // while this short synchronization finishes in the background.
+        await waitForConversationToolSync();
+
         if (isTaskInterruption) {
             if (attachmentsMeta.length > 0) {
                 toast.warning(t('task_mode_interrupt_no_attachments', '任务补充暂不支持附件，请先移除附件。'));
@@ -705,10 +805,10 @@ function ChatBox({
 
             taskInterruptPendingRef.current = true;
             setIsTaskInterruptPending(true);
-            // The Worker owns the authoritative taskUserMessage bubble. Keeping an
-            // extra transcript-level optimistic bubble duplicates the same request
-            // once the new Task Mode segment is rendered by the server.
-            updateMessageContent('');
+            // Keep the persisted normal draft until the server accepts the interrupt.
+            // The empty composer is only an optimistic visual state, so a refresh/crash
+            // while the request is in flight can still recover the submitted text.
+            updateMessageContent('', {persist: false});
 
             try {
                 const response = await emitEvent({
@@ -724,6 +824,14 @@ function ChatBox({
                     if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
                     toast.error(response?.value || t('task_mode_interrupt_failed', '无法补充任务要求。'));
                     return;
+                }
+
+                const persistedDraft = readComposerDraft({
+                    conversationId: draftConversationIdRef.current,
+                    mode: 'normal',
+                });
+                if ((persistedDraft?.content || '') === currentContent && !messageContentRef.current.trim()) {
+                    clearComposerDraft({conversationId: draftConversationIdRef.current, mode: 'normal'});
                 }
                 toast.success(t('task_mode_interrupt_sent', '已将补充要求加入当前任务。'));
             } catch (error) {
@@ -745,7 +853,39 @@ function ChatBox({
         const hasNewInput = Boolean(currentContent.trim()) || attachmentsMeta.length > 0 || wasEditing;
         const interruptAndSend = sendButtonStatusRef.current === 'generating' && hasNewInput;
 
-        onSendMessage({
+        let submittedEditCommit = null;
+        let submittedNormalCommit = null;
+
+        if (wasEditing && activeEditDraft) {
+            persistActiveDraft();
+            submittedEditCommit = {
+                conversationId: draftConversationIdRef.current,
+                messageId: activeEditDraft.messageId,
+                mode: activeEditDraft.mode,
+                message: activeEditDraft.message || null,
+            };
+            pendingEditCommitRef.current = submittedEditCommit;
+            pendingEditClearRef.current = true;
+        } else {
+            // Freeze the exact browser-local draft revision being submitted.  The
+            // user may start changing the composer again before protocol.reply /
+            // composer.clear arrives; those newer edits must never be committed by
+            // the older Turn.
+            persistActiveDraft();
+            const submittedDraft = readComposerDraft({
+                conversationId: draftConversationIdRef.current,
+                mode: 'normal',
+            });
+            submittedNormalCommit = {
+                conversationId: draftConversationIdRef.current,
+                content: currentContent,
+                draftUpdatedAt: submittedDraft?.updatedAt || 0,
+                serverAccepted: false,
+            };
+            pendingNormalCommitRef.current = submittedNormalCommit;
+        }
+
+        const sendPromise = Promise.resolve(onSendMessage({
             messageContent: currentContent,
             toolsStatus: buildOutboundToolsStatus(),
             isEditMessage: wasEditing,
@@ -760,13 +900,56 @@ function ChatBox({
             isRegenerate: false,
             role: currentRole?.name,
             isFork: isForkMode
-        });
+        }));
         textareaRef.current?.focus();
 
-        if (wasEditing) {
-            if (activeEditDraft) clearMessageDraft(activeEditDraft.message, activeEditDraft.mode);
-            pendingEditClearRef.current = true;
-            leaveEditMode();
+        // Leave Edit/Fork immediately for a responsive composer, but do not delete
+        // its local draft until the authoritative composer.clear arrives.  Failed
+        // admissions therefore remain recoverable when the user edits the message again.
+        // Do this before awaiting protocol.reply: composer.clear can legally arrive very
+        // soon afterwards, and leaving later would accidentally persist the committed
+        // Edit draft again.
+        if (wasEditing) leaveEditMode();
+
+        try {
+            const sendResult = await sendPromise;
+            if (sendResult?.success === false) {
+                pendingEditClearRef.current = false;
+                pendingEditCommitRef.current = null;
+                pendingNormalCommitRef.current = null;
+            } else if (sendResult?.success === true) {
+                // protocol.reply success is the durable admission/commit boundary.
+                // Remove only the exact submitted browser draft here so switching
+                // conversations before composer.clear cannot resurrect an already
+                // sent message.  composer.clear remains responsible for the visible
+                // input reset in the currently mounted ChatBox.
+                if (wasEditing && submittedEditCommit) {
+                    clearComposerDraft(submittedEditCommit);
+                    clearMountedComposerDraft(submittedEditCommit.message, submittedEditCommit.mode);
+                } else if (submittedNormalCommit) {
+                    // For the first Turn of a brand-new conversation, ChatBox was
+                    // submitted while its prop-level conversationId was still null.
+                    // ChatPage now returns the authoritative ID actually used for
+                    // turn.start, so commit the migrated draft against that ID instead
+                    // of mutating pending refs from a later React effect.
+                    const committedConversationId = sendResult?.conversationId
+                        ?? submittedNormalCommit.conversationId;
+                    const persistedDraft = readComposerDraft({
+                        conversationId: committedConversationId,
+                        mode: 'normal',
+                    });
+                    const sameDraftRevision = (persistedDraft?.updatedAt || 0) === submittedNormalCommit.draftUpdatedAt;
+                    if (sameDraftRevision) {
+                        clearComposerDraft({conversationId: committedConversationId, mode: 'normal'});
+                        submittedNormalCommit.serverAccepted = true;
+                    }
+                }
+            }
+        } catch (error) {
+            pendingEditClearRef.current = false;
+            pendingEditCommitRef.current = null;
+            pendingNormalCommitRef.current = null;
+            console.error('Send message admission failed:', error);
         }
     }, [
         onSendMessage,
@@ -777,8 +960,10 @@ function ChatBox({
         isForkMode,
         leaveEditMode,
         conversationId,
+        persistActiveDraft,
         t,
         updateMessageContent,
+        waitForConversationToolSync,
     ]);
 
     const handleKeyDown = useCallback((e) => {
@@ -818,6 +1003,12 @@ function ChatBox({
         }
         handleSendMessage();
     }, [attachmentsMeta.length, handleInputActivity, handleSendMessage, isSmallScreen, t, tipMessageIsForNewLine]);
+
+    const handleRoleChange = useCallback((role) => {
+        currentRoleRef.current = role || null;
+        setCurrentRole(role || null);
+        persistActiveDraft({roleName: role?.name || null});
+    }, [persistActiveDraft]);
 
     const handleInputChange = useCallback((newValue) => {
         if (isReadOnly) return;
@@ -1323,19 +1514,22 @@ function ChatBox({
         }
 
         if (data.roles) {
-            // 设置角色列表
+            // 设置角色列表，并优先恢复当前 browser-local Composer Draft 的角色。
             setRoles(data.roles);
+            rolesRef.current = data.roles;
 
-            // 查找默认角色
-            const defaultRole = data.roles.find(role => role.default);
-            if (defaultRole) {
-                setCurrentRole(defaultRole);
-            } else if (data.roles.length > 0) {
-                setCurrentRole(data.roles[0]);
-            }
+            const activeIdentity = getActiveDraftIdentity();
+            const activeDraft = readComposerDraft(activeIdentity);
+            const draftRole = activeDraft?.roleName
+                ? data.roles.find(role => role.name === activeDraft.roleName)
+                : null;
+            const defaultRole = data.roles.find(role => role.default) || data.roles[0] || null;
+            const nextRole = draftRole || defaultRole;
+            currentRoleRef.current = nextRole;
+            setCurrentRole(nextRole);
         }
 
-    }, [FilePickerCallback, PicPickerCallback, initializeExtraTools, conversationId]);
+    }, [FilePickerCallback, PicPickerCallback, getActiveDraftIdentity, initializeExtraTools, conversationId]);
 
     // ========== 事件处理函数 ==========
 
@@ -1460,49 +1654,92 @@ function ChatBox({
                             isFork: payload.isFork
                         }
                     );
+                } else if (!payload.isEdit) {
+                    // Branch switching and other message actions may explicitly ask the
+                    // composer to leave Edit/Fork mode. Never replace the normal draft
+                    // with an empty payload in that path.
+                    if (editDraftRef.current) leaveEditMode();
                 } else {
-                    if (!isEditMessageRef.current) {
-                        standaloneAttachmentsRef.current = [...attachmentsMeta];
-                    }
+                    // Save whichever draft is active before switching sessions. Normal,
+                    // Edit and Fork drafts are independent browser-local records.
+                    persistActiveDraft();
 
                     const draftMode = payload.isFork ? 'fork' : 'edit';
                     const targetMessage = payload.message || null;
-                    const restoredDraft = readMessageDraft(targetMessage, draftMode);
+                    const messageId = payload.msgId || targetMessage?.id || targetMessage?.msgId || null;
+                    const persistedDraft = readComposerDraft({
+                        conversationId: draftConversationIdRef.current,
+                        mode: draftMode,
+                        messageId,
+                    });
+                    const mountedDraft = readMountedComposerDraft(targetMessage, draftMode);
+                    const restoredDraft = newestComposerDraft(mountedDraft, persistedDraft);
+                    const nextContent = restoredDraft?.content ?? (payload.content ?? '');
+                    const nextAttachments = restoredDraft
+                        ? (restoredDraft.attachments || [])
+                        : (payload.attachments || []);
+                    const nextRoleName = restoredDraft?.roleName || payload.role || null;
 
-                    editDraftRef.current = {message: targetMessage, mode: draftMode};
-                    isEditMessageRef.current = Boolean(payload.isEdit);
+                    editDraftRef.current = {messageId, mode: draftMode, message: targetMessage};
+                    isEditMessageRef.current = true;
                     pendingEditClearRef.current = false;
 
-                    setIsEditMessage(Boolean(payload.isEdit));
+                    setIsEditMessage(true);
                     setIsForkMode(Boolean(payload.isFork));
-                    if (payload.attachments !== undefined) setAttachments(payload.attachments);
-                    updateMessageContent(
-                        restoredDraft !== undefined ? restoredDraft : (payload.content ?? ''),
-                        {persist: false}
-                    );
-                    if (payload.msgId) setEditMessageId(payload.msgId);
-                    if (payload.role) {
-                        const foundRole = roles.find(item => item.name === payload.role)
-                        if (foundRole) {
-                            setCurrentRole(foundRole);
-                        } else {
-                            setCurrentRole({name: payload.role, text: "?"});
-                        }
+                    setEditMessageId(messageId);
+                    suppressAttachmentDraftPersistRef.current = true;
+                    setAttachments(nextAttachments);
+                    const nextRole = resolveDraftRole(nextRoleName);
+                    currentRoleRef.current = nextRole;
+                    setCurrentRole(nextRole);
+                    updateMessageContent(nextContent, {persist: false});
+                    const seededDraft = saveComposerSnapshot({
+                        conversationId: draftConversationIdRef.current,
+                        mode: draftMode,
+                        messageId,
+                        content: nextContent,
+                        attachments: nextAttachments,
+                        roleName: nextRole?.name || nextRoleName,
+                    });
+                    if (seededDraft && targetMessage) {
+                        mountComposerDraft(targetMessage, draftMode, seededDraft);
                     }
                     showCollapsedChatBox({focus: true});
                 }
 
                 break;
 
-            case 'composer.clear':
-                if (pendingEditClearRef.current) {
+            case 'composer.clear': {
+                if (pendingEditClearRef.current && pendingEditCommitRef.current) {
+                    const committed = pendingEditCommitRef.current;
                     pendingEditClearRef.current = false;
-                    leaveEditMode();
-                } else {
-                    setAttachments([]);
-                    updateMessageContent("");
+                    pendingEditCommitRef.current = null;
+                    clearComposerDraft(committed);
+                    clearMountedComposerDraft(committed.message, committed.mode);
+                    break;
                 }
+
+                const normalCommit = pendingNormalCommitRef.current;
+                pendingNormalCommitRef.current = null;
+                if (normalCommit) {
+                    const persistedDraft = readComposerDraft({
+                        conversationId: normalCommit.conversationId,
+                        mode: 'normal',
+                    });
+                    const currentStillSubmitted = messageContentRef.current === normalCommit.content;
+                    const persistedStillSubmitted = normalCommit.serverAccepted
+                        || (persistedDraft?.updatedAt || 0) === normalCommit.draftUpdatedAt;
+                    if (!currentStillSubmitted || !persistedStillSubmitted) break;
+                    clearComposerDraft({conversationId: normalCommit.conversationId, mode: 'normal'});
+                } else {
+                    clearComposerDraft({conversationId: draftConversationIdRef.current, mode: 'normal'});
+                }
+
+                suppressAttachmentDraftPersistRef.current = true;
+                setAttachments([]);
+                updateMessageContent('', {persist: false});
                 break;
+            }
 
             case 'composer.message.seeded':  // 原地发送消息
                 if (payload.msgId && payload.value && payload.value.name) {
@@ -1578,16 +1815,10 @@ function ChatBox({
                                         conversationId: conversationId,
                                         localOnly: true,
                                     }).then(data => {
-                                        if (!payload.noClear) {
-                                            if (isEditMessageRef.current) {
-                                                const editDraft = editDraftRef.current;
-                                                if (editDraft) clearMessageDraft(editDraft.message, editDraft.mode);
-                                                leaveEditMode();
-                                            } else {
-                                                updateMessageContent("");
-                                                setAttachments([]);
-                                            }
-                                        }
+                                        // Composer clearing is an explicit server event (`composer.clear`).
+                                        // `composer.message.seeded` only materializes the optimistic/user message.
+                                        // Keeping those responsibilities separate prevents an out-of-order seeded
+                                        // event from erasing a newer normal draft typed after the submitted Turn.
                                         reply(data);
                                     })
                                 })
@@ -1604,12 +1835,13 @@ function ChatBox({
 
                 break;
         }
-    }, [attachmentsMeta, buildOutboundToolsStatus, chatboxSetup, leaveEditMode, conversationId, onSendMessage, roles, setAttachments, showCollapsedChatBox, t, toolsStatus, updateMessageContent]);
+    }, [attachmentsMeta, buildOutboundToolsStatus, chatboxSetup, leaveEditMode, conversationId, onSendMessage, persistActiveDraft, resolveDraftRole, setAttachments, showCollapsedChatBox, t, toolsStatus, updateMessageContent]);
 
     const renderMenuItems = useExtraToolsMenuItems({
         toolsStatus,
         setToolsStatus,
         runtimeToolPermissions,
+        pendingToolPermissionNames,
         onToolPermissionChange: syncToolPermission,
         highZClass,
         t,
@@ -1626,6 +1858,10 @@ function ChatBox({
         const pendingPermissions = pendingConversationToolPermissionsRef.current;
 
         toolPermissionRevisionRef.current = 0;
+        toolPermissionSyncQueueRef.current = Promise.resolve();
+        toolPermissionPendingCountsRef.current.clear();
+        setPendingToolPermissionNames(new Set());
+        setConversationToolSyncCount(0);
         if (isNewConversationAssigned && Object.keys(pendingPermissions).length > 0) {
             // conversation.create runs before the first turn.start is persisted. Keep
             // the new-conversation tool selection attached to the assigned ID
@@ -1789,37 +2025,63 @@ function ChatBox({
         return () => unsubscribe();
     }, [handleEventBroadcast, conversationId]);
 
-    // 页面切换时恢复对应会话的普通输入草稿。
+    // 草稿完全属于浏览器。切换 Conversation 时保存当前 Session，并恢复目标
+    // Conversation 的 normal draft；Edit/Fork 草稿按 messageId+mode 独立持久化。
     useEffect(() => {
         const previousConversationId = previousConversationIdRef.current;
-        if (previousConversationId === conversationId) return;
-
-        const previousStorageKey = currentDraftStorageKeyRef.current;
-        const nextStorageKey = getStandaloneDraftStorageKey(conversationId);
+        const isInitialHydration = !hasHydratedDraftRef.current;
         const isNewConversationAssigned = !previousConversationId && Boolean(conversationId);
 
-        previousConversationIdRef.current = conversationId;
-        currentDraftStorageKeyRef.current = nextStorageKey;
-        editDraftRef.current = null;
-        isEditMessageRef.current = false;
-        pendingEditClearRef.current = false;
-        standaloneAttachmentsRef.current = [];
-        setIsEditMessage(false);
-        setIsForkMode(false);
-        setEditMessageId(null);
+        if (!isInitialHydration && previousConversationId === conversationId) return;
 
-        // 新对话首次发送时，conversation.create 会先让 conversationId 从空值切换为正式 ID。
-        // 此时保留当前输入与附件，避免随后的 Shot-Message 回读到空内容；
-        // 同时把普通草稿迁移到正式会话键，后端发送 Clear 后会正常删除。
+        if (!isInitialHydration) persistActiveDraft();
+        hasHydratedDraftRef.current = true;
+        previousConversationIdRef.current = conversationId;
+
         if (isNewConversationAssigned) {
-            saveStandaloneDraft(previousStorageKey, '');
-            saveStandaloneDraft(nextStorageKey, messageContentRef.current);
+            moveComposerConversationDrafts(previousConversationId, conversationId);
+            draftConversationIdRef.current = conversationId;
+            // Do not mutate an in-flight pending commit here. protocol.reply and
+            // composer.clear can legitimately clear that ref before this passive
+            // effect runs. The send result carries the authoritative conversationId
+            // used by turn.start and owns draft commit resolution instead.
             return;
         }
 
-        setAttachments([]);
-        updateMessageContent(readStandaloneDraft(nextStorageKey), {persist: false});
-    }, [conversationId, setAttachments, updateMessageContent]);
+        draftConversationIdRef.current = conversationId;
+        editDraftRef.current = null;
+        pendingEditClearRef.current = false;
+        pendingEditCommitRef.current = null;
+        pendingNormalCommitRef.current = null;
+        isEditMessageRef.current = false;
+        setIsEditMessage(false);
+        setIsForkMode(false);
+        setEditMessageId(null);
+        restoreNormalDraft();
+    }, [conversationId, persistActiveDraft, restoreNormalDraft]);
+
+    // Persist uploaded attachment metadata with the active browser-local draft. Local
+    // File/Blob objects are intentionally excluded by draftStore; only server-backed
+    // attachment metadata survives a refresh.
+    useEffect(() => {
+        attachmentsMetaRef.current = attachmentsMeta;
+        if (suppressAttachmentDraftPersistRef.current) {
+            suppressAttachmentDraftPersistRef.current = false;
+            return;
+        }
+        if (!hasHydratedDraftRef.current) return;
+        persistActiveDraft({attachments: attachmentsMeta});
+    }, [attachmentsMeta, persistActiveDraft]);
+
+    useEffect(() => {
+        rolesRef.current = roles;
+    }, [roles]);
+
+    useEffect(() => {
+        currentRoleRef.current = currentRole;
+        if (!currentRole || !hasHydratedDraftRef.current) return;
+        persistActiveDraft({roleName: currentRole.name});
+    }, [currentRole, persistActiveDraft]);
 
     // 更新附件高度。附件数量、容器宽度和过渡动画都会改变实际高度，
     // 使用 ResizeObserver 避免 rootMaxHeight 沿用旧值而裁掉附件滚动按钮。
@@ -2083,10 +2345,11 @@ function ChatBox({
         setMobileOpenSections: setMobileOpenMenuSections,
         onManageConversationTools: () => setConversationToolsDialogOpen(true),
         conversationToolsDisabled: isReadOnly,
+        conversationToolsSyncing: conversationToolSyncCount > 0,
         onManageWorkspace: () => setWorkspaceSettingsDialogOpen(true),
         workspaceSettingsDisabled: isReadOnly,
     }), [toolsLoadedStatus, extraTools, attachmentTools, visibleBuiltinTools, activeToolsStatus,
-        setToolsStatus, handleBuiltinToolToggle, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth, voiceInputNode, isSmallScreen, mobileOpenMenuSections, isReadOnly]);
+        setToolsStatus, handleBuiltinToolToggle, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth, voiceInputNode, isSmallScreen, mobileOpenMenuSections, isReadOnly, conversationToolSyncCount]);
 
     const autoHideButtonLabel = isSmallScreen
         ? t('chatbox_hide')
@@ -2109,6 +2372,7 @@ function ChatBox({
                 defaultPermissions={conversationToolDefaults}
                 onApply={syncToolPermissions}
                 disabled={isReadOnly}
+                syncing={conversationToolSyncCount > 0}
                 t={t}
             />
             <WorkspaceSettingsDialog
@@ -2319,7 +2583,7 @@ function ChatBox({
                                 currentRole={currentRole}
                                 selectedModel={selectedModel}
                                 highZClass={highZClass}
-                                onRoleChange={setCurrentRole}
+                                onRoleChange={handleRoleChange}
                             />
 
                             {activeTaskModeOptions.length > 1 && (

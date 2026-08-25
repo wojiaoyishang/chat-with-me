@@ -1,5 +1,5 @@
 import React, {useCallback, useState} from 'react';
-import {Check, ChevronDown, Hand, Minus, Square, ThumbsDown, ThumbsUp} from 'lucide-react';
+import {Check, ChevronDown, Hand, LoaderCircle, Minus, Square, ThumbsDown, ThumbsUp} from 'lucide-react';
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
@@ -43,6 +43,7 @@ export const useExtraToolsMenuItems = ({
     toolsStatus,
     setToolsStatus,
     runtimeToolPermissions = {},
+    pendingToolPermissionNames = new Set(),
     onToolPermissionChange,
     highZClass,
     t,
@@ -233,6 +234,7 @@ export const useExtraToolsMenuItems = ({
                     ? (rawMode ? 'allow' : 'deny')
                     : (['allow', 'deny', 'ask'].includes(rawMode) ? rawMode : 'ask');
                 const currentMode = runtimeToolPermissions[item.name] || persistedMode;
+                const isPending = pendingToolPermissionNames?.has?.(item.name) || false;
                 const modes = [
                     {value: 'allow', label: t('tool_permission_allow', '允许'), Icon: ThumbsUp},
                     {value: 'ask', label: t('tool_permission_ask', '询问'), Icon: Hand},
@@ -252,6 +254,7 @@ export const useExtraToolsMenuItems = ({
                 return (
                     <div
                         key={`tool-${item.name}`}
+                        aria-busy={isPending}
                         className={`${isMobileMenu ? 'rounded-lg px-2.5 py-2' : 'px-2 py-1.5'} ${
                             isDisabled ? 'pointer-events-none opacity-60' : ''
                         }`}
@@ -259,6 +262,11 @@ export const useExtraToolsMenuItems = ({
                         <div className="flex min-w-0 items-center gap-2">
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
                             <span className={`${MENU_ITEM_TEXT_CLASS} text-sm text-gray-700`} title={t(item.text)}>{t(item.text)}</span>
+                            {isPending && (
+                                <span className="ml-auto inline-flex shrink-0 items-center gap-1 text-[10px] text-blue-500" title={t('conversation_tools_syncing', '正在同步工具状态…')}>
+                                    <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
+                                </span>
+                            )}
                         </div>
                         <div className="mt-1.5 grid grid-cols-3 rounded-lg bg-gray-100 p-0.5">
                             {modes.map(({value, label, Icon}) => {
@@ -454,7 +462,7 @@ export const useExtraToolsMenuItems = ({
 
             return null;
         });
-    }, [toolsStatus.extra_tools, setToolsStatus, runtimeToolPermissions, onToolPermissionChange, highZClass, isMobileMenu, menuCollisionPadding, renderIcon, subMenuSide, t, isMobileSectionOpen, toggleMobileSection, getMobileSectionScope]);
+    }, [toolsStatus.extra_tools, setToolsStatus, runtimeToolPermissions, pendingToolPermissionNames, onToolPermissionChange, highZClass, isMobileMenu, menuCollisionPadding, renderIcon, subMenuSide, t, isMobileSectionOpen, toggleMobileSection, getMobileSectionScope]);
 
     return renderMenuItems;
 };

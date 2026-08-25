@@ -1207,17 +1207,24 @@ function ChatPage({
             if (isEditMessage) {
                 eventPayload.payload.msgId = editMessageId;
             }
-            emitEvent(eventPayload).then((payload) => {
+            return emitEvent(eventPayload).then((payload) => {
                 if (payload.success) {
                     currentTurnIdempotencyKeyRef.current = generateUUID();
                 } else {
                     toast.error(t("send_message_error", {message: payload.value}));
                 }
+                // Always expose the authoritative conversation used for this Turn.
+                // A brand-new conversation is created inside this callback before the
+                // parent ChatBox receives the updated conversationId prop, so callers
+                // must not rely on a later React effect to rewrite pending draft state.
+                return {
+                    ...payload,
+                    conversationId,
+                };
             });
-            setAttachments([]);
         };
         if (!conversationId) {
-            emitEvent({
+            return emitEvent({
                 event: 'conversation.create',
                 payload: {
                     idempotencyKey: currentTurnIdempotencyKeyRef.current
@@ -1231,16 +1238,17 @@ function ChatPage({
                         isNewConversationIdRef.current = true;
                         setIsNewConversationId(true);
                         onNewConversationId(payload.value);
-                        sendMessage(payload.value);
+                        return sendMessage(payload.value);
                     } else {
                         throw new Error(payload.value);
                     }
                 })
                 .catch((error) => {
                     toast.error(t("get_conversation_id_error", {message: error?.message}));
+                    return {success: false, value: error?.message || String(error)};
                 });
         } else {
-            sendMessage(conversationId);
+            return sendMessage(conversationId);
         }
     }, [conversationId, documentId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType, t, uploadFiles, onNewConversationId]);
 
