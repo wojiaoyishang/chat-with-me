@@ -1,5 +1,5 @@
 src/features/notification/useNotificationStore 模块
-=================================================
+==========================================================================================================
 
 .. js:module:: src/features/notification/useNotificationStore
 
@@ -11,7 +11,7 @@ src/features/notification/useNotificationStore 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/notification/useNotificationStore.js``
 * **模块标识**：``src/features/notification/useNotificationStore``
@@ -20,12 +20,12 @@ src/features/notification/useNotificationStore 模块
 * **局部函数与匿名回调**：17
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``zustand``、``@/lib/tools.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:202:343:FUNCTION
 
@@ -65,7 +65,7 @@ src/features/notification/useNotificationStore 模块
    **主要协作调用**：``Number``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -332,7 +332,7 @@ src/features/notification/useNotificationStore 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``state``、``{ notifications: next, resolvedRevisions: { ...state.resolvedRevisions, [notificationId]: Math.max( incomingRevision, Number(state.resolvedRevisions[notificationId] \|\| 0), ), }, }``。
+根据执行分支返回结果；代表性返回表达式为 ``state``、``{ notifications: next, resolvedRevisions: { ...state.resolvedRevisions, [notificationId]: Math.max( incomingRevision, Number(state.resolvedRevisions[notificationId] || 0), ), }, }``。
 
 **主要协作调用**：``Number``、``Math.max``。
 
@@ -387,7 +387,7 @@ src/features/notification/useNotificationStore 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{ notifications: next, resolvedRevisions: { ...state.resolvedRevisions, [notificationId]: Math.max( Number(revision \|\| 0), Number(state.resolvedRevisions[notificationId] \|\| 0), ),…``。
+根据执行分支返回结果；代表性返回表达式为 ``{ notifications: next, resolvedRevisions: { ...state.resolvedRevisions, [notificationId]: Math.max( Number(revision || 0), Number(state.resolvedRevisions[notificationId] || 0), ),…``。
 
 **主要协作调用**：``Math.max``、``Number``。
 

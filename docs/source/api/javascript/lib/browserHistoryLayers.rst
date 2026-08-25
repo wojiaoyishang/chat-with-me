@@ -1,9 +1,9 @@
 src/lib/browserHistoryLayers 模块
-===============================
+================================================================================
 
 .. js:module:: src/lib/browserHistoryLayers
 
-Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser Back closes the newest layer first. - Normal close buttons collapse the synthetic history entry. - `onBack` may return false to keep the layer open and immediately re-arm it. This is useful for an unsaved-change confirmation flow.
+Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser Back closes the newest layer first. - Normal close buttons collapse the synthetic history entry. - \`onBack\` may return false to keep the layer open and immediately re-arm it. This is useful for an unsaved-change confirmation flow.
 
 .. note::
 
@@ -11,7 +11,7 @@ Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/lib/browserHistoryLayers.js``
 * **模块标识**：``src/lib/browserHistoryLayers``
@@ -20,12 +20,12 @@ Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser
 * **局部函数与匿名回调**：12
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/lib/browserHistoryLayers.js:236:386:FUNCTION
 
@@ -41,7 +41,7 @@ Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``''``、``\`${window.location.pathname}${window.location.search}${window.location.hash}\```。
+   根据执行分支返回结果；代表性返回表达式为 ``''``、``\x60${window.location.pathname}${window.location.search}${window.location.hash}\x60``。
 
    **副作用**
 
@@ -262,7 +262,7 @@ Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

@@ -1,5 +1,5 @@
 src/components/markdown/remarkDirectiveToComponent 模块
-=====================================================
+==================================================================================================================
 
 .. js:module:: src/components/markdown/remarkDirectiveToComponent
 
@@ -11,7 +11,7 @@ src/components/markdown/remarkDirectiveToComponent 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/remarkDirectiveToComponent.js``
 * **模块标识**：``src/components/markdown/remarkDirectiveToComponent``
@@ -20,12 +20,12 @@ src/components/markdown/remarkDirectiveToComponent 模块
 * **局部函数与匿名回调**：8
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``unist-util-visit``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/remarkDirectiveToComponent.js:39:406:FUNCTION
 
@@ -137,7 +137,7 @@ src/components/markdown/remarkDirectiveToComponent 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``function transformer(tree) { visit(tree, (node) => node.type === 'paragraph' \|\| node.type === 'heading', (paragraphNode, paragraphIndex, paragraphParent) => { if (!paragraphParent…``。
+   根据执行分支返回结果；代表性返回表达式为 ``function transformer(tree) { visit(tree, (node) => node.type === 'paragraph' || node.type === 'heading', (paragraphNode, paragraphIndex, paragraphParent) => { if (!paragraphParent…``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -155,12 +155,12 @@ src/components/markdown/remarkDirectiveToComponent 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``function transformer(tree) { visit(tree, 'code', (node) => { const data = node.data \|\| (node.data = {}); data.hProperties = { ...(data.hProperties \|\| {}), isCodeBlock: true, }; })…``。
+   根据执行分支返回结果；代表性返回表达式为 ``function transformer(tree) { visit(tree, 'code', (node) => { const data = node.data || (node.data = {}); data.hProperties = { ...(data.hProperties || {}), isCodeBlock: true, }; })…``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

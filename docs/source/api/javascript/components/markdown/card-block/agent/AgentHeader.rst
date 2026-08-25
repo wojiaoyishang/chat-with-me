@@ -1,5 +1,5 @@
 src/components/markdown/card-block/agent/AgentHeader 模块
-=======================================================
+======================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/agent/AgentHeader
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/agent/AgentHeader 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/agent/AgentHeader.jsx``
 * **模块标识**：``src/components/markdown/card-block/agent/AgentHeader``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/agent/AgentHeader 模块
 * **局部函数与匿名回调**：2
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``../useExpandedState.js``、``../status/StableStepsButton.jsx``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,11 +44,11 @@ src/components/markdown/card-block/agent/AgentHeader 模块
 **参数**
 
 ``{ Icon, expandedKey, isDone, isFailed, isFinished, isProcessing, lastLine, statusConfig, title, }``
-   调用方传入的 `` Icon, expandedKey, isDone, isFailed, isFinished, isProcessing, lastLine, statusConfig, title, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``Icon, expandedKey, isDone, isFailed, isFinished, isProcessing, lastLine, statusConfig, title,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex items-center justify-between px-3 py-2.5"> <div className="flex items-center gap-3 min-w-0 flex-1"> <div className={\` flex-shrink-0 w-7 h-7 rounded-md flex…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex items-center justify-between px-3 py-2.5"> <div className="flex items-center gap-3 min-w-0 flex-1"> <div className={\x60 flex-shrink-0 w-7 h-7 rounded-md flex…``。
 
 **主要协作调用**：``useExpandedState``。
 

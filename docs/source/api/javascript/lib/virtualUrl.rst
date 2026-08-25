@@ -1,5 +1,5 @@
 src/lib/virtualUrl 模块
-=====================
+================================================================================
 
 .. js:module:: src/lib/virtualUrl
 
@@ -11,7 +11,7 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/lib/virtualUrl.js``
 * **模块标识**：``src/lib/virtualUrl``
@@ -20,12 +20,12 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 * **局部函数与匿名回调**：3
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``@/config.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/lib/virtualUrl.js:69:279:FUNCTION
 
@@ -42,9 +42,9 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``String(path \|\| '') .split('/') .filter(Boolean) .map(segment => decodeURIComponent(segment))``、``null``。
+   根据执行分支返回结果；代表性返回表达式为 ``String(path || '') .split('/') .filter(Boolean) .map(segment => decodeURIComponent(segment))``、``null``。
 
-   **主要协作调用**：``String(path \|\| '') .split('/') .filter(Boolean) .map``、``String(path \|\| '') .split('/') .filter``、``String(path \|\| '') .split``、``String``。
+   **主要协作调用**：``String(path || '') .split('/') .filter(Boolean) .map``、``String(path || '') .split('/') .filter``、``String(path || '') .split``、``String``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -141,9 +141,9 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``''``、``segments[1] === 'preview' ? \`${base}/upload/preview/${id}\` : \`${base}/upload/${id}\```、``\`${base}/public/${encodeSegments(segments)}\```。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``''``、``segments[1] === 'preview' ? \x60${base}/upload/preview/${id}\x60 : \x60${base}/upload/${id}\x60``、``\x60${base}/public/${encodeSegments(segments)}\x60``。
 
-   **主要协作调用**：``value.trim``、``raw.toLowerCase().startsWith``、``raw.toLowerCase``、``/[?#]/.test``、``/^cwm:\/\/([a-z]+)(?:\/(.*))?$/i.exec``、``match[1].toLowerCase``、``decodeSegments``、``segments.some``、``String(BASE_BACKEND_URL \|\| '').replace``、``String``、``IDENTIFIER_RE.test``、``encodeURIComponent``。
+   **主要协作调用**：``value.trim``、``raw.toLowerCase().startsWith``、``raw.toLowerCase``、``/[?#]/.test``、``/^cwm:\/\/([a-z]+)(?:\/(.*))?$/i.exec``、``match[1].toLowerCase``、``decodeSegments``、``segments.some``、``String(BASE_BACKEND_URL || '').replace``、``String``、``IDENTIFIER_RE.test``、``encodeURIComponent``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -181,24 +181,24 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``''``、``\`cwm://artifact/${encodeURIComponent(value)}/preview\```。
+   根据执行分支返回结果；代表性返回表达式为 ``''``、``\x60cwm://artifact/${encodeURIComponent(value)}/preview\x60``。
 
-   **主要协作调用**：``String(serverId \|\| '').trim``、``String``、``IDENTIFIER_RE.test``、``encodeURIComponent``。
+   **主要协作调用**：``String(serverId || '').trim``、``String``、``IDENTIFIER_RE.test``、``encodeURIComponent``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
 .. CWM-AST-FUNCTION src/lib/virtualUrl.js:196:234:FUNCTION
 
-.. rubric:: ``String(path \|\| '') .split('/') .filter(Boolean) .map callback @ 8``
+.. rubric:: ``String(path || '') .split('/') .filter(Boolean) .map callback @ 8``
 
 .. code-block:: javascript
 
    String(path || '') .split('/') .filter(Boolean) .map callback @ 8(segment)
 
-作为 ``String(path \|\| '') .split('/') .filter(Boolean) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``String(path || '') .split('/') .filter(Boolean) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``8``—``8`` 行；所属函数 ``decodeSegments``。
 

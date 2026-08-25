@@ -1,5 +1,5 @@
 src/features/notification/NotificationSettings 模块
-=================================================
+==========================================================================================================
 
 .. js:module:: src/features/notification/NotificationSettings
 
@@ -11,7 +11,7 @@ src/features/notification/NotificationSettings 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/notification/NotificationSettings.jsx``
 * **模块标识**：``src/features/notification/NotificationSettings``
@@ -20,12 +20,12 @@ src/features/notification/NotificationSettings 模块
 * **局部函数与匿名回调**：15
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``@/lib/apiClient.js``、``@/config.js``、``@/components/ui/switch``、``./useNotificationStore.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/notification/NotificationSettings.jsx:327:4953:FUNCTION
 
@@ -52,7 +52,7 @@ src/features/notification/NotificationSettings 模块
    **内部回调数量**：9。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -164,7 +164,7 @@ src/features/notification/NotificationSettings 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``setLoading``、``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types \|\| []…``、``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then``、``apiClient.get``。
+**主要协作调用**：``setLoading``、``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types || []…``、``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then``、``apiClient.get``。
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
@@ -193,13 +193,13 @@ src/features/notification/NotificationSettings 模块
 
 .. CWM-AST-FUNCTION src/features/notification/NotificationSettings.jsx:1048:1116:FUNCTION
 
-.. rubric:: ``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types \|\| []… callback @ 24``
+.. rubric:: ``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types || []… callback @ 24``
 
 .. code-block:: javascript
 
    apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types || []… callback @ 24(error)
 
-实现 ``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types \|\| []…`` 对应的前端处理。
+实现 ``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types || []…`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``24``—``24`` 行；所属函数 ``useEffect callback @ 16``。
 
@@ -216,13 +216,13 @@ src/features/notification/NotificationSettings 模块
 
 .. CWM-AST-FUNCTION src/features/notification/NotificationSettings.jsx:1139:1172:FUNCTION
 
-.. rubric:: ``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types \|\| []… callback @ 25``
+.. rubric:: ``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types || []… callback @ 25``
 
 .. code-block:: javascript
 
    apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types || []… callback @ 25()
 
-实现 ``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types \|\| []…`` 对应的前端处理。
+实现 ``apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT) .then((response) => { if (active) setTypes(response?.types || []…`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``25``—``25`` 行；所属函数 ``useEffect callback @ 16``。
 
@@ -276,7 +276,7 @@ src/features/notification/NotificationSettings 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``grouped``。
 
-**主要协作调用**：``query.trim().toLowerCase``、``query.trim``、``\`${item.name \|\| ''} ${item.typeId \|\| ''} ${item.description \|\| ''}\`.toLowerCase``、``haystack.includes``、``grouped[category].push``。
+**主要协作调用**：``query.trim().toLowerCase``、``query.trim``、``\x60${item.name || ''} ${item.typeId || ''} ${item.description || ''}\x60.toLowerCase``、``haystack.includes``、``grouped[category].push``。
 
 .. CWM-AST-FUNCTION src/features/notification/NotificationSettings.jsx:1818:1979:FUNCTION
 

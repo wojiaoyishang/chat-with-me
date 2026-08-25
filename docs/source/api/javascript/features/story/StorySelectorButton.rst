@@ -1,5 +1,5 @@
 src/features/story/StorySelectorButton 模块
-=========================================
+==========================================================================================
 
 .. js:module:: src/features/story/StorySelectorButton
 
@@ -11,7 +11,7 @@ src/features/story/StorySelectorButton 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/story/StorySelectorButton.jsx``
 * **模块标识**：``src/features/story/StorySelectorButton``
@@ -20,12 +20,12 @@ src/features/story/StorySelectorButton 模块
 * **局部函数与匿名回调**：15
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``@/components/ui/button.tsx``、``@/components/ui/popover.tsx``、``@/components/ui/dropdown-menu``、``@/components/ui/dialog``、``@/components/ui/input``、``@/components/ui/DeleteConfirmDialog``、``@/lib/virtualUrl.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:719:9678:FUNCTION
 
@@ -38,7 +38,7 @@ src/features/story/StorySelectorButton 模块
    **参数**
 
    ``{ stories = [], onOpenStory, onRenameStory, onDeleteStory, t, isWindowMode = false, }``
-      调用方传入的 `` stories = , onOpenStory, onRenameStory, onDeleteStory, t, isWindowMode = false, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``stories = , onOpenStory, onRenameStory, onDeleteStory, t, isWindowMode = false,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -49,7 +49,7 @@ src/features/story/StorySelectorButton 模块
    **内部回调数量**：11。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

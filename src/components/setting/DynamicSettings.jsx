@@ -534,8 +534,19 @@ function ListItem({ item, path }) {
     const { values, update } = useSettings();
     const listPath = path;
     const list = Array.isArray(deepGet(values, listPath)) ? deepGet(values, listPath) : [];
+    const addTemplates = Array.isArray(item.addTemplates) ? item.addTemplates : [];
 
     const [draggedEntry, setDraggedEntry] = useState(null);
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+    const [selectedTemplateId, setSelectedTemplateId] = useState(addTemplates[0]?.id || "");
+    const [newEntryId, setNewEntryId] = useState(null);
+
+    useEffect(() => {
+        if (!addTemplates.length) return;
+        if (!addTemplates.some((template) => template.id === selectedTemplateId)) {
+            setSelectedTemplateId(addTemplates[0]?.id || "");
+        }
+    }, [addTemplates, selectedTemplateId]);
 
     const uniqueKey = item.uniqueKey;
 
@@ -576,20 +587,51 @@ function ListItem({ item, path }) {
         return duplicateIndices.has(index);
     }, [list, duplicateIndices]);
 
-    const addItem = useCallback(() => {
+    const addItem = useCallback((template = null) => {
         const internalId = generateInternalId();
         const editableId = generateBusinessId();
         const defaultItem = { id: editableId, internalId };
         if (item.children) {
             item.children.forEach((child) => {
-                if (["info", "heading", "presetButtons"].includes(child.type)) return;
+                if (["info", "heading"].includes(child.type)) return;
                 if (child.name) {
                     defaultItem[child.name] = child.default ?? (child.nullable ? null : undefined);
                 }
             });
         }
-        update(listPath, [...list, defaultItem]);
+        const templateValues = template?.values && typeof template.values === "object"
+            ? JSON.parse(JSON.stringify(template.values))
+            : {};
+        const nextItem = {
+            ...defaultItem,
+            ...templateValues,
+            // Template data must never control the local React/DnD identity.
+            id: templateValues.id || editableId,
+            internalId,
+        };
+        update(listPath, [...list, nextItem]);
+        setNewEntryId(internalId);
     }, [list, update, listPath, item.children]);
+
+    const handleAddClick = useCallback(() => {
+        if (addTemplates.length) {
+            setSelectedTemplateId((current) => (
+                addTemplates.some((template) => template.id === current)
+                    ? current
+                    : (addTemplates[0]?.id || "")
+            ));
+            setAddDialogOpen(true);
+            return;
+        }
+        addItem();
+    }, [addItem, addTemplates]);
+
+    const confirmTemplateAdd = useCallback(() => {
+        const template = addTemplates.find((entry) => entry.id === selectedTemplateId) || addTemplates[0];
+        if (!template) return;
+        addItem(template);
+        setAddDialogOpen(false);
+    }, [addItem, addTemplates, selectedTemplateId]);
 
     const removeItem = useCallback((internalId) => {
         update(listPath, list.filter((e) => e.internalId !== internalId));
@@ -629,12 +671,90 @@ function ListItem({ item, path }) {
                     <TipWrapper tips={item.tips} />
                 </div>
                 <button
-                    onClick={addItem}
+                    onClick={handleAddClick}
                     className="inline-flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg text-sm font-medium text-[#2563eb] bg-[#2563eb]/5 hover:bg-[#2563eb]/10 hover:text-[#1d4ed8] transition-colors cursor-pointer w-full sm:w-auto"
                 >
                     <Plus size={16} /> {t("ds.add")}
                 </button>
             </div>
+
+            {addTemplates.length > 0 && (
+                <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                    <DialogContent className="z-[999] w-[min(92vw,620px)] max-w-none rounded-2xl border-[#e1e4e8] bg-white p-0 shadow-[0_20px_60px_rgba(0,0,0,0.28)] dark:border-[#3a3f45] dark:bg-[#1c1e21]">
+                        <DialogHeader className="border-b border-[#e1e4e8] px-5 py-4 pr-12 text-left dark:border-[#3a3f45]">
+                            <DialogTitle className="text-base font-semibold">
+                                {item.addDialogTitle || `${t("ds.add")} ${item.text || ""}`}
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 px-5 py-4">
+                            {item.addDialogTips && (
+                                <div className="rounded-xl border border-[#d0d7de] bg-[#f8f9fa] px-3 py-2.5 text-xs leading-relaxed text-[#656d76] dark:border-[#3a3f45] dark:bg-[#25282c] dark:text-[#9ca3af]">
+                                    {item.addDialogTips}
+                                </div>
+                            )}
+                            <div className="space-y-2">
+                                <div className="text-sm font-medium text-[#1a1d21] dark:text-[#e4e7eb]">配置模板</div>
+                                <Listbox value={selectedTemplateId} onChange={setSelectedTemplateId}>
+                                    <div className="relative">
+                                        <ListboxButton className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[#d0d7de] bg-white px-3 py-2 text-left text-sm text-[#1a1d21] transition hover:border-[#2563eb] dark:border-[#3a3f45] dark:bg-[#25282c] dark:text-[#e4e7eb]">
+                                            <span className="min-w-0 flex-1 truncate">
+                                                {addTemplates.find((entry) => entry.id === selectedTemplateId)?.label || addTemplates[0]?.label || ""}
+                                            </span>
+                                            <ChevronDown size={16} className="shrink-0 text-[#656d76]"/>
+                                        </ListboxButton>
+                                        <ListboxOptions className="absolute z-[1001] mt-2 max-h-72 w-full overflow-auto rounded-xl border border-[#d0d7de] bg-white p-1 shadow-xl focus:outline-none dark:border-[#3a3f45] dark:bg-[#25282c]">
+                                            {addTemplates.map((template) => (
+                                                <ListboxOption
+                                                    key={template.id}
+                                                    value={template.id}
+                                                    className="group cursor-pointer rounded-lg px-3 py-2.5 text-sm data-[focus]:bg-[#f1f3f5] dark:data-[focus]:bg-[#2d3136]"
+                                                >
+                                                    <div className="font-medium text-[#1a1d21] dark:text-[#e4e7eb]">{template.label}</div>
+                                                    {template.description && (
+                                                        <div className="mt-0.5 text-xs leading-relaxed text-[#656d76] dark:text-[#9ca3af]">
+                                                            {template.description}
+                                                        </div>
+                                                    )}
+                                                </ListboxOption>
+                                            ))}
+                                        </ListboxOptions>
+                                    </div>
+                                </Listbox>
+                            </div>
+                            {(() => {
+                                const selected = addTemplates.find((entry) => entry.id === selectedTemplateId) || addTemplates[0];
+                                const target = selected?.targetUrl || selected?.values?.base_url;
+                                if (!target) return null;
+                                return (
+                                    <div className="rounded-xl border border-[#d0d7de] bg-[#f8f9fa] px-3 py-2.5 dark:border-[#3a3f45] dark:bg-[#25282c]">
+                                        <div className="text-xs font-medium text-[#656d76] dark:text-[#9ca3af]">
+                                            {selected?.provider === "litellm" || selected?.values?.provider === "litellm" ? "LiteLLM API Base" : "目标 URL"}
+                                        </div>
+                                        <div className="mt-1 break-all font-mono text-xs text-[#1a1d21] dark:text-[#e4e7eb]">{target}</div>
+                                    </div>
+                                );
+                            })()}
+                        </div>
+                        <div className="flex justify-end gap-2 border-t border-[#e1e4e8] px-5 py-4 dark:border-[#3a3f45]">
+                            <button
+                                type="button"
+                                onClick={() => setAddDialogOpen(false)}
+                                className="h-9 rounded-lg border border-[#d0d7de] px-4 text-sm font-medium text-[#1a1d21] transition hover:bg-[#f1f3f5] dark:border-[#3a3f45] dark:text-[#e4e7eb] dark:hover:bg-[#2d3136]"
+                            >
+                                取消
+                            </button>
+                            <button
+                                type="button"
+                                onClick={confirmTemplateAdd}
+                                disabled={!selectedTemplateId}
+                                className="h-9 rounded-lg bg-[#2563eb] px-4 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                创建模型
+                            </button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
 
             {list.length === 0 && (
                 <div className="text-center py-6 text-[#9ca3af] text-sm rounded-2xl border border-dashed border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c]">
@@ -666,7 +786,7 @@ function ListItem({ item, path }) {
                             list={list}
                             update={update}
                             t={t}
-                            initialOpen={false}
+                            initialOpen={entry.internalId === newEntryId}
                         />
                     ))}
                 </SortableContext>
@@ -2488,62 +2608,6 @@ function ToolPermissionMatrixItem({item, path}) {
     );
 }
 
-// ─── Preset Buttons ────────────────────────────────────────────────
-function PresetButtonsItem({item, path}) {
-    const {values, update} = useSettings();
-    const [appliedId, setAppliedId] = useState(null);
-    const parentPath = path.slice(0, -1);
-    const presets = Array.isArray(item.presets) ? item.presets : [];
-
-    const applyPreset = useCallback((preset) => {
-        const current = deepGet(values, parentPath);
-        const patch = preset?.values && typeof preset.values === "object" ? preset.values : {};
-        const next = {
-            ...(current && typeof current === "object" ? current : {}),
-            ...JSON.parse(JSON.stringify(patch)),
-        };
-        update(parentPath, next);
-        setAppliedId(preset.id || preset.label || null);
-    }, [parentPath, update, values]);
-
-    return (
-        <div className="w-full px-3 sm:px-4 pt-1 pb-3">
-            <div className="mb-2 flex items-center gap-1.5 text-sm font-medium">
-                <span>{item.text}</span>
-                <TipWrapper tips={item.tips}/>
-            </div>
-            <div className="w-full rounded-xl border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa]/70 dark:bg-[#25282c]/70 p-3">
-                <div className="flex flex-wrap gap-2">
-                    {presets.map((preset) => {
-                        const id = preset.id || preset.label;
-                        const active = appliedId === id;
-                        return (
-                            <button
-                                key={id}
-                                type="button"
-                                onClick={() => applyPreset(preset)}
-                                title={preset.description || preset.label}
-                                className={`inline-flex min-h-8 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${active
-                                    ? "border-[#2563eb] bg-[#2563eb] text-white"
-                                    : "border-[#d0d7de] dark:border-[#3a3f45] bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] hover:border-[#2563eb] hover:text-[#2563eb]"
-                                }`}
-                            >
-                                {active && <CheckCircle2 size={14}/>} 
-                                <span>{preset.label}</span>
-                            </button>
-                        );
-                    })}
-                </div>
-                {appliedId && (
-                    <div className="mt-2 text-xs text-[#656d76] dark:text-[#9ca3af]">
-                        已填充预设值；保存前仍可修改上方任意字段。
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
-
 // ─── Item Renderer ─────────────────────────────────────────────────
 function SettingItemRenderer({item, path}) {
     const { values } = useSettings();
@@ -2584,7 +2648,6 @@ function SettingItemRenderer({item, path}) {
         case "json": return <JsonItem item={item} path={path} />;
         case "tags": return <TagsItem item={item} path={path} />;
         case "toolPermissionMatrix": return <ToolPermissionMatrixItem item={item} path={path} />;
-        case "presetButtons": return <PresetButtonsItem item={item} path={path} />;
         default: return null;
     }
 }
@@ -2646,7 +2709,7 @@ export default function DynamicSettings({
 function buildDefaults(config, initialValues) {
     const result = {};
     for (const item of config) {
-        if (item.type === "heading" || item.type === "info" || item.type === "presetButtons") continue;
+        if (item.type === "heading" || item.type === "info") continue;
         if (item.type === "list" && item.name) {
             const initList = initialValues?.[item.name];
             // 为每个列表项补充稳定的 internalId

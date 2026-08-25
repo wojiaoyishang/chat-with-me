@@ -1,5 +1,5 @@
 src/runtime/transport/channel 模块
-================================
+================================================================================
 
 .. js:module:: src/runtime/transport/channel
 
@@ -11,7 +11,7 @@ src/runtime/transport/channel 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/runtime/transport/channel.js``
 * **模块标识**：``src/runtime/transport/channel``
@@ -20,7 +20,7 @@ src/runtime/transport/channel 模块
 * **局部函数与匿名回调**：0
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/runtime/transport/channel.js:122:182:FUNCTION
 

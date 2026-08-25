@@ -1,5 +1,5 @@
 src/components/markdown/card-block/index 模块
-===========================================
+==============================================================================================
 
 .. js:module:: src/components/markdown/card-block/index
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/index 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/index.jsx``
 * **模块标识**：``src/components/markdown/card-block/index``

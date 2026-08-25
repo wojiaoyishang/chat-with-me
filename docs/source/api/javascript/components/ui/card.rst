@@ -1,5 +1,5 @@
 src/components/ui/card 模块
-=========================
+================================================================================
 
 .. js:module:: src/components/ui/card
 
@@ -11,7 +11,7 @@ src/components/ui/card 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/ui/card.tsx``
 * **模块标识**：``src/components/ui/card``
@@ -20,12 +20,12 @@ src/components/ui/card 模块
 * **局部函数与匿名回调**：0
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@/lib/utils``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/ui/card.tsx:64:349:FUNCTION
 
@@ -38,7 +38,7 @@ src/components/ui/card 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -57,7 +57,7 @@ src/components/ui/card 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -76,7 +76,7 @@ src/components/ui/card 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -95,7 +95,7 @@ src/components/ui/card 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -114,7 +114,7 @@ src/components/ui/card 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -133,7 +133,7 @@ src/components/ui/card 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -152,7 +152,7 @@ src/components/ui/card 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 

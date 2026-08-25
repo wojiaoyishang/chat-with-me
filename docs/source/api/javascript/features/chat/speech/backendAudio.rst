@@ -1,5 +1,5 @@
 src/features/chat/speech/backendAudio 模块
-========================================
+========================================================================================
 
 .. js:module:: src/features/chat/speech/backendAudio
 
@@ -11,7 +11,7 @@ src/features/chat/speech/backendAudio 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/speech/backendAudio.js``
 * **模块标识**：``src/features/chat/speech/backendAudio``
@@ -20,12 +20,12 @@ src/features/chat/speech/backendAudio 模块
 * **局部函数与匿名回调**：2
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``./constants.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/speech/backendAudio.js:191:702:FUNCTION
 
@@ -60,7 +60,7 @@ src/features/chat/speech/backendAudio 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``String( payload.format \|\| 'pcm' ).toLowerCase``、``String``。
+   **主要协作调用**：``String( payload.format || 'pcm' ).toLowerCase``、``String``。
 
 .. CWM-AST-FUNCTION src/features/chat/speech/backendAudio.js:860:962:FUNCTION
 
@@ -212,7 +212,7 @@ src/features/chat/speech/backendAudio 模块
 
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-   **主要协作调用**：``String(value \|\| '').replace``、``String``、``window.atob``、``binaryString.charCodeAt``。
+   **主要协作调用**：``String(value || '').replace``、``String``、``window.atob``、``binaryString.charCodeAt``。
 
 .. CWM-AST-FUNCTION src/features/chat/speech/backendAudio.js:2523:2863:FUNCTION
 
@@ -313,7 +313,7 @@ src/features/chat/speech/backendAudio 模块
    **主要协作调用**：``concatUint8Arrays``、``normalizeBackendAudioFormat``、``String(mime).toLowerCase().includes``、``String(mime).toLowerCase``、``String``、``createWavBlobFromPcm``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

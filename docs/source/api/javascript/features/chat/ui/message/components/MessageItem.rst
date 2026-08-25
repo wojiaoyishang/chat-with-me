@@ -1,5 +1,5 @@
 src/features/chat/ui/message/components/MessageItem 模块
-======================================================
+====================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/components/MessageItem
 
@@ -11,7 +11,7 @@ src/features/chat/ui/message/components/MessageItem 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/components/MessageItem.jsx``
 * **模块标识**：``src/features/chat/ui/message/components/MessageItem``
@@ -20,46 +20,46 @@ src/features/chat/ui/message/components/MessageItem 模块
 * **局部函数与匿名回调**：25
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
-``react``、``@/lib/virtualUrl.js``、``lucide-react``、``@/components/markdown/MarkdownRenderer.jsx``、``@/components/ui/avatar``、``../../AttachmentShowcase``、``./KnowledgeGraphViewer.jsx``、``./LeftAvatarName.jsx``、``./MessageActions.jsx``、``./MessageAvatarMenu.jsx``、``./TextOnlyMessageContent.jsx``、``./SpeechOverlayHighlighter.jsx``、``@/lib/tools.jsx``、``./MessageContextBadges.jsx``、``./IgnoredContextIndicator.jsx``、``./CompactedContextIndicator.jsx``、``./WidgetResponseMessage.jsx``。
+``react``、``@/lib/virtualUrl.js``、``lucide-react``、``@/components/markdown/MarkdownRenderer.jsx``、``@/components/ui/avatar``、``../../AttachmentShowcase``、``./KnowledgeGraphViewer.jsx``、``./LeftAvatarName.jsx``、``./MessageActions.jsx``、``./MessageAvatarMenu.jsx``、``./TextOnlyMessageContent.jsx``、``./SpeechOverlayHighlighter.jsx``、``@/lib/tools.jsx``、``./MessageContextBadges.jsx``、``./IgnoredContextIndicator.jsx``、``./CompactedContextIndicator.jsx``、``./WidgetResponseMessage.jsx``、``@/features/chat/attachmentVision.js``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:1179:18157:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:1256:18355:FUNCTION
 
-.. rubric:: ``memo callback @ 22``
+.. rubric:: ``memo callback @ 23``
 
 .. code-block:: javascript
 
-   memo callback @ 22({ msgId, msg, conversationId, messages, isFading, animationClass, switchingMessageId, setSwitchingM…)
+   memo callback @ 23({ msgId, msg, conversationId, messages, isFading, animationClass, switchingMessageId, setSwitchingM…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``22``—``435`` 行。
+**性质**：同步局部函数；源码第 ``23``—``437`` 行。
 
 **参数**
 
 ``{ msgId, msg, conversationId, messages, isFading, animationClass, switchingMessageId, setSwitchingM…``
-   调用方传入的 `` msgId, msg, conversationId, messages, isFading, animationClass, switchingMessageId, setSwitchingM…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``msgId, msg, conversationId, messages, isFading, animationClass, switchingMessageId, setSwitchingM…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={msgId} ref={rootRef} data-message-id={msgId} data-message-role={msg?.role \|\| (isMid ? 'system' : (isRight ? 'user' : 'assistant'))} className={\`flex flex-col w-full ro…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={msgId} ref={rootRef} data-message-id={msgId} data-message-role={msg?.role || (isMid ? 'system' : (isRight ? 'user' : 'assistant'))} className={\x60flex flex-col w-full ro…``。
 
 **副作用**
 
 * 注册事件、DOM 或运行时订阅。
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``useRef``、``msg.content?.trim``、``useState``、``useIsMobile``、``Array.isArray``、``Boolean``、``useCallback``、``useEffect``、``getLabel``、``leavingMessages.has``、``renderMessageContent``。
+**主要协作调用**：``useRef``、``normalizeAttachmentList``、``msg.content?.trim``、``useState``、``useIsMobile``、``Array.isArray``、``Boolean``、``useCallback``、``useEffect``、``getLabel``、``leavingMessages.has``、``renderMessageContent``。
 
 **内部回调数量**：14。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:3483:3508:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:3641:3666:FUNCTION
 
 .. rubric:: ``onMouseEnter``
 
@@ -69,7 +69,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 处理 ``Mouse Enter`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``70``—``70`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``72``—``72`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -81,7 +81,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``setIsHovered``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:3531:3557:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:3689:3715:FUNCTION
 
 .. rubric:: ``onMouseLeave``
 
@@ -91,7 +91,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 处理 ``Mouse Leave`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``71``—``71`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``73``—``73`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -103,17 +103,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``setIsHovered``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:3605:3757:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:3763:3915:FUNCTION
 
-.. rubric:: ``useCallback callback @ 74``
+.. rubric:: ``useCallback callback @ 76``
 
 .. code-block:: javascript
 
-   useCallback callback @ 74(key, fallback)
+   useCallback callback @ 76(key, fallback)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``74``—``77`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``76``—``79`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -129,17 +129,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:4092:4141:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:4250:4299:FUNCTION
 
-.. rubric:: ``useCallback callback @ 94``
+.. rubric:: ``useCallback callback @ 96``
 
 .. code-block:: javascript
 
-   useCallback callback @ 94()
+   useCallback callback @ 96()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``94``—``96`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``96``—``98`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -151,17 +151,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``setIsAvatarMenuOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:4188:4312:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:4346:4470:FUNCTION
 
-.. rubric:: ``useCallback callback @ 98``
+.. rubric:: ``useCallback callback @ 100``
 
 .. code-block:: javascript
 
-   useCallback callback @ 98(event)
+   useCallback callback @ 100(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``98``—``102`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``100``—``104`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -174,17 +174,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``event?.preventDefault``、``event?.stopPropagation``、``setIsAvatarMenuOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:4367:4580:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:4525:4738:FUNCTION
 
-.. rubric:: ``useCallback callback @ 104``
+.. rubric:: ``useCallback callback @ 106``
 
 .. code-block:: javascript
 
-   useCallback callback @ 104(event)
+   useCallback callback @ 106(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``104``—``109`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``106``—``111`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -197,17 +197,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``target.closest``、``openAvatarMenu``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:4642:5024:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:4800:5182:FUNCTION
 
-.. rubric:: ``useCallback callback @ 111``
+.. rubric:: ``useCallback callback @ 113``
 
 .. code-block:: javascript
 
-   useCallback callback @ 111(event)
+   useCallback callback @ 113(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``111``—``121`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``113``—``123`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -220,17 +220,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``target.closest``、``setIsMobileActive``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:5072:5535:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:5230:5693:FUNCTION
 
-.. rubric:: ``useEffect callback @ 123``
+.. rubric:: ``useEffect callback @ 125``
 
 .. code-block:: javascript
 
-   useEffect callback @ 123()
+   useEffect callback @ 125()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``123``—``134`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``125``—``136`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -249,7 +249,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:5174:5361:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:5332:5519:FUNCTION
 
 .. rubric:: ``handlePointerDown``
 
@@ -259,7 +259,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``126``—``130`` 行；所属函数 ``useEffect callback @ 123``。
+**性质**：同步局部函数；源码第 ``128``—``132`` 行；所属函数 ``useEffect callback @ 125``。
 
 **参数**
 
@@ -272,17 +272,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``rootRef.current?.contains``、``setIsMobileActive``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:5453:5528:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:5611:5686:FUNCTION
 
-.. rubric:: ``returned callback @ 133``
+.. rubric:: ``returned callback @ 135``
 
 .. code-block:: javascript
 
-   returned callback @ 133()
+   returned callback @ 135()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``133``—``133`` 行；所属函数 ``useEffect callback @ 123``。
+**性质**：同步局部函数；源码第 ``135``—``135`` 行；所属函数 ``useEffect callback @ 125``。
 
 **参数**
 
@@ -298,17 +298,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``document.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:5581:5652:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:5739:5810:FUNCTION
 
-.. rubric:: ``useEffect callback @ 136``
+.. rubric:: ``useEffect callback @ 138``
 
 .. code-block:: javascript
 
-   useEffect callback @ 136()
+   useEffect callback @ 138()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``136``—``139`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``138``—``141`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -320,17 +320,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``setIsExpanded``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:5724:6742:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:5882:6900:FUNCTION
 
-.. rubric:: ``useEffect callback @ 141``
+.. rubric:: ``useEffect callback @ 143``
 
 .. code-block:: javascript
 
-   useEffect callback @ 141()
+   useEffect callback @ 143()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``141``—``170`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``143``—``172`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -349,7 +349,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:5965:6324:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:6123:6482:FUNCTION
 
 .. rubric:: ``measure``
 
@@ -359,7 +359,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 实现 ``measure`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``151``—``157`` 行；所属函数 ``useEffect callback @ 141``。
+**性质**：同步局部函数；源码第 ``153``—``159`` 行；所属函数 ``useEffect callback @ 143``。
 
 **参数**
 
@@ -373,17 +373,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:6074:6312:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:6232:6470:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 153``
+.. rubric:: ``requestAnimationFrame callback @ 155``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 153()
+   requestAnimationFrame callback @ 155()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``153``—``156`` 行；所属函数 ``measure``。
+**性质**：同步局部函数；源码第 ``155``—``158`` 行；所属函数 ``measure``。
 
 **参数**
 
@@ -397,17 +397,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:6237:6296:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:6395:6454:FUNCTION
 
-.. rubric:: ``setIsMidOverflowing callback @ 155``
+.. rubric:: ``setIsMidOverflowing callback @ 157``
 
 .. code-block:: javascript
 
-   setIsMidOverflowing callback @ 155(prev)
+   setIsMidOverflowing callback @ 157(prev)
 
 设置与 ``Is Mid Overflowing`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``155``—``155`` 行；所属函数 ``requestAnimationFrame callback @ 153``。
+**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``requestAnimationFrame callback @ 155``。
 
 **参数**
 
@@ -418,17 +418,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:6560:6735:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:6718:6893:FUNCTION
 
-.. rubric:: ``returned callback @ 165``
+.. rubric:: ``returned callback @ 167``
 
 .. code-block:: javascript
 
-   returned callback @ 165()
+   returned callback @ 167()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``165``—``169`` 行；所属函数 ``useEffect callback @ 141``。
+**性质**：同步局部函数；源码第 ``167``—``171`` 行；所属函数 ``useEffect callback @ 143``。
 
 **参数**
 
@@ -444,7 +444,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``cancelAnimationFrame``、``resizeObserver?.disconnect``、``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:6990:8027:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:7148:8185:FUNCTION
 
 .. rubric:: ``renderLeftAvatarName``
 
@@ -454,7 +454,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 渲染与 ``Left Avatar Name`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``177``—``202`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``179``—``204`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -466,7 +466,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``leavingMessages.has``、``getLabel``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:8059:8428:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:8217:8586:FUNCTION
 
 .. rubric:: ``renderRightAvatar``
 
@@ -476,7 +476,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 渲染与 ``Right Avatar`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``204``—``212`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``206``—``214`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -489,7 +489,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``resolveResourceUrl``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:8701:9424:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:8859:9582:FUNCTION
 
 .. rubric:: ``renderMidExpandControl``
 
@@ -499,7 +499,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 渲染与 ``Mid Expand Control`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``224``—``246`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``226``—``248`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -513,17 +513,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:8847:8881:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:9005:9039:FUNCTION
 
-.. rubric:: ``onClick callback @ 230``
+.. rubric:: ``onClick callback @ 232``
 
 .. code-block:: javascript
 
-   onClick callback @ 230()
+   onClick callback @ 232()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``230``—``230`` 行；所属函数 ``renderMidExpandControl``。
+**性质**：同步局部函数；源码第 ``232``—``232`` 行；所属函数 ``renderMidExpandControl``。
 
 **参数**
 
@@ -537,17 +537,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:8867:8880:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:9025:9038:FUNCTION
 
-.. rubric:: ``setIsExpanded callback @ 230``
+.. rubric:: ``setIsExpanded callback @ 232``
 
 .. code-block:: javascript
 
-   setIsExpanded callback @ 230(prev)
+   setIsExpanded callback @ 232(prev)
 
 设置与 ``Is Expanded`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``230``—``230`` 行；所属函数 ``onClick callback @ 230``。
+**性质**：同步局部函数；源码第 ``232``—``232`` 行；所属函数 ``onClick callback @ 232``。
 
 **参数**
 
@@ -558,7 +558,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:9459:16710:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:9617:16908:FUNCTION
 
 .. rubric:: ``renderMessageContent``
 
@@ -568,7 +568,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 渲染与 ``Message Content`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``248``—``397`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``250``—``399`` 行；所属函数 ``memo callback @ 23``。
 
 **参数**
 
@@ -576,23 +576,23 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className="w-full py-2 px-1"> <div className={\`relative bg-gray-50/40 border border-gray-100 rounded-2xl transition-all duration-300 ${isActionActive ? 'shadow-sm' : ''}\`}…``、``( <> <div className="flex max-w-full items-start justify-end gap-2 pl-7"> <WidgetResponseMessage response={widgetResponsePayload}/> {renderRightAvatar('h-10 w-10 flex-shrink-0 mt-…``、``( <> {!isRight && renderLeftAvatarName()} {isRight ? ( <div className="flex items-start gap-2 max-w-full mt-1"> <div className="flex-1 min-w-[150px] max-w-[calc(100%-3rem)] sm:pl-…``、``( <> {isRight ? ( <> <div className="max-w-[90%] lg:max-w-[55%] ml-auto pr-10 mb-2"> <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/> </div> <TextOnlyMessage…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className="w-full py-2 px-1"> <div className={\x60relative bg-gray-50/40 border border-gray-100 rounded-2xl transition-all duration-300 ${isActionActive ? 'shadow-sm' : ''}\x60}…``、``( <> <div className="flex max-w-full items-start justify-end gap-2 pl-7"> <WidgetResponseMessage response={widgetResponsePayload}/> {renderRightAvatar('h-10 w-10 flex-shrink-0 mt-…``、``( <> {!isRight && renderLeftAvatarName()} {isRight ? ( <div className="flex items-start gap-2 max-w-full mt-1"> <div className="flex-1 min-w-[150px] max-w-[calc(100%-3rem)] sm:pl-…``、``( <> {isRight ? ( <> <div className="max-w-[90%] lg:max-w-[55%] ml-auto pr-10 mb-2"> <AttachmentShowcase attachmentsMeta={normalizedAttachments} msgMode={true}/> </div> <TextOnlyM…``。
 
 **主要协作调用**：``['loading', 'playing', 'paused'].includes``、``renderMidExpandControl``、``renderRightAvatar``、``renderLeftAvatarName``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:10814:10857:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:10972:11015:FUNCTION
 
-.. rubric:: ``anonymous callback @ 268``
+.. rubric:: ``anonymous callback @ 270``
 
 .. code-block:: javascript
 
-   anonymous callback @ 268(event)
+   anonymous callback @ 270(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``268``—``268`` 行；所属函数 ``renderMessageContent``。
+**性质**：同步局部函数；源码第 ``270``—``270`` 行；所属函数 ``renderMessageContent``。
 
 **参数**
 
@@ -605,17 +605,17 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``onSpeechTextClick``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:18158:19170:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:18356:19368:FUNCTION
 
-.. rubric:: ``memo callback @ 435``
+.. rubric:: ``memo callback @ 437``
 
 .. code-block:: javascript
 
-   memo callback @ 435(prevProps, nextProps)
+   memo callback @ 437(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``435``—``448`` 行。
+**性质**：同步局部函数；源码第 ``437``—``450`` 行。
 
 **参数**
 

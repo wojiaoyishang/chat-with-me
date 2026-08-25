@@ -1,5 +1,5 @@
 src/components/ui/avatar 模块
-===========================
+================================================================================
 
 .. js:module:: src/components/ui/avatar
 
@@ -11,7 +11,7 @@ src/components/ui/avatar 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/ui/avatar.tsx``
 * **模块标识**：``src/components/ui/avatar``
@@ -20,12 +20,12 @@ src/components/ui/avatar 模块
 * **局部函数与匿名回调**：0
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@radix-ui/react-avatar``、``@/lib/utils``、``@/lib/virtualUrl.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/ui/avatar.tsx:179:488:FUNCTION
 
@@ -38,7 +38,7 @@ src/components/ui/avatar 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<typeof AvatarPrimitive.Root>``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -57,11 +57,11 @@ src/components/ui/avatar 模块
    **参数**
 
    ``{ className, src, ...props }``（类型 ``React.ComponentProps<typeof AvatarPrimitive.Image>``）
-      调用方传入的 `` className, src, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, src, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <AvatarPrimitive.Image data-slot="avatar-image" className={cn("aspect-square size-full", className)} src={resolvedSrc \|\| undefined} {...props} /> )``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <AvatarPrimitive.Image data-slot="avatar-image" className={cn("aspect-square size-full", className)} src={resolvedSrc || undefined} {...props} /> )``。
 
    **主要协作调用**：``resolveResourceUrl``、``cn``。
 
@@ -76,7 +76,7 @@ src/components/ui/avatar 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<typeof AvatarPrimitive.Fallback>``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 

@@ -1,19 +1,28 @@
 import React, {useMemo, useState} from 'react';
-import {Activity, ChevronDown, ChevronUp, Mic, MicOff, Minimize2, PhoneOff, Waves} from 'lucide-react';
+import {
+    Activity,
+    ChevronDown,
+    ChevronUp,
+    Mic,
+    MicOff,
+    Minimize2,
+    PhoneOff,
+} from 'lucide-react';
+import './RealtimeVoiceSurface.css';
 
 const STATUS_LABELS = {
-    authorizing: '正在授权媒体通道',
-    connecting: '正在连接实时语音',
-    negotiating: '正在协商语音协议',
-    requesting_microphone: '等待麦克风授权',
-    listening: '正在听您说',
-    user_speaking: '正在听您说',
+    authorizing: '正在准备',
+    connecting: '正在连接',
+    negotiating: '正在连接',
+    requesting_microphone: '正在打开麦克风',
+    listening: '正在听',
+    user_speaking: '正在听',
     understanding: '正在理解',
-    thinking: '我在想',
-    speaking: '我在说',
-    disconnected: '语音连接已断开',
-    error: '实时语音出现错误',
-    ended: '语音会话已结束',
+    thinking: '思考中',
+    speaking: '正在说',
+    disconnected: '连接已断开',
+    error: '连接出现问题',
+    ended: '通话已结束',
 };
 
 const modeLabel = (mode) => ({
@@ -24,16 +33,60 @@ const modeLabel = (mode) => ({
     text_projection: 'TEXT PROJECTION',
 }[mode] || String(mode || 'REALTIME').toUpperCase());
 
-function Waveform({levels = []}) {
+const visualStateFor = (state) => {
+    if (state?.muted) return 'muted';
+    if (state?.status === 'user_speaking') return 'user-speaking';
+    if (state?.status === 'thinking' || state?.status === 'understanding') return 'thinking';
+    if (state?.status === 'speaking') return 'assistant-speaking';
+    if (state?.status === 'error' || state?.status === 'disconnected') return 'error';
+    return 'listening';
+};
+
+const waveformLevel = (levels = []) => {
+    if (!Array.isArray(levels) || levels.length === 0) return 0;
+    const values = levels
+        .map(value => Number(value))
+        .filter(Number.isFinite)
+        .map(value => Math.max(0, Math.min(1, value)));
+    if (values.length === 0) return 0;
+    const peak = Math.max(...values);
+    const average = values.reduce((total, value) => total + value, 0) / values.length;
+    return Math.max(average, peak * 0.72);
+};
+
+function VoiceOrb({state}) {
+    const level = waveformLevel(state?.waveform);
+    const visualState = visualStateFor(state);
+    const animatedLevel = !state?.muted && state?.status === 'user_speaking' ? level : 0;
+
     return (
-        <div className="flex h-16 items-center justify-center gap-1 md:h-14" aria-hidden="true">
-            {levels.map((level, index) => (
-                <span
-                    key={index}
-                    className="w-1 rounded-full bg-current opacity-70 transition-[height] duration-75"
-                    style={{height: `${Math.max(6, Math.min(54, 6 + (level || 0) * 48))}px`}}
-                />
-            ))}
+        <div
+            className={`cwm-voice-orb cwm-voice-orb--${visualState}`}
+            style={{
+                '--cwm-voice-scale': 1 + animatedLevel * 0.045,
+                '--cwm-voice-core-scale': 1 + animatedLevel * 0.10,
+                '--cwm-voice-halo-opacity': 0.44 + animatedLevel * 0.44,
+            }}
+            aria-hidden="true"
+        >
+            <div className="cwm-voice-orb__halo cwm-voice-orb__halo--outer"/>
+            <div className="cwm-voice-orb__halo cwm-voice-orb__halo--inner"/>
+            <div className="cwm-voice-orb__layer cwm-voice-orb__layer--one"/>
+            <div className="cwm-voice-orb__layer cwm-voice-orb__layer--two"/>
+            <div className="cwm-voice-orb__layer cwm-voice-orb__layer--three"/>
+            <div className="cwm-voice-orb__core">
+                <div className="cwm-voice-orb__shine"/>
+            </div>
+        </div>
+    );
+}
+
+function StatusTrail({state}) {
+    const active = ['authorizing', 'connecting', 'negotiating', 'requesting_microphone', 'understanding', 'thinking']
+        .includes(state?.status);
+    return (
+        <div className={`cwm-voice-status-trail ${active ? 'cwm-voice-status-trail--active' : ''}`} aria-hidden="true">
+            <span/><span/><span/>
         </div>
     );
 }
@@ -42,50 +95,58 @@ function ProtocolIndicator({profile}) {
     const [expanded, setExpanded] = useState(false);
     if (!profile?.debug?.showProtocol) return null;
     const fallbacks = Array.isArray(profile.fallbacks) ? profile.fallbacks : [];
+
     return (
-        <div className="w-full rounded-xl border border-slate-200/80 bg-white/80 text-slate-700 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200">
+        <div className="relative">
             <button
                 type="button"
-                className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left"
+                className="cwm-voice-icon-button"
                 onClick={() => setExpanded(value => !value)}
+                title="查看实时语音协议"
+                aria-label="查看实时语音协议"
+                aria-expanded={expanded}
             >
-                <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold tracking-wide">
-                        <span>{modeLabel(profile.mode)}</span>
-                        <span className="text-slate-300 dark:text-slate-600">·</span>
-                        <span className="truncate">{profile.conversationModel?.model || profile.conversationModel?.id || 'Model'}</span>
-                        <span className="text-slate-300 dark:text-slate-600">·</span>
-                        <span>{profile.asr?.endpoint || profile.asr?.mode || 'ASR'}</span>
-                        <span className="text-slate-300 dark:text-slate-600">·</span>
-                        <span>{profile.tts?.mode || 'TTS'}</span>
-                    </div>
-                    {fallbacks.length > 0 && (
-                        <div className="mt-0.5 truncate text-[11px] text-amber-600 dark:text-amber-400">
-                            {fallbacks.length} 项能力已降级
-                        </div>
-                    )}
-                </div>
-                {expanded ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+                <Activity size={17}/>
+                {expanded ? <ChevronUp size={13}/> : <ChevronDown size={13}/>}
             </button>
             {expanded && (
-                <div className="grid gap-3 border-t border-slate-200/80 px-3.5 py-3 text-xs dark:border-slate-700 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-2">
-                    <div><div className="font-semibold">Transport</div><div>{profile.transport?.protocol}</div><div>{profile.transport?.codec} · {profile.transport?.sampleRate}Hz</div></div>
-                    <div><div className="font-semibold">Conversation</div><div>{profile.conversationModel?.provider}</div><div>{profile.conversationModel?.api}</div></div>
-                    <div><div className="font-semibold">ASR</div><div>{profile.asr?.provider} / {profile.asr?.mode}</div><div>{profile.asr?.endpoint}{profile.asr?.connectionState ? ` · ${profile.asr.connectionState}` : ''}</div></div>
-                    <div><div className="font-semibold">TTS / Barge-in</div><div>{profile.tts?.provider} / {profile.tts?.mode}</div><div>cursor: {profile.bargeIn?.cursorAccuracy}</div></div>
-                    {fallbacks.length > 0 && (
-                        <div className="sm:col-span-2 md:col-span-1 xl:col-span-2">
-                            <div className="font-semibold text-amber-700 dark:text-amber-300">Fallback</div>
-                            {fallbacks.map((item, index) => (
-                                <div key={`${item.component}-${index}`} className="mt-1 text-slate-600 dark:text-slate-300">
-                                    {item.component}: {item.requested || 'auto'} → {item.selected} · {item.reason}
-                                </div>
-                            ))}
+                <div className="cwm-voice-protocol-panel">
+                    <div className="text-[11px] font-semibold tracking-[0.08em] text-slate-400">
+                        {modeLabel(profile.mode)}
+                    </div>
+                    <div className="mt-3 grid gap-3 text-xs text-slate-600 dark:text-slate-300">
+                        <div>
+                            <div className="font-semibold text-slate-800 dark:text-slate-100">Transport</div>
+                            <div>{profile.transport?.protocol || '—'} · {profile.transport?.codec || '—'}</div>
+                            {profile.transport?.sampleRate ? <div>{profile.transport.sampleRate}Hz</div> : null}
                         </div>
-                    )}
+                        <div>
+                            <div className="font-semibold text-slate-800 dark:text-slate-100">ASR</div>
+                            <div>{profile.asr?.provider || '—'} / {profile.asr?.mode || '—'}</div>
+                            <div>{profile.asr?.endpoint || '—'}</div>
+                        </div>
+                        <div>
+                            <div className="font-semibold text-slate-800 dark:text-slate-100">TTS / Barge-in</div>
+                            <div>{profile.tts?.provider || '—'} / {profile.tts?.mode || '—'}</div>
+                            <div>cursor: {profile.bargeIn?.cursorAccuracy || '—'}</div>
+                        </div>
+                        {fallbacks.length > 0 && (
+                            <div className="rounded-xl bg-amber-50 px-3 py-2 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+                                {fallbacks.length} 项能力正在使用兼容模式
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
         </div>
+    );
+}
+
+function MiniVoiceOrb({state}) {
+    return (
+        <span className={`cwm-voice-mini-orb cwm-voice-mini-orb--${visualStateFor(state)}`} aria-hidden="true">
+            <span/>
+        </span>
     );
 }
 
@@ -94,123 +155,113 @@ export default function RealtimeVoiceSurface({state, onEnd, onMinimize, onRestor
         ? '麦克风已静音'
         : (STATUS_LABELS[state?.status] || state?.status || '实时语音');
     const liveTranscript = String(state?.partialTranscript || '').trim();
-    const recentUtterance = state?.recentUtterance || null;
-    const transcript = liveTranscript || recentUtterance?.text || state?.finalTranscript || '';
-    const transcriptLabel = liveTranscript
-        ? '实时识别'
-        : (recentUtterance?.role === 'assistant'
-            ? (recentUtterance?.live ? '助手正在说' : '助手最近一句')
-            : '最近一句');
-    const isSpeaking = state?.status === 'speaking';
-    const accentClass = isSpeaking ? 'text-violet-500' : 'text-blue-500';
+    const recentUserUtterance = state?.recentUtterance?.role === 'user' ? state.recentUtterance : null;
+    const transcript = liveTranscript
+        || String(recentUserUtterance?.text || '').trim()
+        || String(state?.finalTranscript || '').trim();
     const summary = useMemo(() => (
         state?.profile?.conversationModel?.model || state?.profile?.conversationModel?.id || 'Realtime Voice'
     ), [state?.profile]);
+    const connectionHealthy = !['disconnected', 'error', 'ended'].includes(state?.status);
 
     if (!state?.open) return null;
+
     if (state.minimized) {
         return (
             <button
                 type="button"
                 onClick={onRestore}
-                className="fixed bottom-24 right-4 z-[10020] flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-3 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+                className="cwm-voice-minimized"
                 title="恢复语音窗口"
             >
-                <span className={`relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 ${accentClass} dark:bg-slate-800`}>
-                    <Waves size={18}/>
-                    <span className="absolute inset-0 animate-ping rounded-full border border-current opacity-20"/>
+                <MiniVoiceOrb state={state}/>
+                <span className="min-w-0 text-left">
+                    <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        {statusLabel}
+                        {connectionHealthy && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/>}
+                    </span>
+                    <span className="block max-w-40 truncate text-xs text-slate-400">{summary}</span>
                 </span>
-                <span className="text-left">
-                    <span className="block text-sm font-medium text-slate-900 dark:text-slate-100">{statusLabel}</span>
-                    <span className="block max-w-44 truncate text-xs text-slate-500">{summary}</span>
-                </span>
+                <ChevronUp className="ml-1 text-slate-400" size={17}/>
             </button>
         );
     }
 
     return (
-        <aside className="fixed inset-0 z-[10010] flex min-h-0 bg-white/96 backdrop-blur-md dark:bg-slate-950/96 md:relative md:inset-auto md:z-20 md:h-full md:w-[42%] md:min-w-[360px] md:max-w-[560px] md:flex-none md:border-l md:border-slate-200 md:bg-slate-50/70 md:backdrop-blur-none md:dark:border-slate-800 md:dark:bg-slate-950">
-            <section className="pretty-scrollbar flex h-[100dvh] w-full min-h-0 flex-col overflow-y-auto bg-white px-4 pb-[max(20px,env(safe-area-inset-bottom))] pt-[max(16px,env(safe-area-inset-top))] dark:bg-slate-950 md:h-full md:px-5 md:pb-5 md:pt-5">
-                <header className="flex w-full items-center justify-between gap-4">
+        <aside className="cwm-voice-dock">
+            <section className="cwm-voice-surface">
+                <header className="cwm-voice-header">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                            <span className="inline-flex h-2 w-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.12)]"/>
-                            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">CWM Realtime Voice</div>
+                            <div className="text-sm font-semibold text-slate-900 dark:text-white">Realtime Voice</div>
+                            <span
+                                className={`h-1.5 w-1.5 shrink-0 rounded-full ${connectionHealthy ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}
+                            />
                         </div>
-                        <div className="mt-1 truncate text-sm text-slate-500 dark:text-slate-400">{summary}</div>
+                        <div className="mt-0.5 max-w-52 truncate text-xs text-slate-400">{summary}</div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-1.5">
+                        <ProtocolIndicator profile={state.profile}/>
                         <button
                             type="button"
                             onClick={onMinimize}
-                            className="rounded-full p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            className="cwm-voice-icon-button cwm-voice-icon-button--single"
                             title="缩小语音窗口"
                             aria-label="缩小语音窗口"
                         >
-                            <Minimize2 size={19}/>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={onEnd}
-                            className="rounded-full bg-red-500 p-2.5 text-white shadow-sm hover:bg-red-600"
-                            title="结束语音"
-                            aria-label="结束语音"
-                        >
-                            <PhoneOff size={19}/>
+                            <Minimize2 size={18}/>
                         </button>
                     </div>
                 </header>
 
-                <div className="mt-4 w-full">
-                    <ProtocolIndicator profile={state.profile}/>
-                </div>
-
-                <main className="flex min-h-0 flex-1 flex-col py-5 text-center md:py-4">
-                    <div className="flex min-h-[300px] flex-1 flex-col items-center justify-center rounded-3xl border border-slate-200/80 bg-slate-50/80 px-5 py-7 shadow-inner dark:border-slate-800 dark:bg-slate-900/55">
-                        <div className={`flex h-24 w-24 items-center justify-center rounded-full bg-white ${accentClass} shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-950 dark:ring-slate-800 md:h-24 md:w-24`}>
-                            {state.status === 'thinking' || state.status === 'understanding'
-                                ? <Activity className="animate-pulse" size={36}/>
-                                : <Waves size={38}/>} 
-                        </div>
-                        <h2 className="mt-5 text-2xl font-semibold text-slate-900 dark:text-slate-50">{statusLabel}</h2>
-                        <div className={`${accentClass} mt-1.5 w-full`}>
-                            <Waveform levels={state.waveform}/>
-                        </div>
+                <main className="cwm-voice-stage">
+                    <div className="cwm-voice-stage__ambient" aria-hidden="true"/>
+                    <div className="cwm-voice-orb-wrap">
+                        <VoiceOrb state={state}/>
                     </div>
 
-                    <div className="mt-4 min-h-28 w-full rounded-2xl border border-slate-200/70 bg-white px-4 py-4 text-left shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
-                        <div className="flex items-center justify-between gap-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                            <span>{transcriptLabel}</span>
-                            {recentUtterance?.role && !liveTranscript && (
-                                <span className="font-medium normal-case tracking-normal text-slate-300 dark:text-slate-600">
-                                    {recentUtterance.role === 'assistant' ? 'AI' : '你'}
-                                </span>
-                            )}
-                        </div>
-                        <p className={`mt-2 whitespace-pre-wrap text-lg leading-relaxed md:text-xl ${liveTranscript ? 'text-slate-500' : 'text-slate-800 dark:text-slate-100'}`}>
-                            {transcript || (state.muted
-                                ? '麦克风已静音，恢复后可以继续说话。'
-                                : (state.status === 'listening' ? '您可以直接开始说话。' : '…'))}
-                        </p>
+                    <div className="cwm-voice-status">
+                        <h2>{statusLabel}</h2>
+                        <StatusTrail state={state}/>
+                    </div>
+
+                    <div className="cwm-voice-transcript">
+                        {transcript ? (
+                            <p>“{transcript}”</p>
+                        ) : (
+                            <p className="cwm-voice-transcript__hint">
+                                {state?.muted
+                                    ? '恢复麦克风后继续说话'
+                                    : (state?.status === 'listening' ? '直接说话即可' : '')}
+                            </p>
+                        )}
                     </div>
 
                     {state.error && (
-                        <div className="mt-4 w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300">
+                        <div className="cwm-voice-error" role="status">
                             {state.error}
                         </div>
                     )}
                 </main>
 
-                <footer className="flex w-full items-center justify-center gap-3 pb-1 pt-1">
+                <footer className="cwm-voice-controls" aria-label="实时语音控制">
                     <button
                         type="button"
                         onClick={onToggleMute}
-                        className={`flex min-w-28 items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium ${state.muted ? 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-300' : 'border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'}`}
+                        className={`cwm-voice-control-button ${state.muted ? 'cwm-voice-control-button--muted' : ''}`}
+                        title={state.muted ? '恢复麦克风' : '麦克风静音'}
+                        aria-label={state.muted ? '恢复麦克风' : '麦克风静音'}
                     >
-                        {state.muted ? <MicOff size={18}/> : <Mic size={18}/>} {state.muted ? '恢复麦克风' : '麦克风静音'}
+                        {state.muted ? <MicOff size={21}/> : <Mic size={21}/>}
                     </button>
-                    <button type="button" onClick={onEnd} className="rounded-full bg-red-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-600">
-                        结束语音
+                    <button
+                        type="button"
+                        onClick={onEnd}
+                        className="cwm-voice-control-button cwm-voice-control-button--end"
+                        title="结束语音"
+                        aria-label="结束语音"
+                    >
+                        <PhoneOff size={22}/>
                     </button>
                 </footer>
             </section>

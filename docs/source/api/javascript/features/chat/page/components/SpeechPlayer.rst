@@ -1,5 +1,5 @@
 src/features/chat/page/components/SpeechPlayer 模块
-=================================================
+==========================================================================================================
 
 .. js:module:: src/features/chat/page/components/SpeechPlayer
 
@@ -11,7 +11,7 @@ src/features/chat/page/components/SpeechPlayer 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/page/components/SpeechPlayer.jsx``
 * **模块标识**：``src/features/chat/page/components/SpeechPlayer``
@@ -20,12 +20,12 @@ src/features/chat/page/components/SpeechPlayer 模块
 * **局部函数与匿名回调**：134
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-dom``、``@headlessui/react``、``lucide-react``、``@/lib/tools.jsx``、``@/features/chat/speech/subtitleSettings.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:1456:1846:FUNCTION
 
@@ -131,7 +131,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <div className={\`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[3px] overflow-hidden bg-slate-200/55 ${className}\`} role="progressbar" aria-label="Speech playback and b…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[3px] overflow-hidden bg-slate-200/55 ${className}\x60} role="progressbar" aria-label="Speech playback and b…``。
 
    **主要协作调用**：``Number``、``Number.isInteger``、``Math.max``、``normalizeProgress``、``Math.round``。
 
@@ -373,7 +373,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``false``、``Boolean(hasCoarsePointer \|\| hasNoHover \|\| isSmallScreen)``。
+   根据执行分支返回结果；代表性返回表达式为 ``false``、``Boolean(hasCoarsePointer || hasNoHover || isSmallScreen)``。
 
    **副作用**
 
@@ -392,7 +392,7 @@ src/features/chat/page/components/SpeechPlayer 模块
    **参数**
 
    ``{ open, anchorRef, menuRef, options, selectedValue, defaultLabel, onOpenChange, onPointerEnter, onP…``
-      调用方传入的 `` open, anchorRef, menuRef, options, selectedValue, defaultLabel, onOpenChange, onPointerEnter, onP…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``open, anchorRef, menuRef, options, selectedValue, defaultLabel, onOpenChange, onPointerEnter, onP…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -459,7 +459,7 @@ src/features/chat/page/components/SpeechPlayer 模块
    **参数**
 
    ``{ open, anchorRef, menuRef, position, settings, onPositionSelect, onSettingsChange, onReset, onPoin…``
-      调用方传入的 `` open, anchorRef, menuRef, position, settings, onPositionSelect, onSettingsChange, onReset, onPoin…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``open, anchorRef, menuRef, position, settings, onPositionSelect, onSettingsChange, onReset, onPoin…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -475,7 +475,7 @@ src/features/chat/page/components/SpeechPlayer 模块
    **内部回调数量**：9。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -647,7 +647,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``\`${voice.name}${lang}${defaultMark}\```。
+根据执行分支返回结果；代表性返回表达式为 ``\x60${voice.name}${lang}${defaultMark}\x60``。
 
 **主要协作调用**：``fallbackText``。
 
@@ -935,7 +935,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <button key={item.id} type="button" role="radio" aria-checked={active} onClick={() => onPositionSelect?.(item)} className={\`group flex min-h-11 items-center justify-center round…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <button key={item.id} type="button" role="radio" aria-checked={active} onClick={() => onPositionSelect?.(item)} className={\x60group flex min-h-11 items-center justify-center round…``。
 
 **主要协作调用**：``Math.abs``、``getSubtitleQuickPositionLabel``。
 
@@ -1093,7 +1093,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 **参数**
 
 ``{ speechState, message, autoFollowEnabled = false, onAutoFollowToggle, subtitlesEnabled = true, onS…``
-   调用方传入的 `` speechState, message, autoFollowEnabled = false, onAutoFollowToggle, subtitlesEnabled = true, onS…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``speechState, message, autoFollowEnabled = false, onAutoFollowToggle, subtitlesEnabled = true, onS…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -1622,7 +1622,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 * 注册事件、DOM 或运行时订阅。
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``[ window.matchMedia?.('(pointer: coarse)'), window.matchMedia?.('(hover: none)'), window.matchMedia?.(\`(max-width: ${MO…``、``window.matchMedia``、``updateInteractionMode``、``mediaQueries.forEach``、``window.addEventListener``。
+**主要协作调用**：``[ window.matchMedia?.('(pointer: coarse)'), window.matchMedia?.('(hover: none)'), window.matchMedia?.(\x60(max-width: ${MO…``、``window.matchMedia``、``updateInteractionMode``、``mediaQueries.forEach``、``window.addEventListener``。
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
@@ -3218,7 +3218,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``browserVoiceDefaultLabel``、``\`${selectedVoice.name}${lang}${defaultMark}\```。
+根据执行分支返回结果；代表性返回表达式为 ``browserVoiceDefaultLabel``、``\x60${selectedVoice.name}${lang}${defaultMark}\x60``。
 
 **主要协作调用**：``browserVoiceOptions.find``、``fallbackText``。
 
@@ -3333,7 +3333,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <button key={item} type="button" onClick={() => { onRateChange?.(item); setSpeedMenuOpen(false); }} className={\`w-full flex items-center justify-between rounded-xl px-2.5 py-2 t…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <button key={item} type="button" onClick={() => { onRateChange?.(item); setSpeedMenuOpen(false); }} className={\x60w-full flex items-center justify-between rounded-xl px-2.5 py-2 t…``。
 
 **主要协作调用**：``Math.abs``、``fallbackText``。
 

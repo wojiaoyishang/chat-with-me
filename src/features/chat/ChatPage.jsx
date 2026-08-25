@@ -18,8 +18,10 @@ import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
 import RuntimeInspectorDialog from '@/features/chat/page/components/RuntimeInspectorDialog.jsx';
 import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
 import StoryReader from '@/features/story/StoryReader.jsx';
+import TaskMonitorHost from '@/components/markdown/card-block/task/TaskMonitorHost.jsx';
+import {followTaskMonitorCard} from '@/components/markdown/card-block/task/useTaskMonitorStore.js';
 import {clearWorkspaceTransfers, upsertWorkspaceTransfer} from '@/features/workspace/useWorkspaceTransferStore.js';
-import {getVisionAttachmentIds} from './attachmentVision.js';
+import {getVisionAttachmentIds, normalizeAttachmentList} from './attachmentVision.js';
 import {normalizeRemoteChatModel} from './modelCapabilities.js';
 import {WidgetPresentationProvider} from './widgets/WidgetPresentationContext.jsx';
 import {RealtimeVoiceSurface, useRealtimeVoiceConversation} from './voice/index.js';
@@ -149,8 +151,8 @@ const getReplacementPayloadContent = (entry) => {
     return entry.frontend ?? entry.content ?? entry.value ?? '';
 };
 
-const collectTaskInterruptReceipts = (messageOrReplacementUpdates) => {
-    const receipts = [];
+const collectLiveTaskModeCardIds = (messageOrReplacementUpdates) => {
+    const cardIds = [];
     const seen = new Set();
 
     Object.values(messageOrReplacementUpdates || {}).forEach((outerValue) => {
@@ -159,33 +161,26 @@ const collectTaskInterruptReceipts = (messageOrReplacementUpdates) => {
         const replacementMap = outerValue?.extraInfo?.replace
             || outerValue?.extra_info?.replace
             || outerValue;
-
         if (!replacementMap || typeof replacementMap !== 'object') return;
 
-        Object.values(replacementMap).forEach((entry) => {
-            const rawContent = String(getReplacementPayloadContent(entry) || '').trim();
-            if (!rawContent.startsWith('{')) return;
+        Object.entries(replacementMap).forEach(([replacementId, entry]) => {
+            const cardId = String(replacementId || '').trim();
+            const rawContent = String(getReplacementPayloadContent(entry) || '');
+            if (!cardId || seen.has(cardId)) return;
 
-            try {
-                const parsed = JSON.parse(rawContent);
-                const items = Array.isArray(parsed?.items) ? parsed.items : [parsed];
+            // Task Mode cards are the only replacements carrying both markers.
+            // A sealed historical segment also carries TASK_SEGMENT_DONE and must
+            // never steal an already-open monitor from the newly-created segment.
+            if (!/\[TASK_STATUS:[^\]\r\n]+\]/i.test(rawContent)) return;
+            if (!/\[TASK_RUN_ID:[^\]\r\n]+\]/i.test(rawContent)) return;
+            if (/\[TASK_SEGMENT_DONE:true\]/i.test(rawContent)) return;
 
-                items.forEach((item) => {
-                    const requestId = String(item?.requestId || '').trim();
-                    if (!requestId || seen.has(requestId)) return;
-                    seen.add(requestId);
-                    receipts.push({
-                        requestId,
-                        taskRunId: String(item?.taskRunId || parsed?.taskRunId || '').trim(),
-                    });
-                });
-            } catch {
-                // 普通 replacement 内容不一定是 JSON，忽略即可。
-            }
+            seen.add(cardId);
+            cardIds.push(cardId);
         });
     });
 
-    return receipts;
+    return cardIds;
 };
 
 
@@ -221,8 +216,6 @@ function ChatPage({
     const [messages, setMessages] = useImmer({});
     const messagesRef = useRef({});
     const messagesOrderRef = useRef([]);
-    const [taskInterruptPreviews, setTaskInterruptPreviews] = useState([]);
-    const taskInterruptDividerShownRef = useRef(new Set());
 
     const [showQuickUserMessageNavigator] = useLocalSetting(
         MESSAGE_NAVIGATOR_SETTING_KEY,
@@ -841,111 +834,6 @@ function ChatPage({
         smoothScrollToBottom,
     ]);
 
-    const handleTaskInterruptPreview = useCallback((preview) => {
-        const requestId = String(preview?.requestId || '').trim();
-        const taskRunId = String(preview?.taskRunId || '').trim();
-        const content = String(preview?.content || '').trim();
-        if (!requestId || !taskRunId || !content) return;
-
-        const hasRenderedDivider = taskInterruptDividerShownRef.current.has(taskRunId)
-            || collectTaskInterruptReceipts(messagesRef.current)
-                .some((item) => item.taskRunId === taskRunId);
-        const showDivider = !hasRenderedDivider;
-        if (showDivider) taskInterruptDividerShownRef.current.add(taskRunId);
-
-        setTaskInterruptPreviews((current) => {
-            if (current.some((item) => item.requestId === requestId)) return current;
-            return [...current, {
-                requestId,
-                taskRunId,
-                content,
-                createdAt: preview?.createdAt || Date.now(),
-                pending: true,
-                showDivider,
-            }];
-        });
-
-        scrollToBottomAfterRender(isAutoScrollEnabledRef.current, {delay: 0});
-    }, [isAutoScrollEnabledRef, scrollToBottomAfterRender]);
-
-    const handleTaskInterruptResult = useCallback(({requestId, success}) => {
-        const normalizedRequestId = String(requestId || '').trim();
-        if (!normalizedRequestId) return;
-
-        setTaskInterruptPreviews((current) => {
-            if (!success) {
-                const failedItem = current.find((item) => item.requestId === normalizedRequestId);
-                const remaining = current.filter((item) => item.requestId !== normalizedRequestId);
-                if (!failedItem?.showDivider) return remaining;
-
-                const nextGroupIndex = remaining.findIndex(
-                    (item) => item.taskRunId === failedItem.taskRunId
-                );
-                if (nextGroupIndex >= 0) {
-                    return remaining.map((item, index) => (
-                        index === nextGroupIndex ? {...item, showDivider: true} : item
-                    ));
-                }
-
-                const hasRenderedDivider = collectTaskInterruptReceipts(messagesRef.current)
-                    .some((item) => item.taskRunId === failedItem.taskRunId);
-                if (!hasRenderedDivider) {
-                    taskInterruptDividerShownRef.current.delete(failedItem.taskRunId);
-                }
-                return remaining;
-            }
-            return current.map((item) => (
-                item.requestId === normalizedRequestId
-                    ? {...item, pending: false}
-                    : item
-            ));
-        });
-    }, []);
-
-    const handleTaskInterruptClear = useCallback((taskRunId) => {
-        const normalizedTaskRunId = String(taskRunId || '').trim();
-        if (!normalizedTaskRunId) return;
-        setTaskInterruptPreviews((current) => (
-            current.filter((item) => item.taskRunId !== normalizedTaskRunId)
-        ));
-        taskInterruptDividerShownRef.current.delete(normalizedTaskRunId);
-    }, []);
-
-    const acknowledgeTaskInterruptReplacements = useCallback((updates) => {
-        const receipts = collectTaskInterruptReceipts(updates);
-        if (receipts.length === 0) return;
-
-        const receivedIds = new Set(receipts.map((item) => item.requestId));
-        const receivedTaskRunIds = new Set(
-            receipts.map((item) => item.taskRunId).filter(Boolean)
-        );
-        receivedTaskRunIds.forEach((taskRunId) => {
-            taskInterruptDividerShownRef.current.add(taskRunId);
-        });
-
-        // Worker 会先推送 replacement，再把对应 card token 追加到正文。
-        // 先隐藏乐观分组的分割线，避免与正式卡片重叠；稍后再撤销已对账气泡，
-        // 避免两条流事件之间出现内容短暂消失。
-        setTaskInterruptPreviews((current) => (
-            current.map((item) => (
-                receivedTaskRunIds.has(item.taskRunId)
-                    ? {...item, showDivider: false}
-                    : item
-            ))
-        ));
-
-        globalThis.setTimeout(() => {
-            setTaskInterruptPreviews((current) => (
-                current.filter((item) => !receivedIds.has(item.requestId))
-            ));
-        }, 80);
-    }, []);
-
-    useEffect(() => {
-        setTaskInterruptPreviews([]);
-        taskInterruptDividerShownRef.current.clear();
-    }, [conversationId]);
-
     const handleManualScrollToBottomClick = useCallback(() => {
         if (historyNavigationLockedRef.current && restoreLatestMessagesRef.current) {
             restoreLatestMessagesRef.current();
@@ -1097,6 +985,10 @@ function ChatPage({
             text,
         });
     }, [handleSpeakContentRequest]);
+
+    const stopStorySpeech = useCallback(() => {
+        cancelActiveSpeech(true);
+    }, [cancelActiveSpeech]);
 
     useEffect(() => {
         loadStories();
@@ -1264,13 +1156,17 @@ function ChatPage({
             isFork = false,
             role,
             admissionPolicy = 'auto',
-            inputSource = 'chat'
+            inputSource = 'chat',
+            restartTaskRunId = '',
+            restartTaskMessageId = '',
+            idempotencyKey = '',
         }
     ) => {
         if (uploadFiles.length !== 0) {
             toast.error(t("file_upload_not_complete"));
             return;
         }
+        const outboundAttachments = normalizeAttachmentList(attachments);
         const sendMessage = (conversationId) => {
             if (isFirstMessageSend) {
                 emitEvent({
@@ -1287,8 +1183,8 @@ function ChatPage({
                 payload: {
                     content: messageContent,
                     toolsStatus: toolsStatus,
-                    attachments: attachments,
-                    visionAttachmentIds: getVisionAttachmentIds(attachments),
+                    attachments: outboundAttachments,
+                    visionAttachmentIds: getVisionAttachmentIds(outboundAttachments),
                     isEdit: isEditMessage,
                     model: selectedModel.id,
                     sendButtonStatus: sendButtonStatus,
@@ -1301,7 +1197,9 @@ function ChatPage({
                     documentId: documentId,
                     admissionPolicy: admissionPolicy,
                     inputSource: inputSource,
-                    idempotencyKey: currentTurnIdempotencyKeyRef.current
+                    idempotencyKey: idempotencyKey || currentTurnIdempotencyKeyRef.current,
+                    restartTaskRunId: restartTaskRunId || undefined,
+                    restartTaskMessageId: restartTaskMessageId || undefined,
                 },
                 conversationId: conversationId,
                 documentId: documentId,
@@ -2265,7 +2163,6 @@ function ChatPage({
                                 }
                             }
 
-                            acknowledgeTaskInterruptReplacements(payload.value);
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
 
@@ -2336,7 +2233,9 @@ function ChatPage({
                                     }
                                 }
                             });
-                            acknowledgeTaskInterruptReplacements(payload.value);
+                            collectLiveTaskModeCardIds(payload.value).forEach((cardId) => {
+                                followTaskMonitorCard(conversationId, cardId);
+                            });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
                             scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
@@ -2774,7 +2673,7 @@ function ChatPage({
             unsubscribe2();
             unsubscribe3();
         };
-    }, [acknowledgeTaskInterruptReplacements, conversationId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, loadRuntimeInspector, showQuickUserMessageNavigator, runtimeInspectorOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState]);
+    }, [conversationId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, loadRuntimeInspector, showQuickUserMessageNavigator, runtimeInspectorOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState]);
 
     useEffect(() => {
         return () => {
@@ -3159,9 +3058,10 @@ function ChatPage({
                                 speechState={speechState}
                                 onSpeechTextClick={handleSpeechTextClick}
                                 highlightedMessageId={highlightedMessageId}
-                                taskInterruptPreviews={taskInterruptPreviews}
                             />
                         </div>
+
+                        <TaskMonitorHost conversationId={conversationId}/>
 
                         <QuickUserMessageNavigator
                             items={messageSummaries}
@@ -3238,9 +3138,6 @@ function ChatPage({
                             onVoicePcmReady={handleVoicePcmReady}
                             onVoiceRecordingCancel={handleVoiceRecordingCancel}
                             onRealtimeVoiceStart={handleRealtimeVoiceStart}
-                            onTaskInterruptPreview={handleTaskInterruptPreview}
-                            onTaskInterruptResult={handleTaskInterruptResult}
-                            onTaskInterruptClear={handleTaskInterruptClear}
                             selectedWorkspaceIds={Array.isArray(advancedSettingsValues?.workspaceIds)
                                 ? advancedSettingsValues.workspaceIds
                                 : (advancedSettingsValues?.workspaceId ? [advancedSettingsValues.workspaceId] : [])}
@@ -3320,13 +3217,11 @@ function ChatPage({
                 story={activeStory}
                 open={storyReaderOpen}
                 onClose={() => {
-                    cancelActiveSpeech(true);
+                    stopStorySpeech();
                     setStoryReaderOpen(false);
                 }}
                 onSpeakPart={speakStoryPart}
-                onStopSpeech={() => cancelActiveSpeech(true)}
-                onPauseSpeech={pauseActiveSpeech}
-                onResumeSpeech={resumeActiveSpeech}
+                onStopSpeech={stopStorySpeech}
                 speechState={speechState}
                 subtitlesEnabled={speechSubtitlesEnabled}
                 onSubtitlesToggle={updateSpeechSubtitlesEnabled}

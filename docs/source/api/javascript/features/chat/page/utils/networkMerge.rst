@@ -1,5 +1,5 @@
 src/features/chat/page/utils/networkMerge 模块
-============================================
+================================================================================================
 
 .. js:module:: src/features/chat/page/utils/networkMerge
 
@@ -11,7 +11,7 @@ src/features/chat/page/utils/networkMerge 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/page/utils/networkMerge.js``
 * **模块标识**：``src/features/chat/page/utils/networkMerge``
@@ -20,7 +20,7 @@ src/features/chat/page/utils/networkMerge 模块
 * **局部函数与匿名回调**：2
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:124:191:FUNCTION
 
@@ -59,7 +59,7 @@ src/features/chat/page/utils/networkMerge 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``key === undefined \|\| key === null \|\| key === '' ? null : String(key)``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``key === undefined || key === null || key === '' ? null : String(key)``。
 
    **主要协作调用**：``String``。
 
@@ -78,7 +78,7 @@ src/features/chat/page/utils/networkMerge 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``String(rel.id)``、``\`${String(from)}__${String(to)}__${String(type)}\```。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``String(rel.id)``、``\x60${String(from)}__${String(to)}__${String(type)}\x60``。
 
    **主要协作调用**：``String``。
 
@@ -170,14 +170,14 @@ src/features/chat/page/utils/networkMerge 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``new Set( (Array.isArray(items) ? items : []) .map(item => { if (item && typeof item === 'object') return getObjectKey(item); return item === undefined \|\| item === null \|\| item ===…``。
+   根据执行分支返回结果；代表性返回表达式为 ``new Set( (Array.isArray(items) ? items : []) .map(item => { if (item && typeof item === 'object') return getObjectKey(item); return item === undefined || item === null || item ===…``。
 
    **主要协作调用**：``(Array.isArray(items) ? items : []) .map(item => { if (item && typeof item === 'object') return getObjectKey(item); ret…``、``(Array.isArray(items) ? items : []) .map``、``Array.isArray``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -227,6 +227,6 @@ src/features/chat/page/utils/networkMerge 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``getObjectKey(item)``、``item === undefined \|\| item === null \|\| item === '' ? null : String(item)``。
+根据执行分支返回结果；代表性返回表达式为 ``getObjectKey(item)``、``item === undefined || item === null || item === '' ? null : String(item)``。
 
 **主要协作调用**：``getObjectKey``、``String``。

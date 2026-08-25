@@ -1,5 +1,5 @@
 src/features/notification/NotificationHost 模块
-=============================================
+==================================================================================================
 
 .. js:module:: src/features/notification/NotificationHost
 
@@ -11,7 +11,7 @@ src/features/notification/NotificationHost 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/notification/NotificationHost.jsx``
 * **模块标识**：``src/features/notification/NotificationHost``
@@ -20,12 +20,12 @@ src/features/notification/NotificationHost 模块
 * **局部函数与匿名回调**：58
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``@/context/useEventStore.jsx``、``@/lib/tools.jsx``、``./NotificationToast.jsx``、``./notificationRegistry.js``、``./useNotificationStore.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:629:731:FUNCTION
 
@@ -96,7 +96,7 @@ src/features/notification/NotificationHost 模块
    **参数**
 
    ``{ currentConversationId, isConversationVisible = true, onOpenConversation, }``
-      调用方传入的 `` currentConversationId, isConversationVisible = true, onOpenConversation, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``currentConversationId, isConversationVisible = true, onOpenConversation,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -113,7 +113,7 @@ src/features/notification/NotificationHost 模块
    **内部回调数量**：26。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -542,7 +542,7 @@ src/features/notification/NotificationHost 模块
 **参数**
 
 ``{ backgroundSince = null, backgroundBaseline = null, }``（默认值 ``{}``）
-   调用方传入的 `` backgroundSince = null, backgroundBaseline = null, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``backgroundSince = null, backgroundBaseline = null,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -552,7 +552,7 @@ src/features/notification/NotificationHost 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``syncPromiseRef.current.then``、``apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications \|\|…``、``apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then``、``apiClient.get``。
+**主要协作调用**：``syncPromiseRef.current.then``、``apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications ||…``、``apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then``、``apiClient.get``。
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
@@ -604,13 +604,13 @@ src/features/notification/NotificationHost 模块
 
 .. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5426:5534:FUNCTION
 
-.. rubric:: ``apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications \|\|… callback @ 112``
+.. rubric:: ``apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications ||… callback @ 112``
 
 .. code-block:: javascript
 
    apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications ||… callback @ 112()
 
-实现 ``apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications \|\|…`` 对应的前端处理。
+实现 ``apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications ||…`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``112``—``114`` 行；所属函数 ``useCallback callback @ 93``。
 
@@ -643,19 +643,19 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``(notification.actions \|\| []).find``、``onOpenConversation``、``dismissToast``。
+**主要协作调用**：``(notification.actions || []).find``、``onOpenConversation``、``dismissToast``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
 .. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5785:5828:FUNCTION
 
-.. rubric:: ``(notification.actions \|\| []).find callback @ 120``
+.. rubric:: ``(notification.actions || []).find callback @ 120``
 
 .. code-block:: javascript
 
    (notification.actions || []).find callback @ 120(item)
 
-作为 ``(notification.actions \|\| []).find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(notification.actions || []).find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``120``—``120`` 行；所属函数 ``useCallback callback @ 119``。
 

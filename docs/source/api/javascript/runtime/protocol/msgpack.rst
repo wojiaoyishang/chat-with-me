@@ -1,5 +1,5 @@
 src/runtime/protocol/msgpack 模块
-===============================
+================================================================================
 
 .. js:module:: src/runtime/protocol/msgpack
 
@@ -11,7 +11,7 @@ Small MessagePack codec used by CWM Protocol v1. It intentionally supports only 
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/runtime/protocol/msgpack.js``
 * **模块标识**：``src/runtime/protocol/msgpack``
@@ -20,7 +20,7 @@ Small MessagePack codec used by CWM Protocol v1. It intentionally supports only 
 * **局部函数与匿名回调**：2
 
 类
---
+--------------------------------------------------------------------------------
 
 .. js:class:: Writer()
 
@@ -306,12 +306,12 @@ Small MessagePack codec used by CWM Protocol v1. It intentionally supports only 
 
       根据执行分支返回结果；代表性返回表达式为 ``code``、``code - 0x100``、``this.string(code & 0x1f)``、``this.array(code & 0x0f)``。
 
-      **显式抛出**：``new TypeError(\`Unsupported MessagePack code: 0x${code.toString(16)}\`)``。
+      **显式抛出**：``new TypeError(\x60Unsupported MessagePack code: 0x${code.toString(16)}\x60)``。
 
       **主要协作调用**：``this.number``、``this.string``、``this.array``、``this.map``、``this.raw``、``this.safeBigInt``、``code.toString``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/runtime/protocol/msgpack.js:1130:1596:FUNCTION
 
@@ -370,7 +370,7 @@ Small MessagePack codec used by CWM Protocol v1. It intentionally supports only 
 
    根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-   **显式抛出**：``new TypeError('MessagePack only accepts finite numbers')``、``new RangeError('Integer exceeds JavaScript safe range')``、``new TypeError(\`Unsupported MessagePack value: ${typeof value}\`)``。
+   **显式抛出**：``new TypeError('MessagePack only accepts finite numbers')``、``new RangeError('Integer exceeds JavaScript safe range')``、``new TypeError(\x60Unsupported MessagePack value: ${typeof value}\x60)``。
 
    **主要协作调用**：``writer.byte``、``Number.isFinite``、``Number.isInteger``、``writer.number``、``Number.isSafeInteger``、``BigInt``、``textEncoder.encode``、``writeLength``、``writer.push``、``ArrayBuffer.isView``、``Array.isArray``、``value.forEach``。
 
@@ -417,7 +417,7 @@ Small MessagePack codec used by CWM Protocol v1. It intentionally supports only 
    **主要协作调用**：``reader.value``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

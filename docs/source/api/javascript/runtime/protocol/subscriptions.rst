@@ -1,5 +1,5 @@
 src/runtime/protocol/subscriptions 模块
-=====================================
+==================================================================================
 
 .. js:module:: src/runtime/protocol/subscriptions
 
@@ -11,7 +11,7 @@ Listener-delivery policy for the frontend semantic event runtime.
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/runtime/protocol/subscriptions.js``
 * **模块标识**：``src/runtime/protocol/subscriptions``
@@ -20,7 +20,7 @@ Listener-delivery policy for the frontend semantic event runtime.
 * **局部函数与匿名回调**：1
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/runtime/protocol/subscriptions.js:444:960:FUNCTION
 
@@ -54,18 +54,18 @@ Listener-delivery policy for the frontend semantic event runtime.
    **参数**
 
    ``{ direction, replyTo = null, listenerDirections = null, includeReplies = false, }``
-      调用方传入的 `` direction, replyTo = null, listenerDirections = null, includeReplies = false, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``direction, replyTo = null, listenerDirections = null, includeReplies = false,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``false``、``true``。
 
-   **显式抛出**：``new TypeError(\`Invalid CWM event direction: ${direction}\`)``。
+   **显式抛出**：``new TypeError(\x60Invalid CWM event direction: ${direction}\x60)``。
 
-   **主要协作调用**：``String(direction \|\| '').trim().toLowerCase``、``String(direction \|\| '').trim``、``String``、``VALID_EVENT_DIRECTIONS.has``、``listenerDirections.has``。
+   **主要协作调用**：``String(direction || '').trim().toLowerCase``、``String(direction || '').trim``、``String``、``VALID_EVENT_DIRECTIONS.has``、``listenerDirections.has``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -90,6 +90,6 @@ Listener-delivery policy for the frontend semantic event runtime.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**显式抛出**：``new TypeError(\`Invalid CWM event direction: ${item}\`)``。
+**显式抛出**：``new TypeError(\x60Invalid CWM event direction: ${item}\x60)``。
 
-**主要协作调用**：``String(item \|\| '').trim().toLowerCase``、``String(item \|\| '').trim``、``String``、``VALID_EVENT_DIRECTIONS.has``、``normalized.add``。
+**主要协作调用**：``String(item || '').trim().toLowerCase``、``String(item || '').trim``、``String``、``VALID_EVENT_DIRECTIONS.has``、``normalized.add``。

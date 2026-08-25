@@ -1,5 +1,5 @@
 src/features/chat/ui/QuickOptions 模块
-====================================
+================================================================================
 
 .. js:module:: src/features/chat/ui/QuickOptions
 
@@ -11,7 +11,7 @@ src/features/chat/ui/QuickOptions 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/QuickOptions.jsx``
 * **模块标识**：``src/features/chat/ui/QuickOptions``
@@ -20,12 +20,12 @@ src/features/chat/ui/QuickOptions 模块
 * **局部函数与匿名回调**：14
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-i18next``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,11 +44,11 @@ src/features/chat/ui/QuickOptions 模块
 **参数**
 
 ``{ option, isSelected, onClick }``
-   调用方传入的 `` option, isSelected, onClick `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``option, isSelected, onClick`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <button key={option.id} type="button" onClick={handleClick} className={\`w-[102px] flex-shrink-0 px-2.5 py-2 text-sm rounded-lg transition-all duration-150 ease-in-out shadow-sm…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <button key={option.id} type="button" onClick={handleClick} className={\x60w-[102px] flex-shrink-0 px-2.5 py-2 text-sm rounded-lg transition-all duration-150 ease-in-out shadow-sm…``。
 
 **主要协作调用**：``useCallback``。
 
@@ -115,7 +115,7 @@ src/features/chat/ui/QuickOptions 模块
 **参数**
 
 ``{ direction, disabled, onClick, ariaLabel }``
-   调用方传入的 `` direction, disabled, onClick, ariaLabel `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``direction, disabled, onClick, ariaLabel`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -186,7 +186,7 @@ src/features/chat/ui/QuickOptions 模块
 **参数**
 
 ``{ quickOptionsLength, currentPageIndex, setCurrentPageIndex, quickOptionsRef, t }``
-   调用方传入的 `` quickOptionsLength, currentPageIndex, setCurrentPageIndex, quickOptionsRef, t `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``quickOptionsLength, currentPageIndex, setCurrentPageIndex, quickOptionsRef, t`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -280,7 +280,7 @@ src/features/chat/ui/QuickOptions 模块
 **参数**
 
 ``{ quickOptions, quickOptionsRef, currentPageIndex, setCurrentPageIndex, onOptionClick, selectedOpti…``
-   调用方传入的 `` quickOptions, quickOptionsRef, currentPageIndex, setCurrentPageIndex, onOptionClick, selectedOpti…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``quickOptions, quickOptionsRef, currentPageIndex, setCurrentPageIndex, onOptionClick, selectedOpti…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 

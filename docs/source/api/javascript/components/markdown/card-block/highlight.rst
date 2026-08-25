@@ -1,5 +1,5 @@
 src/components/markdown/card-block/highlight 模块
-===============================================
+======================================================================================================
 
 .. js:module:: src/components/markdown/card-block/highlight
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/highlight 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/highlight.js``
 * **模块标识**：``src/components/markdown/card-block/highlight``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/highlight 模块
 * **局部函数与匿名回调**：2
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``./utils.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/highlight.js:376:764:FUNCTION
 
@@ -62,7 +62,7 @@ src/components/markdown/card-block/highlight 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``''``、``HIGHLIGHT_LANGUAGE_ALIASES[normalized] \|\| normalized``。
+   根据执行分支返回结果；代表性返回表达式为 ``''``、``HIGHLIGHT_LANGUAGE_ALIASES[normalized] || normalized``。
 
    **主要协作调用**：``toSafeString(language).trim().toLowerCase``、``toSafeString(language).trim``、``toSafeString``。
 
@@ -93,7 +93,7 @@ src/components/markdown/card-block/highlight 模块
    **主要协作调用**：``hljsInst.getLanguage``、``failedLanguages.has``、``failedLanguages?.add``、``loadModule``、``hljsInst.registerLanguage``、``console.error``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

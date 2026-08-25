@@ -1,5 +1,5 @@
 src/features/chat/page/components/QuickUserMessageNavigator 模块
-==============================================================
+====================================================================================================================================
 
 .. js:module:: src/features/chat/page/components/QuickUserMessageNavigator
 
@@ -11,7 +11,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/page/components/QuickUserMessageNavigator.jsx``
 * **模块标识**：``src/features/chat/page/components/QuickUserMessageNavigator``
@@ -20,12 +20,12 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 * **局部函数与匿名回调**：44
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@/components/ui/card``、``@/components/ui/tooltip``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:576:633:FUNCTION
 
@@ -70,7 +70,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
    根据执行分支返回结果；代表性返回表达式为 ``event.deltaY * 16``、``event.deltaY * 220``、``event.deltaY``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -89,11 +89,11 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 **参数**
 
 ``{ items = [], activeMessageId, onSelect, visible = true, t, }``
-   调用方传入的 `` items = , activeMessageId, onSelect, visible = true, t, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``items = , activeMessageId, onSelect, visible = true, t,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <aside className={\`pointer-events-auto absolute right-0 top-1/2 z-20 hidden -translate-y-1/2 transition-[width] duration-300 ease-out md:block ${ isExpanded ? 'w-[76px]' : 'w-5'…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <aside className={\x60pointer-events-auto absolute right-0 top-1/2 z-20 hidden -translate-y-1/2 transition-[width] duration-300 ease-out md:block ${ isExpanded ? 'w-[76px]' : 'w-5'…``。
 
 **副作用**
 
@@ -264,7 +264,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``activeMessageId``、``userItems[nearestUserIndex]?.messageId \|\| activeMessageId``。
+根据执行分支返回结果；代表性返回表达式为 ``activeMessageId``、``userItems[nearestUserIndex]?.messageId || activeMessageId``。
 
 **副作用**
 
@@ -370,7 +370,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{ key: \`${startIndex}-${endIndex}\`, startIndex, endIndex, containsUser: bucket.some(item => item?.role === 'user'), }``。
+根据执行分支返回结果；代表性返回表达式为 ``{ key: \x60${startIndex}-${endIndex}\x60, startIndex, endIndex, containsUser: bucket.some(item => item?.role === 'user'), }``。
 
 **主要协作调用**：``Math.floor``、``Math.max``、``items.slice``、``bucket.some``。
 
@@ -1079,7 +1079,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <span key={marker.key} className={\`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-[top,opacity,background-color,transform] duration-700 ease-[cubic-…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <span key={marker.key} className={\x60absolute left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-[top,opacity,background-color,transform] duration-700 ease-[cubic-…``。
 
 .. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:17085:17115:FUNCTION
 
@@ -1125,7 +1125,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``<div key={\`empty-${slotIndex}\`} className="h-5 w-full" aria-hidden="true"/>``、``( <Tooltip key={item.messageId}> <TooltipTrigger asChild> <button type="button" onClick={() => onSelect?.(item.messageId)} className="group flex h-5 w-full cursor-pointer items-ce…``。
+根据执行分支返回结果；代表性返回表达式为 ``<div key={\x60empty-${slotIndex}\x60} className="h-5 w-full" aria-hidden="true"/>``、``( <Tooltip key={item.messageId}> <TooltipTrigger asChild> <button type="button" onClick={() => onSelect?.(item.messageId)} className="group flex h-5 w-full cursor-pointer items-ce…``。
 
 **主要协作调用**：``Math.min``、``Math.abs``、``t``。
 

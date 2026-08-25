@@ -1,5 +1,5 @@
 src/components/sidebar/ConversationsList 模块
-===========================================
+==============================================================================================
 
 .. js:module:: src/components/sidebar/ConversationsList
 
@@ -11,7 +11,7 @@ src/components/sidebar/ConversationsList 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/sidebar/ConversationsList.jsx``
 * **模块标识**：``src/components/sidebar/ConversationsList``
@@ -20,12 +20,12 @@ src/components/sidebar/ConversationsList 模块
 * **局部函数与匿名回调**：62
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``date-fns``、``lucide-react``、``@/lib/tools.jsx``、``react-i18next``、``@/lib/apiClient.js``、``@/config.js``、``@/components/ui/dropdown-menu``、``@/components/ui/button``、``@/components/ui/input``、``@/components/ui/badge``、``@/components/ui/dialog``、``sonner``、``@/components/ui/DeleteConfirmDialog``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:1347:1601:FUNCTION
 
@@ -44,7 +44,7 @@ src/components/sidebar/ConversationsList 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``Date.now``、``(session.children \|\| []).map``。
+   **主要协作调用**：``Date.now``、``(session.children || []).map``。
 
 .. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:1626:1995:FUNCTION
 
@@ -63,7 +63,7 @@ src/components/sidebar/ConversationsList 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``Boolean``、``(conversation.children \|\| []).map``。
+   **主要协作调用**：``Boolean``、``(conversation.children || []).map``。
 
 .. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2018:2246:FUNCTION
 
@@ -85,7 +85,7 @@ src/components/sidebar/ConversationsList 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``(nodes \|\| []).map``。
+   **主要协作调用**：``(nodes || []).map``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -109,7 +109,7 @@ src/components/sidebar/ConversationsList 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``(nodes \|\| []) .filter((node) => node.conversationId !== conversationId) .map``、``(nodes \|\| []) .filter``。
+   **主要协作调用**：``(nodes || []) .filter((node) => node.conversationId !== conversationId) .map``、``(nodes || []) .filter``。
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -155,7 +155,7 @@ src/components/sidebar/ConversationsList 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``(nodes \|\| []).reduce``。
+   **主要协作调用**：``(nodes || []).reduce``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -179,7 +179,7 @@ src/components/sidebar/ConversationsList 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``(nodes \|\| []).some``。
+   **主要协作调用**：``(nodes || []).some``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -247,7 +247,7 @@ src/components/sidebar/ConversationsList 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <> <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}> <DropdownMenuTrigger asChild> <Button type="button" variant="ghost" size="icon-sm" className={\`h-7 w-7 rounded-md bo…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <> <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}> <DropdownMenuTrigger asChild> <Button type="button" variant="ghost" size="icon-sm" className={\x60h-7 w-7 rounded-md bo…``。
 
    **主要协作调用**：``useTranslation``、``useState``、``useEffect``、``t``、``draftTitle.trim``。
 
@@ -264,30 +264,30 @@ src/components/sidebar/ConversationsList 模块
    **参数**
 
    ``{ child, selectedConversationId, onSelect, onDelete, onChange, expandedNodes, setExpandedNodes, for…``
-      调用方传入的 `` child, selectedConversationId, onSelect, onDelete, onChange, expandedNodes, setExpandedNodes, for…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``child, selectedConversationId, onSelect, onDelete, onChange, expandedNodes, setExpandedNodes, for…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <li data-conversation-id={child.conversationId}> <div className={\`group flex items-center gap-1 rounded-lg px-1.5 transition-colors ${ compact ? 'py-1' : 'py-1.5' } ${isSelected…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <li data-conversation-id={child.conversationId}> <div className={\x60group flex items-center gap-1 rounded-lg px-1.5 transition-colors ${ compact ? 'py-1' : 'py-1.5' } ${isSelected…``。
 
    **主要协作调用**：``Number``、``countAgentDescendants``、``formatConversationTime``、``child.children.map``。
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
 .. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2063:2243:FUNCTION
 
-.. rubric:: ``(nodes \|\| []).map callback @ 74``
+.. rubric:: ``(nodes || []).map callback @ 74``
 
 .. code-block:: javascript
 
    (nodes || []).map callback @ 74(node)
 
-作为 ``(nodes \|\| []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(nodes || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``74``—``80`` 行；所属函数 ``mapAgentTree``。
 
@@ -298,19 +298,19 @@ src/components/sidebar/ConversationsList 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{ ...nextNode, children: mapAgentTree(nextNode.children \|\| [], updater), }``。
+根据执行分支返回结果；代表性返回表达式为 ``{ ...nextNode, children: mapAgentTree(nextNode.children || [], updater), }``。
 
 **主要协作调用**：``updater``、``mapAgentTree``。
 
 .. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2336:2384:FUNCTION
 
-.. rubric:: ``(nodes \|\| []) .filter callback @ 85``
+.. rubric:: ``(nodes || []) .filter callback @ 85``
 
 .. code-block:: javascript
 
    (nodes || []) .filter callback @ 85(node)
 
-作为 ``(nodes \|\| []) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(nodes || []) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``removeAgentNode``。
 
@@ -325,13 +325,13 @@ src/components/sidebar/ConversationsList 模块
 
 .. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2399:2519:FUNCTION
 
-.. rubric:: ``(nodes \|\| []) .filter((node) => node.conversationId !== conversationId) .map callback @ 86``
+.. rubric:: ``(nodes || []) .filter((node) => node.conversationId !== conversationId) .map callback @ 86``
 
 .. code-block:: javascript
 
    (nodes || []) .filter((node) => node.conversationId !== conversationId) .map callback @ 86(node)
 
-作为 ``(nodes \|\| []) .filter((node) => node.conversationId !== conversationId) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(nodes || []) .filter((node) => node.conversationId !== conversationId) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``86``—``89`` 行；所属函数 ``removeAgentNode``。
 
@@ -348,13 +348,13 @@ src/components/sidebar/ConversationsList 模块
 
 .. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2966:3053:FUNCTION
 
-.. rubric:: ``(nodes \|\| []).reduce callback @ 103``
+.. rubric:: ``(nodes || []).reduce callback @ 103``
 
 .. code-block:: javascript
 
    (nodes || []).reduce callback @ 103(total, node)
 
-作为 ``(nodes \|\| []).reduce callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(nodes || []).reduce callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``103``—``105`` 行；所属函数 ``countAgentDescendants``。
 
@@ -374,13 +374,13 @@ src/components/sidebar/ConversationsList 模块
 
 .. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3141:3340:FUNCTION
 
-.. rubric:: ``(nodes \|\| []).some callback @ 109``
+.. rubric:: ``(nodes || []).some callback @ 109``
 
 .. code-block:: javascript
 
    (nodes || []).some callback @ 109(node)
 
-作为 ``(nodes \|\| []).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(nodes || []).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``109``—``112`` 行；所属函数 ``agentTreeContains``。
 
@@ -391,9 +391,9 @@ src/components/sidebar/ConversationsList 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``title.includes(normalizedQuery) \|\| agentTreeContains(node.children, normalizedQuery)``。
+根据执行分支返回结果；代表性返回表达式为 ``title.includes(normalizedQuery) || agentTreeContains(node.children, normalizedQuery)``。
 
-**主要协作调用**：``String(node.name \|\| node.title \|\| '').toLocaleLowerCase``、``String``、``title.includes``、``agentTreeContains``。
+**主要协作调用**：``String(node.name || node.title || '').toLocaleLowerCase``、``String``、``title.includes``、``agentTreeContains``。
 
 .. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3482:3519:FUNCTION
 
@@ -809,7 +809,7 @@ src/components/sidebar/ConversationsList 模块
 * 发起 HTTP 请求或访问外部服务。
 * 更新 React 或全局 Store 状态。
 
-**主要协作调用**：``setIsLoading``、``setIsLoadingError``、``apiClient.get``、``(response.data \|\| []).map``、``setConversations``、``setOffset``、``setTotal``、``setHasMore``、``console.error``。
+**主要协作调用**：``setIsLoading``、``setIsLoadingError``、``apiClient.get``、``(response.data || []).map``、``setConversations``、``setOffset``、``setTotal``、``setHasMore``、``console.error``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
@@ -1145,7 +1145,7 @@ src/components/sidebar/ConversationsList 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``conversations``、``conversations.filter((conversation) => ( String(conversation.title \|\| '').toLocaleLowerCase().includes(normalizedQuery) \|\| agentTreeContains(conversation.children, normalizedQuery…``。
+根据执行分支返回结果；代表性返回表达式为 ``conversations``、``conversations.filter((conversation) => ( String(conversation.title || '').toLocaleLowerCase().includes(normalizedQuery) || agentTreeContains(conversation.children, normalizedQuery…``。
 
 **主要协作调用**：``conversations.filter``。
 
@@ -1172,7 +1172,7 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String(conversation.title \|\| '').toLocaleLowerCase().includes``、``String(conversation.title \|\| '').toLocaleLowerCase``、``String``、``agentTreeContains``。
+**主要协作调用**：``String(conversation.title || '').toLocaleLowerCase().includes``、``String(conversation.title || '').toLocaleLowerCase``、``String``、``agentTreeContains``。
 
 .. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:23149:23344:FUNCTION
 
@@ -1523,7 +1523,7 @@ src/components/sidebar/ConversationsList 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <React.Fragment key={conversation.conversationId}> <li data-conversation-id={conversation.conversationId}> <div className={\`group flex w-full items-center rounded-lg px-1.5 tran…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <React.Fragment key={conversation.conversationId}> <li data-conversation-id={conversation.conversationId}> <div className={\x60group flex w-full items-center rounded-lg px-1.5 tran…``。
 
 **主要协作调用**：``Boolean``、``countAgentDescendants``、``t``、``formatConversationTime``、``conversation.children.map``。
 

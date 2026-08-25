@@ -1,5 +1,5 @@
 src/features/chat/ui/ToolButtons 模块
-===================================
+================================================================================
 
 .. js:module:: src/features/chat/ui/ToolButtons
 
@@ -11,7 +11,7 @@ src/features/chat/ui/ToolButtons 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/ToolButtons.jsx``
 * **模块标识**：``src/features/chat/ui/ToolButtons``
@@ -20,12 +20,12 @@ src/features/chat/ui/ToolButtons 模块
 * **局部函数与匿名回调**：36
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-icons/io``、``lucide-react``、``@/components/ui/dropdown-menu``、``@/lib/virtualUrl.js``、``@/lib/tools.jsx``、``./ChatButton.jsx``、``@/components/ui/ThreeDotLoading.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:842:968:FUNCTION
 
@@ -80,9 +80,9 @@ src/features/chat/ui/ToolButtons 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``String(value \|\| 'remote').toLowerCase() === 'local' ? 'local' : 'remote'``。
+   根据执行分支返回结果；代表性返回表达式为 ``String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote'``。
 
-   **主要协作调用**：``String(value \|\| 'remote').toLowerCase``、``String``。
+   **主要协作调用**：``String(value || 'remote').toLowerCase``、``String``。
 
 .. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:1943:2102:FUNCTION
 
@@ -135,12 +135,12 @@ src/features/chat/ui/ToolButtons 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``<Icon className={iconClassName} />``、``( <span className={iconClassName} dangerouslySetInnerHTML={{ __html: typeof iconData === 'string' ? iconData : '' }} /> )``、``( <img src={resolveResourceUrl(iconData)} className={iconClassName} width="18" height="18" alt={t(tool.text \|\| tool.name \|\| 'tool')} /> )``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``<Icon className={iconClassName} />``、``( <span className={iconClassName} dangerouslySetInnerHTML={{ __html: typeof iconData === 'string' ? iconData : '' }} /> )``、``( <img src={resolveResourceUrl(iconData)} className={iconClassName} width="18" height="18" alt={t(tool.text || tool.name || 'tool')} /> )``。
 
    **主要协作调用**：``getBuiltinToolIconData``、``resolveResourceUrl``、``t``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -181,7 +181,7 @@ src/features/chat/ui/ToolButtons 模块
 **参数**
 
 ``{ tool, isActive, onToggle }``
-   调用方传入的 `` tool, isActive, onToggle `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``tool, isActive, onToggle`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -275,7 +275,7 @@ src/features/chat/ui/ToolButtons 模块
 **参数**
 
 ``{ toolsLoadedStatus, extraTools, attachmentTools = [], renderMenuItems, setToolsLoadedStatus, tools…``
-   调用方传入的 `` toolsLoadedStatus, extraTools, attachmentTools = , renderMenuItems, setToolsLoadedStatus, tools…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``toolsLoadedStatus, extraTools, attachmentTools = , renderMenuItems, setToolsLoadedStatus, tools…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 

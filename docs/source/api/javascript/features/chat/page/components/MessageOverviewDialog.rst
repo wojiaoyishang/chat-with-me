@@ -1,5 +1,5 @@
 src/features/chat/page/components/MessageOverviewDialog 模块
-==========================================================
+============================================================================================================================
 
 .. js:module:: src/features/chat/page/components/MessageOverviewDialog
 
@@ -11,7 +11,7 @@ src/features/chat/page/components/MessageOverviewDialog 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/page/components/MessageOverviewDialog.jsx``
 * **模块标识**：``src/features/chat/page/components/MessageOverviewDialog``
@@ -20,12 +20,12 @@ src/features/chat/page/components/MessageOverviewDialog 模块
 * **局部函数与匿名回调**：10
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``react-virtuoso``、``@/components/ui/button``、``@/components/ui/dialog``、``./MessageSummaryItem.jsx``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,7 +44,7 @@ src/features/chat/page/components/MessageOverviewDialog 模块
 **参数**
 
 ``{ open, hostElement: _hostElement, items = [], loading = false, activeMessageId, onClose, onSelect,…``
-   调用方传入的 `` open, hostElement: _hostElement, items = , loading = false, activeMessageId, onClose, onSelect,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``open, hostElement: _hostElement, items = , loading = false, activeMessageId, onClose, onSelect,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 

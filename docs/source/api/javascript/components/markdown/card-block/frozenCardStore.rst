@@ -1,5 +1,5 @@
 src/components/markdown/card-block/frozenCardStore 模块
-=====================================================
+==================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/frozenCardStore
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/frozenCardStore 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/frozenCardStore.js``
 * **模块标识**：``src/components/markdown/card-block/frozenCardStore``
@@ -20,7 +20,7 @@ src/components/markdown/card-block/frozenCardStore 模块
 * **局部函数与匿名回调**：0
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/frozenCardStore.js:96:185:FUNCTION
 
@@ -40,7 +40,7 @@ src/components/markdown/card-block/frozenCardStore 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``\`${contextId \|\| '__default__'}::${id \|\| '__empty__'}\```。
+   根据执行分支返回结果；代表性返回表达式为 ``\x60${contextId || '__default__'}::${id || '__empty__'}\x60``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/frozenCardStore.js:399:742:FUNCTION
 
@@ -57,7 +57,7 @@ src/components/markdown/card-block/frozenCardStore 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``false``、``( rawEntry.stable === true \|\| rawEntry.isStable === true \|\| rawEntry.frozen === true \|\| rawEntry.isFrozen === true \|\| rawEntry.finished === true \|\| rawEntry.isFinished === true )``。
+   根据执行分支返回结果；代表性返回表达式为 ``false``、``( rawEntry.stable === true || rawEntry.isStable === true || rawEntry.frozen === true || rawEntry.isFrozen === true || rawEntry.finished === true || rawEntry.isFinished === true )``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/frozenCardStore.js:778:1351:FUNCTION
 
@@ -102,7 +102,7 @@ src/components/markdown/card-block/frozenCardStore 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``frozenCardMap.get(getFrozenCardKey(contextId, id)) \|\| null``。
+   根据执行分支返回结果；代表性返回表达式为 ``frozenCardMap.get(getFrozenCardKey(contextId, id)) || null``。
 
    **副作用**
 
@@ -121,7 +121,7 @@ src/components/markdown/card-block/frozenCardStore 模块
    **参数**
 
    ``{ contextId, id, normalized, rawEntry, }``
-      调用方传入的 `` contextId, id, normalized, rawEntry, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``contextId, id, normalized, rawEntry,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 

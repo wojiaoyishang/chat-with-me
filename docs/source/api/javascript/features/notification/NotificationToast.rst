@@ -1,5 +1,5 @@
 src/features/notification/NotificationToast 模块
-==============================================
+====================================================================================================
 
 .. js:module:: src/features/notification/NotificationToast
 
@@ -11,7 +11,7 @@ src/features/notification/NotificationToast 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/notification/NotificationToast.jsx``
 * **模块标识**：``src/features/notification/NotificationToast``
@@ -20,12 +20,12 @@ src/features/notification/NotificationToast 模块
 * **局部函数与匿名回调**：0
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/notification/NotificationToast.jsx:181:2500:FUNCTION
 
@@ -42,4 +42,4 @@ src/features/notification/NotificationToast 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <div className={\`${mobile ? 'w-[calc(100vw-16px)] rounded-xl p-3' : 'w-[340px] max-w-[calc(100vw-24px)] rounded-2xl p-3.5'} border border-gray-200 bg-white shadow-xl\`}> <div cla…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60${mobile ? 'w-[calc(100vw-16px)] rounded-xl p-3' : 'w-[340px] max-w-[calc(100vw-24px)] rounded-2xl p-3.5'} border border-gray-200 bg-white shadow-xl\x60}> <div cla…``。

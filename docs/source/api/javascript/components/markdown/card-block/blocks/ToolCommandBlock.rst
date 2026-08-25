@@ -1,5 +1,5 @@
 src/components/markdown/card-block/blocks/ToolCommandBlock 模块
-=============================================================
+==================================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/blocks/ToolCommandBlock
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/blocks/ToolCommandBlock.jsx``
 * **模块标识**：``src/components/markdown/card-block/blocks/ToolCommandBlock``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 * **局部函数与匿名回调**：6
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``../highlight.js``、``../utils.js``、``./OutputToolbar.jsx``、``./useFollowOutputScroll.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:450:925:FUNCTION
 
@@ -47,7 +47,7 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
    **主要协作调用**：``toSafeString(content).replace``、``toSafeString``、``safeContent.match``、``match[1].trim``、``normalizeHighlightLanguage``、``safeContent.slice``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

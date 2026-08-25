@@ -156,7 +156,7 @@
    * - :doc:`src/components/markdown/card-block/status/StatusHeader </api/javascript/components/markdown/card-block/status/StatusHeader>`
      - 0
      - 0
-     - 9
+     - 10
      - ``src/components/markdown/card-block/status/StatusHeader.jsx``
    * - :doc:`src/components/markdown/card-block/status/StatusWidget </api/javascript/components/markdown/card-block/status/StatusWidget>`
      - 2
@@ -186,18 +186,28 @@
    * - :doc:`src/components/markdown/card-block/task/TaskModeWidget </api/javascript/components/markdown/card-block/task/TaskModeWidget>`
      - 2
      - 0
-     - 11
+     - 13
      - ``src/components/markdown/card-block/task/TaskModeWidget.jsx``
+   * - :doc:`src/components/markdown/card-block/task/TaskMonitorHost </api/javascript/components/markdown/card-block/task/TaskMonitorHost>`
+     - 1
+     - 0
+     - 5
+     - ``src/components/markdown/card-block/task/TaskMonitorHost.jsx``
    * - :doc:`src/components/markdown/card-block/task/TaskMonitorWindow </api/javascript/components/markdown/card-block/task/TaskMonitorWindow>`
      - 3
      - 0
-     - 57
+     - 58
      - ``src/components/markdown/card-block/task/TaskMonitorWindow.jsx``
    * - :doc:`src/components/markdown/card-block/task/TaskUserMessageCard </api/javascript/components/markdown/card-block/task/TaskUserMessageCard>`
      - 0
      - 0
      - 3
      - ``src/components/markdown/card-block/task/TaskUserMessageCard.jsx``
+   * - :doc:`src/components/markdown/card-block/task/useTaskMonitorStore </api/javascript/components/markdown/card-block/task/useTaskMonitorStore>`
+     - 8
+     - 0
+     - 11
+     - ``src/components/markdown/card-block/task/useTaskMonitorStore.js``
    * - :doc:`src/components/markdown/card-block/useExpandedState </api/javascript/components/markdown/card-block/useExpandedState>`
      - 1
      - 0
@@ -239,9 +249,9 @@
      - 7
      - ``src/components/modal/universalModal.js``
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
-     - 41
+     - 40
      - 0
-     - 180
+     - 189
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/UserProfileCard </api/javascript/components/setting/UserProfileCard>`
      - 1
@@ -418,8 +428,10 @@
    /api/javascript/components/markdown/card-block/task/TaskChecklistCard
    /api/javascript/components/markdown/card-block/task/TaskInterruptPreviewGroup
    /api/javascript/components/markdown/card-block/task/TaskModeWidget
+   /api/javascript/components/markdown/card-block/task/TaskMonitorHost
    /api/javascript/components/markdown/card-block/task/TaskMonitorWindow
    /api/javascript/components/markdown/card-block/task/TaskUserMessageCard
+   /api/javascript/components/markdown/card-block/task/useTaskMonitorStore
    /api/javascript/components/markdown/card-block/useExpandedState
    /api/javascript/components/markdown/card-block/utils
    /api/javascript/components/markdown/card-block/widget/CanvasCardDeck

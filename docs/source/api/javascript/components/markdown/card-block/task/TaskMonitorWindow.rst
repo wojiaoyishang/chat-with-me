@@ -1,5 +1,5 @@
 src/components/markdown/card-block/task/TaskMonitorWindow 模块
-============================================================
+================================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/task/TaskMonitorWindow
 
@@ -11,21 +11,21 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/task/TaskMonitorWindow.jsx``
 * **模块标识**：``src/components/markdown/card-block/task/TaskMonitorWindow``
 * **顶层函数/组件/Hook**：3
 * **类**：0
-* **局部函数与匿名回调**：57
+* **局部函数与匿名回调**：58
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-dom``、``lucide-react``、``@/context/useEventStore.jsx``、``@/features/workspace/useWorkspaceTransferStore.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:795:867:FUNCTION
 
@@ -100,30 +100,30 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
    **主要协作调用**：``window.localStorage.setItem``、``JSON.stringify``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:2209:28606:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:2209:29614:FUNCTION
 
 .. rubric:: ``memo callback @ 69``
 
 .. code-block:: javascript
 
-   memo callback @ 69({ actions = [], cleanContent = '', elapsedText = '', error = '', isFailed = false, isFinished = fal…)
+   memo callback @ 69({ actions = [], cleanContent = '', contentKey = '', elapsedText = '', error = '', isFailed = false,…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``69``—``663`` 行。
+**性质**：同步局部函数；源码第 ``69``—``689`` 行。
 
 **参数**
 
-``{ actions = [], cleanContent = '', elapsedText = '', error = '', isFailed = false, isFinished = fal…``
-   调用方传入的 `` actions = , cleanContent = '', elapsedText = '', error = '', isFailed = false, isFinished = fal…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ actions = [], cleanContent = '', contentKey = '', elapsedText = '', error = '', isFailed = false,…``
+   调用方传入的 ``actions = , cleanContent = '', contentKey = '', elapsedText = '', error = '', isFailed = false,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``createPortal( <section ref={windowRef} role="dialog" aria-label={t('task_monitor_title', '任务过程监视器')} className={\`fixed z-[119000] flex flex-col overflow-hidden border border-gray-…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``createPortal( <section ref={windowRef} role="dialog" aria-label={t('task_monitor_title', '任务过程监视器')} className={\x60fixed z-[119000] flex flex-col overflow-hidden border border-gray-…``。
 
 **副作用**
 
@@ -133,19 +133,19 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``useRef``、``useState``、``useWorkspaceTransferStore``、``useMemo``、``useCallback``、``useEffect``、``useLayoutEffect``、``t``、``createPortal``、``transfers.map``、``renderMarkdown``、``actions.map``。
 
-**内部回调数量**：35。这些回调也会在本页逐项说明。
+**内部回调数量**：36。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:3391:3498:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:3464:3571:FUNCTION
 
-.. rubric:: ``useState callback @ 104``
+.. rubric:: ``useState callback @ 106``
 
 .. code-block:: javascript
 
-   useState callback @ 104()
+   useState callback @ 106()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``104``—``106`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``106``—``108`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -161,17 +161,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``window.matchMedia``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:3555:3667:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:3628:3740:FUNCTION
 
-.. rubric:: ``useWorkspaceTransferStore callback @ 107``
+.. rubric:: ``useWorkspaceTransferStore callback @ 109``
 
 .. code-block:: javascript
 
-   useWorkspaceTransferStore callback @ 107(state)
+   useWorkspaceTransferStore callback @ 109(state)
 
 封装 ``WorkspaceTransferStore`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``107``—``109`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``109``—``111`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -182,17 +182,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:3722:3750:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:3795:3823:FUNCTION
 
-.. rubric:: ``useWorkspaceTransferStore callback @ 110``
+.. rubric:: ``useWorkspaceTransferStore callback @ 112``
 
 .. code-block:: javascript
 
-   useWorkspaceTransferStore callback @ 110(state)
+   useWorkspaceTransferStore callback @ 112(state)
 
 封装 ``WorkspaceTransferStore`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``112``—``112`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -203,17 +203,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:3783:3860:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:3856:3933:FUNCTION
 
-.. rubric:: ``useMemo callback @ 112``
+.. rubric:: ``useMemo callback @ 114``
 
 .. code-block:: javascript
 
-   useMemo callback @ 112()
+   useMemo callback @ 114()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``112``—``112`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``114``—``114`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -227,17 +227,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:3818:3843:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:3891:3916:FUNCTION
 
-.. rubric:: ``taskTransferIds.map callback @ 112``
+.. rubric:: ``taskTransferIds.map callback @ 114``
 
 .. code-block:: javascript
 
-   taskTransferIds.map callback @ 112(id)
+   taskTransferIds.map callback @ 114(id)
 
 作为 ``taskTransferIds.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``112``—``112`` 行；所属函数 ``useMemo callback @ 112``。
+**性质**：同步局部函数；源码第 ``114``—``114`` 行；所属函数 ``useMemo callback @ 114``。
 
 **参数**
 
@@ -248,17 +248,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:3951:4232:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:4024:4305:FUNCTION
 
-.. rubric:: ``useCallback callback @ 116``
+.. rubric:: ``useCallback callback @ 118``
 
 .. code-block:: javascript
 
-   useCallback callback @ 116(nextSize)
+   useCallback callback @ 118(nextSize)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``116``—``122`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``118``—``124`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -275,17 +275,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``clamp``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:4286:4633:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:4359:4706:FUNCTION
 
-.. rubric:: ``useCallback callback @ 124``
+.. rubric:: ``useCallback callback @ 126``
 
 .. code-block:: javascript
 
-   useCallback callback @ 124(nextPosition, nextSize)
+   useCallback callback @ 126(nextPosition, nextSize)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``124``—``131`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``126``—``133`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -305,17 +305,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``getClampedSize``、``clamp``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:4713:4919:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:4786:4992:FUNCTION
 
-.. rubric:: ``useCallback callback @ 133``
+.. rubric:: ``useCallback callback @ 135``
 
 .. code-block:: javascript
 
-   useCallback callback @ 133()
+   useCallback callback @ 135()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``133``—``137`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``135``—``139`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -333,17 +333,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:4821:4864:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:4894:4937:FUNCTION
 
-.. rubric:: ``scheduledScrollFramesRef.current.forEach callback @ 135``
+.. rubric:: ``scheduledScrollFramesRef.current.forEach callback @ 137``
 
 .. code-block:: javascript
 
-   scheduledScrollFramesRef.current.forEach callback @ 135(frame)
+   scheduledScrollFramesRef.current.forEach callback @ 137(frame)
 
 作为 ``scheduledScrollFramesRef.current.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``135``—``135`` 行；所属函数 ``useCallback callback @ 133``。
+**性质**：同步局部函数；源码第 ``137``—``137`` 行；所属函数 ``useCallback callback @ 135``。
 
 **参数**
 
@@ -360,17 +360,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:4966:5731:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:5039:5804:FUNCTION
 
-.. rubric:: ``useCallback callback @ 139``
+.. rubric:: ``useCallback callback @ 141``
 
 .. code-block:: javascript
 
-   useCallback callback @ 139()
+   useCallback callback @ 141()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``139``—``156`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``141``—``158`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -388,17 +388,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:5511:5645:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:5584:5718:FUNCTION
 
-.. rubric:: ``window.requestAnimationFrame callback @ 149``
+.. rubric:: ``window.requestAnimationFrame callback @ 151``
 
 .. code-block:: javascript
 
-   window.requestAnimationFrame callback @ 149()
+   window.requestAnimationFrame callback @ 151()
 
 实现 ``window.requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``149``—``152`` 行；所属函数 ``useCallback callback @ 139``。
+**性质**：同步局部函数；源码第 ``151``—``154`` 行；所属函数 ``useCallback callback @ 141``。
 
 **参数**
 
@@ -408,17 +408,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:5780:6471:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:5853:6544:FUNCTION
 
-.. rubric:: ``useCallback callback @ 158``
+.. rubric:: ``useCallback callback @ 160``
 
 .. code-block:: javascript
 
-   useCallback callback @ 158()
+   useCallback callback @ 160()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``158``—``172`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``160``—``174`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -436,7 +436,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:5943:6380:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:6016:6453:FUNCTION
 
 .. rubric:: ``schedule``
 
@@ -446,7 +446,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 实现 ``schedule`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``161``—``169`` 行；所属函数 ``useCallback callback @ 158``。
+**性质**：同步局部函数；源码第 ``163``—``171`` 行；所属函数 ``useCallback callback @ 160``。
 
 **参数**
 
@@ -465,17 +465,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:6016:6310:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:6089:6383:FUNCTION
 
-.. rubric:: ``window.requestAnimationFrame callback @ 162``
+.. rubric:: ``window.requestAnimationFrame callback @ 164``
 
 .. code-block:: javascript
 
-   window.requestAnimationFrame callback @ 162()
+   window.requestAnimationFrame callback @ 164()
 
 实现 ``window.requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``162``—``167`` 行；所属函数 ``schedule``。
+**性质**：同步局部函数；源码第 ``164``—``169`` 行；所属函数 ``schedule``。
 
 **参数**
 
@@ -489,17 +489,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:6115:6133:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:6188:6206:FUNCTION
 
-.. rubric:: ``scheduledScrollFramesRef.current.filter callback @ 163``
+.. rubric:: ``scheduledScrollFramesRef.current.filter callback @ 165``
 
 .. code-block:: javascript
 
-   scheduledScrollFramesRef.current.filter callback @ 163(id)
+   scheduledScrollFramesRef.current.filter callback @ 165(id)
 
 作为 ``scheduledScrollFramesRef.current.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``163``—``163`` 行；所属函数 ``window.requestAnimationFrame callback @ 162``。
+**性质**：同步局部函数；源码第 ``165``—``165`` 行；所属函数 ``window.requestAnimationFrame callback @ 164``。
 
 **参数**
 
@@ -510,17 +510,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:6576:6987:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:6649:7060:FUNCTION
 
-.. rubric:: ``useCallback callback @ 174``
+.. rubric:: ``useCallback callback @ 176``
 
 .. code-block:: javascript
 
-   useCallback callback @ 174()
+   useCallback callback @ 176()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``174``—``183`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``176``—``185`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -536,17 +536,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``、``setAutoFollowBottom``、``cancelScheduledBottomScroll``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:7036:7418:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:7109:7491:FUNCTION
 
-.. rubric:: ``useEffect callback @ 185``
+.. rubric:: ``useEffect callback @ 187``
 
 .. code-block:: javascript
 
-   useEffect callback @ 185()
+   useEffect callback @ 187()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``185``—``192`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``187``—``194`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -565,7 +565,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:7201:7239:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:7274:7312:FUNCTION
 
 .. rubric:: ``syncMobileMode``
 
@@ -575,7 +575,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 实现 ``syncMobileMode`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``188``—``188`` 行；所属函数 ``useEffect callback @ 185``。
+**性质**：同步局部函数；源码第 ``190``—``190`` 行；所属函数 ``useEffect callback @ 187``。
 
 **参数**
 
@@ -587,17 +587,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``setIsMobile``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:7346:7411:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:7419:7484:FUNCTION
 
-.. rubric:: ``returned callback @ 191``
+.. rubric:: ``returned callback @ 193``
 
 .. code-block:: javascript
 
-   returned callback @ 191()
+   returned callback @ 193()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``useEffect callback @ 185``。
+**性质**：同步局部函数；源码第 ``193``—``193`` 行；所属函数 ``useEffect callback @ 187``。
 
 **参数**
 
@@ -609,17 +609,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``mediaQuery.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:7446:8293:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:7519:8366:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 194``
+.. rubric:: ``useLayoutEffect callback @ 196``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 194()
+   useLayoutEffect callback @ 196()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``194``—``213`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``196``—``215`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -637,17 +637,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:7671:8228:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:7744:8301:FUNCTION
 
-.. rubric:: ``window.requestAnimationFrame callback @ 201``
+.. rubric:: ``window.requestAnimationFrame callback @ 203``
 
 .. code-block:: javascript
 
-   window.requestAnimationFrame callback @ 201()
+   window.requestAnimationFrame callback @ 203()
 
 实现 ``window.requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``201``—``211`` 行；所属函数 ``useLayoutEffect callback @ 194``。
+**性质**：同步局部函数；源码第 ``203``—``213`` 行；所属函数 ``useLayoutEffect callback @ 196``。
 
 **参数**
 
@@ -665,17 +665,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:7941:8216:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8014:8289:FUNCTION
 
-.. rubric:: ``setPosition callback @ 207``
+.. rubric:: ``setPosition callback @ 209``
 
 .. code-block:: javascript
 
-   setPosition callback @ 207(current)
+   setPosition callback @ 209(current)
 
 设置与 ``Position`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``207``—``210`` 行；所属函数 ``window.requestAnimationFrame callback @ 201``。
+**性质**：同步局部函数；源码第 ``209``—``212`` 行；所属函数 ``window.requestAnimationFrame callback @ 203``。
 
 **参数**
 
@@ -692,17 +692,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``fitPositionToViewport``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8245:8286:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8318:8359:FUNCTION
 
-.. rubric:: ``returned callback @ 212``
+.. rubric:: ``returned callback @ 214``
 
 .. code-block:: javascript
 
-   returned callback @ 212()
+   returned callback @ 214()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``212``—``212`` 行；所属函数 ``useLayoutEffect callback @ 194``。
+**性质**：同步局部函数；源码第 ``214``—``214`` 行；所属函数 ``useLayoutEffect callback @ 196``。
 
 **参数**
 
@@ -718,17 +718,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8374:9329:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8447:9402:FUNCTION
 
-.. rubric:: ``useEffect callback @ 215``
+.. rubric:: ``useEffect callback @ 217``
 
 .. code-block:: javascript
 
-   useEffect callback @ 215()
+   useEffect callback @ 217()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``215``—``237`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``217``—``239`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -747,7 +747,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8488:8919:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8561:8992:FUNCTION
 
 .. rubric:: ``handleViewportResize``
 
@@ -757,7 +757,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Viewport Resize`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``217``—``227`` 行；所属函数 ``useEffect callback @ 215``。
+**性质**：同步局部函数；源码第 ``219``—``229`` 行；所属函数 ``useEffect callback @ 217``。
 
 **参数**
 
@@ -775,17 +775,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8588:8907:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8661:8980:FUNCTION
 
-.. rubric:: ``setSize callback @ 219``
+.. rubric:: ``setSize callback @ 221``
 
 .. code-block:: javascript
 
-   setSize callback @ 219(current)
+   setSize callback @ 221(current)
 
 设置与 ``Size`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``219``—``226`` 行；所属函数 ``handleViewportResize``。
+**性质**：同步局部函数；源码第 ``221``—``228`` 行；所属函数 ``handleViewportResize``。
 
 **参数**
 
@@ -800,17 +800,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8727:8860:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8800:8933:FUNCTION
 
-.. rubric:: ``setPosition callback @ 222``
+.. rubric:: ``setPosition callback @ 224``
 
 .. code-block:: javascript
 
-   setPosition callback @ 222(positionValue)
+   setPosition callback @ 224(positionValue)
 
 设置与 ``Position`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``222``—``224`` 行；所属函数 ``setSize callback @ 219``。
+**性质**：同步局部函数；源码第 ``224``—``226`` 行；所属函数 ``setSize callback @ 221``。
 
 **参数**
 
@@ -823,7 +823,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``fitPositionToViewport``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:8950:9026:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:9023:9099:FUNCTION
 
 .. rubric:: ``handleKeyDown``
 
@@ -833,7 +833,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Key Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``228``—``230`` 行；所属函数 ``useEffect callback @ 215``。
+**性质**：同步局部函数；源码第 ``230``—``232`` 行；所属函数 ``useEffect callback @ 217``。
 
 **参数**
 
@@ -846,17 +846,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``onClose``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:9166:9322:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:9239:9395:FUNCTION
 
-.. rubric:: ``returned callback @ 233``
+.. rubric:: ``returned callback @ 235``
 
 .. code-block:: javascript
 
-   returned callback @ 233()
+   returned callback @ 235()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``233``—``236`` 行；所属函数 ``useEffect callback @ 215``。
+**性质**：同步局部函数；源码第 ``235``—``238`` 行；所属函数 ``useEffect callback @ 217``。
 
 **参数**
 
@@ -872,17 +872,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:9403:9522:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:9476:9595:FUNCTION
 
-.. rubric:: ``useEffect callback @ 239``
+.. rubric:: ``useEffect callback @ 241``
 
 .. code-block:: javascript
 
-   useEffect callback @ 239()
+   useEffect callback @ 241()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``239``—``242`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``241``—``244`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -894,17 +894,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``keepBottomPinned``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:9584:9673:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:9657:9746:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 244``
+.. rubric:: ``useLayoutEffect callback @ 246``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 244()
+   useLayoutEffect callback @ 246()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``244``—``247`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``246``—``249`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -916,17 +916,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``keepBottomPinned``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:9775:9995:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:9848:10068:FUNCTION
 
-.. rubric:: ``useEffect callback @ 249``
+.. rubric:: ``useEffect callback @ 251``
 
 .. code-block:: javascript
 
-   useEffect callback @ 249()
+   useEffect callback @ 251()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``249``—``256`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``251``—``258`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -938,17 +938,39 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``setAutoFollowBottom``、``keepBottomPinned``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:10039:10959:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:10118:10717:FUNCTION
 
-.. rubric:: ``useEffect callback @ 258``
+.. rubric:: ``useLayoutEffect callback @ 260``
 
 .. code-block:: javascript
 
-   useEffect callback @ 258()
+   useLayoutEffect callback @ 260()
+
+作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
+
+**性质**：同步局部函数；源码第 ``260``—``274`` 行；所属函数 ``memo callback @ 69``。
+
+**参数**
+
+无。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+**主要协作调用**：``setAutoFollowBottom``、``keepBottomPinned``。
+
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:10773:11693:FUNCTION
+
+.. rubric:: ``useEffect callback @ 276``
+
+.. code-block:: javascript
+
+   useEffect callback @ 276()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``258``—``281`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``276``—``299`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -966,7 +988,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:10203:10228:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:10937:10962:FUNCTION
 
 .. rubric:: ``handleLayoutChange``
 
@@ -976,7 +998,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Layout Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``263``—``263`` 行；所属函数 ``useEffect callback @ 258``。
+**性质**：同步局部函数；源码第 ``281``—``281`` 行；所属函数 ``useEffect callback @ 276``。
 
 **参数**
 
@@ -988,17 +1010,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``keepBottomPinned``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:10773:10952:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:11507:11686:FUNCTION
 
-.. rubric:: ``returned callback @ 276``
+.. rubric:: ``returned callback @ 294``
 
 .. code-block:: javascript
 
-   returned callback @ 276()
+   returned callback @ 294()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``276``—``280`` 行；所属函数 ``useEffect callback @ 258``。
+**性质**：同步局部函数；源码第 ``294``—``298`` 行；所属函数 ``useEffect callback @ 276``。
 
 **参数**
 
@@ -1010,17 +1032,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``resizeObserver?.disconnect``、``mutationObserver?.disconnect``、``content.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:11003:11238:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:11737:11972:FUNCTION
 
-.. rubric:: ``useEffect callback @ 283``
+.. rubric:: ``useEffect callback @ 301``
 
 .. code-block:: javascript
 
-   useEffect callback @ 283()
+   useEffect callback @ 301()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``283``—``288`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``301``—``306`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1036,17 +1058,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:11008:11238:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:11742:11972:FUNCTION
 
-.. rubric:: ``anonymous callback @ 283``
+.. rubric:: ``anonymous callback @ 301``
 
 .. code-block:: javascript
 
-   anonymous callback @ 283()
+   anonymous callback @ 301()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``283``—``288`` 行；所属函数 ``useEffect callback @ 283``。
+**性质**：同步局部函数；源码第 ``301``—``306`` 行；所属函数 ``useEffect callback @ 301``。
 
 **参数**
 
@@ -1062,17 +1084,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``cancelScheduledBottomScroll``、``window.cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:11287:11483:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:12021:12217:FUNCTION
 
-.. rubric:: ``useEffect callback @ 290``
+.. rubric:: ``useEffect callback @ 308``
 
 .. code-block:: javascript
 
-   useEffect callback @ 290()
+   useEffect callback @ 308()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``290``—``297`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``308``—``315`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1084,7 +1106,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``setIsDragging``、``setIsResizing``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:11524:12100:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:12258:12834:FUNCTION
 
 .. rubric:: ``handlePointerDown``
 
@@ -1094,7 +1116,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``299``—``314`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``317``—``332`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1107,7 +1129,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``event.target.closest``、``element.getBoundingClientRect``、``event.currentTarget.setPointerCapture``、``setIsDragging``、``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:12132:12469:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:12866:13203:FUNCTION
 
 .. rubric:: ``handlePointerMove``
 
@@ -1117,7 +1139,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Pointer Move`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``316``—``323`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``334``—``341`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1130,7 +1152,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``setPosition``、``fitPositionToViewport``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:12499:12778:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:13233:13512:FUNCTION
 
 .. rubric:: ``handlePointerUp``
 
@@ -1140,7 +1162,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Pointer Up`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``325``—``331`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``343``—``349`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1153,7 +1175,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``setIsDragging``、``event.currentTarget.releasePointerCapture``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:12816:13548:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:13550:14282:FUNCTION
 
 .. rubric:: ``handleResizePointerDown``
 
@@ -1163,7 +1185,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Resize Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``333``—``354`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``351``—``372`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1179,7 +1201,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``element.getBoundingClientRect``、``event.currentTarget.setPointerCapture``、``setIsResizing``、``event.preventDefault``、``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:13586:15288:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:14320:16022:FUNCTION
 
 .. rubric:: ``handleResizePointerMove``
 
@@ -1189,7 +1211,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Resize Pointer Move`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``356``—``402`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``374``—``420`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1206,7 +1228,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``resizeState.direction.includes``、``clamp``、``setSize``、``setPosition``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:15324:15657:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:16058:16391:FUNCTION
 
 .. rubric:: ``handleResizePointerUp``
 
@@ -1216,7 +1238,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Resize Pointer Up`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``404``—``411`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``422``—``429`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1229,7 +1251,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``setIsResizing``、``persistWindowSize``、``event.currentTarget.releasePointerCapture``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:15684:16512:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:16418:17520:FUNCTION
 
 .. rubric:: ``handleAction``
 
@@ -1239,7 +1261,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Action`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``413``—``435`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``431``—``461`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1259,7 +1281,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``globalThis.crypto?.randomUUID``、``Date.now``、``Math.random``、``emitEvent``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:16549:16782:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:17557:17790:FUNCTION
 
 .. rubric:: ``toggleAutoFollowBottom``
 
@@ -1269,7 +1291,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 切换与 ``Auto Follow Bottom`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``437``—``445`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``463``—``471`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1281,7 +1303,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``disableAutoFollowBottom``、``setAutoFollowBottom``、``keepBottomPinned``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:16809:17192:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:17817:18200:FUNCTION
 
 .. rubric:: ``handleScroll``
 
@@ -1291,7 +1313,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Scroll`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``447``—``458`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``473``—``484`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1304,7 +1326,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``disableAutoFollowBottom``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:17218:17325:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:18226:18333:FUNCTION
 
 .. rubric:: ``handleWheel``
 
@@ -1314,7 +1336,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Wheel`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``460``—``462`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``486``—``488`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1327,7 +1349,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``disableAutoFollowBottom``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:17356:17445:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:18364:18453:FUNCTION
 
 .. rubric:: ``handleTouchStart``
 
@@ -1337,7 +1359,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Touch Start`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``464``—``466`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``490``—``492`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1348,7 +1370,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:17475:17871:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:18483:18879:FUNCTION
 
 .. rubric:: ``handleTouchMove``
 
@@ -1358,7 +1380,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Touch Move`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``468``—``479`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``494``—``505`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1371,7 +1393,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``disableAutoFollowBottom``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:17905:18069:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:18913:19077:FUNCTION
 
 .. rubric:: ``handleScrollKeyDown``
 
@@ -1381,7 +1403,7 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 处理 ``Scroll Key Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``481``—``485`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``507``—``511`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1394,17 +1416,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``['ArrowUp', 'PageUp', 'Home'].includes``、``disableAutoFollowBottom``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:23058:26320:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:24066:27328:FUNCTION
 
-.. rubric:: ``transfers.map callback @ 575``
+.. rubric:: ``transfers.map callback @ 601``
 
 .. code-block:: javascript
 
-   transfers.map callback @ 575(transfer)
+   transfers.map callback @ 601(transfer)
 
 作为 ``transfers.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``575``—``615`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``601``—``641`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1413,21 +1435,21 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={transfer.transferId} className={\`rounded-xl border px-3 py-2 ${failed ? 'border-red-200 bg-red-50' : completed ? 'border-emerald-200 bg-emerald-50' : 'border-blue-200…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={transfer.transferId} className={\x60rounded-xl border px-3 py-2 ${failed ? 'border-red-200 bg-red-50' : completed ? 'border-emerald-200 bg-emerald-50' : 'border-blue-200…``。
 
 **主要协作调用**：``Number.isFinite``、``Number``、``Math.round``、``t``、``[transfer.workspaceName, transfer.targetPath].filter(Boolean).join``、``[transfer.workspaceName, transfer.targetPath].filter``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:27302:27956:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:28310:28964:FUNCTION
 
-.. rubric:: ``actions.map callback @ 635``
+.. rubric:: ``actions.map callback @ 661``
 
 .. code-block:: javascript
 
-   actions.map callback @ 635(action)
+   actions.map callback @ 661(action)
 
 作为 ``actions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``635``—``645`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``661``—``671`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1440,17 +1462,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:27514:27550:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:28522:28558:FUNCTION
 
-.. rubric:: ``onClick callback @ 639``
+.. rubric:: ``onClick callback @ 665``
 
 .. code-block:: javascript
 
-   onClick callback @ 639(event)
+   onClick callback @ 665(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``639``—``639`` 行；所属函数 ``actions.map callback @ 635``。
+**性质**：同步局部函数；源码第 ``665``—``665`` 行；所属函数 ``actions.map callback @ 661``。
 
 **参数**
 
@@ -1463,17 +1485,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **主要协作调用**：``handleAction``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:28052:28545:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:29060:29553:FUNCTION
 
-.. rubric:: ``RESIZE_HANDLES.map callback @ 649``
+.. rubric:: ``RESIZE_HANDLES.map callback @ 675``
 
 .. code-block:: javascript
 
-   RESIZE_HANDLES.map callback @ 649([direction, className])
+   RESIZE_HANDLES.map callback @ 675([direction, className])
 
 作为 ``RESIZE_HANDLES.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``649``—``659`` 行；所属函数 ``memo callback @ 69``。
+**性质**：同步局部函数；源码第 ``675``—``685`` 行；所属函数 ``memo callback @ 69``。
 
 **参数**
 
@@ -1486,17 +1508,17 @@ src/components/markdown/card-block/task/TaskMonitorWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:28285:28335:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskMonitorWindow.jsx:29293:29343:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 654``
+.. rubric:: ``onPointerDown callback @ 680``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 654(event)
+   onPointerDown callback @ 680(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``654``—``654`` 行；所属函数 ``RESIZE_HANDLES.map callback @ 649``。
+**性质**：同步局部函数；源码第 ``680``—``680`` 行；所属函数 ``RESIZE_HANDLES.map callback @ 675``。
 
 **参数**
 

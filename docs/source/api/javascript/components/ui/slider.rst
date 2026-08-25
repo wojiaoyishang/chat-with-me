@@ -1,5 +1,5 @@
 src/components/ui/slider 模块
-===========================
+================================================================================
 
 .. js:module:: src/components/ui/slider
 
@@ -11,7 +11,7 @@ src/components/ui/slider 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/ui/slider.tsx``
 * **模块标识**：``src/components/ui/slider``
@@ -20,12 +20,12 @@ src/components/ui/slider 模块
 * **局部函数与匿名回调**：2
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``radix-ui``、``@/lib/utils``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/ui/slider.tsx:117:1957:FUNCTION
 
@@ -38,7 +38,7 @@ src/components/ui/slider 模块
    **参数**
 
    ``{ className, defaultValue, value, min = 0, max = 100, ...props }``（类型 ``React.ComponentProps<typeof SliderPrimitive.Root>``）
-      调用方传入的 `` className, defaultValue, value, min = 0, max = 100, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, defaultValue, value, min = 0, max = 100, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -49,7 +49,7 @@ src/components/ui/slider 模块
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

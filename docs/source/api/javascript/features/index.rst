@@ -16,12 +16,12 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 15
      - 0
-     - 250
+     - 226
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
-     - 4
+     - 6
      - 0
-     - 0
+     - 1
      - ``src/features/chat/attachmentVision.js``
    * - :doc:`src/features/chat/index </api/javascript/features/chat/index>`
      - 0
@@ -106,7 +106,7 @@
    * - :doc:`src/features/chat/page/hooks/useChatSpeech </api/javascript/features/chat/page/hooks/useChatSpeech>`
      - 22
      - 0
-     - 241
+     - 269
      - ``src/features/chat/page/hooks/useChatSpeech.js``
    * - :doc:`src/features/chat/page/hooks/useChatWindowMode </api/javascript/features/chat/page/hooks/useChatWindowMode>`
      - 1
@@ -171,7 +171,7 @@
    * - :doc:`src/features/chat/ui/AttachmentShowcase </api/javascript/features/chat/ui/AttachmentShowcase>`
      - 2
      - 0
-     - 24
+     - 25
      - ``src/features/chat/ui/AttachmentShowcase.jsx``
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 13
@@ -266,7 +266,7 @@
    * - :doc:`src/features/chat/ui/chatbox/utils/voiceRecorder </api/javascript/features/chat/ui/chatbox/utils/voiceRecorder>`
      - 15
      - 1
-     - 11
+     - 34
      - ``src/features/chat/ui/chatbox/utils/voiceRecorder.js``
    * - :doc:`src/features/chat/ui/message/components/BranchMessageSelectorDialog </api/javascript/features/chat/ui/message/components/BranchMessageSelectorDialog>`
      - 0
@@ -344,9 +344,9 @@
      - 1
      - ``src/features/chat/ui/message/components/ReplacementContextBadge.jsx``
    * - :doc:`src/features/chat/ui/message/components/SpeechOverlayHighlighter </api/javascript/features/chat/ui/message/components/SpeechOverlayHighlighter>`
-     - 33
+     - 37
      - 0
-     - 25
+     - 36
      - ``src/features/chat/ui/message/components/SpeechOverlayHighlighter.jsx``
    * - :doc:`src/features/chat/ui/message/components/TextOnlyMessageContent </api/javascript/features/chat/ui/message/components/TextOnlyMessageContent>`
      - 0
@@ -389,9 +389,9 @@
      - 3
      - ``src/features/chat/ui/message/utils/messageActions.js``
    * - :doc:`src/features/chat/ui/message/utils/speechContent </api/javascript/features/chat/ui/message/utils/speechContent>`
-     - 18
+     - 22
      - 0
-     - 5
+     - 6
      - ``src/features/chat/ui/message/utils/speechContent.js``
    * - :doc:`src/features/chat/voice/RealtimeVoiceButton </api/javascript/features/chat/voice/RealtimeVoiceButton>`
      - 1
@@ -399,9 +399,9 @@
      - 0
      - ``src/features/chat/voice/RealtimeVoiceButton.jsx``
    * - :doc:`src/features/chat/voice/RealtimeVoiceSurface </api/javascript/features/chat/voice/RealtimeVoiceSurface>`
-     - 4
+     - 8
      - 0
-     - 5
+     - 6
      - ``src/features/chat/voice/RealtimeVoiceSurface.jsx``
    * - :doc:`src/features/chat/voice/index </api/javascript/features/chat/voice/index>`
      - 0
@@ -409,9 +409,9 @@
      - 0
      - ``src/features/chat/voice/index.js``
    * - :doc:`src/features/chat/voice/useRealtimeVoiceConversation </api/javascript/features/chat/voice/useRealtimeVoiceConversation>`
-     - 3
+     - 5
      - 0
-     - 30
+     - 42
      - ``src/features/chat/voice/useRealtimeVoiceConversation.js``
    * - :doc:`src/features/chat/widgets/WidgetPresentationContext </api/javascript/features/chat/widgets/WidgetPresentationContext>`
      - 2
@@ -449,9 +449,9 @@
      - 13
      - ``src/features/story/StoryCard.jsx``
    * - :doc:`src/features/story/StoryReader </api/javascript/features/story/StoryReader>`
-     - 2
+     - 5
      - 0
-     - 24
+     - 38
      - ``src/features/story/StoryReader.jsx``
    * - :doc:`src/features/story/StorySelectorButton </api/javascript/features/story/StorySelectorButton>`
      - 1

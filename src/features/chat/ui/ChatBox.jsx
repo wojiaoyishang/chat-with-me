@@ -259,9 +259,6 @@ function ChatBox({
                      onVoiceRecordingStart,
                      onVoiceRecordingCancel,
                      onRealtimeVoiceStart,
-                     onTaskInterruptPreview,
-                     onTaskInterruptResult,
-                     onTaskInterruptClear,
                      selectedWorkspaceIds = [],
                      onWorkspaceChange,
                  }) {
@@ -705,16 +702,12 @@ function ChatBox({
             if (taskInterruptPendingRef.current) return;
 
             const requestId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
-            const preview = {
-                requestId,
-                taskRunId: taskMode.taskRunId,
-                content: currentContent,
-                createdAt: Date.now(),
-            };
 
             taskInterruptPendingRef.current = true;
             setIsTaskInterruptPending(true);
-            onTaskInterruptPreview?.(preview);
+            // The Worker owns the authoritative taskUserMessage bubble. Keeping an
+            // extra transcript-level optimistic bubble duplicates the same request
+            // once the new Task Mode segment is rendered by the server.
             updateMessageContent('');
 
             try {
@@ -728,16 +721,13 @@ function ChatBox({
                     },
                 });
                 if (response?.success === false) {
-                    onTaskInterruptResult?.({requestId, taskRunId: taskMode.taskRunId, success: false});
                     if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
                     toast.error(response?.value || t('task_mode_interrupt_failed', '无法补充任务要求。'));
                     return;
                 }
-                onTaskInterruptResult?.({requestId, taskRunId: taskMode.taskRunId, success: true});
                 toast.success(t('task_mode_interrupt_sent', '已将补充要求加入当前任务。'));
             } catch (error) {
                 console.error('Task interruption failed:', error);
-                onTaskInterruptResult?.({requestId, taskRunId: taskMode.taskRunId, success: false});
                 if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
                 toast.error(t('task_mode_interrupt_failed', '无法补充任务要求。'));
             } finally {
@@ -780,8 +770,6 @@ function ChatBox({
         }
     }, [
         onSendMessage,
-        onTaskInterruptPreview,
-        onTaskInterruptResult,
         buildOutboundToolsStatus,
         editMessageId,
         attachmentsMeta,
@@ -1362,8 +1350,8 @@ function ChatBox({
                         runtimeToolPermissionRunIdRef.current = null;
                         setRuntimeToolPermissions({});
                     }
-                    reply({value: payload.value});
-                } else {
+                    if (payload.reply) reply({value: payload.value});
+                } else if (payload.reply) {
                     reply({value: sendButtonStatusRef.current});
                 }
                 if (payload.readOnly !== undefined) {
@@ -1396,10 +1384,43 @@ function ChatBox({
                     taskInterruptPendingRef.current = false;
                     setIsTaskInterruptPending(false);
                 }
-                if (taskRunId && !value.active) {
-                    onTaskInterruptClear?.(taskRunId);
-                }
                 reply({value});
+                break;
+            }
+            case 'task.restart.requested': {
+                const taskRunId = String(payload.taskRunId || '').trim();
+                const sourceMessageId = String(payload.messageId || '').trim();
+                if (!taskRunId) {
+                    reply({success: false, value: t('task_mode_restart_missing', '缺少要继续的任务。')});
+                    break;
+                }
+                if (sendButtonStatusRef.current !== 'normal') {
+                    const message = t('task_mode_restart_busy', '当前仍有内容正在生成，请先结束当前执行再继续之前任务。');
+                    toast.warning(message);
+                    reply({success: false, value: message});
+                    break;
+                }
+
+                runtimeToolPermissionRevisionRef.current = 0;
+                runtimeToolPermissionRunIdRef.current = null;
+                setRuntimeToolPermissions({});
+                onSendMessage({
+                    messageContent: t('task_mode_restart_user_message', '继续之前任务'),
+                    toolsStatus: buildOutboundToolsStatus(),
+                    isEditMessage: false,
+                    attachments: [],
+                    sendButtonStatus: 'normal',
+                    admissionPolicy: 'reject',
+                    inputSource: 'task_restart',
+                    isRegenerate: false,
+                    isProgenerate: false,
+                    role: 'user',
+                    isFork: false,
+                    restartTaskRunId: taskRunId,
+                    restartTaskMessageId: sourceMessageId,
+                    idempotencyKey: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                });
+                reply({success: true, value: {taskRunId}});
                 break;
             }
             case 'composer.content.set':
@@ -1419,14 +1440,6 @@ function ChatBox({
                     setQuickOptions(payload.value);
                     setIsTransitioning(false);
                 }, 500);
-                break;
-            case 'message.attachments.set':
-                if (payload.value) {
-                    setAttachments(payload.value);
-                    reply({value: payload.value});
-                } else {
-                    reply({value: attachments});
-                }
                 break;
 
             case 'composer.edit.set':
@@ -1591,7 +1604,7 @@ function ChatBox({
 
                 break;
         }
-    }, [attachmentsMeta, buildOutboundToolsStatus, chatboxSetup, leaveEditMode, conversationId, onSendMessage, onTaskInterruptClear, roles, setAttachments, showCollapsedChatBox, toolsStatus, updateMessageContent]);
+    }, [attachmentsMeta, buildOutboundToolsStatus, chatboxSetup, leaveEditMode, conversationId, onSendMessage, roles, setAttachments, showCollapsedChatBox, t, toolsStatus, updateMessageContent]);
 
     const renderMenuItems = useExtraToolsMenuItems({
         toolsStatus,
@@ -1768,7 +1781,7 @@ function ChatBox({
             event: [
                 'composer.*',
                 'task.state.changed',
-                'message.attachments.set',
+                'task.restart.requested',
             ],
             conversationId,
             onlyWithoutConversation: Boolean(!conversationId),
@@ -2423,9 +2436,6 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         prevProps.onVoicePcmReady === nextProps.onVoicePcmReady &&
         prevProps.onVoiceRecordingStart === nextProps.onVoiceRecordingStart &&
         prevProps.onVoiceRecordingCancel === nextProps.onVoiceRecordingCancel &&
-        prevProps.onRealtimeVoiceStart === nextProps.onRealtimeVoiceStart &&
-        prevProps.onTaskInterruptPreview === nextProps.onTaskInterruptPreview &&
-        prevProps.onTaskInterruptResult === nextProps.onTaskInterruptResult &&
-        prevProps.onTaskInterruptClear === nextProps.onTaskInterruptClear
+        prevProps.onRealtimeVoiceStart === nextProps.onRealtimeVoiceStart
     );
 });

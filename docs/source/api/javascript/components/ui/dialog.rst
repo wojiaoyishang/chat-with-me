@@ -1,5 +1,5 @@
 src/components/ui/dialog 模块
-===========================
+================================================================================
 
 .. js:module:: src/components/ui/dialog
 
@@ -11,7 +11,7 @@ src/components/ui/dialog 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/ui/dialog.tsx``
 * **模块标识**：``src/components/ui/dialog``
@@ -20,12 +20,12 @@ src/components/ui/dialog 模块
 * **局部函数与匿名回调**：2
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``radix-ui``、``@/lib/utils``、``@/components/ui/button``、``@/lib/browserHistoryLayers.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/ui/dialog.tsx:270:1022:FUNCTION
 
@@ -38,7 +38,7 @@ src/components/ui/dialog 模块
    **参数**
 
    ``{ open, defaultOpen, onOpenChange, ...props }``（类型 ``React.ComponentProps<typeof DialogPrimitive.Root>``）
-      调用方传入的 `` open, defaultOpen, onOpenChange, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``open, defaultOpen, onOpenChange, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -59,7 +59,7 @@ src/components/ui/dialog 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof DialogPrimitive.Trigger>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -76,7 +76,7 @@ src/components/ui/dialog 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof DialogPrimitive.Portal>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -93,7 +93,7 @@ src/components/ui/dialog 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof DialogPrimitive.Close>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -110,7 +110,7 @@ src/components/ui/dialog 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<typeof DialogPrimitive.Overlay>``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -129,7 +129,7 @@ src/components/ui/dialog 模块
    **参数**
 
    ``{ className, children, showCloseButton = true, ...props }``（类型 ``React.ComponentProps<typeof DialogPrimitive.Content> & { showCloseButton?: boolean }``）
-      调用方传入的 `` className, children, showCloseButton = true, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, children, showCloseButton = true, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -148,7 +148,7 @@ src/components/ui/dialog 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -167,7 +167,7 @@ src/components/ui/dialog 模块
    **参数**
 
    ``{ className, showCloseButton = false, children, ...props }``（类型 ``React.ComponentProps<"div"> & { showCloseButton?: boolean }``）
-      调用方传入的 `` className, showCloseButton = false, children, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, showCloseButton = false, children, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -186,7 +186,7 @@ src/components/ui/dialog 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<typeof DialogPrimitive.Title>``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -205,7 +205,7 @@ src/components/ui/dialog 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<typeof DialogPrimitive.Description>``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -214,7 +214,7 @@ src/components/ui/dialog 模块
    **主要协作调用**：``cn``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

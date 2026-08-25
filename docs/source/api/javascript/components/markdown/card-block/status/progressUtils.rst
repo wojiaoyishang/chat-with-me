@@ -1,5 +1,5 @@
 src/components/markdown/card-block/status/progressUtils 模块
-==========================================================
+============================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/status/progressUtils
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/status/progressUtils 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/status/progressUtils.js``
 * **模块标识**：``src/components/markdown/card-block/status/progressUtils``
@@ -20,7 +20,7 @@ src/components/markdown/card-block/status/progressUtils 模块
 * **局部函数与匿名回调**：0
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/status/progressUtils.js:36:131:FUNCTION
 
@@ -40,7 +40,7 @@ src/components/markdown/card-block/status/progressUtils 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``\`${progressKey \|\| '__tool_progress__'}::${total \|\| 0}\```。
+   根据执行分支返回结果；代表性返回表达式为 ``\x60${progressKey || '__tool_progress__'}::${total || 0}\x60``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/status/progressUtils.js:172:285:FUNCTION
 

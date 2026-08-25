@@ -1,5 +1,5 @@
 src/features/chat/page/components/ChatHeader 模块
-===============================================
+======================================================================================================
 
 .. js:module:: src/features/chat/page/components/ChatHeader
 
@@ -11,7 +11,7 @@ src/features/chat/page/components/ChatHeader 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/page/components/ChatHeader.jsx``
 * **模块标识**：``src/features/chat/page/components/ChatHeader``
@@ -20,16 +20,16 @@ src/features/chat/page/components/ChatHeader 模块
 * **局部函数与匿名回调**：6
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``@/components/ui/popover.tsx``、``@/components/ui/button.tsx``、``./ModelItem.jsx``、``./ModelPreviewCard.jsx``、``@/features/story/StorySelectorButton.jsx``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:516:10945:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:515:10953:FUNCTION
 
 .. rubric:: ``memo callback @ 9``
 
@@ -44,17 +44,17 @@ src/features/chat/page/components/ChatHeader 模块
 **参数**
 
 ``{ models, selectedModel, isModelPopoverOpen, previewModel, isMobile, t, handlePopoverOpenChange, ha…``
-   调用方传入的 `` models, selectedModel, isModelPopoverOpen, previewModel, isMobile, t, handlePopoverOpenChange, ha…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``models, selectedModel, isModelPopoverOpen, previewModel, isMobile, t, handlePopoverOpenChange, ha…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
 根据执行分支返回结果；代表性返回表达式为 ``( <header className="relative w-full bg-white flex items-center justify-between p-4 h-14"> <Popover open={isAgentSession ? false : isModelPopoverOpen} onOpenChange={isAgentSession…``。
 
-**主要协作调用**：``useRef``、``Number``、``String(contextCompactionState?.status \|\| '').toLowerCase``、``String``、``['planning', 'compressing', 'committing'].includes``、``useEffect``、``useMemo``、``t``。
+**主要协作调用**：``useRef``、``Number``、``String(contextCompactionState?.status || '').toLowerCase``、``String``、``['planning', 'compressing', 'committing'].includes``、``useEffect``、``useMemo``、``t``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2556:2661:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2557:2662:FUNCTION
 
 .. rubric:: ``useEffect callback @ 49``
 
@@ -76,7 +76,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **主要协作调用**：``scrollToSelectedItem``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2748:3628:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2749:3629:FUNCTION
 
 .. rubric:: ``useMemo callback @ 55``
 
@@ -100,7 +100,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2996:3620:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2997:3621:FUNCTION
 
 .. rubric:: ``models.map callback @ 64``
 
@@ -123,7 +123,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3103:3137:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3104:3138:FUNCTION
 
 .. rubric:: ``handleClick``
 
@@ -145,7 +145,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **主要协作调用**：``handleModelItemClick``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3175:3214:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3176:3215:FUNCTION
 
 .. rubric:: ``handleMouseEnter``
 

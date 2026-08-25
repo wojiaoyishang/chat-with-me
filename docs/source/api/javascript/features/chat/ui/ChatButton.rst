@@ -1,5 +1,5 @@
 src/features/chat/ui/ChatButton 模块
-==================================
+================================================================================
 
 .. js:module:: src/features/chat/ui/ChatButton
 
@@ -11,7 +11,7 @@ ToggleSearchButton 组件 用于展示一个可点击的按钮，支持三种图
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/ChatButton.jsx``
 * **模块标识**：``src/features/chat/ui/ChatButton``
@@ -20,12 +20,12 @@ ToggleSearchButton 组件 用于展示一个可点击的按钮，支持三种图
 * **局部函数与匿名回调**：5
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-i18next``、``@/lib/virtualUrl.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/ui/ChatButton.jsx:153:4000:FUNCTION
 
@@ -38,7 +38,7 @@ ToggleSearchButton 组件 用于展示一个可点击的按钮，支持三种图
    **参数**
 
    ``{ isActive = false, disabled = false, onClick, className = '', textKey = 'search', bgColor = '#4F39…``
-      调用方传入的 `` isActive = false, disabled = false, onClick, className = '', textKey = 'search', bgColor = '#4F39…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``isActive = false, disabled = false, onClick, className = '', textKey = 'search', bgColor = '#4F39…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -49,7 +49,7 @@ ToggleSearchButton 组件 用于展示一个可点击的按钮，支持三种图
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -140,7 +140,7 @@ ToggleSearchButton 组件 用于展示一个可点击的按钮，支持三种图
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``<Icon className={\`w-4.5 h-4.5 ${iconColor}\`} />``、``( <span className={\`w-4.5 h-4.5 ${iconColor}\`} dangerouslySetInnerHTML={{ __html: typeof iconData === 'string' ? iconData : '' }} /> )``、``( <img src={resolveResourceUrl(iconData)} className={\`w-4.5 h-4.5 ${iconColor}\`} width="20" height="20" alt={t(textKey)} // 国际化 alt 文本 /> )``、``null``。
+根据执行分支返回结果；代表性返回表达式为 ``<Icon className={\x60w-4.5 h-4.5 ${iconColor}\x60} />``、``( <span className={\x60w-4.5 h-4.5 ${iconColor}\x60} dangerouslySetInnerHTML={{ __html: typeof iconData === 'string' ? iconData : '' }} /> )``、``( <img src={resolveResourceUrl(iconData)} className={\x60w-4.5 h-4.5 ${iconColor}\x60} width="20" height="20" alt={t(textKey)} // 国际化 alt 文本 /> )``、``null``。
 
 **主要协作调用**：``resolveResourceUrl``、``t``。
 

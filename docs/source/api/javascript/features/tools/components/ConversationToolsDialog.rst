@@ -1,5 +1,5 @@
 src/features/tools/components/ConversationToolsDialog 模块
-========================================================
+========================================================================================================================
 
 .. js:module:: src/features/tools/components/ConversationToolsDialog
 
@@ -11,7 +11,7 @@ src/features/tools/components/ConversationToolsDialog 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/tools/components/ConversationToolsDialog.jsx``
 * **模块标识**：``src/features/tools/components/ConversationToolsDialog``
@@ -20,12 +20,12 @@ src/features/tools/components/ConversationToolsDialog 模块
 * **局部函数与匿名回调**：40
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``@/components/ui/dialog``、``@/components/ui/button``、``@/components/ui/switch``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:483:638:FUNCTION
 
@@ -47,7 +47,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``['allow', 'ask', 'deny'].includes(mode) ? mode : fallback``。
 
-   **主要协作调用**：``String(value \|\| '').toLowerCase``、``String``、``['allow', 'ask', 'deny'].includes``。
+   **主要协作调用**：``String(value || '').toLowerCase``、``String``、``['allow', 'ask', 'deny'].includes``。
 
 .. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:665:792:FUNCTION
 
@@ -64,7 +64,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``region?.children \|\| items``。
+   根据执行分支返回结果；代表性返回表达式为 ``region?.children || items``。
 
    **主要协作调用**：``items.find``。
 
@@ -136,7 +136,7 @@ src/features/tools/components/ConversationToolsDialog 模块
    **参数**
 
    ``{ open, onOpenChange, toolsConfig = [], currentPermissions = {}, defaultPermissions = {}, onApply,…``
-      调用方传入的 `` open, onOpenChange, toolsConfig = , currentPermissions = , defaultPermissions = , onApply,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``open, onOpenChange, toolsConfig = , currentPermissions = , defaultPermissions = , onApply,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -147,7 +147,7 @@ src/features/tools/components/ConversationToolsDialog 模块
    **内部回调数量**：16。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -396,7 +396,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``groups.map((group) => { const sourceTools = group.tools \|\| []; if (!normalizedQuery) return {...group, sourceTools}; co…``、``groups.map``。
+**主要协作调用**：``groups.map((group) => { const sourceTools = group.tools || []; if (!normalizedQuery) return {...group, sourceTools}; co…``、``groups.map``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
@@ -419,9 +419,9 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{...group, sourceTools}``、``{ ...group, sourceTools, tools: groupMatches ? sourceTools : sourceTools.filter((tool) => [tool.name, t(tool.text \|\| tool.name), tool.description] .filter(Boolean) .some(value =>…``。
+根据执行分支返回结果；代表性返回表达式为 ``{...group, sourceTools}``、``{ ...group, sourceTools, tools: groupMatches ? sourceTools : sourceTools.filter((tool) => [tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some(value =>…``。
 
-**主要协作调用**：``String(t(group.name) \|\| group.name).toLowerCase().includes``、``String(t(group.name) \|\| group.name).toLowerCase``、``String``、``t``、``sourceTools.filter``。
+**主要协作调用**：``String(t(group.name) || group.name).toLowerCase().includes``、``String(t(group.name) || group.name).toLowerCase``、``String``、``t``、``sourceTools.filter``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
@@ -446,19 +446,19 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``[tool.name, t(tool.text \|\| tool.name), tool.description] .filter(Boolean) .some``、``[tool.name, t(tool.text \|\| tool.name), tool.description] .filter``、``t``。
+**主要协作调用**：``[tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some``、``[tool.name, t(tool.text || tool.name), tool.description] .filter``、``t``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
 .. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4396:4458:FUNCTION
 
-.. rubric:: ``[tool.name, t(tool.text \|\| tool.name), tool.description] .filter(Boolean) .some callback @ 118``
+.. rubric:: ``[tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some callback @ 118``
 
 .. code-block:: javascript
 
    [tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some callback @ 118(value)
 
-作为 ``[tool.name, t(tool.text \|\| tool.name), tool.description] .filter(Boolean) .some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``[tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``118``—``118`` 行；所属函数 ``sourceTools.filter callback @ 116``。
 
@@ -475,13 +475,13 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 .. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4487:4518:FUNCTION
 
-.. rubric:: ``groups.map((group) => { const sourceTools = group.tools \|\| []; if (!normalizedQuery) return {...group, sourceTools}; co… callback @ 120``
+.. rubric:: ``groups.map((group) => { const sourceTools = group.tools || []; if (!normalizedQuery) return {...group, sourceTools}; co… callback @ 120``
 
 .. code-block:: javascript
 
    groups.map((group) => { const sourceTools = group.tools || []; if (!normalizedQuery) return {...group, sourceTools}; co… callback @ 120(group)
 
-实现 ``groups.map((group) => { const sourceTools = group.tools \|\| []; if (!normalizedQuery) return {...group, sourceTools}; co…`` 对应的前端处理。
+实现 ``groups.map((group) => { const sourceTools = group.tools || []; if (!normalizedQuery) return {...group, sourceTools}; co…`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``120``—``120`` 行；所属函数 ``useMemo callback @ 107``。
 
@@ -996,7 +996,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={tool.name} className="flex gap-3 px-3 py-3"> <div className="min-w-0 flex-1"> <div className="truncate text-sm font-medium text-gray-800">{t(tool.text \|\| tool.name)}</…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={tool.name} className="flex gap-3 px-3 py-3"> <div className="min-w-0 flex-1"> <div className="truncate text-sm font-medium text-gray-800">{t(tool.text || tool.name)}</…``。
 
 **主要协作调用**：``normalizeMode``、``ENABLED_MODES.has``、``t``。
 

@@ -1,5 +1,5 @@
 src/components/ui/ButtonContentWrapper 模块
-=========================================
+==========================================================================================
 
 .. js:module:: src/components/ui/ButtonContentWrapper
 
@@ -11,7 +11,7 @@ src/components/ui/ButtonContentWrapper 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/ui/ButtonContentWrapper.jsx``
 * **模块标识**：``src/components/ui/ButtonContentWrapper``
@@ -20,12 +20,12 @@ src/components/ui/ButtonContentWrapper 模块
 * **局部函数与匿名回调**：0
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``framer-motion``、``lucide-react``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/ui/ButtonContentWrapper.jsx:311:1763:FUNCTION
 

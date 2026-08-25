@@ -1,5 +1,5 @@
 src/components/markdown/card-block/widget/CanvasCardDeck 模块
-===========================================================
+==============================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/widget/CanvasCardDeck
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/widget/CanvasCardDeck.jsx``
 * **模块标识**：``src/components/markdown/card-block/widget/CanvasCardDeck``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 * **局部函数与匿名回调**：78
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``@/components/modal/universalModal.js``、``@/lib/virtualUrl.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:310:367:FUNCTION
 
@@ -128,7 +128,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``''``、``cwm \|\| ''``、``raw``。
+   根据执行分支返回结果；代表性返回表达式为 ``''``、``cwm || ''``、``raw``。
 
    **主要协作调用**：``value.trim``、``resolveCwmUrl``、``/^https:\/\//i.test``。
 
@@ -336,7 +336,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``[]``、``lines``。
 
-   **主要协作调用**：``String(text \|\| '').trim``、``String``、``ctx.measureText``、``lines.push``、``lines.join``、``last.slice``。
+   **主要协作调用**：``String(text || '').trim``、``String``、``ctx.measureText``、``lines.push``、``lines.join``、``last.slice``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:4306:4906:FUNCTION
 
@@ -418,7 +418,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-   **主要协作调用**：``Math.max``、``resolveWidgetImageUrl``、``['auto', 'poster', 'text'].includes``、``String(card?.style \|\| '').toLowerCase``、``String``、``String(card.style).toLowerCase``、``getCachedImage``、``Array.isArray``、``card.badges.slice``、``['center', 'top', 'bottom', 'left', 'right'].includes``、``String(card?.imagePosition \|\| '').toLowerCase``、``String(card.imagePosition).toLowerCase``。
+   **主要协作调用**：``Math.max``、``resolveWidgetImageUrl``、``['auto', 'poster', 'text'].includes``、``String(card?.style || '').toLowerCase``、``String``、``String(card.style).toLowerCase``、``getCachedImage``、``Array.isArray``、``card.badges.slice``、``['center', 'top', 'bottom', 'left', 'right'].includes``、``String(card?.imagePosition || '').toLowerCase``、``String(card.imagePosition).toLowerCase``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:13344:15057:FUNCTION
 
@@ -465,7 +465,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-   **主要协作调用**：``cards .filter(Boolean) .filter((card) => String(card?.id \|\| '') !== String(hiddenCardId \|\| '')) .slice``、``cards .filter(Boolean) .filter``、``cards .filter``、``clamp``、``Math.max``、``Math.min``、``drawCard``、``makePose``、``drawCardBack``、``ctx.save``、``ctx.beginPath``、``ctx.arc``。
+   **主要协作调用**：``cards .filter(Boolean) .filter((card) => String(card?.id || '') !== String(hiddenCardId || '')) .slice``、``cards .filter(Boolean) .filter``、``cards .filter``、``clamp``、``Math.max``、``Math.min``、``drawCard``、``makePose``、``drawCardBack``、``ctx.save``、``ctx.beginPath``、``ctx.arc``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -861,7 +861,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-   **主要协作调用**：``window.getComputedStyle``、``/(auto\|scroll\|overlay)/.test``、``entries.push``、``entries.some``。
+   **主要协作调用**：``window.getComputedStyle``、``/(auto|scroll|overlay)/.test``、``entries.push``、``entries.some``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -914,7 +914,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    **内部回调数量**：32。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -1398,7 +1398,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``760``、``Math.round(window.visualViewport?.height \|\| window.innerHeight \|\| 760)``。
+根据执行分支返回结果；代表性返回表达式为 ``760``、``Math.round(window.visualViewport?.height || window.innerHeight || 760)``。
 
 **副作用**
 
@@ -1617,7 +1617,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``entries .map((entry) => scene.byId.get(String(entry?.cardId \|\| ''))) .filter``、``entries .map``、``drawPocketStack``。
+**主要协作调用**：``entries .map((entry) => scene.byId.get(String(entry?.cardId || ''))) .filter``、``entries .map``、``drawPocketStack``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 

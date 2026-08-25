@@ -1,9 +1,9 @@
 src/context/useEventStore 模块
-============================
+================================================================================
 
 .. js:module:: src/context/useEventStore
 
-Emit one semantic event. The returned thenable waits for an event whose ``reply_to`` references the generated ``event_id``.
+Emit one semantic event. The returned thenable waits for an event whose \`\`reply\_to\`\` references the generated \`\`event\_id\`\`.
 
 .. note::
 
@@ -11,29 +11,29 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/context/useEventStore.jsx``
 * **模块标识**：``src/context/useEventStore``
 * **顶层函数/组件/Hook**：11
 * **类**：0
-* **局部函数与匿名回调**：14
+* **局部函数与匿名回调**：16
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
-``zustand``、``@/lib/tools.jsx``、``@/runtime/transport/channel.js``、``@/runtime/protocol/events.js``、``@/runtime/protocol/subscriptions.js``。
+``zustand``、``@/lib/tools.jsx``、``@/runtime/transport/channel.js``、``@/runtime/protocol/events.js``、``@/runtime/protocol/subscriptions.js``、``@/runtime/transport/EventDispatchScheduler.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:614:677:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:739:802:FUNCTION
 
 .. js:function:: debugEnabled()
 
    实现 ``debugEnabled`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``16``—``16`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``17``—``17`` 行。
 
    **参数**
 
@@ -45,18 +45,18 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
    **主要协作调用**：``Boolean``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:702:1506:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:827:1631:FUNCTION
 
 .. js:function:: createEnvelope({ event, payload = {}, conversationId = null, documentId = null, turnId = null, runId = null, strea…)
 
    创建与 ``Envelope`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``18``—``45`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``19``—``46`` 行。
 
    **参数**
 
    ``{ event, payload = {}, conversationId = null, documentId = null, turnId = null, runId = null, strea…``
-      调用方传入的 `` event, payload = , conversationId = null, documentId = null, turnId = null, runId = null, strea…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``event, payload = , conversationId = null, documentId = null, turnId = null, runId = null, strea…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -64,13 +64,13 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
    **主要协作调用**：``generateUUID``、``normalizeEventName``、``Date.now``、``Number.isFinite``、``Number``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:1529:1614:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:1654:1739:FUNCTION
 
 .. js:function:: matchesEvent(patterns, event)
 
    实现 ``matchesEvent`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``47``—``47`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``48``—``48`` 行。
 
    **参数**
 
@@ -88,13 +88,13 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:1633:2260:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:1758:2385:FUNCTION
 
 .. js:function:: logEvent(direction, envelope)
 
    实现 ``logEvent`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``49``—``60`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``50``—``61`` 行。
 
    **参数**
 
@@ -110,13 +110,13 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
    **主要协作调用**：``debugEnabled``、``console.groupCollapsed``、``direction.toUpperCase``、``console.log``、``console.groupEnd``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:2396:2687:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:2521:2812:FUNCTION
 
 .. js:function:: rememberEvent(eventId)
 
    实现 ``rememberEvent`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``68``—``74`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``69``—``75`` 行。
 
    **参数**
 
@@ -129,13 +129,13 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
    **主要协作调用**：``processedEventIds.includes``、``processedEventIds.push``、``processedEventIds.splice``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:2709:3171:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:2834:3296:FUNCTION
 
 .. js:function:: settleReply(envelope)
 
    实现 ``settleReply`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``76``—``88`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``77``—``89`` 行。
 
    **参数**
 
@@ -155,13 +155,13 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:3198:6433:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:3323:7360:FUNCTION
 
 .. js:function:: dispatchEnvelope(envelope, {direction = 'local', localOnly = false})
 
    分派与 ``Envelope`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``90``—``166`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``91``—``188`` 行。
 
    **参数**
 
@@ -181,17 +181,17 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
    **显式抛出**：``new TypeError('Invalid CWM event envelope')``。
 
-   **主要协作调用**：``rememberEvent``、``logEvent``、``useEventStore.setState``、``settleReply``、``listeners.values``、``matchesEvent``、``shouldDeliverEventToListener``、``Promise.resolve().then``、``Promise.resolve``。
+   **主要协作调用**：``rememberEvent``、``logEvent``、``useEventStore.setState``、``settleReply``、``listeners.values``、``matchesEvent``、``shouldDeliverEventToListener``、``listenerJobs.push``、``scheduleIncomingEventCallback``、``Promise.resolve().then``、``Promise.resolve``。
 
-   **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:6472:6556:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:7399:7483:FUNCTION
 
 .. js:function:: dispatchIncomingEvent(envelope)
 
    分派与 ``Incoming Event`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``168``—``168`` 行。
+   **性质**：同步函数；导出 API；源码第 ``190``—``190`` 行。
 
    **参数**
 
@@ -204,13 +204,13 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
    **主要协作调用**：``dispatchEnvelope``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:6579:7134:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:7506:8061:FUNCTION
 
 .. js:function:: waitForReply(eventId, timeoutMs, onTimeout)
 
    实现 ``waitForReply`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``170``—``184`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``192``—``206`` 行。
 
    **参数**
 
@@ -225,7 +225,7 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``Promise.resolve(payload)``、``new Promise((resolve, reject) => { const timeoutId = window.setTimeout(() => { replyWaiters.delete(eventId); onTimeout?.(); reject(new Error(\`Timeout waiting for reply to event ${…``。
+   根据执行分支返回结果；代表性返回表达式为 ``Promise.resolve(payload)``、``new Promise((resolve, reject) => { const timeoutId = window.setTimeout(() => { replyWaiters.delete(eventId); onTimeout?.(); reject(new Error(\x60Timeout waiting for reply to event ${…``。
 
    **副作用**
 
@@ -236,18 +236,18 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:7299:8406:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:8226:9333:FUNCTION
 
 .. js:function:: emitEvent({ event, payload = {}, conversationId = null, documentId = null, turnId = null, runId = null, strea…)
 
    发送事件与 ``Event`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``190``—``229`` 行。
+   **性质**：同步函数；导出 API；源码第 ``212``—``251`` 行。
 
    **参数**
 
    ``{ event, payload = {}, conversationId = null, documentId = null, turnId = null, runId = null, strea…``
-      调用方传入的 `` event, payload = , conversationId = null, documentId = null, turnId = null, runId = null, strea…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``event, payload = , conversationId = null, documentId = null, turnId = null, runId = null, strea…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -257,18 +257,18 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:8521:9943:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:9448:10870:FUNCTION
 
 .. js:function:: onEvent({ event, conversationId = null, documentId = null, onlyWithoutConversation = false, includeGlobal =…)
 
    处理 ``Event`` 用户交互或运行时事件。
 
-   **性质**：同步函数；导出 API；源码第 ``232``—``275`` 行。
+   **性质**：同步函数；导出 API；源码第 ``254``—``297`` 行。
 
    **参数**
 
    ``{ event, conversationId = null, documentId = null, onlyWithoutConversation = false, includeGlobal =…``
-      调用方传入的 `` event, conversationId = null, documentId = null, onlyWithoutConversation = false, includeGlobal =…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``event, conversationId = null, documentId = null, onlyWithoutConversation = false, includeGlobal =…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -277,21 +277,21 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:1565:1613:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:1690:1738:FUNCTION
 
-.. rubric:: ``patterns.some callback @ 47``
+.. rubric:: ``patterns.some callback @ 48``
 
 .. code-block:: javascript
 
-   patterns.some callback @ 47(pattern)
+   patterns.some callback @ 48(pattern)
 
 作为 ``patterns.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``47``—``47`` 行；所属函数 ``matchesEvent``。
+**性质**：同步局部函数；源码第 ``48``—``48`` 行；所属函数 ``matchesEvent``。
 
 **参数**
 
@@ -304,17 +304,17 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 **主要协作调用**：``eventMatchesPattern``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:2299:2371:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:2424:2496:FUNCTION
 
-.. rubric:: ``create callback @ 62``
+.. rubric:: ``create callback @ 63``
 
 .. code-block:: javascript
 
-   create callback @ 62()
+   create callback @ 63()
 
 创建与 ``create`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``62``—``66`` 行。
+**性质**：同步局部函数；源码第 ``63``—``67`` 行。
 
 **参数**
 
@@ -324,17 +324,17 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:3074:3118:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:3199:3243:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 85``
+.. rubric:: ``window.setTimeout callback @ 86``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 85()
+   window.setTimeout callback @ 86()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``settleReply``。
+**性质**：同步局部函数；源码第 ``86``—``86`` 行；所属函数 ``settleReply``。
 
 **参数**
 
@@ -346,7 +346,7 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 **主要协作调用**：``replyBacklog.delete``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:4578:5324:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:4732:5478:FUNCTION
 
 .. rubric:: ``reply``
 
@@ -356,14 +356,14 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 实现 ``reply`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``120``—``138`` 行；所属函数 ``dispatchEnvelope``。
+**性质**：同步局部函数；源码第 ``122``—``140`` 行；所属函数 ``dispatchEnvelope``。
 
 **参数**
 
 ``payload``
    事件或业务操作的结构化载荷。
 
-``event``（默认值 ``\`${envelope.event}.result\```）
+``event``（默认值 ``\x60${envelope.event}.result\x60``）
    语义事件名或 EventEnvelope。
 
 **返回值**
@@ -372,17 +372,17 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 **主要协作调用**：``createEnvelope``、``dispatchEnvelope``、``sendRealtimeEvent``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:5358:6423:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:5507:6880:FUNCTION
 
-.. rubric:: ``Promise.resolve().then callback @ 140``
+.. rubric:: ``listenerJobs.push callback @ 142``
 
 .. code-block:: javascript
 
-   Promise.resolve().then callback @ 140()
+   listenerJobs.push callback @ 142()
 
-处理 ``Promise.resolve().then callback`` 对应的事件或订阅结果。
+实现 ``listenerJobs.push`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``140``—``164`` 行；所属函数 ``dispatchEnvelope``。
+**性质**：同步局部函数；源码第 ``142``—``171`` 行；所属函数 ``dispatchEnvelope``。
 
 **参数**
 
@@ -392,19 +392,66 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``registration.callback``、``console.error``。
+**主要协作调用**：``registration.callback``、``Promise.resolve(result).catch``、``Promise.resolve``、``console.error``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:6813:7130:FUNCTION
+**内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. rubric:: ``anonymous callback @ 176``
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:6544:6699:FUNCTION
+
+.. rubric:: ``Promise.resolve(result).catch callback @ 164``
 
 .. code-block:: javascript
 
-   anonymous callback @ 176(resolve, reject)
+   Promise.resolve(result).catch callback @ 164(error)
+
+处理 ``Promise.resolve(result).catch callback`` 对应的事件或订阅结果。
+
+**性质**：同步局部函数；源码第 ``164``—``166`` 行；所属函数 ``listenerJobs.push callback @ 142``。
+
+**参数**
+
+``error``
+   调用方传入的 ``error`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``console.error``。
+
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:6960:7029:FUNCTION
+
+.. rubric:: ``invokeEnvelopeListeners``
+
+.. code-block:: javascript
+
+   invokeEnvelopeListeners()
+
+实现 ``invokeEnvelopeListeners`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``175``—``177`` 行；所属函数 ``dispatchEnvelope``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``job``。
+
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:7740:8057:FUNCTION
+
+.. rubric:: ``anonymous callback @ 198``
+
+.. code-block:: javascript
+
+   anonymous callback @ 198(resolve, reject)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``176``—``183`` 行；所属函数 ``waitForReply``。
+**性质**：同步局部函数；源码第 ``198``—``205`` 行；所属函数 ``waitForReply``。
 
 **参数**
 
@@ -426,17 +473,17 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:6880:7046:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:7807:7973:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 177``
+.. rubric:: ``window.setTimeout callback @ 199``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 177()
+   window.setTimeout callback @ 199()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``177``—``181`` 行；所属函数 ``anonymous callback @ 176``。
+**性质**：同步局部函数；源码第 ``199``—``203`` 行；所属函数 ``anonymous callback @ 198``。
 
 **参数**
 
@@ -448,7 +495,7 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 **主要协作调用**：``replyWaiters.delete``、``onTimeout``、``reject``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:8073:8186:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:9000:9113:FUNCTION
 
 .. rubric:: ``then``
 
@@ -458,7 +505,7 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 实现 ``then`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``225``—``225`` 行；所属函数 ``emitEvent``。
+**性质**：同步局部函数；源码第 ``247``—``247`` 行；所属函数 ``emitEvent``。
 
 **参数**
 
@@ -474,7 +521,7 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 **主要协作调用**：``waitForReply(envelope.event_id, timeoutMs, onTimeout).then``、``waitForReply``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:8202:8290:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:9129:9217:FUNCTION
 
 .. rubric:: ``catch``
 
@@ -484,7 +531,7 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 实现 ``catch`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``226``—``226`` 行；所属函数 ``emitEvent``。
+**性质**：同步局部函数；源码第 ``248``—``248`` 行；所属函数 ``emitEvent``。
 
 **参数**
 
@@ -497,7 +544,7 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 **主要协作调用**：``waitForReply(envelope.event_id, timeoutMs, onTimeout).catch``、``waitForReply``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:8308:8396:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:9235:9323:FUNCTION
 
 .. rubric:: ``finally``
 
@@ -507,7 +554,7 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 实现 ``finally`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``227``—``227`` 行；所属函数 ``emitEvent``。
+**性质**：同步局部函数；源码第 ``249``—``249`` 行；所属函数 ``emitEvent``。
 
 **参数**
 
@@ -520,7 +567,7 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 **主要协作调用**：``waitForReply(envelope.event_id, timeoutMs, onTimeout).finally``、``waitForReply``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:8760:9939:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:9687:10866:FUNCTION
 
 .. rubric:: ``then``
 
@@ -530,7 +577,7 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 实现 ``then`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``243``—``274`` 行；所属函数 ``onEvent``。
+**性质**：同步局部函数；源码第 ``265``—``296`` 行；所属函数 ``onEvent``。
 
 **参数**
 
@@ -545,17 +592,17 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:8855:8916:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:9782:9843:FUNCTION
 
-.. rubric:: ``(Array.isArray(event) ? event : [event]).map callback @ 244``
+.. rubric:: ``(Array.isArray(event) ? event : [event]).map callback @ 266``
 
 .. code-block:: javascript
 
-   (Array.isArray(event) ? event : [event]).map callback @ 244(item)
+   (Array.isArray(event) ? event : [event]).map callback @ 266(item)
 
 作为 ``(Array.isArray(event) ? event : [event]).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``244``—``246`` 行；所属函数 ``then``。
+**性质**：同步局部函数；源码第 ``266``—``268`` 行；所属函数 ``then``。
 
 **参数**
 
@@ -568,17 +615,17 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 **主要协作调用**：``normalizeEventPattern``。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:9158:9167:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:10085:10094:FUNCTION
 
-.. rubric:: ``returned callback @ 250``
+.. rubric:: ``returned callback @ 272``
 
 .. code-block:: javascript
 
-   returned callback @ 250()
+   returned callback @ 272()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``250``—``250`` 行；所属函数 ``then``。
+**性质**：同步局部函数；源码第 ``272``—``272`` 行；所属函数 ``then``。
 
 **参数**
 
@@ -588,17 +635,17 @@ Emit one semantic event. The returned thenable waits for an event whose ``reply_
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/context/useEventStore.jsx:9783:9932:FUNCTION
+.. CWM-AST-FUNCTION src/context/useEventStore.jsx:10710:10859:FUNCTION
 
-.. rubric:: ``returned callback @ 269``
+.. rubric:: ``returned callback @ 291``
 
 .. code-block:: javascript
 
-   returned callback @ 269()
+   returned callback @ 291()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``269``—``273`` 行；所属函数 ``then``。
+**性质**：同步局部函数；源码第 ``291``—``295`` 行；所属函数 ``then``。
 
 **参数**
 

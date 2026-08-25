@@ -1,5 +1,5 @@
 src/components/markdown/card-block/status/StatusBody 模块
-=======================================================
+======================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/status/StatusBody
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/status/StatusBody 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/status/StatusBody.jsx``
 * **模块标识**：``src/components/markdown/card-block/status/StatusBody``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/status/StatusBody 模块
 * **局部函数与匿名回调**：2
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``../constants.jsx``、``../useExpandedState.js``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,11 +44,11 @@ src/components/markdown/card-block/status/StatusBody 模块
 **参数**
 
 ``{ cleanContent, expandedKey, isFailed = false, isFinished = false, isToolCalling = false, renderMar…``
-   调用方传入的 `` cleanContent, expandedKey, isFailed = false, isFinished = false, isToolCalling = false, renderMar…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``cleanContent, expandedKey, isFailed = false, isFinished = false, isToolCalling = false, renderMar…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\`mt-2 ml-2 pl-4 border-l border-gray-200 ${isToolCalling ? 'transition-all duration-300' : ''} ${isToolCalling && !isFinished && !isFailed ? 'card-tool-body-brea…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\x60mt-2 ml-2 pl-4 border-l border-gray-200 ${isToolCalling ? 'transition-all duration-300' : ''} ${isToolCalling && !isFinished && !isFailed ? 'card-tool-body-brea…``。
 
 **主要协作调用**：``useExpandedState``、``renderMarkdown``。
 

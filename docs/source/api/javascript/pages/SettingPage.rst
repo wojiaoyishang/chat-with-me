@@ -1,5 +1,5 @@
 src/pages/SettingPage 模块
-========================
+================================================================================
 
 .. js:module:: src/pages/SettingPage
 
@@ -11,7 +11,7 @@ src/pages/SettingPage 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/pages/SettingPage.jsx``
 * **模块标识**：``src/pages/SettingPage``
@@ -20,12 +20,12 @@ src/pages/SettingPage 模块
 * **局部函数与匿名回调**：54
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``framer-motion``、``sonner``、``@/lib/tools.jsx``、``@/context/userContext.jsx``、``@/context/useEventStore.jsx``、``react-i18next``、``@/components/setting/UserProfileCard.jsx``、``@/components/setting/DynamicSettings.jsx``、``@/lib/browserHistoryLayers.js``、``@/features/notification/NotificationSettings.jsx``、``@/lib/apiClient.js``、``@/config.js``、``@/components/ui/dialog``、``@/components/ui/card``、``@/components/ui/switch``、``@/components/ui/separator``、``@/components/ui/badge``、``@/lib/virtualUrl.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/pages/SettingPage.jsx:1713:2411:FUNCTION
 
@@ -57,7 +57,7 @@ src/pages/SettingPage 模块
    **参数**
 
    ``{ open, progress, fileName, onCancel, t }``
-      调用方传入的 `` open, progress, fileName, onCancel, t `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``open, progress, fileName, onCancel, t`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -78,7 +78,7 @@ src/pages/SettingPage 模块
    **参数**
 
    ``{ open, onClose, onRefreshRequested, handleLogout }``
-      调用方传入的 `` open, onClose, onRefreshRequested, handleLogout `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``open, onClose, onRefreshRequested, handleLogout`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -115,7 +115,7 @@ src/pages/SettingPage 模块
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -183,9 +183,9 @@ src/pages/SettingPage 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``[...new Set(rawScopes .map((scope) => String(scope \|\| '').trim()) .filter(Boolean))]``。
+根据执行分支返回结果；代表性返回表达式为 ``[...new Set(rawScopes .map((scope) => String(scope || '').trim()) .filter(Boolean))]``。
 
-**主要协作调用**：``Array.isArray``、``rawScopes .map((scope) => String(scope \|\| '').trim()) .filter``、``rawScopes .map``。
+**主要协作调用**：``Array.isArray``、``rawScopes .map((scope) => String(scope || '').trim()) .filter``、``rawScopes .map``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
@@ -210,7 +210,7 @@ src/pages/SettingPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String(scope \|\| '').trim``、``String``。
+**主要协作调用**：``String(scope || '').trim``、``String``。
 
 .. CWM-AST-FUNCTION src/pages/SettingPage.jsx:6456:6683:FUNCTION
 
@@ -948,7 +948,7 @@ src/pages/SettingPage 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``new Promise((resolve) => { let hasResponded = false; const picker = createFilePicker('image/*', (files) => { if (hasResponded) return; hasResponded = true; if (!files \|\| files.len…``。
+根据执行分支返回结果；代表性返回表达式为 ``new Promise((resolve) => { let hasResponded = false; const picker = createFilePicker('image/*', (files) => { if (hasResponded) return; hasResponded = true; if (!files || files.len…``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
@@ -1296,7 +1296,7 @@ src/pages/SettingPage 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="max-w-3xl mx-auto"> <UserProfileCard handleLogout={handleLogout}/> <div className="mt-8 pt-8 bo…``、``( <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="mx-auto max-w-3xl space-y-6"> <div> <p className="mb-4 text-xs font-semibold uppercase tracking…``、``( <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}}> <NotificationSettings/> </motion.div> )``、``<div className="h-full flex items-center justify-center"><UnifiedLoadingScreen text={t("loading_config") \|\| "Loading settings..."} compact/></div>``。
+根据执行分支返回结果；代表性返回表达式为 ``( <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="max-w-3xl mx-auto"> <UserProfileCard handleLogout={handleLogout}/> <div className="mt-8 pt-8 bo…``、``( <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="mx-auto max-w-3xl space-y-6"> <div> <p className="mb-4 text-xs font-semibold uppercase tracking…``、``( <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}}> <NotificationSettings/> </motion.div> )``、``<div className="h-full flex items-center justify-center"><UnifiedLoadingScreen text={t("loading_config") || "Loading settings..."} compact/></div>``。
 
 **主要协作调用**：``t``。
 

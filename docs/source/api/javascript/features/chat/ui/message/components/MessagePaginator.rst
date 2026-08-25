@@ -1,5 +1,5 @@
 src/features/chat/ui/message/components/MessagePaginator 模块
-===========================================================
+==============================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/components/MessagePaginator
 
@@ -11,7 +11,7 @@ src/features/chat/ui/message/components/MessagePaginator 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/components/MessagePaginator.jsx``
 * **模块标识**：``src/features/chat/ui/message/components/MessagePaginator``
@@ -20,12 +20,12 @@ src/features/chat/ui/message/components/MessagePaginator 模块
 * **局部函数与匿名回调**：10
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``sonner``、``@/components/ui/button``、``@/components/ui/popover``、``./BranchMessageSelectorDialog.jsx``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,11 +44,11 @@ src/features/chat/ui/message/components/MessagePaginator 模块
 **参数**
 
 ``{ msg, msgId, conversationId, messages, isRight, onSwitchMessage, switchingMessageId, setSwitchingM…``
-   调用方传入的 `` msg, msgId, conversationId, messages, isRight, onSwitchMessage, switchingMessageId, setSwitchingM…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``msg, msgId, conversationId, messages, isRight, onSwitchMessage, switchingMessageId, setSwitchingM…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\`flex items-center gap-0.5 text-sm transition-opacity duration-300 ${isRight ? 'justify-end' : 'justify-start'}\`}> <Button type="button" variant="ghost" size="ic…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\x60flex items-center gap-0.5 text-sm transition-opacity duration-300 ${isRight ? 'justify-end' : 'justify-start'}\x60}> <Button type="button" variant="ghost" size="ic…``。
 
 **主要协作调用**：``useState``、``Array.isArray``、``branchMessages.includes``、``branchMessages.indexOf``、``Math.max``、``useCallback``、``t``。
 

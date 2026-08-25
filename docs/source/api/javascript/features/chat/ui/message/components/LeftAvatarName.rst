@@ -1,5 +1,5 @@
 src/features/chat/ui/message/components/LeftAvatarName 模块
-=========================================================
+==========================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/components/LeftAvatarName
 
@@ -11,7 +11,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/components/LeftAvatarName.jsx``
 * **模块标识**：``src/features/chat/ui/message/components/LeftAvatarName``
@@ -20,12 +20,12 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 * **局部函数与匿名回调**：1
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@/lib/virtualUrl.js``、``@/components/ui/avatar``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -48,6 +48,6 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className={\`flex items-center gap-2 mb-1 transition-opacity duration-300 ${isLeaving ? 'opacity-0' : 'opacity-100'}\`} > <Avatar className="h-10 w-10"> <AvatarImage src={res…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60flex items-center gap-2 mb-1 transition-opacity duration-300 ${isLeaving ? 'opacity-0' : 'opacity-100'}\x60} > <Avatar className="h-10 w-10"> <AvatarImage src={res…``。
 
 **主要协作调用**：``resolveResourceUrl``。

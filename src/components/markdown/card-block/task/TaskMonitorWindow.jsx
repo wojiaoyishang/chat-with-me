@@ -69,6 +69,7 @@ const RESIZE_HANDLES = [
 const TaskMonitorWindow = memo(({
     actions = [],
     cleanContent = '',
+    contentKey = '',
     elapsedText = '',
     error = '',
     isFailed = false,
@@ -93,6 +94,7 @@ const TaskMonitorWindow = memo(({
     const scheduledScrollFramesRef = useRef([]);
     const programmaticResetFrameRef = useRef(null);
     const wasOpenRef = useRef(false);
+    const activeContentKeyRef = useRef(contentKey);
     const dragStateRef = useRef(null);
     const resizeStateRef = useRef(null);
     const [position, setPosition] = useState(null);
@@ -254,6 +256,22 @@ const TaskMonitorWindow = memo(({
         }
         wasOpenRef.current = open;
     }, [keepBottomPinned, open]);
+
+    useLayoutEffect(() => {
+        if (!open) {
+            activeContentKeyRef.current = contentKey;
+            return;
+        }
+        if (!contentKey || activeContentKeyRef.current === contentKey) return;
+
+        // A server-created Task Mode segment became authoritative while this
+        // monitor was already open. Switch the window to that segment and resume
+        // live-bottom following so the user immediately sees the newest task work.
+        activeContentKeyRef.current = contentKey;
+        autoFollowBottomRef.current = true;
+        setAutoFollowBottom(true);
+        keepBottomPinned();
+    }, [contentKey, keepBottomPinned, open]);
 
     useEffect(() => {
         if (!open) return undefined;
@@ -419,6 +437,14 @@ const TaskMonitorWindow = memo(({
                 payload: {
                     taskRunId: action.taskRunId,
                     requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                },
+            },
+            restartTask: {
+                event: 'task.restart.requested',
+                localOnly: true,
+                payload: {
+                    taskRunId: action.taskRunId,
+                    messageId: action.messageId || '',
                 },
             },
             cancelTask: {

@@ -1,5 +1,5 @@
 src/hooks/messageCallback 模块
-============================
+================================================================================
 
 .. js:module:: src/hooks/messageCallback
 
@@ -11,7 +11,7 @@ Dispatch one decoded CWM Protocol v1 event envelope.
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/hooks/messageCallback.jsx``
 * **模块标识**：``src/hooks/messageCallback``
@@ -20,12 +20,12 @@ Dispatch one decoded CWM Protocol v1 event envelope.
 * **局部函数与匿名回调**：0
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``@/context/useEventStore.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/hooks/messageCallback.jsx:66:229:FUNCTION
 

@@ -3,7 +3,6 @@ import {toast} from 'sonner';
 import {useTranslation} from 'react-i18next';
 import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
 import MessageItem from './message/components/MessageItem.jsx';
-import TaskInterruptPreviewGroup from '@/components/markdown/card-block/task/TaskInterruptPreviewGroup.jsx';
 import useMessageAnimation from './message/hooks/useMessageAnimation.js';
 import useMessageEvents from './message/hooks/useMessageEvents.js';
 import './message/styles/messageAnimations.js';
@@ -17,8 +16,7 @@ const MessageContainer = forwardRef(({
                                          conversationId,
                                          speechState,
                                          onSpeechTextClick,
-                                         highlightedMessageId = null,
-                                         taskInterruptPreviews = []
+                                         highlightedMessageId = null
                                      }, ref) => {
     const [switchingMessageId, setSwitchingMessageId] = useState(null);
     const {t} = useTranslation();
@@ -166,7 +164,6 @@ const MessageContainer = forwardRef(({
             className="w-full max-w-220 mx-auto px-4 py-6 flex flex-col gap-6 pb-60"
         >
             {messagesOrder.map((msgId, index) => renderMessage(msgId, index))}
-            <TaskInterruptPreviewGroup previews={taskInterruptPreviews}/>
         </div>
     );
 });

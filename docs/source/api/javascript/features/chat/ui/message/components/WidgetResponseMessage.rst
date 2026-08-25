@@ -1,5 +1,5 @@
 src/features/chat/ui/message/components/WidgetResponseMessage 模块
-================================================================
+========================================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/components/WidgetResponseMessage
 
@@ -11,7 +11,7 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/components/WidgetResponseMessage.jsx``
 * **模块标识**：``src/features/chat/ui/message/components/WidgetResponseMessage``
@@ -20,12 +20,12 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 * **局部函数与匿名回调**：4
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:163:289:FUNCTION
 
@@ -66,7 +66,7 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``text``、``\`${text.slice(0, Math.max(0, max - 1))}…\```。
+   根据执行分支返回结果；代表性返回表达式为 ``text``、``\x60${text.slice(0, Math.max(0, max - 1))}…\x60``。
 
    **主要协作调用**：``String(value ?? '').replace(/\s+/g, ' ').trim``、``String(value ?? '').replace``、``String``、``text.slice``、``Math.max``。
 
@@ -102,12 +102,12 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``\`${leftLabel} ${leftCount} · ${middleLabel} ${middleCount} · ${rightLabel} ${rightCount}\```、``\`填写：${compactText(item?.value, 80)}\```、``\`选择：${compactText(value, 80)}\```、``item?.confirmed ? '已确认' : '已取消'``。
+   根据执行分支返回结果；代表性返回表达式为 ``\x60${leftLabel} ${leftCount} · ${middleLabel} ${middleCount} · ${rightLabel} ${rightCount}\x60``、``\x60填写：${compactText(item?.value, 80)}\x60``、``\x60选择：${compactText(value, 80)}\x60``、``item?.confirmed ? '已确认' : '已取消'``。
 
    **主要协作调用**：``Number``、``Array.isArray``、``compactText``、``item.value.join``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -201,6 +201,6 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={item?.widgetId \|\| \`${item?.widgetType \|\| 'widget'}-${index}\`} className="flex items-start gap-2.5 px-3.5 py-2.5"> <div className="mt-0.5 rounded-lg bg-white/75 p-1.5 t…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={item?.widgetId || \x60${item?.widgetType || 'widget'}-${index}\x60} className="flex items-start gap-2.5 px-3.5 py-2.5"> <div className="mt-0.5 rounded-lg bg-white/75 p-1.5 t…``。
 
 **主要协作调用**：``iconForType``、``itemSummary``。

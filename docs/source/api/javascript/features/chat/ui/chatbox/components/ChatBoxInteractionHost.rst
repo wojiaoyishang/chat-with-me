@@ -1,5 +1,5 @@
 src/features/chat/ui/chatbox/components/ChatBoxInteractionHost 模块
-=================================================================
+==========================================================================================================================================
 
 .. js:module:: src/features/chat/ui/chatbox/components/ChatBoxInteractionHost
 
@@ -11,7 +11,7 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx``
 * **模块标识**：``src/features/chat/ui/chatbox/components/ChatBoxInteractionHost``
@@ -20,12 +20,12 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 * **局部函数与匿名回调**：31
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``react-i18next``、``@/context/useEventStore.jsx``、``@/components/ui/badge``、``@/components/ui/button``、``@/components/ui/card``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:493:558:FUNCTION
 
@@ -90,7 +90,7 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``source.map((item, index) => ({ itemId: item?.itemId \|\| \`t${index}\`, toolName: item?.toolName \|\| data?.approvalToolNames?.[index] \|\| data?.toolNames?.[index] \|\| 'Tool', callPreview…``、``[{ itemId: '', toolName: fallbackNames.join('、') \|\| 'Tool', callPreview: data?.toolCallContent \|\| '', callIndex: 0, status: 'pending', decision: null, scope: 'once', groupType: da…``。
+   根据执行分支返回结果；代表性返回表达式为 ``source.map((item, index) => ({ itemId: item?.itemId || \x60t${index}\x60, toolName: item?.toolName || data?.approvalToolNames?.[index] || data?.toolNames?.[index] || 'Tool', callPreview…``、``[{ itemId: '', toolName: fallbackNames.join('、') || 'Tool', callPreview: data?.toolCallContent || '', callIndex: 0, status: 'pending', decision: null, scope: 'once', groupType: da…``。
 
    **主要协作调用**：``Array.isArray``、``source.map``、``fallbackNames.join``。
 
@@ -113,7 +113,7 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
    根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div title={summary} className="mt-1 truncate font-mono text-[11px] leading-5 text-muted-foreground" > {summary} </div> )``。
 
-   **主要协作调用**：``String(value \|\| '').replace(/\s+/g, ' ').trim``、``String(value \|\| '').replace``、``String``。
+   **主要协作调用**：``String(value || '').replace(/\s+/g, ' ').trim``、``String(value || '').replace``、``String``。
 
 .. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:2683:4451:FUNCTION
 
@@ -176,7 +176,7 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
    * 发送本地或远程 CWM 事件/媒体帧。
 
-   **主要协作调用**：``useTranslation``、``useState``、``useMemo``、``items.filter``、``String(data.approvalGroupType \|\| items[0]?.groupType \|\| 'single').toLowerCase``、``String``、``String(data.toolCallMode \|\| '').toLowerCase``、``useCallback``、``t``、``submittingIds.has``、``items.map``。
+   **主要协作调用**：``useTranslation``、``useState``、``useMemo``、``items.filter``、``String(data.approvalGroupType || items[0]?.groupType || 'single').toLowerCase``、``String``、``String(data.toolCallMode || '').toLowerCase``、``useCallback``、``t``、``submittingIds.has``、``items.map``。
 
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -207,7 +207,7 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
    **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -540,7 +540,7 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <Card key={item.itemId \|\| index} className={\`gap-0 rounded-xl py-0 shadow-none transition-colors ${ allowed ? 'border-emerald-200 bg-emerald-50/45 dark:border-emerald-900 dark:b…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <Card key={item.itemId || index} className={\x60gap-0 rounded-xl py-0 shadow-none transition-colors ${ allowed ? 'border-emerald-200 bg-emerald-50/45 dark:border-emerald-900 dark:b…``。
 
 **主要协作调用**：``submittingIds.has``。
 

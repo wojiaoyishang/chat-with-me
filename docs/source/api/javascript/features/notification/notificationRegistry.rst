@@ -1,5 +1,5 @@
 src/features/notification/notificationRegistry 模块
-=================================================
+==========================================================================================================
 
 .. js:module:: src/features/notification/notificationRegistry
 
@@ -11,7 +11,7 @@ src/features/notification/notificationRegistry 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/notification/notificationRegistry.js``
 * **模块标识**：``src/features/notification/notificationRegistry``
@@ -20,7 +20,7 @@ src/features/notification/notificationRegistry 模块
 * **局部函数与匿名回调**：4
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/notification/notificationRegistry.js:124:391:FUNCTION
 
@@ -128,7 +128,7 @@ src/features/notification/notificationRegistry 模块
    **主要协作调用**：``notificationActions.get``、``handler``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

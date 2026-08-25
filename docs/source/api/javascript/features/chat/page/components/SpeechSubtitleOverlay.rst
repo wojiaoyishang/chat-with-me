@@ -1,5 +1,5 @@
 src/features/chat/page/components/SpeechSubtitleOverlay 模块
-==========================================================
+============================================================================================================================
 
 .. js:module:: src/features/chat/page/components/SpeechSubtitleOverlay
 
@@ -11,7 +11,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/page/components/SpeechSubtitleOverlay.jsx``
 * **模块标识**：``src/features/chat/page/components/SpeechSubtitleOverlay``
@@ -20,12 +20,12 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 * **局部函数与匿名回调**：27
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-dom``、``@/features/chat/speech/subtitleSettings.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:594:702:FUNCTION
 
@@ -141,7 +141,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
    **主要协作调用**：``fallbackText``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -194,7 +194,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 * 注册事件、DOM 或运行时订阅。
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``useRef``、``useState``、``useEffect``、``useMemo``、``fallbackText``、``String(currentSegment?.text \|\| '').trim``、``String``、``Boolean``、``useCallback``、``SUBTITLE_QUICK_POSITIONS.map``、``createPortal``。
+**主要协作调用**：``useRef``、``useState``、``useEffect``、``useMemo``、``fallbackText``、``String(currentSegment?.text || '').trim``、``String``、``Boolean``、``useCallback``、``SUBTITLE_QUICK_POSITIONS.map``、``createPortal``。
 
 **内部回调数量**：15。这些回调也会在本页逐项说明。
 
@@ -767,7 +767,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <button key={item.id} type="button" role="menuitem" onClick={() => selectQuickPosition(item)} className={\`group flex h-12 cursor-pointer items-center justify-center rounded-xl b…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <button key={item.id} type="button" role="menuitem" onClick={() => selectQuickPosition(item)} className={\x60group flex h-12 cursor-pointer items-center justify-center rounded-xl b…``。
 
 **主要协作调用**：``Math.abs``、``getQuickPositionLabel``。
 

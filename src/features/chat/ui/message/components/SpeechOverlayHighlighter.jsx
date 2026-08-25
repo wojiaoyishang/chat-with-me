@@ -29,6 +29,28 @@ const RECT_EPSILON = 0.5;
 const INTERRUPTION_MARKER_HALF_HEIGHT = 10;
 const INTERRUPTION_MARKER_CONTENT_GAP = 8;
 const INTERRUPTION_MARKER_MIN_FLOW_GAP = 24;
+const INTERRUPTION_MARKER_POINTER_RADIUS_Y = 22;
+const INTERRUPTION_MARKER_COMPACT_WIDTH = 64;
+const INTERRUPTION_MARKER_COMPACT_POINTER_PAD_X = 18;
+
+const isPointerNearInterruptionMarker = (event, root, layout) => {
+    if (!event || !root || !layout) return false;
+
+    const rootRect = root.getBoundingClientRect();
+    const x = event.clientX - rootRect.left;
+    const y = event.clientY - rootRect.top;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+    if (Math.abs(y - Number(layout.top || 0)) > INTERRUPTION_MARKER_POINTER_RADIUS_Y) return false;
+
+    if (layout.mode === 'divider') {
+        return x >= -INTERRUPTION_MARKER_COMPACT_POINTER_PAD_X &&
+            x <= rootRect.width + INTERRUPTION_MARKER_COMPACT_POINTER_PAD_X;
+    }
+
+    const left = Number(layout.left || 0);
+    return x >= left - INTERRUPTION_MARKER_COMPACT_POINTER_PAD_X &&
+        x <= left + INTERRUPTION_MARKER_COMPACT_WIDTH + INTERRUPTION_MARKER_COMPACT_POINTER_PAD_X;
+};
 
 const rectsEqual = (a, b) => {
     if (!a && !b) return true;
@@ -732,6 +754,66 @@ const SpeechOverlayHighlighter = memo(({containerRef, msgId, msg, speechState}) 
     const hasInterruptionMarker = Boolean(
         hasInterruption && interruptionPosition >= 0 && interruptionMarkerLayout
     );
+    const [isInterruptionPointerNear, setIsInterruptionPointerNear] = useState(false);
+    const [isInterruptionTouchFocused, setIsInterruptionTouchFocused] = useState(false);
+
+    useEffect(() => {
+        const root = containerRef?.current;
+        if (!root || !hasInterruptionMarker || !interruptionMarkerLayout) {
+            setIsInterruptionPointerNear(false);
+            setIsInterruptionTouchFocused(false);
+            return undefined;
+        }
+
+        const handlePointerMove = (event) => {
+            if (event.pointerType && event.pointerType !== 'mouse') return;
+            setIsInterruptionPointerNear(
+                isPointerNearInterruptionMarker(event, root, interruptionMarkerLayout)
+            );
+        };
+        const handlePointerLeave = () => setIsInterruptionPointerNear(false);
+        const handlePointerDown = (event) => {
+            if (event.pointerType === 'mouse') return;
+            if (isPointerNearInterruptionMarker(event, root, interruptionMarkerLayout)) {
+                // Mobile has no hover state. Treat one tap near the marker as focus:
+                // conceal the visual overlay without changing interruption metadata/content.
+                setIsInterruptionTouchFocused(true);
+            }
+        };
+
+        root.addEventListener('pointermove', handlePointerMove, {passive: true});
+        root.addEventListener('pointerleave', handlePointerLeave, {passive: true});
+        root.addEventListener('pointerdown', handlePointerDown, {passive: true});
+        return () => {
+            root.removeEventListener('pointermove', handlePointerMove);
+            root.removeEventListener('pointerleave', handlePointerLeave);
+            root.removeEventListener('pointerdown', handlePointerDown);
+        };
+    }, [containerRef, hasInterruptionMarker, interruptionMarkerLayout]);
+
+    useEffect(() => {
+        if (!isInterruptionTouchFocused || typeof document === 'undefined') return undefined;
+
+        const handleDocumentPointerDown = (event) => {
+            if (event.pointerType === 'mouse') return;
+            const root = containerRef?.current;
+            if (!root || !isPointerNearInterruptionMarker(event, root, interruptionMarkerLayout)) {
+                setIsInterruptionTouchFocused(false);
+            }
+        };
+
+        // Capture lets the next tap anywhere restore the marker even when the
+        // tapped content itself has no focusable element.
+        document.addEventListener('pointerdown', handleDocumentPointerDown, true);
+        return () => document.removeEventListener('pointerdown', handleDocumentPointerDown, true);
+    }, [containerRef, interruptionMarkerLayout, isInterruptionTouchFocused]);
+
+    useEffect(() => {
+        setIsInterruptionPointerNear(false);
+        setIsInterruptionTouchFocused(false);
+    }, [msgId, voiceDelivery?.interruptedAt, voiceDelivery?.cursor?.segmentId, interruptionPosition]);
+
+    const concealInterruptionMarker = isInterruptionPointerNear || isInterruptionTouchFocused;
 
     if (!hasLiveHighlight && !hasInterruptionMarker) return null;
 
@@ -780,7 +862,9 @@ const SpeechOverlayHighlighter = memo(({containerRef, msgId, msg, speechState}) 
                 <div
                     data-tts-overlay="true"
                     data-voice-delivery-interrupted="true"
-                    className="absolute inset-0 pointer-events-none z-[3] overflow-visible"
+                    data-voice-delivery-marker-concealed={concealInterruptionMarker ? 'true' : 'false'}
+                    className="absolute inset-0 pointer-events-none z-[3] overflow-visible transition-opacity duration-150"
+                    style={{opacity: concealInterruptionMarker ? 0 : 1}}
                     role="note"
                     aria-label="语音在此被打断"
                 >

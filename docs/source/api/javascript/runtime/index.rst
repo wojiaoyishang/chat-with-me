@@ -33,9 +33,14 @@
      - 0
      - 1
      - ``src/runtime/protocol/subscriptions.js``
+   * - :doc:`src/runtime/transport/EventDispatchScheduler </api/javascript/runtime/transport/EventDispatchScheduler>`
+     - 7
+     - 0
+     - 3
+     - ``src/runtime/transport/EventDispatchScheduler.js``
    * - :doc:`src/runtime/transport/WebSocketTransport </api/javascript/runtime/transport/WebSocketTransport>`
      - 0
-     - 6
+     - 7
      - 5
      - ``src/runtime/transport/WebSocketTransport.js``
    * - :doc:`src/runtime/transport/channel </api/javascript/runtime/transport/channel>`
@@ -44,9 +49,9 @@
      - 0
      - ``src/runtime/transport/channel.js``
    * - :doc:`src/runtime/voice/RealtimeVoiceTransport </api/javascript/runtime/voice/RealtimeVoiceTransport>`
-     - 1
-     - 10
-     - 5
+     - 3
+     - 12
+     - 9
      - ``src/runtime/voice/RealtimeVoiceTransport.js``
 
 .. toctree::
@@ -57,6 +62,7 @@
    /api/javascript/runtime/protocol/frame
    /api/javascript/runtime/protocol/msgpack
    /api/javascript/runtime/protocol/subscriptions
+   /api/javascript/runtime/transport/EventDispatchScheduler
    /api/javascript/runtime/transport/WebSocketTransport
    /api/javascript/runtime/transport/channel
    /api/javascript/runtime/voice/RealtimeVoiceTransport

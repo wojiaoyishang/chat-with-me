@@ -1,5 +1,5 @@
 src/features/chat/page/components/MessageSummaryItem 模块
-=======================================================
+======================================================================================================================
 
 .. js:module:: src/features/chat/page/components/MessageSummaryItem
 
@@ -11,7 +11,7 @@ src/features/chat/page/components/MessageSummaryItem 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/page/components/MessageSummaryItem.jsx``
 * **模块标识**：``src/features/chat/page/components/MessageSummaryItem``
@@ -20,12 +20,12 @@ src/features/chat/page/components/MessageSummaryItem 模块
 * **局部函数与匿名回调**：3
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``@/components/ui/badge``、``@/components/ui/card``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,11 +44,11 @@ src/features/chat/page/components/MessageSummaryItem 模块
 **参数**
 
 ``{ item, selected = false, active = false, onClick, variant = 'map', indexLabel, }``
-   调用方传入的 `` item, selected = false, active = false, onClick, variant = 'map', indexLabel, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``item, selected = false, active = false, onClick, variant = 'map', indexLabel,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <Card className={\`h-full gap-0 overflow-hidden p-0 transition-colors ${config.cardClass} ${ selected ? 'ring-2 ring-primary ring-offset-2' : 'hover:border-primary/40 hover:bg-ac…``、``( <Card className={\`gap-0 overflow-hidden p-0 shadow-none transition-colors ${config.cardClass} ${ active ? 'border-primary/60 bg-primary/5' : 'hover:bg-accent/45' }\`} > <button t…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <Card className={\x60h-full gap-0 overflow-hidden p-0 transition-colors ${config.cardClass} ${ selected ? 'ring-2 ring-primary ring-offset-2' : 'hover:border-primary/40 hover:bg-ac…``、``( <Card className={\x60gap-0 overflow-hidden p-0 shadow-none transition-colors ${config.cardClass} ${ active ? 'border-primary/60 bg-primary/5' : 'hover:bg-accent/45' }\x60} > <button t…``。
 
 **主要协作调用**：``preview.includes``、``Number.isInteger``。
 

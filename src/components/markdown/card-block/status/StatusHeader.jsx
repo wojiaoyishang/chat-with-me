@@ -94,7 +94,9 @@ const StatusHeader = memo(({
         (!isFinished || isFinishingProgressVisible || justFinishedDuringRender)
     );
     const shouldFadeProgress = Boolean(hasProgress && isFinished && isFinishingProgressFading && !isFailed);
-    const visibleActions = isFinished ? [] : actions;
+    const visibleActions = isFinished
+        ? actions.filter(action => action?.allowWhenFinished)
+        : actions;
 
     const handleActionClick = (event, action) => {
         event.preventDefault();
@@ -110,6 +112,14 @@ const StatusHeader = memo(({
                 payload: {
                     taskRunId: action.taskRunId,
                     requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+                },
+            },
+            restartTask: {
+                event: 'task.restart.requested',
+                localOnly: true,
+                payload: {
+                    taskRunId: action.taskRunId,
+                    messageId: action.messageId || contextId,
                 },
             },
             cancelTask: {

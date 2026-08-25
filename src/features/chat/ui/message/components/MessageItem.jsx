@@ -15,6 +15,7 @@ import MessageContextBadges from './MessageContextBadges.jsx';
 import IgnoredContextIndicator from './IgnoredContextIndicator.jsx';
 import CompactedContextIndicator from './CompactedContextIndicator.jsx';
 import WidgetResponseMessage from './WidgetResponseMessage.jsx';
+import {normalizeAttachmentList} from '@/features/chat/attachmentVision.js';
 
 const MID_COLLAPSED_CONTENT_MAX_HEIGHT = 360;
 const MID_OVERFLOW_TOLERANCE = 18;
@@ -43,7 +44,8 @@ const MessageItem = memo(({
     const markdownRef = useRef(null);
     const midBodyRef = useRef(null);
     const displayName = msg.name || 'U';
-    const hasAttachments = msg.attachments?.length > 0;
+    const normalizedAttachments = normalizeAttachmentList(msg.attachments);
+    const hasAttachments = normalizedAttachments.length > 0;
     const hasContent = msg.content?.trim();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isMidOverflowing, setIsMidOverflowing] = useState(false);
@@ -282,7 +284,7 @@ const MessageItem = memo(({
 
                                 {hasAttachments && (
                                     <div className="w-full border rounded-md mt-3">
-                                        <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
+                                        <AttachmentShowcase attachmentsMeta={normalizedAttachments} msgMode={true}/>
                                     </div>
                                 )}
 
@@ -329,13 +331,13 @@ const MessageItem = memo(({
                     {isRight ? (
                         <div className="flex items-start gap-2 max-w-full mt-1">
                             <div className="flex-1 min-w-[150px] max-w-[calc(100%-3rem)] sm:pl-0 pl-7">
-                                <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
+                                <AttachmentShowcase attachmentsMeta={normalizedAttachments} msgMode={true}/>
                             </div>
                             {renderRightAvatar('h-10 w-10 flex-shrink-0 mt-1')}
                         </div>
                     ) : (
                         <div className="max-w-[95%] pl-7 mb-2">
-                            <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
+                            <AttachmentShowcase attachmentsMeta={normalizedAttachments} msgMode={true}/>
                         </div>
                     )}
 
@@ -350,7 +352,7 @@ const MessageItem = memo(({
                     {isRight ? (
                         <>
                             <div className="max-w-[90%] lg:max-w-[55%] ml-auto pr-10 mb-2">
-                                <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
+                                <AttachmentShowcase attachmentsMeta={normalizedAttachments} msgMode={true}/>
                             </div>
                             <TextOnlyMessageContent {...textOnlyMessageProps}/>
                         </>
@@ -358,7 +360,7 @@ const MessageItem = memo(({
                         <div className="flex flex-col items-start w-full">
                             {renderLeftAvatarName()}
                             <div className="max-w-[95%] pl-7 mb-2">
-                                <AttachmentShowcase attachmentsMeta={msg.attachments} msgMode={true}/>
+                                <AttachmentShowcase attachmentsMeta={normalizedAttachments} msgMode={true}/>
                             </div>
                             <TextOnlyMessageContent {...textOnlyMessageProps}/>
                         </div>

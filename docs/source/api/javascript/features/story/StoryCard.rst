@@ -1,5 +1,5 @@
 src/features/story/StoryCard 模块
-===============================
+================================================================================
 
 .. js:module:: src/features/story/StoryCard
 
@@ -11,7 +11,7 @@ src/features/story/StoryCard 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/story/StoryCard.jsx``
 * **模块标识**：``src/features/story/StoryCard``
@@ -20,12 +20,12 @@ src/features/story/StoryCard 模块
 * **局部函数与匿名回调**：13
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``react-i18next``、``@/lib/apiClient.js``、``@/config.js``、``@/context/useEventStore.jsx``、``@/lib/virtualUrl.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:406:524:FUNCTION
 
@@ -42,12 +42,12 @@ src/features/story/StoryCard 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``JSON.parse(String(content \|\| '{}'))``、``{}``。
+   根据执行分支返回结果；代表性返回表达式为 ``JSON.parse(String(content || '{}'))``、``{}``。
 
    **主要协作调用**：``JSON.parse``、``String``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -234,7 +234,7 @@ src/features/story/StoryCard 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``undefined``、``onEvent({event: 'story.*', conversationId, includeGlobal: true}).then(({event, payload}) => { const value = payload?.value \|\| {}; const nextStory = value.story \|\| value; if (Numbe…``。
+根据执行分支返回结果；代表性返回表达式为 ``undefined``、``onEvent({event: 'story.*', conversationId, includeGlobal: true}).then(({event, payload}) => { const value = payload?.value || {}; const nextStory = value.story || value; if (Numbe…``。
 
 **副作用**
 

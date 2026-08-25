@@ -1,5 +1,5 @@
 src/features/chat/ui/message/components/BranchMessageSelectorDialog 模块
-======================================================================
+====================================================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/components/BranchMessageSelectorDialog
 
@@ -11,7 +11,7 @@ src/features/chat/ui/message/components/BranchMessageSelectorDialog 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/components/BranchMessageSelectorDialog.jsx``
 * **模块标识**：``src/features/chat/ui/message/components/BranchMessageSelectorDialog``
@@ -20,12 +20,12 @@ src/features/chat/ui/message/components/BranchMessageSelectorDialog 模块
 * **局部函数与匿名回调**：11
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``@/components/ui/button``、``@/components/ui/card``、``@/components/ui/popover``、``@/features/chat/page/components/MessageSummaryItem.jsx``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,7 +44,7 @@ src/features/chat/ui/message/components/BranchMessageSelectorDialog 模块
 **参数**
 
 ``{ open, conversationId, parentMessageId, currentMessageId, onClose, onSelect, t, }``
-   调用方传入的 `` open, conversationId, parentMessageId, currentMessageId, onClose, onSelect, t, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``open, conversationId, parentMessageId, currentMessageId, onClose, onSelect, t,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -172,7 +172,7 @@ src/features/chat/ui/message/components/BranchMessageSelectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``listRef.current?.querySelector(\`[data-branch-message-id="${escaped}"]\`)?.scrollIntoView``、``listRef.current?.querySelector``。
+**主要协作调用**：``listRef.current?.querySelector(\x60[data-branch-message-id="${escaped}"]\x60)?.scrollIntoView``、``listRef.current?.querySelector``。
 
 .. CWM-AST-FUNCTION src/features/chat/ui/message/components/BranchMessageSelectorDialog.jsx:3278:4217:FUNCTION
 

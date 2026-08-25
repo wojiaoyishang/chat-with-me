@@ -1,5 +1,5 @@
 src/components/markdown/MarkdownRenderer 模块
-===========================================
+==============================================================================================
 
 .. js:module:: src/components/markdown/MarkdownRenderer
 
@@ -11,7 +11,7 @@ src/components/markdown/MarkdownRenderer 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/MarkdownRenderer.jsx``
 * **模块标识**：``src/components/markdown/MarkdownRenderer``
@@ -20,12 +20,12 @@ src/components/markdown/MarkdownRenderer 模块
 * **局部函数与匿名回调**：42
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-markdown``、``remark-gfm``、``remark-math``、``rehype-katex``、``./remarkDirectiveToComponent.js``、``./CodeBlock.jsx``、``./card-block/CardBlock.jsx``、``@/features/chat/ui/message/components/ReplacementContextBadge.jsx``、``./replacementProtocol.js``、``katex/dist/katex.min.css``、``@/lib/virtualUrl.js``、``@/components/modal/universalModal.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:1386:1530:FUNCTION
 
@@ -232,9 +232,9 @@ src/components/markdown/MarkdownRenderer 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``true``、``false``、``String(attributes.type \|\| '').trim() === 'replace'``。
+   根据执行分支返回结果；代表性返回表达式为 ``true``、``false``、``String(attributes.type || '').trim() === 'replace'``。
 
-   **主要协作调用**：``String(attributes.type \|\| '').trim``、``String``。
+   **主要协作调用**：``String(attributes.type || '').trim``、``String``。
 
 .. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:5549:7024:FUNCTION
 
@@ -323,7 +323,7 @@ src/components/markdown/MarkdownRenderer 模块
    **参数**
 
    ``{ contextId = '', conversationId = null, replacementRef, depth = 0, maxDepth = 10, visitedIds = [],…``
-      调用方传入的 `` contextId = '', conversationId = null, replacementRef, depth = 0, maxDepth = 10, visitedIds = ,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``contextId = '', conversationId = null, replacementRef, depth = 0, maxDepth = 10, visitedIds = ,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -342,7 +342,7 @@ src/components/markdown/MarkdownRenderer 模块
    **参数**
 
    ``{ contextId = '', conversationId = null, content, replacement = {}, depth = 0, maxDepth = 10, visit…``
-      调用方传入的 `` contextId = '', conversationId = null, content, replacement = , depth = 0, maxDepth = 10, visit…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``contextId = '', conversationId = null, content, replacement = , depth = 0, maxDepth = 10, visit…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -373,7 +373,7 @@ src/components/markdown/MarkdownRenderer 模块
    根据执行分支返回结果；代表性返回表达式为 ``true``、``false``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -396,7 +396,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``name.startsWith(tokenBody) \|\| tokenBody === name \|\| tokenBody.startsWith(\`${name} \`)``。
+根据执行分支返回结果；代表性返回表达式为 ``name.startsWith(tokenBody) || tokenBody === name || tokenBody.startsWith(\x60${name} \x60)``。
 
 **主要协作调用**：``name.startsWith``、``tokenBody.startsWith``。
 
@@ -590,7 +590,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``replacementRef?.current \|\| {}``。
+根据执行分支返回结果；代表性返回表达式为 ``replacementRef?.current || {}``。
 
 .. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:9546:10138:FUNCTION
 
@@ -873,9 +873,9 @@ src/components/markdown/MarkdownRenderer 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <code className="bg-gray-100 px-1 py-0.5 rounded-md text-xs font-mono text-gray-800" {...props} > {children} </code> )``、``( <CodeBlock codeString={String(children \|\| '').replace(/\n$/, '')} language={language} /> )``。
+根据执行分支返回结果；代表性返回表达式为 ``( <code className="bg-gray-100 px-1 py-0.5 rounded-md text-xs font-mono text-gray-800" {...props} > {children} </code> )``、``( <CodeBlock codeString={String(children || '').replace(/\n$/, '')} language={language} /> )``。
 
-**主要协作调用**：``/language-(.+)/.exec``、``String(children \|\| '').replace``、``String``。
+**主要协作调用**：``/language-(.+)/.exec``、``String(children || '').replace``、``String``。
 
 .. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:12717:13009:FUNCTION
 
@@ -1043,7 +1043,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className="block w-full clear-both" data-tts-ignore="true"> <CardBlock id="" type={tokenType} content="" contextId={contextId} conversationId={conversationId} replacement={…``、``null``、``( <div className="block w-full clear-both" data-tts-ignore="true"> <CardBlock id={finalId} type="error" content={\`cardReplace 出现循环引用，id: ${finalId}\`} contextId={contextId} convers…``、``( <div className="block w-full clear-both" data-tts-ignore="true"> <CardBlock id={finalId} type="error" content={\`cardReplace 嵌套过深，id: ${finalId}\`} contextId={contextId} conversat…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className="block w-full clear-both" data-tts-ignore="true"> <CardBlock id="" type={tokenType} content="" contextId={contextId} conversationId={conversationId} replacement={…``、``null``、``( <div className="block w-full clear-both" data-tts-ignore="true"> <CardBlock id={finalId} type="error" content={\x60cardReplace 出现循环引用，id: ${finalId}\x60} contextId={contextId} convers…``、``( <div className="block w-full clear-both" data-tts-ignore="true"> <CardBlock id={finalId} type="error" content={\x60cardReplace 嵌套过深，id: ${finalId}\x60} contextId={contextId} conversat…``。
 
 **主要协作调用**：``String``、``getCurrentReplacement``、``visitedIds.includes``、``console.error``、``normalizeReplacementEntry``。
 

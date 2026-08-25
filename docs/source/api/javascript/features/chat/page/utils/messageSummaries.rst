@@ -1,5 +1,5 @@
 src/features/chat/page/utils/messageSummaries 模块
-================================================
+========================================================================================================
 
 .. js:module:: src/features/chat/page/utils/messageSummaries
 
@@ -11,7 +11,7 @@ Utilities for keeping the lightweight message-overview cache authoritative.
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/page/utils/messageSummaries.js``
 * **模块标识**：``src/features/chat/page/utils/messageSummaries``
@@ -20,7 +20,7 @@ Utilities for keeping the lightweight message-overview cache authoritative.
 * **局部函数与匿名回调**：4
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/page/utils/messageSummaries.js:154:277:FUNCTION
 
@@ -116,7 +116,7 @@ Utilities for keeping the lightweight message-overview cache authoritative.
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

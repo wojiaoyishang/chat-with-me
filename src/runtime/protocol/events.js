@@ -56,6 +56,7 @@ export const EventName = Object.freeze({
     TASK_CANCEL: 'task.cancel',
     TASK_INTERRUPT: 'task.interrupt',
     TASK_RESUME: 'task.resume',
+    TASK_RESTART_REQUESTED: 'task.restart.requested',
     DASHBOARD_SELECTION_CHANGE: 'dashboard.selection.change',
     VOICE_MEDIA_TICKET_REQUEST: 'voice.media_ticket.request',
     VOICE_SESSION_START: 'voice.session.start',

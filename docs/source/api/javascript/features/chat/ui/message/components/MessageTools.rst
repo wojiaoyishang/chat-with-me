@@ -1,5 +1,5 @@
 src/features/chat/ui/message/components/MessageTools 模块
-=======================================================
+======================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/components/MessageTools
 
@@ -11,7 +11,7 @@ src/features/chat/ui/message/components/MessageTools 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/components/MessageTools.jsx``
 * **模块标识**：``src/features/chat/ui/message/components/MessageTools``
@@ -20,12 +20,12 @@ src/features/chat/ui/message/components/MessageTools 模块
 * **局部函数与匿名回调**：11
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-i18next``、``lucide-react``、``@/components/ui/tooltip``、``../utils/messageActions.js``、``../utils/speechContent.js``、``./TooltipInfo.jsx``、``@/components/modal/universalModal.js``、``@/config.js``、``@/context/userContext.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageTools.jsx:695:757:FUNCTION
 
@@ -47,7 +47,7 @@ src/features/chat/ui/message/components/MessageTools 模块
    **主要协作调用**：``['loading', 'playing', 'paused'].includes``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

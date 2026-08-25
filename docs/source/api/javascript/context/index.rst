@@ -41,7 +41,7 @@
    * - :doc:`src/context/useEventStore </api/javascript/context/useEventStore>`
      - 11
      - 0
-     - 14
+     - 16
      - ``src/context/useEventStore.jsx``
    * - :doc:`src/context/userContext </api/javascript/context/userContext>`
      - 0

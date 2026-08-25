@@ -1,5 +1,5 @@
 src/components/markdown/card-block/widget/WidgetHost 模块
-=======================================================
+======================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/widget/WidgetHost
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/widget/WidgetHost.jsx``
 * **模块标识**：``src/components/markdown/card-block/widget/WidgetHost``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 * **局部函数与匿名回调**：134
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-dom``、``framer-motion``、``lucide-react``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``@/lib/tools.jsx``、``@/components/modal/universalModal.js``、``@/lib/virtualUrl.js``、``@/features/chat/widgets/WidgetPresentationContext.jsx``、``@/lib/browserHistoryLayers.js``、``./CanvasCardDeck.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:869:1058:FUNCTION
 
@@ -99,7 +99,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``''``、``resolvedCwm \|\| ''``、``raw``。
+   根据执行分支返回结果；代表性返回表达式为 ``''``、``resolvedCwm || ''``、``raw``。
 
    **主要协作调用**：``value.trim``、``resolveCwmUrl``、``/^https:\/\//i.test``。
 
@@ -196,9 +196,9 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <div className={\`relative aspect-[5/7] w-full overflow-hidden rounded-[22px] border border-black/[0.06] bg-neutral-100 shadow-[0_18px_50px_rgba(15,23,42,0.16),0_3px_10px_rgba(15…``、``( <div className={\`relative flex aspect-[5/7] w-full flex-col items-center justify-center overflow-hidden rounded-[22px] border border-black/[0.07] bg-[radial-gradient(circle_at_5…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60relative aspect-[5/7] w-full overflow-hidden rounded-[22px] border border-black/[0.06] bg-neutral-100 shadow-[0_18px_50px_rgba(15,23,42,0.16),0_3px_10px_rgba(15…``、``( <div className={\x60relative flex aspect-[5/7] w-full flex-col items-center justify-center overflow-hidden rounded-[22px] border border-black/[0.07] bg-[radial-gradient(circle_at_5…``。
 
-   **主要协作调用**：``resolveWidgetImageUrl``、``useState``、``useEffect``、``Array.isArray``、``card.badges.slice``、``['auto', 'poster', 'text'].includes``、``String(card?.style \|\| '').toLowerCase``、``String``、``String(card.style).toLowerCase``、``Boolean``、``String(card?.imagePosition \|\| 'center').toLowerCase``、``badges.map``。
+   **主要协作调用**：``resolveWidgetImageUrl``、``useState``、``useEffect``、``Array.isArray``、``card.badges.slice``、``['auto', 'poster', 'text'].includes``、``String(card?.style || '').toLowerCase``、``String``、``String(card.style).toLowerCase``、``Boolean``、``String(card?.imagePosition || 'center').toLowerCase``、``badges.map``。
 
    **内部回调数量**：8。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -305,7 +305,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``signedOffset >= REVIEW_COMMIT_DISTANCE \|\| (signedOffset >= REVIEW_FLICK_MIN_DISTANCE && signedVelocity >= REVIEW_FLICK_VELOCITY)``。
+   根据执行分支返回结果；代表性返回表达式为 ``signedOffset >= REVIEW_COMMIT_DISTANCE || (signedOffset >= REVIEW_FLICK_MIN_DISTANCE && signedVelocity >= REVIEW_FLICK_VELOCITY)``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:16086:16431:FUNCTION
 
@@ -341,7 +341,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
    **参数**
 
    ``{ side, offsetX, velocityX, originBox, oppositeBox, allowDirectOpposite = false, preview = false, }``
-      调用方传入的 `` side, offsetX, velocityX, originBox, oppositeBox, allowDirectOpposite = false, preview = false, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``side, offsetX, velocityX, originBox, oppositeBox, allowDirectOpposite = false, preview = false,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -389,7 +389,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-   **主要协作调用**：``window.getComputedStyle``、``/(auto\|scroll\|overlay)/.test``、``found.push``、``found.includes``。
+   **主要协作调用**：``window.getComputedStyle``、``/(auto|scroll|overlay)/.test``、``found.push``、``found.includes``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:19089:20768:FUNCTION
 
@@ -429,7 +429,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
       调用方传入的 ``element`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    ``{ fromX = 0, fromY = 0, toX = 0, toY = 0, fromScale = 1, toScale = 1, fromRotate = 0, toRotate = 0,…``（默认值 ``{}``）
-      调用方传入的 `` fromX = 0, fromY = 0, toX = 0, toY = 0, fromScale = 1, toScale = 1, fromRotate = 0, toRotate = 0,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``fromX = 0, fromY = 0, toX = 0, toY = 0, fromScale = 1, toScale = 1, fromRotate = 0, toRotate = 0,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -490,7 +490,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
    **参数**
 
    ``{ side, label, count, entries, topCard, active, onClick, onReverse, onReverseTargetChange, returnin…``
-      调用方传入的 `` side, label, count, entries, topCard, active, onClick, onReverse, onReverseTargetChange, returnin…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``side, label, count, entries, topCard, active, onClick, onReverse, onReverseTargetChange, returnin…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -536,7 +536,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<CompletedWidget widget={widget}/>``、``( <div className="relative w-full overflow-hidden" style={{ height: deckViewportHeight ? \`${deckViewportHeight}px\` : undefined, overflow: 'clip', contain: 'layout paint', }} > <An…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<CompletedWidget widget={widget}/>``、``( <div className="relative w-full overflow-hidden" style={{ height: deckViewportHeight ? \x60${deckViewportHeight}px\x60 : undefined, overflow: 'clip', contain: 'layout paint', }} > <An…``。
 
    **副作用**
 
@@ -619,7 +619,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<CompletedWidget widget={widget}/>``、``( <div className="space-y-3"> <Field value={value} onChange={(event) => setValue(event.target.value)} placeholder={descriptor.placeholder \|\| ''} disabled={!interactive \|\| busy} ro…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<CompletedWidget widget={widget}/>``、``( <div className="space-y-3"> <Field value={value} onChange={(event) => setValue(event.target.value)} placeholder={descriptor.placeholder || ''} disabled={!interactive || busy} ro…``。
 
    **主要协作调用**：``useState``、``useEffect``、``String(value).trim``、``String``。
 
@@ -661,12 +661,12 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<CompletedWidget widget={widget}/>``、``( <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"> <button type="button" disabled={!interactive \|\| busy} onClick={() => void act('cancel', {})} className="…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<CompletedWidget widget={widget}/>``、``( <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"> <button type="button" disabled={!interactive || busy} onClick={() => void act('cancel', {})} className="…``。
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -2363,7 +2363,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <motion.div key={\`review-stack-${card.id}\`} initial={{y: 30, scale: 0.9, opacity: 0}} animate={{ x: 0, y: depth * 13, scale: 1 - depth * 0.042, rotate: depth % 2 ? -1.4 : 1.4, o…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <motion.div key={\x60review-stack-${card.id}\x60} initial={{y: 30, scale: 0.9, opacity: 0}} animate={{ x: 0, y: depth * 13, scale: 1 - depth * 0.042, rotate: depth % 2 ? -1.4 : 1.4, o…``。
 
 **主要协作调用**：``reviewCardsForStack.findIndex``、``Math.max``。
 
@@ -2531,7 +2531,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <motion.div key={\`deck-card-${cardId}\`} ref={isFront ? cardRef : null} initial={{y: 34, scale: 0.88, rotate: 0.7, opacity: 0}} animate={attractedPose} exit={{y: 24, scale: 0.9,…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <motion.div key={\x60deck-card-${cardId}\x60} ref={isFront ? cardRef : null} initial={{y: 34, scale: 0.88, rotate: 0.7, opacity: 0}} animate={attractedPose} exit={{y: 24, scale: 0.9,…``。
 
 **主要协作调用**：``String``、``getDeckPose``。
 
@@ -2791,7 +2791,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={String(card?.id \|\| index)} className="absolute left-1/2 top-1/2 aspect-[5/7] w-[82px] overflow-hidden rounded-xl border border-white/60 bg-white/80 shadow-md" style={{…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={String(card?.id || index)} className="absolute left-1/2 top-1/2 aspect-[5/7] w-[82px] overflow-hidden rounded-xl border border-white/60 bg-white/80 shadow-md" style={{…``。
 
 **主要协作调用**：``resolveWidgetImageUrl``、``String``。
 
@@ -3138,7 +3138,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <button key={\`${optionValue}-${index}\`} type="button" disabled={!interactive \|\| busy} onClick={() => toggle(optionValue)} className={\`flex w-full items-start gap-3 rounded-xl bo…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <button key={\x60${optionValue}-${index}\x60} type="button" disabled={!interactive || busy} onClick={() => toggle(optionValue)} className={\x60flex w-full items-start gap-3 rounded-xl bo…``。
 
 **主要协作调用**：``getOptionValue``、``Array.isArray``、``value.includes``、``getOptionLabel``。
 
@@ -3552,7 +3552,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``data?.widget \|\| null``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``data?.widget || null``。
 
 **副作用**
 
@@ -3579,7 +3579,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <Frame title={descriptor.title \|\| descriptor.question \|\| descriptor.prompt} description={descriptor.description \|\| descriptor.prompt} className={className} footer={busy && widge…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <Frame title={descriptor.title || descriptor.question || descriptor.prompt} description={descriptor.description || descriptor.prompt} className={className} footer={busy && widge…``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:100119:100153:FUNCTION
 

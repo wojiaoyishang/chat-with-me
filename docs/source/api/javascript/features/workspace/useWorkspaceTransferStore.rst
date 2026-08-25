@@ -1,5 +1,5 @@
 src/features/workspace/useWorkspaceTransferStore 模块
-===================================================
+==============================================================================================================
 
 .. js:module:: src/features/workspace/useWorkspaceTransferStore
 
@@ -11,7 +11,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/workspace/useWorkspaceTransferStore.js``
 * **模块标识**：``src/features/workspace/useWorkspaceTransferStore``
@@ -20,12 +20,12 @@ src/features/workspace/useWorkspaceTransferStore 模块
 * **局部函数与匿名回调**：5
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``zustand``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:102:474:FUNCTION
 
@@ -42,7 +42,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``{ ...value, artifactId: value.artifactId \|\| value.serverId \|\| null, progress: Number.isFinite(Number(value.progress)) ? Math.max(0, Math.min(1, Number(value.progress))) : value.st…``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``{ ...value, artifactId: value.artifactId || value.serverId || null, progress: Number.isFinite(Number(value.progress)) ? Math.max(0, Math.min(1, Number(value.progress))) : value.st…``。
 
    **主要协作调用**：``Number.isFinite``、``Number``、``Math.max``、``Math.min``。
 
@@ -101,7 +101,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``transferId ? state.transfersById[transferId] \|\| null : null``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``transferId ? state.transfersById[transferId] || null : null``。
 
 .. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2285:2492:FUNCTION
 
@@ -121,14 +121,14 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``EMPTY_TRANSFERS``、``(state.taskTransferIds[taskRunId] \|\| EMPTY_TRANSFERS) .map((id) => state.transfersById[id]) .filter(Boolean)``。
+   根据执行分支返回结果；代表性返回表达式为 ``EMPTY_TRANSFERS``、``(state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map((id) => state.transfersById[id]) .filter(Boolean)``。
 
-   **主要协作调用**：``(state.taskTransferIds[taskRunId] \|\| EMPTY_TRANSFERS) .map((id) => state.transfersById[id]) .filter``、``(state.taskTransferIds[taskRunId] \|\| EMPTY_TRANSFERS) .map``。
+   **主要协作调用**：``(state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map((id) => state.transfersById[id]) .filter``、``(state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -235,13 +235,13 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
 .. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2432:2463:FUNCTION
 
-.. rubric:: ``(state.taskTransferIds[taskRunId] \|\| EMPTY_TRANSFERS) .map callback @ 68``
+.. rubric:: ``(state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map callback @ 68``
 
 .. code-block:: javascript
 
    (state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map callback @ 68(id)
 
-作为 ``(state.taskTransferIds[taskRunId] \|\| EMPTY_TRANSFERS) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``68``—``68`` 行；所属函数 ``selectTaskTransfers``。
 

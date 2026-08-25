@@ -1,5 +1,5 @@
 src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
-==============================================================
+====================================================================================================================================
 
 .. js:module:: src/features/chat/ui/chatbox/components/ExtraToolsMenuItems
 
@@ -11,7 +11,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx``
 * **模块标识**：``src/features/chat/ui/chatbox/components/ExtraToolsMenuItems``
@@ -20,12 +20,12 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 * **局部函数与匿名回调**：29
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``@/components/ui/dropdown-menu``、``@/lib/virtualUrl.js``、``@/lib/tools.jsx``、``../utils/toolState``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:1610:1774:FUNCTION
 
@@ -55,7 +55,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
    **参数**
 
    ``{ toolsStatus, setToolsStatus, runtimeToolPermissions = {}, onToolPermissionChange, highZClass, t,…``
-      调用方传入的 `` toolsStatus, setToolsStatus, runtimeToolPermissions = , onToolPermissionChange, highZClass, t,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``toolsStatus, setToolsStatus, runtimeToolPermissions = , onToolPermissionChange, highZClass, t,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -66,7 +66,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -214,7 +214,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``items.map((item, index) => { if (item.type === 'label') { return ( <DropdownMenuLabel key={\`label-${index}\`} className={\`px-2 py-1.5 text-sm font-semibold ${item.disabled ? 'text-…``。
+根据执行分支返回结果；代表性返回表达式为 ``items.map((item, index) => { if (item.type === 'label') { return ( <DropdownMenuLabel key={\x60label-${index}\x60} className={\x60px-2 py-1.5 text-sm font-semibold ${item.disabled ? 'text-…``。
 
 **主要协作调用**：``items.map``。
 
@@ -242,7 +242,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuLabel key={\`label-${index}\`} className={\`px-2 py-1.5 text-sm font-semibold ${item.disabled ? 'text-gray-400 cursor-not-allowed' : ''}\`} > {t(item.text)} </DropdownM…``、``<DropdownMenuSeparator key={\`sep-${index}\`}/>``、``( <div key={\`group-${item.name \|\| index}\`} className="py-0.5"> <button type="button" disabled={isDisabled} aria-expanded={isOpen} onClick={() => !isDisabled && toggleMobileSection…``、``( <DropdownMenuSub key={\`group-${item.name \|\| index}\`}> <DropdownMenuSubTrigger disabled={isDisabled} className={\`flex items-center px-2 py-1.5 text-sm cursor-pointer ${ isDisable…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuLabel key={\x60label-${index}\x60} className={\x60px-2 py-1.5 text-sm font-semibold ${item.disabled ? 'text-gray-400 cursor-not-allowed' : ''}\x60} > {t(item.text)} </DropdownM…``、``<DropdownMenuSeparator key={\x60sep-${index}\x60}/>``、``( <div key={\x60group-${item.name || index}\x60} className="py-0.5"> <button type="button" disabled={isDisabled} aria-expanded={isOpen} onClick={() => !isDisabled && toggleMobileSection…``、``( <DropdownMenuSub key={\x60group-${item.name || index}\x60}> <DropdownMenuSubTrigger disabled={isDisabled} className={\x60flex items-center px-2 py-1.5 text-sm cursor-pointer ${ isDisable…``。
 
 **主要协作调用**：``t``、``collectTogglePaths``、``togglePaths.map``、``getGroupCheckState``、``getMobileSectionScope``、``currentPath.join``、``isMobileSectionOpen``、``renderIcon``、``getMobileAccordionPanelClass``、``renderMenuItems``、``getNestedValue``、``['allow', 'deny', 'ask'].includes``。
 
@@ -454,7 +454,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <button key={value} type="button" title={label} aria-label={\`${t(item.text)}：${label}\`} aria-pressed={selected} onClick={(event) => setMode(event, value)} className={\`flex h-7 m…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <button key={value} type="button" title={label} aria-label={\x60${t(item.text)}：${label}\x60} aria-pressed={selected} onClick={(event) => setMode(event, value)} className={\x60flex h-7 m…``。
 
 **主要协作调用**：``t``。
 
@@ -597,7 +597,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuItem key={\`radio-${item.name}-${child.name}\`} onSelect={(e) => e.preventDefault()} onClick={(e) => { if (isDisabled \|\| childIsDisabled) { e.preventDefault(); return…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuItem key={\x60radio-${item.name}-${child.name}\x60} onSelect={(e) => e.preventDefault()} onClick={(e) => { if (isDisabled || childIsDisabled) { e.preventDefault(); return…``。
 
 **主要协作调用**：``renderIcon``、``t``。
 

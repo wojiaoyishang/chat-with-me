@@ -1,5 +1,5 @@
 src/pages/ChatWithEditor 模块
-===========================
+================================================================================
 
 .. js:module:: src/pages/ChatWithEditor
 
@@ -11,7 +11,7 @@ src/pages/ChatWithEditor 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/pages/ChatWithEditor.jsx``
 * **模块标识**：``src/pages/ChatWithEditor``
@@ -20,12 +20,12 @@ src/pages/ChatWithEditor 模块
 * **局部函数与匿名回调**：15
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@/pages/ChatPage.jsx``、``@/components/editor/CollaboraOnlineEditor.jsx``、``@/lib/tools.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:267:10708:FUNCTION
 
@@ -38,11 +38,11 @@ src/pages/ChatWithEditor 模块
    **参数**
 
    ``{ url, conversationId, documentId, setDocModifiedStatus, onNewConversationId, settingsRefreshVersio…``
-      调用方传入的 `` url, conversationId, documentId, setDocModifiedStatus, onNewConversationId, settingsRefreshVersio…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``url, conversationId, documentId, setDocModifiedStatus, onNewConversationId, settingsRefreshVersio…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <div ref={containerRef} className={\`flex h-screen w-full bg-gray-50 overflow-hidden relative transition-opacity duration-700 ease-in ${isMounted ? 'opacity-100' : 'opacity-0'}\`}…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div ref={containerRef} className={\x60flex h-screen w-full bg-gray-50 overflow-hidden relative transition-opacity duration-700 ease-in ${isMounted ? 'opacity-100' : 'opacity-0'}\x60}…``。
 
    **副作用**
 
@@ -54,7 +54,7 @@ src/pages/ChatWithEditor 模块
    **内部回调数量**：11。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -76,7 +76,7 @@ src/pages/ChatWithEditor 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``0``、``parseFloat(sidebarWidth) \|\| 0``。
+根据执行分支返回结果；代表性返回表达式为 ``0``、``parseFloat(sidebarWidth) || 0``。
 
 **主要协作调用**：``getComputedStyle``、``styles.getPropertyValue``、``parseFloat``。
 
@@ -380,7 +380,7 @@ src/pages/ChatWithEditor 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className={\`relative flex-shrink-0 flex items-center justify-center transition-all duration-200 border-gray-300 ${showWideBar ? 'w-8 bg-gray-100 hover:bg-gray-200 cursor-po…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60relative flex-shrink-0 flex items-center justify-center transition-all duration-200 border-gray-300 ${showWideBar ? 'w-8 bg-gray-100 hover:bg-gray-200 cursor-po…``。
 
 .. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:7890:8234:FUNCTION
 

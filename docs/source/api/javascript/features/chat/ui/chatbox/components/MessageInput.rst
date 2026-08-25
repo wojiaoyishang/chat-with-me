@@ -1,5 +1,5 @@
 src/features/chat/ui/chatbox/components/MessageInput 模块
-=======================================================
+======================================================================================================================
 
 .. js:module:: src/features/chat/ui/chatbox/components/MessageInput
 
@@ -11,7 +11,7 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/chatbox/components/MessageInput.jsx``
 * **模块标识**：``src/features/chat/ui/chatbox/components/MessageInput``
@@ -20,12 +20,12 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 * **局部函数与匿名回调**：22
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@/components/ui/ThreeDotLoading.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:312:409:FUNCTION
 
@@ -69,7 +69,7 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
    **主要协作调用**：``window.matchMedia``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -88,11 +88,11 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 **参数**
 
 ``{ value, onChange, onPaste, onKeyDown, onInputActivity, onFocus, onBlur, isReadOnly, placeholder, t…``
-   调用方传入的 `` value, onChange, onPaste, onKeyDown, onInputActivity, onFocus, onBlur, isReadOnly, placeholder, t…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``value, onChange, onPaste, onKeyDown, onInputActivity, onFocus, onBlur, isReadOnly, placeholder, t…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className={\`flex min-h-[48px] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3\`} role="status" aria-live="polite" aria-label={voiceRecogni…``、``( <div className={\`flex min-h-[48px] w-full items-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3\`} role="status" aria-live="polite" aria-label={voiceRecordingLabel} > <div…``、``( <textarea ref={textareaRef} value={value} onChange={handleChange} onPaste={handlePaste} onKeyDown={onKeyDown} onBeforeInput={handleInputActivity} onCompositionStart={handleInput…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60flex min-h-[48px] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3\x60} role="status" aria-live="polite" aria-label={voiceRecogni…``、``( <div className={\x60flex min-h-[48px] w-full items-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3\x60} role="status" aria-live="polite" aria-label={voiceRecordingLabel} > <div…``、``( <textarea ref={textareaRef} value={value} onChange={handleChange} onPaste={handlePaste} onKeyDown={onKeyDown} onBeforeInput={handleInputActivity} onCompositionStart={handleInput…``。
 
 **副作用**
 
@@ -570,7 +570,7 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <span key={index} className="block flex-1 rounded-full bg-gray-700" style={{ height: \`${height}px\`, opacity, }} /> )``。
+根据执行分支返回结果；代表性返回表达式为 ``( <span key={index} className="block flex-1 rounded-full bg-gray-700" style={{ height: \x60${height}px\x60, opacity, }} /> )``。
 
 **主要协作调用**：``Math.max``、``Math.min``、``Number``。
 

@@ -1,5 +1,5 @@
 src/features/chat/ui/chatbox/components/FullscreenEditorModal 模块
-================================================================
+========================================================================================================================================
 
 .. js:module:: src/features/chat/ui/chatbox/components/FullscreenEditorModal
 
@@ -11,7 +11,7 @@ src/features/chat/ui/chatbox/components/FullscreenEditorModal 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/chatbox/components/FullscreenEditorModal.jsx``
 * **模块标识**：``src/features/chat/ui/chatbox/components/FullscreenEditorModal``
@@ -20,12 +20,12 @@ src/features/chat/ui/chatbox/components/FullscreenEditorModal 模块
 * **局部函数与匿名回调**：9
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-dom``、``framer-motion``、``lucide-react``、``@/components/editor/SimpleMDEditor.jsx``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,11 +44,11 @@ src/features/chat/ui/chatbox/components/FullscreenEditorModal 模块
 **参数**
 
 ``{ isOpen, portalTargetRef, messageContent, setMessageContent, isReadOnly, onClose, t, }``
-   调用方传入的 `` isOpen, portalTargetRef, messageContent, setMessageContent, isReadOnly, onClose, t, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``isOpen, portalTargetRef, messageContent, setMessageContent, isReadOnly, onClose, t,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``createPortal( <div ref={dialogRef} className={\`${positionClass} inset-0 z-[100] overflow-hidden bg-white pointer-events-auto\`} role="dialog" aria-modal="true" aria-label={t('zoom_…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``createPortal( <div ref={dialogRef} className={\x60${positionClass} inset-0 z-[100] overflow-hidden bg-white pointer-events-auto\x60} role="dialog" aria-modal="true" aria-label={t('zoom_…``。
 
 **副作用**
 

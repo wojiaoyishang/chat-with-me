@@ -1,5 +1,5 @@
 src/components/markdown/CodeBlock 模块
-====================================
+================================================================================
 
 .. js:module:: src/components/markdown/CodeBlock
 
@@ -11,7 +11,7 @@ src/components/markdown/CodeBlock 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/CodeBlock.jsx``
 * **模块标识**：``src/components/markdown/CodeBlock``
@@ -20,12 +20,12 @@ src/components/markdown/CodeBlock 模块
 * **局部函数与匿名回调**：17
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``react-i18next``、``@/lib/tools.jsx``、``./CodeBlock.css``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:714:1275:FUNCTION
 
@@ -92,7 +92,7 @@ src/components/markdown/CodeBlock 模块
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -262,7 +262,7 @@ src/components/markdown/CodeBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String(language \|\| 'text').trim().toLowerCase``、``String(language \|\| 'text').trim``、``String``。
+**主要协作调用**：``String(language || 'text').trim().toLowerCase``、``String(language || 'text').trim``、``String``。
 
 .. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2377:2656:FUNCTION
 

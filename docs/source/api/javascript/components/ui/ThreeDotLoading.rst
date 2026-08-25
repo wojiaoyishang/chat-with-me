@@ -1,5 +1,5 @@
 src/components/ui/ThreeDotLoading 模块
-====================================
+================================================================================
 
 .. js:module:: src/components/ui/ThreeDotLoading
 
@@ -11,7 +11,7 @@ src/components/ui/ThreeDotLoading 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/ui/ThreeDotLoading.jsx``
 * **模块标识**：``src/components/ui/ThreeDotLoading``
@@ -20,7 +20,7 @@ src/components/ui/ThreeDotLoading 模块
 * **局部函数与匿名回调**：0
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/ui/ThreeDotLoading.jsx:0:617:FUNCTION
 
@@ -33,8 +33,8 @@ src/components/ui/ThreeDotLoading 模块
    **参数**
 
    ``{ size = 8, color = '#4f46e5' }``
-      调用方传入的 `` size = 8, color = '#4f46e5' `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``size = 8, color = '#4f46e5'`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex justify-center items-center space-x-1 p-3"> <div className="rounded-full animate-pulse" style={{ width: \`${size}px\`, height: \`${size}px\`, backgroundColor: c…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex justify-center items-center space-x-1 p-3"> <div className="rounded-full animate-pulse" style={{ width: \x60${size}px\x60, height: \x60${size}px\x60, backgroundColor: c…``。

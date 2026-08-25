@@ -7,7 +7,11 @@ import {getExpandedKey} from '../expandedStore.js';
 import useExpandedState from '../useExpandedState.js';
 import StatusBody from '../status/StatusBody.jsx';
 import StatusHeader from '../status/StatusHeader.jsx';
-import TaskMonitorWindow from './TaskMonitorWindow.jsx';
+import {
+    openTaskMonitorCard,
+    registerTaskMonitorCard,
+    useTaskMonitorStore,
+} from './useTaskMonitorStore.js';
 import {getLastLineForPreview, stripCardReplaceTokensForPreview, toSafeString} from '../utils.js';
 
 const TASK_STATUS_REGEX = /\[TASK_STATUS:([^\]\r\n]+)\]/gi;
@@ -20,6 +24,8 @@ const TASK_ERROR_REGEX = /\[TASK_ERROR:([^\]\r\n]*)\]/gi;
 const TASK_STARTED_AT_REGEX = /\[TASK_STARTED_AT:(\d+)\]/gi;
 const TASK_ENDED_AT_REGEX = /\[TASK_ENDED_AT:(\d+)\]/gi;
 const TASK_SEGMENT_DONE_REGEX = /\[TASK_SEGMENT_DONE:true\]/gi;
+const TASK_MANUAL_CANCELLED_REGEX = /\[TASK_MANUAL_CANCELLED:true\]/gi;
+const TASK_RESTARTED_FROM_REGEX = /\[TASK_RESTARTED_FROM:([^\]\r\n]+)\]/gi;
 const DONE_REGEX = /\[DONE\]/gi;
 
 const getLastMarkerValue = (content, regex, fallback = '') => {
@@ -49,7 +55,6 @@ const TaskModeWidget = memo(({
 }) => {
     const {t} = useTranslation();
     const [now, setNow] = useState(() => Date.now());
-    const [monitorOpen, setMonitorOpen] = useState(false);
     const expandedKey = useMemo(() => getExpandedKey(contextId, id, type), [contextId, id, type]);
     useExpandedState(expandedKey, false);
 
@@ -67,6 +72,9 @@ const TaskModeWidget = memo(({
         TASK_RECOVERABLE_REGEX.lastIndex = 0;
         const segmentDone = TASK_SEGMENT_DONE_REGEX.test(safeContent);
         TASK_SEGMENT_DONE_REGEX.lastIndex = 0;
+        const manualCancelled = TASK_MANUAL_CANCELLED_REGEX.test(safeContent);
+        TASK_MANUAL_CANCELLED_REGEX.lastIndex = 0;
+        const restartedFromTaskRunId = getLastMarkerValue(safeContent, TASK_RESTARTED_FROM_REGEX);
         const hasDoneMarker = DONE_REGEX.test(safeContent);
         DONE_REGEX.lastIndex = 0;
 
@@ -81,6 +89,8 @@ const TaskModeWidget = memo(({
             .replace(TASK_STARTED_AT_REGEX, '')
             .replace(TASK_ENDED_AT_REGEX, '')
             .replace(TASK_SEGMENT_DONE_REGEX, '')
+            .replace(TASK_MANUAL_CANCELLED_REGEX, '')
+            .replace(TASK_RESTARTED_FROM_REGEX, '')
             .replace(DONE_REGEX, '')
             .trim();
 
@@ -93,6 +103,15 @@ const TaskModeWidget = memo(({
                 name: t('task_mode_resume', '继续任务'),
                 command: 'resumeTask',
                 taskRunId,
+            });
+        }
+        if (manualCancelled && status === 'cancelled' && taskRunId) {
+            actions.push({
+                name: t('task_mode_restart_previous', '继续之前任务'),
+                command: 'restartTask',
+                taskRunId,
+                messageId: contextId,
+                allowWhenFinished: true,
             });
         }
         if (!isFinished && taskRunId) {
@@ -112,6 +131,8 @@ const TaskModeWidget = memo(({
             endedAt,
             isFailed,
             isFinished,
+            manualCancelled,
+            restartedFromTaskRunId,
             segmentDone,
             startedAt,
             status,
@@ -123,7 +144,7 @@ const TaskModeWidget = memo(({
             workspaceId,
             workspaceName,
         };
-    }, [content, t]);
+    }, [content, contextId, t]);
 
     useEffect(() => {
         if (!parsed.startedAt || parsed.endedAt || parsed.isFinished) {
@@ -145,15 +166,64 @@ const TaskModeWidget = memo(({
                 ? 'text-sky-600'
                 : 'text-blue-600';
 
+    const monitorSnapshot = useMemo(() => ({
+        actions: parsed.actions,
+        cardId: String(id || '').trim(),
+        cleanContent: parsed.cleanContent,
+        conversationId: String(conversationId || '').trim(),
+        elapsedText,
+        error: parsed.error,
+        isFailed: parsed.isFailed,
+        isFinished: parsed.isFinished,
+        renderMarkdown,
+        status: parsed.status,
+        taskRunId: parsed.taskRunId,
+        messageId: contextId,
+        manualCancelled: parsed.manualCancelled,
+        restartedFromTaskRunId: parsed.restartedFromTaskRunId,
+        title: parsed.title,
+        workspaceName: parsed.workspaceName,
+    }), [
+        conversationId,
+        contextId,
+        elapsedText,
+        id,
+        parsed.actions,
+        parsed.cleanContent,
+        parsed.error,
+        parsed.isFailed,
+        parsed.isFinished,
+        parsed.status,
+        parsed.taskRunId,
+        parsed.manualCancelled,
+        parsed.restartedFromTaskRunId,
+        parsed.title,
+        parsed.workspaceName,
+        renderMarkdown,
+    ]);
+
+    useEffect(() => {
+        if (!monitorSnapshot.conversationId || !monitorSnapshot.cardId) return;
+        registerTaskMonitorCard(monitorSnapshot);
+    }, [monitorSnapshot]);
+
+    const monitorActive = useTaskMonitorStore(state => {
+        const session = state.sessions[monitorSnapshot.conversationId];
+        return Boolean(
+            session?.isOpen
+            && session.activeCardId === monitorSnapshot.cardId
+        );
+    });
+
     const monitorButton = (
         <button
             type="button"
             onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                setMonitorOpen(true);
+                openTaskMonitorCard(monitorSnapshot);
             }}
-            className={`rounded-md p-1.5 transition-colors ${monitorOpen ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'}`}
+            className={`rounded-md p-1.5 transition-colors ${monitorActive ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'}`}
             title={t('task_monitor_open', '在独立窗口中监视')}
             aria-label={t('task_monitor_open', '在独立窗口中监视')}
         >
@@ -188,23 +258,6 @@ const TaskModeWidget = memo(({
                 isFailed={parsed.isFailed}
                 isFinished={parsed.isFinished}
                 renderMarkdown={renderMarkdown}
-            />
-            <TaskMonitorWindow
-                actions={parsed.actions}
-                cleanContent={parsed.cleanContent}
-                elapsedText={elapsedText}
-                error={parsed.error}
-                isFailed={parsed.isFailed}
-                isFinished={parsed.isFinished}
-                conversationId={conversationId}
-                onClose={() => setMonitorOpen(false)}
-                open={monitorOpen}
-                renderMarkdown={renderMarkdown}
-                status={parsed.status}
-                taskRunId={parsed.taskRunId}
-                title={parsed.title}
-                workspaceName={parsed.workspaceName}
-                t={t}
             />
         </div>
     );

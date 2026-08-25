@@ -1,9 +1,9 @@
 src/components/markdown/replacementProtocol 模块
-==============================================
+====================================================================================================
 
 .. js:module:: src/components/markdown/replacementProtocol
 
-Keep card replacement controls as Markdown block boundaries. Streaming can concatenate a completed marker directly with a heading, e.g. `{{cardReplace id=42:11}}# Title`. Without an explicit line break Markdown parses both pieces into the same block, allowing the rendered card to overlap or inherit heading layout. This normalizer isolates complete markers w…
+Keep card replacement controls as Markdown block boundaries. Streaming can concatenate a completed marker directly with a heading, e.g. \`{{cardReplace id=42:11}}# Title\`. Without an explicit line break Markdown parses both pieces into the same block, allowing the rendered card to overlap or inherit heading layout. This normalizer isolates complete markers w…
 
 .. note::
 
@@ -11,7 +11,7 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/replacementProtocol.js``
 * **模块标识**：``src/components/markdown/replacementProtocol``
@@ -20,7 +20,7 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 * **局部函数与匿名回调**：3
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:252:337:FUNCTION
 
@@ -97,7 +97,7 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 
    根据执行分支返回结果；代表性返回表达式为 ``outputLines.join('\n')``。
 
-   **主要协作调用**：``normalizeReplacementLineBreaks``、``normalized.split``、``MARKDOWN_FENCE_RE.exec``、``outputLines.push``、``String(fenceMatch[2] \|\| '').trim``、``String``、``CARD_REPLACE_COMPLETE_TOKEN_RE.exec``、``isInsideInlineCode``、``matches.push``、``line.slice``、``before.trim``、``appendBlankLine``。
+   **主要协作调用**：``normalizeReplacementLineBreaks``、``normalized.split``、``MARKDOWN_FENCE_RE.exec``、``outputLines.push``、``String(fenceMatch[2] || '').trim``、``String``、``CARD_REPLACE_COMPLETE_TOKEN_RE.exec``、``isInsideInlineCode``、``matches.push``、``line.slice``、``before.trim``、``appendBlankLine``。
 
 .. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:3949:4254:FUNCTION
 
@@ -116,7 +116,7 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 
    根据执行分支返回结果；代表性返回表达式为 ``flags``。
 
-   **主要协作调用**：``String(value \|\| '') .trim() .split(/\s+/) .filter(Boolean) .forEach``、``String(value \|\| '') .trim() .split(/\s+/) .filter``、``String(value \|\| '') .trim() .split``、``String(value \|\| '') .trim``、``String``。
+   **主要协作调用**：``String(value || '') .trim() .split(/\s+/) .filter(Boolean) .forEach``、``String(value || '') .trim() .split(/\s+/) .filter``、``String(value || '') .trim() .split``、``String(value || '') .trim``、``String``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -159,7 +159,7 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{ content: entry, entryType: '', allowTts: false, contextStatus: null, }``、``{ content: entry.content ?? entry.frontend ?? entry.value ?? '', entryType: entry.type \|\| '', allowTts: entry.allowTts === true \|\| entry.tts === true, contextStatus: entry.context…``、``{ content: String(entry ?? ''), entryType: '', allowTts: false, contextStatus: null, }``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ content: entry, entryType: '', allowTts: false, contextStatus: null, }``、``{ content: entry.content ?? entry.frontend ?? entry.value ?? '', entryType: entry.type || '', allowTts: entry.allowTts === true || entry.tts === true, contextStatus: entry.context…``、``{ content: String(entry ?? ''), entryType: '', allowTts: false, contextStatus: null, }``。
 
    **主要协作调用**：``String``。
 
@@ -187,9 +187,9 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{ exists: false, id: normalizedId, type: explicitTokenType \|\| 'markdown', flags: new Set(), allowTts: false, contextStatus: null, content: '', incompleteProtocol: false, }``、``{ exists: true, id: normalizedId, type: resolvedType, flags: protocol.flags, allowTts, contextStatus: extracted.contextStatus, content: shouldStripProtocol ? protocol.content : no…``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ exists: false, id: normalizedId, type: explicitTokenType || 'markdown', flags: new Set(), allowTts: false, contextStatus: null, content: '', incompleteProtocol: false, }``、``{ exists: true, id: normalizedId, type: resolvedType, flags: protocol.flags, allowTts, contextStatus: extracted.contextStatus, content: shouldStripProtocol ? protocol.content : no…``。
 
-   **主要协作调用**：``String``、``String(tokenType \|\| '').trim``、``getReplacementEntryValue``、``normalizeReplacementLineBreaks``、``parseReplacementProtocol``、``String( explicitTokenType \|\| extracted.entryType \|\| protocol.type \|\| 'markdown', ).trim``、``resolvedType.toLowerCase``、``String(protocol.type \|\| '').toLowerCase``、``Boolean``、``protocol.flags.has``。
+   **主要协作调用**：``String``、``String(tokenType || '').trim``、``getReplacementEntryValue``、``normalizeReplacementLineBreaks``、``parseReplacementProtocol``、``String( explicitTokenType || extracted.entryType || protocol.type || 'markdown', ).trim``、``resolvedType.toLowerCase``、``String(protocol.type || '').toLowerCase``、``Boolean``、``protocol.flags.has``。
 
 .. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:10118:10892:FUNCTION
 
@@ -208,7 +208,7 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 
    根据执行分支返回结果；代表性返回表达式为 ``result``。
 
-   **主要协作调用**：``String(attributes \|\| '').trim``、``String``、``attrRegex.exec``、``key.includes``、``Array.isArray``、``result.__tokens.find``。
+   **主要协作调用**：``String(attributes || '').trim``、``String``、``attrRegex.exec``、``key.includes``、``Array.isArray``、``result.__tokens.find``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -229,22 +229,22 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``String( attributes.id \|\| attributes.cardId \|\| attributes.replaceId \|\| attributes.name \|\| '', ).trim``、``String``。
+   **主要协作调用**：``String( attributes.id || attributes.cardId || attributes.replaceId || attributes.name || '', ).trim``、``String``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
 .. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:4102:4231:FUNCTION
 
-.. rubric:: ``String(value \|\| '') .trim() .split(/\s+/) .filter(Boolean) .forEach callback @ 143``
+.. rubric:: ``String(value || '') .trim() .split(/\s+/) .filter(Boolean) .forEach callback @ 143``
 
 .. code-block:: javascript
 
    String(value || '') .trim() .split(/\s+/) .filter(Boolean) .forEach callback @ 143(token)
 
-作为 ``String(value \|\| '') .trim() .split(/\s+/) .filter(Boolean) .forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``String(value || '') .trim() .split(/\s+/) .filter(Boolean) .forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``143``—``147`` 行；所属函数 ``parseFlags``。
 

@@ -1,5 +1,5 @@
 src/features/workspace/components/FolderBrowser 模块
-==================================================
+============================================================================================================
 
 .. js:module:: src/features/workspace/components/FolderBrowser
 
@@ -11,7 +11,7 @@ src/features/workspace/components/FolderBrowser 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/workspace/components/FolderBrowser.jsx``
 * **模块标识**：``src/features/workspace/components/FolderBrowser``
@@ -20,12 +20,12 @@ src/features/workspace/components/FolderBrowser 模块
 * **局部函数与匿名回调**：17
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``@/components/ui/button``、``@/components/ui/select``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/workspace/components/FolderBrowser.jsx:456:1044:FUNCTION
 
@@ -45,9 +45,9 @@ src/features/workspace/components/FolderBrowser 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``root \|\| relativePath \|\| '.'``、``\`${normalizedRoot}${separator}${normalizedRelative}\```。
+   根据执行分支返回结果；代表性返回表达式为 ``root || relativePath || '.'``、``\x60${normalizedRoot}${separator}${normalizedRelative}\x60``。
 
-   **主要协作调用**：``String(rootPath \|\| '').trim``、``String``、``String(relativePath \|\| '.').replace(/\\/g, '/').replace``、``String(relativePath \|\| '.').replace``、``/^[A-Za-z]:[\\/]?/.test``、``root.includes``、``root.replace``、``relative.split('/').filter(Boolean).join``、``relative.split('/').filter``、``relative.split``。
+   **主要协作调用**：``String(rootPath || '').trim``、``String``、``String(relativePath || '.').replace(/\\/g, '/').replace``、``String(relativePath || '.').replace``、``/^[A-Za-z]:[\\/]?/.test``、``root.includes``、``root.replace``、``relative.split('/').filter(Boolean).join``、``relative.split('/').filter``、``relative.split``。
 
 .. CWM-AST-FUNCTION src/features/workspace/components/FolderBrowser.jsx:1068:8041:FUNCTION
 
@@ -64,7 +64,7 @@ src/features/workspace/components/FolderBrowser 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <div className={\`flex min-h-0 flex-1 flex-col gap-3 ${className}\`}> <div className="flex shrink-0 items-center gap-2"> <Select value={rootId \|\| undefined} onValueChange={(value)…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60flex min-h-0 flex-1 flex-col gap-3 ${className}\x60}> <div className="flex shrink-0 items-center gap-2"> <Select value={rootId || undefined} onValueChange={(value)…``。
 
    **副作用**
 
@@ -75,7 +75,7 @@ src/features/workspace/components/FolderBrowser 模块
    **内部回调数量**：13。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -404,13 +404,13 @@ src/features/workspace/components/FolderBrowser 模块
 
 .. CWM-AST-FUNCTION src/features/workspace/components/FolderBrowser.jsx:6152:6667:FUNCTION
 
-.. rubric:: ``(data?.entries \|\| []).map callback @ 147``
+.. rubric:: ``(data?.entries || []).map callback @ 147``
 
 .. code-block:: javascript
 
    (data?.entries || []).map callback @ 147(entry)
 
-作为 ``(data?.entries \|\| []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(data?.entries || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``147``—``157`` 行；所属函数 ``FolderBrowser``。
 
@@ -435,7 +435,7 @@ src/features/workspace/components/FolderBrowser 模块
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``151``—``151`` 行；所属函数 ``(data?.entries \|\| []).map callback @ 147``。
+**性质**：同步局部函数；源码第 ``151``—``151`` 行；所属函数 ``(data?.entries || []).map callback @ 147``。
 
 **参数**
 

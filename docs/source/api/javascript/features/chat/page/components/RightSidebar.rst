@@ -1,5 +1,5 @@
 src/features/chat/page/components/RightSidebar 模块
-=================================================
+==========================================================================================================
 
 .. js:module:: src/features/chat/page/components/RightSidebar
 
@@ -11,7 +11,7 @@ src/features/chat/page/components/RightSidebar 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/page/components/RightSidebar.jsx``
 * **模块标识**：``src/features/chat/page/components/RightSidebar``
@@ -20,12 +20,12 @@ src/features/chat/page/components/RightSidebar 模块
 * **局部函数与匿名回调**：21
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``framer-motion``、``lucide-react``、``@/components/setting/DynamicSettings.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:464:876:FUNCTION
 
@@ -75,7 +75,7 @@ src/features/chat/page/components/RightSidebar 模块
    **主要协作调用**：``window.localStorage.setItem``、``String``、``Math.round``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -94,7 +94,7 @@ src/features/chat/page/components/RightSidebar 模块
 **参数**
 
 ``{ isOpen, onClose, advancedSettings, initialSettingValues, settingsInstanceKey, conversationId, onS…``
-   调用方传入的 `` isOpen, onClose, advancedSettings, initialSettingValues, settingsInstanceKey, conversationId, onS…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``isOpen, onClose, advancedSettings, initialSettingValues, settingsInstanceKey, conversationId, onS…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -127,9 +127,9 @@ src/features/chat/page/components/RightSidebar 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``\`${settingsInstanceKey ?? 'conversationless'}:${names}\```。
+根据执行分支返回结果；代表性返回表达式为 ``\x60${settingsInstanceKey ?? 'conversationless'}:${names}\x60``。
 
-**主要协作调用**：``Array.isArray``、``advancedSettings.map((item) => item?.name \|\| item?.text \|\| item?.type \|\| '').join``、``advancedSettings.map``。
+**主要协作调用**：``Array.isArray``、``advancedSettings.map((item) => item?.name || item?.text || item?.type || '').join``、``advancedSettings.map``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 

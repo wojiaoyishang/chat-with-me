@@ -1,5 +1,5 @@
 src/components/markdown/card-block/CardBlock 模块
-===============================================
+======================================================================================================
 
 .. js:module:: src/components/markdown/card-block/CardBlock
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/CardBlock 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/CardBlock.jsx``
 * **模块标识**：``src/components/markdown/card-block/CardBlock``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/CardBlock 模块
 * **局部函数与匿名回调**：4
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``./agent/AgentWidget.jsx``、``./blocks/ErrorBlock.jsx``、``./blocks/HtmlBlock.jsx``、``./blocks/MarkdownBlock.jsx``、``./blocks/QueuingBlock.jsx``、``./blocks/TextBlock.jsx``、``./blocks/ToolCommandBlock.jsx``、``./blocks/ToolLogBlock.jsx``、``./cardBlockAnimations.css``、``./constants.jsx``、``./status/StatusWidget.jsx``、``./task/TaskChecklistCard.jsx``、``./task/TaskModeWidget.jsx``、``./task/TaskUserMessageCard.jsx``、``@/features/story/StoryCard.jsx``、``./widget/WidgetHost.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1200:1268:FUNCTION
 
@@ -47,7 +47,7 @@ src/components/markdown/card-block/CardBlock 模块
    **主要协作调用**：``CARD_TYPES_WITH_NESTED_MARKDOWN.has``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -111,7 +111,7 @@ src/components/markdown/card-block/CardBlock 模块
 **参数**
 
 ``{ content = '', id, allowTts = false, conversationId = null, type = 'markdown', contextId = '', rep…``
-   调用方传入的 `` content = '', id, allowTts = false, conversationId = null, type = 'markdown', contextId = '', rep…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``content = '', id, allowTts = false, conversationId = null, type = 'markdown', contextId = '', rep…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 

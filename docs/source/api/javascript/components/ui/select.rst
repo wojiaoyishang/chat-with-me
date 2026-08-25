@@ -1,5 +1,5 @@
 src/components/ui/select 模块
-===========================
+================================================================================
 
 .. js:module:: src/components/ui/select
 
@@ -11,7 +11,7 @@ src/components/ui/select 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/ui/select.tsx``
 * **模块标识**：``src/components/ui/select``
@@ -20,12 +20,12 @@ src/components/ui/select 模块
 * **局部函数与匿名回调**：0
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``radix-ui``、``@/lib/utils``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/ui/select.tsx:190:342:FUNCTION
 
@@ -38,7 +38,7 @@ src/components/ui/select 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Root>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -55,7 +55,7 @@ src/components/ui/select 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Group>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -72,7 +72,7 @@ src/components/ui/select 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Value>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -88,8 +88,8 @@ src/components/ui/select 模块
 
    **参数**
 
-   ``{ className, size = "default", children, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Trigger> & { size?: "sm" \| "default" }``）
-      调用方传入的 `` className, size = "default", children, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ className, size = "default", children, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Trigger> & { size?: "sm" | "default" }``）
+      调用方传入的 ``className, size = "default", children, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -108,7 +108,7 @@ src/components/ui/select 模块
    **参数**
 
    ``{ className, children, position = "popper", align = "start", ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Content>``）
-      调用方传入的 `` className, children, position = "popper", align = "start", ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, children, position = "popper", align = "start", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -127,7 +127,7 @@ src/components/ui/select 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Label>``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -146,7 +146,7 @@ src/components/ui/select 模块
    **参数**
 
    ``{ className, children, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Item>``）
-      调用方传入的 `` className, children, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, children, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -165,7 +165,7 @@ src/components/ui/select 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Separator>``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -184,7 +184,7 @@ src/components/ui/select 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -203,7 +203,7 @@ src/components/ui/select 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 

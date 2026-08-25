@@ -1,5 +1,5 @@
 src/pages/DocEditorHome 模块
-==========================
+================================================================================
 
 .. js:module:: src/pages/DocEditorHome
 
@@ -11,7 +11,7 @@ src/pages/DocEditorHome 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/pages/DocEditorHome.jsx``
 * **模块标识**：``src/pages/DocEditorHome``
@@ -20,12 +20,12 @@ src/pages/DocEditorHome 模块
 * **局部函数与匿名回调**：63
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``react-i18next``、``date-fns``、``framer-motion``、``@/lib/tools.jsx``、``@/lib/apiClient.js``、``@/config.js``、``sonner``、``@/lib/virtualUrl.js``、``@/components/ui/button``、``@/components/ui/input``、``@/components/ui/label``、``@/components/ui/dialog``、``@/components/ui/alert-dialog``、``@/components/ui/field``、``@/components/ui/radio-group.tsx``、``@/components/sidebar/sidebarRegistry.js``、``@/pages/ChatWithEditor.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:1691:2029:FUNCTION
 
@@ -82,7 +82,7 @@ src/pages/DocEditorHome 模块
    **参数**
 
    ``{ conversationId, documentId, onNewConversationId, onNewDocumentId, settingsRefreshVersions, }``
-      调用方传入的 `` conversationId, documentId, onNewConversationId, onNewDocumentId, settingsRefreshVersions, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``conversationId, documentId, onNewConversationId, onNewDocumentId, settingsRefreshVersions,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -97,7 +97,7 @@ src/pages/DocEditorHome 模块
    **内部回调数量**：19。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -213,7 +213,7 @@ src/pages/DocEditorHome 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className={\`flex flex-col border border-gray-200 bg-white rounded-xl overflow-hidden shadow-sm relative transition-all duration-200 ${isError ? 'border-red-400' : ''}\`} > <…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60flex flex-col border border-gray-200 bg-white rounded-xl overflow-hidden shadow-sm relative transition-all duration-200 ${isError ? 'border-red-400' : ''}\x60} > <…``。
 
 **主要协作调用**：``useTranslation``、``t``。
 
@@ -1054,19 +1054,19 @@ src/pages/DocEditorHome 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``apiClient.get(\`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\`) .then((data) => { setTimeout(()…``、``apiClient.get(\`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\`) .then``、``apiClient.get``、``onNewDocumentId``。
+**主要协作调用**：``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then((data) => { setTimeout(()…``、``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then``、``apiClient.get``、``onNewDocumentId``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
 .. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:23598:23725:FUNCTION
 
-.. rubric:: ``apiClient.get(\`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\`) .then callback @ 591``
+.. rubric:: ``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then callback @ 591``
 
 .. code-block:: javascript
 
    apiClient.get(`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}`) .then callback @ 591(data)
 
-处理 ``apiClient.get(\`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\`) .then callback`` 对应的事件或订阅结果。
+处理 ``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then callback`` 对应的事件或订阅结果。
 
 **性质**：同步局部函数；源码第 ``591``—``595`` 行；所属函数 ``useCallback callback @ 588``。
 
@@ -1093,7 +1093,7 @@ src/pages/DocEditorHome 模块
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``592``—``594`` 行；所属函数 ``apiClient.get(\`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\`) .then callback @ 591``。
+**性质**：同步局部函数；源码第 ``592``—``594`` 行；所属函数 ``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then callback @ 591``。
 
 **参数**
 
@@ -1107,13 +1107,13 @@ src/pages/DocEditorHome 模块
 
 .. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:23746:23888:FUNCTION
 
-.. rubric:: ``apiClient.get(\`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\`) .then((data) => { setTimeout(()… callback @ 596``
+.. rubric:: ``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then((data) => { setTimeout(()… callback @ 596``
 
 .. code-block:: javascript
 
    apiClient.get(`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}`) .then((data) => { setTimeout(()… callback @ 596(error)
 
-实现 ``apiClient.get(\`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\`) .then((data) => { setTimeout(()…`` 对应的前端处理。
+实现 ``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then((data) => { setTimeout(()…`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``596``—``598`` 行；所属函数 ``useCallback callback @ 588``。
 

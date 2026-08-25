@@ -1,5 +1,5 @@
 src/components/markdown/card-block/blocks/ToolLogBlock 模块
-=========================================================
+==========================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/blocks/ToolLogBlock
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/blocks/ToolLogBlock.jsx``
 * **模块标识**：``src/components/markdown/card-block/blocks/ToolLogBlock``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 * **局部函数与匿名回调**：18
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``../utils.js``、``./OutputToolbar.jsx``、``./useFollowOutputScroll.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:721:1267:FUNCTION
 
@@ -61,7 +61,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``''``、``\`${totalSeconds}s\```、``\`${minutes}m ${String(seconds).padStart(2, '0')}s\```、``\`${hours}h ${String(minutes).padStart(2, '0')}m\```。
+   根据执行分支返回结果；代表性返回表达式为 ``''``、``\x60${totalSeconds}s\x60``、``\x60${minutes}m ${String(seconds).padStart(2, '0')}s\x60``、``\x60${hours}h ${String(minutes).padStart(2, '0')}m\x60``。
 
    **主要协作调用**：``Number.isFinite``、``Math.round``、``Math.floor``、``String(seconds).padStart``、``String``、``String(minutes).padStart``。
 
@@ -101,7 +101,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{ title: titleText \|\| 'Tool Log', bodySegments: parseToolLogBodySegments(contentWithoutStatus.trimStart()), status, startTimeMs, doneTimeMs, failedTimeMs, }``、``{ title, bodySegments: parseToolLogBodySegments(body), status, startTimeMs, doneTimeMs, failedTimeMs, }``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ title: titleText || 'Tool Log', bodySegments: parseToolLogBodySegments(contentWithoutStatus.trimStart()), status, startTimeMs, doneTimeMs, failedTimeMs, }``、``{ title, bodySegments: parseToolLogBodySegments(body), status, startTimeMs, doneTimeMs, failedTimeMs, }``。
 
    **主要协作调用**：``toSafeString(content) .replace(/^\uFEFF/, '') .replace(TOOL_LOG_PROTOCOL_BOUNDARY_RE, ']\n') .trimEnd``、``toSafeString(content) .replace(/^\uFEFF/, '') .replace``、``toSafeString(content) .replace``、``toSafeString``、``safeContent.split``、``TOOL_LOG_TERMINAL_OPEN_LINE_RE.test``、``contentLines.push``、``TOOL_LOG_TERMINAL_CLOSE_LINE_RE.test``、``line.match``、``titleMatch[1].trim``、``metaMatch[1].toUpperCase``、``metaMatch[2]?.trim``。
 
@@ -123,7 +123,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
    根据执行分支返回结果；代表性返回表达式为 ``{ card: 'border-red-200/80 bg-red-50/60', title: 'text-red-700', body: 'text-red-700/85', bodyWrap: 'border-red-100', icon: 'border-red-100 bg-red-50 text-red-600', duration: 'tex…``、``{ card: 'border-emerald-200/80 bg-emerald-50/60', title: 'text-emerald-700', body: 'text-emerald-700/85', bodyWrap: 'border-emerald-100', icon: 'border-emerald-100 bg-emerald-50 t…``、``{ card: 'border-amber-200/60 bg-amber-50/60 shadow-[0_8px_24px_rgba(245,158,11,0.08)]', title: 'text-amber-800', body: 'text-amber-800/80', bodyWrap: 'border-amber-100/70', icon:…``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -164,11 +164,11 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 **参数**
 
 ``{ className = '', endTimeMs, isRunning, startTimeMs, }``
-   调用方传入的 `` className = '', endTimeMs, isRunning, startTimeMs, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``className = '', endTimeMs, isRunning, startTimeMs,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <span className={className} aria-label={\`Tool log duration ${durationText}\`} title={\`Duration: ${durationText}\`} > {durationText} </span> )``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <span className={className} aria-label={\x60Tool log duration ${durationText}\x60} title={\x60Duration: ${durationText}\x60} > {durationText} </span> )``。
 
 **副作用**
 
@@ -291,11 +291,11 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 **参数**
 
 ``{ endTimeMs, isDone, isFailed, isRunning, shouldShowDuration, startTimeMs, tone, }``
-   调用方传入的 `` endTimeMs, isDone, isFailed, isRunning, shouldShowDuration, startTimeMs, tone, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``endTimeMs, isDone, isFailed, isRunning, shouldShowDuration, startTimeMs, tone,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className="ml-2 flex shrink-0 items-center gap-1"> {shouldShowDuration && ( <ToolLogDuration className={\`flex h-4 items-center whitespace-nowrap rounded bg-white/50 px-1 fo…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className="ml-2 flex shrink-0 items-center gap-1"> {shouldShowDuration && ( <ToolLogDuration className={\x60flex h-4 items-center whitespace-nowrap rounded bg-white/50 px-1 fo…``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:8913:9950:FUNCTION
 
@@ -337,7 +337,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``<ToolLogTerminalBlock content={segment.content}/>``、``( <pre className={\`m-0 whitespace-pre-wrap break-words font-mono text-[11px] leading-5 ${tone.body}\`}>{segment.content}</pre> )``。
+根据执行分支返回结果；代表性返回表达式为 ``<ToolLogTerminalBlock content={segment.content}/>``、``( <pre className={\x60m-0 whitespace-pre-wrap break-words font-mono text-[11px] leading-5 ${tone.body}\x60}>{segment.content}</pre> )``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11478:15152:FUNCTION
 
@@ -358,7 +358,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className={\`my-1.5 rounded-md border px-2.5 py-2 transition-colors duration-300 ${isRunning ? 'card-tool-log-running-breathe' : ''} ${tone.card}\`} data-card-block-id={id} >…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60my-1.5 rounded-md border px-2.5 py-2 transition-colors duration-300 ${isRunning ? 'card-tool-log-running-breathe' : ''} ${tone.card}\x60} data-card-block-id={id} >…``。
 
 **主要协作调用**：``useMemo``、``useFollowOutputScroll``、``bodySegments.map``。
 
@@ -449,7 +449,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``bodyText ? \`${title}\n${bodyText}\` : title``。
+根据执行分支返回结果；代表性返回表达式为 ``bodyText ? \x60${title}\n${bodyText}\x60 : title``。
 
 **主要协作调用**：``bodySegments .map((segment) => segment.content) .filter(Boolean) .join``、``bodySegments .map((segment) => segment.content) .filter``、``bodySegments .map``。
 
@@ -520,7 +520,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <ToolLogBodySegment key={\`${segment.type}-${index}\`} segment={segment} tone={tone} /> )``。
+根据执行分支返回结果；代表性返回表达式为 ``( <ToolLogBodySegment key={\x60${segment.type}-${index}\x60} segment={segment} tone={tone} /> )``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:15153:15262:FUNCTION
 

@@ -1,5 +1,5 @@
 src/runtime/protocol/frame 模块
-=============================
+================================================================================
 
 .. js:module:: src/runtime/protocol/frame
 
@@ -11,7 +11,7 @@ src/runtime/protocol/frame 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/runtime/protocol/frame.js``
 * **模块标识**：``src/runtime/protocol/frame``
@@ -20,12 +20,12 @@ src/runtime/protocol/frame 模块
 * **局部函数与匿名回调**：1
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``./msgpack.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/runtime/protocol/frame.js:633:997:FUNCTION
 
@@ -68,7 +68,7 @@ src/runtime/protocol/frame 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **显式抛出**：``new TypeError(\`${label} must be a map\`)``。
+   **显式抛出**：``new TypeError(\x60${label} must be a map\x60)``。
 
    **主要协作调用**：``Array.isArray``。
 
@@ -95,7 +95,7 @@ src/runtime/protocol/frame 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-   **显式抛出**：``new TypeError(\`${field} is required\`)``、``new TypeError(\`${field} must be a canonical UUID\`)``。
+   **显式抛出**：``new TypeError(\x60${field} is required\x60)``、``new TypeError(\x60${field} must be a canonical UUID\x60)``。
 
    **主要协作调用**：``UUID_PATTERN.test``。
 
@@ -116,7 +116,7 @@ src/runtime/protocol/frame 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **显式抛出**：``new TypeError(\`Unsupported protocol version: ${envelope.version}\`)``、``new TypeError(\`Invalid semantic event name: ${envelope.event}\`)``、``new TypeError('sequence must be a non-negative integer')``、``new TypeError('timestamp_ms must be a non-negative safe integer')``。
+   **显式抛出**：``new TypeError(\x60Unsupported protocol version: ${envelope.version}\x60)``、``new TypeError(\x60Invalid semantic event name: ${envelope.event}\x60)``、``new TypeError('sequence must be a non-negative integer')``、``new TypeError('timestamp_ms must be a non-negative safe integer')``。
 
    **主要协作调用**：``assertObject``、``envelope.event.trim``、``EVENT_NAME_PATTERN.test``、``assertIdentifier``、``Number.isInteger``、``Number.isSafeInteger``。
 
@@ -137,7 +137,7 @@ src/runtime/protocol/frame 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``envelope``。
 
-   **显式抛出**：``new TypeError(\`Unexpected event envelope fields: ${extra.join(', ')}\`)``。
+   **显式抛出**：``new TypeError(\x60Unexpected event envelope fields: ${extra.join(', ')}\x60)``。
 
    **主要协作调用**：``assertCommonEnvelope``、``Object.keys(envelope).filter``、``Object.keys``、``extra.join``、``assertObject``。
 
@@ -249,12 +249,12 @@ src/runtime/protocol/frame 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``{kind, header, body}``。
 
-   **显式抛出**：``new RangeError('Frame is shorter than the fixed header')``、``new TypeError('Invalid CWM frame magic')``、``new TypeError(\`Unsupported protocol version: ${version}\`)``、``new TypeError(\`Unsupported frame kind: ${kind}\`)``、``new RangeError('Frame exceeds protocol limits')``、``new RangeError(\`Frame length mismatch: expected ${expected}, got ${bytes.byteLength}\`)``、``new TypeError('Event frames must not include a raw body')``。
+   **显式抛出**：``new RangeError('Frame is shorter than the fixed header')``、``new TypeError('Invalid CWM frame magic')``、``new TypeError(\x60Unsupported protocol version: ${version}\x60)``、``new TypeError(\x60Unsupported frame kind: ${kind}\x60)``、``new RangeError('Frame exceeds protocol limits')``、``new RangeError(\x60Frame length mismatch: expected ${expected}, got ${bytes.byteLength}\x60)``、``new TypeError('Event frames must not include a raw body')``。
 
    **主要协作调用**：``asBytes``、``view.getUint8``、``[FrameKind.EVENT, FrameKind.MEDIA, FrameKind.BINARY].includes``、``view.getUint32``、``decodeMessagePack``、``bytes.slice``、``validateEventEnvelope``、``validateMediaEnvelope``、``assertObject``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

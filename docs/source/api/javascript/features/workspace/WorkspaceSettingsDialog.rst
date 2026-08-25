@@ -1,5 +1,5 @@
 src/features/workspace/WorkspaceSettingsDialog 模块
-=================================================
+==========================================================================================================
 
 .. js:module:: src/features/workspace/WorkspaceSettingsDialog
 
@@ -11,7 +11,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/workspace/WorkspaceSettingsDialog.jsx``
 * **模块标识**：``src/features/workspace/WorkspaceSettingsDialog``
@@ -20,12 +20,12 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 * **局部函数与匿名回调**：107
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``@/components/ui/badge``、``@/components/ui/button``、``@/components/ui/checkbox``、``@/components/ui/dialog``、``@/components/ui/input``、``@/components/ui/label``、``@/components/ui/separator``、``@/components/ui/switch``、``@/components/ui/select``、``@/components/ui/DeleteConfirmDialog``、``./components/FolderBrowserDialog.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:1494:1547:FUNCTION
 
@@ -82,7 +82,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``key \|\| 'all'``。
+   根据执行分支返回结果；代表性返回表达式为 ``key || 'all'``。
 
    **主要协作调用**：``normalizeOperations``、``Object.keys(OPERATION_PRESETS).find``、``Object.keys``。
 
@@ -108,7 +108,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``String``、``Date.now``、``Math.random().toString(16).slice``、``Math.random().toString``、``Math.random``、``['path', 'glob', 'regex', 'exact'].includes``、``String(rule?.matcher?.pattern \|\| '').replace``、``normalizeOperations``、``Array.isArray``、``Number``、``Number.isFinite``。
+   **主要协作调用**：``String``、``Date.now``、``Math.random().toString(16).slice``、``Math.random().toString``、``Math.random``、``['path', 'glob', 'regex', 'exact'].includes``、``String(rule?.matcher?.pattern || '').replace``、``normalizeOperations``、``Array.isArray``、``Number``、``Number.isFinite``。
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:2874:3255:FUNCTION
 
@@ -170,9 +170,9 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``normalized \|\| \`mount-${index + 1}\```。
+   根据执行分支返回结果；代表性返回表达式为 ``normalized || \x60mount-${index + 1}\x60``。
 
-   **主要协作调用**：``String(name \|\| '') .normalize('NFKD') .replace(/[^A-Za-z0-9._-]+/g, '-') .replace(/^-+\|-+$/g, '') .slice``、``String(name \|\| '') .normalize('NFKD') .replace(/[^A-Za-z0-9._-]+/g, '-') .replace``、``String(name \|\| '') .normalize('NFKD') .replace``、``String(name \|\| '') .normalize``、``String``。
+   **主要协作调用**：``String(name || '') .normalize('NFKD') .replace(/[^A-Za-z0-9._-]+/g, '-') .replace(/^-+|-+$/g, '') .slice``、``String(name || '') .normalize('NFKD') .replace(/[^A-Za-z0-9._-]+/g, '-') .replace``、``String(name || '') .normalize('NFKD') .replace``、``String(name || '') .normalize``、``String``。
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3903:3990:FUNCTION
 
@@ -191,7 +191,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``String(value \|\| '') .replace(/\\\//g, '\\') .replace``、``String(value \|\| '') .replace``、``String``。
+   **主要协作调用**：``String(value || '') .replace(/\\\//g, '\\') .replace``、``String(value || '') .replace``、``String``。
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:4024:51674:FUNCTION
 
@@ -214,12 +214,12 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    * 发起 HTTP 请求或访问外部服务。
 
-   **主要协作调用**：``useState``、``useMemo``、``useEffect``、``useCallback``、``t``、``workspaces.map``、``pairingCode.trim``、``(selected.mounts \|\| []).map``、``String(editingId \|\| '').startsWith``、``String``、``mounts.map``、``quickAccessRules.map``。
+   **主要协作调用**：``useState``、``useMemo``、``useEffect``、``useCallback``、``t``、``workspaces.map``、``pairingCode.trim``、``(selected.mounts || []).map``、``String(editingId || '').startsWith``、``String``、``mounts.map``、``quickAccessRules.map``。
 
    **内部回调数量**：35。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -375,9 +375,9 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``[...new Set(raw.map((item) => String(item \|\| '').trim()).filter(Boolean))]``。
+根据执行分支返回结果；代表性返回表达式为 ``[...new Set(raw.map((item) => String(item || '').trim()).filter(Boolean))]``。
 
-**主要协作调用**：``Array.isArray``、``raw.map((item) => String(item \|\| '').trim()).filter``、``raw.map``。
+**主要协作调用**：``Array.isArray``、``raw.map((item) => String(item || '').trim()).filter``、``raw.map``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
@@ -402,7 +402,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String(item \|\| '').trim``、``String``。
+**主要协作调用**：``String(item || '').trim``、``String``。
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:5876:5902:FUNCTION
 
@@ -442,7 +442,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``focused``、``workspaces.find((item) => selectedIdSet.has(item.id)) \|\| null``。
+根据执行分支返回结果；代表性返回表达式为 ``focused``、``workspaces.find((item) => selectedIdSet.has(item.id)) || null``。
 
 **主要协作调用**：``workspaces.find``。
 
@@ -612,7 +612,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String(a.name \|\| '').localeCompare``、``String``。
+**主要协作调用**：``String(a.name || '').localeCompare``、``String``。
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:8235:8274:FUNCTION
 
@@ -657,7 +657,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``true``、``false``。
 
-**主要协作调用**：``(Array.isArray(nextWorkspaceIds) ? nextWorkspaceIds : []) .map((item) => String(item \|\| '').trim()).filter``、``(Array.isArray(nextWorkspaceIds) ? nextWorkspaceIds : []) .map``、``Array.isArray``、``onWorkspaceChange``、``apiClient.put``、``encodeURIComponent``、``toast.error``、``t``。
+**主要协作调用**：``(Array.isArray(nextWorkspaceIds) ? nextWorkspaceIds : []) .map((item) => String(item || '').trim()).filter``、``(Array.isArray(nextWorkspaceIds) ? nextWorkspaceIds : []) .map``、``Array.isArray``、``onWorkspaceChange``、``apiClient.put``、``encodeURIComponent``、``toast.error``、``t``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
@@ -682,7 +682,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String(item \|\| '').trim``、``String``。
+**主要协作调用**：``String(item || '').trim``、``String``。
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:9118:9475:FUNCTION
 
@@ -708,7 +708,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``String(workspaceId \|\| '').trim``、``String``、``selectedIds.filter``、``setFocusedWorkspaceId``、``persistWorkspaceSelection``。
+**主要协作调用**：``String(workspaceId || '').trim``、``String``、``selectedIds.filter``、``setFocusedWorkspaceId``、``persistWorkspaceSelection``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
@@ -803,9 +803,9 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``next.sort((a, b) => String(a.name \|\| '').localeCompare(String(b.name \|\| '')))``。
+根据执行分支返回结果；代表性返回表达式为 ``next.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))``。
 
-**主要协作调用**：``current.filter((item) => !agentId \|\| item.agentId !== agentId).concat``、``current.filter``、``next.sort``。
+**主要协作调用**：``current.filter((item) => !agentId || item.agentId !== agentId).concat``、``current.filter``、``next.sort``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
@@ -854,7 +854,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String(a.name \|\| '').localeCompare``、``String``。
+**主要协作调用**：``String(a.name || '').localeCompare``、``String``。
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:10480:10528:FUNCTION
 
@@ -1123,19 +1123,19 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``setEditingId``、``setName``、``setReadOnly``、``Boolean``、``setMounts``、``(workspace.mounts \|\| []).map``、``applyAccessPolicy``、``setVisibilityPolicy``、``cloneValue``、``setConfiguredCommands``、``Array.isArray``、``setAllowedCommands``。
+**主要协作调用**：``setEditingId``、``setName``、``setReadOnly``、``Boolean``、``setMounts``、``(workspace.mounts || []).map``、``applyAccessPolicy``、``setVisibilityPolicy``、``cloneValue``、``setConfiguredCommands``、``Array.isArray``、``setAllowedCommands``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13019:13124:FUNCTION
 
-.. rubric:: ``(workspace.mounts \|\| []).map callback @ 295``
+.. rubric:: ``(workspace.mounts || []).map callback @ 295``
 
 .. code-block:: javascript
 
    (workspace.mounts || []).map callback @ 295(item)
 
-作为 ``(workspace.mounts \|\| []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(workspace.mounts || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``295``—``298`` 行；所属函数 ``beginEdit``。
 
@@ -1239,7 +1239,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String(item.alias \|\| '').toLowerCase``、``String``。
+**主要协作调用**：``String(item.alias || '').toLowerCase``、``String``。
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:14573:14862:FUNCTION
 
@@ -1518,7 +1518,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``String(editingId \|\| '').startsWith``、``String``、``name.trim``、``toast.error``、``t``、``mounts.some``、``validateAccessRules``、``setSaving``、``[...preservedAccessRules, ...accessRules] .sort((left, right) => (left._order ?? 0) - (right._order ?? 0)) .map``、``[...preservedAccessRules, ...accessRules] .sort``、``commandPolicyPayload``、``workspaces.find``。
+**主要协作调用**：``String(editingId || '').startsWith``、``String``、``name.trim``、``toast.error``、``t``、``mounts.some``、``validateAccessRules``、``setSaving``、``[...preservedAccessRules, ...accessRules] .sort((left, right) => (left._order ?? 0) - (right._order ?? 0)) .map``、``[...preservedAccessRules, ...accessRules] .sort``、``commandPolicyPayload``、``workspaces.find``。
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
@@ -1588,7 +1588,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{ ...rule, name: rule.name \|\| rule.matcher.pattern, enabled: rule.effect === 'deny' ? true : rule.enabled, matcher: {...rule.matcher, pattern: rule.matcher.pattern.trim()}, operat…``。
+根据执行分支返回结果；代表性返回表达式为 ``{ ...rule, name: rule.name || rule.matcher.pattern, enabled: rule.effect === 'deny' ? true : rule.enabled, matcher: {...rule.matcher, pattern: rule.matcher.pattern.trim()}, operat…``。
 
 **主要协作调用**：``rule.matcher.pattern.trim``、``normalizeOperations``。
 
@@ -1818,9 +1818,9 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={item.id} className={\`flex items-center gap-2 border-b px-3 py-2.5 last:border-b-0 ${focused ? 'bg-blue-50/70' : 'hover:bg-muted/40'}\`} onClick={() => setFocusedWorkspa…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={item.id} className={\x60flex items-center gap-2 border-b px-3 py-2.5 last:border-b-0 ${focused ? 'bg-blue-50/70' : 'hover:bg-muted/40'}\x60} onClick={() => setFocusedWorkspa…``。
 
-**主要协作调用**：``selectedIdSet.has``、``(item.mounts \|\| []).map((mount) => \`/${mount.alias}\`).join``、``(item.mounts \|\| []).map``。
+**主要协作调用**：``selectedIdSet.has``、``(item.mounts || []).map((mount) => \x60/${mount.alias}\x60).join``、``(item.mounts || []).map``。
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
@@ -1894,13 +1894,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:26301:26329:FUNCTION
 
-.. rubric:: ``(item.mounts \|\| []).map callback @ 546``
+.. rubric:: ``(item.mounts || []).map callback @ 546``
 
 .. code-block:: javascript
 
    (item.mounts || []).map callback @ 546(mount)
 
-作为 ``(item.mounts \|\| []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(item.mounts || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``546``—``546`` 行；所属函数 ``workspaces.map callback @ 518``。
 
@@ -2050,13 +2050,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 .. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:31753:31931:FUNCTION
 
-.. rubric:: ``(selected.mounts \|\| []).map callback @ 622``
+.. rubric:: ``(selected.mounts || []).map callback @ 622``
 
 .. code-block:: javascript
 
    (selected.mounts || []).map callback @ 622(mount)
 
-作为 ``(selected.mounts \|\| []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(selected.mounts || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``622``—``624`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
@@ -2138,7 +2138,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``cleanDisplayPath``、``String(editingId \|\| '').startsWith``、``String``、``t``、``Boolean``、``roots.find``。
+**主要协作调用**：``cleanDisplayPath``、``String(editingId || '').startsWith``、``String``、``t``、``Boolean``、``roots.find``。
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 

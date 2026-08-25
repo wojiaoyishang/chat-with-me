@@ -1,5 +1,5 @@
 src/features/chat/ui/message/components/TextOnlyMessageContent 模块
-=================================================================
+==========================================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/components/TextOnlyMessageContent
 
@@ -11,7 +11,7 @@ src/features/chat/ui/message/components/TextOnlyMessageContent 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/components/TextOnlyMessageContent.jsx``
 * **模块标识**：``src/features/chat/ui/message/components/TextOnlyMessageContent``
@@ -20,16 +20,16 @@ src/features/chat/ui/message/components/TextOnlyMessageContent 模块
 * **局部函数与匿名回调**：3
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@/lib/virtualUrl.js``、``@/components/markdown/MarkdownRenderer.jsx``、``@/components/ui/avatar``、``./KnowledgeGraphViewer.jsx``、``./SpeechOverlayHighlighter.jsx``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:421:3691:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:421:3711:FUNCTION
 
 .. rubric:: ``memo callback @ 8``
 
@@ -44,7 +44,7 @@ src/features/chat/ui/message/components/TextOnlyMessageContent 模块
 **参数**
 
 ``{msg, msgId, conversationId, isLeaving, speechState, onSpeechTextClick, avatarClickProps = {}}``
-   调用方传入的 ``msg, msgId, conversationId, isLeaving, speechState, onSpeechTextClick, avatarClickProps = `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``msg, msgId, conversationId, isLeaving, speechState, onSpeechTextClick, avatarClickProps =`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -77,7 +77,7 @@ src/features/chat/ui/message/components/TextOnlyMessageContent 模块
 
 **主要协作调用**：``onSpeechTextClick``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:2939:2982:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:2949:2992:FUNCTION
 
 .. rubric:: ``anonymous callback @ 51``
 

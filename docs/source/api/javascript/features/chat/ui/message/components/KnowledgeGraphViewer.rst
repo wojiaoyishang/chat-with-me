@@ -1,5 +1,5 @@
 src/features/chat/ui/message/components/KnowledgeGraphViewer 模块
-===============================================================
+======================================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/components/KnowledgeGraphViewer
 
@@ -11,7 +11,7 @@ src/features/chat/ui/message/components/KnowledgeGraphViewer 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/components/KnowledgeGraphViewer.jsx``
 * **模块标识**：``src/features/chat/ui/message/components/KnowledgeGraphViewer``
@@ -20,12 +20,12 @@ src/features/chat/ui/message/components/KnowledgeGraphViewer 模块
 * **局部函数与匿名回调**：34
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``@neo4j-nvl/react``、``@/components/ui/ThreeDotLoading.jsx``、``@/context/LazyVisibility.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/ui/message/components/KnowledgeGraphViewer.jsx:311:778:FUNCTION
 
@@ -42,12 +42,12 @@ src/features/chat/ui/message/components/KnowledgeGraphViewer 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``'#666666'``、``colorMap[label]``、``\`hsl(${hue}, 88%, 58%)\```。
+   根据执行分支返回结果；代表性返回表达式为 ``'#666666'``、``colorMap[label]``、``\x60hsl(${hue}, 88%, 58%)\x60``。
 
    **主要协作调用**：``label.charCodeAt``、``Math.abs``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -163,13 +163,13 @@ src/features/chat/ui/message/components/KnowledgeGraphViewer 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\`mt-1 mb-4 border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm ${className}\`}> <div className="px-4 py-2.5 text-sm font-medium text-gray-600 bor…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\x60mt-1 mb-4 border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm ${className}\x60}> <div className="px-4 py-2.5 text-sm font-medium text-gray-600 bor…``。
 
 **副作用**
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``useRef``、``useState``、``useEffect``、``Array.isArray``、``network.nodes.map``、``nvlNodes.map``、``(network.relationships \|\| network.relationship \|\| []) .map((rel, index) => { const from = String(rel.from ?? rel.source…``、``(network.relationships \|\| network.relationship \|\| []) .map``。
+**主要协作调用**：``useRef``、``useState``、``useEffect``、``Array.isArray``、``network.nodes.map``、``nvlNodes.map``、``(network.relationships || network.relationship || []) .map((rel, index) => { const from = String(rel.from ?? rel.source…``、``(network.relationships || network.relationship || []) .map``。
 
 **内部回调数量**：7。这些回调也会在本页逐项说明。
 
@@ -283,13 +283,13 @@ src/features/chat/ui/message/components/KnowledgeGraphViewer 模块
 
 .. CWM-AST-FUNCTION src/features/chat/ui/message/components/KnowledgeGraphViewer.jsx:3654:4022:FUNCTION
 
-.. rubric:: ``(network.relationships \|\| network.relationship \|\| []) .map callback @ 118``
+.. rubric:: ``(network.relationships || network.relationship || []) .map callback @ 118``
 
 .. code-block:: javascript
 
    (network.relationships || network.relationship || []) .map callback @ 118(rel, index)
 
-作为 ``(network.relationships \|\| network.relationship \|\| []) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(network.relationships || network.relationship || []) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``118``—``128`` 行；所属函数 ``memo callback @ 79``。
 
@@ -303,19 +303,19 @@ src/features/chat/ui/message/components/KnowledgeGraphViewer 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{ id: String(rel.id ?? \`rel-${index}\`), from, to, captions: (rel.type \|\| rel.label) ? [{value: rel.type \|\| rel.label}] : undefined, }``。
+根据执行分支返回结果；代表性返回表达式为 ``{ id: String(rel.id ?? \x60rel-${index}\x60), from, to, captions: (rel.type || rel.label) ? [{value: rel.type || rel.label}] : undefined, }``。
 
 **主要协作调用**：``String``。
 
 .. CWM-AST-FUNCTION src/features/chat/ui/message/components/KnowledgeGraphViewer.jsx:4040:4108:FUNCTION
 
-.. rubric:: ``(network.relationships \|\| network.relationship \|\| []) .map((rel, index) => { const from = String(rel.from ?? rel.source… callback @ 129``
+.. rubric:: ``(network.relationships || network.relationship || []) .map((rel, index) => { const from = String(rel.from ?? rel.source… callback @ 129``
 
 .. code-block:: javascript
 
    (network.relationships || network.relationship || []) .map((rel, index) => { const from = String(rel.from ?? rel.source… callback @ 129(r)
 
-实现 ``(network.relationships \|\| network.relationship \|\| []) .map((rel, index) => { const from = String(rel.from ?? rel.source…`` 对应的前端处理。
+实现 ``(network.relationships || network.relationship || []) .map((rel, index) => { const from = String(rel.from ?? rel.source…`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``129``—``129`` 行；所属函数 ``memo callback @ 79``。
 
@@ -637,7 +637,7 @@ src/features/chat/ui/message/components/KnowledgeGraphViewer 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``visited.add``、``result.push``、``graph.get``、``nextNodes .filter(nextId => !visited.has(nextId)) .sort((a, b) => (degree.get(a) \|\| 0) - (degree.get(b) \|\| 0)) .forEach``、``nextNodes .filter(nextId => !visited.has(nextId)) .sort``、``nextNodes .filter``。
+**主要协作调用**：``visited.add``、``result.push``、``graph.get``、``nextNodes .filter(nextId => !visited.has(nextId)) .sort((a, b) => (degree.get(a) || 0) - (degree.get(b) || 0)) .forEach``、``nextNodes .filter(nextId => !visited.has(nextId)) .sort``、``nextNodes .filter``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 

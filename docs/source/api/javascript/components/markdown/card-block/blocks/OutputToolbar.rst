@@ -1,5 +1,5 @@
 src/components/markdown/card-block/blocks/OutputToolbar 模块
-==========================================================
+============================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/blocks/OutputToolbar
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/blocks/OutputToolbar 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/blocks/OutputToolbar.jsx``
 * **模块标识**：``src/components/markdown/card-block/blocks/OutputToolbar``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/blocks/OutputToolbar 模块
 * **局部函数与匿名回调**：6
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-i18next``、``lucide-react``、``@/lib/tools.jsx``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,11 +44,11 @@ src/components/markdown/card-block/blocks/OutputToolbar 模块
 **参数**
 
 ``{ copyContent = '', isFollowing = true, onScrollToBottom, onToggleFollowing, tone = 'slate', }``
-   调用方传入的 `` copyContent = '', isFollowing = true, onScrollToBottom, onToggleFollowing, tone = 'slate', `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``copyContent = '', isFollowing = true, onScrollToBottom, onToggleFollowing, tone = 'slate',`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className={\`flex min-h-7 items-center justify-between gap-2 border-b px-2 py-1 text-[10px] backdrop-blur-sm ${toneClass}\`}> <div className="flex min-w-0 items-center gap-1"…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60flex min-h-7 items-center justify-between gap-2 border-b px-2 py-1 text-[10px] backdrop-blur-sm ${toneClass}\x60}> <div className="flex min-w-0 items-center gap-1"…``。
 
 **副作用**
 

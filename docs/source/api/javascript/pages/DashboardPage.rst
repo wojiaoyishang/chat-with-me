@@ -1,5 +1,5 @@
 src/pages/DashboardPage 模块
-==========================
+================================================================================
 
 .. js:module:: src/pages/DashboardPage
 
@@ -11,7 +11,7 @@ src/pages/DashboardPage 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/pages/DashboardPage.jsx``
 * **模块标识**：``src/pages/DashboardPage``
@@ -20,12 +20,12 @@ src/pages/DashboardPage 模块
 * **局部函数与匿名回调**：22
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@/components/sidebar/Sidebar.jsx``、``@/pages/ChatPage.jsx``、``@/lib/tools.jsx``、``@/lib/apiClient.js``、``@/config.js``、``react-i18next``、``@/pages/DocEditorHome.jsx``、``@/context/useEventStore.jsx``、``sonner``、``@/context/userContext.jsx``、``framer-motion``、``react-router-dom``、``@/features/notification/NotificationHost.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:849:1670:FUNCTION
 
@@ -41,7 +41,7 @@ src/pages/DashboardPage 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``{pageType: 'chat', conversationId: parts[1] \|\| null, documentId: null}``、``{pageType: 'doc', documentId: parts[1] \|\| null, conversationId: parts[2] \|\| null}``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``{pageType: 'chat', conversationId: parts[1] || null, documentId: null}``、``{pageType: 'doc', documentId: parts[1] || null, conversationId: parts[2] || null}``。
 
    **副作用**
 
@@ -81,7 +81,7 @@ src/pages/DashboardPage 模块
    **内部回调数量**：12。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -211,7 +211,7 @@ src/pages/DashboardPage 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``(Array.isArray(scopes) ? scopes : [scopes]) .map((scope) => String(scope \|\| '').trim()) .filter``、``(Array.isArray(scopes) ? scopes : [scopes]) .map``、``Array.isArray``、``setSettingsRefreshVersions``。
+**主要协作调用**：``(Array.isArray(scopes) ? scopes : [scopes]) .map((scope) => String(scope || '').trim()) .filter``、``(Array.isArray(scopes) ? scopes : [scopes]) .map``、``Array.isArray``、``setSettingsRefreshVersions``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
@@ -236,7 +236,7 @@ src/pages/DashboardPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String(scope \|\| '').trim``、``String``。
+**主要协作调用**：``String(scope || '').trim``、``String``。
 
 .. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:3334:3548:FUNCTION
 

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {CircleCheck, CircleX, Eye, EyeOff, Loader2, X} from 'lucide-react';
 import {selectArtifactTransfer, useWorkspaceTransferStore} from '@/features/workspace/useWorkspaceTransferStore.js';
 import {resolveResourceUrl} from '@/lib/virtualUrl.js';
-import {isAttachmentVisionEnabled, isImageAttachment} from '../attachmentVision.js';
+import {isAttachmentVisionEnabled, isImageAttachment, normalizeAttachmentList} from '../attachmentVision.js';
 
 // 将格式化文件大小的函数移到组件外部，避免每次渲染都重新创建
 const formatFileSize = (bytes) => {
@@ -298,6 +298,7 @@ const AttachmentShowcase = memo(({
     const scrollContainerRef = useRef(null);
     const [showLeftShadow, setShowLeftShadow] = useState(false);
     const [showRightShadow, setShowRightShadow] = useState(false);
+    const normalizedAttachments = useMemo(() => normalizeAttachmentList(attachmentsMeta), [attachmentsMeta]);
 
     // 使用useCallback缓存函数，避免每次渲染都创建新函数
     const checkScrollShadows = useCallback(() => {
@@ -334,11 +335,11 @@ const AttachmentShowcase = memo(({
 
     // 使用useMemo缓存附件项列表
     const attachmentItems = useMemo(() => {
-        if (!attachmentsMeta || attachmentsMeta.length === 0) {
+        if (normalizedAttachments.length === 0) {
             return null;
         }
 
-        return attachmentsMeta.map((attachment, index) => (
+        return normalizedAttachments.map((attachment, index) => (
             <AttachmentItem
                 key={attachment.id || index}
                 attachment={attachment}
@@ -350,7 +351,7 @@ const AttachmentShowcase = memo(({
                 t={t}
             />
         ));
-    }, [attachmentsMeta, onRemove, onVisionToggle, visionSupported, msgMode, t]);
+    }, [normalizedAttachments, onRemove, onVisionToggle, visionSupported, msgMode, t]);
 
     useLayoutEffect(() => {
         const container = scrollContainerRef.current;
@@ -377,14 +378,14 @@ const AttachmentShowcase = memo(({
             window.removeEventListener('resize', scheduleCheck);
             resizeObserver?.disconnect();
         };
-    }, [attachmentsMeta, checkScrollShadows]);
+    }, [normalizedAttachments, checkScrollShadows]);
 
     useEffect(() => {
         const frameId = window.requestAnimationFrame(checkScrollShadows);
         return () => window.cancelAnimationFrame(frameId);
     }, [attachmentItems, checkScrollShadows]);
 
-    if (!attachmentsMeta || attachmentsMeta.length === 0) {
+    if (normalizedAttachments.length === 0) {
         return emptyState;
     }
 
@@ -438,8 +439,8 @@ const AttachmentShowcase = memo(({
     );
 }, (prevProps, nextProps) => {
     // 自定义比较函数，优化组件重新渲染
-    const prevAttachments = prevProps.attachmentsMeta || [];
-    const nextAttachments = nextProps.attachmentsMeta || [];
+    const prevAttachments = normalizeAttachmentList(prevProps.attachmentsMeta);
+    const nextAttachments = normalizeAttachmentList(nextProps.attachmentsMeta);
 
     // 如果数量不同，需要重新渲染
     if (prevAttachments.length !== nextAttachments.length) {

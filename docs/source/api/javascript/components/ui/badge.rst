@@ -1,5 +1,5 @@
 src/components/ui/badge 模块
-==========================
+================================================================================
 
 .. js:module:: src/components/ui/badge
 
@@ -11,7 +11,7 @@ src/components/ui/badge 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/ui/badge.tsx``
 * **模块标识**：``src/components/ui/badge``
@@ -20,12 +20,12 @@ src/components/ui/badge 模块
 * **局部函数与匿名回调**：0
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@radix-ui/react-slot``、``class-variance-authority``、``@/lib/utils``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/ui/badge.tsx:1254:1599:FUNCTION
 
@@ -38,7 +38,7 @@ src/components/ui/badge 模块
    **参数**
 
    ``{ className, variant, asChild = false, ...props }``（类型 ``React.ComponentProps<"span"> & VariantProps<typeof badgeVariants> & { asChild?: boolean }``）
-      调用方传入的 `` className, variant, asChild = false, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, variant, asChild = false, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 

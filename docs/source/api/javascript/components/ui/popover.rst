@@ -1,5 +1,5 @@
 src/components/ui/popover 模块
-============================
+================================================================================
 
 .. js:module:: src/components/ui/popover
 
@@ -11,7 +11,7 @@ src/components/ui/popover 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/ui/popover.tsx``
 * **模块标识**：``src/components/ui/popover``
@@ -20,12 +20,12 @@ src/components/ui/popover 模块
 * **局部函数与匿名回调**：0
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@radix-ui/react-popover``、``@/lib/utils``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/ui/popover.tsx:124:280:FUNCTION
 
@@ -38,7 +38,7 @@ src/components/ui/popover 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof PopoverPrimitive.Root>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -55,7 +55,7 @@ src/components/ui/popover 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof PopoverPrimitive.Trigger>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -72,7 +72,7 @@ src/components/ui/popover 模块
    **参数**
 
    ``{ className, align = "center", sideOffset = 4, ...props }``（类型 ``React.ComponentProps<typeof PopoverPrimitive.Content>``）
-      调用方传入的 `` className, align = "center", sideOffset = 4, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, align = "center", sideOffset = 4, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -91,7 +91,7 @@ src/components/ui/popover 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof PopoverPrimitive.Anchor>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 

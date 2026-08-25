@@ -1,5 +1,5 @@
 src/features/chat/ui/message/components/MessageContextBadges 模块
-===============================================================
+======================================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/components/MessageContextBadges
 
@@ -11,7 +11,7 @@ Fallback message-level context status for layouts without a left-side name row. 
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/components/MessageContextBadges.jsx``
 * **模块标识**：``src/features/chat/ui/message/components/MessageContextBadges``
@@ -20,12 +20,12 @@ Fallback message-level context status for layouts without a left-side name row. 
 * **局部函数与匿名回调**：1
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``./IgnoredContextIndicator.jsx``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,8 +44,8 @@ Fallback message-level context status for layouts without a left-side name row. 
 **参数**
 
 ``{ conversationId, messageId, state, align = 'left', showForgotten = true, }``
-   调用方传入的 `` conversationId, messageId, state, align = 'left', showForgotten = true, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``conversationId, messageId, state, align = 'left', showForgotten = true,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\`mt-1 flex w-full flex-wrap items-center gap-1.5 ${align === 'right' ? 'justify-end pr-12' : 'justify-start pl-2 lg:pl-10'}\`}> <IgnoredContextIndicator conversat…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\x60mt-1 flex w-full flex-wrap items-center gap-1.5 ${align === 'right' ? 'justify-end pr-12' : 'justify-start pl-2 lg:pl-10'}\x60}> <IgnoredContextIndicator conversat…``。

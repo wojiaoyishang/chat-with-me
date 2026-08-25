@@ -1,5 +1,5 @@
 src/components/markdown/card-block/status/AnimatedProgressFill 模块
-=================================================================
+==========================================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/status/AnimatedProgressFill
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/status/AnimatedProgressFill 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/status/AnimatedProgressFill.jsx``
 * **模块标识**：``src/components/markdown/card-block/status/AnimatedProgressFill``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/status/AnimatedProgressFill 模块
 * **局部函数与匿名回调**：6
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,11 +44,11 @@ src/components/markdown/card-block/status/AnimatedProgressFill 模块
 **参数**
 
 ``{ className = '', isActive = false, progressKey, storageKey, targetPercent, }``
-   调用方传入的 `` className = '', isActive = false, progressKey, storageKey, targetPercent, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``className = '', isActive = false, progressKey, storageKey, targetPercent,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className={\`${className} ${isActive ? 'card-progress-breathe' : ''}\`} style={{ width: \`${displayPercent}%\`, }} /> )``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60${className} ${isActive ? 'card-progress-breathe' : ''}\x60} style={{ width: \x60${displayPercent}%\x60, }} /> )``。
 
 **副作用**
 

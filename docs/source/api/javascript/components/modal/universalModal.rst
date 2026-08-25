@@ -1,5 +1,5 @@
 src/components/modal/universalModal 模块
-======================================
+====================================================================================
 
 .. js:module:: src/components/modal/universalModal
 
@@ -11,7 +11,7 @@ src/components/modal/universalModal 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/modal/universalModal.js``
 * **模块标识**：``src/components/modal/universalModal``
@@ -20,12 +20,12 @@ src/components/modal/universalModal 模块
 * **局部函数与匿名回调**：7
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``zustand``、``@/lib/apiClient.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/modal/universalModal.js:184:644:FUNCTION
 
@@ -44,7 +44,7 @@ src/components/modal/universalModal 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``JSON.parse(text)``、``null``。
 
-   **主要协作调用**：``String(value \|\| '') .replace(/-/g, '+') .replace``、``String(value \|\| '') .replace``、``String``、``'='.repeat``、``atob``、``Uint8Array.from``、``new TextDecoder().decode``、``JSON.parse``。
+   **主要协作调用**：``String(value || '') .replace(/-/g, '+') .replace``、``String(value || '') .replace``、``String``、``'='.repeat``、``atob``、``Uint8Array.from``、``new TextDecoder().decode``、``JSON.parse``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -107,7 +107,7 @@ src/components/modal/universalModal 模块
 
    * 发起 HTTP 请求或访问外部服务。
 
-   **主要协作调用**：``isUniversalModalLink``、``String(href).trim``、``String``、``url.hostname.toLowerCase``、``url.pathname.split('/').filter``、``url.pathname.split``、``String(segments[0] \|\| '').toLowerCase``、``decodeBase64UrlJson``、``String(payload.endpoint \|\| '').trim``、``endpoint.startsWith``、``endpoint.includes``、``String(payload.method \|\| 'get').toLowerCase``。
+   **主要协作调用**：``isUniversalModalLink``、``String(href).trim``、``String``、``url.hostname.toLowerCase``、``url.pathname.split('/').filter``、``url.pathname.split``、``String(segments[0] || '').toLowerCase``、``decodeBase64UrlJson``、``String(payload.endpoint || '').trim``、``endpoint.startsWith``、``endpoint.includes``、``String(payload.method || 'get').toLowerCase``。
 
 .. CWM-AST-FUNCTION src/components/modal/universalModal.js:4646:4732:FUNCTION
 
@@ -149,7 +149,7 @@ src/components/modal/universalModal 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``useUniversalModalStore.getState().openRemote({ endpoint, params, method: options.method \|\| 'get', })``。
+   根据执行分支返回结果；代表性返回表达式为 ``useUniversalModalStore.getState().openRemote({ endpoint, params, method: options.method || 'get', })``。
 
    **主要协作调用**：``useUniversalModalStore.getState().openRemote``、``useUniversalModalStore.getState``。
 
@@ -173,7 +173,7 @@ src/components/modal/universalModal 模块
    **主要协作调用**：``parseUniversalModalLink``、``openUniversalModal``、``openRemoteUniversalModal``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -348,4 +348,4 @@ src/components/modal/universalModal 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``String(endpoint \|\| '').trim``、``String``、``safeEndpoint.startsWith``、``safeEndpoint.includes``、``set``、``get``、``String(method \|\| 'get').toLowerCase``、``apiClient.post``、``apiClient.get``、``normalizeDescriptor``。
+**主要协作调用**：``String(endpoint || '').trim``、``String``、``safeEndpoint.startsWith``、``safeEndpoint.includes``、``set``、``get``、``String(method || 'get').toLowerCase``、``apiClient.post``、``apiClient.get``、``normalizeDescriptor``。

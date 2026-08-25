@@ -1,5 +1,5 @@
 src/components/markdown/card-block/status/ProgressTimeline 模块
-=============================================================
+==================================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/status/ProgressTimeline
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/status/ProgressTimeline.jsx``
 * **模块标识**：``src/components/markdown/card-block/status/ProgressTimeline``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 * **局部函数与匿名回调**：5
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``./AnimatedProgressFill.jsx``、``./progressUtils.js``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,11 +44,11 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 **参数**
 
 ``{ progress, progressKey, isFailed, isDisappearing = false, }``
-   调用方传入的 `` progress, progressKey, isFailed, isDisappearing = false, `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``progress, progressKey, isFailed, isDisappearing = false,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\`w-full min-w-0 flex-1 overflow-visible transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${isDisappearing ? 'opacity-0 scale-x-[0.985] blur-[0.5px…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\x60w-full min-w-0 flex-1 overflow-visible transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${isDisappearing ? 'opacity-0 scale-x-[0.985] blur-[0.5px…``。
 
 **主要协作调用**：``Array.from``、``getCompactProgressSteps``、``getVisualProgressPercent``、``Math.min``、``getProgressStorageKey``、``steps.map``、``compactSteps.map``。
 
@@ -97,7 +97,7 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={step} className={\` relative flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold shadow-sm transition-all duration-300 ov…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={step} className={\x60 relative flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold shadow-sm transition-all duration-300 ov…``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:5824:7650:FUNCTION
 
@@ -118,7 +118,7 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={step} className={\` relative flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold shadow-sm transition-all duration-300 overflow-visible $…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={step} className={\x60 relative flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold shadow-sm transition-all duration-300 overflow-visible $…``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:7947:8249:FUNCTION
 

@@ -1,5 +1,5 @@
 src/components/markdown/card-block/status/StatusWidget 模块
-=========================================================
+==========================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/status/StatusWidget
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/status/StatusWidget 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/status/StatusWidget.jsx``
 * **模块标识**：``src/components/markdown/card-block/status/StatusWidget``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/status/StatusWidget 模块
 * **局部函数与匿名回调**：10
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-i18next``、``../constants.jsx``、``../expandedStore.js``、``../useExpandedState.js``、``../utils.js``、``./StatusBody.jsx``、``./StatusHeader.jsx``、``@/features/chat/ui/message/components/IgnoredContextIndicator.jsx``、``@/features/chat/ui/message/components/CompactedContextIndicator.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:1212:1846:FUNCTION
 
@@ -63,10 +63,10 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``fields``。
 
-   **主要协作调用**：``String(rawFields \|\| '').matchAll``、``String``、``toSafeString(match[1]).trim``、``toSafeString``、``toSafeString(match[2]).trim``。
+   **主要协作调用**：``String(rawFields || '').matchAll``、``String``、``toSafeString(match[1]).trim``、``toSafeString``、``toSafeString(match[2]).trim``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -85,7 +85,7 @@ src/components/markdown/card-block/status/StatusWidget 模块
 **参数**
 
 ``{ activeColor, content = '', doneColor, Icon, id, conversationId = null, isProcessing = false, titl…``
-   调用方传入的 `` activeColor, content = '', doneColor, Icon, id, conversationId = null, isProcessing = false, titl…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``activeColor, content = '', doneColor, Icon, id, conversationId = null, isProcessing = false, titl…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -205,7 +205,7 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``''``、``lastLine``、``\`...${lastLine.slice(-maxLen)}\```。
+根据执行分支返回结果；代表性返回表达式为 ``''``、``lastLine``、``\x60...${lastLine.slice(-maxLen)}\x60``。
 
 **主要协作调用**：``lastLine.slice``。
 
@@ -277,7 +277,7 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``null``、``( <IgnoredContextIndicator conversationId={conversationId} messageId={contextId} replacementId={resultReplacementId} label={t('context_state_tool_forgotten', '工具上下文已忽略')} /> )``、``( <CompactedContextIndicator conversationId={conversationId} messageId={contextId} replacementId={resultReplacementId} label={t('context_state_tool_compacted', '工具上下文已压缩')} /> )``。
 
-**主要协作调用**：``String``、``rawId.endsWith``、``rawId.slice``、``String( resultStatus?.status \|\| rootStatus?.status \|\| '', ).toLowerCase``、``Array.isArray``、``t``。
+**主要协作调用**：``String``、``rawId.endsWith``、``rawId.slice``、``String( resultStatus?.status || rootStatus?.status || '', ).toLowerCase``、``Array.isArray``、``t``。
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:12951:13691:FUNCTION
 

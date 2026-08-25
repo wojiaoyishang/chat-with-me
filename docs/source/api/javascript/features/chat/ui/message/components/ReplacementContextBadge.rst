@@ -1,9 +1,9 @@
 src/features/chat/ui/message/components/ReplacementContextBadge 模块
-==================================================================
+============================================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/components/ReplacementContextBadge
 
-Replacement-local status indicator for non-tool cards. Tool-call status is intentionally aggregated by the enclosing `toolCalling` status card so one invocation renders exactly one indicator beside "Tool Calling Finished" instead of repeating on nested command/result cards.
+Replacement-local status indicator for non-tool cards. Tool-call status is intentionally aggregated by the enclosing \`toolCalling\` status card so one invocation renders exactly one indicator beside "Tool Calling Finished" instead of repeating on nested command/result cards.
 
 .. note::
 
@@ -11,7 +11,7 @@ Replacement-local status indicator for non-tool cards. Tool-call status is inten
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/components/ReplacementContextBadge.jsx``
 * **模块标识**：``src/features/chat/ui/message/components/ReplacementContextBadge``
@@ -20,12 +20,12 @@ Replacement-local status indicator for non-tool cards. Tool-call status is inten
 * **局部函数与匿名回调**：1
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``./IgnoredContextIndicator.jsx``、``./CompactedContextIndicator.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/ui/message/components/ReplacementContextBadge.jsx:203:440:FUNCTION
 
@@ -42,12 +42,12 @@ Replacement-local status indicator for non-tool cards. Tool-call status is inten
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``value.startsWith('tool-result-') \|\| value.endsWith('-toolCalling') \|\| value.endsWith('-toolCommand') \|\| value.endsWith('-toolLog')``。
+   根据执行分支返回结果；代表性返回表达式为 ``value.startsWith('tool-result-') || value.endsWith('-toolCalling') || value.endsWith('-toolCommand') || value.endsWith('-toolLog')``。
 
    **主要协作调用**：``String``、``value.startsWith``、``value.endsWith``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -72,4 +72,4 @@ Replacement-local status indicator for non-tool cards. Tool-call status is inten
 
 根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="mb-1 flex justify-start" data-tts-ignore="true"> <IgnoredContextIndicator conversationId={conversationId} messageId={messageId} replacementId={replacementId} lab…``、``( <div className="mb-1 flex justify-start" data-tts-ignore="true"> <CompactedContextIndicator conversationId={conversationId} messageId={messageId} replacementId={replacementId} l…``。
 
-**主要协作调用**：``isToolReplacement``、``String(effectiveStatus.status \|\| '').toLowerCase``、``String``。
+**主要协作调用**：``isToolReplacement``、``String(effectiveStatus.status || '').toLowerCase``、``String``。

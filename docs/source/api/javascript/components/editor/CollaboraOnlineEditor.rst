@@ -1,5 +1,5 @@
 src/components/editor/CollaboraOnlineEditor 模块
-==============================================
+====================================================================================================
 
 .. js:module:: src/components/editor/CollaboraOnlineEditor
 
@@ -11,7 +11,7 @@ src/components/editor/CollaboraOnlineEditor 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/editor/CollaboraOnlineEditor.jsx``
 * **模块标识**：``src/components/editor/CollaboraOnlineEditor``
@@ -20,12 +20,12 @@ src/components/editor/CollaboraOnlineEditor 模块
 * **局部函数与匿名回调**：12
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``react-i18next``、``@/lib/tools.jsx``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,7 +44,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 **参数**
 
 ``{ iframeUrl, postmessageReady = true, onMessageReceived }``
-   调用方传入的 `` iframeUrl, postmessageReady = true, onMessageReceived `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``iframeUrl, postmessageReady = true, onMessageReceived`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 ``ref``
    调用方传入的 ``ref`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
@@ -312,7 +312,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 **参数**
 
 ``{ onRetry }``
-   调用方传入的 `` onRetry `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``onRetry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 

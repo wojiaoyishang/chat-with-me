@@ -1,5 +1,5 @@
 src/components/modal/UniversalModalHost 模块
-==========================================
+============================================================================================
 
 .. js:module:: src/components/modal/UniversalModalHost
 
@@ -11,7 +11,7 @@ src/components/modal/UniversalModalHost 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/modal/UniversalModalHost.jsx``
 * **模块标识**：``src/components/modal/UniversalModalHost``
@@ -20,12 +20,12 @@ src/components/modal/UniversalModalHost 模块
 * **局部函数与匿名回调**：16
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``@/components/markdown/MarkdownRenderer.jsx``、``@/components/ui/dialog``、``@/components/ui/badge``、``@/components/ui/button``、``./universalModal.js``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/modal/UniversalModalHost.jsx:734:779:FUNCTION
 
@@ -61,7 +61,7 @@ src/components/modal/UniversalModalHost 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <a href={href \|\| '#'} target={modalLink ? undefined : '_blank'} rel={modalLink ? undefined : 'noopener noreferrer'} className={\`inline-flex items-center gap-1 text-blue-600 unde…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <a href={href || '#'} target={modalLink ? undefined : '_blank'} rel={modalLink ? undefined : 'noopener noreferrer'} className={\x60inline-flex items-center gap-1 text-blue-600 unde…``。
 
    **主要协作调用**：``href.startsWith``。
 
@@ -174,7 +174,7 @@ src/components/modal/UniversalModalHost 模块
    **内部回调数量**：10。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -296,7 +296,7 @@ src/components/modal/UniversalModalHost 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <section className="min-w-0"> {block.title && <h3 className="mb-2 text-sm font-medium">{block.title}</h3>} <MarkdownRenderer content={String(block.content \|\| '')}/> </section> )``、``( <section className="space-y-2"> {block.title && <h3 className="text-sm font-medium">{block.title}</h3>} <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">…``、``<CodeBlock block={block}/>``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <section className="min-w-0"> {block.title && <h3 className="mb-2 text-sm font-medium">{block.title}</h3>} <MarkdownRenderer content={String(block.content || '')}/> </section> )``、``( <section className="space-y-2"> {block.title && <h3 className="text-sm font-medium">{block.title}</h3>} <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">…``、``<CodeBlock block={block}/>``。
 
 **主要协作调用**：``String``、``JSON.stringify``。
 
@@ -520,7 +520,7 @@ src/components/modal/UniversalModalHost 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <Button key={\`${action.label \|\| 'close'}-${index}\`} variant={action.variant \|\| 'outline'} onClick={close}> {action.label \|\| '关闭'} </Button> )``、``( <Button key={\`${action.label \|\| 'link'}-${index}\`} variant={action.variant \|\| 'default'} onClick={() => { if (!openUniversalModalLink(action.href)) { window.open(action.href, '_…``、``null``。
+根据执行分支返回结果；代表性返回表达式为 ``( <Button key={\x60${action.label || 'close'}-${index}\x60} variant={action.variant || 'outline'} onClick={close}> {action.label || '关闭'} </Button> )``、``( <Button key={\x60${action.label || 'link'}-${index}\x60} variant={action.variant || 'default'} onClick={() => { if (!openUniversalModalLink(action.href)) { window.open(action.href, '_…``、``null``。
 
 **副作用**
 

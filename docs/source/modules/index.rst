@@ -15,6 +15,7 @@
    event_store
    websocket_context
    chat_surface
+   story_mode
    message_summaries
    speech_runtime
    realtime_voice

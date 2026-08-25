@@ -1,5 +1,5 @@
 src/features/chat/ui/chatbox/components/SendButton 模块
-=====================================================
+==================================================================================================================
 
 .. js:module:: src/features/chat/ui/chatbox/components/SendButton
 
@@ -11,7 +11,7 @@ src/features/chat/ui/chatbox/components/SendButton 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/chatbox/components/SendButton.jsx``
 * **模块标识**：``src/features/chat/ui/chatbox/components/SendButton``
@@ -20,16 +20,16 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 * **局部函数与匿名回调**：3
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:69:4891:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:69:5364:FUNCTION
 
 .. rubric:: ``memo callback @ 3``
 
@@ -39,7 +39,7 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``3``—``108`` 行。
+**性质**：同步局部函数；源码第 ``3``—``118`` 行。
 
 **参数**
 
@@ -48,13 +48,13 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <button type="button" onClick={onClick} disabled={sendButtonStyle.disabled} aria-label={status === 'generating' && taskModeActive && messageContent.trim() ? t('task_mode_interru…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <button type="button" onClick={onClick} disabled={sendButtonStyle.disabled} aria-label={ status === 'generating' && taskModeActive && messageContent.trim() ? t('task_mode_interr…``。
 
 **主要协作调用**：``useMemo``、``messageContent.trim``、``t``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:220:4304:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:220:4535:FUNCTION
 
 .. rubric:: ``useMemo callback @ 4``
 
@@ -64,7 +64,7 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``4``—``95`` 行；所属函数 ``memo callback @ 3``。
+**性质**：同步局部函数；源码第 ``4``—``99`` 行；所属函数 ``memo callback @ 3``。
 
 **参数**
 
@@ -72,21 +72,21 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{ state: 'loading', className: 'text-white bg-blue-600 cursor-wait', icon: ( <div className="relative w-6 h-6"> <div className="absolute inset-[-9px] border-3 border-blue-300 bord…``、``{ state: 'disabled', className: 'text-gray-400 bg-gray-200 cursor-not-allowed', icon: baseIcon, disabled: true, }``、``{ state: 'loading', className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer', icon: ( <div className="relative w-6 h-6"> <div className="absolute inset-[-9px] border-3…``、``{ state: canSendTaskInterruption ? 'task-interrupt' : 'generating', className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer', icon: canSendTaskInterruption ? baseIcon…``。
+根据执行分支返回结果；代表性返回表达式为 ``{ state: 'loading', className: 'text-white bg-blue-600 cursor-wait', icon: ( <div className="relative w-6 h-6"> <div className="absolute inset-[-9px] border-3 border-blue-300 bord…``、``{ state: 'disabled', className: 'text-gray-400 bg-gray-200 cursor-not-allowed', icon: baseIcon, disabled: true, }``、``{ state: 'loading', className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer', icon: ( <div className="relative w-6 h-6"> <div className="absolute inset-[-9px] border-3…``、``{ state: canSendTaskInterruption ? 'task-interrupt' : (canInterruptAndSend ? 'interrupt-send' : 'generating'), className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer'…``。
 
-**主要协作调用**：``messageContent.trim``、``Boolean``。
+**主要协作调用**：``Boolean``、``messageContent.trim``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:4892:5313:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:5365:5786:FUNCTION
 
-.. rubric:: ``memo callback @ 108``
+.. rubric:: ``memo callback @ 118``
 
 .. code-block:: javascript
 
-   memo callback @ 108(prevProps, nextProps)
+   memo callback @ 118(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``108``—``117`` 行。
+**性质**：同步局部函数；源码第 ``118``—``127`` 行。
 
 **参数**
 

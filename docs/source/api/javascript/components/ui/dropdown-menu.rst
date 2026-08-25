@@ -1,5 +1,5 @@
 src/components/ui/dropdown-menu 模块
-==================================
+================================================================================
 
 .. js:module:: src/components/ui/dropdown-menu
 
@@ -11,7 +11,7 @@ src/components/ui/dropdown-menu 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/ui/dropdown-menu.tsx``
 * **模块标识**：``src/components/ui/dropdown-menu``
@@ -20,12 +20,12 @@ src/components/ui/dropdown-menu 模块
 * **局部函数与匿名回调**：0
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@radix-ui/react-dropdown-menu``、``lucide-react``、``@/lib/utils``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:206:383:FUNCTION
 
@@ -38,7 +38,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Root>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -55,7 +55,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Portal>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -72,7 +72,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -89,7 +89,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ className, sideOffset = 4, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Content>``）
-      调用方传入的 `` className, sideOffset = 4, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, sideOffset = 4, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -108,7 +108,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Group>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -124,8 +124,8 @@ src/components/ui/dropdown-menu 模块
 
    **参数**
 
-   ``{ className, inset, variant = "default", ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Item> & { inset?: boolean variant?: "default" \| "destructive" }``）
-      调用方传入的 `` className, inset, variant = "default", ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ className, inset, variant = "default", ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Item> & { inset?: boolean variant?: "default" | "destructive" }``）
+      调用方传入的 ``className, inset, variant = "default", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -144,7 +144,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ className, children, checked, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>``）
-      调用方传入的 `` className, children, checked, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, children, checked, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -163,7 +163,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -180,7 +180,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ className, children, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>``）
-      调用方传入的 `` className, children, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, children, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -199,7 +199,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ className, inset, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Label> & { inset?: boolean }``）
-      调用方传入的 `` className, inset, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, inset, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -218,7 +218,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Separator>``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -237,7 +237,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<"span">``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -256,7 +256,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Sub>``）
-      调用方传入的 `` ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -273,7 +273,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ className, inset, children, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & { inset?: boolean }``）
-      调用方传入的 `` className, inset, children, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, inset, children, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -292,7 +292,7 @@ src/components/ui/dropdown-menu 模块
    **参数**
 
    ``{ className, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.SubContent>``）
-      调用方传入的 `` className, ...props `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 

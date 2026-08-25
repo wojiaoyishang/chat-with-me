@@ -1,5 +1,5 @@
 src/components/markdown/card-block/task/TaskChecklistCard 模块
-============================================================
+================================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/task/TaskChecklistCard
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/task/TaskChecklistCard 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/task/TaskChecklistCard.jsx``
 * **模块标识**：``src/components/markdown/card-block/task/TaskChecklistCard``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/task/TaskChecklistCard 模块
 * **局部函数与匿名回调**：5
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``lucide-react``、``react-i18next``、``@/components/ui/badge``、``@/components/ui/card``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -72,7 +72,7 @@ src/components/markdown/card-block/task/TaskChecklistCard 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{ items: Array.isArray(parsed?.items) ? parsed.items : [], status: String(parsed?.status \|\| 'running'), }``、``{items: [], status: 'invalid'}``。
+根据执行分支返回结果；代表性返回表达式为 ``{ items: Array.isArray(parsed?.items) ? parsed.items : [], status: String(parsed?.status || 'running'), }``、``{items: [], status: 'invalid'}``。
 
 **主要协作调用**：``JSON.parse``、``String``、``Array.isArray``。
 
@@ -119,7 +119,7 @@ src/components/markdown/card-block/task/TaskChecklistCard 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={item?.id \|\| \`${index}-${item?.text \|\| ''}\`} className="flex items-start gap-2.5 px-3.5 py-2.5" > <Icon className={\`mt-0.5 h-4 w-4 shrink-0 ${className}\`}/> <div classN…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={item?.id || \x60${index}-${item?.text || ''}\x60} className="flex items-start gap-2.5 px-3.5 py-2.5" > <Icon className={\x60mt-0.5 h-4 w-4 shrink-0 ${className}\x60}/> <div classN…``。
 
 **主要协作调用**：``t``。
 

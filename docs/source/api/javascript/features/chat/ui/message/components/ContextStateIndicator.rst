@@ -1,5 +1,5 @@
 src/features/chat/ui/message/components/ContextStateIndicator 模块
-================================================================
+========================================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/components/ContextStateIndicator
 
@@ -11,7 +11,7 @@ Lightweight, always-available product status for context transformations. The co
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/components/ContextStateIndicator.jsx``
 * **模块标识**：``src/features/chat/ui/message/components/ContextStateIndicator``
@@ -20,12 +20,12 @@ Lightweight, always-available product status for context transformations. The co
 * **局部函数与匿名回调**：2
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``@/config.js``、``@/components/modal/universalModal.js``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -44,11 +44,11 @@ Lightweight, always-available product status for context transformations. The co
 **参数**
 
 ``{ icon: Icon, conversationId, messageId, replacementId = null, label, state = 'status', className =…``
-   调用方传入的 `` icon: Icon, conversationId, messageId, replacementId = null, label, state = 'status', className =…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``icon: Icon, conversationId, messageId, replacementId = null, label, state = 'status', className =…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <button type="button" data-context-state={state} data-tts-ignore="true" className={\`group inline-flex h-6 shrink-0 cursor-pointer items-center overflow-hidden rounded-full borde…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <button type="button" data-context-state={state} data-tts-ignore="true" className={\x60group inline-flex h-6 shrink-0 cursor-pointer items-center overflow-hidden rounded-full borde…``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 

@@ -1,5 +1,5 @@
 src/features/chat/ui/message/hooks/useMessageAnimation 模块
-=========================================================
+==========================================================================================================================
 
 .. js:module:: src/features/chat/ui/message/hooks/useMessageAnimation
 
@@ -11,7 +11,7 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/ui/message/hooks/useMessageAnimation.js``
 * **模块标识**：``src/features/chat/ui/message/hooks/useMessageAnimation``
@@ -20,12 +20,12 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 * **局部函数与匿名回调**：11
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:92:2334:FUNCTION
 
@@ -49,7 +49,7 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

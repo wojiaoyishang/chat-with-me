@@ -1,5 +1,5 @@
 src/lib/tools 模块
-================
+================================================================================
 
 .. js:module:: src/lib/tools
 
@@ -11,7 +11,7 @@ src/lib/tools 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/lib/tools.jsx``
 * **模块标识**：``src/lib/tools``
@@ -20,12 +20,12 @@ src/lib/tools 模块
 * **局部函数与匿名回调**：19
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react-router-dom``、``@/config.js``、``@/lib/apiClient``、``react``、``@/components/ui/ThreeDotLoading.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/lib/tools.jsx:900:1472:FUNCTION
 
@@ -42,7 +42,7 @@ src/lib/tools 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``[]``、``fileArray.map(file => ({ id: \`${Date.now()}-${Math.random().toString(36).substr(2, 9)}\`, name: file.name, progress: 0, serverId: null, file: file }))``。
+   根据执行分支返回结果；代表性返回表达式为 ``[]``、``fileArray.map(file => ({ id: \x60${Date.now()}-${Math.random().toString(36).substr(2, 9)}\x60, name: file.name, progress: 0, serverId: null, file: file }))``。
 
    **主要协作调用**：``Array.isArray``、``Array.from(files).filter``、``Array.from``、``fileArray.map``。
 
@@ -413,11 +413,11 @@ src/lib/tools 模块
    **参数**
 
    ``{ text, zIndex = "", compact = false }``
-      调用方传入的 `` text, zIndex = "", compact = false `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``text, zIndex = "", compact = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex flex-col items-center py-8"> <ThreeDotLoading /> {text && ( <span className="mt-3 text-xs text-gray-500 text-center"> {text} </span> )} </div> )``、``( <div className={\`absolute ${zIndex} inset-0 bg-white flex items-center justify-center\`}> <div className="flex flex-col items-center"> <ThreeDotLoading /> {text && ( <span classN…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex flex-col items-center py-8"> <ThreeDotLoading /> {text && ( <span className="mt-3 text-xs text-gray-500 text-center"> {text} </span> )} </div> )``、``( <div className={\x60absolute ${zIndex} inset-0 bg-white flex items-center justify-center\x60}> <div className="flex flex-col items-center"> <ThreeDotLoading /> {text && ( <span classN…``。
 
 .. CWM-AST-FUNCTION src/lib/tools.jsx:13694:16307:FUNCTION
 
@@ -430,14 +430,14 @@ src/lib/tools 模块
    **参数**
 
    ``{ title, subtitle, onRetry, retryText, zIndex = "", compact = false }``
-      调用方传入的 `` title, subtitle, onRetry, retryText, zIndex = "", compact = false `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+      调用方传入的 ``title, subtitle, onRetry, retryText, zIndex = "", compact = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex flex-col items-center px-2 py-4 text-center"> <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3"> <svg className="w-4 h-…``、``( <div className={\`absolute ${zIndex} inset-0 bg-white flex items-center justify-center\`}> <div className="flex flex-col items-center"> <div className="w-8 h-8 bg-red-100 rounded-…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex flex-col items-center px-2 py-4 text-center"> <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3"> <svg className="w-4 h-…``、``( <div className={\x60absolute ${zIndex} inset-0 bg-white flex items-center justify-center\x60}> <div className="flex flex-col items-center"> <div className="w-8 h-8 bg-red-100 rounded-…``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

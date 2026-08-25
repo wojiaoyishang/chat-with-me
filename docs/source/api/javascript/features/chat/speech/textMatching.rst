@@ -1,5 +1,5 @@
 src/features/chat/speech/textMatching 模块
-========================================
+========================================================================================
 
 .. js:module:: src/features/chat/speech/textMatching
 
@@ -11,7 +11,7 @@ src/features/chat/speech/textMatching 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/features/chat/speech/textMatching.js``
 * **模块标识**：``src/features/chat/speech/textMatching``
@@ -20,7 +20,7 @@ src/features/chat/speech/textMatching 模块
 * **局部函数与匿名回调**：1
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/features/chat/speech/textMatching.js:39:136:FUNCTION
 
@@ -58,7 +58,7 @@ src/features/chat/speech/textMatching 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``normalizeSpeechMatchText(value) .replace(/^\s*(?:[-*+•‣⁃]\|\d+[.)、]\|[a-zA-Z][.)])\s+/, '') .trim``、``normalizeSpeechMatchText(value) .replace``、``normalizeSpeechMatchText``。
+   **主要协作调用**：``normalizeSpeechMatchText(value) .replace(/^\s*(?:[-*+•‣⁃]|\d+[.)、]|[a-zA-Z][.)])\s+/, '') .trim``、``normalizeSpeechMatchText(value) .replace``、``normalizeSpeechMatchText``。
 
 .. CWM-AST-FUNCTION src/features/chat/speech/textMatching.js:331:732:FUNCTION
 
@@ -224,7 +224,7 @@ src/features/chat/speech/textMatching 模块
    **主要协作调用**：``element?.tagName?.toLowerCase``、``element?.getAttribute``、``['p', 'blockquote', 'td', 'th', 'figcaption', 'summary'].includes``、``/^h[1-6]$/.test``、``['pre', 'code'].includes``、``['span', 'strong', 'em'].includes``。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 

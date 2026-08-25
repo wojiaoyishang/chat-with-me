@@ -1,5 +1,5 @@
 src/components/markdown/card-block/task/TaskInterruptPreviewGroup 模块
-====================================================================
+================================================================================================================================================
 
 .. js:module:: src/components/markdown/card-block/task/TaskInterruptPreviewGroup
 
@@ -11,7 +11,7 @@ src/components/markdown/card-block/task/TaskInterruptPreviewGroup 模块
    它不会启动 Vite、React、WebSocket 或浏览器 API；人工架构章节优先于自动推断。
 
 源码与职责
-------------
+--------------------------------------------------------------------------------
 
 * **源码文件**：``src/components/markdown/card-block/task/TaskInterruptPreviewGroup.jsx``
 * **模块标识**：``src/components/markdown/card-block/task/TaskInterruptPreviewGroup``
@@ -20,12 +20,12 @@ src/components/markdown/card-block/task/TaskInterruptPreviewGroup 模块
 * **局部函数与匿名回调**：6
 
 主要依赖
---------
+--------------------------------------------------------------------------------
 
 ``react``、``./TaskUserMessageCard.jsx``。
 
 顶层函数、组件与 Hook
---------------------
+--------------------------------------------------------------------------------
 
 .. CWM-AST-FUNCTION src/components/markdown/card-block/task/TaskInterruptPreviewGroup.jsx:120:775:FUNCTION
 
@@ -53,7 +53,7 @@ src/components/markdown/card-block/task/TaskInterruptPreviewGroup 模块
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
-------------------
+--------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
@@ -99,7 +99,7 @@ src/components/markdown/card-block/task/TaskInterruptPreviewGroup 模块
 **参数**
 
 ``{previews = []}``
-   调用方传入的 ``previews = `` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   调用方传入的 ``previews =`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
