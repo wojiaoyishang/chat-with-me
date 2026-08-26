@@ -186,6 +186,17 @@ Voice Surface 将启动过程拆成 ``requesting_microphone``、``authorizing``�
 手动结束会立即关闭 Surface、停止麦克风和当前朗读；网络清理在后续完成。异步 Start 的晚到 Reply
 和麦克风授权结果会被 Lifecycle Token 丢弃，不能重新打开用户已经结束的 Session。
 
+无 Conversation ID 的 Chat 需要先通过主控制通道创建 Conversation，再启动 Voice Runtime。这个
+``null -> conversationId`` 是同一次 Voice Start 的资源绑定，不是会话导航，不能触发 Voice Hook 的 teardown。
+因此 Hook 的组件卸载清理必须是 unmount-only，不能把 ``stop`` callback identity（它会随 conversation props
+更新）直接作为 cleanup effect 依赖。真正从已有 Conversation A 导航到 B 或 ``null`` 时，由 ChatPage 明确结束
+A 的 Voice Session。
+
+Voice-only 的 ``conversation.create`` 使用每次启动动作独立的 idempotency key，不能复用普通
+``turn.start`` 的 ``currentTurnIdempotencyKey``；语音创建会话不经过普通 Turn 成功后的 key 轮换，否则挂断后
+再“新建对话 -> 开始语音”会把新建请求误判为上一动作的重复请求。Conversationless Voice Start 同时使用
+single-flight guard，避免 Conversation ID 尚未返回时快速连点创建两个资源。
+
 Composer 状态恢复
 --------------------------------------------------------------------------------
 
@@ -225,3 +236,31 @@ Media Ticket 授权。:class:`RealtimeVoiceTransport` 会继续等待后端
 如果 Ticket 无效或 Redis 消费失败，后端会在已建立的 WebSocket 上返回协议错误并以
 ``4401`` 关闭。前端会保留 ``CloseEvent.reason``，因此 Voice Surface 可以显示具体错误，
 而不是统一显示“连接超时”。
+
+Composer 主操作与后端能力
+--------------------------------------------------------------------------------
+
+Realtime Voice 的入口不再与发送按钮并列。ChatBox 右下角只有一个主操作槽位：普通模式下如果 Composer
+没有文本、附件或上传任务，并且不处于 Edit/Fork、Task Mode、语音输入、只读、Loading/Generating 等状态，
+前端才允许用 ``RealtimeVoiceButton`` 替换原本禁用的 ``SendButton``。一旦出现可发送内容或更高优先级的
+Composer 状态，主操作立即恢复为原 ``SendButton`` 状态机。
+
+是否展示 Voice 主操作不能由前端根据 URL、Provider 名字或路由探测猜测。``GET /chat/chatbox`` 返回：
+
+.. code-block:: json
+
+   {
+     "capabilities": {
+       "realtimeVoice": {
+         "available": true,
+         "reason": null,
+         "protocol": "cwm-realtime-v1"
+       }
+     }
+   }
+
+旧后端没有 ``capabilities.realtimeVoice`` 时按不可用处理。``available`` 仅用于 UI capability discovery；
+真正开始通话时 Media Ticket、``/ws/realtime`` 和 Profile negotiation 仍由后端重新校验，不能把前端 capability
+视作授权结果。
+
+主操作判定集中在 ``ComposerPrimaryAction``，不要重新在 ``ChatBox`` 中增加独立的 Voice/Send 并列按钮。

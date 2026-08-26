@@ -16,13 +16,23 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 15
      - 0
-     - 226
+     - 227
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
      - 0
      - 1
      - ``src/features/chat/attachmentVision.js``
+   * - :doc:`src/features/chat/composer/draftStore </api/javascript/features/chat/composer/draftStore>`
+     - 17
+     - 0
+     - 4
+     - ``src/features/chat/composer/draftStore.js``
+   * - :doc:`src/features/chat/composer/messageDraftMount </api/javascript/features/chat/composer/messageDraftMount>`
+     - 6
+     - 0
+     - 1
+     - ``src/features/chat/composer/messageDraftMount.js``
    * - :doc:`src/features/chat/index </api/javascript/features/chat/index>`
      - 0
      - 0
@@ -79,7 +89,7 @@
      - 21
      - ``src/features/chat/page/components/RightSidebar.jsx``
    * - :doc:`src/features/chat/page/components/RuntimeInspectorDialog </api/javascript/features/chat/page/components/RuntimeInspectorDialog>`
-     - 10
+     - 11
      - 0
      - 47
      - ``src/features/chat/page/components/RuntimeInspectorDialog.jsx``
@@ -174,9 +184,9 @@
      - 25
      - ``src/features/chat/ui/AttachmentShowcase.jsx``
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
-     - 13
+     - 6
      - 0
-     - 153
+     - 177
      - ``src/features/chat/ui/ChatBox.jsx``
    * - :doc:`src/features/chat/ui/ChatBoxHeader </api/javascript/features/chat/ui/ChatBoxHeader>`
      - 0
@@ -218,6 +228,11 @@
      - 0
      - 31
      - ``src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx``
+   * - :doc:`src/features/chat/ui/chatbox/components/ComposerPrimaryAction </api/javascript/features/chat/ui/chatbox/components/ComposerPrimaryAction>`
+     - 0
+     - 0
+     - 2
+     - ``src/features/chat/ui/chatbox/components/ComposerPrimaryAction.jsx``
    * - :doc:`src/features/chat/ui/chatbox/components/EditMessageIndicator </api/javascript/features/chat/ui/chatbox/components/EditMessageIndicator>`
      - 0
      - 0
@@ -411,7 +426,7 @@
    * - :doc:`src/features/chat/voice/useRealtimeVoiceConversation </api/javascript/features/chat/voice/useRealtimeVoiceConversation>`
      - 5
      - 0
-     - 42
+     - 43
      - ``src/features/chat/voice/useRealtimeVoiceConversation.js``
    * - :doc:`src/features/chat/widgets/WidgetPresentationContext </api/javascript/features/chat/widgets/WidgetPresentationContext>`
      - 2
@@ -459,9 +474,9 @@
      - 15
      - ``src/features/story/StorySelectorButton.jsx``
    * - :doc:`src/features/tools/components/ConversationToolsDialog </api/javascript/features/tools/components/ConversationToolsDialog>`
-     - 5
+     - 4
      - 0
-     - 40
+     - 56
      - ``src/features/tools/components/ConversationToolsDialog.jsx``
    * - :doc:`src/features/workspace/WorkspaceSelector </api/javascript/features/workspace/WorkspaceSelector>`
      - 1
@@ -495,6 +510,8 @@
 
    /api/javascript/features/chat/ChatPage
    /api/javascript/features/chat/attachmentVision
+   /api/javascript/features/chat/composer/draftStore
+   /api/javascript/features/chat/composer/messageDraftMount
    /api/javascript/features/chat/index
    /api/javascript/features/chat/modelCapabilities
    /api/javascript/features/chat/page/components/ChatHeader
@@ -534,6 +551,7 @@
    /api/javascript/features/chat/ui/QuickOptions
    /api/javascript/features/chat/ui/ToolButtons
    /api/javascript/features/chat/ui/chatbox/components/ChatBoxInteractionHost
+   /api/javascript/features/chat/ui/chatbox/components/ComposerPrimaryAction
    /api/javascript/features/chat/ui/chatbox/components/EditMessageIndicator
    /api/javascript/features/chat/ui/chatbox/components/ExtraToolsMenuItems
    /api/javascript/features/chat/ui/chatbox/components/FullscreenEditorModal

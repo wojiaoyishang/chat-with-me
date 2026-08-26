@@ -201,6 +201,7 @@ function ChatPage({
     const chatPageRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const currentTurnIdempotencyKeyRef = useRef(generateUUID());
+    const realtimeVoiceStartInFlightRef = useRef(false);
     const messagesLoadedIdempotencyKeyRef = useRef(generateUUID());
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
@@ -897,6 +898,12 @@ function ChatPage({
         resumeActiveSpeech,
         cancelActiveSpeech,
     });
+    const realtimeVoiceOpenRef = useRef(false);
+    const realtimeVoiceStopRef = useRef(null);
+    useEffect(() => {
+        realtimeVoiceOpenRef.current = Boolean(realtimeVoice.state.open);
+        realtimeVoiceStopRef.current = realtimeVoice.stop;
+    }, [realtimeVoice.state.open, realtimeVoice.stop]);
 
     // Message deltas, replacement deltas and the final readonly=false snapshot all
     // converge through the existing message state. Streaming TTS only needs one
@@ -1253,33 +1260,39 @@ function ChatPage({
     }, [conversationId, documentId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType, t, uploadFiles, onNewConversationId]);
 
     const handleRealtimeVoiceStart = useCallback(async ({toolsStatus = {}, composerStatus = 'normal'} = {}) => {
-        if (!selectedModel?.id) {
-            toast.error(t('no_models', {defaultValue: '没有可用模型'}));
-            return;
-        }
-        if (uploadFiles.length !== 0) {
-            toast.error(t('file_upload_not_complete'));
-            return;
-        }
-        if (composerStatus === 'loading' || composerStatus === 'disabled') {
-            toast.error(t('realtime_voice_composer_busy', {defaultValue: '当前对话正在切换状态，暂时无法启动实时语音。'}));
-            return;
-        }
-
-        const startForConversation = async (targetConversationId) => {
-            await realtimeVoice.start({
-                conversationId: targetConversationId,
-                model: selectedModel.id,
-                toolsStatus,
-                options: advancedSettingsValues,
-                pageType,
-                documentId,
-                ttsEngine: advancedSettingsValues?.speakEngine || 'browser',
-                composerStatus,
-            });
-        };
+        // conversation.create happens before the Voice Surface becomes active for a
+        // conversationless chat.  Prevent a rapid double-click from starting two
+        // independent create/start pipelines during that short window.
+        if (realtimeVoiceStartInFlightRef.current) return;
+        realtimeVoiceStartInFlightRef.current = true;
 
         try {
+            if (!selectedModel?.id) {
+                toast.error(t('no_models', {defaultValue: '没有可用模型'}));
+                return;
+            }
+            if (uploadFiles.length !== 0) {
+                toast.error(t('file_upload_not_complete'));
+                return;
+            }
+            if (composerStatus === 'loading' || composerStatus === 'disabled') {
+                toast.error(t('realtime_voice_composer_busy', {defaultValue: '当前对话正在切换状态，暂时无法启动实时语音。'}));
+                return;
+            }
+
+            const startForConversation = async (targetConversationId) => {
+                await realtimeVoice.start({
+                    conversationId: targetConversationId,
+                    model: selectedModel.id,
+                    toolsStatus,
+                    options: advancedSettingsValues,
+                    pageType,
+                    documentId,
+                    ttsEngine: advancedSettingsValues?.speakEngine || 'browser',
+                    composerStatus,
+                });
+            };
+
             // Desktop Realtime Voice is an embedded right dock. Reuse the existing
             // conversation sidebar slot instead of squeezing two right-side panels.
             setIsSidebarOpen(false);
@@ -1287,9 +1300,16 @@ function ChatPage({
                 await startForConversation(conversationId);
                 return;
             }
+
+            // Voice-only conversation creation is a distinct user action from a
+            // normal turn.start.  Do not reuse currentTurnIdempotencyKeyRef here:
+            // voice startup does not pass through the ordinary successful Turn path
+            // that rotates that key, so a later New Conversation could otherwise be
+            // rejected as a duplicate conversation.create request.
+            const voiceConversationCreateKey = generateUUID();
             const payload = await emitEvent({
                 event: 'conversation.create',
-                payload: {idempotencyKey: currentTurnIdempotencyKeyRef.current},
+                payload: {idempotencyKey: voiceConversationCreateKey},
             });
             // emitEvent is a thenable; await resolves its reply payload.
             if (!payload?.success) throw new Error(payload?.value || 'Unable to create conversation');
@@ -1299,6 +1319,8 @@ function ChatPage({
             await startForConversation(payload.value);
         } catch (error) {
             toast.error(error?.message || '无法启动实时语音');
+        } finally {
+            realtimeVoiceStartInFlightRef.current = false;
         }
     }, [advancedSettingsValues, conversationId, documentId, onNewConversationId, pageType, realtimeVoice, selectedModel, t, uploadFiles.length]);
 
@@ -2700,7 +2722,19 @@ function ChatPage({
             && Boolean(conversationId)
             && isNewConversationIdRef.current
         );
+        const switchedAwayFromActiveConversation = (
+            Boolean(previousConversationId)
+            && previousConversationId !== conversationId
+        );
         previousConversationIdRef.current = conversationId;
+
+        // Voice startup in a brand-new chat intentionally performs null -> newId
+        // and must survive that adoption.  Real navigation away from an existing
+        // conversation is different: close the old media session explicitly now
+        // that the voice hook's unmount cleanup is no longer tied to prop changes.
+        if (switchedAwayFromActiveConversation && realtimeVoiceOpenRef.current) {
+            void realtimeVoiceStopRef.current?.();
+        }
 
         clearWorkspaceTransfers();
         setSettingsInstanceKey(`${conversationId ?? 'conversationless'}-${Date.now()}`);

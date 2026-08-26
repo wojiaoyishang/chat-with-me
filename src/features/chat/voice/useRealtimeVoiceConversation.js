@@ -765,9 +765,18 @@ export function useRealtimeVoiceConversation({
         }
     }, [patchState, speechState?.status, state.open]);
 
-    useEffect(() => () => {
-        void stop({silent: true});
+    // Keep unmount cleanup independent from reactive callback identity.  The
+    // session's stop callback captures conversation-related helpers, so binding
+    // this cleanup directly to `stop` used to tear down a brand-new voice session
+    // when conversationId changed from null to the freshly-created conversation.
+    const stopLatestRef = useRef(stop);
+    useEffect(() => {
+        stopLatestRef.current = stop;
     }, [stop]);
+
+    useEffect(() => () => {
+        void stopLatestRef.current?.({silent: true});
+    }, []);
 
     useEffect(() => {
         if (!state.open || !sessionControlConnectionIdRef.current) return;

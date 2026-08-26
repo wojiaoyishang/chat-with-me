@@ -27,19 +27,21 @@ src/features/chat/voice/RealtimeVoiceButton 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceButton.jsx:67:618:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceButton.jsx:67:768:FUNCTION
 
-.. js:function:: RealtimeVoiceButton({onClick, disabled = false})
+.. js:function:: RealtimeVoiceButton({onClick, disabled = false, t})
 
    渲染 ``RealtimeVoiceButton`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``4``—``17`` 行。
+   **性质**：同步函数；导出 API；源码第 ``4``—``21`` 行。
 
    **参数**
 
-   ``{onClick, disabled = false}``
+   ``{onClick, disabled = false, t}``
       调用方提供的事件回调。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <button type="button" onClick={onClick} disabled={disabled} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-10…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <button type="button" onClick={onClick} disabled={disabled} className="p-2.5 rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-off…``。
+
+   **主要协作调用**：``t``。

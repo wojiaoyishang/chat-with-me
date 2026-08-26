@@ -70,6 +70,11 @@ Silero 资源与首次麦克风启动
 ``readyState=live``，再申请 Media Ticket / 建立媒体 WebSocket。协商期间复用同一 Track 暂停采集，完成后重新
 启动 Silero。Track 在任何启动阶段 ``ended`` 都要终止 Voice Runtime，不能留下“连接正常但麦克风没数据”的状态。
 
+无 Conversation ID 时，ChatPage 先创建 Conversation。``null -> 新 conversationId`` 只是本次 Voice Start
+绑定资源，不能因为 React callback/effect identity 更新而执行 teardown；真正从已有 Conversation 导航离开时再
+显式 ``stop``。Voice 创建 Conversation 的幂等键必须属于这次 Voice Start 自身，不能复用普通 Turn 的长期 ref。
+开始流程还应保持 single-flight，避免快速重复点击产生两个 ``conversation.create``。
+
 测试
 ----
 

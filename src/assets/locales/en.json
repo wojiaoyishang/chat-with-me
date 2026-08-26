@@ -575,5 +575,6 @@
   "allow_toolset_short": "Allow all",
   "ask_toolset_short": "Ask all",
   "deny_toolset_short": "Deny all",
-  "toolset_permission_summary": "Allow {{allow}} · Ask {{ask}} · Deny {{deny}}"
+  "toolset_permission_summary": "Allow {{allow}} · Ask {{ask}} · Deny {{deny}}",
+  "realtime_voice_start": "Start realtime voice conversation"
 }

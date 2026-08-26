@@ -78,7 +78,7 @@ src/components/ui/dropdown-menu 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} /> )``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:811:1828:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:811:1811:FUNCTION
 
 .. js:function:: DropdownMenuContent({ className, sideOffset = 4, ...props })
 
@@ -97,7 +97,7 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:1828:2028:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:1811:2011:FUNCTION
 
 .. js:function:: DropdownMenuGroup({ ...props })
 
@@ -114,7 +114,7 @@ src/components/ui/dropdown-menu 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuPrimitive.Group data-slot="dropdown-menu-group" {...props} /> )``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:2028:3115:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:2011:3098:FUNCTION
 
 .. js:function:: DropdownMenuItem({ className, inset, variant = "default", ...props })
 
@@ -133,7 +133,7 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:3115:4126:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:3098:4109:FUNCTION
 
 .. js:function:: DropdownMenuCheckboxItem({ className, children, checked, ...props })
 
@@ -152,7 +152,7 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:4126:4363:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:4109:4346:FUNCTION
 
 .. js:function:: DropdownMenuRadioGroup({ ...props })
 
@@ -169,7 +169,7 @@ src/components/ui/dropdown-menu 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuPrimitive.RadioGroup data-slot="dropdown-menu-radio-group" {...props} /> )``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:4363:5338:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:4346:5321:FUNCTION
 
 .. js:function:: DropdownMenuRadioItem({ className, children, ...props })
 
@@ -188,7 +188,7 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:5338:5734:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:5321:5717:FUNCTION
 
 .. js:function:: DropdownMenuLabel({ className, inset, ...props })
 
@@ -207,7 +207,7 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:5734:6040:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:5717:6023:FUNCTION
 
 .. js:function:: DropdownMenuSeparator({ className, ...props })
 
@@ -226,7 +226,7 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6040:6337:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6023:6320:FUNCTION
 
 .. js:function:: DropdownMenuShortcut({ className, ...props })
 
@@ -245,7 +245,7 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6337:6519:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6320:6502:FUNCTION
 
 .. js:function:: DropdownMenuSub({ ...props })
 
@@ -262,7 +262,7 @@ src/components/ui/dropdown-menu 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``<DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6519:7231:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6502:7214:FUNCTION
 
 .. js:function:: DropdownMenuSubTrigger({ className, inset, children, ...props })
 
@@ -281,7 +281,7 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:7231:8034:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:7214:8017:FUNCTION
 
 .. js:function:: DropdownMenuSubContent({ className, ...props })
 

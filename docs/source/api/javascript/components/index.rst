@@ -251,7 +251,7 @@
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
      - 40
      - 0
-     - 189
+     - 194
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/UserProfileCard </api/javascript/components/setting/UserProfileCard>`
      - 1

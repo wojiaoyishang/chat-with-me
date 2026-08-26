@@ -14,10 +14,9 @@ import FileUploadProgress from './FileUploadProgress';
 import DropFileLayer from './DropFileLayer.jsx';
 import MessageInput from './chatbox/components/MessageInput';
 import EditMessageIndicator from './chatbox/components/EditMessageIndicator';
-import SendButton from './chatbox/components/SendButton';
+import ComposerPrimaryAction from './chatbox/components/ComposerPrimaryAction';
 import VoiceInputButton from './chatbox/components/VoiceInputButton';
 import VoicePermissionDialog from './chatbox/components/VoicePermissionDialog';
-import {RealtimeVoiceButton} from '../voice/index.js';
 import ChatBoxInteractionHost from './chatbox/components/ChatBoxInteractionHost';
 import {getAttachmentId} from '../attachmentVision.js';
 import {
@@ -288,6 +287,11 @@ function ChatBox({
 
     // 按钮
     const [sendButtonStatus, setSendButtonStatus] = useState('normal');
+    const [realtimeVoiceCapability, setRealtimeVoiceCapability] = useState({
+        available: false,
+        reason: 'not_loaded',
+        protocol: null,
+    });
     const [activeTaskMode, setActiveTaskMode] = useState(null);
     const [activeTaskModeOptions, setActiveTaskModeOptions] = useState([]);
     const [isTaskInterruptPending, setIsTaskInterruptPending] = useState(false);
@@ -1519,6 +1523,15 @@ function ChatBox({
             setIsReadOnly(Boolean(data.readOnly));
         }
 
+        if (data.capabilities && Object.prototype.hasOwnProperty.call(data.capabilities, 'realtimeVoice')) {
+            const capability = data.capabilities.realtimeVoice || {};
+            setRealtimeVoiceCapability({
+                available: capability.available === true,
+                reason: capability.reason || null,
+                protocol: capability.protocol || null,
+            });
+        }
+
         if (data.tipMessage !== undefined) {
             setTipMessageIsForNewLine(false);
             if (data.tipMessage === null) {
@@ -2646,22 +2659,26 @@ function ChatBox({
                                 </select>
                             )}
 
-                            <RealtimeVoiceButton
-                                disabled={isReadOnly || !selectedModel?.id || ['loading', 'disabled'].includes(sendButtonStatus)}
-                                onClick={() => onRealtimeVoiceStart?.({
-                                    toolsStatus: activeToolsStatus,
-                                    composerStatus: sendButtonStatus,
-                                })}
-                            />
-
-                            {/* 发送按钮 */}
-                            <SendButton
+                            {/* 主操作：空输入且后端声明支持时，实时语音替换禁用的发送按钮。 */}
+                            <ComposerPrimaryAction
                                 status={sendButtonStatus}
                                 messageContent={messageContent}
                                 attachmentsMeta={attachmentsMeta}
-                                onClick={handleSendMessage}
+                                onSend={handleSendMessage}
                                 taskModeActive={Boolean(activeTaskMode?.active)}
                                 taskInterruptPending={isTaskInterruptPending}
+                                isEditMessage={isEditMessage}
+                                isForkMode={isForkMode}
+                                isReadOnly={isReadOnly}
+                                selectedModel={selectedModel}
+                                realtimeVoiceCapability={realtimeVoiceCapability}
+                                onRealtimeVoiceStart={onRealtimeVoiceStart}
+                                realtimeVoicePayload={{
+                                    toolsStatus: activeToolsStatus,
+                                    composerStatus: sendButtonStatus,
+                                }}
+                                voiceInputBusy={isMobileVoiceMode || isVoiceRecording || isVoiceRecognizing || voiceActionPending}
+                                uploadPending={uploadFiles.length > 0}
                                 t={t}
                             />
                         </div>

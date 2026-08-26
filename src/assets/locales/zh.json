@@ -574,5 +574,6 @@
   "allow_toolset_short": "全部允许",
   "ask_toolset_short": "全部询问",
   "deny_toolset_short": "全部拒绝",
-  "toolset_permission_summary": "允许 {{allow}} · 询问 {{ask}} · 拒绝 {{deny}}"
+  "toolset_permission_summary": "允许 {{allow}} · 询问 {{ask}} · 拒绝 {{deny}}",
+  "realtime_voice_start": "开始实时语音对话"
 }

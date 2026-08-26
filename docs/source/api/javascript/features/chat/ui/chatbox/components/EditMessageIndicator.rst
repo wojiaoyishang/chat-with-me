@@ -29,7 +29,7 @@ src/features/chat/ui/chatbox/components/EditMessageIndicator 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/EditMessageIndicator.jsx:189:2465:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/EditMessageIndicator.jsx:190:2685:FUNCTION
 
 .. rubric:: ``memo callback @ 5``
 
@@ -39,7 +39,7 @@ src/features/chat/ui/chatbox/components/EditMessageIndicator 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``5``—``70`` 行。
+**性质**：同步局部函数；源码第 ``5``—``72`` 行。
 
 **参数**
 
@@ -54,7 +54,7 @@ src/features/chat/ui/chatbox/components/EditMessageIndicator 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/EditMessageIndicator.jsx:334:369:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/EditMessageIndicator.jsx:335:370:FUNCTION
 
 .. rubric:: ``useCallback callback @ 13``
 
@@ -76,7 +76,7 @@ src/features/chat/ui/chatbox/components/EditMessageIndicator 模块
 
 **主要协作调用**：``onCancel``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/EditMessageIndicator.jsx:421:455:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/EditMessageIndicator.jsx:422:456:FUNCTION
 
 .. rubric:: ``useCallback callback @ 17``
 
@@ -98,17 +98,17 @@ src/features/chat/ui/chatbox/components/EditMessageIndicator 模块
 
 **主要协作调用**：``onClear``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/EditMessageIndicator.jsx:2466:2776:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/EditMessageIndicator.jsx:2686:2996:FUNCTION
 
-.. rubric:: ``memo callback @ 70``
+.. rubric:: ``memo callback @ 72``
 
 .. code-block:: javascript
 
-   memo callback @ 70(prevProps, nextProps)
+   memo callback @ 72(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``70``—``78`` 行。
+**性质**：同步局部函数；源码第 ``72``—``80`` 行。
 
 **参数**
 

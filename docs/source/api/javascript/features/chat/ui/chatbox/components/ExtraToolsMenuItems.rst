@@ -27,7 +27,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:1610:1774:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:1624:1788:FUNCTION
 
 .. js:function:: getMobileAccordionPanelClass(isOpen)
 
@@ -44,18 +44,18 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:2212:25325:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:2226:25928:FUNCTION
 
-.. js:function:: useExtraToolsMenuItems({ toolsStatus, setToolsStatus, runtimeToolPermissions = {}, onToolPermissionChange, highZClass, t,…)
+.. js:function:: useExtraToolsMenuItems({ toolsStatus, setToolsStatus, runtimeToolPermissions = {}, pendingToolPermissionNames = new Set(),…)
 
    封装 ``useExtraToolsMenuItems`` Hook，向调用组件提供相关状态、动作与生命周期清理。
 
-   **性质**：同步函数；导出 API；源码第 ``42``—``460`` 行。
+   **性质**：同步函数；导出 API；源码第 ``42``—``468`` 行。
 
    **参数**
 
-   ``{ toolsStatus, setToolsStatus, runtimeToolPermissions = {}, onToolPermissionChange, highZClass, t,…``
-      调用方传入的 ``toolsStatus, setToolsStatus, runtimeToolPermissions = , onToolPermissionChange, highZClass, t,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ toolsStatus, setToolsStatus, runtimeToolPermissions = {}, pendingToolPermissionNames = new Set(),…``
+      调用方传入的 ``toolsStatus, setToolsStatus, runtimeToolPermissions = , pendingToolPermissionNames = new Set(),…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -70,17 +70,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:2954:3065:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:3012:3123:FUNCTION
 
-.. rubric:: ``useCallback callback @ 59``
+.. rubric:: ``useCallback callback @ 60``
 
 .. code-block:: javascript
 
-   useCallback callback @ 59(parentPath)
+   useCallback callback @ 60(parentPath)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``59``—``61`` 行；所属函数 ``useExtraToolsMenuItems``。
+**性质**：同步局部函数；源码第 ``60``—``62`` 行；所属函数 ``useExtraToolsMenuItems``。
 
 **参数**
 
@@ -93,17 +93,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``parentPath.join``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:3116:3211:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:3174:3269:FUNCTION
 
-.. rubric:: ``useCallback callback @ 62``
+.. rubric:: ``useCallback callback @ 63``
 
 .. code-block:: javascript
 
-   useCallback callback @ 62(sectionScope, sectionKey)
+   useCallback callback @ 63(sectionScope, sectionKey)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``62``—``64`` 行；所属函数 ``useExtraToolsMenuItems``。
+**性质**：同步局部函数；源码第 ``63``—``65`` 行；所属函数 ``useExtraToolsMenuItems``。
 
 **参数**
 
@@ -117,17 +117,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:3280:3587:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:3338:3645:FUNCTION
 
-.. rubric:: ``useCallback callback @ 65``
+.. rubric:: ``useCallback callback @ 66``
 
 .. code-block:: javascript
 
-   useCallback callback @ 65(sectionScope, sectionKey)
+   useCallback callback @ 66(sectionScope, sectionKey)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``65``—``73`` 行；所属函数 ``useExtraToolsMenuItems``。
+**性质**：同步局部函数；源码第 ``66``—``74`` 行；所属函数 ``useExtraToolsMenuItems``。
 
 **参数**
 
@@ -145,17 +145,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:3342:3579:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:3400:3637:FUNCTION
 
-.. rubric:: ``setMobileOpenSections callback @ 66``
+.. rubric:: ``setMobileOpenSections callback @ 67``
 
 .. code-block:: javascript
 
-   setMobileOpenSections callback @ 66(prev)
+   setMobileOpenSections callback @ 67(prev)
 
 设置与 ``Mobile Open Sections`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``66``—``72`` 行；所属函数 ``useCallback callback @ 65``。
+**性质**：同步局部函数；源码第 ``67``—``73`` 行；所属函数 ``useCallback callback @ 66``。
 
 **参数**
 
@@ -166,17 +166,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``{ ...currentSections, [sectionScope]: currentSections[sectionScope] === sectionKey ? null : sectionKey, }``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:3651:4113:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:3709:4171:FUNCTION
 
-.. rubric:: ``useCallback callback @ 75``
+.. rubric:: ``useCallback callback @ 76``
 
 .. code-block:: javascript
 
-   useCallback callback @ 75(iconType, iconData)
+   useCallback callback @ 76(iconType, iconData)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``75``—``88`` 行；所属函数 ``useExtraToolsMenuItems``。
+**性质**：同步局部函数；源码第 ``76``—``89`` 行；所属函数 ``useExtraToolsMenuItems``。
 
 **参数**
 
@@ -192,17 +192,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``resolveResourceUrl``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:4161:25060:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:4219:25635:FUNCTION
 
-.. rubric:: ``useCallback callback @ 90``
+.. rubric:: ``useCallback callback @ 91``
 
 .. code-block:: javascript
 
-   useCallback callback @ 90(items, parentPath)
+   useCallback callback @ 91(items, parentPath)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``90``—``457`` 行；所属函数 ``useExtraToolsMenuItems``。
+**性质**：同步局部函数；源码第 ``91``—``465`` 行；所属函数 ``useExtraToolsMenuItems``。
 
 **参数**
 
@@ -220,17 +220,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:4216:25052:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:4274:25627:FUNCTION
 
-.. rubric:: ``items.map callback @ 91``
+.. rubric:: ``items.map callback @ 92``
 
 .. code-block:: javascript
 
-   items.map callback @ 91(item, index)
+   items.map callback @ 92(item, index)
 
 作为 ``items.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``91``—``456`` 行；所属函数 ``useCallback callback @ 90``。
+**性质**：同步局部函数；源码第 ``92``—``464`` 行；所属函数 ``useCallback callback @ 91``。
 
 **参数**
 
@@ -248,17 +248,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **内部回调数量**：14。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:5072:5105:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:5130:5163:FUNCTION
 
-.. rubric:: ``togglePaths.map callback @ 111``
+.. rubric:: ``togglePaths.map callback @ 112``
 
 .. code-block:: javascript
 
-   togglePaths.map callback @ 111(path)
+   togglePaths.map callback @ 112(path)
 
 作为 ``togglePaths.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``111``—``111`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``112``—``112`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -269,7 +269,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:5246:5655:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:5304:5713:FUNCTION
 
 .. rubric:: ``handleToggleAll``
 
@@ -279,7 +279,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 处理 ``Toggle All`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``113``—``123`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``114``—``124`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -293,17 +293,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:5356:5635:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:5414:5693:FUNCTION
 
-.. rubric:: ``setToolsStatus callback @ 115``
+.. rubric:: ``setToolsStatus callback @ 116``
 
 .. code-block:: javascript
 
-   setToolsStatus callback @ 115(prev)
+   setToolsStatus callback @ 116(prev)
 
 设置与 ``Tools Status`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``115``—``122`` 行；所属函数 ``handleToggleAll``。
+**性质**：同步局部函数；源码第 ``116``—``123`` 行；所属函数 ``handleToggleAll``。
 
 **参数**
 
@@ -316,17 +316,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``toggleAllInGroup``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:6294:6360:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:6352:6418:FUNCTION
 
-.. rubric:: ``onClick callback @ 136``
+.. rubric:: ``onClick callback @ 137``
 
 .. code-block:: javascript
 
-   onClick callback @ 136()
+   onClick callback @ 137()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``136``—``136`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``137``—``137`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -338,17 +338,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``toggleMobileSection``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:7741:7766:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:7799:7824:FUNCTION
 
-.. rubric:: ``onSelect callback @ 156``
+.. rubric:: ``onSelect callback @ 157``
 
 .. code-block:: javascript
 
-   onSelect callback @ 156(e)
+   onSelect callback @ 157(e)
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``156``—``156`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -361,17 +361,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``e.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:10743:10768:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:10801:10826:FUNCTION
 
-.. rubric:: ``onSelect callback @ 204``
+.. rubric:: ``onSelect callback @ 205``
 
 .. code-block:: javascript
 
-   onSelect callback @ 204(e)
+   onSelect callback @ 205(e)
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``204``—``204`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``205``—``205`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -384,7 +384,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``e.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:13183:13615:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:13330:13762:FUNCTION
 
 .. rubric:: ``setMode``
 
@@ -394,7 +394,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 设置与 ``Mode`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``241``—``250`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``243``—``252`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -412,17 +412,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:13371:13532:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:13518:13679:FUNCTION
 
-.. rubric:: ``setToolsStatus callback @ 245``
+.. rubric:: ``setToolsStatus callback @ 247``
 
 .. code-block:: javascript
 
-   setToolsStatus callback @ 245(prev)
+   setToolsStatus callback @ 247(prev)
 
 设置与 ``Tools Status`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``245``—``248`` 行；所属函数 ``setMode``。
+**性质**：同步局部函数；源码第 ``247``—``250`` 行；所属函数 ``setMode``。
 
 **参数**
 
@@ -435,17 +435,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``setNestedValue``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:14409:15666:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:14984:16241:FUNCTION
 
-.. rubric:: ``modes.map callback @ 264``
+.. rubric:: ``modes.map callback @ 272``
 
 .. code-block:: javascript
 
-   modes.map callback @ 264({value, label, Icon})
+   modes.map callback @ 272({value, label, Icon})
 
 作为 ``modes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``264``—``282`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``272``—``290`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -460,17 +460,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:14947:14979:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:15522:15554:FUNCTION
 
-.. rubric:: ``onClick callback @ 273``
+.. rubric:: ``onClick callback @ 281``
 
 .. code-block:: javascript
 
-   onClick callback @ 273(event)
+   onClick callback @ 281(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``273``—``273`` 行；所属函数 ``modes.map callback @ 264``。
+**性质**：同步局部函数；源码第 ``281``—``281`` 行；所属函数 ``modes.map callback @ 272``。
 
 **参数**
 
@@ -483,17 +483,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``setMode``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:16164:16189:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:16739:16764:FUNCTION
 
-.. rubric:: ``onSelect callback @ 296``
+.. rubric:: ``onSelect callback @ 304``
 
 .. code-block:: javascript
 
-   onSelect callback @ 296(e)
+   onSelect callback @ 304(e)
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``296``—``296`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``304``—``304`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -506,17 +506,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``e.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:16224:16805:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:16799:17380:FUNCTION
 
-.. rubric:: ``onClick callback @ 297``
+.. rubric:: ``onClick callback @ 305``
 
 .. code-block:: javascript
 
-   onClick callback @ 297(e)
+   onClick callback @ 305(e)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``297``—``310`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``305``—``318`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -531,17 +531,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:16444:16777:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:17019:17352:FUNCTION
 
-.. rubric:: ``setToolsStatus callback @ 302``
+.. rubric:: ``setToolsStatus callback @ 310``
 
 .. code-block:: javascript
 
-   setToolsStatus callback @ 302(prev)
+   setToolsStatus callback @ 310(prev)
 
 设置与 ``Tools Status`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``302``—``309`` 行；所属函数 ``onClick callback @ 297``。
+**性质**：同步局部函数；源码第 ``310``—``317`` 行；所属函数 ``onClick callback @ 305``。
 
 **参数**
 
@@ -554,7 +554,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``setNestedValue``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:17841:20125:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:18416:20700:FUNCTION
 
 .. rubric:: ``renderRadioChildren``
 
@@ -564,7 +564,7 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 渲染与 ``Radio Children`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``327``—``365`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``335``—``373`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -578,17 +578,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:17866:20124:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:18441:20699:FUNCTION
 
-.. rubric:: ``item.children.map callback @ 327``
+.. rubric:: ``item.children.map callback @ 335``
 
 .. code-block:: javascript
 
-   item.children.map callback @ 327(child)
+   item.children.map callback @ 335(child)
 
 作为 ``item.children.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``327``—``365`` 行；所属函数 ``renderRadioChildren``。
+**性质**：同步局部函数；源码第 ``335``—``373`` 行；所属函数 ``renderRadioChildren``。
 
 **参数**
 
@@ -603,17 +603,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:18192:18217:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:18767:18792:FUNCTION
 
-.. rubric:: ``onSelect callback @ 333``
+.. rubric:: ``onSelect callback @ 341``
 
 .. code-block:: javascript
 
-   onSelect callback @ 333(e)
+   onSelect callback @ 341(e)
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``333``—``333`` 行；所属函数 ``item.children.map callback @ 327``。
+**性质**：同步局部函数；源码第 ``341``—``341`` 行；所属函数 ``item.children.map callback @ 335``。
 
 **参数**
 
@@ -626,17 +626,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``e.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:18256:19135:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:18831:19710:FUNCTION
 
-.. rubric:: ``onClick callback @ 334``
+.. rubric:: ``onClick callback @ 342``
 
 .. code-block:: javascript
 
-   onClick callback @ 334(e)
+   onClick callback @ 342(e)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``334``—``350`` 行；所属函数 ``item.children.map callback @ 327``。
+**性质**：同步局部函数；源码第 ``342``—``358`` 行；所属函数 ``item.children.map callback @ 335``。
 
 **参数**
 
@@ -651,17 +651,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:18742:19103:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:19317:19678:FUNCTION
 
-.. rubric:: ``setToolsStatus callback @ 342``
+.. rubric:: ``setToolsStatus callback @ 350``
 
 .. code-block:: javascript
 
-   setToolsStatus callback @ 342(prev)
+   setToolsStatus callback @ 350(prev)
 
 设置与 ``Tools Status`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``342``—``349`` 行；所属函数 ``onClick callback @ 334``。
+**性质**：同步局部函数；源码第 ``350``—``357`` 行；所属函数 ``onClick callback @ 342``。
 
 **参数**
 
@@ -674,17 +674,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``setNestedValue``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:20470:20507:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:21045:21082:FUNCTION
 
-.. rubric:: ``item.children?.find callback @ 371``
+.. rubric:: ``item.children?.find callback @ 379``
 
 .. code-block:: javascript
 
-   item.children?.find callback @ 371(child)
+   item.children?.find callback @ 379(child)
 
 作为 ``item.children?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``371``—``371`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``379``—``379`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -695,17 +695,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:20939:21005:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:21514:21580:FUNCTION
 
-.. rubric:: ``onClick callback @ 380``
+.. rubric:: ``onClick callback @ 388``
 
 .. code-block:: javascript
 
-   onClick callback @ 380()
+   onClick callback @ 388()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``380``—``380`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``388``—``388`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -717,17 +717,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``toggleMobileSection``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:24318:24344:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:24893:24919:FUNCTION
 
-.. rubric:: ``anonymous callback @ 441``
+.. rubric:: ``anonymous callback @ 449``
 
 .. code-block:: javascript
 
-   anonymous callback @ 441(e)
+   anonymous callback @ 449(e)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``441``—``441`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``449``—``449`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
@@ -740,17 +740,17 @@ src/features/chat/ui/chatbox/components/ExtraToolsMenuItems 模块
 
 **主要协作调用**：``e.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:24554:24576:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx:25129:25151:FUNCTION
 
-.. rubric:: ``onClick callback @ 446``
+.. rubric:: ``onClick callback @ 454``
 
 .. code-block:: javascript
 
-   onClick callback @ 446()
+   onClick callback @ 454()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``446``—``446`` 行；所属函数 ``items.map callback @ 91``。
+**性质**：同步局部函数；源码第 ``454``—``454`` 行；所属函数 ``items.map callback @ 92``。
 
 **参数**
 
