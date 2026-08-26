@@ -51,8 +51,8 @@ const EditMessageIndicator = memo((
                         type="button"
                         onClick={handleCancel}
                         className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
-                        aria-label={t('save_draft_and_exit_editing', '保存草稿并退出编辑')}
-                        title={t('save_draft_and_exit_editing', '保存草稿并退出编辑')}
+                        aria-label={t('discard_draft_and_exit_editing', '撤销本次修改并退出编辑')}
+                        title={t('discard_draft_and_exit_editing', '撤销本次修改并退出编辑')}
                     >
                         <X className="w-4 h-4"/>
                     </button>
@@ -60,8 +60,8 @@ const EditMessageIndicator = memo((
                         type="button"
                         onClick={handleClear}
                         className="text-gray-600 hover:text-gray-800 focus:rounded-full p-0.5 cursor-pointer"
-                        aria-label={t('stash_edit_draft_and_exit', '暂存草稿并退出编辑')}
-                        title={t('stash_edit_draft_and_exit', '暂存草稿并退出编辑')}
+                        aria-label={t('archive_edit_draft_and_exit', '存档草稿并退出编辑')}
+                        title={t('archive_edit_draft_and_exit', '存档草稿并退出编辑')}
                     >
                         <Archive className="w-4 h-4"/>
                     </button>

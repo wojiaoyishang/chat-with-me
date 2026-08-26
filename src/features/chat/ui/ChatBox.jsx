@@ -448,20 +448,46 @@ function ChatBox({
     }, [resolveDraftRole, setAttachments, updateMessageContent]);
 
     const leaveEditMode = useCallback(() => {
-        // Leaving Edit/Fork is an interruption, not a destructive discard. Persist
-        // the in-progress draft to both the message mount point and local Draft Store
+        // Archive/stash the current Edit/Fork draft in both browser-local layers
         // before restoring the independent normal composer draft.
         if (editDraftRef.current) persistActiveDraft();
         restoreNormalDraft();
     }, [persistActiveDraft, restoreNormalDraft]);
 
-    // ×：中断当前 Edit/Fork，保留消息级草稿并恢复普通输入草稿。
+    // ×：不保存“本次进入 Edit/Fork 之后”的修改。输入过程中工作副本仍会
+    // 持续写入 local Draft Store 与 Message runtime mount，用于刷新/中断恢复；
+    // 因此取消时不能简单清空草稿，而要回滚到进入本次编辑会话时捕获的 baseline。
+    // 如果进入前没有任何草稿，baseline 就是服务器消息本身，此时清理两层工作副本
+    // 即可；如果进入前已有存档/中断草稿，则把两层都恢复到那份进入前快照。
     const handleCancelEdit = useCallback(() => {
-        leaveEditMode();
-    }, [leaveEditMode]);
+        const editDraft = editDraftRef.current;
+        if (editDraft) {
+            if (editDraft.baselineWasDraft && editDraft.baselineSnapshot) {
+                const restoredBaseline = saveComposerSnapshot({
+                    conversationId: draftConversationIdRef.current,
+                    mode: editDraft.mode,
+                    messageId: editDraft.messageId,
+                    content: editDraft.baselineSnapshot.content,
+                    attachments: editDraft.baselineSnapshot.attachments,
+                    roleName: editDraft.baselineSnapshot.roleName,
+                });
+                if (restoredBaseline && editDraft.message) {
+                    mountComposerDraft(editDraft.message, editDraft.mode, restoredBaseline);
+                }
+            } else {
+                clearComposerDraft({
+                    conversationId: draftConversationIdRef.current,
+                    mode: editDraft.mode,
+                    messageId: editDraft.messageId,
+                });
+                clearMountedComposerDraft(editDraft.message, editDraft.mode);
+            }
+        }
+        restoreNormalDraft();
+    }, [restoreNormalDraft]);
 
-    // 取消按钮同样只是“暂存并退出”。真正提交成功后才清理消息上的
-    // Edit/Fork 草稿，避免误点或切换操作导致用户编辑内容永久丢失。
+    // 存档按钮：保留当前 Edit/Fork 工作副本并退出。下次进入同一 Message + mode
+    // 时，这份存档会成为新的 session baseline；之后再修改并点击 ×，只回滚到这里。
     const handleClearEdit = useCallback(() => {
         leaveEditMode();
     }, [leaveEditMode]);
@@ -1679,8 +1705,23 @@ function ChatBox({
                         ? (restoredDraft.attachments || [])
                         : (payload.attachments || []);
                     const nextRoleName = restoredDraft?.roleName || payload.role || null;
+                    const nextRole = resolveDraftRole(nextRoleName);
 
-                    editDraftRef.current = {messageId, mode: draftMode, message: targetMessage};
+                    // Capture the value visible *before this editing session starts*.
+                    // This is deliberately separate from the continuously persisted working
+                    // copy. A prior archive/stash or interrupted draft is therefore treated
+                    // as the baseline, while a first-time edit falls back to the server seed.
+                    editDraftRef.current = {
+                        messageId,
+                        mode: draftMode,
+                        message: targetMessage,
+                        baselineWasDraft: Boolean(restoredDraft),
+                        baselineSnapshot: {
+                            content: nextContent,
+                            attachments: nextAttachments,
+                            roleName: nextRole?.name || nextRoleName || null,
+                        },
+                    };
                     isEditMessageRef.current = true;
                     pendingEditClearRef.current = false;
 
@@ -1689,7 +1730,6 @@ function ChatBox({
                     setEditMessageId(messageId);
                     suppressAttachmentDraftPersistRef.current = true;
                     setAttachments(nextAttachments);
-                    const nextRole = resolveDraftRole(nextRoleName);
                     currentRoleRef.current = nextRole;
                     setCurrentRole(nextRole);
                     updateMessageContent(nextContent, {persist: false});

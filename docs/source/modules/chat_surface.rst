@@ -103,9 +103,12 @@ V12 起 Chat Composer 的未发送内容完全属于浏览器，不进入 CWM Pr
 同一条 Message 的 Edit 与 Fork 草稿彼此独立，切换 Conversation 或刷新后再次进入对应 Edit/Fork 时也会
 恢复浏览器本地保存的内容。
 
-Edit/Fork 指示器中的退出/暂存动作都属于“中断编辑”：当前内容会先写入 Message mount point 和本地 Draft Store，
-然后恢复独立的普通输入草稿。误点取消、切换消息或切换 Branch 不会永久删除 Edit/Fork 草稿；只有该 Edit/Fork
-Turn 被服务器正式接受后，才同时清理持久 Draft 和消息挂载 Draft。
+Edit/Fork 指示器中的两个退出动作语义不同。每次进入 Edit/Fork 时会先捕获当时恢复出来的内容作为本次
+``session baseline``：如果之前存在存档/中断草稿，它就是 baseline；第一次编辑则以服务器消息为起点。``×`` 表示
+“不保存本次进入之后的修改”，会把 Message mount point 与本地 Draft Store 的工作副本回滚到该 baseline；如果进入前
+没有草稿，则删除临时工作副本即可。存档按钮则保留当前两层工作副本并退出，因此这次存档会成为下一次进入同一
+Message + mode 时的新 baseline。这样 ``A → 编辑为 B → 存档 → 再改为 C → ×`` 后，下一次恢复的是 B，而不是 A 或 C。
+Edit/Fork Turn 被服务器正式接受后，仍会清理对应的持久 Draft 和消息挂载 Draft。
 
 Draft 还保存当前 Role 和已经上传到服务器的附件元数据。浏览器原始 ``File``/``Blob`` 不可跨刷新安全恢复，
 因此不会写入持久草稿；只有含 ``serverId``/``artifactId`` 的 JSON-safe 附件元数据会被保存。
@@ -121,19 +124,18 @@ Conversation 后会把 ``__new__`` 草稿迁移到真实 ``conversationId``；�
 本对话工具同步体验
 --------------------------------------------------------------------------------
 
-本对话 Tool Permission 仍然以后端为最终事实来源，前端没有把它改成本地配置。V12 只改变交互方式：
+本对话 Tool Permission 仍然以后端为最终事实来源，前端没有把它改成本地配置。工具在本窗口中不再拥有额外的
+“启用/停用”开关；``allow``、``ask``、``deny`` 就是完整权限状态，其中 ``deny`` 已经表达“不允许调用”，避免
+出现 Switch 与权限按钮两套语义互相重叠。
 
-* 工具菜单中的单项切换先做 optimistic 更新，并在该工具旁显示 pending spinner；
-* ``+`` 工具按钮和本对话工具区域在存在同步任务时显示同步状态；
-* 同一 Conversation 的权限 mutation 通过前端队列按顺序提交，避免旧 reply 覆盖较新的本地选择；
-* 用户发送新 Turn 前会等待当前权限同步队列完成，保证 UI 展示状态与该 Turn 实际使用的权限一致；
-* 同步失败时恢复服务端最后确认的 authoritative snapshot 并提示错误。
+每个工具始终直接显示“允许 / 询问 / 拒绝”三态选择。普通逐项修改保存在 Dialog draft 中，最后通过
+“应用到本对话”一次提交。``+`` 工具按钮和本对话工具区域在存在同步任务时显示同步状态；同一 Conversation 的
+权限 mutation 通过前端队列按顺序提交，避免旧 reply 覆盖较新的本地选择。用户发送新 Turn 前仍会等待当前权限
+同步队列完成，保证 UI 展示权限与该 Turn 实际使用的权限一致；同步失败时恢复服务端最后确认的 authoritative snapshot。
 
-``ConversationToolsDialog`` 顶部提供“全部启用”和“全部禁用”。它们只操作当前窗口里的可变工具；被模型、
-系统或权限策略标记为 disabled 的工具不会被强制修改。这两个批量按钮本身就是 one-click server action：直接通过
-已有的 ``tool.permissions.set`` 一次提交批量 patch，成功后留在窗口中并把新状态作为 baseline。每个工具集标题行也
-提供独立的“全开/全关”按钮；它们只提交该工具集的可修改工具，不会顺带提交其他工具集中尚未保存的草稿修改。
-普通逐项编辑仍可最后点击“应用到本对话”一次保存，所有批量操作都不会逐工具忙等 RPC。
+``ConversationToolsDialog`` 顶部以及每个工具集标题行都提供一键“全部允许 / 全部询问 / 全部拒绝”。批量操作只
+处理可修改工具，并通过已有 ``tool.permissions.set`` 一次提交 patch，不逐工具忙等 RPC。工具集级批量操作只提交当前
+工具集，不会顺带提交其他工具集中尚未保存的 draft；成功后该组的新权限会成为新的 server-confirmed baseline。
 
-窗口保存期间标题区域显示“正在同步工具状态…”，工具入口也显示 spinner，因此保持 server-authoritative 的同步
-设计时不会再表现为无反馈的忙等。
+窗口保存或执行一键权限操作期间，标题区域显示“正在同步工具权限…”，因此保持 server-authoritative 的同步设计时
+不会表现为无反馈的忙等。

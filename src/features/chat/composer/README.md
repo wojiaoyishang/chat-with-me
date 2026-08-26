@@ -10,7 +10,7 @@ A conversation can keep independent drafts for:
 - `edit:<messageId>` — an unfinished edit of an existing message;
 - `fork:<messageId>` — an unfinished fork prompt based on an existing message.
 
-Entering Edit/Fork saves the current normal draft and switches draft identity. Leaving with the close button saves the Edit/Fork draft and restores the normal draft. The discard button deletes only the active Edit/Fork draft.
+Entering Edit/Fork saves the current normal draft and switches draft identity. Each Edit/Fork session captures the restored value visible at entry as its **session baseline**. The close (`×`) button discards only changes made after that entry point: if an older archived/interrupted draft existed, both browser-local layers are rolled back to that draft; otherwise the temporary working draft is removed and the server message remains the source value. The archive button keeps the current working copy, so it becomes the baseline the next time the same message and mode is opened.
 
 ## Persistence
 

@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {Check, ChevronDown, CircleHelp, LoaderCircle, Power, PowerOff, RotateCcw, Search, ShieldCheck, Wrench} from 'lucide-react';
+import {ChevronDown, CircleHelp, LoaderCircle, RotateCcw, Search, ShieldCheck, ShieldX, Wrench} from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -9,10 +9,6 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import {Button} from '@/components/ui/button';
-import {Switch} from '@/components/ui/switch';
-
-const ENABLED_MODES = new Set(['allow', 'ask']);
-
 const normalizeMode = (value, fallback = 'ask') => {
     const mode = String(value || '').toLowerCase();
     return ['allow', 'ask', 'deny'].includes(mode) ? mode : fallback;
@@ -55,14 +51,6 @@ const collectTools = (items = [], group = null, result = []) => {
     return result;
 };
 
-const resolveEnabledMode = (toolName, currentMode, defaults, lastEnabledModes) => {
-    const remembered = normalizeMode(lastEnabledModes.current[toolName], '');
-    if (ENABLED_MODES.has(remembered)) return remembered;
-    const defaultMode = normalizeMode(defaults?.[toolName], 'ask');
-    if (ENABLED_MODES.has(defaultMode)) return defaultMode;
-    return currentMode === 'allow' ? 'allow' : 'ask';
-};
-
 const ConversationToolsDialog = ({
     open,
     onOpenChange,
@@ -79,7 +67,6 @@ const ConversationToolsDialog = ({
     const [initial, setInitial] = useState({});
     const [expanded, setExpanded] = useState(() => new Set());
     const [saving, setSaving] = useState(false);
-    const lastEnabledModes = useRef({});
     const initializedForOpen = useRef(false);
 
     const groups = useMemo(() => collectTools(unwrapToolRegion(toolsConfig)), [toolsConfig]);
@@ -95,7 +82,6 @@ const ConversationToolsDialog = ({
         allTools.forEach((tool) => {
             const mode = normalizeMode(currentPermissions[tool.name] ?? defaultPermissions[tool.name] ?? tool.default, 'ask');
             next[tool.name] = mode;
-            if (ENABLED_MODES.has(mode)) lastEnabledModes.current[tool.name] = mode;
         });
         setDraft(next);
         setInitial(next);
@@ -120,11 +106,19 @@ const ConversationToolsDialog = ({
         };
     }).filter(group => group.tools.length > 0), [groups, normalizedQuery, t]);
 
-    const enabledCount = allTools.reduce((count, tool) => count + (ENABLED_MODES.has(draft[tool.name]) ? 1 : 0), 0);
+    const permissionCounts = allTools.reduce((counts, tool) => {
+        const mode = normalizeMode(draft[tool.name], 'ask');
+        counts[mode] += 1;
+        return counts;
+    }, {allow: 0, ask: 0, deny: 0});
     const changed = allTools.some(tool => normalizeMode(draft[tool.name]) !== normalizeMode(initial[tool.name]));
     const mutableTools = useMemo(() => allTools.filter(tool => !tool.disabled), [allTools]);
-    const allMutableEnabled = mutableTools.length > 0 && mutableTools.every(tool => ENABLED_MODES.has(draft[tool.name]));
-    const allMutableDisabled = mutableTools.length > 0 && mutableTools.every(tool => !ENABLED_MODES.has(draft[tool.name]));
+    const isMutablePermissionCommitted = (mode) => mutableTools.length > 0
+        && mutableTools.every(tool => normalizeMode(draft[tool.name], 'ask') === mode)
+        && mutableTools.every(tool => normalizeMode(initial[tool.name], 'ask') === mode);
+    const allMutableAllowed = isMutablePermissionCommitted('allow');
+    const allMutableAsked = isMutablePermissionCommitted('ask');
+    const allMutableDenied = isMutablePermissionCommitted('deny');
     const controlsDisabled = disabled || saving;
 
     const toggleGroup = (groupId) => {
@@ -136,93 +130,22 @@ const ConversationToolsDialog = ({
         });
     };
 
-    const setToolEnabled = (tool, enabled) => {
-        setDraft((previous) => {
-            const currentMode = normalizeMode(previous[tool.name], 'ask');
-            if (enabled) {
-                return {
-                    ...previous,
-                    [tool.name]: resolveEnabledMode(tool.name, currentMode, defaultPermissions, lastEnabledModes),
-                };
-            }
-            if (ENABLED_MODES.has(currentMode)) lastEnabledModes.current[tool.name] = currentMode;
-            return {...previous, [tool.name]: 'deny'};
-        });
-    };
-
-    const buildAllDraft = (enabled, source = draft) => {
-        const next = {...source};
-        mutableTools.forEach((tool) => {
-            const currentMode = normalizeMode(next[tool.name], 'ask');
-            if (enabled) {
-                next[tool.name] = ENABLED_MODES.has(currentMode)
-                    ? currentMode
-                    : resolveEnabledMode(tool.name, currentMode, defaultPermissions, lastEnabledModes);
-            } else {
-                if (ENABLED_MODES.has(currentMode)) lastEnabledModes.current[tool.name] = currentMode;
-                next[tool.name] = 'deny';
-            }
-        });
-        return next;
-    };
-
-    const applyAll = async (enabled) => {
-        if (controlsDisabled || mutableTools.length === 0) return;
-        const previous = draft;
-        const next = buildAllDraft(enabled, previous);
-        const updates = {};
-        mutableTools.forEach((tool) => {
-            const nextMode = normalizeMode(next[tool.name], 'ask');
-            if (nextMode !== normalizeMode(initial[tool.name], 'ask')) updates[tool.name] = nextMode;
-        });
-
-        setDraft(next);
-        if (Object.keys(updates).length === 0) return;
-        setSaving(true);
-        try {
-            const succeeded = await onApply?.(updates);
-            if (succeeded === false) {
-                setDraft(previous);
-                return;
-            }
-            // The batch action is deliberately one-click: successful server sync
-            // becomes the new dialog baseline without closing the window.
-            setInitial(next);
-        } catch (error) {
-            console.error('Bulk conversation tool update failed:', error);
-            setDraft(previous);
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const applyGroup = async (group, enabled) => {
+    const applyPermissionBatch = async (tools, targetMode, errorLabel) => {
         if (controlsDisabled) return;
-        const sourceTools = group.sourceTools || group.tools || [];
-        const mutableGroupTools = sourceTools.filter(tool => !tool.disabled);
-        if (mutableGroupTools.length === 0) return;
+        const normalizedTarget = normalizeMode(targetMode, 'ask');
+        if (!['allow', 'ask', 'deny'].includes(normalizedTarget)) return;
+
+        const mutableBatchTools = (tools || []).filter(tool => !tool.disabled);
+        if (mutableBatchTools.length === 0) return;
 
         const previous = draft;
         const next = {...previous};
-        mutableGroupTools.forEach((tool) => {
-            const currentMode = normalizeMode(next[tool.name], 'ask');
-            if (enabled) {
-                next[tool.name] = ENABLED_MODES.has(currentMode)
-                    ? currentMode
-                    : resolveEnabledMode(
-                        tool.name,
-                        currentMode,
-                        defaultPermissions,
-                        lastEnabledModes,
-                    );
-            } else {
-                if (ENABLED_MODES.has(currentMode)) lastEnabledModes.current[tool.name] = currentMode;
-                next[tool.name] = 'deny';
-            }
+        mutableBatchTools.forEach((tool) => {
+            next[tool.name] = normalizedTarget;
         });
 
         const updates = {};
-        mutableGroupTools.forEach((tool) => {
+        mutableBatchTools.forEach((tool) => {
             const nextMode = normalizeMode(next[tool.name], 'ask');
             if (nextMode !== normalizeMode(initial[tool.name], 'ask')) updates[tool.name] = nextMode;
         });
@@ -236,27 +159,37 @@ const ConversationToolsDialog = ({
                 setDraft(previous);
                 return;
             }
-            // Commit only this toolset into the dialog baseline. Any unsaved edits
-            // in other groups stay dirty and are not sent as a side effect.
+            // One-click permission actions become the new server-confirmed baseline
+            // for only the tools included in this batch.
             setInitial((previousInitial) => {
                 const nextInitial = {...previousInitial};
-                mutableGroupTools.forEach((tool) => {
-                    nextInitial[tool.name] = normalizeMode(next[tool.name], 'ask');
+                mutableBatchTools.forEach((tool) => {
+                    nextInitial[tool.name] = normalizedTarget;
                 });
                 return nextInitial;
             });
         } catch (error) {
-            console.error('Toolset bulk conversation update failed:', error);
+            console.error(errorLabel, error);
             setDraft(previous);
         } finally {
             setSaving(false);
         }
     };
 
-    const setEnabledMode = (toolName, mode) => {
+    const applyAllPermission = (targetMode) => applyPermissionBatch(
+        mutableTools,
+        targetMode,
+        'Bulk conversation tool permission update failed:',
+    );
+
+    const applyGroupPermission = (group, targetMode) => applyPermissionBatch(
+        group.sourceTools || group.tools || [],
+        targetMode,
+        'Toolset permission batch update failed:',
+    );
+
+    const setToolPermission = (toolName, mode) => {
         const normalized = normalizeMode(mode, 'ask');
-        if (!ENABLED_MODES.has(normalized)) return;
-        lastEnabledModes.current[toolName] = normalized;
         setDraft(previous => ({...previous, [toolName]: normalized}));
     };
 
@@ -286,7 +219,7 @@ const ConversationToolsDialog = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="flex max-h-[min(84vh,760px)] w-[min(94vw,760px)] max-w-none flex-col gap-0 overflow-hidden p-0">
+            <DialogContent className="flex max-h-[min(84vh,760px)] w-[min(96vw,860px)] max-w-none flex-col gap-0 overflow-hidden p-0">
                 <DialogHeader className="shrink-0 border-b border-gray-100 px-5 py-4 text-left">
                     <div className="flex items-center justify-between gap-3">
                         <DialogTitle className="flex items-center gap-2">
@@ -296,12 +229,12 @@ const ConversationToolsDialog = ({
                         {(saving || syncing) && (
                             <div className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-blue-600" role="status" aria-live="polite">
                                 <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
-                                {t('conversation_tools_syncing', '正在同步工具状态…')}
+                                {t('conversation_tools_syncing', '正在同步工具权限…')}
                             </div>
                         )}
                     </div>
                     <DialogDescription>
-                        {t('conversation_tools_description', '只影响当前对话；正在执行的工具不会被中断，新状态从后续工具调用开始生效。')}
+                        {t('conversation_tools_description', '只影响当前对话；正在执行的工具不会被中断，新权限从后续工具调用开始生效。')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -316,25 +249,41 @@ const ConversationToolsDialog = ({
                         />
                     </div>
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
-                        <span>{t('conversation_tools_enabled_count', {defaultValue: '已启用 {{enabled}} / {{total}}', enabled: enabledCount, total: allTools.length})}</span>
+                        <span>
+                            {t('conversation_tools_permission_summary', {
+                                defaultValue: '允许 {{allow}} · 询问 {{ask}} · 拒绝 {{deny}}',
+                                allow: permissionCounts.allow,
+                                ask: permissionCounts.ask,
+                                deny: permissionCounts.deny,
+                            })}
+                        </span>
                         <div className="flex flex-wrap items-center justify-end gap-1.5">
                             <button
                                 type="button"
-                                disabled={controlsDisabled || mutableTools.length === 0 || allMutableEnabled}
-                                onClick={() => applyAll(true)}
+                                disabled={controlsDisabled || mutableTools.length === 0 || allMutableAllowed}
+                                onClick={() => applyAllPermission('allow')}
                                 className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-emerald-600 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-40"
                             >
-                                <Power className="h-3.5 w-3.5"/>
-                                {t('enable_all_tools', '全部启用')}
+                                <ShieldCheck className="h-3.5 w-3.5"/>
+                                {t('allow_all_tools', '全部允许')}
                             </button>
                             <button
                                 type="button"
-                                disabled={controlsDisabled || mutableTools.length === 0 || allMutableDisabled}
-                                onClick={() => applyAll(false)}
+                                disabled={controlsDisabled || mutableTools.length === 0 || allMutableAsked}
+                                onClick={() => applyAllPermission('ask')}
+                                className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-amber-600 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <CircleHelp className="h-3.5 w-3.5"/>
+                                {t('ask_all_tools', '全部询问')}
+                            </button>
+                            <button
+                                type="button"
+                                disabled={controlsDisabled || mutableTools.length === 0 || allMutableDenied}
+                                onClick={() => applyAllPermission('deny')}
                                 className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
                             >
-                                <PowerOff className="h-3.5 w-3.5"/>
-                                {t('disable_all_tools', '全部禁用')}
+                                <ShieldX className="h-3.5 w-3.5"/>
+                                {t('deny_all_tools', '全部拒绝')}
                             </button>
                             <button
                                 type="button"
@@ -355,9 +304,12 @@ const ConversationToolsDialog = ({
                             const isExpanded = Boolean(normalizedQuery) || expanded.has(group.id);
                             const sourceTools = group.sourceTools || group.tools;
                             const mutableSourceTools = sourceTools.filter(tool => !tool.disabled);
-                            const groupEnabledCount = sourceTools.filter(tool => ENABLED_MODES.has(draft[tool.name])).length;
-                            const allEnabled = mutableSourceTools.length > 0 && mutableSourceTools.every(tool => ENABLED_MODES.has(draft[tool.name]));
-                            const allDisabled = mutableSourceTools.length > 0 && mutableSourceTools.every(tool => !ENABLED_MODES.has(draft[tool.name]));
+                            const groupPermissionCommitted = (mode) => mutableSourceTools.length > 0
+                                && mutableSourceTools.every(tool => normalizeMode(draft[tool.name], 'ask') === mode)
+                                && mutableSourceTools.every(tool => normalizeMode(initial[tool.name], 'ask') === mode);
+                            const allAllowed = groupPermissionCommitted('allow');
+                            const allAsked = groupPermissionCommitted('ask');
+                            const allDenied = groupPermissionCommitted('deny');
                             return (
                                 <section key={group.id} className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                                     <div className="flex items-center gap-3 bg-gray-50 px-3 py-3">
@@ -369,30 +321,40 @@ const ConversationToolsDialog = ({
                                         >
                                             <ChevronDown className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}/>
                                             <span className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-800">{t(group.name)}</span>
-                                            <span className="shrink-0 text-xs text-gray-400">{groupEnabledCount}/{sourceTools.length}</span>
                                         </button>
                                         <div className="flex shrink-0 items-center gap-1">
                                             <button
                                                 type="button"
-                                                disabled={controlsDisabled || mutableSourceTools.length === 0 || allEnabled}
-                                                onClick={() => applyGroup({...group, sourceTools}, true)}
-                                                title={t('enable_toolset_all', '全开此工具集')}
-                                                aria-label={`${t(group.name)}：${t('enable_toolset_all', '全开此工具集')}`}
+                                                disabled={controlsDisabled || mutableSourceTools.length === 0 || allAllowed}
+                                                onClick={() => applyGroupPermission({...group, sourceTools}, 'allow')}
+                                                title={t('allow_toolset_all', '将此工具集的所有可修改工具设为允许')}
+                                                aria-label={`${t(group.name)}：${t('allow_toolset_all', '将此工具集的所有可修改工具设为允许')}`}
                                                 className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-emerald-600 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-40"
                                             >
-                                                <Power className="h-3.5 w-3.5"/>
-                                                {t('enable_toolset_short', '全开')}
+                                                <ShieldCheck className="h-3.5 w-3.5"/>
+                                                {t('allow_toolset_short', '全部允许')}
                                             </button>
                                             <button
                                                 type="button"
-                                                disabled={controlsDisabled || mutableSourceTools.length === 0 || allDisabled}
-                                                onClick={() => applyGroup({...group, sourceTools}, false)}
-                                                title={t('disable_toolset_all', '全关此工具集')}
-                                                aria-label={`${t(group.name)}：${t('disable_toolset_all', '全关此工具集')}`}
+                                                disabled={controlsDisabled || mutableSourceTools.length === 0 || allAsked}
+                                                onClick={() => applyGroupPermission({...group, sourceTools}, 'ask')}
+                                                title={t('ask_toolset_all', '将此工具集的所有可修改工具设为询问')}
+                                                aria-label={`${t(group.name)}：${t('ask_toolset_all', '将此工具集的所有可修改工具设为询问')}`}
+                                                className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-amber-600 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-40"
+                                            >
+                                                <CircleHelp className="h-3.5 w-3.5"/>
+                                                {t('ask_toolset_short', '全部询问')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled={controlsDisabled || mutableSourceTools.length === 0 || allDenied}
+                                                onClick={() => applyGroupPermission({...group, sourceTools}, 'deny')}
+                                                title={t('deny_toolset_all', '将此工具集的所有可修改工具设为拒绝')}
+                                                aria-label={`${t(group.name)}：${t('deny_toolset_all', '将此工具集的所有可修改工具设为拒绝')}`}
                                                 className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
                                             >
-                                                <PowerOff className="h-3.5 w-3.5"/>
-                                                {t('disable_toolset_short', '全关')}
+                                                <ShieldX className="h-3.5 w-3.5"/>
+                                                {t('deny_toolset_short', '全部拒绝')}
                                             </button>
                                         </div>
                                     </div>
@@ -400,44 +362,41 @@ const ConversationToolsDialog = ({
                                         <div className="divide-y divide-gray-100">
                                             {group.tools.map((tool) => {
                                                 const mode = normalizeMode(draft[tool.name], 'ask');
-                                                const enabled = ENABLED_MODES.has(mode);
                                                 return (
                                                     <div key={tool.name} className="flex gap-3 px-3 py-3">
                                                         <div className="min-w-0 flex-1">
                                                             <div className="truncate text-sm font-medium text-gray-800">{t(tool.text || tool.name)}</div>
                                                             <div className="mt-0.5 truncate font-mono text-[11px] text-gray-400">{tool.name}</div>
                                                             {tool.description && <div className="mt-1 text-xs leading-5 text-gray-500">{t(tool.description)}</div>}
-                                                            {enabled && (
-                                                                <div className="mt-2 flex flex-wrap gap-1.5">
-                                                                    <button
-                                                                        type="button"
-                                                                        disabled={controlsDisabled || tool.disabled}
-                                                                        onClick={() => setEnabledMode(tool.name, 'ask')}
-                                                                        className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[11px] ${mode === 'ask' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'} disabled:cursor-not-allowed disabled:opacity-50`}
-                                                                    >
-                                                                        <CircleHelp className="h-3 w-3"/>
-                                                                        {t('tool_permission_ask', '调用前询问')}
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        disabled={controlsDisabled || tool.disabled}
-                                                                        onClick={() => setEnabledMode(tool.name, 'allow')}
-                                                                        className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[11px] ${mode === 'allow' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'} disabled:cursor-not-allowed disabled:opacity-50`}
-                                                                    >
-                                                                        <ShieldCheck className="h-3 w-3"/>
-                                                                        {t('tool_permission_allow', '自动允许')}
-                                                                    </button>
-                                                                </div>
-                                                            )}
                                                         </div>
-                                                        <div className="flex shrink-0 items-start gap-2 pt-0.5">
-                                                            {enabled && <Check className="mt-0.5 h-4 w-4 text-emerald-500"/>}
-                                                            <Switch
-                                                                checked={enabled}
+                                                        <div className="flex shrink-0 flex-wrap items-start justify-end gap-1.5 pt-0.5">
+                                                            <button
+                                                                type="button"
                                                                 disabled={controlsDisabled || tool.disabled}
-                                                                onCheckedChange={checked => setToolEnabled(tool, checked)}
-                                                                aria-label={`${t(tool.text || tool.name)}：${enabled ? t('enabled', '已启用') : t('disabled', '已停用')}`}
-                                                            />
+                                                                onClick={() => setToolPermission(tool.name, 'allow')}
+                                                                className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[11px] ${mode === 'allow' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'} disabled:cursor-not-allowed disabled:opacity-50`}
+                                                            >
+                                                                <ShieldCheck className="h-3 w-3"/>
+                                                                {t('tool_permission_allow', '允许')}
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                disabled={controlsDisabled || tool.disabled}
+                                                                onClick={() => setToolPermission(tool.name, 'ask')}
+                                                                className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[11px] ${mode === 'ask' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'} disabled:cursor-not-allowed disabled:opacity-50`}
+                                                            >
+                                                                <CircleHelp className="h-3 w-3"/>
+                                                                {t('tool_permission_ask', '询问')}
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                disabled={controlsDisabled || tool.disabled}
+                                                                onClick={() => setToolPermission(tool.name, 'deny')}
+                                                                className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[11px] ${mode === 'deny' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'} disabled:cursor-not-allowed disabled:opacity-50`}
+                                                            >
+                                                                <ShieldX className="h-3 w-3"/>
+                                                                {t('tool_permission_deny', '拒绝')}
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 );
