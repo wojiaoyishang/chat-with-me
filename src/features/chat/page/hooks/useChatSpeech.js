@@ -341,6 +341,7 @@ const createSpeechSegmentCacheState = () => ({
     rate: 1,
     entries: new Map(),
     inFlightPositions: new Set(),
+    failedPositions: new Set(),
     requestPositionMap: new Map(),
     activeRequestId: null,
 });
@@ -1408,6 +1409,13 @@ export default function useChatSpeech({
             ? explicitOriginalPosition
             : (cache.requestPositionMap.get(localPosition) ?? localPosition);
         const segment = speechControllerRef.current?.segments?.[segmentPosition];
+        const rawFailedPositions = Array.isArray(payload?.failedSegmentPositions)
+            ? payload.failedSegmentPositions
+            : (Array.isArray(payload?.failed_segment_positions) ? payload.failed_segment_positions : []);
+        const failedSegmentPositions = rawFailedPositions
+            .map((value) => Number(value))
+            .filter((value) => Number.isInteger(value) && value >= 0)
+            .map((localFailedPosition) => cache.requestPositionMap.get(localFailedPosition) ?? localFailedPosition);
 
         return {
             ...payload,
@@ -1417,6 +1425,8 @@ export default function useChatSpeech({
             segment_index: segment?.index ?? segmentPosition,
             segmentId: segment?.id || payload.segmentId || payload.segment_id,
             segment_id: segment?.id || payload.segmentId || payload.segment_id,
+            failedSegmentPositions,
+            failed_segment_positions: failedSegmentPositions,
             total: speechControllerRef.current?.segments?.length || payload.total,
             totalSegments: speechControllerRef.current?.segments?.length || payload.totalSegments,
         };
@@ -2999,6 +3009,9 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
 
         cache.activeRequestId = requestId;
         cache.inFlightPositions = new Set(missingPositions);
+        // failedPositions 只描述“当前生成尝试中不可用”的位置。用户主动 seek /
+        // restart 到这些位置时允许重新请求，因此发起新请求前清掉对应失败标记。
+        missingPositions.forEach((position) => cache.failedPositions?.delete?.(position));
         cache.requestPositionMap = new Map(missingPositions.map((position, localPosition) => [localPosition, position]));
         controller.generationRequestId = requestId;
         backendState.activeGenerationRequestId = requestId;
@@ -4018,13 +4031,28 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         const queueState = ensureBackendPlaybackQueueState();
         if (!queueState) return;
 
-        const nextPosition = queueState.nextPlaybackPosition;
+        const cache = speechSegmentCacheRef.current;
+        const total = getBackendSpeechTotalSegments();
+        let nextPosition = queueState.nextPlaybackPosition;
+
+        // Provider 允许 partial success：某个后续 segment 超时/失败时，已经 ready
+        // 的音频仍然可播放。播放游标只跳过本次生成明确失败的位置，而不是把整次
+        // speech session 判废。重新朗读/主动 seek 会发起新请求并清除这些临时标记。
+        while (nextPosition < total && cache.failedPositions?.has?.(nextPosition)) {
+            logSpeechCache('backend-skip-failed-segment', {
+                sessionId: controller.requestId,
+                segmentPosition: nextPosition,
+            });
+            nextPosition += 1;
+            queueState.nextPlaybackPosition = nextPosition;
+            backendState.nextPlaybackPosition = nextPosition;
+        }
+
         const nextItem = queueState.readySegmentsByPosition.get(nextPosition);
 
         // 严格按播放游标消费：后面的句子即使已缓存，也只能等待前一句真实播放结束。
         // 这样 generated/buffered progress 不会驱动 playback currentSegment 跳进度。
         if (!nextItem) {
-            const total = getBackendSpeechTotalSegments();
             if (nextPosition >= total) {
                 if (controller.streaming && !controller.streamingFinalized) {
                     setSpeechState(prev => ({
@@ -4736,18 +4764,53 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
                 logSpeechCache('backend-generation-cancelled', {requestId});
                 reply?.({success: true});
                 break;
-            case 'speech.failed':
+            case 'speech.failed': {
+                const failedPositionsFromProvider = Array.isArray(eventPayload.failedSegmentPositions)
+                    ? eventPayload.failedSegmentPositions
+                    : [];
+                const failedPositions = failedPositionsFromProvider.length > 0
+                    ? failedPositionsFromProvider
+                    : Array.from(cache.inFlightPositions || []);
+                const hasReadyAudio = cache.entries.size > 0 || backendSpeechAudioRef.current.playing;
+                const partialFailure = eventPayload.partial === true || hasReadyAudio;
+
+                failedPositions.forEach((position) => {
+                    const numericPosition = Number(position);
+                    if (Number.isInteger(numericPosition) && numericPosition >= 0) {
+                        cache.failedPositions.add(numericPosition);
+                    }
+                });
                 cache.inFlightPositions.clear();
-                logSpeechPlayError('backend-speech-error-event', {
+
+                logSpeechPlayError(partialFailure ? 'backend-speech-partial-error-event' : 'backend-speech-error-event', {
                     requestId,
                     messageId: eventPayload.messageId || eventPayload.message_id || eventPayload.msgId || eventPayload.msg_id || speechStateRef.current?.messageId,
                     payload: eventPayload,
+                    failedPositions: Array.from(cache.failedPositions || []),
+                    cachedPositions: getSortedSpeechCachePositions(cache),
                     error: eventPayload.value || eventPayload.message || eventPayload.error,
                 });
-                toast.error(t('speech_play_error', {message: eventPayload.value || eventPayload.message || t('unknown_error')}));
-                setSpeechState(prev => ({...prev, generationStatus: 'idle', generationPhase: 'error'}));
+
+                if (partialFailure) {
+                    backendSpeechAudioRef.current.generationEnded = true;
+                    toast.warning(t('speech_partial_generation_error', {
+                        message: eventPayload.value || eventPayload.message || t('unknown_error'),
+                    }));
+                    setSpeechState(prev => ({
+                        ...prev,
+                        generationStatus: 'ended',
+                        generationPhase: 'partial-error',
+                    }));
+                    // 不取消当前 Audio，也不清已经 ready 的 message cache。当前句播放完后
+                    // playNext 会继续消费缓存，并跳过本次明确失败的 segment。
+                    window.setTimeout(() => playNextBackendSpeechSegment(), 0);
+                } else {
+                    toast.error(t('speech_play_error', {message: eventPayload.value || eventPayload.message || t('unknown_error')}));
+                    setSpeechState(prev => ({...prev, generationStatus: 'idle', generationPhase: 'error'}));
+                }
                 reply?.({success: true});
                 break;
+            }
             case 'speech.audio.chunk':
                 reply?.({success: handleBackendSpeechAudioChunk(eventPayload)});
                 break;

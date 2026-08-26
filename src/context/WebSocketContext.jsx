@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 
 import FatalErrorPopoverElement from '@/context/FatalErrorPopover.jsx';
 import globalMessageCallback from '@/hooks/messageCallback.jsx';
-import {emitEvent} from '@/context/useEventStore.jsx';
+import {dispatchIncomingEvent, emitEvent} from '@/context/useEventStore.jsx';
 import {WEBSOCKET_URL} from '@/config.js';
 import {EventName} from '@/runtime/protocol/events.js';
 import {WebSocketTransport} from '@/runtime/transport/WebSocketTransport.js';
@@ -66,20 +66,28 @@ export const WebSocketProvider = ({children}) => {
                 if (mountedRef.current) setMessages((current) => [...current.slice(-99), envelope]);
             },
             onMedia: (header, body) => {
-                // Media consumers subscribe through the same event runtime. Raw bytes
-                // stay outside MessagePack and are exposed only to the local listener.
-                emitEvent({
+                // MEDIA is still a server -> client semantic event. Preserve the
+                // original event identity/direction so incoming-only consumers (for
+                // example ChatSpeech) receive raw audio chunks through the same FIFO
+                // stream lane as speech.segment.ready / speech.generation.progress.
+                //
+                // Do not re-emit this through emitEvent({localOnly:true}): that marks
+                // the event as `local`, loses the original inbound scheduling semantics
+                // and makes direction:'incoming' subscribers silently miss MEDIA frames.
+                dispatchIncomingEvent({
+                    version: header.version,
+                    event_id: header.event_id,
                     event: header.event,
+                    conversation_id: header.conversation_id || null,
+                    document_id: header.document_id || null,
+                    turn_id: header.turn_id || null,
+                    run_id: header.run_id || null,
+                    stream_id: header.stream_id || null,
+                    trace_id: header.trace_id,
+                    timestamp_ms: header.timestamp_ms ?? Date.now(),
+                    sequence: Number.isFinite(Number(header.sequence)) ? Number(header.sequence) : 0,
+                    reply_to: header.reply_to || null,
                     payload: {...(header.metadata || {}), header, body},
-                    conversationId: header.conversation_id,
-                    documentId: header.document_id,
-                    turnId: header.turn_id,
-                    runId: header.run_id,
-                    streamId: header.stream_id,
-                    traceId: header.trace_id,
-                    eventId: header.event_id,
-                    sequence: header.sequence,
-                    localOnly: true,
                 });
             },
             onProtocolError: (error) => {

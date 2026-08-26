@@ -4,8 +4,9 @@
 接收
 ----
 
-WebSocketTransport 解码 Media Frame 后调用 ``onMedia(header, body)``。WebSocketContext 把它转换为
-``localOnly`` 同名事件，Payload 包含：
+WebSocketTransport 解码 Media Frame 后调用 ``onMedia(header, body)``。WebSocketContext 会保留
+服务器入站语义，把它作为 ``incoming`` 同名事件送入 Event Runtime；不会重新标记成 ``localOnly``。
+Payload 包含：
 
 .. code-block:: javascript
 
@@ -19,7 +20,9 @@ WebSocketTransport 解码 Media Frame 后调用 ``onMedia(header, body)``。WebS
 ----
 
 Speech Hook/Player 优先读取 ``payload.body``。Header 提供 streamId、sequence、codec、sampleRate 和
-channels。
+channels。MEDIA 与普通 EVENT 一样保留原 ``event_id``、``trace_id``、``sequence`` 和 ``conversation_id``，
+因此 ``direction: 'incoming'`` 的订阅器能够收到媒体帧，并与同一 ``speech.*`` Stream Lane 中的 Ready/Progress
+事件保持一致的入站调度语义。
 
 输入
 ----

@@ -28,7 +28,8 @@ Event Store 区分三种方向：
    当前浏览器创建并准备发往服务器的事件。
 
 ``incoming``
-   WebSocket Transport 已解码并交给前端运行时的服务器事件。
+   WebSocket Transport 已解码并交给前端运行时的服务器事件。EVENT Frame 与 MEDIA Frame 都属于
+   ``incoming``；媒体帧不能因为在浏览器内转换成统一事件 Payload 而降级成 ``local``。
 
 .. important::
 
