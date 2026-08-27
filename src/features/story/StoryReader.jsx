@@ -5,41 +5,13 @@ import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.t
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import SpeechOverlayHighlighter from '@/features/chat/ui/message/components/SpeechOverlayHighlighter.jsx';
 import {resolveResourceUrl} from '@/lib/virtualUrl.js';
+import StoryMediaDeck from '@/features/story/media/StoryMediaDeck.jsx';
+import StoryVideo from '@/features/story/media/StoryVideo.jsx';
+import {normalizeVideoTiming, resolveStoryMediaLayout} from '@/features/story/media/storyMediaLayout.js';
 
 const FONT_SCALES = {small: .88, compact: .95, normal: 1, large: 1.15, extraLarge: 1.32};
 const FONT_LABELS = {small: '小', compact: '较小', normal: '标准', large: '较大', extraLarge: '大'};
 const FONT_KEY = 'storyReader:fontScale';
-const VIDEO_POSITIONS = new Set(['auto', 'top', 'bottom', 'left', 'right']);
-const VIDEO_TIMINGS = new Set(['before', 'alongside', 'after']);
-
-const normalizeVideoPosition = (value) => VIDEO_POSITIONS.has(String(value || '').trim())
-    ? String(value).trim()
-    : 'auto';
-
-const normalizeVideoTiming = (value) => VIDEO_TIMINGS.has(String(value || '').trim())
-    ? String(value).trim()
-    : 'alongside';
-
-const resolveImageLayout = (part, fontScale, forceStacked = false) => {
-    if (!part?.imageUrl) return 'text_only';
-    if (forceStacked) return 'image_top';
-    if (typeof window !== 'undefined' && window.innerWidth < 768) return 'image_top';
-    if (fontScale >= 1.15) return 'image_top';
-    if (part.layoutHint && part.layoutHint !== 'auto') return part.layoutHint;
-    const ratio = part.imageWidth && part.imageHeight ? part.imageWidth / part.imageHeight : 1.3;
-    if (typeof window !== 'undefined' && window.innerWidth >= 1024 && ratio >= 1.15 && String(part.bodyMarkdown || '').length <= 900) {
-        return part.sequence % 2 === 0 ? 'image_right' : 'image_left';
-    }
-    return 'image_top';
-};
-
-const resolveVideoPosition = (part) => {
-    if (!part?.videoUrl) return null;
-    if (typeof window !== 'undefined' && window.innerWidth < 768) return 'top';
-    const position = normalizeVideoPosition(part.videoPosition);
-    return position === 'auto' ? 'top' : position;
-};
-
 export default function StoryReader({
     story,
     open,
@@ -62,6 +34,8 @@ export default function StoryReader({
     const [speechDone, setSpeechDone] = useState(false);
     const [videoPlaybackError, setVideoPlaybackError] = useState('');
     const [suppressedVideoAutoplayKey, setSuppressedVideoAutoplayKey] = useState('');
+    const [viewportWidth, setViewportWidth] = useState(() => typeof window === 'undefined' ? 1024 : window.innerWidth);
+    const [videoAspectRatio, setVideoAspectRatio] = useState(null);
     const storyContentRef = useRef(null);
     const wasOpenRef = useRef(false);
     const activeStoryIdRef = useRef(null);
@@ -83,8 +57,19 @@ export default function StoryReader({
     const videoSrc = resolveResourceUrl(part?.videoUrl || '');
     const videoAutoplay = Boolean(part?.videoUrl) && part?.videoAutoplay !== false;
     const videoMuted = part?.videoMuted !== false;
+    const videoLoop = part?.videoLoop === true;
     const videoTiming = normalizeVideoTiming(part?.videoTiming);
-    const videoPosition = resolveVideoPosition(part);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+        const handleResize = () => setViewportWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
+        setVideoAspectRatio(null);
+    }, [videoSrc]);
 
     const pauseVideo = useCallback((reset = false) => {
         const video = videoRef.current;
@@ -386,8 +371,10 @@ export default function StoryReader({
     if (!open || !story) return null;
 
     const scale = FONT_SCALES[fontKey] || 1;
-    const sideVideo = videoPosition === 'left' || videoPosition === 'right';
-    const imageLayout = resolveImageLayout(part, scale, sideVideo);
+    const mediaLayout = resolveStoryMediaLayout({part, fontScale: scale, viewportWidth, videoAspectRatio});
+    const videoPosition = mediaLayout.videoPosition;
+    const sideVideo = mediaLayout.mode === 'video_side';
+    const imageLayout = mediaLayout.imageLayout;
     const setPart = next => {
         if (!next) return;
         setWaitingForNext(false);
@@ -402,35 +389,50 @@ export default function StoryReader({
     };
 
     const handleVideoEnded = () => {
-        if (!autoPlayActive || !videoAutoplay || activePlaybackKeyRef.current !== renderedPartKeyRef.current) return;
-        videoDoneKeyRef.current = renderedPartKeyRef.current;
+        const currentKey = renderedPartKeyRef.current;
+
+        // Outside Story Auto Play, loop means the video itself repeats indefinitely.
+        // During Auto Play, before/after intentionally remain one-shot so the session
+        // can progress. Alongside may repeat while narration is still active, then
+        // finishes the current cycle before advancing.
+        if (videoLoop) {
+            if (!autoPlayActive || !videoAutoplay) {
+                void playCurrentVideo({reset: true});
+                return;
+            }
+            if (activePlaybackKeyRef.current === currentKey && videoTiming === 'alongside' && !speechDone) {
+                void playCurrentVideo({reset: true, playbackKey: currentKey});
+                return;
+            }
+        }
+
+        if (!autoPlayActive || !videoAutoplay || activePlaybackKeyRef.current !== currentKey) return;
+        videoDoneKeyRef.current = currentKey;
         setVideoDone(true);
     };
 
+    const handleVideoMetadata = (event) => {
+        const video = event?.currentTarget;
+        const width = Number(video?.videoWidth || 0);
+        const height = Number(video?.videoHeight || 0);
+        if (width > 0 && height > 0) setVideoAspectRatio(width / height);
+    };
+
     const videoElement = videoSrc ? (
-        <figure className="overflow-hidden rounded-3xl bg-black shadow-lg ring-1 ring-black/5">
-            <video
-                key={videoSrc}
-                ref={videoRef}
-                src={videoSrc}
-                className="max-h-[66vh] w-full bg-black object-contain"
-                controls
-                playsInline
-                preload="metadata"
-                muted={videoMuted}
-                onEnded={handleVideoEnded}
-            />
-            {videoPlaybackError && (
-                <figcaption className="bg-amber-50 px-3 py-2 text-center text-xs text-amber-800">
-                    {videoPlaybackError}
-                </figcaption>
-            )}
-        </figure>
+        <StoryVideo
+            ref={videoRef}
+            src={videoSrc}
+            muted={videoMuted}
+            aspectRatio={mediaLayout.mode === 'media_pair' ? mediaLayout.videoAspectRatio : videoAspectRatio}
+            playbackError={videoPlaybackError}
+            onEnded={handleVideoEnded}
+            onLoadedMetadata={handleVideoMetadata}
+        />
     ) : null;
 
     const storyArticle = part ? (
         <article className={`grid min-w-0 gap-7 ${imageLayout === 'image_left' || imageLayout === 'image_right' ? 'items-center lg:grid-cols-[minmax(0,45%)_minmax(0,55%)]' : 'grid-cols-1'}`}>
-            {part.imageUrl && (
+            {part.imageUrl && mediaLayout.renderImageInArticle && (
                 <figure className={`overflow-hidden rounded-3xl bg-amber-100 shadow-lg ${imageLayout === 'image_right' ? 'lg:order-2' : ''}`}>
                     <img src={resolveResourceUrl(part.imageUrl)} alt={part.imageAlt || ''} className="max-h-[64vh] w-full object-contain"/>
                 </figure>
@@ -505,6 +507,11 @@ export default function StoryReader({
             <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-10">
                 {!part ? (
                     <div className="flex h-full flex-col items-center justify-center gap-3 text-amber-700"><Loader2 className="h-7 w-7 animate-spin"/><span>{t('story_waiting_first_part', '正在创作第一个篇幅…')}</span></div>
+                ) : mediaLayout.mode === 'media_pair' ? (
+                    <div className="mx-auto max-w-6xl space-y-8">
+                        <StoryMediaDeck part={part} layout={mediaLayout} videoElement={videoElement}/>
+                        {storyArticle}
+                    </div>
                 ) : sideVideo ? (
                     <div className="mx-auto grid max-w-7xl items-start gap-7 lg:grid-cols-[minmax(0,42%)_minmax(0,58%)]">
                         <div className={videoPosition === 'right' ? 'lg:order-2' : ''}>{videoElement}</div>

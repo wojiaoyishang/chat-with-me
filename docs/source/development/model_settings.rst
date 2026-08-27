@@ -96,3 +96,30 @@ V10 的“添加模型”候选增加独立 Responses 模板：
 通过模板或普通“添加”创建新的 List 项后，``DynamicSettings`` 会让新卡片自动展开，并在 Dialog 关闭、布局
 稳定后调用 ``scrollIntoView`` 平滑滚动到新卡片。该行为依赖前端生成的稳定 ``internalId``，不会根据模型
 业务 ``id`` 查找 DOM，因此用户修改模型 ID 或拖拽排序不会破坏后续设置编辑。
+
+递归 JSON 参数编辑器
+--------------------------------------------------------------------------------
+
+``DynamicSettings`` 的通用 ``custom`` JSON 参数不再把值一律按字符串渲染。每个键值都保存真实 JSON 类型，
+并可选择 ``string``、``number``、``boolean``、``null``、``object`` 或 ``array``。
+
+``object`` / ``array`` 不在单行输入框中显示 ``[object Object]`` 或要求手写压缩 JSON；值位置改为“编辑对象/数组”
+按钮，点击后打开同一套递归编辑器。对象继续编辑键和值，数组按顺序编辑元素并支持上下移动，因此可表达任意深度的
+Provider 请求参数，例如：
+
+.. code-block:: json
+
+   {
+     "stream_options": {
+       "include_usage": true
+     },
+     "reasoning": {
+       "effort": "high",
+       "summary": "auto"
+     },
+     "metadata": ["cwm", 1, null]
+   }
+
+后端 Schema 对模型固定请求参数、LiteLLM 额外参数、TTS/ASR ``extra_options`` 等字段显式使用
+``component=requestJsonKeyValue``。未注册的普通 ``custom`` 字段也回退到同一 JSON 编辑器；只有声明了专用
+``component`` 的字段（例如 Remote Workspace 状态视图）使用自己的注册组件。

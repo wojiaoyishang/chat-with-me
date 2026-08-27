@@ -15,7 +15,9 @@ Story Reader 位于 ``src/features/story/StoryReader.jsx``。Story 是独立持�
    ``https://`` URL。
 
 ``videoPosition``
-   ``auto / top / bottom / left / right``。移动端始终收敛为顶部展示，避免侧栏压缩正文。
+   ``auto / top / bottom / left / right``。当同一篇幅同时存在图片和视频时，``auto`` 不再等价于
+   ``top``：宽屏由 ``media/storyMediaLayout.js`` 计算智能双媒体布局，移动端自动堆叠；显式
+   ``top / bottom / left / right`` 仍然覆盖自动布局。
 
 ``videoAutoplay``
    是否在篇幅展示时自动播放视频，缺省为 ``true``。
@@ -23,9 +25,25 @@ Story Reader 位于 ``src/features/story/StoryReader.jsx``。Story 是独立持�
 ``videoMuted``
    自动播放时是否静音，缺省为 ``true``。默认静音也能减少浏览器 Autoplay Policy 拒绝。
 
+``videoLoop``
+   是否循环播放视频，缺省为 ``false``。普通阅读时循环持续生效；Story Auto Play Session 中
+   ``before / after`` 始终只消费一遍，``alongside`` 可在 TTS 尚未结束时继续循环，并在当前循环
+   完成后进入下一篇，避免循环视频永久阻塞自动播放。
+
 ``videoTiming``
    Story 自动播放会话包含 TTS 时的视频时序：``before`` 表示视频结束后再朗读；
    ``alongside`` 表示视频和朗读同时开始（默认）；``after`` 表示朗读结束后再播放视频。
+
+智能媒体布局
+------------
+
+当一个篇幅同时存在 ``imageUrl`` 与 ``videoUrl``，且 ``videoPosition=auto`` 时，Reader 使用统一
+Media Deck，而不是让视频单独占满整行。图片宽高优先使用后端保存的 ``imageWidth/imageHeight``；
+视频宽高在 ``loadedmetadata`` 后读取。宽屏下两个媒体项按宽高比估算等视觉高度所需宽度，并把
+图片比例限制在 30%~55%，避免竖图或视频过度挤压另一侧。小于 768px 时自动改为上下堆叠。
+
+``storyMediaLayout.js`` 是纯布局函数，不依赖 React/API。这是有意的边界：浏览器后续直接导出
+Story HTML/打印布局时可以复用同一份布局决策，而不必复制 Reader 的条件分支。
 
 自动播放会话
 ------------
