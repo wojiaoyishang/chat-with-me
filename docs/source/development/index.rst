@@ -15,6 +15,7 @@
    add_widget
    model_settings
    http_auth
+   user_management
    voice
    testing
    debugging

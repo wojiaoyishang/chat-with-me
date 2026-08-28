@@ -38,6 +38,7 @@ import {resolveResourceUrl} from "@/lib/virtualUrl.js";
 import apiClient from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {toast} from "sonner";
+import {useUserStore} from "@/context/userContext.jsx";
 
 import {
     DndContext,
@@ -243,7 +244,7 @@ function SettingRow({
                     }) {
     if (fullWidth) {
         return (
-            <div className={`w-full px-3 sm:px-4 pt-1 pb-3 ${className || ""}`}>
+            <div className={`w-full px-3 sm:px-4 pt-3 pb-3 ${className || ""}`}>
                 {children}
             </div>
         );
@@ -2079,7 +2080,7 @@ function JsonItem({item, path}) {
                     )}
                 </SettingRow>
             ) : (
-                <SettingRow fullWidth className="border-b border-black/10 py-2 last:border-b-0 dark:border-white/15">
+                <SettingRow fullWidth className="border-b border-black/10 last:border-b-0 dark:border-white/15">
                     <div className="w-full overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm dark:border-white/15 dark:bg-black">
                         <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-black/10 bg-black/[0.025] px-2.5 py-2 dark:border-white/15 dark:bg-white/[0.06] sm:px-3">
                             {titleContent}
@@ -2191,7 +2192,7 @@ function useRemoteWorkspaceConnections(pollMs = 10000) {
 function RemoteWorkspaceConnectionsItem({item}) {
     const {connections, loading, error, refresh} = useRemoteWorkspaceConnections();
     return (
-        <SettingRow fullWidth className="border-b border-black/10 py-2 last:border-b-0 dark:border-white/15">
+        <SettingRow fullWidth className="border-b border-black/10 last:border-b-0 dark:border-white/15">
             <div className="w-full">
                 <div className="mb-2 flex items-center justify-between gap-3">
                     <div className="min-w-0">
@@ -2228,6 +2229,393 @@ function RemoteWorkspaceConnectionsItem({item}) {
     );
 }
 
+function ruleEffectForPattern(rules, pattern) {
+    const item = (Array.isArray(rules) ? rules : []).find((rule) => String(rule?.pattern || '') === String(pattern));
+    return item?.effect === 'deny' ? 'deny' : item?.effect === 'allow' ? 'allow' : 'inherit';
+}
+
+function setRuleEffect(rules, pattern, effect) {
+    const next = (Array.isArray(rules) ? rules : []).filter((rule) => String(rule?.pattern || '') !== String(pattern));
+    if (effect === 'allow' || effect === 'deny') next.push({pattern, effect});
+    return next;
+}
+
+function AccessRuleButtons({value, onChange, disabled = false, showInherit = true}) {
+    const options = [
+        ...(showInherit ? [['inherit', '继承']] : []),
+        ['allow', '允许'],
+        ['deny', '拒绝'],
+    ];
+    return (
+        <div
+            className="grid shrink-0 rounded-lg border border-black/10 bg-white p-0.5 dark:border-white/10 dark:bg-black/10"
+            style={{width: showInherit ? 150 : 104, gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))`}}
+        >
+            {options.map(([mode, label]) => (
+                <button
+                    key={mode}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => onChange(mode)}
+                    className={`min-w-0 whitespace-nowrap rounded-md px-2 py-1 text-center text-[11px] font-medium leading-5 transition-colors ${
+                        value === mode
+                            ? mode === 'allow'
+                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200'
+                                : mode === 'deny'
+                                    ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-200'
+                                    : 'bg-black/5 text-foreground dark:bg-white/10'
+                            : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10'
+                    } disabled:cursor-not-allowed disabled:opacity-40`}
+                >
+                    {label}
+                </button>
+            ))}
+        </div>
+    );
+}
+
+
+function UserToolAccessEditor({catalog, rules, setRules}) {
+    const [query, setQuery] = useState('');
+    const [expandedGroups, setExpandedGroups] = useState(() => new Set());
+    const normalizedQuery = query.trim().toLowerCase();
+    const overallEffect = ruleEffectForPattern(rules, '*') === 'allow' ? 'allow' : 'deny';
+
+    const visibleCatalog = useMemo(() => (Array.isArray(catalog) ? catalog : []).map((group) => {
+        const sourceTools = Array.isArray(group.tools) ? group.tools : [];
+        const groupMatches = normalizedQuery && [group.id, group.name]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(normalizedQuery));
+        const tools = !normalizedQuery || groupMatches
+            ? sourceTools
+            : sourceTools.filter((tool) => [tool.path, tool.name, tool.text]
+                .filter(Boolean)
+                .some((value) => String(value).toLowerCase().includes(normalizedQuery)));
+        return {...group, sourceTools, tools};
+    }).filter((group) => group.tools.length > 0), [catalog, normalizedQuery]);
+
+    const toggleExpanded = useCallback((groupId) => {
+        setExpandedGroups((previous) => {
+            const next = new Set(previous);
+            if (next.has(groupId)) next.delete(groupId);
+            else next.add(groupId);
+            return next;
+        });
+    }, []);
+
+    return (
+        <div className="space-y-3">
+            <div className="rounded-xl border border-black/10 bg-black/[0.015] p-3 dark:border-white/10 dark:bg-white/[0.03]">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="min-w-0">
+                        <div className="text-sm font-semibold">总体默认状态</div>
+                        <div className="mt-0.5 text-[11px] leading-5 text-muted-foreground">
+                            未设置独立规则的工具和工具集将继承这里的状态。
+                        </div>
+                    </div>
+                    <AccessRuleButtons
+                        value={overallEffect}
+                        showInherit={false}
+                        onChange={(effect) => setRules((value) => setRuleEffect(value, '*', effect))}
+                    />
+                </div>
+                <div className="relative mt-3">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
+                    <input
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        placeholder="搜索工具集、工具名称或路径"
+                        className="h-9 w-full rounded-lg border border-black/10 bg-background pl-9 pr-3 text-sm text-foreground outline-none focus:border-blue-400 dark:border-white/10"
+                    />
+                </div>
+            </div>
+
+            {visibleCatalog.map((group) => {
+                const groupPattern = `${group.id}.*`;
+                const isExpanded = Boolean(normalizedQuery) || expandedGroups.has(group.id);
+                return (
+                    <div key={group.id} className="overflow-hidden rounded-lg border border-black/10 dark:border-white/10">
+                        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 bg-black/[0.025] px-3 py-2 dark:bg-white/[0.04]">
+                            <button
+                                type="button"
+                                onClick={() => toggleExpanded(group.id)}
+                                aria-expanded={isExpanded}
+                                className="flex min-w-0 items-center gap-2 text-left"
+                            >
+                                <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`}/>
+                                <span className="min-w-0">
+                                    <span className="block truncate text-sm font-medium">{group.name || group.id}</span>
+                                    <span className="block text-[10px] font-mono text-muted-foreground">
+                                        {groupPattern} · {group.sourceTools.length} 个工具{normalizedQuery ? ` · 命中 ${group.tools.length}` : ''}
+                                    </span>
+                                </span>
+                            </button>
+                            <AccessRuleButtons
+                                value={ruleEffectForPattern(rules, groupPattern)}
+                                onChange={(effect) => setRules((value) => setRuleEffect(value, groupPattern, effect))}
+                            />
+                        </div>
+                        {isExpanded && (
+                            <div className="divide-y divide-black/5 dark:divide-white/5">
+                                {group.tools.map((tool) => (
+                                    <div key={tool.path} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2">
+                                        <div className="min-w-0 pl-6">
+                                            <div className="truncate text-xs font-medium">{tool.text || tool.name}</div>
+                                            <div className="truncate text-[10px] font-mono text-muted-foreground">{tool.path}</div>
+                                        </div>
+                                        <AccessRuleButtons
+                                            value={ruleEffectForPattern(rules, tool.path)}
+                                            onChange={(effect) => setRules((value) => setRuleEffect(value, tool.path, effect))}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+            {visibleCatalog.length === 0 && (
+                <div className="rounded-xl border border-dashed border-black/10 py-8 text-center text-sm text-muted-foreground dark:border-white/10">
+                    没有找到匹配的工具。
+                </div>
+            )}
+        </div>
+    );
+}
+
+function UserManagementItem({item}) {
+    const currentUser = useUserStore((state) => state.user);
+    const [users, setUsers] = useState([]);
+    const [catalog, setCatalog] = useState([]);
+    const [selectedId, setSelectedId] = useState(null);
+    const [rules, setRules] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [createOpen, setCreateOpen] = useState(false);
+    const [createForm, setCreateForm] = useState({username: '', email: '', password: '', isSuperuser: false});
+    const [editForm, setEditForm] = useState(null);
+
+    const selectedUser = useMemo(
+        () => users.find((entry) => Number(entry.id) === Number(selectedId)) || null,
+        [users, selectedId],
+    );
+    const isSelf = Boolean(selectedUser && currentUser && Number(selectedUser.id) === Number(currentUser.id));
+
+    const refreshUsers = useCallback(async ({keepSelection = true} = {}) => {
+        const data = await apiClient.get(apiEndpoint.ADMIN_USERS_ENDPOINT);
+        const next = Array.isArray(data) ? data : [];
+        setUsers(next);
+        setSelectedId((current) => {
+            if (keepSelection && next.some((entry) => Number(entry.id) === Number(current))) return current;
+            return next[0]?.id ?? null;
+        });
+        return next;
+    }, []);
+
+    const refreshAll = useCallback(async () => {
+        setLoading(true);
+        try {
+            const [userData, toolData] = await Promise.all([
+                apiClient.get(apiEndpoint.ADMIN_USERS_ENDPOINT),
+                apiClient.get(apiEndpoint.ADMIN_TOOL_CATALOG_ENDPOINT),
+            ]);
+            const nextUsers = Array.isArray(userData) ? userData : [];
+            setUsers(nextUsers);
+            setCatalog(Array.isArray(toolData) ? toolData : []);
+            setSelectedId((current) => nextUsers.some((entry) => Number(entry.id) === Number(current)) ? current : nextUsers[0]?.id ?? null);
+        } catch (error) {
+            toast.error(error?.message || '加载用户管理数据失败。');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => { refreshAll(); }, [refreshAll]);
+
+    useEffect(() => {
+        if (!selectedUser) {
+            setEditForm(null);
+            setRules([]);
+            return;
+        }
+        setEditForm({
+            username: selectedUser.username || '',
+            email: selectedUser.email || '',
+            password: '',
+            isActive: Boolean(selectedUser.isActive),
+            isSuperuser: Boolean(selectedUser.isSuperuser),
+        });
+        let cancelled = false;
+        apiClient.get(`${apiEndpoint.ADMIN_USERS_ENDPOINT}/${selectedUser.id}/tool-access`)
+            .then((data) => {
+                if (!cancelled) setRules(Array.isArray(data?.rules) ? data.rules : []);
+            })
+            .catch((error) => {
+                if (!cancelled) toast.error(error?.message || '读取用户工具分配失败。');
+            });
+        return () => { cancelled = true; };
+    }, [selectedUser?.id]);
+
+    const createUser = useCallback(async () => {
+        if (!createForm.username.trim() || !createForm.email.trim() || !createForm.password) {
+            toast.error('用户名、邮箱和密码不能为空。');
+            return;
+        }
+        setSaving(true);
+        try {
+            const created = await apiClient.post(apiEndpoint.ADMIN_USERS_ENDPOINT, createForm);
+            await refreshUsers({keepSelection: false});
+            setSelectedId(created?.id ?? null);
+            setCreateOpen(false);
+            setCreateForm({username: '', email: '', password: '', isSuperuser: false});
+            toast.success('用户已创建。');
+        } catch (error) {
+            toast.error(error?.message || '创建用户失败。');
+        } finally {
+            setSaving(false);
+        }
+    }, [createForm, refreshUsers]);
+
+    const saveSelected = useCallback(async () => {
+        if (!selectedUser || !editForm) return;
+        setSaving(true);
+        try {
+            const payload = {...editForm};
+            if (!payload.password) delete payload.password;
+            const updated = await apiClient.patch(`${apiEndpoint.ADMIN_USERS_ENDPOINT}/${selectedUser.id}`, payload);
+            if (!updated?.isSuperuser) {
+                await apiClient.put(`${apiEndpoint.ADMIN_USERS_ENDPOINT}/${selectedUser.id}/tool-access`, {rules});
+            }
+            await refreshUsers();
+            toast.success('用户设置已保存。');
+        } catch (error) {
+            toast.error(error?.message || '保存用户设置失败。');
+        } finally {
+            setSaving(false);
+        }
+    }, [selectedUser, editForm, rules, refreshUsers]);
+
+    const deleteSelected = useCallback(async () => {
+        if (!selectedUser || isSelf) return;
+        const confirmed = window.confirm(`确定永久删除用户“${selectedUser.username}”吗？\n\n如果该用户已有会话或故事等持久数据，服务器会拒绝删除；这类账户请使用“禁用账户”。`);
+        if (!confirmed) return;
+        setSaving(true);
+        try {
+            await apiClient.delete(`${apiEndpoint.ADMIN_USERS_ENDPOINT}/${selectedUser.id}/permanent`);
+            await refreshUsers({keepSelection: false});
+            toast.success('用户已删除。');
+        } catch (error) {
+            toast.error(error?.message || '删除用户失败。');
+        } finally {
+            setSaving(false);
+        }
+    }, [selectedUser, isSelf, refreshUsers]);
+
+    if (loading) {
+        return (
+            <SettingRow fullWidth>
+                <div className="w-full rounded-xl border border-dashed border-black/10 py-10 text-center text-sm text-muted-foreground dark:border-white/10">正在加载用户管理…</div>
+            </SettingRow>
+        );
+    }
+
+    return (
+        <SettingRow fullWidth className="border-b-0">
+            <div className="grid w-full min-h-[420px] grid-cols-1 gap-4 md:grid-cols-[190px_minmax(0,1fr)]">
+                <div className="rounded-xl border border-black/10 bg-black/[0.015] p-2 dark:border-white/10 dark:bg-white/[0.03]">
+                    <div className="mb-2 flex items-center justify-between px-1">
+                        <div>
+                            <div className="text-sm font-semibold">用户</div>
+                            <div className="text-[11px] text-muted-foreground">{users.length} 个账户</div>
+                        </div>
+                        <button type="button" onClick={() => setCreateOpen(true)} className="inline-flex h-8 items-center gap-1 rounded-md bg-blue-600 px-2.5 text-xs font-medium text-white hover:bg-blue-700">
+                            <Plus size={13}/> 添加
+                        </button>
+                    </div>
+                    <div className="space-y-1">
+                        {users.map((entry) => (
+                            <button
+                                key={entry.id}
+                                type="button"
+                                onClick={() => setSelectedId(entry.id)}
+                                className={`w-full rounded-lg px-3 py-2 text-left transition-colors ${Number(selectedId) === Number(entry.id) ? 'bg-blue-50 text-blue-800 dark:bg-blue-500/15 dark:text-blue-200' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+                            >
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="truncate text-sm font-medium">{entry.username}</span>
+                                    <span className={`h-2 w-2 shrink-0 rounded-full ${entry.isActive ? 'bg-emerald-500' : 'bg-gray-300'}`}/>
+                                </div>
+                                <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                    {entry.isSuperuser ? <><LockKeyhole size={11}/> 管理员</> : '普通用户'}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {selectedUser && editForm ? (
+                    <div className="min-w-0 space-y-4">
+                        <div className="rounded-xl border border-black/10 p-4 dark:border-white/10">
+                            <div className="mb-4 flex items-start justify-between gap-3">
+                                <div>
+                                    <div className="text-base font-semibold">{selectedUser.username}</div>
+                                    <div className="text-xs text-muted-foreground">用户 #{selectedUser.id}</div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button type="button" onClick={saveSelected} disabled={saving} className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50">保存</button>
+                                    <button type="button" onClick={deleteSelected} disabled={saving || isSelf} title={isSelf ? '不能删除当前登录管理员' : '永久删除用户'} className="rounded-lg border border-red-500/20 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-500/5 disabled:cursor-not-allowed disabled:opacity-40">删除</button>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <label className="space-y-1 text-xs text-muted-foreground">用户名<input value={editForm.username} onChange={(e) => setEditForm((v) => ({...v, username: e.target.value}))} className="h-9 w-full rounded-lg border border-black/10 bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400 dark:border-white/10"/></label>
+                                <label className="space-y-1 text-xs text-muted-foreground">邮箱<input value={editForm.email} onChange={(e) => setEditForm((v) => ({...v, email: e.target.value}))} className="h-9 w-full rounded-lg border border-black/10 bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400 dark:border-white/10"/></label>
+                                <label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">新密码（留空不修改）<input type="password" value={editForm.password} onChange={(e) => setEditForm((v) => ({...v, password: e.target.value}))} className="h-9 w-full rounded-lg border border-black/10 bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400 dark:border-white/10"/></label>
+                            </div>
+                            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-black/5 pt-4 dark:border-white/10">
+                                <label className={`flex items-center gap-2 text-sm ${isSelf ? 'text-muted-foreground' : ''}`} title={isSelf ? '不能禁用当前登录管理员' : ''}><Switch disabled={isSelf} checked={editForm.isActive} onCheckedChange={(checked) => setEditForm((v) => ({...v, isActive: checked}))}/> 启用账户</label>
+                                <label className={`flex items-center gap-2 text-sm ${isSelf ? 'text-muted-foreground' : ''}`} title={isSelf ? '不能撤销当前登录管理员身份' : ''}><Switch disabled={isSelf} checked={editForm.isSuperuser} onCheckedChange={(checked) => setEditForm((v) => ({...v, isSuperuser: checked}))}/> 管理员</label>
+                                {isSelf && <span className="flex min-h-7 items-center text-xs leading-5 text-muted-foreground">当前登录管理员不能禁用自身或撤销自己的管理员身份。</span>}
+                            </div>
+                        </div>
+
+                        <div className="rounded-xl border border-black/10 p-4 dark:border-white/10">
+                            <div className="mb-3">
+                                <div className="text-sm font-semibold">工具分配</div>
+                                <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                                    普通用户按“总体默认 → 工具集 → 单工具”逐层继承。精确工具规则优先于工具集规则；同级冲突时拒绝优先。
+                                </div>
+                            </div>
+                            {editForm.isSuperuser ? (
+                                <div className="rounded-lg border border-blue-500/15 bg-blue-500/5 px-3 py-3 text-xs text-blue-700 dark:text-blue-200">管理员默认拥有全部工具，无需单独分配。</div>
+                            ) : (
+                                <UserToolAccessEditor catalog={catalog} rules={rules} setRules={setRules}/>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center rounded-xl border border-dashed border-black/10 text-sm text-muted-foreground dark:border-white/10">请选择用户。</div>
+                )}
+            </div>
+
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                <DialogContent className="sm:max-w-[460px]">
+                    <DialogHeader><DialogTitle>添加用户</DialogTitle></DialogHeader>
+                    <div className="space-y-3 py-2">
+                        <label className="block space-y-1 text-xs text-muted-foreground">用户名<input value={createForm.username} onChange={(e) => setCreateForm((v) => ({...v, username: e.target.value}))} className="h-9 w-full rounded-lg border border-black/10 px-3 text-sm text-foreground outline-none dark:border-white/10"/></label>
+                        <label className="block space-y-1 text-xs text-muted-foreground">邮箱<input value={createForm.email} onChange={(e) => setCreateForm((v) => ({...v, email: e.target.value}))} className="h-9 w-full rounded-lg border border-black/10 px-3 text-sm text-foreground outline-none dark:border-white/10"/></label>
+                        <label className="block space-y-1 text-xs text-muted-foreground">密码<input type="password" value={createForm.password} onChange={(e) => setCreateForm((v) => ({...v, password: e.target.value}))} className="h-9 w-full rounded-lg border border-black/10 px-3 text-sm text-foreground outline-none dark:border-white/10"/></label>
+                        <label className="flex items-center gap-2 text-sm"><Switch checked={createForm.isSuperuser} onCheckedChange={(checked) => setCreateForm((v) => ({...v, isSuperuser: checked}))}/> 管理员</label>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <button type="button" onClick={() => setCreateOpen(false)} className="rounded-lg border border-black/10 px-3 py-2 text-sm dark:border-white/10">取消</button>
+                        <button type="button" onClick={createUser} disabled={saving} className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50">创建</button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </SettingRow>
+    );
+}
+
+
 // ─── Registered Custom Components ────────────────────────────────
 // 后端只下发稳定的组件标识；具体 UI 实现由前端注册表负责。
 // 这样“自定义请求参数”不会再被误认为通用 JSON 字段，同时也便于
@@ -2235,6 +2623,7 @@ function RemoteWorkspaceConnectionsItem({item}) {
 const CUSTOM_SETTING_COMPONENTS = {
     requestJsonKeyValue: JsonItem,
     remoteWorkspaceConnections: RemoteWorkspaceConnectionsItem,
+    userManagement: UserManagementItem,
 };
 
 function CustomItem({item, path}) {
@@ -2762,7 +3151,7 @@ export default function DynamicSettings({
 
     return (
         <SettingsContext.Provider value={ctx}>
-            <div className={`font-sans text-[#1a1d21] dark:text-[#e4e7eb] rounded-lg overflow-hidden ${className || ""}`}>
+            <div className={`w-full min-w-0 font-sans text-[#1a1d21] dark:text-[#e4e7eb] rounded-lg overflow-hidden ${className || ""}`}>
                 {config.map((item, i) => {
                     const key = item.name || item.text || `item-${i}`;
                     const path = item.name ? [item.name] : [];

@@ -24,6 +24,8 @@ import {
     processSelectedFiles,
     useIsMobile,
     useLocalSetting,
+    getLocalSetting,
+    setLocalSetting,
 } from "@/lib/tools.jsx";
 import {useUserStore} from "@/context/userContext.jsx";
 import {onEvent} from "@/context/useEventStore.jsx";
@@ -107,6 +109,24 @@ const ImageUploadProgressDialog = ({ open, progress, fileName, onCancel, t }) =>
     );
 };
 
+const SETTINGS_WINDOW_SIZE_KEY = "cwm:settings-window-size:v1";
+const DEFAULT_SETTINGS_WINDOW_SIZE = {width: 900, height: 600};
+
+function clampSettingsWindowSize(size) {
+    if (typeof window === "undefined") return DEFAULT_SETTINGS_WINDOW_SIZE;
+    const maxWidth = Math.max(560, window.innerWidth - 32);
+    const maxHeight = Math.max(420, window.innerHeight - 32);
+    return {
+        width: Math.min(maxWidth, Math.max(640, Number(size?.width) || DEFAULT_SETTINGS_WINDOW_SIZE.width)),
+        height: Math.min(maxHeight, Math.max(440, Number(size?.height) || DEFAULT_SETTINGS_WINDOW_SIZE.height)),
+    };
+}
+
+function loadSettingsWindowSize() {
+    if (typeof window === "undefined") return DEFAULT_SETTINGS_WINDOW_SIZE;
+    return clampSettingsWindowSize(getLocalSetting(SETTINGS_WINDOW_SIZE_KEY, DEFAULT_SETTINGS_WINDOW_SIZE));
+}
+
 const SettingPage = ({
                          open,
                          onClose,
@@ -128,6 +148,8 @@ const SettingPage = ({
     );
     const {user, setUser} = useUserStore();
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [settingsWindowSize, setSettingsWindowSize] = useState(loadSettingsWindowSize);
+    const resizeCleanupRef = useRef(null);
     const {t} = useTranslation();
 
     // ==================== Tabs 状态 ====================
@@ -552,6 +574,48 @@ const SettingPage = ({
         setUploadDialogOpen(false);
     }, []);
 
+    const beginSettingsResize = useCallback((event) => {
+        if (isMobile || isFullscreen || event.button !== 0) return;
+        event.preventDefault();
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const startSize = clampSettingsWindowSize(settingsWindowSize);
+
+        resizeCleanupRef.current?.();
+        const onMove = (moveEvent) => {
+            const next = clampSettingsWindowSize({
+                width: startSize.width + (moveEvent.clientX - startX) * 2,
+                height: startSize.height + (moveEvent.clientY - startY) * 2,
+            });
+            setSettingsWindowSize(next);
+        };
+        const onUp = () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+            resizeCleanupRef.current = null;
+            setSettingsWindowSize((current) => {
+                const next = clampSettingsWindowSize(current);
+                try { setLocalSetting(SETTINGS_WINDOW_SIZE_KEY, next); } catch {}
+                return next;
+            });
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp, {once: true});
+        resizeCleanupRef.current = () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+        };
+    }, [isFullscreen, isMobile, settingsWindowSize]);
+
+    useEffect(() => () => resizeCleanupRef.current?.(), []);
+
+    useEffect(() => {
+        if (!open || isMobile || isFullscreen) return;
+        const keepInsideViewport = () => setSettingsWindowSize((current) => clampSettingsWindowSize(current));
+        window.addEventListener('resize', keepInsideViewport);
+        return () => window.removeEventListener('resize', keepInsideViewport);
+    }, [open, isMobile, isFullscreen]);
+
     // ==================== 左侧侧边栏 ====================
     const renderSidebar = () => (
         <div className={`${isMobile ? 'w-16' : 'w-auto'} border-r bg-gray-50/50 p-2 flex flex-col gap-1`}>
@@ -695,7 +759,7 @@ const SettingPage = ({
         if (!dynamicConfig) return null;
 
         return (
-            <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="max-w-3xl mx-auto">
+            <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="w-full min-w-0">
                 <DynamicSettings
                     key={activeTab}
                     config={dynamicConfig.options || []}
@@ -734,14 +798,29 @@ const SettingPage = ({
                                 : ''
                         }`}
                         style={{
-                            width: isFullscreen || isMobile ? '100%' : 'min(900px, calc(100vw - 2rem))',
-                            height: isFullscreen || isMobile ? '100%' : 'min(600px, calc(100vh - 2rem))',
+                            width: isFullscreen || isMobile ? '100%' : settingsWindowSize.width,
+                            height: isFullscreen || isMobile ? '100%' : settingsWindowSize.height,
+                            maxWidth: isFullscreen || isMobile ? '100%' : 'calc(100vw - 2rem)',
+                            maxHeight: isFullscreen || isMobile ? '100%' : 'calc(100vh - 2rem)',
                             borderRadius: isFullscreen || isMobile ? 0 : 12,
                             contain: "layout paint",
                             willChange: "transform, opacity",
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
+                        {!isMobile && !isFullscreen && (
+                            <button
+                                type="button"
+                                aria-label="拖动调整设置窗口大小"
+                                title="拖动调整窗口大小"
+                                onPointerDown={beginSettingsResize}
+                                className="absolute bottom-1 right-1 z-20 h-5 w-5 cursor-se-resize rounded-sm opacity-45 transition-opacity hover:opacity-90 focus:outline-none"
+                            >
+                                <span className="absolute bottom-[3px] right-[3px] h-[8px] w-[8px] border-b-2 border-r-2 border-gray-400"/>
+                                <span className="absolute bottom-[7px] right-[7px] h-[5px] w-[5px] border-b border-r border-gray-300"/>
+                            </button>
+                        )}
+
                         {/* 顶部导航栏 */}
                         <div className="flex items-center justify-between px-4 h-14 border-b shrink-0 bg-white">
                             <div className="flex items-center gap-4">
@@ -788,7 +867,7 @@ const SettingPage = ({
 
                         <div className="flex flex-1 overflow-hidden">
                             {renderSidebar()}
-                            <div className="pretty-scrollbar flex-1 overflow-y-auto bg-white p-4 md:p-6">
+                            <div className="pretty-scrollbar min-w-0 flex-1 overflow-y-auto bg-white p-4 md:p-6">
                                 {renderContent()}
                             </div>
                         </div>

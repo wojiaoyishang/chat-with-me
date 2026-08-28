@@ -214,9 +214,9 @@
      - 7
      - ``src/components/modal/universalModal.js``
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
-     - 45
+     - 50
      - 0
-     - 192
+     - 254
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/UserProfileCard </api/javascript/components/setting/UserProfileCard>`
      - 1

@@ -22,6 +22,8 @@ export const apiEndpoint = {
     LOGIN_ENDPOINT: '/user/login',
     LOGOUT_ENDPOINT: '/user/logout',
     USER_INFO_ENDPOINT: '/user/info',
+    ADMIN_USERS_ENDPOINT: '/user/admin/users',
+    ADMIN_TOOL_CATALOG_ENDPOINT: '/user/admin/tool-catalog',
     DOCUMENT_ENDPOINT: '/document',
     DOCUMENT_COLLABORA_DIRECTION_ENDPOINT: '/document/redirect',
     SETTING_TABS_ENDPOINT: '/setting/tabs',
