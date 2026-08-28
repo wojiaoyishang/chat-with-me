@@ -46,7 +46,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
    **主要协作调用**：``Number.isFinite``、``Number``、``Math.max``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:1799:1884:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:1840:1925:FUNCTION
 
 .. js:function:: upsertWorkspaceTransfer(transfer)
 
@@ -65,7 +65,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
    **主要协作调用**：``useWorkspaceTransferStore.getState().upsertTransfer``、``useWorkspaceTransferStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:1925:2006:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:1966:2047:FUNCTION
 
 .. js:function:: clearWorkspaceTransfers()
 
@@ -83,7 +83,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
    **主要协作调用**：``useWorkspaceTransferStore.getState().clearConversationTransfers``、``useWorkspaceTransferStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2046:2248:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2087:2289:FUNCTION
 
 .. js:function:: selectArtifactTransfer(state, artifactId)
 
@@ -103,11 +103,11 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``null``、``transferId ? state.transfersById[transferId] || null : null``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2285:2492:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2331:2549:FUNCTION
 
-.. js:function:: selectTaskTransfers(state, taskRunId)
+.. js:function:: selectExecutionTransfers(state, executionId)
 
-   实现 ``selectTaskTransfers`` 对应的前端处理。
+   实现 ``selectExecutionTransfers`` 对应的前端处理。
 
    **性质**：同步函数；导出 API；源码第 ``65``—``70`` 行。
 
@@ -116,14 +116,14 @@ src/features/workspace/useWorkspaceTransferStore 模块
    ``state``
       调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``taskRunId``
+   ``executionId``
       目标对象的公共或运行时标识。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``EMPTY_TRANSFERS``、``(state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map((id) => state.transfersById[id]) .filter(Boolean)``。
+   根据执行分支返回结果；代表性返回表达式为 ``EMPTY_TRANSFERS``、``(state.executionTransferIds[executionId] || EMPTY_TRANSFERS) .map((id) => state.transfersById[id]) .filter(Boolean)``。
 
-   **主要协作调用**：``(state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map((id) => state.transfersById[id]) .filter``、``(state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map``。
+   **主要协作调用**：``(state.executionTransferIds[executionId] || EMPTY_TRANSFERS) .map((id) => state.transfersById[id]) .filter``、``(state.executionTransferIds[executionId] || EMPTY_TRANSFERS) .map``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -132,7 +132,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:525:1757:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:525:1798:FUNCTION
 
 .. rubric:: ``create callback @ 16``
 
@@ -159,7 +159,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:641:1604:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:646:1640:FUNCTION
 
 .. rubric:: ``upsertTransfer``
 
@@ -188,7 +188,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:660:1603:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:665:1639:FUNCTION
 
 .. rubric:: ``set callback @ 21``
 
@@ -207,11 +207,11 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``state``、``{transfersById, taskTransferIds, latestTransferIdByArtifact}``。
+根据执行分支返回结果；代表性返回表达式为 ``state``、``{transfersById, executionTransferIds, latestTransferIdByArtifact}``。
 
 **主要协作调用**：``normalizeTransfer``、``current.includes``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:1638:1753:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:1674:1794:FUNCTION
 
 .. rubric:: ``clearConversationTransfers``
 
@@ -233,17 +233,17 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
 **主要协作调用**：``set``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2432:2463:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2489:2520:FUNCTION
 
-.. rubric:: ``(state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map callback @ 68``
+.. rubric:: ``(state.executionTransferIds[executionId] || EMPTY_TRANSFERS) .map callback @ 68``
 
 .. code-block:: javascript
 
-   (state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map callback @ 68(id)
+   (state.executionTransferIds[executionId] || EMPTY_TRANSFERS) .map callback @ 68(id)
 
-作为 ``(state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(state.executionTransferIds[executionId] || EMPTY_TRANSFERS) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``68``—``68`` 行；所属函数 ``selectTaskTransfers``。
+**性质**：同步局部函数；源码第 ``68``—``68`` 行；所属函数 ``selectExecutionTransfers``。
 
 **参数**
 

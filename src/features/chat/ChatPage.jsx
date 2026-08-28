@@ -18,8 +18,7 @@ import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
 import RuntimeInspectorDialog from '@/features/chat/page/components/RuntimeInspectorDialog.jsx';
 import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
 import StoryReader from '@/features/story/StoryReader.jsx';
-import TaskMonitorHost from '@/components/markdown/card-block/task/TaskMonitorHost.jsx';
-import {followTaskMonitorCard} from '@/components/markdown/card-block/task/useTaskMonitorStore.js';
+import {ExecutionHost} from '@/features/execution';
 import {clearWorkspaceTransfers, upsertWorkspaceTransfer} from '@/features/workspace/useWorkspaceTransferStore.js';
 import {getVisionAttachmentIds, normalizeAttachmentList} from './attachmentVision.js';
 import {normalizeRemoteChatModel} from './modelCapabilities.js';
@@ -144,45 +143,6 @@ const translateWithFallback = (t, key, fallback, options) => {
     const translated = t(key, options);
     return translated && translated !== key ? translated : fallback;
 };
-
-const getReplacementPayloadContent = (entry) => {
-    if (typeof entry === 'string') return entry;
-    if (!entry || typeof entry !== 'object') return '';
-    return entry.frontend ?? entry.content ?? entry.value ?? '';
-};
-
-const collectLiveTaskModeCardIds = (messageOrReplacementUpdates) => {
-    const cardIds = [];
-    const seen = new Set();
-
-    Object.values(messageOrReplacementUpdates || {}).forEach((outerValue) => {
-        if (!outerValue || typeof outerValue !== 'object') return;
-
-        const replacementMap = outerValue?.extraInfo?.replace
-            || outerValue?.extra_info?.replace
-            || outerValue;
-        if (!replacementMap || typeof replacementMap !== 'object') return;
-
-        Object.entries(replacementMap).forEach(([replacementId, entry]) => {
-            const cardId = String(replacementId || '').trim();
-            const rawContent = String(getReplacementPayloadContent(entry) || '');
-            if (!cardId || seen.has(cardId)) return;
-
-            // Task Mode cards are the only replacements carrying both markers.
-            // A sealed historical segment also carries TASK_SEGMENT_DONE and must
-            // never steal an already-open monitor from the newly-created segment.
-            if (!/\[TASK_STATUS:[^\]\r\n]+\]/i.test(rawContent)) return;
-            if (!/\[TASK_RUN_ID:[^\]\r\n]+\]/i.test(rawContent)) return;
-            if (/\[TASK_SEGMENT_DONE:true\]/i.test(rawContent)) return;
-
-            seen.add(cardId);
-            cardIds.push(cardId);
-        });
-    });
-
-    return cardIds;
-};
-
 
 // ========== 主组件 ==========
 function ChatPage({
@@ -1164,8 +1124,6 @@ function ChatPage({
             role,
             admissionPolicy = 'auto',
             inputSource = 'chat',
-            restartTaskRunId = '',
-            restartTaskMessageId = '',
             idempotencyKey = '',
         }
     ) => {
@@ -1205,8 +1163,6 @@ function ChatPage({
                     admissionPolicy: admissionPolicy,
                     inputSource: inputSource,
                     idempotencyKey: idempotencyKey || currentTurnIdempotencyKeyRef.current,
-                    restartTaskRunId: restartTaskRunId || undefined,
-                    restartTaskMessageId: restartTaskMessageId || undefined,
                 },
                 conversationId: conversationId,
                 documentId: documentId,
@@ -2263,9 +2219,6 @@ function ChatPage({
                                     }
                                 }
                             });
-                            collectLiveTaskModeCardIds(payload.value).forEach((cardId) => {
-                                followTaskMonitorCard(conversationId, cardId);
-                            });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
                             scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
@@ -2999,6 +2952,8 @@ function ChatPage({
             <>
             <motion.div
                 ref={windowRef}
+                data-chat-layout-root="true"
+                data-cwm-conversation-id={conversationId || ''}
                 className={`flex overflow-hidden bg-white ${
                     isWindowMode ? 'shadow-2xl border-2 border-gray-300' : ''
                 }`}
@@ -3103,7 +3058,6 @@ function ChatPage({
                             />
                         </div>
 
-                        <TaskMonitorHost conversationId={conversationId}/>
 
                         <QuickUserMessageNavigator
                             items={messageSummaries}
@@ -3213,6 +3167,13 @@ function ChatPage({
                         </span>
                     </footer>
                 </div>
+
+                <div
+                    data-execution-dock-root="true"
+                    data-cwm-conversation-id={conversationId || ''}
+                    className="relative h-full w-0 shrink-0 overflow-hidden bg-white"
+                />
+                <ExecutionHost conversationId={conversationId} messageOrder={messagesOrder} messages={messages}/>
 
                 <RealtimeVoiceSurface
                     state={realtimeVoice.state}

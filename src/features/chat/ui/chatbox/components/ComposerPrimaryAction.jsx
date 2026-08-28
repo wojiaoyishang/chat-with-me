@@ -8,8 +8,9 @@ const ComposerPrimaryAction = memo(({
     messageContent,
     attachmentsMeta,
     onSend,
-    taskModeActive = false,
-    taskInterruptPending = false,
+    executionActive = false,
+    executionStatus = '',
+    executionGuidancePending = false,
     isEditMessage = false,
     isForkMode = false,
     isReadOnly = false,
@@ -26,8 +27,8 @@ const ComposerPrimaryAction = memo(({
     const showRealtimeVoice = (
         status === 'normal'
         && !hasInput
-        && !taskModeActive
-        && !taskInterruptPending
+        && !executionActive
+        && !executionGuidancePending
         && !isEditMessage
         && !isForkMode
         && !isReadOnly
@@ -53,8 +54,9 @@ const ComposerPrimaryAction = memo(({
             messageContent={messageContent}
             attachmentsMeta={attachmentsMeta}
             onClick={onSend}
-            taskModeActive={taskModeActive}
-            taskInterruptPending={taskInterruptPending}
+            executionActive={executionActive}
+            executionStatus={executionStatus}
+            executionGuidancePending={executionGuidancePending}
             t={t}
         />
     );

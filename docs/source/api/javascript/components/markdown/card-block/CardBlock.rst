@@ -22,18 +22,18 @@ src/components/markdown/card-block/CardBlock 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``./agent/AgentWidget.jsx``、``./blocks/ErrorBlock.jsx``、``./blocks/HtmlBlock.jsx``、``./blocks/MarkdownBlock.jsx``、``./blocks/QueuingBlock.jsx``、``./blocks/TextBlock.jsx``、``./blocks/ToolCommandBlock.jsx``、``./blocks/ToolLogBlock.jsx``、``./cardBlockAnimations.css``、``./constants.jsx``、``./status/StatusWidget.jsx``、``./task/TaskChecklistCard.jsx``、``./task/TaskModeWidget.jsx``、``./task/TaskUserMessageCard.jsx``、``@/features/story/StoryCard.jsx``、``./widget/WidgetHost.jsx``。
+``react``、``lucide-react``、``./agent/AgentWidget.jsx``、``./blocks/ErrorBlock.jsx``、``./blocks/HtmlBlock.jsx``、``./blocks/MarkdownBlock.jsx``、``./blocks/QueuingBlock.jsx``、``./blocks/TextBlock.jsx``、``./blocks/ToolCommandBlock.jsx``、``./blocks/ToolLogBlock.jsx``、``./cardBlockAnimations.css``、``./constants.jsx``、``./status/StatusWidget.jsx``、``@/features/execution``、``@/features/story/StoryCard.jsx``、``./widget/WidgetHost.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1200:1268:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1077:1145:FUNCTION
 
 .. js:function:: shouldCompareRenderContext(type)
 
    实现 ``shouldCompareRenderContext`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``38``—``40`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``36``—``38`` 行。
 
    **参数**
 
@@ -51,17 +51,17 @@ src/components/markdown/card-block/CardBlock 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1297:1890:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1174:1767:FUNCTION
 
-.. rubric:: ``memo callback @ 42``
+.. rubric:: ``memo callback @ 40``
 
 .. code-block:: javascript
 
-   memo callback @ 42({type, content})
+   memo callback @ 40({type, content})
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``42``—``57`` 行。
+**性质**：同步局部函数；源码第 ``40``—``55`` 行。
 
 **参数**
 
@@ -72,17 +72,17 @@ src/components/markdown/card-block/CardBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <div className="bg-red-50/40 border border-red-200 p-3 my-2 rounded-md"> <div className="text-red-700 text-xs mb-1.5 flex items-center gap-1.5"> <span className="bg-red-200 text…``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1891:2004:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1768:1881:FUNCTION
 
-.. rubric:: ``memo callback @ 57``
+.. rubric:: ``memo callback @ 55``
 
 .. code-block:: javascript
 
-   memo callback @ 57(prev, next)
+   memo callback @ 55(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``57``—``62`` 行。
+**性质**：同步局部函数；源码第 ``55``—``60`` 行。
 
 **参数**
 
@@ -96,17 +96,17 @@ src/components/markdown/card-block/CardBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( prev.type === next.type && prev.content === next.content )``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:2075:6675:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1952:6291:FUNCTION
 
-.. rubric:: ``memo callback @ 66``
+.. rubric:: ``memo callback @ 64``
 
 .. code-block:: javascript
 
-   memo callback @ 66({ content = '', id, allowTts = false, conversationId = null, type = 'markdown', contextId = '', rep…)
+   memo callback @ 64({ content = '', id, allowTts = false, conversationId = null, type = 'markdown', contextId = '', rep…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``66``—``253`` 行。
+**性质**：同步局部函数；源码第 ``64``—``238`` 行。
 
 **参数**
 
@@ -117,17 +117,17 @@ src/components/markdown/card-block/CardBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <MarkdownBlock {...commonProps} /> )``、``( <TextBlock id={id} content={content} /> )``、``( <HtmlBlock id={id} content={content} /> )``、``( <ToolCommandBlock id={id} content={content} /> )``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:6676:7610:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:6292:7226:FUNCTION
 
-.. rubric:: ``memo callback @ 253``
+.. rubric:: ``memo callback @ 238``
 
 .. code-block:: javascript
 
-   memo callback @ 253(prev, next)
+   memo callback @ 238(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``253``—``279`` 行。
+**性质**：同步局部函数；源码第 ``238``—``264`` 行。
 
 **参数**
 

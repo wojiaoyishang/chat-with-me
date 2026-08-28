@@ -12,6 +12,7 @@
    project_structure
    bootstrap_routing_auth
    event_flow
+   execution_runtime
    state_management
    surfaces
    rendering_widgets

@@ -2492,6 +2492,7 @@ function ToolPermissionMatrixItem({item, path}) {
     const normalizedQuery = query.trim().toLowerCase();
 
     const resolveMode = useCallback((tool) => {
+        if (tool.locked && ["allow", "ask", "deny"].includes(tool.default)) return tool.default;
         const explicit = permissions[tool.name];
         if (["allow", "ask", "deny"].includes(explicit)) return explicit;
         if (["allow", "ask", "deny"].includes(tool.default)) return tool.default;
@@ -2630,26 +2631,33 @@ function ToolPermissionMatrixItem({item, path}) {
                                                     <div className="mt-0.5 break-all font-mono text-[11px] text-[#8c959f]">{tool.name}</div>
                                                     {tool.description && <div className="mt-1 text-xs leading-5 text-[#656d76] dark:text-[#8b949e]">{tool.description}</div>}
                                                 </div>
-                                                <div className="flex shrink-0 rounded-xl border border-[#d0d7de] dark:border-[#30363d] bg-[#f6f8fa] dark:bg-[#161b22] p-1">
-                                                    {modes.map(mode => {
-                                                        const Icon = TOOL_PERMISSION_ICONS[mode.name] || CircleHelp;
-                                                        const disabled = tool.locked || !(tool.allowedModes || ["allow", "ask", "deny"]).includes(mode.name);
-                                                        const selected = selectedMode === mode.name;
-                                                        return (
-                                                            <button
-                                                                type="button"
-                                                                key={mode.name}
-                                                                disabled={disabled}
-                                                                onClick={() => setToolMode(tool, mode.name)}
-                                                                title={mode.text}
-                                                                className={`inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-lg px-2 text-xs font-medium transition ${disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"} ${selected ? (TOOL_PERMISSION_STYLES[mode.name] || "") : "border border-transparent text-[#656d76] hover:bg-white dark:text-[#8b949e] dark:hover:bg-[#0d1117]"}`}
-                                                            >
-                                                                <Icon className="h-4 w-4" />
-                                                                <span className="hidden md:inline">{mode.text}</span>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
+                                                {tool.locked ? (
+                                                    <div className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-medium ${TOOL_PERMISSION_STYLES[selectedMode] || ""}`}>
+                                                        <LockKeyhole className="h-3.5 w-3.5" />
+                                                        <span>系统固定</span>
+                                                        <span>·</span>
+                                                        <span>{modes.find(mode => mode.name === selectedMode)?.text || selectedMode}</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex shrink-0 rounded-xl border border-[#d0d7de] dark:border-[#30363d] bg-[#f6f8fa] dark:bg-[#161b22] p-1">
+                                                        {modes.filter(mode => (tool.allowedModes || ["allow", "ask", "deny"]).includes(mode.name)).map(mode => {
+                                                            const Icon = TOOL_PERMISSION_ICONS[mode.name] || CircleHelp;
+                                                            const selected = selectedMode === mode.name;
+                                                            return (
+                                                                <button
+                                                                    type="button"
+                                                                    key={mode.name}
+                                                                    onClick={() => setToolMode(tool, mode.name)}
+                                                                    title={mode.text}
+                                                                    className={`inline-flex h-8 min-w-8 cursor-pointer items-center justify-center gap-1 rounded-lg px-2 text-xs font-medium transition ${selected ? (TOOL_PERMISSION_STYLES[mode.name] || "") : "border border-transparent text-[#656d76] hover:bg-white dark:text-[#8b949e] dark:hover:bg-[#0d1117]"}`}
+                                                                >
+                                                                    <Icon className="h-4 w-4" />
+                                                                    <span className="hidden md:inline">{mode.text}</span>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })}

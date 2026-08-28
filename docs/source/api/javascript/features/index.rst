@@ -14,9 +14,9 @@
      - 局部/回调
      - 源码
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
-     - 15
+     - 13
      - 0
-     - 227
+     - 224
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -116,7 +116,7 @@
    * - :doc:`src/features/chat/page/hooks/useChatSpeech </api/javascript/features/chat/page/hooks/useChatSpeech>`
      - 22
      - 0
-     - 269
+     - 276
      - ``src/features/chat/page/hooks/useChatSpeech.js``
    * - :doc:`src/features/chat/page/hooks/useChatWindowMode </api/javascript/features/chat/page/hooks/useChatWindowMode>`
      - 1
@@ -184,9 +184,9 @@
      - 25
      - ``src/features/chat/ui/AttachmentShowcase.jsx``
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
-     - 6
+     - 8
      - 0
-     - 177
+     - 175
      - ``src/features/chat/ui/ChatBox.jsx``
    * - :doc:`src/features/chat/ui/ChatBoxHeader </api/javascript/features/chat/ui/ChatBoxHeader>`
      - 0
@@ -241,7 +241,7 @@
    * - :doc:`src/features/chat/ui/chatbox/components/ExtraToolsMenuItems </api/javascript/features/chat/ui/chatbox/components/ExtraToolsMenuItems>`
      - 2
      - 0
-     - 29
+     - 31
      - ``src/features/chat/ui/chatbox/components/ExtraToolsMenuItems.jsx``
    * - :doc:`src/features/chat/ui/chatbox/components/FullscreenEditorModal </api/javascript/features/chat/ui/chatbox/components/FullscreenEditorModal>`
      - 0
@@ -433,6 +433,36 @@
      - 0
      - 1
      - ``src/features/chat/widgets/WidgetPresentationContext.jsx``
+   * - :doc:`src/features/execution/ExecutionGuidanceBubble </api/javascript/features/execution/ExecutionGuidanceBubble>`
+     - 1
+     - 0
+     - 2
+     - ``src/features/execution/ExecutionGuidanceBubble.jsx``
+   * - :doc:`src/features/execution/ExecutionHost </api/javascript/features/execution/ExecutionHost>`
+     - 0
+     - 0
+     - 16
+     - ``src/features/execution/ExecutionHost.jsx``
+   * - :doc:`src/features/execution/ExecutionStatus </api/javascript/features/execution/ExecutionStatus>`
+     - 1
+     - 0
+     - 8
+     - ``src/features/execution/ExecutionStatus.jsx``
+   * - :doc:`src/features/execution/ExecutionWindow </api/javascript/features/execution/ExecutionWindow>`
+     - 6
+     - 0
+     - 27
+     - ``src/features/execution/ExecutionWindow.jsx``
+   * - :doc:`src/features/execution/index </api/javascript/features/execution/index>`
+     - 0
+     - 0
+     - 0
+     - ``src/features/execution/index.js``
+   * - :doc:`src/features/execution/useExecutionStore </api/javascript/features/execution/useExecutionStore>`
+     - 11
+     - 0
+     - 17
+     - ``src/features/execution/useExecutionStore.js``
    * - :doc:`src/features/notification/NotificationHost </api/javascript/features/notification/NotificationHost>`
      - 4
      - 0
@@ -464,19 +494,34 @@
      - 13
      - ``src/features/story/StoryCard.jsx``
    * - :doc:`src/features/story/StoryReader </api/javascript/features/story/StoryReader>`
-     - 5
+     - 1
      - 0
-     - 38
+     - 44
      - ``src/features/story/StoryReader.jsx``
    * - :doc:`src/features/story/StorySelectorButton </api/javascript/features/story/StorySelectorButton>`
      - 1
      - 0
      - 15
      - ``src/features/story/StorySelectorButton.jsx``
-   * - :doc:`src/features/tools/components/ConversationToolsDialog </api/javascript/features/tools/components/ConversationToolsDialog>`
-     - 4
+   * - :doc:`src/features/story/media/StoryMediaDeck </api/javascript/features/story/media/StoryMediaDeck>`
+     - 1
      - 0
-     - 56
+     - 0
+     - ``src/features/story/media/StoryMediaDeck.jsx``
+   * - :doc:`src/features/story/media/StoryVideo </api/javascript/features/story/media/StoryVideo>`
+     - 0
+     - 0
+     - 1
+     - ``src/features/story/media/StoryVideo.jsx``
+   * - :doc:`src/features/story/media/storyMediaLayout </api/javascript/features/story/media/storyMediaLayout>`
+     - 7
+     - 0
+     - 0
+     - ``src/features/story/media/storyMediaLayout.js``
+   * - :doc:`src/features/tools/components/ConversationToolsDialog </api/javascript/features/tools/components/ConversationToolsDialog>`
+     - 8
+     - 0
+     - 57
      - ``src/features/tools/components/ConversationToolsDialog.jsx``
    * - :doc:`src/features/workspace/WorkspaceSelector </api/javascript/features/workspace/WorkspaceSelector>`
      - 1
@@ -592,6 +637,12 @@
    /api/javascript/features/chat/voice/index
    /api/javascript/features/chat/voice/useRealtimeVoiceConversation
    /api/javascript/features/chat/widgets/WidgetPresentationContext
+   /api/javascript/features/execution/ExecutionGuidanceBubble
+   /api/javascript/features/execution/ExecutionHost
+   /api/javascript/features/execution/ExecutionStatus
+   /api/javascript/features/execution/ExecutionWindow
+   /api/javascript/features/execution/index
+   /api/javascript/features/execution/useExecutionStore
    /api/javascript/features/notification/NotificationHost
    /api/javascript/features/notification/NotificationSettings
    /api/javascript/features/notification/NotificationToast
@@ -600,6 +651,9 @@
    /api/javascript/features/story/StoryCard
    /api/javascript/features/story/StoryReader
    /api/javascript/features/story/StorySelectorButton
+   /api/javascript/features/story/media/StoryMediaDeck
+   /api/javascript/features/story/media/StoryVideo
+   /api/javascript/features/story/media/storyMediaLayout
    /api/javascript/features/tools/components/ConversationToolsDialog
    /api/javascript/features/workspace/WorkspaceSelector
    /api/javascript/features/workspace/WorkspaceSettingsDialog

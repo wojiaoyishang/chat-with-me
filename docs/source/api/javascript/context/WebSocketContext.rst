@@ -27,7 +27,7 @@ Send a complete CWM Protocol v1 event envelope.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:842:1000:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:865:1023:FUNCTION
 
 .. js:function:: sendWebSocketMessage(envelope)
 
@@ -50,7 +50,7 @@ Send a complete CWM Protocol v1 event envelope.
 
    **主要协作调用**：``getRealtimeTransport``、``transport.sendEvent``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:1042:1222:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:1065:1245:FUNCTION
 
 .. js:function:: retryWebSocketConnection()
 
@@ -68,13 +68,13 @@ Send a complete CWM Protocol v1 event envelope.
 
    **主要协作调用**：``currentRetryFunction``、``Promise.reject``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:1257:7549:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:1280:8266:FUNCTION
 
 .. js:function:: WebSocketProvider({children})
 
    渲染 ``WebSocketProvider`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``30``—``174`` 行。
+   **性质**：同步函数；导出 API；源码第 ``30``—``182`` 行。
 
    **参数**
 
@@ -97,13 +97,13 @@ Send a complete CWM Protocol v1 event envelope.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:7579:7614:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:8296:8331:FUNCTION
 
 .. js:function:: useWebSocket()
 
    封装 ``useWebSocket`` Hook，向调用组件提供相关状态、动作与生命周期清理。
 
-   **性质**：同步函数；导出 API；源码第 ``176``—``176`` 行。
+   **性质**：同步函数；导出 API；源码第 ``184``—``184`` 行。
 
    **参数**
 
@@ -124,7 +124,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:1670:6616:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:1693:7333:FUNCTION
 
 .. rubric:: ``createConnection``
 
@@ -134,7 +134,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 创建与 ``Connection`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``40``—``145`` 行；所属函数 ``WebSocketProvider``。
+**性质**：异步局部函数；源码第 ``40``—``153`` 行；所属函数 ``WebSocketProvider``。
 
 **参数**
 
@@ -159,7 +159,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:2232:2598:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:2255:2621:FUNCTION
 
 .. rubric:: ``onOpen``
 
@@ -181,7 +181,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 **主要协作调用**：``setRealtimeTransport``、``setIsConnected``、``flushRealtimeEvents``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:2620:2992:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:2643:3015:FUNCTION
 
 .. rubric:: ``onEvent``
 
@@ -210,7 +210,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:2930:2976:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:2953:2999:FUNCTION
 
 .. rubric:: ``setMessages callback @ 66``
 
@@ -233,7 +233,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 **主要协作调用**：``current.slice``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:3014:3807:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:3037:4524:FUNCTION
 
 .. rubric:: ``onMedia``
 
@@ -243,7 +243,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 处理 ``Media`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``68``—``84`` 行；所属函数 ``createConnection``。
+**性质**：同步局部函数；源码第 ``68``—``92`` 行；所属函数 ``createConnection``。
 
 **参数**
 
@@ -262,9 +262,9 @@ Send a complete CWM Protocol v1 event envelope.
 * 发送本地或远程 CWM 事件/媒体帧。
 * 注册事件、DOM 或运行时订阅。
 
-**主要协作调用**：``emitEvent``。
+**主要协作调用**：``dispatchIncomingEvent``、``Date.now``、``Number.isFinite``、``Number``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:3837:4034:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:4554:4751:FUNCTION
 
 .. rubric:: ``onProtocolError``
 
@@ -274,7 +274,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 处理 ``Protocol Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``85``—``88`` 行；所属函数 ``createConnection``。
+**性质**：同步局部函数；源码第 ``93``—``96`` 行；所属函数 ``createConnection``。
 
 **参数**
 
@@ -291,7 +291,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 **主要协作调用**：``console.error``、``emitEvent``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:4056:5996:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:4773:6713:FUNCTION
 
 .. rubric:: ``onClose``
 
@@ -301,7 +301,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 处理 ``Close`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``89``—``126`` 行；所属函数 ``createConnection``。
+**性质**：同步局部函数；源码第 ``97``—``134`` 行；所属函数 ``createConnection``。
 
 **参数**
 
@@ -321,17 +321,17 @@ Send a complete CWM Protocol v1 event envelope.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:4916:5303:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:5633:6020:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 106``
+.. rubric:: ``window.setTimeout callback @ 114``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 106()
+   window.setTimeout callback @ 114()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``106``—``112`` 行；所属函数 ``onClose``。
+**性质**：同步局部函数；源码第 ``114``—``120`` 行；所属函数 ``onClose``。
 
 **参数**
 
@@ -345,7 +345,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:5090:5127:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:5807:5844:FUNCTION
 
 .. rubric:: ``success``
 
@@ -355,7 +355,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 实现 ``success`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``window.setTimeout callback @ 106``。
+**性质**：同步局部函数；源码第 ``117``—``117`` 行；所属函数 ``window.setTimeout callback @ 114``。
 
 **参数**
 
@@ -367,7 +367,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:5163:5252:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:5880:5969:FUNCTION
 
 .. rubric:: ``error``
 
@@ -377,7 +377,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 实现 ``error`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``window.setTimeout callback @ 106``。
+**性质**：同步局部函数；源码第 ``118``—``118`` 行；所属函数 ``window.setTimeout callback @ 114``。
 
 **参数**
 
@@ -390,7 +390,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:5640:5961:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:6357:6678:FUNCTION
 
 .. rubric:: ``onRetry``
 
@@ -400,7 +400,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 处理 ``Retry`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``120``—``124`` 行；所属函数 ``onClose``。
+**性质**：同步局部函数；源码第 ``128``—``132`` 行；所属函数 ``onClose``。
 
 **参数**
 
@@ -414,7 +414,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:5779:5816:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:6496:6533:FUNCTION
 
 .. rubric:: ``success``
 
@@ -424,7 +424,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 实现 ``success`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``122``—``122`` 行；所属函数 ``onRetry``。
+**性质**：同步局部函数；源码第 ``130``—``130`` 行；所属函数 ``onRetry``。
 
 **参数**
 
@@ -436,7 +436,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:5848:5937:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:6565:6654:FUNCTION
 
 .. rubric:: ``error``
 
@@ -446,7 +446,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 实现 ``error`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``123``—``123`` 行；所属函数 ``onRetry``。
+**性质**：同步局部函数；源码第 ``131``—``131`` 行；所属函数 ``onRetry``。
 
 **参数**
 
@@ -459,7 +459,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:6018:6323:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:6735:7040:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -469,7 +469,7 @@ Send a complete CWM Protocol v1 event envelope.
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``127``—``134`` 行；所属函数 ``createConnection``。
+**性质**：同步局部函数；源码第 ``135``—``142`` 行；所属函数 ``createConnection``。
 
 **参数**
 
@@ -486,17 +486,17 @@ Send a complete CWM Protocol v1 event envelope.
 
 **主要协作调用**：``emitEvent``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:6633:7194:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:7350:7911:FUNCTION
 
-.. rubric:: ``useEffect callback @ 147``
+.. rubric:: ``useEffect callback @ 155``
 
 .. code-block:: javascript
 
-   useEffect callback @ 147()
+   useEffect callback @ 155()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``147``—``160`` 行；所属函数 ``WebSocketProvider``。
+**性质**：同步局部函数；源码第 ``155``—``168`` 行；所属函数 ``WebSocketProvider``。
 
 **参数**
 
@@ -510,17 +510,17 @@ Send a complete CWM Protocol v1 event envelope.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:6706:6735:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:7423:7452:FUNCTION
 
-.. rubric:: ``anonymous callback @ 149``
+.. rubric:: ``anonymous callback @ 157``
 
 .. code-block:: javascript
 
-   anonymous callback @ 149()
+   anonymous callback @ 157()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``149``—``149`` 行；所属函数 ``useEffect callback @ 147``。
+**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``useEffect callback @ 155``。
 
 **参数**
 
@@ -532,17 +532,17 @@ Send a complete CWM Protocol v1 event envelope.
 
 **主要协作调用**：``createConnection``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:6780:6840:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:7497:7557:FUNCTION
 
-.. rubric:: ``createConnection(false).catch callback @ 150``
+.. rubric:: ``createConnection(false).catch callback @ 158``
 
 .. code-block:: javascript
 
-   createConnection(false).catch callback @ 150(error)
+   createConnection(false).catch callback @ 158(error)
 
 处理 ``createConnection(false).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``150``—``150`` 行；所属函数 ``useEffect callback @ 147``。
+**性质**：同步局部函数；源码第 ``158``—``158`` 行；所属函数 ``useEffect callback @ 155``。
 
 **参数**
 
@@ -555,17 +555,17 @@ Send a complete CWM Protocol v1 event envelope.
 
 **主要协作调用**：``console.error``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:6857:7187:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketContext.jsx:7574:7904:FUNCTION
 
-.. rubric:: ``returned callback @ 151``
+.. rubric:: ``returned callback @ 159``
 
 .. code-block:: javascript
 
-   returned callback @ 151()
+   returned callback @ 159()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``151``—``159`` 行；所属函数 ``useEffect callback @ 147``。
+**性质**：同步局部函数；源码第 ``159``—``167`` 行；所属函数 ``useEffect callback @ 155``。
 
 **参数**
 

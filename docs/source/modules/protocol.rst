@@ -1,35 +1,44 @@
 Protocol 模块
-=============
+================================================================================
 
 .. js:module:: src/runtime/protocol/frame
+   :no-index:
 
 .. js:function:: encodeEventFrame(envelope)
+   :no-index:
 
    校验并编码 Event Frame，返回 ArrayBuffer。
 
 .. js:function:: encodeMediaFrame(envelope, body)
+   :no-index:
 
    编码 Media Header 和原始 Body。
 
 .. js:function:: decodeFrame(input)
+   :no-index:
 
    验证和解码完整 Frame，返回 Kind/Header/Body。
 
 .. js:module:: src/runtime/protocol/msgpack
+   :no-index:
 
 .. js:function:: encodeMessagePack(value)
+   :no-index:
 
    把受支持的 JavaScript 数据编码为 Uint8Array。
 
 .. js:function:: decodeMessagePack(input)
+   :no-index:
 
    解码单个 MessagePack Value，并拒绝尾随数据。
 
 .. js:module:: src/runtime/protocol/events
+   :no-index:
 
 提供 EventName、真实事件名校验、订阅 Pattern 校验和 Pattern Match。
 
 .. js:module:: src/runtime/protocol/subscriptions
+   :no-index:
 
 提供 EventDirection、Direction 规范化和 Reply/Direction 投递策略。
 

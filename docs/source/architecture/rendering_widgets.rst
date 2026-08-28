@@ -1,35 +1,39 @@
 Markdown、Replacement 与 Widget
-===============================
+================================================================================
 
 Markdown
---------
+--------------------------------------------------------------------------------
 
 ``MarkdownRenderer`` 负责 GFM、Math、Highlight 和自定义 Directive。模型文本不能直接执行任意
 HTML/脚本，渲染扩展要经过白名单组件。
 
 Replacement
------------
+--------------------------------------------------------------------------------
 
 现有消息使用 ``{{cardReplace ...}}`` 把正文占位与 Tool/Thinking/Widget 的前后端表示关联。它是
 兼容现有持久消息的协议，后续可逐步迁移为 Structured Message Parts。
 
 Widget
-------
+--------------------------------------------------------------------------------
 
 ``WidgetHost`` 根据 Widget 类型选择渲染器。Card Deck 支持滑动、撤回、分类和提交。Widget State
 通过语义事件进入 Agent，而不是直接修改后端页面状态。
 
-Task Mode 卡片与 Monitor
--------------------------
+Execution Inline Trace 与窗口
+--------------------------------------------------------------------------------
 
-Task Mode replacement 使用 ``TASK_RUN_ID``、``TASK_STATUS`` 等 marker 描述运行态。用户手动终止时会额外出现 ``TASK_MANUAL_CANCELLED:true``，因此历史卡片可以提供“继续之前任务”动作。新启动的任务卡片带 ``TASK_RESTARTED_FROM:<oldTaskRunId>``，用于调试和展示来源关系。
+V28 不再渲染新的 Task Mode 卡片或 Task Monitor。普通 Agent 只要开始真实工具工作，
+后端就通过 ``executionStatus`` replacement 在 Assistant 正文之间插入轻量执行状态。
+同一阶段内多次工具活动会更新当前状态节点；阶段切换时旧节点变成完成态，并在正文后继续插入新的状态节点。
 
-“继续之前任务”不会修改旧 replacement。服务器会在新的 Assistant Message 中创建新的 Task Mode card 与 taskChecklist replacement；旧 checklist 的完成/作废状态被复制，终止时正在执行的项会以待核对状态进入新 checklist。
+点击状态节点打开会话级 ``ExecutionWindow``，其中展示 Execution Plan、模型/工具/完成门控的公开执行轨迹、
+可恢复状态以及用户追加要求输入框。窗口不展示隐藏思维链或原始 Provider Payload；开发者级细节仍属于 Runtime Inspector。
 
-Task Monitor 是会话级单例窗口。已经打开时，只要收到新的、未带 ``TASK_SEGMENT_DONE:true`` 的 Task Mode replacement，就把 active card 切到最新卡片并恢复自动跟随底部；历史封存卡不会抢焦点。
+历史 ``taskMode`` replacement 仅被压缩成“旧执行记录”，旧 checklist 不再投影到主聊天 UI。
+这是一层读取兼容，不允许新的 Turn 再进入 Task Mode。
 
 新增 Widget 的要求
-------------------
+--------------------------------------------------------------------------------
 
 #. 定义稳定 Schema、版本和默认值；
 #. 提供空状态、Loading、Error、只读态；

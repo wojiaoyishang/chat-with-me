@@ -227,7 +227,7 @@ WebSocket/登录 Session；如果 Ticket 已签发而媒体握手失败，则检
    只通过主控制连接取得，并且必须使用 ``encodeURIComponent`` 后放入媒体 WebSocket URL。
 
 媒体通道授权就绪
-----------------
+--------------------------------------------------------------------------------
 
 浏览器触发原生 WebSocket ``open`` 只表示传输层握手完成，并不表示 CWM 已经完成
 Media Ticket 授权。:class:`RealtimeVoiceTransport` 会继续等待后端
@@ -241,7 +241,7 @@ Composer 主操作与后端能力
 --------------------------------------------------------------------------------
 
 Realtime Voice 的入口不再与发送按钮并列。ChatBox 右下角只有一个主操作槽位：普通模式下如果 Composer
-没有文本、附件或上传任务，并且不处于 Edit/Fork、Task Mode、语音输入、只读、Loading/Generating 等状态，
+没有文本、附件或上传任务，并且不处于 Edit/Fork、活跃 Execution、语音输入、只读、Loading/Generating 等状态，
 前端才允许用 ``RealtimeVoiceButton`` 替换原本禁用的 ``SendButton``。一旦出现可发送内容或更高优先级的
 Composer 状态，主操作立即恢复为原 ``SendButton`` 状态机。
 

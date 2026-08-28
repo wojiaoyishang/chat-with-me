@@ -1,9 +1,11 @@
 事件 Store API
-==============
+================================================================================
 
 .. js:module:: context/useEventStore
+   :no-index:
 
 .. js:function:: emitEvent(options)
+   :no-index:
 
    创建、分发并按需发送语义 Event。返回包含 ``eventId``、``envelope`` 的 Thenable。
 
@@ -21,6 +23,7 @@
    * ``timeoutMs``
 
 .. js:function:: onEvent(options)
+   :no-index:
 
    注册事件监听器，调用 ``.then(callback)`` 获得取消订阅函数。设置
    ``conversationId`` / ``documentId`` 后，默认只接收对应资源事件；只有确实需要接收
@@ -69,6 +72,7 @@
       订阅通配符不是 Wire Event，不能通过 ``emitEvent`` 发送。
 
 .. js:function:: dispatchIncomingEvent(envelope)
+   :no-index:
 
    将 Transport 已验证的入站 Event 送入 Store，并把事件方向标记为 ``incoming``。
 
@@ -83,12 +87,15 @@
 
 
 .. js:module:: runtime/transport/EventDispatchScheduler
+   :no-index:
 
 .. js:function:: scheduleIncomingEventCallback(options)
+   :no-index:
 
    将一个已经验证的入站 Event Listener Job 放入 ``control / interaction / stream / background`` Lane。
    调用立即返回；调度器以公平时间片执行，不丢弃 Stream Job。
 
 .. js:function:: getIncomingEventSchedulerStats()
+   :no-index:
 
    返回各 Lane 当前积压数量。Debug 模式下也可以通过 ``window.getCwmEventSchedulerStats()`` 查看。

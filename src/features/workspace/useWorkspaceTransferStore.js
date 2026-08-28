@@ -15,7 +15,7 @@ const normalizeTransfer = (value) => {
 
 export const useWorkspaceTransferStore = create((set) => ({
     transfersById: {},
-    taskTransferIds: {},
+    executionTransferIds: {},
     latestTransferIdByArtifact: {},
 
     upsertTransfer: (incoming) => set((state) => {
@@ -25,25 +25,25 @@ export const useWorkspaceTransferStore = create((set) => ({
         const existing = state.transfersById[transfer.transferId] || {};
         const merged = {...existing, ...transfer};
         const transfersById = {...state.transfersById, [transfer.transferId]: merged};
-        const taskTransferIds = {...state.taskTransferIds};
+        const executionTransferIds = {...state.executionTransferIds};
         const latestTransferIdByArtifact = {...state.latestTransferIdByArtifact};
 
-        if (merged.taskRunId) {
-            const current = taskTransferIds[merged.taskRunId] || EMPTY_TRANSFERS;
+        if (merged.executionId) {
+            const current = executionTransferIds[merged.executionId] || EMPTY_TRANSFERS;
             if (!current.includes(merged.transferId)) {
-                taskTransferIds[merged.taskRunId] = [...current, merged.transferId];
+                executionTransferIds[merged.executionId] = [...current, merged.transferId];
             }
         }
         if (merged.artifactId) {
             latestTransferIdByArtifact[merged.artifactId] = merged.transferId;
         }
 
-        return {transfersById, taskTransferIds, latestTransferIdByArtifact};
+        return {transfersById, executionTransferIds, latestTransferIdByArtifact};
     }),
 
     clearConversationTransfers: () => set({
         transfersById: {},
-        taskTransferIds: {},
+        executionTransferIds: {},
         latestTransferIdByArtifact: {},
     }),
 }));
@@ -62,9 +62,9 @@ export const selectArtifactTransfer = (state, artifactId) => {
     return transferId ? state.transfersById[transferId] || null : null;
 };
 
-export const selectTaskTransfers = (state, taskRunId) => {
-    if (!taskRunId) return EMPTY_TRANSFERS;
-    return (state.taskTransferIds[taskRunId] || EMPTY_TRANSFERS)
+export const selectExecutionTransfers = (state, executionId) => {
+    if (!executionId) return EMPTY_TRANSFERS;
+    return (state.executionTransferIds[executionId] || EMPTY_TRANSFERS)
         .map((id) => state.transfersById[id])
         .filter(Boolean);
 };

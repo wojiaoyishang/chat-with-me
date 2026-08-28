@@ -36,6 +36,11 @@ import RoleSelector from './chatbox/components/RoleSelector';
 import FullscreenEditorModal from './chatbox/components/FullscreenEditorModal';
 import {useExtraToolsMenuItems} from './chatbox/components/ExtraToolsMenuItems';
 import ConversationToolsDialog from '@/features/tools/components/ConversationToolsDialog';
+import {
+    patchExecutionActivity,
+    upsertExecution,
+    upsertExecutionActivity,
+} from '@/features/execution/useExecutionStore.js';
 import WorkspaceSettingsDialog from '@/features/workspace/WorkspaceSettingsDialog.jsx';
 import {deepMerge, setNestedValue} from './chatbox/utils/toolState';
 import {
@@ -45,6 +50,22 @@ import {
     isVoicePermissionFlowCancelled,
     requestMicrophoneStream,
 } from './chatbox/utils/voiceRecorder';
+
+const realtimeActionErrorMessage = (response, fallback) => (
+    response?.value
+    || response?.message
+    || (response?.code ? String(response.code) : '')
+    || fallback
+);
+
+const createExecutionGuidanceId = () => {
+    try {
+        if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+    } catch {
+        // Ignore browser crypto probing failures and use a local-only fallback.
+    }
+    return `guidance-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
 
 const VOICE_WAVEFORM_BARS = 56;
 const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
@@ -292,9 +313,8 @@ function ChatBox({
         reason: 'not_loaded',
         protocol: null,
     });
-    const [activeTaskMode, setActiveTaskMode] = useState(null);
-    const [activeTaskModeOptions, setActiveTaskModeOptions] = useState([]);
-    const [isTaskInterruptPending, setIsTaskInterruptPending] = useState(false);
+    const [activeExecution, setActiveExecution] = useState(null);
+    const [isExecutionGuidancePending, setIsExecutionGuidancePending] = useState(false);
     const [isBottomAutoHideEnabled, setIsBottomAutoHideEnabled] = useState(() => (
         Boolean(getLocalSetting(CHATBOX_AUTO_HIDE_SETTING_KEY, false))
     ));
@@ -356,9 +376,8 @@ function ChatBox({
     // 使用 useRef 缓存频繁变化的值，避免触发重新渲染
     const messageContentRef = useRef(messageContent);
     const sendButtonStatusRef = useRef(sendButtonStatus);
-    const activeTaskModeRef = useRef(activeTaskMode);
-    const activeTaskModesRef = useRef(new Map());
-    const taskInterruptPendingRef = useRef(false);
+    const activeExecutionRef = useRef(activeExecution);
+    const executionGuidancePendingRef = useRef(false);
 
     // 发送消息角色身份相关
     const [roles, setRoles] = useState([]);
@@ -811,10 +830,19 @@ function ChatBox({
         const activeEditDraft = editDraftRef.current;
         const wasEditing = isEditMessageRef.current;
         const currentContent = messageContentRef.current;
-        const taskMode = activeTaskModeRef.current;
-        const isTaskInterruption = (
-            sendButtonStatusRef.current === 'generating'
-            && taskMode?.active
+        const execution = activeExecutionRef.current;
+        const executionStatus = String(execution?.status || '').toLowerCase();
+        const executionAcceptsGuidance = Boolean(
+            execution?.active
+            && executionStatus !== 'cancelling'
+            && executionStatus !== 'cancelled'
+        );
+        // Execution steering is keyed by the durable Execution state, not by the
+        // Composer's transient button status.  Stream bootstrap/reconciliation may
+        // briefly report `normal` while the Execution is still active; tying steering
+        // to `generating` used to misroute the supplement as a new Turn.
+        const isExecutionGuidance = (
+            executionAcceptsGuidance
             && !wasEditing
             && Boolean(currentContent.trim())
         );
@@ -824,38 +852,63 @@ function ChatBox({
         // while this short synchronization finishes in the background.
         await waitForConversationToolSync();
 
-        if (isTaskInterruption) {
+        if (isExecutionGuidance) {
             if (attachmentsMeta.length > 0) {
-                toast.warning(t('task_mode_interrupt_no_attachments', '任务补充暂不支持附件，请先移除附件。'));
+                toast.warning(t('execution_guidance_no_attachments', '执行中的补充信息暂不支持附件，请先移除附件。'));
                 return;
             }
-            if (taskInterruptPendingRef.current) return;
-
-            const requestId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
-
-            taskInterruptPendingRef.current = true;
-            setIsTaskInterruptPending(true);
-            // Keep the persisted normal draft until the server accepts the interrupt.
-            // The empty composer is only an optimistic visual state, so a refresh/crash
-            // while the request is in flight can still recover the submitted text.
+            if (executionGuidancePendingRef.current) return;
+            executionGuidancePendingRef.current = true;
+            setIsExecutionGuidancePending(true);
+            const guidanceId = createExecutionGuidanceId();
+            const guidanceActivity = {
+                id: guidanceId,
+                time: Date.now(),
+                kind: 'guidance',
+                source: 'user_guidance',
+                state: 'submitting',
+                label: currentContent.slice(0, 160),
+                content: currentContent,
+                anchorStatusId: execution.statusId || null,
+            };
+            // Show the supplement immediately in the transcript. The durable server
+            // snapshot will reconcile the same guidanceId to pending/consumed later.
+            upsertExecutionActivity(execution, guidanceActivity);
             updateMessageContent('', {persist: false});
-
             try {
                 const response = await emitEvent({
-                    event: 'task.interrupt',
+                    event: 'execution.guidance.add',
                     conversationId,
+                    runId: execution.runId || null,
+                    turnId: execution.turnId || null,
                     payload: {
-                        taskRunId: taskMode.taskRunId,
+                        executionId: execution.executionId,
+                        guidanceId,
+                        anchorStatusId: guidanceActivity.anchorStatusId,
                         content: currentContent,
-                        requestId,
                     },
                 });
                 if (response?.success === false) {
+                    patchExecutionActivity(
+                        conversationId,
+                        execution.executionId,
+                        guidanceId,
+                        {state: 'failed'},
+                    );
                     if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
-                    toast.error(response?.value || t('task_mode_interrupt_failed', '无法补充任务要求。'));
-                    return;
+                    throw new Error(realtimeActionErrorMessage(response, t('execution_guidance_failed', '无法追加到当前执行。')));
                 }
-
+                const acceptedGuidance = response?.value?.guidance;
+                patchExecutionActivity(
+                    conversationId,
+                    execution.executionId,
+                    guidanceId,
+                    {
+                        state: 'pending',
+                        anchorStatusId: acceptedGuidance?.anchorStatusId ?? guidanceActivity.anchorStatusId,
+                        waitingFor: acceptedGuidance?.waitingFor || guidanceActivity.waitingFor,
+                    },
+                );
                 const persistedDraft = readComposerDraft({
                     conversationId: draftConversationIdRef.current,
                     mode: 'normal',
@@ -863,25 +916,89 @@ function ChatBox({
                 if ((persistedDraft?.content || '') === currentContent && !messageContentRef.current.trim()) {
                     clearComposerDraft({conversationId: draftConversationIdRef.current, mode: 'normal'});
                 }
-                toast.success(t('task_mode_interrupt_sent', '已将补充要求加入当前任务。'));
+                toast.success(t('execution_guidance_sent', '已加入当前执行。'));
             } catch (error) {
-                console.error('Task interruption failed:', error);
+                console.error('Execution guidance failed:', error);
+                patchExecutionActivity(
+                    conversationId,
+                    execution.executionId,
+                    guidanceId,
+                    {state: 'failed'},
+                );
                 if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
-                toast.error(t('task_mode_interrupt_failed', '无法补充任务要求。'));
+                toast.error(error?.message || t('execution_guidance_failed', '无法追加到当前执行。'));
             } finally {
-                taskInterruptPendingRef.current = false;
-                setIsTaskInterruptPending(false);
+                executionGuidancePendingRef.current = false;
+                setIsExecutionGuidancePending(false);
                 textareaRef.current?.focus();
             }
+            return;
+        }
+
+        // An active Execution owns the Composer even if a transient status sync says
+        // `normal`. Empty-submit is the explicit stop action; text submit is handled
+        // above as guidance. Attachments are not silently converted into a new Turn.
+        if (execution?.active && !wasEditing) {
+            if (executionStatus === 'cancelling') {
+                toast.warning(t('execution_stopping', '当前执行正在停止，请稍候。'));
+                return;
+            }
+            if (attachmentsMeta.length > 0) {
+                toast.warning(t('execution_guidance_no_attachments', '执行中的补充信息暂不支持附件，请先移除附件。'));
+                return;
+            }
+            if (!currentContent.trim()) {
+                try {
+                    const response = await emitEvent({
+                        event: 'execution.cancel',
+                        conversationId,
+                        runId: execution.runId || null,
+                        turnId: execution.turnId || null,
+                        payload: {executionId: execution.executionId},
+                    });
+                    if (response?.success === false) {
+                        throw new Error(realtimeActionErrorMessage(response, t('execution_cancel_failed', '无法停止当前执行。')));
+                    }
+                    upsertExecution({
+                        ...execution,
+                        active: true,
+                        status: 'cancelling',
+                        label: '正在停止执行',
+                        recoverable: false,
+                    });
+                } catch (error) {
+                    console.error('Execution cancel failed:', error);
+                    toast.error(error?.message || t('execution_cancel_failed', '无法停止当前执行。'));
+                }
+                textareaRef.current?.focus();
+                return;
+            }
+        }
+
+        // During an ordinary non-Execution generation the composer may keep a local
+        // draft, but it cannot supersede the active Turn.  The primary button remains
+        // a pure stop action; only an active durable Execution accepts guidance.
+        if (sendButtonStatusRef.current === 'generating') {
+            await Promise.resolve(onSendMessage({
+                messageContent: '',
+                toolsStatus: buildOutboundToolsStatus(),
+                isEditMessage: false,
+                editMessageId: null,
+                attachments: [],
+                sendButtonStatus: 'generating',
+                admissionPolicy: 'auto',
+                inputSource: 'chat',
+                isRegenerate: false,
+                role: currentRole?.name,
+                isFork: false,
+            }));
+            textareaRef.current?.focus();
             return;
         }
 
         runtimeToolPermissionRevisionRef.current = 0;
         runtimeToolPermissionRunIdRef.current = null;
         setRuntimeToolPermissions({});
-
-        const hasNewInput = Boolean(currentContent.trim()) || attachmentsMeta.length > 0 || wasEditing;
-        const interruptAndSend = sendButtonStatusRef.current === 'generating' && hasNewInput;
 
         let submittedEditCommit = null;
         let submittedNormalCommit = null;
@@ -921,11 +1038,8 @@ function ChatBox({
             isEditMessage: wasEditing,
             editMessageId: editMessageId,
             attachments: attachmentsMeta,
-            // ``generating`` retains its original meaning: explicit stop.  A new
-            // user Turn while generation is active is instead admitted as a normal
-            // Turn with an interrupt policy.
-            sendButtonStatus: interruptAndSend ? 'normal' : sendButtonStatusRef.current,
-            admissionPolicy: interruptAndSend ? 'interrupt' : 'auto',
+            sendButtonStatus: sendButtonStatusRef.current,
+            admissionPolicy: 'auto',
             inputSource: 'chat',
             isRegenerate: false,
             role: currentRole?.name,
@@ -1016,18 +1130,15 @@ function ChatBox({
         }
 
         e.preventDefault();
-        const hasPendingInput = Boolean(messageContentRef.current.trim()) || attachmentsMeta.length > 0;
-        const canInterruptTask = (
-            sendButtonStatusRef.current === 'generating'
-            && activeTaskModeRef.current?.active
+        const keyboardExecution = activeExecutionRef.current;
+        const keyboardExecutionStatus = String(keyboardExecution?.status || '').toLowerCase();
+        const canSteerExecution = (
+            keyboardExecution?.active
+            && keyboardExecutionStatus !== 'cancelling'
             && Boolean(messageContentRef.current.trim())
-            && !taskInterruptPendingRef.current
+            && !executionGuidancePendingRef.current
         );
-        const canInterruptAndSend = (
-            sendButtonStatusRef.current === 'generating'
-            && hasPendingInput
-        );
-        if (sendButtonStatusRef.current !== 'normal' && !canInterruptTask && !canInterruptAndSend) {
+        if (sendButtonStatusRef.current !== 'normal' && !canSteerExecution) {
             toast.warning(t('is_generating_try_later'));
             return;
         }
@@ -1591,69 +1702,16 @@ function ChatBox({
                     setIsReadOnly(Boolean(payload.readOnly));
                 }
                 break;
-            case 'task.state.changed': {
-                const value = payload.value || {};
-                const taskRunId = value.taskRunId;
-                const nextTasks = new Map(activeTaskModesRef.current);
-                if (taskRunId) {
-                    if (value.active) nextTasks.set(taskRunId, value);
-                    else nextTasks.delete(taskRunId);
-                }
-                activeTaskModesRef.current = nextTasks;
-                const options = [...nextTasks.values()];
-                setActiveTaskModeOptions(options);
-
-                let selected = activeTaskModeRef.current;
-                if (value.active && (!selected || selected.taskRunId === taskRunId)) {
-                    selected = value;
-                } else if (!selected || !nextTasks.has(selected.taskRunId)) {
-                    selected = options.at(-1) || null;
-                } else {
-                    selected = nextTasks.get(selected.taskRunId) || selected;
-                }
-                activeTaskModeRef.current = selected;
-                setActiveTaskMode(selected);
+            case 'execution.state.changed': {
+                const value = payload?.value && typeof payload.value === 'object' ? payload.value : payload;
+                const selected = value?.active ? value : null;
+                activeExecutionRef.current = selected;
+                setActiveExecution(selected);
                 if (!selected) {
-                    taskInterruptPendingRef.current = false;
-                    setIsTaskInterruptPending(false);
+                    executionGuidancePendingRef.current = false;
+                    setIsExecutionGuidancePending(false);
                 }
-                reply({value});
-                break;
-            }
-            case 'task.restart.requested': {
-                const taskRunId = String(payload.taskRunId || '').trim();
-                const sourceMessageId = String(payload.messageId || '').trim();
-                if (!taskRunId) {
-                    reply({success: false, value: t('task_mode_restart_missing', '缺少要继续的任务。')});
-                    break;
-                }
-                if (sendButtonStatusRef.current !== 'normal') {
-                    const message = t('task_mode_restart_busy', '当前仍有内容正在生成，请先结束当前执行再继续之前任务。');
-                    toast.warning(message);
-                    reply({success: false, value: message});
-                    break;
-                }
-
-                runtimeToolPermissionRevisionRef.current = 0;
-                runtimeToolPermissionRunIdRef.current = null;
-                setRuntimeToolPermissions({});
-                onSendMessage({
-                    messageContent: t('task_mode_restart_user_message', '继续之前任务'),
-                    toolsStatus: buildOutboundToolsStatus(),
-                    isEditMessage: false,
-                    attachments: [],
-                    sendButtonStatus: 'normal',
-                    admissionPolicy: 'reject',
-                    inputSource: 'task_restart',
-                    isRegenerate: false,
-                    isProgenerate: false,
-                    role: 'user',
-                    isFork: false,
-                    restartTaskRunId: taskRunId,
-                    restartTaskMessageId: sourceMessageId,
-                    idempotencyKey: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
-                });
-                reply({success: true, value: {taskRunId}});
+                if (payload?.reply) reply({value});
                 break;
             }
             case 'composer.content.set':
@@ -1931,12 +1989,10 @@ function ChatBox({
         setRuntimeToolPermissions({});
         setConversationToolDefaults({});
         setConversationToolsDialogOpen(false);
-        activeTaskModeRef.current = null;
-        activeTaskModesRef.current = new Map();
-        setActiveTaskMode(null);
-        setActiveTaskModeOptions([]);
-        taskInterruptPendingRef.current = false;
-        setIsTaskInterruptPending(false);
+        activeExecutionRef.current = null;
+        setActiveExecution(null);
+        executionGuidancePendingRef.current = false;
+        setIsExecutionGuidancePending(false);
     }, [conversationId]);
 
     useEffect(() => {
@@ -2069,8 +2125,7 @@ function ChatBox({
         const unsubscribe = onEvent({
             event: [
                 'composer.*',
-                'task.state.changed',
-                'task.restart.requested',
+                'execution.state.changed',
             ],
             conversationId,
             onlyWithoutConversation: Boolean(!conversationId),
@@ -2639,25 +2694,7 @@ function ChatBox({
                                 onRoleChange={handleRoleChange}
                             />
 
-                            {activeTaskModeOptions.length > 1 && (
-                                <select
-                                    value={activeTaskMode?.taskRunId || ''}
-                                    onChange={(event) => {
-                                        const selected = activeTaskModesRef.current.get(event.target.value) || null;
-                                        activeTaskModeRef.current = selected;
-                                        setActiveTaskMode(selected);
-                                    }}
-                                    className="max-w-36 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 outline-none focus:border-blue-400"
-                                    aria-label={t('task_mode_target', '选择任务目标')}
-                                    title={t('task_mode_target', '选择任务目标')}
-                                >
-                                    {activeTaskModeOptions.map(task => (
-                                        <option key={task.taskRunId} value={task.taskRunId}>
-                                            {task.title || task.taskRunId}
-                                        </option>
-                                    ))}
-                                </select>
-                            )}
+
 
                             {/* 主操作：空输入且后端声明支持时，实时语音替换禁用的发送按钮。 */}
                             <ComposerPrimaryAction
@@ -2665,8 +2702,9 @@ function ChatBox({
                                 messageContent={messageContent}
                                 attachmentsMeta={attachmentsMeta}
                                 onSend={handleSendMessage}
-                                taskModeActive={Boolean(activeTaskMode?.active)}
-                                taskInterruptPending={isTaskInterruptPending}
+                                executionActive={Boolean(activeExecution?.active)}
+                                executionStatus={activeExecution?.status || ''}
+                                executionGuidancePending={isExecutionGuidancePending}
                                 isEditMessage={isEditMessage}
                                 isForkMode={isForkMode}
                                 isReadOnly={isReadOnly}

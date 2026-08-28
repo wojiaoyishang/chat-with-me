@@ -39,7 +39,7 @@ Workspace 和语音装配，是后续拆分的重要边界。
 --------------------------------------------------------------------------------
 
 ChatBox/ChatPage 不根据 Provider 名称推导思考能力。模型列表和 Conversation ``options`` 都由后端返回
-Capability-aware Schema：工具调用思考续传、跨用户 Turn 历史思考回传以及“软思维自动关闭任务模式思考”
+Capability-aware Schema：工具调用思考续传、跨用户 Turn 历史思考回传以及“软思维自动关闭执行规划思考”
 分别拥有独立的 ``disabled``/``tips`` 状态。切换模型后应以服务端返回的当前模型 options 为准。
 
 Thinking 卡片仍是可见展示层；跨 Turn reasoning 的精确持久化与 Provider 序列化属于后端职责，前端不得从
@@ -137,5 +137,32 @@ Conversation 后会把 ``__new__`` 草稿迁移到真实 ``conversationId``；�
 处理可修改工具，并通过已有 ``tool.permissions.set`` 一次提交 patch，不逐工具忙等 RPC。工具集级批量操作只提交当前
 工具集，不会顺带提交其他工具集中尚未保存的 draft；成功后该组的新权限会成为新的 server-confirmed baseline。
 
+V42 起工具 Registry 还会提供 ``default / allowedModes / locked``。普通工具缺省 ``default=ask``；locked Tool 不渲染
+三态切换按钮，而只显示“系统固定 · 允许/询问/拒绝”徽标，并从所有批量操作中排除。Task Mode 的
+``task_mode_enter / task_finish / task_block`` 是后端 Runtime 控制协议，固定为 ``allow + locked``，用户无法在默认设置、
+本对话窗口或快捷菜单中拒绝它们。真正的强制规则仍由后端 Approval Policy 执行。
+
 窗口保存或执行一键权限操作期间，标题区域显示“正在同步工具权限…”，因此保持 server-authoritative 的同步设计时
 不会表现为无反馈的忙等。
+
+
+Execution Runtime / 新 Task Mode 交互
+--------------------------------------------------------------------------------
+
+V41 的 Task Mode 是 ``ExecutionRuntime`` 的可见工作区，不再使用旧 Task Checklist/TaskRun UI。
+普通非 Execution Tool 仍在正文显示 Tool Calling Card；解析为 ``execution.promote=true`` 的 Tool 会自动进入 Task Mode，
+其完整 Tool Calling Card 默认移到右侧 Task Window，正文只保留轻量 ``executionStatus``、用户补充气泡和 AI 正文。
+
+模型也可以在第一个 promoted Tool 之前调用 ``task_mode_enter`` 手动进入任务模式。完成/阻塞意图通过
+``task_finish`` / ``task_block`` Tool Calling 表达；前端不依赖模型正文 JSON 决定任务终态。
+
+只有 active Execution 的纯文本输入才作为 ``execution.guidance.add``；普通生成期间输入继续保留为本地 Draft，
+不得隐式抢占。补充消息立即以用户消息变体显示，后端 ``guidancePrompts`` 再把“等待工具调用完成 / 等待模型响应”
+投影在补充气泡组下方。
+
+Task Window 绑定当前 Execution 的 Assistant ``messageId``。该消息离开当前 ``messagesOrder``（Branch 切换、Retry/Regenerate、
+Edit/Fork 新路径、删除等）时窗口自动关闭。
+
+Task Window 的 Tool Calling 与任务日志在 V42 合并成一条按发生时间排序的执行时间线；用户补充、模型/Runtime 活动与
+完整 Tool Calling Card 可以自然穿插显示，不再维护“工具调用”和“任务日志”两个割裂区块。标题栏同时提供显式自动置底
+按钮：默认跟随流式增长，用户向上滚动后暂停，点击按钮才恢复并跳到最新活动。

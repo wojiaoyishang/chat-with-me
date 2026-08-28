@@ -173,41 +173,6 @@
      - 0
      - 0
      - ``src/components/markdown/card-block/status/progressUtils.js``
-   * - :doc:`src/components/markdown/card-block/task/TaskChecklistCard </api/javascript/components/markdown/card-block/task/TaskChecklistCard>`
-     - 0
-     - 0
-     - 5
-     - ``src/components/markdown/card-block/task/TaskChecklistCard.jsx``
-   * - :doc:`src/components/markdown/card-block/task/TaskInterruptPreviewGroup </api/javascript/components/markdown/card-block/task/TaskInterruptPreviewGroup>`
-     - 1
-     - 0
-     - 6
-     - ``src/components/markdown/card-block/task/TaskInterruptPreviewGroup.jsx``
-   * - :doc:`src/components/markdown/card-block/task/TaskModeWidget </api/javascript/components/markdown/card-block/task/TaskModeWidget>`
-     - 2
-     - 0
-     - 13
-     - ``src/components/markdown/card-block/task/TaskModeWidget.jsx``
-   * - :doc:`src/components/markdown/card-block/task/TaskMonitorHost </api/javascript/components/markdown/card-block/task/TaskMonitorHost>`
-     - 1
-     - 0
-     - 5
-     - ``src/components/markdown/card-block/task/TaskMonitorHost.jsx``
-   * - :doc:`src/components/markdown/card-block/task/TaskMonitorWindow </api/javascript/components/markdown/card-block/task/TaskMonitorWindow>`
-     - 3
-     - 0
-     - 58
-     - ``src/components/markdown/card-block/task/TaskMonitorWindow.jsx``
-   * - :doc:`src/components/markdown/card-block/task/TaskUserMessageCard </api/javascript/components/markdown/card-block/task/TaskUserMessageCard>`
-     - 0
-     - 0
-     - 3
-     - ``src/components/markdown/card-block/task/TaskUserMessageCard.jsx``
-   * - :doc:`src/components/markdown/card-block/task/useTaskMonitorStore </api/javascript/components/markdown/card-block/task/useTaskMonitorStore>`
-     - 8
-     - 0
-     - 11
-     - ``src/components/markdown/card-block/task/useTaskMonitorStore.js``
    * - :doc:`src/components/markdown/card-block/useExpandedState </api/javascript/components/markdown/card-block/useExpandedState>`
      - 1
      - 0
@@ -249,9 +214,9 @@
      - 7
      - ``src/components/modal/universalModal.js``
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
-     - 40
+     - 45
      - 0
-     - 194
+     - 192
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/UserProfileCard </api/javascript/components/setting/UserProfileCard>`
      - 1
@@ -388,6 +353,16 @@
      - 0
      - 0
      - ``src/components/ui/tooltip.tsx``
+   * - :doc:`src/components/window/FloatingDockWindow </api/javascript/components/window/FloatingDockWindow>`
+     - 4
+     - 0
+     - 32
+     - ``src/components/window/FloatingDockWindow.jsx``
+   * - :doc:`src/components/window/index </api/javascript/components/window/index>`
+     - 0
+     - 0
+     - 0
+     - ``src/components/window/index.js``
 
 .. toctree::
    :hidden:
@@ -425,13 +400,6 @@
    /api/javascript/components/markdown/card-block/status/StatusWidget
    /api/javascript/components/markdown/card-block/status/ToolCallingRightStatus
    /api/javascript/components/markdown/card-block/status/progressUtils
-   /api/javascript/components/markdown/card-block/task/TaskChecklistCard
-   /api/javascript/components/markdown/card-block/task/TaskInterruptPreviewGroup
-   /api/javascript/components/markdown/card-block/task/TaskModeWidget
-   /api/javascript/components/markdown/card-block/task/TaskMonitorHost
-   /api/javascript/components/markdown/card-block/task/TaskMonitorWindow
-   /api/javascript/components/markdown/card-block/task/TaskUserMessageCard
-   /api/javascript/components/markdown/card-block/task/useTaskMonitorStore
    /api/javascript/components/markdown/card-block/useExpandedState
    /api/javascript/components/markdown/card-block/utils
    /api/javascript/components/markdown/card-block/widget/CanvasCardDeck
@@ -468,4 +436,6 @@
    /api/javascript/components/ui/sonner
    /api/javascript/components/ui/switch
    /api/javascript/components/ui/tooltip
+   /api/javascript/components/window/FloatingDockWindow
+   /api/javascript/components/window/index
 

@@ -1,17 +1,20 @@
 消息概览缓存模块
-================
+================================================================================
 
 .. js:module:: src/features/chat/page/utils/messageSummaries
+   :no-index:
 
 .. js:data:: MESSAGE_SUMMARY_APPEND_OVERLAP
 
    增量加载时重新读取尾部数量，默认覆盖最新 User 和 Assistant 占位。
 
 .. js:function:: getMessageSummaryAppendCursor(existingItems, overlap)
+   :no-index:
 
    根据最后 orderIndex 计算带重叠的后端 Cursor。
 
 .. js:function:: mergeMessageSummaryItems(existingItems, incomingItems, options)
+   :no-index:
 
    追加模式下从入站页最小 orderIndex 替换旧尾部，再按 messageId 去重和排序；全量模式直接校准。
 

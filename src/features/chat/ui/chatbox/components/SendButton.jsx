@@ -1,11 +1,12 @@
 import React, {memo, useMemo} from 'react';
 
-const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, taskModeActive = false, taskInterruptPending = false, t}) => {
+const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, executionActive = false, executionStatus = '', executionGuidancePending = false, t}) => {
     const sendButtonStyle = useMemo(() => {
         const hasInput = Boolean(messageContent.trim()) || attachmentsMeta.length > 0;
-        const isEmpty = !hasInput && status === 'normal';
-        const canSendTaskInterruption = status === 'generating' && taskModeActive && Boolean(messageContent.trim());
-        const canInterruptAndSend = status === 'generating' && hasInput;
+        const normalizedExecutionStatus = String(executionStatus || '').toLowerCase();
+        const executionStopping = executionActive && normalizedExecutionStatus === 'cancelling';
+        const canSendExecutionGuidance = executionActive && !executionStopping && Boolean(messageContent.trim()) && attachmentsMeta.length === 0;
+        const isEmpty = !hasInput && status === 'normal' && !executionActive;
         const baseIcon = (
             <svg
                 t="1758800079268"
@@ -25,7 +26,7 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, task
             </svg>
         );
 
-        if (taskInterruptPending) {
+        if (executionGuidancePending) {
             return {
                 state: 'loading',
                 className: 'text-white bg-blue-600 cursor-wait',
@@ -38,6 +39,37 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, task
                     </div>
                 ),
                 disabled: true,
+            };
+        }
+
+        if (executionStopping) {
+            return {
+                state: 'loading',
+                className: 'text-white bg-blue-600 cursor-wait',
+                icon: (
+                    <div className="relative w-6 h-6">
+                        <div className="absolute inset-[-9px] border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-4 h-4 bg-white rounded"></div>
+                        </div>
+                    </div>
+                ),
+                disabled: true,
+            };
+        }
+
+        if (executionActive) {
+            return {
+                state: canSendExecutionGuidance ? 'execution-guidance' : 'execution-stop',
+                className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
+                icon: canSendExecutionGuidance ? baseIcon : (
+                    <div className="relative w-6 h-6">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-4 h-4 bg-white rounded"></div>
+                        </div>
+                    </div>
+                ),
+                disabled: false,
             };
         }
 
@@ -75,11 +107,9 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, task
                 };
             case 'generating':
                 return {
-                    state: canSendTaskInterruption
-                        ? 'task-interrupt'
-                        : (canInterruptAndSend ? 'interrupt-send' : 'generating'),
+                    state: 'generating',
                     className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer',
-                    icon: (canSendTaskInterruption || canInterruptAndSend) ? baseIcon : (
+                    icon: (
                         <div className="relative w-6 h-6">
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <div className="w-4 h-4 bg-white rounded"></div>
@@ -96,7 +126,7 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, task
                     disabled: false,
                 };
         }
-    }, [status, messageContent, attachmentsMeta, taskModeActive, taskInterruptPending]);
+    }, [status, messageContent, attachmentsMeta, executionActive, executionStatus, executionGuidancePending]);
 
     return (
         <button
@@ -104,11 +134,11 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, task
             onClick={onClick}
             disabled={sendButtonStyle.disabled}
             aria-label={
-                status === 'generating' && taskModeActive && messageContent.trim()
-                    ? t('task_mode_interrupt_send', '发送任务补充')
-                    : (status === 'generating' && (messageContent.trim() || attachmentsMeta.length > 0)
-                        ? t('interrupt_and_send', '打断当前回答并发送')
-                        : t('send_message'))
+                executionActive
+                    ? (messageContent.trim()
+                        ? t('execution_guidance_send', '追加到当前执行')
+                        : t('execution_stop', '停止执行'))
+                    : (status === 'generating' ? t('stop_generation', '停止生成') : t('send_message'))
             }
             className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${sendButtonStyle.className}`}
         >
@@ -121,8 +151,9 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, task
         prevProps.messageContent === nextProps.messageContent &&
         prevProps.attachmentsMeta === nextProps.attachmentsMeta &&
         prevProps.onClick === nextProps.onClick &&
-        prevProps.taskModeActive === nextProps.taskModeActive &&
-        prevProps.taskInterruptPending === nextProps.taskInterruptPending
+        prevProps.executionActive === nextProps.executionActive &&
+        prevProps.executionStatus === nextProps.executionStatus &&
+        prevProps.executionGuidancePending === nextProps.executionGuidancePending
     );
 });
 

@@ -1,19 +1,23 @@
 Widget 与 Markdown 模块
-======================
+================================================================================
 
 .. js:module:: src/components/markdown/card-block/widget/WidgetHost
+   :no-index:
 
 ``WidgetHost`` 选择 Widget Renderer、处理状态和 Action，并与消息 Replacement 关联。
 
 .. js:module:: src/components/markdown/card-block/widget/CanvasCardDeck
+   :no-index:
 
 ``CanvasCardDeck`` 实现卡片布局、左右滑、撤回、分类、全屏和提交。
 
 .. js:module:: src/components/markdown/replacementProtocol
+   :no-index:
 
 解析/生成 ``cardReplace`` 占位和 Replacement ID。修改协议时要兼容已有持久消息或提供迁移。
 
 .. js:module:: src/components/markdown/MarkdownRenderer
+   :no-index:
 
 装配 Markdown Plugin、代码高亮、Math、Directive 和 Card Block。
 

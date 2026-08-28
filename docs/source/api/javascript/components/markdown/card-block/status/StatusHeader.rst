@@ -29,7 +29,7 @@ src/components/markdown/card-block/status/StatusHeader 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusHeader.jsx:379:10763:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusHeader.jsx:379:9911:FUNCTION
 
 .. rubric:: ``memo callback @ 14``
 
@@ -39,7 +39,7 @@ src/components/markdown/card-block/status/StatusHeader 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``14``—``251`` 行。
+**性质**：同步局部函数；源码第 ``14``—``229`` 行。
 
 **参数**
 
@@ -178,7 +178,7 @@ src/components/markdown/card-block/status/StatusHeader 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusHeader.jsx:3663:4933:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusHeader.jsx:3663:4100:FUNCTION
 
 .. rubric:: ``handleActionClick``
 
@@ -188,7 +188,7 @@ src/components/markdown/card-block/status/StatusHeader 模块
 
 处理 ``Action Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``101``—``136`` 行；所属函数 ``memo callback @ 14``。
+**性质**：同步局部函数；源码第 ``101``—``114`` 行；所属函数 ``memo callback @ 14``。
 
 **参数**
 
@@ -206,19 +206,19 @@ src/components/markdown/card-block/status/StatusHeader 模块
 
 * 发送本地或远程 CWM 事件/媒体帧。
 
-**主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``globalThis.crypto?.randomUUID``、``Date.now``、``Math.random``、``emitEvent``。
+**主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``emitEvent``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusHeader.jsx:9341:10046:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusHeader.jsx:8508:9194:FUNCTION
 
-.. rubric:: ``visibleActions.map callback @ 219``
+.. rubric:: ``visibleActions.map callback @ 197``
 
 .. code-block:: javascript
 
-   visibleActions.map callback @ 219(action)
+   visibleActions.map callback @ 197(action)
 
 作为 ``visibleActions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``219``—``229`` 行；所属函数 ``memo callback @ 14``。
+**性质**：同步局部函数；源码第 ``197``—``207`` 行；所属函数 ``memo callback @ 14``。
 
 **参数**
 
@@ -231,17 +231,17 @@ src/components/markdown/card-block/status/StatusHeader 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusHeader.jsx:9536:9579:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusHeader.jsx:8703:8746:FUNCTION
 
-.. rubric:: ``onClick callback @ 223``
+.. rubric:: ``onClick callback @ 201``
 
 .. code-block:: javascript
 
-   onClick callback @ 223(event)
+   onClick callback @ 201(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``223``—``223`` 行；所属函数 ``visibleActions.map callback @ 219``。
+**性质**：同步局部函数；源码第 ``201``—``201`` 行；所属函数 ``visibleActions.map callback @ 197``。
 
 **参数**
 
@@ -254,17 +254,17 @@ src/components/markdown/card-block/status/StatusHeader 模块
 
 **主要协作调用**：``handleActionClick``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusHeader.jsx:10764:12041:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusHeader.jsx:9912:11189:FUNCTION
 
-.. rubric:: ``memo callback @ 251``
+.. rubric:: ``memo callback @ 229``
 
 .. code-block:: javascript
 
-   memo callback @ 251(prev, next)
+   memo callback @ 229(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``251``—``278`` 行。
+**性质**：同步局部函数；源码第 ``229``—``256`` 行。
 
 **参数**
 

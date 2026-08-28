@@ -18,9 +18,7 @@ import ToolLogBlock from './blocks/ToolLogBlock.jsx';
 import './cardBlockAnimations.css';
 import { defaultRenderMarkdown } from './constants.jsx';
 import StatusWidget from './status/StatusWidget.jsx';
-import TaskChecklistCard from './task/TaskChecklistCard.jsx';
-import TaskModeWidget from './task/TaskModeWidget.jsx';
-import TaskUserMessageCard from './task/TaskUserMessageCard.jsx';
+import {ExecutionStatus} from '@/features/execution';
 import StoryCard from '@/features/story/StoryCard.jsx';
 import WidgetHost from './widget/WidgetHost.jsx';
 
@@ -32,7 +30,7 @@ const CARD_TYPES_WITH_NESTED_MARKDOWN = new Set([
     'coding',
     'doc',
     'agent',
-    'taskMode',
+    'executionStatus',
 ]);
 
 const shouldCompareRenderContext = (type) => {
@@ -197,17 +195,11 @@ const CardBlock = memo(({
                 />
             );
 
-        case 'taskMode':
+        case 'executionStatus':
             return (
-                <TaskModeWidget
-                    {...commonProps}
-                />
-            );
-
-        case 'taskChecklist':
-            return (
-                <TaskChecklistCard
+                <ExecutionStatus
                     content={content}
+                    conversationId={conversationId}
                 />
             );
 
@@ -226,13 +218,6 @@ const CardBlock = memo(({
                     conversationId={conversationId}
                     messageReadonly={messageReadonly}
                     messageIsLatest={messageIsLatest}
-                />
-            );
-
-        case 'taskUserMessage':
-            return (
-                <TaskUserMessageCard
-                    content={content}
                 />
             );
 

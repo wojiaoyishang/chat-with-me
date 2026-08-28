@@ -107,28 +107,6 @@ const StatusHeader = memo(({
                 event: 'run.background_tool.cancel',
                 payload: {msgId: contextId, toolCallingId: action.toolId},
             },
-            resumeTask: {
-                event: 'task.resume',
-                payload: {
-                    taskRunId: action.taskRunId,
-                    requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
-                },
-            },
-            restartTask: {
-                event: 'task.restart.requested',
-                localOnly: true,
-                payload: {
-                    taskRunId: action.taskRunId,
-                    messageId: action.messageId || contextId,
-                },
-            },
-            cancelTask: {
-                event: 'task.cancel',
-                payload: {
-                    taskRunId: action.taskRunId,
-                    requestId: globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`,
-                },
-            },
         };
         const request = actions[action.command];
         if (!request) return;
@@ -221,7 +199,7 @@ const StatusHeader = memo(({
                         key={`${action.command}-${action.toolId || action.name}`}
                         type="button"
                         onClick={(event) => handleActionClick(event, action)}
-                        disabled={!conversationId || (action.command === 'cancelBackgroundTool' ? !action.toolId : !action.taskRunId)}
+                        disabled={!conversationId || (action.command === 'cancelBackgroundTool' && !action.toolId)}
                         className="shrink-0 cursor-pointer rounded-sm bg-orange-500/15 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {action.name}
