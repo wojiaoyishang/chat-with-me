@@ -26,46 +26,71 @@
     flex: 1 1 auto;
     flex-direction: column;
     min-height: 0;
-    height: 100%;
+    height: 100% !important;
     padding: 0;
+    overflow: hidden !important;
     box-shadow: none;
 }
 
-.editorWrapper :global(.w-md-editor-content),
-.editorWrapper :global(.w-md-editor-area),
-.editorWrapper :global(.w-md-editor-text) {
-    min-height: 0;
-}
-
+/*
+ * Fullscreen layout contract:
+ *   toolbar = intrinsic height
+ *   content = every remaining pixel
+ *
+ * @uiw/react-md-editor ships .w-md-editor-content with height:100% and
+ * overflow:auto. In a flex-column editor that makes "toolbar + 100% content"
+ * taller than the modal and creates the first of the two vertical scrollbars.
+ */
 .editorWrapper :global(.w-md-editor-content) {
     display: flex;
-    flex: 1 1 auto;
-    overflow: hidden;
+    flex: 1 1 0 !important;
+    width: 100%;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: hidden !important;
 }
 
-.editorWrapper :global(.w-md-editor-area),
 .editorWrapper :global(.w-md-editor-input) {
     display: flex !important;
-    flex: 1 1 auto !important;
+    flex: 1 1 0 !important;
+    width: 100% !important;
     min-height: 0 !important;
-    height: 100% !important;
+    height: auto !important;
+    overflow: hidden !important;
+}
+
+/*
+ * Keep the library's intended scrolling model: the editor area is the single
+ * scroll container. The transparent textarea grows with .w-md-editor-text and
+ * does not own another scrollbar. This keeps the highlighted <pre> and the
+ * real textarea in the same coordinate space.
+ */
+.editorWrapper :global(.w-md-editor-area) {
+    display: block !important;
+    flex: 1 1 0 !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
     cursor: text;
 }
 
 .editorWrapper :global(.w-md-editor-text) {
     position: relative !important;
-    flex: 1 1 auto !important;
+    box-sizing: border-box !important;
     width: 100% !important;
     min-height: 100% !important;
-    height: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
     cursor: text;
 }
 
 /*
- * @uiw/react-md-editor layers a transparent textarea over a highlighted pre.
- * In a flex/full-height layout its input area can become taller than the text
- * layer, leaving a visually editable but non-interactive strip. Make both
- * layers cover the same complete hit area and keep the display layer inert.
+ * @uiw/react-md-editor overlays a transparent textarea on the highlighted
+ * pre. It must cover the complete text layer (including the empty lower half
+ * of a short document), but it must not scroll independently from the area.
  */
 .editorWrapper :global(.w-md-editor-text-input) {
     position: absolute !important;
@@ -76,7 +101,7 @@
     height: 100% !important;
     min-height: 100% !important;
     resize: none !important;
-    overflow: auto !important;
+    overflow: hidden !important;
     pointer-events: auto !important;
     user-select: text !important;
     caret-color: currentColor;
@@ -86,6 +111,7 @@
 .editorWrapper :global(.w-md-editor-text-pre) {
     position: relative !important;
     z-index: 1 !important;
+    box-sizing: border-box !important;
     width: 100% !important;
     min-height: 100% !important;
     pointer-events: none !important;
@@ -97,6 +123,7 @@
 }
 
 .editorWrapper :global(.w-md-editor-toolbar) {
+    flex: 0 0 auto;
     width: 100%;
     background-color: #f5f5f5;
     border-radius: 8px;

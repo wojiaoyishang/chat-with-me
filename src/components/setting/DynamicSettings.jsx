@@ -36,9 +36,10 @@ import {createPortal} from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {resolveResourceUrl} from "@/lib/virtualUrl.js";
 import apiClient from "@/lib/apiClient.js";
-import {apiEndpoint} from "@/config.js";
+import {apiEndpoint, BASE_BACKEND_URL} from "@/config.js";
 import {toast} from "sonner";
 import {useUserStore} from "@/context/userContext.jsx";
+import {onEvent} from "@/context/useEventStore.jsx";
 
 import {
     DndContext,
@@ -1425,6 +1426,37 @@ function SelectItem({item, path}) {
     const selected = options.find((o) => o.value === val) || options[0] || null;
     const buttonRef = useRef(null);
 
+    const handleSelectChange = useCallback((nextValue) => {
+        const compatibilityDefaults = item.compatibilityDefaults;
+        if (
+            compatibilityDefaults
+            && typeof compatibilityDefaults === "object"
+            && path.length > 0
+        ) {
+            const parentPath = path.slice(0, -1);
+            const fieldName = path[path.length - 1];
+            const currentRecord = deepGet(values, parentPath);
+            if (currentRecord && typeof currentRecord === "object" && !Array.isArray(currentRecord)) {
+                const nextRecord = {...currentRecord, [fieldName]: nextValue};
+                const profile = String(nextRecord.openai_compat_profile || "generic");
+                const protocol = String(nextRecord.api_protocol || "chat_completions");
+                const patch = compatibilityDefaults?.[profile]?.[protocol];
+                if (patch && typeof patch === "object" && !Array.isArray(patch)) {
+                    // Apply compatibility defaults only on an explicit profile/protocol
+                    // change. Later advanced edits remain untouched until the user
+                    // changes one of these selectors again.
+                    update(parentPath, {
+                        ...nextRecord,
+                        ...JSON.parse(JSON.stringify(patch)),
+                        [fieldName]: nextValue,
+                    });
+                    return;
+                }
+            }
+        }
+        update(path, nextValue);
+    }, [item.compatibilityDefaults, path, update, values]);
+
     useEffect(() => {
         setIsNull(rawVal === null);
     }, [rawVal]);
@@ -1461,7 +1493,7 @@ function SelectItem({item, path}) {
 
     return (
         <SettingRow text={item.text} tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull} required={item.required} controlFillAvailable>
-            <Listbox value={val} onChange={(v) => update(path, v)}>
+            <Listbox value={val} onChange={handleSelectChange}>
                 {({ open }) => (
                     <div className="w-full">
                         <ListboxButton
@@ -2104,127 +2136,284 @@ function JsonItem({item, path}) {
 // ─── Registered/special custom components are declared below. ───────
 
 // ─── Remote Workspace Components ─────────────────────────────────
-function RemoteWorkspaceStatusBadge({online}) {
+function RemoteWorkspaceStatusBadge({online, status}) {
+    const revoked = status === 'revoked';
     return (
-        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${online
-            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-            : "bg-black/5 text-black/55 dark:bg-white/10 dark:text-white/55"}`}>
-            {online ? <Wifi size={12}/> : <WifiOff size={12}/>}
-            {online ? "已连接" : "离线"}
+        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${revoked
+            ? "bg-red-500/10 text-red-700 dark:text-red-300"
+            : online
+                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                : "bg-black/5 text-black/55 dark:bg-white/10 dark:text-white/55"}`}>
+            {online && !revoked ? <Wifi size={12}/> : <WifiOff size={12}/>}
+            {revoked ? "已撤销" : (online ? "已连接" : "离线")}
         </span>
     );
 }
 
-function RemoteWorkspaceConnectionCard({connection, compact = false}) {
-    const lastSeen = connection?.lastSeen
-        ? new Date(Number(connection.lastSeen) * 1000).toLocaleString()
-        : "—";
+function workspaceStatusLabel(item) {
+    if (item?.status === 'revoked') return '设备已撤销';
+    if (item?.status === 'error') return '异常';
+    if (item?.online) return '在线';
+    return '离线';
+}
+
+function workspacePermissionLabel(value) {
+    if (value === 'manage') return '管理';
+    if (value === 'use') return '使用';
+    if (value === 'view') return '查看';
+    return '—';
+}
+
+function buildWorkspaceAgentCommand(token) {
+    if (typeof window === 'undefined') return `python agent.py --server "wss://YOUR_HOST/api/workspace/remote/connect" --token "${token}" --root "ALIAS=/path/to/project"`;
+    const basePath = `${BASE_BACKEND_URL}${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/connect`.replace(/\/+/g, '/');
+    const scheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const server = `${scheme}//${window.location.host}${basePath.startsWith('/') ? basePath : `/${basePath}`}`;
+    return `python agent.py --server "${server}" --token "${token}" --root "workspace=/path/to/project"`;
+}
+
+function WorkspaceAclDialog({workspace, open, onOpenChange, onChanged}) {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [targetUserId, setTargetUserId] = useState('');
+    const [permission, setPermission] = useState('use');
+
+    const load = useCallback(async () => {
+        if (!workspace?.id || !open) return;
+        setLoading(true);
+        try {
+            const result = await apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(workspace.id)}/permissions`);
+            setData(result || {});
+        } catch (error) {
+            toast.error(error?.message || '读取 Workspace 用户权限失败');
+        } finally {
+            setLoading(false);
+        }
+    }, [open, workspace?.id]);
+
+    useEffect(() => { load(); }, [load]);
+
+    const grant = async () => {
+        if (!targetUserId) return;
+        setSaving(true);
+        try {
+            await apiClient.put(
+                `${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(workspace.id)}/permissions/${encodeURIComponent(targetUserId)}`,
+                {permission},
+            );
+            setTargetUserId('');
+            await load();
+            onChanged?.();
+            toast.success('Workspace 用户权限已更新');
+        } catch (error) {
+            toast.error(error?.message || '更新 Workspace 用户权限失败');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const remove = async (userId) => {
+        setSaving(true);
+        try {
+            await apiClient.delete(`${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(workspace.id)}/permissions/${encodeURIComponent(userId)}`);
+            await load();
+            onChanged?.();
+        } catch (error) {
+            toast.error(error?.message || '移除 Workspace 用户权限失败');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const grantIds = new Set((data?.grants || []).map((item) => Number(item.userId)));
+    const assignableUsers = (data?.assignableUsers || []).filter((item) => !grantIds.has(Number(item.id)));
+
     return (
-        <div className="rounded-xl border border-black/10 bg-white p-3 shadow-sm dark:border-white/15 dark:bg-black">
-            <div className="flex min-w-0 items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <div className="flex min-w-0 items-center gap-2">
-                        <Server size={15} className="shrink-0 text-black/55 dark:text-white/55"/>
-                        <span className="truncate text-sm font-semibold" title={connection?.name || "Remote Workspace"}>
-                            {connection?.name || "Remote Workspace"}
-                        </span>
-                    </div>
-                    {!compact && (
-                        <div className="mt-1 text-[11px] text-black/45 dark:text-white/45">
-                            <div className="truncate">
-                                {connection?.platform || "未知平台"}
-                                {Array.isArray(connection?.roots) && connection.roots.length > 1
-                                    ? ` · ${connection.roots.length} 个根目录`
-                                    : (connection?.rootLabel ? ` · ${connection.rootLabel}` : "")}
-                            </div>
-                            {Array.isArray(connection?.roots) && connection.roots.length > 1 && (
-                                <div className="mt-1 space-y-0.5">
-                                    {connection.roots.map((root) => (
-                                        <div key={root.id} className="truncate font-mono" title={root.displayPath || root.alias}>
-                                            {root.alias || 'workspace'} → {root.displayPath || '远端根目录'}
-                                        </div>
-                                    ))}
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[560px]">
+                <DialogHeader>
+                    <DialogTitle>Workspace 用户权限</DialogTitle>
+                </DialogHeader>
+                <div className="text-xs text-muted-foreground">{workspace?.name}</div>
+                {loading ? (
+                    <div className="py-8 text-center text-sm text-muted-foreground">正在读取权限…</div>
+                ) : (
+                    <div className="space-y-3">
+                        <div className="divide-y rounded-xl border border-black/10 dark:border-white/10">
+                            {(data?.grants || []).map((grant) => (
+                                <div key={grant.userId} className="flex items-center gap-3 px-3 py-2.5">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="truncate text-sm font-medium">{grant.username || `User ${grant.userId}`}</div>
+                                        <div className="mt-0.5 text-[11px] text-muted-foreground">{grant.owner ? 'Workspace Owner' : '已分配权限'}</div>
+                                    </div>
+                                    <span className="rounded-full bg-black/5 px-2 py-1 text-xs dark:bg-white/10">{workspacePermissionLabel(grant.permission)}</span>
+                                    {!grant.owner ? (
+                                        <button type="button" disabled={saving} onClick={() => remove(grant.userId)} className="rounded-md p-1.5 text-muted-foreground hover:bg-red-500/10 hover:text-red-600 disabled:opacity-50">
+                                            <Trash2 size={14}/>
+                                        </button>
+                                    ) : null}
                                 </div>
-                            )}
+                            ))}
                         </div>
-                    )}
-                </div>
-                <RemoteWorkspaceStatusBadge online={!!connection?.online}/>
-            </div>
-            <div className="mt-3 rounded-lg bg-black/[0.035] px-2.5 py-2 text-xs dark:bg-white/[0.06]">
-                <div className="text-[10px] uppercase tracking-wide text-black/40 dark:text-white/40">连接 IP</div>
-                <div className="mt-0.5 break-all font-mono text-[12px]">{connection?.ip || "—"}</div>
-            </div>
-            {!compact && (
-                <div className="mt-2 text-[11px] text-black/45 dark:text-white/45">最后在线：{lastSeen}</div>
-            )}
-        </div>
+                        {assignableUsers.length > 0 ? (
+                            <div className="grid gap-2 rounded-xl border border-dashed border-black/10 p-3 dark:border-white/10 sm:grid-cols-[minmax(0,1fr)_8rem_auto]">
+                                <select value={targetUserId} onChange={(event) => setTargetUserId(event.target.value)} className="h-9 rounded-lg border border-black/10 bg-transparent px-2 text-sm dark:border-white/10">
+                                    <option value="">选择用户</option>
+                                    {assignableUsers.map((entry) => <option key={entry.id} value={entry.id}>{entry.username}</option>)}
+                                </select>
+                                <select value={permission} onChange={(event) => setPermission(event.target.value)} className="h-9 rounded-lg border border-black/10 bg-transparent px-2 text-sm dark:border-white/10">
+                                    <option value="view">查看</option>
+                                    <option value="use">使用</option>
+                                    <option value="manage">管理</option>
+                                </select>
+                                <button type="button" disabled={!targetUserId || saving} onClick={grant} className="h-9 rounded-lg bg-blue-600 px-3 text-sm font-medium text-white disabled:opacity-50">添加</button>
+                            </div>
+                        ) : null}
+                    </div>
+                )}
+            </DialogContent>
+        </Dialog>
     );
 }
 
-function useRemoteWorkspaceConnections(pollMs = 10000) {
-    const [connections, setConnections] = useState([]);
+function WorkspaceManagementItem({item}) {
+    const [agents, setAgents] = useState([]);
+    const [workspaces, setWorkspaces] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [tokenInfo, setTokenInfo] = useState(null);
+    const [tokenLoading, setTokenLoading] = useState(false);
+    const [aclWorkspace, setAclWorkspace] = useState(null);
+    const {user} = useUserStore();
 
     const refresh = useCallback(async ({quiet = false} = {}) => {
         if (!quiet) setLoading(true);
         try {
-            const data = await apiClient.get(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/connections`);
-            setConnections(Array.isArray(data) ? data : []);
-            setError("");
-        } catch (err) {
-            setError(err?.message || "读取远程 Workspace 失败。");
+            const [agentData, localData, remoteData] = await Promise.all([
+                apiClient.get(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/connections`),
+                apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/`),
+                apiClient.get(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/workspaces`),
+            ]);
+            setAgents(Array.isArray(agentData) ? agentData : []);
+            const locals = (Array.isArray(localData) ? localData : []).map((entry) => ({...entry, kind: entry.kind || 'local'}));
+            const remotes = Array.isArray(remoteData) ? remoteData : [];
+            setWorkspaces([...locals, ...remotes].sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''))));
+        } catch (error) {
+            toast.error(error?.message || '读取 Workspace 设置失败');
         } finally {
             if (!quiet) setLoading(false);
         }
     }, []);
 
+    useEffect(() => { refresh(); }, [refresh]);
     useEffect(() => {
-        refresh();
-        const timer = window.setInterval(() => refresh({quiet: true}), pollMs);
-        return () => window.clearInterval(timer);
-    }, [pollMs, refresh]);
+        const unsubscribeConnection = onEvent({event: 'workspace.connection.status_changed'}).then(() => refresh({quiet: true}));
+        const unsubscribeAccess = onEvent({event: 'workspace.access.changed'}).then(() => refresh({quiet: true}));
+        const timer = window.setInterval(() => refresh({quiet: true}), 60_000);
+        return () => {
+            unsubscribeConnection?.();
+            unsubscribeAccess?.();
+            window.clearInterval(timer);
+        };
+    }, [refresh]);
 
-    return {connections, loading, error, refresh};
-}
+    const generateToken = async () => {
+        setTokenLoading(true);
+        try {
+            const data = await apiClient.post(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/enrollment-tokens`, {expiresMinutes: 10});
+            setTokenInfo(data || null);
+        } catch (error) {
+            toast.error(error?.message || '生成 Workspace 连接凭据失败');
+        } finally {
+            setTokenLoading(false);
+        }
+    };
 
-function RemoteWorkspaceConnectionsItem({item}) {
-    const {connections, loading, error, refresh} = useRemoteWorkspaceConnections();
+    const revokeAgent = async (agent) => {
+        if (!agent?.id || !window.confirm(`撤销设备“${agent.name || agent.id}”吗？撤销后该设备必须重新注册。`)) return;
+        try {
+            await apiClient.delete(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/agents/${encodeURIComponent(agent.id)}`);
+            await refresh();
+            toast.success('设备身份已撤销');
+        } catch (error) {
+            toast.error(error?.message || '撤销远程设备失败');
+        }
+    };
+
+    const copyText = async (value, message) => {
+        try {
+            await navigator.clipboard.writeText(String(value || ''));
+            toast.success(message || '已复制');
+        } catch {
+            toast.error('复制失败');
+        }
+    };
+
+    const onlineAgents = agents.filter((item) => item.online).length;
+    const remoteCount = workspaces.filter((item) => item.kind === 'remote').length;
+    const command = tokenInfo?.token ? buildWorkspaceAgentCommand(tokenInfo.token) : '';
+
     return (
         <SettingRow fullWidth className="border-b border-black/10 last:border-b-0 dark:border-white/15">
-            <div className="w-full">
-                <div className="mb-2 flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                        <div className="text-sm font-semibold">{item.text || "远程连接"}</div>
-                        <div className="mt-0.5 text-xs text-black/45 dark:text-white/45">
-                            此处只显示连接状态，不展示配对码，也不会展示目标机动态生成的认证秘钥。
-                        </div>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => refresh()}
-                        disabled={loading}
-                        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-black/10 px-2.5 text-xs font-medium hover:bg-black/5 disabled:opacity-50 dark:border-white/15 dark:hover:bg-white/10"
-                    >
-                        <RefreshCw size={13} className={loading ? "animate-spin" : ""}/>
-                        刷新
-                    </button>
+            <div className="w-full space-y-4">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <div className="rounded-xl border border-black/10 p-3 dark:border-white/10"><div className="text-[11px] text-muted-foreground">Workspace</div><div className="mt-1 text-xl font-semibold">{workspaces.length}</div></div>
+                    <div className="rounded-xl border border-black/10 p-3 dark:border-white/10"><div className="text-[11px] text-muted-foreground">远程设备</div><div className="mt-1 text-xl font-semibold">{agents.length}</div></div>
+                    <div className="rounded-xl border border-black/10 p-3 dark:border-white/10"><div className="text-[11px] text-muted-foreground">在线设备</div><div className="mt-1 text-xl font-semibold">{onlineAgents}</div></div>
+                    <div className="rounded-xl border border-black/10 p-3 dark:border-white/10"><div className="text-[11px] text-muted-foreground">远程根目录</div><div className="mt-1 text-xl font-semibold">{remoteCount}</div></div>
                 </div>
-                {error ? (
-                    <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-xs text-red-600 dark:text-red-300">{error}</div>
-                ) : loading && connections.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-black/10 px-3 py-5 text-center text-xs text-black/45 dark:border-white/15 dark:text-white/45">正在读取远程连接…</div>
-                ) : connections.length === 0 ? (
-                    <div className="rounded-lg border border-dashed border-black/10 px-3 py-5 text-center text-xs text-black/45 dark:border-white/15 dark:text-white/45">暂无已登记的远程 Workspace。启动远端 Agent 后会自动出现在这里。</div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
-                        {connections.map((connection) => (
-                            <RemoteWorkspaceConnectionCard key={connection.id} connection={connection}/>
-                        ))}
+
+                <section className="rounded-xl border border-black/10 p-3 dark:border-white/10">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <div className="text-sm font-semibold">连接新设备</div>
+                            <div className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">生成一个绑定当前用户、10 分钟有效且只能使用一次的 Enrollment Token。远端注册成功后 Token 立即作废，后续使用设备密钥自动重连。</div>
+                        </div>
+                        <button type="button" disabled={tokenLoading} onClick={generateToken} className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-sm font-medium text-white disabled:opacity-50">
+                            <LockKeyhole size={14}/>{tokenLoading ? '生成中…' : '生成连接凭据'}
+                        </button>
                     </div>
-                )}
+                    {tokenInfo?.token ? (
+                        <div className="mt-3 space-y-2 rounded-xl bg-black/[0.035] p-3 dark:bg-white/[0.06]">
+                            <div className="flex items-center justify-between gap-2"><div className="text-xs font-medium">一次性 Token · 用户 {tokenInfo.username || tokenInfo.userId}</div><button onClick={() => copyText(tokenInfo.token, 'Token 已复制')} className="rounded-md p-1.5 hover:bg-black/5 dark:hover:bg-white/10"><Copy size={14}/></button></div>
+                            <code className="block break-all rounded-lg border border-black/10 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-black">{tokenInfo.token}</code>
+                            <div className="text-[11px] text-muted-foreground">有效至：{tokenInfo.expiresAt ? new Date(tokenInfo.expiresAt).toLocaleString() : '—'} · 注册成功后即焚</div>
+                            <div className="flex items-start gap-2"><code className="min-w-0 flex-1 break-all rounded-lg border border-black/10 bg-white px-2.5 py-2 text-[11px] dark:border-white/10 dark:bg-black">{command}</code><button onClick={() => copyText(command, '连接命令已复制')} className="rounded-md p-1.5 hover:bg-black/5 dark:hover:bg-white/10"><Copy size={14}/></button></div>
+                        </div>
+                    ) : null}
+                </section>
+
+                <section className="space-y-2">
+                    <div className="flex items-center justify-between"><div><div className="text-sm font-semibold">我的远程设备</div><div className="text-xs text-muted-foreground">IP 与主机信息用于审计和异常提示；设备身份由 Ed25519 密钥证明。</div></div><button onClick={() => refresh()} disabled={loading} className="rounded-md p-2 text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10"><RefreshCw size={14} className={loading ? 'animate-spin' : ''}/></button></div>
+                    {loading && agents.length === 0 ? <div className="rounded-xl border border-dashed p-5 text-center text-xs text-muted-foreground">正在读取设备…</div> : agents.length === 0 ? <div className="rounded-xl border border-dashed p-5 text-center text-xs text-muted-foreground">暂无已注册远程设备。</div> : (
+                        <div className="grid gap-2 xl:grid-cols-2">
+                            {agents.map((agent) => (
+                                <div key={agent.id} className="rounded-xl border border-black/10 p-3 dark:border-white/10">
+                                    <div className="flex items-start justify-between gap-3"><div className="min-w-0"><div className="flex items-center gap-2"><Server size={15}/><span className="truncate text-sm font-semibold">{agent.name || agent.id}</span></div><div className="mt-1 truncate text-[11px] text-muted-foreground">{agent.hostname || '未知主机'} · {agent.platform || '未知平台'}</div></div><RemoteWorkspaceStatusBadge online={!!agent.online} status={agent.status}/></div>
+                                    <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]"><div className="rounded-lg bg-black/[0.035] p-2 dark:bg-white/[0.06]"><div className="text-muted-foreground">最近 IP</div><div className="mt-0.5 truncate font-mono">{agent.ip || '—'}</div></div><div className="rounded-lg bg-black/[0.035] p-2 dark:bg-white/[0.06]"><div className="text-muted-foreground">最后在线</div><div className="mt-0.5">{agent.lastSeen ? new Date(Number(agent.lastSeen) * 1000).toLocaleString() : '—'}</div></div></div>
+                                    {(agent.owned || user?.isSuperuser) && agent.status !== 'revoked' ? <div className="mt-2 flex justify-end"><button onClick={() => revokeAgent(agent)} className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-red-600 hover:bg-red-500/10"><Trash2 size={13}/>撤销设备</button></div> : null}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                <section className="space-y-2">
+                    <div><div className="text-sm font-semibold">Workspace 与用户权限</div><div className="text-xs text-muted-foreground">Owner/管理员默认 manage；其他用户通过 ACL 获得 view/use/manage。只有 use/manage 可以挂载并调用 Workspace 工具。</div></div>
+                    {workspaces.length === 0 ? <div className="rounded-xl border border-dashed p-5 text-center text-xs text-muted-foreground">暂无 Workspace。</div> : (
+                        <div className="divide-y rounded-xl border border-black/10 dark:border-white/10">
+                            {workspaces.map((workspace) => (
+                                <div key={workspace.id} className="flex flex-wrap items-center gap-3 px-3 py-2.5">
+                                    <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><span className="truncate text-sm font-medium">{workspace.name}</span><span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] dark:bg-white/10">{workspace.kind === 'remote' ? workspaceStatusLabel(workspace) : (workspace.available === false ? '不可用' : '本机')}</span></div><div className="mt-0.5 truncate text-[11px] text-muted-foreground">{workspace.kind === 'remote' ? `${workspace.agentName || ''}${workspace.rootAlias ? ` · ${workspace.rootAlias}` : ''}` : ((workspace.mounts || []).map((mount) => `/${mount.alias}`).join(' · ') || 'Local Workspace')}</div></div>
+                                    <span className="rounded-full bg-blue-500/10 px-2 py-1 text-xs text-blue-700 dark:text-blue-300">{workspacePermissionLabel(workspace.permission || 'manage')}</span>
+                                    {(workspace.permission || 'manage') === 'manage' ? <button onClick={() => setAclWorkspace(workspace)} className="rounded-lg border border-black/10 px-2.5 py-1.5 text-xs font-medium hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10">管理用户</button> : null}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
             </div>
+            <WorkspaceAclDialog workspace={aclWorkspace} open={!!aclWorkspace} onOpenChange={(next) => {if (!next) setAclWorkspace(null);}} onChanged={() => refresh({quiet: true})}/>
         </SettingRow>
     );
 }
@@ -2622,7 +2811,7 @@ function UserManagementItem({item}) {
 // 后续继续增加专用动态设置组件，而无需扩展基础 item.type 枚举。
 const CUSTOM_SETTING_COMPONENTS = {
     requestJsonKeyValue: JsonItem,
-    remoteWorkspaceConnections: RemoteWorkspaceConnectionsItem,
+    workspaceManagement: WorkspaceManagementItem,
     userManagement: UserManagementItem,
 };
 

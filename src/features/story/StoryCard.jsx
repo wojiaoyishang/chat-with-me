@@ -65,8 +65,12 @@ const StoryCard = memo(({content = '', conversationId = null}) => {
             const nextStory = value.story || value;
             if (Number(nextStory?.storyId || value?.storyId) !== storyId) return;
             if (event === 'story.deleted') {
+                // Keep a compact tombstone instead of removing the card node while
+                // the owning Assistant message may still be streaming. Removing a
+                // large replacement in the middle of a live message causes a sharp
+                // layout collapse and makes an otherwise healthy stream look lost.
                 setStory(current => ({...current, deleted: true, status: 'deleted'}));
-                setHiddenByPermission(true);
+                setHiddenByPermission(false);
             } else if (event === 'story.permissions.changed') {
                 void refreshStory();
             } else if (event === 'story.changed') {
@@ -81,7 +85,27 @@ const StoryCard = memo(({content = '', conversationId = null}) => {
         });
     }, [conversationId, storyId, refreshStory]);
 
-    if (!storyId || !accessChecked || hiddenByPermission) return null;
+    if (!storyId || !accessChecked || (hiddenByPermission && !story?.deleted)) return null;
+
+    if (story?.deleted) {
+        return (
+            <div
+                className="my-4 flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left text-gray-500"
+                data-story-deleted="true"
+                data-story-id={storyId}
+            >
+                <BookOpen className="h-4 w-4 shrink-0"/>
+                <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-gray-700">
+                        {story?.title || t('story_untitled', '未命名故事')}
+                    </div>
+                    <div className="mt-0.5 text-xs text-gray-500">
+                        {t('story_deleted', '故事已删除')}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const openStory = () => {
         if (story?.deleted) return;

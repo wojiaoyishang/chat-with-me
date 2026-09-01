@@ -27,13 +27,13 @@ src/features/workspace/WorkspaceSelector 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:406:9126:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:406:9800:FUNCTION
 
 .. js:function:: WorkspaceSelector({conversationId, selectedWorkspaceId, onChange, t})
 
    渲染 ``WorkspaceSelector`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``15``—``202`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``15``—``208`` 行。
 
    **参数**
 
@@ -103,7 +103,7 @@ src/features/workspace/WorkspaceSelector 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:960:1889:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:960:2078:FUNCTION
 
 .. rubric:: ``useCallback callback @ 27``
 
@@ -113,7 +113,7 @@ src/features/workspace/WorkspaceSelector 模块
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``27``—``45`` 行；所属函数 ``WorkspaceSelector``。
+**性质**：异步局部函数；源码第 ``27``—``48`` 行；所属函数 ``WorkspaceSelector``。
 
 **参数**
 
@@ -131,17 +131,17 @@ src/features/workspace/WorkspaceSelector 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:1637:1703:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:1826:1892:FUNCTION
 
-.. rubric:: ``[...local, ...remote].sort callback @ 39``
+.. rubric:: ``[...local, ...remote].sort callback @ 42``
 
 .. code-block:: javascript
 
-   [...local, ...remote].sort callback @ 39(a, b)
+   [...local, ...remote].sort callback @ 42(a, b)
 
 作为 ``[...local, ...remote].sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``39``—``39`` 行；所属函数 ``useCallback callback @ 27``。
+**性质**：同步局部函数；源码第 ``42``—``42`` 行；所属函数 ``useCallback callback @ 27``。
 
 **参数**
 
@@ -157,17 +157,17 @@ src/features/workspace/WorkspaceSelector 模块
 
 **主要协作调用**：``String(a.name || '').localeCompare``、``String``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:1928:1957:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:2117:2146:FUNCTION
 
-.. rubric:: ``useEffect callback @ 47``
+.. rubric:: ``useEffect callback @ 50``
 
 .. code-block:: javascript
 
-   useEffect callback @ 47()
+   useEffect callback @ 50()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``47``—``49`` 行；所属函数 ``WorkspaceSelector``。
+**性质**：同步局部函数；源码第 ``50``—``52`` 行；所属函数 ``WorkspaceSelector``。
 
 **参数**
 
@@ -179,7 +179,7 @@ src/features/workspace/WorkspaceSelector 模块
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:1996:2598:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:2185:2787:FUNCTION
 
 .. rubric:: ``selectWorkspace``
 
@@ -189,7 +189,7 @@ src/features/workspace/WorkspaceSelector 模块
 
 实现 ``selectWorkspace`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``51``—``67`` 行；所属函数 ``WorkspaceSelector``。
+**性质**：异步局部函数；源码第 ``54``—``70`` 行；所属函数 ``WorkspaceSelector``。
 
 **参数**
 
@@ -202,7 +202,7 @@ src/features/workspace/WorkspaceSelector 模块
 
 **主要协作调用**：``onChange``、``setSaving``、``apiClient.put``、``encodeURIComponent``、``toast.error``、``t``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:2628:3512:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:2817:3701:FUNCTION
 
 .. rubric:: ``createWorkspace``
 
@@ -212,7 +212,7 @@ src/features/workspace/WorkspaceSelector 模块
 
 创建与 ``Workspace`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``69``—``91`` 行；所属函数 ``WorkspaceSelector``。
+**性质**：异步局部函数；源码第 ``72``—``94`` 行；所属函数 ``WorkspaceSelector``。
 
 **参数**
 
@@ -230,17 +230,17 @@ src/features/workspace/WorkspaceSelector 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:3044:3123:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:3233:3312:FUNCTION
 
-.. rubric:: ``setWorkspaces callback @ 80``
+.. rubric:: ``setWorkspaces callback @ 83``
 
 .. code-block:: javascript
 
-   setWorkspaces callback @ 80(current)
+   setWorkspaces callback @ 83(current)
 
 设置与 ``Workspaces`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``80``—``80`` 行；所属函数 ``createWorkspace``。
+**性质**：同步局部函数；源码第 ``83``—``83`` 行；所属函数 ``createWorkspace``。
 
 **参数**
 
@@ -255,17 +255,17 @@ src/features/workspace/WorkspaceSelector 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:3084:3122:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:3273:3311:FUNCTION
 
-.. rubric:: ``[...current, created].sort callback @ 80``
+.. rubric:: ``[...current, created].sort callback @ 83``
 
 .. code-block:: javascript
 
-   [...current, created].sort callback @ 80(a, b)
+   [...current, created].sort callback @ 83(a, b)
 
 作为 ``[...current, created].sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``80``—``80`` 行；所属函数 ``setWorkspaces callback @ 80``。
+**性质**：同步局部函数；源码第 ``83``—``83`` 行；所属函数 ``setWorkspaces callback @ 83``。
 
 **参数**
 
@@ -281,7 +281,7 @@ src/features/workspace/WorkspaceSelector 模块
 
 **主要协作调用**：``a.name.localeCompare``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:3541:4351:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:3730:4508:FUNCTION
 
 .. rubric:: ``deleteSelected``
 
@@ -291,7 +291,7 @@ src/features/workspace/WorkspaceSelector 模块
 
 删除与 ``Selected`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``93``—``109`` 行；所属函数 ``WorkspaceSelector``。
+**性质**：异步局部函数；源码第 ``96``—``112`` 行；所属函数 ``WorkspaceSelector``。
 
 **参数**
 
@@ -305,21 +305,21 @@ src/features/workspace/WorkspaceSelector 模块
 
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``window.confirm``、``t``、``setSaving``、``apiClient.delete``、``encodeURIComponent``、``setWorkspaces``、``selectWorkspace``、``toast.error``。
+**主要协作调用**：``window.confirm``、``t``、``setSaving``、``toast.error``、``apiClient.delete``、``encodeURIComponent``、``setWorkspaces``、``selectWorkspace``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:4062:4124:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:4219:4281:FUNCTION
 
-.. rubric:: ``setWorkspaces callback @ 102``
+.. rubric:: ``setWorkspaces callback @ 105``
 
 .. code-block:: javascript
 
-   setWorkspaces callback @ 102(current)
+   setWorkspaces callback @ 105(current)
 
 设置与 ``Workspaces`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``102``—``102`` 行；所属函数 ``deleteSelected``。
+**性质**：同步局部函数；源码第 ``105``—``105`` 行；所属函数 ``deleteSelected``。
 
 **参数**
 
@@ -334,17 +334,17 @@ src/features/workspace/WorkspaceSelector 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:4090:4123:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:4247:4280:FUNCTION
 
-.. rubric:: ``current.filter callback @ 102``
+.. rubric:: ``current.filter callback @ 105``
 
 .. code-block:: javascript
 
-   current.filter callback @ 102(item)
+   current.filter callback @ 105(item)
 
 作为 ``current.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``102``—``102`` 行；所属函数 ``setWorkspaces callback @ 102``。
+**性质**：同步局部函数；源码第 ``105``—``105`` 行；所属函数 ``setWorkspaces callback @ 105``。
 
 **参数**
 
@@ -355,17 +355,17 @@ src/features/workspace/WorkspaceSelector 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:5258:5319:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:5415:5476:FUNCTION
 
-.. rubric:: ``onValueChange callback @ 129``
+.. rubric:: ``onValueChange callback @ 132``
 
 .. code-block:: javascript
 
-   onValueChange callback @ 129(value)
+   onValueChange callback @ 132(value)
 
 处理 ``Value Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``129``—``129`` 行；所属函数 ``WorkspaceSelector``。
+**性质**：同步局部函数；源码第 ``132``—``132`` 行；所属函数 ``WorkspaceSelector``。
 
 **参数**
 
@@ -378,17 +378,17 @@ src/features/workspace/WorkspaceSelector 模块
 
 **主要协作调用**：``selectWorkspace``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:5742:6097:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:5899:6679:FUNCTION
 
-.. rubric:: ``workspaces.map callback @ 137``
+.. rubric:: ``workspaces.map callback @ 140``
 
 .. code-block:: javascript
 
-   workspaces.map callback @ 137(workspace)
+   workspaces.map callback @ 140(workspace)
 
 作为 ``workspaces.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``137``—``141`` 行；所属函数 ``WorkspaceSelector``。
+**性质**：同步局部函数；源码第 ``140``—``147`` 行；所属函数 ``WorkspaceSelector``。
 
 **参数**
 
@@ -397,21 +397,21 @@ src/features/workspace/WorkspaceSelector 模块
 
 **返回值**
 
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+根据执行分支返回结果；代表性返回表达式为 ``( <SelectItem key={workspace.id} value={workspace.id} disabled={denied && workspace.id !== selectedWorkspaceId}> {workspace.kind === 'remote' ? \x60远程 · ${workspace.name}${workspace.…``。
 
 **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:6837:6879:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:7419:7461:FUNCTION
 
-.. rubric:: ``onClick callback @ 157``
+.. rubric:: ``onClick callback @ 163``
 
 .. code-block:: javascript
 
-   onClick callback @ 157()
+   onClick callback @ 163()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``WorkspaceSelector``。
+**性质**：同步局部函数；源码第 ``163``—``163`` 行；所属函数 ``WorkspaceSelector``。
 
 **参数**
 
@@ -425,17 +425,17 @@ src/features/workspace/WorkspaceSelector 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:6857:6878:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:7439:7460:FUNCTION
 
-.. rubric:: ``setShowCreate callback @ 157``
+.. rubric:: ``setShowCreate callback @ 163``
 
 .. code-block:: javascript
 
-   setShowCreate callback @ 157(current)
+   setShowCreate callback @ 163(current)
 
 设置与 ``Show Create`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``onClick callback @ 157``。
+**性质**：同步局部函数；源码第 ``163``—``163`` 行；所属函数 ``onClick callback @ 163``。
 
 **参数**
 
@@ -446,17 +446,17 @@ src/features/workspace/WorkspaceSelector 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:7910:7948:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:8584:8622:FUNCTION
 
-.. rubric:: ``onChange callback @ 180``
+.. rubric:: ``onChange callback @ 186``
 
 .. code-block:: javascript
 
-   onChange callback @ 180(event)
+   onChange callback @ 186(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``180``—``180`` 行；所属函数 ``WorkspaceSelector``。
+**性质**：同步局部函数；源码第 ``186``—``186`` 行；所属函数 ``WorkspaceSelector``。
 
 **参数**
 
@@ -469,17 +469,17 @@ src/features/workspace/WorkspaceSelector 模块
 
 **主要协作调用**：``setName``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:8302:8344:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSelector.jsx:8976:9018:FUNCTION
 
-.. rubric:: ``onChange callback @ 186``
+.. rubric:: ``onChange callback @ 192``
 
 .. code-block:: javascript
 
-   onChange callback @ 186(event)
+   onChange callback @ 192(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``186``—``186`` 行；所属函数 ``WorkspaceSelector``。
+**性质**：同步局部函数；源码第 ``192``—``192`` 行；所属函数 ``WorkspaceSelector``。
 
 **参数**
 

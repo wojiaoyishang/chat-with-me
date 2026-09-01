@@ -3,7 +3,7 @@ src/features/chat/ui/message/components/ReplacementContextBadge 模块
 
 .. js:module:: src/features/chat/ui/message/components/ReplacementContextBadge
 
-Replacement-local status indicator for non-tool cards. Tool-call status is intentionally aggregated by the enclosing \`toolCalling\` status card so one invocation renders exactly one indicator beside "Tool Calling Finished" instead of repeating on nested command/result cards.
+Replacement-local status indicator for non-tool cards. Tool-call status is intentionally aggregated by the enclosing \x60toolCalling\x60 status card so one invocation renders exactly one indicator beside "Tool Calling Finished" instead of repeating on nested command/result cards.
 
 .. note::
 

@@ -29,9 +29,9 @@
      - 3
      - ``src/components/editor/SimpleMDEditor.jsx``
    * - :doc:`src/components/markdown/CodeBlock </api/javascript/components/markdown/CodeBlock>`
-     - 3
+     - 1
      - 0
-     - 17
+     - 15
      - ``src/components/markdown/CodeBlock.jsx``
    * - :doc:`src/components/markdown/MarkdownRenderer </api/javascript/components/markdown/MarkdownRenderer>`
      - 16
@@ -214,9 +214,9 @@
      - 7
      - ``src/components/modal/universalModal.js``
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
-     - 50
+     - 52
      - 0
-     - 254
+     - 282
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/UserProfileCard </api/javascript/components/setting/UserProfileCard>`
      - 1

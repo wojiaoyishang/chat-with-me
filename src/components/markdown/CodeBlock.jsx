@@ -3,57 +3,13 @@ import {Check, Copy} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
 
 import {copyTextToClipboard} from '@/lib/tools.jsx';
+import {ensureHighlightLanguage, loadHljs, normalizeHighlightLanguage} from './card-block/highlight.js';
 import './CodeBlock.css';
-
-// 使用 import.meta.glob 静态收集所有语言模块。
-const languageModules = import.meta.glob('/node_modules/highlight.js/es/languages/*.js');
 
 const MAX_HIGHLIGHT_CHARACTERS = 120_000;
 const MAX_HIGHLIGHT_LINES = 2_500;
 const MAX_LINE_NUMBER_COUNT = 5_000;
 const COPY_RESET_DELAY_MS = 1_800;
-
-// 全局失败语言缓存（跨 CodeBlock 复用，避免重复加载失败模块）。
-if (!window.hljsFailedLanguages) {
-    window.hljsFailedLanguages = new Set();
-}
-
-let hljs = null;
-let loadingPromise = null;
-
-const loadHljs = () => {
-    if (hljs) return Promise.resolve(hljs);
-
-    if (!loadingPromise) {
-        loadingPromise = import('highlight.js/lib/core')
-            .then((module) => {
-                hljs = module.default;
-                hljs.configure({
-                    noHighlightRe: /\b(?:no-?highlight|language-text|language-plain|language-plaintext|language-txt|language-none)\b/i,
-                });
-                return hljs;
-            })
-            .finally(() => {
-                loadingPromise = null;
-            });
-    }
-
-    return loadingPromise;
-};
-
-const NO_HIGHLIGHT_LANGS = new Set([
-    'text',
-    'txt',
-    'plain',
-    'plaintext',
-    'none',
-]);
-
-const normalizeLanguage = (language) => {
-    const lang = language?.toLowerCase?.().trim();
-    if (!lang || NO_HIGHLIGHT_LANGS.has(lang)) return '';
-    return lang;
-};
 
 const scheduleIdleWork = (callback) => {
     if (typeof window.requestIdleCallback === 'function') {
@@ -71,7 +27,7 @@ const CodeBlock = memo(({codeString = '', language}) => {
     const codeRef = useRef(null);
     const copyResetTimerRef = useRef(null);
 
-    const normalizedLanguage = useMemo(() => normalizeLanguage(language), [language]);
+    const normalizedLanguage = useMemo(() => normalizeHighlightLanguage(language), [language]);
     const displayLanguage = useMemo(
         () => String(language || 'text').trim().toLowerCase() || 'text',
         [language],
@@ -120,31 +76,8 @@ const CodeBlock = memo(({codeString = '', language}) => {
             const hljsInst = await loadHljs();
             if (cancelled || !codeRef.current) return;
 
-            if (
-                !hljsInst.getLanguage(normalizedLanguage)
-                && !window.hljsFailedLanguages.has(normalizedLanguage)
-            ) {
-                const mappedLanguage = normalizedLanguage === 'html' ? 'xml' : normalizedLanguage;
-                const languagePath = `/node_modules/highlight.js/es/languages/${mappedLanguage}.js`;
-                const loadModule = languageModules[languagePath];
-
-                if (!loadModule) {
-                    window.hljsFailedLanguages.add(normalizedLanguage);
-                    return;
-                }
-
-                try {
-                    const module = await loadModule();
-                    if (cancelled || !codeRef.current) return;
-                    hljsInst.registerLanguage(normalizedLanguage, module.default);
-                } catch (error) {
-                    console.error(`Failed to load language module for: ${normalizedLanguage}`, error);
-                    window.hljsFailedLanguages.add(normalizedLanguage);
-                    return;
-                }
-            }
-
-            if (window.hljsFailedLanguages.has(normalizedLanguage) || !codeRef.current) return;
+            const loadedLanguage = await ensureHighlightLanguage(hljsInst, normalizedLanguage);
+            if (cancelled || !codeRef.current || !loadedLanguage) return;
 
             if (codeRef.current.dataset.highlighted) {
                 delete codeRef.current.dataset.highlighted;
@@ -224,8 +157,8 @@ const CodeBlock = memo(({codeString = '', language}) => {
                         ref={codeRef}
                         className={
                             shouldHighlight
-                                ? `hljs language-${normalizedLanguage}`
-                                : 'hljs nohighlight'
+                                ? `hljs cwm-highlight language-${normalizedLanguage}`
+                                : 'hljs cwm-highlight nohighlight'
                         }
                     >
                         {codeString}

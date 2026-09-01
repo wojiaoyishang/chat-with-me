@@ -232,6 +232,54 @@ const ResponsesContinuationPanel = ({continuation}) => {
     );
 };
 
+const PromptCompositionPanel = ({composition}) => {
+    if (!composition || !Array.isArray(composition.fragments)) return null;
+    const contextKeys = Array.isArray(composition.contextKeys) ? composition.contextKeys : [];
+    return (
+        <section className="space-y-3 rounded-xl border p-3 sm:p-4">
+            <div className="flex flex-wrap items-center gap-2">
+                <h3 className="flex items-center gap-2 text-sm font-semibold"><Braces className="size-4"/>Prompt Composition</h3>
+                <Badge variant="outline">{composition.fragments.length} fragments</Badge>
+                {composition.toolSnapshotId ? <Badge variant="secondary" className="font-mono">snapshot {String(composition.toolSnapshotId).slice(0, 8)}</Badge> : null}
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <div className="rounded-lg border p-2.5">
+                    <div className="text-[11px] text-muted-foreground">Rendered Length</div>
+                    <div className="mt-1 font-semibold tabular-nums">{formatNumber(composition.renderedLength)} chars</div>
+                </div>
+                <div className="rounded-lg border p-2.5">
+                    <div className="text-[11px] text-muted-foreground">Composition Hash</div>
+                    <div className="mt-1 truncate font-mono text-[11px]" title={composition.compositionHash || ''}>{composition.compositionHash || '—'}</div>
+                </div>
+                <div className="rounded-lg border p-2.5">
+                    <div className="text-[11px] text-muted-foreground">Context Keys</div>
+                    <div className="mt-1 font-semibold tabular-nums">{contextKeys.length}</div>
+                </div>
+            </div>
+            {contextKeys.length ? (
+                <div className="flex flex-wrap gap-1.5">
+                    {contextKeys.map(key => <Badge key={key} variant="outline" className="font-mono text-[10px]">{key}</Badge>)}
+                </div>
+            ) : null}
+            <div className="space-y-2">
+                {composition.fragments.map((fragment, index) => (
+                    <div key={`${fragment.name || 'fragment'}-${index}`} className="rounded-lg border bg-background/70 p-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-xs font-medium">{fragment.name || `fragment-${index + 1}`}</span>
+                            <Badge variant={fragment.kind === 'template' ? 'secondary' : 'outline'}>{fragment.kind || 'unknown'}</Badge>
+                            <Badge variant="outline">priority {fragment.priority ?? '—'}</Badge>
+                            <span className="ml-auto text-[11px] tabular-nums text-muted-foreground">{formatNumber(fragment.renderedLength)} chars</span>
+                        </div>
+                        {fragment.templatePath ? <div className="mt-2 break-all font-mono text-[10px] text-muted-foreground">{fragment.templatePath}</div> : null}
+                        {fragment.source ? <div className="mt-1 text-[10px] text-muted-foreground">source: {fragment.source}</div> : null}
+                        {fragment.templateHash ? <div className="mt-1 truncate font-mono text-[9px] text-muted-foreground" title={fragment.templateHash}>sha256: {fragment.templateHash}</div> : null}
+                    </div>
+                ))}
+            </div>
+        </section>
+    );
+};
+
 const ModelCallBrowser = ({section}) => {
     const calls = Array.isArray(section?.modelCalls) ? section.modelCalls : [];
     const [selectedId, setSelectedId] = useState(section?.selectedModelCallId || calls.at(-1)?.modelCallId || '');
@@ -299,11 +347,30 @@ const ModelCallBrowser = ({section}) => {
                     {Object.entries(roleCounts).map(([role, count]) => (
                         <Badge key={role} variant="outline">{role} {count}</Badge>
                     ))}
+                    {selected?.apiProtocol ? <Badge variant="outline" className="font-mono">{selected.apiProtocol}</Badge> : null}
+                    {selected?.openaiCompatibilityProfile ? (
+                        <Badge variant={selected.openaiCompatibilityProfile === 'deepseek' ? 'default' : 'outline'}>
+                            compat: {selected.openaiCompatibilityProfile}
+                        </Badge>
+                    ) : null}
+                    {selected?.reasoningContinuity && selected.reasoningContinuity !== 'optional' ? (
+                        <Badge variant="secondary">reasoning: {selected.reasoningContinuity}</Badge>
+                    ) : null}
                     <Badge variant="secondary">{selected?.tools?.providerManaged ? 'Provider Native Tools' : 'Prompt Tools'}</Badge>
                     <Badge variant="outline">{selected?.status || 'captured'}</Badge>
                 </div>
+                {selected?.openaiCompatibilityProfile ? (
+                    <div className="rounded-xl border bg-muted/15 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+                        OpenAI Compatibility Profile：<span className="font-mono text-foreground">{selected.openaiCompatibilityProfile}</span>
+                        {selected?.openaiCompatibilitySource ? <> · source: <span className="font-mono text-foreground">{selected.openaiCompatibilitySource}</span></> : null}
+                        {selected?.reasoningContinuity === 'required_with_tools'
+                            ? ' · 原生工具调用时 reasoning continuity 为协议硬约束。'
+                            : ''}
+                    </div>
+                ) : null}
 
                 <ResponsesContinuationPanel continuation={selected?.responsesContinuation}/>
+                <PromptCompositionPanel composition={selected?.promptComposition}/>
 
                 <section className="space-y-2">
                     <div className="flex items-center justify-between gap-3">
@@ -505,6 +572,13 @@ const ToolBrowser = ({section}) => {
                     <Badge variant="outline">已进入上下文 {tools.contextNames?.length || 0}</Badge>
                     <Badge variant="outline">已获取详情 {tools.detailedNames?.length || 0}</Badge>
                     <Badge variant="outline">当前 Schema {tools.schemaNames?.length || tools.definitions?.length || 0}</Badge>
+                    {tools?.toolExposureSnapshot?.snapshotId ? (
+                        <Badge variant="secondary" className="font-mono" title={tools.toolExposureSnapshot.snapshotId}>
+                            snapshot {String(tools.toolExposureSnapshot.snapshotId).slice(0, 8)}
+                        </Badge>
+                    ) : null}
+                    {tools?.toolExposureSnapshot ? <Badge variant="outline">Direct {tools.toolExposureSnapshot.direct?.length || 0}</Badge> : null}
+                    {tools?.toolExposureSnapshot ? <Badge variant="outline">Dispatcher {tools.toolExposureSnapshot.dispatcher?.length || 0}</Badge> : null}
                 </section>
 
                 <section className="space-y-3">
@@ -563,11 +637,16 @@ const ToolBrowser = ({section}) => {
                     {(tools.toolsets || []).length ? (tools.toolsets || []).map(item => (
                         <div key={item.name} className="rounded-lg border p-3 text-sm">
                             <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant={item.active ? 'default' : 'outline'}>{item.name}</Badge>
-                                {item.active && <span className="text-xs text-muted-foreground">当前原生 Schema 已激活</span>}
+                                <Badge variant="outline">{item.name}</Badge>
                                 {item.inspected && <span className="text-xs text-muted-foreground">模型已读取 Toolset 信息</span>}
+                                <Badge variant="secondary">Direct {item.directNames?.length || 0}</Badge>
                             </div>
                             {item.introduction && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{item.introduction}</p>}
+                            {(item.directNames || []).length ? (
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                    {item.directNames.map(name => <Badge key={name} variant="outline" className="font-mono text-[10px]">{name}</Badge>)}
+                                </div>
+                            ) : null}
                         </div>
                     )) : <p className="text-sm text-muted-foreground">没有 Toolset 元数据。</p>}
                 </section>

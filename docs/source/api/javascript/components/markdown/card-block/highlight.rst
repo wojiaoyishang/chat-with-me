@@ -27,13 +27,13 @@ src/components/markdown/card-block/highlight 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/highlight.js:376:764:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/highlight.js:1104:1681:FUNCTION
 
 .. js:function:: loadHljs()
 
    加载与 ``Hljs`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``13``—``30`` 行。
+   **性质**：同步函数；导出 API；源码第 ``50``—``70`` 行。
 
    **参数**
 
@@ -43,17 +43,17 @@ src/components/markdown/card-block/highlight 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``Promise.resolve(hljs)``、``loadingPromise``。
 
-   **主要协作调用**：``Promise.resolve``、``import('highlight.js/lib/core') .then((module) => { hljs = module.default; return hljs; }) .finally``、``import('highlight.js/lib/core') .then``、``import``。
+   **主要协作调用**：``Promise.resolve``、``import('highlight.js/lib/core') .then((module) => { hljs = module.default; hljs.configure({ noHighlightRe: /\b(?:no-?hi…``、``import('highlight.js/lib/core') .then``、``import``。
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/highlight.js:1082:1283:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/highlight.js:1725:1962:FUNCTION
 
 .. js:function:: normalizeHighlightLanguage(language)
 
    规范化与 ``Highlight Language`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``47``—``55`` 行。
+   **性质**：同步函数；导出 API；源码第 ``72``—``78`` 行。
 
    **参数**
 
@@ -64,15 +64,15 @@ src/components/markdown/card-block/highlight 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``''``、``HIGHLIGHT_LANGUAGE_ALIASES[normalized] || normalized``。
 
-   **主要协作调用**：``toSafeString(language).trim().toLowerCase``、``toSafeString(language).trim``、``toSafeString``。
+   **主要协作调用**：``toSafeString(language).trim().toLowerCase``、``toSafeString(language).trim``、``toSafeString``、``NO_HIGHLIGHT_LANGS.has``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/highlight.js:1324:2101:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/highlight.js:2003:2901:FUNCTION
 
 .. js:function:: ensureHighlightLanguage(hljsInst, language)
 
    确保与 ``Highlight Language`` 相关的数据或状态。
 
-   **性质**：异步函数；导出 API；源码第 ``57``—``85`` 行。
+   **性质**：异步函数；导出 API；源码第 ``80``—``110`` 行。
 
    **参数**
 
@@ -84,30 +84,30 @@ src/components/markdown/card-block/highlight 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+   根据执行分支返回结果；代表性返回表达式为 ``normalized``、``''``。
 
    **副作用**
 
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-   **主要协作调用**：``hljsInst.getLanguage``、``failedLanguages.has``、``failedLanguages?.add``、``loadModule``、``hljsInst.registerLanguage``、``console.error``。
+   **主要协作调用**：``normalizeHighlightLanguage``、``hljsInst.getLanguage``、``failedLanguages?.has``、``failedLanguages?.add``、``loadModule``、``hljsInst.registerLanguage``、``console.error``。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/highlight.js:548:643:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/highlight.js:1276:1560:FUNCTION
 
-.. rubric:: ``import('highlight.js/lib/core') .then callback @ 20``
+.. rubric:: ``import('highlight.js/lib/core') .then callback @ 57``
 
 .. code-block:: javascript
 
-   import('highlight.js/lib/core') .then callback @ 20(module)
+   import('highlight.js/lib/core') .then callback @ 57(module)
 
 处理 ``import('highlight.js/lib/core') .then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``20``—``23`` 行；所属函数 ``loadHljs``。
+**性质**：同步局部函数；源码第 ``57``—``63`` 行；所属函数 ``loadHljs``。
 
 **参数**
 
@@ -118,17 +118,19 @@ src/components/markdown/card-block/highlight 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``hljs``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/highlight.js:666:726:FUNCTION
+**主要协作调用**：``hljs.configure``。
 
-.. rubric:: ``import('highlight.js/lib/core') .then((module) => { hljs = module.default; return hljs; }) .finally callback @ 24``
+.. CWM-AST-FUNCTION src/components/markdown/card-block/highlight.js:1583:1643:FUNCTION
+
+.. rubric:: ``import('highlight.js/lib/core') .then((module) => { hljs = module.default; hljs.configure({ noHighlightRe: /\b(?:no-?hi… callback @ 64``
 
 .. code-block:: javascript
 
-   import('highlight.js/lib/core') .then((module) => { hljs = module.default; return hljs; }) .finally callback @ 24()
+   import('highlight.js/lib/core') .then((module) => { hljs = module.default; hljs.configure({ noHighlightRe: /\b(?:no-?hi… callback @ 64()
 
-处理 ``import('highlight.js/lib/core') .then((module) => { hljs = module.default; return hljs; }) .finally callback`` 对应的事件或订阅结果。
+实现 ``import('highlight.js/lib/core') .then((module) => { hljs = module.default; hljs.configure({ noHighlightRe: /\b(?:no-?hi…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``24``—``26`` 行；所属函数 ``loadHljs``。
+**性质**：同步局部函数；源码第 ``64``—``66`` 行；所属函数 ``loadHljs``。
 
 **参数**
 

@@ -275,6 +275,10 @@ function ChatBox({
     const [pendingToolPermissionNames, setPendingToolPermissionNames] = useState(() => new Set());
     const [conversationToolSyncCount, setConversationToolSyncCount] = useState(0);
     const [workspaceSettingsDialogOpen, setWorkspaceSettingsDialogOpen] = useState(false);
+    // Workspace selection is persisted through a dedicated HTTP endpoint. Keep the
+    // mutation serialized and expose a completion barrier to message submission so a
+    // freshly selected remote Workspace cannot lose a race against turn.start.
+    const workspaceSelectionSyncQueueRef = useRef(Promise.resolve());
 
     // 全屏编辑器
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -716,6 +720,26 @@ function ChatBox({
         await toolPermissionSyncQueueRef.current.catch(() => undefined);
     }, []);
 
+    const runWorkspaceSelectionMutation = useCallback((operation) => {
+        const runPromise = workspaceSelectionSyncQueueRef.current
+            .catch(() => undefined)
+            .then(() => operation());
+        workspaceSelectionSyncQueueRef.current = runPromise.then(() => undefined, () => undefined);
+        return runPromise;
+    }, []);
+
+    const waitForWorkspaceSelectionSync = useCallback(async () => {
+        await workspaceSelectionSyncQueueRef.current.catch(() => undefined);
+    }, []);
+
+    const handleRealtimeVoiceStartWithWorkspaceSync = useCallback(async (payload) => {
+        await waitForWorkspaceSelectionSync();
+        if (typeof onRealtimeVoiceStart === 'function') {
+            return onRealtimeVoiceStart(payload);
+        }
+        return undefined;
+    }, [onRealtimeVoiceStart, waitForWorkspaceSelectionSync]);
+
     const restoreAuthoritativeToolPermissions = useCallback(({preservePending = false} = {}) => {
         applyConversationToolPermissions(
             conversationToolPermissionsRef.current,
@@ -851,6 +875,10 @@ function ChatBox({
         // new Turn ahead of a pending permission mutation; the UI remains optimistic
         // while this short synchronization finishes in the background.
         await waitForConversationToolSync();
+        // Workspace selection is also server-authoritative. A Workspace checkbox is
+        // optimistic in the UI, so never admit a Turn while its persistence request is
+        // still in flight; otherwise the Gateway can read the previous empty selection.
+        await waitForWorkspaceSelectionSync();
 
         if (isExecutionGuidance) {
             if (attachmentsMeta.length > 0) {
@@ -1108,6 +1136,7 @@ function ChatBox({
         t,
         updateMessageContent,
         waitForConversationToolSync,
+        waitForWorkspaceSelectionSync,
     ]);
 
     const handleKeyDown = useCallback((e) => {
@@ -2489,6 +2518,7 @@ function ChatBox({
                 conversationId={conversationId}
                 selectedWorkspaceIds={selectedWorkspaceIds}
                 onWorkspaceChange={onWorkspaceChange}
+                runWorkspaceSelectionMutation={runWorkspaceSelectionMutation}
                 t={t}
             />
             <DropFileLayer
@@ -2710,7 +2740,7 @@ function ChatBox({
                                 isReadOnly={isReadOnly}
                                 selectedModel={selectedModel}
                                 realtimeVoiceCapability={realtimeVoiceCapability}
-                                onRealtimeVoiceStart={onRealtimeVoiceStart}
+                                onRealtimeVoiceStart={handleRealtimeVoiceStartWithWorkspaceSync}
                                 realtimeVoicePayload={{
                                     toolsStatus: activeToolsStatus,
                                     composerStatus: sendButtonStatus,

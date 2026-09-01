@@ -187,3 +187,127 @@
         transition: none;
     }
 }
+
+/* highlight.js token theme. CodeBlock previously loaded hljs spans but had no
+   active token stylesheet, so successful highlighting still looked monochrome. */
+.cwm-highlight .hljs-comment,
+.cwm-highlight .hljs-quote {
+    color: #6a737d;
+    font-style: italic;
+}
+
+.cwm-highlight .hljs-keyword,
+.cwm-highlight .hljs-selector-tag,
+.cwm-highlight .hljs-subst {
+    color: #d73a49;
+}
+
+.cwm-highlight .hljs-number,
+.cwm-highlight .hljs-literal,
+.cwm-highlight .hljs-variable,
+.cwm-highlight .hljs-template-variable,
+.cwm-highlight .hljs-tag .hljs-attr {
+    color: #005cc5;
+}
+
+.cwm-highlight .hljs-string,
+.cwm-highlight .hljs-doctag,
+.cwm-highlight .hljs-regexp,
+.cwm-highlight .hljs-template-tag,
+.cwm-highlight .hljs-template-variable {
+    color: #032f62;
+}
+
+.cwm-highlight .hljs-title,
+.cwm-highlight .hljs-section,
+.cwm-highlight .hljs-selector-id,
+.cwm-highlight .hljs-selector-class,
+.cwm-highlight .hljs-type,
+.cwm-highlight .hljs-class .hljs-title {
+    color: #6f42c1;
+}
+
+.cwm-highlight .hljs-attribute,
+.cwm-highlight .hljs-name,
+.cwm-highlight .hljs-tag,
+.cwm-highlight .hljs-selector-attr,
+.cwm-highlight .hljs-selector-pseudo {
+    color: #22863a;
+}
+
+.cwm-highlight .hljs-built_in,
+.cwm-highlight .hljs-builtin-name,
+.cwm-highlight .hljs-symbol,
+.cwm-highlight .hljs-bullet,
+.cwm-highlight .hljs-link {
+    color: #e36209;
+}
+
+.cwm-highlight .hljs-meta,
+.cwm-highlight .hljs-meta .hljs-keyword {
+    color: #b31d28;
+}
+
+.cwm-highlight .hljs-emphasis {
+    font-style: italic;
+}
+
+.cwm-highlight .hljs-strong {
+    font-weight: 700;
+}
+
+.dark .cwm-highlight .hljs-comment,
+.dark .cwm-highlight .hljs-quote {
+    color: #8b949e;
+}
+
+.dark .cwm-highlight .hljs-keyword,
+.dark .cwm-highlight .hljs-selector-tag,
+.dark .cwm-highlight .hljs-subst {
+    color: #ff7b72;
+}
+
+.dark .cwm-highlight .hljs-number,
+.dark .cwm-highlight .hljs-literal,
+.dark .cwm-highlight .hljs-variable,
+.dark .cwm-highlight .hljs-template-variable,
+.dark .cwm-highlight .hljs-tag .hljs-attr {
+    color: #79c0ff;
+}
+
+.dark .cwm-highlight .hljs-string,
+.dark .cwm-highlight .hljs-doctag,
+.dark .cwm-highlight .hljs-regexp,
+.dark .cwm-highlight .hljs-template-tag {
+    color: #a5d6ff;
+}
+
+.dark .cwm-highlight .hljs-title,
+.dark .cwm-highlight .hljs-section,
+.dark .cwm-highlight .hljs-selector-id,
+.dark .cwm-highlight .hljs-selector-class,
+.dark .cwm-highlight .hljs-type,
+.dark .cwm-highlight .hljs-class .hljs-title {
+    color: #d2a8ff;
+}
+
+.dark .cwm-highlight .hljs-attribute,
+.dark .cwm-highlight .hljs-name,
+.dark .cwm-highlight .hljs-tag,
+.dark .cwm-highlight .hljs-selector-attr,
+.dark .cwm-highlight .hljs-selector-pseudo {
+    color: #7ee787;
+}
+
+.dark .cwm-highlight .hljs-built_in,
+.dark .cwm-highlight .hljs-builtin-name,
+.dark .cwm-highlight .hljs-symbol,
+.dark .cwm-highlight .hljs-bullet,
+.dark .cwm-highlight .hljs-link {
+    color: #ffa657;
+}
+
+.dark .cwm-highlight .hljs-meta,
+.dark .cwm-highlight .hljs-meta .hljs-keyword {
+    color: #ffa198;
+}

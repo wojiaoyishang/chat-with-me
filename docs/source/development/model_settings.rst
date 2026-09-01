@@ -123,3 +123,27 @@ Provider 请求参数，例如：
 后端 Schema 对模型固定请求参数、LiteLLM 额外参数、TTS/ASR ``extra_options`` 等字段显式使用
 ``component=requestJsonKeyValue``。未注册的普通 ``custom`` 字段也回退到同一 JSON 编辑器；只有声明了专用
 ``component`` 的字段（例如 Remote Workspace 状态视图）使用自己的注册组件。
+
+OpenAI 兼容协议与自动填充
+--------------------------------------------------------------------------------
+
+V53 的 Direct HTTP 模型新增 ``openai_compat_profile``：
+
+* ``generic``：通用 OpenAI-compatible；
+* ``openai``：OpenAI 原生语义；
+* ``deepseek``：DeepSeek-compatible；
+* ``qwen``：Qwen-compatible。
+
+该字段只在 ``provider=openai`` 时显示。``provider=litellm`` 继续严格透传，不参与这套兼容层。
+
+后端 Schema 在 ``openai_compat_profile`` 与 ``api_protocol`` Select 上提供同一份
+``compatibilityDefaults``。``DynamicSettings`` 只在用户**主动切换**这两个 Selector 时，根据
+``profile + protocol`` 原子填充 Thinking、Reasoning 和 Responses 默认字段；普通重新渲染不会再次覆盖，
+因此用户随后手动修改的高级设置会被保留。
+
+自定义 OpenAI-compatible 模板默认使用 ``generic``。如果目标实际上兼容 DeepSeek，用户选择
+“兼容 DeepSeek”即可自动获得对应默认值，不需要重新创建模型或根据 URL 猜厂商。
+
+需要注意：自动填充只是编辑体验。像 DeepSeek Thinking + Native Tools 必须回传
+``reasoning_content`` 这样的协议硬约束由后端 Runtime 强制执行，前端开关不能解除。
+

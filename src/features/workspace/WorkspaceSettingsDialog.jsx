@@ -20,6 +20,7 @@ import {toast} from 'sonner';
 
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
+import {onEvent} from '@/context/useEventStore.jsx';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {Checkbox} from '@/components/ui/checkbox';
@@ -116,7 +117,9 @@ const cleanDisplayPath = (value) => String(value || '')
     .replace(/\\\//g, '\\')
     .replace(/\/\\/g, '\\');
 
-const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWorkspaceIds = [], onWorkspaceChange, t}) => {
+const workspacePermissionLabel = (value) => ({manage: '管理', use: '使用', view: '查看', none: '无权限'}[String(value || '')] || '—');
+
+const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWorkspaceIds = [], onWorkspaceChange, runWorkspaceSelectionMutation, t}) => {
     const [workspaces, setWorkspaces] = useState([]);
     const [roots, setRoots] = useState([]);
     const [defaultAccessPolicy, setDefaultAccessPolicy] = useState({version: 2, defaultEffect: 'allow', rules: []});
@@ -137,8 +140,6 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
     const [shellAllowed, setShellAllowed] = useState(false);
     const [browserOpen, setBrowserOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
-    const [pairingCode, setPairingCode] = useState('');
-    const [pairing, setPairing] = useState(false);
     const [focusedWorkspaceId, setFocusedWorkspaceId] = useState(null);
 
     const selectedIds = useMemo(() => {
@@ -158,21 +159,21 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
         setFocusedWorkspaceId(next?.id || null);
     }, [focusedWorkspaceId, selectedIdSet, workspaces]);
 
-    const load = useCallback(async () => {
-        setLoading(true);
+    const load = useCallback(async ({quiet = false} = {}) => {
+        if (!quiet) setLoading(true);
         try {
-            const pairedUrl = conversationId
-                ? `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired?conversationId=${encodeURIComponent(conversationId)}`
-                : `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired`;
-            const [workspaceData, rootData, policyData, pairedRemoteData] = await Promise.all([
-                apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/`),
+            const query = conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : '';
+            const remoteUrl = `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/workspaces${query}`;
+            const localUrl = `${apiEndpoint.WORKSPACES_ENDPOINT}/${query}`;
+            const [workspaceData, rootData, policyData, remoteWorkspaceData] = await Promise.all([
+                apiClient.get(localUrl),
                 apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/mount-roots`),
                 apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/policy-defaults`),
-                apiClient.get(pairedUrl),
+                apiClient.get(remoteUrl),
             ]);
             const localWorkspaces = Array.isArray(workspaceData) ? workspaceData : [];
-            const pairedRemote = Array.isArray(pairedRemoteData) ? pairedRemoteData : [];
-            setWorkspaces([...localWorkspaces, ...pairedRemote].sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''))));
+            const remoteWorkspaces = Array.isArray(remoteWorkspaceData) ? remoteWorkspaceData : [];
+            setWorkspaces([...localWorkspaces, ...remoteWorkspaces].sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''))));
             setRoots(Array.isArray(rootData) ? rootData : []);
             setDefaultAccessPolicy(cloneValue(policyData?.accessPolicy) || {version: 2, defaultEffect: 'allow', rules: []});
             setDefaultVisibilityPolicy(cloneValue(policyData?.visibilityPolicy) || {version: 1, ignoredRules: []});
@@ -180,12 +181,23 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
         } catch (error) {
             toast.error(error?.message || t('workspace_load_failed', '读取 Workspace 失败'));
         } finally {
-            setLoading(false);
+            if (!quiet) setLoading(false);
         }
     }, [conversationId, t]);
 
     useEffect(() => {
-        if (open) load();
+        if (!open) return undefined;
+        load();
+        const unsubscribeConnection = onEvent({event: 'workspace.connection.status_changed'}).then(() => load({quiet: true}));
+        const unsubscribeAccess = onEvent({event: 'workspace.access.changed'}).then(() => load({quiet: true}));
+        // Semantic events are primary. A low-frequency reconcile covers abrupt
+        // Gateway/process death where a Redis TTL may expire without a final event.
+        const timer = window.setInterval(() => load({quiet: true}), 60_000);
+        return () => {
+            unsubscribeConnection?.();
+            unsubscribeAccess?.();
+            window.clearInterval(timer);
+        };
     }, [load, open]);
 
     const persistWorkspaceSelection = async (nextWorkspaceIds) => {
@@ -195,10 +207,15 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
         onWorkspaceChange?.(nextIds);
         if (!conversationId) return true;
         try {
-            await apiClient.put(
+            const persist = () => apiClient.put(
                 `${apiEndpoint.WORKSPACES_ENDPOINT}/conversation/${encodeURIComponent(conversationId)}`,
                 {workspaceIds: nextIds},
             );
+            if (typeof runWorkspaceSelectionMutation === 'function') {
+                await runWorkspaceSelectionMutation(persist);
+            } else {
+                await persist();
+            }
             return true;
         } catch (error) {
             onWorkspaceChange?.(previousIds);
@@ -215,58 +232,6 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
             : selectedIds.filter((item) => item !== id);
         setFocusedWorkspaceId(id);
         await persistWorkspaceSelection(nextIds);
-    };
-
-    const pairRemoteWorkspace = async () => {
-        const code = pairingCode.trim();
-        if (!code) {
-            toast.error('请输入目标机 Agent 显示的配对码');
-            return;
-        }
-        setPairing(true);
-        try {
-            const paired = await apiClient.post(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/pair`, {pairingCode: code});
-            setPairingCode('');
-            const pairedWorkspaces = Array.isArray(paired?.workspaces) ? paired.workspaces : (paired?.id ? [paired] : []);
-            if (pairedWorkspaces.length === 0) throw new Error('目标机没有提供可访问的 Workspace 根目录');
-            setWorkspaces((current) => {
-                const agentId = paired?.agentId || pairedWorkspaces[0]?.agentId;
-                const next = current.filter((item) => !agentId || item.agentId !== agentId).concat(pairedWorkspaces);
-                return next.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
-            });
-            const primary = pairedWorkspaces.find((item) => item.id === paired?.primaryWorkspaceId)
-                || pairedWorkspaces.find((item) => item.primaryRoot)
-                || pairedWorkspaces[0];
-            await persistWorkspaceSelection([...selectedIds, primary.id]);
-            setFocusedWorkspaceId(primary.id);
-            beginEdit(primary);
-            toast.success(`已全局配对 ${paired?.name || primary.agentName || '远程 Workspace'}，发现 ${pairedWorkspaces.length} 个可访问根目录；已挂载默认根，请继续保存权限。`);
-        } catch (error) {
-            setPairingCode('');
-            toast.error(error?.message || '远程 Workspace 配对失败');
-        } finally {
-            setPairing(false);
-        }
-    };
-
-    const unpairRemoteWorkspace = async (workspace) => {
-        if (!workspace?.agentId) return;
-        setSaving(true);
-        try {
-            await apiClient.delete(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired/${encodeURIComponent(workspace.agentId)}`);
-            const removedIds = new Set(workspaces.filter((item) => item.agentId === workspace.agentId).map((item) => item.id));
-            setWorkspaces((current) => current.filter((item) => item.agentId !== workspace.agentId));
-            if (selectedIds.some((id) => removedIds.has(id))) {
-                await persistWorkspaceSelection(selectedIds.filter((item) => !removedIds.has(item)));
-            }
-            if (removedIds.has(focusedWorkspaceId)) setFocusedWorkspaceId(null);
-            if (removedIds.has(editingId)) stopEditing();
-            toast.success('已解除全局配对；其他会话也将不再提供这个远程 Workspace。');
-        } catch (error) {
-            toast.error(error?.message || '解除远程 Workspace 配对失败');
-        } finally {
-            setSaving(false);
-        }
     };
 
     const applyAccessPolicy = (policy) => {
@@ -424,12 +389,10 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
                     commandPolicy: commandPolicyPayload(allowedCommands),
                     shellAllowed,
                 };
-                const editingWorkspace = workspaces.find((item) => item.id === editingId);
-                const remoteAgentId = editingWorkspace?.agentId || String(editingId).slice('remote:'.length).split(':')[0];
-                const remoteRootId = editingWorkspace?.rootId || String(editingId).slice('remote:'.length).split(':').slice(1).join(':');
-                const policyUrl = `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired/${encodeURIComponent(remoteAgentId)}/workspace`
-                    + (remoteRootId ? `?rootId=${encodeURIComponent(remoteRootId)}` : '');
-                saved = await apiClient.patch(policyUrl, payload);
+                saved = await apiClient.patch(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/workspaces/policy`, {
+                    workspaceId: editingId,
+                    ...payload,
+                });
             } else {
                 const payload = {
                     name: name.trim(),
@@ -513,7 +476,7 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
                             <div className="max-h-56 overflow-y-auto rounded-lg border bg-background pretty-scrollbar">
                                 {workspaces.length === 0 ? (
                                     <div className="px-3 py-6 text-center text-xs text-muted-foreground">
-                                        暂无 Workspace。可以新建本机 Workspace，或在下方输入配对码添加远程 Workspace。
+                                        暂无可用 Workspace。可以新建本机 Workspace；远程设备请先在“Workspace 设置”中使用一次性连接凭据注册。
                                     </div>
                                 ) : workspaces.map((item) => {
                                     const checked = selectedIdSet.has(item.id);
@@ -528,6 +491,7 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
                                                 checked={checked}
                                                 onCheckedChange={(value) => toggleWorkspace(item.id, value === true)}
                                                 onClick={(event) => event.stopPropagation()}
+                                                disabled={!selectedIdSet.has(item.id) && (item.permission === 'view' || item.permission === 'none' || item.status === 'revoked')}
                                                 aria-label={`${checked ? '取消挂载' : '挂载'} ${item.name}`}
                                             />
                                             {item.kind === 'remote' ? (
@@ -539,8 +503,10 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
                                                 <div className="flex min-w-0 items-center gap-1.5">
                                                     <span className="truncate text-sm font-medium">{item.kind === 'remote' ? `远程 · ${item.name}` : item.name}</span>
                                                     {item.readOnly ? <Badge variant="outline" className="shrink-0 text-[10px]">只读</Badge> : null}
-                                                    {item.kind === 'remote' && !item.online ? <Badge variant="outline" className="shrink-0 text-[10px]">离线</Badge> : null}
-                                                    {item.kind === 'remote' && !item.permissionsConfigured ? <Badge variant="destructive" className="shrink-0 text-[10px]">未授权</Badge> : null}
+                                                    {item.status === 'access_denied' ? <Badge variant="destructive" className="shrink-0 text-[10px]">无权访问</Badge> : (item.kind === 'remote' && !item.online ? <Badge variant="outline" className="shrink-0 text-[10px]">离线</Badge> : null)}
+                                                    {item.kind === 'remote' && item.status === 'revoked' ? <Badge variant="destructive" className="shrink-0 text-[10px]">设备已撤销</Badge> : null}
+                                                    {item.permission ? <Badge variant="secondary" className="shrink-0 text-[10px]">{workspacePermissionLabel(item.permission)}</Badge> : null}
+                                                    {item.kind === 'remote' && !item.permissionsConfigured && item.permission === 'manage' ? <Badge variant="destructive" className="shrink-0 text-[10px]">策略未配置</Badge> : null}
                                                 </div>
                                                 <div className="mt-0.5 truncate text-[11px] text-muted-foreground" title={item.kind === 'remote' ? item.rootLabel : item.rootPath}>
                                                     {item.kind === 'remote' ? (item.rootLabel || '远端根目录') : (item.rootPath || (item.mounts || []).map((mount) => `/${mount.alias}`).join(' · '))}
@@ -556,6 +522,7 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
                                                     setFocusedWorkspaceId(item.id);
                                                     beginEdit(item);
                                                 }}
+                                                disabled={item.permission && item.permission !== 'manage'}
                                                 aria-label={`编辑 ${item.name}`}
                                             >
                                                 <Pencil className="h-3.5 w-3.5"/>
@@ -568,55 +535,22 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
                                 可同时勾选多个 Workspace。只选一个时 AI 可像以前一样直接操作；选择多个时 AI 会先识别 Workspace，并在每次文件或命令调用中指定目标。
                             </div>
 
-                            <div className="rounded-lg border border-dashed border-blue-500/25 bg-blue-500/[0.03] p-3">
-                                <div className="flex items-start gap-2">
-                                    <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600"/>
-                                    <div className="min-w-0 flex-1">
-                                        <div className="text-sm font-medium">配对远程 Workspace</div>
-                                        <div className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
-                                            只输入目标机 Agent 显示的配对码。配对成功后远端 Workspace 会加入上方列表并自动挂载到当前会话；以后其他会话也可以直接勾选它。认证秘钥始终只在目标机与服务器之间使用。
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mt-2.5 flex gap-2">
-                                    <div className="relative min-w-0 flex-1">
-                                        <KeyRound className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"/>
-                                        <Input
-                                            value={pairingCode}
-                                            onChange={(event) => setPairingCode(event.target.value)}
-                                            onKeyDown={(event) => {
-                                                if (event.key === 'Enter' && pairingCode.trim() && !pairing) pairRemoteWorkspace();
-                                            }}
-                                            autoComplete="off"
-                                            spellCheck={false}
-                                            placeholder="Pairing Code"
-                                            className="h-9 pl-8 font-mono text-xs"
-                                            disabled={pairing}
-                                        />
-                                    </div>
-                                    <Button type="button" size="sm" onClick={pairRemoteWorkspace} disabled={pairing || !pairingCode.trim()}>
-                                        {pairing ? <Loader2 className="animate-spin"/> : <Link2/>}
-                                        {pairing ? '配对中' : '配对'}
-                                    </Button>
-                                </div>
+                            <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.03] p-3 text-xs leading-relaxed text-muted-foreground">
+                                远程 Workspace 的设备注册、一次性连接凭据、设备撤销和用户 ACL 统一在“Workspace 设置”中管理。这里仅负责当前对话的 Workspace 挂载和资源策略。
                             </div>
 
                             <div className="flex flex-wrap items-center gap-2 pt-3">
                                 <Button type="button" size="sm" onClick={beginCreate}>
                                     <Plus/> {t('workspace_new', '新建')}
                                 </Button>
-                                <Button type="button" size="sm" variant="outline" disabled={!selected} onClick={() => selected && beginEdit(selected)}>
+                                <Button type="button" size="sm" variant="outline" disabled={!selected || (selected.permission && selected.permission !== 'manage')} onClick={() => selected && beginEdit(selected)}>
                                     <Pencil/> {t('edit', '编辑')}
                                 </Button>
-                                {selected?.kind === 'remote' ? (
-                                    <Button type="button" size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={saving} onClick={() => unpairRemoteWorkspace(selected)}>
-                                        <Unlink/> 解除全局配对
-                                    </Button>
-                                ) : (
-                                    <Button type="button" size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={!selected} onClick={() => setDeleteOpen(true)}>
+                                {selected?.kind !== 'remote' ? (
+                                    <Button type="button" size="sm" variant="ghost" className="text-destructive hover:text-destructive" disabled={!selected || (selected.permission && selected.permission !== 'manage')} onClick={() => setDeleteOpen(true)}>
                                         <Trash2/> {t('delete', '删除')}
                                     </Button>
-                                )}
+                                ) : null}
                                 {selected ? (
                                     <div className="ml-auto flex max-w-full flex-wrap justify-end gap-1">
                                         {(selected.mounts || []).map((mount) => (
@@ -837,11 +771,15 @@ const WorkspaceSettingsDialog = ({open, onOpenChange, conversationId, selectedWo
                             </>
                         ) : selected ? (
                             <div className="rounded-md border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
-                                {selected?.kind === 'remote'
-                                    ? (selected?.permissionsConfigured
-                                        ? `该远程 Workspace 已全局配对。${selected?.online ? '当前在线' : '当前离线'}；所有会话均可挂载它，并共用这套已保存权限。`
-                                        : `该远程 Workspace 已全局配对。${selected?.online ? '当前在线' : '当前离线'}；尚未保存权限，AI 调用会被拒绝。请点击“编辑”完成全局权限设置。`)
-                                    : t('workspace_task_fixed_hint', '任务开始后会冻结当前会话已挂载的全部 Workspace')}
+                                {selected?.status === 'access_denied'
+                                    ? '该 Workspace 的访问权限已被撤销。当前对话仍保留原绑定，你可以取消挂载；恢复授权后无需重新选择即可再次使用。'
+                                    : selected?.kind === 'remote'
+                                        ? (selected?.status === 'revoked'
+                                            ? '该远程设备身份已被撤销，当前 Workspace 不再可执行。请在 Workspace 设置中重新注册设备。'
+                                            : (selected?.permissionsConfigured
+                                                ? `该远程 Workspace 已注册到设备 ${selected?.agentName || ''}。${selected?.online ? '当前在线' : '当前离线'}；当前权限：${workspacePermissionLabel(selected?.permission)}。设备掉线不会解除当前对话绑定。`
+                                                : `该远程 Workspace 已注册但资源策略尚未配置。只有管理权限用户可以编辑策略；设备掉线不会解除当前对话绑定。`))
+                                        : t('workspace_task_fixed_hint', '任务开始后会冻结当前会话已挂载的全部 Workspace')}
                             </div>
                         ) : null}
                     </div>

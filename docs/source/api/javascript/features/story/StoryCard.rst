@@ -51,7 +51,7 @@ src/features/story/StoryCard 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:550:5953:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:550:7095:FUNCTION
 
 .. rubric:: ``memo callback @ 18``
 
@@ -61,7 +61,7 @@ src/features/story/StoryCard 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``18``—``132`` 行。
+**性质**：同步局部函数；源码第 ``18``—``156`` 行。
 
 **参数**
 
@@ -70,7 +70,7 @@ src/features/story/StoryCard 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <button type="button" onClick={openStory} disabled={story?.deleted} className="group my-4 flex w-full max-w-none overflow-hidden rounded-2xl border border-amber-200/80 bg-gradie…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="my-4 flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left text-gray-500" data-story-deleted="true" data-story-id={stor…``、``( <button type="button" onClick={openStory} disabled={story?.deleted} className="group my-4 flex w-full max-w-none overflow-hidden rounded-2xl border border-amber-200/80 bg-gradie…``。
 
 **副作用**
 
@@ -78,7 +78,7 @@ src/features/story/StoryCard 模块
 * 发送本地或远程 CWM 事件/媒体帧。
 * 注册事件、DOM 或运行时订阅。
 
-**主要协作调用**：``useTranslation``、``useMemo``、``useState``、``Number``、``useEffect``、``useCallback``、``resolveResourceUrl``、``t``。
+**主要协作调用**：``useTranslation``、``useMemo``、``useState``、``Number``、``useEffect``、``useCallback``、``t``、``resolveResourceUrl``。
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
@@ -216,7 +216,7 @@ src/features/story/StoryCard 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:2147:3177:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:2147:3513:FUNCTION
 
 .. rubric:: ``useEffect callback @ 61``
 
@@ -226,7 +226,7 @@ src/features/story/StoryCard 模块
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``61``—``82`` 行；所属函数 ``memo callback @ 18``。
+**性质**：同步局部函数；源码第 ``61``—``86`` 行；所属函数 ``memo callback @ 18``。
 
 **参数**
 
@@ -244,7 +244,7 @@ src/features/story/StoryCard 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:2280:3169:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:2280:3505:FUNCTION
 
 .. rubric:: ``onEvent({event: 'story.*', conversationId, includeGlobal: true}).then callback @ 63``
 
@@ -254,7 +254,7 @@ src/features/story/StoryCard 模块
 
 处理 ``onEvent({event: 'story.*', conversationId, includeGlobal: true}).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``63``—``81`` 行；所属函数 ``useEffect callback @ 61``。
+**性质**：同步局部函数；源码第 ``63``—``85`` 行；所属函数 ``useEffect callback @ 61``。
 
 **参数**
 
@@ -269,17 +269,17 @@ src/features/story/StoryCard 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:2556:2615:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:2891:2950:FUNCTION
 
-.. rubric:: ``setStory callback @ 68``
+.. rubric:: ``setStory callback @ 72``
 
 .. code-block:: javascript
 
-   setStory callback @ 68(current)
+   setStory callback @ 72(current)
 
 设置与 ``Story`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``68``—``68`` 行；所属函数 ``onEvent({event: 'story.*', conversationId, includeGlobal: true}).then callback @ 63``。
+**性质**：同步局部函数；源码第 ``72``—``72`` 行；所属函数 ``onEvent({event: 'story.*', conversationId, includeGlobal: true}).then callback @ 63``。
 
 **参数**
 
@@ -290,17 +290,17 @@ src/features/story/StoryCard 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:2841:3143:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:3177:3479:FUNCTION
 
-.. rubric:: ``setStory callback @ 73``
+.. rubric:: ``setStory callback @ 77``
 
 .. code-block:: javascript
 
-   setStory callback @ 73(current)
+   setStory callback @ 77(current)
 
 设置与 ``Story`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``73``—``79`` 行；所属函数 ``onEvent({event: 'story.*', conversationId, includeGlobal: true}).then callback @ 63``。
+**性质**：同步局部函数；源码第 ``77``—``83`` 行；所属函数 ``onEvent({event: 'story.*', conversationId, includeGlobal: true}).then callback @ 63``。
 
 **参数**
 
@@ -311,7 +311,7 @@ src/features/story/StoryCard 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``merged``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:3315:3528:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:4457:4670:FUNCTION
 
 .. rubric:: ``openStory``
 
@@ -321,7 +321,7 @@ src/features/story/StoryCard 模块
 
 打开与 ``Story`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``86``—``94`` 行；所属函数 ``memo callback @ 18``。
+**性质**：同步局部函数；源码第 ``110``—``118`` 行；所属函数 ``memo callback @ 18``。
 
 **参数**
 
@@ -337,17 +337,17 @@ src/features/story/StoryCard 模块
 
 **主要协作调用**：``emitEvent``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:5954:6047:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryCard.jsx:7096:7189:FUNCTION
 
-.. rubric:: ``memo callback @ 132``
+.. rubric:: ``memo callback @ 156``
 
 .. code-block:: javascript
 
-   memo callback @ 132(prev, next)
+   memo callback @ 156(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``132``—``132`` 行。
+**性质**：同步局部函数；源码第 ``156``—``156`` 行。
 
 **参数**
 

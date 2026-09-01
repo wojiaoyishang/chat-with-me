@@ -27,12 +27,15 @@ const WorkspaceSelector = ({conversationId, selectedWorkspaceId, onChange, t}) =
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const pairedUrl = conversationId
-                ? `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired?conversationId=${encodeURIComponent(conversationId)}`
-                : `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired`;
+            const remoteUrl = conversationId
+                ? `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/workspaces?conversationId=${encodeURIComponent(conversationId)}`
+                : `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/workspaces`;
+            const localUrl = conversationId
+                ? `${apiEndpoint.WORKSPACES_ENDPOINT}/?conversationId=${encodeURIComponent(conversationId)}`
+                : `${apiEndpoint.WORKSPACES_ENDPOINT}/`;
             const [localData, remoteData] = await Promise.all([
-                apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/`),
-                apiClient.get(pairedUrl),
+                apiClient.get(localUrl),
+                apiClient.get(remoteUrl),
             ]);
             const local = Array.isArray(localData) ? localData : [];
             const remote = Array.isArray(remoteData) ? remoteData : [];
@@ -95,10 +98,10 @@ const WorkspaceSelector = ({conversationId, selectedWorkspaceId, onChange, t}) =
         setSaving(true);
         try {
             if (selected.kind === 'remote') {
-                await apiClient.delete(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/paired/${encodeURIComponent(selected.agentId)}`);
-            } else {
-                await apiClient.delete(`${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(selected.id)}`);
+                toast.error(t('workspace_remote_manage_in_settings', '远程设备请在“Workspace 设置”中管理或撤销'));
+                return;
             }
+            await apiClient.delete(`${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(selected.id)}`);
             setWorkspaces((current) => current.filter((item) => item.id !== selected.id));
             await selectWorkspace(null);
         } catch (error) {
@@ -134,11 +137,14 @@ const WorkspaceSelector = ({conversationId, selectedWorkspaceId, onChange, t}) =
                 </SelectTrigger>
                 <SelectContent>
                     <SelectItem value="__none__">{t('workspace_not_selected', '不启用代码 Workspace')}</SelectItem>
-                    {workspaces.map((workspace) => (
-                        <SelectItem key={workspace.id} value={workspace.id}>
-                            {workspace.kind === 'remote' ? `远程 · ${workspace.name}${workspace.online ? '' : ' · 离线'}` : workspace.name}{workspace.readOnly ? ` · ${t('workspace_read_only', '只读')}` : ''}
-                        </SelectItem>
-                    ))}
+                    {workspaces.map((workspace) => {
+                        const denied = workspace.permission === 'view' || workspace.permission === 'none' || workspace.status === 'revoked' || workspace.status === 'access_denied';
+                        return (
+                            <SelectItem key={workspace.id} value={workspace.id} disabled={denied && workspace.id !== selectedWorkspaceId}>
+                                {workspace.kind === 'remote' ? `远程 · ${workspace.name}${workspace.status === 'access_denied' ? ' · 无权访问' : (workspace.online ? '' : ' · 离线')}` : `${workspace.name}${workspace.status === 'access_denied' ? ' · 无权访问' : ''}`}{workspace.readOnly ? ` · ${t('workspace_read_only', '只读')}` : ''}
+                            </SelectItem>
+                        );
+                    })}
                 </SelectContent>
             </Select>
 
@@ -160,7 +166,7 @@ const WorkspaceSelector = ({conversationId, selectedWorkspaceId, onChange, t}) =
                     <Plus className="h-3.5 w-3.5"/>
                     {t('workspace_add', '添加本机目录')}
                 </button>
-                {selected ? (
+                {selected && selected.kind !== 'remote' && (!selected.permission || selected.permission === 'manage') ? (
                     <button
                         type="button"
                         onClick={deleteSelected}

@@ -22,18 +22,18 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``../highlight.js``、``../utils.js``、``./OutputToolbar.jsx``、``./useFollowOutputScroll.js``。
+``react``、``../highlight.js``、``../utils.js``、``./OutputToolbar.jsx``、``./useFollowOutputScroll.js``、``../../CodeBlock.css``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:450:925:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:480:955:FUNCTION
 
 .. js:function:: parseToolCommandContent(content)
 
    解析与 ``Tool Command Content`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``19``—``37`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``20``—``38`` 行。
 
    **参数**
 
@@ -51,17 +51,17 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:958:4339:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:988:4911:FUNCTION
 
-.. rubric:: ``memo callback @ 39``
+.. rubric:: ``memo callback @ 40``
 
 .. code-block:: javascript
 
-   memo callback @ 39({content = '', id})
+   memo callback @ 40({content = '', id})
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``39``—``143`` 行。
+**性质**：同步局部函数；源码第 ``40``—``152`` 行。
 
 **参数**
 
@@ -76,17 +76,17 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1085:1147:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1115:1177:FUNCTION
 
-.. rubric:: ``useMemo callback @ 45``
+.. rubric:: ``useMemo callback @ 46``
 
 .. code-block:: javascript
 
-   useMemo callback @ 45()
+   useMemo callback @ 46()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``45``—``47`` 行；所属函数 ``memo callback @ 39``。
+**性质**：同步局部函数；源码第 ``46``—``48`` 行；所属函数 ``memo callback @ 40``。
 
 **参数**
 
@@ -98,17 +98,17 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 **主要协作调用**：``parseToolCommandContent``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1434:2331:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1464:2889:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 61``
+.. rubric:: ``useLayoutEffect callback @ 62``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 61()
+   useLayoutEffect callback @ 62()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``61``—``97`` 行；所属函数 ``memo callback @ 39``。
+**性质**：同步局部函数；源码第 ``62``—``106`` 行；所属函数 ``memo callback @ 40``。
 
 **参数**
 
@@ -122,7 +122,7 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1613:2234:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:2052:2792:FUNCTION
 
 .. rubric:: ``doHighlight``
 
@@ -132,7 +132,7 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 实现 ``doHighlight`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``68``—``90`` 行；所属函数 ``useLayoutEffect callback @ 61``。
+**性质**：异步局部函数；源码第 ``81``—``99`` 行；所属函数 ``useLayoutEffect callback @ 62``。
 
 **参数**
 
@@ -142,19 +142,19 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``loadHljs``、``ensureHighlightLanguage``、``hljsInst.highlightElement``、``console.error``。
+**主要协作调用**：``loadHljs``、``ensureHighlightLanguage``、``codeRef.current.classList.remove``、``codeRef.current.classList.add``、``hljsInst.highlightElement``、``console.error``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:2275:2324:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:2833:2882:FUNCTION
 
-.. rubric:: ``returned callback @ 94``
+.. rubric:: ``returned callback @ 103``
 
 .. code-block:: javascript
 
-   returned callback @ 94()
+   returned callback @ 103()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``94``—``96`` 行；所属函数 ``useLayoutEffect callback @ 61``。
+**性质**：同步局部函数；源码第 ``103``—``105`` 行；所属函数 ``useLayoutEffect callback @ 62``。
 
 **参数**
 
@@ -164,17 +164,17 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:4340:4449:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:4912:5021:FUNCTION
 
-.. rubric:: ``memo callback @ 143``
+.. rubric:: ``memo callback @ 152``
 
 .. code-block:: javascript
 
-   memo callback @ 143(prev, next)
+   memo callback @ 152(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``143``—``148`` 行。
+**性质**：同步局部函数；源码第 ``152``—``157`` 行。
 
 **参数**
 

@@ -43,3 +43,6 @@ Runtime Inspector 模块
    :no-index:
 
    简要模式虚拟化消息摘要列表，复用 ChatPage 现有快速跳转逻辑。
+
+V53 起 ``ModelCallBrowser`` 还展示后端计算的 ``apiProtocol``、``openaiCompatibilityProfile`` 与
+``reasoningContinuity``，用于检查 Direct OpenAI-compatible Provider 的实际兼容策略。

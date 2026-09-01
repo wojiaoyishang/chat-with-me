@@ -29,6 +29,10 @@ import {
     getMessageSummaryAppendCursor,
     mergeMessageSummaryItems,
 } from '@/features/chat/page/utils/messageSummaries.js';
+import {
+    reconcileHistorySnapshotWithLiveState,
+    restoreMissingStreamTail,
+} from '@/features/chat/page/utils/liveMessageReconcile.js';
 
 import {
     ChatBox,
@@ -177,6 +181,12 @@ function ChatPage({
     const [messages, setMessages] = useImmer({});
     const messagesRef = useRef({});
     const messagesOrderRef = useRef([]);
+    // HTTP history snapshots are durable but can lag behind the WebSocket stream.
+    // Keep an explicit record of message ids touched by a live Run so history
+    // navigation/reconcile can never roll their visible content/order backwards.
+    const liveStreamMessageIdsRef = useRef(new Set());
+    const liveStreamRunMessagesRef = useRef(new Map());
+    const lastHydratedConversationIdRef = useRef(null);
 
     const [showQuickUserMessageNavigator] = useLocalSetting(
         MESSAGE_NAVIGATOR_SETTING_KEY,
@@ -304,6 +314,58 @@ function ChatPage({
         updateStreamingStatus,
         handleChatBoxHeightChange,
     } = useChatScroll(messagesContainerRef);
+
+    const markLiveStreamMessages = useCallback((messageIds, runId = null) => {
+        const normalizedIds = (Array.isArray(messageIds) ? messageIds : [messageIds])
+            .map((value) => String(value || '').trim())
+            .filter(Boolean);
+        if (!normalizedIds.length) return;
+
+        normalizedIds.forEach((messageId) => liveStreamMessageIdsRef.current.add(messageId));
+        const normalizedRunId = String(runId || '').trim();
+        if (!normalizedRunId) return;
+        const runMessages = liveStreamRunMessagesRef.current.get(normalizedRunId) || new Set();
+        normalizedIds.forEach((messageId) => runMessages.add(messageId));
+        liveStreamRunMessagesRef.current.set(normalizedRunId, runMessages);
+    }, []);
+
+    const clearLiveStreamRun = useCallback((runId = null) => {
+        const normalizedRunId = String(runId || '').trim();
+        if (!normalizedRunId) return;
+        const runMessages = liveStreamRunMessagesRef.current.get(normalizedRunId);
+        if (!runMessages) return;
+        liveStreamRunMessagesRef.current.delete(normalizedRunId);
+        runMessages.forEach((messageId) => {
+            const stillOwned = Array.from(liveStreamRunMessagesRef.current.values())
+                .some((messageIds) => messageIds.has(messageId));
+            if (!stillOwned) liveStreamMessageIdsRef.current.delete(messageId);
+        });
+    }, []);
+
+    const ensureStreamMessagesVisible = useCallback((messageIds) => {
+        // When the user intentionally navigates a historical window, live output
+        // must not force the current tail back into that viewport. The next
+        // explicit “scroll to bottom” restores the latest chain safely instead.
+        if (historyNavigationLockedRef.current) return;
+
+        const normalizedIds = (Array.isArray(messageIds) ? messageIds : [messageIds])
+            .map((value) => String(value || '').trim())
+            .filter(Boolean);
+        if (!normalizedIds.length) return;
+
+        let nextOrder = messagesOrderRef.current;
+        for (const messageId of normalizedIds) {
+            nextOrder = restoreMissingStreamTail(nextOrder, messagesRef.current, messageId);
+        }
+        if (nextOrder === messagesOrderRef.current) return;
+        if (
+            nextOrder.length === messagesOrderRef.current.length
+            && nextOrder.every((messageId, index) => messageId === messagesOrderRef.current[index])
+        ) return;
+
+        messagesOrderRef.current = nextOrder;
+        setMessagesOrder(nextOrder);
+    }, []);
 
     const decorateMessages = useCallback((sourceMessages = {}) => produce(sourceMessages, (draft) => {
         Object.keys(draft || {}).forEach((key) => {
@@ -1110,6 +1172,21 @@ function ChatPage({
     ]);
 
     // ========= 消息相关 =========
+    const persistPendingWorkspaceSelection = useCallback(async (targetConversationId) => {
+        if (!targetConversationId) return [];
+        const workspaceIds = [...new Set((
+            Array.isArray(advancedSettingsValues?.workspaceIds)
+                ? advancedSettingsValues.workspaceIds
+                : (advancedSettingsValues?.workspaceId ? [advancedSettingsValues.workspaceId] : [])
+        ).map((item) => String(item || '').trim()).filter(Boolean))];
+        if (workspaceIds.length === 0) return workspaceIds;
+        await apiClient.put(
+            `${apiEndpoint.WORKSPACES_ENDPOINT}/conversation/${encodeURIComponent(targetConversationId)}`,
+            {workspaceIds},
+        );
+        return workspaceIds;
+    }, [advancedSettingsValues]);
+
     const handleSendMessage = useCallback((
         {
             messageContent,
@@ -1201,7 +1278,13 @@ function ChatPage({
                         isNewConversationIdRef.current = true;
                         setIsNewConversationId(true);
                         onNewConversationId(payload.value);
-                        return sendMessage(payload.value);
+
+                        // A conversationless composer can already have Workspace
+                        // selections. Persist them before the first Turn because the
+                        // Gateway intentionally treats the server-side selection as
+                        // authoritative.
+                        return persistPendingWorkspaceSelection(payload.value)
+                            .then(() => sendMessage(payload.value));
                     } else {
                         throw new Error(payload.value);
                     }
@@ -1213,7 +1296,7 @@ function ChatPage({
         } else {
             return sendMessage(conversationId);
         }
-    }, [conversationId, documentId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType, t, uploadFiles, onNewConversationId]);
+    }, [conversationId, documentId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType, t, uploadFiles, onNewConversationId, persistPendingWorkspaceSelection]);
 
     const handleRealtimeVoiceStart = useCallback(async ({toolsStatus = {}, composerStatus = 'normal'} = {}) => {
         // conversation.create happens before the Voice Surface becomes active for a
@@ -1272,13 +1355,14 @@ function ChatPage({
             isNewConversationIdRef.current = true;
             setIsNewConversationId(true);
             onNewConversationId(payload.value);
+            await persistPendingWorkspaceSelection(payload.value);
             await startForConversation(payload.value);
         } catch (error) {
             toast.error(error?.message || '无法启动实时语音');
         } finally {
             realtimeVoiceStartInFlightRef.current = false;
         }
-    }, [advancedSettingsValues, conversationId, documentId, onNewConversationId, pageType, realtimeVoice, selectedModel, t, uploadFiles.length]);
+    }, [advancedSettingsValues, conversationId, documentId, onNewConversationId, pageType, persistPendingWorkspaceSelection, realtimeVoice, selectedModel, t, uploadFiles.length]);
 
     const loadMoreHistory = useCallback(async () => {
         if (historyLoadInFlightRef.current) return historyLoadInFlightRef.current;
@@ -1408,15 +1492,22 @@ function ChatPage({
                 params: {conversationId: conversationId, limit: HISTORY_PAGE_SIZE}
             });
             const decorated = decorateMessages(data.messages || {});
-            const nextMessages = {...messagesRef.current, ...decorated};
-            const nextOrder = data.haveMore
+            const snapshotOrder = data.haveMore
                 ? ['<PREV_MORE>', ...(data.messagesOrder || [])]
                 : [...(data.messagesOrder || [])];
+            const reconciled = reconcileHistorySnapshotWithLiveState({
+                snapshotMessages: decorated,
+                snapshotOrder,
+                currentMessages: messagesRef.current,
+                currentOrder: messagesOrderRef.current,
+                liveMessageIds: liveStreamMessageIdsRef.current,
+            });
 
-            messagesRef.current = nextMessages;
-            messagesOrderRef.current = nextOrder;
-            setMessages(nextMessages);
-            setMessagesOrder(nextOrder);
+            messagesRef.current = reconciled.messages;
+            messagesOrderRef.current = reconciled.order;
+            setMessages(reconciled.messages);
+            setMessagesOrder(reconciled.order);
+            lastHydratedConversationIdRef.current = conversationId;
             historyNavigationLockedRef.current = false;
             userAutoScrollUnlockUntilRef.current = 0;
             isAutoScrollEnabledRef.current = true;
@@ -2019,7 +2110,7 @@ function ChatPage({
             ],
             conversationId,
         })
-            .then(({event, payload, reply}) => {
+            .then(({event, payload, reply, eventRunId}) => {
                 switch (event) {
                     case 'speech.play.requested':
                         handleSpeakMessageRequest(payload, reply);
@@ -2082,6 +2173,8 @@ function ChatPage({
                         break;
                     case 'message.created':
                         if (payload.value && typeof payload.value === 'object') {
+                            const messageIds = Object.keys(payload.value);
+                            if (eventRunId) markLiveStreamMessages(messageIds, eventRunId);
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             let newMessages = {...messagesRef.current};
 
@@ -2151,6 +2244,7 @@ function ChatPage({
 
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
+                            if (eventRunId) ensureStreamMessagesVisible(messageIds);
 
                             scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
 
@@ -2169,6 +2263,8 @@ function ChatPage({
                         break;
                     case 'message.content.set':
                         if (payload.value && typeof payload.value === 'object') {
+                            const messageIds = Object.keys(payload.value);
+                            markLiveStreamMessages(messageIds, eventRunId);
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
                             const newMessages = produce(messagesRef.current, draft => {
@@ -2180,6 +2276,7 @@ function ChatPage({
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
+                            ensureStreamMessagesVisible(messageIds);
                             scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
                             if (payload.reply) reply({success: true});
                         } else {
@@ -2188,6 +2285,8 @@ function ChatPage({
                         break;
                     case 'message.content.delta':
                         if (payload.value && typeof payload.value === 'object') {
+                            const messageIds = Object.keys(payload.value);
+                            markLiveStreamMessages(messageIds, eventRunId);
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
                             const newMessages = produce(messagesRef.current, draft => {
@@ -2199,6 +2298,7 @@ function ChatPage({
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
+                            ensureStreamMessagesVisible(messageIds);
                             scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
                             if (payload.reply) reply({success: true});
                         } else {
@@ -2207,6 +2307,8 @@ function ChatPage({
                         break;
                     case 'message.replacement.set':
                         if (payload.value && typeof payload.value === 'object') {
+                            const messageIds = Object.keys(payload.value);
+                            markLiveStreamMessages(messageIds, eventRunId);
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, newReplaces] of Object.entries(payload.value)) {
@@ -2221,6 +2323,7 @@ function ChatPage({
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
+                            ensureStreamMessagesVisible(messageIds);
                             scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
                             if (payload.reply) reply({success: true});
                         } else {
@@ -2229,6 +2332,8 @@ function ChatPage({
                         break;
                     case 'message.replacement.delta':
                         if (payload.value && typeof payload.value === 'object') {
+                            const messageIds = Object.keys(payload.value);
+                            markLiveStreamMessages(messageIds, eventRunId);
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             updateStreamingStatus();
                             const newMessages = produce(messagesRef.current, draft => {
@@ -2249,6 +2354,7 @@ function ChatPage({
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
+                            ensureStreamMessagesVisible(messageIds);
                             scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
                             if (payload.reply) reply({success: true});
                         } else {
@@ -2291,6 +2397,8 @@ function ChatPage({
                     }
                     case 'message.attachments.set':
                         if (payload.value && typeof payload.value === 'object') {
+                            const messageIds = Object.keys(payload.value);
+                            if (eventRunId) markLiveStreamMessages(messageIds, eventRunId);
                             const wasAutoScroll = isAutoScrollEnabledRef.current;
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, newAttachments] of Object.entries(payload.value)) {
@@ -2301,6 +2409,7 @@ function ChatPage({
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
+                            if (eventRunId) ensureStreamMessagesVisible(messageIds);
                             scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
                             if (payload.reply) reply({success: true});
                         } else {
@@ -2309,6 +2418,8 @@ function ChatPage({
                         break;
                     case 'message.background_tools.set':
                         if (payload.value && typeof payload.value === 'object') {
+                            const messageIds = Object.keys(payload.value);
+                            if (eventRunId) markLiveStreamMessages(messageIds, eventRunId);
                             const newMessages = produce(messagesRef.current, draft => {
                                 for (const [msgId, backgroundTools] of Object.entries(payload.value)) {
                                     if (draft[msgId]) {
@@ -2318,6 +2429,7 @@ function ChatPage({
                             });
                             setMessages(newMessages);
                             messagesRef.current = newMessages;
+                            if (eventRunId) ensureStreamMessagesVisible(messageIds);
                             if (payload.reply) reply({success: true});
                         } else if (payload.reply) {
                             reply({success: false});
@@ -2472,6 +2584,13 @@ function ChatPage({
                     case 'turn.completed':
                     case 'turn.cancelled':
                     case 'turn.failed':
+                        // Control lane can arrive slightly ahead of the final queued stream
+                        // frames. Keep the live-tail protection briefly so a terminal event
+                        // cannot make an immediately-following final delta vulnerable to a
+                        // stale HTTP/reconcile snapshot.
+                        if (eventRunId) {
+                            window.setTimeout(() => clearLiveStreamRun(eventRunId), 1800);
+                        }
                         // 后端只会在最终消息写入数据库之后发送终态 Turn 事件。
                         // 重新读取摘要，替换生成开始时缓存下来的空 Assistant 占位。
                         if (
@@ -2656,7 +2775,7 @@ function ChatPage({
             unsubscribe2();
             unsubscribe3();
         };
-    }, [conversationId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, loadRuntimeInspector, showQuickUserMessageNavigator, runtimeInspectorOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState]);
+    }, [conversationId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, loadRuntimeInspector, showQuickUserMessageNavigator, runtimeInspectorOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState, markLiveStreamMessages, clearLiveStreamRun, ensureStreamMessagesVisible]);
 
     useEffect(() => {
         return () => {
@@ -2680,6 +2799,12 @@ function ChatPage({
             && previousConversationId !== conversationId
         );
         previousConversationIdRef.current = conversationId;
+
+        if (switchedAwayFromActiveConversation) {
+            liveStreamMessageIdsRef.current.clear();
+            liveStreamRunMessagesRef.current.clear();
+            lastHydratedConversationIdRef.current = null;
+        }
 
         // Voice startup in a brand-new chat intentionally performs null -> newId
         // and must survive that adoption.  Real navigation away from an existing
@@ -2706,6 +2831,9 @@ function ChatPage({
         applyContextCompactionState({});
 
         if (conversationId === null || conversationId === undefined) {
+            liveStreamMessageIdsRef.current.clear();
+            liveStreamRunMessagesRef.current.clear();
+            lastHydratedConversationIdRef.current = null;
             setAdvancedSettings([]);
             const emptyMessages = {};
             setMessages(emptyMessages);
@@ -2836,15 +2964,30 @@ function ChatPage({
                     timeout: CHAT_BOOTSTRAP_TIMEOUT_MS,
                 });
 
-                const messages = decorateMessages(messagesData.messages || {});
+                const snapshotMessages = decorateMessages(messagesData.messages || {});
+                let snapshotOrder = messagesData.messagesOrder;
+                if (messagesData.haveMore) snapshotOrder = ["<PREV_MORE>", ...messagesData.messagesOrder];
 
-                setMessages(messages);
-                messagesRef.current = messages;
+                const shouldPreserveLiveState = (
+                    lastHydratedConversationIdRef.current === conversationId
+                    && !historyNavigationLockedRef.current
+                    && liveStreamMessageIdsRef.current.size > 0
+                );
+                const reconciled = shouldPreserveLiveState
+                    ? reconcileHistorySnapshotWithLiveState({
+                        snapshotMessages,
+                        snapshotOrder,
+                        currentMessages: messagesRef.current,
+                        currentOrder: messagesOrderRef.current,
+                        liveMessageIds: liveStreamMessageIdsRef.current,
+                    })
+                    : {messages: snapshotMessages, order: snapshotOrder};
 
-                let initOrder = messagesData.messagesOrder;
-                if (messagesData.haveMore) initOrder = ["<PREV_MORE>", ...messagesData.messagesOrder];
-                setMessagesOrder(initOrder);
-                messagesOrderRef.current = initOrder;
+                setMessages(reconciled.messages);
+                messagesRef.current = reconciled.messages;
+                setMessagesOrder(reconciled.order);
+                messagesOrderRef.current = reconciled.order;
+                lastHydratedConversationIdRef.current = conversationId;
                 historyNavigationLockedRef.current = false;
 
                 setTimeout(() => {

@@ -103,3 +103,25 @@ const unsubscribe = onEvent({
 ## 清理
 
 增量包根目录提供 `clean_project.bat`，用于删除 `dist`、Vite 缓存、测试覆盖率、文档构建产物和系统临时文件，不会删除 `node_modules`。
+
+## V52 Markdown code highlighting
+
+Markdown and Tool code blocks share one Highlight.js loader in
+`src/components/markdown/card-block/highlight.js`. Language modules are loaded from
+Highlight.js v11's `lib/languages` path, common Markdown aliases (`js`, `ts`, `py`,
+`sh`, `yml`, etc.) are normalized, and `CodeBlock.css` provides scoped light/dark
+`.hljs-*` token colors. Streaming updates reset previous Highlight.js DOM state and
+only highlight the newest code text during browser idle time.
+
+## V53 OpenAI compatibility settings
+
+Direct OpenAI-compatible model cards now expose an **OpenAI 兼容协议** selector:
+`generic / openai / deepseek / qwen`. Changing the compatibility profile or API protocol applies
+the backend-provided defaults for that combination in one atomic settings update; later advanced
+edits remain untouched until the user explicitly changes one of those selectors again.
+
+Runtime Inspector also displays the effective compatibility profile and provider reasoning
+continuity requirement. DeepSeek-compatible `required_with_tools` is shown as a protocol-level
+constraint so a missing `reasoning_content` can be distinguished from an ordinary user replay
+preference.
+

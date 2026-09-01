@@ -1,7 +1,8 @@
 import { toSafeString } from './utils.js';
 
-// 使用 import.meta.glob 静态收集所有语言模块，供 toolCommand 按需加载高亮语言。
-const languageModules = import.meta.glob('/node_modules/highlight.js/es/languages/*.js');
+// highlight.js v11 publishes language modules under lib/languages. Keeping one
+// Vite glob here avoids separate, drifting loaders in Markdown and Tool cards.
+const languageModules = import.meta.glob('/node_modules/highlight.js/lib/languages/*.js');
 
 if (typeof window !== 'undefined' && !window.hljsFailedLanguages) {
     window.hljsFailedLanguages = new Set();
@@ -9,6 +10,42 @@ if (typeof window !== 'undefined' && !window.hljsFailedLanguages) {
 
 let hljs = null;
 let loadingPromise = null;
+
+const NO_HIGHLIGHT_LANGS = new Set([
+    'text',
+    'txt',
+    'plain',
+    'plaintext',
+    'none',
+    'nohighlight',
+    'no-highlight',
+]);
+
+const HIGHLIGHT_LANGUAGE_ALIASES = {
+    'c#': 'csharp',
+    'c++': 'cpp',
+    cjs: 'javascript',
+    cs: 'csharp',
+    html: 'xml',
+    htm: 'xml',
+    js: 'javascript',
+    jsx: 'javascript',
+    mjs: 'javascript',
+    md: 'markdown',
+    py: 'python',
+    py3: 'python',
+    python3: 'python',
+    rb: 'ruby',
+    rs: 'rust',
+    shell: 'bash',
+    sh: 'bash',
+    zsh: 'bash',
+    ts: 'typescript',
+    tsx: 'typescript',
+    vue: 'xml',
+    svg: 'xml',
+    yml: 'yaml',
+};
 
 export const loadHljs = () => {
     if (hljs) {
@@ -19,6 +56,9 @@ export const loadHljs = () => {
         loadingPromise = import('highlight.js/lib/core')
             .then((module) => {
                 hljs = module.default;
+                hljs.configure({
+                    noHighlightRe: /\b(?:no-?highlight|language-text|language-plain|language-plaintext|language-txt|language-none)\b/i,
+                });
                 return hljs;
             })
             .finally(() => {
@@ -29,57 +69,42 @@ export const loadHljs = () => {
     return loadingPromise;
 };
 
-const HIGHLIGHT_LANGUAGE_ALIASES = {
-    csharp: 'csharp',
-    'c#': 'csharp',
-    cpp: 'cpp',
-    'c++': 'cpp',
-    html: 'xml',
-    js: 'javascript',
-    md: 'markdown',
-    py: 'python',
-    python3: 'python',
-    shell: 'bash',
-    sh: 'bash',
-    ts: 'typescript',
-};
-
 export const normalizeHighlightLanguage = (language) => {
     const normalized = toSafeString(language).trim().toLowerCase();
-
-    if (!normalized) {
+    if (!normalized || NO_HIGHLIGHT_LANGS.has(normalized)) {
         return '';
     }
-
     return HIGHLIGHT_LANGUAGE_ALIASES[normalized] || normalized;
 };
 
 export const ensureHighlightLanguage = async (hljsInst, language) => {
+    const normalized = normalizeHighlightLanguage(language);
+    if (!normalized || hljsInst.getLanguage(normalized)) {
+        return normalized;
+    }
+
     const failedLanguages = typeof window !== 'undefined'
         ? window.hljsFailedLanguages
         : null;
-
-    if (
-        !language ||
-        hljsInst.getLanguage(language) ||
-        (failedLanguages && failedLanguages.has(language))
-    ) {
-        return;
+    if (failedLanguages?.has(normalized)) {
+        return '';
     }
 
-    const langPath = `/node_modules/highlight.js/es/languages/${language}.js`;
+    const langPath = `/node_modules/highlight.js/lib/languages/${normalized}.js`;
     const loadModule = languageModules[langPath];
 
     if (!loadModule) {
-        failedLanguages?.add(language);
-        return;
+        failedLanguages?.add(normalized);
+        return '';
     }
 
     try {
         const mod = await loadModule();
-        hljsInst.registerLanguage(language, mod.default);
+        hljsInst.registerLanguage(normalized, mod.default);
+        return normalized;
     } catch (err) {
-        console.error(`Failed to load language module for: ${language}`, err);
-        failedLanguages?.add(language);
+        console.error(`Failed to load language module for: ${normalized}`, err);
+        failedLanguages?.add(normalized);
+        return '';
     }
 };

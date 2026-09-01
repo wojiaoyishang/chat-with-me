@@ -16,7 +16,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 224
+     - 238
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -89,9 +89,9 @@
      - 21
      - ``src/features/chat/page/components/RightSidebar.jsx``
    * - :doc:`src/features/chat/page/components/RuntimeInspectorDialog </api/javascript/features/chat/page/components/RuntimeInspectorDialog>`
-     - 11
+     - 12
      - 0
-     - 47
+     - 50
      - ``src/features/chat/page/components/RuntimeInspectorDialog.jsx``
    * - :doc:`src/features/chat/page/components/ScrollToBottomButton </api/javascript/features/chat/page/components/ScrollToBottomButton>`
      - 0
@@ -128,6 +128,11 @@
      - 0
      - 42
      - ``src/features/chat/page/hooks/useFileUpload.js``
+   * - :doc:`src/features/chat/page/utils/liveMessageReconcile </api/javascript/features/chat/page/utils/liveMessageReconcile>`
+     - 7
+     - 0
+     - 5
+     - ``src/features/chat/page/utils/liveMessageReconcile.js``
    * - :doc:`src/features/chat/page/utils/messageMountPoints </api/javascript/features/chat/page/utils/messageMountPoints>`
      - 1
      - 0
@@ -186,7 +191,7 @@
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 8
      - 0
-     - 175
+     - 183
      - ``src/features/chat/ui/ChatBox.jsx``
    * - :doc:`src/features/chat/ui/ChatBoxHeader </api/javascript/features/chat/ui/ChatBoxHeader>`
      - 0
@@ -529,9 +534,9 @@
      - 18
      - ``src/features/workspace/WorkspaceSelector.jsx``
    * - :doc:`src/features/workspace/WorkspaceSettingsDialog </api/javascript/features/workspace/WorkspaceSettingsDialog>`
-     - 9
+     - 10
      - 0
-     - 107
+     - 95
      - ``src/features/workspace/WorkspaceSettingsDialog.jsx``
    * - :doc:`src/features/workspace/components/FolderBrowser </api/javascript/features/workspace/components/FolderBrowser>`
      - 2
@@ -576,6 +581,7 @@
    /api/javascript/features/chat/page/hooks/useChatSpeech
    /api/javascript/features/chat/page/hooks/useChatWindowMode
    /api/javascript/features/chat/page/hooks/useFileUpload
+   /api/javascript/features/chat/page/utils/liveMessageReconcile
    /api/javascript/features/chat/page/utils/messageMountPoints
    /api/javascript/features/chat/page/utils/messageSummaries
    /api/javascript/features/chat/page/utils/networkMerge

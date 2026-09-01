@@ -13,6 +13,7 @@ import {
 import { toSafeString } from '../utils.js';
 import OutputToolbar from './OutputToolbar.jsx';
 import useFollowOutputScroll from './useFollowOutputScroll.js';
+import '../../CodeBlock.css';
 
 const TOOL_COMMAND_CODE_RE = /^\s*\[CODE:([^\]]+)]\s*(?:\r?\n|$)/i;
 
@@ -59,7 +60,19 @@ const ToolCommandBlock = memo(({content = '', id}) => {
     });
 
     useLayoutEffect(() => {
-        if (!codeString || !codeRef.current || language === 'text') {
+        const codeElement = codeRef.current;
+        if (!codeElement) {
+            return undefined;
+        }
+
+        // highlight.js mutates innerHTML. Restore the latest streamed text before
+        // every pass so React and hljs never fight over stale token spans.
+        if (codeElement.dataset.highlighted) {
+            delete codeElement.dataset.highlighted;
+        }
+        codeElement.textContent = codeString;
+
+        if (!codeString || language === 'text') {
             return undefined;
         }
 
@@ -67,20 +80,16 @@ const ToolCommandBlock = memo(({content = '', id}) => {
 
         const doHighlight = async () => {
             const hljsInst = await loadHljs();
+            if (isDisposed || !codeRef.current) return;
 
-            if (isDisposed || !codeRef.current) {
-                return;
-            }
-
-            await ensureHighlightLanguage(hljsInst, language);
-
-            if (isDisposed || !codeRef.current) {
-                return;
-            }
+            const loadedLanguage = await ensureHighlightLanguage(hljsInst, language);
+            if (isDisposed || !codeRef.current || !loadedLanguage) return;
 
             if (codeRef.current.dataset.highlighted) {
                 delete codeRef.current.dataset.highlighted;
             }
+            codeRef.current.classList.remove(`language-${language}`);
+            codeRef.current.classList.add(`language-${loadedLanguage}`);
 
             try {
                 hljsInst.highlightElement(codeRef.current);
@@ -130,7 +139,7 @@ const ToolCommandBlock = memo(({content = '', id}) => {
                     >
                         <code
                             ref={codeRef}
-                            className={`hljs block bg-transparent font-mono text-[11px] leading-5 text-inherit ${language ? `language-${language}` : ''}`}
+                            className={`hljs cwm-highlight block bg-transparent font-mono text-[11px] leading-5 text-inherit ${language ? `language-${language}` : ''}`}
                             style={{background: 'transparent', color: 'inherit', padding: 0}}
                         >
                             {codeString}

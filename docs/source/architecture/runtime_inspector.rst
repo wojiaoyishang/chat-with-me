@@ -59,3 +59,14 @@ Model Call/Context/Provider 数据则由其他 Tab 承担，不把 Conversation 
 未来增加 Responses API、Realtime API 或其他 Provider 时，正常情况下前端不需要为存储方式增加逻辑；只要后端
 Inspector Document 继续输出已有 Section Contract，Provider Capture 的新增 Raw Record/Usage 字段可以直接通过
 通用 JSON/Usage Renderer 展示。
+
+OpenAI Compatibility Profile
+--------------------------------------------------------------------------------
+
+V53 的 Model Call 标题区会显示后端返回的 ``apiProtocol``、``openaiCompatibilityProfile`` 与
+``reasoningContinuity``。当 Profile 为 ``deepseek`` 且 Continuity 为 ``required_with_tools`` 时，UI 会明确
+把它标成协议级 reasoning 约束。前端不根据模型名、URL 或请求内容重新推导这些值。
+
+该信息用于把“用户选择是否回传历史思考”与“Provider 为了形成合法 Tool continuation 必须携带
+``reasoning_content``”区分开。实际请求是否满足约束仍以后端 Provider Capture / Wire Request 为准。
+
