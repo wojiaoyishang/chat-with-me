@@ -340,19 +340,43 @@ const ExecutionWindow = memo(({
                                                     <ToolCardIcon state={card.state}/>
                                                     <Wrench className="h-3.5 w-3.5" aria-hidden="true"/>
                                                     <span className="min-w-0 flex-1 truncate">
-                                                        {Array.isArray(card.toolNames) && card.toolNames.length > 0
-                                                            ? card.toolNames.join(', ')
-                                                            : 'Tool Calling'}
+                                                        {Array.isArray(card.displayNames) && card.displayNames.length > 0
+                                                            ? card.displayNames.join(', ')
+                                                            : Array.isArray(card.toolNames) && card.toolNames.length > 0
+                                                                ? card.toolNames.join(', ')
+                                                                : 'Tool Calling'}
                                                     </span>
                                                 </div>
                                                 {exists ? (
                                                     <MarkdownRenderer
                                                         contextId={ownerMessageId}
                                                         conversationId={execution.conversationId}
-                                                        content={`{{cardReplace id=${replacementId} type=toolCalling}}`}
+                                                        content={`{{cardReplace id=${replacementId}}}`}
                                                         replacement={ownerReplacement}
                                                         msg={ownerMessage}
+                                                        renderSurface="task_window"
                                                     />
+                                                ) : card?.toolCallRepair ? (
+                                                    <div
+                                                        className="rounded-lg border border-gray-200 bg-gray-50/70 px-3 py-3"
+                                                        data-tool-call-repair-fallback="true"
+                                                    >
+                                                        <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                                            <ToolCardIcon state={card.state}/>
+                                                            <span>{String(card.state || '').toLowerCase() === 'failed'
+                                                                ? 'Tool Call Repair Failed'
+                                                                : String(card.state || '').toLowerCase() === 'cancelled'
+                                                                    ? 'Tool Call Repair Cancelled'
+                                                                    : String(card.state || '').toLowerCase() === 'completed'
+                                                                        ? 'Tool Call Repair Finished'
+                                                                        : 'Tool Call Repair'}</span>
+                                                        </div>
+                                                        <div className="mt-1 text-xs leading-5 text-gray-400">
+                                                            {ownerMessage
+                                                                ? '工具调用详情正在同步…'
+                                                                : '当前消息已不在可见消息链中。'}
+                                                        </div>
+                                                    </div>
                                                 ) : (
                                                     <div className="rounded-lg border border-dashed border-gray-200 px-3 py-4 text-sm text-gray-400">
                                                         {ownerMessage

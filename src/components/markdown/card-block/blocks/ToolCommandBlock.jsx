@@ -1,13 +1,12 @@
 import {
     memo,
-    useLayoutEffect,
+    useEffect,
     useMemo,
-    useRef,
+    useState,
 } from 'react';
 
 import {
-    ensureHighlightLanguage,
-    loadHljs,
+    highlightCode,
     normalizeHighlightLanguage,
 } from '../highlight.js';
 import { toSafeString } from '../utils.js';
@@ -38,7 +37,12 @@ const parseToolCommandContent = (content) => {
 };
 
 const ToolCommandBlock = memo(({content = '', id}) => {
-    const codeRef = useRef(null);
+    const [highlightState, setHighlightState] = useState(() => ({
+        source: '',
+        language: '',
+        html: '',
+        resolvedLanguage: '',
+    }));
 
     const {
         codeString,
@@ -59,19 +63,7 @@ const ToolCommandBlock = memo(({content = '', id}) => {
         contentKey: codeString,
     });
 
-    useLayoutEffect(() => {
-        const codeElement = codeRef.current;
-        if (!codeElement) {
-            return undefined;
-        }
-
-        // highlight.js mutates innerHTML. Restore the latest streamed text before
-        // every pass so React and hljs never fight over stale token spans.
-        if (codeElement.dataset.highlighted) {
-            delete codeElement.dataset.highlighted;
-        }
-        codeElement.textContent = codeString;
-
+    useEffect(() => {
         if (!codeString || language === 'text') {
             return undefined;
         }
@@ -79,23 +71,15 @@ const ToolCommandBlock = memo(({content = '', id}) => {
         let isDisposed = false;
 
         const doHighlight = async () => {
-            const hljsInst = await loadHljs();
-            if (isDisposed || !codeRef.current) return;
+            const result = await highlightCode(codeString, language);
+            if (isDisposed) return;
 
-            const loadedLanguage = await ensureHighlightLanguage(hljsInst, language);
-            if (isDisposed || !codeRef.current || !loadedLanguage) return;
-
-            if (codeRef.current.dataset.highlighted) {
-                delete codeRef.current.dataset.highlighted;
-            }
-            codeRef.current.classList.remove(`language-${language}`);
-            codeRef.current.classList.add(`language-${loadedLanguage}`);
-
-            try {
-                hljsInst.highlightElement(codeRef.current);
-            } catch (err) {
-                console.error('Highlight failed:', err);
-            }
+            setHighlightState({
+                source: codeString,
+                language,
+                html: result.highlighted ? result.html : '',
+                resolvedLanguage: result.language || language,
+            });
         };
 
         doHighlight();
@@ -104,6 +88,16 @@ const ToolCommandBlock = memo(({content = '', id}) => {
             isDisposed = true;
         };
     }, [codeString, language]);
+
+    const highlightedHtml = (
+        language !== 'text'
+        && highlightState.source === codeString
+        && highlightState.language === language
+    ) ? highlightState.html : '';
+
+    const renderedLanguage = highlightedHtml
+        ? (highlightState.resolvedLanguage || language)
+        : language;
 
     if (!codeString.trim()) {
         return null;
@@ -137,13 +131,20 @@ const ToolCommandBlock = memo(({content = '', id}) => {
                         className="m-0 min-w-max bg-transparent px-3 py-2.5 text-[11px] leading-5 text-slate-700"
                         style={{background: 'transparent'}}
                     >
-                        <code
-                            ref={codeRef}
-                            className={`hljs cwm-highlight block bg-transparent font-mono text-[11px] leading-5 text-inherit ${language ? `language-${language}` : ''}`}
-                            style={{background: 'transparent', color: 'inherit', padding: 0}}
-                        >
-                            {codeString}
-                        </code>
+                        {highlightedHtml ? (
+                            <code
+                                className={`hljs cwm-highlight block bg-transparent font-mono text-[11px] leading-5 text-inherit language-${renderedLanguage}`}
+                                style={{background: 'transparent', color: 'inherit', padding: 0}}
+                                dangerouslySetInnerHTML={{__html: highlightedHtml}}
+                            />
+                        ) : (
+                            <code
+                                className={`hljs cwm-highlight block bg-transparent font-mono text-[11px] leading-5 text-inherit ${language ? `language-${language}` : ''}`}
+                                style={{background: 'transparent', color: 'inherit', padding: 0}}
+                            >
+                                {codeString}
+                            </code>
+                        )}
                     </pre>
                 </div>
             </div>

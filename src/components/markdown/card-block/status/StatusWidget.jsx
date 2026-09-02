@@ -23,9 +23,15 @@ import StatusBody from './StatusBody.jsx';
 import StatusHeader from './StatusHeader.jsx';
 import IgnoredContextIndicator from '@/features/chat/ui/message/components/IgnoredContextIndicator.jsx';
 import CompactedContextIndicator from '@/features/chat/ui/message/components/CompactedContextIndicator.jsx';
+import {
+    CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
+    TASK_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
+    useLocalSetting,
+} from '@/lib/tools.jsx';
 
 const STATUS_MARKER_REGEX = /\[(DONE|FAILED)(?::[^\]\r\n]+)?\]/gi;
 const TOOL_STATUS_MARKER_REGEX = /\[TOOL_STATUS:([a-z_]+)\]/gi;
+const TOOL_CALL_REPAIR_MARKER_REGEX = /\[TOOL_CALL_REPAIR\]/gi;
 const BADGE_MARKER_REGEX = /^[ \t]*\[BADGE\s+NAME:([^\]\r\n]*?)\s+COLOR:(#[0-9a-fA-F]{3,8})\][ \t]*$/gm;
 const ACTION_MARKER_REGEX = /^[ \t]*\[ACTION\s+([^\]\r\n]*?)\][ \t]*$/gm;
 const ACTION_FIELD_REGEX = /([A-Z_]+):([\s\S]*?)(?=\s+[A-Z_]+:|$)/g;
@@ -82,12 +88,22 @@ const StatusWidget = memo(({
                                replacement = {},
                                contextStatus = null,
                                messageContextState = null,
+                               renderSurface = 'conversation',
                                renderMarkdown = defaultRenderMarkdown,
                            }) => {
     const {t} = useTranslation();
+    const [autoCollapseChatToolCalls] = useLocalSetting(
+        CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
+        true,
+    );
+    const [autoCollapseTaskWindowToolCalls] = useLocalSetting(
+        TASK_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
+        false,
+    );
     const expandedKey = useMemo(() => {
-        return getExpandedKey(contextId, id, type);
-    }, [contextId, id, type]);
+        const scopedType = type === 'toolCalling' ? `${type}:${renderSurface}` : type;
+        return getExpandedKey(contextId, id, scopedType);
+    }, [contextId, id, renderSurface, type]);
 
     const {
         badges,
@@ -98,6 +114,7 @@ const StatusWidget = memo(({
         lastLine,
         progress,
         toolStatus,
+        isToolCallRepair,
     } = useMemo(() => {
         const safeContent = toSafeString(content);
 
@@ -142,11 +159,14 @@ const StatusWidget = memo(({
         const isFailed = lastMarker === 'FAILED';
         const toolStatusMarkers = [...safeContent.matchAll(TOOL_STATUS_MARKER_REGEX)];
         const toolStatus = toolStatusMarkers.at(-1)?.[1]?.toLowerCase() ?? null;
+        const isToolCallRepair = TOOL_CALL_REPAIR_MARKER_REGEX.test(safeContent);
+        TOOL_CALL_REPAIR_MARKER_REGEX.lastIndex = 0;
 
         let cleanContent = safeContent
             .replace(BADGE_MARKER_REGEX, '')
             .replace(ACTION_MARKER_REGEX, '')
             .replace(TOOL_STATUS_MARKER_REGEX, '')
+            .replace(TOOL_CALL_REPAIR_MARKER_REGEX, '')
             .replace(STATUS_MARKER_REGEX, '')
             .trimEnd();
 
@@ -170,6 +190,7 @@ const StatusWidget = memo(({
             lastLine,
             progress,
             toolStatus,
+            isToolCallRepair,
         };
     }, [content, type]);
 
@@ -193,20 +214,31 @@ const StatusWidget = memo(({
     const isProgressComplete = isToolCalling && progress?.isComplete === true;
     const isFinished = isDone || isFailed || isProgressComplete;
 
-    // 显式结束标记是主信号；批处理进度达到 total 也应立即收敛为完成，
-    // 避免结束增量延迟到达时卡片仍表现为正在调用。用户手动展开/收起仍有最高优先级。
-    const isToolCallingSettled = isFinished;
-    const shouldAutoExpandToolCalling = isToolCalling && !isToolCallingSettled;
+    // Successful completion is the only state eligible for automatic collapse.
+    // Failed/cancelled/approval-waiting calls stay expanded so the user can inspect
+    // why the task needs attention. Conversation and Task Window use independent
+    // preferences and independent expansion keys. Manual user toggles always win.
+    const normalizedSurface = String(renderSurface || 'conversation').toLowerCase();
+    const autoCollapseCompletedToolCalls = normalizedSurface === 'task_window'
+        ? autoCollapseTaskWindowToolCalls !== false
+        : autoCollapseChatToolCalls !== false;
+    const isCancelled = toolStatus === 'cancelled' || toolStatus === 'canceled';
+    const isSuccessfulToolCompletion = Boolean(
+        isToolCalling && !isFailed && !isCancelled && (isDone || isProgressComplete),
+    );
+    const desiredToolExpanded = Boolean(
+        isToolCalling && (!isSuccessfulToolCompletion || !autoCollapseCompletedToolCalls),
+    );
 
-    useExpandedState(expandedKey, isToolCalling ? shouldAutoExpandToolCalling : defaultExpanded);
+    useExpandedState(expandedKey, isToolCalling ? desiredToolExpanded : defaultExpanded);
 
     useEffect(() => {
         if (!isToolCalling || hasExpandedUserOverride(expandedKey)) {
             return;
         }
 
-        setExpandedValue(expandedKey, !isToolCallingSettled);
-    }, [expandedKey, isToolCalling, isToolCallingSettled]);
+        setExpandedValue(expandedKey, desiredToolExpanded);
+    }, [desiredToolExpanded, expandedKey, isToolCalling]);
 
     let displayTitle = title;
     if (isWaitingApproval) {
@@ -216,12 +248,15 @@ const StatusWidget = memo(({
     } else if (isResumingSubagent) {
         displayTitle = t('tool_subagent_resuming_status', 'Sub-agent finished, resuming');
     } else if (isToolCalling) {
+        const toolCallingTitle = isToolCallRepair ? 'Tool Call Repair' : title;
         if (isFailed) {
-            displayTitle = `${title} Failed`;
+            displayTitle = `${toolCallingTitle} Failed`;
         } else if (isDone) {
-            displayTitle = `${title} Finished`;
+            displayTitle = `${toolCallingTitle} Finished`;
         } else if (isProgressComplete) {
-            displayTitle = `${title} Done`;
+            displayTitle = `${toolCallingTitle} Done`;
+        } else if (isToolCallRepair) {
+            displayTitle = toolCallingTitle;
         }
     } else {
         if (isDone) displayTitle = `${title} Finished`;

@@ -147,7 +147,7 @@ src/features/execution/ExecutionWindow 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:2842:21283:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:2842:23504:FUNCTION
 
 .. rubric:: ``memo callback @ 67``
 
@@ -157,7 +157,7 @@ src/features/execution/ExecutionWindow 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``67``—``414`` 行。
+**性质**：同步局部函数；源码第 ``67``—``438`` 行。
 
 **参数**
 
@@ -762,7 +762,7 @@ src/features/execution/ExecutionWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:14406:20828:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:14406:23049:FUNCTION
 
 .. rubric:: ``timelineItems.map callback @ 325``
 
@@ -772,7 +772,7 @@ src/features/execution/ExecutionWindow 模块
 
 作为 ``timelineItems.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``325``—``400`` 行；所属函数 ``memo callback @ 67``。
+**性质**：同步局部函数；源码第 ``325``—``424`` 行；所属函数 ``memo callback @ 67``。
 
 **参数**
 
@@ -786,4 +786,4 @@ src/features/execution/ExecutionWindow 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <div key={item.key} className="rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm" data-execution-timeline-kind="tool_card" data-task-tool-call-id={card.toolCallId |…``、``( <div key={item.key || \x60${activity.time}-${index}\x60} className={\x60flex gap-3 rounded-lg px-2 py-2 transition hover:bg-gray-50 ${userGuidance ? 'border border-blue-100 bg-blue-50/50…``。
 
-**主要协作调用**：``String(card?.replacementId || '').trim``、``String``、``Object.prototype.hasOwnProperty.call``、``fmtTime``、``Array.isArray``、``card.toolNames.join``、``String(activity?.kind || '').toLowerCase``、``String(activity?.source || '').toLowerCase``、``activity.tools.join``。
+**主要协作调用**：``String(card?.replacementId || '').trim``、``String``、``Object.prototype.hasOwnProperty.call``、``fmtTime``、``Array.isArray``、``card.displayNames.join``、``card.toolNames.join``、``String(card.state || '').toLowerCase``、``String(activity?.kind || '').toLowerCase``、``String(activity?.source || '').toLowerCase``、``activity.tools.join``。

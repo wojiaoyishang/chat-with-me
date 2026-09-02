@@ -8,6 +8,8 @@ export const LOCAL_SETTING_CHANGE_EVENT = 'chat-local-setting-change';
 export const MESSAGE_NAVIGATOR_SETTING_KEY = 'ShowQuickUserMessageNavigator';
 export const CONVERSATION_LIST_COMPACT_SETTING_KEY = 'CompactConversationList';
 export const CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY = 'ShowConversationTimestamps';
+export const CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY = 'AutoCollapseCompletedToolCallsInChat';
+export const TASK_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY = 'AutoCollapseCompletedToolCallsInTaskWindow';
 
 export const TTS_LOCAL_SETTING_KEYS = Object.freeze({
     browserVoice: 'chat-browser-speech-voice-v1',

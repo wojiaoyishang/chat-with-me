@@ -31,7 +31,7 @@
    * - :doc:`src/components/markdown/CodeBlock </api/javascript/components/markdown/CodeBlock>`
      - 1
      - 0
-     - 15
+     - 16
      - ``src/components/markdown/CodeBlock.jsx``
    * - :doc:`src/components/markdown/MarkdownRenderer </api/javascript/components/markdown/MarkdownRenderer>`
      - 16
@@ -96,7 +96,7 @@
    * - :doc:`src/components/markdown/card-block/blocks/ToolCommandBlock </api/javascript/components/markdown/card-block/blocks/ToolCommandBlock>`
      - 1
      - 0
-     - 6
+     - 7
      - ``src/components/markdown/card-block/blocks/ToolCommandBlock.jsx``
    * - :doc:`src/components/markdown/card-block/blocks/ToolLogBlock </api/javascript/components/markdown/card-block/blocks/ToolLogBlock>`
      - 5
@@ -124,7 +124,7 @@
      - 0
      - ``src/components/markdown/card-block/frozenCardStore.js``
    * - :doc:`src/components/markdown/card-block/highlight </api/javascript/components/markdown/card-block/highlight>`
-     - 3
+     - 4
      - 0
      - 2
      - ``src/components/markdown/card-block/highlight.js``

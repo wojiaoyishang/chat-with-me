@@ -16,6 +16,8 @@ import {toast} from "sonner";
 import {
     CONVERSATION_LIST_COMPACT_SETTING_KEY,
     CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY,
+    CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
+    TASK_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
     MESSAGE_NAVIGATOR_SETTING_KEY,
     UnifiedErrorScreen,
     UnifiedLoadingScreen,
@@ -145,6 +147,14 @@ const SettingPage = ({
     const [showConversationTimestamps, setShowConversationTimestamps] = useLocalSetting(
         CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY,
         true
+    );
+    const [autoCollapseChatToolCalls, setAutoCollapseChatToolCalls] = useLocalSetting(
+        CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
+        true
+    );
+    const [autoCollapseTaskWindowToolCalls, setAutoCollapseTaskWindowToolCalls] = useLocalSetting(
+        TASK_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
+        false
     );
     const {user, setUser} = useUserStore();
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -733,6 +743,20 @@ const SettingPage = ({
                                 checked={showQuickUserMessageNavigator}
                                 onCheckedChange={setShowQuickUserMessageNavigator}
                                 badge={t('desktop_only')}
+                            />
+                            <Separator/>
+                            <InterfaceSettingItem
+                                title={t('chat_tool_call_auto_collapse_setting')}
+                                description={t('chat_tool_call_auto_collapse_setting_tip')}
+                                checked={autoCollapseChatToolCalls}
+                                onCheckedChange={setAutoCollapseChatToolCalls}
+                            />
+                            <Separator/>
+                            <InterfaceSettingItem
+                                title={t('task_window_tool_call_auto_collapse_setting')}
+                                description={t('task_window_tool_call_auto_collapse_setting_tip')}
+                                checked={autoCollapseTaskWindowToolCalls}
+                                onCheckedChange={setAutoCollapseTaskWindowToolCalls}
                             />
                         </CardContent>
                     </Card>

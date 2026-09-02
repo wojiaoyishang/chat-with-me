@@ -3,7 +3,7 @@ import {Check, Copy} from 'lucide-react';
 import {useTranslation} from 'react-i18next';
 
 import {copyTextToClipboard} from '@/lib/tools.jsx';
-import {ensureHighlightLanguage, loadHljs, normalizeHighlightLanguage} from './card-block/highlight.js';
+import {highlightCode, normalizeHighlightLanguage} from './card-block/highlight.js';
 import './CodeBlock.css';
 
 const MAX_HIGHLIGHT_CHARACTERS = 120_000;
@@ -24,8 +24,13 @@ const scheduleIdleWork = (callback) => {
 const CodeBlock = memo(({codeString = '', language}) => {
     const {t} = useTranslation();
     const [copied, setCopied] = useState(false);
-    const codeRef = useRef(null);
     const copyResetTimerRef = useRef(null);
+    const [highlightState, setHighlightState] = useState(() => ({
+        source: '',
+        language: '',
+        html: '',
+        resolvedLanguage: '',
+    }));
 
     const normalizedLanguage = useMemo(() => normalizeHighlightLanguage(language), [language]);
     const displayLanguage = useMemo(
@@ -58,36 +63,25 @@ const CodeBlock = memo(({codeString = '', language}) => {
         && lineCount <= MAX_HIGHLIGHT_LINES,
     );
 
-    // 高亮延后到浏览器空闲时执行；流式代码更新会取消旧任务，只处理最新内容。
+    // Keep Highlight.js output in React state instead of mutating a React-owned
+    // <code> DOM node. Imperative highlightElement() spans were easy to lose when
+    // streaming Markdown or a parent render reconciled the original text child.
     useEffect(() => {
-        const codeElement = codeRef.current;
-        if (!codeElement) return undefined;
-
-        // highlight.js 会改写 innerHTML；每次先恢复最新纯文本，避免语言切换或流式更新残留旧节点。
-        if (codeElement.dataset.highlighted) {
-            delete codeElement.dataset.highlighted;
+        if (!codeString || !shouldHighlight) {
+            return undefined;
         }
-        codeElement.textContent = codeString;
-
-        if (!codeString || !shouldHighlight) return undefined;
 
         let cancelled = false;
         const cancelIdleWork = scheduleIdleWork(async () => {
-            const hljsInst = await loadHljs();
-            if (cancelled || !codeRef.current) return;
+            const result = await highlightCode(codeString, normalizedLanguage);
+            if (cancelled) return;
 
-            const loadedLanguage = await ensureHighlightLanguage(hljsInst, normalizedLanguage);
-            if (cancelled || !codeRef.current || !loadedLanguage) return;
-
-            if (codeRef.current.dataset.highlighted) {
-                delete codeRef.current.dataset.highlighted;
-            }
-
-            try {
-                hljsInst.highlightElement(codeRef.current);
-            } catch (error) {
-                console.error('Highlight failed:', error);
-            }
+            setHighlightState({
+                source: codeString,
+                language: normalizedLanguage,
+                html: result.highlighted ? result.html : '',
+                resolvedLanguage: result.resolvedLanguage || result.language || normalizedLanguage,
+            });
         });
 
         return () => {
@@ -95,6 +89,18 @@ const CodeBlock = memo(({codeString = '', language}) => {
             cancelIdleWork();
         };
     }, [codeString, normalizedLanguage, shouldHighlight]);
+
+    const highlightedHtml = (
+        shouldHighlight
+        && highlightState.source === codeString
+        && highlightState.language === normalizedLanguage
+    ) ? highlightState.html : '';
+
+    const renderedLanguage = (
+        highlightedHtml
+        ? (highlightState.resolvedLanguage || normalizedLanguage)
+        : normalizedLanguage
+    );
 
     useEffect(() => () => {
         if (copyResetTimerRef.current) {
@@ -153,16 +159,22 @@ const CodeBlock = memo(({codeString = '', language}) => {
                 )}
 
                 <pre className="code-preview pretty-scrollbar">
-                    <code
-                        ref={codeRef}
-                        className={
-                            shouldHighlight
-                                ? `hljs cwm-highlight language-${normalizedLanguage}`
-                                : 'hljs cwm-highlight nohighlight'
-                        }
-                    >
-                        {codeString}
-                    </code>
+                    {highlightedHtml ? (
+                        <code
+                            className={`hljs cwm-highlight language-${renderedLanguage}`}
+                            dangerouslySetInnerHTML={{__html: highlightedHtml}}
+                        />
+                    ) : (
+                        <code
+                            className={
+                                shouldHighlight
+                                    ? `hljs cwm-highlight language-${normalizedLanguage}`
+                                    : 'hljs cwm-highlight nohighlight'
+                            }
+                        >
+                            {codeString}
+                        </code>
+                    )}
                 </pre>
             </div>
         </section>

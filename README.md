@@ -104,14 +104,17 @@ const unsubscribe = onEvent({
 
 增量包根目录提供 `clean_project.bat`，用于删除 `dist`、Vite 缓存、测试覆盖率、文档构建产物和系统临时文件，不会删除 `node_modules`。
 
-## V52 Markdown code highlighting
+## V59 Markdown code highlighting
 
-Markdown and Tool code blocks share one Highlight.js loader in
-`src/components/markdown/card-block/highlight.js`. Language modules are loaded from
-Highlight.js v11's `lib/languages` path, common Markdown aliases (`js`, `ts`, `py`,
-`sh`, `yml`, etc.) are normalized, and `CodeBlock.css` provides scoped light/dark
-`.hljs-*` token colors. Streaming updates reset previous Highlight.js DOM state and
-only highlight the newest code text during browser idle time.
+Markdown fenced code and Tool command blocks share the Highlight.js runtime in
+`src/components/markdown/card-block/highlight.js`. Fenced Markdown is marked at the
+rehype/HAST `<pre><code>` boundary, so inline code remains inline while block code
+always reaches `CodeBlock`. Highlight.js is loaded through its public package entry
+instead of a Vite `node_modules` glob. Highlighted HTML is produced with
+`hljs.highlight()` / `highlightAuto()` and stored in React state; Highlight.js no
+longer mutates React-owned DOM with `highlightElement()`. This keeps token spans
+stable during streaming and parent re-renders while `CodeBlock.css` provides scoped
+light/dark `.hljs-*` colors.
 
 ## V53 OpenAI compatibility settings
 

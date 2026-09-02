@@ -178,6 +178,19 @@ const normalizeReplacementCopyEntry = (replacement, id) => {
     }
 
     const rawCopyContent = extractCopyTextFromReplacementValue(replacement[normalizedId]);
+    const protocol = parseReplacementProtocol(rawCopyContent);
+
+    // Tool details routed exclusively to Task Window are deliberately absent from
+    // the Assistant transcript. Keep message-level copy/TTS semantics aligned with
+    // what the conversation surface actually shows instead of expanding hidden
+    // command/log/result payloads back into the copied answer.
+    if (String(protocol.type || '').toLowerCase() === 'taskwindowtool') {
+        return {
+            exists: true,
+            id: normalizedId,
+            content: '',
+        };
+    }
 
     return {
         exists: true,
@@ -322,6 +335,7 @@ const createComponents = ({
                               messageContextState = null,
                               messageReadonly = false,
                               messageIsLatest = true,
+                              renderSurface = 'conversation',
                           }) => {
     const getCurrentReplacement = () => {
         return replacementRef?.current || {};
@@ -340,6 +354,7 @@ const createComponents = ({
                 isStreaming={isStreaming}
                 messageContextState={messageContextState}
                 messageIsLatest={messageIsLatest}
+                renderSurface={renderSurface}
             />
         );
     };
@@ -403,7 +418,7 @@ const createComponents = ({
         },
 
         code({className, children, isCodeBlock, ...props}) {
-            const match = /language-(.+)/.exec(className || '');
+            const match = /\blanguage-([^\s]+)/.exec(className || '');
             const language = match ? match[1] : '';
 
             if (!isCodeBlock) {
@@ -485,6 +500,7 @@ const createComponents = ({
                             conversationId={conversationId}
                             replacement={currentReplacement}
                             messageIsLatest={messageIsLatest}
+                            renderSurface={renderSurface}
                             renderMarkdown={(markdownContent) => {
                                 return renderNestedMarkdown(markdownContent, {
                                     depth: depth + 1,
@@ -517,6 +533,7 @@ const createComponents = ({
                             conversationId={conversationId}
                             replacement={currentReplacement}
                             messageIsLatest={messageIsLatest}
+                            renderSurface={renderSurface}
                             renderMarkdown={(markdownContent) => {
                                 return renderNestedMarkdown(markdownContent, {
                                     depth: depth + 1,
@@ -543,6 +560,7 @@ const createComponents = ({
                             conversationId={conversationId}
                             replacement={currentReplacement}
                             messageIsLatest={messageIsLatest}
+                            renderSurface={renderSurface}
                             renderMarkdown={(markdownContent) => {
                                 return renderNestedMarkdown(markdownContent, {
                                     depth: depth + 1,
@@ -595,6 +613,7 @@ const createComponents = ({
                         messageContextState={messageContextState}
                         messageReadonly={messageReadonly}
                         messageIsLatest={messageIsLatest}
+                        renderSurface={renderSurface}
                         renderMarkdown={(markdownContent) => {
                             return renderNestedMarkdown(markdownContent, {
                                 depth: depth + 1,
@@ -621,6 +640,7 @@ function MarkdownRendererInner({
                                    isStreaming: isStreamingProp = null,
                                    messageIsLatest: messageIsLatestProp = null,
                                    copyContentComponentName = MARKDOWN_COPY_CONTENT_COMPONENT_NAME,
+                                   renderSurface = 'conversation',
                                }) {
     const replacementRef = useRef(replacement);
     replacementRef.current = replacement;
@@ -648,6 +668,7 @@ function MarkdownRendererInner({
             messageContextState,
             messageReadonly,
             messageIsLatest,
+            renderSurface,
         });
     }, [
         contextId,
@@ -660,6 +681,7 @@ function MarkdownRendererInner({
         messageContextState,
         messageReadonly,
         messageIsLatest,
+        renderSurface,
     ]);
 
     const processedContent = useMemo(() => {
@@ -748,6 +770,7 @@ const MarkdownRenderer = memo(MarkdownRendererInner, (prev, next) => {
         prev.isStreaming === next.isStreaming &&
         prev.messageIsLatest === next.messageIsLatest &&
         prev.copyContentComponentName === next.copyContentComponentName &&
+        prev.renderSurface === next.renderSurface &&
         areVisitedIdsEqual(prev.visitedIds, next.visitedIds)
     );
 });

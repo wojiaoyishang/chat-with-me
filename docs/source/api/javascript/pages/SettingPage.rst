@@ -27,13 +27,13 @@ src/pages/SettingPage 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:1755:2453:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:1854:2552:FUNCTION
 
 .. js:function:: InterfaceSettingItem({title, description, checked, onCheckedChange, badge})
 
    渲染 ``InterfaceSettingItem`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``54``—``70`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``56``—``72`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/pages/SettingPage 模块
 
    **主要协作调用**：``Boolean``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2543:4144:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2642:4243:FUNCTION
 
 .. js:function:: ImageUploadProgressDialog({ open, progress, fileName, onCancel, t })
 
    渲染 ``ImageUploadProgressDialog`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``73``—``110`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``75``—``112`` 行。
 
    **参数**
 
@@ -67,13 +67,13 @@ src/pages/SettingPage 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:4274:4758:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:4373:4857:FUNCTION
 
 .. js:function:: clampSettingsWindowSize(size)
 
    实现 ``clampSettingsWindowSize`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``115``—``123`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``117``—``125`` 行。
 
    **参数**
 
@@ -90,13 +90,13 @@ src/pages/SettingPage 模块
 
    **主要协作调用**：``Math.max``、``Math.min``、``Number``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:4758:4982:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:4857:5081:FUNCTION
 
 .. js:function:: loadSettingsWindowSize()
 
    加载与 ``Settings Window Size`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``125``—``128`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``127``—``130`` 行。
 
    **参数**
 
@@ -108,13 +108,13 @@ src/pages/SettingPage 模块
 
    **主要协作调用**：``clampSettingsWindowSize``、``getLocalSetting``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5003:40625:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5102:41970:FUNCTION
 
 .. js:function:: SettingPage({ open, onClose, onRefreshRequested, handleLogout })
 
    渲染 ``SettingPage`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``130``—``917`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``132``—``941`` 行。
 
    **参数**
 
@@ -135,13 +135,13 @@ src/pages/SettingPage 模块
 
    **内部回调数量**：29。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:40651:40903:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:41996:42248:FUNCTION
 
 .. js:function:: SidebarSkeleton()
 
    渲染 ``SidebarSkeleton`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``919``—``928`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``943``—``952`` 行。
 
    **参数**
 
@@ -160,17 +160,17 @@ src/pages/SettingPage 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2648:2677:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2747:2776:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 75``
+.. rubric:: ``onOpenChange callback @ 77``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 75()
+   onOpenChange callback @ 77()
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``75``—``75`` 行；所属函数 ``ImageUploadProgressDialog``。
+**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``ImageUploadProgressDialog``。
 
 **参数**
 
@@ -182,17 +182,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``onCancel``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7047:7115:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7480:7548:FUNCTION
 
-.. rubric:: ``useCallback callback @ 176``
+.. rubric:: ``useCallback callback @ 186``
 
 .. code-block:: javascript
 
-   useCallback callback @ 176(tabId)
+   useCallback callback @ 186(tabId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``176``—``176`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``186``—``186`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -205,17 +205,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``['account', 'interface', 'notifications'].includes``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7170:7414:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7603:7847:FUNCTION
 
-.. rubric:: ``useCallback callback @ 178``
+.. rubric:: ``useCallback callback @ 188``
 
 .. code-block:: javascript
 
-   useCallback callback @ 178(value)
+   useCallback callback @ 188(value)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``178``—``183`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``188``—``193`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -230,17 +230,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7338:7375:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7771:7808:FUNCTION
 
-.. rubric:: ``rawScopes .map callback @ 181``
+.. rubric:: ``rawScopes .map callback @ 191``
 
 .. code-block:: javascript
 
-   rawScopes .map callback @ 181(scope)
+   rawScopes .map callback @ 191(scope)
 
 作为 ``rawScopes .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``181``—``181`` 行；所属函数 ``useCallback callback @ 178``。
+**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``useCallback callback @ 188``。
 
 **参数**
 
@@ -253,17 +253,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``String(scope || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7468:7695:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7901:8128:FUNCTION
 
-.. rubric:: ``useCallback callback @ 185``
+.. rubric:: ``useCallback callback @ 195``
 
 .. code-block:: javascript
 
-   useCallback callback @ 185(tabId)
+   useCallback callback @ 195(tabId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``185``—``190`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``195``—``200`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -278,17 +278,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7518:7546:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7951:7979:FUNCTION
 
-.. rubric:: ``dynamicTabs.find callback @ 186``
+.. rubric:: ``dynamicTabs.find callback @ 196``
 
 .. code-block:: javascript
 
-   dynamicTabs.find callback @ 186(item)
+   dynamicTabs.find callback @ 196(item)
 
 作为 ``dynamicTabs.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``186``—``186`` 行；所属函数 ``useCallback callback @ 185``。
+**性质**：同步局部函数；源码第 ``196``—``196`` 行；所属函数 ``useCallback callback @ 195``。
 
 **参数**
 
@@ -299,17 +299,17 @@ src/pages/SettingPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7609:7687:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8042:8120:FUNCTION
 
-.. rubric:: ``normalizeRefreshScopes(tab?.refreshOnClose).forEach callback @ 187``
+.. rubric:: ``normalizeRefreshScopes(tab?.refreshOnClose).forEach callback @ 197``
 
 .. code-block:: javascript
 
-   normalizeRefreshScopes(tab?.refreshOnClose).forEach callback @ 187(scope)
+   normalizeRefreshScopes(tab?.refreshOnClose).forEach callback @ 197(scope)
 
 作为 ``normalizeRefreshScopes(tab?.refreshOnClose).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``187``—``189`` 行；所属函数 ``useCallback callback @ 185``。
+**性质**：同步局部函数；源码第 ``197``—``199`` 行；所属函数 ``useCallback callback @ 195``。
 
 **参数**
 
@@ -322,17 +322,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``pendingRefreshScopesRef.current.add``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7776:8066:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8209:8499:FUNCTION
 
-.. rubric:: ``useCallback callback @ 192``
+.. rubric:: ``useCallback callback @ 202``
 
 .. code-block:: javascript
 
-   useCallback callback @ 192()
+   useCallback callback @ 202()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``192``—``199`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``202``—``209`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -344,17 +344,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``pendingRefreshScopesRef.current.clear``、``onClose``、``onRefreshRequested``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8135:8543:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8568:8976:FUNCTION
 
-.. rubric:: ``useCallback callback @ 201``
+.. rubric:: ``useCallback callback @ 211``
 
 .. code-block:: javascript
 
-   useCallback callback @ 201(value)
+   useCallback callback @ 211(value)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``201``—``212`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``211``—``222`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -367,17 +367,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``structuredClone``、``JSON.parse``、``JSON.stringify``、``console.warn``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9190:9226:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9623:9659:FUNCTION
 
-.. rubric:: ``useCallback callback @ 229``
+.. rubric:: ``useCallback callback @ 239``
 
 .. code-block:: javascript
 
-   useCallback callback @ 229()
+   useCallback callback @ 239()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``229``—``229`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``239``—``239`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -391,17 +391,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9212:9225:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9645:9658:FUNCTION
 
-.. rubric:: ``setIsFullscreen callback @ 229``
+.. rubric:: ``setIsFullscreen callback @ 239``
 
 .. code-block:: javascript
 
-   setIsFullscreen callback @ 229(prev)
+   setIsFullscreen callback @ 239(prev)
 
 设置与 ``Is Fullscreen`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``229``—``229`` 行；所属函数 ``useCallback callback @ 229``。
+**性质**：同步局部函数；源码第 ``239``—``239`` 行；所属函数 ``useCallback callback @ 239``。
 
 **参数**
 
@@ -412,17 +412,17 @@ src/pages/SettingPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9491:10394:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9924:10827:FUNCTION
 
-.. rubric:: ``useCallback callback @ 235``
+.. rubric:: ``useCallback callback @ 245``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 235({force = false, silent = false})
+   async useCallback callback @ 245({force = false, silent = false})
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``235``—``257`` 行；所属函数 ``SettingPage``。
+**性质**：异步局部函数；源码第 ``245``—``267`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -439,17 +439,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setLoadingTabs``、``setTabsError``、``apiClient.get``、``Array.isArray``、``setDynamicTabs``、``console.error``、``toast.error``、``t``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10508:12706:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10941:13139:FUNCTION
 
-.. rubric:: ``useCallback callback @ 260``
+.. rubric:: ``useCallback callback @ 270``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 260(tabId)
+   async useCallback callback @ 270(tabId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``260``—``312`` 行；所属函数 ``SettingPage``。
+**性质**：异步局部函数；源码第 ``270``—``322`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -466,17 +466,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``isStaticTab``、``abortControllerRef.current.abort``、``setLoadingDynamicConfig``、``setDynamicConfigError``、``setDynamicConfig``、``setDynamicValues``、``setOriginalDynamicValues``、``apiClient.get``、``Array.isArray``、``cloneData``、``setIsConfigPristine``、``console.error``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12753:12869:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13186:13302:FUNCTION
 
-.. rubric:: ``useEffect callback @ 314``
+.. rubric:: ``useEffect callback @ 324``
 
 .. code-block:: javascript
 
-   useEffect callback @ 314()
+   useEffect callback @ 324()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``314``—``318`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``324``—``328`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -488,17 +488,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``pendingRefreshScopesRef.current.clear``、``loadDynamicTabs``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12988:13283:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13421:13716:FUNCTION
 
-.. rubric:: ``useEffect callback @ 322``
+.. rubric:: ``useEffect callback @ 332``
 
 .. code-block:: javascript
 
-   useEffect callback @ 322()
+   useEffect callback @ 332()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``322``—``328`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``332``—``338`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -516,17 +516,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13185:13219:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13618:13652:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 326``
+.. rubric:: ``window.setTimeout callback @ 336``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 326()
+   window.setTimeout callback @ 336()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``326``—``326`` 行；所属函数 ``useEffect callback @ 322``。
+**性质**：同步局部函数；源码第 ``336``—``336`` 行；所属函数 ``useEffect callback @ 332``。
 
 **参数**
 
@@ -538,83 +538,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``loadDynamicConfig``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13241:13276:FUNCTION
-
-.. rubric:: ``returned callback @ 327``
-
-.. code-block:: javascript
-
-   returned callback @ 327()
-
-实现 ``returned`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``327``—``327`` 行；所属函数 ``useEffect callback @ 322``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**副作用**
-
-* 读取或修改浏览器全局对象、页面或历史状态。
-
-**主要协作调用**：``window.clearTimeout``。
-
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13490:13893:FUNCTION
-
-.. rubric:: ``useEffect callback @ 332``
-
-.. code-block:: javascript
-
-   useEffect callback @ 332()
-
-封装 ``Effect`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``332``—``342`` 行；所属函数 ``SettingPage``。
-
-**参数**
-
-无。
-
-**返回值**
-
-根据执行分支返回结果；代表性返回表达式为 ``() => window.cancelIdleCallback?.(idleId)``、``() => window.clearTimeout(timerId)``。
-
-**副作用**
-
-* 读取或修改浏览器全局对象、页面或历史状态。
-
-**主要协作调用**：``window.requestIdleCallback``、``window.setTimeout``。
-
-**内部回调数量**：3。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13521:13559:FUNCTION
-
-.. rubric:: ``preload``
-
-.. code-block:: javascript
-
-   preload()
-
-实现 ``preload`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``333``—``333`` 行；所属函数 ``useEffect callback @ 332``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``loadDynamicTabs``。
-
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13725:13767:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13674:13709:FUNCTION
 
 .. rubric:: ``returned callback @ 337``
 
@@ -638,19 +562,95 @@ src/pages/SettingPage 模块
 
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``window.cancelIdleCallback``。
+**主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13851:13886:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13923:14326:FUNCTION
 
-.. rubric:: ``returned callback @ 341``
+.. rubric:: ``useEffect callback @ 342``
 
 .. code-block:: javascript
 
-   returned callback @ 341()
+   useEffect callback @ 342()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``342``—``352`` 行；所属函数 ``SettingPage``。
+
+**参数**
+
+无。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``() => window.cancelIdleCallback?.(idleId)``、``() => window.clearTimeout(timerId)``。
+
+**副作用**
+
+* 读取或修改浏览器全局对象、页面或历史状态。
+
+**主要协作调用**：``window.requestIdleCallback``、``window.setTimeout``。
+
+**内部回调数量**：3。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13954:13992:FUNCTION
+
+.. rubric:: ``preload``
+
+.. code-block:: javascript
+
+   preload()
+
+实现 ``preload`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``343``—``343`` 行；所属函数 ``useEffect callback @ 342``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``loadDynamicTabs``。
+
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14158:14200:FUNCTION
+
+.. rubric:: ``returned callback @ 347``
+
+.. code-block:: javascript
+
+   returned callback @ 347()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``341``—``341`` 行；所属函数 ``useEffect callback @ 332``。
+**性质**：同步局部函数；源码第 ``347``—``347`` 行；所属函数 ``useEffect callback @ 342``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**副作用**
+
+* 读取或修改浏览器全局对象、页面或历史状态。
+
+**主要协作调用**：``window.cancelIdleCallback``。
+
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14284:14319:FUNCTION
+
+.. rubric:: ``returned callback @ 351``
+
+.. code-block:: javascript
+
+   returned callback @ 351()
+
+实现 ``returned`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``351``—``351`` 行；所属函数 ``useEffect callback @ 342``。
 
 **参数**
 
@@ -666,17 +666,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13930:14862:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14363:15295:FUNCTION
 
-.. rubric:: ``useEffect callback @ 344``
+.. rubric:: ``useEffect callback @ 354``
 
 .. code-block:: javascript
 
-   useEffect callback @ 344()
+   useEffect callback @ 354()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``344``—``367`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``354``—``377`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -694,17 +694,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14084:14818:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14517:15251:FUNCTION
 
-.. rubric:: ``onEvent({ event: 'tool.default_permissions.changed', }).then callback @ 348``
+.. rubric:: ``onEvent({ event: 'tool.default_permissions.changed', }).then callback @ 358``
 
 .. code-block:: javascript
 
-   onEvent({ event: 'tool.default_permissions.changed', }).then callback @ 348({payload})
+   onEvent({ event: 'tool.default_permissions.changed', }).then callback @ 358({payload})
 
 处理 ``onEvent({ event: 'tool.default_permissions.changed', }).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``348``—``365`` 行；所属函数 ``useEffect callback @ 344``。
+**性质**：同步局部函数；源码第 ``358``—``375`` 行；所属函数 ``useEffect callback @ 354``。
 
 **参数**
 
@@ -717,17 +717,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``Number``、``toast.info``、``setDynamicValues``、``cloneData``、``setOriginalDynamicValues``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14835:14855:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15268:15288:FUNCTION
 
-.. rubric:: ``returned callback @ 366``
+.. rubric:: ``returned callback @ 376``
 
 .. code-block:: javascript
 
-   returned callback @ 366()
+   returned callback @ 376()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``366``—``366`` 行；所属函数 ``useEffect callback @ 344``。
+**性质**：同步局部函数；源码第 ``376``—``376`` 行；所属函数 ``useEffect callback @ 354``。
 
 **参数**
 
@@ -743,17 +743,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15010:15306:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15443:15739:FUNCTION
 
-.. rubric:: ``useCallback callback @ 370``
+.. rubric:: ``useCallback callback @ 380``
 
 .. code-block:: javascript
 
-   useCallback callback @ 370(newTab)
+   useCallback callback @ 380(newTab)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``370``—``381`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``380``—``391`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -766,7 +766,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setPendingAction``、``setPendingTabId``、``setShowUnsavedDialog``、``performTabChange``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15384:15999:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15817:16432:FUNCTION
 
 .. rubric:: ``performTabChange``
 
@@ -776,7 +776,7 @@ src/pages/SettingPage 模块
 
 实现 ``performTabChange`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``383``—``403`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``393``—``413`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -789,17 +789,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setActiveTab``、``setIsConfigPristine``、``isStaticTab``、``loadDynamicConfig``、``abortControllerRef.current.abort``、``setLoadingDynamicConfig``、``setDynamicConfigError``、``setDynamicConfig``、``setDynamicValues``、``setOriginalDynamicValues``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16089:17369:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16522:17802:FUNCTION
 
-.. rubric:: ``useCallback callback @ 406``
+.. rubric:: ``useCallback callback @ 416``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 406()
+   async useCallback callback @ 416()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``406``—``434`` 行；所属函数 ``SettingPage``。
+**性质**：异步局部函数；源码第 ``416``—``444`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -815,17 +815,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``apiClient.post``、``cloneData``、``toast.success``、``t``、``setDynamicValues``、``setOriginalDynamicValues``、``setIsConfigPristine``、``setUser``、``markTabRefreshOnClose``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:17551:17747:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:17984:18180:FUNCTION
 
-.. rubric:: ``useCallback callback @ 437``
+.. rubric:: ``useCallback callback @ 447``
 
 .. code-block:: javascript
 
-   useCallback callback @ 437()
+   useCallback callback @ 447()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``437``—``444`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``447``—``454`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -837,17 +837,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setPendingAction``、``setShowUnsavedDialog``、``closeSettings``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:17851:18156:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18284:18589:FUNCTION
 
-.. rubric:: ``useCallback callback @ 446``
+.. rubric:: ``useCallback callback @ 456``
 
 .. code-block:: javascript
 
-   useCallback callback @ 446()
+   useCallback callback @ 456()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``446``—``455`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``456``—``465`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -859,17 +859,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setPendingAction``、``setShowUnsavedDialog``、``closeSettings``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18438:18687:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18871:19120:FUNCTION
 
-.. rubric:: ``useCallback callback @ 460``
+.. rubric:: ``useCallback callback @ 470``
 
 .. code-block:: javascript
 
-   useCallback callback @ 460(isOpen)
+   useCallback callback @ 470(isOpen)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``460``—``467`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``470``—``477`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -882,7 +882,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setShowUnsavedDialog``、``setPendingAction``、``setPendingTabId``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18727:19846:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19160:20279:FUNCTION
 
 .. rubric:: ``confirmUnsavedAction``
 
@@ -892,7 +892,7 @@ src/pages/SettingPage 模块
 
 实现 ``confirmUnsavedAction`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``469``—``505`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``479``—``515`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -906,17 +906,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19153:19230:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19586:19663:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 482``
+.. rubric:: ``setTimeout callback @ 492``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 482()
+   setTimeout callback @ 492()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``482``—``484`` 行；所属函数 ``confirmUnsavedAction``。
+**性质**：同步局部函数；源码第 ``492``—``494`` 行；所属函数 ``confirmUnsavedAction``。
 
 **参数**
 
@@ -926,17 +926,17 @@ src/pages/SettingPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19596:19754:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20029:20187:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 496``
+.. rubric:: ``setTimeout callback @ 506``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 496()
+   setTimeout callback @ 506()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``496``—``500`` 行；所属函数 ``confirmUnsavedAction``。
+**性质**：同步局部函数；源码第 ``506``—``510`` 行；所属函数 ``confirmUnsavedAction``。
 
 **参数**
 
@@ -948,17 +948,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``closeSettings``、``setLoadingDynamicConfig``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19974:20156:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20407:20589:FUNCTION
 
-.. rubric:: ``useCallback callback @ 509``
+.. rubric:: ``useCallback callback @ 519``
 
 .. code-block:: javascript
 
-   useCallback callback @ 509(newValues)
+   useCallback callback @ 519(newValues)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``509``—``514`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``519``—``524`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -971,17 +971,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setDynamicValues``、``setIsConfigPristine``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20262:21998:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20695:22431:FUNCTION
 
-.. rubric:: ``useCallback callback @ 517``
+.. rubric:: ``useCallback callback @ 527``
 
 .. code-block:: javascript
 
-   useCallback callback @ 517()
+   useCallback callback @ 527()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``517``—``567`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``527``—``577`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -993,17 +993,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20297:21990:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20730:22423:FUNCTION
 
-.. rubric:: ``anonymous callback @ 518``
+.. rubric:: ``anonymous callback @ 528``
 
 .. code-block:: javascript
 
-   anonymous callback @ 518(resolve)
+   anonymous callback @ 528(resolve)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``518``—``566`` 行；所属函数 ``useCallback callback @ 517``。
+**性质**：同步局部函数；源码第 ``528``—``576`` 行；所属函数 ``useCallback callback @ 527``。
 
 **参数**
 
@@ -1018,17 +1018,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20405:21955:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20838:22388:FUNCTION
 
-.. rubric:: ``createFilePicker callback @ 521``
+.. rubric:: ``createFilePicker callback @ 531``
 
 .. code-block:: javascript
 
-   createFilePicker callback @ 521(files)
+   createFilePicker callback @ 531(files)
 
 创建与 ``File Picker`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``521``—``563`` 行；所属函数 ``anonymous callback @ 518``。
+**性质**：同步局部函数；源码第 ``531``—``573`` 行；所属函数 ``anonymous callback @ 528``。
 
 **参数**
 
@@ -1043,7 +1043,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21028:21126:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21461:21559:FUNCTION
 
 .. rubric:: ``handleProgress``
 
@@ -1053,7 +1053,7 @@ src/pages/SettingPage 模块
 
 处理 ``Progress`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``542``—``544`` 行；所属函数 ``createFilePicker callback @ 521``。
+**性质**：同步局部函数；源码第 ``552``—``554`` 行；所属函数 ``createFilePicker callback @ 531``。
 
 **参数**
 
@@ -1069,7 +1069,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setUploadProgress``、``Math.round``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21167:21525:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21600:21958:FUNCTION
 
 .. rubric:: ``handleComplete``
 
@@ -1079,7 +1079,7 @@ src/pages/SettingPage 模块
 
 处理 ``Complete`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``546``—``552`` 行；所属函数 ``createFilePicker callback @ 521``。
+**性质**：同步局部函数；源码第 ``556``—``562`` 行；所属函数 ``createFilePicker callback @ 531``。
 
 **参数**
 
@@ -1095,7 +1095,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setUploadDialogOpen``、``toast.success``、``t``、``artifactPreviewVirtualUrl``、``resolve``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21563:21786:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21996:22219:FUNCTION
 
 .. rubric:: ``handleError``
 
@@ -1105,7 +1105,7 @@ src/pages/SettingPage 模块
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``554``—``559`` 行；所属函数 ``createFilePicker callback @ 521``。
+**性质**：同步局部函数；源码第 ``564``—``569`` 行；所属函数 ``createFilePicker callback @ 531``。
 
 **参数**
 
@@ -1117,17 +1117,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setUploadDialogOpen``、``toast.error``、``t``、``resolve``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:22050:22234:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:22483:22667:FUNCTION
 
-.. rubric:: ``useCallback callback @ 569``
+.. rubric:: ``useCallback callback @ 579``
 
 .. code-block:: javascript
 
-   useCallback callback @ 569()
+   useCallback callback @ 579()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``569``—``575`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``579``—``585`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1139,17 +1139,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``uploadCleanupRef.current``、``setUploadDialogOpen``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:22286:23645:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:22719:24078:FUNCTION
 
-.. rubric:: ``useCallback callback @ 577``
+.. rubric:: ``useCallback callback @ 587``
 
 .. code-block:: javascript
 
-   useCallback callback @ 577(event)
+   useCallback callback @ 587(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``577``—``608`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``587``—``618`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1169,7 +1169,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:22607:22894:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23040:23327:FUNCTION
 
 .. rubric:: ``onMove``
 
@@ -1179,7 +1179,7 @@ src/pages/SettingPage 模块
 
 处理 ``Move`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``585``—``591`` 行；所属函数 ``useCallback callback @ 577``。
+**性质**：同步局部函数；源码第 ``595``—``601`` 行；所属函数 ``useCallback callback @ 587``。
 
 **参数**
 
@@ -1192,7 +1192,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``clampSettingsWindowSize``、``setSettingsWindowSize``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:22916:23340:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23349:23773:FUNCTION
 
 .. rubric:: ``onUp``
 
@@ -1202,7 +1202,7 @@ src/pages/SettingPage 模块
 
 处理 ``Up`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``592``—``601`` 行；所属函数 ``useCallback callback @ 577``。
+**性质**：同步局部函数；源码第 ``602``—``611`` 行；所属函数 ``useCallback callback @ 587``。
 
 **参数**
 
@@ -1220,17 +1220,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23126:23328:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23559:23761:FUNCTION
 
-.. rubric:: ``setSettingsWindowSize callback @ 596``
+.. rubric:: ``setSettingsWindowSize callback @ 606``
 
 .. code-block:: javascript
 
-   setSettingsWindowSize callback @ 596(current)
+   setSettingsWindowSize callback @ 606(current)
 
 设置与 ``Settings Window Size`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``596``—``600`` 行；所属函数 ``onUp``。
+**性质**：同步局部函数；源码第 ``606``—``610`` 行；所属函数 ``onUp``。
 
 **参数**
 
@@ -1243,17 +1243,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``clampSettingsWindowSize``、``setLocalSetting``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23498:23638:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23931:24071:FUNCTION
 
-.. rubric:: ``anonymous callback @ 604``
+.. rubric:: ``anonymous callback @ 614``
 
 .. code-block:: javascript
 
-   anonymous callback @ 604()
+   anonymous callback @ 614()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``604``—``607`` 行；所属函数 ``useCallback callback @ 577``。
+**性质**：同步局部函数；源码第 ``614``—``617`` 行；所属函数 ``useCallback callback @ 587``。
 
 **参数**
 
@@ -1269,17 +1269,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23709:23749:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24142:24182:FUNCTION
 
-.. rubric:: ``useEffect callback @ 610``
+.. rubric:: ``useEffect callback @ 620``
 
 .. code-block:: javascript
 
-   useEffect callback @ 610()
+   useEffect callback @ 620()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``610``—``610`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``620``—``620`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1291,17 +1291,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23714:23749:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24147:24182:FUNCTION
 
-.. rubric:: ``anonymous callback @ 610``
+.. rubric:: ``anonymous callback @ 620``
 
 .. code-block:: javascript
 
-   anonymous callback @ 610()
+   anonymous callback @ 620()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``610``—``610`` 行；所属函数 ``useEffect callback @ 610``。
+**性质**：同步局部函数；源码第 ``620``—``620`` 行；所属函数 ``useEffect callback @ 620``。
 
 **参数**
 
@@ -1313,17 +1313,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``resizeCleanupRef.current``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23771:24092:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24204:24525:FUNCTION
 
-.. rubric:: ``useEffect callback @ 612``
+.. rubric:: ``useEffect callback @ 622``
 
 .. code-block:: javascript
 
-   useEffect callback @ 612()
+   useEffect callback @ 622()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``612``—``617`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``622``—``627`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1342,7 +1342,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23868:23943:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24301:24376:FUNCTION
 
 .. rubric:: ``keepInsideViewport``
 
@@ -1352,7 +1352,7 @@ src/pages/SettingPage 模块
 
 实现 ``keepInsideViewport`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``614``—``614`` 行；所属函数 ``useEffect callback @ 612``。
+**性质**：同步局部函数；源码第 ``624``—``624`` 行；所属函数 ``useEffect callback @ 622``。
 
 **参数**
 
@@ -1366,17 +1366,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23897:23942:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24330:24375:FUNCTION
 
-.. rubric:: ``setSettingsWindowSize callback @ 614``
+.. rubric:: ``setSettingsWindowSize callback @ 624``
 
 .. code-block:: javascript
 
-   setSettingsWindowSize callback @ 614(current)
+   setSettingsWindowSize callback @ 624(current)
 
 设置与 ``Settings Window Size`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``614``—``614`` 行；所属函数 ``keepInsideViewport``。
+**性质**：同步局部函数；源码第 ``624``—``624`` 行；所属函数 ``keepInsideViewport``。
 
 **参数**
 
@@ -1389,17 +1389,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``clampSettingsWindowSize``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24022:24085:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24455:24518:FUNCTION
 
-.. rubric:: ``returned callback @ 616``
+.. rubric:: ``returned callback @ 626``
 
 .. code-block:: javascript
 
-   returned callback @ 616()
+   returned callback @ 626()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``616``—``616`` 行；所属函数 ``useEffect callback @ 612``。
+**性质**：同步局部函数；源码第 ``626``—``626`` 行；所属函数 ``useEffect callback @ 622``。
 
 **参数**
 
@@ -1415,7 +1415,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24208:27503:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24641:27936:FUNCTION
 
 .. rubric:: ``renderSidebar``
 
@@ -1425,7 +1425,7 @@ src/pages/SettingPage 模块
 
 渲染与 ``Sidebar`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``620``—``678`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``630``—``688`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1439,17 +1439,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24369:24401:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24802:24834:FUNCTION
 
-.. rubric:: ``onClick callback @ 623``
+.. rubric:: ``onClick callback @ 633``
 
 .. code-block:: javascript
 
-   onClick callback @ 623()
+   onClick callback @ 633()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``623``—``623`` 行；所属函数 ``renderSidebar``。
+**性质**：同步局部函数；源码第 ``633``—``633`` 行；所属函数 ``renderSidebar``。
 
 **参数**
 
@@ -1461,17 +1461,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``handleTabChange``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24863:24897:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:25296:25330:FUNCTION
 
-.. rubric:: ``onClick callback @ 631``
+.. rubric:: ``onClick callback @ 641``
 
 .. code-block:: javascript
 
-   onClick callback @ 631()
+   onClick callback @ 641()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``631``—``631`` 行；所属函数 ``renderSidebar``。
+**性质**：同步局部函数；源码第 ``641``—``641`` 行；所属函数 ``renderSidebar``。
 
 **参数**
 
@@ -1483,17 +1483,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``handleTabChange``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:25365:25403:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:25798:25836:FUNCTION
 
-.. rubric:: ``onClick callback @ 639``
+.. rubric:: ``onClick callback @ 649``
 
 .. code-block:: javascript
 
-   onClick callback @ 639()
+   onClick callback @ 649()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``639``—``639`` 行；所属函数 ``renderSidebar``。
+**性质**：同步局部函数；源码第 ``649``—``649`` 行；所属函数 ``renderSidebar``。
 
 **参数**
 
@@ -1505,17 +1505,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``handleTabChange``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:26332:26368:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:26765:26801:FUNCTION
 
-.. rubric:: ``onRetry callback @ 656``
+.. rubric:: ``onRetry callback @ 666``
 
 .. code-block:: javascript
 
-   onRetry callback @ 656()
+   onRetry callback @ 666()
 
 处理 ``Retry`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``656``—``656`` 行；所属函数 ``renderSidebar``。
+**性质**：同步局部函数；源码第 ``666``—``666`` 行；所属函数 ``renderSidebar``。
 
 **参数**
 
@@ -1527,17 +1527,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``loadDynamicTabs``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:26543:27455:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:26976:27888:FUNCTION
 
-.. rubric:: ``dynamicTabs.map callback @ 661``
+.. rubric:: ``dynamicTabs.map callback @ 671``
 
 .. code-block:: javascript
 
-   dynamicTabs.map callback @ 661(tab)
+   dynamicTabs.map callback @ 671(tab)
 
 作为 ``dynamicTabs.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``661``—``675`` 行；所属函数 ``renderSidebar``。
+**性质**：同步局部函数；源码第 ``671``—``685`` 行；所属函数 ``renderSidebar``。
 
 **参数**
 
@@ -1552,17 +1552,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:26664:26693:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:27097:27126:FUNCTION
 
-.. rubric:: ``onClick callback @ 664``
+.. rubric:: ``onClick callback @ 674``
 
 .. code-block:: javascript
 
-   onClick callback @ 664()
+   onClick callback @ 674()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``664``—``664`` 行；所属函数 ``dynamicTabs.map callback @ 661``。
+**性质**：同步局部函数；源码第 ``674``—``674`` 行；所属函数 ``dynamicTabs.map callback @ 671``。
 
 **参数**
 
@@ -1574,17 +1574,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``handleTabChange``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:27219:27262:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:27652:27695:FUNCTION
 
-.. rubric:: ``onError callback @ 671``
+.. rubric:: ``onError callback @ 681``
 
 .. code-block:: javascript
 
-   onError callback @ 671(e)
+   onError callback @ 681(e)
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``671``—``671`` 行；所属函数 ``dynamicTabs.map callback @ 661``。
+**性质**：同步局部函数；源码第 ``681``—``681`` 行；所属函数 ``dynamicTabs.map callback @ 671``。
 
 **参数**
 
@@ -1595,7 +1595,7 @@ src/pages/SettingPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:27586:32494:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:28019:33839:FUNCTION
 
 .. rubric:: ``renderContent``
 
@@ -1605,7 +1605,7 @@ src/pages/SettingPage 模块
 
 渲染与 ``Content`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``681``—``772`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``691``—``796`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1619,17 +1619,17 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:31912:31946:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:33257:33291:FUNCTION
 
-.. rubric:: ``onRetry callback @ 756``
+.. rubric:: ``onRetry callback @ 780``
 
 .. code-block:: javascript
 
-   onRetry callback @ 756()
+   onRetry callback @ 780()
 
 处理 ``Retry`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``756``—``756`` 行；所属函数 ``renderContent``。
+**性质**：同步局部函数；源码第 ``780``—``780`` 行；所属函数 ``renderContent``。
 
 **参数**
 
@@ -1641,17 +1641,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``loadDynamicConfig``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:34550:34576:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:35895:35921:FUNCTION
 
-.. rubric:: ``onClick callback @ 809``
+.. rubric:: ``onClick callback @ 833``
 
 .. code-block:: javascript
 
-   onClick callback @ 809(e)
+   onClick callback @ 833(e)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``809``—``809`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``833``—``833`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1664,17 +1664,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``e.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:39342:39375:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:40687:40720:FUNCTION
 
-.. rubric:: ``onClick callback @ 890``
+.. rubric:: ``onClick callback @ 914``
 
 .. code-block:: javascript
 
-   onClick callback @ 890()
+   onClick callback @ 914()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``890``—``890`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``914``—``914`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1686,17 +1686,17 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setShowUnsavedDialog``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:40725:40888:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:42070:42233:FUNCTION
 
-.. rubric:: ``[1, 2, 3].map callback @ 921``
+.. rubric:: ``[1, 2, 3].map callback @ 945``
 
 .. code-block:: javascript
 
-   [1, 2, 3].map callback @ 921(i)
+   [1, 2, 3].map callback @ 945(i)
 
 作为 ``[1, 2, 3].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``921``—``926`` 行；所属函数 ``SidebarSkeleton``。
+**性质**：同步局部函数；源码第 ``945``—``950`` 行；所属函数 ``SidebarSkeleton``。
 
 **参数**
 

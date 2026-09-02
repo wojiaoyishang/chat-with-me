@@ -27,6 +27,7 @@ const CARD_TYPES_WITH_NESTED_MARKDOWN = new Set([
     'processing',
     'thinking',
     'toolCalling',
+    'taskWindowTool',
     'coding',
     'doc',
     'agent',
@@ -73,6 +74,7 @@ const CardBlock = memo(({
     messageContextState = null,
     messageReadonly = false,
     messageIsLatest = true,
+    renderSurface = 'conversation',
     renderMarkdown = defaultRenderMarkdown,
 }) => {
     const commonProps = {
@@ -87,6 +89,7 @@ const CardBlock = memo(({
         messageContextState,
         messageReadonly,
         messageIsLatest,
+        renderSurface,
         renderMarkdown,
     };
 
@@ -161,6 +164,21 @@ const CardBlock = memo(({
                     doneColor="text-emerald-600"
                     Icon={Wrench}
                     title="Tool Calling"
+                />
+            );
+
+        case 'taskWindowTool':
+            // The canonical outer Tool replacement remains attached to the Assistant
+            // message so every nested command/log/progress/result update has one data
+            // source.  Task Mode only changes the rendering surface: hide this host in
+            // the transcript and render its complete replacement tree in Task Window.
+            if (String(renderSurface || 'conversation').toLowerCase() !== 'task_window') {
+                return null;
+            }
+            return (
+                <MarkdownBlock
+                    {...commonProps}
+                    allowTts={false}
                 />
             );
 
@@ -246,7 +264,8 @@ const CardBlock = memo(({
         prev.contextStatus !== next.contextStatus ||
         prev.messageContextState !== next.messageContextState ||
         prev.messageReadonly !== next.messageReadonly ||
-        prev.messageIsLatest !== next.messageIsLatest
+        prev.messageIsLatest !== next.messageIsLatest ||
+        prev.renderSurface !== next.renderSurface
     ) {
         return false;
     }

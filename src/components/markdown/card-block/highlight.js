@@ -1,12 +1,4 @@
-import { toSafeString } from './utils.js';
-
-// highlight.js v11 publishes language modules under lib/languages. Keeping one
-// Vite glob here avoids separate, drifting loaders in Markdown and Tool cards.
-const languageModules = import.meta.glob('/node_modules/highlight.js/lib/languages/*.js');
-
-if (typeof window !== 'undefined' && !window.hljsFailedLanguages) {
-    window.hljsFailedLanguages = new Set();
-}
+import {toSafeString} from './utils.js';
 
 let hljs = null;
 let loadingPromise = null;
@@ -53,9 +45,13 @@ export const loadHljs = () => {
     }
 
     if (!loadingPromise) {
-        loadingPromise = import('highlight.js/lib/core')
+        // Load Highlight.js through its public package entry. The previous Vite
+        // node_modules glob could resolve to an empty language-module map in a
+        // production build, leaving every code block monochrome even though the
+        // Highlight.js core itself loaded successfully.
+        loadingPromise = import('highlight.js')
             .then((module) => {
-                hljs = module.default;
+                hljs = module.default || module;
                 hljs.configure({
                     noHighlightRe: /\b(?:no-?highlight|language-text|language-plain|language-plaintext|language-txt|language-none)\b/i,
                 });
@@ -79,32 +75,55 @@ export const normalizeHighlightLanguage = (language) => {
 
 export const ensureHighlightLanguage = async (hljsInst, language) => {
     const normalized = normalizeHighlightLanguage(language);
-    if (!normalized || hljsInst.getLanguage(normalized)) {
-        return normalized;
-    }
-
-    const failedLanguages = typeof window !== 'undefined'
-        ? window.hljsFailedLanguages
-        : null;
-    if (failedLanguages?.has(normalized)) {
+    if (!normalized) {
         return '';
     }
+    return hljsInst.getLanguage(normalized) ? normalized : '';
+};
 
-    const langPath = `/node_modules/highlight.js/lib/languages/${normalized}.js`;
-    const loadModule = languageModules[langPath];
+export const highlightCode = async (code, language, {autoDetectUnknown = true} = {}) => {
+    const codeString = toSafeString(code);
+    const normalizedLanguage = normalizeHighlightLanguage(language);
 
-    if (!loadModule) {
-        failedLanguages?.add(normalized);
-        return '';
+    if (!codeString || !normalizedLanguage) {
+        return {
+            html: '',
+            language: normalizedLanguage,
+            highlighted: false,
+        };
     }
+
+    const hljsInst = await loadHljs();
+    const loadedLanguage = await ensureHighlightLanguage(hljsInst, normalizedLanguage);
 
     try {
-        const mod = await loadModule();
-        hljsInst.registerLanguage(normalized, mod.default);
-        return normalized;
-    } catch (err) {
-        console.error(`Failed to load language module for: ${normalized}`, err);
-        failedLanguages?.add(normalized);
-        return '';
+        if (loadedLanguage) {
+            const result = hljsInst.highlight(codeString, {
+                language: loadedLanguage,
+                ignoreIllegals: true,
+            });
+            return {
+                html: result.value,
+                language: loadedLanguage,
+                highlighted: true,
+            };
+        }
+
+        if (autoDetectUnknown) {
+            const result = hljsInst.highlightAuto(codeString);
+            return {
+                html: result.value,
+                language: result.language || normalizedLanguage,
+                highlighted: true,
+            };
+        }
+    } catch (error) {
+        console.error('Highlight failed:', error);
     }
+
+    return {
+        html: '',
+        language: normalizedLanguage,
+        highlighted: false,
+    };
 };

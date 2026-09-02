@@ -15,8 +15,8 @@ Task Window 展示：
 
 * Task Mode 标题与目标；
 * Execution Plan；
-* 单一“执行时间线”，按后端时间戳混排 promoted Tool 的完整 ``Tool Calling`` Card、Runtime/Model 状态和
-  ``source=user_guidance`` 用户补充；
+* 单一“执行时间线”，按后端时间戳混排 Task Mode 期间所有非 hidden Tool 的完整 ``Tool Calling`` Card、
+  Runtime/Model 状态和 ``source=user_guidance`` 用户补充；
 * Stop / Continue Task。
 
 窗口本身没有第二个 guidance 输入框；追加要求仍从正常 ChatBox 发送。
@@ -40,22 +40,17 @@ ChatPage ``messagesOrder``；只要 owner message 不再属于当前 active bran
 Task Mode Tool Calling Surface
 --------------------------------------------------------------------------------
 
-后端 Tool metadata 通过 ``execution.surface`` 决定 Card Surface：
-
-``inline``
-   普通 Tool，完整 Tool Calling Card 继续留在正文。
-
-``task_window``
-   Execution Tool 的 outer inline host 被后端抑制；Task Window 使用 owner message 的同一个
-   ``extraInfo.replace[replacementId]`` 渲染已有 ``toolCalling`` CardBlock。
-
-``both``
-   两处都显示。
+后端先读取 Tool metadata 的 ``execution.surface``，再计算当前有效 Card Surface。普通对话中仍遵守
+``inline / task_window / both / hidden`` 配置；但 **Task Mode active 后，所有非 hidden Tool Call 都统一使用
+``task_window``**，即使该工具本身 ``promote=false``。触发 Task Mode 的 promoted Tool 自己也直接进入 Task
+Window，不会先在正文完整展示后再搬移。
 
 ``hidden``
-   Task 控制工具等内部 Tool 不显示完整 Tool Calling Card。
+   Task 控制工具等内部 Tool 始终保持隐藏，不因为 Task Mode active 而暴露。
 
-前端不会复制 Tool command/log/result 数据，Task Window 只是另一处渲染 surface。
+这个规则只改变展示位置：普通工具不会因为进入 Task Window 就变成 Execution admission/evidence Tool。
+前端不会复制 Tool command/log/result 数据，Task Window 只是 owner message 同一份
+``extraInfo.replace[replacementId]`` 的另一处渲染 surface；正文保留轻量任务运行/完成状态。
 
 Composer steering
 --------------------------------------------------------------------------------
@@ -82,8 +77,9 @@ Optimistic projection 只负责即时可见性；服务器 snapshot 仍是状态
 Tool timeline
 --------------------------------------------------------------------------------
 
-每个 promoted Tool Call 拥有独立 ``executionStatus`` 节点：running → completed / failed / cancelled。
-旧 Tool 的状态在原位置变成终态；新 Tool 获取新 status id，不再复用一个固定全局“正在调用工具”节点。
+Task Mode 中每个可见 Tool Call 都拥有独立 ``executionStatus`` 节点：running → completed / failed / cancelled。
+普通非 promoted Tool 只参与这层展示状态，不改变 Completion Barrier 的 evidence 语义。旧 Tool 的状态在原位置
+变成终态；新 Tool 获取新 status id，不再复用一个固定全局“正在调用工具”节点。
 
 Task Window 中的完整 Tool Calling Card 与主聊天中的轻量 status 属于同一个 ``toolCallId``。
 
@@ -101,3 +97,41 @@ Recoverable Execution 可以通过 ``execution.resume`` 创建新的实际 Run �
 V41 不保留旧 ``TaskModeWidget``、Task Checklist、Task Monitor、TaskUserMessageCard 或
 ``LegacyTaskExecutionStatus``。增量 ZIP 无法表达删除动作，安装时由后端 ``temp/apply_task_mode_v41.py --frontend-root ...``
 清理这些残留文件和过期生成 API 文档。
+
+Tool Call Repair Card
+--------------------------------------------------------------------------------
+
+当 Native Tool Calling 使用 ``tool_call_edit`` 修复并重放上一条调用时，后端仍保存原始 Provider helper history，
+但会按真实目标 Tool 的 Execution Surface 投影同一张 Tool Calling Card。普通对话中保持目标 Tool 原 surface；
+Task Mode active 后所有非 hidden Repair 目标同样进入 Task Window。Card 内容中的 ``[TOOL_CALL_REPAIR]`` 是内部标记，
+``StatusWidget`` 会移除它并把生命周期标题显示为
+``Tool Call Repair`` / ``Tool Call Repair Finished`` / ``Tool Call Repair Failed``，不会把标记泄露给用户。
+
+
+V57 增加了 Tool Call Repair 的乱序保护：Task Window 收到 ``toolCallRepair=true`` 的 Tool Card 后，
+即使对应 ``message.replacement`` 尚未同步，也会立即显示 ``Tool Call Repair`` 状态卡；终态分别为
+``Tool Call Repair Finished`` / ``Tool Call Repair Failed``。replacement 到达后自动改用完整既有 CardBlock，
+不会生成第二份 Tool Call 数据。
+
+
+Tool Calling 自动收缩
+--------------------------------------------------------------------------------
+
+界面设置提供两个彼此独立的 browser-local 开关：
+
+* ``正文区域自动收起已完成的工具调用``：默认开启；
+* ``任务窗口自动收起已完成的工具调用``：默认关闭。
+
+只有成功完成的 Tool Calling Card 会参与自动收缩。running、failed、cancelled、waiting approval 等需要关注的
+状态保持展开；用户对某张卡片的手动展开/收起拥有最高优先级。正文和 Task Window 使用独立 expansion key，避免
+同一 replacement 在不同 surface 之间互相改变展开状态。
+
+连续 Tool Call 与状态文案（V64）
+--------------------------------------------------------------------------------
+
+Task Window 的 Tool Card 标题优先使用后端 Registry ``displayNames``，只有缺失时才显示内部 ``toolNames``。
+后端以具体 ``toolCallId`` 保存每次调用状态；Native 调用若在 ``prepare`` 前 abort，provisional Card 会立即标记
+``failed``，后续 Repair/下一次调用使用新的独立 timeline item，不会继承旧的 running 状态。
+
+promoted Execution Tool 继续使用工具声明的具体运行文案；仅因为 Task Mode 已 active 而被搬入窗口的普通 Tool
+使用 ``<工具显示名> · 执行中/已完成/失败/已取消``。这项规则只改变展示，不改变工具的 ``promote`` 或 evidence。

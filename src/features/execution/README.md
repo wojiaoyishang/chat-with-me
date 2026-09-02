@@ -8,9 +8,15 @@ V41 exposes a new **Task Mode workspace** backed by the existing durable
   It shows Task objective/plan and one chronological execution timeline where full
   Execution Tool Calling cards, Runtime/model activities and user-guidance logs are
   interleaved by their server timestamps, plus stop/resume controls.
-- Promoted tools normally use `execution.surface=task_window`; their existing
-  `toolCalling` replacement is rendered in the Task Window instead of duplicated.
-  Ordinary non-Execution tools stay inline.
+- While Task Mode is active, every non-hidden Tool Call is projected into the Task Window,
+  including ordinary non-promoted helper tools. V62 renders the tool's **outer canonical
+  replacement host**, not only its nested `toolCalling` replacement, so command preview, live
+  ToolLog/progress, final frontend result, custom Markdown/widgets and adapter-specific output
+  all remain visible in one continuous card tree. The outer host uses the private
+  `taskWindowTool` transport type: it renders only on `renderSurface="task_window"` and is
+  suppressed in the conversation transcript without deleting its replacement data. Outside
+  Task Mode, the configured tool surface still applies and ordinary non-Execution tools stay
+  inline.
 - `FloatingDockWindow` supplies draggable/resizable/docked behavior. Dock state and
   geometry are browser-local.
 - The normal ChatBox remains the only place to add requirements. Guidance is accepted
@@ -55,3 +61,46 @@ Conversation/default Tool permission UIs consume backend `default`, `allowedMode
 Allow/Ask/Deny controls.  The frontend is only a projection: server Tool Approval policy
 reapplies locked defaults before execution, so hiding the controls is not the security
 boundary.
+
+## Tool Call Repair cards (V56)
+
+A repaired native invocation reuses the original Tool Calling host rather than creating a
+second copy of the retained target arguments. Backend prepare metadata projects the real
+target tool's Execution surface, so repaired promoted tools render in the Task Window and
+ordinary repaired tools remain inline. The `toolCalling` payload contains a private
+`[TOOL_CALL_REPAIR]` marker; `StatusWidget` strips that marker from visible content and
+uses `Tool Call Repair` / `Tool Call Repair Finished` / `Tool Call Repair Failed` for the
+card lifecycle.
+
+
+## Tool Call Repair visual-host fallback (V57)
+
+Repair Tool Cards now carry `toolCallRepair=true`. The backend `prepare` path
+idempotently guarantees that the canonical `<toolCallingId>-toolCalling` replacement
+exists even when a compatible Provider coalesces or omits the ordinary visible start
+stream. If execution state reaches the browser before that replacement, Task Window
+renders a compact `Tool Call Repair` / `Tool Call Repair Finished` fallback immediately
+and swaps to the canonical CardBlock when replacement synchronization catches up.
+
+## Tool Calling auto-collapse preferences (V61)
+
+Two browser-local Interface settings control successful Tool Calling cards independently:
+
+- **Auto-collapse completed tool calls in chat**: defaults to enabled.
+- **Auto-collapse completed tool calls in Task Window**: defaults to disabled.
+
+Only successfully completed calls are auto-collapsed. Running, failed, cancelled and
+approval-waiting calls remain expanded, and an explicit user expand/collapse action always
+overrides the automatic preference for that card. Conversation and Task Window expansion state
+use separate keys so one surface cannot unexpectedly collapse the other.
+
+## Consecutive Tool Call labels (V64)
+
+Task Window prefers backend `displayNames` for Tool Card headers and falls back to protocol
+`toolNames` only when a Registry display name is unavailable. This matches the backend V64
+status projection: promoted task tools keep their explicit execution labels, while ordinary
+helpers routed into an already-active Task Mode use `<display name> · 执行中/已完成`.
+
+The backend also terminalizes a provisional Native Tool Card when the call aborts before
+`prepare`, so a repaired or following call appears as a new independent timeline item instead
+of sitting below a stale `running` card.
