@@ -17,23 +17,23 @@ src/features/chat/ui/AttachmentShowcase 模块
 * **模块标识**：``src/features/chat/ui/AttachmentShowcase``
 * **顶层函数/组件/Hook**：2
 * **类**：0
-* **局部函数与匿名回调**：25
+* **局部函数与匿名回调**：24
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``@headlessui/react``、``react-i18next``、``lucide-react``、``@/features/workspace/useWorkspaceTransferStore.js``、``@/lib/virtualUrl.js``、``../attachmentVision.js``。
+``react``、``@headlessui/react``、``react-i18next``、``lucide-react``、``@/lib/virtualUrl.js``、``../attachmentVision.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:625:888:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:468:723:FUNCTION
 
 .. js:function:: formatFileSize(bytes)
 
    格式化与 ``File Size`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``10``—``18`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``9``—``17`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/features/chat/ui/AttachmentShowcase 模块
 
    **主要协作调用**：``Math.floor``、``Math.log``、``parseFloat``、``(bytes / Math.pow(k, i)).toFixed``、``Math.pow``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:918:1129:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:751:958:FUNCTION
 
 .. js:function:: isDefaultFileIcon(attachment)
 
    判断与 ``Default File Icon`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``20``—``24`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``19``—``23`` 行。
 
    **参数**
 
@@ -70,17 +70,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:1208:9681:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:1031:6603:FUNCTION
 
-.. rubric:: ``memo callback @ 30``
+.. rubric:: ``memo callback @ 29``
 
 .. code-block:: javascript
 
-   memo callback @ 30({ attachment, index, onRemove, onVisionToggle, visionSupported, msgMode, t, })
+   memo callback @ 29({ attachment, index, onRemove, onVisionToggle, visionSupported, msgMode, t, })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``30``—``183`` 行。
+**性质**：同步局部函数；源码第 ``29``—``143`` 行。
 
 **参数**
 
@@ -95,44 +95,21 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``resolveResourceUrl``、``isDefaultFileIcon``、``useWorkspaceTransferStore``、``Number.isFinite``、``Number``、``Math.round``、``t``、``isImageAttachment``、``isAttachmentVisionEnabled``、``useCallback``、``formatFileSize``、``['completed', 'failed', 'cancelled'].includes``。
+**主要协作调用**：``resolveResourceUrl``、``isDefaultFileIcon``、``isImageAttachment``、``isAttachmentVisionEnabled``、``useCallback``、``t``、``formatFileSize``。
 
-**内部回调数量**：4。这些回调也会在本页逐项说明。
+**内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:1717:1767:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:1645:1718:FUNCTION
 
-.. rubric:: ``useWorkspaceTransferStore callback @ 43``
-
-.. code-block:: javascript
-
-   useWorkspaceTransferStore callback @ 43(state)
-
-封装 ``WorkspaceTransferStore`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``43``—``43`` 行；所属函数 ``memo callback @ 30``。
-
-**参数**
-
-``state``
-   调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``selectArtifactTransfer``。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:3035:3111:FUNCTION
-
-.. rubric:: ``useCallback callback @ 65``
+.. rubric:: ``useCallback callback @ 45``
 
 .. code-block:: javascript
 
-   useCallback callback @ 65(e)
+   useCallback callback @ 45(e)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``65``—``68`` 行；所属函数 ``memo callback @ 30``。
+**性质**：同步局部函数；源码第 ``45``—``48`` 行；所属函数 ``memo callback @ 29``。
 
 **参数**
 
@@ -145,17 +122,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``e.stopPropagation``、``onRemove``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:3177:3318:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:1782:1919:FUNCTION
 
-.. rubric:: ``useCallback callback @ 70``
+.. rubric:: ``useCallback callback @ 50``
 
 .. code-block:: javascript
 
-   useCallback callback @ 70()
+   useCallback callback @ 50()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``70``—``74`` 行；所属函数 ``memo callback @ 30``。
+**性质**：同步局部函数；源码第 ``50``—``54`` 行；所属函数 ``memo callback @ 29``。
 
 **参数**
 
@@ -171,17 +148,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``window.open``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:3390:3531:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:1989:2126:FUNCTION
 
-.. rubric:: ``useCallback callback @ 76``
+.. rubric:: ``useCallback callback @ 56``
 
 .. code-block:: javascript
 
-   useCallback callback @ 76(event)
+   useCallback callback @ 56(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``76``—``80`` 行；所属函数 ``memo callback @ 30``。
+**性质**：同步局部函数；源码第 ``56``—``60`` 行；所属函数 ``memo callback @ 29``。
 
 **参数**
 
@@ -194,17 +171,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``onVisionToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:9682:11242:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:6604:7740:FUNCTION
 
-.. rubric:: ``memo callback @ 183``
+.. rubric:: ``memo callback @ 143``
 
 .. code-block:: javascript
 
-   memo callback @ 183(prevProps, nextProps)
+   memo callback @ 143(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``183``—``209`` 行。
+**性质**：同步局部函数；源码第 ``143``—``165`` 行。
 
 **参数**
 
@@ -218,17 +195,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( prevAttachment.id === nextAttachment.id && prevAttachment.preview === nextAttachment.preview && prevAttachment.previewType === nextAttachment.previewType && prevAttachment.name…``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:11359:12520:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:7849:8980:FUNCTION
 
-.. rubric:: ``memo callback @ 217``
+.. rubric:: ``memo callback @ 173``
 
 .. code-block:: javascript
 
-   memo callback @ 217({ direction, onClick, t, show })
+   memo callback @ 173({ direction, onClick, t, show })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``217``—``247`` 行。
+**性质**：同步局部函数；源码第 ``173``—``203`` 行。
 
 **参数**
 
@@ -241,17 +218,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:12521:12765:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:8981:9218:FUNCTION
 
-.. rubric:: ``memo callback @ 247``
+.. rubric:: ``memo callback @ 203``
 
 .. code-block:: javascript
 
-   memo callback @ 247(prevProps, nextProps)
+   memo callback @ 203(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``247``—``254`` 行。
+**性质**：同步局部函数；源码第 ``203``—``210`` 行。
 
 **参数**
 
@@ -265,17 +242,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( prevProps.direction === nextProps.direction && prevProps.show === nextProps.show && prevProps.onClick === nextProps.onClick && prevProps.t === nextProps.t )``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:12876:13320:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:9321:9751:FUNCTION
 
-.. rubric:: ``memo callback @ 262``
+.. rubric:: ``memo callback @ 218``
 
 .. code-block:: javascript
 
-   memo callback @ 262({ side, show })
+   memo callback @ 218({ side, show })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``262``—``276`` 行。
+**性质**：同步局部函数；源码第 ``218``—``232`` 行。
 
 **参数**
 
@@ -286,17 +263,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\x60absolute ${positionClass} top-0 bottom-0 w-8 ${gradientClass} z-20 pointer-events-none\x60} /> )``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:13321:13436:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:9752:9865:FUNCTION
 
-.. rubric:: ``memo callback @ 276``
+.. rubric:: ``memo callback @ 232``
 
 .. code-block:: javascript
 
-   memo callback @ 276(prevProps, nextProps)
+   memo callback @ 232(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``276``—``278`` 行。
+**性质**：同步局部函数；源码第 ``232``—``234`` 行。
 
 **参数**
 
@@ -310,17 +287,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``prevProps.side === nextProps.side && prevProps.show === nextProps.show``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:13615:19304:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:10034:15571:FUNCTION
 
-.. rubric:: ``memo callback @ 288``
+.. rubric:: ``memo callback @ 244``
 
 .. code-block:: javascript
 
-   memo callback @ 288({ attachmentsMeta, onRemove, onVisionToggle, visionSupported = false, msgMode, })
+   memo callback @ 244({ attachmentsMeta, onRemove, onVisionToggle, visionSupported = false, msgMode, })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``288``—``440`` 行。
+**性质**：同步局部函数；源码第 ``244``—``396`` 行。
 
 **参数**
 
@@ -340,17 +317,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **内部回调数量**：9。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:14031:14077:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:10437:10483:FUNCTION
 
-.. rubric:: ``useMemo callback @ 301``
+.. rubric:: ``useMemo callback @ 257``
 
 .. code-block:: javascript
 
-   useMemo callback @ 301()
+   useMemo callback @ 257()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``301``—``301`` 行；所属函数 ``memo callback @ 288``。
+**性质**：同步局部函数；源码第 ``257``—``257`` 行；所属函数 ``memo callback @ 244``。
 
 **参数**
 
@@ -362,17 +339,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``normalizeAttachmentList``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:14184:14613:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:10587:11006:FUNCTION
 
-.. rubric:: ``useCallback callback @ 304``
+.. rubric:: ``useCallback callback @ 260``
 
 .. code-block:: javascript
 
-   useCallback callback @ 304()
+   useCallback callback @ 260()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``304``—``314`` 行；所属函数 ``memo callback @ 288``。
+**性质**：同步局部函数；源码第 ``260``—``270`` 行；所属函数 ``memo callback @ 244``。
 
 **参数**
 
@@ -384,17 +361,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``Math.max``、``setShowLeftShadow``、``setShowRightShadow``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:14665:14994:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:11056:11375:FUNCTION
 
-.. rubric:: ``useCallback callback @ 316``
+.. rubric:: ``useCallback callback @ 272``
 
 .. code-block:: javascript
 
-   useCallback callback @ 316(direction)
+   useCallback callback @ 272(direction)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``316``—``326`` 行；所属函数 ``memo callback @ 288``。
+**性质**：同步局部函数；源码第 ``272``—``282`` 行；所属函数 ``memo callback @ 244``。
 
 **参数**
 
@@ -407,17 +384,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``container.scrollTo``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15058:15214:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:11436:11587:FUNCTION
 
-.. rubric:: ``useMemo callback @ 329``
+.. rubric:: ``useMemo callback @ 285``
 
 .. code-block:: javascript
 
-   useMemo callback @ 329()
+   useMemo callback @ 285()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``329``—``334`` 行；所属函数 ``memo callback @ 288``。
+**性质**：同步局部函数；源码第 ``285``—``290`` 行；所属函数 ``memo callback @ 244``。
 
 **参数**
 
@@ -427,17 +404,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15285:15827:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:11655:12180:FUNCTION
 
-.. rubric:: ``useMemo callback @ 337``
+.. rubric:: ``useMemo callback @ 293``
 
 .. code-block:: javascript
 
-   useMemo callback @ 337()
+   useMemo callback @ 293()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``337``—``354`` 行；所属函数 ``memo callback @ 288``。
+**性质**：同步局部函数；源码第 ``293``—``310`` 行；所属函数 ``memo callback @ 244``。
 
 **参数**
 
@@ -451,17 +428,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15425:15818:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:11790:12172:FUNCTION
 
-.. rubric:: ``normalizedAttachments.map callback @ 342``
+.. rubric:: ``normalizedAttachments.map callback @ 298``
 
 .. code-block:: javascript
 
-   normalizedAttachments.map callback @ 342(attachment, index)
+   normalizedAttachments.map callback @ 298(attachment, index)
 
 作为 ``normalizedAttachments.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``342``—``353`` 行；所属函数 ``useMemo callback @ 337``。
+**性质**：同步局部函数；源码第 ``298``—``309`` 行；所属函数 ``useMemo callback @ 293``。
 
 **参数**
 
@@ -475,17 +452,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15933:16979:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:12284:13305:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 356``
+.. rubric:: ``useLayoutEffect callback @ 312``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 356()
+   useLayoutEffect callback @ 312()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``356``—``381`` 行；所属函数 ``memo callback @ 288``。
+**性质**：同步局部函数；源码第 ``312``—``337`` 行；所属函数 ``memo callback @ 244``。
 
 **参数**
 
@@ -504,7 +481,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:16144:16287:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:12490:12630:FUNCTION
 
 .. rubric:: ``scheduleCheck``
 
@@ -514,7 +491,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 实现 ``scheduleCheck`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``361``—``364`` 行；所属函数 ``useLayoutEffect callback @ 356``。
+**性质**：同步局部函数；源码第 ``317``—``320`` 行；所属函数 ``useLayoutEffect callback @ 312``。
 
 **参数**
 
@@ -530,17 +507,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``、``window.requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:16723:16971:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:13055:13298:FUNCTION
 
-.. rubric:: ``returned callback @ 375``
+.. rubric:: ``returned callback @ 331``
 
 .. code-block:: javascript
 
-   returned callback @ 375()
+   returned callback @ 331()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``375``—``380`` 行；所属函数 ``useLayoutEffect callback @ 356``。
+**性质**：同步局部函数；源码第 ``331``—``336`` 行；所属函数 ``useLayoutEffect callback @ 312``。
 
 **参数**
 
@@ -556,17 +533,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``、``container.removeEventListener``、``window.removeEventListener``、``resizeObserver?.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:17044:17193:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:13368:13514:FUNCTION
 
-.. rubric:: ``useEffect callback @ 383``
+.. rubric:: ``useEffect callback @ 339``
 
 .. code-block:: javascript
 
-   useEffect callback @ 383()
+   useEffect callback @ 339()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``383``—``386`` 行；所属函数 ``memo callback @ 288``。
+**性质**：同步局部函数；源码第 ``339``—``342`` 行；所属函数 ``memo callback @ 244``。
 
 **参数**
 
@@ -584,17 +561,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:17142:17185:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:13464:13507:FUNCTION
 
-.. rubric:: ``returned callback @ 385``
+.. rubric:: ``returned callback @ 341``
 
 .. code-block:: javascript
 
-   returned callback @ 385()
+   returned callback @ 341()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``385``—``385`` 行；所属函数 ``useEffect callback @ 383``。
+**性质**：同步局部函数；源码第 ``341``—``341`` 行；所属函数 ``useEffect callback @ 339``。
 
 **参数**
 
@@ -610,17 +587,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:18842:18873:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15124:15155:FUNCTION
 
-.. rubric:: ``onClick callback @ 425``
+.. rubric:: ``onClick callback @ 381``
 
 .. code-block:: javascript
 
-   onClick callback @ 425()
+   onClick callback @ 381()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``425``—``425`` 行；所属函数 ``memo callback @ 288``。
+**性质**：同步局部函数；源码第 ``381``—``381`` 行；所属函数 ``memo callback @ 244``。
 
 **参数**
 
@@ -632,17 +609,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``scrollAttachments``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:19090:19122:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15365:15397:FUNCTION
 
-.. rubric:: ``onClick callback @ 432``
+.. rubric:: ``onClick callback @ 388``
 
 .. code-block:: javascript
 
-   onClick callback @ 432()
+   onClick callback @ 388()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``432``—``432`` 行；所属函数 ``memo callback @ 288``。
+**性质**：同步局部函数；源码第 ``388``—``388`` 行；所属函数 ``memo callback @ 244``。
 
 **参数**
 
@@ -654,17 +631,17 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``scrollAttachments``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:19305:21348:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15572:17158:FUNCTION
 
-.. rubric:: ``memo callback @ 440``
+.. rubric:: ``memo callback @ 396``
 
 .. code-block:: javascript
 
-   memo callback @ 440(prevProps, nextProps)
+   memo callback @ 396(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``440``—``483`` 行。
+**性质**：同步局部函数；源码第 ``396``—``435`` 行。
 
 **参数**
 

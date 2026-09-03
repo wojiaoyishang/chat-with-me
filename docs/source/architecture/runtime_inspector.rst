@@ -2,8 +2,8 @@ Runtime Inspector 前端架构
 ================================================================================
 
 Runtime Inspector 是 CWM Runtime 可观测数据的 Backend-driven View。Storage V2 后，前端不再依赖 Message
-``extraInfo`` 中的快照；每次打开窗口都由后端根据 ModelCall、Context Manifest、ProviderRecord、
-ToolExecution 和 Message Tree 组装当前 ViewModel。
+``extraInfo`` 中的快照。V3 起它是严格的旁路诊断界面：打开窗口只请求轻量 ``overview``，ModelCall、
+Context Manifest、ProviderRecord、ToolExecution 和 Raw Message 在用户进入对应 Tab 后按需读取。
 
 Tab 与响应式布局
 --------------------------------------------------------------------------------
@@ -13,6 +13,25 @@ Tab 与响应式布局
 
 移动端使用 ``100dvh`` 全屏；桌面端显式覆盖通用 Dialog 的宽度限制，作为接近全屏的开发者工作区。
 所有长内容遵守 ``h-full + min-h-0 + flex-1 + overflow-y-auto``，全局 Pretty Scrollbar 负责统一滚动体验。
+
+
+消息流隔离与按需加载
+--------------------------------------------------------------------------------
+
+Runtime Inspector 的 HTTP 生命周期不得参与 Chat WebSocket 订阅。``ChatPage`` 的核心 ``onEvent`` Effect
+不依赖 Inspector 的 open/close 状态；事件处理器只通过稳定的 ``isOpenRef`` 判断是否需要把 Inspector 标记为
+``stale``。因此打开或关闭 Dialog 不会 unsubscribe/re-subscribe，也不会使 EventDispatchScheduler 中已经排队的
+``message.content.delta`` 因旧 registration 失活而被丢弃。
+
+``useRuntimeInspector`` 独立管理 Inspector HTTP：
+
+* 新请求使用 ``AbortController`` 取消旧请求，关闭窗口立即 abort；
+* ``turn.completed`` / ``conversation.tree.changed`` 只设置“有新 Runtime 数据”，不自动全量刷新；
+* ``brief`` 继续复用 ChatPage 已有 Message Summary，不复制第二份消息导航数据；
+* ``model-request`` / ``tools`` 先加载轻量 Model Call 列表，选中某个 Call 后才请求该 Call 的完整详情；
+* Context 与 Raw Messages 仅在首次进入对应 Tab 时读取，手动刷新时只刷新当前 Tab。
+
+这条边界保证 Inspector 是 Runtime 的观察者，而不是正常消息收发链路的一部分。
 
 Model Call 与 Usage
 --------------------------------------------------------------------------------

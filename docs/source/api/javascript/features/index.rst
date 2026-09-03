@@ -16,7 +16,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 238
+     - 232
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -86,7 +86,7 @@
    * - :doc:`src/features/chat/page/components/RuntimeInspectorDialog </api/javascript/features/chat/page/components/RuntimeInspectorDialog>`
      - 12
      - 0
-     - 50
+     - 56
      - ``src/features/chat/page/components/RuntimeInspectorDialog.jsx``
    * - :doc:`src/features/chat/page/components/ScrollToBottomButton </api/javascript/features/chat/page/components/ScrollToBottomButton>`
      - 0
@@ -123,6 +123,11 @@
      - 0
      - 42
      - ``src/features/chat/page/hooks/useFileUpload.js``
+   * - :doc:`src/features/chat/page/hooks/useRuntimeInspector </api/javascript/features/chat/page/hooks/useRuntimeInspector>`
+     - 4
+     - 0
+     - 29
+     - ``src/features/chat/page/hooks/useRuntimeInspector.js``
    * - :doc:`src/features/chat/page/utils/liveMessageReconcile </api/javascript/features/chat/page/utils/liveMessageReconcile>`
      - 7
      - 0
@@ -181,7 +186,7 @@
    * - :doc:`src/features/chat/ui/AttachmentShowcase </api/javascript/features/chat/ui/AttachmentShowcase>`
      - 2
      - 0
-     - 25
+     - 24
      - ``src/features/chat/ui/AttachmentShowcase.jsx``
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 8
@@ -439,7 +444,7 @@
      - 8
      - ``src/features/execution/ExecutionStatus.jsx``
    * - :doc:`src/features/execution/ExecutionWindow </api/javascript/features/execution/ExecutionWindow>`
-     - 6
+     - 7
      - 0
      - 27
      - ``src/features/execution/ExecutionWindow.jsx``
@@ -528,6 +533,11 @@
      - 0
      - 1
      - ``src/features/workspace/components/FolderBrowserDialog.jsx``
+   * - :doc:`src/features/workspace/components/WorkspaceTransferCard </api/javascript/features/workspace/components/WorkspaceTransferCard>`
+     - 9
+     - 0
+     - 4
+     - ``src/features/workspace/components/WorkspaceTransferCard.jsx``
    * - :doc:`src/features/workspace/useWorkspaceTransferStore </api/javascript/features/workspace/useWorkspaceTransferStore>`
      - 5
      - 0
@@ -560,6 +570,7 @@
    /api/javascript/features/chat/page/hooks/useChatSpeech
    /api/javascript/features/chat/page/hooks/useChatWindowMode
    /api/javascript/features/chat/page/hooks/useFileUpload
+   /api/javascript/features/chat/page/hooks/useRuntimeInspector
    /api/javascript/features/chat/page/utils/liveMessageReconcile
    /api/javascript/features/chat/page/utils/messageMountPoints
    /api/javascript/features/chat/page/utils/messageSummaries
@@ -641,5 +652,6 @@
    /api/javascript/features/workspace/WorkspaceSettingsDialog
    /api/javascript/features/workspace/components/FolderBrowser
    /api/javascript/features/workspace/components/FolderBrowserDialog
+   /api/javascript/features/workspace/components/WorkspaceTransferCard
    /api/javascript/features/workspace/useWorkspaceTransferStore
 

@@ -20,6 +20,7 @@ import { defaultRenderMarkdown } from './constants.jsx';
 import StatusWidget from './status/StatusWidget.jsx';
 import {ExecutionStatus} from '@/features/execution';
 import StoryCard from '@/features/story/StoryCard.jsx';
+import WorkspaceTransferCard from '@/features/workspace/components/WorkspaceTransferCard.jsx';
 import WidgetHost from './widget/WidgetHost.jsx';
 
 const CARD_TYPES_WITH_NESTED_MARKDOWN = new Set([
@@ -218,6 +219,16 @@ const CardBlock = memo(({
                 <ExecutionStatus
                     content={content}
                     conversationId={conversationId}
+                />
+            );
+
+
+        case 'workspaceTransfer':
+            return (
+                <WorkspaceTransferCard
+                    id={id}
+                    content={content}
+                    variant={String(renderSurface || '').toLowerCase() === 'task_window' ? 'compact' : 'conversation'}
                 />
             );
 

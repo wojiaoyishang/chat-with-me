@@ -17,6 +17,7 @@ import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import {FloatingDockWindow} from '@/components/window';
 import {Button} from '@/components/ui/button.tsx';
 import {upsertExecution} from './useExecutionStore.js';
+import WorkspaceTransferCard from '@/features/workspace/components/WorkspaceTransferCard.jsx';
 
 const realtimeActionErrorMessage = (response, fallback = '操作失败') => (
     response?.value
@@ -57,6 +58,21 @@ const ActivityStateIcon = ({activity, userGuidance}) => {
     if (state === 'cancelled') return <Square className="h-3.5 w-3.5 text-gray-400" aria-hidden="true"/>;
     if (state === 'completed' || state === 'accepted') return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true"/>;
     return <CircleDot className="h-3.5 w-3.5 text-gray-300" aria-hidden="true"/>;
+};
+
+const WORKSPACE_TRANSFER_TOOL_DIRECTIONS = {
+    workspace_import_artifact: 'artifact_to_workspace',
+    workspace_import_archive: 'artifact_to_workspace',
+    workspace_export: 'workspace_to_artifact',
+};
+
+const workspaceTransferDirectionForCard = (card) => {
+    const names = Array.isArray(card?.toolNames) ? card.toolNames : [];
+    for (const name of names) {
+        const direction = WORKSPACE_TRANSFER_TOOL_DIRECTIONS[String(name || '').trim()];
+        if (direction) return direction;
+    }
+    return null;
 };
 
 const timelineTimestamp = (item) => {
@@ -327,6 +343,7 @@ const ExecutionWindow = memo(({
                                         const card = item.card || {};
                                         const replacementId = String(card?.replacementId || '').trim();
                                         const exists = replacementId && Object.prototype.hasOwnProperty.call(ownerReplacement, replacementId);
+                                        const workspaceTransferDirection = workspaceTransferDirectionForCard(card);
                                         return (
                                             <div
                                                 key={item.key}
@@ -384,6 +401,14 @@ const ExecutionWindow = memo(({
                                                             : '当前消息已不在可见消息链中。'}
                                                     </div>
                                                 )}
+                                                {workspaceTransferDirection ? (
+                                                    <WorkspaceTransferCard
+                                                        toolCallId={card.toolCallId}
+                                                        direction={workspaceTransferDirection}
+                                                        fallbackStatus={card.state}
+                                                        variant="compact"
+                                                    />
+                                                ) : null}
                                             </div>
                                         );
                                     }

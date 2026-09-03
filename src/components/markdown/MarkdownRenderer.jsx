@@ -184,7 +184,7 @@ const normalizeReplacementCopyEntry = (replacement, id) => {
     // the Assistant transcript. Keep message-level copy/TTS semantics aligned with
     // what the conversation surface actually shows instead of expanding hidden
     // command/log/result payloads back into the copied answer.
-    if (String(protocol.type || '').toLowerCase() === 'taskwindowtool') {
+    if (['taskwindowtool', 'workspacetransfer'].includes(String(protocol.type || '').toLowerCase())) {
         return {
             exists: true,
             id: normalizedId,

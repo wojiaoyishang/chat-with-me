@@ -128,3 +128,11 @@ continuity requirement. DeepSeek-compatible `required_with_tools` is shown as a 
 constraint so a missing `reasoning_content` can be distinguished from an ordinary user replay
 preference.
 
+
+## Workspace canonical resource paths
+
+Workspace path identity is backend-owned and model-facing paths now use only the explicit resource form
+`cwm://workspace/@<workspaceId>/<path>` (root: `cwm://workspace/@<workspaceId>/`). The frontend treats
+these values as opaque tool/lazy-resource identifiers; it does not resolve them to browser URLs or host
+paths. Workspace transfer cards continue to use `transferId/toolCallId/executionId` and are unaffected by
+this stricter path namespace.

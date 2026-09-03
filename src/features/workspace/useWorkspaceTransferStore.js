@@ -7,6 +7,8 @@ const normalizeTransfer = (value) => {
     return {
         ...value,
         artifactId: value.artifactId || value.serverId || null,
+        toolCallId: value.toolCallId || value.tool_call_id || null,
+        executionId: value.executionId || value.execution_id || null,
         progress: Number.isFinite(Number(value.progress))
             ? Math.max(0, Math.min(1, Number(value.progress)))
             : value.status === 'completed' ? 1 : null,
@@ -16,7 +18,7 @@ const normalizeTransfer = (value) => {
 export const useWorkspaceTransferStore = create((set) => ({
     transfersById: {},
     executionTransferIds: {},
-    latestTransferIdByArtifact: {},
+    toolCallTransferIds: {},
 
     upsertTransfer: (incoming) => set((state) => {
         const transfer = normalizeTransfer(incoming);
@@ -26,7 +28,7 @@ export const useWorkspaceTransferStore = create((set) => ({
         const merged = {...existing, ...transfer};
         const transfersById = {...state.transfersById, [transfer.transferId]: merged};
         const executionTransferIds = {...state.executionTransferIds};
-        const latestTransferIdByArtifact = {...state.latestTransferIdByArtifact};
+        const toolCallTransferIds = {...state.toolCallTransferIds};
 
         if (merged.executionId) {
             const current = executionTransferIds[merged.executionId] || EMPTY_TRANSFERS;
@@ -34,17 +36,20 @@ export const useWorkspaceTransferStore = create((set) => ({
                 executionTransferIds[merged.executionId] = [...current, merged.transferId];
             }
         }
-        if (merged.artifactId) {
-            latestTransferIdByArtifact[merged.artifactId] = merged.transferId;
+        if (merged.toolCallId) {
+            const current = toolCallTransferIds[merged.toolCallId] || EMPTY_TRANSFERS;
+            if (!current.includes(merged.transferId)) {
+                toolCallTransferIds[merged.toolCallId] = [...current, merged.transferId];
+            }
         }
 
-        return {transfersById, executionTransferIds, latestTransferIdByArtifact};
+        return {transfersById, executionTransferIds, toolCallTransferIds};
     }),
 
     clearConversationTransfers: () => set({
         transfersById: {},
         executionTransferIds: {},
-        latestTransferIdByArtifact: {},
+        toolCallTransferIds: {},
     }),
 }));
 
@@ -56,9 +61,10 @@ export const clearWorkspaceTransfers = () => {
     useWorkspaceTransferStore.getState().clearConversationTransfers();
 };
 
-export const selectArtifactTransfer = (state, artifactId) => {
-    if (!artifactId) return null;
-    const transferId = state.latestTransferIdByArtifact[artifactId];
+export const selectToolCallTransfer = (state, toolCallId) => {
+    if (!toolCallId) return null;
+    const ids = state.toolCallTransferIds[toolCallId] || EMPTY_TRANSFERS;
+    const transferId = ids[ids.length - 1];
     return transferId ? state.transfersById[transferId] || null : null;
 };
 

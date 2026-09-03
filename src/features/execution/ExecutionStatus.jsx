@@ -5,11 +5,23 @@ import ExecutionGuidanceBubble from './ExecutionGuidanceBubble.jsx';
 import {openExecution, upsertExecution, useExecutionStore} from './useExecutionStore.js';
 
 const parseExecution = (content, conversationId) => {
+    const raw = String(content ?? '').trim();
+    // Empty replacements are the backend's canonical way to remove transient
+    // execution rows. They are not an empty Execution snapshot.
+    if (!raw) return null;
+
     try {
-        const parsed = JSON.parse(String(content || '{}'));
-        if (!parsed || typeof parsed !== 'object') return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+
+        const executionId = String(parsed.executionId || '').trim();
+        const statusId = String(parsed.statusId || '').trim();
+        if (!executionId || !statusId) return null;
+
         return {
             ...parsed,
+            executionId,
+            statusId,
             conversationId: String(parsed.conversationId || conversationId || '').trim(),
         };
     } catch {
@@ -43,13 +55,48 @@ const ExecutionStatus = memo(({content = '', conversationId = null}) => {
 
     const inlineState = String(execution.inlineState || '').toLowerCase();
     const status = String(execution.status || '').toLowerCase();
-    const done = Boolean(execution.done) || ['completed', 'failed', 'cancelled'].includes(inlineState);
-    const active = inlineState === 'running' || (!inlineState && Boolean(execution.active) && !done);
+    const explicitLabel = String(execution.label || '').trim();
     const failed = inlineState === 'failed' || status === 'blocked' || status === 'failed' || status === 'recoverable_failed';
-    const cancelled = inlineState === 'cancelled';
+    const cancelled = inlineState === 'cancelled' || status === 'cancelled';
     const recovering = !inlineState && status === 'recovering';
-    const Icon = failed ? CircleAlert : cancelled ? CircleX : recovering ? RotateCcw : active ? Loader2 : Check;
-    const label = execution.label || (active ? '正在执行' : status === 'cancelled' ? '执行已停止' : '执行完成');
+    const completed = inlineState === 'completed' || status === 'completed';
+    const historicalDone = Boolean(execution.done) && !failed && !cancelled && !completed;
+    const active = inlineState === 'running' || (
+        !inlineState
+        && Boolean(execution.active)
+        && !failed
+        && !cancelled
+        && !completed
+        && !historicalDone
+    );
+
+    // Do not turn an unknown/incomplete payload into a success state. A check mark
+    // is reserved for an explicit completed state or a valid frozen historical row.
+    const renderable = failed || cancelled || recovering || active || completed || historicalDone;
+    if (!renderable) return null;
+
+    const Icon = failed
+        ? CircleAlert
+        : cancelled
+            ? CircleX
+            : recovering
+                ? RotateCcw
+                : active
+                    ? Loader2
+                    : Check;
+    const label = explicitLabel || (
+        completed
+            ? '执行完成'
+            : cancelled
+                ? '执行已停止'
+                : failed
+                    ? (status === 'blocked' ? '执行需要处理' : '执行失败')
+                    : recovering
+                        ? '正在恢复执行'
+                        : active
+                            ? '正在执行'
+                            : '阶段已完成'
+    );
     const nodeStatusId = String(execution.statusId || '').trim();
     const activitySource = liveExecution?.activities || execution.activities || [];
     const guidanceActivities = activitySource.filter((activity) => (

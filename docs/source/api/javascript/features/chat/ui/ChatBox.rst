@@ -4556,7 +4556,7 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``closeVoicePermissionDialog``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:123316:126060:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:123316:125975:FUNCTION
 
 .. rubric:: ``memo callback @ 2777``
 
@@ -4566,7 +4566,7 @@ src/features/chat/ui/ChatBox 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2777``—``2830`` 行。
+**性质**：同步局部函数；源码第 ``2777``—``2829`` 行。
 
 **参数**
 

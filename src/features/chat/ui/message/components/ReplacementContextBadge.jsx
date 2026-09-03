@@ -4,7 +4,8 @@ import CompactedContextIndicator from './CompactedContextIndicator.jsx';
 
 const isToolReplacement = (replacementId) => {
     const value = String(replacementId || '');
-    return value.startsWith('tool-result-')
+    return value.startsWith('workspace-transfer:')
+        || value.startsWith('tool-result-')
         || value.endsWith('-toolCalling')
         || value.endsWith('-toolCommand')
         || value.endsWith('-toolLog');

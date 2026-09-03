@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/dialog';
 import MessageSummaryItem from './MessageSummaryItem.jsx';
 
-const formatNumber = (value) => Number(value || 0).toLocaleString();
+const formatNumber = (value) => (value == null ? '—' : Number(value || 0).toLocaleString());
 
 
 const usageSourceLabels = {
@@ -191,7 +191,7 @@ const ModelCallSelector = ({calls, selectedId, onSelect}) => (
                         <span className="font-medium">Model Call #{call.sequence || index + 1}</span>
                     </div>
                     <div className="mt-1 truncate text-xs text-muted-foreground">
-                        {call?.model?.name || call?.model?.modelId || '模型'} · {formatNumber(call?.summary?.messageCount)} msgs
+                        {call?.model?.name || call?.model?.modelId || '模型'} · {call?.summary?.messageCount == null ? '—' : formatNumber(call.summary.messageCount)} msgs
                     </div>
                     <div className="mt-1 truncate font-mono text-[10px] text-muted-foreground">
                         {call.modelCallId}
@@ -280,7 +280,7 @@ const PromptCompositionPanel = ({composition}) => {
     );
 };
 
-const ModelCallBrowser = ({section}) => {
+const ModelCallBrowser = ({section, onLoadModelCall, loadingModelCallId}) => {
     const calls = Array.isArray(section?.modelCalls) ? section.modelCalls : [];
     const [selectedId, setSelectedId] = useState(section?.selectedModelCallId || calls.at(-1)?.modelCallId || '');
     useEffect(() => {
@@ -288,6 +288,18 @@ const ModelCallBrowser = ({section}) => {
         if (!calls.some(item => item.modelCallId === selectedId)) setSelectedId(next);
     }, [calls, section?.selectedModelCallId, selectedId]);
     const selected = calls.find(item => item.modelCallId === selectedId) || calls.at(-1);
+    const detailLoaded = selected?.detailLoaded === true;
+    useEffect(() => {
+        if (selected?.modelCallId && !detailLoaded) {
+            onLoadModelCall?.(selected.modelCallId);
+        }
+    }, [detailLoaded, onLoadModelCall, selected?.modelCallId]);
+
+    const handleSelect = (modelCallId) => {
+        setSelectedId(modelCallId);
+        const target = calls.find(item => item.modelCallId === modelCallId);
+        if (target && target.detailLoaded !== true) onLoadModelCall?.(modelCallId);
+    };
 
     if (!selected) {
         return <EmptyState>这个历史 Assistant 消息没有 Runtime Inspector 模型请求快照。新版本生成的回复会自动记录。</EmptyState>;
@@ -296,8 +308,14 @@ const ModelCallBrowser = ({section}) => {
     const roleCounts = selected?.summary?.roleCounts || {};
     return (
         <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row">
-            <ModelCallSelector calls={calls} selectedId={selected?.modelCallId} onSelect={setSelectedId}/>
+            <ModelCallSelector calls={calls} selectedId={selected?.modelCallId} onSelect={handleSelect}/>
             <div className="pretty-scrollbar min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable] sm:p-4 lg:p-5">
+                {!detailLoaded ? (
+                    <div className="flex min-h-56 items-center justify-center gap-2 rounded-xl border border-dashed text-sm text-muted-foreground">
+                        <Loader2 className={`size-4 ${loadingModelCallId === selected.modelCallId ? 'animate-spin' : ''}`}/>
+                        正在按需读取这个 Model Call 的上下文与 Provider Records…
+                    </div>
+                ) : (<>
                 <section className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     <div className="rounded-xl border p-3"><div className="text-xs text-muted-foreground">消息</div><div className="mt-1 text-lg font-semibold">{formatNumber(selected?.summary?.messageCount)}</div></div>
                     <UsageMetric label="输入 Token" metric={selected?.usage?.inputTokens}/>
@@ -405,6 +423,7 @@ const ModelCallBrowser = ({section}) => {
                     <p className="mt-2 text-xs text-muted-foreground">请求元数据、响应身份、真实 usage 与错误由 Model Call Recorder 自动记录。</p>
                     <div className="mt-3"><JsonBlock value={selected.providerRecords || []} title="Provider Records"/></div>
                 </details>
+                </>)}
             </div>
         </div>
     );
@@ -520,15 +539,29 @@ const RawMessageBrowser = ({section, onJump}) => {
     );
 };
 
-const ToolBrowser = ({section}) => {
+const ToolBrowser = ({section, onLoadToolCall, loadingToolCallId}) => {
     const calls = Array.isArray(section?.modelCalls) ? section.modelCalls : [];
-    const [selectedId, setSelectedId] = useState(calls.at(-1)?.modelCallId || '');
+    const [selectedId, setSelectedId] = useState(section?.selectedModelCallId || calls.at(-1)?.modelCallId || '');
     const [filter, setFilter] = useState('enabled');
     const [query, setQuery] = useState('');
     useEffect(() => {
-        if (!calls.some(item => item.modelCallId === selectedId)) setSelectedId(calls.at(-1)?.modelCallId || '');
-    }, [calls, selectedId]);
+        const next = section?.selectedModelCallId || calls.at(-1)?.modelCallId || '';
+        if (!calls.some(item => item.modelCallId === selectedId)) setSelectedId(next);
+    }, [calls, section?.selectedModelCallId, selectedId]);
     const selected = calls.find(item => item.modelCallId === selectedId) || calls.at(-1);
+    const toolDetailLoaded = selected?.toolDetailLoaded === true || selected?.detailLoaded === true;
+    useEffect(() => {
+        if (selected?.modelCallId && !toolDetailLoaded) {
+            onLoadToolCall?.(selected.modelCallId);
+        }
+    }, [onLoadToolCall, selected?.modelCallId, toolDetailLoaded]);
+    const handleSelect = (modelCallId) => {
+        setSelectedId(modelCallId);
+        const target = calls.find(item => item.modelCallId === modelCallId);
+        if (target && target.toolDetailLoaded !== true && target.detailLoaded !== true) {
+            onLoadToolCall?.(modelCallId);
+        }
+    };
     const tools = selected?.tools || {};
     const catalog = useMemo(() => {
         if (Array.isArray(tools.catalog)) return tools.catalog;
@@ -564,8 +597,14 @@ const ToolBrowser = ({section}) => {
     if (!selected) return <EmptyState>没有可用的 Model Call 工具快照。</EmptyState>;
     return (
         <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row">
-            <ModelCallSelector calls={calls} selectedId={selected.modelCallId} onSelect={setSelectedId}/>
+            <ModelCallSelector calls={calls} selectedId={selected.modelCallId} onSelect={handleSelect}/>
             <div className="pretty-scrollbar min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable] sm:p-4 lg:p-5">
+                {!toolDetailLoaded ? (
+                    <div className="flex min-h-56 items-center justify-center gap-2 rounded-xl border border-dashed text-sm text-muted-foreground">
+                        <Loader2 className={`size-4 ${loadingToolCallId === selected.modelCallId ? 'animate-spin' : ''}`}/>
+                        正在按需读取这个 Model Call 的工具快照…
+                    </div>
+                ) : (<>
                 <section className="flex flex-wrap gap-2">
                     <Badge>{tools.providerManaged ? 'Provider Native' : 'Prompt Managed'}</Badge>
                     <Badge variant="outline">启用 {tools.enabledNames?.length || 0}</Badge>
@@ -650,6 +689,7 @@ const ToolBrowser = ({section}) => {
                         </div>
                     )) : <p className="text-sm text-muted-foreground">没有 Toolset 元数据。</p>}
                 </section>
+                </>)}
             </div>
         </div>
     );
@@ -688,10 +728,35 @@ const sectionRenderers = {
     'message-summary-browser': BriefBrowser,
 };
 
-const RuntimeSectionRenderer = ({section, activeMessageId, onJump}) => {
+const RuntimeSectionRenderer = ({
+    section,
+    activeMessageId,
+    onJump,
+    onLoadModelCall,
+    onLoadToolCall,
+    modelCallLoadingId,
+    toolCallLoadingId,
+}) => {
+    if (section?.loaded === false) {
+        return (
+            <div className="flex h-full min-h-44 items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin"/>正在按需读取当前 Inspector 页面…
+            </div>
+        );
+    }
     const Renderer = sectionRenderers[section?.type];
     if (!Renderer) return <JsonBlock value={section} title={`Unsupported section: ${section?.type || 'unknown'}`}/>;
-    return <Renderer section={section} activeMessageId={activeMessageId} onJump={onJump}/>;
+    return (
+        <Renderer
+            section={section}
+            activeMessageId={activeMessageId}
+            onJump={onJump}
+            onLoadModelCall={onLoadModelCall}
+            onLoadToolCall={onLoadToolCall}
+            loadingModelCallId={modelCallLoadingId}
+            loadingToolCallId={toolCallLoadingId}
+        />
+    );
 };
 
 const RuntimeInspectorDialog = memo(({
@@ -699,10 +764,18 @@ const RuntimeInspectorDialog = memo(({
     document,
     loading = false,
     error = '',
+    stale = false,
     activeMessageId,
+    briefItems = [],
+    briefLoading = false,
+    modelCallLoadingId = '',
+    toolCallLoadingId = '',
     onClose,
     onRefresh,
     onJumpToMessage,
+    onTabChange,
+    onLoadModelCall,
+    onLoadToolCall,
 }) => {
     const tabs = Array.isArray(document?.tabs) ? document.tabs : [];
     const [activeTab, setActiveTab] = useState(document?.defaultTab || tabs[0]?.id || '');
@@ -711,6 +784,15 @@ const RuntimeInspectorDialog = memo(({
         if (!tabs.some(tab => tab.id === activeTab)) setActiveTab(next);
     }, [document?.defaultTab, tabs, activeTab]);
     const currentTab = tabs.find(tab => tab.id === activeTab) || tabs[0];
+    const currentSection = currentTab?.id === 'brief'
+        ? {
+            ...(currentTab?.section || {}),
+            type: 'message-summary-browser',
+            loaded: !briefLoading || briefItems.length > 0,
+            items: briefItems,
+            focusMessageId: activeMessageId,
+        }
+        : currentTab?.section;
 
     const handleJump = (messageId) => {
         onClose?.();
@@ -727,7 +809,10 @@ const RuntimeInspectorDialog = memo(({
                     <div className="flex items-center gap-3">
                         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Activity className="size-5"/></div>
                         <div className="min-w-0 flex-1">
-                            <DialogTitle className="truncate">{document?.title || 'Runtime Inspector'}</DialogTitle>
+                            <div className="flex min-w-0 items-center gap-2">
+                                <DialogTitle className="truncate">{document?.title || 'Runtime Inspector'}</DialogTitle>
+                                {stale ? <Badge variant="outline" className="shrink-0 border-amber-300/70 text-amber-700">有新 Runtime 数据</Badge> : null}
+                            </div>
                             <DialogDescription className="mt-1 truncate text-xs">{document?.conversationTitle || document?.subtitle || '运行时检查器'}</DialogDescription>
                         </div>
                         <Button type="button" variant="ghost" size="icon-sm" onClick={onRefresh} disabled={loading} title="刷新">
@@ -764,18 +849,31 @@ const RuntimeInspectorDialog = memo(({
                                                 : tab.id === 'brief' ? MessageSquareText : Braces;
                                 const Icon = icon;
                                 return (
-                                    <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)} className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm transition ${active ? 'bg-background font-medium shadow-sm ring-1 ring-border' : 'text-muted-foreground hover:bg-background/70 hover:text-foreground'}`}>
+                                    <button key={tab.id} type="button" onClick={() => { setActiveTab(tab.id); onTabChange?.(tab.id); }} className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm transition ${active ? 'bg-background font-medium shadow-sm ring-1 ring-border' : 'text-muted-foreground hover:bg-background/70 hover:text-foreground'}`}>
                                         <Icon className="size-4"/>{tab.label}
                                     </button>
                                 );
                             })}
                         </nav>
                         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                            {error ? (
+                                <div className="shrink-0 border-b border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive sm:px-4">{error}</div>
+                            ) : null}
                             {currentTab?.description && (
                                 <div className="shrink-0 border-b bg-muted/10 px-3 py-2 text-xs text-muted-foreground sm:px-4">{currentTab.description}</div>
                             )}
                             <div className="min-h-0 flex-1 overflow-hidden">
-                                {currentTab ? <RuntimeSectionRenderer section={currentTab.section} activeMessageId={activeMessageId} onJump={handleJump}/> : <EmptyState>没有 Inspector 页面。</EmptyState>}
+                                {currentTab ? (
+                                    <RuntimeSectionRenderer
+                                        section={currentSection}
+                                        activeMessageId={activeMessageId}
+                                        onJump={handleJump}
+                                        onLoadModelCall={onLoadModelCall}
+                                        onLoadToolCall={onLoadToolCall}
+                                        modelCallLoadingId={modelCallLoadingId}
+                                        toolCallLoadingId={toolCallLoadingId}
+                                    />
+                                ) : <EmptyState>没有 Inspector 页面。</EmptyState>}
                             </div>
                         </div>
                     </>

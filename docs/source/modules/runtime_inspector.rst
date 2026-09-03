@@ -7,12 +7,12 @@ Runtime Inspector 模块
 .. js:function:: RuntimeInspectorDialog(props)
    :no-index:
 
-   Runtime Inspector 响应式顶层窗口。处理 Tab、刷新、关闭和消息跳转，不负责 ModelCall/Context/Tool 业务推导。
+   Runtime Inspector 响应式顶层窗口。处理 Tab、刷新、关闭、stale 提示和消息跳转；重型 Section 通过回调按需加载。
 
 .. js:function:: RuntimeSectionRenderer(props)
    :no-index:
 
-   按后端 ``section.type`` 选择固定 Renderer；未知类型安全退化成 JSON Viewer。
+   按后端 ``section.type`` 选择固定 Renderer；``loaded=false`` 显示按需加载状态，未知类型安全退化成 JSON Viewer。
 
 .. js:function:: ModelCallBrowser(props)
    :no-index:
@@ -46,3 +46,12 @@ Runtime Inspector 模块
 
 V53 起 ``ModelCallBrowser`` 还展示后端计算的 ``apiProtocol``、``openaiCompatibilityProfile`` 与
 ``reasoningContinuity``，用于检查 Direct OpenAI-compatible Provider 的实际兼容策略。
+
+.. js:module:: src/features/chat/page/hooks/useRuntimeInspector
+   :no-index:
+
+.. js:function:: useRuntimeInspector(conversationId)
+   :no-index:
+
+   Inspector 专用 Controller。维护可取消 HTTP 请求、Section/ModelCall 缓存和 stale 状态，并通过稳定
+   ``isOpenRef`` 与 Chat WebSocket 事件处理器通信；其 open/close 状态不得进入核心消息订阅 Effect 的依赖。

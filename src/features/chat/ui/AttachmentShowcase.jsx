@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { Transition } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
-import {CircleCheck, CircleX, Eye, EyeOff, Loader2, X} from 'lucide-react';
-import {selectArtifactTransfer, useWorkspaceTransferStore} from '@/features/workspace/useWorkspaceTransferStore.js';
+import {Eye, EyeOff, X} from 'lucide-react';
 import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {isAttachmentVisionEnabled, isImageAttachment, normalizeAttachmentList} from '../attachmentVision.js';
 
@@ -36,28 +35,9 @@ const AttachmentItem = memo(({
     msgMode,
     t,
 }) => {
-    const artifactId = attachment.artifactId || attachment.serverId;
     const resolvedPreviewUrl = attachment.previewType === 'svg' ? attachment.preview : resolveResourceUrl(attachment.preview);
     const resolvedDownloadUrl = resolveResourceUrl(attachment.downloadUrl);
     const usesDefaultIcon = isDefaultFileIcon(attachment);
-    const storeTransfer = useWorkspaceTransferStore(state => selectArtifactTransfer(state, artifactId));
-    const transfer = attachment.workspaceTransfer || storeTransfer;
-    const transferProgress = Number.isFinite(Number(transfer?.progress))
-        ? Math.round(Number(transfer.progress) * 100)
-        : null;
-    const transferStatusText = transfer?.status === 'completed'
-        ? t('workspace_transfer_completed', '已完成 Workspace 文件传输')
-        : transfer?.status === 'failed'
-            ? t('workspace_transfer_failed', 'Workspace 文件传输失败')
-            : transfer
-                ? ({
-                    preparing: t('workspace_transfer_preparing', 'AI 正在准备文件'),
-                    transferring: t('workspace_transfer_transferring', 'AI 正在传输文件'),
-                    verifying: t('workspace_transfer_verifying', 'AI 正在校验文件'),
-                    extracting: t('workspace_transfer_extracting', 'AI 正在安全解压'),
-                    applying: t('workspace_transfer_applying', 'AI 正在写入 Workspace'),
-                }[transfer.stage] || t('workspace_transfer_running', 'AI 正在处理文件'))
-                : '';
     const imageAttachment = isImageAttachment(attachment);
     const visionEnabled = isAttachmentVisionEnabled(attachment);
     const showVisionToggle = !msgMode && visionSupported && imageAttachment;
@@ -130,29 +110,9 @@ const AttachmentItem = memo(({
                     <div className="text-sm font-medium text-gray-800 truncate max-w-[180px]">
                         {attachment.name}
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                        <span>{formatFileSize(attachment.size)}</span>
-                        {transfer?.status === 'completed' ? <CircleCheck className="h-3 w-3 text-emerald-600"/> : null}
-                        {transfer?.status === 'failed' ? <CircleX className="h-3 w-3 text-red-500"/> : null}
-                        {transfer && !['completed', 'failed', 'cancelled'].includes(transfer.status)
-                            ? <Loader2 className="h-3 w-3 animate-spin text-blue-600"/>
-                            : null}
+                    <div className="text-xs text-gray-500">
+                        {formatFileSize(attachment.size)}
                     </div>
-                    {transfer ? (
-                        <div className="mt-1 min-w-0">
-                            <div className={`truncate text-[10px] ${transfer.status === 'failed' ? 'text-red-600' : transfer.status === 'completed' ? 'text-emerald-700' : 'text-blue-700'}`}>
-                                {transferStatusText}{transferProgress !== null && transfer.status !== 'completed' ? ` · ${transferProgress}%` : ''}
-                            </div>
-                            {transfer.status !== 'completed' && transfer.status !== 'failed' ? (
-                                <div className="mt-1 h-1 overflow-hidden rounded-full bg-blue-100">
-                                    <div
-                                        className="h-full rounded-full bg-blue-500 transition-[width] duration-300"
-                                        style={{width: `${transferProgress ?? 8}%`}}
-                                    />
-                                </div>
-                            ) : null}
-                        </div>
-                    ) : null}
                 </div>
 
                 {showVisionToggle ? (
@@ -196,10 +156,6 @@ const AttachmentItem = memo(({
         prevAttachment.mimeType === nextAttachment.mimeType &&
         prevAttachment.visionEnabled === nextAttachment.visionEnabled &&
         (prevAttachment.artifactId || prevAttachment.serverId) === (nextAttachment.artifactId || nextAttachment.serverId) &&
-        prevAttachment.workspaceTransfer?.transferId === nextAttachment.workspaceTransfer?.transferId &&
-        prevAttachment.workspaceTransfer?.status === nextAttachment.workspaceTransfer?.status &&
-        prevAttachment.workspaceTransfer?.stage === nextAttachment.workspaceTransfer?.stage &&
-        prevAttachment.workspaceTransfer?.progress === nextAttachment.workspaceTransfer?.progress &&
         prevProps.msgMode === nextProps.msgMode &&
         prevProps.onRemove === nextProps.onRemove &&
         prevProps.onVisionToggle === nextProps.onVisionToggle &&
@@ -463,11 +419,7 @@ const AttachmentShowcase = memo(({
             prevAttachment.fileType !== nextAttachment.fileType ||
             prevAttachment.mimeType !== nextAttachment.mimeType ||
             prevAttachment.visionEnabled !== nextAttachment.visionEnabled ||
-            (prevAttachment.artifactId || prevAttachment.serverId) !== (nextAttachment.artifactId || nextAttachment.serverId) ||
-            prevAttachment.workspaceTransfer?.transferId !== nextAttachment.workspaceTransfer?.transferId ||
-            prevAttachment.workspaceTransfer?.status !== nextAttachment.workspaceTransfer?.status ||
-            prevAttachment.workspaceTransfer?.stage !== nextAttachment.workspaceTransfer?.stage ||
-            prevAttachment.workspaceTransfer?.progress !== nextAttachment.workspaceTransfer?.progress
+            (prevAttachment.artifactId || prevAttachment.serverId) !== (nextAttachment.artifactId || nextAttachment.serverId)
         ) {
             return false;
         }

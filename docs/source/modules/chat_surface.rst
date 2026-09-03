@@ -171,3 +171,19 @@ Edit/Fork 新路径、删除等）时窗口自动关闭。
 Task Window 的 Tool Calling 与任务日志在 V42 合并成一条按发生时间排序的执行时间线；用户补充、模型/Runtime 活动与
 完整 Tool Calling Card 可以自然穿插显示，不再维护“工具调用”和“任务日志”两个割裂区块。标题栏同时提供显式自动置底
 按钮：默认跟随流式增长，用户向上滚动后暂停，点击按钮才恢复并跳到最新活动。
+
+Workspace 文件传输正文卡
+--------------------------------------------------------------------------------
+
+Workspace 文件交换不再把进度状态挂在 ``AttachmentShowcase``。``workspace_import_artifact``、
+``workspace_import_archive`` 与 ``workspace_export`` 会在 Assistant 正文创建一个
+``workspaceTransfer`` Replace Card；其 host id 使用 ``workspace-transfer:<toolCallId>``，实际传输状态
+仍以 ``transferId`` 为权威身份。
+
+卡片持久 payload 只保存稳定/最终快照，实时 ``progress / transferredBytes / totalBytes / stage`` 由
+``workspace.transfer.state_changed`` 写入 ``useWorkspaceTransferStore``，组件通过 ``toolCallId`` 找到当前
+Transfer 并原地刷新。因此进度变化不会持续改写 Conversation Message。Task Window 复用同一个
+``WorkspaceTransferCard`` 的 compact variant，不维护第二份进度状态。
+
+``AttachmentShowcase`` 现在只表示文件实体：名称、大小、预览/下载与图片视觉开关。Workspace ->
+Conversation 导出完成后仍会生成标准聊天 Attachment，但“传输过程”和“最终文件实体”已彻底解耦。

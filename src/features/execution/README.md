@@ -38,6 +38,20 @@ Execution/Task snapshots and hidden lifecycle Tool Calls remain absent from the 
 timeline. If `task_finish` is rejected, normal tools resume; if late user guidance arrives first,
 that guidance takes precedence over the forced finish request.
 
+## Inline Execution status terminal semantics
+
+`executionStatus` replacements use empty frontend content as a deletion signal for transient rows.
+`ExecutionStatus` therefore treats an empty/invalid payload as non-rendering; it never coerces it to
+`{}` or falls back to a success check mark. A visible `执行完成` label requires an explicit
+`status=completed` / `inlineState=completed` terminal snapshot. Frozen historical phase/tool rows may
+still render a check mark when they carry a valid `done=true` snapshot and their own concrete label.
+
+The backend keeps `continuationStatusId` separate from the durable `currentStatusId`. Continuation
+rows such as `正在继续执行任务` / `正在确认任务完成` are always transient tail hosts and never become
+the terminal anchor. After the authorized `final_response` finishes, Runtime appends one fresh
+terminal `executionStatus` replacement at the current Assistant-message tail. This guarantees a
+single `✓ 执行完成` after the final answer instead of recycling an earlier continuation/tool row.
+
 ## Window ownership
 
 The Task Window belongs to the Assistant message that created the Execution.
@@ -118,3 +132,21 @@ helpers routed into an already-active Task Mode use `<display name> · 执行中
 The backend also terminalizes a provisional Native Tool Card when the call aborts before
 `prepare`, so a repaired or following call appears as a new independent timeline item instead
 of sitting below a stale `running` card.
+
+## Workspace transfer cards
+
+Workspace file exchange is no longer rendered as progress inside `AttachmentShowcase`. The backend creates a
+conversation Replace Card with transport type `workspaceTransfer` for each
+`workspace_import_artifact` / `workspace_import_archive` / `workspace_export` Tool Call. The full card remains
+in Assistant正文 and reads live `workspace.transfer.state_changed` state from `useWorkspaceTransferStore`.
+
+`ExecutionWindow` reuses the same `WorkspaceTransferCard` with `variant="compact"` under the matching Tool
+Calling card. Both surfaces therefore consume the same `transferId` state rather than maintaining separate
+percentages. `toolCallId` is only the current ownership/index key; no `invocationId` migration is implied.
+
+## Workspace delivery completion semantics
+
+`workspace_export` success is now explicitly reported to the model as `deliveryCompleted=true`. Within the
+same durable Execution the backend also deduplicates an identical successful export, so repeated model calls
+reuse the existing Artifact instead of creating another transfer. This is a backend lifecycle guarantee;
+`ExecutionWindow` continues to render the concrete Tool Call plus the shared `WorkspaceTransferCard` state.

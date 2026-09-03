@@ -16,6 +16,7 @@ import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
 import RuntimeInspectorDialog from '@/features/chat/page/components/RuntimeInspectorDialog.jsx';
+import useRuntimeInspector from '@/features/chat/page/hooks/useRuntimeInspector.js';
 import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
 import StoryReader from '@/features/story/StoryReader.jsx';
 import {ExecutionHost} from '@/features/execution';
@@ -194,11 +195,24 @@ function ChatPage({
     );
     const [messageSummaries, setMessageSummaries] = useState([]);
     const [messageSummaryLoading, setMessageSummaryLoading] = useState(false);
-    const [runtimeInspectorOpen, setRuntimeInspectorOpen] = useState(false);
-    const [runtimeInspectorDocument, setRuntimeInspectorDocument] = useState(null);
-    const [runtimeInspectorLoading, setRuntimeInspectorLoading] = useState(false);
-    const [runtimeInspectorError, setRuntimeInspectorError] = useState('');
-    const runtimeInspectorRequestVersionRef = useRef(0);
+    const {
+        open: runtimeInspectorOpen,
+        document: runtimeInspectorDocument,
+        loading: runtimeInspectorLoading,
+        error: runtimeInspectorError,
+        stale: runtimeInspectorStale,
+        activeTab: runtimeInspectorActiveTab,
+        modelCallLoadingId: runtimeInspectorModelCallLoadingId,
+        toolCallLoadingId: runtimeInspectorToolCallLoadingId,
+        isOpenRef: runtimeInspectorOpenRef,
+        openInspector,
+        closeInspector,
+        markStale: markRuntimeInspectorStale,
+        selectTab: selectRuntimeInspectorTab,
+        refresh: refreshRuntimeInspector,
+        loadModelCall: loadRuntimeInspectorModelCall,
+        loadToolCall: loadRuntimeInspectorToolCall,
+    } = useRuntimeInspector(conversationId);
     const [activeVisibleMessageId, setActiveVisibleMessageId] = useState(null);
     const [highlightedMessageId, setHighlightedMessageId] = useState(null);
     const [isMessageNavigatorWide, setIsMessageNavigatorWide] = useState(true);
@@ -446,36 +460,6 @@ function ChatPage({
         }
     }, [conversationId, t]);
 
-    const loadRuntimeInspector = useCallback(async ({silent = false, focusMessageId = null} = {}) => {
-        if (!conversationId) {
-            setRuntimeInspectorDocument(null);
-            setRuntimeInspectorError('');
-            return null;
-        }
-        const requestVersion = runtimeInspectorRequestVersionRef.current + 1;
-        runtimeInspectorRequestVersionRef.current = requestVersion;
-        if (!silent) setRuntimeInspectorLoading(true);
-        setRuntimeInspectorError('');
-        try {
-            const data = await apiClient.get(apiEndpoint.CHAT_RUNTIME_INSPECTOR_ENDPOINT, {
-                params: {
-                    conversationId,
-                    ...(focusMessageId ? {focusMessageId} : {}),
-                },
-            });
-            if (requestVersion !== runtimeInspectorRequestVersionRef.current) return null;
-            setRuntimeInspectorDocument(data || null);
-            return data || null;
-        } catch (error) {
-            if (requestVersion !== runtimeInspectorRequestVersionRef.current) return null;
-            setRuntimeInspectorError(error?.message || '加载 Runtime Inspector 失败');
-            return null;
-        } finally {
-            if (requestVersion === runtimeInspectorRequestVersionRef.current) {
-                setRuntimeInspectorLoading(false);
-            }
-        }
-    }, [conversationId]);
 
     // ========== Popover 相关函数 ==========
     const scrollToSelectedItem = useCallback((modelListRef) => {
@@ -1550,7 +1534,6 @@ function ChatPage({
 
     const jumpToMessage = useCallback(async (messageId) => {
         if (!messageId) return false;
-        setRuntimeInspectorOpen(false);
 
         if (scrollToRenderedMessage(messageId)) return true;
 
@@ -1961,10 +1944,6 @@ function ChatPage({
         messageSummaryFingerprintRef.current = null;
         messageSummaryTailIdRef.current = null;
         setActiveVisibleMessageId(null);
-        setRuntimeInspectorOpen(false);
-        setRuntimeInspectorDocument(null);
-        setRuntimeInspectorError('');
-        runtimeInspectorRequestVersionRef.current += 1;
         setHistoryAutoLoadReady(false);
         setIsLoadingMoreHistory(false);
         historyLoadInFlightRef.current = null;
@@ -1979,14 +1958,30 @@ function ChatPage({
     }, [conversationId, loadMessageSummaries, showQuickUserMessageNavigator]);
 
     const handleOpenRuntimeInspector = useCallback(() => {
-        setRuntimeInspectorOpen(true);
-        loadRuntimeInspector({focusMessageId: activeVisibleMessageId});
+        openInspector({focusMessageId: activeVisibleMessageId});
         if (!messageSummaryLoading) {
             loadMessageSummaries({
                 silent: messageSummariesRef.current.length > 0,
             });
         }
-    }, [activeVisibleMessageId, loadMessageSummaries, loadRuntimeInspector, messageSummaryLoading]);
+    }, [activeVisibleMessageId, loadMessageSummaries, messageSummaryLoading, openInspector]);
+
+    const handleRuntimeInspectorTabChange = useCallback((tabId) => {
+        selectRuntimeInspectorTab(tabId, {focusMessageId: activeVisibleMessageId});
+    }, [activeVisibleMessageId, selectRuntimeInspectorTab]);
+
+    const handleRefreshRuntimeInspector = useCallback(async () => {
+        if (runtimeInspectorActiveTab === 'brief' && !messageSummaryLoading) {
+            loadMessageSummaries({silent: true});
+        }
+        await refreshRuntimeInspector({focusMessageId: activeVisibleMessageId});
+    }, [
+        activeVisibleMessageId,
+        loadMessageSummaries,
+        messageSummaryLoading,
+        refreshRuntimeInspector,
+        runtimeInspectorActiveTab,
+    ]);
 
     useEffect(() => {
         if (
@@ -2364,31 +2359,10 @@ function ChatPage({
                     case 'workspace.transfer.state_changed': {
                         const transfer = payload.value;
                         if (transfer && typeof transfer === 'object' && transfer.transferId) {
+                            // Transfer progress is a standalone Workspace domain state.
+                            // Conversation Replace Cards and Task Window consume the same
+                            // store; attachments remain immutable file entities.
                             upsertWorkspaceTransfer(transfer);
-                            // Workspace 文件传输属于 AI 的工具执行过程。
-                            // 前端继续维护附件/任务卡片中的传输状态，但不再用 Toast 打扰用户。
-                            const artifactId = transfer.artifactId || transfer.serverId;
-                            if (artifactId) {
-                                setAttachments(current => current.map(attachment => {
-                                    const currentArtifactId = attachment.artifactId || attachment.serverId;
-                                    return currentArtifactId === artifactId
-                                        ? {...attachment, workspaceTransfer: transfer}
-                                        : attachment;
-                                }));
-                                const newMessages = produce(messagesRef.current, draft => {
-                                    Object.values(draft).forEach(message => {
-                                        if (!Array.isArray(message?.attachments)) return;
-                                        message.attachments = message.attachments.map(attachment => {
-                                            const currentArtifactId = attachment.artifactId || attachment.serverId;
-                                            return currentArtifactId === artifactId
-                                                ? {...attachment, workspaceTransfer: transfer}
-                                                : attachment;
-                                        });
-                                    });
-                                });
-                                setMessages(newMessages);
-                                messagesRef.current = newMessages;
-                            }
                             if (payload.reply) reply({success: true});
                         } else if (payload.reply) {
                             reply({success: false});
@@ -2596,12 +2570,12 @@ function ChatPage({
                         if (
                             messageSummariesRef.current.length > 0
                             || showQuickUserMessageNavigator
-                            || runtimeInspectorOpen
+                            || runtimeInspectorOpenRef.current
                         ) {
                             loadMessageSummaries({silent: true});
                         }
-                        if (runtimeInspectorOpen) {
-                            loadRuntimeInspector({silent: true});
+                        if (runtimeInspectorOpenRef.current) {
+                            markRuntimeInspectorStale();
                         }
                         if (payload.reply) reply({success: true});
                         break;
@@ -2612,12 +2586,12 @@ function ChatPage({
                         if (
                             messageSummariesRef.current.length > 0
                             || showQuickUserMessageNavigator
-                            || runtimeInspectorOpen
+                            || runtimeInspectorOpenRef.current
                         ) {
                             loadMessageSummaries({silent: true});
                         }
-                        if (runtimeInspectorOpen) {
-                            loadRuntimeInspector({silent: true});
+                        if (runtimeInspectorOpenRef.current) {
+                            markRuntimeInspectorStale();
                         }
                         reply({success: true, treeRevision: payload.treeRevision});
                         break;
@@ -2775,7 +2749,7 @@ function ChatPage({
             unsubscribe2();
             unsubscribe3();
         };
-    }, [conversationId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, loadRuntimeInspector, showQuickUserMessageNavigator, runtimeInspectorOpen, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState, markLiveStreamMessages, clearLiveStreamRun, ensureStreamMessagesVisible]);
+    }, [conversationId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, showQuickUserMessageNavigator, markRuntimeInspectorStale, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState, markLiveStreamMessages, clearLiveStreamRun, ensureStreamMessagesVisible]);
 
     useEffect(() => {
         return () => {
@@ -3297,10 +3271,18 @@ function ChatPage({
                         document={runtimeInspectorDocument}
                         loading={runtimeInspectorLoading}
                         error={runtimeInspectorError}
+                        stale={runtimeInspectorStale}
                         activeMessageId={activeVisibleMessageId}
-                        onClose={() => setRuntimeInspectorOpen(false)}
+                        briefItems={messageSummaries}
+                        briefLoading={messageSummaryLoading}
+                        modelCallLoadingId={runtimeInspectorModelCallLoadingId}
+                        toolCallLoadingId={runtimeInspectorToolCallLoadingId}
+                        onClose={closeInspector}
                         onJumpToMessage={jumpToMessage}
-                        onRefresh={() => loadRuntimeInspector({focusMessageId: activeVisibleMessageId})}
+                        onRefresh={handleRefreshRuntimeInspector}
+                        onTabChange={handleRuntimeInspectorTabChange}
+                        onLoadModelCall={loadRuntimeInspectorModelCall}
+                        onLoadToolCall={loadRuntimeInspectorToolCall}
                     />
 
                     <footer

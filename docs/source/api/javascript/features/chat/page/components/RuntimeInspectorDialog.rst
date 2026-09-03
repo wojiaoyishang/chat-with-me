@@ -17,7 +17,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 * **模块标识**：``src/features/chat/page/components/RuntimeInspectorDialog``
 * **顶层函数/组件/Hook**：12
 * **类**：0
-* **局部函数与匿名回调**：50
+* **局部函数与匿名回调**：56
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:672:719:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:672:743:FUNCTION
 
 .. js:function:: formatNumber(value)
 
@@ -46,7 +46,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
    **主要协作调用**：``Number(value || 0).toLocaleString``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:874:2045:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:898:2069:FUNCTION
 
 .. js:function:: UsageMetric({label, metric})
 
@@ -65,7 +65,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
    **主要协作调用**：``String``、``source.toUpperCase``、``formatNumber``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:3205:3398:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:3229:3422:FUNCTION
 
 .. js:function:: EmptyState({children})
 
@@ -82,7 +82,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:8016:9561:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:8040:9627:FUNCTION
 
 .. js:function:: ModelCallSelector({calls, selectedId, onSelect})
 
@@ -103,7 +103,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:9598:12062:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:9664:12128:FUNCTION
 
 .. js:function:: ResponsesContinuationPanel({continuation})
 
@@ -120,7 +120,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``null``、``( <section className="space-y-3 rounded-xl border p-3 sm:p-4"> <div className="flex flex-wrap items-center gap-2"> <h3 className="flex items-center gap-2 text-sm font-semibold"><L…``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:12095:15540:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:12161:15606:FUNCTION
 
 .. js:function:: PromptCompositionPanel({composition})
 
@@ -141,34 +141,34 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:15567:25619:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:15633:26680:FUNCTION
 
-.. js:function:: ModelCallBrowser({section})
+.. js:function:: ModelCallBrowser({section, onLoadModelCall, loadingModelCallId})
 
    渲染 ``ModelCallBrowser`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``283``—``411`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``283``—``430`` 行。
 
    **参数**
 
-   ``{section}``
-      调用方传入的 ``section`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{section, onLoadModelCall, loadingModelCallId}``
+      目标对象的公共或运行时标识。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<EmptyState>这个历史 Assistant 消息没有 Runtime Inspector 模型请求快照。新版本生成的回复会自动记录。</EmptyState>``、``( <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row"> <ModelCallSelector calls={calls} selectedId={selected?.modelCallId} onSelect={setSelectedId}/> <div className="…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<EmptyState>这个历史 Assistant 消息没有 Runtime Inspector 模型请求快照。新版本生成的回复会自动记录。</EmptyState>``、``( <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row"> <ModelCallSelector calls={calls} selectedId={selected?.modelCallId} onSelect={handleSelect}/> <div className="p…``。
 
    **主要协作调用**：``Array.isArray``、``useState``、``calls.at``、``useEffect``、``calls.find``、``formatNumber``、``Object.entries(roleCounts).map``、``Object.entries``、``(selected.messages || []).map``。
 
-   **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:25644:30585:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:26705:31646:FUNCTION
 
 .. js:function:: ContextBrowser({section, onJump})
 
    渲染 ``ContextBrowser`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``413``—``468`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``432``—``487`` 行。
 
    **参数**
 
@@ -183,13 +183,13 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:30613:34103:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:31674:35164:FUNCTION
 
 .. js:function:: RawMessageBrowser({section, onJump})
 
    渲染 ``RawMessageBrowser`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``470``—``521`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``489``—``540`` 行。
 
    **参数**
 
@@ -204,34 +204,34 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:34125:43314:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:35186:45582:FUNCTION
 
-.. js:function:: ToolBrowser({section})
+.. js:function:: ToolBrowser({section, onLoadToolCall, loadingToolCallId})
 
    渲染 ``ToolBrowser`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``523``—``656`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``542``—``696`` 行。
 
    **参数**
 
-   ``{section}``
-      调用方传入的 ``section`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{section, onLoadToolCall, loadingToolCallId}``
+      目标对象的公共或运行时标识。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<EmptyState>没有可用的 Model Call 工具快照。</EmptyState>``、``( <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row"> <ModelCallSelector calls={calls} selectedId={selected.modelCallId} onSelect={setSelectedId}/> <div className="p…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<EmptyState>没有可用的 Model Call 工具快照。</EmptyState>``、``( <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row"> <ModelCallSelector calls={calls} selectedId={selected.modelCallId} onSelect={handleSelect}/> <div className="pr…``。
 
    **主要协作调用**：``Array.isArray``、``useState``、``calls.at``、``useEffect``、``calls.find``、``useMemo``、``String(tools.toolExposureSnapshot.snapshotId).slice``、``String``、``filters.map``、``filteredTools.map``、``(tools.toolsets || []).map``。
 
-   **内部回调数量**：9。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：11。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:43338:44316:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:45606:46584:FUNCTION
 
 .. js:function:: BriefBrowser({section, activeMessageId, onJump})
 
    渲染 ``BriefBrowser`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``659``—``681`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``699``—``721`` 行。
 
    **参数**
 
@@ -246,29 +246,29 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:44587:44894:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:46855:47804:FUNCTION
 
-.. js:function:: RuntimeSectionRenderer({section, activeMessageId, onJump})
+.. js:function:: RuntimeSectionRenderer({ section, activeMessageId, onJump, onLoadModelCall, onLoadToolCall, modelCallLoadingId, toolCallLo…)
 
    渲染 ``RuntimeSectionRenderer`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``691``—``695`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``731``—``760`` 行。
 
    **参数**
 
-   ``{section, activeMessageId, onJump}``
-      调用方传入的 ``section, activeMessageId, onJump`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ section, activeMessageId, onJump, onLoadModelCall, onLoadToolCall, modelCallLoadingId, toolCallLo…``
+      调用方传入的 ``section, activeMessageId, onJump, onLoadModelCall, onLoadToolCall, modelCallLoadingId, toolCallLo…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<JsonBlock value={section} title={\x60Unsupported section: ${section?.type || 'unknown'}\x60}/>``、``<Renderer section={section} activeMessageId={activeMessageId} onJump={onJump}/>``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex h-full min-h-44 items-center justify-center gap-2 text-sm text-muted-foreground"> <Loader2 className="size-4 animate-spin"/>正在按需读取当前 Inspector 页面… </div> )``、``<JsonBlock value={section} title={\x60Unsupported section: ${section?.type || 'unknown'}\x60}/>``、``( <Renderer section={section} activeMessageId={activeMessageId} onJump={onJump} onLoadModelCall={onLoadModelCall} onLoadToolCall={onLoadToolCall} loadingModelCallId={modelCallLoad…``。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:2609:3146:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:2633:3170:FUNCTION
 
 .. rubric:: ``memo callback @ 83``
 
@@ -291,7 +291,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``JSON.stringify``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:3431:7936:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:3455:7960:FUNCTION
 
 .. rubric:: ``memo callback @ 102``
 
@@ -316,7 +316,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:3773:4029:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:3797:4053:FUNCTION
 
 .. rubric:: ``useMemo callback @ 107``
 
@@ -338,7 +338,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``JSON.stringify``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:8287:9546:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:8311:9612:FUNCTION
 
 .. rubric:: ``calls.map callback @ 178``
 
@@ -366,7 +366,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:8526:8558:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:8550:8582:FUNCTION
 
 .. rubric:: ``onClick callback @ 184``
 
@@ -388,7 +388,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``onSelect``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:13957:14046:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:14023:14112:FUNCTION
 
 .. rubric:: ``contextKeys.map callback @ 261``
 
@@ -409,7 +409,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:14177:15491:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:14243:15557:FUNCTION
 
 .. rubric:: ``composition.fragments.map callback @ 265``
 
@@ -435,7 +435,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``formatNumber``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:15794:15980:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:15897:16083:FUNCTION
 
 .. rubric:: ``useEffect callback @ 286``
 
@@ -459,7 +459,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:15912:15951:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:16015:16054:FUNCTION
 
 .. rubric:: ``calls.some callback @ 288``
 
@@ -480,7 +480,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:16066:16105:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:16169:16208:FUNCTION
 
 .. rubric:: ``calls.find callback @ 290``
 
@@ -501,17 +501,85 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:20986:21111:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:16299:16429:FUNCTION
 
-.. rubric:: ``Object.entries(roleCounts).map callback @ 347``
+.. rubric:: ``useEffect callback @ 292``
 
 .. code-block:: javascript
 
-   Object.entries(roleCounts).map callback @ 347([role, count])
+   useEffect callback @ 292()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``292``—``296`` 行；所属函数 ``ModelCallBrowser``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``onLoadModelCall``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:16513:16735:FUNCTION
+
+.. rubric:: ``handleSelect``
+
+.. code-block:: javascript
+
+   handleSelect(modelCallId)
+
+处理 ``Select`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``298``—``302`` 行；所属函数 ``ModelCallBrowser``。
+
+**参数**
+
+``modelCallId``
+   目标对象的公共或运行时标识。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``setSelectedId``、``calls.find``、``onLoadModelCall``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:16603:16643:FUNCTION
+
+.. rubric:: ``calls.find callback @ 300``
+
+.. code-block:: javascript
+
+   calls.find callback @ 300(item)
+
+作为 ``calls.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``handleSelect``。
+
+**参数**
+
+``item``
+   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:22025:22150:FUNCTION
+
+.. rubric:: ``Object.entries(roleCounts).map callback @ 365``
+
+.. code-block:: javascript
+
+   Object.entries(roleCounts).map callback @ 365([role, count])
 
 作为 ``Object.entries(roleCounts).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``347``—``349`` 行；所属函数 ``ModelCallBrowser``。
+**性质**：同步局部函数；源码第 ``365``—``367`` 行；所属函数 ``ModelCallBrowser``。
 
 **参数**
 
@@ -522,17 +590,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:23724:23878:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:24763:24917:FUNCTION
 
-.. rubric:: ``(selected.messages || []).map callback @ 384``
+.. rubric:: ``(selected.messages || []).map callback @ 402``
 
 .. code-block:: javascript
 
-   (selected.messages || []).map callback @ 384(message, index)
+   (selected.messages || []).map callback @ 402(message, index)
 
 作为 ``(selected.messages || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``384``—``386`` 行；所属函数 ``ModelCallBrowser``。
+**性质**：同步局部函数；源码第 ``402``—``404`` 行；所属函数 ``ModelCallBrowser``。
 
 **参数**
 
@@ -546,17 +614,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:25788:25810:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:26849:26871:FUNCTION
 
-.. rubric:: ``artifacts.filter callback @ 415``
+.. rubric:: ``artifacts.filter callback @ 434``
 
 .. code-block:: javascript
 
-   artifacts.filter callback @ 415(item)
+   artifacts.filter callback @ 434(item)
 
 作为 ``artifacts.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``415``—``415`` 行；所属函数 ``ContextBrowser``。
+**性质**：同步局部函数；源码第 ``434``—``434`` 行；所属函数 ``ContextBrowser``。
 
 **参数**
 
@@ -567,17 +635,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:27838:30213:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:28899:31274:FUNCTION
 
-.. rubric:: ``artifacts.map callback @ 437``
+.. rubric:: ``artifacts.map callback @ 456``
 
 .. code-block:: javascript
 
-   artifacts.map callback @ 437(artifact)
+   artifacts.map callback @ 456(artifact)
 
 作为 ``artifacts.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``437``—``459`` 行；所属函数 ``ContextBrowser``。
+**性质**：同步局部函数；源码第 ``456``—``478`` 行；所属函数 ``ContextBrowser``。
 
 **参数**
 
@@ -592,17 +660,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:29435:30092:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:30496:31153:FUNCTION
 
-.. rubric:: ``(artifact.sourceMessages || []).map callback @ 450``
+.. rubric:: ``(artifact.sourceMessages || []).map callback @ 469``
 
 .. code-block:: javascript
 
-   (artifact.sourceMessages || []).map callback @ 450(message)
+   (artifact.sourceMessages || []).map callback @ 469(message)
 
 作为 ``(artifact.sourceMessages || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``450``—``455`` 行；所属函数 ``artifacts.map callback @ 437``。
+**性质**：同步局部函数；源码第 ``469``—``474`` 行；所属函数 ``artifacts.map callback @ 456``。
 
 **参数**
 
@@ -617,17 +685,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:29539:29572:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:30600:30633:FUNCTION
 
-.. rubric:: ``onClick callback @ 451``
+.. rubric:: ``onClick callback @ 470``
 
 .. code-block:: javascript
 
-   onClick callback @ 451()
+   onClick callback @ 470()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``451``—``451`` 行；所属函数 ``(artifact.sourceMessages || []).map callback @ 450``。
+**性质**：同步局部函数；源码第 ``470``—``470`` 行；所属函数 ``(artifact.sourceMessages || []).map callback @ 469``。
 
 **参数**
 
@@ -639,17 +707,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``onJump``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:30782:31240:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:31843:32301:FUNCTION
 
-.. rubric:: ``useMemo callback @ 473``
+.. rubric:: ``useMemo callback @ 492``
 
 .. code-block:: javascript
 
-   useMemo callback @ 473()
+   useMemo callback @ 492()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``473``—``482`` 行；所属函数 ``RawMessageBrowser``。
+**性质**：同步局部函数；源码第 ``492``—``501`` 行；所属函数 ``RawMessageBrowser``。
 
 **参数**
 
@@ -663,17 +731,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:30912:31232:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:31973:32293:FUNCTION
 
-.. rubric:: ``items.filter callback @ 476``
+.. rubric:: ``items.filter callback @ 495``
 
 .. code-block:: javascript
 
-   items.filter callback @ 476(item)
+   items.filter callback @ 495(item)
 
 作为 ``items.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``476``—``481`` 行；所属函数 ``useMemo callback @ 473``。
+**性质**：同步局部函数；源码第 ``495``—``500`` 行；所属函数 ``useMemo callback @ 492``。
 
 **参数**
 
@@ -686,17 +754,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``String(item.role || '').toLowerCase().includes``、``String(item.role || '').toLowerCase``、``String``、``String(item.name || '').toLowerCase().includes``、``String(item.name || '').toLowerCase``、``String(item.content || '').toLowerCase().includes``、``String(item.content || '').toLowerCase``、``String(item.messageId || '').toLowerCase().includes``、``String(item.messageId || '').toLowerCase``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:31609:31646:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:32670:32707:FUNCTION
 
-.. rubric:: ``onChange callback @ 489``
+.. rubric:: ``onChange callback @ 508``
 
 .. code-block:: javascript
 
-   onChange callback @ 489(event)
+   onChange callback @ 508(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``489``—``489`` 行；所属函数 ``RawMessageBrowser``。
+**性质**：同步局部函数；源码第 ``508``—``508`` 行；所属函数 ``RawMessageBrowser``。
 
 **参数**
 
@@ -709,17 +777,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``setQuery``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:32002:34035:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:33063:35096:FUNCTION
 
-.. rubric:: ``filtered.map callback @ 494``
+.. rubric:: ``filtered.map callback @ 513``
 
 .. code-block:: javascript
 
-   filtered.map callback @ 494(item)
+   filtered.map callback @ 513(item)
 
 作为 ``filtered.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``494``—``516`` 行；所属函数 ``RawMessageBrowser``。
+**性质**：同步局部函数；源码第 ``513``—``535`` 行；所属函数 ``RawMessageBrowser``。
 
 **参数**
 
@@ -734,17 +802,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:33071:33101:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:34132:34162:FUNCTION
 
-.. rubric:: ``onClick callback @ 505``
+.. rubric:: ``onClick callback @ 524``
 
 .. code-block:: javascript
 
-   onClick callback @ 505()
+   onClick callback @ 524()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``505``—``505`` 行；所属函数 ``filtered.map callback @ 494``。
+**性质**：同步局部函数；源码第 ``524``—``524`` 行；所属函数 ``filtered.map callback @ 513``。
 
 **参数**
 
@@ -756,17 +824,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``onJump``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:34417:34544:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:35545:35731:FUNCTION
 
-.. rubric:: ``useEffect callback @ 528``
+.. rubric:: ``useEffect callback @ 547``
 
 .. code-block:: javascript
 
-   useEffect callback @ 528()
+   useEffect callback @ 547()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``528``—``530`` 行；所属函数 ``ToolBrowser``。
+**性质**：同步局部函数；源码第 ``547``—``550`` 行；所属函数 ``ToolBrowser``。
 
 **参数**
 
@@ -776,21 +844,21 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``calls.some``、``setSelectedId``、``calls.at``。
+**主要协作调用**：``calls.at``、``calls.some``、``setSelectedId``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:34449:34488:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:35663:35702:FUNCTION
 
-.. rubric:: ``calls.some callback @ 529``
+.. rubric:: ``calls.some callback @ 549``
 
 .. code-block:: javascript
 
-   calls.some callback @ 529(item)
+   calls.some callback @ 549(item)
 
 作为 ``calls.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``529``—``529`` 行；所属函数 ``useEffect callback @ 528``。
+**性质**：同步局部函数；源码第 ``549``—``549`` 行；所属函数 ``useEffect callback @ 547``。
 
 **参数**
 
@@ -801,17 +869,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:34600:34639:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:35817:35856:FUNCTION
 
-.. rubric:: ``calls.find callback @ 531``
+.. rubric:: ``calls.find callback @ 551``
 
 .. code-block:: javascript
 
-   calls.find callback @ 531(item)
+   calls.find callback @ 551(item)
 
 作为 ``calls.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``531``—``531`` 行；所属函数 ``ToolBrowser``。
+**性质**：同步局部函数；源码第 ``551``—``551`` 行；所属函数 ``ToolBrowser``。
 
 **参数**
 
@@ -822,17 +890,85 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:34727:35228:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:35990:36123:FUNCTION
 
-.. rubric:: ``useMemo callback @ 533``
+.. rubric:: ``useEffect callback @ 553``
 
 .. code-block:: javascript
 
-   useMemo callback @ 533()
+   useEffect callback @ 553()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``553``—``557`` 行；所属函数 ``ToolBrowser``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``onLoadToolCall``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:36209:36490:FUNCTION
+
+.. rubric:: ``handleSelect``
+
+.. code-block:: javascript
+
+   handleSelect(modelCallId)
+
+处理 ``Select`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``558``—``564`` 行；所属函数 ``ToolBrowser``。
+
+**参数**
+
+``modelCallId``
+   目标对象的公共或运行时标识。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``setSelectedId``、``calls.find``、``onLoadToolCall``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:36299:36339:FUNCTION
+
+.. rubric:: ``calls.find callback @ 560``
+
+.. code-block:: javascript
+
+   calls.find callback @ 560(item)
+
+作为 ``calls.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``560``—``560`` 行；所属函数 ``handleSelect``。
+
+**参数**
+
+``item``
+   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:36561:37062:FUNCTION
+
+.. rubric:: ``useMemo callback @ 566``
+
+.. code-block:: javascript
+
+   useMemo callback @ 566()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``533``—``545`` 行；所属函数 ``ToolBrowser``。
+**性质**：同步局部函数；源码第 ``566``—``578`` 行；所属函数 ``ToolBrowser``。
 
 **参数**
 
@@ -846,17 +982,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:35022:35220:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:36856:37054:FUNCTION
 
-.. rubric:: ``(tools.enabledNames || []).map callback @ 538``
+.. rubric:: ``(tools.enabledNames || []).map callback @ 571``
 
 .. code-block:: javascript
 
-   (tools.enabledNames || []).map callback @ 538(name)
+   (tools.enabledNames || []).map callback @ 571(name)
 
 作为 ``(tools.enabledNames || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``538``—``544`` 行；所属函数 ``useMemo callback @ 533``。
+**性质**：同步局部函数；源码第 ``571``—``577`` 行；所属函数 ``useMemo callback @ 566``。
 
 **参数**
 
@@ -869,17 +1005,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``detailed.has``、``context.has``、``schema.has``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:35707:36090:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:37541:37924:FUNCTION
 
-.. rubric:: ``useMemo callback @ 551``
+.. rubric:: ``useMemo callback @ 584``
 
 .. code-block:: javascript
 
-   useMemo callback @ 551()
+   useMemo callback @ 584()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``551``—``559`` 行；所属函数 ``ToolBrowser``。
+**性质**：同步局部函数；源码第 ``584``—``592`` 行；所属函数 ``ToolBrowser``。
 
 **参数**
 
@@ -893,17 +1029,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:35797:36082:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:37631:37916:FUNCTION
 
-.. rubric:: ``catalog.filter callback @ 553``
+.. rubric:: ``catalog.filter callback @ 586``
 
 .. code-block:: javascript
 
-   catalog.filter callback @ 553(item)
+   catalog.filter callback @ 586(item)
 
 作为 ``catalog.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``553``—``558`` 行；所属函数 ``useMemo callback @ 551``。
+**性质**：同步局部函数；源码第 ``586``—``591`` 行；所属函数 ``useMemo callback @ 584``。
 
 **参数**
 
@@ -916,17 +1052,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``String(item.name || '').toLowerCase().includes``、``String(item.name || '').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:36133:36296:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:37967:38130:FUNCTION
 
-.. rubric:: ``useEffect callback @ 560``
+.. rubric:: ``useEffect callback @ 593``
 
 .. code-block:: javascript
 
-   useEffect callback @ 560()
+   useEffect callback @ 593()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``560``—``563`` 行；所属函数 ``ToolBrowser``。
+**性质**：同步局部函数；源码第 ``593``—``596`` 行；所属函数 ``ToolBrowser``。
 
 **参数**
 
@@ -940,17 +1076,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:36235:36265:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:38069:38099:FUNCTION
 
-.. rubric:: ``filters.some callback @ 562``
+.. rubric:: ``filters.some callback @ 595``
 
 .. code-block:: javascript
 
-   filters.some callback @ 562(item)
+   filters.some callback @ 595(item)
 
 作为 ``filters.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``562``—``562`` 行；所属函数 ``useEffect callback @ 560``。
+**性质**：同步局部函数；源码第 ``595``—``595`` 行；所属函数 ``useEffect callback @ 593``。
 
 **参数**
 
@@ -961,17 +1097,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:38581:38620:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:40827:40866:FUNCTION
 
-.. rubric:: ``onChange callback @ 591``
+.. rubric:: ``onChange callback @ 630``
 
 .. code-block:: javascript
 
-   onChange callback @ 591(event)
+   onChange callback @ 630(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``591``—``591`` 行；所属函数 ``ToolBrowser``。
+**性质**：同步局部函数；源码第 ``630``—``630`` 行；所属函数 ``ToolBrowser``。
 
 **参数**
 
@@ -984,17 +1120,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``setQuery``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:39037:39697:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:41283:41943:FUNCTION
 
-.. rubric:: ``filters.map callback @ 598``
+.. rubric:: ``filters.map callback @ 637``
 
 .. code-block:: javascript
 
-   filters.map callback @ 598(item)
+   filters.map callback @ 637(item)
 
 作为 ``filters.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``598``—``607`` 行；所属函数 ``ToolBrowser``。
+**性质**：同步局部函数；源码第 ``637``—``646`` 行；所属函数 ``ToolBrowser``。
 
 **参数**
 
@@ -1007,17 +1143,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:39216:39240:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:41462:41486:FUNCTION
 
-.. rubric:: ``onClick callback @ 602``
+.. rubric:: ``onClick callback @ 641``
 
 .. code-block:: javascript
 
-   onClick callback @ 602()
+   onClick callback @ 641()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``602``—``602`` 行；所属函数 ``filters.map callback @ 598``。
+**性质**：同步局部函数；源码第 ``641``—``641`` 行；所属函数 ``filters.map callback @ 637``。
 
 **参数**
 
@@ -1029,17 +1165,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``setFilter``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:39888:41596:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:42134:43842:FUNCTION
 
-.. rubric:: ``filteredTools.map callback @ 611``
+.. rubric:: ``filteredTools.map callback @ 650``
 
 .. code-block:: javascript
 
-   filteredTools.map callback @ 611(item)
+   filteredTools.map callback @ 650(item)
 
 作为 ``filteredTools.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``611``—``630`` 行；所属函数 ``ToolBrowser``。
+**性质**：同步局部函数；源码第 ``650``—``669`` 行；所属函数 ``ToolBrowser``。
 
 **参数**
 
@@ -1050,17 +1186,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:42089:43175:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:44335:45421:FUNCTION
 
-.. rubric:: ``(tools.toolsets || []).map callback @ 637``
+.. rubric:: ``(tools.toolsets || []).map callback @ 676``
 
 .. code-block:: javascript
 
-   (tools.toolsets || []).map callback @ 637(item)
+   (tools.toolsets || []).map callback @ 676(item)
 
 作为 ``(tools.toolsets || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``637``—``651`` 行；所属函数 ``ToolBrowser``。
+**性质**：同步局部函数；源码第 ``676``—``690`` 行；所属函数 ``ToolBrowser``。
 
 **参数**
 
@@ -1075,17 +1211,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:42951:43043:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:45197:45289:FUNCTION
 
-.. rubric:: ``item.directNames.map callback @ 647``
+.. rubric:: ``item.directNames.map callback @ 686``
 
 .. code-block:: javascript
 
-   item.directNames.map callback @ 647(name)
+   item.directNames.map callback @ 686(name)
 
 作为 ``item.directNames.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``647``—``647`` 行；所属函数 ``(tools.toolsets || []).map callback @ 637``。
+**性质**：同步局部函数；源码第 ``686``—``686`` 行；所属函数 ``(tools.toolsets || []).map callback @ 676``。
 
 **参数**
 
@@ -1096,17 +1232,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:43529:43571:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:45797:45839:FUNCTION
 
-.. rubric:: ``items.findIndex callback @ 662``
+.. rubric:: ``items.findIndex callback @ 702``
 
 .. code-block:: javascript
 
-   items.findIndex callback @ 662(item)
+   items.findIndex callback @ 702(item)
 
 实现 ``items.findIndex`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``662``—``662`` 行；所属函数 ``BriefBrowser``。
+**性质**：同步局部函数；源码第 ``702``—``702`` 行；所属函数 ``BriefBrowser``。
 
 **参数**
 
@@ -1117,17 +1253,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:43588:43752:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:45856:46020:FUNCTION
 
-.. rubric:: ``useEffect callback @ 663``
+.. rubric:: ``useEffect callback @ 703``
 
 .. code-block:: javascript
 
-   useEffect callback @ 663()
+   useEffect callback @ 703()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``663``—``666`` 行；所属函数 ``BriefBrowser``。
+**性质**：同步局部函数；源码第 ``703``—``706`` 行；所属函数 ``BriefBrowser``。
 
 **参数**
 
@@ -1141,17 +1277,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:43663:43744:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:45931:46012:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 665``
+.. rubric:: ``requestAnimationFrame callback @ 705``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 665()
+   requestAnimationFrame callback @ 705()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``665``—``665`` 行；所属函数 ``useEffect callback @ 663``。
+**性质**：同步局部函数；源码第 ``705``—``705`` 行；所属函数 ``useEffect callback @ 703``。
 
 **参数**
 
@@ -1163,17 +1299,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``virtuosoRef.current?.scrollToIndex``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:44034:44295:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:46302:46563:FUNCTION
 
-.. rubric:: ``itemContent callback @ 674``
+.. rubric:: ``itemContent callback @ 714``
 
 .. code-block:: javascript
 
-   itemContent callback @ 674(_index, item)
+   itemContent callback @ 714(_index, item)
 
 实现 ``itemContent`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``674``—``678`` 行；所属函数 ``BriefBrowser``。
+**性质**：同步局部函数；源码第 ``714``—``718`` 行；所属函数 ``BriefBrowser``。
 
 **参数**
 
@@ -1189,17 +1325,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:44225:44255:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:46493:46523:FUNCTION
 
-.. rubric:: ``onClick callback @ 676``
+.. rubric:: ``onClick callback @ 716``
 
 .. code-block:: javascript
 
-   onClick callback @ 676()
+   onClick callback @ 716()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``676``—``676`` 行；所属函数 ``itemContent callback @ 674``。
+**性质**：同步局部函数；源码第 ``716``—``716`` 行；所属函数 ``itemContent callback @ 714``。
 
 **参数**
 
@@ -1211,22 +1347,22 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``onJump``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:44933:51206:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:47843:55695:FUNCTION
 
-.. rubric:: ``memo callback @ 697``
+.. rubric:: ``memo callback @ 762``
 
 .. code-block:: javascript
 
-   memo callback @ 697({ open, document, loading = false, error = '', activeMessageId, onClose, onRefresh, onJumpToMessage…)
+   memo callback @ 762({ open, document, loading = false, error = '', stale = false, activeMessageId, briefItems = [], bri…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``697``—``792`` 行。
+**性质**：同步局部函数；源码第 ``762``—``890`` 行。
 
 **参数**
 
-``{ open, document, loading = false, error = '', activeMessageId, onClose, onRefresh, onJumpToMessage…``
-   调用方传入的 ``open, document, loading = false, error = '', activeMessageId, onClose, onRefresh, onJumpToMessage…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ open, document, loading = false, error = '', stale = false, activeMessageId, briefItems = [], bri…``
+   调用方传入的 ``open, document, loading = false, error = '', stale = false, activeMessageId, briefItems = , bri…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -1240,17 +1376,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:45249:45399:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:48340:48490:FUNCTION
 
-.. rubric:: ``useEffect callback @ 709``
+.. rubric:: ``useEffect callback @ 782``
 
 .. code-block:: javascript
 
-   useEffect callback @ 709()
+   useEffect callback @ 782()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``709``—``712`` 行；所属函数 ``memo callback @ 697``。
+**性质**：同步局部函数；源码第 ``782``—``785`` 行；所属函数 ``memo callback @ 762``。
 
 **参数**
 
@@ -1264,17 +1400,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:45344:45371:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:48435:48462:FUNCTION
 
-.. rubric:: ``tabs.some callback @ 711``
+.. rubric:: ``tabs.some callback @ 784``
 
 .. code-block:: javascript
 
-   tabs.some callback @ 711(tab)
+   tabs.some callback @ 784(tab)
 
 作为 ``tabs.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``711``—``711`` 行；所属函数 ``useEffect callback @ 709``。
+**性质**：同步局部函数；源码第 ``784``—``784`` 行；所属函数 ``useEffect callback @ 782``。
 
 **参数**
 
@@ -1285,17 +1421,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:45476:45503:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:48567:48594:FUNCTION
 
-.. rubric:: ``tabs.find callback @ 713``
+.. rubric:: ``tabs.find callback @ 786``
 
 .. code-block:: javascript
 
-   tabs.find callback @ 713(tab)
+   tabs.find callback @ 786(tab)
 
 作为 ``tabs.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``713``—``713`` 行；所属函数 ``memo callback @ 697``。
+**性质**：同步局部函数；源码第 ``786``—``786`` 行；所属函数 ``memo callback @ 762``。
 
 **参数**
 
@@ -1306,7 +1442,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:45540:45651:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:48963:49074:FUNCTION
 
 .. rubric:: ``handleJump``
 
@@ -1316,7 +1452,7 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 处理 ``Jump`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``715``—``718`` 行；所属函数 ``memo callback @ 697``。
+**性质**：同步局部函数；源码第 ``797``—``800`` 行；所属函数 ``memo callback @ 762``。
 
 **参数**
 
@@ -1331,17 +1467,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:45609:45643:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:49032:49066:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 717``
+.. rubric:: ``requestAnimationFrame callback @ 799``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 717()
+   requestAnimationFrame callback @ 799()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``717``—``717`` 行；所属函数 ``handleJump``。
+**性质**：同步局部函数；源码第 ``799``—``799`` 行；所属函数 ``handleJump``。
 
 **参数**
 
@@ -1353,17 +1489,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``onJumpToMessage``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:45709:45747:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:49132:49170:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 721``
+.. rubric:: ``onOpenChange callback @ 803``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 721(nextOpen)
+   onOpenChange callback @ 803(nextOpen)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``721``—``721`` 行；所属函数 ``memo callback @ 697``。
+**性质**：同步局部函数；源码第 ``803``—``803`` 行；所属函数 ``memo callback @ 762``。
 
 **参数**
 
@@ -1376,17 +1512,17 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **主要协作调用**：``onClose``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:48959:50059:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:52651:53779:FUNCTION
 
-.. rubric:: ``tabs.map callback @ 758``
+.. rubric:: ``tabs.map callback @ 843``
 
 .. code-block:: javascript
 
-   tabs.map callback @ 758(tab)
+   tabs.map callback @ 843(tab)
 
 作为 ``tabs.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``758``—``771`` 行；所属函数 ``memo callback @ 697``。
+**性质**：同步局部函数；源码第 ``843``—``856`` 行；所属函数 ``memo callback @ 762``。
 
 **参数**
 
@@ -1395,21 +1531,21 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)} className={\x60flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm transition ${active ? 'bg-bac…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <button key={tab.id} type="button" onClick={() => { setActiveTab(tab.id); onTabChange?.(tab.id); }} className={\x60flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-sm t…``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:49613:49639:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RuntimeInspectorDialog.jsx:53305:53359:FUNCTION
 
-.. rubric:: ``onClick callback @ 767``
+.. rubric:: ``onClick callback @ 852``
 
 .. code-block:: javascript
 
-   onClick callback @ 767()
+   onClick callback @ 852()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``767``—``767`` 行；所属函数 ``tabs.map callback @ 758``。
+**性质**：同步局部函数；源码第 ``852``—``852`` 行；所属函数 ``tabs.map callback @ 843``。
 
 **参数**
 
@@ -1419,4 +1555,4 @@ src/features/chat/page/components/RuntimeInspectorDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``setActiveTab``。
+**主要协作调用**：``setActiveTab``、``onTabChange``。

@@ -27,13 +27,13 @@ Replacement-local status indicator for non-tool cards. Tool-call status is inten
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ReplacementContextBadge.jsx:203:440:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ReplacementContextBadge.jsx:203:491:FUNCTION
 
 .. js:function:: isToolReplacement(replacementId)
 
    判断与 ``Tool Replacement`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``5``—``11`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``5``—``12`` 行。
 
    **参数**
 
@@ -42,7 +42,7 @@ Replacement-local status indicator for non-tool cards. Tool-call status is inten
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``value.startsWith('tool-result-') || value.endsWith('-toolCalling') || value.endsWith('-toolCommand') || value.endsWith('-toolLog')``。
+   根据执行分支返回结果；代表性返回表达式为 ``value.startsWith('workspace-transfer:') || value.startsWith('tool-result-') || value.endsWith('-toolCalling') || value.endsWith('-toolCommand') || value.endsWith('-toolLog')``。
 
    **主要协作调用**：``String``、``value.startsWith``、``value.endsWith``。
 
@@ -51,17 +51,17 @@ Replacement-local status indicator for non-tool cards. Tool-call status is inten
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ReplacementContextBadge.jsx:778:1863:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ReplacementContextBadge.jsx:829:1914:FUNCTION
 
-.. rubric:: ``memo callback @ 20``
+.. rubric:: ``memo callback @ 21``
 
 .. code-block:: javascript
 
-   memo callback @ 20({conversationId, messageId, replacementId, status})
+   memo callback @ 21({conversationId, messageId, replacementId, status})
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``20``—``51`` 行。
+**性质**：同步局部函数；源码第 ``21``—``52`` 行。
 
 **参数**
 

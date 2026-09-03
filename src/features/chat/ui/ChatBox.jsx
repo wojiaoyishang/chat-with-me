@@ -2795,8 +2795,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
             prevAttachment.fileType !== nextAttachment.fileType ||
             prevAttachment.mimeType !== nextAttachment.mimeType ||
             prevAttachment.visionEnabled !== nextAttachment.visionEnabled ||
-            prevAttachment.artifactStatus !== nextAttachment.artifactStatus ||
-            prevAttachment.workspaceTransfer !== nextAttachment.workspaceTransfer
+            prevAttachment.artifactStatus !== nextAttachment.artifactStatus
         ) {
             return false;
         }

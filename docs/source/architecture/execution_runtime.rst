@@ -95,6 +95,12 @@ Tool 协议则在审批边界拒绝其他工具。前端不会渲染该 hidden �
 ``final_response``，此时前端正常流式展示唯一的最终 Assistant 答复。如果强制提交前收到新的用户 guidance，guidance
 优先并撤销该次完成提交。
 
+Execution inline 终态同时采用双端防护：后端的 ``continuationStatusId`` 只表示可清空的尾随节点，不再覆盖
+``currentStatusId``；``final_response`` 真正结束后，Runtime 才在 Assistant 正文尾部追加一张新的 terminal
+``executionStatus``，因此 ``执行完成`` 只拥有一个终态位置。前端把空 replacement 视为删除，不再把空字符串解析为
+``{}``；只有明确 ``status=completed`` / ``inlineState=completed`` 的终态快照才会使用默认文案 ``执行完成``。
+未知或不完整 payload 不渲染，也不会以 Check 图标兜底。
+
 Stop / Resume
 --------------------------------------------------------------------------------
 

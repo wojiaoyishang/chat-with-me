@@ -25,6 +25,9 @@ Execution Inline Trace 与窗口
 V28 不再渲染新的 Task Mode 卡片或 Task Monitor。普通 Agent 只要开始真实工具工作，
 后端就通过 ``executionStatus`` replacement 在 Assistant 正文之间插入轻量执行状态。
 同一阶段内多次工具活动会更新当前状态节点；阶段切换时旧节点变成完成态，并在正文后继续插入新的状态节点。
+空的 ``executionStatus`` frontend replacement 表示该瞬时节点已被删除，前端必须返回空渲染，不能把它解释为
+默认完成状态。Execution 的最终 ``执行完成`` 则由后端在 final Assistant response 结束后追加独立 terminal host，
+不复用被清空的 continuation replacement。
 
 点击状态节点打开会话级 ``ExecutionWindow``，其中展示 Execution Plan、模型/工具/完成门控的公开执行轨迹、
 可恢复状态以及用户追加要求输入框。窗口不展示隐藏思维链或原始 Provider Payload；开发者级细节仍属于 Runtime Inspector。
