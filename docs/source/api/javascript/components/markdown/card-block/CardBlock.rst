@@ -27,7 +27,7 @@ src/components/markdown/card-block/CardBlock 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1099:1167:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1135:1205:FUNCTION
 
 .. js:function:: shouldCompareRenderContext(type)
 
@@ -51,7 +51,7 @@ src/components/markdown/card-block/CardBlock 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1196:1789:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1236:1844:FUNCTION
 
 .. rubric:: ``memo callback @ 41``
 
@@ -72,7 +72,7 @@ src/components/markdown/card-block/CardBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <div className="bg-red-50/40 border border-red-200 p-3 my-2 rounded-md"> <div className="text-red-700 text-xs mb-1.5 flex items-center gap-1.5"> <span className="bg-red-200 text…``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1790:1903:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1845:1963:FUNCTION
 
 .. rubric:: ``memo callback @ 56``
 
@@ -96,7 +96,7 @@ src/components/markdown/card-block/CardBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( prev.type === next.type && prev.content === next.content )``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:1974:7046:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:2038:7301:FUNCTION
 
 .. rubric:: ``memo callback @ 65``
 
@@ -119,7 +119,7 @@ src/components/markdown/card-block/CardBlock 模块
 
 **主要协作调用**：``String(renderSurface || 'conversation').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:7047:8034:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:7302:8316:FUNCTION
 
 .. rubric:: ``memo callback @ 256``
 

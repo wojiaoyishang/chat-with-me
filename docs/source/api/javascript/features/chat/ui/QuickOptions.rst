@@ -29,7 +29,7 @@ src/features/chat/ui/QuickOptions 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:199:1071:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:182:1031:FUNCTION
 
 .. rubric:: ``memo callback @ 8``
 
@@ -54,7 +54,7 @@ src/features/chat/ui/QuickOptions 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:275:315:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:257:295:FUNCTION
 
 .. rubric:: ``useCallback callback @ 9``
 
@@ -76,7 +76,7 @@ src/features/chat/ui/QuickOptions 模块
 
 **主要协作调用**：``onClick``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:1072:1444:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:1032:1395:FUNCTION
 
 .. rubric:: ``memo callback @ 31``
 
@@ -100,7 +100,7 @@ src/features/chat/ui/QuickOptions 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( prevProps.option.id === nextProps.option.id && prevProps.option.label === nextProps.option.label && prevProps.option.value === nextProps.option.value && prevProps.isSelected ===…``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:1566:2142:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:1509:2069:FUNCTION
 
 .. rubric:: ``memo callback @ 48``
 
@@ -125,7 +125,7 @@ src/features/chat/ui/QuickOptions 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:1654:1697:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:1596:1637:FUNCTION
 
 .. rubric:: ``useCallback callback @ 49``
 
@@ -147,7 +147,7 @@ src/features/chat/ui/QuickOptions 模块
 
 **主要协作调用**：``onClick``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:2143:2411:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:2070:2331:FUNCTION
 
 .. rubric:: ``memo callback @ 64``
 
@@ -171,7 +171,7 @@ src/features/chat/ui/QuickOptions 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( prevProps.direction === nextProps.direction && prevProps.disabled === nextProps.disabled && prevProps.onClick === nextProps.onClick && prevProps.ariaLabel === nextProps.ariaLabe…``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:2537:4268:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:2449:4130:FUNCTION
 
 .. rubric:: ``memo callback @ 79``
 
@@ -196,7 +196,7 @@ src/features/chat/ui/QuickOptions 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:2873:2942:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:2778:2846:FUNCTION
 
 .. rubric:: ``useMemo callback @ 86``
 
@@ -218,7 +218,7 @@ src/features/chat/ui/QuickOptions 模块
 
 **主要协作调用**：``Math.max``、``Math.ceil``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:3026:3579:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:2926:3462:FUNCTION
 
 .. rubric:: ``useCallback callback @ 91``
 
@@ -241,7 +241,7 @@ src/features/chat/ui/QuickOptions 模块
 
 **主要协作调用**：``setCurrentPageIndex``、``quickOptionsRef.current.scrollTo``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:4269:4647:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:4131:4501:FUNCTION
 
 .. rubric:: ``memo callback @ 129``
 
@@ -265,7 +265,7 @@ src/features/chat/ui/QuickOptions 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( prevProps.quickOptionsLength === nextProps.quickOptionsLength && prevProps.currentPageIndex === nextProps.currentPageIndex && prevProps.setCurrentPageIndex === nextProps.setCurr…``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:4892:6268:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:4734:6070:FUNCTION
 
 .. rubric:: ``memo callback @ 149``
 
@@ -290,7 +290,7 @@ src/features/chat/ui/QuickOptions 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:5323:5609:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:5154:5431:FUNCTION
 
 .. rubric:: ``useMemo callback @ 160``
 
@@ -314,7 +314,7 @@ src/features/chat/ui/QuickOptions 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:5364:5600:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:5194:5423:FUNCTION
 
 .. rubric:: ``quickOptions.map callback @ 161``
 
@@ -335,7 +335,7 @@ src/features/chat/ui/QuickOptions 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:6269:7407:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/QuickOptions.jsx:6071:7176:FUNCTION
 
 .. rubric:: ``memo callback @ 189``
 

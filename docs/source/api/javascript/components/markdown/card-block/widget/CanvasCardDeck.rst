@@ -886,7 +886,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:30431:72921:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:30431:72873:FUNCTION
 
 .. js:function:: CanvasCardDeck({widget, interactive, busy, act, onExit, initialReviewCategory = null, allowPageScroll = false})
 
@@ -1455,7 +1455,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``isUniversalModalLink``、``openUniversalModalLink``、``window.open``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:33157:44574:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:33157:44526:FUNCTION
 
 .. rubric:: ``useCallback callback @ 765``
 
@@ -1483,7 +1483,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:33252:44566:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:33252:44518:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 767``
 
@@ -1583,13 +1583,13 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``clamp``、``easeOutCubic``、``poseOverrides.set``、``interpolatePose``、``reflowMap.delete``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:35684:36741:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:35684:36732:FUNCTION
 
 .. rubric:: ``drawPocket``
 
 .. code-block:: javascript
 
-   drawPocket(side, entries, topCard, rect)
+   drawPocket(side, entries, rect)
 
 实现 ``drawPocket`` 对应的前端处理。
 
@@ -1602,9 +1602,6 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 ``entries``
    调用方传入的 ``entries`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-``topCard``
-   调用方传入的 ``topCard`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 ``rect``
    调用方传入的 ``rect`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
@@ -1621,7 +1618,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:36080:36134:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:36071:36125:FUNCTION
 
 .. rubric:: ``entries .map callback @ 825``
 
@@ -1648,7 +1645,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``scene.byId.get``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:37053:37087:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:37005:37039:FUNCTION
 
 .. rubric:: ``scene.pending.slice(0, 3).map callback @ 845``
 
@@ -1675,7 +1672,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``scene.byId.get``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:38077:38500:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:38029:38452:FUNCTION
 
 .. rubric:: ``pendingCards.forEach callback @ 858``
 
@@ -1705,7 +1702,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``poseOverrides.get``、``String``、``poseOverrides.set``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:39701:39748:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:39653:39700:FUNCTION
 
 .. rubric:: ``reviewEntries.slice(0, 4).map callback @ 885``
 
@@ -1732,7 +1729,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``scene.byId.get``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:40960:40994:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:40912:40946:FUNCTION
 
 .. rubric:: ``scene.pending .map callback @ 901``
 
@@ -1759,7 +1756,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``scene.byId.get``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:42582:43158:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:42534:43110:FUNCTION
 
 .. rubric:: ``reviewCards.slice().reverse().forEach callback @ 926``
 
@@ -1785,7 +1782,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``String``、``Math.min``、``interpolatePose``、``drawCard``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:44602:45095:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:44554:45047:FUNCTION
 
 .. rubric:: ``useLayoutEffect callback @ 966``
 
@@ -1809,7 +1806,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:44753:44941:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:44705:44893:FUNCTION
 
 .. rubric:: ``update``
 
@@ -1833,7 +1830,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:44871:44929:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:44823:44881:FUNCTION
 
 .. rubric:: ``setWidth callback @ 971``
 
@@ -1856,7 +1853,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``Math.abs``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45060:45088:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45012:45040:FUNCTION
 
 .. rubric:: ``returned callback @ 976``
 
@@ -1878,7 +1875,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``observer.disconnect``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45123:45791:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45075:45743:FUNCTION
 
 .. rubric:: ``useLayoutEffect callback @ 979``
 
@@ -1907,7 +1904,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45262:45470:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45214:45422:FUNCTION
 
 .. rubric:: ``update``
 
@@ -1935,7 +1932,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45400:45458:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45352:45410:FUNCTION
 
 .. rubric:: ``setViewportHeight callback @ 984``
 
@@ -1958,7 +1955,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``Math.abs``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45645:45784:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45597:45736:FUNCTION
 
 .. rubric:: ``returned callback @ 989``
 
@@ -1984,7 +1981,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``window.removeEventListener``、``viewport?.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45819:46242:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:45771:46194:FUNCTION
 
 .. rubric:: ``useLayoutEffect callback @ 995``
 
@@ -2010,7 +2007,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``clamp``、``Math.round``、``requestDraw``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:46283:47131:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:46235:47083:FUNCTION
 
 .. rubric:: ``useEffect callback @ 1007``
 
@@ -2038,7 +2035,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:46499:46533:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:46451:46485:FUNCTION
 
 .. rubric:: ``previous.map callback @ 1011``
 
@@ -2064,7 +2061,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:46562:47047:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:46514:46999:FUNCTION
 
 .. rubric:: ``next.forEach callback @ 1012``
 
@@ -2094,7 +2091,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``previousIndex.get``、``String``、``Math.min``、``reflowRef.current.set``、``performance.now``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47181:48099:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47133:48051:FUNCTION
 
 .. rubric:: ``useEffect callback @ 1024``
 
@@ -2118,7 +2115,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47354:47383:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47306:47335:FUNCTION
 
 .. rubric:: ``pending.some callback @ 1028``
 
@@ -2141,7 +2138,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47430:47467:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47382:47419:FUNCTION
 
 .. rubric:: ``leftEntries.some callback @ 1029``
 
@@ -2164,7 +2161,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47516:47553:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47468:47505:FUNCTION
 
 .. rubric:: ``rightEntries.some callback @ 1030``
 
@@ -2187,7 +2184,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47757:47959:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47709:47911:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 1033``
 
@@ -2209,7 +2206,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``requestDraw``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47984:48019:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:47936:47971:FUNCTION
 
 .. rubric:: ``returned callback @ 1039``
 
@@ -2231,7 +2228,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:48215:48334:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:48167:48286:FUNCTION
 
 .. rubric:: ``useEffect callback @ 1046``
 
@@ -2253,7 +2250,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:48220:48334:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:48172:48286:FUNCTION
 
 .. rubric:: ``anonymous callback @ 1046``
 
@@ -2275,7 +2272,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:48382:48614:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:48334:48566:FUNCTION
 
 .. rubric:: ``useCallback callback @ 1051``
 
@@ -2298,7 +2295,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``requestDraw``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:48671:49093:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:48623:49045:FUNCTION
 
 .. rubric:: ``useCallback callback @ 1060``
 
@@ -2330,7 +2327,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:48757:49092:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:48709:49044:FUNCTION
 
 .. rubric:: ``anonymous callback @ 1060``
 
@@ -2353,7 +2350,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``String``、``performance.now``、``requestDraw``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:49157:51095:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:49109:51047:FUNCTION
 
 .. rubric:: ``useCallback callback @ 1076``
 
@@ -2378,7 +2375,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:49782:49826:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:49734:49778:FUNCTION
 
 .. rubric:: ``restoreScroll``
 
@@ -2400,7 +2397,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``restoreScrollSnapshot``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:49862:50054:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:49814:50006:FUNCTION
 
 .. rubric:: ``restoreAfterCommit``
 
@@ -2424,7 +2421,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:49934:50042:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:49886:49994:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 1086``
 
@@ -2446,7 +2443,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``restoreScroll``、``requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:51211:52256:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:51163:52208:FUNCTION
 
 .. rubric:: ``useCallback callback @ 1122``
 
@@ -2471,7 +2468,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:52168:52211:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:52120:52163:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 1137``
 
@@ -2493,7 +2490,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``restoreScrollSnapshot``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:52367:53347:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:52319:53299:FUNCTION
 
 .. rubric:: ``useCallback callback @ 1141``
 
@@ -2521,7 +2518,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:53259:53302:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:53211:53254:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 1158``
 
@@ -2543,7 +2540,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``restoreScrollSnapshot``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:53454:55462:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:53406:55414:FUNCTION
 
 .. rubric:: ``useCallback callback @ 1162``
 
@@ -2570,7 +2567,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``scene.byId.get``、``String``、``pointInRect``、``makePose``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:55508:58350:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:55460:58302:FUNCTION
 
 .. rubric:: ``useCallback callback @ 1198``
 
@@ -2593,7 +2590,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``event.preventDefault``、``getPointerPosition``、``resolvePointerTarget``、``makePose``、``canvas.setPointerCapture``、``performance.now``、``String``、``requestDraw``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:58484:61745:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:58436:61697:FUNCTION
 
 .. rubric:: ``useCallback callback @ 1263``
 
@@ -2616,7 +2613,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``getPointerPosition``、``performance.now``、``pushPointerSample``、``Math.hypot``、``Math.abs``、``setMagnetTarget``、``requestDraw``、``canvas.setPointerCapture``、``event.preventDefault``、``clamp``、``Math.max``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:61836:66918:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:61788:66870:FUNCTION
 
 .. rubric:: ``useCallback callback @ 1335``
 
@@ -2642,7 +2639,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``canvas?.releasePointerCapture``、``event.preventDefault``、``getPointerPosition``、``performance.now``、``pushPointerSample``、``getPointerVelocity``、``getFlingProjection``、``Number``、``resolveProjectedDropTarget``、``getFlingFlightDuration``、``setMagnetTarget``、``requestDraw``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:67054:67583:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:67006:67535:FUNCTION
 
 .. rubric:: ``useCallback callback @ 1463``
 
@@ -2665,7 +2662,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``Number``、``makePose``、``runActionAfterFlight``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:68870:68913:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:68822:68865:FUNCTION
 
 .. rubric:: ``onPointerUp callback @ 1498``
 
@@ -2688,7 +2685,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``finishPointer``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:68952:68994:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:68904:68946:FUNCTION
 
 .. rubric:: ``onPointerCancel callback @ 1499``
 
@@ -2711,7 +2708,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``finishPointer``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:69731:69763:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:69683:69715:FUNCTION
 
 .. rubric:: ``onClick callback @ 1512``
 
@@ -2733,7 +2730,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``actByKeyboard``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:69962:69995:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:69914:69947:FUNCTION
 
 .. rubric:: ``onClick callback @ 1515``
 
@@ -2755,7 +2752,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``actByKeyboard``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:70503:70535:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:70455:70487:FUNCTION
 
 .. rubric:: ``onClick callback @ 1526``
 
@@ -2777,7 +2774,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``onExit``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:71161:71185:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:71113:71137:FUNCTION
 
 .. rubric:: ``onClick callback @ 1535``
 
@@ -2799,7 +2796,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 
 **主要协作调用**：``closePocket``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:71929:71957:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/CanvasCardDeck.jsx:71881:71909:FUNCTION
 
 .. rubric:: ``onClick callback @ 1544``
 

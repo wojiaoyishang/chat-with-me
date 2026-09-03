@@ -2,8 +2,6 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {toast} from 'sonner';
 import {generateUUID, getLocalSetting, setLocalSetting, TTS_LOCAL_SETTING_KEYS} from '@/lib/tools.jsx';
 import {emitEvent} from '@/context/useEventStore.jsx';
-import apiClient from '@/lib/apiClient.js';
-import {apiEndpoint} from '@/config.js';
 import {getSpeakableSegments, getStreamingSpeakableSegments} from '../../ui/message/utils/speechContent.js';
 import {
     TTS_HIGHLIGHT_MAX_SYNC_WAIT_MS,
@@ -35,7 +33,6 @@ import {
     decodeBase64ToUint8Array,
     createBackendSpeechBlob,
     normalizeSpeechMatchText,
-    getSpeechSegmentText,
     getSpeechSegmentTextVariants,
     resolveSpeechSegmentByLocator,
     resolveSpeechSegmentIdByLocator,
@@ -734,127 +731,6 @@ export default function useChatSpeech({
         getSpeechMessageElement,
         scoreSpeechTextCandidate,
     ]);
-
-    const getMappedSpeechSegmentElement = useCallback((container, speech = speechStateRef.current) => {
-        if (!container || !speech?.messageId) return null;
-
-        // 每次朗读段落变化时重建映射，保证 DOM 更新、重复文本和列表项都按当前消息顺序定位。
-        const map = rebuildSpeechSegmentElementMap(container, speech);
-        const {currentSegmentId, currentSegmentIndex, currentSegmentPosition} = speech;
-        const canonicalSegmentId = resolveSpeechSegmentIdByLocator(speech.segments, {
-            currentSegmentId,
-            currentSegmentIndex,
-            currentSegmentPosition,
-        }, currentSegmentId);
-
-        for (const segmentId of Array.from(new Set([currentSegmentId, canonicalSegmentId].filter(Boolean)))) {
-            const byIdElement = map.byId.get(segmentId);
-            if (byIdElement) return byIdElement;
-        }
-
-        for (const segmentIndex of Array.from(new Set([currentSegmentPosition, currentSegmentIndex]))) {
-            if (Number.isInteger(segmentIndex) && segmentIndex >= 0) {
-                const byIndexElement = map.byIndex.get(segmentIndex);
-                if (byIndexElement) return byIndexElement;
-            }
-        }
-
-        return null;
-    }, [rebuildSpeechSegmentElementMap]);
-
-    const findSpeechElementByText = useCallback((searchRoot, currentSegment) => {
-        if (!searchRoot || !currentSegment) return null;
-
-        const textVariants = getSpeechSegmentTextVariants(currentSegment);
-        if (textVariants.length === 0) return null;
-
-        const candidates = collectSpeechTextCandidates(searchRoot, textVariants);
-        let bestElement = null;
-        let bestScore = -Infinity;
-        for (const element of candidates) {
-            const score = scoreSpeechTextCandidate(element, textVariants);
-            if (score > bestScore) {
-                bestScore = score;
-                bestElement = element;
-            }
-        }
-
-        return bestScore > -Infinity ? bestElement : null;
-    }, [collectSpeechTextCandidates, scoreSpeechTextCandidate]);
-
-    const getSpeechParentFallbackElement = useCallback((container, speech = speechStateRef.current, messageElement = null) => {
-        if (!container || !speech?.messageId) return null;
-
-        const messageRoot = messageElement || getSpeechMessageElement(container, speech.messageId);
-        if (!messageRoot) return null;
-
-        const segments = Array.isArray(speech.segments) ? speech.segments : [];
-        if (segments.length === 0) return null;
-
-        const currentSegment = resolveSpeechSegmentByLocator(segments, {
-            currentSegmentId: speech.currentSegmentId,
-            currentSegmentIndex: speech.currentSegmentIndex,
-            currentSegmentPosition: speech.currentSegmentPosition,
-        });
-
-        const currentIndexes = Array.from(new Set([
-            speech.currentSegmentPosition,
-            speech.currentSegmentIndex,
-            currentSegment?.index,
-            currentSegment ? segments.indexOf(currentSegment) : -1,
-        ]
-            .map(Number)
-            .filter(index => Number.isInteger(index) && index >= 0 && index < segments.length)));
-
-        if (currentIndexes.length === 0) return null;
-
-        const isInsideMessage = (element) => element &&
-            element !== container &&
-            element !== messageRoot &&
-            (element === messageRoot || messageRoot.contains(element));
-
-        const toSafeParentBoundary = (element) => {
-            if (!isInsideMessage(element)) return null;
-
-            const listItem = element.closest?.('li, [role="listitem"]');
-            if (isInsideMessage(listItem)) return listItem;
-
-            if (element.matches?.(SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR) && element !== messageRoot) {
-                return element;
-            }
-
-            const blockElement = element.closest?.(SPEECH_HIGHLIGHT_BOUNDARY_SELECTOR);
-            if (isInsideMessage(blockElement)) return blockElement;
-
-            // 最后的兜底只允许回退到“当前碎片的一层父级”，不要回退到整条 message。
-            const parent = element.parentElement;
-            if (isInsideMessage(parent)) return parent;
-
-            return null;
-        };
-
-        // 如果当前短句没有命中，优先借用相邻分段的边界。
-        // 例如同一个 li 内的 “测试时！” 已经绑定到第 2 项，
-        // 那么 “测试2！” 定位失败时只回退到第 2 个 li，而不是整条 message。
-        const map = rebuildSpeechSegmentElementMap(container, speech);
-        const visitedIndexes = new Set();
-
-        for (let distance = 1; distance < segments.length; distance += 1) {
-            for (const currentIndex of currentIndexes) {
-                for (const neighborIndex of [currentIndex - distance, currentIndex + distance]) {
-                    if (visitedIndexes.has(neighborIndex)) continue;
-                    visitedIndexes.add(neighborIndex);
-                    if (!Number.isInteger(neighborIndex) || neighborIndex < 0 || neighborIndex >= segments.length) continue;
-
-                    const neighborElement = map.byIndex.get(neighborIndex);
-                    const boundary = toSafeParentBoundary(neighborElement);
-                    if (boundary) return boundary;
-                }
-            }
-        }
-
-        return null;
-    }, [getSpeechMessageElement, rebuildSpeechSegmentElementMap]);
 
     const getSpeechSegmentElement = useCallback((container, speech = speechStateRef.current) => {
         if (!container || !speech?.messageId) return null;
@@ -4568,8 +4444,6 @@ const findBrowserSpeechVoice = useCallback((speechConfig = {}) => {
         }
 
         if (!segmentBuffer) {
-            const explicitChunkCount = Number(payload.chunkCount ?? payload.chunk_count);
-            const explicitByteLength = Number(payload.byteLength ?? payload.byte_length ?? payload.audioByteLength ?? payload.audio_byte_length);
 
             // Ready 可能先于 Audio-Chunk 到达；即使后端当前声明 chunkCount=0，
             // 也不能造静音占位或跳过该句。正确行为是保留 pending ready，

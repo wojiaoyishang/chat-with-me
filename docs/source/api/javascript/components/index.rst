@@ -13,11 +13,6 @@
      - 方法
      - 局部/回调
      - 源码
-   * - :doc:`src/components/debugger/Debugger </api/javascript/components/debugger/Debugger>`
-     - 1
-     - 0
-     - 3
-     - ``src/components/debugger/Debugger.js``
    * - :doc:`src/components/editor/CollaboraOnlineEditor </api/javascript/components/editor/CollaboraOnlineEditor>`
      - 0
      - 0
@@ -43,11 +38,6 @@
      - 0
      - 4
      - ``src/components/markdown/card-block/CardBlock.jsx``
-   * - :doc:`src/components/markdown/card-block/StableCardBlock </api/javascript/components/markdown/card-block/StableCardBlock>`
-     - 0
-     - 0
-     - 2
-     - ``src/components/markdown/card-block/StableCardBlock.jsx``
    * - :doc:`src/components/markdown/card-block/agent/AgentBody </api/javascript/components/markdown/card-block/agent/AgentBody>`
      - 0
      - 0
@@ -118,21 +108,11 @@
      - 0
      - 1
      - ``src/components/markdown/card-block/expandedStore.js``
-   * - :doc:`src/components/markdown/card-block/frozenCardStore </api/javascript/components/markdown/card-block/frozenCardStore>`
-     - 6
-     - 0
-     - 0
-     - ``src/components/markdown/card-block/frozenCardStore.js``
    * - :doc:`src/components/markdown/card-block/highlight </api/javascript/components/markdown/card-block/highlight>`
      - 4
      - 0
      - 2
      - ``src/components/markdown/card-block/highlight.js``
-   * - :doc:`src/components/markdown/card-block/index </api/javascript/components/markdown/card-block/index>`
-     - 0
-     - 0
-     - 0
-     - ``src/components/markdown/card-block/index.jsx``
    * - :doc:`src/components/markdown/card-block/status/AnimatedProgressFill </api/javascript/components/markdown/card-block/status/AnimatedProgressFill>`
      - 0
      - 0
@@ -189,9 +169,9 @@
      - 78
      - ``src/components/markdown/card-block/widget/CanvasCardDeck.jsx``
    * - :doc:`src/components/markdown/card-block/widget/WidgetHost </api/javascript/components/markdown/card-block/widget/WidgetHost>`
-     - 31
+     - 14
      - 0
-     - 134
+     - 51
      - ``src/components/markdown/card-block/widget/WidgetHost.jsx``
    * - :doc:`src/components/markdown/remarkDirectiveToComponent </api/javascript/components/markdown/remarkDirectiveToComponent>`
      - 7
@@ -368,13 +348,11 @@
    :hidden:
    :maxdepth: 1
 
-   /api/javascript/components/debugger/Debugger
    /api/javascript/components/editor/CollaboraOnlineEditor
    /api/javascript/components/editor/SimpleMDEditor
    /api/javascript/components/markdown/CodeBlock
    /api/javascript/components/markdown/MarkdownRenderer
    /api/javascript/components/markdown/card-block/CardBlock
-   /api/javascript/components/markdown/card-block/StableCardBlock
    /api/javascript/components/markdown/card-block/agent/AgentBody
    /api/javascript/components/markdown/card-block/agent/AgentHeader
    /api/javascript/components/markdown/card-block/agent/AgentWidget
@@ -389,9 +367,7 @@
    /api/javascript/components/markdown/card-block/blocks/useFollowOutputScroll
    /api/javascript/components/markdown/card-block/constants
    /api/javascript/components/markdown/card-block/expandedStore
-   /api/javascript/components/markdown/card-block/frozenCardStore
    /api/javascript/components/markdown/card-block/highlight
-   /api/javascript/components/markdown/card-block/index
    /api/javascript/components/markdown/card-block/status/AnimatedProgressFill
    /api/javascript/components/markdown/card-block/status/ProgressTimeline
    /api/javascript/components/markdown/card-block/status/StableStepsButton

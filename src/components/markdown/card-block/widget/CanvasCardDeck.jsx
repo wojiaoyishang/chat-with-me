@@ -816,7 +816,7 @@ const CanvasCardDeck = ({widget, interactive, busy, act, onExit, initialReviewCa
                 else reflowMap.delete(cardId);
             });
 
-            const drawPocket = (side, entries, topCard, rect) => {
+            const drawPocket = (side, entries, rect) => {
                 const active = magnet[side] || 0;
                 const nudgeAmount = currentLayout.mobile ? 12 : 5;
                 const nudge = active * (side === 'left' ? nudgeAmount : -nudgeAmount);
@@ -839,8 +839,8 @@ const CanvasCardDeck = ({widget, interactive, busy, act, onExit, initialReviewCa
             };
 
             if (!scene.reviewCategory) {
-                drawPocket('left', scene.leftEntries, scene.leftTopCard, currentLayout.leftRect);
-                drawPocket('right', scene.rightEntries, scene.rightTopCard, currentLayout.rightRect);
+                drawPocket('left', scene.leftEntries, currentLayout.leftRect);
+                drawPocket('right', scene.rightEntries, currentLayout.rightRect);
 
                 const pendingCards = scene.pending.slice(0, 3).map((id) => scene.byId.get(String(id))).filter(Boolean);
                 const activeDrag = dragRef.current;

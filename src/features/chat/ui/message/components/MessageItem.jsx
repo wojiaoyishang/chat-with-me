@@ -25,7 +25,6 @@ const MessageItem = memo(({
                               msg,
                               conversationId,
                               messages,
-                              isFading,
                               animationClass,
                               switchingMessageId,
                               setSwitchingMessageId,

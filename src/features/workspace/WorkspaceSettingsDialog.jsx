@@ -1,8 +1,6 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {
     Folder,
-    KeyRound,
-    Link2,
     Loader2,
     MapPinned,
     Pencil,
@@ -13,7 +11,6 @@ import {
     ShieldCheck,
     Terminal,
     Trash2,
-    Unlink,
     X,
 } from 'lucide-react';
 import {toast} from 'sonner';

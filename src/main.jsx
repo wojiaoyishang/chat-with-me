@@ -16,7 +16,6 @@ import FatalErrorPopoverElement from "@/context/FatalErrorPopover.jsx";
 import ContextEvent from "@/context/ContextEvent.jsx";
 import DashboardPage from "@/pages/DashboardPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
-import ChatWithEditor from "@/pages/ChatWithEditor.jsx";
 import UniversalModalHost from '@/components/modal/UniversalModalHost.jsx';
 import {subscribeBrowserRoutePop} from '@/lib/browserHistoryLayers.js';
 

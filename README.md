@@ -47,10 +47,10 @@ npm ci
 npm run dev
 ```
 
-协议测试与生产构建：
+代码检查与生产构建：
 
 ```bash
-npm run test:protocol
+npm run lint
 npm run build
 ```
 
@@ -102,7 +102,7 @@ const unsubscribe = onEvent({
 
 ## 清理
 
-增量包根目录提供 `clean_project.bat`，用于删除 `dist`、Vite 缓存、测试覆盖率、文档构建产物和系统临时文件，不会删除 `node_modules`。
+清理增量在 `temp/cleanup_baseline.bat` 提供幂等清理脚本，用于删除旧测试入口、孤儿源码/资源、构建分析产物、Vite 缓存和覆盖率缓存；不会删除 `node_modules`。
 
 ## V59 Markdown code highlighting
 

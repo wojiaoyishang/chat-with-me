@@ -27,7 +27,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:102:474:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:106:487:FUNCTION
 
 .. js:function:: normalizeTransfer(value)
 
@@ -46,7 +46,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
    **主要协作调用**：``Number.isFinite``、``Number``、``Math.max``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:1840:1925:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:1890:1977:FUNCTION
 
 .. js:function:: upsertWorkspaceTransfer(transfer)
 
@@ -65,7 +65,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
    **主要协作调用**：``useWorkspaceTransferStore.getState().upsertTransfer``、``useWorkspaceTransferStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:1966:2047:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2020:2103:FUNCTION
 
 .. js:function:: clearWorkspaceTransfers()
 
@@ -83,7 +83,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
    **主要协作调用**：``useWorkspaceTransferStore.getState().clearConversationTransfers``、``useWorkspaceTransferStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2087:2289:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2145:2351:FUNCTION
 
 .. js:function:: selectArtifactTransfer(state, artifactId)
 
@@ -103,7 +103,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``null``、``transferId ? state.transfersById[transferId] || null : null``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2331:2549:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2395:2618:FUNCTION
 
 .. js:function:: selectExecutionTransfers(state, executionId)
 
@@ -132,7 +132,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:525:1798:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:540:1846:FUNCTION
 
 .. rubric:: ``create callback @ 16``
 
@@ -159,7 +159,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:646:1640:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:666:1681:FUNCTION
 
 .. rubric:: ``upsertTransfer``
 
@@ -188,7 +188,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:665:1639:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:685:1680:FUNCTION
 
 .. rubric:: ``set callback @ 21``
 
@@ -211,7 +211,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
 **主要协作调用**：``normalizeTransfer``、``current.includes``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:1674:1794:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:1717:1841:FUNCTION
 
 .. rubric:: ``clearConversationTransfers``
 
@@ -233,7 +233,7 @@ src/features/workspace/useWorkspaceTransferStore 模块
 
 **主要协作调用**：``set``。
 
-.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2489:2520:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/useWorkspaceTransferStore.js:2556:2587:FUNCTION
 
 .. rubric:: ``(state.executionTransferIds[executionId] || EMPTY_TRANSFERS) .map callback @ 68``
 

@@ -1,4 +1,3 @@
-import {useParams} from 'react-router-dom';
 import {apiEndpoint} from '@/config.js';
 import apiClient from '@/lib/apiClient';
 import {useEffect, useState} from "react";

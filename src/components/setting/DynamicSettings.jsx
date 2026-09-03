@@ -2277,7 +2277,7 @@ function WorkspaceAclDialog({workspace, open, onOpenChange, onChanged}) {
     );
 }
 
-function WorkspaceManagementItem({item}) {
+function WorkspaceManagementItem() {
     const [agents, setAgents] = useState([]);
     const [workspaces, setWorkspaces] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -2572,7 +2572,7 @@ function UserToolAccessEditor({catalog, rules, setRules}) {
     );
 }
 
-function UserManagementItem({item}) {
+function UserManagementItem() {
     const currentUser = useUserStore((state) => state.user);
     const [users, setUsers] = useState([]);
     const [catalog, setCatalog] = useState([]);

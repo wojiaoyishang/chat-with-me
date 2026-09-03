@@ -220,7 +220,7 @@ const replaceCopyDirectives = (source, directiveRegex, replacement, options) => 
 
     directiveRegex.lastIndex = 0;
 
-    return source.replace(directiveRegex, (match, directiveName, rawAttributes) => {
+    return source.replace(directiveRegex, (_match, directiveName, rawAttributes) => {
         const attributes = parseCardReplaceAttributes(rawAttributes);
         const finalId = getCardReplaceIdFromAttributes(attributes);
         const hasReplacementEntry = Boolean(

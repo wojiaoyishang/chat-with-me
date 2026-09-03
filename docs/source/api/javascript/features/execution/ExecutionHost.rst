@@ -29,7 +29,7 @@ src/features/execution/ExecutionHost 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:292:3746:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:298:3836:FUNCTION
 
 .. rubric:: ``memo callback @ 7``
 
@@ -59,7 +59,7 @@ src/features/execution/ExecutionHost 模块
 
 **内部回调数量**：8。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:448:513:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:456:521:FUNCTION
 
 .. rubric:: ``useExecutionStore callback @ 9``
 
@@ -80,7 +80,7 @@ src/features/execution/ExecutionHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:827:996:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:840:1013:FUNCTION
 
 .. rubric:: ``useMemo callback @ 14``
 
@@ -104,7 +104,7 @@ src/features/execution/ExecutionHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:905:960:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:920:975:FUNCTION
 
 .. rubric:: ``messageOrder.filter callback @ 16``
 
@@ -125,7 +125,7 @@ src/features/execution/ExecutionHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1055:1087:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1073:1105:FUNCTION
 
 .. rubric:: ``useMemo callback @ 19``
 
@@ -145,7 +145,7 @@ src/features/execution/ExecutionHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1127:1917:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1148:1953:FUNCTION
 
 .. rubric:: ``useEffect callback @ 22``
 
@@ -173,7 +173,7 @@ src/features/execution/ExecutionHost 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1325:1787:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1352:1819:FUNCTION
 
 .. rubric:: ``resolve``
 
@@ -201,7 +201,7 @@ src/features/execution/ExecutionHost 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1577:1647:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1607:1677:FUNCTION
 
 .. rubric:: ``targets.find callback @ 31``
 
@@ -224,7 +224,7 @@ src/features/execution/ExecutionHost 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1696:1766:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1727:1797:FUNCTION
 
 .. rubric:: ``mounts.find callback @ 32``
 
@@ -247,7 +247,7 @@ src/features/execution/ExecutionHost 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1876:1910:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1911:1945:FUNCTION
 
 .. rubric:: ``returned callback @ 36``
 
@@ -269,7 +269,7 @@ src/features/execution/ExecutionHost 模块
 
 **主要协作调用**：``cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1949:2311:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:1987:2356:FUNCTION
 
 .. rubric:: ``useEffect callback @ 39``
 
@@ -291,7 +291,7 @@ src/features/execution/ExecutionHost 模块
 
 **主要协作调用**：``String(execution.messageId || execution.assistantMessageId || '').trim``、``String``、``visibleMessageIdSet.has``、``closeExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:2547:2831:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:2602:2892:FUNCTION
 
 .. rubric:: ``useEffect callback @ 56``
 
@@ -313,7 +313,7 @@ src/features/execution/ExecutionHost 模块
 
 **主要协作调用**：``closeExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:2863:3357:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:2926:3432:FUNCTION
 
 .. rubric:: ``useEffect callback @ 64``
 
@@ -341,7 +341,7 @@ src/features/execution/ExecutionHost 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:3122:3313:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:3192:3386:FUNCTION
 
 .. rubric:: ``onEvent({ event: 'execution.state.changed', conversationId: normalized, direction: 'incoming', includeGlobal: true, }).… callback @ 71``
 
@@ -364,7 +364,7 @@ src/features/execution/ExecutionHost 模块
 
 **主要协作调用**：``upsertExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:3330:3350:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:3404:3424:FUNCTION
 
 .. rubric:: ``returned callback @ 75``
 
@@ -390,7 +390,7 @@ src/features/execution/ExecutionHost 模块
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:3645:3725:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionHost.jsx:3730:3812:FUNCTION
 
 .. rubric:: ``onOpenChange callback @ 86``
 

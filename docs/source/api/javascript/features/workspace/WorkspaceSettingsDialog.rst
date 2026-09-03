@@ -27,13 +27,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:1547:1600:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:1510:1563:FUNCTION
 
 .. js:function:: cloneValue(value)
 
    实现 ``cloneValue`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``54``—``54`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``51``—``51`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **主要协作调用**：``JSON.parse``、``JSON.stringify``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:1630:1782:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:1593:1745:FUNCTION
 
 .. js:function:: normalizeOperations(value)
 
    规范化与 ``Operations`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``56``—``59`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``53``—``56`` 行。
 
    **参数**
 
@@ -67,13 +67,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:1811:2156:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:1774:2119:FUNCTION
 
 .. js:function:: operationPresetFor(operations)
 
    实现 ``operationPresetFor`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``61``—``68`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``58``—``65`` 行。
 
    **参数**
 
@@ -88,13 +88,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:2186:2899:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:2149:2862:FUNCTION
 
 .. js:function:: normalizeAccessRule(rule, index)
 
    规范化与 ``Access Rule`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``70``—``83`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``67``—``80`` 行。
 
    **参数**
 
@@ -110,13 +110,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **主要协作调用**：``String``、``Date.now``、``Math.random().toString(16).slice``、``Math.random().toString``、``Math.random``、``['path', 'glob', 'regex', 'exact'].includes``、``String(rule?.matcher?.pattern || '').replace``、``normalizeOperations``、``Array.isArray``、``Number``、``Number.isFinite``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:2927:3308:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:2890:3271:FUNCTION
 
 .. js:function:: splitAccessPolicy(policy)
 
    实现 ``splitAccessPolicy`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``85``—``92`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``82``—``89`` 行。
 
    **参数**
 
@@ -131,13 +131,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3339:3673:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3302:3636:FUNCTION
 
 .. js:function:: commandPolicyPayload(allowedCommandIds)
 
    实现 ``commandPolicyPayload`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``94``—``105`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``91``—``102`` 行。
 
    **参数**
 
@@ -152,13 +152,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3693:3929:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3656:3892:FUNCTION
 
 .. js:function:: safeAlias(name, index)
 
    实现 ``safeAlias`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``107``—``114`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``104``—``111`` 行。
 
    **参数**
 
@@ -174,13 +174,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **主要协作调用**：``String(name || '') .normalize('NFKD') .replace(/[^A-Za-z0-9._-]+/g, '-') .replace(/^-+|-+$/g, '') .slice``、``String(name || '') .normalize('NFKD') .replace(/[^A-Za-z0-9._-]+/g, '-') .replace``、``String(name || '') .normalize('NFKD') .replace``、``String(name || '') .normalize``、``String``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3956:4043:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3919:4006:FUNCTION
 
 .. js:function:: cleanDisplayPath(value)
 
    实现 ``cleanDisplayPath`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``116``—``118`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``113``—``115`` 行。
 
    **参数**
 
@@ -193,13 +193,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **主要协作调用**：``String(value || '') .replace(/\\\//g, '\\') .replace``、``String(value || '') .replace``、``String``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:4078:4170:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:4041:4133:FUNCTION
 
 .. js:function:: workspacePermissionLabel(value)
 
    实现 ``workspacePermissionLabel`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``120``—``120`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``117``—``117`` 行。
 
    **参数**
 
@@ -212,13 +212,13 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:4204:48487:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:4167:48450:FUNCTION
 
 .. js:function:: WorkspaceSettingsDialog({open, onOpenChange, conversationId, selectedWorkspaceIds = [], onWorkspaceChange, runWorkspaceSele…)
 
    渲染 ``WorkspaceSettingsDialog`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``122``—``820`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``119``—``817`` 行。
 
    **参数**
 
@@ -244,17 +244,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:1748:1778:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:1711:1741:FUNCTION
 
-.. rubric:: ``ACCESS_OPERATIONS.filter callback @ 58``
+.. rubric:: ``ACCESS_OPERATIONS.filter callback @ 55``
 
 .. code-block:: javascript
 
-   ACCESS_OPERATIONS.filter callback @ 58(item)
+   ACCESS_OPERATIONS.filter callback @ 55(item)
 
 作为 ``ACCESS_OPERATIONS.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``58``—``58`` 行；所属函数 ``normalizeOperations``。
+**性质**：同步局部函数；源码第 ``55``—``55`` 行；所属函数 ``normalizeOperations``。
 
 **参数**
 
@@ -267,17 +267,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``items.includes``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:1938:2127:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:1901:2090:FUNCTION
 
-.. rubric:: ``Object.keys(OPERATION_PRESETS).find callback @ 63``
+.. rubric:: ``Object.keys(OPERATION_PRESETS).find callback @ 60``
 
 .. code-block:: javascript
 
-   Object.keys(OPERATION_PRESETS).find callback @ 63(item)
+   Object.keys(OPERATION_PRESETS).find callback @ 60(item)
 
 作为 ``Object.keys(OPERATION_PRESETS).find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``63``—``66`` 行；所属函数 ``operationPresetFor``。
+**性质**：同步局部函数；源码第 ``60``—``63`` 行；所属函数 ``operationPresetFor``。
 
 **参数**
 
@@ -292,17 +292,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:2074:2119:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:2037:2082:FUNCTION
 
-.. rubric:: ``candidate.every callback @ 65``
+.. rubric:: ``candidate.every callback @ 62``
 
 .. code-block:: javascript
 
-   candidate.every callback @ 65(operation)
+   candidate.every callback @ 62(operation)
 
 作为 ``candidate.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``65``—``65`` 行；所属函数 ``Object.keys(OPERATION_PRESETS).find callback @ 63``。
+**性质**：同步局部函数；源码第 ``62``—``62`` 行；所属函数 ``Object.keys(OPERATION_PRESETS).find callback @ 60``。
 
 **参数**
 
@@ -315,17 +315,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``normalized.includes``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3160:3208:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3123:3171:FUNCTION
 
-.. rubric:: ``rules.filter callback @ 89``
+.. rubric:: ``rules.filter callback @ 86``
 
 .. code-block:: javascript
 
-   rules.filter callback @ 89(rule)
+   rules.filter callback @ 86(rule)
 
 作为 ``rules.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``89``—``89`` 行；所属函数 ``splitAccessPolicy``。
+**性质**：同步局部函数；源码第 ``86``—``86`` 行；所属函数 ``splitAccessPolicy``。
 
 **参数**
 
@@ -336,17 +336,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3248:3297:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3211:3260:FUNCTION
 
-.. rubric:: ``rules.filter callback @ 90``
+.. rubric:: ``rules.filter callback @ 87``
 
 .. code-block:: javascript
 
-   rules.filter callback @ 90(rule)
+   rules.filter callback @ 87(rule)
 
 作为 ``rules.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``90``—``90`` 行；所属函数 ``splitAccessPolicy``。
+**性质**：同步局部函数；源码第 ``87``—``87`` 行；所属函数 ``splitAccessPolicy``。
 
 **参数**
 
@@ -357,17 +357,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3454:3668:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:3417:3631:FUNCTION
 
-.. rubric:: ``[...allowedCommandIds].sort().map callback @ 97``
+.. rubric:: ``[...allowedCommandIds].sort().map callback @ 94``
 
 .. code-block:: javascript
 
-   [...allowedCommandIds].sort().map callback @ 97(commandId)
+   [...allowedCommandIds].sort().map callback @ 94(commandId)
 
 作为 ``[...allowedCommandIds].sort().map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``97``—``104`` 行；所属函数 ``commandPolicyPayload``。
+**性质**：同步局部函数；源码第 ``94``—``101`` 行；所属函数 ``commandPolicyPayload``。
 
 **参数**
 
@@ -378,17 +378,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:5730:5919:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:5693:5882:FUNCTION
 
-.. rubric:: ``useMemo callback @ 145``
+.. rubric:: ``useMemo callback @ 142``
 
 .. code-block:: javascript
 
-   useMemo callback @ 145()
+   useMemo callback @ 142()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``145``—``148`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``142``—``145`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -402,17 +402,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:5858:5893:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:5821:5856:FUNCTION
 
-.. rubric:: ``raw.map callback @ 147``
+.. rubric:: ``raw.map callback @ 144``
 
 .. code-block:: javascript
 
-   raw.map callback @ 147(item)
+   raw.map callback @ 144(item)
 
 作为 ``raw.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``147``—``147`` 行；所属函数 ``useMemo callback @ 145``。
+**性质**：同步局部函数；源码第 ``144``—``144`` 行；所属函数 ``useMemo callback @ 142``。
 
 **参数**
 
@@ -425,17 +425,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``String(item || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:5980:6006:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:5943:5969:FUNCTION
 
-.. rubric:: ``useMemo callback @ 149``
+.. rubric:: ``useMemo callback @ 146``
 
 .. code-block:: javascript
 
-   useMemo callback @ 149()
+   useMemo callback @ 146()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``149``—``149`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``146``—``146`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -445,17 +445,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6053:6264:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6016:6227:FUNCTION
 
-.. rubric:: ``useMemo callback @ 150``
+.. rubric:: ``useMemo callback @ 147``
 
 .. code-block:: javascript
 
-   useMemo callback @ 150()
+   useMemo callback @ 147()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``150``—``154`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``147``—``151`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -469,17 +469,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6101:6141:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6064:6104:FUNCTION
 
-.. rubric:: ``workspaces.find callback @ 151``
+.. rubric:: ``workspaces.find callback @ 148``
 
 .. code-block:: javascript
 
-   workspaces.find callback @ 151(item)
+   workspaces.find callback @ 148(item)
 
 作为 ``workspaces.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``151``—``151`` 行；所属函数 ``useMemo callback @ 150``。
+**性质**：同步局部函数；源码第 ``148``—``148`` 行；所属函数 ``useMemo callback @ 147``。
 
 **参数**
 
@@ -490,17 +490,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6212:6248:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6175:6211:FUNCTION
 
-.. rubric:: ``workspaces.find callback @ 153``
+.. rubric:: ``workspaces.find callback @ 150``
 
 .. code-block:: javascript
 
-   workspaces.find callback @ 153(item)
+   workspaces.find callback @ 150(item)
 
 作为 ``workspaces.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``153``—``153`` 行；所属函数 ``useMemo callback @ 150``。
+**性质**：同步局部函数；源码第 ``150``—``150`` 行；所属函数 ``useMemo callback @ 147``。
 
 **参数**
 
@@ -513,17 +513,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``selectedIdSet.has``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6331:6595:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6294:6558:FUNCTION
 
-.. rubric:: ``useEffect callback @ 156``
+.. rubric:: ``useEffect callback @ 153``
 
 .. code-block:: javascript
 
-   useEffect callback @ 156()
+   useEffect callback @ 153()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``156``—``160`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``153``—``157`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -537,17 +537,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6389:6429:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6352:6392:FUNCTION
 
-.. rubric:: ``workspaces.some callback @ 157``
+.. rubric:: ``workspaces.some callback @ 154``
 
 .. code-block:: javascript
 
-   workspaces.some callback @ 157(item)
+   workspaces.some callback @ 154(item)
 
 作为 ``workspaces.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``useEffect callback @ 156``。
+**性质**：同步局部函数；源码第 ``154``—``154`` 行；所属函数 ``useEffect callback @ 153``。
 
 **参数**
 
@@ -558,17 +558,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6477:6513:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6440:6476:FUNCTION
 
-.. rubric:: ``workspaces.find callback @ 158``
+.. rubric:: ``workspaces.find callback @ 155``
 
 .. code-block:: javascript
 
-   workspaces.find callback @ 158(item)
+   workspaces.find callback @ 155(item)
 
 作为 ``workspaces.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``158``—``158`` 行；所属函数 ``useEffect callback @ 156``。
+**性质**：同步局部函数；源码第 ``155``—``155`` 行；所属函数 ``useEffect callback @ 153``。
 
 **参数**
 
@@ -581,17 +581,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``selectedIdSet.has``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6677:8370:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:6640:8333:FUNCTION
 
-.. rubric:: ``useCallback callback @ 162``
+.. rubric:: ``useCallback callback @ 159``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 162({quiet = false})
+   async useCallback callback @ 159({quiet = false})
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``162``—``186`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：异步局部函数；源码第 ``159``—``183`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -610,17 +610,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:7662:7728:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:7625:7691:FUNCTION
 
-.. rubric:: ``[...localWorkspaces, ...remoteWorkspaces].sort callback @ 176``
+.. rubric:: ``[...localWorkspaces, ...remoteWorkspaces].sort callback @ 173``
 
 .. code-block:: javascript
 
-   [...localWorkspaces, ...remoteWorkspaces].sort callback @ 176(a, b)
+   [...localWorkspaces, ...remoteWorkspaces].sort callback @ 173(a, b)
 
 作为 ``[...localWorkspaces, ...remoteWorkspaces].sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``176``—``176`` 行；所属函数 ``useCallback callback @ 162``。
+**性质**：同步局部函数；源码第 ``173``—``173`` 行；所属函数 ``useCallback callback @ 159``。
 
 **参数**
 
@@ -636,17 +636,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``String(a.name || '').localeCompare``、``String``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:8409:9105:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:8372:9068:FUNCTION
 
-.. rubric:: ``useEffect callback @ 188``
+.. rubric:: ``useEffect callback @ 185``
 
 .. code-block:: javascript
 
-   useEffect callback @ 188()
+   useEffect callback @ 185()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``188``—``201`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``185``—``198`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -665,17 +665,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:8569:8594:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:8532:8557:FUNCTION
 
-.. rubric:: ``onEvent({event: 'workspace.connection.status_changed'}).then callback @ 191``
+.. rubric:: ``onEvent({event: 'workspace.connection.status_changed'}).then callback @ 188``
 
 .. code-block:: javascript
 
-   onEvent({event: 'workspace.connection.status_changed'}).then callback @ 191()
+   onEvent({event: 'workspace.connection.status_changed'}).then callback @ 188()
 
 处理 ``onEvent({event: 'workspace.connection.status_changed'}).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``useEffect callback @ 188``。
+**性质**：同步局部函数；源码第 ``188``—``188`` 行；所属函数 ``useEffect callback @ 185``。
 
 **参数**
 
@@ -687,17 +687,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:8681:8706:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:8644:8669:FUNCTION
 
-.. rubric:: ``onEvent({event: 'workspace.access.changed'}).then callback @ 192``
+.. rubric:: ``onEvent({event: 'workspace.access.changed'}).then callback @ 189``
 
 .. code-block:: javascript
 
-   onEvent({event: 'workspace.access.changed'}).then callback @ 192()
+   onEvent({event: 'workspace.access.changed'}).then callback @ 189()
 
 处理 ``onEvent({event: 'workspace.access.changed'}).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``192``—``192`` 行；所属函数 ``useEffect callback @ 188``。
+**性质**：同步局部函数；源码第 ``189``—``189`` 行；所属函数 ``useEffect callback @ 185``。
 
 **参数**
 
@@ -709,17 +709,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:8915:8940:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:8878:8903:FUNCTION
 
-.. rubric:: ``window.setInterval callback @ 195``
+.. rubric:: ``window.setInterval callback @ 192``
 
 .. code-block:: javascript
 
-   window.setInterval callback @ 195()
+   window.setInterval callback @ 192()
 
 实现 ``window.setInterval`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``195``—``195`` 行；所属函数 ``useEffect callback @ 188``。
+**性质**：同步局部函数；源码第 ``192``—``192`` 行；所属函数 ``useEffect callback @ 185``。
 
 **参数**
 
@@ -731,17 +731,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:8965:9098:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:8928:9061:FUNCTION
 
-.. rubric:: ``returned callback @ 196``
+.. rubric:: ``returned callback @ 193``
 
 .. code-block:: javascript
 
-   returned callback @ 196()
+   returned callback @ 193()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``196``—``200`` 行；所属函数 ``useEffect callback @ 188``。
+**性质**：同步局部函数；源码第 ``193``—``197`` 行；所属函数 ``useEffect callback @ 185``。
 
 **参数**
 
@@ -758,7 +758,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``unsubscribeConnection``、``unsubscribeAccess``、``window.clearInterval``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:9160:10136:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:9123:10099:FUNCTION
 
 .. rubric:: ``persistWorkspaceSelection``
 
@@ -768,7 +768,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 实现 ``persistWorkspaceSelection`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``203``—``225`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：异步局部函数；源码第 ``200``—``222`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -783,17 +783,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:9302:9337:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:9265:9300:FUNCTION
 
-.. rubric:: ``(Array.isArray(nextWorkspaceIds) ? nextWorkspaceIds : []) .map callback @ 205``
+.. rubric:: ``(Array.isArray(nextWorkspaceIds) ? nextWorkspaceIds : []) .map callback @ 202``
 
 .. code-block:: javascript
 
-   (Array.isArray(nextWorkspaceIds) ? nextWorkspaceIds : []) .map callback @ 205(item)
+   (Array.isArray(nextWorkspaceIds) ? nextWorkspaceIds : []) .map callback @ 202(item)
 
 作为 ``(Array.isArray(nextWorkspaceIds) ? nextWorkspaceIds : []) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``205``—``205`` 行；所属函数 ``persistWorkspaceSelection``。
+**性质**：同步局部函数；源码第 ``202``—``202`` 行；所属函数 ``persistWorkspaceSelection``。
 
 **参数**
 
@@ -806,7 +806,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``String(item || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:9520:9701:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:9483:9664:FUNCTION
 
 .. rubric:: ``persist``
 
@@ -816,7 +816,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 实现 ``persist`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``210``—``213`` 行；所属函数 ``persistWorkspaceSelection``。
+**性质**：同步局部函数；源码第 ``207``—``210`` 行；所属函数 ``persistWorkspaceSelection``。
 
 **参数**
 
@@ -828,7 +828,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``apiClient.put``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:10166:10523:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:10129:10486:FUNCTION
 
 .. rubric:: ``toggleWorkspace``
 
@@ -838,7 +838,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 切换与 ``Workspace`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``227``—``235`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：异步局部函数；源码第 ``224``—``232`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -856,17 +856,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:10348:10369:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:10311:10332:FUNCTION
 
-.. rubric:: ``selectedIds.filter callback @ 231``
+.. rubric:: ``selectedIds.filter callback @ 228``
 
 .. code-block:: javascript
 
-   selectedIds.filter callback @ 231(item)
+   selectedIds.filter callback @ 228(item)
 
 作为 ``selectedIds.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``231``—``231`` 行；所属函数 ``toggleWorkspace``。
+**性质**：同步局部函数；源码第 ``228``—``228`` 行；所属函数 ``toggleWorkspace``。
 
 **参数**
 
@@ -877,17 +877,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:10409:10430:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:10372:10393:FUNCTION
 
-.. rubric:: ``selectedIds.filter callback @ 232``
+.. rubric:: ``selectedIds.filter callback @ 229``
 
 .. code-block:: javascript
 
-   selectedIds.filter callback @ 232(item)
+   selectedIds.filter callback @ 229(item)
 
 作为 ``selectedIds.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``232``—``232`` 行；所属函数 ``toggleWorkspace``。
+**性质**：同步局部函数；源码第 ``229``—``229`` 行；所属函数 ``toggleWorkspace``。
 
 **参数**
 
@@ -898,7 +898,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:10555:10775:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:10518:10738:FUNCTION
 
 .. rubric:: ``applyAccessPolicy``
 
@@ -908,7 +908,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 应用与 ``Access Policy`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``237``—``242`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``234``—``239`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -921,7 +921,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``splitAccessPolicy``、``setAccessDefaultEffect``、``setAccessRules``、``setPreservedAccessRules``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:10801:11163:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:10764:11126:FUNCTION
 
 .. rubric:: ``beginCreate``
 
@@ -931,7 +931,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 实现 ``beginCreate`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``244``—``254`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``241``—``251`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -943,7 +943,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``setEditingId``、``setName``、``setReadOnly``、``setMounts``、``applyAccessPolicy``、``setVisibilityPolicy``、``cloneValue``、``setConfiguredCommands``、``setAllowedCommands``、``setShellAllowed``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:11187:11934:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:11150:11897:FUNCTION
 
 .. rubric:: ``beginEdit``
 
@@ -953,7 +953,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 实现 ``beginEdit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``256``—``269`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``253``—``266`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -968,17 +968,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:11377:11482:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:11340:11445:FUNCTION
 
-.. rubric:: ``(workspace.mounts || []).map callback @ 260``
+.. rubric:: ``(workspace.mounts || []).map callback @ 257``
 
 .. code-block:: javascript
 
-   (workspace.mounts || []).map callback @ 260(item)
+   (workspace.mounts || []).map callback @ 257(item)
 
 作为 ``(workspace.mounts || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``260``—``263`` 行；所属函数 ``beginEdit``。
+**性质**：同步局部函数；源码第 ``257``—``260`` 行；所属函数 ``beginEdit``。
 
 **参数**
 
@@ -991,7 +991,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``cleanDisplayPath``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:11960:12340:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:11923:12303:FUNCTION
 
 .. rubric:: ``stopEditing``
 
@@ -1001,7 +1001,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 停止与 ``Editing`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``271``—``283`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``268``—``280`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1013,7 +1013,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``setEditingId``、``setName``、``setReadOnly``、``setMounts``、``setAccessDefaultEffect``、``setAccessRules``、``setPreservedAccessRules``、``setVisibilityPolicy``、``setConfiguredCommands``、``setAllowedCommands``、``setShellAllowed``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:12363:13228:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:12326:13191:FUNCTION
 
 .. rubric:: ``addMount``
 
@@ -1023,7 +1023,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 新增与 ``Mount`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``285``—``303`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``282``—``300`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1038,17 +1038,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:12416:12500:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:12379:12463:FUNCTION
 
-.. rubric:: ``mounts.some callback @ 286``
+.. rubric:: ``mounts.some callback @ 283``
 
 .. code-block:: javascript
 
-   mounts.some callback @ 286(item)
+   mounts.some callback @ 283(item)
 
 作为 ``mounts.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``286``—``286`` 行；所属函数 ``addMount``。
+**性质**：同步局部函数；源码第 ``283``—``283`` 行；所属函数 ``addMount``。
 
 **参数**
 
@@ -1059,17 +1059,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:12668:12716:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:12631:12679:FUNCTION
 
-.. rubric:: ``mounts.map callback @ 291``
+.. rubric:: ``mounts.map callback @ 288``
 
 .. code-block:: javascript
 
-   mounts.map callback @ 291(item)
+   mounts.map callback @ 288(item)
 
 作为 ``mounts.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``291``—``291`` 行；所属函数 ``addMount``。
+**性质**：同步局部函数；源码第 ``288``—``288`` 行；所属函数 ``addMount``。
 
 **参数**
 
@@ -1082,17 +1082,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``String(item.alias || '').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:12931:13220:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:12894:13183:FUNCTION
 
-.. rubric:: ``setMounts callback @ 295``
+.. rubric:: ``setMounts callback @ 292``
 
 .. code-block:: javascript
 
-   setMounts callback @ 295(current)
+   setMounts callback @ 292(current)
 
 设置与 ``Mounts`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``295``—``302`` 行；所属函数 ``addMount``。
+**性质**：同步局部函数；源码第 ``292``—``299`` 行；所属函数 ``addMount``。
 
 **参数**
 
@@ -1105,7 +1105,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``Boolean``、``cleanDisplayPath``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13259:13430:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13222:13393:FUNCTION
 
 .. rubric:: ``updateAccessRule``
 
@@ -1115,7 +1115,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 更新与 ``Access Rule`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``305``—``309`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``302``—``306`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1133,17 +1133,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13303:13422:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13266:13385:FUNCTION
 
-.. rubric:: ``setAccessRules callback @ 306``
+.. rubric:: ``setAccessRules callback @ 303``
 
 .. code-block:: javascript
 
-   setAccessRules callback @ 306(current)
+   setAccessRules callback @ 303(current)
 
 设置与 ``Access Rules`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``306``—``308`` 行；所属函数 ``updateAccessRule``。
+**性质**：同步局部函数；源码第 ``303``—``305`` 行；所属函数 ``updateAccessRule``。
 
 **参数**
 
@@ -1158,17 +1158,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13328:13421:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13291:13384:FUNCTION
 
-.. rubric:: ``current.map callback @ 306``
+.. rubric:: ``current.map callback @ 303``
 
 .. code-block:: javascript
 
-   current.map callback @ 306(item, itemIndex)
+   current.map callback @ 303(item, itemIndex)
 
 作为 ``current.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``306``—``308`` 行；所属函数 ``setAccessRules callback @ 306``。
+**性质**：同步局部函数；源码第 ``303``—``305`` 行；所属函数 ``setAccessRules callback @ 303``。
 
 **参数**
 
@@ -1182,7 +1182,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13458:14250:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13421:14213:FUNCTION
 
 .. rubric:: ``addAccessRule``
 
@@ -1192,7 +1192,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 新增与 ``Access Rule`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``311``—``330`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``308``—``327`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1207,17 +1207,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13565:13592:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13528:13555:FUNCTION
 
-.. rubric:: ``accessRules.map callback @ 314``
+.. rubric:: ``accessRules.map callback @ 311``
 
 .. code-block:: javascript
 
-   accessRules.map callback @ 314(item)
+   accessRules.map callback @ 311(item)
 
 作为 ``accessRules.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``314``—``314`` 行；所属函数 ``addAccessRule``。
+**性质**：同步局部函数；源码第 ``311``—``311`` 行；所属函数 ``addAccessRule``。
 
 **参数**
 
@@ -1228,17 +1228,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13635:13662:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13598:13625:FUNCTION
 
-.. rubric:: ``preservedAccessRules.map callback @ 315``
+.. rubric:: ``preservedAccessRules.map callback @ 312``
 
 .. code-block:: javascript
 
-   preservedAccessRules.map callback @ 315(item)
+   preservedAccessRules.map callback @ 312(item)
 
 作为 ``preservedAccessRules.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``315``—``315`` 行；所属函数 ``addAccessRule``。
+**性质**：同步局部函数；源码第 ``312``—``312`` 行；所属函数 ``addAccessRule``。
 
 **参数**
 
@@ -1249,17 +1249,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:14023:14169:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:13986:14132:FUNCTION
 
-.. rubric:: ``accessRules.some callback @ 326``
+.. rubric:: ``accessRules.some callback @ 323``
 
 .. code-block:: javascript
 
-   accessRules.some callback @ 326(item)
+   accessRules.some callback @ 323(item)
 
 作为 ``accessRules.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``326``—``328`` 行；所属函数 ``addAccessRule``。
+**性质**：同步局部函数；源码第 ``323``—``325`` 行；所属函数 ``addAccessRule``。
 
 **参数**
 
@@ -1270,17 +1270,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:14211:14242:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:14174:14205:FUNCTION
 
-.. rubric:: ``setAccessRules callback @ 329``
+.. rubric:: ``setAccessRules callback @ 326``
 
 .. code-block:: javascript
 
-   setAccessRules callback @ 329(current)
+   setAccessRules callback @ 326(current)
 
 设置与 ``Access Rules`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``329``—``329`` 行；所属函数 ``addAccessRule``。
+**性质**：同步局部函数；源码第 ``326``—``326`` 行；所属函数 ``addAccessRule``。
 
 **参数**
 
@@ -1291,7 +1291,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:14281:14326:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:14244:14289:FUNCTION
 
 .. rubric:: ``resetAccessRules``
 
@@ -1301,7 +1301,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 重置与 ``Access Rules`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``332``—``332`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``329``—``329`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1313,7 +1313,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``applyAccessPolicy``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:14360:15041:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:14323:15004:FUNCTION
 
 .. rubric:: ``validateAccessRules``
 
@@ -1323,7 +1323,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 校验与 ``Access Rules`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``334``—``352`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``331``—``349`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1335,7 +1335,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``rule.matcher.pattern.trim``、``toast.error``、``t``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:15060:18718:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:15023:18681:FUNCTION
 
 .. rubric:: ``save``
 
@@ -1345,7 +1345,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 保存与 ``save`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``354``—``432`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：异步局部函数；源码第 ``351``—``429`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1363,17 +1363,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:15397:15470:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:15360:15433:FUNCTION
 
-.. rubric:: ``mounts.some callback @ 360``
+.. rubric:: ``mounts.some callback @ 357``
 
 .. code-block:: javascript
 
-   mounts.some callback @ 360(item)
+   mounts.some callback @ 357(item)
 
 作为 ``mounts.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``360``—``360`` 行；所属函数 ``save``。
+**性质**：同步局部函数；源码第 ``357``—``357`` 行；所属函数 ``save``。
 
 **参数**
 
@@ -1386,17 +1386,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``item.alias?.trim``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:15867:15924:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:15830:15887:FUNCTION
 
-.. rubric:: ``[...preservedAccessRules, ...accessRules] .sort callback @ 371``
+.. rubric:: ``[...preservedAccessRules, ...accessRules] .sort callback @ 368``
 
 .. code-block:: javascript
 
-   [...preservedAccessRules, ...accessRules] .sort callback @ 371(left, right)
+   [...preservedAccessRules, ...accessRules] .sort callback @ 368(left, right)
 
 作为 ``[...preservedAccessRules, ...accessRules] .sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``371``—``371`` 行；所属函数 ``save``。
+**性质**：同步局部函数；源码第 ``368``—``368`` 行；所属函数 ``save``。
 
 **参数**
 
@@ -1410,17 +1410,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:15951:16461:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:15914:16424:FUNCTION
 
-.. rubric:: ``[...preservedAccessRules, ...accessRules] .sort((left, right) => (left._order ?? 0) - (right._order ?? 0)) .map callback @ 372``
+.. rubric:: ``[...preservedAccessRules, ...accessRules] .sort((left, right) => (left._order ?? 0) - (right._order ?? 0)) .map callback @ 369``
 
 .. code-block:: javascript
 
-   [...preservedAccessRules, ...accessRules] .sort((left, right) => (left._order ?? 0) - (right._order ?? 0)) .map callback @ 372(item)
+   [...preservedAccessRules, ...accessRules] .sort((left, right) => (left._order ?? 0) - (right._order ?? 0)) .map callback @ 369(item)
 
 作为 ``[...preservedAccessRules, ...accessRules] .sort((left, right) => (left._order ?? 0) - (right._order ?? 0)) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``372``—``381`` 行；所属函数 ``save``。
+**性质**：同步局部函数；源码第 ``369``—``378`` 行；所属函数 ``save``。
 
 **参数**
 
@@ -1433,17 +1433,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``rule.matcher.pattern.trim``、``normalizeOperations``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:17240:17542:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:17203:17505:FUNCTION
 
-.. rubric:: ``mounts.map callback @ 402``
+.. rubric:: ``mounts.map callback @ 399``
 
 .. code-block:: javascript
 
-   mounts.map callback @ 402(item)
+   mounts.map callback @ 399(item)
 
 作为 ``mounts.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``402``—``408`` 行；所属函数 ``save``。
+**性质**：同步局部函数；源码第 ``399``—``405`` 行；所属函数 ``save``。
 
 **参数**
 
@@ -1456,17 +1456,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``item.alias.trim``、``Boolean``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18041:18234:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18004:18197:FUNCTION
 
-.. rubric:: ``setWorkspaces callback @ 417``
+.. rubric:: ``setWorkspaces callback @ 414``
 
 .. code-block:: javascript
 
-   setWorkspaces callback @ 417(current)
+   setWorkspaces callback @ 414(current)
 
 设置与 ``Workspaces`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``417``—``420`` 行；所属函数 ``save``。
+**性质**：同步局部函数；源码第 ``414``—``417`` 行；所属函数 ``save``。
 
 **参数**
 
@@ -1481,17 +1481,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18100:18130:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18063:18093:FUNCTION
 
-.. rubric:: ``current.filter callback @ 418``
+.. rubric:: ``current.filter callback @ 415``
 
 .. code-block:: javascript
 
-   current.filter callback @ 418(item)
+   current.filter callback @ 415(item)
 
 作为 ``current.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``418``—``418`` 行；所属函数 ``setWorkspaces callback @ 417``。
+**性质**：同步局部函数；源码第 ``415``—``415`` 行；所属函数 ``setWorkspaces callback @ 414``。
 
 **参数**
 
@@ -1502,17 +1502,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18180:18218:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18143:18181:FUNCTION
 
-.. rubric:: ``next.sort callback @ 419``
+.. rubric:: ``next.sort callback @ 416``
 
 .. code-block:: javascript
 
-   next.sort callback @ 419(a, b)
+   next.sort callback @ 416(a, b)
 
 作为 ``next.sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``419``—``419`` 行；所属函数 ``setWorkspaces callback @ 417``。
+**性质**：同步局部函数；源码第 ``416``—``416`` 行；所属函数 ``setWorkspaces callback @ 414``。
 
 **参数**
 
@@ -1528,7 +1528,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``a.name.localeCompare``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18748:19483:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18711:19446:FUNCTION
 
 .. rubric:: ``removeWorkspace``
 
@@ -1538,7 +1538,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 移除与 ``Workspace`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``434``—``451`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：异步局部函数；源码第 ``431``—``448`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1552,17 +1552,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18968:19030:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18931:18993:FUNCTION
 
-.. rubric:: ``setWorkspaces callback @ 439``
+.. rubric:: ``setWorkspaces callback @ 436``
 
 .. code-block:: javascript
 
-   setWorkspaces callback @ 439(current)
+   setWorkspaces callback @ 436(current)
 
 设置与 ``Workspaces`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``439``—``439`` 行；所属函数 ``removeWorkspace``。
+**性质**：同步局部函数；源码第 ``436``—``436`` 行；所属函数 ``removeWorkspace``。
 
 **参数**
 
@@ -1577,17 +1577,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18996:19029:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:18959:18992:FUNCTION
 
-.. rubric:: ``current.filter callback @ 439``
+.. rubric:: ``current.filter callback @ 436``
 
 .. code-block:: javascript
 
-   current.filter callback @ 439(item)
+   current.filter callback @ 436(item)
 
 作为 ``current.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``439``—``439`` 行；所属函数 ``setWorkspaces callback @ 439``。
+**性质**：同步局部函数；源码第 ``436``—``436`` 行；所属函数 ``setWorkspaces callback @ 436``。
 
 **参数**
 
@@ -1598,17 +1598,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:19150:19180:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:19113:19143:FUNCTION
 
-.. rubric:: ``selectedIds.filter callback @ 441``
+.. rubric:: ``selectedIds.filter callback @ 438``
 
 .. code-block:: javascript
 
-   selectedIds.filter callback @ 441(item)
+   selectedIds.filter callback @ 438(item)
 
 作为 ``selectedIds.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``441``—``441`` 行；所属函数 ``removeWorkspace``。
+**性质**：同步局部函数；源码第 ``438``—``438`` 行；所属函数 ``removeWorkspace``。
 
 **参数**
 
@@ -1619,17 +1619,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:21522:26245:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:21485:26208:FUNCTION
 
-.. rubric:: ``workspaces.map callback @ 481``
+.. rubric:: ``workspaces.map callback @ 478``
 
 .. code-block:: javascript
 
-   workspaces.map callback @ 481(item)
+   workspaces.map callback @ 478(item)
 
 作为 ``workspaces.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``481``—``532`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``478``—``529`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1644,17 +1644,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:22063:22099:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:22026:22062:FUNCTION
 
-.. rubric:: ``onClick callback @ 488``
+.. rubric:: ``onClick callback @ 485``
 
 .. code-block:: javascript
 
-   onClick callback @ 488()
+   onClick callback @ 485()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``488``—``488`` 行；所属函数 ``workspaces.map callback @ 481``。
+**性质**：同步局部函数；源码第 ``485``—``485`` 行；所属函数 ``workspaces.map callback @ 478``。
 
 **参数**
 
@@ -1666,17 +1666,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``setFocusedWorkspaceId``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:22328:22379:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:22291:22342:FUNCTION
 
-.. rubric:: ``onCheckedChange callback @ 492``
+.. rubric:: ``onCheckedChange callback @ 489``
 
 .. code-block:: javascript
 
-   onCheckedChange callback @ 492(value)
+   onCheckedChange callback @ 489(value)
 
 处理 ``Checked Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``492``—``492`` 行；所属函数 ``workspaces.map callback @ 481``。
+**性质**：同步局部函数；源码第 ``489``—``489`` 行；所属函数 ``workspaces.map callback @ 478``。
 
 **参数**
 
@@ -1689,17 +1689,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``toggleWorkspace``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:22438:22472:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:22401:22435:FUNCTION
 
-.. rubric:: ``onClick callback @ 493``
+.. rubric:: ``onClick callback @ 490``
 
 .. code-block:: javascript
 
-   onClick callback @ 493(event)
+   onClick callback @ 490(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``493``—``493`` 行；所属函数 ``workspaces.map callback @ 481``。
+**性质**：同步局部函数；源码第 ``490``—``490`` 行；所属函数 ``workspaces.map callback @ 478``。
 
 **参数**
 
@@ -1712,17 +1712,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:24942:24970:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:24905:24933:FUNCTION
 
-.. rubric:: ``(item.mounts || []).map callback @ 512``
+.. rubric:: ``(item.mounts || []).map callback @ 509``
 
 .. code-block:: javascript
 
-   (item.mounts || []).map callback @ 512(mount)
+   (item.mounts || []).map callback @ 509(mount)
 
 作为 ``(item.mounts || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``512``—``512`` 行；所属函数 ``workspaces.map callback @ 481``。
+**性质**：同步局部函数；源码第 ``509``—``509`` 行；所属函数 ``workspaces.map callback @ 478``。
 
 **参数**
 
@@ -1733,17 +1733,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:25464:25756:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:25427:25719:FUNCTION
 
-.. rubric:: ``onClick callback @ 520``
+.. rubric:: ``onClick callback @ 517``
 
 .. code-block:: javascript
 
-   onClick callback @ 520(event)
+   onClick callback @ 517(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``520``—``524`` 行；所属函数 ``workspaces.map callback @ 481``。
+**性质**：同步局部函数；源码第 ``517``—``521`` 行；所属函数 ``workspaces.map callback @ 478``。
 
 **参数**
 
@@ -1756,17 +1756,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``event.stopPropagation``、``setFocusedWorkspaceId``、``beginEdit``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:27295:27332:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:27258:27295:FUNCTION
 
-.. rubric:: ``onClick callback @ 546``
+.. rubric:: ``onClick callback @ 543``
 
 .. code-block:: javascript
 
-   onClick callback @ 546()
+   onClick callback @ 543()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``546``—``546`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``543``—``543`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1778,17 +1778,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``beginEdit``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:27733:27758:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:27696:27721:FUNCTION
 
-.. rubric:: ``onClick callback @ 550``
+.. rubric:: ``onClick callback @ 547``
 
 .. code-block:: javascript
 
-   onClick callback @ 550()
+   onClick callback @ 547()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``550``—``550`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``547``—``547`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1800,17 +1800,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``setDeleteOpen``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:28140:28318:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:28103:28281:FUNCTION
 
-.. rubric:: ``(selected.mounts || []).map callback @ 556``
+.. rubric:: ``(selected.mounts || []).map callback @ 553``
 
 .. code-block:: javascript
 
-   (selected.mounts || []).map callback @ 556(mount)
+   (selected.mounts || []).map callback @ 553(mount)
 
 作为 ``(selected.mounts || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``556``—``558`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``553``—``555`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1821,17 +1821,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:29095:29133:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:29058:29096:FUNCTION
 
-.. rubric:: ``onChange callback @ 573``
+.. rubric:: ``onChange callback @ 570``
 
 .. code-block:: javascript
 
-   onChange callback @ 573(event)
+   onChange callback @ 570(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``573``—``573`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``570``—``570`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1844,17 +1844,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``setName``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:30391:30417:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:30354:30380:FUNCTION
 
-.. rubric:: ``onClick callback @ 588``
+.. rubric:: ``onClick callback @ 585``
 
 .. code-block:: javascript
 
-   onClick callback @ 588()
+   onClick callback @ 585()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``588``—``588`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``585``—``585`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1866,17 +1866,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``setBrowserOpen``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:31304:35439:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:31267:35402:FUNCTION
 
-.. rubric:: ``mounts.map callback @ 600``
+.. rubric:: ``mounts.map callback @ 597``
 
 .. code-block:: javascript
 
-   mounts.map callback @ 600(mount, index)
+   mounts.map callback @ 597(mount, index)
 
 作为 ``mounts.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``600``—``641`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``597``—``638`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -1894,17 +1894,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:32801:32884:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:32764:32847:FUNCTION
 
-.. rubric:: ``onClick callback @ 614``
+.. rubric:: ``onClick callback @ 611``
 
 .. code-block:: javascript
 
-   onClick callback @ 614()
+   onClick callback @ 611()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``614``—``614`` 行；所属函数 ``mounts.map callback @ 600``。
+**性质**：同步局部函数；源码第 ``611``—``611`` 行；所属函数 ``mounts.map callback @ 597``。
 
 **参数**
 
@@ -1918,17 +1918,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:32817:32883:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:32780:32846:FUNCTION
 
-.. rubric:: ``setMounts callback @ 614``
+.. rubric:: ``setMounts callback @ 611``
 
 .. code-block:: javascript
 
-   setMounts callback @ 614(current)
+   setMounts callback @ 611(current)
 
 设置与 ``Mounts`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``614``—``614`` 行；所属函数 ``onClick callback @ 614``。
+**性质**：同步局部函数；源码第 ``611``—``611`` 行；所属函数 ``onClick callback @ 611``。
 
 **参数**
 
@@ -1943,17 +1943,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:32845:32882:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:32808:32845:FUNCTION
 
-.. rubric:: ``current.filter callback @ 614``
+.. rubric:: ``current.filter callback @ 611``
 
 .. code-block:: javascript
 
-   current.filter callback @ 614(_, itemIndex)
+   current.filter callback @ 611(_, itemIndex)
 
 作为 ``current.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``614``—``614`` 行；所属函数 ``setMounts callback @ 614``。
+**性质**：同步局部函数；源码第 ``611``—``611`` 行；所属函数 ``setMounts callback @ 611``。
 
 **参数**
 
@@ -1967,17 +1967,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:33699:33833:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:33662:33796:FUNCTION
 
-.. rubric:: ``onChange callback @ 624``
+.. rubric:: ``onChange callback @ 621``
 
 .. code-block:: javascript
 
-   onChange callback @ 624(event)
+   onChange callback @ 621(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``624``—``624`` 行；所属函数 ``mounts.map callback @ 600``。
+**性质**：同步局部函数；源码第 ``621``—``621`` 行；所属函数 ``mounts.map callback @ 597``。
 
 **参数**
 
@@ -1992,17 +1992,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:33720:33832:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:33683:33795:FUNCTION
 
-.. rubric:: ``setMounts callback @ 624``
+.. rubric:: ``setMounts callback @ 621``
 
 .. code-block:: javascript
 
-   setMounts callback @ 624(current)
+   setMounts callback @ 621(current)
 
 设置与 ``Mounts`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``624``—``624`` 行；所属函数 ``onChange callback @ 624``。
+**性质**：同步局部函数；源码第 ``621``—``621`` 行；所属函数 ``onChange callback @ 621``。
 
 **参数**
 
@@ -2017,17 +2017,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:33745:33831:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:33708:33794:FUNCTION
 
-.. rubric:: ``current.map callback @ 624``
+.. rubric:: ``current.map callback @ 621``
 
 .. code-block:: javascript
 
-   current.map callback @ 624(item, itemIndex)
+   current.map callback @ 621(item, itemIndex)
 
 作为 ``current.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``624``—``624`` 行；所属函数 ``setMounts callback @ 624``。
+**性质**：同步局部函数；源码第 ``621``—``621`` 行；所属函数 ``setMounts callback @ 621``。
 
 **参数**
 
@@ -2041,17 +2041,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:34519:34553:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:34482:34516:FUNCTION
 
-.. rubric:: ``roots.find callback @ 631``
+.. rubric:: ``roots.find callback @ 628``
 
 .. code-block:: javascript
 
-   roots.find callback @ 631(root)
+   roots.find callback @ 628(root)
 
 作为 ``roots.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``631``—``631`` 行；所属函数 ``mounts.map callback @ 600``。
+**性质**：同步局部函数；源码第 ``628``—``628`` 行；所属函数 ``mounts.map callback @ 597``。
 
 **参数**
 
@@ -2062,17 +2062,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:34652:34780:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:34615:34743:FUNCTION
 
-.. rubric:: ``onCheckedChange callback @ 632``
+.. rubric:: ``onCheckedChange callback @ 629``
 
 .. code-block:: javascript
 
-   onCheckedChange callback @ 632(checked)
+   onCheckedChange callback @ 629(checked)
 
 处理 ``Checked Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``632``—``632`` 行；所属函数 ``mounts.map callback @ 600``。
+**性质**：同步局部函数；源码第 ``629``—``629`` 行；所属函数 ``mounts.map callback @ 597``。
 
 **参数**
 
@@ -2087,17 +2087,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:34675:34779:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:34638:34742:FUNCTION
 
-.. rubric:: ``setMounts callback @ 632``
+.. rubric:: ``setMounts callback @ 629``
 
 .. code-block:: javascript
 
-   setMounts callback @ 632(current)
+   setMounts callback @ 629(current)
 
 设置与 ``Mounts`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``632``—``632`` 行；所属函数 ``onCheckedChange callback @ 632``。
+**性质**：同步局部函数；源码第 ``629``—``629`` 行；所属函数 ``onCheckedChange callback @ 629``。
 
 **参数**
 
@@ -2112,17 +2112,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:34700:34778:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:34663:34741:FUNCTION
 
-.. rubric:: ``current.map callback @ 632``
+.. rubric:: ``current.map callback @ 629``
 
 .. code-block:: javascript
 
-   current.map callback @ 632(item, itemIndex)
+   current.map callback @ 629(item, itemIndex)
 
 作为 ``current.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``632``—``632`` 行；所属函数 ``setMounts callback @ 632``。
+**性质**：同步局部函数；源码第 ``629``—``629`` 行；所属函数 ``setMounts callback @ 629``。
 
 **参数**
 
@@ -2136,17 +2136,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:36899:36920:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:36862:36883:FUNCTION
 
-.. rubric:: ``onClick callback @ 662``
+.. rubric:: ``onClick callback @ 659``
 
 .. code-block:: javascript
 
-   onClick callback @ 662()
+   onClick callback @ 659()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``662``—``662`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``659``—``659`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -2158,17 +2158,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``addAccessRule``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:37128:37440:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:37091:37403:FUNCTION
 
-.. rubric:: ``quickAccessRules.map callback @ 665``
+.. rubric:: ``quickAccessRules.map callback @ 662``
 
 .. code-block:: javascript
 
-   quickAccessRules.map callback @ 665(rule)
+   quickAccessRules.map callback @ 662(rule)
 
 作为 ``quickAccessRules.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``665``—``669`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``662``—``666`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -2181,17 +2181,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:37255:37280:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:37218:37243:FUNCTION
 
-.. rubric:: ``onClick callback @ 666``
+.. rubric:: ``onClick callback @ 663``
 
 .. code-block:: javascript
 
-   onClick callback @ 666()
+   onClick callback @ 663()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``666``—``666`` 行；所属函数 ``quickAccessRules.map callback @ 665``。
+**性质**：同步局部函数；源码第 ``663``—``663`` 行；所属函数 ``quickAccessRules.map callback @ 662``。
 
 **参数**
 
@@ -2203,17 +2203,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``addAccessRule``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:37966:42139:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:37929:42102:FUNCTION
 
-.. rubric:: ``accessRules.map callback @ 677``
+.. rubric:: ``accessRules.map callback @ 674``
 
 .. code-block:: javascript
 
-   accessRules.map callback @ 677(rule, index)
+   accessRules.map callback @ 674(rule, index)
 
 作为 ``accessRules.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``677``—``722`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``674``—``719`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -2231,17 +2231,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:38390:38467:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:38353:38430:FUNCTION
 
-.. rubric:: ``onValueChange callback @ 681``
+.. rubric:: ``onValueChange callback @ 678``
 
 .. code-block:: javascript
 
-   onValueChange callback @ 681(value)
+   onValueChange callback @ 678(value)
 
 处理 ``Value Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``681``—``681`` 行；所属函数 ``accessRules.map callback @ 677``。
+**性质**：同步局部函数；源码第 ``678``—``678`` 行；所属函数 ``accessRules.map callback @ 674``。
 
 **参数**
 
@@ -2254,17 +2254,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``updateAccessRule``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:39405:39691:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:39368:39654:FUNCTION
 
-.. rubric:: ``onChange callback @ 692``
+.. rubric:: ``onChange callback @ 689``
 
 .. code-block:: javascript
 
-   onChange callback @ 692(event)
+   onChange callback @ 689(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``692``—``695`` 行；所属函数 ``accessRules.map callback @ 677``。
+**性质**：同步局部函数；源码第 ``689``—``692`` 行；所属函数 ``accessRules.map callback @ 674``。
 
 **参数**
 
@@ -2277,17 +2277,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``updateAccessRule``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:40186:40260:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:40149:40223:FUNCTION
 
-.. rubric:: ``onValueChange callback @ 701``
+.. rubric:: ``onValueChange callback @ 698``
 
 .. code-block:: javascript
 
-   onValueChange callback @ 701(value)
+   onValueChange callback @ 698(value)
 
 处理 ``Value Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``701``—``701`` 行；所属函数 ``accessRules.map callback @ 677``。
+**性质**：同步局部函数；源码第 ``698``—``698`` 行；所属函数 ``accessRules.map callback @ 674``。
 
 **参数**
 
@@ -2300,17 +2300,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``updateAccessRule``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41768:41856:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41731:41819:FUNCTION
 
-.. rubric:: ``onClick callback @ 717``
+.. rubric:: ``onClick callback @ 714``
 
 .. code-block:: javascript
 
-   onClick callback @ 717()
+   onClick callback @ 714()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``717``—``717`` 行；所属函数 ``accessRules.map callback @ 677``。
+**性质**：同步局部函数；源码第 ``714``—``714`` 行；所属函数 ``accessRules.map callback @ 674``。
 
 **参数**
 
@@ -2324,17 +2324,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41789:41855:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41752:41818:FUNCTION
 
-.. rubric:: ``setAccessRules callback @ 717``
+.. rubric:: ``setAccessRules callback @ 714``
 
 .. code-block:: javascript
 
-   setAccessRules callback @ 717(current)
+   setAccessRules callback @ 714(current)
 
 设置与 ``Access Rules`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``717``—``717`` 行；所属函数 ``onClick callback @ 717``。
+**性质**：同步局部函数；源码第 ``714``—``714`` 行；所属函数 ``onClick callback @ 714``。
 
 **参数**
 
@@ -2349,17 +2349,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41817:41854:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41780:41817:FUNCTION
 
-.. rubric:: ``current.filter callback @ 717``
+.. rubric:: ``current.filter callback @ 714``
 
 .. code-block:: javascript
 
-   current.filter callback @ 717(_, itemIndex)
+   current.filter callback @ 714(_, itemIndex)
 
 作为 ``current.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``717``—``717`` 行；所属函数 ``setAccessRules callback @ 717``。
+**性质**：同步局部函数；源码第 ``714``—``714`` 行；所属函数 ``setAccessRules callback @ 714``。
 
 **参数**
 
@@ -2373,17 +2373,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:44867:45859:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:44830:45822:FUNCTION
 
-.. rubric:: ``configuredCommands.map callback @ 756``
+.. rubric:: ``configuredCommands.map callback @ 753``
 
 .. code-block:: javascript
 
-   configuredCommands.map callback @ 756(commandId)
+   configuredCommands.map callback @ 753(commandId)
 
 作为 ``configuredCommands.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``756``—``768`` 行；所属函数 ``WorkspaceSettingsDialog``。
+**性质**：同步局部函数；源码第 ``753``—``765`` 行；所属函数 ``WorkspaceSettingsDialog``。
 
 **参数**
 
@@ -2398,17 +2398,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45340:45712:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45303:45675:FUNCTION
 
-.. rubric:: ``onCheckedChange callback @ 761``
+.. rubric:: ``onCheckedChange callback @ 758``
 
 .. code-block:: javascript
 
-   onCheckedChange callback @ 761(checked)
+   onCheckedChange callback @ 758(checked)
 
 处理 ``Checked Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``761``—``765`` 行；所属函数 ``configuredCommands.map callback @ 756``。
+**性质**：同步局部函数；源码第 ``758``—``762`` 行；所属函数 ``configuredCommands.map callback @ 753``。
 
 **参数**
 
@@ -2423,17 +2423,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45372:45711:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45335:45674:FUNCTION
 
-.. rubric:: ``setAllowedCommands callback @ 761``
+.. rubric:: ``setAllowedCommands callback @ 758``
 
 .. code-block:: javascript
 
-   setAllowedCommands callback @ 761(current)
+   setAllowedCommands callback @ 758(current)
 
 设置与 ``Allowed Commands`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``761``—``765`` 行；所属函数 ``onCheckedChange callback @ 761``。
+**性质**：同步局部函数；源码第 ``758``—``762`` 行；所属函数 ``onCheckedChange callback @ 758``。
 
 **参数**
 
@@ -2448,17 +2448,17 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45628:45656:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45591:45619:FUNCTION
 
-.. rubric:: ``current.filter callback @ 764``
+.. rubric:: ``current.filter callback @ 761``
 
 .. code-block:: javascript
 
-   current.filter callback @ 764(item)
+   current.filter callback @ 761(item)
 
 作为 ``current.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``764``—``764`` 行；所属函数 ``setAllowedCommands callback @ 761``。
+**性质**：同步局部函数；源码第 ``761``—``761`` 行；所属函数 ``setAllowedCommands callback @ 758``。
 
 **参数**
 

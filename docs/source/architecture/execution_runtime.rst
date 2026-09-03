@@ -83,6 +83,18 @@ Task Mode 中每个可见 Tool Call 都拥有独立 ``executionStatus`` 节点�
 
 Task Window 中的完整 Tool Calling Card 与主聊天中的轻量 status 属于同一个 ``toolCallId``。
 
+任务结束兜底
+--------------------------------------------------------------------------------
+
+Task Mode 的终态仍由后端生命周期控制。``taskMode.status=active`` 时，普通 Assistant ``stop`` 不会直接变成最终答复；
+如果模型在没有生命周期 Tool Call 的情况下自然结束，Execution Runtime 会暂存该轮正文、注入 hidden system 控制提示，
+并把下一轮转换为专用 ``task_finish`` 提交。Provider-native 模式在该轮只暴露 ``task_finish`` 且要求必须调用工具；文本
+Tool 协议则在审批边界拒绝其他工具。前端不会渲染该 hidden 控制过程，也不会自行推断“模型说完成了”就等于完成。
+
+``task_finish`` 仍必须通过既有 Hard Completion Barrier。拒绝时后端恢复正常工具选择继续处理 blockers；接受后才进入
+``final_response``，此时前端正常流式展示唯一的最终 Assistant 答复。如果强制提交前收到新的用户 guidance，guidance
+优先并撤销该次完成提交。
+
 Stop / Resume
 --------------------------------------------------------------------------------
 

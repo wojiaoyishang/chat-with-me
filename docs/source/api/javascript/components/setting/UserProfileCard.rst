@@ -27,13 +27,13 @@ src/components/setting/UserProfileCard 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:901:13135:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:833:13057:FUNCTION
 
 .. js:function:: UserProfileCard({handleLogout})
 
    渲染 ``UserProfileCard`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``29``—``297`` 行。
+   **性质**：同步函数；导出 API；源码第 ``24``—``292`` 行。
 
    **参数**
 
@@ -57,17 +57,17 @@ src/components/setting/UserProfileCard 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:1899:2013:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:1820:1934:FUNCTION
 
-.. rubric:: ``useEffect callback @ 57``
+.. rubric:: ``useEffect callback @ 52``
 
 .. code-block:: javascript
 
-   useEffect callback @ 57()
+   useEffect callback @ 52()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``57``—``61`` 行；所属函数 ``UserProfileCard``。
+**性质**：同步局部函数；源码第 ``52``—``56`` 行；所属函数 ``UserProfileCard``。
 
 **参数**
 
@@ -79,7 +79,7 @@ src/components/setting/UserProfileCard 模块
 
 **主要协作调用**：``nameInputRef.current.focus``。
 
-.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:2130:2457:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:2051:2378:FUNCTION
 
 .. rubric:: ``handleToggleEdit``
 
@@ -89,7 +89,7 @@ src/components/setting/UserProfileCard 模块
 
 处理 ``Toggle Edit`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``66``—``77`` 行；所属函数 ``UserProfileCard``。
+**性质**：同步局部函数；源码第 ``61``—``72`` 行；所属函数 ``UserProfileCard``。
 
 **参数**
 
@@ -101,7 +101,7 @@ src/components/setting/UserProfileCard 模块
 
 **主要协作调用**：``setIsEditing``、``setTempName``、``setPreviewAvatar``、``setPreviewAvatarServerId``、``setIsAvatarChanged``。
 
-.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:2494:3653:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:2415:3574:FUNCTION
 
 .. rubric:: ``handleSave``
 
@@ -111,7 +111,7 @@ src/components/setting/UserProfileCard 模块
 
 处理 ``Save`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``80``—``116`` 行；所属函数 ``UserProfileCard``。
+**性质**：同步局部函数；源码第 ``75``—``111`` 行；所属函数 ``UserProfileCard``。
 
 **参数**
 
@@ -129,7 +129,7 @@ src/components/setting/UserProfileCard 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:2649:3623:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:2570:3544:FUNCTION
 
 .. rubric:: ``requestSave``
 
@@ -139,7 +139,7 @@ src/components/setting/UserProfileCard 模块
 
 实现 ``requestSave`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``86``—``113`` 行；所属函数 ``handleSave``。
+**性质**：异步局部函数；源码第 ``81``—``108`` 行；所属函数 ``handleSave``。
 
 **参数**
 
@@ -155,7 +155,7 @@ src/components/setting/UserProfileCard 模块
 
 **主要协作调用**：``setIsSaving``、``apiClient.post``、``setUser``、``setIsAvatarChanged``、``setPreviewAvatarServerId``、``setIsEditing``、``toast.success``、``t``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:3698:4600:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:3619:4522:FUNCTION
 
 .. rubric:: ``handleFileSelect``
 
@@ -165,7 +165,7 @@ src/components/setting/UserProfileCard 模块
 
 处理 ``File Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``119``—``145`` 行；所属函数 ``UserProfileCard``。
+**性质**：同步局部函数；源码第 ``114``—``140`` 行；所属函数 ``UserProfileCard``。
 
 **参数**
 
@@ -180,17 +180,17 @@ src/components/setting/UserProfileCard 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:3935:3969:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:3856:3890:FUNCTION
 
-.. rubric:: ``fileUpload callback @ 128``
+.. rubric:: ``fileUpload callback @ 123``
 
 .. code-block:: javascript
 
-   fileUpload callback @ 128()
+   fileUpload callback @ 123()
 
 实现 ``fileUpload`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``128``—``129`` 行；所属函数 ``handleFileSelect``。
+**性质**：同步局部函数；源码第 ``123``—``124`` 行；所属函数 ``handleFileSelect``。
 
 **参数**
 
@@ -200,22 +200,22 @@ src/components/setting/UserProfileCard 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:3970:4368:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:3891:4290:FUNCTION
 
-.. rubric:: ``fileUpload callback @ 130``
+.. rubric:: ``fileUpload callback @ 125``
 
 .. code-block:: javascript
 
-   fileUpload callback @ 130(id, attachment)
+   fileUpload callback @ 125(_id, attachment)
 
 实现 ``fileUpload`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``130``—``138`` 行；所属函数 ``handleFileSelect``。
+**性质**：同步局部函数；源码第 ``125``—``133`` 行；所属函数 ``handleFileSelect``。
 
 **参数**
 
-``id``
-   调用方传入的 ``id`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``_id``
+   调用方传入的 ``_id`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 ``attachment``
    调用方传入的 ``attachment`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
@@ -226,17 +226,17 @@ src/components/setting/UserProfileCard 模块
 
 **主要协作调用**：``setIsUploading``、``setPreviewAvatar``、``setPreviewAvatarServerId``、``setIsAvatarChanged``、``toast.success``、``t``。
 
-.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:4369:4554:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:4291:4476:FUNCTION
 
-.. rubric:: ``fileUpload callback @ 139``
+.. rubric:: ``fileUpload callback @ 134``
 
 .. code-block:: javascript
 
-   fileUpload callback @ 139(error)
+   fileUpload callback @ 134(error)
 
 实现 ``fileUpload`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``139``—``142`` 行；所属函数 ``handleFileSelect``。
+**性质**：同步局部函数；源码第 ``134``—``137`` 行；所属函数 ``handleFileSelect``。
 
 **参数**
 
@@ -249,17 +249,17 @@ src/components/setting/UserProfileCard 模块
 
 **主要协作调用**：``setIsUploading``、``toast.error``、``t``。
 
-.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:6295:6346:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:6217:6268:FUNCTION
 
-.. rubric:: ``onClick callback @ 179``
+.. rubric:: ``onClick callback @ 174``
 
 .. code-block:: javascript
 
-   onClick callback @ 179()
+   onClick callback @ 174()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``179``—``179`` 行；所属函数 ``UserProfileCard``。
+**性质**：同步局部函数；源码第 ``174``—``174`` 行；所属函数 ``UserProfileCard``。
 
 **参数**
 
@@ -271,17 +271,17 @@ src/components/setting/UserProfileCard 模块
 
 **主要协作调用**：``fileInputRef.current?.click``。
 
-.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:7712:7746:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/UserProfileCard.jsx:7634:7668:FUNCTION
 
-.. rubric:: ``onChange callback @ 202``
+.. rubric:: ``onChange callback @ 197``
 
 .. code-block:: javascript
 
-   onChange callback @ 202(e)
+   onChange callback @ 197(e)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``202``—``202`` 行；所属函数 ``UserProfileCard``。
+**性质**：同步局部函数；源码第 ``197``—``197`` 行；所属函数 ``UserProfileCard``。
 
 **参数**
 

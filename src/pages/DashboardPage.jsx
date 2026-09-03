@@ -1,12 +1,12 @@
 import React, {useEffect, useState, useRef, useCallback} from 'react';
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
 import ChatPage from '@/pages/ChatPage.jsx';
-import {generateUUID, UnifiedErrorScreen, UnifiedLoadingScreen, updateURL, useIsMobile} from "@/lib/tools.jsx";
+import {UnifiedErrorScreen, UnifiedLoadingScreen, updateURL} from "@/lib/tools.jsx";
 import apiClient, {isAuthRedirectError} from "@/lib/apiClient.js";
 import {apiEndpoint} from "@/config.js";
 import {useTranslation} from "react-i18next";
 import DocEditorHome from "@/pages/DocEditorHome.jsx";
-import {emitEvent, onEvent} from "@/context/useEventStore.jsx";
+import {emitEvent} from "@/context/useEventStore.jsx";
 import {toast} from "sonner";
 import {useUserStore} from "@/context/userContext.jsx";
 import {motion, AnimatePresence} from 'framer-motion';
@@ -50,12 +50,11 @@ const DashboardPage = ({type = "chat"}) => {
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [isAuthRedirecting, setIsAuthRedirecting] = useState(false);
     const [sidebarSettings, setSidebarSettings] = useState({});
-    const [randomUUID, setRandomUUID] = useState();
     const [settingsRefreshVersions, setSettingsRefreshVersions] = useState({});
 
     const [pageType, setPageType] = useState(type);
 
-    const {user, setUser, clearUser} = useUserStore();
+    const {setUser} = useUserStore();
 
     const {t} = useTranslation();
 
@@ -203,7 +202,7 @@ const DashboardPage = ({type = "chat"}) => {
                 <>
 
                     <Sidebar conversationId={conversationId} setConversationId={setConversationId} settings={sidebarSettings}
-                             pageType={pageType} setPageType={setPageType} setRandomUUID={setRandomUUID}
+                             pageType={pageType} setPageType={setPageType}
                              onSettingsRefresh={handleSettingsRefresh}
                              onConversationIdSelect={(newConversationId) => {
                                  handleConversationIdSelect({
@@ -223,7 +222,7 @@ const DashboardPage = ({type = "chat"}) => {
                                     transition={{duration: 0.3, ease: "easeInOut"}}
                                     className="absolute inset-0"
                                 >
-                                    <ChatPage key={randomUUID}
+                                    <ChatPage
                                               conversationId={conversationId}
                                               onNewConversationId={(newConversationId) => {
                                                   handleConversationIdSelect({
@@ -245,7 +244,7 @@ const DashboardPage = ({type = "chat"}) => {
                                     transition={{duration: 0.3, ease: "easeInOut"}}
                                     className="absolute inset-0"
                                 >
-                                    <DocEditorHome key={randomUUID}
+                                    <DocEditorHome
                                                    documentId={documentId}
                                                    conversationId={conversationId}
                                                    onNewConversationId={(newConversationId) => {

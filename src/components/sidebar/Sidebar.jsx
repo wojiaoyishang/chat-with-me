@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {resolveResourceUrl} from '@/lib/virtualUrl.js';
-import {ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut, Trash, MessageSquare} from 'lucide-react';
+import {ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut, MessageSquare} from 'lucide-react';
 import {getLocalSetting, setLocalSetting, updateURL} from "@/lib/tools.jsx";
 import {Transition} from '@headlessui/react';
 import {useTranslation} from "react-i18next";
@@ -32,7 +32,6 @@ const Sidebar = ({
     pageType,
     setPageType,
     settings,
-    setRandomUUID,
     onConversationIdSelect,
     onSettingsRefresh,
 }) => {
@@ -72,7 +71,7 @@ const Sidebar = ({
         };
 
         updateSidebarState();
-        const handler = (e) => updateSidebarState();
+        const handler = () => updateSidebarState();
         mql.addEventListener('change', handler);
         return () => mql.removeEventListener('change', handler);
     }, []);

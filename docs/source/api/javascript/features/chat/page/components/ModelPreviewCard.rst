@@ -29,13 +29,13 @@ src/features/chat/page/components/ModelPreviewCard 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ModelPreviewCard.jsx:249:1425:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ModelPreviewCard.jsx:249:1415:FUNCTION
 
 .. rubric:: ``React.memo callback @ 6``
 
 .. code-block:: javascript
 
-   React.memo callback @ 6({model, isMobile})
+   React.memo callback @ 6({model})
 
 实现 ``React.memo`` 对应的前端处理。
 
@@ -43,8 +43,8 @@ src/features/chat/page/components/ModelPreviewCard 模块
 
 **参数**
 
-``{model, isMobile}``
-   调用方传入的 ``model, isMobile`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{model}``
+   调用方传入的 ``model`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -54,7 +54,7 @@ src/features/chat/page/components/ModelPreviewCard 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ModelPreviewCard.jsx:1128:1334:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ModelPreviewCard.jsx:1118:1324:FUNCTION
 
 .. rubric:: ``model.tags?.map callback @ 25``
 
@@ -78,7 +78,7 @@ src/features/chat/page/components/ModelPreviewCard 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ModelPreviewCard.jsx:1426:1573:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ModelPreviewCard.jsx:1416:1494:FUNCTION
 
 .. rubric:: ``React.memo callback @ 35``
 
@@ -88,7 +88,7 @@ src/features/chat/page/components/ModelPreviewCard 模块
 
 实现 ``React.memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``35``—``40`` 行。
+**性质**：同步局部函数；源码第 ``35``—``37`` 行。
 
 **参数**
 
@@ -100,4 +100,4 @@ src/features/chat/page/components/ModelPreviewCard 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( prevProps.model === nextProps.model && prevProps.isMobile === nextProps.isMobile )``。
+根据执行分支返回结果；代表性返回表达式为 ``prevProps.model === nextProps.model``。

@@ -156,6 +156,11 @@ V41 的 Task Mode 是 ``ExecutionRuntime`` 的可见工作区，不再使用旧 
 模型也可以在第一个 promoted Tool 之前调用 ``task_mode_enter`` 手动进入任务模式。完成/阻塞意图通过
 ``task_finish`` / ``task_block`` Tool Calling 表达；前端不依赖模型正文 JSON 决定任务终态。
 
+当前后端还会兜底模型“忘记调用 ``task_finish``”的情况：当 ``taskMode.status=active`` 的模型请求以普通正文自然结束、
+却没有生命周期 Tool Call 时，Execution Runtime 不会把这段正文当成最终答复发布，而是注入 hidden completion-control
+消息并发起专用 ``task_finish`` 提交轮。Hard Completion Barrier 仍然拥有最终决定权；拒绝后恢复正常工具执行，新的用户
+guidance 若在强制提交前到达则优先处理。前端不实现这套判断，只继续投影后端 authoritative snapshot。
+
 只有 active Execution 的纯文本输入才作为 ``execution.guidance.add``；普通生成期间输入继续保留为本地 Draft，
 不得隐式抢占。补充消息立即以用户消息变体显示，后端 ``guidancePrompts`` 再把“等待工具调用完成 / 等待模型响应”
 投影在补充气泡组下方。

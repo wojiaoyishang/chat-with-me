@@ -10,7 +10,7 @@
 #. 在最接近 UI 的 Feature 中订阅，不在全局 WebSocketContext 增加业务判断。
 #. 指定 ``conversationId``、``direction`` 和是否接收 Global。
 #. ``useEffect`` 清理时调用 unsubscribe。
-#. 增加组件/协议测试并更新模块文档。
+#. 更新对应模块文档，并补充可复现的验证步骤。
 
 订阅模板
 --------------------------------------------------------------------------------
@@ -34,7 +34,7 @@
 * 没有让 reply Envelope 进入普通监听器；
 * HTTP 401 使用统一登录跳转；
 * 新状态不会让整个 ChatPage 高频重渲染；
-* ``npm run test:protocol``、``lint``、``build`` 和文档检查通过。
+* ``npm run lint``、``npm run build`` 和文档检查通过。
 
 .. important::
 

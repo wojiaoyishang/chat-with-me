@@ -1942,7 +1942,7 @@ function ChatBox({
                                     },
                                     conversationId: conversationId,
                                     localOnly: true,
-                                }).then(data => {
+                                }).then(() => {
 
                                     // 修改消息链
                                     emitEvent({
@@ -1954,7 +1954,7 @@ function ChatBox({
                                         },
                                         conversationId: conversationId,
                                         localOnly: true,
-                                    }).then(data => {
+                                    }).then(() => {
                                         // Composer clearing is an explicit server event (`composer.clear`).
                                         // `composer.message.seeded` only materializes the optimistic/user message.
                                         // Keeping those responsibilities separate prevents an out-of-order seeded

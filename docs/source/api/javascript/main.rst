@@ -22,18 +22,18 @@ src/main 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``./assets/js/i18n.js``、``./assets/css/index.css``、``react-router-dom``、``react-dom/client``、``./context/WebSocketContext.jsx``、``@/context/MyToaster.jsx``、``@/context/FatalErrorPopover.jsx``、``@/context/ContextEvent.jsx``、``@/pages/DashboardPage.jsx``、``./pages/LoginPage.jsx``、``@/pages/ChatWithEditor.jsx``、``@/components/modal/UniversalModalHost.jsx``、``@/lib/browserHistoryLayers.js``。
+``react``、``./assets/js/i18n.js``、``./assets/css/index.css``、``react-router-dom``、``react-dom/client``、``./context/WebSocketContext.jsx``、``@/context/MyToaster.jsx``、``@/context/FatalErrorPopover.jsx``、``@/context/ContextEvent.jsx``、``@/pages/DashboardPage.jsx``、``./pages/LoginPage.jsx``、``@/components/modal/UniversalModalHost.jsx``、``@/lib/browserHistoryLayers.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/main.jsx:1540:2531:FUNCTION
+.. CWM-AST-FUNCTION src/main.jsx:1483:2474:FUNCTION
 
 .. js:function:: HistorySynchronizedRouter()
 
    渲染 ``HistorySynchronizedRouter`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``56``—``73`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``55``—``72`` 行。
 
    **参数**
 
@@ -58,17 +58,17 @@ src/main 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/main.jsx:1569:2476:FUNCTION
+.. CWM-AST-FUNCTION src/main.jsx:1512:2419:FUNCTION
 
-.. rubric:: ``React.useEffect callback @ 57``
+.. rubric:: ``React.useEffect callback @ 56``
 
 .. code-block:: javascript
 
-   React.useEffect callback @ 57()
+   React.useEffect callback @ 56()
 
 实现 ``React.useEffect`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``57``—``70`` 行；所属函数 ``HistorySynchronizedRouter``。
+**性质**：同步局部函数；源码第 ``56``—``69`` 行；所属函数 ``HistorySynchronizedRouter``。
 
 **参数**
 
@@ -88,17 +88,17 @@ src/main 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/main.jsx:1600:2475:FUNCTION
+.. CWM-AST-FUNCTION src/main.jsx:1543:2418:FUNCTION
 
-.. rubric:: ``subscribeBrowserRoutePop callback @ 57``
+.. rubric:: ``subscribeBrowserRoutePop callback @ 56``
 
 .. code-block:: javascript
 
-   subscribeBrowserRoutePop callback @ 57({url})
+   subscribeBrowserRoutePop callback @ 56({url})
 
 订阅与 ``Browser Route Pop`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``57``—``70`` 行；所属函数 ``React.useEffect callback @ 57``。
+**性质**：同步局部函数；源码第 ``56``—``69`` 行；所属函数 ``React.useEffect callback @ 56``。
 
 **参数**
 
@@ -118,17 +118,17 @@ src/main 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/main.jsx:2373:2457:FUNCTION
+.. CWM-AST-FUNCTION src/main.jsx:2316:2400:FUNCTION
 
-.. rubric:: ``Promise.resolve(router.navigate(target, {replace: true})) .catch callback @ 68``
+.. rubric:: ``Promise.resolve(router.navigate(target, {replace: true})) .catch callback @ 67``
 
 .. code-block:: javascript
 
-   Promise.resolve(router.navigate(target, {replace: true})) .catch callback @ 68(error)
+   Promise.resolve(router.navigate(target, {replace: true})) .catch callback @ 67(error)
 
 处理 ``Promise.resolve(router.navigate(target, {replace: true})) .catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``68``—``68`` 行；所属函数 ``subscribeBrowserRoutePop callback @ 57``。
+**性质**：同步局部函数；源码第 ``67``—``67`` 行；所属函数 ``subscribeBrowserRoutePop callback @ 56``。
 
 **参数**
 

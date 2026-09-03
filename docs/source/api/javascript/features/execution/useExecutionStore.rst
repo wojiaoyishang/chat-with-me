@@ -27,7 +27,7 @@ src/features/execution/useExecutionStore 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:52:90:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:54:92:FUNCTION
 
 .. js:function:: normalizeId(value)
 
@@ -46,7 +46,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``String(value || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:113:193:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:117:201:FUNCTION
 
 .. js:function:: emptySession()
 
@@ -62,7 +62,7 @@ src/features/execution/useExecutionStore 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:217:698:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:227:717:FUNCTION
 
 .. js:function:: mergeActivity(activities, incoming)
 
@@ -86,7 +86,7 @@ src/features/execution/useExecutionStore 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:727:1380:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:748:1414:FUNCTION
 
 .. js:function:: normalizeExecution(incoming)
 
@@ -105,7 +105,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``normalizeId``、``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6555:6626:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6722:6793:FUNCTION
 
 .. js:function:: upsertExecution(execution)
 
@@ -124,7 +124,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().upsertExecution``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6656:6725:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6824:6893:FUNCTION
 
 .. js:function:: openExecution(execution)
 
@@ -143,7 +143,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().openExecution``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6759:6859:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6928:7028:FUNCTION
 
 .. js:function:: openExecutionById(conversationId, executionId)
 
@@ -165,7 +165,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().openById``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6899:6989:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7069:7159:FUNCTION
 
 .. js:function:: upsertExecutionActivity(execution, activity)
 
@@ -187,7 +187,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().upsertActivity``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7028:7171:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7199:7342:FUNCTION
 
 .. js:function:: patchExecutionActivity(conversationId, executionId, activityId, patch)
 
@@ -215,7 +215,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().patchActivity``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7202:7273:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7374:7445:FUNCTION
 
 .. js:function:: closeExecution(conversationId)
 
@@ -234,7 +234,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().close``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7316:7399:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7489:7572:FUNCTION
 
 .. js:function:: clearExecutionConversation(conversationId)
 
@@ -258,7 +258,7 @@ src/features/execution/useExecutionStore 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:478:522:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:492:536:FUNCTION
 
 .. rubric:: ``source.findIndex callback @ 15``
 
@@ -281,7 +281,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1423:6521:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1459:6686:FUNCTION
 
 .. rubric:: ``create callback @ 37``
 
@@ -308,7 +308,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：7。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1474:2225:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1513:2282:FUNCTION
 
 .. rubric:: ``upsertExecution``
 
@@ -337,7 +337,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1493:2224:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1532:2281:FUNCTION
 
 .. rubric:: ``set callback @ 40``
 
@@ -360,7 +360,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeExecution``、``emptySession``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:2246:3093:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:2305:3172:FUNCTION
 
 .. rubric:: ``openExecution``
 
@@ -389,7 +389,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:2265:3092:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:2324:3171:FUNCTION
 
 .. rubric:: ``set callback @ 60``
 
@@ -412,7 +412,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeExecution``、``emptySession``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3109:3729:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3190:3825:FUNCTION
 
 .. rubric:: ``openById``
 
@@ -444,7 +444,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3157:3728:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3238:3824:FUNCTION
 
 .. rubric:: ``set callback @ 82``
 
@@ -467,7 +467,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3751:4752:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3849:4872:FUNCTION
 
 .. rubric:: ``upsertActivity``
 
@@ -499,7 +499,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3794:4751:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3892:4871:FUNCTION
 
 .. rubric:: ``set callback @ 99``
 
@@ -522,7 +522,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``、``emptySession``、``normalizeExecution``、``mergeActivity``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4773:5794:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4895:5938:FUNCTION
 
 .. rubric:: ``patchActivity``
 
@@ -560,7 +560,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4850:5793:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4972:5937:FUNCTION
 
 .. rubric:: ``set callback @ 123``
 
@@ -585,7 +585,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5310:5425:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5439:5556:FUNCTION
 
 .. rubric:: ``(execution.activities || []).map callback @ 130``
 
@@ -608,7 +608,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5807:6186:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5953:6342:FUNCTION
 
 .. rubric:: ``close``
 
@@ -637,7 +637,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5837:6185:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5983:6341:FUNCTION
 
 .. rubric:: ``set callback @ 147``
 
@@ -660,7 +660,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6211:6517:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6369:6681:FUNCTION
 
 .. rubric:: ``clearConversation``
 
@@ -689,7 +689,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6241:6516:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6399:6680:FUNCTION
 
 .. rubric:: ``set callback @ 159``
 

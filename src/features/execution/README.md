@@ -24,6 +24,20 @@ V41 exposes a new **Task Mode workspace** backed by the existing durable
   variant; backend snapshots own the waiting/consumed/responded lifecycle.
 - `useExecutionStore` is a frontend projection only; server snapshots remain authoritative.
 
+## Task completion enforcement
+
+The frontend never treats ordinary Assistant prose as a Task Mode terminal signal. While the
+backend reports `taskMode.status="active"`, a model round that tries to stop without a lifecycle
+Tool Call is intercepted by Execution Runtime. Its would-be final prose is not published as the
+user-facing final answer; Runtime injects a hidden completion-control message and forces a
+`task_finish` submission round. The existing completion barrier then decides whether the task may
+enter `final_response` or must continue working.
+
+This is intentionally backend-owned. The Task Window continues to consume only authoritative
+Execution/Task snapshots and hidden lifecycle Tool Calls remain absent from the visible Tool
+timeline. If `task_finish` is rejected, normal tools resume; if late user guidance arrives first,
+that guidance takes precedence over the forced finish request.
+
 ## Window ownership
 
 The Task Window belongs to the Assistant message that created the Execution.

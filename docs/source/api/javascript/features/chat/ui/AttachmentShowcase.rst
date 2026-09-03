@@ -27,7 +27,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:616:871:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:625:888:FUNCTION
 
 .. js:function:: formatFileSize(bytes)
 
@@ -46,7 +46,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
    **主要协作调用**：``Math.floor``、``Math.log``、``parseFloat``、``(bytes / Math.pow(k, i)).toFixed``、``Math.pow``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:899:1106:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:918:1129:FUNCTION
 
 .. js:function:: isDefaultFileIcon(attachment)
 
@@ -70,7 +70,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:1179:9499:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:1208:9681:FUNCTION
 
 .. rubric:: ``memo callback @ 30``
 
@@ -99,7 +99,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:1675:1725:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:1717:1767:FUNCTION
 
 .. rubric:: ``useWorkspaceTransferStore callback @ 43``
 
@@ -122,7 +122,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``selectArtifactTransfer``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:2971:3044:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:3035:3111:FUNCTION
 
 .. rubric:: ``useCallback callback @ 65``
 
@@ -145,7 +145,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``e.stopPropagation``、``onRemove``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:3108:3245:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:3177:3318:FUNCTION
 
 .. rubric:: ``useCallback callback @ 70``
 
@@ -171,7 +171,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``window.open``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:3315:3452:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:3390:3531:FUNCTION
 
 .. rubric:: ``useCallback callback @ 76``
 
@@ -194,7 +194,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``onVisionToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:9500:11034:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:9682:11242:FUNCTION
 
 .. rubric:: ``memo callback @ 183``
 
@@ -218,7 +218,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( prevAttachment.id === nextAttachment.id && prevAttachment.preview === nextAttachment.preview && prevAttachment.previewType === nextAttachment.previewType && prevAttachment.name…``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:11143:12274:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:11359:12520:FUNCTION
 
 .. rubric:: ``memo callback @ 217``
 
@@ -241,7 +241,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:12275:12512:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:12521:12765:FUNCTION
 
 .. rubric:: ``memo callback @ 247``
 
@@ -265,7 +265,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( prevProps.direction === nextProps.direction && prevProps.show === nextProps.show && prevProps.onClick === nextProps.onClick && prevProps.t === nextProps.t )``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:12615:13045:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:12876:13320:FUNCTION
 
 .. rubric:: ``memo callback @ 262``
 
@@ -286,7 +286,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\x60absolute ${positionClass} top-0 bottom-0 w-8 ${gradientClass} z-20 pointer-events-none\x60} /> )``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:13046:13159:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:13321:13436:FUNCTION
 
 .. rubric:: ``memo callback @ 276``
 
@@ -310,7 +310,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``prevProps.side === nextProps.side && prevProps.show === nextProps.show``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:13328:18865:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:13615:19304:FUNCTION
 
 .. rubric:: ``memo callback @ 288``
 
@@ -340,7 +340,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **内部回调数量**：9。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:13731:13777:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:14031:14077:FUNCTION
 
 .. rubric:: ``useMemo callback @ 301``
 
@@ -362,7 +362,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``normalizeAttachmentList``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:13881:14300:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:14184:14613:FUNCTION
 
 .. rubric:: ``useCallback callback @ 304``
 
@@ -384,7 +384,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``Math.max``、``setShowLeftShadow``、``setShowRightShadow``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:14350:14669:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:14665:14994:FUNCTION
 
 .. rubric:: ``useCallback callback @ 316``
 
@@ -407,7 +407,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``container.scrollTo``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:14730:14881:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15058:15214:FUNCTION
 
 .. rubric:: ``useMemo callback @ 329``
 
@@ -427,7 +427,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:14949:15474:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15285:15827:FUNCTION
 
 .. rubric:: ``useMemo callback @ 337``
 
@@ -451,7 +451,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15084:15466:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15425:15818:FUNCTION
 
 .. rubric:: ``normalizedAttachments.map callback @ 342``
 
@@ -475,7 +475,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15578:16599:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15933:16979:FUNCTION
 
 .. rubric:: ``useLayoutEffect callback @ 356``
 
@@ -504,7 +504,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:15784:15924:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:16144:16287:FUNCTION
 
 .. rubric:: ``scheduleCheck``
 
@@ -530,7 +530,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``、``window.requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:16349:16592:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:16723:16971:FUNCTION
 
 .. rubric:: ``returned callback @ 375``
 
@@ -556,7 +556,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``、``container.removeEventListener``、``window.removeEventListener``、``resizeObserver?.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:16662:16808:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:17044:17193:FUNCTION
 
 .. rubric:: ``useEffect callback @ 383``
 
@@ -584,7 +584,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:16758:16801:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:17142:17185:FUNCTION
 
 .. rubric:: ``returned callback @ 385``
 
@@ -610,7 +610,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:18418:18449:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:18842:18873:FUNCTION
 
 .. rubric:: ``onClick callback @ 425``
 
@@ -632,7 +632,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``scrollAttachments``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:18659:18691:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:19090:19122:FUNCTION
 
 .. rubric:: ``onClick callback @ 432``
 
@@ -654,7 +654,7 @@ src/features/chat/ui/AttachmentShowcase 模块
 
 **主要协作调用**：``scrollAttachments``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:18866:20866:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/AttachmentShowcase.jsx:19305:21348:FUNCTION
 
 .. rubric:: ``memo callback @ 440``
 

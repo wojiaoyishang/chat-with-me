@@ -3,7 +3,7 @@ import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar.tsx';
 import {Badge} from '@/components/ui/badge.tsx';
 
-const ModelPreviewCard = React.memo(({model, isMobile}) => {
+const ModelPreviewCard = React.memo(({model}) => {
     if (!model) return null;
 
     return (
@@ -33,10 +33,7 @@ const ModelPreviewCard = React.memo(({model, isMobile}) => {
         </div>
     );
 }, (prevProps, nextProps) => {
-    return (
-        prevProps.model === nextProps.model &&
-        prevProps.isMobile === nextProps.isMobile
-    );
+    return prevProps.model === nextProps.model;
 });
 
 ModelPreviewCard.displayName = 'ModelPreviewCard';

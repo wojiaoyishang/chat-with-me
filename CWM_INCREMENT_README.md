@@ -6,12 +6,12 @@
 
 1. 保留当前项目副本。
 2. 将本增量包解压到 **前端项目根目录**，允许覆盖同名文件。
-3. 运行 `clean_project.bat` 清理旧构建产物和 Vite 缓存。
+3. 如叠加本次清理增量，运行 `temp\cleanup_baseline.bat` 清理旧测试/孤儿文件和构建缓存。
 4. 按原锁文件安装依赖并构建：
 
    ```bat
    npm ci
-   npm run test:protocol
+   npm run lint
    npm run build
    ```
 

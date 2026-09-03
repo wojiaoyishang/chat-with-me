@@ -2,7 +2,6 @@ import React, {useState, useRef, useEffect, useCallback, memo} from 'react';
 import {
     Plus,
     FileInput,
-    ChevronRight,
     X,
     FileText,
     Loader2,
@@ -13,7 +12,6 @@ import {
 } from 'lucide-react';
 import {useTranslation} from "react-i18next";
 import {format} from 'date-fns';
-import {motion, AnimatePresence} from 'framer-motion';
 
 import {fileUpload, processSelectedFiles, UnifiedLoadingScreen} from "@/lib/tools.jsx";
 import apiClient from "@/lib/apiClient.js";
@@ -23,12 +21,10 @@ import {resolveResourceUrl} from "@/lib/virtualUrl.js";
 
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
 
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle
@@ -470,7 +466,7 @@ const DocEditorHome = ({
                 });
             };
 
-            const handleComplete = (uploadId, attachment) => {
+            const handleComplete = () => {
                 setIsProcessing(true);
                 /* TODO: 用户上传文件并且应该形成一个卡片 */
             };

@@ -108,7 +108,7 @@ src/pages/SettingPage 模块
 
    **主要协作调用**：``clampSettingsWindowSize``、``getLocalSetting``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5102:41970:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5102:41964:FUNCTION
 
 .. js:function:: SettingPage({ open, onClose, onRefreshRequested, handleLogout })
 
@@ -135,7 +135,7 @@ src/pages/SettingPage 模块
 
    **内部回调数量**：29。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:41996:42248:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:41990:42242:FUNCTION
 
 .. js:function:: SidebarSkeleton()
 
@@ -182,7 +182,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``onCancel``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7480:7548:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7474:7542:FUNCTION
 
 .. rubric:: ``useCallback callback @ 186``
 
@@ -205,7 +205,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``['account', 'interface', 'notifications'].includes``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7603:7847:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7597:7841:FUNCTION
 
 .. rubric:: ``useCallback callback @ 188``
 
@@ -230,7 +230,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7771:7808:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7765:7802:FUNCTION
 
 .. rubric:: ``rawScopes .map callback @ 191``
 
@@ -253,7 +253,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``String(scope || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7901:8128:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7895:8122:FUNCTION
 
 .. rubric:: ``useCallback callback @ 195``
 
@@ -278,7 +278,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7951:7979:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7945:7973:FUNCTION
 
 .. rubric:: ``dynamicTabs.find callback @ 196``
 
@@ -299,7 +299,7 @@ src/pages/SettingPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8042:8120:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8036:8114:FUNCTION
 
 .. rubric:: ``normalizeRefreshScopes(tab?.refreshOnClose).forEach callback @ 197``
 
@@ -322,7 +322,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``pendingRefreshScopesRef.current.add``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8209:8499:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8203:8493:FUNCTION
 
 .. rubric:: ``useCallback callback @ 202``
 
@@ -344,7 +344,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``pendingRefreshScopesRef.current.clear``、``onClose``、``onRefreshRequested``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8568:8976:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8562:8970:FUNCTION
 
 .. rubric:: ``useCallback callback @ 211``
 
@@ -367,7 +367,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``structuredClone``、``JSON.parse``、``JSON.stringify``、``console.warn``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9623:9659:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9617:9653:FUNCTION
 
 .. rubric:: ``useCallback callback @ 239``
 
@@ -391,7 +391,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9645:9658:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9639:9652:FUNCTION
 
 .. rubric:: ``setIsFullscreen callback @ 239``
 
@@ -412,7 +412,7 @@ src/pages/SettingPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9924:10827:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9918:10821:FUNCTION
 
 .. rubric:: ``useCallback callback @ 245``
 
@@ -439,7 +439,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setLoadingTabs``、``setTabsError``、``apiClient.get``、``Array.isArray``、``setDynamicTabs``、``console.error``、``toast.error``、``t``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10941:13139:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10935:13133:FUNCTION
 
 .. rubric:: ``useCallback callback @ 270``
 
@@ -466,7 +466,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``isStaticTab``、``abortControllerRef.current.abort``、``setLoadingDynamicConfig``、``setDynamicConfigError``、``setDynamicConfig``、``setDynamicValues``、``setOriginalDynamicValues``、``apiClient.get``、``Array.isArray``、``cloneData``、``setIsConfigPristine``、``console.error``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13186:13302:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13180:13296:FUNCTION
 
 .. rubric:: ``useEffect callback @ 324``
 
@@ -488,7 +488,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``pendingRefreshScopesRef.current.clear``、``loadDynamicTabs``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13421:13716:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13415:13710:FUNCTION
 
 .. rubric:: ``useEffect callback @ 332``
 
@@ -516,7 +516,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13618:13652:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13612:13646:FUNCTION
 
 .. rubric:: ``window.setTimeout callback @ 336``
 
@@ -538,7 +538,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``loadDynamicConfig``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13674:13709:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13668:13703:FUNCTION
 
 .. rubric:: ``returned callback @ 337``
 
@@ -564,7 +564,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13923:14326:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13917:14320:FUNCTION
 
 .. rubric:: ``useEffect callback @ 342``
 
@@ -592,7 +592,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13954:13992:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13948:13986:FUNCTION
 
 .. rubric:: ``preload``
 
@@ -614,7 +614,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``loadDynamicTabs``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14158:14200:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14152:14194:FUNCTION
 
 .. rubric:: ``returned callback @ 347``
 
@@ -640,7 +640,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``window.cancelIdleCallback``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14284:14319:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14278:14313:FUNCTION
 
 .. rubric:: ``returned callback @ 351``
 
@@ -666,7 +666,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14363:15295:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14357:15289:FUNCTION
 
 .. rubric:: ``useEffect callback @ 354``
 
@@ -694,7 +694,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14517:15251:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14511:15245:FUNCTION
 
 .. rubric:: ``onEvent({ event: 'tool.default_permissions.changed', }).then callback @ 358``
 
@@ -717,7 +717,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``Number``、``toast.info``、``setDynamicValues``、``cloneData``、``setOriginalDynamicValues``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15268:15288:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15262:15282:FUNCTION
 
 .. rubric:: ``returned callback @ 376``
 
@@ -743,7 +743,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15443:15739:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15437:15733:FUNCTION
 
 .. rubric:: ``useCallback callback @ 380``
 
@@ -766,7 +766,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setPendingAction``、``setPendingTabId``、``setShowUnsavedDialog``、``performTabChange``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15817:16432:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15811:16426:FUNCTION
 
 .. rubric:: ``performTabChange``
 
@@ -789,7 +789,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setActiveTab``、``setIsConfigPristine``、``isStaticTab``、``loadDynamicConfig``、``abortControllerRef.current.abort``、``setLoadingDynamicConfig``、``setDynamicConfigError``、``setDynamicConfig``、``setDynamicValues``、``setOriginalDynamicValues``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16522:17802:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16516:17796:FUNCTION
 
 .. rubric:: ``useCallback callback @ 416``
 
@@ -815,7 +815,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``apiClient.post``、``cloneData``、``toast.success``、``t``、``setDynamicValues``、``setOriginalDynamicValues``、``setIsConfigPristine``、``setUser``、``markTabRefreshOnClose``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:17984:18180:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:17978:18174:FUNCTION
 
 .. rubric:: ``useCallback callback @ 447``
 
@@ -837,7 +837,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setPendingAction``、``setShowUnsavedDialog``、``closeSettings``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18284:18589:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18278:18583:FUNCTION
 
 .. rubric:: ``useCallback callback @ 456``
 
@@ -859,7 +859,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setPendingAction``、``setShowUnsavedDialog``、``closeSettings``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18871:19120:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18865:19114:FUNCTION
 
 .. rubric:: ``useCallback callback @ 470``
 
@@ -882,7 +882,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setShowUnsavedDialog``、``setPendingAction``、``setPendingTabId``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19160:20279:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19154:20273:FUNCTION
 
 .. rubric:: ``confirmUnsavedAction``
 
@@ -906,7 +906,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19586:19663:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19580:19657:FUNCTION
 
 .. rubric:: ``setTimeout callback @ 492``
 
@@ -926,7 +926,7 @@ src/pages/SettingPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20029:20187:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20023:20181:FUNCTION
 
 .. rubric:: ``setTimeout callback @ 506``
 
@@ -948,7 +948,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``closeSettings``、``setLoadingDynamicConfig``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20407:20589:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20401:20583:FUNCTION
 
 .. rubric:: ``useCallback callback @ 519``
 
@@ -971,7 +971,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setDynamicValues``、``setIsConfigPristine``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20695:22431:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20689:22425:FUNCTION
 
 .. rubric:: ``useCallback callback @ 527``
 
@@ -993,7 +993,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20730:22423:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20724:22417:FUNCTION
 
 .. rubric:: ``anonymous callback @ 528``
 
@@ -1018,7 +1018,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20838:22388:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20832:22382:FUNCTION
 
 .. rubric:: ``createFilePicker callback @ 531``
 
@@ -1043,7 +1043,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21461:21559:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21455:21553:FUNCTION
 
 .. rubric:: ``handleProgress``
 
@@ -1069,7 +1069,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setUploadProgress``、``Math.round``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21600:21958:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21594:21952:FUNCTION
 
 .. rubric:: ``handleComplete``
 
@@ -1095,7 +1095,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setUploadDialogOpen``、``toast.success``、``t``、``artifactPreviewVirtualUrl``、``resolve``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21996:22219:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21990:22213:FUNCTION
 
 .. rubric:: ``handleError``
 
@@ -1117,7 +1117,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setUploadDialogOpen``、``toast.error``、``t``、``resolve``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:22483:22667:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:22477:22661:FUNCTION
 
 .. rubric:: ``useCallback callback @ 579``
 
@@ -1139,7 +1139,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``uploadCleanupRef.current``、``setUploadDialogOpen``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:22719:24078:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:22713:24072:FUNCTION
 
 .. rubric:: ``useCallback callback @ 587``
 
@@ -1169,7 +1169,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23040:23327:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23034:23321:FUNCTION
 
 .. rubric:: ``onMove``
 
@@ -1192,7 +1192,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``clampSettingsWindowSize``、``setSettingsWindowSize``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23349:23773:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23343:23767:FUNCTION
 
 .. rubric:: ``onUp``
 
@@ -1220,7 +1220,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23559:23761:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23553:23755:FUNCTION
 
 .. rubric:: ``setSettingsWindowSize callback @ 606``
 
@@ -1243,7 +1243,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``clampSettingsWindowSize``、``setLocalSetting``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23931:24071:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23925:24065:FUNCTION
 
 .. rubric:: ``anonymous callback @ 614``
 
@@ -1269,7 +1269,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24142:24182:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24136:24176:FUNCTION
 
 .. rubric:: ``useEffect callback @ 620``
 
@@ -1291,7 +1291,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24147:24182:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24141:24176:FUNCTION
 
 .. rubric:: ``anonymous callback @ 620``
 
@@ -1313,7 +1313,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``resizeCleanupRef.current``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24204:24525:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24198:24519:FUNCTION
 
 .. rubric:: ``useEffect callback @ 622``
 
@@ -1342,7 +1342,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24301:24376:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24295:24370:FUNCTION
 
 .. rubric:: ``keepInsideViewport``
 
@@ -1366,7 +1366,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24330:24375:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24324:24369:FUNCTION
 
 .. rubric:: ``setSettingsWindowSize callback @ 624``
 
@@ -1389,7 +1389,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``clampSettingsWindowSize``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24455:24518:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24449:24512:FUNCTION
 
 .. rubric:: ``returned callback @ 626``
 
@@ -1415,7 +1415,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24641:27936:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24635:27930:FUNCTION
 
 .. rubric:: ``renderSidebar``
 
@@ -1439,7 +1439,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24802:24834:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24796:24828:FUNCTION
 
 .. rubric:: ``onClick callback @ 633``
 
@@ -1461,7 +1461,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``handleTabChange``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:25296:25330:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:25290:25324:FUNCTION
 
 .. rubric:: ``onClick callback @ 641``
 
@@ -1483,7 +1483,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``handleTabChange``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:25798:25836:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:25792:25830:FUNCTION
 
 .. rubric:: ``onClick callback @ 649``
 
@@ -1505,7 +1505,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``handleTabChange``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:26765:26801:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:26759:26795:FUNCTION
 
 .. rubric:: ``onRetry callback @ 666``
 
@@ -1527,7 +1527,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``loadDynamicTabs``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:26976:27888:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:26970:27882:FUNCTION
 
 .. rubric:: ``dynamicTabs.map callback @ 671``
 
@@ -1552,7 +1552,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:27097:27126:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:27091:27120:FUNCTION
 
 .. rubric:: ``onClick callback @ 674``
 
@@ -1574,7 +1574,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``handleTabChange``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:27652:27695:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:27646:27689:FUNCTION
 
 .. rubric:: ``onError callback @ 681``
 
@@ -1595,7 +1595,7 @@ src/pages/SettingPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:28019:33839:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:28013:33833:FUNCTION
 
 .. rubric:: ``renderContent``
 
@@ -1619,7 +1619,7 @@ src/pages/SettingPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:33257:33291:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:33251:33285:FUNCTION
 
 .. rubric:: ``onRetry callback @ 780``
 
@@ -1641,7 +1641,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``loadDynamicConfig``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:35895:35921:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:35889:35915:FUNCTION
 
 .. rubric:: ``onClick callback @ 833``
 
@@ -1664,7 +1664,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``e.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:40687:40720:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:40681:40714:FUNCTION
 
 .. rubric:: ``onClick callback @ 914``
 
@@ -1686,7 +1686,7 @@ src/pages/SettingPage 模块
 
 **主要协作调用**：``setShowUnsavedDialog``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:42070:42233:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:42064:42227:FUNCTION
 
 .. rubric:: ``[1, 2, 3].map callback @ 945``
 

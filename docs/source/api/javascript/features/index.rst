@@ -53,11 +53,6 @@
      - 0
      - 0
      - ``src/features/chat/page/components/LoadingScreens.jsx``
-   * - :doc:`src/features/chat/page/components/MessageOverviewDialog </api/javascript/features/chat/page/components/MessageOverviewDialog>`
-     - 0
-     - 0
-     - 10
-     - ``src/features/chat/page/components/MessageOverviewDialog.jsx``
    * - :doc:`src/features/chat/page/components/MessageSummaryItem </api/javascript/features/chat/page/components/MessageSummaryItem>`
      - 0
      - 0
@@ -116,7 +111,7 @@
    * - :doc:`src/features/chat/page/hooks/useChatSpeech </api/javascript/features/chat/page/hooks/useChatSpeech>`
      - 22
      - 0
-     - 276
+     - 270
      - ``src/features/chat/page/hooks/useChatSpeech.js``
    * - :doc:`src/features/chat/page/hooks/useChatWindowMode </api/javascript/features/chat/page/hooks/useChatWindowMode>`
      - 1
@@ -298,11 +293,6 @@
      - 0
      - 1
      - ``src/features/chat/ui/message/components/CompactedContextIndicator.jsx``
-   * - :doc:`src/features/chat/ui/message/components/ContextInspectorDialog </api/javascript/features/chat/ui/message/components/ContextInspectorDialog>`
-     - 3
-     - 0
-     - 10
-     - ``src/features/chat/ui/message/components/ContextInspectorDialog.jsx``
    * - :doc:`src/features/chat/ui/message/components/ContextStateIndicator </api/javascript/features/chat/ui/message/components/ContextStateIndicator>`
      - 0
      - 0
@@ -343,11 +333,6 @@
      - 0
      - 25
      - ``src/features/chat/ui/message/components/MessageItem.jsx``
-   * - :doc:`src/features/chat/ui/message/components/MessageMenuButton </api/javascript/features/chat/ui/message/components/MessageMenuButton>`
-     - 0
-     - 0
-     - 7
-     - ``src/features/chat/ui/message/components/MessageMenuButton.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessagePaginator </api/javascript/features/chat/ui/message/components/MessagePaginator>`
      - 0
      - 0
@@ -528,11 +513,6 @@
      - 0
      - 57
      - ``src/features/tools/components/ConversationToolsDialog.jsx``
-   * - :doc:`src/features/workspace/WorkspaceSelector </api/javascript/features/workspace/WorkspaceSelector>`
-     - 1
-     - 0
-     - 18
-     - ``src/features/workspace/WorkspaceSelector.jsx``
    * - :doc:`src/features/workspace/WorkspaceSettingsDialog </api/javascript/features/workspace/WorkspaceSettingsDialog>`
      - 10
      - 0
@@ -566,7 +546,6 @@
    /api/javascript/features/chat/modelCapabilities
    /api/javascript/features/chat/page/components/ChatHeader
    /api/javascript/features/chat/page/components/LoadingScreens
-   /api/javascript/features/chat/page/components/MessageOverviewDialog
    /api/javascript/features/chat/page/components/MessageSummaryItem
    /api/javascript/features/chat/page/components/ModelItem
    /api/javascript/features/chat/page/components/ModelPreviewCard
@@ -615,7 +594,6 @@
    /api/javascript/features/chat/ui/chatbox/utils/voiceRecorder
    /api/javascript/features/chat/ui/message/components/BranchMessageSelectorDialog
    /api/javascript/features/chat/ui/message/components/CompactedContextIndicator
-   /api/javascript/features/chat/ui/message/components/ContextInspectorDialog
    /api/javascript/features/chat/ui/message/components/ContextStateIndicator
    /api/javascript/features/chat/ui/message/components/IgnoredContextIndicator
    /api/javascript/features/chat/ui/message/components/KnowledgeGraphViewer
@@ -624,7 +602,6 @@
    /api/javascript/features/chat/ui/message/components/MessageAvatarMenu
    /api/javascript/features/chat/ui/message/components/MessageContextBadges
    /api/javascript/features/chat/ui/message/components/MessageItem
-   /api/javascript/features/chat/ui/message/components/MessageMenuButton
    /api/javascript/features/chat/ui/message/components/MessagePaginator
    /api/javascript/features/chat/ui/message/components/MessageTools
    /api/javascript/features/chat/ui/message/components/ReplacementContextBadge
@@ -661,7 +638,6 @@
    /api/javascript/features/story/media/StoryVideo
    /api/javascript/features/story/media/storyMediaLayout
    /api/javascript/features/tools/components/ConversationToolsDialog
-   /api/javascript/features/workspace/WorkspaceSelector
    /api/javascript/features/workspace/WorkspaceSettingsDialog
    /api/javascript/features/workspace/components/FolderBrowser
    /api/javascript/features/workspace/components/FolderBrowserDialog

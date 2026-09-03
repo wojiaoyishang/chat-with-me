@@ -27,7 +27,7 @@ src/features/execution/ExecutionStatus 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:323:672:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:329:689:FUNCTION
 
 .. js:function:: parseExecution(content, conversationId)
 
@@ -54,7 +54,7 @@ src/features/execution/ExecutionStatus 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:704:5624:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:723:5728:FUNCTION
 
 .. rubric:: ``memo callback @ 20``
 
@@ -79,7 +79,7 @@ src/features/execution/ExecutionStatus 模块
 
 **内部回调数量**：7。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:779:824:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:799:844:FUNCTION
 
 .. rubric:: ``useMemo callback @ 21``
 
@@ -101,7 +101,7 @@ src/features/execution/ExecutionStatus 模块
 
 **主要协作调用**：``parseExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:898:1193:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:919:1219:FUNCTION
 
 .. rubric:: ``useExecutionStore callback @ 22``
 
@@ -124,7 +124,7 @@ src/features/execution/ExecutionStatus 模块
 
 **主要协作调用**：``String(execution?.conversationId || conversationId || '').trim``、``String``、``String(execution?.executionId || '').trim``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:1211:1904:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:1239:1943:FUNCTION
 
 .. rubric:: ``useEffect callback @ 29``
 
@@ -146,7 +146,7 @@ src/features/execution/ExecutionStatus 模块
 
 **主要协作调用**：``useExecutionStore.getState``、``Number``、``upsertExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:2959:3120:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:3013:3177:FUNCTION
 
 .. rubric:: ``activitySource.filter callback @ 55``
 
@@ -169,7 +169,7 @@ src/features/execution/ExecutionStatus 模块
 
 **主要协作调用**：``String(activity?.kind || '').toLowerCase``、``String``、``String(activity?.anchorStatusId || '').trim``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:3886:3917:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:3959:3990:FUNCTION
 
 .. rubric:: ``onClick callback @ 74``
 
@@ -191,7 +191,7 @@ src/features/execution/ExecutionStatus 模块
 
 **主要协作调用**：``openExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:4657:4767:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:4742:4854:FUNCTION
 
 .. rubric:: ``guidanceActivities.map callback @ 86``
 
@@ -212,7 +212,7 @@ src/features/execution/ExecutionStatus 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:4895:4926:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:4986:5017:FUNCTION
 
 .. rubric:: ``onClick callback @ 92``
 

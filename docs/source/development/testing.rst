@@ -1,25 +1,19 @@
-测试策略
+验证策略
 ================================================================================
 
-协议测试
+当前基线
 --------------------------------------------------------------------------------
 
-``npm run test:protocol`` 覆盖 Event/Media Frame、MessagePack、UUID、Event Pattern、Direction、
-Reply 隔离、消息摘要尾部合并和跨语言样例。
+当前发布包不携带前端自动化 Test Suite，也不暴露 ``npm run test:*`` 脚本。提交前以静态检查、生产构建和手工黄金链路作为最低验证门槛。
 
-组件测试建议
+静态检查与构建
 --------------------------------------------------------------------------------
 
-项目后续应补 React Testing Library/Vitest，重点覆盖：
+.. code-block:: bat
 
-* Dashboard 认证和 401 去重；
-* Chat Turn 生命周期；
-* 编辑消息/分支和摘要；
-* Tool Approval；
-* Widget Action；
-* Speech 播放和取消；
-* WebSocket 重连；
-* ErrorBoundary。
+   npm run lint
+   npm run build
+   docs\make.bat
 
 手工黄金链路
 --------------------------------------------------------------------------------
@@ -33,18 +27,8 @@ Reply 隔离、消息摘要尾部合并和跨语言样例。
 #. Runtime Inspector：模型请求、上下文、原始消息和“简要模式”快速跳转；
 #. 朗读/暂停/停止；
 #. Document；
-#. 断线重连。
-
-命令
---------------------------------------------------------------------------------
-
-.. code-block:: bat
-
-   npm run test:protocol
-   npm run lint
-   npm run build
-   docs\make.bat
+#. Workspace 与断线重连。
 
 .. important::
 
-   仅做 TypeScript AST 语法扫描不能代替 Vite build；完整 node_modules 环境中必须执行生产构建。
+   TypeScript AST 静态扫描不能代替 Vite 生产构建；正式发布环境仍应执行 ``npm run build``。

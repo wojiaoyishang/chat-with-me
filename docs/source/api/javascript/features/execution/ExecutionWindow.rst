@@ -27,7 +27,7 @@ src/features/execution/ExecutionWindow 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:616:767:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:636:792:FUNCTION
 
 .. js:function:: realtimeActionErrorMessage(response, fallback)
 
@@ -49,7 +49,7 @@ src/features/execution/ExecutionWindow 模块
 
    **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:785:1056:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:812:1091:FUNCTION
 
 .. js:function:: fmtTime(value)
 
@@ -68,7 +68,7 @@ src/features/execution/ExecutionWindow 模块
 
    **主要协作调用**：``Number``、``Number.isFinite``、``new Date(number).toLocaleTimeString``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1075:1345:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1112:1386:FUNCTION
 
 .. js:function:: PlanIcon({status})
 
@@ -85,7 +85,7 @@ src/features/execution/ExecutionWindow 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``<CheckCircle2 className="h-4 w-4 text-emerald-500"/>``、``<Loader2 className="h-4 w-4 animate-spin text-blue-500"/>``、``<CircleDot className="h-4 w-4 text-gray-300"/>``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1368:1786:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1411:1835:FUNCTION
 
 .. js:function:: ToolCardIcon({state})
 
@@ -104,7 +104,7 @@ src/features/execution/ExecutionWindow 模块
 
    **主要协作调用**：``String(state || '').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1814:2643:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1865:2702:FUNCTION
 
 .. js:function:: ActivityStateIcon({activity, userGuidance})
 
@@ -123,7 +123,7 @@ src/features/execution/ExecutionWindow 模块
 
    **主要协作调用**：``String(activity?.state || '').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:2671:2810:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:2732:2874:FUNCTION
 
 .. js:function:: timelineTimestamp(item)
 
@@ -147,7 +147,7 @@ src/features/execution/ExecutionWindow 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:2842:23504:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:2908:23941:FUNCTION
 
 .. rubric:: ``memo callback @ 67``
 
@@ -176,7 +176,7 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：15。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3530:3582:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3613:3665:FUNCTION
 
 .. rubric:: ``useMemo callback @ 84``
 
@@ -198,7 +198,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``[...(execution?.activities || [])].slice``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3640:3918:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3724:4006:FUNCTION
 
 .. rubric:: ``useMemo callback @ 85``
 
@@ -222,7 +222,7 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3746:3814:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3832:3900:FUNCTION
 
 .. rubric:: ``[...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter callback @ 87``
 
@@ -245,7 +245,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3834:3911:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3921:3998:FUNCTION
 
 .. rubric:: ``[...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter((item) => item && String(item.surface ||… callback @ 88``
 
@@ -271,7 +271,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4339:5904:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4434:6033:FUNCTION
 
 .. rubric:: ``useMemo callback @ 96``
 
@@ -295,7 +295,7 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4438:4803:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4536:4910:FUNCTION
 
 .. rubric:: ``toolCards.forEach callback @ 99``
 
@@ -321,7 +321,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``String(card?.toolCallId || '').trim``、``String``、``cardToolIds.add``、``items.push``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4833:5642:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4941:5764:FUNCTION
 
 .. rubric:: ``activities.forEach callback @ 109``
 
@@ -347,7 +347,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``String(activity?.kind || '').toLowerCase``、``String``、``String(activity?.toolCallId || '').trim``、``cardToolIds.has``、``items.push``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:5664:5874:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:5787:6001:FUNCTION
 
 .. rubric:: ``items.sort callback @ 124``
 
@@ -373,7 +373,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``timelineTimestamp``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:5972:6261:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6103:6401:FUNCTION
 
 .. rubric:: ``useCallback callback @ 132``
 
@@ -396,7 +396,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``Math.max``、``node.scrollTo``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6310:6415:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6452:6560:FUNCTION
 
 .. rubric:: ``useCallback callback @ 143``
 
@@ -420,7 +420,7 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6377:6407:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6521:6551:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 145``
 
@@ -442,7 +442,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``scrollToBottom``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6478:6609:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6625:6762:FUNCTION
 
 .. rubric:: ``useCallback callback @ 148``
 
@@ -464,7 +464,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``setAutoFollow``、``enableAutoFollow``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6690:7165:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6845:7328:FUNCTION
 
 .. rubric:: ``useCallback callback @ 156``
 
@@ -486,7 +486,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``setAutoFollow``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7197:7387:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7362:7556:FUNCTION
 
 .. rubric:: ``useEffect callback @ 166``
 
@@ -510,7 +510,7 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7301:7329:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7468:7496:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 168``
 
@@ -532,7 +532,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``scrollToBottom``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7346:7380:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7514:7548:FUNCTION
 
 .. rubric:: ``returned callback @ 169``
 
@@ -554,7 +554,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7509:7995:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7680:8178:FUNCTION
 
 .. rubric:: ``useEffect callback @ 172``
 
@@ -578,7 +578,7 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7700:7831:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7874:8008:FUNCTION
 
 .. rubric:: ``anonymous callback @ 175``
 
@@ -602,7 +602,7 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7791:7819:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7967:7995:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 177``
 
@@ -624,7 +624,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``scrollToBottom``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7894:7988:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8073:8170:FUNCTION
 
 .. rubric:: ``returned callback @ 180``
 
@@ -646,7 +646,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``cancelAnimationFrame``、``observer.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8060:9012:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8245:9223:FUNCTION
 
 .. rubric:: ``requestAction``
 
@@ -675,7 +675,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``setActionPending``、``emitEvent``、``realtimeActionErrorMessage``、``upsertExecution``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:10855:10894:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:11107:11146:FUNCTION
 
 .. rubric:: ``onClick callback @ 253``
 
@@ -697,7 +697,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``requestAction``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:11207:11246:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:11467:11506:FUNCTION
 
 .. rubric:: ``onClick callback @ 261``
 
@@ -719,7 +719,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``requestAction``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:11751:11778:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:12027:12054:FUNCTION
 
 .. rubric:: ``onClose callback @ 277``
 
@@ -741,7 +741,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``onOpenChange``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:13391:13754:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:13697:14065:FUNCTION
 
 .. rubric:: ``execution.plan.map callback @ 307``
 
@@ -762,7 +762,7 @@ src/features/execution/ExecutionWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:14406:23049:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:14730:23472:FUNCTION
 
 .. rubric:: ``timelineItems.map callback @ 325``
 

@@ -216,7 +216,7 @@ const ToolButtons = memo(({
         ? extraTools.filter(item => item !== toolRegion)
         : [];
 
-    const handleToggle = useCallback((toolName, e, newIsActive) => {
+    const handleToggle = useCallback((toolName, newIsActive) => {
         if (typeof onBuiltinToolToggle === 'function') {
             onBuiltinToolToggle(toolName, newIsActive);
             return;
@@ -360,7 +360,7 @@ const ToolButtons = memo(({
                     key={tool.name}
                     tool={tool}
                     isActive={isActive}
-                    onToggle={(e, newIsActive) => handleToggle(tool.name, e, newIsActive)}
+                    onToggle={(_event, newIsActive) => handleToggle(tool.name, newIsActive)}
                 />
             );
         });
@@ -377,7 +377,7 @@ const ToolButtons = memo(({
                     tool={tool}
                     isActive={isActive}
                     t={t}
-                    onToggle={(event, newIsActive) => handleToggle(tool.name, event, newIsActive)}
+                    onToggle={(_event, newIsActive) => handleToggle(tool.name, newIsActive)}
                 />
             );
         });

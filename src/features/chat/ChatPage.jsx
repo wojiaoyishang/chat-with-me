@@ -2155,7 +2155,7 @@ function ChatPage({
                             if (silent) {
                                 apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + msgId,
                                     {params: {conversationId: conversationId}})
-                                    .then((data) => {
+                                    .then(() => {
                                         deleteMessageLocally(msgId);
                                     })
                                     .catch((error) => {
@@ -3399,7 +3399,7 @@ function ChatPage({
                     apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId,
                         {params: {conversationId: conversationId}}
                     )
-                        .then((data) => {
+                        .then(() => {
                             deleteMessageLocally(pendingDeleteMsgId);
                         })
                         .catch((error) => {

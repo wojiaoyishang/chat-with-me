@@ -31,16 +31,15 @@
 * ``/doc/:documentId/:conversationId``：文档与聊天；
 * ``/doc/:documentId``：文档入口。
 
-测试与构建
+检查与构建
 --------------------------------------------------------------------------------
 
 .. code-block:: bat
 
-   npm run test:protocol
    npm run lint
    npm run build
 
-Protocol 测试使用 Node Test Runner；生产构建会同时发现 JSX、导入、重复属性和 Vite 解析问题。
+当前基线不携带自动化 Test Suite；生产构建会同时发现 JSX、导入、重复属性和 Vite 解析问题。
 
 构建文档
 --------------------------------------------------------------------------------

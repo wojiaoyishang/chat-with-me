@@ -156,7 +156,7 @@ const SettingPage = ({
         TASK_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
         false
     );
-    const {user, setUser} = useUserStore();
+    const {setUser} = useUserStore();
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [settingsWindowSize, setSettingsWindowSize] = useState(loadSettingsWindowSize);
     const resizeCleanupRef = useRef(null);

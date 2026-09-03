@@ -1,111 +1,112 @@
-CWM Frontend Protocol v1 Increment
-Date: 2026-08-21
+CWM Frontend Cleanup Increment Manifest
+Date: 2026-09-03
 
-BREAKING CHANGE:
-  This increment removes the legacy target/command/markId JSON WebSocket protocol.
-  Apply the matching frontend and backend increments together.
+Scope: safe baseline cleanup only; CWM Protocol v1 and current runtime contracts are unchanged.
+This is an incremental package, not a full frontend distribution.
 
 Apply:
-  1. Back up the project and development database.
-  2. Extract this ZIP directly into the corresponding project root.
-  3. Run clean_project.bat.
-  4. Run npm ci in your normal networked development environment.
-  5. Run npm run test:protocol and npm run build.
+  1. Overlay frontend/ onto the existing frontend project root.
+  2. Run temp\cleanup_baseline.bat to remove files that an overlay cannot delete.
+  3. In a complete networked dependency environment run npm ci, npm run lint, npm run build.
 
-Validated in the build workspace:
-  - 5 frontend protocol tests passed.
-  - 190 JS/JSX/TS/TSX source files passed TypeScript syntax transpilation.
-  - JavaScript/Python event and raw-media frames decoded in both directions.
+Validated in cleanup workspace:
+  - JavaScript API AST coverage passed: modules=201, function_nodes=3907, missing=0.
+  - Frontend documentation navigation/coverage validation passed: documents=266, reachable=266.
+  - TypeScript/JS syntax and unused-symbol static checks passed in the cleanup workspace.
+  - package-lock dependency graph is reachable from root dependencies after visualizer removal.
 
-Included files:
+Included modified/added files:
+  CWM_CLEANUP_INCREMENT_README.md
   CWM_INCREMENT_README.md
+  PACKAGE_MANIFEST.txt
   README.md
-  clean_project.bat
-  docs/Makefile
-  docs/legacy/README_pre_protocol_v1.md
-  docs/make.bat
-  docs/requirements.txt
-  docs/source/_static/.gitkeep
-  docs/source/_templates/.gitkeep
-  docs/source/architecture/event_flow.rst
-  docs/source/architecture/index.rst
-  docs/source/architecture/overview.rst
-  docs/source/architecture/surfaces.rst
-  docs/source/conf.py
-  docs/source/development/adding_event.rst
-  docs/source/development/debugging.rst
-  docs/source/development/index.rst
+  docs/source/api/javascript/GENERATION_SUMMARY.txt
+  docs/source/api/javascript/components/index.rst
+  docs/source/api/javascript/components/markdown/MarkdownRenderer.rst
+  docs/source/api/javascript/components/markdown/card-block/CardBlock.rst
+  docs/source/api/javascript/components/markdown/card-block/widget/CanvasCardDeck.rst
+  docs/source/api/javascript/components/markdown/card-block/widget/WidgetHost.rst
+  docs/source/api/javascript/components/setting/DynamicSettings.rst
+  docs/source/api/javascript/components/setting/UserProfileCard.rst
+  docs/source/api/javascript/components/sidebar/Sidebar.rst
+  docs/source/api/javascript/features/chat/ChatPage.rst
+  docs/source/api/javascript/features/chat/page/components/ModelPreviewCard.rst
+  docs/source/api/javascript/features/chat/page/hooks/useChatSpeech.rst
+  docs/source/api/javascript/features/chat/ui/AttachmentShowcase.rst
+  docs/source/api/javascript/features/chat/ui/ChatBox.rst
+  docs/source/api/javascript/features/chat/ui/QuickOptions.rst
+  docs/source/api/javascript/features/chat/ui/ToolButtons.rst
+  docs/source/api/javascript/features/chat/ui/message/components/MessageItem.rst
+  docs/source/api/javascript/features/execution/ExecutionHost.rst
+  docs/source/api/javascript/features/execution/ExecutionStatus.rst
+  docs/source/api/javascript/features/execution/ExecutionWindow.rst
+  docs/source/api/javascript/features/execution/useExecutionStore.rst
+  docs/source/api/javascript/features/index.rst
+  docs/source/api/javascript/features/workspace/WorkspaceSettingsDialog.rst
+  docs/source/api/javascript/features/workspace/useWorkspaceTransferStore.rst
+  docs/source/api/javascript/index.rst
+  docs/source/api/javascript/lib/tools.rst
+  docs/source/api/javascript/main.rst
+  docs/source/api/javascript/pages/DashboardPage.rst
+  docs/source/api/javascript/pages/DocEditorHome.rst
+  docs/source/api/javascript/pages/SettingPage.rst
+  docs/source/development/release_checklist.rst
   docs/source/development/testing.rst
-  docs/source/index.rst
-  docs/source/modules/event_store.rst
-  docs/source/modules/index.rst
-  docs/source/modules/protocol.rst
-  docs/source/modules/transport.rst
-  docs/source/protocol/binary_transport.rst
-  docs/source/protocol/event_runtime.rst
-  docs/source/protocol/identifiers.rst
-  docs/source/protocol/index.rst
-  docs/source/protocol/media.rst
-  docs/source/welcome/index.rst
-  docs/source/welcome/overview.rst
+  docs/source/welcome/first_change.rst
   docs/source/welcome/quickstart.rst
+  package-lock.json
   package.json
-  src/assets/locales/en.json
-  src/assets/locales/zh.json
-  src/components/debugger/Debugger.js
   src/components/markdown/MarkdownRenderer.jsx
-  src/components/markdown/card-block/CardBlock.jsx
-  src/components/markdown/card-block/status/StatusHeader.jsx
-  src/components/markdown/card-block/status/StatusWidget.jsx
-  src/components/markdown/card-block/task/TaskModeWidget.jsx
-  src/components/markdown/card-block/task/TaskMonitorWindow.jsx
+  src/components/markdown/card-block/widget/CanvasCardDeck.jsx
   src/components/markdown/card-block/widget/WidgetHost.jsx
-  src/components/sidebar/ConversationsList.jsx
+  src/components/setting/DynamicSettings.jsx
+  src/components/setting/UserProfileCard.jsx
   src/components/sidebar/Sidebar.jsx
-  src/context/ContextEvent.jsx
-  src/context/WebSocketContext.jsx
-  src/context/useEventStore.jsx
   src/features/chat/ChatPage.jsx
-  src/features/chat/page/components/RightSidebar.jsx
+  src/features/chat/page/components/ModelPreviewCard.jsx
   src/features/chat/page/hooks/useChatSpeech.js
-  src/features/chat/page/hooks/useFileUpload.js
-  src/features/chat/page/utils/networkMerge.js
   src/features/chat/ui/ChatBox.jsx
-  src/features/chat/ui/MessageContainer.jsx
-  src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx
-  src/features/chat/ui/message/components/BranchMessageSelectorDialog.jsx
-  src/features/chat/ui/message/components/CompactedContextIndicator.jsx
-  src/features/chat/ui/message/components/ContextInspectorDialog.jsx
-  src/features/chat/ui/message/components/ContextStateIndicator.jsx
-  src/features/chat/ui/message/components/IgnoredContextIndicator.jsx
-  src/features/chat/ui/message/components/MessageActions.jsx
-  src/features/chat/ui/message/components/MessageAvatarMenu.jsx
-  src/features/chat/ui/message/components/MessageContextBadges.jsx
+  src/features/chat/ui/QuickOptions.jsx
+  src/features/chat/ui/ToolButtons.jsx
   src/features/chat/ui/message/components/MessageItem.jsx
-  src/features/chat/ui/message/components/MessageMenuButton.jsx
-  src/features/chat/ui/message/components/MessagePaginator.jsx
-  src/features/chat/ui/message/components/MessageTools.jsx
-  src/features/chat/ui/message/components/ReplacementContextBadge.jsx
-  src/features/chat/ui/message/components/TextOnlyMessageContent.jsx
-  src/features/chat/ui/message/components/TooltipInfo.jsx
-  src/features/chat/ui/message/hooks/useMessageEvents.js
-  src/features/chat/ui/message/utils/messageActions.js
-  src/features/notification/NotificationHost.jsx
-  src/features/story/StoryCard.jsx
-  src/features/workspace/WorkspaceSelector.jsx
+  src/features/workspace/README.md
   src/features/workspace/WorkspaceSettingsDialog.jsx
-  src/hooks/messageCallback.jsx
+  src/lib/tools.jsx
   src/main.jsx
-  src/pages/ChatWithEditor.jsx
   src/pages/DashboardPage.jsx
   src/pages/DocEditorHome.jsx
   src/pages/SettingPage.jsx
-  src/runtime/protocol/events.js
-  src/runtime/protocol/frame.js
-  src/runtime/protocol/msgpack.js
-  src/runtime/transport/WebSocketTransport.js
-  src/runtime/transport/channel.js
-  tests/protocol.test.mjs
+  temp/cleanup_baseline.bat
+  vite.config.js
 
-Deleted/replaced paths:
-  (none)
+Deleted paths handled by temp\cleanup_baseline.bat:
+  docs/source/api/javascript/components/debugger/Debugger.rst
+  docs/source/api/javascript/components/markdown/card-block/StableCardBlock.rst
+  docs/source/api/javascript/components/markdown/card-block/frozenCardStore.rst
+  docs/source/api/javascript/components/markdown/card-block/index.rst
+  docs/source/api/javascript/features/chat/page/components/MessageOverviewDialog.rst
+  docs/source/api/javascript/features/chat/ui/message/components/ContextInspectorDialog.rst
+  docs/source/api/javascript/features/chat/ui/message/components/MessageMenuButton.rst
+  docs/source/api/javascript/features/execution/components/ToolInvocationCard.rst
+  docs/source/api/javascript/features/workspace/WorkspaceSelector.rst
+  docs/source/api/javascript/features/workspace/components/WorkspaceTransferProgress.rst
+  src/assets/#U673a#U5668#U4eba.png
+  src/assets/AI.png
+  src/assets/css/code-block.css
+  src/assets/human.jpg
+  src/assets/icon/TXT.png
+  src/assets/react.svg
+  src/assets/test.png
+  src/components/debugger/Debugger.js
+  src/components/markdown/card-block/StableCardBlock.jsx
+  src/components/markdown/card-block/frozenCardStore.js
+  src/components/markdown/card-block/index.jsx
+  src/features/chat/page/components/MessageOverviewDialog.jsx
+  src/features/chat/ui/message/components/ContextInspectorDialog.jsx
+  src/features/chat/ui/message/components/MessageMenuButton.jsx
+  src/features/execution/components/ToolInvocationCard.jsx
+  src/features/execution/components/toolInvocationCardAdapter.js
+  src/features/workspace/WorkspaceSelector.jsx
+  src/features/workspace/components/WorkspaceTransferProgress.jsx
+  stats.html
+

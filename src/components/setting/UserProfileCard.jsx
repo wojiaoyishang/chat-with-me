@@ -1,14 +1,9 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {
     X,
-    Maximize2,
-    Minimize2,
-    ChevronLeft,
-    User,
     Camera,
     Pencil,
     Loader2,
-    Check,
     LogOut,
     Save
 } from 'lucide-react';
@@ -35,7 +30,7 @@ export const UserProfileCard = ({handleLogout}) => {
     const [isSaving, setIsSaving] = useState(false);
 
     // 数据状态
-    const {user, clearUser, setUser} = useUserStore();
+    const {user, setUser} = useUserStore();
     const originalName = user?.nickname || "User";
     const [previewAvatar, setPreviewAvatar] = useState(user?.avatar);
     const [previewAvatarServerId, setPreviewAvatarServerId] = useState(null);
@@ -127,7 +122,7 @@ export const UserProfileCard = ({handleLogout}) => {
             uploadObj,
             () => {
             }, // onProgress
-            (id, attachment) => {
+            (_id, attachment) => {
                 setIsUploading(false);
                 if (attachment?.preview) {
                     setPreviewAvatar(attachment.preview);
