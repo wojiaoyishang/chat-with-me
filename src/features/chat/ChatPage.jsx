@@ -215,6 +215,7 @@ function ChatPage({
     } = useRuntimeInspector(conversationId);
     const [activeVisibleMessageId, setActiveVisibleMessageId] = useState(null);
     const [highlightedMessageId, setHighlightedMessageId] = useState(null);
+    const messageDeepLinkHandledRef = useRef('');
     const [isMessageNavigatorWide, setIsMessageNavigatorWide] = useState(true);
     const summaryRequestVersionRef = useRef(0);
     const messageSummariesRef = useRef([]);
@@ -1608,6 +1609,22 @@ function ChatPage({
         setShowScrollToBottomButton,
         t,
     ]);
+
+    useEffect(() => {
+        if (!conversationId || messagesOrder.length === 0) return;
+        const targetMessageId = String(new URLSearchParams(window.location.search).get('message') || '').trim();
+        if (!targetMessageId) return;
+
+        const deepLinkKey = `${conversationId}:${targetMessageId}`;
+        if (messageDeepLinkHandledRef.current === deepLinkKey) return;
+        messageDeepLinkHandledRef.current = deepLinkKey;
+
+        jumpToMessage(targetMessageId).then((success) => {
+            if (!success && messageDeepLinkHandledRef.current === deepLinkKey) {
+                messageDeepLinkHandledRef.current = '';
+            }
+        });
+    }, [conversationId, jumpToMessage, messagesOrder.length]);
 
     const loadSwitchMessage = useCallback(async (msgId, newMsgId) => {
         if (!(msgId in messagesRef.current)) return false;
@@ -3135,6 +3152,7 @@ function ChatPage({
                         handleModelItemMouseEnter={handleModelItemMouseEnter}
                         scrollToSelectedItem={scrollToSelectedItem}
                         handleSidebarToggle={handleSidebarToggle}
+                        conversationId={conversationId}
                         onOpenRuntimeInspector={handleOpenRuntimeInspector}
                         runtimeInspectorDisabled={!conversationId}
                         isWindowMode={isWindowMode}

@@ -16,7 +16,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 232
+     - 234
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -458,6 +458,21 @@
      - 0
      - 17
      - ``src/features/execution/useExecutionStore.js``
+   * - :doc:`src/features/message-map/MessageHistoryMapButton </api/javascript/features/message-map/MessageHistoryMapButton>`
+     - 0
+     - 0
+     - 2
+     - ``src/features/message-map/MessageHistoryMapButton.jsx``
+   * - :doc:`src/features/message-map/MessageHistoryMapPage </api/javascript/features/message-map/MessageHistoryMapPage>`
+     - 6
+     - 0
+     - 101
+     - ``src/features/message-map/MessageHistoryMapPage.jsx``
+   * - :doc:`src/features/message-map/messageMapLayout.worker </api/javascript/features/message-map/messageMapLayout.worker>`
+     - 2
+     - 0
+     - 9
+     - ``src/features/message-map/messageMapLayout.worker.js``
    * - :doc:`src/features/notification/NotificationHost </api/javascript/features/notification/NotificationHost>`
      - 4
      - 0
@@ -637,6 +652,9 @@
    /api/javascript/features/execution/ExecutionWindow
    /api/javascript/features/execution/index
    /api/javascript/features/execution/useExecutionStore
+   /api/javascript/features/message-map/MessageHistoryMapButton
+   /api/javascript/features/message-map/MessageHistoryMapPage
+   /api/javascript/features/message-map/messageMapLayout.worker
    /api/javascript/features/notification/NotificationHost
    /api/javascript/features/notification/NotificationSettings
    /api/javascript/features/notification/NotificationToast

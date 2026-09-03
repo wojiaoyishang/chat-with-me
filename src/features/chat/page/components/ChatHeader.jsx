@@ -5,6 +5,7 @@ import {Button} from '@/components/ui/button.tsx';
 import ModelItem from './ModelItem.jsx';
 import ModelPreviewCard from './ModelPreviewCard.jsx';
 import StorySelectorButton from '@/features/story/StorySelectorButton.jsx';
+import MessageHistoryMapButton from '@/features/message-map/MessageHistoryMapButton.jsx';
 
 const ChatHeader = memo(({
                              models,
@@ -19,6 +20,7 @@ const ChatHeader = memo(({
                              scrollToSelectedItem,
                              handleSidebarToggle,
                              onOpenRuntimeInspector,
+                             conversationId,
                              runtimeInspectorDisabled = false,
                              isWindowMode,
                              handleDragMouseDown,
@@ -181,6 +183,12 @@ const ChatHeader = memo(({
                     onDeleteStory={onDeleteStory}
                     t={t}
                     isWindowMode={isWindowMode}
+                />
+
+                <MessageHistoryMapButton
+                    conversationId={conversationId}
+                    disabled={!conversationId}
+                    label={t('message_history_map', {defaultValue: '消息历史地图'})}
                 />
 
                 <Button

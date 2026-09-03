@@ -582,5 +582,6 @@
   "realtime_voice_start": "开始实时语音对话",
   "speech_partial_generation_error": "部分语音生成失败，已保留并继续播放成功生成的内容：{{message}}",
   "execution_guidance_history": "执行中的补充",
-  "execution_guidance_user": "用户补充"
+  "execution_guidance_user": "用户补充",
+  "message_history_map": "消息历史地图"
 }

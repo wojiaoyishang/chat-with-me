@@ -16,6 +16,7 @@ import FatalErrorPopoverElement from "@/context/FatalErrorPopover.jsx";
 import ContextEvent from "@/context/ContextEvent.jsx";
 import DashboardPage from "@/pages/DashboardPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
+import MessageHistoryMapPage from '@/features/message-map/MessageHistoryMapPage.jsx';
 import UniversalModalHost from '@/components/modal/UniversalModalHost.jsx';
 import {subscribeBrowserRoutePop} from '@/lib/browserHistoryLayers.js';
 
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
     {
         path: "/chat",
         element: <DashboardPage/>,
+    },
+    {
+        path: "/chat/:conversationId/message-map",
+        element: <MessageHistoryMapPage/>,
     },
     {
         path: "/chat/:conversationId",

@@ -23,6 +23,7 @@ Chat / Speech / Widget / Story / Notification Surface
 - 请求与回复使用 `event_id / reply_to`，不再使用 `isReply`。
 - ChatPage 不再拥有传输协议；页面通过 `emitEvent` 与 `onEvent` 使用事件运行时。
 - 新协议不提供旧 JSON WebSocket 格式的兼容模式。
+- Message History Map 从 Conversation 顶部工具栏进入，以数据库中的 `prevMessage / messages / nextMessage` 关系绘制历史分支树；默认展开当前 active root→leaf 对话路径、其余历史分支保持折叠；点击节点按需展开/读取完整正文并复用聊天 Markdown/cardReplace 渲染真实卡片，搜索自动展开目标路径，支持展开全部/折叠全部以及显式切换历史分支后回到原对话定位。画布支持拖拽平移、滚轮/触控板直接缩放与移动端双指 pinch。
 
 ## 目录
 

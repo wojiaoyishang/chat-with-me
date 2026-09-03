@@ -583,5 +583,6 @@
   "realtime_voice_start": "Start realtime voice conversation",
   "speech_partial_generation_error": "Part of the speech could not be generated. Successfully generated audio will continue playing: {{message}}",
   "execution_guidance_history": "Execution guidance",
-  "execution_guidance_user": "User guidance"
+  "execution_guidance_user": "User guidance",
+  "message_history_map": "Message history map"
 }

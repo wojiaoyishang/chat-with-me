@@ -29,7 +29,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:1256:18315:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:1256:18338:FUNCTION
 
 .. rubric:: ``memo callback @ 23``
 
@@ -48,7 +48,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={msgId} ref={rootRef} data-message-id={msgId} data-message-role={msg?.role || (isMid ? 'system' : (isRight ? 'user' : 'assistant'))} className={\x60flex flex-col w-full ro…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={msgId} ref={rootRef} data-message-id={msgId} data-message-role={msg?.role || (isMid ? 'system' : (isRight ? 'user' : 'assistant'))} className={\x60group/message relative…``。
 
 **副作用**
 
@@ -605,7 +605,7 @@ src/features/chat/ui/message/components/MessageItem 模块
 
 **主要协作调用**：``onSpeechTextClick``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:18316:19328:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageItem.jsx:18339:19351:FUNCTION
 
 .. rubric:: ``memo callback @ 436``
 

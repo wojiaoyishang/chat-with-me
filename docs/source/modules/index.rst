@@ -22,3 +22,10 @@
    turn_admission
    widget_runtime
    runtime_inspector
+
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   message_history_map
