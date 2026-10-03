@@ -903,11 +903,12 @@ function ChatPage({
     const [avatarExpanded, setAvatarExpanded] = useState(false);
     const avatarImmersive = avatarSceneOpen && avatarExpanded;
     const immersiveComposer = useImmersiveComposer({enabled: avatarImmersive, hostRef: chatPageRef});
-    const toggleAvatarScene = useCallback(() => { setAvatarExpanded(false); setAvatarSceneOpen(value => !value); }, []);
+    const toggleAvatarScene = useCallback(() => { setAvatarExpanded(true); setAvatarSceneOpen(value => !value); }, []);
     const toggleAvatarExpanded = useCallback(() => setAvatarExpanded(value => !value), []);
     const closeAvatarScene = useCallback(() => { setAvatarExpanded(false); setAvatarSceneOpen(false); }, []);
 
     const realtimeVoice = useRealtimeVoiceConversation({
+        textInputEnabled: avatarSceneOpen,
         conversationId,
         speechState,
         beginStreamingSpeech,
@@ -918,6 +919,9 @@ function ChatPage({
         resumeActiveSpeech,
         cancelActiveSpeech,
     });
+    useEffect(() => {
+        if (!realtimeVoice.state.open) closeAvatarScene();
+    }, [realtimeVoice.state.open, closeAvatarScene]);
     const realtimeVoiceOpenRef = useRef(false);
     const realtimeVoiceStopRef = useRef(null);
     useEffect(() => {
@@ -3154,8 +3158,6 @@ function ChatPage({
                     data-cwm-conversation-id={conversationId || ''}
                 >
                     <ChatHeader
-                        avatarSceneOpen={avatarSceneOpen}
-                        onToggleAvatarScene={toggleAvatarScene}
                         models={models}
                         selectedModel={selectedModel}
                         isModelPopoverOpen={isModelPopoverOpen}
@@ -3264,6 +3266,11 @@ function ChatPage({
                             inert={avatarImmersive && !immersiveComposer.visible ? true : undefined}
                             className={avatarImmersive ? 'absolute inset-x-0 bottom-0 z-[60] max-h-[80%] overflow-y-auto rounded-t-3xl border-t border-border/50 shadow-[0_-12px_40px_rgba(0,0,0,0.12)] transition-[transform,opacity] duration-200 ease-out bg-background/95 backdrop-blur-md' : 'contents'}
                             style={avatarImmersive ? {transform: immersiveComposer.visible ? 'translateY(0)' : 'translateY(24px)', opacity: immersiveComposer.visible ? 1 : 0, pointerEvents: immersiveComposer.visible ? 'auto' : 'none'} : undefined}>
+                        {avatarImmersive && <div className="flex items-center justify-center gap-2 px-4 pt-3">
+                            <Button variant="destructive" size="sm" onClick={() => { closeAvatarScene(); void realtimeVoice.stop(); }}>挂断</Button>
+                            <Button variant="secondary" size="sm" aria-pressed={realtimeVoice.state.muted} onClick={realtimeVoice.toggleMute}>{realtimeVoice.state.muted ? '取消静音' : '静音'}</Button>
+                            <Button variant="secondary" size="sm" onClick={toggleAvatarExpanded}>窗口化</Button>
+                        </div>}
                         <div
                             ref={setWidgetChatBoxHostElement}
                             data-widget-chatbox-floating-host="true"
@@ -3350,8 +3357,8 @@ function ChatPage({
                 <RealtimeVoiceSurface
                     avatarSceneOpen={avatarSceneOpen}
                     onToggleAvatarScene={() => { toggleAvatarScene(); realtimeVoice.setMinimized(true); }}
-                    state={realtimeVoice.state}
-                    onEnd={() => realtimeVoice.stop()}
+                    state={{...realtimeVoice.state, open: realtimeVoice.state.open && !avatarImmersive}}
+                    onEnd={() => { closeAvatarScene(); void realtimeVoice.stop(); }}
                     onMinimize={() => realtimeVoice.setMinimized(true)}
                     onRestore={() => realtimeVoice.setMinimized(false)}
                     onToggleMute={realtimeVoice.toggleMute}

@@ -23,6 +23,7 @@ const STATUS_LABELS = {
     speaking: '正在说',
     disconnected: '连接已断开',
     error: '连接出现问题',
+    text_input: '文字通话',
     ended: '通话已结束',
 };
 

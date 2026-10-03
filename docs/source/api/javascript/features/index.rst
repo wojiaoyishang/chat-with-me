@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 240
+     - 242
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -451,7 +451,7 @@
    * - :doc:`src/features/chat/voice/useRealtimeVoiceConversation </api/javascript/features/chat/voice/useRealtimeVoiceConversation>`
      - 5
      - 0
-     - 43
+     - 44
      - ``src/features/chat/voice/useRealtimeVoiceConversation.js``
    * - :doc:`src/features/chat/widgets/WidgetPresentationContext </api/javascript/features/chat/widgets/WidgetPresentationContext>`
      - 2

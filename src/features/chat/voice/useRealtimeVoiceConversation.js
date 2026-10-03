@@ -21,6 +21,7 @@ const BARGE_PROBE_TTL_MS = 15000;
 
 const initialState = () => ({
     open: false,
+    outputOnly: false,
     minimized: false,
     status: 'idle',
     profile: null,
@@ -56,6 +57,7 @@ const waitForMicrophoneReady = async (streamer) => {
 
 
 export function useRealtimeVoiceConversation({
+    textInputEnabled = false,
     conversationId,
     speechState,
     beginStreamingSpeech,
@@ -68,6 +70,8 @@ export function useRealtimeVoiceConversation({
 }) {
     const {connectionId: controlConnectionId, isConnected: controlConnected} = useWebSocket() || {};
     const [state, setState] = useState(initialState);
+    const textInputEnabledRef = useRef(textInputEnabled);
+    textInputEnabledRef.current = textInputEnabled;
     const transportRef = useRef(null);
     const streamerRef = useRef(null);
     const lifecycleRef = useRef(0);
@@ -103,6 +107,7 @@ export function useRealtimeVoiceConversation({
 
     const applyComposerStatus = useCallback((status, targetConversationId = null) => {
         if (!VALID_COMPOSER_STATES.has(status)) return;
+        if (status === 'disabled' && textInputEnabledRef.current) status = 'normal';
         emitEvent({
             event: EventName.COMPOSER_STATUS_CHANGED,
             payload: {value: status, readOnly: false, source: 'realtime_voice'},
@@ -271,7 +276,7 @@ export function useRealtimeVoiceConversation({
         beginStreamingSpeech?.({
             messageId,
             turnId,
-            engine: ttsProfile.id || 'browser',
+            engine: ttsProfile.id || currentConfigRef.current?.ttsEngine || 'browser',
             options: ttsProfile.options || {},
         });
         return true;
@@ -327,7 +332,7 @@ export function useRealtimeVoiceConversation({
                     // The transcript was injected into the already-running Task Mode
                     // rather than creating a second durable Turn.  Do not wait for a
                     // terminal event carrying this synthetic voice turn_id.
-                    patchState({status: 'listening'});
+                    patchState({status: voiceStateRef.current?.outputOnly ? 'text_input' : 'listening'});
                     break;
                 }
                 if (envelope.turn_id && !terminalVoiceTurnIdsRef.current.has(envelope.turn_id)) {
@@ -387,10 +392,8 @@ export function useRealtimeVoiceConversation({
                 const message = payload.message || 'Realtime voice error';
                 clearBargeProbe();
                 void stopMedia();
-                cancelStreamingSpeech?.({cancelPlayback: false});
-                cancelActiveSpeech?.(true);
                 if (activeTurnIdsRef.current.size === 0) applyComposerStatus('normal');
-                patchState({error: message, status: 'error'});
+                patchState({error: message, outputOnly: true, status: 'text_input'});
                 toast.error(message);
                 break;
             }
@@ -656,8 +659,10 @@ export function useRealtimeVoiceConversation({
                 ? '实时语音连接超时，请检查后端、ASR 配置或网络后重试。'
                 : (error?.message || '无法启动实时语音');
             await stop({silent: true});
+            if (lifecycleRef.current !== lifecycle + 1) return false;
             applyComposerStatus(config.composerStatus === 'generating' ? 'generating' : 'normal', config.conversationId);
-            setState({...initialState(), open: true, status: 'error', error: message});
+            currentConfigRef.current = config;
+            setState({...initialState(), open: true, minimized: textInputEnabledRef.current, outputOnly: true, status: 'text_input', error: message});
             throw new Error(message, {cause: error});
         }
     }, [
@@ -690,13 +695,10 @@ export function useRealtimeVoiceConversation({
                 if (!messageId) return;
                 startedTurnMessagesRef.current.set(eventTurnId, messageId);
 
-                // The standard chat handler emits turn.started before waiting for
-                // the Celery worker acknowledgement, while voice.turn.committed is
-                // emitted only after that request returns. During an open Voice
-                // Surface, the next Turn started from the ASR-final thinking state
-                // is therefore the earliest reliable point to arm streaming TTS.
+                // Arm voice turns before the worker acknowledgement; also include
+                // typed turns in 3D or output-only mode after capture failed.
                 const expectedVoiceTurn = voiceStateRef.current?.open
-                    && voiceStateRef.current?.status === 'thinking';
+                    && (voiceStateRef.current?.outputOnly || textInputEnabledRef.current || voiceStateRef.current?.status === 'thinking');
                 if (expectedVoiceTurn) activeTurnIdsRef.current.add(eventTurnId);
                 if (activeTurnIdsRef.current.has(eventTurnId)) {
                     armStreamingSpeechForTurn(eventTurnId, messageId);
@@ -707,7 +709,7 @@ export function useRealtimeVoiceConversation({
             if (!activeTurnIdsRef.current.has(eventTurnId)) return;
             // The Worker releases the Composer at turn terminal. A still-open
             // Voice Surface immediately reclaims it until the user ends voice mode.
-            if (voiceStateRef.current?.open) applyComposerStatus('disabled', conversationId);
+            if (voiceStateRef.current?.open) applyComposerStatus(voiceStateRef.current?.outputOnly ? 'normal' : 'disabled', conversationId);
 
             terminalVoiceTurnIdsRef.current.add(eventTurnId);
             const messageId = payload?.messageId || startedTurnMessagesRef.current.get(eventTurnId) || null;
@@ -721,7 +723,7 @@ export function useRealtimeVoiceConversation({
                 // Voice Surface out of the user's current speech/ASR/new-turn phase.
                 if (!['user_speaking', 'understanding', 'thinking'].includes(voiceStateRef.current?.status)) {
                     patchState({
-                        status: isSpeakingState(speechStateRef.current) ? 'speaking' : 'listening',
+                        status: isSpeakingState(speechStateRef.current) ? 'speaking' : (voiceStateRef.current?.outputOnly ? 'text_input' : 'listening'),
                     });
                 }
             } else {
@@ -729,7 +731,7 @@ export function useRealtimeVoiceConversation({
                 // A stale cancellation from the superseded Assistant Turn must not
                 // steal the surface while the user is already speaking/being ASR'd.
                 if (!['user_speaking', 'understanding', 'thinking'].includes(voiceStateRef.current?.status)) {
-                    patchState({status: 'listening'});
+                    patchState({status: voiceStateRef.current?.outputOnly ? 'text_input' : 'listening'});
                 }
             }
 
@@ -760,7 +762,7 @@ export function useRealtimeVoiceConversation({
                     'user_speaking', 'thinking', 'understanding', 'connecting',
                     'negotiating', 'requesting_microphone', 'error',
                 ].includes(current.status)) return current;
-                return {...current, status: 'listening'};
+                return {...current, status: current.outputOnly ? 'text_input' : 'listening'};
             });
         }
     }, [patchState, speechState?.status, state.open]);
@@ -785,6 +787,11 @@ export function useRealtimeVoiceConversation({
             void stop();
         }
     }, [controlConnected, controlConnectionId, state.open, stop]);
+
+    useEffect(() => {
+        if (!state.open) return;
+        applyComposerStatus(activeTurnIdsRef.current.size ? 'generating' : (state.outputOnly || textInputEnabled ? 'normal' : 'disabled'), conversationId);
+    }, [textInputEnabled, state.open, state.outputOnly, applyComposerStatus, conversationId]);
 
     const toggleMute = useCallback(() => {
         const nextMuted = !mutedRef.current;
@@ -820,7 +827,7 @@ export function useRealtimeVoiceConversation({
             status: nextMuted
                 ? (isSpeakingState(speechStateRef.current)
                     ? 'speaking'
-                    : (['thinking', 'understanding'].includes(bargeResumeStatus) ? bargeResumeStatus : 'listening'))
+                    : (['thinking', 'understanding'].includes(bargeResumeStatus) ? bargeResumeStatus : (voiceStateRef.current?.outputOnly ? 'text_input' : 'listening')))
                 : current.status,
         }));
     }, [clearBargeProbe, conversationId, patchState, resumeActiveSpeech]);

@@ -2563,7 +2563,7 @@ function ChatBox({
             <div
                 ref={rootRef}
                 aria-hidden={!immersive && !isSmallScreen && isChatBoxCollapsed ? true : undefined}
-                className="pointer-events-none relative isolate mx-auto flex w-full max-w-225 flex-col overflow-hidden px-4 py-4"
+                className={`pointer-events-none relative isolate mx-auto flex w-full max-w-225 flex-col overflow-hidden px-4 pb-4 ${immersive ? 'pt-4' : 'pt-0'}`}
                 onMouseEnter={handleChatBoxMouseEnter}
                 onMouseLeave={handleChatBoxMouseLeave}
                 style={{
