@@ -1,4 +1,4 @@
-import React, {lazy, Suspense, useMemo, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {
     Activity,
     ChevronDown,
@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import './RealtimeVoiceSurface.css';
 import {Button} from '@/components/ui/button';
-const AvatarScene = lazy(() => import('@/features/avatar-scene/AvatarScene.jsx'));
 
 const STATUS_LABELS = {
     authorizing: '正在准备',
@@ -152,8 +151,7 @@ function MiniVoiceOrb({state}) {
     );
 }
 
-export default function RealtimeVoiceSurface({state, onEnd, onMinimize, onRestore, onToggleMute, requestScene, conversationId}) {
-    const [actionMode, setActionMode] = useState(false);
+export default function RealtimeVoiceSurface({state, onEnd, onMinimize, onRestore, onToggleMute, avatarSceneOpen, onToggleAvatarScene}) {
     const statusLabel = state?.muted
         ? '麦克风已静音'
         : (STATUS_LABELS[state?.status] || state?.status || '实时语音');
@@ -204,7 +202,7 @@ export default function RealtimeVoiceSurface({state, onEnd, onMinimize, onRestor
                         <div className="mt-0.5 max-w-52 truncate text-xs text-slate-400">{summary}</div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
-                        <Button size="sm" variant={actionMode ? "secondary" : "ghost"} disabled={!state.realtimeSessionId || !connectionHealthy} onClick={() => setActionMode(value => !value)} aria-pressed={actionMode} title="实时动作模式">3D</Button>
+                        <Button size="sm" variant={avatarSceneOpen ? "secondary" : "ghost"} onClick={onToggleAvatarScene} aria-pressed={avatarSceneOpen} title="实时动作模式">3D</Button>
                         <ProtocolIndicator profile={state.profile}/>
                         <button
                             type="button"
@@ -218,12 +216,11 @@ export default function RealtimeVoiceSurface({state, onEnd, onMinimize, onRestor
                     </div>
                 </header>
 
-                <main className={`cwm-voice-stage ${actionMode ? "cwm-voice-stage--scene" : ""}`}>
-                    {actionMode && connectionHealthy && state.realtimeSessionId && <Suspense fallback={<p className="p-3 text-center">正在加载场景…</p>}><AvatarScene requestScene={requestScene} conversationId={conversationId} realtimeSessionId={state.realtimeSessionId}/></Suspense>}
+                <main className="cwm-voice-stage">
                     <div className="cwm-voice-stage__ambient" aria-hidden="true"/>
-                    {!actionMode && <div className="cwm-voice-orb-wrap">
+                    <div className="cwm-voice-orb-wrap">
                         <VoiceOrb state={state}/>
-                    </div>}
+                    </div>
 
                     <div className="cwm-voice-status">
                         <h2>{statusLabel}</h2>

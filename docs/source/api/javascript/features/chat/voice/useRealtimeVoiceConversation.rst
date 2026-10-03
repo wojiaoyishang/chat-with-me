@@ -17,7 +17,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 * **模块标识**：``src/features/chat/voice/useRealtimeVoiceConversation``
 * **顶层函数/组件/Hook**：5
 * **类**：0
-* **局部函数与匿名回调**：44
+* **局部函数与匿名回调**：43
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -106,13 +106,13 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:1999:38889:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:1999:38574:FUNCTION
 
 .. js:function:: useRealtimeVoiceConversation({ conversationId, speechState, beginStreamingSpeech, requestStreamingSpeechFinalize, cancelStreamin…)
 
    封装 ``useRealtimeVoiceConversation`` Hook，向调用组件提供相关状态、动作与生命周期清理。
 
-   **性质**：同步函数；导出 API；源码第 ``58``—``842`` 行。
+   **性质**：同步函数；导出 API；源码第 ``58``—``835`` 行。
 
    **参数**
 
@@ -121,7 +121,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{ requestScene, state, start, stop, toggleMute, setMinimized: (minimized) => patchState({minimized}), }``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ state, start, stop, toggleMute, setMinimized: (minimized) => patchState({minimized}), }``。
 
    **副作用**
 
@@ -133,7 +133,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
    **主要协作调用**：``useWebSocket``、``useState``、``useRef``、``useEffect``、``useCallback``。
 
-   **内部回调数量**：21。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：20。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
@@ -1146,37 +1146,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``createSilentWaveformLevels``、``isSpeakingState``、``['thinking', 'understanding'].includes``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:38464:38698:FUNCTION
-
-.. rubric:: ``useCallback callback @ 828``
-
-.. code-block:: javascript
-
-   useCallback callback @ 828(event, payload)
-
-封装 ``Callback`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``828``—``832`` 行；所属函数 ``useRealtimeVoiceConversation``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-``payload``（默认值 ``{}``）
-   事件或业务操作的结构化载荷。
-
-**返回值**
-
-根据执行分支返回结果；代表性返回表达式为 ``Promise.reject(new Error("通话连接已关闭"))``、``transport.request({event, payload, conversationId, timeoutMs: 6000})``。
-
-**副作用**
-
-* 发起 HTTP 请求或访问外部服务。
-
-**主要协作调用**：``Promise.reject``、``transport.request``。
-
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:38840:38879:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:38525:38564:FUNCTION
 
 .. rubric:: ``setMinimized``
 
@@ -1186,7 +1156,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 设置与 ``Minimized`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``840``—``840`` 行；所属函数 ``useRealtimeVoiceConversation``。
+**性质**：同步局部函数；源码第 ``833``—``833`` 行；所属函数 ``useRealtimeVoiceConversation``。
 
 **参数**
 

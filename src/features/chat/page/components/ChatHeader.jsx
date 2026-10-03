@@ -1,5 +1,5 @@
 import React, {memo, useEffect, useMemo, useRef} from 'react';
-import {Bot, Check, ChevronDown, LoaderCircle, Activity, Maximize2, Minimize2, Minus, PanelRight} from 'lucide-react';
+import {Box, Bot, Check, ChevronDown, LoaderCircle, Activity, Maximize2, Minimize2, Minus, PanelRight} from 'lucide-react';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.tsx';
 import {Button} from '@/components/ui/button.tsx';
 import ModelItem from './ModelItem.jsx';
@@ -20,6 +20,8 @@ const ChatHeader = memo(({
                              scrollToSelectedItem,
                              handleSidebarToggle,
                              onOpenRuntimeInspector,
+                             avatarSceneOpen = false,
+                             onToggleAvatarScene,
                              conversationId,
                              runtimeInspectorDisabled = false,
                              isWindowMode,
@@ -184,6 +186,8 @@ const ChatHeader = memo(({
                     t={t}
                     isWindowMode={isWindowMode}
                 />
+
+                <Button variant={avatarSceneOpen ? "secondary" : "ghost"} size="icon" onClick={onToggleAvatarScene} aria-label="3D 动作模式" title="3D 动作模式" aria-pressed={avatarSceneOpen}><Box className="h-5 w-5"/></Button>
 
                 <MessageHistoryMapButton
                     conversationId={conversationId}

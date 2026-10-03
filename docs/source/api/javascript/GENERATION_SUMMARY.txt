@@ -1,5 +1,5 @@
 CWM frontend JavaScript API generation
-modules=211
+modules=212
 groups=9
 failures=0
-function_nodes=4147
+function_nodes=4149

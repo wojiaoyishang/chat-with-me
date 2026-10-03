@@ -26,6 +26,7 @@ import {getVisionAttachmentIds, normalizeAttachmentList} from './attachmentVisio
 import {normalizeRemoteChatModel} from './modelCapabilities.js';
 import {WidgetPresentationProvider} from './widgets/WidgetPresentationContext.jsx';
 import {RealtimeVoiceSurface, useRealtimeVoiceConversation} from './voice/index.js';
+import AvatarScenePanel from '@/features/avatar-scene/AvatarScenePanel.jsx';
 import {useBrowserBackLayer} from '@/lib/browserHistoryLayers.js';
 import {
     getMessageSummaryAppendCursor,
@@ -895,6 +896,9 @@ function ChatPage({
         checkScrollPosition,
         setShowScrollToBottomButton,
     });
+
+    const [avatarSceneOpen, setAvatarSceneOpen] = useState(false);
+    const toggleAvatarScene = useCallback(() => setAvatarSceneOpen(value => !value), []);
 
     const realtimeVoice = useRealtimeVoiceConversation({
         conversationId,
@@ -3143,6 +3147,8 @@ function ChatPage({
                     data-cwm-conversation-id={conversationId || ''}
                 >
                     <ChatHeader
+                        avatarSceneOpen={avatarSceneOpen}
+                        onToggleAvatarScene={toggleAvatarScene}
                         models={models}
                         selectedModel={selectedModel}
                         isModelPopoverOpen={isModelPopoverOpen}
@@ -3320,9 +3326,10 @@ function ChatPage({
                 />
                 <ExecutionHost conversationId={conversationId} messageOrder={messagesOrder} messages={messages}/>
 
+                {avatarSceneOpen && <AvatarScenePanel conversationId={conversationId} onClose={() => setAvatarSceneOpen(false)}/>}
                 <RealtimeVoiceSurface
-                    requestScene={realtimeVoice.requestScene}
-                    conversationId={conversationId}
+                    avatarSceneOpen={avatarSceneOpen}
+                    onToggleAvatarScene={toggleAvatarScene}
                     state={realtimeVoice.state}
                     onEnd={() => realtimeVoice.stop()}
                     onMinimize={() => realtimeVoice.setMinimized(true)}

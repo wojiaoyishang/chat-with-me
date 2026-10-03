@@ -18,3 +18,20 @@ gltf.scene.traverse(object => { if (object.isSkinnedMesh) skinned++; if (object.
 assert(skinned > 0);
 for (const expression of ['Angry', 'Surprised', 'Sad']) assert(expression in expressions);
 console.log('PASS: fresh scene commands, bundled skeleton, animation and expression compatibility');
+
+// Run the panel's actual request callback: disconnected operations must not queue.
+const panel = fs.readFileSync(new URL('../src/features/avatar-scene/AvatarScenePanel.jsx', import.meta.url), 'utf8');
+const start = panel.indexOf('const requestScene = useCallback(async (event, payload = {}) => {');
+const bodyStart = panel.indexOf('=> {', start) + 4;
+const bodyEnd = panel.indexOf('}, [conversationId]);', bodyStart);
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+const invoke = new AsyncFunction('event', 'payload', 'getRealtimeTransport', 'emitEvent', 'conversationId', panel.slice(bodyStart, bodyEnd));
+let sent = 0;
+const emit = async () => { sent++; return {success: true, scope: {sceneSessionId: 'test'}}; };
+await assert.rejects(invoke('avatar.scene.start', {}, () => ({isOpen: false}), emit, 'chat'));
+assert.equal(sent, 0);
+const result = await invoke('avatar.scene.start', {}, () => ({isOpen: true}), emit, 'chat');
+assert.equal(result.payload.scope.sceneSessionId, 'test');
+assert.equal(sent, 1);
+await assert.rejects(invoke('avatar.scene.start', {}, () => ({isOpen: true}), async () => ({success: false, message: 'denied'}), 'chat'));
+console.log('PASS: independent control requests, offline queue bypass and explicit failure');

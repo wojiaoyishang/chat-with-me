@@ -4,18 +4,19 @@ import {onEvent} from '@/context/useEventStore.jsx';
 import {createRobotScene} from './robotScene.js';
 import {acceptSceneCommand} from './commandGate.js';
 
-export default function AvatarScene({requestScene, conversationId, realtimeSessionId}) {
+export default function AvatarScene({requestScene, conversationId}) {
     const container = useRef(null);
     const engine = useRef(null);
     const [catalog, setCatalog] = useState(null);
     const [ready, setReady] = useState(false);
     const [error, setError] = useState('');
     useEffect(() => {
+        setReady(false); setCatalog(null); setError('');
         const abort = new AbortController();
         let scope, heartbeat, unsubscribe, lastSequence = 0;
-        const stop = (binding) => requestScene('voice.scene.stop', {sceneSessionId: binding.sceneSessionId}).catch(() => {});
+        const stop = (binding) => requestScene('avatar.scene.stop', {sceneSessionId: binding.sceneSessionId}).catch(() => {});
         (async () => {
-            const response = await requestScene('voice.scene.catalog');
+            const response = await requestScene('avatar.scene.catalog');
             const manifest = response.payload.catalog;
             if (abort.signal.aborted) return;
             const graphics = await createRobotScene(container.current, manifest, abort.signal);
@@ -28,25 +29,26 @@ export default function AvatarScene({requestScene, conversationId, realtimeSessi
                 let applied = true, detail = '';
                 try { graphics.apply(payload.poseId, payload.expressionId); }
                 catch (failure) { applied = false; detail = failure.message; }
-                requestScene('voice.scene.ack', {sceneSessionId: scope.sceneSessionId, commandId: payload.commandId, applied, error: detail}).catch(() => {});
+                requestScene('avatar.scene.ack', {sceneSessionId: scope.sceneSessionId, commandId: payload.commandId, applied, error: detail}).catch(() => {});
             });
-            const started = await requestScene('voice.scene.start', {version: manifest.version,
+            if (!conversationId) { setReady(true); return; }
+            const started = await requestScene('avatar.scene.start', {version: manifest.version,
                 poses: manifest.poses.map(item => item.id), expressions: manifest.expressions.map(item => item.id)});
             scope = started.payload.scope;
             if (abort.signal.aborted) { await stop(scope); return; }
             setReady(true);
             heartbeat = setInterval(() => {
-                requestScene('voice.scene.renew', {sceneSessionId: scope.sceneSessionId}).catch(failure => {
+                requestScene('avatar.scene.renew', {sceneSessionId: scope.sceneSessionId}).catch(failure => {
                     if (abort.signal.aborted) return;
                     clearInterval(heartbeat); if (scope) stop(scope); scope = null; setReady(false); setError(failure.message || '场景已失效，请重新打开');
                 });
             }, 10000);
         })().catch(failure => { if (!abort.signal.aborted) { setReady(false); setError(failure.message || '场景加载失败'); } });
         return () => { abort.abort(); clearInterval(heartbeat); unsubscribe?.(); if (scope) stop(scope); engine.current?.dispose(); engine.current = null; };
-    }, [requestScene, conversationId, realtimeSessionId]);
+    }, [requestScene, conversationId]);
     return <div className="relative w-full min-w-0">
         <div ref={container} className="h-64 w-full sm:h-80" aria-label="实时机器人 3D 场景"/>
-        <p className="px-3 text-center text-xs text-muted-foreground" role="status">{error || (ready ? '可以让 AI 挥手、点头、跳舞或切换表情' : '正在加载机器人…')}</p>
+        <p className="px-3 text-center text-xs text-muted-foreground" role="status">{error || (ready ? (conversationId ? '可以打字或说话，让 AI 控制动作和表情' : '可预览动作；发送消息创建对话后，AI 就能控制机器人') : '正在加载机器人…')}</p>
         <div className="flex flex-wrap justify-center gap-1 p-2">
             {catalog?.poses.map(pose => <Button key={pose.id} size="sm" variant="outline" disabled={!ready} onClick={() => engine.current?.apply(pose.id, 'neutral')}>{pose.label}</Button>)}
         </div>

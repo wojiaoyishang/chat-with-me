@@ -18,6 +18,11 @@
      - 0
      - 16
      - ``src/features/avatar-scene/AvatarScene.jsx``
+   * - :doc:`src/features/avatar-scene/AvatarScenePanel </api/javascript/features/avatar-scene/AvatarScenePanel>`
+     - 1
+     - 0
+     - 2
+     - ``src/features/avatar-scene/AvatarScenePanel.jsx``
    * - :doc:`src/features/avatar-scene/commandGate </api/javascript/features/avatar-scene/commandGate>`
      - 1
      - 0
@@ -31,7 +36,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 234
+     - 237
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -426,7 +431,7 @@
    * - :doc:`src/features/chat/voice/RealtimeVoiceSurface </api/javascript/features/chat/voice/RealtimeVoiceSurface>`
      - 8
      - 0
-     - 9
+     - 6
      - ``src/features/chat/voice/RealtimeVoiceSurface.jsx``
    * - :doc:`src/features/chat/voice/index </api/javascript/features/chat/voice/index>`
      - 0
@@ -436,7 +441,7 @@
    * - :doc:`src/features/chat/voice/useRealtimeVoiceConversation </api/javascript/features/chat/voice/useRealtimeVoiceConversation>`
      - 5
      - 0
-     - 44
+     - 43
      - ``src/features/chat/voice/useRealtimeVoiceConversation.js``
    * - :doc:`src/features/chat/widgets/WidgetPresentationContext </api/javascript/features/chat/widgets/WidgetPresentationContext>`
      - 2
@@ -589,6 +594,7 @@
    :maxdepth: 1
 
    /api/javascript/features/avatar-scene/AvatarScene
+   /api/javascript/features/avatar-scene/AvatarScenePanel
    /api/javascript/features/avatar-scene/commandGate
    /api/javascript/features/avatar-scene/robotScene
    /api/javascript/features/chat/ChatPage
