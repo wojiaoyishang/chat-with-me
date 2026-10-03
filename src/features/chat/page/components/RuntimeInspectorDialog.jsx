@@ -302,7 +302,7 @@ const ModelCallBrowser = ({section, onLoadModelCall, loadingModelCallId}) => {
     };
 
     if (!selected) {
-        return <EmptyState>这个历史 Assistant 消息没有 Runtime Inspector 模型请求快照。新版本生成的回复会自动记录。</EmptyState>;
+        return <EmptyState>这条消息没有可查看的模型请求记录。</EmptyState>;
     }
 
     const roleCounts = selected?.summary?.roleCounts || {};
@@ -313,7 +313,7 @@ const ModelCallBrowser = ({section, onLoadModelCall, loadingModelCallId}) => {
                 {!detailLoaded ? (
                     <div className="flex min-h-56 items-center justify-center gap-2 rounded-xl border border-dashed text-sm text-muted-foreground">
                         <Loader2 className={`size-4 ${loadingModelCallId === selected.modelCallId ? 'animate-spin' : ''}`}/>
-                        正在按需读取这个 Model Call 的上下文与 Provider Records…
+                        正在加载上下文与请求记录…
                     </div>
                 ) : (<>
                 <section className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -602,7 +602,7 @@ const ToolBrowser = ({section, onLoadToolCall, loadingToolCallId}) => {
                 {!toolDetailLoaded ? (
                     <div className="flex min-h-56 items-center justify-center gap-2 rounded-xl border border-dashed text-sm text-muted-foreground">
                         <Loader2 className={`size-4 ${loadingToolCallId === selected.modelCallId ? 'animate-spin' : ''}`}/>
-                        正在按需读取这个 Model Call 的工具快照…
+                        正在加载工具记录…
                     </div>
                 ) : (<>
                 <section className="flex flex-wrap gap-2">
@@ -740,7 +740,7 @@ const RuntimeSectionRenderer = ({
     if (section?.loaded === false) {
         return (
             <div className="flex h-full min-h-44 items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin"/>正在按需读取当前 Inspector 页面…
+                <Loader2 className="size-4 animate-spin"/>正在加载…
             </div>
         );
     }
@@ -834,7 +834,7 @@ const RuntimeInspectorDialog = memo(({
                 </DialogHeader>
 
                 {loading && !document ? (
-                    <div className="flex min-h-0 flex-1 items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-5 animate-spin"/>正在从后端构建 Runtime Inspector…</div>
+                    <div className="flex min-h-0 flex-1 items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-5 animate-spin"/>正在加载运行记录…</div>
                 ) : error && !document ? (
                     <div className="m-4 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{error}</div>
                 ) : (
