@@ -466,13 +466,23 @@
    * - :doc:`src/features/message-map/MessageHistoryMapPage </api/javascript/features/message-map/MessageHistoryMapPage>`
      - 6
      - 0
-     - 118
+     - 101
      - ``src/features/message-map/MessageHistoryMapPage.jsx``
+   * - :doc:`src/features/message-map/MessageMapSearch </api/javascript/features/message-map/MessageMapSearch>`
+     - 2
+     - 0
+     - 24
+     - ``src/features/message-map/MessageMapSearch.jsx``
    * - :doc:`src/features/message-map/messageMapLayout.worker </api/javascript/features/message-map/messageMapLayout.worker>`
      - 2
      - 0
      - 9
      - ``src/features/message-map/messageMapLayout.worker.js``
+   * - :doc:`src/features/message-map/useMessageMapSearch </api/javascript/features/message-map/useMessageMapSearch>`
+     - 1
+     - 0
+     - 8
+     - ``src/features/message-map/useMessageMapSearch.js``
    * - :doc:`src/features/notification/NotificationHost </api/javascript/features/notification/NotificationHost>`
      - 4
      - 0
@@ -654,7 +664,9 @@
    /api/javascript/features/execution/useExecutionStore
    /api/javascript/features/message-map/MessageHistoryMapButton
    /api/javascript/features/message-map/MessageHistoryMapPage
+   /api/javascript/features/message-map/MessageMapSearch
    /api/javascript/features/message-map/messageMapLayout.worker
+   /api/javascript/features/message-map/useMessageMapSearch
    /api/javascript/features/notification/NotificationHost
    /api/javascript/features/notification/NotificationSettings
    /api/javascript/features/notification/NotificationToast

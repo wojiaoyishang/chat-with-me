@@ -5,7 +5,6 @@ import {
     Bot,
     ChevronDown,
     ChevronRight,
-    ChevronUp,
     CircleUserRound,
     CornerUpLeft,
     Loader2,
@@ -13,7 +12,6 @@ import {
     Map as MapIcon,
     Maximize,
     RefreshCw,
-    Search,
     X,
     ZoomIn,
     ZoomOut,
@@ -23,7 +21,7 @@ import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import {Button} from '@/components/ui/button';
 import {Badge} from '@/components/ui/badge';
-import {Input} from '@/components/ui/input';
+import MessageMapSearch from './MessageMapSearch.jsx';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 
 const VIEWPORT_BUFFER = 520;
@@ -83,12 +81,6 @@ const MessageHistoryMapPage = () => {
     const [focusedMessageId, setFocusedMessageId] = useState(initialFocusId || null);
     const [detail, setDetail] = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
-    const [query, setQuery] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
-    const [searchTotal, setSearchTotal] = useState(0);
-    const [searchLoading, setSearchLoading] = useState(false);
-    const [searchIndex, setSearchIndex] = useState(0);
-    const [searchPage, setSearchPage] = useState(0);
     const [nodeOffsets, setNodeOffsets] = useState({});
     const [viewportSize, setViewportSize] = useState({width: 0, height: 0});
     const [viewTransform, setViewTransform] = useState({x: 0, y: 0, scale: 1});
@@ -100,7 +92,6 @@ const MessageHistoryMapPage = () => {
     const layoutWorkerRef = useRef(null);
     const mapAbortRef = useRef(null);
     const detailAbortRef = useRef(null);
-    const searchAbortRef = useRef(null);
     const detailCacheRef = useRef(new Map());
     const initialLocationHandledRef = useRef(false);
     const viewTransformRef = useRef(viewTransform);
@@ -166,7 +157,6 @@ const MessageHistoryMapPage = () => {
         setFocusedMessageId(initialFocusId || null);
         setExpandedMessageIds(new Set());
         setNodeOffsets({});
-        setSearchPage(0);
         pendingLocateRef.current = null;
         fitAfterLayoutRef.current = false;
         void loadMap();
@@ -655,56 +645,12 @@ const MessageHistoryMapPage = () => {
 
     useEffect(() => () => window.clearTimeout(nodeHoldRef.current?.timer), []);
 
-    useEffect(() => {
-        const normalized = query.trim();
-        searchAbortRef.current?.abort();
-        if (normalized.length < 2) {
-            setSearchResults([]);
-            setSearchTotal(0);
-            setSearchIndex(0);
-            setSearchLoading(false);
-            return undefined;
-        }
-
-        const timer = window.setTimeout(() => {
-            const controller = new AbortController();
-            searchAbortRef.current = controller;
-            setSearchLoading(true);
-            apiClient.get(apiEndpoint.CHAT_MESSAGE_MAP_SEARCH_ENDPOINT, {
-                params: {conversationId, q: normalized, limit: 50, offset: searchPage * 50},
-                signal: controller.signal,
-            }).then((data) => {
-                if (controller.signal.aborted) return;
-                setSearchResults(data.items || []);
-                setSearchTotal(Number(data.total || 0));
-                setSearchIndex(0);
-            }).catch((error) => {
-                if (error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED') return;
-                toast.error(error?.message || '搜索消息失败');
-            }).finally(() => {
-                if (searchAbortRef.current === controller) {
-                    searchAbortRef.current = null;
-                    setSearchLoading(false);
-                }
-            });
-        }, 260);
-
-        return () => {
-            window.clearTimeout(timer);
-            searchAbortRef.current?.abort();
-        };
-    }, [conversationId, query, searchPage]);
-
-    const activateSearchResult = useCallback((index) => {
-        if (!searchResults.length) return;
-        const normalizedIndex = (index + searchResults.length) % searchResults.length;
-        setSearchIndex(normalizedIndex);
-        const item = searchResults[normalizedIndex];
+    const selectSearchResult = useCallback((item) => {
         if (!revealMessageBranch(item.messageId, {select: true, expandTarget: false})) {
             setSelectedMessageId(item.messageId);
             toast.info('已打开完整消息；该消息超出地图绘制范围');
         }
-    }, [revealMessageBranch, searchResults]);
+    }, [revealMessageBranch]);
 
     const openMessageInConversation = useCallback((messageId) => {
         const targetId = String(messageId || '').trim();
@@ -855,7 +801,7 @@ const MessageHistoryMapPage = () => {
 
     return (
         <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
-            <header className="relative z-30 flex min-h-16 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur">
+            <header className="relative z-30 flex min-h-16 flex-wrap items-center gap-2 border-b bg-background/95 px-3 py-2 backdrop-blur sm:gap-3 sm:px-4">
                 <Button type="button" variant="ghost" size="icon" onClick={() => navigate(`/chat/${encodeURIComponent(conversationId || '')}`)} title="返回对话">
                     <ArrowLeft/>
                 </Button>
@@ -864,61 +810,12 @@ const MessageHistoryMapPage = () => {
                         <MapIcon className="size-4 shrink-0"/>
                         <h1 className="truncate text-sm font-semibold">消息历史地图</h1>
                     </div>
-                    <p className="max-w-[34vw] truncate text-xs text-muted-foreground">{mapData.conversationTitle || conversationId}</p>
+                    <p className="max-w-[60vw] truncate sm:max-w-[34vw] text-xs text-muted-foreground">{mapData.conversationTitle || conversationId}</p>
                 </div>
 
-                <div className="relative mx-auto w-full max-w-2xl">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"/>
-                    <Input
-                        value={query}
-                        onChange={event => { setQuery(event.target.value); setSearchPage(0); setSearchResults([]); }}
-                        onKeyDown={(event) => {
-                            if (event.key !== 'Enter' || !searchResults.length) return;
-                            event.preventDefault();
-                            activateSearchResult(searchIndex + (event.shiftKey ? -1 : 1));
-                        }}
-                        placeholder="搜索所有历史消息…"
-                        className="pl-9 pr-28"
-                    />
-                    <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1 text-xs text-muted-foreground">
-                        {searchLoading && <Loader2 className="size-3.5 animate-spin"/>}
-                        {query.trim().length >= 2 && <span>{searchResults.length ? `${searchPage * 50 + searchIndex + 1} / ${searchTotal}` : `0 / ${searchTotal}`}</span>}
-                        <button type="button" className="rounded p-1 hover:bg-accent" onClick={() => activateSearchResult(searchIndex - 1)} disabled={!searchResults.length}><ChevronUp className="size-3.5"/></button>
-                        <button type="button" className="rounded p-1 hover:bg-accent" onClick={() => activateSearchResult(searchIndex + 1)} disabled={!searchResults.length}><ChevronDown className="size-3.5"/></button>
-                        {query && <button type="button" className="rounded p-1 hover:bg-accent" onClick={() => setQuery('')}><X className="size-3.5"/></button>}
-                    </div>
-                    {query.trim().length >= 2 && searchResults.length > 0 && (
-                        <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] max-h-80 overflow-y-auto rounded-xl border bg-popover p-1 shadow-xl">
-                            {searchResults.map((item, index) => {
-                                const meta = roleMeta[item.role] || roleMeta.assistant;
-                                const Icon = meta.Icon;
-                                return (
-                                    <button
-                                        type="button"
-                                        key={item.messageId}
-                                        onClick={() => {
-                                            activateSearchResult(index);
-                                        }}
-                                        className={`flex w-full items-start gap-2 rounded-lg px-3 py-2 text-left hover:bg-accent ${index === searchIndex ? 'bg-accent/70' : ''}`}
-                                    >
-                                        <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground"/>
-                                        <span className="min-w-0 flex-1">
-                                            <span className="line-clamp-2 text-sm">{item.preview}</span>
-                                            <span className="mt-1 block text-xs text-muted-foreground">{item.isActivePath ? '当前分支' : '历史分支'} · {formatTime(item.createdAt)}</span>
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                            <div data-message-map-control="true" className="flex items-center justify-between border-t p-2">
-                                <Button variant="outline" size="sm" disabled={searchLoading || searchPage === 0} onClick={() => { setSearchResults([]); setSearchPage(page => page - 1); }}>上一页</Button>
-                                <span className="text-xs text-muted-foreground">第 {searchPage + 1} / {Math.max(1, Math.ceil(searchTotal / 50))} 页 · 共 {searchTotal} 条</span>
-                                <Button variant="outline" size="sm" disabled={searchLoading || (searchPage + 1) * 50 >= searchTotal} onClick={() => { setSearchResults([]); setSearchPage(page => page + 1); }}>下一页</Button>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <MessageMapSearch key={conversationId} conversationId={conversationId} onSelect={selectSearchResult}/>
 
-                <div className="ml-auto flex shrink-0 items-center gap-2">
+                <div className="order-4 ml-auto flex w-full shrink-0 items-center gap-2 overflow-x-auto pb-1 sm:order-none sm:w-auto sm:pb-0">
                     <Badge variant="outline">{displayedNodes.length} / {mapData.nodeCount} 条消息</Badge>
                     <Button type="button" variant="outline" size="sm" onClick={expandAllBranches} disabled={!mapData.nodeCount}>
                         展开全部

@@ -118,32 +118,32 @@ src/components/ui/dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:1951:3453:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:1951:3530:FUNCTION
 
-.. js:function:: DialogContent({ className, children, showCloseButton = true, ...props })
+.. js:function:: DialogContent({ className, children, showCloseButton = true, overlayClassName, ...props })
 
    渲染 ``DialogContent`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``73``—``105`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``73``—``107`` 行。
 
    **参数**
 
-   ``{ className, children, showCloseButton = true, ...props }``（类型 ``React.ComponentProps<typeof DialogPrimitive.Content> & { showCloseButton?: boolean }``）
-      调用方传入的 ``className, children, showCloseButton = true, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ className, children, showCloseButton = true, overlayClassName, ...props }``（类型 ``React.ComponentProps<typeof DialogPrimitive.Content> & { showCloseButton?: boolean overlayClassName?: string }``）
+      调用方传入的 ``className, children, showCloseButton = true, overlayClassName, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <DialogPortal data-slot="dialog-portal"> <DialogOverlay /> <DialogPrimitive.Content data-slot="dialog-content" className={cn( "bg-background data-[state=open]:animate-in data-[s…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <DialogPortal data-slot="dialog-portal"> <DialogOverlay className={overlayClassName} /> <DialogPrimitive.Content data-slot="dialog-content" className={cn( "bg-background data-[s…``。
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:3453:3694:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:3530:3771:FUNCTION
 
 .. js:function:: DialogHeader({ className, ...props })
 
    渲染 ``DialogHeader`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``107``—``115`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``109``—``117`` 行。
 
    **参数**
 
@@ -156,13 +156,13 @@ src/components/ui/dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:3694:4234:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:3771:4311:FUNCTION
 
 .. js:function:: DialogFooter({ className, showCloseButton = false, children, ...props })
 
    渲染 ``DialogFooter`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``117``—``142`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``119``—``144`` 行。
 
    **参数**
 
@@ -175,13 +175,13 @@ src/components/ui/dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:4234:4508:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:4311:4585:FUNCTION
 
 .. js:function:: DialogTitle({ className, ...props })
 
    渲染 ``DialogTitle`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``144``—``155`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``146``—``157`` 行。
 
    **参数**
 
@@ -194,13 +194,13 @@ src/components/ui/dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:4508:4801:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:4585:4878:FUNCTION
 
 .. js:function:: DialogDescription({ className, ...props })
 
    渲染 ``DialogDescription`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``157``—``168`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``159``—``170`` 行。
 
    **参数**
 
