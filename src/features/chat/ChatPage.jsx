@@ -3321,6 +3321,8 @@ function ChatPage({
                 <ExecutionHost conversationId={conversationId} messageOrder={messagesOrder} messages={messages}/>
 
                 <RealtimeVoiceSurface
+                    requestScene={realtimeVoice.requestScene}
+                    conversationId={conversationId}
                     state={realtimeVoice.state}
                     onEnd={() => realtimeVoice.stop()}
                     onMinimize={() => realtimeVoice.setMinimized(true)}

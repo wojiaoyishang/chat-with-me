@@ -825,7 +825,14 @@ export function useRealtimeVoiceConversation({
         }));
     }, [clearBargeProbe, conversationId, patchState, resumeActiveSpeech]);
 
+    const requestScene = useCallback((event, payload = {}) => {
+        const transport = transportRef.current;
+        if (!transport) return Promise.reject(new Error("通话连接已关闭"));
+        return transport.request({event, payload, conversationId, timeoutMs: 6000});
+    }, [conversationId]);
+
     return {
+        requestScene,
         state,
         start,
         stop,

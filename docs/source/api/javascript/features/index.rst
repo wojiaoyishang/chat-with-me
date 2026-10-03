@@ -13,6 +13,21 @@
      - 方法
      - 局部/回调
      - 源码
+   * - :doc:`src/features/avatar-scene/AvatarScene </api/javascript/features/avatar-scene/AvatarScene>`
+     - 1
+     - 0
+     - 16
+     - ``src/features/avatar-scene/AvatarScene.jsx``
+   * - :doc:`src/features/avatar-scene/commandGate </api/javascript/features/avatar-scene/commandGate>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/avatar-scene/commandGate.js``
+   * - :doc:`src/features/avatar-scene/robotScene </api/javascript/features/avatar-scene/robotScene>`
+     - 1
+     - 0
+     - 18
+     - ``src/features/avatar-scene/robotScene.js``
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
@@ -411,7 +426,7 @@
    * - :doc:`src/features/chat/voice/RealtimeVoiceSurface </api/javascript/features/chat/voice/RealtimeVoiceSurface>`
      - 8
      - 0
-     - 6
+     - 9
      - ``src/features/chat/voice/RealtimeVoiceSurface.jsx``
    * - :doc:`src/features/chat/voice/index </api/javascript/features/chat/voice/index>`
      - 0
@@ -421,7 +436,7 @@
    * - :doc:`src/features/chat/voice/useRealtimeVoiceConversation </api/javascript/features/chat/voice/useRealtimeVoiceConversation>`
      - 5
      - 0
-     - 43
+     - 44
      - ``src/features/chat/voice/useRealtimeVoiceConversation.js``
    * - :doc:`src/features/chat/widgets/WidgetPresentationContext </api/javascript/features/chat/widgets/WidgetPresentationContext>`
      - 2
@@ -573,6 +588,9 @@
    :hidden:
    :maxdepth: 1
 
+   /api/javascript/features/avatar-scene/AvatarScene
+   /api/javascript/features/avatar-scene/commandGate
+   /api/javascript/features/avatar-scene/robotScene
    /api/javascript/features/chat/ChatPage
    /api/javascript/features/chat/attachmentVision
    /api/javascript/features/chat/composer/draftStore

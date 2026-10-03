@@ -275,13 +275,13 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:5232:150525:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:5232:150639:FUNCTION
 
 .. js:function:: ChatPage({ conversationId, documentId, pageType, onNewConversationId, showWindowButton = true, showMinimizeB…)
 
    渲染 ``ChatPage`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``154``—``3419`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``154``—``3421`` 行。
 
    **参数**
 
@@ -5726,59 +5726,15 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:146929:146955:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:147043:147069:FUNCTION
 
-.. rubric:: ``onEnd callback @ 3325``
+.. rubric:: ``onEnd callback @ 3327``
 
 .. code-block:: javascript
 
-   onEnd callback @ 3325()
+   onEnd callback @ 3327()
 
 处理 ``End`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``3325``—``3325`` 行；所属函数 ``ChatPage``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``realtimeVoice.stop``。
-
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:146989:147027:FUNCTION
-
-.. rubric:: ``onMinimize callback @ 3326``
-
-.. code-block:: javascript
-
-   onMinimize callback @ 3326()
-
-处理 ``Minimize`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``3326``—``3326`` 行；所属函数 ``ChatPage``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``realtimeVoice.setMinimized``。
-
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:147060:147099:FUNCTION
-
-.. rubric:: ``onRestore callback @ 3327``
-
-.. code-block:: javascript
-
-   onRestore callback @ 3327()
-
-处理 ``Restore`` 用户交互或运行时事件。
 
 **性质**：同步局部函数；源码第 ``3327``—``3327`` 行；所属函数 ``ChatPage``。
 
@@ -5790,19 +5746,63 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``realtimeVoice.setMinimized``。
+**主要协作调用**：``realtimeVoice.stop``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:147601:147750:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:147103:147141:FUNCTION
 
-.. rubric:: ``onSettingChange callback @ 3338``
+.. rubric:: ``onMinimize callback @ 3328``
 
 .. code-block:: javascript
 
-   onSettingChange callback @ 3338(values)
+   onMinimize callback @ 3328()
+
+处理 ``Minimize`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``3328``—``3328`` 行；所属函数 ``ChatPage``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``realtimeVoice.setMinimized``。
+
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:147174:147213:FUNCTION
+
+.. rubric:: ``onRestore callback @ 3329``
+
+.. code-block:: javascript
+
+   onRestore callback @ 3329()
+
+处理 ``Restore`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``3329``—``3329`` 行；所属函数 ``ChatPage``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``realtimeVoice.setMinimized``。
+
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:147715:147864:FUNCTION
+
+.. rubric:: ``onSettingChange callback @ 3340``
+
+.. code-block:: javascript
+
+   onSettingChange callback @ 3340(values)
 
 处理 ``Setting Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3338``—``3341`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3340``—``3343`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5815,17 +5815,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setAdvancedSettingsValues``、``setInitialSettingValues``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:148595:148706:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:148709:148820:FUNCTION
 
-.. rubric:: ``onClose callback @ 3367``
+.. rubric:: ``onClose callback @ 3369``
 
 .. code-block:: javascript
 
-   onClose callback @ 3367()
+   onClose callback @ 3369()
 
 处理 ``Close`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3367``—``3370`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3369``—``3372`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5837,17 +5837,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``stopStorySpeech``、``setStoryReaderOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:149107:149293:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:149221:149407:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 3381``
+.. rubric:: ``onOpenChange callback @ 3383``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 3381(open)
+   onOpenChange callback @ 3383(open)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3381``—``3387`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3383``—``3389`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5860,17 +5860,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setShowDeleteConfirm``、``setPendingDeleteMsgId``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:149565:150446:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:149679:150560:FUNCTION
 
-.. rubric:: ``onConfirm callback @ 3393``
+.. rubric:: ``onConfirm callback @ 3395``
 
 .. code-block:: javascript
 
-   onConfirm callback @ 3393()
+   onConfirm callback @ 3395()
 
 处理 ``Confirm`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3393``—``3414`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3395``—``3416`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5884,17 +5884,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:149996:150099:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:150110:150213:FUNCTION
 
-.. rubric:: ``apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId, {params: {conversationId: conversationI… callback @ 3404``
+.. rubric:: ``apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId, {params: {conversationId: conversationI… callback @ 3406``
 
 .. code-block:: javascript
 
-   apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId, {params: {conversationId: conversationI… callback @ 3404()
+   apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId, {params: {conversationId: conversationI… callback @ 3406()
 
 实现 ``apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId, {params: {conversationId: conversationI…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``3404``—``3406`` 行；所属函数 ``onConfirm callback @ 3393``。
+**性质**：同步局部函数；源码第 ``3406``—``3408`` 行；所属函数 ``onConfirm callback @ 3395``。
 
 **参数**
 
@@ -5906,17 +5906,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``deleteMessageLocally``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:150132:150279:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:150246:150393:FUNCTION
 
-.. rubric:: ``apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId, {params: {conversationId: conversationI… callback @ 3407``
+.. rubric:: ``apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId, {params: {conversationId: conversationI… callback @ 3409``
 
 .. code-block:: javascript
 
-   apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId, {params: {conversationId: conversationI… callback @ 3407(error)
+   apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId, {params: {conversationId: conversationI… callback @ 3409(error)
 
 实现 ``apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId, {params: {conversationId: conversationI…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``3407``—``3409`` 行；所属函数 ``onConfirm callback @ 3393``。
+**性质**：同步局部函数；源码第 ``3409``—``3411`` 行；所属函数 ``onConfirm callback @ 3395``。
 
 **参数**
 

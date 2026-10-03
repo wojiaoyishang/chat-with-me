@@ -632,3 +632,7 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+.cwm-voice-stage--scene { overflow-y: auto; justify-content: flex-start; padding: .5rem; }
+.cwm-voice-stage--scene .cwm-voice-transcript { min-height: 0; margin-top: .5rem; }
+.cwm-voice-stage--scene .cwm-voice-status { min-height: 0; }
