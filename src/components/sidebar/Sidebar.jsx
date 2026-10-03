@@ -85,27 +85,6 @@ const Sidebar = ({
         return true;
     }, {kind: 'mobile-main-sidebar'});
 
-    // 移动端滑动
-    useEffect(() => {
-        if (!isMobile) return;
-        let startX = 0, startY = 0;
-        const handleTouchStart = (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; };
-        const handleTouchEnd = (e) => {
-            const endX = e.changedTouches[0].clientX;
-            const deltaX = endX - startX;
-            const deltaY = Math.abs(e.changedTouches[0].clientY - startY);
-            if (deltaY > 50) return;
-            if (!isOpen && deltaX > 30 && startX < 150) handleSetIsOpen(true);
-            else if (isOpen && deltaX < -30) handleSetIsOpen(false);
-        };
-        window.addEventListener('touchstart', handleTouchStart);
-        window.addEventListener('touchend', handleTouchEnd);
-        return () => {
-            window.removeEventListener('touchstart', handleTouchStart);
-            window.removeEventListener('touchend', handleTouchEnd);
-        };
-    }, [isOpen, isMobile]);
-
     // 事件监听（保持不变）
     useEffect(() => {
         const unsubscribe = onEvent({event: 'sidebar.*'}).then(({event, payload, eventConversationId}) => {

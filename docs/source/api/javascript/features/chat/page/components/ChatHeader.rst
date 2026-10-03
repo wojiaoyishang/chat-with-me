@@ -29,7 +29,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:605:11327:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:605:11499:FUNCTION
 
 .. rubric:: ``memo callback @ 10``
 
@@ -48,7 +48,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <header className="relative w-full bg-white flex items-center justify-between p-4 h-14"> <Popover open={isAgentSession ? false : isModelPopoverOpen} onOpenChange={isAgentSession…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <header className="relative w-full min-w-0 bg-white flex items-center justify-between gap-2 px-2 py-4 sm:px-4 h-14"> <Popover open={isAgentSession ? false : isModelPopoverOpen}…``。
 
 **主要协作调用**：``useRef``、``Number``、``String(contextCompactionState?.status || '').toLowerCase``、``String``、``['planning', 'compressing', 'committing'].includes``、``useEffect``、``useMemo``、``t``。
 

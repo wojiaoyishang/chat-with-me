@@ -211,7 +211,7 @@
    * - :doc:`src/components/sidebar/Sidebar </api/javascript/components/sidebar/Sidebar>`
      - 1
      - 0
-     - 27
+     - 23
      - ``src/components/sidebar/Sidebar.jsx``
    * - :doc:`src/components/sidebar/sidebarRegistry </api/javascript/components/sidebar/sidebarRegistry>`
      - 2

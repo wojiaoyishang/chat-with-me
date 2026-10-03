@@ -83,7 +83,7 @@ const ChatHeader = memo(({
     }, [models, isMobile, handleModelItemClick, handleModelItemMouseEnter, selectedModel, t]);
 
     return (
-        <header className="relative w-full bg-white flex items-center justify-between p-4 h-14">
+        <header className="relative w-full min-w-0 bg-white flex items-center justify-between gap-2 px-2 py-4 sm:px-4 h-14">
             <Popover
                 open={isAgentSession ? false : isModelPopoverOpen}
                 onOpenChange={isAgentSession ? undefined : handlePopoverOpenChange}
@@ -92,12 +92,12 @@ const ChatHeader = memo(({
                     <Button
                         variant="ghost"
                         disabled={isAgentSession}
-                        className={`justify-start px-0 hover:bg-transparent text-lg ${
+                        className={`min-w-0 flex-1 overflow-hidden justify-start px-0 hover:bg-transparent text-lg ${
                             isAgentSession ? 'cursor-default disabled:opacity-100' : 'cursor-pointer'
                         }`}
                     >
-                        <span className="flex min-w-0 items-center gap-2">
-                            <span className="min-w-0">
+                        <span className="flex min-w-0 flex-1 items-center gap-2">
+                            <span className="min-w-0 flex-1" title={isAgentSession ? agentSessionName : selectedModel?.name}>
                                 <span className="block truncate">
                                     {isAgentSession
                                         ? (agentSessionName || '复杂子智能体')
@@ -118,7 +118,7 @@ const ChatHeader = memo(({
                         </span>
                         {!isAgentSession && (
                             <ChevronDown
-                                className={`ml-2 h-4 w-4 transition-transform duration-200 ${isModelPopoverOpen ? 'rotate-180' : ''}`}/>
+                                className={`ml-2 h-4 w-4 shrink-0 transition-transform duration-200 ${isModelPopoverOpen ? 'rotate-180' : ''}`}/>
                         )}
                     </Button>
                 </PopoverTrigger>
@@ -175,7 +175,7 @@ const ChatHeader = memo(({
                 </div>
             )}
 
-            <div className="flex items-center gap-2">
+            <div className="ml-auto flex shrink-0 items-center gap-0 sm:gap-2">
                 <StorySelectorButton
                     stories={stories}
                     onOpenStory={onOpenStory}
