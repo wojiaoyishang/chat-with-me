@@ -26,7 +26,7 @@
    * - :doc:`src/pages/DashboardPage </api/javascript/pages/DashboardPage>`
      - 2
      - 0
-     - 22
+     - 23
      - ``src/pages/DashboardPage.jsx``
    * - :doc:`src/pages/DocEditorHome </api/javascript/pages/DocEditorHome>`
      - 3

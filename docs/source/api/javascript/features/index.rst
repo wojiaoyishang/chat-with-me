@@ -466,7 +466,7 @@
    * - :doc:`src/features/message-map/MessageHistoryMapPage </api/javascript/features/message-map/MessageHistoryMapPage>`
      - 6
      - 0
-     - 101
+     - 118
      - ``src/features/message-map/MessageHistoryMapPage.jsx``
    * - :doc:`src/features/message-map/messageMapLayout.worker </api/javascript/features/message-map/messageMapLayout.worker>`
      - 2

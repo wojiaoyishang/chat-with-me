@@ -33,6 +33,7 @@ const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 2.5;
 const ZOOM_BUTTON_FACTOR = 1.18;
 const FIT_PADDING = 72;
+const NODE_HOLD_DELAY_MS = 400;
 
 const roleMeta = {
     user: {label: 'User', Icon: CircleUserRound},
@@ -87,6 +88,8 @@ const MessageHistoryMapPage = () => {
     const [searchTotal, setSearchTotal] = useState(0);
     const [searchLoading, setSearchLoading] = useState(false);
     const [searchIndex, setSearchIndex] = useState(0);
+    const [searchPage, setSearchPage] = useState(0);
+    const [nodeOffsets, setNodeOffsets] = useState({});
     const [viewportSize, setViewportSize] = useState({width: 0, height: 0});
     const [viewTransform, setViewTransform] = useState({x: 0, y: 0, scale: 1});
     const [isCanvasDragging, setIsCanvasDragging] = useState(false);
@@ -105,6 +108,8 @@ const MessageHistoryMapPage = () => {
     const pendingTransformRef = useRef(null);
     const activePointersRef = useRef(new Map());
     const gestureRef = useRef(null);
+    const nodeHoldRef = useRef(null);
+    const latestRequestedRef = useRef(false);
     const suppressNodeClickUntilRef = useRef(0);
     const pendingLocateRef = useRef(null);
     const fitAfterLayoutRef = useRef(false);
@@ -144,6 +149,7 @@ const MessageHistoryMapPage = () => {
             });
             setMapData(data);
         } catch (error) {
+            latestRequestedRef.current = false;
             if (error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED') return;
             setLoadError(error?.message || '无法加载消息历史地图');
         } finally {
@@ -159,15 +165,26 @@ const MessageHistoryMapPage = () => {
         setSelectedMessageId(initialFocusId || null);
         setFocusedMessageId(initialFocusId || null);
         setExpandedMessageIds(new Set());
+        setNodeOffsets({});
+        setSearchPage(0);
         pendingLocateRef.current = null;
         fitAfterLayoutRef.current = false;
         void loadMap();
         return () => mapAbortRef.current?.abort();
     }, [initialFocusId, loadMap]);
 
-    const positionById = useMemo(() => new Map(
+    const layoutPositionById = useMemo(() => new Map(
         (layout?.positions || []).map(position => [String(position.messageId), position]),
     ), [layout]);
+    // Resolve offsets only for visible nodes and their edges, not every node on each drag.
+    const positionById = useMemo(() => ({
+        has: messageId => layoutPositionById.has(messageId),
+        get: messageId => {
+            const point = layoutPositionById.get(messageId);
+            const offset = nodeOffsets[messageId];
+            return point && offset ? {...point, x: point.x + offset.x, y: point.y + offset.y} : point;
+        },
+    }), [layoutPositionById, nodeOffsets]);
     const nodeById = useMemo(() => new Map(
         (mapData?.nodes || []).map(node => [String(node.messageId), node]),
     ), [mapData]);
@@ -284,6 +301,12 @@ const MessageHistoryMapPage = () => {
         pendingLocateRef.current = {messageId: targetId, select};
         return true;
     }, [childrenByParent, nodeById]);
+
+    useEffect(() => {
+        if (!latestRequestedRef.current || !mapData) return;
+        latestRequestedRef.current = false;
+        revealMessageBranch(mapData.activeLeafMessageId, {select: true, expandTarget: false});
+    }, [mapData, revealMessageBranch]);
 
     const expandAllBranches = useCallback(() => {
         setExpandedMessageIds(new Set(
@@ -457,6 +480,8 @@ const MessageHistoryMapPage = () => {
         if (event.pointerType === 'touch') {
             activePointersRef.current.set(event.pointerId, {x: event.clientX, y: event.clientY});
             if (activePointersRef.current.size >= 2) {
+                window.clearTimeout(nodeHoldRef.current?.timer);
+                nodeHoldRef.current = null;
                 activePointersRef.current.forEach((_, pointerId) => {
                     try {
                         element.setPointerCapture(pointerId);
@@ -508,6 +533,24 @@ const MessageHistoryMapPage = () => {
     }, [beginPinchGesture]);
 
     const handleCanvasPointerMove = useCallback((event) => {
+        const hold = nodeHoldRef.current;
+        if (hold?.pointerId === event.pointerId) {
+            const dx = event.clientX - hold.startX;
+            const dy = event.clientY - hold.startY;
+            if (hold.dragging) {
+                setNodeOffsets(previous => ({...previous, [hold.messageId]: {
+                    x: hold.offset.x + dx / viewTransformRef.current.scale,
+                    y: hold.offset.y + dy / viewTransformRef.current.scale,
+                }}));
+                suppressNodeClickUntilRef.current = Date.now() + 350;
+                event.preventDefault();
+                return;
+            }
+            if (Math.hypot(dx, dy) > 6) {
+                window.clearTimeout(hold.timer);
+                nodeHoldRef.current = null;
+            }
+        }
         if (event.pointerType === 'touch' && activePointersRef.current.has(event.pointerId)) {
             activePointersRef.current.set(event.pointerId, {x: event.clientX, y: event.clientY});
             if (activePointersRef.current.size >= 2) {
@@ -552,6 +595,11 @@ const MessageHistoryMapPage = () => {
     }, [beginPinchGesture, scheduleViewTransform]);
 
     const endCanvasPointer = useCallback((event) => {
+        if (nodeHoldRef.current?.pointerId === event.pointerId) {
+            window.clearTimeout(nodeHoldRef.current.timer);
+            if (nodeHoldRef.current.dragging) suppressNodeClickUntilRef.current = Date.now() + 350;
+            nodeHoldRef.current = null;
+        }
         if (event.pointerType === 'touch') activePointersRef.current.delete(event.pointerId);
         const gesture = gestureRef.current;
         if (gesture?.mode === 'pan' && gesture.pointerId === event.pointerId) {
@@ -605,6 +653,8 @@ const MessageHistoryMapPage = () => {
         return () => controller.abort();
     }, [conversationId, selectedMessageId]);
 
+    useEffect(() => () => window.clearTimeout(nodeHoldRef.current?.timer), []);
+
     useEffect(() => {
         const normalized = query.trim();
         searchAbortRef.current?.abort();
@@ -621,9 +671,10 @@ const MessageHistoryMapPage = () => {
             searchAbortRef.current = controller;
             setSearchLoading(true);
             apiClient.get(apiEndpoint.CHAT_MESSAGE_MAP_SEARCH_ENDPOINT, {
-                params: {conversationId, q: normalized, limit: 50},
+                params: {conversationId, q: normalized, limit: 50, offset: searchPage * 50},
                 signal: controller.signal,
             }).then((data) => {
+                if (controller.signal.aborted) return;
                 setSearchResults(data.items || []);
                 setSearchTotal(Number(data.total || 0));
                 setSearchIndex(0);
@@ -642,15 +693,16 @@ const MessageHistoryMapPage = () => {
             window.clearTimeout(timer);
             searchAbortRef.current?.abort();
         };
-    }, [conversationId, query]);
+    }, [conversationId, query, searchPage]);
 
     const activateSearchResult = useCallback((index) => {
         if (!searchResults.length) return;
         const normalizedIndex = (index + searchResults.length) % searchResults.length;
         setSearchIndex(normalizedIndex);
         const item = searchResults[normalizedIndex];
-        if (!revealMessageBranch(item.messageId, {select: true, expandTarget: true})) {
-            toast.warning('该搜索结果不在当前已加载的地图范围内');
+        if (!revealMessageBranch(item.messageId, {select: true, expandTarget: false})) {
+            setSelectedMessageId(item.messageId);
+            toast.info('已打开完整消息；该消息超出地图绘制范围');
         }
     }, [revealMessageBranch, searchResults]);
 
@@ -711,6 +763,7 @@ const MessageHistoryMapPage = () => {
         const minCellY = Math.floor(top / SPATIAL_CELL_SIZE);
         const maxCellY = Math.floor(bottom / SPATIAL_CELL_SIZE);
         const candidateIds = new Set();
+        Object.keys(nodeOffsets).forEach(messageId => candidateIds.add(messageId));
 
         for (let cellX = minCellX; cellX <= maxCellX; cellX += 1) {
             for (let cellY = minCellY; cellY <= maxCellY; cellY += 1) {
@@ -727,7 +780,7 @@ const MessageHistoryMapPage = () => {
             result.push(node);
         });
         return result;
-    }, [layout, nodeById, positionById, spatialBuckets, viewportSize, visibleGraphBounds]);
+    }, [layout, nodeById, nodeOffsets, positionById, spatialBuckets, viewportSize, visibleGraphBounds]);
 
     const visibleEdges = useMemo(() => {
         if (!layout || visibleNodes.length === 0) return [];
@@ -818,7 +871,7 @@ const MessageHistoryMapPage = () => {
                     <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"/>
                     <Input
                         value={query}
-                        onChange={event => setQuery(event.target.value)}
+                        onChange={event => { setQuery(event.target.value); setSearchPage(0); setSearchResults([]); }}
                         onKeyDown={(event) => {
                             if (event.key !== 'Enter' || !searchResults.length) return;
                             event.preventDefault();
@@ -829,7 +882,7 @@ const MessageHistoryMapPage = () => {
                     />
                     <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1 text-xs text-muted-foreground">
                         {searchLoading && <Loader2 className="size-3.5 animate-spin"/>}
-                        {query.trim().length >= 2 && <span>{searchResults.length ? `${searchIndex + 1} / ${searchTotal}` : `0 / ${searchTotal}`}</span>}
+                        {query.trim().length >= 2 && <span>{searchResults.length ? `${searchPage * 50 + searchIndex + 1} / ${searchTotal}` : `0 / ${searchTotal}`}</span>}
                         <button type="button" className="rounded p-1 hover:bg-accent" onClick={() => activateSearchResult(searchIndex - 1)} disabled={!searchResults.length}><ChevronUp className="size-3.5"/></button>
                         <button type="button" className="rounded p-1 hover:bg-accent" onClick={() => activateSearchResult(searchIndex + 1)} disabled={!searchResults.length}><ChevronDown className="size-3.5"/></button>
                         {query && <button type="button" className="rounded p-1 hover:bg-accent" onClick={() => setQuery('')}><X className="size-3.5"/></button>}
@@ -844,8 +897,7 @@ const MessageHistoryMapPage = () => {
                                         type="button"
                                         key={item.messageId}
                                         onClick={() => {
-                                            setSearchIndex(index);
-                                            revealMessageBranch(item.messageId, {select: true, expandTarget: true});
+                                            activateSearchResult(index);
                                         }}
                                         className={`flex w-full items-start gap-2 rounded-lg px-3 py-2 text-left hover:bg-accent ${index === searchIndex ? 'bg-accent/70' : ''}`}
                                     >
@@ -857,6 +909,11 @@ const MessageHistoryMapPage = () => {
                                     </button>
                                 );
                             })}
+                            <div data-message-map-control="true" className="flex items-center justify-between border-t p-2">
+                                <Button variant="outline" size="sm" disabled={searchLoading || searchPage === 0} onClick={() => { setSearchResults([]); setSearchPage(page => page - 1); }}>上一页</Button>
+                                <span className="text-xs text-muted-foreground">第 {searchPage + 1} / {Math.max(1, Math.ceil(searchTotal / 50))} 页 · 共 {searchTotal} 条</span>
+                                <Button variant="outline" size="sm" disabled={searchLoading || (searchPage + 1) * 50 >= searchTotal} onClick={() => { setSearchResults([]); setSearchPage(page => page + 1); }}>下一页</Button>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -869,8 +926,8 @@ const MessageHistoryMapPage = () => {
                     <Button type="button" variant="outline" size="sm" onClick={collapseAllBranches} disabled={!mapData.nodeCount}>
                         折叠全部
                     </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => revealMessageBranch(mapData.activeLeafMessageId, {select: true, expandTarget: true})} disabled={!mapData.activeLeafMessageId}>
-                        <LocateFixed/> 当前分支末端
+                    <Button type="button" variant="outline" size="sm" onClick={() => { latestRequestedRef.current = true; void loadMap(); }} disabled={!mapData.activeLeafMessageId || loading}>
+                        <LocateFixed/> 回到最新分支
                     </Button>
                     <Button type="button" variant="ghost" size="icon" onClick={loadMap} title="刷新地图"><RefreshCw/></Button>
                 </div>
@@ -896,6 +953,7 @@ const MessageHistoryMapPage = () => {
                     onPointerMove={handleCanvasPointerMove}
                     onPointerUp={endCanvasPointer}
                     onPointerCancel={endCanvasPointer}
+                    onLostPointerCapture={endCanvasPointer}
                     onAuxClick={event => event.preventDefault()}
                 >
                     {(mapData.nodes || []).length === 0 ? (
@@ -935,35 +993,58 @@ const MessageHistoryMapPage = () => {
                                 const selected = selectedMessageId === node.messageId;
                                 const focused = focusedMessageId === node.messageId;
                                 return (
-                                    <button
-                                        type="button"
+                                    <div
+                                        role="button"
+                                        tabIndex={0}
                                         key={node.messageId}
                                         data-message-map-node="true"
+                                        onContextMenu={event => event.preventDefault()}
+                                        onKeyDown={event => {
+                                            if (event.target !== event.currentTarget || !['Enter', ' '].includes(event.key)) return;
+                                            event.preventDefault();
+                                            setSelectedMessageId(node.messageId);
+                                            setFocusedMessageId(node.messageId);
+                                        }}
+                                        onPointerDown={event => {
+                                            if (event.button !== 0 || event.target.closest('[data-message-map-control="true"]')) return;
+                                            window.clearTimeout(nodeHoldRef.current?.timer);
+                                            const hold = {messageId: String(node.messageId), pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, offset: nodeOffsets[String(node.messageId)] || {x: 0, y: 0}, dragging: false};
+                                            hold.timer = window.setTimeout(() => {
+                                                hold.dragging = true;
+                                                suppressNodeClickUntilRef.current = Date.now() + 350;
+                                                try { canvasRef.current?.setPointerCapture(hold.pointerId); } catch {
+                                                    // The pointer may have ended while this timer was queued.
+                                                    hold.dragging = false;
+                                                }
+                                            }, NODE_HOLD_DELAY_MS);
+                                            nodeHoldRef.current = hold;
+                                        }}
                                         onClick={() => {
                                             if (Date.now() < suppressNodeClickUntilRef.current) return;
                                             setSelectedMessageId(node.messageId);
                                             setFocusedMessageId(node.messageId);
-                                            toggleMessageBranch(node.messageId);
                                         }}
                                         className={`absolute flex flex-col rounded-xl border bg-background px-3 py-2 text-left shadow-sm transition-[border-color,box-shadow,opacity] hover:border-primary/50 hover:shadow-md ${
                                             node.isActivePath ? 'border-blue-300' : 'border-border/80 opacity-80 hover:opacity-100'
                                         } ${selected ? 'ring-2 ring-primary ring-offset-2' : ''} ${focused ? 'shadow-lg' : ''}`}
                                         style={{left: point.x, top: point.y, width: layout.nodeWidth, height: layout.nodeHeight}}
-                                        title={node.childCount > 0 ? (expandedMessageIds.has(String(node.messageId)) ? '点击查看消息并折叠下级分支' : '点击查看消息并展开下级分支') : '点击查看完整消息'}
+                                        title="点击查看完整消息，长按拖动节点"
                                     >
                                         <span className="flex w-full items-center gap-2 text-xs text-muted-foreground">
                                             <Icon className="size-3.5"/>
                                             <span>{meta.label}</span>
                                             {node.isActiveLeaf && <Badge className="ml-auto h-5 px-1.5 text-[10px]">当前</Badge>}
-                                            {!node.isActiveLeaf && node.childCount > 0 && (
+                                            {node.childCount > 0 && (
                                                 <span className="ml-auto flex items-center gap-1">
                                                     {node.childCount > 1 && <span>{node.childCount} 个分支</span>}
+                                                    <Button data-message-map-control="true" variant="ghost" size="icon" className="size-6" aria-label={expandedMessageIds.has(String(node.messageId)) ? '折叠子消息' : '展开子消息'} onClick={event => {event.stopPropagation(); toggleMessageBranch(node.messageId);}}>
                                                     {expandedMessageIds.has(String(node.messageId)) ? <ChevronDown className="size-3.5"/> : <ChevronRight className="size-3.5"/>}
+                                                    </Button>
                                                 </span>
                                             )}
                                         </span>
                                         <span className="mt-1 line-clamp-2 text-sm leading-5 text-foreground">{node.preview}</span>
-                                    </button>
+                                    </div>
                                 );
                             })}
                         </div>
@@ -995,10 +1076,10 @@ const MessageHistoryMapPage = () => {
                     )}
 
                     <div className="pointer-events-none absolute bottom-4 right-4 z-10 hidden rounded-lg bg-background/80 px-2.5 py-1.5 text-[11px] text-muted-foreground shadow-sm backdrop-blur md:block">
-                        点击节点展开分支 · 拖动空白 / 中键拖动 · 滚轮缩放
+                        点击查看 · 右上角展开 · 长按拖动节点 · 滚轮缩放
                     </div>
                     <div className="pointer-events-none absolute bottom-4 right-4 z-10 rounded-lg bg-background/80 px-2.5 py-1.5 text-[11px] text-muted-foreground shadow-sm backdrop-blur md:hidden">
-                        点击节点展开分支 · 单指拖动画布 · 双指缩放
+                        点击查看 · 右上角展开 · 长按拖动节点 · 双指缩放
                     </div>
                 </div>
 

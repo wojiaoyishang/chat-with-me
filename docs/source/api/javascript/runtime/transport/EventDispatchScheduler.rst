@@ -40,7 +40,7 @@ Schedule one incoming semantic event callback without discarding any lane. FIFO 
 
    **主要协作调用**：``globalThis.performance?.now``、``Date.now``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:631:1075:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:631:1121:FUNCTION
 
 .. js:function:: classifyEvent(event, replyTo)
 
@@ -62,7 +62,7 @@ Schedule one incoming semantic event callback without discarding any lane. FIFO 
 
    **主要协作调用**：``String``、``value.startsWith``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1093:1519:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1139:1565:FUNCTION
 
 .. js:function:: popNext()
 
@@ -84,7 +84,7 @@ Schedule one incoming semantic event callback without discarding any lane. FIFO 
 
    **主要协作调用**：``queues.get``、``queue.shift``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1833:1928:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1879:1974:FUNCTION
 
 .. js:function:: requestFlush()
 
@@ -102,7 +102,7 @@ Schedule one incoming semantic event callback without discarding any lane. FIFO 
 
    **主要协作调用**：``postFlush``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1928:2580:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1974:2626:FUNCTION
 
 .. js:function:: flush()
 
@@ -120,7 +120,7 @@ Schedule one incoming semantic event callback without discarding any lane. FIFO 
 
    **主要协作调用**：``now``、``popNext``、``job``、``console.error``、``requestFlush``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:2845:3245:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:2891:3291:FUNCTION
 
 .. js:function:: scheduleIncomingEventCallback({event, replyTo = null, callback})
 
@@ -143,7 +143,7 @@ Schedule one incoming semantic event callback without discarding any lane. FIFO 
 
    **主要协作调用**：``classifyEvent``、``queues.get(lane).push``、``queues.get``、``console.warn``、``requestFlush``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:3293:3528:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:3339:3574:FUNCTION
 
 .. js:function:: getIncomingEventSchedulerStats()
 
@@ -170,7 +170,7 @@ Schedule one incoming semantic event callback without discarding any lane. FIFO 
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1653:1667:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1699:1713:FUNCTION
 
 .. rubric:: ``anonymous callback @ 58``
 
@@ -192,7 +192,7 @@ Schedule one incoming semantic event callback without discarding any lane. FIFO 
 
 **主要协作调用**：``flush``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1742:1777:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1788:1823:FUNCTION
 
 .. rubric:: ``anonymous callback @ 61``
 
@@ -214,7 +214,7 @@ Schedule one incoming semantic event callback without discarding any lane. FIFO 
 
 **主要协作调用**：``channel.port2.postMessage``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1803:1830:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/EventDispatchScheduler.js:1849:1876:FUNCTION
 
 .. rubric:: ``anonymous callback @ 63``
 
