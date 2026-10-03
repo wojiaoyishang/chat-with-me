@@ -100,47 +100,48 @@ const dispatchEnvelope = (envelope, {direction = 'local', localOnly = false} = {
     });
     settleReply(envelope);
 
-    const listenerJobs = [];
-    for (const registration of [...listeners.values()]) {
-        if (!registration.active || !matchesEvent(registration.events, envelope.event)) continue;
-        if (!shouldDeliverEventToListener({
-            direction,
-            replyTo: envelope.reply_to,
-            listenerDirections: registration.directions,
-            includeReplies: registration.includeReplies,
-        })) continue;
-        if (registration.conversationId) {
-            const isGlobal = !envelope.conversation_id;
-            if ((!isGlobal || !registration.includeGlobal) && registration.conversationId !== envelope.conversation_id) continue;
-        }
-        if (registration.documentId) {
-            const isGlobal = !envelope.document_id;
-            if ((!isGlobal || !registration.includeGlobal) && registration.documentId !== envelope.document_id) continue;
-        }
-        if (registration.onlyWithoutConversation && envelope.conversation_id) continue;
+    // Resolve listeners when the queued event is delivered, not when it arrives.
+    // React can clean up and re-register a subscription between these tasks;
+    // capturing the old registration silently dropped deltas in that gap.
+    const invokeEnvelopeListeners = () => {
+        for (const registration of [...listeners.values()]) {
+            if (!registration.active || !matchesEvent(registration.events, envelope.event)) continue;
+            if (!shouldDeliverEventToListener({
+                direction,
+                replyTo: envelope.reply_to,
+                listenerDirections: registration.directions,
+                includeReplies: registration.includeReplies,
+            })) continue;
+            if (registration.conversationId) {
+                const isGlobal = !envelope.conversation_id;
+                if ((!isGlobal || !registration.includeGlobal) && registration.conversationId !== envelope.conversation_id) continue;
+            }
+            if (registration.documentId) {
+                const isGlobal = !envelope.document_id;
+                if ((!isGlobal || !registration.includeGlobal) && registration.documentId !== envelope.document_id) continue;
+            }
+            if (registration.onlyWithoutConversation && envelope.conversation_id) continue;
 
-        const reply = (payload, event = `${envelope.event}.result`) => {
-            const replyEnvelope = createEnvelope({
-                event,
-                payload,
-                conversationId: envelope.conversation_id,
-                documentId: envelope.document_id,
-                turnId: envelope.turn_id,
-                runId: envelope.run_id,
-                streamId: envelope.stream_id,
-                traceId: envelope.trace_id,
-                replyTo: envelope.event_id,
-            });
-            dispatchEnvelope(replyEnvelope, {
-                direction: localOnly ? 'local' : 'outgoing',
-                localOnly,
-            });
-            if (!localOnly) sendRealtimeEvent(replyEnvelope);
-            return replyEnvelope;
-        };
+            const reply = (payload, event = `${envelope.event}.result`) => {
+                const replyEnvelope = createEnvelope({
+                    event,
+                    payload,
+                    conversationId: envelope.conversation_id,
+                    documentId: envelope.document_id,
+                    turnId: envelope.turn_id,
+                    runId: envelope.run_id,
+                    streamId: envelope.stream_id,
+                    traceId: envelope.trace_id,
+                    replyTo: envelope.event_id,
+                });
+                dispatchEnvelope(replyEnvelope, {
+                    direction: localOnly ? 'local' : 'outgoing',
+                    localOnly,
+                });
+                if (!localOnly) sendRealtimeEvent(replyEnvelope);
+                return replyEnvelope;
+            };
 
-        listenerJobs.push(() => {
-            if (!registration.active) return;
             try {
                 const result = registration.callback({
                     payload: envelope.payload,
@@ -168,22 +169,17 @@ const dispatchEnvelope = (envelope, {direction = 'local', localOnly = false} = {
             } catch (error) {
                 console.error(`[CWM event listener failed] ${envelope.event}`, error, registration.stack);
             }
-        });
-    }
-
-    if (listenerJobs.length) {
-        const invokeEnvelopeListeners = () => {
-            for (const job of listenerJobs) job();
-        };
-        if (direction === 'incoming') {
-            scheduleIncomingEventCallback({
-                event: envelope.event,
-                replyTo: envelope.reply_to,
-                callback: invokeEnvelopeListeners,
-            });
-        } else {
-            Promise.resolve().then(invokeEnvelopeListeners);
         }
+    };
+
+    if (direction === 'incoming') {
+        scheduleIncomingEventCallback({
+            event: envelope.event,
+            replyTo: envelope.reply_to,
+            callback: invokeEnvelopeListeners,
+        });
+    } else {
+        Promise.resolve().then(invokeEnvelopeListeners);
     }
 };
 

@@ -10,7 +10,7 @@ import {emitEvent} from "@/context/useEventStore.jsx";
 import {toast} from "sonner";
 import {useUserStore} from "@/context/userContext.jsx";
 import {motion, AnimatePresence} from 'framer-motion';
-import {useParams} from "react-router-dom";
+import {useLocation, useOutlet, useParams} from "react-router-dom";
 import NotificationHost from "@/features/notification/NotificationHost.jsx";
 
 const readDashboardLocation = () => {
@@ -39,12 +39,14 @@ const readDashboardLocation = () => {
 const DashboardPage = ({type = "chat"}) => {
 
     const urlParams = useParams();
+    const location = useLocation();
+    const outlet = useOutlet();
 
     const previousConversationIdRef = useRef("");
     const previousDocumentIdRef = useRef("");
 
-    const [conversationId, setConversationId] = useState(urlParams.conversationId);
-    const [documentId, setDocumentId] = useState(urlParams.documentId);
+    const [conversationId, setConversationId] = useState(urlParams.conversationId || null);
+    const [documentId, setDocumentId] = useState(urlParams.documentId || null);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingError, setIsLoadingError] = useState(false);
@@ -57,6 +59,16 @@ const DashboardPage = ({type = "chat"}) => {
     const {setUser} = useUserStore();
 
     const {t} = useTranslation();
+
+    // Child routes share this Dashboard and its live ChatPage. Read the actual
+    // URL because legacy selection still updates native history directly.
+    useEffect(() => {
+        const next = readDashboardLocation();
+        if (!next) return;
+        setPageType(next.pageType);
+        setConversationId(next.conversationId);
+        setDocumentId(next.documentId);
+    }, [location.pathname]);
 
     useEffect(() => {
         const syncFromBrowserHistory = () => {
@@ -181,7 +193,8 @@ const DashboardPage = ({type = "chat"}) => {
     }, [pageType])
 
     return (
-        <div className="flex full-screen-height bg-white relative">
+        <>
+        <div className="flex full-screen-height bg-white relative" inert={outlet ? true : undefined}>
             {!isLoading && !isLoadingError && !isAuthRedirecting && (
                 <NotificationHost
                     currentConversationId={conversationId}
@@ -269,6 +282,12 @@ const DashboardPage = ({type = "chat"}) => {
                 </>
             )}
         </div>
+        {outlet && (
+            <div className="fixed inset-0 z-[2147483301] bg-background" role="region" aria-label="消息历史地图">
+                {outlet}
+            </div>
+        )}
+        </>
     );
 };
 

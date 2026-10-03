@@ -48,6 +48,11 @@
    ``eventRunId``、``eventStreamId``、``eventTraceId``、``eventReplyTo``、
    ``eventSequence`` 与 ``eventDirection``，用于无需解析原始 Envelope 的 Surface。
 
+   入站事件排队后，在实际交付时匹配当前监听器。React effect 在到达与交付之间清理/重注册
+   订阅时，不能继续绑定旧 registration 而静默丢弃增量。匹配仍遵守方向与资源作用域；
+   真正切换到另一个 Conversation 不会让旧事件进入新页面。
+   ``conversation.messages.*`` 与 ``message.*`` 共用 stream FIFO，历史校准不越过先前消息更新。
+
    .. important::
 
       只处理服务器结果的监听器必须设置 ``direction: 'incoming'``。例如 TTS 后端事件

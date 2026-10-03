@@ -33,7 +33,7 @@ const classifyEvent = (event, replyTo = null) => {
     if (replyTo || value.startsWith('transport.') || value.startsWith('protocol.') || value.startsWith('turn.') || value === 'composer.status.changed') {
         return LANE_CONTROL;
     }
-    if (value.startsWith('message.') || value.startsWith('speech.')) return LANE_STREAM;
+    if (value.startsWith('message.') || value.startsWith('conversation.messages.') || value.startsWith('speech.')) return LANE_STREAM;
     if (value.startsWith('notification.')) return LANE_BACKGROUND;
     return LANE_INTERACTION;
 };

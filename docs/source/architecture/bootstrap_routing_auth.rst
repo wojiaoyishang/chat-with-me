@@ -18,6 +18,11 @@ Root 依次装配：
 ``createBrowserRouter`` 管理 Chat、Document 和 Login。``HistorySynchronizedRouter`` 监听旧代码中
 仍存在的 ``history.pushState`` 路径，在 POP 时与 Router 状态校准，避免整页 reload。
 
+``/chat/:conversationId?`` 共用一个 Dashboard 路由。消息地图是其 ``message-map`` 子路由，
+以覆盖层呈现，底层 ChatPage、消息状态和实时订阅保持挂载。进入/退出地图及关闭设置不应
+重建聊天运行时或取消当前 Conversation 的采集器；资源选择变化与组件挂载必须分开处理。
+返回地图中的消息定位通过 Router 的 pathname/search 变化触发，不能仅依赖 ChatPage 首次挂载。
+
 认证初始化
 --------------------------------------------------------------------------------
 

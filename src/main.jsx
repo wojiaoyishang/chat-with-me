@@ -22,16 +22,11 @@ import {subscribeBrowserRoutePop} from '@/lib/browserHistoryLayers.js';
 
 const router = createBrowserRouter([
     {
-        path: "/chat",
+        path: "/chat/:conversationId?",
         element: <DashboardPage/>,
-    },
-    {
-        path: "/chat/:conversationId/message-map",
-        element: <MessageHistoryMapPage/>,
-    },
-    {
-        path: "/chat/:conversationId",
-        element: <DashboardPage type={"chat"}/>,
+        children: [
+            {path: 'message-map', element: <MessageHistoryMapPage/>},
+        ],
     },
     {
         path: "/",

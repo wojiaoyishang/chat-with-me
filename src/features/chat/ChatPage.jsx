@@ -12,6 +12,7 @@ import {toast} from 'sonner';
 import {motion} from 'framer-motion';
 import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
 import {useTranslation} from 'react-i18next';
+import {useLocation} from 'react-router-dom';
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
@@ -163,6 +164,7 @@ function ChatPage({
                       settingsRefreshVersions = {}, // 设置页关闭后按 scope 触发的定向刷新版本
                   }) {
     const {t, i18n} = useTranslation();
+    const routeLocation = useLocation();
     const chatPageRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const currentTurnIdempotencyKeyRef = useRef(generateUUID());
@@ -1624,7 +1626,7 @@ function ChatPage({
                 messageDeepLinkHandledRef.current = '';
             }
         });
-    }, [conversationId, jumpToMessage, messagesOrder.length]);
+    }, [conversationId, jumpToMessage, messagesOrder.length, routeLocation.pathname, routeLocation.search]);
 
     const loadSwitchMessage = useCallback(async (msgId, newMsgId) => {
         if (!(msgId in messagesRef.current)) return false;
