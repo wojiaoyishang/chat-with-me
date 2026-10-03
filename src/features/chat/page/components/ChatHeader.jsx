@@ -92,7 +92,7 @@ const ChatHeader = memo(({
                     <Button
                         variant="ghost"
                         disabled={isAgentSession}
-                        className={`min-w-0 flex-1 overflow-hidden justify-start px-0 hover:bg-transparent text-lg ${
+                        className={`w-40 min-w-0 shrink grow-0 overflow-hidden justify-start px-0 text-left hover:bg-transparent text-lg sm:w-60 ${
                             isAgentSession ? 'cursor-default disabled:opacity-100' : 'cursor-pointer'
                         }`}
                     >

@@ -26,7 +26,8 @@ Root 依次装配：
 移动端顶部与导航
 ----------------
 
-ChatHeader 的模型触发按钮及文本容器使用 min-width: 0 和弹性宽度，名称 truncate；
+ChatHeader 的模型触发按钮靠左，手机端固定基准宽度 160px，较大屏幕为 240px，不扩展填满顶部；
+窄屏可收缩以保留右侧按钮空间。文本容器使用 min-width: 0，名称 truncate；
 右侧操作区 shrink-0，长模型名称或子 Agent 名称不能把按钮推到屏幕外。
 手机端减小操作区间距，仍使用已有按钮和交互。
 Sidebar 移除全局 touchstart/touchend 滑动开关；主导航通过显式按钮、遮罩与返回键关闭。
