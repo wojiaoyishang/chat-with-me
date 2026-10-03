@@ -31,20 +31,21 @@ const writeLayout = (storageKey, value) => {
     }
 };
 
-const normalizeFloating = (layout = {}) => {
+const normalizeFloating = (layout = {}, target = null) => {
     if (typeof window === 'undefined') {
         return {x: 120, y: 80, width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT, docked: false};
     }
-    const width = clamp(Number(layout.width) || DEFAULT_WIDTH, MIN_WIDTH, window.innerWidth - EDGE * 2);
-    const height = clamp(Number(layout.height) || DEFAULT_HEIGHT, MIN_HEIGHT, window.innerHeight - EDGE * 2);
-    const fallbackX = Math.max(EDGE, Math.round((window.innerWidth - width) / 2));
-    const fallbackY = Math.max(EDGE, Math.round((window.innerHeight - height) / 2));
+    const bounds = target?.getBoundingClientRect() || {left: 0, top: 0, width: window.innerWidth, height: window.innerHeight};
+    const availableWidth = Math.max(1, bounds.width - EDGE * 2);
+    const availableHeight = Math.max(1, bounds.height - EDGE * 2);
+    const width = clamp(Number(layout.width) || DEFAULT_WIDTH, Math.min(MIN_WIDTH, availableWidth), availableWidth);
+    const height = clamp(Number(layout.height) || DEFAULT_HEIGHT, Math.min(MIN_HEIGHT, availableHeight), availableHeight);
+    const fallbackX = Math.max(EDGE, Math.round((bounds.width - width) / 2));
+    const fallbackY = Math.max(EDGE, Math.round((bounds.height - height) / 2));
     return {
-        x: clamp(Number.isFinite(Number(layout.x)) ? Number(layout.x) : fallbackX, EDGE, window.innerWidth - width - EDGE),
-        y: clamp(Number.isFinite(Number(layout.y)) ? Number(layout.y) : fallbackY, EDGE, window.innerHeight - height - EDGE),
-        width,
-        height,
-        docked: layout.docked === true,
+        x: clamp(Number.isFinite(Number(layout.x)) ? Number(layout.x) : fallbackX, EDGE, bounds.width - width - EDGE),
+        y: clamp(Number.isFinite(Number(layout.y)) ? Number(layout.y) : fallbackY, EDGE, bounds.height - height - EDGE),
+        width, height, docked: layout.docked === true,
     };
 };
 
@@ -60,19 +61,25 @@ const FloatingDockWindow = memo(({
     dockMount = null,
     storageKey = 'cwm:floating-window:v1',
     className = '',
+    portalTarget = null,
+    expanded = false,
+    compactMobile = false,
+    defaultLayout = null,
+    zIndex = 2147483200,
 }) => {
-    const [layout, setLayout] = useState(() => normalizeFloating(readLayout(storageKey)));
+    const normalizeLayout = useCallback(value => normalizeFloating(value, portalTarget), [portalTarget]);
+    const [layout, setLayout] = useState(() => normalizeLayout({...defaultLayout, ...readLayout(storageKey)}));
     const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT);
     const [dockTargetWidth, setDockTargetWidth] = useState(() => Number(dockTarget?.clientWidth || 0));
     const interactionRef = useRef(null);
 
     const commitLayout = useCallback((updater) => {
         setLayout((previous) => {
-            const next = normalizeFloating(typeof updater === 'function' ? updater(previous) : updater);
+            const next = normalizeLayout(typeof updater === 'function' ? updater(previous) : updater);
             writeLayout(storageKey, next);
             return next;
         });
-    }, [storageKey]);
+    }, [storageKey, normalizeLayout]);
 
     useEffect(() => {
         if (!dockTarget) {
@@ -96,7 +103,14 @@ const FloatingDockWindow = memo(({
         return () => window.removeEventListener('resize', onResize);
     }, [commitLayout]);
 
-    const canDock = Boolean(dockTarget && dockMount && !isMobile && dockTargetWidth >= 720);
+    useEffect(() => {
+        if (!portalTarget) return undefined;
+        const observer = new ResizeObserver(() => commitLayout(previous => previous));
+        observer.observe(portalTarget);
+        return () => observer.disconnect();
+    }, [portalTarget, commitLayout]);
+
+    const canDock = Boolean(!expanded && dockTarget && dockMount && !isMobile && dockTargetWidth >= 720);
     const docked = Boolean(layout.docked && canDock);
 
     useEffect(() => {
@@ -141,7 +155,7 @@ const FloatingDockWindow = memo(({
             if (current.kind === 'drag') {
                 const dx = event.clientX - current.startX;
                 const dy = event.clientY - current.startY;
-                setLayout((previous) => normalizeFloating({
+                setLayout((previous) => normalizeLayout({
                     ...previous,
                     docked: false,
                     x: current.startLayout.x + dx,
@@ -150,7 +164,7 @@ const FloatingDockWindow = memo(({
             } else if (current.kind === 'resize') {
                 const dx = event.clientX - current.startX;
                 const dy = event.clientY - current.startY;
-                setLayout((previous) => normalizeFloating({
+                setLayout((previous) => normalizeLayout({
                     ...previous,
                     width: current.startLayout.width + dx,
                     height: current.startLayout.height + dy,
@@ -166,7 +180,7 @@ const FloatingDockWindow = memo(({
             if (!current) return;
             interactionRef.current = null;
             setLayout((previous) => {
-                let next = normalizeFloating(previous);
+                let next = normalizeLayout(previous);
                 if (current.kind === 'drag' && !isMobile) {
                     const rightDistance = window.innerWidth - (next.x + next.width);
                     if (rightDistance <= 34 && canDock) next = {...next, docked: true};
@@ -183,10 +197,10 @@ const FloatingDockWindow = memo(({
             window.removeEventListener('pointerup', onPointerUp);
             window.removeEventListener('pointercancel', onPointerUp);
         };
-    }, [canDock, dockTarget, isMobile, storageKey]);
+    }, [canDock, dockTarget, isMobile, storageKey, normalizeLayout]);
 
     const startDrag = useCallback((event) => {
-        if (docked || isMobile || event.button !== 0) return;
+        if (expanded || docked || (isMobile && !compactMobile) || event.button !== 0) return;
         interactionRef.current = {
             kind: 'drag',
             startX: event.clientX,
@@ -194,10 +208,10 @@ const FloatingDockWindow = memo(({
             startLayout: {...layout},
         };
         event.currentTarget.setPointerCapture?.(event.pointerId);
-    }, [docked, isMobile, layout]);
+    }, [expanded, docked, isMobile, compactMobile, layout]);
 
     const startResize = useCallback((event) => {
-        if (isMobile || event.button !== 0) return;
+        if (expanded || isMobile || event.button !== 0) return;
         interactionRef.current = {
             kind: docked ? 'dock-resize' : 'resize',
             startX: event.clientX,
@@ -206,7 +220,7 @@ const FloatingDockWindow = memo(({
         };
         event.preventDefault();
         event.stopPropagation();
-    }, [docked, isMobile, layout]);
+    }, [expanded, docked, isMobile, layout]);
 
     const toggleDock = useCallback(() => {
         if (isMobile || !canDock) return;
@@ -214,8 +228,9 @@ const FloatingDockWindow = memo(({
     }, [canDock, commitLayout, isMobile]);
 
     const panelStyle = useMemo(() => {
-        if (isMobile) {
-            return {position: 'fixed', inset: '8px', zIndex: 2147483200};
+        if (expanded && portalTarget) return {position: "absolute", inset: 0, width: "100%", height: "100%", zIndex};
+        if (isMobile && !compactMobile) {
+            return {position: 'fixed', inset: '8px', zIndex};
         }
         if (docked) {
             return {
@@ -227,14 +242,14 @@ const FloatingDockWindow = memo(({
             };
         }
         return {
-            position: 'fixed',
+            position: portalTarget ? 'absolute' : 'fixed',
             left: layout.x,
             top: layout.y,
             width: layout.width,
             height: layout.height,
-            zIndex: 2147483200,
+            zIndex,
         };
-    }, [docked, isMobile, layout]);
+    }, [docked, isMobile, layout, expanded, compactMobile, portalTarget, zIndex]);
 
     if (!open || typeof document === 'undefined') return null;
 
@@ -243,7 +258,7 @@ const FloatingDockWindow = memo(({
             role="dialog"
             aria-modal="false"
             aria-label={typeof title === 'string' ? title : 'Execution'}
-            className={`flex min-h-0 flex-col overflow-hidden border border-gray-200 bg-white shadow-2xl ${docked ? 'rounded-none border-y-0 border-r-0' : 'rounded-2xl'} ${className}`}
+            className={`flex min-h-0 flex-col overflow-hidden border border-gray-200 bg-white shadow-2xl ${docked || expanded ? 'rounded-none border-y-0 border-r-0' : 'rounded-2xl'} ${className}`}
             style={panelStyle}
         >
             {docked && !isMobile && (
@@ -253,7 +268,7 @@ const FloatingDockWindow = memo(({
                 />
             )}
             <header
-                className={`flex shrink-0 select-none items-start gap-3 border-b border-gray-100 px-4 py-3 ${!docked && !isMobile ? 'cursor-move' : ''}`}
+                className={`flex shrink-0 select-none items-start gap-3 border-b border-gray-100 px-4 py-3 ${!expanded && !docked && (!isMobile || compactMobile) ? 'cursor-move touch-none' : ''}`}
                 onPointerDown={startDrag}
             >
                 <GripHorizontal className="mt-1 h-4 w-4 shrink-0 text-gray-300"/>
@@ -294,7 +309,7 @@ const FloatingDockWindow = memo(({
             <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
             {footer && <footer className="shrink-0 border-t border-gray-100 bg-white px-4 py-3">{footer}</footer>}
 
-            {!docked && !isMobile && (
+            {!expanded && !docked && !isMobile && (
                 <div
                     className="absolute bottom-0 right-0 h-5 w-5 cursor-se-resize"
                     onPointerDown={startResize}
@@ -304,7 +319,7 @@ const FloatingDockWindow = memo(({
         </section>
     );
 
-    return createPortal(panel, docked && dockMount ? dockMount : document.body);
+    return createPortal(panel, docked && dockMount ? dockMount : (portalTarget || document.body));
 });
 
 FloatingDockWindow.displayName = 'FloatingDockWindow';

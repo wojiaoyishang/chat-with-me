@@ -27,9 +27,9 @@ src/features/avatar-scene/AvatarScene 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:357:4304:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:357:4403:FUNCTION
 
-.. js:function:: AvatarScene({requestScene, conversationId})
+.. js:function:: AvatarScene({requestScene, conversationId, immersive = false})
 
    渲染 ``AvatarScene`` React 组件，并协调该界面的状态、事件和子组件。
 
@@ -37,12 +37,12 @@ src/features/avatar-scene/AvatarScene 模块
 
    **参数**
 
-   ``{requestScene, conversationId}``
-      目标对象的公共或运行时标识。
+   ``{requestScene, conversationId, immersive = false}``
+      调用方传入的 ``requestScene, conversationId, immersive = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<div className="relative w-full min-w-0"> <div ref={container} className="h-64 w-full sm:h-80" aria-label="实时机器人 3D 场景"/> <p className="px-3 text-center text-xs text-muted-foregro…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<div className="relative flex h-full min-h-0 w-full min-w-0 flex-col"> <div ref={container} className="min-h-0 w-full flex-1" aria-label="实时机器人 3D 场景"/> {(error || !ready || !conv…``。
 
    **副作用**
 
@@ -57,7 +57,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:734:3298:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:753:3317:FUNCTION
 
 .. rubric:: ``useEffect callback @ 16``
 
@@ -85,7 +85,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:925:1030:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:944:1049:FUNCTION
 
 .. rubric:: ``stop``
 
@@ -110,7 +110,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:1021:1029:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:1040:1048:FUNCTION
 
 .. rubric:: ``requestScene('avatar.scene.stop', {sceneSessionId: binding.sceneSessionId}).catch callback @ 20``
 
@@ -130,7 +130,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:1041:3021:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:1060:3040:FUNCTION
 
 .. rubric:: ``anonymous callback @ 21``
 
@@ -158,7 +158,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:1655:2197:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:1674:2216:FUNCTION
 
 .. rubric:: ``onEvent({event: 'avatar.pose.apply', conversationId, direction: 'incoming'}).then callback @ 29``
 
@@ -183,7 +183,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2173:2181:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2192:2200:FUNCTION
 
 .. rubric:: ``requestScene('avatar.scene.ack', {sceneSessionId: scope.sceneSessionId, commandId: payload.commandId, applied, error: d… callback @ 35``
 
@@ -203,7 +203,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2400:2415:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2419:2434:FUNCTION
 
 .. rubric:: ``manifest.poses.map callback @ 39``
 
@@ -224,7 +224,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2456:2471:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2475:2490:FUNCTION
 
 .. rubric:: ``manifest.expressions.map callback @ 39``
 
@@ -245,7 +245,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2652:3002:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2671:3021:FUNCTION
 
 .. rubric:: ``setInterval callback @ 43``
 
@@ -269,7 +269,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2757:2986:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2776:3005:FUNCTION
 
 .. rubric:: ``requestScene('avatar.scene.renew', {sceneSessionId: scope.sceneSessionId}).catch callback @ 44``
 
@@ -292,7 +292,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **主要协作调用**：``clearInterval``、``stop``、``setReady``、``setError``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3031:3132:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3050:3151:FUNCTION
 
 .. rubric:: ``(async () => { const response = await requestScene('avatar.scene.catalog'); const manifest = response.payload.catalog;… callback @ 49``
 
@@ -315,7 +315,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **主要协作调用**：``setReady``、``setError``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3149:3291:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3168:3310:FUNCTION
 
 .. rubric:: ``returned callback @ 50``
 
@@ -341,7 +341,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **主要协作调用**：``abort.abort``、``clearInterval``、``unsubscribe``、``stop``、``engine.current?.dispose``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3803:3958:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3902:4057:FUNCTION
 
 .. rubric:: ``catalog?.poses.map callback @ 57``
 
@@ -364,7 +364,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3888:3935:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3987:4034:FUNCTION
 
 .. rubric:: ``onClick callback @ 57``
 
@@ -386,7 +386,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **主要协作调用**：``engine.current?.apply``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:4086:4260:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:4185:4359:FUNCTION
 
 .. rubric:: ``catalog?.expressions.map callback @ 60``
 
@@ -409,7 +409,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:4181:4231:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:4280:4330:FUNCTION
 
 .. rubric:: ``onClick callback @ 60``
 

@@ -6,7 +6,7 @@ import {acceptSceneCommand} from './commandGate.js';
 import {useLocalSetting} from '@/lib/tools.jsx';
 import {ROBOT_DEBUG_SETTING_KEY} from './settings.js';
 
-export default function AvatarScene({requestScene, conversationId}) {
+export default function AvatarScene({requestScene, conversationId, immersive = false}) {
     const [robotDebugEnabled] = useLocalSetting(ROBOT_DEBUG_SETTING_KEY, false);
     const container = useRef(null);
     const engine = useRef(null);
@@ -49,11 +49,11 @@ export default function AvatarScene({requestScene, conversationId}) {
         })().catch(failure => { if (!abort.signal.aborted) { setReady(false); setError(failure.message || '场景加载失败'); } });
         return () => { abort.abort(); clearInterval(heartbeat); unsubscribe?.(); if (scope) stop(scope); engine.current?.dispose(); engine.current = null; };
     }, [requestScene, conversationId]);
-    return <div className="relative w-full min-w-0">
-        <div ref={container} className="h-64 w-full sm:h-80" aria-label="实时机器人 3D 场景"/>
+    return <div className="relative flex h-full min-h-0 w-full min-w-0 flex-col">
+        <div ref={container} className="min-h-0 w-full flex-1" aria-label="实时机器人 3D 场景"/>
         {(error || !ready || !conversationId) && <p className="px-3 text-center text-xs text-muted-foreground" role="status">{error || (!ready ? '正在加载机器人…' : '发送消息创建对话后，AI 就能控制机器人')}</p>}
         {robotDebugEnabled === true && <>
-        <div className="flex flex-wrap justify-center gap-1 p-2">
+        <div className={`flex shrink-0 flex-wrap justify-center gap-1 p-2 ${immersive ? "bg-background/80" : ""}`}>
             {catalog?.poses.map(pose => <Button key={pose.id} size="sm" variant="outline" disabled={!ready} onClick={() => engine.current?.apply(pose.id, 'neutral')}>{pose.label}</Button>)}
         </div>
         <div className="flex flex-wrap justify-center gap-1 px-2 pb-3">

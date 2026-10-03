@@ -27,6 +27,8 @@ import {normalizeRemoteChatModel} from './modelCapabilities.js';
 import {WidgetPresentationProvider} from './widgets/WidgetPresentationContext.jsx';
 import {RealtimeVoiceSurface, useRealtimeVoiceConversation} from './voice/index.js';
 import AvatarScenePanel from '@/features/avatar-scene/AvatarScenePanel.jsx';
+import useImmersiveComposer from '@/features/avatar-scene/useImmersiveComposer.js';
+import {Button} from '@/components/ui/button';
 import {useBrowserBackLayer} from '@/lib/browserHistoryLayers.js';
 import {
     getMessageSummaryAppendCursor,
@@ -898,7 +900,12 @@ function ChatPage({
     });
 
     const [avatarSceneOpen, setAvatarSceneOpen] = useState(false);
-    const toggleAvatarScene = useCallback(() => setAvatarSceneOpen(value => !value), []);
+    const [avatarExpanded, setAvatarExpanded] = useState(false);
+    const avatarImmersive = avatarSceneOpen && avatarExpanded;
+    const immersiveComposer = useImmersiveComposer({enabled: avatarImmersive, hostRef: chatPageRef});
+    const toggleAvatarScene = useCallback(() => { setAvatarExpanded(false); setAvatarSceneOpen(value => !value); }, []);
+    const toggleAvatarExpanded = useCallback(() => setAvatarExpanded(value => !value), []);
+    const closeAvatarScene = useCallback(() => { setAvatarExpanded(false); setAvatarSceneOpen(false); }, []);
 
     const realtimeVoice = useRealtimeVoiceConversation({
         conversationId,
@@ -3249,12 +3256,20 @@ function ChatPage({
                             onBrowserSpeechVoiceChange={updateBrowserSpeechVoice}
                             t={t}
                         />
+                        <div ref={immersiveComposer.composerRef}
+                            data-avatar-composer="true"
+                            onFocusCapture={immersiveComposer.onFocusCapture}
+                            onBlurCapture={immersiveComposer.onBlurCapture}
+                            inert={avatarImmersive && !immersiveComposer.visible ? true : undefined}
+                            className={avatarImmersive ? 'absolute inset-x-0 bottom-0 z-[60] max-h-full overflow-y-auto transition-[transform,opacity] duration-200 bg-background/90 backdrop-blur-sm' : 'contents'}
+                            style={avatarImmersive ? {transform: immersiveComposer.visible ? 'translateY(0)' : 'translateY(100%)', opacity: immersiveComposer.visible ? 1 : 0, pointerEvents: immersiveComposer.visible ? 'auto' : 'none'} : undefined}>
                         <div
                             ref={setWidgetChatBoxHostElement}
                             data-widget-chatbox-floating-host="true"
                             className="pointer-events-auto relative z-20 mx-auto w-full max-w-225 px-4"
                         />
                         <ChatBox
+                            immersive={avatarImmersive}
                             onSendMessage={handleSendMessage}
                             conversationId={conversationId}
                             attachmentsMeta={attachments}
@@ -3290,6 +3305,7 @@ function ChatPage({
                                 setInitialSettingValues(null);
                             }}
                         />
+                        </div>
                     </div>
 
                     <RuntimeInspectorDialog
@@ -3311,6 +3327,10 @@ function ChatPage({
                         onLoadToolCall={loadRuntimeInspectorToolCall}
                     />
 
+                    {avatarImmersive && !immersiveComposer.visible && <Button
+                        variant="secondary" size="sm" className="absolute bottom-2 left-1/2 z-[70] -translate-x-1/2 shadow"
+                        onPointerEnter={immersiveComposer.show} onFocus={immersiveComposer.show} onClick={immersiveComposer.show}
+                        aria-label="显示输入框">输入消息</Button>}
                     <footer
                         className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center ml-5 mr-5">
                         <span className="text-xs text-gray-500">
@@ -3326,7 +3346,7 @@ function ChatPage({
                 />
                 <ExecutionHost conversationId={conversationId} messageOrder={messagesOrder} messages={messages}/>
 
-                {avatarSceneOpen && <AvatarScenePanel conversationId={conversationId} onClose={() => setAvatarSceneOpen(false)}/>}
+                {avatarSceneOpen && <AvatarScenePanel conversationId={conversationId} onClose={closeAvatarScene} hostElement={chatPageRef.current} expanded={avatarExpanded} onToggleExpanded={toggleAvatarExpanded}/>}
                 <RealtimeVoiceSurface
                     avatarSceneOpen={avatarSceneOpen}
                     onToggleAvatarScene={toggleAvatarScene}

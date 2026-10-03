@@ -21,7 +21,7 @@
    * - :doc:`src/features/avatar-scene/AvatarScenePanel </api/javascript/features/avatar-scene/AvatarScenePanel>`
      - 1
      - 0
-     - 2
+     - 5
      - ``src/features/avatar-scene/AvatarScenePanel.jsx``
    * - :doc:`src/features/avatar-scene/commandGate </api/javascript/features/avatar-scene/commandGate>`
      - 1
@@ -38,10 +38,15 @@
      - 0
      - 0
      - ``src/features/avatar-scene/settings.js``
+   * - :doc:`src/features/avatar-scene/useImmersiveComposer </api/javascript/features/avatar-scene/useImmersiveComposer>`
+     - 1
+     - 0
+     - 8
+     - ``src/features/avatar-scene/useImmersiveComposer.js``
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 237
+     - 239
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -603,6 +608,7 @@
    /api/javascript/features/avatar-scene/commandGate
    /api/javascript/features/avatar-scene/robotScene
    /api/javascript/features/avatar-scene/settings
+   /api/javascript/features/avatar-scene/useImmersiveComposer
    /api/javascript/features/chat/ChatPage
    /api/javascript/features/chat/attachmentVision
    /api/javascript/features/chat/composer/draftStore

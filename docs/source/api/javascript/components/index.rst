@@ -336,7 +336,7 @@
    * - :doc:`src/components/window/FloatingDockWindow </api/javascript/components/window/FloatingDockWindow>`
      - 4
      - 0
-     - 32
+     - 37
      - ``src/components/window/FloatingDockWindow.jsx``
    * - :doc:`src/components/window/index </api/javascript/components/window/index>`
      - 0

@@ -222,6 +222,7 @@ function ChatBox({
                      editorHostRef,
                      selectedModel,
                      isWindowMode = false,
+                     immersive = false,
                      onVoicePcmReady,
                      onVoiceRecordingStart,
                      onVoiceRecordingCancel,
@@ -2496,7 +2497,7 @@ function ChatBox({
                 : t('chatbox_enable_auto_hide')
         );
     const collapsedButtonLabel = t('chatbox_show');
-    const isMobileCollapsed = isSmallScreen && isChatBoxCollapsed;
+    const isMobileCollapsed = !immersive && isSmallScreen && isChatBoxCollapsed;
     const rootMaxHeightStyle = attachmentHeight > 0 ? `calc(100% + ${attachmentHeight}px)` : '100%';
 
     return (
@@ -2547,7 +2548,7 @@ function ChatBox({
                     </button>
                 </div>
             )}
-            {!isSmallScreen && isChatBoxCollapsed && (
+            {!immersive && !isSmallScreen && isChatBoxCollapsed && (
                 <button
                     type="button"
                     aria-label={collapsedButtonLabel}
@@ -2561,7 +2562,7 @@ function ChatBox({
             )}
             <div
                 ref={rootRef}
-                aria-hidden={!isSmallScreen && isChatBoxCollapsed ? true : undefined}
+                aria-hidden={!immersive && !isSmallScreen && isChatBoxCollapsed ? true : undefined}
                 className="pointer-events-none relative isolate mx-auto flex w-full max-w-225 flex-col overflow-hidden px-4 py-4"
                 onMouseEnter={handleChatBoxMouseEnter}
                 onMouseLeave={handleChatBoxMouseLeave}
@@ -2569,13 +2570,13 @@ function ChatBox({
                     transitionProperty: 'max-height, transform, opacity',
                     transitionDuration: '0.3s, 0.34s, 0.14s',
                     transitionTimingFunction: 'ease-in-out, cubic-bezier(0.4, 0, 0.2, 1), ease-out',
-                    transitionDelay: !isSmallScreen && isChatBoxCollapsed
+                    transitionDelay: !immersive && !isSmallScreen && isChatBoxCollapsed
                         ? '0s, 0s, 0.2s'
                         : '0s, 0s, 0s',
                     maxHeight: rootMaxHeightStyle,
                     display: isMobileCollapsed ? 'none' : undefined,
-                    opacity: !isSmallScreen && isChatBoxCollapsed ? 0 : 1,
-                    transform: !isSmallScreen && isChatBoxCollapsed
+                    opacity: !immersive && !isSmallScreen && isChatBoxCollapsed ? 0 : 1,
+                    transform: !immersive && !isSmallScreen && isChatBoxCollapsed
                         ? `translateY(${collapsedTranslateY}px)`
                         : 'translateY(0)',
                 }}
@@ -2821,6 +2822,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
         prevProps.selectedModel === nextProps.selectedModel &&
         JSON.stringify(prevProps.selectedWorkspaceIds || []) === JSON.stringify(nextProps.selectedWorkspaceIds || []) &&
         prevProps.isWindowMode === nextProps.isWindowMode &&
+        prevProps.immersive === nextProps.immersive &&
         prevProps.onVoicePcmReady === nextProps.onVoicePcmReady &&
         prevProps.onVoiceRecordingStart === nextProps.onVoiceRecordingStart &&
         prevProps.onVoiceRecordingCancel === nextProps.onVoiceRecordingCancel &&
