@@ -29,7 +29,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:605:11529:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:605:11544:FUNCTION
 
 .. rubric:: ``memo callback @ 10``
 

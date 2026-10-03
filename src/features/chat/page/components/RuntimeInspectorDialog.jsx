@@ -12,7 +12,6 @@ import {
     MessageSquareText,
     RefreshCw,
     Search,
-    ShieldCheck,
     Wrench,
     X,
 } from 'lucide-react';
@@ -879,11 +878,6 @@ const RuntimeInspectorDialog = memo(({
                     </>
                 )}
 
-                {document?.notice && (
-                    <div className="flex shrink-0 items-start gap-2 border-t bg-muted/15 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground sm:px-5">
-                        <ShieldCheck className="mt-0.5 size-3.5 shrink-0"/>{document.notice}
-                    </div>
-                )}
             </DialogContent>
         </Dialog>
     );
