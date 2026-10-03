@@ -22,18 +22,18 @@ src/features/avatar-scene/AvatarScene 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``@/components/ui/button``、``@/context/useEventStore.jsx``、``./robotScene.js``、``./commandGate.js``。
+``react``、``@/components/ui/button``、``@/context/useEventStore.jsx``、``./robotScene.js``、``./commandGate.js``、``@/lib/tools.jsx``、``./settings.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:253:4070:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:357:4304:FUNCTION
 
 .. js:function:: AvatarScene({requestScene, conversationId})
 
    渲染 ``AvatarScene`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``59`` 行。
+   **性质**：同步函数；导出 API；源码第 ``9``—``64`` 行。
 
    **参数**
 
@@ -48,7 +48,7 @@ src/features/avatar-scene/AvatarScene 模块
 
    * 注册事件、DOM 或运行时订阅。
 
-   **主要协作调用**：``useRef``、``useState``、``useEffect``、``catalog?.poses.map``、``catalog?.expressions.map``。
+   **主要协作调用**：``useLocalSetting``、``useRef``、``useState``、``useEffect``、``catalog?.poses.map``、``catalog?.expressions.map``。
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -57,17 +57,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:549:3113:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:734:3298:FUNCTION
 
-.. rubric:: ``useEffect callback @ 13``
+.. rubric:: ``useEffect callback @ 16``
 
 .. code-block:: javascript
 
-   useEffect callback @ 13()
+   useEffect callback @ 16()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``13``—``48`` 行；所属函数 ``AvatarScene``。
+**性质**：同步局部函数；源码第 ``16``—``51`` 行；所属函数 ``AvatarScene``。
 
 **参数**
 
@@ -85,7 +85,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:740:845:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:925:1030:FUNCTION
 
 .. rubric:: ``stop``
 
@@ -95,7 +95,7 @@ src/features/avatar-scene/AvatarScene 模块
 
 停止与 ``stop`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``17``—``17`` 行；所属函数 ``useEffect callback @ 13``。
+**性质**：同步局部函数；源码第 ``20``—``20`` 行；所属函数 ``useEffect callback @ 16``。
 
 **参数**
 
@@ -110,17 +110,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:836:844:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:1021:1029:FUNCTION
 
-.. rubric:: ``requestScene('avatar.scene.stop', {sceneSessionId: binding.sceneSessionId}).catch callback @ 17``
+.. rubric:: ``requestScene('avatar.scene.stop', {sceneSessionId: binding.sceneSessionId}).catch callback @ 20``
 
 .. code-block:: javascript
 
-   requestScene('avatar.scene.stop', {sceneSessionId: binding.sceneSessionId}).catch callback @ 17()
+   requestScene('avatar.scene.stop', {sceneSessionId: binding.sceneSessionId}).catch callback @ 20()
 
 处理 ``requestScene('avatar.scene.stop', {sceneSessionId: binding.sceneSessionId}).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``17``—``17`` 行；所属函数 ``stop``。
+**性质**：同步局部函数；源码第 ``20``—``20`` 行；所属函数 ``stop``。
 
 **参数**
 
@@ -130,17 +130,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:856:2836:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:1041:3021:FUNCTION
 
-.. rubric:: ``anonymous callback @ 18``
+.. rubric:: ``anonymous callback @ 21``
 
 .. code-block:: javascript
 
-   async anonymous callback @ 18()
+   async anonymous callback @ 21()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``18``—``46`` 行；所属函数 ``useEffect callback @ 13``。
+**性质**：异步局部函数；源码第 ``21``—``49`` 行；所属函数 ``useEffect callback @ 16``。
 
 **参数**
 
@@ -158,17 +158,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:1470:2012:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:1655:2197:FUNCTION
 
-.. rubric:: ``onEvent({event: 'avatar.pose.apply', conversationId, direction: 'incoming'}).then callback @ 26``
+.. rubric:: ``onEvent({event: 'avatar.pose.apply', conversationId, direction: 'incoming'}).then callback @ 29``
 
 .. code-block:: javascript
 
-   onEvent({event: 'avatar.pose.apply', conversationId, direction: 'incoming'}).then callback @ 26({payload})
+   onEvent({event: 'avatar.pose.apply', conversationId, direction: 'incoming'}).then callback @ 29({payload})
 
 处理 ``onEvent({event: 'avatar.pose.apply', conversationId, direction: 'incoming'}).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``26``—``33`` 行；所属函数 ``anonymous callback @ 18``。
+**性质**：同步局部函数；源码第 ``29``—``36`` 行；所属函数 ``anonymous callback @ 21``。
 
 **参数**
 
@@ -183,17 +183,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:1988:1996:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2173:2181:FUNCTION
 
-.. rubric:: ``requestScene('avatar.scene.ack', {sceneSessionId: scope.sceneSessionId, commandId: payload.commandId, applied, error: d… callback @ 32``
+.. rubric:: ``requestScene('avatar.scene.ack', {sceneSessionId: scope.sceneSessionId, commandId: payload.commandId, applied, error: d… callback @ 35``
 
 .. code-block:: javascript
 
-   requestScene('avatar.scene.ack', {sceneSessionId: scope.sceneSessionId, commandId: payload.commandId, applied, error: d… callback @ 32()
+   requestScene('avatar.scene.ack', {sceneSessionId: scope.sceneSessionId, commandId: payload.commandId, applied, error: d… callback @ 35()
 
 实现 ``requestScene('avatar.scene.ack', {sceneSessionId: scope.sceneSessionId, commandId: payload.commandId, applied, error: d…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``32``—``32`` 行；所属函数 ``onEvent({event: 'avatar.pose.apply', conversationId, direction: 'incoming'}).then callback @ 26``。
+**性质**：同步局部函数；源码第 ``35``—``35`` 行；所属函数 ``onEvent({event: 'avatar.pose.apply', conversationId, direction: 'incoming'}).then callback @ 29``。
 
 **参数**
 
@@ -203,17 +203,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2215:2230:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2400:2415:FUNCTION
 
-.. rubric:: ``manifest.poses.map callback @ 36``
+.. rubric:: ``manifest.poses.map callback @ 39``
 
 .. code-block:: javascript
 
-   manifest.poses.map callback @ 36(item)
+   manifest.poses.map callback @ 39(item)
 
 作为 ``manifest.poses.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``36``—``36`` 行；所属函数 ``anonymous callback @ 18``。
+**性质**：同步局部函数；源码第 ``39``—``39`` 行；所属函数 ``anonymous callback @ 21``。
 
 **参数**
 
@@ -224,17 +224,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2271:2286:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2456:2471:FUNCTION
 
-.. rubric:: ``manifest.expressions.map callback @ 36``
+.. rubric:: ``manifest.expressions.map callback @ 39``
 
 .. code-block:: javascript
 
-   manifest.expressions.map callback @ 36(item)
+   manifest.expressions.map callback @ 39(item)
 
 作为 ``manifest.expressions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``36``—``36`` 行；所属函数 ``anonymous callback @ 18``。
+**性质**：同步局部函数；源码第 ``39``—``39`` 行；所属函数 ``anonymous callback @ 21``。
 
 **参数**
 
@@ -245,17 +245,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2467:2817:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2652:3002:FUNCTION
 
-.. rubric:: ``setInterval callback @ 40``
+.. rubric:: ``setInterval callback @ 43``
 
 .. code-block:: javascript
 
-   setInterval callback @ 40()
+   setInterval callback @ 43()
 
 设置与 ``Interval`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``40``—``45`` 行；所属函数 ``anonymous callback @ 18``。
+**性质**：同步局部函数；源码第 ``43``—``48`` 行；所属函数 ``anonymous callback @ 21``。
 
 **参数**
 
@@ -269,17 +269,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2572:2801:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2757:2986:FUNCTION
 
-.. rubric:: ``requestScene('avatar.scene.renew', {sceneSessionId: scope.sceneSessionId}).catch callback @ 41``
+.. rubric:: ``requestScene('avatar.scene.renew', {sceneSessionId: scope.sceneSessionId}).catch callback @ 44``
 
 .. code-block:: javascript
 
-   requestScene('avatar.scene.renew', {sceneSessionId: scope.sceneSessionId}).catch callback @ 41(failure)
+   requestScene('avatar.scene.renew', {sceneSessionId: scope.sceneSessionId}).catch callback @ 44(failure)
 
 处理 ``requestScene('avatar.scene.renew', {sceneSessionId: scope.sceneSessionId}).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``41``—``44`` 行；所属函数 ``setInterval callback @ 40``。
+**性质**：同步局部函数；源码第 ``44``—``47`` 行；所属函数 ``setInterval callback @ 43``。
 
 **参数**
 
@@ -292,17 +292,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 **主要协作调用**：``clearInterval``、``stop``、``setReady``、``setError``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2846:2947:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3031:3132:FUNCTION
 
-.. rubric:: ``(async () => { const response = await requestScene('avatar.scene.catalog'); const manifest = response.payload.catalog;… callback @ 46``
+.. rubric:: ``(async () => { const response = await requestScene('avatar.scene.catalog'); const manifest = response.payload.catalog;… callback @ 49``
 
 .. code-block:: javascript
 
-   (async () => { const response = await requestScene('avatar.scene.catalog'); const manifest = response.payload.catalog;… callback @ 46(failure)
+   (async () => { const response = await requestScene('avatar.scene.catalog'); const manifest = response.payload.catalog;… callback @ 49(failure)
 
 实现 ``(async () => { const response = await requestScene('avatar.scene.catalog'); const manifest = response.payload.catalog;…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``46``—``46`` 行；所属函数 ``useEffect callback @ 13``。
+**性质**：同步局部函数；源码第 ``49``—``49`` 行；所属函数 ``useEffect callback @ 16``。
 
 **参数**
 
@@ -315,17 +315,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 **主要协作调用**：``setReady``、``setError``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:2964:3106:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3149:3291:FUNCTION
 
-.. rubric:: ``returned callback @ 47``
+.. rubric:: ``returned callback @ 50``
 
 .. code-block:: javascript
 
-   returned callback @ 47()
+   returned callback @ 50()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``47``—``47`` 行；所属函数 ``useEffect callback @ 13``。
+**性质**：同步局部函数；源码第 ``50``—``50`` 行；所属函数 ``useEffect callback @ 16``。
 
 **参数**
 
@@ -341,17 +341,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 **主要协作调用**：``abort.abort``、``clearInterval``、``unsubscribe``、``stop``、``engine.current?.dispose``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3582:3737:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3803:3958:FUNCTION
 
-.. rubric:: ``catalog?.poses.map callback @ 53``
+.. rubric:: ``catalog?.poses.map callback @ 57``
 
 .. code-block:: javascript
 
-   catalog?.poses.map callback @ 53(pose)
+   catalog?.poses.map callback @ 57(pose)
 
 作为 ``catalog?.poses.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``53``—``53`` 行；所属函数 ``AvatarScene``。
+**性质**：同步局部函数；源码第 ``57``—``57`` 行；所属函数 ``AvatarScene``。
 
 **参数**
 
@@ -364,17 +364,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3667:3714:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3888:3935:FUNCTION
 
-.. rubric:: ``onClick callback @ 53``
+.. rubric:: ``onClick callback @ 57``
 
 .. code-block:: javascript
 
-   onClick callback @ 53()
+   onClick callback @ 57()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``53``—``53`` 行；所属函数 ``catalog?.poses.map callback @ 53``。
+**性质**：同步局部函数；源码第 ``57``—``57`` 行；所属函数 ``catalog?.poses.map callback @ 57``。
 
 **参数**
 
@@ -386,17 +386,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 **主要协作调用**：``engine.current?.apply``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3865:4039:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:4086:4260:FUNCTION
 
-.. rubric:: ``catalog?.expressions.map callback @ 56``
+.. rubric:: ``catalog?.expressions.map callback @ 60``
 
 .. code-block:: javascript
 
-   catalog?.expressions.map callback @ 56(expression)
+   catalog?.expressions.map callback @ 60(expression)
 
 作为 ``catalog?.expressions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``56``—``56`` 行；所属函数 ``AvatarScene``。
+**性质**：同步局部函数；源码第 ``60``—``60`` 行；所属函数 ``AvatarScene``。
 
 **参数**
 
@@ -409,17 +409,17 @@ src/features/avatar-scene/AvatarScene 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:3960:4010:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScene.jsx:4181:4231:FUNCTION
 
-.. rubric:: ``onClick callback @ 56``
+.. rubric:: ``onClick callback @ 60``
 
 .. code-block:: javascript
 
-   onClick callback @ 56()
+   onClick callback @ 60()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``56``—``56`` 行；所属函数 ``catalog?.expressions.map callback @ 56``。
+**性质**：同步局部函数；源码第 ``60``—``60`` 行；所属函数 ``catalog?.expressions.map callback @ 60``。
 
 **参数**
 

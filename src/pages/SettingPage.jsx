@@ -50,6 +50,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Switch} from "@/components/ui/switch";
 import {Separator} from "@/components/ui/separator";
 import {Badge} from "@/components/ui/badge";
+import {ROBOT_DEBUG_SETTING_KEY} from '@/features/avatar-scene/settings.js';
 import {artifactPreviewVirtualUrl, resolveResourceUrl} from '@/lib/virtualUrl.js';
 
 // ==================== 界面设置通用项 ====================
@@ -136,6 +137,7 @@ const SettingPage = ({
                          handleLogout
                      }) => {
     const isMobile = useIsMobile();
+    const [robotDebugEnabled, setRobotDebugEnabled] = useLocalSetting(ROBOT_DEBUG_SETTING_KEY, false);
     const [showQuickUserMessageNavigator, setShowQuickUserMessageNavigator] = useLocalSetting(
         MESSAGE_NAVIGATOR_SETTING_KEY,
         true
@@ -757,6 +759,13 @@ const SettingPage = ({
                                 description={t('task_window_tool_call_auto_collapse_setting_tip')}
                                 checked={autoCollapseTaskWindowToolCalls}
                                 onCheckedChange={setAutoCollapseTaskWindowToolCalls}
+                            />
+                            <Separator/>
+                            <InterfaceSettingItem
+                                title="机器人调试"
+                                description="在 3D 场景中显示动作与表情测试按钮。"
+                                checked={robotDebugEnabled}
+                                onCheckedChange={setRobotDebugEnabled}
                             />
                         </CardContent>
                     </Card>

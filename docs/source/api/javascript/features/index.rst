@@ -33,6 +33,11 @@
      - 0
      - 18
      - ``src/features/avatar-scene/robotScene.js``
+   * - :doc:`src/features/avatar-scene/settings </api/javascript/features/avatar-scene/settings>`
+     - 0
+     - 0
+     - 0
+     - ``src/features/avatar-scene/settings.js``
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
@@ -597,6 +602,7 @@
    /api/javascript/features/avatar-scene/AvatarScenePanel
    /api/javascript/features/avatar-scene/commandGate
    /api/javascript/features/avatar-scene/robotScene
+   /api/javascript/features/avatar-scene/settings
    /api/javascript/features/chat/ChatPage
    /api/javascript/features/chat/attachmentVision
    /api/javascript/features/chat/composer/draftStore
