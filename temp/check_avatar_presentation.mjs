@@ -54,3 +54,24 @@ hook.show(); hook = render(); assert.equal(hook.visible, true);
 move(500, 200, 'editor'); flushTimers(); hook = render(); assert.equal(hook.visible, true);
 move(500, 200); enabled = false; render(); assert.equal(listeners.size, 0); assert.equal(timers.size, 0);
 console.log('PASS: drag bounds, mobile fit, expand/restore, existing docking, hover, focus pinning, touch reveal and cleanup');
+
+// Verify the real ChatPage composer escapes the clipped message container.
+const {parse} = await import('@babel/parser');
+const pageTree = parse(fs.readFileSync('src/features/chat/ChatPage.jsx', 'utf8'), {sourceType: 'module', plugins: ['jsx']});
+let composerParent;
+function visit(node, parentElement = null) {
+    if (!node || typeof node !== 'object') return;
+    if (node.type === 'JSXElement') {
+        const attrs = node.openingElement.attributes;
+        if (attrs.some(a => a.name?.name === 'data-avatar-composer')) composerParent = parentElement;
+        parentElement = node;
+    }
+    for (const [key, value] of Object.entries(node)) {
+        if (key === 'loc' || key === 'extra') continue;
+        if (Array.isArray(value)) value.forEach(child => visit(child, parentElement));
+        else if (value && typeof value === 'object') visit(value, parentElement);
+    }
+}
+visit(pageTree);
+assert.ok(composerParent?.openingElement.attributes.some(a => a.name?.name === 'ref' && a.value?.expression?.name === 'chatPageRef'));
+console.log('PASS: actual ChatPage composer shares the scene host, outside clipped messages');

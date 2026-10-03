@@ -3188,7 +3188,7 @@ function ChatPage({
                         onDeleteStory={deleteStory}
                     />
 
-                    <div className="flex-1 w-full relative overflow-hidden">
+                    <div className="flex-1 min-h-0 w-full relative overflow-hidden">
                         <div
                             ref={messagesContainerRef}
                             className="h-full overflow-y-auto pb-20 pretty-scrollbar"
@@ -3256,13 +3256,14 @@ function ChatPage({
                             onBrowserSpeechVoiceChange={updateBrowserSpeechVoice}
                             t={t}
                         />
+                    </div>
                         <div ref={immersiveComposer.composerRef}
                             data-avatar-composer="true"
                             onFocusCapture={immersiveComposer.onFocusCapture}
                             onBlurCapture={immersiveComposer.onBlurCapture}
                             inert={avatarImmersive && !immersiveComposer.visible ? true : undefined}
-                            className={avatarImmersive ? 'absolute inset-x-0 bottom-0 z-[60] max-h-full overflow-y-auto transition-[transform,opacity] duration-200 bg-background/90 backdrop-blur-sm' : 'contents'}
-                            style={avatarImmersive ? {transform: immersiveComposer.visible ? 'translateY(0)' : 'translateY(100%)', opacity: immersiveComposer.visible ? 1 : 0, pointerEvents: immersiveComposer.visible ? 'auto' : 'none'} : undefined}>
+                            className={avatarImmersive ? 'absolute inset-x-0 bottom-0 z-[60] max-h-[80%] overflow-y-auto rounded-t-3xl border-t border-border/50 shadow-[0_-12px_40px_rgba(0,0,0,0.12)] transition-[transform,opacity] duration-200 ease-out bg-background/95 backdrop-blur-md' : 'contents'}
+                            style={avatarImmersive ? {transform: immersiveComposer.visible ? 'translateY(0)' : 'translateY(24px)', opacity: immersiveComposer.visible ? 1 : 0, pointerEvents: immersiveComposer.visible ? 'auto' : 'none'} : undefined}>
                         <div
                             ref={setWidgetChatBoxHostElement}
                             data-widget-chatbox-floating-host="true"
@@ -3306,7 +3307,6 @@ function ChatPage({
                             }}
                         />
                         </div>
-                    </div>
 
                     <RuntimeInspectorDialog
                         open={runtimeInspectorOpen}
@@ -3349,7 +3349,7 @@ function ChatPage({
                 {avatarSceneOpen && <AvatarScenePanel conversationId={conversationId} onClose={closeAvatarScene} hostElement={chatPageRef.current} expanded={avatarExpanded} onToggleExpanded={toggleAvatarExpanded}/>}
                 <RealtimeVoiceSurface
                     avatarSceneOpen={avatarSceneOpen}
-                    onToggleAvatarScene={toggleAvatarScene}
+                    onToggleAvatarScene={() => { toggleAvatarScene(); realtimeVoice.setMinimized(true); }}
                     state={realtimeVoice.state}
                     onEnd={() => realtimeVoice.stop()}
                     onMinimize={() => realtimeVoice.setMinimized(true)}
