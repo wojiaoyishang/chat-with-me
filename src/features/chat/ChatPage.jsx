@@ -3332,7 +3332,7 @@ function ChatPage({
                         onPointerEnter={immersiveComposer.show} onFocus={immersiveComposer.show} onClick={immersiveComposer.show}
                         aria-label="显示输入框">输入消息</Button>}
                     <footer
-                        className="absolute inset-x-0 bottom-0 h-14 bg-white flex items-center justify-center ml-5 mr-5">
+                        className={avatarImmersive ? 'hidden' : 'flex h-8 shrink-0 items-center justify-center px-4 bg-background'}>
                         <span className="text-xs text-gray-500">
                           © {new Date().getFullYear()} lovePikachu. All rights reserved.
                         </span>
