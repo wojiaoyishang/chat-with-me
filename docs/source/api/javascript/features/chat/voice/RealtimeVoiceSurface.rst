@@ -22,18 +22,18 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``./RealtimeVoiceSurface.css``、``@/components/ui/button``。
+``react-dom``、``react``、``lucide-react``、``./RealtimeVoiceSurface.css``、``@/components/ui/button``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:656:910:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:697:951:FUNCTION
 
 .. js:function:: modeLabel(mode)
 
    实现 ``modeLabel`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``30``—``36`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``31``—``37`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
    **主要协作调用**：``String(mode || 'REALTIME').toUpperCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:937:1336:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:978:1377:FUNCTION
 
 .. js:function:: visualStateFor(state)
 
    实现 ``visualStateFor`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``38``—``45`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``39``—``46`` 行。
 
    **参数**
 
@@ -63,13 +63,13 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``'muted'``、``'user-speaking'``、``'thinking'``、``'assistant-speaking'``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:1362:1817:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:1403:1858:FUNCTION
 
 .. js:function:: waveformLevel(levels)
 
    实现 ``waveformLevel`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``47``—``57`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``48``—``58`` 行。
 
    **参数**
 
@@ -84,13 +84,13 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:1818:2982:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:1859:3023:FUNCTION
 
 .. js:function:: VoiceOrb({state})
 
    渲染 ``VoiceOrb`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``59``—``84`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``60``—``85`` 行。
 
    **参数**
 
@@ -103,13 +103,13 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
    **主要协作调用**：``waveformLevel``、``visualStateFor``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:2982:3368:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:3023:3409:FUNCTION
 
 .. js:function:: StatusTrail({state})
 
    渲染 ``StatusTrail`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``86``—``94`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``87``—``95`` 行。
 
    **参数**
 
@@ -122,13 +122,13 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
    **主要协作调用**：``['authorizing', 'connecting', 'negotiating', 'requesting_microphone', 'understanding', 'thinking'] .includes``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:3368:5971:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:3409:6012:FUNCTION
 
 .. js:function:: ProtocolIndicator({profile})
 
    渲染 ``ProtocolIndicator`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``96``—``145`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``97``—``146`` 行。
 
    **参数**
 
@@ -143,13 +143,13 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:5971:6183:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:6012:6224:FUNCTION
 
 .. js:function:: MiniVoiceOrb({state})
 
    渲染 ``MiniVoiceOrb`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``147``—``153`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``148``—``154`` 行。
 
    **参数**
 
@@ -162,24 +162,24 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
    **主要协作调用**：``visualStateFor``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:6183:11846:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:6224:12173:FUNCTION
 
-.. js:function:: RealtimeVoiceSurface({state, onEnd, onMinimize, onRestore, onToggleMute, avatarSceneOpen, onToggleAvatarScene})
+.. js:function:: RealtimeVoiceSurface({state, onEnd, onMinimize, onRestore, onToggleMute, avatarSceneOpen, onToggleAvatarScene, minimized…)
 
    渲染 ``RealtimeVoiceSurface`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``155``—``273`` 行。
+   **性质**：同步函数；导出 API；源码第 ``156``—``276`` 行。
 
    **参数**
 
-   ``{state, onEnd, onMinimize, onRestore, onToggleMute, avatarSceneOpen, onToggleAvatarScene}``
-      调用方传入的 ``state, onEnd, onMinimize, onRestore, onToggleMute, avatarSceneOpen, onToggleAvatarScene`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{state, onEnd, onMinimize, onRestore, onToggleMute, avatarSceneOpen, onToggleAvatarScene, minimized…``
+      调用方传入的 ``state, onEnd, onMinimize, onRestore, onToggleMute, avatarSceneOpen, onToggleAvatarScene, minimized…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <button type="button" onClick={onRestore} className="cwm-voice-minimized" title="恢复语音窗口" > <MiniVoiceOrb state={state}/> <span className="min-w-0 text-left"> <span className="fl…``、``( <aside className="cwm-voice-dock"> <section className="cwm-voice-surface"> <header className="cwm-voice-header"> <div className="min-w-0"> <div className="flex items-center gap-…``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``minimizedHost ? createPortal(minimizedView, minimizedHost) : minimizedView``、``( <aside className="cwm-voice-dock"> <section className="cwm-voice-surface"> <header className="cwm-voice-header"> <div className="min-w-0"> <div className="flex items-center gap-…``。
 
-   **主要协作调用**：``String(state?.partialTranscript || '').trim``、``String``、``String(recentUserUtterance?.text || '').trim``、``String(state?.finalTranscript || '').trim``、``useMemo``、``['disconnected', 'error', 'ended'].includes``。
+   **主要协作调用**：``String(state?.partialTranscript || '').trim``、``String``、``String(recentUserUtterance?.text || '').trim``、``String(state?.finalTranscript || '').trim``、``useMemo``、``['disconnected', 'error', 'ended'].includes``、``createPortal``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -188,17 +188,17 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:1489:1511:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:1530:1552:FUNCTION
 
-.. rubric:: ``levels .map callback @ 50``
+.. rubric:: ``levels .map callback @ 51``
 
 .. code-block:: javascript
 
-   levels .map callback @ 50(value)
+   levels .map callback @ 51(value)
 
 作为 ``levels .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``50``—``50`` 行；所属函数 ``waveformLevel``。
+**性质**：同步局部函数；源码第 ``51``—``51`` 行；所属函数 ``waveformLevel``。
 
 **参数**
 
@@ -211,17 +211,17 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:1561:1601:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:1602:1642:FUNCTION
 
-.. rubric:: ``levels .map(value => Number(value)) .filter(Number.isFinite) .map callback @ 52``
+.. rubric:: ``levels .map(value => Number(value)) .filter(Number.isFinite) .map callback @ 53``
 
 .. code-block:: javascript
 
-   levels .map(value => Number(value)) .filter(Number.isFinite) .map callback @ 52(value)
+   levels .map(value => Number(value)) .filter(Number.isFinite) .map callback @ 53(value)
 
 作为 ``levels .map(value => Number(value)) .filter(Number.isFinite) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``52``—``52`` 行；所属函数 ``waveformLevel``。
+**性质**：同步局部函数；源码第 ``53``—``53`` 行；所属函数 ``waveformLevel``。
 
 **参数**
 
@@ -234,17 +234,17 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
 **主要协作调用**：``Math.max``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:1718:1749:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:1759:1790:FUNCTION
 
-.. rubric:: ``values.reduce callback @ 55``
+.. rubric:: ``values.reduce callback @ 56``
 
 .. code-block:: javascript
 
-   values.reduce callback @ 55(total, value)
+   values.reduce callback @ 56(total, value)
 
 作为 ``values.reduce callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``55``—``55`` 行；所属函数 ``waveformLevel``。
+**性质**：同步局部函数；源码第 ``56``—``56`` 行；所属函数 ``waveformLevel``。
 
 **参数**
 
@@ -258,17 +258,17 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:3782:3816:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:3823:3857:FUNCTION
 
-.. rubric:: ``onClick callback @ 106``
+.. rubric:: ``onClick callback @ 107``
 
 .. code-block:: javascript
 
-   onClick callback @ 106()
+   onClick callback @ 107()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``106``—``106`` 行；所属函数 ``ProtocolIndicator``。
+**性质**：同步局部函数；源码第 ``107``—``107`` 行；所属函数 ``ProtocolIndicator``。
 
 **参数**
 
@@ -282,17 +282,17 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:3800:3815:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:3841:3856:FUNCTION
 
-.. rubric:: ``setExpanded callback @ 106``
+.. rubric:: ``setExpanded callback @ 107``
 
 .. code-block:: javascript
 
-   setExpanded callback @ 106(value)
+   setExpanded callback @ 107(value)
 
 设置与 ``Expanded`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``106``—``106`` 行；所属函数 ``onClick callback @ 106``。
+**性质**：同步局部函数；源码第 ``107``—``107`` 行；所属函数 ``onClick callback @ 107``。
 
 **参数**
 
@@ -303,17 +303,17 @@ src/features/chat/voice/RealtimeVoiceSurface 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:6817:6942:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/RealtimeVoiceSurface.jsx:6902:7027:FUNCTION
 
-.. rubric:: ``useMemo callback @ 164``
+.. rubric:: ``useMemo callback @ 165``
 
 .. code-block:: javascript
 
-   useMemo callback @ 164()
+   useMemo callback @ 165()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``164``—``166`` 行；所属函数 ``RealtimeVoiceSurface``。
+**性质**：同步局部函数；源码第 ``165``—``167`` 行；所属函数 ``RealtimeVoiceSurface``。
 
 **参数**
 

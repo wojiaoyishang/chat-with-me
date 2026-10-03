@@ -3357,10 +3357,12 @@ function ChatPage({
                 <RealtimeVoiceSurface
                     avatarSceneOpen={avatarSceneOpen}
                     onToggleAvatarScene={() => { toggleAvatarScene(); realtimeVoice.setMinimized(true); }}
-                    state={{...realtimeVoice.state, open: realtimeVoice.state.open && !avatarImmersive}}
+                    state={{...realtimeVoice.state, minimized: avatarImmersive || realtimeVoice.state.minimized}}
+                    minimizedHost={avatarImmersive ? chatPageRef.current : null}
+                    minimizedBottom={avatarImmersive && immersiveComposer.visible ? (immersiveComposer.composerRef.current?.getBoundingClientRect().height || 0) + 12 : 16}
                     onEnd={() => { closeAvatarScene(); void realtimeVoice.stop(); }}
                     onMinimize={() => realtimeVoice.setMinimized(true)}
-                    onRestore={() => realtimeVoice.setMinimized(false)}
+                    onRestore={() => { setAvatarExpanded(false); realtimeVoice.setMinimized(false); }}
                     onToggleMute={realtimeVoice.toggleMute}
                 />
 

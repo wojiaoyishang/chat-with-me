@@ -1,3 +1,4 @@
+import {createPortal} from 'react-dom';
 import React, {useMemo, useState} from 'react';
 import {
     Activity,
@@ -152,7 +153,7 @@ function MiniVoiceOrb({state}) {
     );
 }
 
-export default function RealtimeVoiceSurface({state, onEnd, onMinimize, onRestore, onToggleMute, avatarSceneOpen, onToggleAvatarScene}) {
+export default function RealtimeVoiceSurface({state, onEnd, onMinimize, onRestore, onToggleMute, avatarSceneOpen, onToggleAvatarScene, minimizedHost = null, minimizedBottom = 16}) {
     const statusLabel = state?.muted
         ? '麦克风已静音'
         : (STATUS_LABELS[state?.status] || state?.status || '实时语音');
@@ -164,16 +165,17 @@ export default function RealtimeVoiceSurface({state, onEnd, onMinimize, onRestor
     const summary = useMemo(() => (
         state?.profile?.conversationModel?.model || state?.profile?.conversationModel?.id || 'Realtime Voice'
     ), [state?.profile]);
-    const connectionHealthy = !['disconnected', 'error', 'ended'].includes(state?.status);
+    const connectionHealthy = !state?.outputOnly && !['disconnected', 'error', 'ended'].includes(state?.status);
 
     if (!state?.open) return null;
 
     if (state.minimized) {
-        return (
+        const minimizedView = (
             <button
                 type="button"
                 onClick={onRestore}
                 className="cwm-voice-minimized"
+                style={minimizedHost ? {position: 'absolute', bottom: minimizedBottom, zIndex: 80} : undefined}
                 title="恢复语音窗口"
             >
                 <MiniVoiceOrb state={state}/>
@@ -187,6 +189,7 @@ export default function RealtimeVoiceSurface({state, onEnd, onMinimize, onRestor
                 <ChevronUp className="ml-1 text-slate-400" size={17}/>
             </button>
         );
+        return minimizedHost ? createPortal(minimizedView, minimizedHost) : minimizedView;
     }
 
     return (
