@@ -51,7 +51,7 @@ export default function AvatarScene({requestScene, conversationId}) {
     }, [requestScene, conversationId]);
     return <div className="relative w-full min-w-0">
         <div ref={container} className="h-64 w-full sm:h-80" aria-label="实时机器人 3D 场景"/>
-        <p className="px-3 text-center text-xs text-muted-foreground" role="status">{error || (ready ? (conversationId ? '可以打字或说话，让 AI 控制动作和表情' : '发送消息创建对话后，AI 就能控制机器人') : '正在加载机器人…')}</p>
+        {(error || !ready || !conversationId) && <p className="px-3 text-center text-xs text-muted-foreground" role="status">{error || (!ready ? '正在加载机器人…' : '发送消息创建对话后，AI 就能控制机器人')}</p>}
         {robotDebugEnabled === true && <>
         <div className="flex flex-wrap justify-center gap-1 p-2">
             {catalog?.poses.map(pose => <Button key={pose.id} size="sm" variant="outline" disabled={!ready} onClick={() => engine.current?.apply(pose.id, 'neutral')}>{pose.label}</Button>)}
