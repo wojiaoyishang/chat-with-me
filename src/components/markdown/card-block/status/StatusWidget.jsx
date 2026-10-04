@@ -396,14 +396,16 @@ const StatusWidget = memo(
                             ));
                         const results = state?.results?.length
                             ? state.results
-                            : state?.status === 'failed'
-                              ? [{ success: false, content: state.message || '调用失败' }]
-                              : [];
+                            : state?.status === 'running'
+                              ? [{ success: null, content: '' }]
+                              : state?.status === 'failed'
+                                ? [{ success: false, content: state.message || '调用失败' }]
+                                : [];
                         return results.map((result, index) => (
                             <ToolLogBlock
                                 key={`${item.toolid}:${state.revision}:${index}`}
                                 id={`${id}:feedback:${item.toolid}:${index}`}
-                                content={`${result.content ?? '工具未返回内容'}\n[${result.success ? 'DONE' : 'FAILED'}]`}
+                                content={`[TITLE:调用工具 ${state.tool_name || '未知工具'}]\n${state.started_at ? `[START:${new Date(state.started_at * 1000).toISOString()}]\n` : ''}${result.content ?? '工具未返回内容'}\n${result.success == null ? '' : `[${result.success ? 'DONE' : 'FAILED'}${state.finished_at ? `:${new Date(state.finished_at * 1000).toISOString()}` : ''}]`}`}
                             />
                         ));
                     })}
