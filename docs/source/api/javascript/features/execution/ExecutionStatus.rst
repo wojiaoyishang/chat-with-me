@@ -27,7 +27,7 @@ src/features/execution/ExecutionStatus 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:329:1156:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:329:1133:FUNCTION
 
 .. js:function:: parseExecution(content, conversationId)
 
@@ -54,21 +54,21 @@ src/features/execution/ExecutionStatus 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:1190:7202:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:1165:7044:FUNCTION
 
 .. rubric:: ``memo callback @ 32``
 
 .. code-block:: javascript
 
-   memo callback @ 32({content = '', conversationId = null})
+   memo callback @ 32({ content = '', conversationId = null })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``32``—``152`` 行。
+**性质**：同步局部函数；源码第 ``32``—``146`` 行。
 
 **参数**
 
-``{content = '', conversationId = null}``
+``{ content = '', conversationId = null }``
    调用方传入的 ``content = '', conversationId = null`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -79,7 +79,7 @@ src/features/execution/ExecutionStatus 模块
 
 **内部回调数量**：7。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:1266:1311:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:1242:1287:FUNCTION
 
 .. rubric:: ``useMemo callback @ 33``
 
@@ -101,7 +101,7 @@ src/features/execution/ExecutionStatus 模块
 
 **主要协作调用**：``parseExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:1386:1686:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:1361:1656:FUNCTION
 
 .. rubric:: ``useExecutionStore callback @ 34``
 
@@ -124,7 +124,7 @@ src/features/execution/ExecutionStatus 模块
 
 **主要协作调用**：``String(execution?.conversationId || conversationId || '').trim``、``String``、``String(execution?.executionId || '').trim``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:1706:2410:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:1674:2367:FUNCTION
 
 .. rubric:: ``useEffect callback @ 41``
 
@@ -146,17 +146,17 @@ src/features/execution/ExecutionStatus 模块
 
 **主要协作调用**：``useExecutionStore.getState``、``Number``、``upsertExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:4487:4651:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:4252:4422:FUNCTION
 
-.. rubric:: ``activitySource.filter callback @ 102``
+.. rubric:: ``activitySource.filter callback @ 93``
 
 .. code-block:: javascript
 
-   activitySource.filter callback @ 102(activity)
+   activitySource.filter callback @ 93(activity)
 
 作为 ``activitySource.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``102``—``105`` 行；所属函数 ``memo callback @ 32``。
+**性质**：同步局部函数；源码第 ``93``—``95`` 行；所属函数 ``memo callback @ 32``。
 
 **参数**
 
@@ -169,17 +169,17 @@ src/features/execution/ExecutionStatus 模块
 
 **主要协作调用**：``String(activity?.kind || '').toLowerCase``、``String``、``String(activity?.anchorStatusId || '').trim``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:5433:5464:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:5210:5241:FUNCTION
 
-.. rubric:: ``onClick callback @ 121``
+.. rubric:: ``onClick callback @ 113``
 
 .. code-block:: javascript
 
-   onClick callback @ 121()
+   onClick callback @ 113()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``121``—``121`` 行；所属函数 ``memo callback @ 32``。
+**性质**：同步局部函数；源码第 ``113``—``113`` 行；所属函数 ``memo callback @ 32``。
 
 **参数**
 
@@ -191,17 +191,17 @@ src/features/execution/ExecutionStatus 模块
 
 **主要协作调用**：``openExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:6216:6328:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:6036:6186:FUNCTION
 
-.. rubric:: ``guidanceActivities.map callback @ 133``
+.. rubric:: ``guidanceActivities.map callback @ 127``
 
 .. code-block:: javascript
 
-   guidanceActivities.map callback @ 133(activity)
+   guidanceActivities.map callback @ 127(activity)
 
 作为 ``guidanceActivities.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``133``—``135`` 行；所属函数 ``memo callback @ 32``。
+**性质**：同步局部函数；源码第 ``127``—``129`` 行；所属函数 ``memo callback @ 32``。
 
 **参数**
 
@@ -212,17 +212,17 @@ src/features/execution/ExecutionStatus 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:6460:6491:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionStatus.jsx:6314:6345:FUNCTION
 
-.. rubric:: ``onClick callback @ 139``
+.. rubric:: ``onClick callback @ 133``
 
 .. code-block:: javascript
 
-   onClick callback @ 139()
+   onClick callback @ 133()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``139``—``139`` 行；所属函数 ``memo callback @ 32``。
+**性质**：同步局部函数；源码第 ``133``—``133`` 行；所属函数 ``memo callback @ 32``。
 
 **参数**
 

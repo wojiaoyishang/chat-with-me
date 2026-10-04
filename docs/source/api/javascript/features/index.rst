@@ -246,7 +246,7 @@
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 8
      - 0
-     - 183
+     - 184
      - ``src/features/chat/ui/ChatBox.jsx``
    * - :doc:`src/features/chat/ui/ChatBoxHeader </api/javascript/features/chat/ui/ChatBoxHeader>`
      - 0
@@ -483,6 +483,11 @@
      - 0
      - 1
      - ``src/features/chat/widgets/WidgetPresentationContext.jsx``
+   * - :doc:`src/features/execution/ExecutionGuidanceAction </api/javascript/features/execution/ExecutionGuidanceAction>`
+     - 1
+     - 0
+     - 1
+     - ``src/features/execution/ExecutionGuidanceAction.jsx``
    * - :doc:`src/features/execution/ExecutionGuidanceBubble </api/javascript/features/execution/ExecutionGuidanceBubble>`
      - 1
      - 0
@@ -727,6 +732,7 @@
    /api/javascript/features/chat/voice/index
    /api/javascript/features/chat/voice/useRealtimeVoiceConversation
    /api/javascript/features/chat/widgets/WidgetPresentationContext
+   /api/javascript/features/execution/ExecutionGuidanceAction
    /api/javascript/features/execution/ExecutionGuidanceBubble
    /api/javascript/features/execution/ExecutionHost
    /api/javascript/features/execution/ExecutionStatus

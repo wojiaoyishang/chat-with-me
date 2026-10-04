@@ -1,11 +1,11 @@
-import React, {useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, memo} from 'react';
-import {useTranslation} from 'react-i18next';
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import {toast} from 'sonner';
-import {apiEndpoint} from '@/config.js';
+import { toast } from 'sonner';
+import { apiEndpoint } from '@/config.js';
 import apiClient from '@/lib/apiClient';
-import {getLocalSetting, setLocalSetting, useIsMobile} from '@/lib/tools.jsx';
-import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
+import { getLocalSetting, setLocalSetting, useIsMobile } from '@/lib/tools.jsx';
+import { emitEvent, onEvent } from '@/context/useEventStore.jsx';
 
 import ChatBoxHeader from './ChatBoxHeader';
 import ToolButtons from './ToolButtons';
@@ -18,7 +18,7 @@ import ComposerPrimaryAction from './chatbox/components/ComposerPrimaryAction';
 import VoiceInputButton from './chatbox/components/VoiceInputButton';
 import VoicePermissionDialog from './chatbox/components/VoicePermissionDialog';
 import ChatBoxInteractionHost from './chatbox/components/ChatBoxInteractionHost';
-import {getAttachmentId} from '../attachmentVision.js';
+import { getAttachmentId } from '../attachmentVision.js';
 import {
     clearComposerDraft,
     moveComposerConversationDrafts,
@@ -31,18 +31,19 @@ import {
     newestComposerDraft,
     readMountedComposerDraft,
 } from '../composer/messageDraftMount.js';
-import {modelSupportsVision} from '../modelCapabilities.js';
+import { modelSupportsVision } from '../modelCapabilities.js';
 import RoleSelector from './chatbox/components/RoleSelector';
 import FullscreenEditorModal from './chatbox/components/FullscreenEditorModal';
-import {useExtraToolsMenuItems} from './chatbox/components/ExtraToolsMenuItems';
+import { useExtraToolsMenuItems } from './chatbox/components/ExtraToolsMenuItems';
 import ConversationToolsDialog from '@/features/tools/components/ConversationToolsDialog';
 import {
     patchExecutionActivity,
+    useExecutionStore,
     upsertExecution,
     upsertExecutionActivity,
 } from '@/features/execution/useExecutionStore.js';
 import WorkspaceSettingsDialog from '@/features/workspace/WorkspaceSettingsDialog.jsx';
-import {deepMerge, setNestedValue} from './chatbox/utils/toolState';
+import { deepMerge, setNestedValue } from './chatbox/utils/toolState';
 import {
     createPcm16kRecorder,
     createSilentWaveformLevels,
@@ -51,12 +52,8 @@ import {
     requestMicrophoneStream,
 } from './chatbox/utils/voiceRecorder';
 
-const realtimeActionErrorMessage = (response, fallback) => (
-    response?.value
-    || response?.message
-    || (response?.code ? String(response.code) : '')
-    || fallback
-);
+const realtimeActionErrorMessage = (response, fallback) =>
+    response?.value || response?.message || (response?.code ? String(response.code) : '') || fallback;
 
 const createExecutionGuidanceId = () => {
     try {
@@ -73,12 +70,11 @@ const CHATBOX_AUTO_HIDE_SETTING_KEY = 'ChatBoxBottomAutoHide';
 const CHATBOX_COLLAPSED_HEIGHT = 30;
 const CHATBOX_COLLAPSE_OVERSHOOT_PX = 24;
 const CHATBOX_AUTO_HIDE_DELAY_MS = 2200;
-const normalizeVoiceRecognitionEngine = (value) => (
-    String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote'
-);
+const normalizeVoiceRecognitionEngine = (value) =>
+    String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote';
 
 const applyLocalSettingBackedExtraToolStatus = (status, toolsConfig = []) => {
-    let result = {...status};
+    let result = { ...status };
 
     const visit = (items = [], parentPath = []) => {
         items.forEach((item) => {
@@ -91,16 +87,17 @@ const applyLocalSettingBackedExtraToolStatus = (status, toolsConfig = []) => {
             const currentPath = [...parentPath, item.name];
 
             if (item.type === 'radio' && item.name === VOICE_RECOGNITION_ENGINE_SETTING_KEY) {
-                const allowedValues = new Set((item.children || []).map(child => child?.name).filter(Boolean));
+                const allowedValues = new Set((item.children || []).map((child) => child?.name).filter(Boolean));
                 const fallbackValue = allowedValues.has(item.default)
                     ? item.default
-                    : (allowedValues.has('remote') ? 'remote' : (item.children?.[0]?.name || 'remote'));
+                    : allowedValues.has('remote')
+                      ? 'remote'
+                      : item.children?.[0]?.name || 'remote';
                 const localValue = normalizeVoiceRecognitionEngine(
-                    getLocalSetting(VOICE_RECOGNITION_ENGINE_SETTING_KEY, fallbackValue)
+                    getLocalSetting(VOICE_RECOGNITION_ENGINE_SETTING_KEY, fallbackValue),
                 );
-                const nextValue = allowedValues.size === 0 || allowedValues.has(localValue)
-                    ? localValue
-                    : fallbackValue;
+                const nextValue =
+                    allowedValues.size === 0 || allowedValues.has(localValue) ? localValue : fallbackValue;
                 result = setNestedValue(result, currentPath, nextValue);
             }
 
@@ -113,7 +110,6 @@ const applyLocalSettingBackedExtraToolStatus = (status, toolsConfig = []) => {
     visit(toolsConfig);
     return result;
 };
-
 
 const collectToolPermissions = (toolsConfig = [], status = {}) => {
     const permissions = {};
@@ -129,9 +125,12 @@ const collectToolPermissions = (toolsConfig = [], status = {}) => {
 
             const value = currentStatus?.[item.name];
             if (item.type === 'tool') {
-                const mode = typeof value === 'boolean'
-                    ? (value ? 'allow' : 'deny')
-                    : String(value || item.default || 'ask').toLowerCase();
+                const mode =
+                    typeof value === 'boolean'
+                        ? value
+                            ? 'allow'
+                            : 'deny'
+                        : String(value || item.default || 'ask').toLowerCase();
                 permissions[item.name] = ['allow', 'deny', 'ask'].includes(mode) ? mode : 'ask';
                 return;
             }
@@ -171,9 +170,8 @@ const extractLocalOnlyExtraToolStatus = (toolsConfig = [], status = {}) => {
     return visit(toolsConfig, status);
 };
 
-
 const applyToolPermissionsToStatus = (toolsConfig = [], status = {}, permissions = {}) => {
-    let result = {...(status || {})};
+    let result = { ...(status || {}) };
 
     const visit = (items = [], parentPath = []) => {
         items.forEach((item) => {
@@ -203,36 +201,36 @@ const applyToolPermissionsToStatus = (toolsConfig = [], status = {}, permissions
 // ========== 主组件 ==========
 
 function ChatBox({
-                     onSendMessage,
-                     readOnly = false,
-                     FilePickerCallback,
-                     PicPickerCallback,
-                     conversationId,
-                     attachmentsMeta = [],
-                     setAttachments,
-                     uploadFiles = [],
-                     onAttachmentRemove,
-                     onImagePaste,
-                     onRetryUpload,
-                     onCancelUpload,
-                     onDropFiles,
-                     onFolderDetected,
-                     onHeightChange,
-                     dropTargetRef,
-                     editorHostRef,
-                     selectedModel,
-                     isWindowMode = false,
-                     immersive = false,
-                     onVoicePcmReady,
-                     onVoiceRecordingStart,
-                     onVoiceRecordingCancel,
-                     onRealtimeVoiceStart,
-                     selectedWorkspaceIds = [],
-                     onWorkspaceChange,
-                 }) {
-    const {t} = useTranslation();
+    onSendMessage,
+    readOnly = false,
+    FilePickerCallback,
+    PicPickerCallback,
+    conversationId,
+    attachmentsMeta = [],
+    setAttachments,
+    uploadFiles = [],
+    onAttachmentRemove,
+    onImagePaste,
+    onRetryUpload,
+    onCancelUpload,
+    onDropFiles,
+    onFolderDetected,
+    onHeightChange,
+    dropTargetRef,
+    editorHostRef,
+    selectedModel,
+    isWindowMode = false,
+    immersive = false,
+    onVoicePcmReady,
+    onVoiceRecordingStart,
+    onVoiceRecordingCancel,
+    onRealtimeVoiceStart,
+    selectedWorkspaceIds = [],
+    onWorkspaceChange,
+}) {
+    const { t } = useTranslation();
     const voiceText = useMemo(() => {
-        const translate = (key, defaultValue) => t(key, {defaultValue});
+        const translate = (key, defaultValue) => t(key, { defaultValue });
         return {
             input: translate('voice_input', 'Voice input'),
             switchToText: translate('voice_input_switch_to_text', 'Switch to text input'),
@@ -245,30 +243,33 @@ function ChatBox({
             permissionTitle: translate('voice_input_permission_title', 'Microphone permission required'),
             permissionIntro: translate(
                 'voice_input_permission_intro',
-                'Voice input needs microphone access. Please choose Allow in the browser permission prompt.'
+                'Voice input needs microphone access. Please choose Allow in the browser permission prompt.',
             ),
             permissionConfirm: translate('voice_input_permission_confirm', 'Continue'),
             permissionCancel: translate('voice_input_permission_cancel', 'Not now'),
             permissionDeniedTitle: translate('voice_input_permission_denied_title', 'Microphone access failed'),
             permissionDeniedMessage: translate(
                 'voice_input_permission_denied_message',
-                'Could not access the microphone. Please allow microphone access in your browser settings and try again.'
+                'Could not access the microphone. Please allow microphone access in your browser settings and try again.',
             ),
             permissionDeniedConfirm: translate('voice_input_permission_denied_confirm', 'Got it'),
             microphoneUnsupported: translate(
                 'voice_input_microphone_unsupported',
-                'This browser does not support microphone recording.'
+                'This browser does not support microphone recording.',
             ),
-            recordingFailed: translate('voice_input_record_failed', 'Could not process the recording. Please try again.'),
+            recordingFailed: translate(
+                'voice_input_record_failed',
+                'Could not process the recording. Please try again.',
+            ),
         };
     }, [t]);
     const isMobileDevice = useIsMobile();
     const highZClass = isWindowMode ? 'z-[100000]' : '';
 
     // ========== 状态管理 ==========
-    const [messageContent, setMessageContent] = useState(() => (
-        readComposerDraft({conversationId, mode: 'normal'})?.content || ''
-    ));
+    const [messageContent, setMessageContent] = useState(
+        () => readComposerDraft({ conversationId, mode: 'normal' })?.content || '',
+    );
     const [toolsStatus, setToolsStatus] = useState({});
     const [runtimeToolPermissions, setRuntimeToolPermissions] = useState({});
     const [conversationToolDefaults, setConversationToolDefaults] = useState({});
@@ -320,9 +321,9 @@ function ChatBox({
     });
     const [activeExecution, setActiveExecution] = useState(null);
     const [isExecutionGuidancePending, setIsExecutionGuidancePending] = useState(false);
-    const [isBottomAutoHideEnabled, setIsBottomAutoHideEnabled] = useState(() => (
-        Boolean(getLocalSetting(CHATBOX_AUTO_HIDE_SETTING_KEY, false))
-    ));
+    const [isBottomAutoHideEnabled, setIsBottomAutoHideEnabled] = useState(() =>
+        Boolean(getLocalSetting(CHATBOX_AUTO_HIDE_SETTING_KEY, false)),
+    );
     const [isChatBoxCollapsed, setIsChatBoxCollapsed] = useState(false);
     const [collapsedTranslateY, setCollapsedTranslateY] = useState(0);
 
@@ -331,8 +332,10 @@ function ChatBox({
     const [isVoiceRecognizing, setIsVoiceRecognizing] = useState(false);
     const [isMobileVoiceMode, setIsMobileVoiceMode] = useState(false);
     const [voiceActionPending, setVoiceActionPending] = useState(false);
-    const [voiceWaveformLevels, setVoiceWaveformLevels] = useState(() => createSilentWaveformLevels(VOICE_WAVEFORM_BARS));
-    const [voicePermissionDialog, setVoicePermissionDialog] = useState({open: false});
+    const [voiceWaveformLevels, setVoiceWaveformLevels] = useState(() =>
+        createSilentWaveformLevels(VOICE_WAVEFORM_BARS),
+    );
+    const [voicePermissionDialog, setVoicePermissionDialog] = useState({ open: false });
 
     // 固件相关
     const [attachmentHeight, setAttachmentHeight] = useState(0);
@@ -377,7 +380,6 @@ function ChatBox({
     const runtimeToolPermissionRunIdRef = useRef(null);
     const [containerWidth, setContainerWidth] = useState(0);
 
-
     // 使用 useRef 缓存频繁变化的值，避免触发重新渲染
     const messageContentRef = useRef(messageContent);
     const sendButtonStatusRef = useRef(sendButtonStatus);
@@ -387,7 +389,6 @@ function ChatBox({
     // 发送消息角色身份相关
     const [roles, setRoles] = useState([]);
     const [currentRole, setCurrentRole] = useState(null);
-
 
     // ========== 回调函数（使用 useCallback 缓存）==========
     const currentRoleRef = useRef(currentRole);
@@ -403,64 +404,69 @@ function ChatBox({
                 messageId: editDraft.messageId,
             };
         }
-        return {conversationId: draftConversationIdRef.current, mode: 'normal', messageId: null};
+        return { conversationId: draftConversationIdRef.current, mode: 'normal', messageId: null };
     }, []);
 
-    const persistActiveDraft = useCallback((overrides = {}) => {
-        const identity = getActiveDraftIdentity();
-        const savedDraft = saveComposerSnapshot({
-            ...identity,
-            content: overrides.content ?? messageContentRef.current,
-            attachments: overrides.attachments ?? attachmentsMetaRef.current,
-            roleName: overrides.roleName ?? currentRoleRef.current?.name ?? null,
-        });
+    const persistActiveDraft = useCallback(
+        (overrides = {}) => {
+            const identity = getActiveDraftIdentity();
+            const savedDraft = saveComposerSnapshot({
+                ...identity,
+                content: overrides.content ?? messageContentRef.current,
+                attachments: overrides.attachments ?? attachmentsMetaRef.current,
+                roleName: overrides.roleName ?? currentRoleRef.current?.name ?? null,
+            });
 
-        // Edit/Fork drafts have two browser-only layers:
-        // 1) the durable local Draft Store for refresh recovery;
-        // 2) the message mount point for immediate per-message recovery while the
-        //    current message object stays alive. Neither layer is synchronized to
-        //    the backend before the user actually sends the edited/forked Turn.
-        const editDraft = editDraftRef.current;
-        if (
-            savedDraft
-            && identity.mode !== 'normal'
-            && editDraft?.message
-            && editDraft.mode === identity.mode
-            && String(editDraft.messageId ?? '') === String(identity.messageId ?? '')
-        ) {
-            mountComposerDraft(editDraft.message, editDraft.mode, savedDraft);
-        }
-        return savedDraft;
-    }, [getActiveDraftIdentity]);
+            // Edit/Fork drafts have two browser-only layers:
+            // 1) the durable local Draft Store for refresh recovery;
+            // 2) the message mount point for immediate per-message recovery while the
+            //    current message object stays alive. Neither layer is synchronized to
+            //    the backend before the user actually sends the edited/forked Turn.
+            const editDraft = editDraftRef.current;
+            if (
+                savedDraft &&
+                identity.mode !== 'normal' &&
+                editDraft?.message &&
+                editDraft.mode === identity.mode &&
+                String(editDraft.messageId ?? '') === String(identity.messageId ?? '')
+            ) {
+                mountComposerDraft(editDraft.message, editDraft.mode, savedDraft);
+            }
+            return savedDraft;
+        },
+        [getActiveDraftIdentity],
+    );
 
     const resolveDraftRole = useCallback((roleName) => {
         const availableRoles = rolesRef.current || [];
         if (roleName) {
-            const matched = availableRoles.find(item => item.name === roleName);
+            const matched = availableRoles.find((item) => item.name === roleName);
             if (matched) return matched;
-            return {name: roleName, text: '?'};
+            return { name: roleName, text: '?' };
         }
-        return availableRoles.find(item => item.default) || availableRoles[0] || null;
+        return availableRoles.find((item) => item.default) || availableRoles[0] || null;
     }, []);
 
-    const updateMessageContent = useCallback((valueOrUpdater, {persist = true} = {}) => {
-        const nextValue = typeof valueOrUpdater === 'function'
-            ? valueOrUpdater(messageContentRef.current)
-            : valueOrUpdater;
-        const normalizedValue = nextValue == null ? '' : String(nextValue);
+    const updateMessageContent = useCallback(
+        (valueOrUpdater, { persist = true } = {}) => {
+            const nextValue =
+                typeof valueOrUpdater === 'function' ? valueOrUpdater(messageContentRef.current) : valueOrUpdater;
+            const normalizedValue = nextValue == null ? '' : String(nextValue);
 
-        messageContentRef.current = normalizedValue;
-        setMessageContent(normalizedValue);
+            messageContentRef.current = normalizedValue;
+            setMessageContent(normalizedValue);
 
-        if (persist) persistActiveDraft({content: normalizedValue});
-        return normalizedValue;
-    }, [persistActiveDraft]);
+            if (persist) persistActiveDraft({ content: normalizedValue });
+            return normalizedValue;
+        },
+        [persistActiveDraft],
+    );
 
     const restoreNormalDraft = useCallback(() => {
         const draft = readComposerDraft({
             conversationId: draftConversationIdRef.current,
             mode: 'normal',
-        }) || {content: '', attachments: [], roleName: null};
+        }) || { content: '', attachments: [], roleName: null };
 
         suppressAttachmentDraftPersistRef.current = true;
         editDraftRef.current = null;
@@ -472,7 +478,7 @@ function ChatBox({
         const nextRole = resolveDraftRole(draft.roleName);
         currentRoleRef.current = nextRole;
         setCurrentRole(nextRole);
-        updateMessageContent(draft.content || '', {persist: false});
+        updateMessageContent(draft.content || '', { persist: false });
     }, [resolveDraftRole, setAttachments, updateMessageContent]);
 
     const leaveEditMode = useCallback(() => {
@@ -526,14 +532,17 @@ function ChatBox({
         autoHideTimerRef.current = null;
     }, []);
 
-    const showCollapsedChatBox = useCallback(({focus = false} = {}) => {
-        clearAutoHideTimer();
-        setIsChatBoxCollapsed(false);
+    const showCollapsedChatBox = useCallback(
+        ({ focus = false } = {}) => {
+            clearAutoHideTimer();
+            setIsChatBoxCollapsed(false);
 
-        if (focus) {
-            requestAnimationFrame(() => textareaRef.current?.focus({preventScroll: true}));
-        }
-    }, [clearAutoHideTimer]);
+            if (focus) {
+                requestAnimationFrame(() => textareaRef.current?.focus({ preventScroll: true }));
+            }
+        },
+        [clearAutoHideTimer],
+    );
 
     const scheduleAutoHide = useCallback(() => {
         clearAutoHideTimer();
@@ -586,68 +595,72 @@ function ChatBox({
 
     const selectedModelId = selectedModel?.id || '';
     const selectedModelSupportsVision = modelSupportsVision(selectedModel);
-    const handleAttachmentVisionToggle = useCallback((attachment, enabled) => {
-        const attachmentId = getAttachmentId(attachment);
-        if (!attachmentId) return;
+    const handleAttachmentVisionToggle = useCallback(
+        (attachment, enabled) => {
+            const attachmentId = getAttachmentId(attachment);
+            if (!attachmentId) return;
 
-        setAttachments(current => current.map(item => {
-            const currentId = getAttachmentId(item);
-            return currentId === attachmentId
-                ? {...item, visionEnabled: Boolean(enabled)}
-                : item;
-        }));
-    }, [setAttachments]);
+            setAttachments((current) =>
+                current.map((item) => {
+                    const currentId = getAttachmentId(item);
+                    return currentId === attachmentId ? { ...item, visionEnabled: Boolean(enabled) } : item;
+                }),
+            );
+        },
+        [setAttachments],
+    );
     const availableBuiltinToolNames = useMemo(
-        () => new Set(Array.isArray(selectedModel?.available_builtin_tools)
-            ? selectedModel.available_builtin_tools
-            : []),
-        [selectedModel?.available_builtin_tools]
+        () =>
+            new Set(Array.isArray(selectedModel?.available_builtin_tools) ? selectedModel.available_builtin_tools : []),
+        [selectedModel?.available_builtin_tools],
     );
     const visibleBuiltinTools = useMemo(
-        () => tools.filter(tool => availableBuiltinToolNames.has(tool.name)),
-        [availableBuiltinToolNames, tools]
+        () => tools.filter((tool) => availableBuiltinToolNames.has(tool.name)),
+        [availableBuiltinToolNames, tools],
     );
     const activeBuiltinToolStatus = useMemo(() => {
-        const saved = selectedModelId
-            ? (builtinToolStateByModelRef.current[selectedModelId] || {})
-            : {};
+        const saved = selectedModelId ? builtinToolStateByModelRef.current[selectedModelId] || {} : {};
         const status = {};
-        visibleBuiltinTools.forEach(tool => {
+        visibleBuiltinTools.forEach((tool) => {
             status[tool.name] = Object.prototype.hasOwnProperty.call(saved, tool.name)
                 ? Boolean(saved[tool.name])
                 : Boolean(tool?.isActive);
         });
         return status;
     }, [selectedModelId, visibleBuiltinTools, toolsStatus.builtin_tools]);
-    const activeToolsStatus = useMemo(() => ({
-        ...toolsStatus,
-        builtin_tools: activeBuiltinToolStatus,
-    }), [activeBuiltinToolStatus, toolsStatus]);
+    const activeToolsStatus = useMemo(
+        () => ({
+            ...toolsStatus,
+            builtin_tools: activeBuiltinToolStatus,
+        }),
+        [activeBuiltinToolStatus, toolsStatus],
+    );
 
-    const handleBuiltinToolToggle = useCallback((toolName, newIsActive) => {
-        if (!availableBuiltinToolNames.has(toolName)) return;
-        const nextValue = Boolean(newIsActive);
-        if (selectedModelId) {
-            builtinToolStateByModelRef.current[selectedModelId] = {
-                ...(builtinToolStateByModelRef.current[selectedModelId] || {}),
-                [toolName]: nextValue,
-            };
-        }
-        setToolsStatus(prev => ({
-            ...prev,
-            builtin_tools: {...(prev.builtin_tools || {}), [toolName]: nextValue},
-        }));
-    }, [availableBuiltinToolNames, selectedModelId]);
+    const handleBuiltinToolToggle = useCallback(
+        (toolName, newIsActive) => {
+            if (!availableBuiltinToolNames.has(toolName)) return;
+            const nextValue = Boolean(newIsActive);
+            if (selectedModelId) {
+                builtinToolStateByModelRef.current[selectedModelId] = {
+                    ...(builtinToolStateByModelRef.current[selectedModelId] || {}),
+                    [toolName]: nextValue,
+                };
+            }
+            setToolsStatus((prev) => ({
+                ...prev,
+                builtin_tools: { ...(prev.builtin_tools || {}), [toolName]: nextValue },
+            }));
+        },
+        [availableBuiltinToolNames, selectedModelId],
+    );
 
     const buildOutboundToolsStatus = useCallback(() => {
         const builtinTools = {};
-        visibleBuiltinTools.forEach(tool => {
+        visibleBuiltinTools.forEach((tool) => {
             builtinTools[tool.name] = Boolean(activeBuiltinToolStatus[tool.name]);
         });
         const localPermissions = collectToolPermissions(extraTools, toolsStatus.extra_tools || {});
-        const authoritativePermissions = conversationId
-            ? conversationToolPermissionsRef.current
-            : localPermissions;
+        const authoritativePermissions = conversationId ? conversationToolPermissionsRef.current : localPermissions;
         return {
             ...toolsStatus,
             builtin_tools: builtinTools,
@@ -656,37 +669,37 @@ function ChatBox({
             // failed optimistic toggle can never leak into turn.start through a stale
             // React render closure. New conversations have no server snapshot yet and
             // therefore submit their browser-local selection with the first Turn.
-            tool_permissions: Object.keys(authoritativePermissions || {}).length > 0
-                ? {...authoritativePermissions}
-                : localPermissions,
+            tool_permissions:
+                Object.keys(authoritativePermissions || {}).length > 0
+                    ? { ...authoritativePermissions }
+                    : localPermissions,
         };
     }, [activeBuiltinToolStatus, conversationId, extraTools, toolsStatus, visibleBuiltinTools]);
 
-    const applyConversationToolPermissions = useCallback((permissions, revision = 0, {preservePending = true} = {}) => {
-        const normalizedRevision = Number(revision) || 0;
-        if (normalizedRevision < toolPermissionRevisionRef.current) return;
-        toolPermissionRevisionRef.current = normalizedRevision;
-        conversationToolPermissionsRef.current = {...(permissions || {})};
-        setToolsStatus(prev => {
-            const displayedPermissions = {...(permissions || {})};
-            if (preservePending && toolPermissionPendingCountsRef.current.size > 0) {
-                const optimisticPermissions = collectToolPermissions(extraTools, prev.extra_tools || {});
-                toolPermissionPendingCountsRef.current.forEach((count, toolName) => {
-                    if (count > 0 && optimisticPermissions[toolName] !== undefined) {
-                        displayedPermissions[toolName] = optimisticPermissions[toolName];
-                    }
-                });
-            }
-            return {
-                ...prev,
-                extra_tools: applyToolPermissionsToStatus(
-                    extraTools,
-                    prev.extra_tools || {},
-                    displayedPermissions
-                ),
-            };
-        });
-    }, [extraTools]);
+    const applyConversationToolPermissions = useCallback(
+        (permissions, revision = 0, { preservePending = true } = {}) => {
+            const normalizedRevision = Number(revision) || 0;
+            if (normalizedRevision < toolPermissionRevisionRef.current) return;
+            toolPermissionRevisionRef.current = normalizedRevision;
+            conversationToolPermissionsRef.current = { ...(permissions || {}) };
+            setToolsStatus((prev) => {
+                const displayedPermissions = { ...(permissions || {}) };
+                if (preservePending && toolPermissionPendingCountsRef.current.size > 0) {
+                    const optimisticPermissions = collectToolPermissions(extraTools, prev.extra_tools || {});
+                    toolPermissionPendingCountsRef.current.forEach((count, toolName) => {
+                        if (count > 0 && optimisticPermissions[toolName] !== undefined) {
+                            displayedPermissions[toolName] = optimisticPermissions[toolName];
+                        }
+                    });
+                }
+                return {
+                    ...prev,
+                    extra_tools: applyToolPermissionsToStatus(extraTools, prev.extra_tools || {}, displayedPermissions),
+                };
+            });
+        },
+        [extraTools],
+    );
 
     const setToolPermissionPending = useCallback((toolNames, pending) => {
         const names = [...new Set((toolNames || []).filter(Boolean))];
@@ -701,31 +714,36 @@ function ChatBox({
         setPendingToolPermissionNames(new Set(counts.keys()));
     }, []);
 
-    const enqueueConversationToolSync = useCallback((toolNames, operation) => {
-        const names = [...new Set((toolNames || []).filter(Boolean))];
-        setToolPermissionPending(names, true);
-        setConversationToolSyncCount(previous => previous + 1);
+    const enqueueConversationToolSync = useCallback(
+        (toolNames, operation) => {
+            const names = [...new Set((toolNames || []).filter(Boolean))];
+            setToolPermissionPending(names, true);
+            setConversationToolSyncCount((previous) => previous + 1);
 
-        const runPromise = toolPermissionSyncQueueRef.current
-            .catch(() => undefined)
-            .then(operation);
-        toolPermissionSyncQueueRef.current = runPromise.then(() => undefined, () => undefined);
+            const runPromise = toolPermissionSyncQueueRef.current.catch(() => undefined).then(operation);
+            toolPermissionSyncQueueRef.current = runPromise.then(
+                () => undefined,
+                () => undefined,
+            );
 
-        return runPromise.finally(() => {
-            setToolPermissionPending(names, false);
-            setConversationToolSyncCount(previous => Math.max(0, previous - 1));
-        });
-    }, [setToolPermissionPending]);
+            return runPromise.finally(() => {
+                setToolPermissionPending(names, false);
+                setConversationToolSyncCount((previous) => Math.max(0, previous - 1));
+            });
+        },
+        [setToolPermissionPending],
+    );
 
     const waitForConversationToolSync = useCallback(async () => {
         await toolPermissionSyncQueueRef.current.catch(() => undefined);
     }, []);
 
     const runWorkspaceSelectionMutation = useCallback((operation) => {
-        const runPromise = workspaceSelectionSyncQueueRef.current
-            .catch(() => undefined)
-            .then(() => operation());
-        workspaceSelectionSyncQueueRef.current = runPromise.then(() => undefined, () => undefined);
+        const runPromise = workspaceSelectionSyncQueueRef.current.catch(() => undefined).then(() => operation());
+        workspaceSelectionSyncQueueRef.current = runPromise.then(
+            () => undefined,
+            () => undefined,
+        );
         return runPromise;
     }, []);
 
@@ -733,123 +751,150 @@ function ChatBox({
         await workspaceSelectionSyncQueueRef.current.catch(() => undefined);
     }, []);
 
-    const handleRealtimeVoiceStartWithWorkspaceSync = useCallback(async (payload) => {
-        await waitForWorkspaceSelectionSync();
-        if (typeof onRealtimeVoiceStart === 'function') {
-            return onRealtimeVoiceStart(payload);
-        }
-        return undefined;
-    }, [onRealtimeVoiceStart, waitForWorkspaceSelectionSync]);
-
-    const restoreAuthoritativeToolPermissions = useCallback(({preservePending = false} = {}) => {
-        applyConversationToolPermissions(
-            conversationToolPermissionsRef.current,
-            toolPermissionRevisionRef.current,
-            {preservePending}
-        );
-    }, [applyConversationToolPermissions]);
-
-    const syncToolPermission = useCallback((toolName, mode) => {
-        setRuntimeToolPermissions(prev => {
-            if (!Object.prototype.hasOwnProperty.call(prev, toolName)) return prev;
-            const next = {...prev};
-            delete next[toolName];
-            return next;
-        });
-
-        if (!conversationId) return Promise.resolve(true);
-        const requestConversationId = conversationId;
-        return enqueueConversationToolSync([toolName], async () => {
-            try {
-                const response = await emitEvent({
-                    event: 'tool.permission.set',
-                    conversationId: requestConversationId,
-                    payload: {
-                        toolName,
-                        mode,
-                        scope: 'conversation',
-                        applyToPending: true,
-                        revision: toolPermissionRevisionRef.current,
-                    },
-                });
-                if (response?.success === false) {
-                    throw new Error(response?.value || t('conversation_tools_save_failed', '保存本对话工具失败。'));
-                }
-                const value = response?.value;
-                if (draftConversationIdRef.current === requestConversationId && value?.permissions) {
-                    applyConversationToolPermissions(value.permissions, value.revision);
-                }
-                return true;
-            } catch (error) {
-                console.error('Set tool permission failed:', error);
-                if (draftConversationIdRef.current === requestConversationId) {
-                    const hasNewerPendingMutation = (toolPermissionPendingCountsRef.current.get(toolName) || 0) > 1;
-                    restoreAuthoritativeToolPermissions({preservePending: hasNewerPendingMutation});
-                    toast.error(error?.message || t('conversation_tools_save_failed', '保存本对话工具失败。'));
-                }
-                return false;
+    const handleRealtimeVoiceStartWithWorkspaceSync = useCallback(
+        async (payload) => {
+            await waitForWorkspaceSelectionSync();
+            if (typeof onRealtimeVoiceStart === 'function') {
+                return onRealtimeVoiceStart(payload);
             }
-        });
-    }, [applyConversationToolPermissions, conversationId, enqueueConversationToolSync, restoreAuthoritativeToolPermissions, t]);
+            return undefined;
+        },
+        [onRealtimeVoiceStart, waitForWorkspaceSelectionSync],
+    );
 
-    const syncToolPermissions = useCallback(async (updates) => {
-        if (!updates || Object.keys(updates).length === 0) return true;
+    const restoreAuthoritativeToolPermissions = useCallback(
+        ({ preservePending = false } = {}) => {
+            applyConversationToolPermissions(
+                conversationToolPermissionsRef.current,
+                toolPermissionRevisionRef.current,
+                { preservePending },
+            );
+        },
+        [applyConversationToolPermissions],
+    );
 
-        // 新建对话尚未分配 conversationId 时，先把权限保存在当前 ChatBox 状态中。
-        // 首条消息会通过 toolsStatus 一并提交，后端据此创建会话级工具权限。
-        if (!conversationId) {
-            const nextPermissions = {
-                ...collectToolPermissions(extraTools, toolsStatus.extra_tools || {}),
-                ...updates,
-            };
-            pendingConversationToolPermissionsRef.current = {...nextPermissions};
-            applyConversationToolPermissions(nextPermissions, toolPermissionRevisionRef.current);
-            toast.success(t('conversation_tools_pending_saved', '已设置新对话工具，将在发送首条消息时生效。'));
-            return true;
-        }
+    const syncToolPermission = useCallback(
+        (toolName, mode) => {
+            setRuntimeToolPermissions((prev) => {
+                if (!Object.prototype.hasOwnProperty.call(prev, toolName)) return prev;
+                const next = { ...prev };
+                delete next[toolName];
+                return next;
+            });
 
-        const requestConversationId = conversationId;
-        const toolNames = Object.keys(updates);
-        return await enqueueConversationToolSync(toolNames, async () => {
-            try {
-                const response = await emitEvent({
-                    event: 'tool.permissions.set',
-                    conversationId: requestConversationId,
-                    payload: {
-                        permissions: updates,
-                        scope: 'conversation',
-                        applyToPending: true,
-                        revision: toolPermissionRevisionRef.current,
-                    },
-                });
-                if (response?.success === false) {
-                    throw new Error(response?.value || t('conversation_tools_save_failed', '保存本对话工具失败。'));
+            if (!conversationId) return Promise.resolve(true);
+            const requestConversationId = conversationId;
+            return enqueueConversationToolSync([toolName], async () => {
+                try {
+                    const response = await emitEvent({
+                        event: 'tool.permission.set',
+                        conversationId: requestConversationId,
+                        payload: {
+                            toolName,
+                            mode,
+                            scope: 'conversation',
+                            applyToPending: true,
+                            revision: toolPermissionRevisionRef.current,
+                        },
+                    });
+                    if (response?.success === false) {
+                        throw new Error(response?.value || t('conversation_tools_save_failed', '保存本对话工具失败。'));
+                    }
+                    const value = response?.value;
+                    if (draftConversationIdRef.current === requestConversationId && value?.permissions) {
+                        applyConversationToolPermissions(value.permissions, value.revision);
+                    }
+                    return true;
+                } catch (error) {
+                    console.error('Set tool permission failed:', error);
+                    if (draftConversationIdRef.current === requestConversationId) {
+                        const hasNewerPendingMutation = (toolPermissionPendingCountsRef.current.get(toolName) || 0) > 1;
+                        restoreAuthoritativeToolPermissions({ preservePending: hasNewerPendingMutation });
+                        toast.error(error?.message || t('conversation_tools_save_failed', '保存本对话工具失败。'));
+                    }
+                    return false;
                 }
-                const value = response?.value;
-                if (draftConversationIdRef.current === requestConversationId && value?.permissions) {
-                    applyConversationToolPermissions(value.permissions, value.revision);
-                }
-                if (draftConversationIdRef.current === requestConversationId) {
-                    toast.success(t('conversation_tools_saved', '已更新本对话工具。'));
-                }
+            });
+        },
+        [
+            applyConversationToolPermissions,
+            conversationId,
+            enqueueConversationToolSync,
+            restoreAuthoritativeToolPermissions,
+            t,
+        ],
+    );
+
+    const syncToolPermissions = useCallback(
+        async (updates) => {
+            if (!updates || Object.keys(updates).length === 0) return true;
+
+            // 新建对话尚未分配 conversationId 时，先把权限保存在当前 ChatBox 状态中。
+            // 首条消息会通过 toolsStatus 一并提交，后端据此创建会话级工具权限。
+            if (!conversationId) {
+                const nextPermissions = {
+                    ...collectToolPermissions(extraTools, toolsStatus.extra_tools || {}),
+                    ...updates,
+                };
+                pendingConversationToolPermissionsRef.current = { ...nextPermissions };
+                applyConversationToolPermissions(nextPermissions, toolPermissionRevisionRef.current);
+                toast.success(t('conversation_tools_pending_saved', '已设置新对话工具，将在发送首条消息时生效。'));
                 return true;
-            } catch (error) {
-                console.error('Set conversation tool permissions failed:', error);
-                if (draftConversationIdRef.current === requestConversationId) {
-                    const hasNewerPendingMutation = toolNames.some(
-                        name => (toolPermissionPendingCountsRef.current.get(name) || 0) > 1
-                    );
-                    restoreAuthoritativeToolPermissions({preservePending: hasNewerPendingMutation});
-                    toast.error(error?.message || t('conversation_tools_save_failed', '保存本对话工具失败。'));
-                }
-                return false;
             }
-        });
-    }, [applyConversationToolPermissions, conversationId, enqueueConversationToolSync, extraTools, restoreAuthoritativeToolPermissions, t, toolsStatus.extra_tools]);
 
-    const currentConversationToolPermissions = useMemo(() => (
-        collectToolPermissions(extraTools, toolsStatus.extra_tools || {})
-    ), [extraTools, toolsStatus.extra_tools]);
+            const requestConversationId = conversationId;
+            const toolNames = Object.keys(updates);
+            return await enqueueConversationToolSync(toolNames, async () => {
+                try {
+                    const response = await emitEvent({
+                        event: 'tool.permissions.set',
+                        conversationId: requestConversationId,
+                        payload: {
+                            permissions: updates,
+                            scope: 'conversation',
+                            applyToPending: true,
+                            revision: toolPermissionRevisionRef.current,
+                        },
+                    });
+                    if (response?.success === false) {
+                        throw new Error(response?.value || t('conversation_tools_save_failed', '保存本对话工具失败。'));
+                    }
+                    const value = response?.value;
+                    if (draftConversationIdRef.current === requestConversationId && value?.permissions) {
+                        applyConversationToolPermissions(value.permissions, value.revision);
+                    }
+                    if (draftConversationIdRef.current === requestConversationId) {
+                        toast.success(t('conversation_tools_saved', '已更新本对话工具。'));
+                    }
+                    return true;
+                } catch (error) {
+                    console.error('Set conversation tool permissions failed:', error);
+                    if (draftConversationIdRef.current === requestConversationId) {
+                        const hasNewerPendingMutation = toolNames.some(
+                            (name) => (toolPermissionPendingCountsRef.current.get(name) || 0) > 1,
+                        );
+                        restoreAuthoritativeToolPermissions({ preservePending: hasNewerPendingMutation });
+                        toast.error(error?.message || t('conversation_tools_save_failed', '保存本对话工具失败。'));
+                    }
+                    return false;
+                }
+            });
+        },
+        [
+            applyConversationToolPermissions,
+            conversationId,
+            enqueueConversationToolSync,
+            extraTools,
+            restoreAuthoritativeToolPermissions,
+            t,
+            toolsStatus.extra_tools,
+        ],
+    );
+
+    const currentConversationToolPermissions = useMemo(
+        () => collectToolPermissions(extraTools, toolsStatus.extra_tools || {}),
+        [extraTools, toolsStatus.extra_tools],
+    );
 
     const handleSendMessage = useCallback(async () => {
         const activeEditDraft = editDraftRef.current;
@@ -858,19 +903,13 @@ function ChatBox({
         const execution = activeExecutionRef.current;
         const executionStatus = String(execution?.status || '').toLowerCase();
         const executionAcceptsGuidance = Boolean(
-            execution?.active
-            && executionStatus !== 'cancelling'
-            && executionStatus !== 'cancelled'
+            execution?.active && executionStatus !== 'cancelling' && executionStatus !== 'cancelled',
         );
         // Execution steering is keyed by the durable Execution state, not by the
         // Composer's transient button status.  Stream bootstrap/reconciliation may
         // briefly report `normal` while the Execution is still active; tying steering
         // to `generating` used to misroute the supplement as a new Turn.
-        const isExecutionGuidance = (
-            executionAcceptsGuidance
-            && !wasEditing
-            && Boolean(currentContent.trim())
-        );
+        const isExecutionGuidance = executionAcceptsGuidance && !wasEditing && Boolean(currentContent.trim());
 
         // Conversation tool permissions are server-authoritative.  Do not race a
         // new Turn ahead of a pending permission mutation; the UI remains optimistic
@@ -903,7 +942,7 @@ function ChatBox({
             // Show the supplement immediately in the transcript. The durable server
             // snapshot will reconcile the same guidanceId to pending/consumed later.
             upsertExecutionActivity(execution, guidanceActivity);
-            updateMessageContent('', {persist: false});
+            updateMessageContent('', { persist: false });
             try {
                 const response = await emitEvent({
                     event: 'execution.guidance.add',
@@ -918,42 +957,37 @@ function ChatBox({
                     },
                 });
                 if (response?.success === false) {
-                    patchExecutionActivity(
-                        conversationId,
-                        execution.executionId,
-                        guidanceId,
-                        {state: 'failed'},
-                    );
+                    patchExecutionActivity(conversationId, execution.executionId, guidanceId, { state: 'failed' });
                     if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
-                    throw new Error(realtimeActionErrorMessage(response, t('execution_guidance_failed', '无法追加到当前执行。')));
+                    throw new Error(
+                        realtimeActionErrorMessage(response, t('execution_guidance_failed', '无法追加到当前执行。')),
+                    );
                 }
                 const acceptedGuidance = response?.value?.guidance;
-                patchExecutionActivity(
-                    conversationId,
-                    execution.executionId,
-                    guidanceId,
-                    {
+                const latestGuidance = useExecutionStore
+                    .getState()
+                    .sessions[conversationId]?.executions[execution.executionId]?.activities?.find(
+                        (item) => item.id === guidanceId,
+                    );
+                if (!latestGuidance || latestGuidance.state === 'submitting') {
+                    patchExecutionActivity(conversationId, execution.executionId, guidanceId, {
                         state: 'pending',
+                        canToggle: true,
                         anchorStatusId: acceptedGuidance?.anchorStatusId ?? guidanceActivity.anchorStatusId,
                         waitingFor: acceptedGuidance?.waitingFor || guidanceActivity.waitingFor,
-                    },
-                );
+                    });
+                }
                 const persistedDraft = readComposerDraft({
                     conversationId: draftConversationIdRef.current,
                     mode: 'normal',
                 });
                 if ((persistedDraft?.content || '') === currentContent && !messageContentRef.current.trim()) {
-                    clearComposerDraft({conversationId: draftConversationIdRef.current, mode: 'normal'});
+                    clearComposerDraft({ conversationId: draftConversationIdRef.current, mode: 'normal' });
                 }
                 toast.success(t('execution_guidance_sent', '已加入当前执行。'));
             } catch (error) {
                 console.error('Execution guidance failed:', error);
-                patchExecutionActivity(
-                    conversationId,
-                    execution.executionId,
-                    guidanceId,
-                    {state: 'failed'},
-                );
+                patchExecutionActivity(conversationId, execution.executionId, guidanceId, { state: 'failed' });
                 if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
                 toast.error(error?.message || t('execution_guidance_failed', '无法追加到当前执行。'));
             } finally {
@@ -983,10 +1017,12 @@ function ChatBox({
                         conversationId,
                         runId: execution.runId || null,
                         turnId: execution.turnId || null,
-                        payload: {executionId: execution.executionId},
+                        payload: { executionId: execution.executionId },
                     });
                     if (response?.success === false) {
-                        throw new Error(realtimeActionErrorMessage(response, t('execution_cancel_failed', '无法停止当前执行。')));
+                        throw new Error(
+                            realtimeActionErrorMessage(response, t('execution_cancel_failed', '无法停止当前执行。')),
+                        );
                     }
                     upsertExecution({
                         ...execution,
@@ -1008,19 +1044,21 @@ function ChatBox({
         // draft, but it cannot supersede the active Turn.  The primary button remains
         // a pure stop action; only an active durable Execution accepts guidance.
         if (sendButtonStatusRef.current === 'generating') {
-            await Promise.resolve(onSendMessage({
-                messageContent: '',
-                toolsStatus: buildOutboundToolsStatus(),
-                isEditMessage: false,
-                editMessageId: null,
-                attachments: [],
-                sendButtonStatus: 'generating',
-                admissionPolicy: 'auto',
-                inputSource: 'chat',
-                isRegenerate: false,
-                role: currentRole?.name,
-                isFork: false,
-            }));
+            await Promise.resolve(
+                onSendMessage({
+                    messageContent: '',
+                    toolsStatus: buildOutboundToolsStatus(),
+                    isEditMessage: false,
+                    editMessageId: null,
+                    attachments: [],
+                    sendButtonStatus: 'generating',
+                    admissionPolicy: 'auto',
+                    inputSource: 'chat',
+                    isRegenerate: false,
+                    role: currentRole?.name,
+                    isFork: false,
+                }),
+            );
             textareaRef.current?.focus();
             return;
         }
@@ -1061,19 +1099,21 @@ function ChatBox({
             pendingNormalCommitRef.current = submittedNormalCommit;
         }
 
-        const sendPromise = Promise.resolve(onSendMessage({
-            messageContent: currentContent,
-            toolsStatus: buildOutboundToolsStatus(),
-            isEditMessage: wasEditing,
-            editMessageId: editMessageId,
-            attachments: attachmentsMeta,
-            sendButtonStatus: sendButtonStatusRef.current,
-            admissionPolicy: 'auto',
-            inputSource: 'chat',
-            isRegenerate: false,
-            role: currentRole?.name,
-            isFork: isForkMode
-        }));
+        const sendPromise = Promise.resolve(
+            onSendMessage({
+                messageContent: currentContent,
+                toolsStatus: buildOutboundToolsStatus(),
+                isEditMessage: wasEditing,
+                editMessageId: editMessageId,
+                attachments: attachmentsMeta,
+                sendButtonStatus: sendButtonStatusRef.current,
+                admissionPolicy: 'auto',
+                inputSource: 'chat',
+                isRegenerate: false,
+                role: currentRole?.name,
+                isFork: isForkMode,
+            }),
+        );
         textareaRef.current?.focus();
 
         // Leave Edit/Fork immediately for a responsive composer, but do not delete
@@ -1105,15 +1145,14 @@ function ChatBox({
                     // ChatPage now returns the authoritative ID actually used for
                     // turn.start, so commit the migrated draft against that ID instead
                     // of mutating pending refs from a later React effect.
-                    const committedConversationId = sendResult?.conversationId
-                        ?? submittedNormalCommit.conversationId;
+                    const committedConversationId = sendResult?.conversationId ?? submittedNormalCommit.conversationId;
                     const persistedDraft = readComposerDraft({
                         conversationId: committedConversationId,
                         mode: 'normal',
                     });
                     const sameDraftRevision = (persistedDraft?.updatedAt || 0) === submittedNormalCommit.draftUpdatedAt;
                     if (sameDraftRevision) {
-                        clearComposerDraft({conversationId: committedConversationId, mode: 'normal'});
+                        clearComposerDraft({ conversationId: committedConversationId, mode: 'normal' });
                         submittedNormalCommit.serverAccepted = true;
                     }
                 }
@@ -1140,147 +1179,168 @@ function ChatBox({
         waitForWorkspaceSelectionSync,
     ]);
 
-    const handleKeyDown = useCallback((e) => {
-        handleInputActivity();
-        if (e.key !== 'Enter') return;
+    const handleKeyDown = useCallback(
+        (e) => {
+            handleInputActivity();
+            if (e.key !== 'Enter') return;
 
-        // 移动端 Enter 始终作为普通换行处理，不拦截默认行为，也不触发发送。
-        // 这样软键盘/外接键盘在小屏幕上都能正常输入多行文本。
-        if (isSmallScreen) return;
+            // 移动端 Enter 始终作为普通换行处理，不拦截默认行为，也不触发发送。
+            // 这样软键盘/外接键盘在小屏幕上都能正常输入多行文本。
+            if (isSmallScreen) return;
 
-        // 输入法组合过程中不要发送消息，避免中文/日文等候选确认时误触发发送。
-        if (e.isComposing || e.nativeEvent?.isComposing) return;
+            // 输入法组合过程中不要发送消息，避免中文/日文等候选确认时误触发发送。
+            if (e.isComposing || e.nativeEvent?.isComposing) return;
 
-        if (e.shiftKey) {
-            if (tipMessageIsForNewLine) {
-                chatboxSetup({tipMessage: null});
-                setLocalSetting('ShowShiftEnterNewlineTip', false);
-            }
-            return;
-        }
-
-        e.preventDefault();
-        const keyboardExecution = activeExecutionRef.current;
-        const keyboardExecutionStatus = String(keyboardExecution?.status || '').toLowerCase();
-        const canSteerExecution = (
-            keyboardExecution?.active
-            && keyboardExecutionStatus !== 'cancelling'
-            && Boolean(messageContentRef.current.trim())
-            && !executionGuidancePendingRef.current
-        );
-        if (sendButtonStatusRef.current !== 'normal' && !canSteerExecution) {
-            toast.warning(t('is_generating_try_later'));
-            return;
-        }
-        handleSendMessage();
-    }, [attachmentsMeta.length, handleInputActivity, handleSendMessage, isSmallScreen, t, tipMessageIsForNewLine]);
-
-    const handleRoleChange = useCallback((role) => {
-        currentRoleRef.current = role || null;
-        setCurrentRole(role || null);
-        persistActiveDraft({roleName: role?.name || null});
-    }, [persistActiveDraft]);
-
-    const handleInputChange = useCallback((newValue) => {
-        if (isReadOnly) return;
-
-        handleInputActivity();
-
-        updateMessageContent(newValue);
-
-        // 防抖处理快捷选项状态更新
-        if (selectedQuickOption !== null) {
-            const selectedOption = quickOptions.find(opt => opt.id === selectedQuickOption);
-            if (selectedOption && newValue !== selectedOption.value) {
-                setSelectedQuickOption(null);
-            }
-        }
-    }, [handleInputActivity, isReadOnly, selectedQuickOption, quickOptions, updateMessageContent]);
-
-    const handlePaste = useCallback((e) => {
-        const clipboardData = e.clipboardData || window.clipboardData;
-        const items = clipboardData.items;
-        for (let i = 0; i < items.length; i++) {
-            if (items[i].type.indexOf('image') !== -1) {
-                const file = items[i].getAsFile();
-                if (onImagePaste && typeof onImagePaste === 'function') {
-                    e.preventDefault();
-                    if (!ignoreAttachmentTools && !isReadOnly) {
-                        onImagePaste(file);
-                    }
+            if (e.shiftKey) {
+                if (tipMessageIsForNewLine) {
+                    chatboxSetup({ tipMessage: null });
+                    setLocalSetting('ShowShiftEnterNewlineTip', false);
                 }
                 return;
             }
-        }
-    }, [onImagePaste, ignoreAttachmentTools, isReadOnly]);
 
-    const handleOptionClick = useCallback((option) => {
-        if (selectedQuickOption === option.id) {
-            if (messageContentRef.current === option.value) {
-                updateMessageContent('');
-                setSelectedQuickOption(null);
-            } else {
-                setSelectedQuickOption(null);
+            e.preventDefault();
+            const keyboardExecution = activeExecutionRef.current;
+            const keyboardExecutionStatus = String(keyboardExecution?.status || '').toLowerCase();
+            const canSteerExecution =
+                keyboardExecution?.active &&
+                keyboardExecutionStatus !== 'cancelling' &&
+                Boolean(messageContentRef.current.trim()) &&
+                !executionGuidancePendingRef.current;
+            if (sendButtonStatusRef.current !== 'normal' && !canSteerExecution) {
+                toast.warning(t('is_generating_try_later'));
+                return;
             }
-        } else {
-            updateMessageContent(option.value);
-            setSelectedQuickOption(option.id);
-            textareaRef.current?.focus();
-        }
-    }, [selectedQuickOption, updateMessageContent]);
+            handleSendMessage();
+        },
+        [attachmentsMeta.length, handleInputActivity, handleSendMessage, isSmallScreen, t, tipMessageIsForNewLine],
+    );
+
+    const handleRoleChange = useCallback(
+        (role) => {
+            currentRoleRef.current = role || null;
+            setCurrentRole(role || null);
+            persistActiveDraft({ roleName: role?.name || null });
+        },
+        [persistActiveDraft],
+    );
+
+    const handleInputChange = useCallback(
+        (newValue) => {
+            if (isReadOnly) return;
+
+            handleInputActivity();
+
+            updateMessageContent(newValue);
+
+            // 防抖处理快捷选项状态更新
+            if (selectedQuickOption !== null) {
+                const selectedOption = quickOptions.find((opt) => opt.id === selectedQuickOption);
+                if (selectedOption && newValue !== selectedOption.value) {
+                    setSelectedQuickOption(null);
+                }
+            }
+        },
+        [handleInputActivity, isReadOnly, selectedQuickOption, quickOptions, updateMessageContent],
+    );
+
+    const handlePaste = useCallback(
+        (e) => {
+            const clipboardData = e.clipboardData || window.clipboardData;
+            const items = clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const file = items[i].getAsFile();
+                    if (onImagePaste && typeof onImagePaste === 'function') {
+                        e.preventDefault();
+                        if (!ignoreAttachmentTools && !isReadOnly) {
+                            onImagePaste(file);
+                        }
+                    }
+                    return;
+                }
+            }
+        },
+        [onImagePaste, ignoreAttachmentTools, isReadOnly],
+    );
+
+    const handleOptionClick = useCallback(
+        (option) => {
+            if (selectedQuickOption === option.id) {
+                if (messageContentRef.current === option.value) {
+                    updateMessageContent('');
+                    setSelectedQuickOption(null);
+                } else {
+                    setSelectedQuickOption(null);
+                }
+            } else {
+                updateMessageContent(option.value);
+                setSelectedQuickOption(option.id);
+                textareaRef.current?.focus();
+            }
+        },
+        [selectedQuickOption, updateMessageContent],
+    );
 
     const closeVoicePermissionDialog = useCallback((result = false) => {
         const resolver = voicePermissionDialogResolverRef.current;
         voicePermissionDialogResolverRef.current = null;
-        setVoicePermissionDialog(prev => (prev?.open ? {...prev, open: false} : {open: false}));
+        setVoicePermissionDialog((prev) => (prev?.open ? { ...prev, open: false } : { open: false }));
 
         // Resolver 只允许触发一次，避免点击取消关闭 Dialog 时又被 onOpenChange 二次触发。
         resolver?.(result);
     }, []);
 
-    const showVoicePermissionDialog = useCallback(({
-                                                       title = voiceText.input,
-                                                       description,
-                                                       confirmText = voiceText.permissionDeniedConfirm,
-                                                       cancelText = voiceText.permissionCancel,
-                                                       showCancel = false,
-                                                   }) => {
-        return new Promise((resolve) => {
-            // 如果极端情况下前一个权限弹窗尚未结算，先按取消处理，避免多个流程互相串扰。
-            voicePermissionDialogResolverRef.current?.(false);
-            voicePermissionDialogResolverRef.current = resolve;
-            setVoicePermissionDialog({
-                open: true,
-                title,
-                description,
-                confirmText,
-                cancelText,
-                showCancel,
-            });
-        });
-    }, [voiceText.input, voiceText.permissionCancel, voiceText.permissionDeniedConfirm]);
-
-    const getMicrophoneRequestOptions = useCallback(() => ({
-        permissionIntroMessage: voiceText.permissionIntro,
-        permissionDeniedMessage: voiceText.permissionDeniedMessage,
-        permissionUnsupportedMessage: voiceText.microphoneUnsupported,
-        onPermissionIntro: async (message) => showVoicePermissionDialog({
-            title: voiceText.permissionTitle,
-            description: message,
-            confirmText: voiceText.permissionConfirm,
-            cancelText: voiceText.permissionCancel,
-            showCancel: true,
-        }),
-        onPermissionDenied: async (error, message) => {
-            if (isVoicePermissionFlowCancelled(error)) return;
-            console.error('Microphone permission failed:', error);
-            await showVoicePermissionDialog({
-                title: voiceText.permissionDeniedTitle,
-                description: message,
-                confirmText: voiceText.permissionDeniedConfirm,
+    const showVoicePermissionDialog = useCallback(
+        ({
+            title = voiceText.input,
+            description,
+            confirmText = voiceText.permissionDeniedConfirm,
+            cancelText = voiceText.permissionCancel,
+            showCancel = false,
+        }) => {
+            return new Promise((resolve) => {
+                // 如果极端情况下前一个权限弹窗尚未结算，先按取消处理，避免多个流程互相串扰。
+                voicePermissionDialogResolverRef.current?.(false);
+                voicePermissionDialogResolverRef.current = resolve;
+                setVoicePermissionDialog({
+                    open: true,
+                    title,
+                    description,
+                    confirmText,
+                    cancelText,
+                    showCancel,
+                });
             });
         },
-    }), [showVoicePermissionDialog, voiceText]);
+        [voiceText.input, voiceText.permissionCancel, voiceText.permissionDeniedConfirm],
+    );
+
+    const getMicrophoneRequestOptions = useCallback(
+        () => ({
+            permissionIntroMessage: voiceText.permissionIntro,
+            permissionDeniedMessage: voiceText.permissionDeniedMessage,
+            permissionUnsupportedMessage: voiceText.microphoneUnsupported,
+            onPermissionIntro: async (message) =>
+                showVoicePermissionDialog({
+                    title: voiceText.permissionTitle,
+                    description: message,
+                    confirmText: voiceText.permissionConfirm,
+                    cancelText: voiceText.permissionCancel,
+                    showCancel: true,
+                }),
+            onPermissionDenied: async (error, message) => {
+                if (isVoicePermissionFlowCancelled(error)) return;
+                console.error('Microphone permission failed:', error);
+                await showVoicePermissionDialog({
+                    title: voiceText.permissionDeniedTitle,
+                    description: message,
+                    confirmText: voiceText.permissionDeniedConfirm,
+                });
+            },
+        }),
+        [showVoicePermissionDialog, voiceText],
+    );
 
     const blurTextInputOnMobile = useCallback(() => {
         if (!isSmallScreen) return;
@@ -1293,19 +1353,22 @@ function ChatBox({
         });
     }, [isSmallScreen]);
 
-    const appendVoiceRecognitionText = useCallback((text) => {
-        const normalizedText = String(text || '').trim();
-        if (!normalizedText) return;
+    const appendVoiceRecognitionText = useCallback(
+        (text) => {
+            const normalizedText = String(text || '').trim();
+            if (!normalizedText) return;
 
-        updateMessageContent((previousValue) => {
-            const separator = previousValue && !/\s$/.test(previousValue) ? ' ' : '';
-            return `${previousValue || ''}${separator}${normalizedText}`;
-        });
+            updateMessageContent((previousValue) => {
+                const separator = previousValue && !/\s$/.test(previousValue) ? ' ' : '';
+                return `${previousValue || ''}${separator}${normalizedText}`;
+            });
 
-        // 语音识别回填文本时不要主动 focus 输入框。
-        // 移动端主动 blur，避免识别完成后软键盘被唤起。
-        blurTextInputOnMobile();
-    }, [blurTextInputOnMobile, updateMessageContent]);
+            // 语音识别回填文本时不要主动 focus 输入框。
+            // 移动端主动 blur，避免识别完成后软键盘被唤起。
+            blurTextInputOnMobile();
+        },
+        [blurTextInputOnMobile, updateMessageContent],
+    );
 
     const getVoiceRecognitionText = useCallback((result) => {
         if (typeof result === 'string') return result;
@@ -1314,23 +1377,26 @@ function ChatBox({
     }, []);
 
     // 最终音频处理由 ChatPage 传入；ChatBox 只负责把采集到的 16k PCM 交出去，并接收可选识别文本回填输入框。
-    const handleVoicePcmReady = useCallback(async (payload) => {
-        if (!payload?.pcm16k?.length) return null;
+    const handleVoicePcmReady = useCallback(
+        async (payload) => {
+            if (!payload?.pcm16k?.length) return null;
 
-        const voicePayload = {
-            ...payload,
-            conversationId,
-        };
+            const voicePayload = {
+                ...payload,
+                conversationId,
+            };
 
-        if (typeof onVoicePcmReady === 'function') {
-            const result = await onVoicePcmReady(voicePayload);
-            appendVoiceRecognitionText(getVoiceRecognitionText(result));
-            return result;
-        }
+            if (typeof onVoicePcmReady === 'function') {
+                const result = await onVoicePcmReady(voicePayload);
+                appendVoiceRecognitionText(getVoiceRecognitionText(result));
+                return result;
+            }
 
-        console.debug('[ChatBox] voice pcm16k ready:', voicePayload);
-        return null;
-    }, [appendVoiceRecognitionText, getVoiceRecognitionText, conversationId, onVoicePcmReady]);
+            console.debug('[ChatBox] voice pcm16k ready:', voicePayload);
+            return null;
+        },
+        [appendVoiceRecognitionText, getVoiceRecognitionText, conversationId, onVoicePcmReady],
+    );
 
     const startVoiceRecording = useCallback(async () => {
         if (isReadOnly || voiceActionPending || isVoiceRecognizing || voiceRecorderRef.current) return false;
@@ -1379,42 +1445,53 @@ function ChatBox({
         } finally {
             setVoiceActionPending(false);
         }
-    }, [getMicrophoneRequestOptions, isReadOnly, isSmallScreen, isVoiceRecognizing, conversationId, onVoiceRecordingStart, voiceActionPending]);
+    }, [
+        getMicrophoneRequestOptions,
+        isReadOnly,
+        isSmallScreen,
+        isVoiceRecognizing,
+        conversationId,
+        onVoiceRecordingStart,
+        voiceActionPending,
+    ]);
 
-    const stopVoiceRecording = useCallback(async ({emitPcm = true} = {}) => {
-        const recorder = voiceRecorderRef.current;
-        if (!recorder) {
-            setIsVoiceRecording(false);
-            return null;
-        }
-
-        voiceRecorderRef.current = null;
-        setIsVoiceRecording(false);
-        setVoiceWaveformLevels(createSilentWaveformLevels(VOICE_WAVEFORM_BARS));
-        setVoiceActionPending(true);
-        setIsVoiceRecognizing(Boolean(emitPcm));
-
-        try {
-            if (!emitPcm) {
-                await recorder.cancel();
-                await onVoiceRecordingCancel?.({conversationId});
+    const stopVoiceRecording = useCallback(
+        async ({ emitPcm = true } = {}) => {
+            const recorder = voiceRecorderRef.current;
+            if (!recorder) {
+                setIsVoiceRecording(false);
                 return null;
             }
 
-            const payload = await recorder.stop();
-            await handleVoicePcmReady(payload);
-            return payload;
-        } catch (error) {
-            await onVoiceRecordingCancel?.({conversationId});
-            console.error('Failed to stop voice recording:', error);
-            toast.error(voiceText.recordingFailed);
-            return null;
-        } finally {
-            setIsVoiceRecognizing(false);
-            setVoiceActionPending(false);
-            blurTextInputOnMobile();
-        }
-    }, [blurTextInputOnMobile, handleVoicePcmReady, conversationId, onVoiceRecordingCancel, voiceText.recordingFailed]);
+            voiceRecorderRef.current = null;
+            setIsVoiceRecording(false);
+            setVoiceWaveformLevels(createSilentWaveformLevels(VOICE_WAVEFORM_BARS));
+            setVoiceActionPending(true);
+            setIsVoiceRecognizing(Boolean(emitPcm));
+
+            try {
+                if (!emitPcm) {
+                    await recorder.cancel();
+                    await onVoiceRecordingCancel?.({ conversationId });
+                    return null;
+                }
+
+                const payload = await recorder.stop();
+                await handleVoicePcmReady(payload);
+                return payload;
+            } catch (error) {
+                await onVoiceRecordingCancel?.({ conversationId });
+                console.error('Failed to stop voice recording:', error);
+                toast.error(voiceText.recordingFailed);
+                return null;
+            } finally {
+                setIsVoiceRecognizing(false);
+                setVoiceActionPending(false);
+                blurTextInputOnMobile();
+            }
+        },
+        [blurTextInputOnMobile, handleVoicePcmReady, conversationId, onVoiceRecordingCancel, voiceText.recordingFailed],
+    );
 
     const handleVoiceButtonClick = useCallback(async () => {
         if (isReadOnly || voiceActionPending || isVoiceRecognizing) return;
@@ -1422,7 +1499,7 @@ function ChatBox({
         if (isSmallScreen) {
             if (isMobileVoiceMode) {
                 if (isVoiceRecording || voiceRecorderRef.current) {
-                    await stopVoiceRecording({emitPcm: true});
+                    await stopVoiceRecording({ emitPcm: true });
                 }
                 setIsMobileVoiceMode(false);
                 requestAnimationFrame(() => textareaRef.current?.focus());
@@ -1445,7 +1522,7 @@ function ChatBox({
         }
 
         if (isVoiceRecording || voiceRecorderRef.current) {
-            await stopVoiceRecording({emitPcm: true});
+            await stopVoiceRecording({ emitPcm: true });
             return;
         }
 
@@ -1462,35 +1539,42 @@ function ChatBox({
         voiceActionPending,
     ]);
 
-    const handleMobileVoicePointerDown = useCallback(async (event) => {
-        if (isReadOnly || voiceActionPending || isVoiceRecognizing || isVoiceRecording || voiceRecorderRef.current) return;
-        if (event.pointerType === 'mouse' && event.button !== 0) return;
+    const handleMobileVoicePointerDown = useCallback(
+        async (event) => {
+            if (isReadOnly || voiceActionPending || isVoiceRecognizing || isVoiceRecording || voiceRecorderRef.current)
+                return;
+            if (event.pointerType === 'mouse' && event.button !== 0) return;
 
-        event.preventDefault();
-        activeVoicePointerIdRef.current = event.pointerId;
-        voicePointerPressedRef.current = true;
-        voicePointerEmitPcmOnReleaseRef.current = true;
-        event.currentTarget.setPointerCapture?.(event.pointerId);
+            event.preventDefault();
+            activeVoicePointerIdRef.current = event.pointerId;
+            voicePointerPressedRef.current = true;
+            voicePointerEmitPcmOnReleaseRef.current = true;
+            event.currentTarget.setPointerCapture?.(event.pointerId);
 
-        const started = await startVoiceRecording();
-        if (started && !voicePointerPressedRef.current) {
-            await stopVoiceRecording({emitPcm: voicePointerEmitPcmOnReleaseRef.current});
-        }
-    }, [isReadOnly, isVoiceRecognizing, isVoiceRecording, startVoiceRecording, stopVoiceRecording, voiceActionPending]);
+            const started = await startVoiceRecording();
+            if (started && !voicePointerPressedRef.current) {
+                await stopVoiceRecording({ emitPcm: voicePointerEmitPcmOnReleaseRef.current });
+            }
+        },
+        [isReadOnly, isVoiceRecognizing, isVoiceRecording, startVoiceRecording, stopVoiceRecording, voiceActionPending],
+    );
 
-    const finishMobileVoicePointer = useCallback(async (event, emitPcm = true) => {
-        if (activeVoicePointerIdRef.current !== event.pointerId) return;
+    const finishMobileVoicePointer = useCallback(
+        async (event, emitPcm = true) => {
+            if (activeVoicePointerIdRef.current !== event.pointerId) return;
 
-        event.preventDefault();
-        voicePointerPressedRef.current = false;
-        voicePointerEmitPcmOnReleaseRef.current = emitPcm;
-        activeVoicePointerIdRef.current = null;
-        event.currentTarget.releasePointerCapture?.(event.pointerId);
+            event.preventDefault();
+            voicePointerPressedRef.current = false;
+            voicePointerEmitPcmOnReleaseRef.current = emitPcm;
+            activeVoicePointerIdRef.current = null;
+            event.currentTarget.releasePointerCapture?.(event.pointerId);
 
-        if (voiceRecorderRef.current) {
-            await stopVoiceRecording({emitPcm});
-        }
-    }, [stopVoiceRecording]);
+            if (voiceRecorderRef.current) {
+                await stopVoiceRecording({ emitPcm });
+            }
+        },
+        [stopVoiceRecording],
+    );
 
     const handleAutoHideToggle = useCallback(() => {
         clearAutoHideTimer();
@@ -1527,7 +1611,7 @@ function ChatBox({
     const initializeExtraTools = useCallback((toolsConfig) => {
         const processItems = (items) => {
             const status = {};
-            items.forEach(item => {
+            items.forEach((item) => {
                 if (!item) return;
                 if (item.type === 'tool-region') {
                     Object.assign(status, processItems(item.children || []));
@@ -1537,15 +1621,18 @@ function ChatBox({
                 if (item.type === 'toggle') {
                     status[item.name] = !!item.default;
                 } else if (item.type === 'tool') {
-                    const defaultMode = typeof item.default === 'boolean'
-                        ? (item.default ? 'allow' : 'deny')
-                        : String(item.default || 'ask').toLowerCase();
+                    const defaultMode =
+                        typeof item.default === 'boolean'
+                            ? item.default
+                                ? 'allow'
+                                : 'deny'
+                            : String(item.default || 'ask').toLowerCase();
                     status[item.name] = ['allow', 'deny', 'ask'].includes(defaultMode) ? defaultMode : 'ask';
                 } else if (item.type === 'radio' && item.children?.length > 0) {
                     let defaultValue;
                     if (item.default) {
-                        const defaultChild = item.children.find(child => child.name === item.default);
-                        defaultValue = defaultChild ? defaultChild.name : (item.children[0]?.name || undefined);
+                        const defaultChild = item.children.find((child) => child.name === item.default);
+                        defaultValue = defaultChild ? defaultChild.name : item.children[0]?.name || undefined;
                     } else {
                         defaultValue = item.children[0]?.name || undefined;
                     }
@@ -1564,419 +1651,438 @@ function ChatBox({
 
     // ========== 聊天框配置函数 ==========
 
-    const chatboxSetup = useCallback((data) => {
-        const newBuiltinStatus = {};
+    const chatboxSetup = useCallback(
+        (data) => {
+            const newBuiltinStatus = {};
 
-        // 默认附件工具配置
-        let defaultAttachmentTools = data.ignoreAttachmentTools
-            ? []
-            : [
-                {type: 'label', text: 'attachment_options'},
-                {
-                    type: 'button',
-                    text: 'add_image',
-                    iconType: 'svg',
-                    iconData: '<svg t="1759404220982" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4746" width="20" height="20"><path d="M247.04 373.333333a74.666667 74.666667 0 1 1 149.333333 0 74.666667 74.666667 0 0 1-149.333333 0zM321.706667 384a10.666667 10.666667 0 1 0 0-21.333333 10.666667 10.666667 0 0 0 0 21.333333z" fill="#666666" p-id="4747"></path><path d="M938.666667 796.074667c0 43.050667-33.834667 72.106667-70.4 77.653333a83.925333 83.925333 0 0 1-12.672 0.938667H168.405333a83.072 83.072 0 0 1-12.672-0.981334c-36.565333-5.546667-70.4-34.56-70.4-77.653333V232.021333C85.333333 185.898667 122.965333 149.333333 168.405333 149.333333h687.189334C901.034667 149.333333 938.666667 185.941333 938.666667 232.021333v564.053334zM170.666667 743.381333V789.333333h682.666666v-42.538666l-252.885333-250.666667-138.581333 149.930667a42.666667 42.666667 0 0 1-55.466667 5.12L333.098667 599.04 170.666667 743.424z m682.666666-99.754666V234.666667H170.666667v394.538666l131.072-116.522666a42.666667 42.666667 0 0 1 53.077333-2.901334l71.125333 50.56 138.026667-149.333333A42.666667 42.666667 0 0 1 618.666667 405.333333l234.666666 238.293334z" fill="#666666" p-id="4748"></path></svg>',
-                    onClick: PicPickerCallback,
-                    autoClose: true,
-                },
-                {
-                    type: 'button',
-                    text: 'add_file',
-                    iconType: 'svg',
-                    iconData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>',
-                    onClick: FilePickerCallback,
-                    autoClose: true,
-                },
-            ];
+            // 默认附件工具配置
+            let defaultAttachmentTools = data.ignoreAttachmentTools
+                ? []
+                : [
+                      { type: 'label', text: 'attachment_options' },
+                      {
+                          type: 'button',
+                          text: 'add_image',
+                          iconType: 'svg',
+                          iconData:
+                              '<svg t="1759404220982" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4746" width="20" height="20"><path d="M247.04 373.333333a74.666667 74.666667 0 1 1 149.333333 0 74.666667 74.666667 0 0 1-149.333333 0zM321.706667 384a10.666667 10.666667 0 1 0 0-21.333333 10.666667 10.666667 0 0 0 0 21.333333z" fill="#666666" p-id="4747"></path><path d="M938.666667 796.074667c0 43.050667-33.834667 72.106667-70.4 77.653333a83.925333 83.925333 0 0 1-12.672 0.938667H168.405333a83.072 83.072 0 0 1-12.672-0.981334c-36.565333-5.546667-70.4-34.56-70.4-77.653333V232.021333C85.333333 185.898667 122.965333 149.333333 168.405333 149.333333h687.189334C901.034667 149.333333 938.666667 185.941333 938.666667 232.021333v564.053334zM170.666667 743.381333V789.333333h682.666666v-42.538666l-252.885333-250.666667-138.581333 149.930667a42.666667 42.666667 0 0 1-55.466667 5.12L333.098667 599.04 170.666667 743.424z m682.666666-99.754666V234.666667H170.666667v394.538666l131.072-116.522666a42.666667 42.666667 0 0 1 53.077333-2.901334l71.125333 50.56 138.026667-149.333333A42.666667 42.666667 0 0 1 618.666667 405.333333l234.666666 238.293334z" fill="#666666" p-id="4748"></path></svg>',
+                          onClick: PicPickerCallback,
+                          autoClose: true,
+                      },
+                      {
+                          type: 'button',
+                          text: 'add_file',
+                          iconType: 'svg',
+                          iconData:
+                              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>',
+                          onClick: FilePickerCallback,
+                          autoClose: true,
+                      },
+                  ];
 
-        if (data.ignoreAttachmentTools !== null && data.ignoreAttachmentTools !== undefined) {
-            setIgnoreAttachmentTools(Boolean(data.ignoreAttachmentTools));
-        }
-
-        const configuredExtraTools = data.extra_tools ? [...data.extra_tools] : [];
-        const allExtraTools = [...configuredExtraTools, ...defaultAttachmentTools];
-        const defaultExtraStatus = initializeExtraTools(allExtraTools);
-
-        let savedExtraStatus = {};
-        try {
-            const saved = localStorage.getItem('extraToolsConfig');
-            if (saved) {
-                savedExtraStatus = extractLocalOnlyExtraToolStatus(
-                    allExtraTools,
-                    JSON.parse(saved)
-                );
+            if (data.ignoreAttachmentTools !== null && data.ignoreAttachmentTools !== undefined) {
+                setIgnoreAttachmentTools(Boolean(data.ignoreAttachmentTools));
             }
-        } catch (error) {
-            console.error('Failed to parse saved extra_tools status:', error);
-        }
 
-        let mergedExtraStatus = applyLocalSettingBackedExtraToolStatus(
-            deepMerge(defaultExtraStatus, savedExtraStatus),
-            allExtraTools
-        );
+            const configuredExtraTools = data.extra_tools ? [...data.extra_tools] : [];
+            const allExtraTools = [...configuredExtraTools, ...defaultAttachmentTools];
+            const defaultExtraStatus = initializeExtraTools(allExtraTools);
 
-        const serverToolPermissions = data.toolPermissions?.values || {};
-        const permissionSource = data.toolPermissions?.source || 'default';
-        const pendingMatchesConversation = Boolean(
-            conversationId
-            && pendingConversationConversationIdRef.current === conversationId
-            && Object.keys(pendingConversationToolPermissionsRef.current).length > 0
-        );
-        const effectiveToolPermissions = (
-            pendingMatchesConversation && permissionSource !== 'conversation'
-                ? pendingConversationToolPermissionsRef.current
-                : serverToolPermissions
-        );
+            let savedExtraStatus = {};
+            try {
+                const saved = localStorage.getItem('extraToolsConfig');
+                if (saved) {
+                    savedExtraStatus = extractLocalOnlyExtraToolStatus(allExtraTools, JSON.parse(saved));
+                }
+            } catch (error) {
+                console.error('Failed to parse saved extra_tools status:', error);
+            }
 
-        setConversationToolDefaults({...((data.toolPermissions?.defaultValues) || {})});
-        if (Object.keys(effectiveToolPermissions).length > 0) {
-            mergedExtraStatus = applyToolPermissionsToStatus(
-                configuredExtraTools,
-                mergedExtraStatus,
-                effectiveToolPermissions
+            let mergedExtraStatus = applyLocalSettingBackedExtraToolStatus(
+                deepMerge(defaultExtraStatus, savedExtraStatus),
+                allExtraTools,
             );
-            toolPermissionRevisionRef.current = Number(data.toolPermissions?.revision) || 0;
-            conversationToolPermissionsRef.current = {...effectiveToolPermissions};
-        }
-        if (pendingMatchesConversation && permissionSource === 'conversation') {
-            pendingConversationToolPermissionsRef.current = {};
-            pendingConversationConversationIdRef.current = null;
-        }
 
-        if (data.builtin_tools) {
-            data.builtin_tools.forEach(tool => {
-                newBuiltinStatus[tool.name] = tool?.isActive ?? false;
-            });
-            setTools(data.builtin_tools);
-        }
+            const serverToolPermissions = data.toolPermissions?.values || {};
+            const permissionSource = data.toolPermissions?.source || 'default';
+            const pendingMatchesConversation = Boolean(
+                conversationId &&
+                pendingConversationConversationIdRef.current === conversationId &&
+                Object.keys(pendingConversationToolPermissionsRef.current).length > 0,
+            );
+            const effectiveToolPermissions =
+                pendingMatchesConversation && permissionSource !== 'conversation'
+                    ? pendingConversationToolPermissionsRef.current
+                    : serverToolPermissions;
 
-        setToolsStatus(prev => ({
-            ...prev,
-            builtin_tools: {...prev.builtin_tools, ...newBuiltinStatus},
-            extra_tools: mergedExtraStatus,
-        }));
-
-        setExtraTools(configuredExtraTools);
-        setAttachmentTools(defaultAttachmentTools);
-
-        if (data.readOnly !== undefined) {
-            setIsReadOnly(Boolean(data.readOnly));
-        }
-
-        if (data.capabilities && Object.prototype.hasOwnProperty.call(data.capabilities, 'realtimeVoice')) {
-            const capability = data.capabilities.realtimeVoice || {};
-            setRealtimeVoiceCapability({
-                available: capability.available === true,
-                reason: capability.reason || null,
-                protocol: capability.protocol || null,
-            });
-        }
-
-        if (data.tipMessage !== undefined) {
-            setTipMessageIsForNewLine(false);
-            if (data.tipMessage === null) {
-                setShowTipMessage(false);
-            } else {
-                setShowTipMessage(false);
-                setTimeout(() => {
-                    setTipMessage(data.tipMessage || '');
-                    setShowTipMessage(true);
-                    if (data.tipMessageFadeOutDelay) {
-                        setTimeout(() => setShowTipMessage(false), parseInt(data.tipMessageFadeOutDelay));
-                    }
-                }, 300);
+            setConversationToolDefaults({ ...(data.toolPermissions?.defaultValues || {}) });
+            if (Object.keys(effectiveToolPermissions).length > 0) {
+                mergedExtraStatus = applyToolPermissionsToStatus(
+                    configuredExtraTools,
+                    mergedExtraStatus,
+                    effectiveToolPermissions,
+                );
+                toolPermissionRevisionRef.current = Number(data.toolPermissions?.revision) || 0;
+                conversationToolPermissionsRef.current = { ...effectiveToolPermissions };
             }
-        }
+            if (pendingMatchesConversation && permissionSource === 'conversation') {
+                pendingConversationToolPermissionsRef.current = {};
+                pendingConversationConversationIdRef.current = null;
+            }
 
-        if (data.isEditMessage !== undefined) {
-            setIsEditMessage(Boolean(data.isEditMessage));
-        }
+            if (data.builtin_tools) {
+                data.builtin_tools.forEach((tool) => {
+                    newBuiltinStatus[tool.name] = tool?.isActive ?? false;
+                });
+                setTools(data.builtin_tools);
+            }
 
-        if (data.roles) {
-            // 设置角色列表，并优先恢复当前 browser-local Composer Draft 的角色。
-            setRoles(data.roles);
-            rolesRef.current = data.roles;
+            setToolsStatus((prev) => ({
+                ...prev,
+                builtin_tools: { ...prev.builtin_tools, ...newBuiltinStatus },
+                extra_tools: mergedExtraStatus,
+            }));
 
-            const activeIdentity = getActiveDraftIdentity();
-            const activeDraft = readComposerDraft(activeIdentity);
-            const draftRole = activeDraft?.roleName
-                ? data.roles.find(role => role.name === activeDraft.roleName)
-                : null;
-            const defaultRole = data.roles.find(role => role.default) || data.roles[0] || null;
-            const nextRole = draftRole || defaultRole;
-            currentRoleRef.current = nextRole;
-            setCurrentRole(nextRole);
-        }
+            setExtraTools(configuredExtraTools);
+            setAttachmentTools(defaultAttachmentTools);
 
-    }, [FilePickerCallback, PicPickerCallback, getActiveDraftIdentity, initializeExtraTools, conversationId]);
+            if (data.readOnly !== undefined) {
+                setIsReadOnly(Boolean(data.readOnly));
+            }
+
+            if (data.capabilities && Object.prototype.hasOwnProperty.call(data.capabilities, 'realtimeVoice')) {
+                const capability = data.capabilities.realtimeVoice || {};
+                setRealtimeVoiceCapability({
+                    available: capability.available === true,
+                    reason: capability.reason || null,
+                    protocol: capability.protocol || null,
+                });
+            }
+
+            if (data.tipMessage !== undefined) {
+                setTipMessageIsForNewLine(false);
+                if (data.tipMessage === null) {
+                    setShowTipMessage(false);
+                } else {
+                    setShowTipMessage(false);
+                    setTimeout(() => {
+                        setTipMessage(data.tipMessage || '');
+                        setShowTipMessage(true);
+                        if (data.tipMessageFadeOutDelay) {
+                            setTimeout(() => setShowTipMessage(false), parseInt(data.tipMessageFadeOutDelay));
+                        }
+                    }, 300);
+                }
+            }
+
+            if (data.isEditMessage !== undefined) {
+                setIsEditMessage(Boolean(data.isEditMessage));
+            }
+
+            if (data.roles) {
+                // 设置角色列表，并优先恢复当前 browser-local Composer Draft 的角色。
+                setRoles(data.roles);
+                rolesRef.current = data.roles;
+
+                const activeIdentity = getActiveDraftIdentity();
+                const activeDraft = readComposerDraft(activeIdentity);
+                const draftRole = activeDraft?.roleName
+                    ? data.roles.find((role) => role.name === activeDraft.roleName)
+                    : null;
+                const defaultRole = data.roles.find((role) => role.default) || data.roles[0] || null;
+                const nextRole = draftRole || defaultRole;
+                currentRoleRef.current = nextRole;
+                setCurrentRole(nextRole);
+            }
+        },
+        [FilePickerCallback, PicPickerCallback, getActiveDraftIdentity, initializeExtraTools, conversationId],
+    );
 
     // ========== 事件处理函数 ==========
 
-    const handleEventBroadcast = useCallback(({event, payload, reply}) => {
-        switch (event) {
-            case 'composer.status.changed':
-                const validStates = ['disabled', 'normal', 'loading', 'generating'];
-                if (validStates.includes(payload.value)) {
-                    setSendButtonStatus(payload.value);
-                    if (payload.value === 'normal') {
-                        runtimeToolPermissionRevisionRef.current = 0;
-                        runtimeToolPermissionRunIdRef.current = null;
-                        setRuntimeToolPermissions({});
+    const handleEventBroadcast = useCallback(
+        ({ event, payload, reply }) => {
+            switch (event) {
+                case 'composer.status.changed':
+                    const validStates = ['disabled', 'normal', 'loading', 'generating'];
+                    if (validStates.includes(payload.value)) {
+                        setSendButtonStatus(payload.value);
+                        if (payload.value === 'normal') {
+                            runtimeToolPermissionRevisionRef.current = 0;
+                            runtimeToolPermissionRunIdRef.current = null;
+                            setRuntimeToolPermissions({});
+                        }
+                        if (payload.reply) reply({ value: payload.value });
+                    } else if (payload.reply) {
+                        reply({ value: sendButtonStatusRef.current });
                     }
-                    if (payload.reply) reply({value: payload.value});
-                } else if (payload.reply) {
-                    reply({value: sendButtonStatusRef.current});
+                    if (payload.readOnly !== undefined) {
+                        setIsReadOnly(Boolean(payload.readOnly));
+                    }
+                    break;
+                case 'execution.state.changed': {
+                    const value = payload?.value && typeof payload.value === 'object' ? payload.value : payload;
+                    const selected = value?.active ? value : null;
+                    activeExecutionRef.current = selected;
+                    setActiveExecution(selected);
+                    if (!selected) {
+                        executionGuidancePendingRef.current = false;
+                        setIsExecutionGuidancePending(false);
+                    }
+                    if (payload?.reply) reply({ value });
+                    break;
                 }
-                if (payload.readOnly !== undefined) {
-                    setIsReadOnly(Boolean(payload.readOnly));
-                }
-                break;
-            case 'execution.state.changed': {
-                const value = payload?.value && typeof payload.value === 'object' ? payload.value : payload;
-                const selected = value?.active ? value : null;
-                activeExecutionRef.current = selected;
-                setActiveExecution(selected);
-                if (!selected) {
-                    executionGuidancePendingRef.current = false;
-                    setIsExecutionGuidancePending(false);
-                }
-                if (payload?.reply) reply({value});
-                break;
-            }
-            case 'composer.content.set':
-                updateMessageContent(payload.value);
-                break;
-            case 'composer.content.get':
-                reply({value: messageContentRef.current});
-                break;
-            case 'composer.setup':
-                // 原子替换工具配置，保持上一帧工具栏高度，避免发送瞬间出现额外一行。
-                chatboxSetup(payload.value);
-                setToolsLoadedStatus(2);
-                break;
-            case 'composer.quick_options.set':
-                setIsTransitioning(true);
-                setTimeout(() => {
-                    setQuickOptions(payload.value);
-                    setIsTransitioning(false);
-                }, 500);
-                break;
+                case 'composer.content.set':
+                    updateMessageContent(payload.value);
+                    break;
+                case 'composer.content.get':
+                    reply({ value: messageContentRef.current });
+                    break;
+                case 'composer.setup':
+                    // 原子替换工具配置，保持上一帧工具栏高度，避免发送瞬间出现额外一行。
+                    chatboxSetup(payload.value);
+                    setToolsLoadedStatus(2);
+                    break;
+                case 'composer.quick_options.set':
+                    setIsTransitioning(true);
+                    setTimeout(() => {
+                        setQuickOptions(payload.value);
+                        setIsTransitioning(false);
+                    }, 500);
+                    break;
 
-            case 'composer.edit.set':
-                if (payload.immediate) {  // 马上发送的逻辑
-                    onSendMessage(
-                        {
+                case 'composer.edit.set':
+                    if (payload.immediate) {
+                        // 马上发送的逻辑
+                        onSendMessage({
                             messageContent: payload.content,
                             toolsStatus: buildOutboundToolsStatus(),
                             isEditMessage: true,
                             editMessageId: payload.msgId,
                             attachments: payload.attachments,
-                            sendButtonStatus: sendButtonStatusRef.current === 'generating' ? 'normal' : sendButtonStatusRef.current,
+                            sendButtonStatus:
+                                sendButtonStatusRef.current === 'generating' ? 'normal' : sendButtonStatusRef.current,
                             admissionPolicy: sendButtonStatusRef.current === 'generating' ? 'interrupt' : 'auto',
                             inputSource: 'chat',
                             isRegenerate: payload.isRegenerate,
                             isProgenerate: payload.isProgenerate,
                             role: payload.role,
-                            isFork: payload.isFork
-                        }
-                    );
-                } else if (!payload.isEdit) {
-                    // Branch switching and other message actions may explicitly ask the
-                    // composer to leave Edit/Fork mode. Never replace the normal draft
-                    // with an empty payload in that path.
-                    if (editDraftRef.current) leaveEditMode();
-                } else {
-                    // Save whichever draft is active before switching sessions. Normal,
-                    // Edit and Fork drafts are independent browser-local records.
-                    persistActiveDraft();
+                            isFork: payload.isFork,
+                        });
+                    } else if (!payload.isEdit) {
+                        // Branch switching and other message actions may explicitly ask the
+                        // composer to leave Edit/Fork mode. Never replace the normal draft
+                        // with an empty payload in that path.
+                        if (editDraftRef.current) leaveEditMode();
+                    } else {
+                        // Save whichever draft is active before switching sessions. Normal,
+                        // Edit and Fork drafts are independent browser-local records.
+                        persistActiveDraft();
 
-                    const draftMode = payload.isFork ? 'fork' : 'edit';
-                    const targetMessage = payload.message || null;
-                    const messageId = payload.msgId || targetMessage?.id || targetMessage?.msgId || null;
-                    const persistedDraft = readComposerDraft({
-                        conversationId: draftConversationIdRef.current,
-                        mode: draftMode,
-                        messageId,
-                    });
-                    const mountedDraft = readMountedComposerDraft(targetMessage, draftMode);
-                    const restoredDraft = newestComposerDraft(mountedDraft, persistedDraft);
-                    const nextContent = restoredDraft?.content ?? (payload.content ?? '');
-                    const nextAttachments = restoredDraft
-                        ? (restoredDraft.attachments || [])
-                        : (payload.attachments || []);
-                    const nextRoleName = restoredDraft?.roleName || payload.role || null;
-                    const nextRole = resolveDraftRole(nextRoleName);
+                        const draftMode = payload.isFork ? 'fork' : 'edit';
+                        const targetMessage = payload.message || null;
+                        const messageId = payload.msgId || targetMessage?.id || targetMessage?.msgId || null;
+                        const persistedDraft = readComposerDraft({
+                            conversationId: draftConversationIdRef.current,
+                            mode: draftMode,
+                            messageId,
+                        });
+                        const mountedDraft = readMountedComposerDraft(targetMessage, draftMode);
+                        const restoredDraft = newestComposerDraft(mountedDraft, persistedDraft);
+                        const nextContent = restoredDraft?.content ?? payload.content ?? '';
+                        const nextAttachments = restoredDraft
+                            ? restoredDraft.attachments || []
+                            : payload.attachments || [];
+                        const nextRoleName = restoredDraft?.roleName || payload.role || null;
+                        const nextRole = resolveDraftRole(nextRoleName);
 
-                    // Capture the value visible *before this editing session starts*.
-                    // This is deliberately separate from the continuously persisted working
-                    // copy. A prior archive/stash or interrupted draft is therefore treated
-                    // as the baseline, while a first-time edit falls back to the server seed.
-                    editDraftRef.current = {
-                        messageId,
-                        mode: draftMode,
-                        message: targetMessage,
-                        baselineWasDraft: Boolean(restoredDraft),
-                        baselineSnapshot: {
+                        // Capture the value visible *before this editing session starts*.
+                        // This is deliberately separate from the continuously persisted working
+                        // copy. A prior archive/stash or interrupted draft is therefore treated
+                        // as the baseline, while a first-time edit falls back to the server seed.
+                        editDraftRef.current = {
+                            messageId,
+                            mode: draftMode,
+                            message: targetMessage,
+                            baselineWasDraft: Boolean(restoredDraft),
+                            baselineSnapshot: {
+                                content: nextContent,
+                                attachments: nextAttachments,
+                                roleName: nextRole?.name || nextRoleName || null,
+                            },
+                        };
+                        isEditMessageRef.current = true;
+                        pendingEditClearRef.current = false;
+
+                        setIsEditMessage(true);
+                        setIsForkMode(Boolean(payload.isFork));
+                        setEditMessageId(messageId);
+                        suppressAttachmentDraftPersistRef.current = true;
+                        setAttachments(nextAttachments);
+                        currentRoleRef.current = nextRole;
+                        setCurrentRole(nextRole);
+                        updateMessageContent(nextContent, { persist: false });
+                        const seededDraft = saveComposerSnapshot({
+                            conversationId: draftConversationIdRef.current,
+                            mode: draftMode,
+                            messageId,
                             content: nextContent,
                             attachments: nextAttachments,
-                            roleName: nextRole?.name || nextRoleName || null,
-                        },
-                    };
-                    isEditMessageRef.current = true;
-                    pendingEditClearRef.current = false;
-
-                    setIsEditMessage(true);
-                    setIsForkMode(Boolean(payload.isFork));
-                    setEditMessageId(messageId);
-                    suppressAttachmentDraftPersistRef.current = true;
-                    setAttachments(nextAttachments);
-                    currentRoleRef.current = nextRole;
-                    setCurrentRole(nextRole);
-                    updateMessageContent(nextContent, {persist: false});
-                    const seededDraft = saveComposerSnapshot({
-                        conversationId: draftConversationIdRef.current,
-                        mode: draftMode,
-                        messageId,
-                        content: nextContent,
-                        attachments: nextAttachments,
-                        roleName: nextRole?.name || nextRoleName,
-                    });
-                    if (seededDraft && targetMessage) {
-                        mountComposerDraft(targetMessage, draftMode, seededDraft);
+                            roleName: nextRole?.name || nextRoleName,
+                        });
+                        if (seededDraft && targetMessage) {
+                            mountComposerDraft(targetMessage, draftMode, seededDraft);
+                        }
+                        showCollapsedChatBox({ focus: true });
                     }
-                    showCollapsedChatBox({focus: true});
-                }
 
-                break;
+                    break;
 
-            case 'composer.clear': {
-                if (pendingEditClearRef.current && pendingEditCommitRef.current) {
-                    const committed = pendingEditCommitRef.current;
-                    pendingEditClearRef.current = false;
-                    pendingEditCommitRef.current = null;
-                    clearComposerDraft(committed);
-                    clearMountedComposerDraft(committed.message, committed.mode);
+                case 'composer.clear': {
+                    if (pendingEditClearRef.current && pendingEditCommitRef.current) {
+                        const committed = pendingEditCommitRef.current;
+                        pendingEditClearRef.current = false;
+                        pendingEditCommitRef.current = null;
+                        clearComposerDraft(committed);
+                        clearMountedComposerDraft(committed.message, committed.mode);
+                        break;
+                    }
+
+                    const normalCommit = pendingNormalCommitRef.current;
+                    pendingNormalCommitRef.current = null;
+                    if (normalCommit) {
+                        const persistedDraft = readComposerDraft({
+                            conversationId: normalCommit.conversationId,
+                            mode: 'normal',
+                        });
+                        const currentStillSubmitted = messageContentRef.current === normalCommit.content;
+                        const persistedStillSubmitted =
+                            normalCommit.serverAccepted ||
+                            (persistedDraft?.updatedAt || 0) === normalCommit.draftUpdatedAt;
+                        if (!currentStillSubmitted || !persistedStillSubmitted) break;
+                        clearComposerDraft({ conversationId: normalCommit.conversationId, mode: 'normal' });
+                    } else {
+                        clearComposerDraft({ conversationId: draftConversationIdRef.current, mode: 'normal' });
+                    }
+
+                    suppressAttachmentDraftPersistRef.current = true;
+                    setAttachments([]);
+                    updateMessageContent('', { persist: false });
                     break;
                 }
 
-                const normalCommit = pendingNormalCommitRef.current;
-                pendingNormalCommitRef.current = null;
-                if (normalCommit) {
-                    const persistedDraft = readComposerDraft({
-                        conversationId: normalCommit.conversationId,
-                        mode: 'normal',
-                    });
-                    const currentStillSubmitted = messageContentRef.current === normalCommit.content;
-                    const persistedStillSubmitted = normalCommit.serverAccepted
-                        || (persistedDraft?.updatedAt || 0) === normalCommit.draftUpdatedAt;
-                    if (!currentStillSubmitted || !persistedStillSubmitted) break;
-                    clearComposerDraft({conversationId: normalCommit.conversationId, mode: 'normal'});
-                } else {
-                    clearComposerDraft({conversationId: draftConversationIdRef.current, mode: 'normal'});
-                }
-
-                suppressAttachmentDraftPersistRef.current = true;
-                setAttachments([]);
-                updateMessageContent('', {persist: false});
-                break;
-            }
-
-            case 'composer.message.seeded':  // 原地发送消息
-                if (payload.msgId && payload.value && payload.value.name) {
-
-                    emitEvent({
-                        event: 'message.order.changed',
-                        payload: {
-                            },
-                        conversationId: conversationId,
-                        localOnly: true,
-                    }).then((messagesOrder) => {
-                        messagesOrder = messagesOrder.value;
-
-                        if (payload.value.content === undefined) payload.value.content = messageContentRef.current;
-                        if (!payload.value.attachments) payload.value.attachments = attachmentsMeta;
-                        if (!payload.value.allowRegenerate) payload.value.allowRegenerate = false;
-                        if (!payload.value.prevMessage) payload.value.prevMessage = messagesOrder[messagesOrder.length - 1];
-                        if (!payload.value.position) payload.value.position = "right";
-                        if (!payload.value.nextMessage) payload.value.nextMessage = null;
-                        if (!payload.value.messages) payload.value.messages = [];
-
+                case 'composer.message.seeded': // 原地发送消息
+                    if (payload.msgId && payload.value && payload.value.name) {
                         emitEvent({
-                            event: 'message.created',
-                            payload: {
-                                value: {
-                                    [payload.msgId]: payload.value
-                                },
-                                isEdit: payload.isEdit
-                            },
+                            event: 'message.order.changed',
+                            payload: {},
                             conversationId: conversationId,
                             localOnly: true,
-                        }).then((data) => {
+                        }).then((messagesOrder) => {
+                            messagesOrder = messagesOrder.value;
 
-                            if (!data.success) {
-                                reply({success: false});
-                                return;
-                            }
+                            if (payload.value.content === undefined) payload.value.content = messageContentRef.current;
+                            if (!payload.value.attachments) payload.value.attachments = attachmentsMeta;
+                            if (!payload.value.allowRegenerate) payload.value.allowRegenerate = false;
+                            if (!payload.value.prevMessage)
+                                payload.value.prevMessage = messagesOrder[messagesOrder.length - 1];
+                            if (!payload.value.position) payload.value.position = 'right';
+                            if (!payload.value.nextMessage) payload.value.nextMessage = null;
+                            if (!payload.value.messages) payload.value.messages = [];
 
-                            if (payload.autoAddOrder) {
-
-                                const prevIndex = messagesOrder.indexOf(payload.value.prevMessage);
-
-                                let newMessagesOrder;
-
-                                if (prevIndex !== -1) {
-                                    if (payload.orderReplace) {  // 是否是替换模式
-                                        newMessagesOrder = [...messagesOrder.slice(0, prevIndex + 1), payload.msgId, ...messagesOrder.slice(prevIndex + 2)];
-                                    } else {
-                                        newMessagesOrder = [...messagesOrder.slice(0, prevIndex + 1), payload.msgId];
-                                    }
-                                } else {
-                                    // 找不到 prevMessage，直接追加
-                                    newMessagesOrder = [...messagesOrder, payload.msgId];
+                            emitEvent({
+                                event: 'message.created',
+                                payload: {
+                                    value: {
+                                        [payload.msgId]: payload.value,
+                                    },
+                                    isEdit: payload.isEdit,
+                                },
+                                conversationId: conversationId,
+                                localOnly: true,
+                            }).then((data) => {
+                                if (!data.success) {
+                                    reply({ success: false });
+                                    return;
                                 }
 
-                                emitEvent({
-                                    event: 'message.order.changed',
-                                    payload: {
-                                        value: newMessagesOrder
-                                    },
-                                    conversationId: conversationId,
-                                    localOnly: true,
-                                }).then(() => {
+                                if (payload.autoAddOrder) {
+                                    const prevIndex = messagesOrder.indexOf(payload.value.prevMessage);
 
-                                    // 修改消息链
+                                    let newMessagesOrder;
+
+                                    if (prevIndex !== -1) {
+                                        if (payload.orderReplace) {
+                                            // 是否是替换模式
+                                            newMessagesOrder = [
+                                                ...messagesOrder.slice(0, prevIndex + 1),
+                                                payload.msgId,
+                                                ...messagesOrder.slice(prevIndex + 2),
+                                            ];
+                                        } else {
+                                            newMessagesOrder = [
+                                                ...messagesOrder.slice(0, prevIndex + 1),
+                                                payload.msgId,
+                                            ];
+                                        }
+                                    } else {
+                                        // 找不到 prevMessage，直接追加
+                                        newMessagesOrder = [...messagesOrder, payload.msgId];
+                                    }
+
                                     emitEvent({
-                                        event: 'message.children.changed',
+                                        event: 'message.order.changed',
                                         payload: {
-                                            msgId: payload.value.prevMessage,
-                                            value: payload.msgId,
-                                            switch: true
+                                            value: newMessagesOrder,
                                         },
                                         conversationId: conversationId,
                                         localOnly: true,
                                     }).then(() => {
-                                        // Composer clearing is an explicit server event (`composer.clear`).
-                                        // `composer.message.seeded` only materializes the optimistic/user message.
-                                        // Keeping those responsibilities separate prevents an out-of-order seeded
-                                        // event from erasing a newer normal draft typed after the submitted Turn.
-                                        reply(data);
-                                    })
-                                })
+                                        // 修改消息链
+                                        emitEvent({
+                                            event: 'message.children.changed',
+                                            payload: {
+                                                msgId: payload.value.prevMessage,
+                                                value: payload.msgId,
+                                                switch: true,
+                                            },
+                                            conversationId: conversationId,
+                                            localOnly: true,
+                                        }).then(() => {
+                                            // Composer clearing is an explicit server event (`composer.clear`).
+                                            // `composer.message.seeded` only materializes the optimistic/user message.
+                                            // Keeping those responsibilities separate prevents an out-of-order seeded
+                                            // event from erasing a newer normal draft typed after the submitted Turn.
+                                            reply(data);
+                                        });
+                                    });
+                                }
+                            });
+                        });
+                    } else {
+                        console.error('Shot-Message Failed. Need msgId, value, value.name in payload at least.');
+                        reply({ success: false });
+                    }
 
-                            }
-                        })
-
-
-                    })
-                } else {
-                    console.error('Shot-Message Failed. Need msgId, value, value.name in payload at least.');
-                    reply({success: false});
-                }
-
-                break;
-        }
-    }, [attachmentsMeta, buildOutboundToolsStatus, chatboxSetup, leaveEditMode, conversationId, onSendMessage, persistActiveDraft, resolveDraftRole, setAttachments, showCollapsedChatBox, t, toolsStatus, updateMessageContent]);
+                    break;
+            }
+        },
+        [
+            attachmentsMeta,
+            buildOutboundToolsStatus,
+            chatboxSetup,
+            leaveEditMode,
+            conversationId,
+            onSendMessage,
+            persistActiveDraft,
+            resolveDraftRole,
+            setAttachments,
+            showCollapsedChatBox,
+            t,
+            toolsStatus,
+            updateMessageContent,
+        ],
+    );
 
     const renderMenuItems = useExtraToolsMenuItems({
         toolsStatus,
@@ -2008,7 +2114,7 @@ function ChatBox({
             // the new-conversation tool selection attached to the assigned ID
             // so an early ChatBox setup response cannot replace it with defaults.
             pendingConversationConversationIdRef.current = conversationId;
-            conversationToolPermissionsRef.current = {...pendingPermissions};
+            conversationToolPermissionsRef.current = { ...pendingPermissions };
         } else {
             conversationToolPermissionsRef.current = {};
             pendingConversationToolPermissionsRef.current = {};
@@ -2027,48 +2133,54 @@ function ChatBox({
 
     useEffect(() => {
         if (Object.keys(conversationToolPermissionsRef.current).length === 0) return;
-        setToolsStatus(prev => ({
+        setToolsStatus((prev) => ({
             ...prev,
             extra_tools: applyToolPermissionsToStatus(
                 extraTools,
                 prev.extra_tools || {},
-                conversationToolPermissionsRef.current
+                conversationToolPermissionsRef.current,
             ),
         }));
     }, [extraTools]);
 
-    useEffect(() => onEvent({
-        event: 'tool.permission.changed',
-        conversationId,
-    }).then(({payload, eventRunId}) => {
-        if (payload.scope === 'conversation') {
-            applyConversationToolPermissions(payload.permissions || {}, payload.revision);
-            return;
-        }
+    useEffect(
+        () =>
+            onEvent({
+                event: 'tool.permission.changed',
+                conversationId,
+            }).then(({ payload, eventRunId }) => {
+                if (payload.scope === 'conversation') {
+                    applyConversationToolPermissions(payload.permissions || {}, payload.revision);
+                    return;
+                }
 
-        if (payload.scope === 'run') {
-            const revision = Number(payload.revision) || 0;
-            const runId = eventRunId || payload.runId || null;
-            if (payload.cleared) {
-                if (
-                    runtimeToolPermissionRunIdRef.current
-                    && runId
-                    && runtimeToolPermissionRunIdRef.current !== runId
-                ) return;
-                runtimeToolPermissionRevisionRef.current = 0;
-                runtimeToolPermissionRunIdRef.current = null;
-                setRuntimeToolPermissions({});
-                return;
-            }
-            if (
-                runtimeToolPermissionRunIdRef.current === runId
-                && revision < runtimeToolPermissionRevisionRef.current
-            ) return;
-            runtimeToolPermissionRevisionRef.current = revision;
-            runtimeToolPermissionRunIdRef.current = runId;
-            setRuntimeToolPermissions(payload.permissions || {});
-        }
-    }), [applyConversationToolPermissions, conversationId]);
+                if (payload.scope === 'run') {
+                    const revision = Number(payload.revision) || 0;
+                    const runId = eventRunId || payload.runId || null;
+                    if (payload.cleared) {
+                        if (
+                            runtimeToolPermissionRunIdRef.current &&
+                            runId &&
+                            runtimeToolPermissionRunIdRef.current !== runId
+                        )
+                            return;
+                        runtimeToolPermissionRevisionRef.current = 0;
+                        runtimeToolPermissionRunIdRef.current = null;
+                        setRuntimeToolPermissions({});
+                        return;
+                    }
+                    if (
+                        runtimeToolPermissionRunIdRef.current === runId &&
+                        revision < runtimeToolPermissionRevisionRef.current
+                    )
+                        return;
+                    runtimeToolPermissionRevisionRef.current = revision;
+                    runtimeToolPermissionRunIdRef.current = runId;
+                    setRuntimeToolPermissions(payload.permissions || {});
+                }
+            }),
+        [applyConversationToolPermissions, conversationId],
+    );
 
     // 更新引用值
     useEffect(() => {
@@ -2110,7 +2222,7 @@ function ChatBox({
         if (isReadOnly) {
             setIsMobileVoiceMode(false);
             setIsVoiceRecognizing(false);
-            stopVoiceRecording({emitPcm: false});
+            stopVoiceRecording({ emitPcm: false });
         }
     }, [isReadOnly, stopVoiceRecording]);
 
@@ -2118,7 +2230,7 @@ function ChatBox({
         return () => {
             voiceRecorderRef.current?.cancel?.();
             voiceRecorderRef.current = null;
-            onVoiceRecordingCancelRef.current?.({conversationId});
+            onVoiceRecordingCancelRef.current?.({ conversationId });
         };
     }, [conversationId]);
 
@@ -2134,9 +2246,9 @@ function ChatBox({
         setToolsLoadedStatus(0);
         apiClient
             .get(apiEndpoint.CHATBOX_ENDPOINT, {
-                params: conversationId ? {conversationId} : undefined,
+                params: conversationId ? { conversationId } : undefined,
             })
-            .then(data => {
+            .then((data) => {
                 if (cancelled) return;
                 chatboxSetup(data);
                 setToolsLoadedStatus(2);
@@ -2153,10 +2265,7 @@ function ChatBox({
     // 监听事件广播
     useEffect(() => {
         const unsubscribe = onEvent({
-            event: [
-                'composer.*',
-                'execution.state.changed',
-            ],
+            event: ['composer.*', 'execution.state.changed'],
             conversationId,
             onlyWithoutConversation: Boolean(!conversationId),
         }).then(handleEventBroadcast);
@@ -2208,7 +2317,7 @@ function ChatBox({
             return;
         }
         if (!hasHydratedDraftRef.current) return;
-        persistActiveDraft({attachments: attachmentsMeta});
+        persistActiveDraft({ attachments: attachmentsMeta });
     }, [attachmentsMeta, persistActiveDraft]);
 
     useEffect(() => {
@@ -2218,7 +2327,7 @@ function ChatBox({
     useEffect(() => {
         currentRoleRef.current = currentRole;
         if (!currentRole || !hasHydratedDraftRef.current) return;
-        persistActiveDraft({roleName: currentRole.name});
+        persistActiveDraft({ roleName: currentRole.name });
     }, [currentRole, persistActiveDraft]);
 
     // 更新附件高度。附件数量、容器宽度和过渡动画都会改变实际高度，
@@ -2237,9 +2346,7 @@ function ChatBox({
 
         updateHeight();
         window.addEventListener('resize', updateHeight);
-        const resizeObserver = typeof ResizeObserver !== 'undefined'
-            ? new ResizeObserver(updateHeight)
-            : null;
+        const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateHeight) : null;
         resizeObserver?.observe(container);
 
         return () => {
@@ -2277,7 +2384,7 @@ function ChatBox({
                 }
 
                 const matrixMatch = transform.match(/^matrix\((.+)\)$/);
-                return matrixMatch ? (Number(matrixMatch[1].split(',')[5]) || 0) : 0;
+                return matrixMatch ? Number(matrixMatch[1].split(',')[5]) || 0 : 0;
             }
         };
 
@@ -2289,16 +2396,11 @@ function ChatBox({
             const currentTranslateY = readCurrentTranslateY();
             const untransformedRootBottom = rootRect.bottom - currentTranslateY;
             const bottomGap = Math.max(0, hostBottom - untransformedRootBottom);
-            const nextTranslateY = Math.max(
-                0,
-                rootRect.height + bottomGap + CHATBOX_COLLAPSE_OVERSHOOT_PX,
-            );
+            const nextTranslateY = Math.max(0, rootRect.height + bottomGap + CHATBOX_COLLAPSE_OVERSHOOT_PX);
 
-            setCollapsedTranslateY((previousValue) => (
-                Math.abs(previousValue - nextTranslateY) < 0.5
-                    ? previousValue
-                    : nextTranslateY
-            ));
+            setCollapsedTranslateY((previousValue) =>
+                Math.abs(previousValue - nextTranslateY) < 0.5 ? previousValue : nextTranslateY,
+            );
         };
 
         const scheduleMeasurement = () => {
@@ -2357,7 +2459,7 @@ function ChatBox({
 
     // 根元素高度观察
     useEffect(() => {
-        const resizeObserver = new ResizeObserver(entries => {
+        const resizeObserver = new ResizeObserver((entries) => {
             for (let entry of entries) {
                 const newHeight = entry.contentRect.height;
                 if (onHeightChange) {
@@ -2395,7 +2497,7 @@ function ChatBox({
         if (conversationId) return;
         pendingConversationToolPermissionsRef.current = collectToolPermissions(
             extraTools,
-            toolsStatus.extra_tools || {}
+            toolsStatus.extra_tools || {},
         );
     }, [extraTools, conversationId, toolsStatus.extra_tools]);
 
@@ -2403,7 +2505,7 @@ function ChatBox({
     useEffect(() => {
         const localOnlyStatus = extractLocalOnlyExtraToolStatus(
             [...extraTools, ...attachmentTools],
-            toolsStatus.extra_tools || {}
+            toolsStatus.extra_tools || {},
         );
         try {
             localStorage.setItem('extraToolsConfig', JSON.stringify(localOnlyStatus));
@@ -2414,88 +2516,112 @@ function ChatBox({
 
     // ========== 使用 useMemo 缓存不需要频繁计算的 props ==========
 
-    const chatBoxHeaderProps = useMemo(() => ({
-        quickOptions,
-        isSmallScreen,
-        showTipMessage,
-        tipMessage,
-        isReadOnly,
-        onOptionClick: handleOptionClick,
-        currentPageIndex,
-        setCurrentPageIndex,
-        quickOptionsRef,
-        selectedOption: selectedQuickOption,
-        isTransitioning,
-    }), [
-        quickOptions,
-        isSmallScreen,
-        showTipMessage,
-        tipMessage,
-        isReadOnly,
-        handleOptionClick,
-        currentPageIndex,
-        selectedQuickOption,
-        isTransitioning,
-    ]);
+    const chatBoxHeaderProps = useMemo(
+        () => ({
+            quickOptions,
+            isSmallScreen,
+            showTipMessage,
+            tipMessage,
+            isReadOnly,
+            onOptionClick: handleOptionClick,
+            currentPageIndex,
+            setCurrentPageIndex,
+            quickOptionsRef,
+            selectedOption: selectedQuickOption,
+            isTransitioning,
+        }),
+        [
+            quickOptions,
+            isSmallScreen,
+            showTipMessage,
+            tipMessage,
+            isReadOnly,
+            handleOptionClick,
+            currentPageIndex,
+            selectedQuickOption,
+            isTransitioning,
+        ],
+    );
 
-    const voiceInputNode = useMemo(() => (
-        <VoiceInputButton
-            isMobile={isSmallScreen}
-            isMobileVoiceMode={isMobileVoiceMode}
-            isRecording={isVoiceRecording}
-            isPending={voiceActionPending}
-            disabled={isReadOnly}
-            onClick={handleVoiceButtonClick}
-            labels={{
-                input: voiceText.input,
-                switchToText: voiceText.switchToText,
-                cancelRecording: voiceText.cancelRecording,
-            }}
-        />
-    ), [
-        handleVoiceButtonClick,
-        isMobileVoiceMode,
-        isReadOnly,
-        isSmallScreen,
-        isVoiceRecording,
-        voiceActionPending,
-        voiceText.cancelRecording,
-        voiceText.input,
-        voiceText.switchToText,
-    ]);
+    const voiceInputNode = useMemo(
+        () => (
+            <VoiceInputButton
+                isMobile={isSmallScreen}
+                isMobileVoiceMode={isMobileVoiceMode}
+                isRecording={isVoiceRecording}
+                isPending={voiceActionPending}
+                disabled={isReadOnly}
+                onClick={handleVoiceButtonClick}
+                labels={{
+                    input: voiceText.input,
+                    switchToText: voiceText.switchToText,
+                    cancelRecording: voiceText.cancelRecording,
+                }}
+            />
+        ),
+        [
+            handleVoiceButtonClick,
+            isMobileVoiceMode,
+            isReadOnly,
+            isSmallScreen,
+            isVoiceRecording,
+            voiceActionPending,
+            voiceText.cancelRecording,
+            voiceText.input,
+            voiceText.switchToText,
+        ],
+    );
 
-    const toolButtonsProps = useMemo(() => ({
-        toolsLoadedStatus,
-        extraTools,
-        attachmentTools,
-        tools: visibleBuiltinTools,
-        toolsStatus: activeToolsStatus,
-        setToolsStatus,
-        onBuiltinToolToggle: handleBuiltinToolToggle,
-        setToolsLoadedStatus,
-        renderMenuItems, // 传递函数
-        t,
-        isWindowMode,
-        containerWidth,
-        voiceInputNode,
-        isMobileMenu: isSmallScreen,
-        mobileOpenSections: mobileOpenMenuSections,
-        setMobileOpenSections: setMobileOpenMenuSections,
-        onManageConversationTools: () => setConversationToolsDialogOpen(true),
-        conversationToolsDisabled: isReadOnly,
-        conversationToolsSyncing: conversationToolSyncCount > 0,
-        onManageWorkspace: () => setWorkspaceSettingsDialogOpen(true),
-        workspaceSettingsDisabled: isReadOnly,
-    }), [toolsLoadedStatus, extraTools, attachmentTools, visibleBuiltinTools, activeToolsStatus,
-        setToolsStatus, handleBuiltinToolToggle, setToolsLoadedStatus, renderMenuItems, t, isWindowMode, containerWidth, voiceInputNode, isSmallScreen, mobileOpenMenuSections, isReadOnly, conversationToolSyncCount]);
+    const toolButtonsProps = useMemo(
+        () => ({
+            toolsLoadedStatus,
+            extraTools,
+            attachmentTools,
+            tools: visibleBuiltinTools,
+            toolsStatus: activeToolsStatus,
+            setToolsStatus,
+            onBuiltinToolToggle: handleBuiltinToolToggle,
+            setToolsLoadedStatus,
+            renderMenuItems, // 传递函数
+            t,
+            isWindowMode,
+            containerWidth,
+            voiceInputNode,
+            isMobileMenu: isSmallScreen,
+            mobileOpenSections: mobileOpenMenuSections,
+            setMobileOpenSections: setMobileOpenMenuSections,
+            onManageConversationTools: () => setConversationToolsDialogOpen(true),
+            conversationToolsDisabled: isReadOnly,
+            conversationToolsSyncing: conversationToolSyncCount > 0,
+            onManageWorkspace: () => setWorkspaceSettingsDialogOpen(true),
+            workspaceSettingsDisabled: isReadOnly,
+        }),
+        [
+            toolsLoadedStatus,
+            extraTools,
+            attachmentTools,
+            visibleBuiltinTools,
+            activeToolsStatus,
+            setToolsStatus,
+            handleBuiltinToolToggle,
+            setToolsLoadedStatus,
+            renderMenuItems,
+            t,
+            isWindowMode,
+            containerWidth,
+            voiceInputNode,
+            isSmallScreen,
+            mobileOpenMenuSections,
+            isReadOnly,
+            conversationToolSyncCount,
+        ],
+    );
 
     const autoHideButtonLabel = isSmallScreen
         ? t('chatbox_hide')
-        : (
-            isBottomAutoHideEnabled
-                ? t('chatbox_disable_auto_hide')
-                : t('chatbox_enable_auto_hide')
-        );
+        : isBottomAutoHideEnabled
+          ? t('chatbox_disable_auto_hide')
+          : t('chatbox_enable_auto_hide');
     const collapsedButtonLabel = t('chatbox_show');
     const isMobileCollapsed = !immersive && isSmallScreen && isChatBoxCollapsed;
     const rootMaxHeightStyle = attachmentHeight > 0 ? `calc(100% + ${attachmentHeight}px)` : '100%';
@@ -2533,7 +2659,7 @@ function ChatBox({
                 onFolderDetected={onFolderDetected}
                 targetRef={dropTargetRef}
             />
-            <ChatBoxInteractionHost conversationId={conversationId}/>
+            <ChatBoxInteractionHost conversationId={conversationId} />
             {isMobileCollapsed && (
                 <div className="mx-auto w-full max-w-225 px-4 py-2 pointer-events-auto">
                     <button
@@ -2543,7 +2669,7 @@ function ChatBox({
                         className="mx-auto flex h-8 items-center gap-2 rounded-full border border-gray-200 bg-white/95 px-4 text-xs font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 cursor-pointer"
                         onClick={showCollapsedChatBox}
                     >
-                        <span className="h-1.5 w-10 rounded-full bg-gray-300"/>
+                        <span className="h-1.5 w-10 rounded-full bg-gray-300" />
                         <span>{collapsedButtonLabel}</span>
                     </button>
                 </div>
@@ -2557,7 +2683,7 @@ function ChatBox({
                     onMouseEnter={showCollapsedChatBox}
                     onClick={showCollapsedChatBox}
                 >
-                    <span className="h-1 w-10 rounded-full bg-gray-400/80 shadow-sm"/>
+                    <span className="h-1 w-10 rounded-full bg-gray-400/80 shadow-sm" />
                 </button>
             )}
             <div
@@ -2570,27 +2696,28 @@ function ChatBox({
                     transitionProperty: 'max-height, transform, opacity',
                     transitionDuration: '0.3s, 0.34s, 0.14s',
                     transitionTimingFunction: 'ease-in-out, cubic-bezier(0.4, 0, 0.2, 1), ease-out',
-                    transitionDelay: !immersive && !isSmallScreen && isChatBoxCollapsed
-                        ? '0s, 0s, 0.2s'
-                        : '0s, 0s, 0s',
+                    transitionDelay: !immersive && !isSmallScreen && isChatBoxCollapsed ? '0s, 0s, 0.2s' : '0s, 0s, 0s',
                     maxHeight: rootMaxHeightStyle,
                     display: isMobileCollapsed ? 'none' : undefined,
                     opacity: !immersive && !isSmallScreen && isChatBoxCollapsed ? 0 : 1,
-                    transform: !immersive && !isSmallScreen && isChatBoxCollapsed
-                        ? `translateY(${collapsedTranslateY}px)`
-                        : 'translateY(0)',
+                    transform:
+                        !immersive && !isSmallScreen && isChatBoxCollapsed
+                            ? `translateY(${collapsedTranslateY}px)`
+                            : 'translateY(0)',
                 }}
             >
                 <ChatBoxHeader {...chatBoxHeaderProps} />
-                <div
-                    className="border-1 relative flex min-h-0 flex-col overflow-hidden rounded-2xl bg-white transition-shadow duration-200 ease-in-out hover:shadow-lg focus-within:shadow-lg pointer-events-auto">
+                <div className="border-1 relative flex min-h-0 flex-col overflow-hidden rounded-2xl bg-white transition-shadow duration-200 ease-in-out hover:shadow-lg focus-within:shadow-lg pointer-events-auto">
                     {/* 文件上传进度 */}
                     <div
                         className="relative z-[1] shrink-0 overflow-hidden transition-all duration-300 ease-in-out"
-                        style={{height: uploadFiles.length > 0 ? 'auto' : 0, minHeight: 0}}
+                        style={{ height: uploadFiles.length > 0 ? 'auto' : 0, minHeight: 0 }}
                     >
-                        <FileUploadProgress uploadFiles={uploadFiles} onRetry={onRetryUpload}
-                                            onCancel={onCancelUpload}/>
+                        <FileUploadProgress
+                            uploadFiles={uploadFiles}
+                            onRetry={onRetryUpload}
+                            onCancel={onCancelUpload}
+                        />
                     </div>
 
                     {/* 附件展示 */}
@@ -2663,10 +2790,9 @@ function ChatBox({
                     {/* 工具按钮和发送按钮 */}
                     <div className="flex min-h-10 shrink-0 flex-nowrap items-center justify-between gap-2 px-4 pb-3">
                         <div className="h-7 min-w-0 flex-1 overflow-hidden">
-                            <ToolButtons {...toolButtonsProps}/>
+                            <ToolButtons {...toolButtonsProps} />
                         </div>
                         <div className="flex shrink-0 items-center space-x-2">
-
                             {/* 靠底隐藏按钮 */}
                             <button
                                 type="button"
@@ -2685,9 +2811,15 @@ function ChatBox({
                                     height="24"
                                     aria-hidden="true"
                                 >
-                                    <path d="M4 5h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                                    <path d="M4 19h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                                    <path d="m8 11 4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    <path d="M4 5h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                    <path d="M4 19h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                    <path
+                                        d="m8 11 4 4 4-4"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
                                 </svg>
                             </button>
 
@@ -2725,8 +2857,6 @@ function ChatBox({
                                 onRoleChange={handleRoleChange}
                             />
 
-
-
                             {/* 主操作：空输入且后端声明支持时，实时语音替换禁用的发送按钮。 */}
                             <ComposerPrimaryAction
                                 status={sendButtonStatus}
@@ -2746,15 +2876,15 @@ function ChatBox({
                                     toolsStatus: activeToolsStatus,
                                     composerStatus: sendButtonStatus,
                                 }}
-                                voiceInputBusy={isMobileVoiceMode || isVoiceRecording || isVoiceRecognizing || voiceActionPending}
+                                voiceInputBusy={
+                                    isMobileVoiceMode || isVoiceRecording || isVoiceRecognizing || voiceActionPending
+                                }
                                 uploadPending={uploadFiles.length > 0}
                                 t={t}
                             />
                         </div>
                     </div>
-
                 </div>
-
             </div>
             <FullscreenEditorModal
                 isOpen={isModalOpen}

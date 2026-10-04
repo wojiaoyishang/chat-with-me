@@ -22,18 +22,18 @@ src/features/execution/ExecutionWindow 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``sonner``、``@/context/useEventStore.jsx``、``@/components/markdown/MarkdownRenderer.jsx``、``@/components/window``、``@/components/ui/button.tsx``、``./useExecutionStore.js``、``@/features/workspace/components/WorkspaceTransferCard.jsx``。
+``./ExecutionGuidanceAction.jsx``、``react``、``lucide-react``、``sonner``、``@/context/useEventStore.jsx``、``@/components/markdown/MarkdownRenderer.jsx``、``@/components/window``、``@/components/ui/button.tsx``、``./useExecutionStore.js``、``@/features/workspace/components/WorkspaceTransferCard.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:711:862:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:792:927:FUNCTION
 
 .. js:function:: realtimeActionErrorMessage(response, fallback)
 
    实现 ``realtimeActionErrorMessage`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``22``—``27`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``23``—``24`` 行。
 
    **参数**
 
@@ -49,13 +49,13 @@ src/features/execution/ExecutionWindow 模块
 
    **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:880:1151:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:945:1218:FUNCTION
 
 .. js:function:: fmtTime(value)
 
    实现 ``fmtTime`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``29``—``37`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``26``—``34`` 行。
 
    **参数**
 
@@ -64,66 +64,66 @@ src/features/execution/ExecutionWindow 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``''``、``new Date(number).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'})``。
+   根据执行分支返回结果；代表性返回表达式为 ``''``、``new Date(number).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })``。
 
    **主要协作调用**：``Number``、``Number.isFinite``、``new Date(number).toLocaleTimeString``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1170:1440:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1237:1512:FUNCTION
 
-.. js:function:: PlanIcon({status})
+.. js:function:: PlanIcon({ status })
 
    渲染 ``PlanIcon`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``39``—``43`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``36``—``40`` 行。
 
    **参数**
 
-   ``{status}``
+   ``{ status }``
       调用方传入的 ``status`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<CheckCircle2 className="h-4 w-4 text-emerald-500"/>``、``<Loader2 className="h-4 w-4 animate-spin text-blue-500"/>``、``<CircleDot className="h-4 w-4 text-gray-300"/>``。
+   根据执行分支返回结果；代表性返回表达式为 ``<CheckCircle2 className="h-4 w-4 text-emerald-500" />``、``<Loader2 className="h-4 w-4 animate-spin text-blue-500" />``、``<CircleDot className="h-4 w-4 text-gray-300" />``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1463:1881:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1535:1959:FUNCTION
 
-.. js:function:: ToolCardIcon({state})
+.. js:function:: ToolCardIcon({ state })
 
    渲染 ``ToolCardIcon`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``45``—``51`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``42``—``48`` 行。
 
    **参数**
 
-   ``{state}``
+   ``{ state }``
       调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<Loader2 className="h-4 w-4 animate-spin text-amber-500"/>``、``<CircleAlert className="h-4 w-4 text-red-500"/>``、``<Square className="h-4 w-4 text-gray-400"/>``、``<CheckCircle2 className="h-4 w-4 text-emerald-500"/>``。
+   根据执行分支返回结果；代表性返回表达式为 ``<Loader2 className="h-4 w-4 animate-spin text-amber-500" />``、``<CircleAlert className="h-4 w-4 text-red-500" />``、``<Square className="h-4 w-4 text-gray-400" />``、``<CheckCircle2 className="h-4 w-4 text-emerald-500" />``。
 
    **主要协作调用**：``String(state || '').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1909:2738:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:1987:2848:FUNCTION
 
-.. js:function:: ActivityStateIcon({activity, userGuidance})
+.. js:function:: ActivityStateIcon({ activity, userGuidance })
 
    渲染 ``ActivityStateIcon`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``53``—``61`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``50``—``61`` 行。
 
    **参数**
 
-   ``{activity, userGuidance}``
+   ``{ activity, userGuidance }``
       调用方传入的 ``activity, userGuidance`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<MessageSquarePlus className="h-3.5 w-3.5 text-blue-500" aria-hidden="true"/>``、``<Loader2 className="h-3.5 w-3.5 animate-spin text-blue-400" aria-hidden="true"/>``、``<CircleAlert className="h-3.5 w-3.5 text-amber-500" aria-hidden="true"/>``、``<Square className="h-3.5 w-3.5 text-gray-400" aria-hidden="true"/>``。
+   根据执行分支返回结果；代表性返回表达式为 ``<MessageSquarePlus className="h-3.5 w-3.5 text-blue-500" aria-hidden="true" />``、``<Loader2 className="h-3.5 w-3.5 animate-spin text-blue-400" aria-hidden="true" />``、``<CircleAlert className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" />``、``<Square className="h-3.5 w-3.5 text-gray-400" aria-hidden="true" />``。
 
    **主要协作调用**：``String(activity?.state || '').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:2989:3260:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3099:3370:FUNCTION
 
 .. js:function:: workspaceTransferDirectionForCard(card)
 
@@ -142,7 +142,7 @@ src/features/execution/ExecutionWindow 模块
 
    **主要协作调用**：``Array.isArray``、``String(name || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3288:3427:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3398:3537:FUNCTION
 
 .. js:function:: timelineTimestamp(item)
 
@@ -166,22 +166,22 @@ src/features/execution/ExecutionWindow 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3459:24843:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3569:29610:FUNCTION
 
-.. rubric:: ``memo callback @ 83``
+.. rubric:: ``memo callback @ 84``
 
 .. code-block:: javascript
 
-   memo callback @ 83({ execution, open, onOpenChange, dockTarget = null, dockMount = null, messages = {}, })
+   memo callback @ 84({ execution, open, onOpenChange, dockTarget = null, dockMount = null, messages = {} })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``83``—``463`` 行。
+**性质**：同步局部函数；源码第 ``84``—``521`` 行。
 
 **参数**
 
-``{ execution, open, onOpenChange, dockTarget = null, dockMount = null, messages = {}, }``
-   调用方传入的 ``execution, open, onOpenChange, dockTarget = null, dockMount = null, messages = ,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ execution, open, onOpenChange, dockTarget = null, dockMount = null, messages = {} }``
+   调用方传入的 ``execution, open, onOpenChange, dockTarget = null, dockMount = null, messages =`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -195,17 +195,17 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：15。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4147:4199:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4277:4329:FUNCTION
 
-.. rubric:: ``useMemo callback @ 100``
+.. rubric:: ``useMemo callback @ 94``
 
 .. code-block:: javascript
 
-   useMemo callback @ 100()
+   useMemo callback @ 94()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``94``—``94`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -217,17 +217,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``[...(execution?.activities || [])].slice``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4257:4535:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4391:4698:FUNCTION
 
-.. rubric:: ``useMemo callback @ 101``
+.. rubric:: ``useMemo callback @ 96``
 
 .. code-block:: javascript
 
-   useMemo callback @ 101()
+   useMemo callback @ 96()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``101``—``105`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``96``—``99`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -241,17 +241,17 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4363:4431:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4524:4592:FUNCTION
 
-.. rubric:: ``[...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter callback @ 103``
+.. rubric:: ``[...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter callback @ 98``
 
 .. code-block:: javascript
 
-   [...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter callback @ 103(item)
+   [...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter callback @ 98(item)
 
 作为 ``[...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``103``—``103`` 行；所属函数 ``useMemo callback @ 101``。
+**性质**：同步局部函数；源码第 ``98``—``98`` 行；所属函数 ``useMemo callback @ 96``。
 
 **参数**
 
@@ -264,17 +264,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4451:4528:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4620:4697:FUNCTION
 
-.. rubric:: ``[...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter((item) => item && String(item.surface ||… callback @ 104``
+.. rubric:: ``[...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter((item) => item && String(item.surface ||… callback @ 99``
 
 .. code-block:: javascript
 
-   [...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter((item) => item && String(item.surface ||… callback @ 104(left, right)
+   [...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter((item) => item && String(item.surface ||… callback @ 99(left, right)
 
 实现 ``[...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])] .filter((item) => item && String(item.surface ||…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``104``—``104`` 行；所属函数 ``useMemo callback @ 101``。
+**性质**：同步局部函数；源码第 ``99``—``99`` 行；所属函数 ``useMemo callback @ 96``。
 
 **参数**
 
@@ -290,17 +290,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4956:6521:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:5185:6886:FUNCTION
 
-.. rubric:: ``useMemo callback @ 112``
+.. rubric:: ``useMemo callback @ 109``
 
 .. code-block:: javascript
 
-   useMemo callback @ 112()
+   useMemo callback @ 109()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``112``—``146`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``109``—``143`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -314,17 +314,17 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:5055:5420:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:5296:5697:FUNCTION
 
-.. rubric:: ``toolCards.forEach callback @ 115``
+.. rubric:: ``toolCards.forEach callback @ 112``
 
 .. code-block:: javascript
 
-   toolCards.forEach callback @ 115(card, index)
+   toolCards.forEach callback @ 112(card, index)
 
 作为 ``toolCards.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``115``—``124`` 行；所属函数 ``useMemo callback @ 112``。
+**性质**：同步局部函数；源码第 ``112``—``121`` 行；所属函数 ``useMemo callback @ 109``。
 
 **参数**
 
@@ -340,17 +340,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``String(card?.toolCallId || '').trim``、``String``、``cardToolIds.add``、``items.push``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:5450:6259:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:5731:6596:FUNCTION
 
-.. rubric:: ``activities.forEach callback @ 125``
+.. rubric:: ``activities.forEach callback @ 122``
 
 .. code-block:: javascript
 
-   activities.forEach callback @ 125(activity, index)
+   activities.forEach callback @ 122(activity, index)
 
 作为 ``activities.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``125``—``139`` 行；所属函数 ``useMemo callback @ 112``。
+**性质**：同步局部函数；源码第 ``122``—``136`` 行；所属函数 ``useMemo callback @ 109``。
 
 **参数**
 
@@ -366,17 +366,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``String(activity?.kind || '').toLowerCase``、``String``、``String(activity?.toolCallId || '').trim``、``cardToolIds.has``、``items.push``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6281:6491:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6622:6848:FUNCTION
 
-.. rubric:: ``items.sort callback @ 140``
+.. rubric:: ``items.sort callback @ 137``
 
 .. code-block:: javascript
 
-   items.sort callback @ 140(left, right)
+   items.sort callback @ 137(left, right)
 
 作为 ``items.sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``140``—``144`` 行；所属函数 ``useMemo callback @ 112``。
+**性质**：同步局部函数；源码第 ``137``—``141`` 行；所属函数 ``useMemo callback @ 109``。
 
 **参数**
 
@@ -392,17 +392,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``timelineTimestamp``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6589:6878:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6958:7285:FUNCTION
 
-.. rubric:: ``useCallback callback @ 148``
+.. rubric:: ``useCallback callback @ 145``
 
 .. code-block:: javascript
 
-   useCallback callback @ 148(behavior)
+   useCallback callback @ 145(behavior)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``148``—``157`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``145``—``154`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -415,17 +415,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``Math.max``、``node.scrollTo``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6927:7032:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7338:7455:FUNCTION
 
-.. rubric:: ``useCallback callback @ 159``
+.. rubric:: ``useCallback callback @ 156``
 
 .. code-block:: javascript
 
-   useCallback callback @ 159()
+   useCallback callback @ 156()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``159``—``162`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``156``—``159`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -439,17 +439,17 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:6994:7024:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7413:7443:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 161``
+.. rubric:: ``requestAnimationFrame callback @ 158``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 161()
+   requestAnimationFrame callback @ 158()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``161``—``161`` 行；所属函数 ``useCallback callback @ 159``。
+**性质**：同步局部函数；源码第 ``158``—``158`` 行；所属函数 ``useCallback callback @ 156``。
 
 **参数**
 
@@ -461,17 +461,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``scrollToBottom``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7095:7226:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7522:7677:FUNCTION
 
-.. rubric:: ``useCallback callback @ 164``
+.. rubric:: ``useCallback callback @ 161``
 
 .. code-block:: javascript
 
-   useCallback callback @ 164()
+   useCallback callback @ 161()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``164``—``170`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``161``—``167`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -483,17 +483,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``setAutoFollow``、``enableAutoFollow``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7307:7782:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7762:8269:FUNCTION
 
-.. rubric:: ``useCallback callback @ 172``
+.. rubric:: ``useCallback callback @ 169``
 
 .. code-block:: javascript
 
-   useCallback callback @ 172()
+   useCallback callback @ 169()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``172``—``180`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``169``—``177`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -505,17 +505,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``setAutoFollow``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7814:8004:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8305:8511:FUNCTION
 
-.. rubric:: ``useEffect callback @ 182``
+.. rubric:: ``useEffect callback @ 179``
 
 .. code-block:: javascript
 
-   useEffect callback @ 182()
+   useEffect callback @ 179()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``182``—``186`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``179``—``183`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -529,17 +529,17 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7918:7946:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8417:8445:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 184``
+.. rubric:: ``requestAnimationFrame callback @ 181``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 184()
+   requestAnimationFrame callback @ 181()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``184``—``184`` 行；所属函数 ``useEffect callback @ 182``。
+**性质**：同步局部函数；源码第 ``181``—``181`` 行；所属函数 ``useEffect callback @ 179``。
 
 **参数**
 
@@ -551,17 +551,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``scrollToBottom``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:7963:7997:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8466:8500:FUNCTION
 
-.. rubric:: ``returned callback @ 185``
+.. rubric:: ``returned callback @ 182``
 
 .. code-block:: javascript
 
-   returned callback @ 185()
+   returned callback @ 182()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``185``—``185`` 行；所属函数 ``useEffect callback @ 182``。
+**性质**：同步局部函数；源码第 ``182``—``182`` 行；所属函数 ``useEffect callback @ 179``。
 
 **参数**
 
@@ -573,17 +573,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8126:8612:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8637:9171:FUNCTION
 
-.. rubric:: ``useEffect callback @ 188``
+.. rubric:: ``useEffect callback @ 185``
 
 .. code-block:: javascript
 
-   useEffect callback @ 188()
+   useEffect callback @ 185()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``188``—``200`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``185``—``197`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -597,17 +597,17 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8317:8448:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8840:8983:FUNCTION
 
-.. rubric:: ``anonymous callback @ 191``
+.. rubric:: ``anonymous callback @ 188``
 
 .. code-block:: javascript
 
-   anonymous callback @ 191()
+   anonymous callback @ 188()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``191``—``194`` 行；所属函数 ``useEffect callback @ 188``。
+**性质**：同步局部函数；源码第 ``188``—``191`` 行；所属函数 ``useEffect callback @ 185``。
 
 **参数**
 
@@ -621,17 +621,17 @@ src/features/execution/ExecutionWindow 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8408:8436:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8939:8967:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 193``
+.. rubric:: ``requestAnimationFrame callback @ 190``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 193()
+   requestAnimationFrame callback @ 190()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``193``—``193`` 行；所属函数 ``anonymous callback @ 191``。
+**性质**：同步局部函数；源码第 ``190``—``190`` 行；所属函数 ``anonymous callback @ 188``。
 
 **参数**
 
@@ -643,17 +643,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``scrollToBottom``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8511:8605:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:9054:9160:FUNCTION
 
-.. rubric:: ``returned callback @ 196``
+.. rubric:: ``returned callback @ 193``
 
 .. code-block:: javascript
 
-   returned callback @ 196()
+   returned callback @ 193()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``196``—``199`` 行；所属函数 ``useEffect callback @ 188``。
+**性质**：同步局部函数；源码第 ``193``—``196`` 行；所属函数 ``useEffect callback @ 185``。
 
 **参数**
 
@@ -665,7 +665,7 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``cancelAnimationFrame``、``observer.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:8677:9629:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:9240:10298:FUNCTION
 
 .. rubric:: ``requestAction``
 
@@ -675,7 +675,7 @@ src/features/execution/ExecutionWindow 模块
 
 实现 ``requestAction`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``202``—``228`` 行；所属函数 ``memo callback @ 83``。
+**性质**：异步局部函数；源码第 ``199``—``225`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -694,17 +694,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``setActionPending``、``emitEvent``、``realtimeActionErrorMessage``、``upsertExecution``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:11472:11511:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:12512:12551:FUNCTION
 
-.. rubric:: ``onClick callback @ 269``
+.. rubric:: ``onClick callback @ 276``
 
 .. code-block:: javascript
 
-   onClick callback @ 269()
+   onClick callback @ 276()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``269``—``269`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``276``—``276`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -716,17 +716,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``requestAction``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:11824:11863:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:12951:12990:FUNCTION
 
-.. rubric:: ``onClick callback @ 277``
+.. rubric:: ``onClick callback @ 286``
 
 .. code-block:: javascript
 
-   onClick callback @ 277()
+   onClick callback @ 286()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``277``—``277`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``286``—``286`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -738,17 +738,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``requestAction``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:12368:12395:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:13621:13648:FUNCTION
 
-.. rubric:: ``onClose callback @ 293``
+.. rubric:: ``onClose callback @ 304``
 
 .. code-block:: javascript
 
-   onClose callback @ 293()
+   onClose callback @ 304()
 
 处理 ``Close`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``293``—``293`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``304``—``304`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -760,17 +760,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``onOpenChange``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:14008:14371:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:15517:16030:FUNCTION
 
-.. rubric:: ``execution.plan.map callback @ 323``
+.. rubric:: ``execution.plan.map callback @ 338``
 
 .. code-block:: javascript
 
-   execution.plan.map callback @ 323(item)
+   execution.plan.map callback @ 338(item)
 
 作为 ``execution.plan.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``323``—``328`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``338``—``346`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -781,17 +781,17 @@ src/features/execution/ExecutionWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:15023:24388:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:16792:29103:FUNCTION
 
-.. rubric:: ``timelineItems.map callback @ 341``
+.. rubric:: ``timelineItems.map callback @ 361``
 
 .. code-block:: javascript
 
-   timelineItems.map callback @ 341(item, index)
+   timelineItems.map callback @ 361(item, index)
 
 作为 ``timelineItems.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``341``—``449`` 行；所属函数 ``memo callback @ 83``。
+**性质**：同步局部函数；源码第 ``361``—``507`` 行；所属函数 ``memo callback @ 84``。
 
 **参数**
 
@@ -803,6 +803,6 @@ src/features/execution/ExecutionWindow 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={item.key} className="rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm" data-execution-timeline-kind="tool_card" data-task-tool-call-id={card.toolCallId |…``、``( <div key={item.key || \x60${activity.time}-${index}\x60} className={\x60flex gap-3 rounded-lg px-2 py-2 transition hover:bg-gray-50 ${userGuidance ? 'border border-blue-100 bg-blue-50/50…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={item.key} className="rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm" data-execution-timeline-kind="tool_card" data-task-tool-call-id={card.toolCallId |…``、``( <div key={item.key || \x60${activity.time}-${index}\x60} className={\x60flex gap-3 rounded-lg px-2 py-2 transition hover:bg-gray-50 ${activity.state === 'withdrawn' ? 'border border-gray…``。
 
 **主要协作调用**：``String(card?.replacementId || '').trim``、``String``、``Object.prototype.hasOwnProperty.call``、``workspaceTransferDirectionForCard``、``fmtTime``、``Array.isArray``、``card.displayNames.join``、``card.toolNames.join``、``String(card.state || '').toLowerCase``、``String(activity?.kind || '').toLowerCase``、``String(activity?.source || '').toLowerCase``、``activity.tools.join``。

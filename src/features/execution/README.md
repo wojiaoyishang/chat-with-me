@@ -150,3 +150,7 @@ percentages. `toolCallId` is only the current ownership/index key; no `invocatio
 same durable Execution the backend also deduplicates an identical successful export, so repeated model calls
 reuse the existing Artifact instead of creating another transfer. This is a backend lifecycle guarantee;
 `ExecutionWindow` continues to render the concrete Tool Call plus the shared `WorkspaceTransferCard` state.
+
+### Guidance withdrawal
+
+ExecutionGuidanceAction is shared by the inline guidance bubble and task timeline. Render it only for server-owned `canToggle=true` in an active execution. Withdrawn activities remain visible with gray styling and a restore action; first model output locks them on the server. Actions send only executionId/guidanceId, reuse the existing WebSocket reply and Execution store, and never mutate message content or create a branch. A late enqueue ACK cannot overwrite a newer response/withdrawal projection.

@@ -1,8 +1,8 @@
-import {memo, useEffect, useMemo} from 'react';
-import {Check, CircleAlert, CircleX, Loader2, LoaderCircle, RotateCcw} from 'lucide-react';
+import { memo, useEffect, useMemo } from 'react';
+import { Check, CircleAlert, CircleX, Loader2, LoaderCircle, RotateCcw } from 'lucide-react';
 
 import ExecutionGuidanceBubble from './ExecutionGuidanceBubble.jsx';
-import {openExecution, upsertExecution, useExecutionStore} from './useExecutionStore.js';
+import { openExecution, upsertExecution, useExecutionStore } from './useExecutionStore.js';
 
 const parseExecution = (content, conversationId) => {
     const raw = String(content ?? '').trim();
@@ -29,7 +29,7 @@ const parseExecution = (content, conversationId) => {
     }
 };
 
-const ExecutionStatus = memo(({content = '', conversationId = null}) => {
+const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
     const execution = useMemo(() => parseExecution(content, conversationId), [content, conversationId]);
     const liveExecution = useExecutionStore((state) => {
         const cid = String(execution?.conversationId || conversationId || '').trim();
@@ -56,61 +56,53 @@ const ExecutionStatus = memo(({content = '', conversationId = null}) => {
     const inlineState = String(execution.inlineState || '').toLowerCase();
     const status = String(execution.status || '').toLowerCase();
     const explicitLabel = String(execution.label || '').trim();
-    const failed = inlineState === 'failed' || status === 'blocked' || status === 'failed' || status === 'recoverable_failed';
+    const failed =
+        inlineState === 'failed' || status === 'blocked' || status === 'failed' || status === 'recoverable_failed';
     const cancelled = inlineState === 'cancelled' || status === 'cancelled';
     const recovering = !inlineState && status === 'recovering';
     const completed = inlineState === 'completed' || status === 'completed';
     const historicalDone = Boolean(execution.done) && !failed && !cancelled && !completed;
-    const active = inlineState === 'running' || (
-        !inlineState
-        && Boolean(execution.active)
-        && !failed
-        && !cancelled
-        && !completed
-        && !historicalDone
-    );
+    const active =
+        inlineState === 'running' ||
+        (!inlineState && Boolean(execution.active) && !failed && !cancelled && !completed && !historicalDone);
 
     // Do not turn an unknown/incomplete payload into a success state. A check mark
     // is reserved for an explicit completed state or a valid frozen historical row.
     const renderable = failed || cancelled || recovering || active || completed || historicalDone;
     if (!renderable) return null;
 
-    const Icon = failed
-        ? CircleAlert
-        : cancelled
-            ? CircleX
-            : recovering
-                ? RotateCcw
-                : active
-                    ? Loader2
-                    : Check;
-    const label = explicitLabel || (
-        completed
+    const Icon = failed ? CircleAlert : cancelled ? CircleX : recovering ? RotateCcw : active ? Loader2 : Check;
+    const label =
+        explicitLabel ||
+        (completed
             ? '执行完成'
             : cancelled
-                ? '执行已停止'
-                : failed
-                    ? (status === 'blocked' ? '执行需要处理' : '执行失败')
-                    : recovering
-                        ? '正在恢复执行'
-                        : active
-                            ? '正在执行'
-                            : '阶段已完成'
-    );
+              ? '执行已停止'
+              : failed
+                ? status === 'blocked'
+                    ? '执行需要处理'
+                    : '执行失败'
+                : recovering
+                  ? '正在恢复执行'
+                  : active
+                    ? '正在执行'
+                    : '阶段已完成');
     const nodeStatusId = String(execution.statusId || '').trim();
     const activitySource = liveExecution?.activities || execution.activities || [];
-    const guidanceActivities = activitySource.filter((activity) => (
-        String(activity?.kind || '').toLowerCase() === 'guidance'
-        && String(activity?.anchorStatusId || '').trim() === nodeStatusId
-    ));
+    const guidanceActivities = activitySource.filter(
+        (activity) =>
+            String(activity?.kind || '').toLowerCase() === 'guidance' &&
+            String(activity?.anchorStatusId || '').trim() === nodeStatusId,
+    );
     const livePromptMap = liveExecution?.guidancePrompts;
     const historicalPromptMap = execution?.guidancePrompts;
-    const guidancePrompt = (
-        (nodeStatusId && livePromptMap && typeof livePromptMap === 'object' ? livePromptMap[nodeStatusId] : null)
-        || execution?.guidancePrompt
-        || (nodeStatusId && historicalPromptMap && typeof historicalPromptMap === 'object' ? historicalPromptMap[nodeStatusId] : null)
-        || null
-    );
+    const guidancePrompt =
+        (nodeStatusId && livePromptMap && typeof livePromptMap === 'object' ? livePromptMap[nodeStatusId] : null) ||
+        execution?.guidancePrompt ||
+        (nodeStatusId && historicalPromptMap && typeof historicalPromptMap === 'object'
+            ? historicalPromptMap[nodeStatusId]
+            : null) ||
+        null;
     const guidancePromptLabel = String(guidancePrompt?.label || '').trim();
     const openTarget = liveExecution || execution;
 
@@ -123,15 +115,17 @@ const ExecutionStatus = memo(({content = '', conversationId = null}) => {
                 title="查看执行过程"
             >
                 <span className="flex max-w-full items-center gap-2 text-[15px] leading-6">
-                    <Icon className={`h-4 w-4 shrink-0 ${active ? 'animate-spin' : ''}`}/>
+                    <Icon className={`h-4 w-4 shrink-0 ${active ? 'animate-spin' : ''}`} />
                     <span className="truncate">{label}</span>
                     {execution.phase && (
-                        <span className="hidden shrink-0 text-xs text-gray-300 group-hover:text-gray-400 sm:inline">查看过程</span>
+                        <span className="hidden shrink-0 text-xs text-gray-300 group-hover:text-gray-400 sm:inline">
+                            查看过程
+                        </span>
                     )}
                 </span>
             </button>
             {guidanceActivities.map((activity) => (
-                <ExecutionGuidanceBubble key={activity.id} activity={activity}/>
+                <ExecutionGuidanceBubble key={activity.id} activity={activity} execution={liveExecution || execution} />
             ))}
             {guidancePromptLabel && (
                 <button
@@ -143,7 +137,7 @@ const ExecutionStatus = memo(({content = '', conversationId = null}) => {
                     data-guidance-wait-state={guidancePrompt?.state || undefined}
                     data-guidance-id={guidancePrompt?.guidanceId || undefined}
                 >
-                    <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden="true"/>
+                    <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden="true" />
                     <span>{guidancePromptLabel}</span>
                 </button>
             )}

@@ -22,18 +22,18 @@ src/features/execution/ExecutionGuidanceBubble 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``@/components/ui/avatar.tsx``、``@/context/userContext.jsx``、``@/lib/virtualUrl.js``。
+``react``、``lucide-react``、``@/components/ui/avatar.tsx``、``@/context/userContext.jsx``、``@/lib/virtualUrl.js``、``./ExecutionGuidanceAction.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:321:915:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:400:1139:FUNCTION
 
 .. js:function:: stateMeta(state)
 
    实现 ``stateMeta`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``8``—``20`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``9``—``23`` 行。
 
    **参数**
 
@@ -42,7 +42,7 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{label: '正在加入执行', Icon: LoaderCircle, spin: true, tone: 'text-blue-500'}``、``{label: '补充未送达', Icon: CircleAlert, spin: false, tone: 'text-red-500'}``、``{label: '执行补充 · 已接收', Icon: Check, spin: false, tone: 'text-emerald-500'}``、``{label: '执行补充', Icon: MessageSquarePlus, spin: false, tone: 'text-blue-500'}``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ label: '正在加入执行', Icon: LoaderCircle, spin: true, tone: 'text-blue-500' }``、``{ label: '执行补充 · 已撤回', Icon: MessageSquarePlus, spin: false, tone: 'text-gray-400' }``、``{ label: '补充未送达', Icon: CircleAlert, spin: false, tone: 'text-red-500' }``、``{ label: '执行补充 · 已接收', Icon: Check, spin: false, tone: 'text-emerald-500' }``。
 
    **主要协作调用**：``String(state || 'pending').toLowerCase``、``String``。
 
@@ -51,22 +51,22 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:955:2764:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1179:3311:FUNCTION
 
-.. rubric:: ``memo callback @ 22``
+.. rubric:: ``memo callback @ 25``
 
 .. code-block:: javascript
 
-   memo callback @ 22({activity})
+   memo callback @ 25({ activity, execution })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``22``—``61`` 行。
+**性质**：同步局部函数；源码第 ``25``—``70`` 行。
 
 **参数**
 
-``{activity}``
-   调用方传入的 ``activity`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ activity, execution }``
+   调用方传入的 ``activity, execution`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -76,17 +76,17 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1003:1024:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1240:1261:FUNCTION
 
-.. rubric:: ``useUserStore callback @ 23``
+.. rubric:: ``useUserStore callback @ 26``
 
 .. code-block:: javascript
 
-   useUserStore callback @ 23(state)
+   useUserStore callback @ 26(state)
 
 封装 ``UserStore`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``23``—``23`` 行；所属函数 ``memo callback @ 22``。
+**性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
