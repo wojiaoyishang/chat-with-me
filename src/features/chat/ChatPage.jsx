@@ -3077,6 +3077,12 @@ function ChatPage({
         [conversationId, t],
     );
 
+    useEffect(() => {
+        if (!isSidebarOpen) return;
+        // Reopening the settings should read the current backend schema.
+        void loadAvailableModels({ preserveSelection: true });
+    }, [isSidebarOpen, loadAvailableModels]);
+
     const modelSettingsRefreshRevision = Number(settingsRefreshVersions?.['chat.models'] || 0);
     const runtimeOptionsRefreshRevision = Number(settingsRefreshVersions?.['chat.runtime-options'] || 0);
     const lastSettingsModelRefreshRef = useRef(`${modelSettingsRefreshRevision}:${runtimeOptionsRefreshRevision}`);
