@@ -20,6 +20,7 @@ import SpeechOverlayHighlighter from '@/features/chat/ui/message/components/Spee
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import StoryMediaDeck from '@/features/story/media/StoryMediaDeck.jsx';
 import StoryVideo from '@/features/story/media/StoryVideo.jsx';
+import StoryMediaEditor from '@/features/story/media/StoryMediaEditor.jsx';
 import { normalizeVideoTiming, resolveStoryMediaLayout } from '@/features/story/media/storyMediaLayout.js';
 
 const FONT_SCALES = { small: 0.88, compact: 0.95, normal: 1, large: 1.15, extraLarge: 1.32 };
@@ -30,6 +31,7 @@ export default function StoryReader({
     open,
     onClose,
     onChangePart,
+    onUpdatePartMedia,
     onSpeakPart,
     onStopSpeech,
     speechState,
@@ -47,6 +49,7 @@ export default function StoryReader({
     const [autoPlayStage, setAutoPlayStage] = useState('idle');
     const [waitingForNext, setWaitingForNext] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [mediaEditor, setMediaEditor] = useState(null);
     const [videoDone, setVideoDone] = useState(false);
     const [speechDone, setSpeechDone] = useState(false);
     const [videoPlaybackError, setVideoPlaybackError] = useState('');
@@ -118,6 +121,7 @@ export default function StoryReader({
             wasOpenRef.current = false;
             activeStoryIdRef.current = null;
             setSettingsOpen(false);
+            setMediaEditor(null);
             setAutoPlayActive(false);
             setAutoPlayStage('idle');
             activePlaybackKeyRef.current = '';
@@ -132,6 +136,7 @@ export default function StoryReader({
             onStopSpeech?.();
             pauseVideo(false);
         }
+        setMediaEditor(null);
         activeStoryIdRef.current = story.storyId;
         activePlaybackKeyRef.current = '';
         speechCycleRef.current = { key: '', started: false, sawActive: false };
@@ -176,7 +181,7 @@ export default function StoryReader({
     useEffect(() => {
         if (!open) return undefined;
         const handleKeyDown = (event) => {
-            if (event.key !== 'Escape') return;
+            if (event.key !== 'Escape' || mediaEditor) return;
             if (settingsOpen) {
                 setSettingsOpen(false);
                 return;
@@ -186,7 +191,7 @@ export default function StoryReader({
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [open, closeReader, settingsOpen]);
+    }, [open, closeReader, settingsOpen, mediaEditor]);
 
     useEffect(() => () => pauseVideo(false), [pauseVideo]);
 
@@ -416,6 +421,12 @@ export default function StoryReader({
         setSequence(next.sequence);
     };
 
+    const editMedia = (type) => {
+        stopAutoPlay();
+        setSettingsOpen(false);
+        setMediaEditor({ storyId: story.storyId, part, type });
+    };
+
     const startAutoPlay = () => {
         if (!part) return;
         setSuppressedVideoAutoplayKey('');
@@ -505,6 +516,12 @@ export default function StoryReader({
 
     return (
         <div className="fixed inset-0 z-[120000] flex flex-col bg-[#fffaf0] text-gray-900">
+            <StoryMediaEditor
+                target={mediaEditor}
+                onClose={() => setMediaEditor(null)}
+                onSave={onUpdatePartMedia}
+                t={t}
+            />
             <header className="flex h-14 shrink-0 items-center justify-between border-b border-amber-100 bg-white/90 px-3 backdrop-blur sm:px-5">
                 <div className="flex min-w-0 items-center gap-2">
                     <Button variant="ghost" size="icon" onClick={closeReader}>
@@ -542,6 +559,16 @@ export default function StoryReader({
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent align="end" sideOffset={8} className="z-[120100] w-64">
+                            {part && story.canEdit === true && onUpdatePartMedia && (
+                                <div className="mb-4 grid grid-cols-2 gap-2 border-b pb-4">
+                                    <Button variant="outline" size="sm" onClick={() => editMedia('image')}>
+                                        {t('story_edit_image', '修改图片')}
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={() => editMedia('video')}>
+                                        {t('story_edit_video', '修改视频')}
+                                    </Button>
+                                </div>
+                            )}
                             <div className="text-sm font-semibold">{t('story_font_size', '文字大小')}</div>
                             <div className="mt-3 grid grid-cols-5 gap-1">
                                 {Object.keys(FONT_SCALES).map((key) => (

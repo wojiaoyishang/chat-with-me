@@ -79,3 +79,16 @@ Story HTML/打印布局时可以复用同一份布局决策，而不必复制 Re
 ``useLocalSetting`` 保存为本机 ``storyReader:videoVolume``。挂载／切换视频时应用保存值；
 调整设置即时更新当前视频音量，不重启播放或朗读。篇幅 ``videoMuted`` 静音规则仍生效，
 TTS 音量使用独立设置。界面复用 shadcn Slider。
+
+修改篇幅媒体
+--------------------------------------------------------------------------------
+
+阅读器右上角设置提供“修改图片”和“修改视频”，仅有编辑权限的故事显示入口。
+``media/StoryMediaEditor.jsx`` 复用现有上传函数和 shadcn 对话框，支持上传文件、填写链接、
+留空保存移除当前媒体。图片上传使用 ``cwm://artifact/{id}/preview``，视频使用
+``cwm://artifact/{id}``。编辑时停止自动播放，上传期间禁用保存，失败保留草稿。
+关闭对话框会取消未完成上传，Escape 仅关闭对话框。
+
+ChatPage 通过 ``PATCH /chat/stories/{storyId}/parts/{partId}/media`` 保存局部字段，
+收到结果立即更新篇幅；其他页面通过已有 ``story.changed`` 的 ``part_updated`` 广播同步。
+后端验证用户与会话编辑权限、媒体 URL，复用已有篇幅更新服务；不会覆盖正文或另一类媒体。

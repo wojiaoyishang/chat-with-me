@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 251
+     - 256
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -571,7 +571,7 @@
    * - :doc:`src/features/story/StoryReader </api/javascript/features/story/StoryReader>`
      - 1
      - 0
-     - 46
+     - 50
      - ``src/features/story/StoryReader.jsx``
    * - :doc:`src/features/story/StorySelectorButton </api/javascript/features/story/StorySelectorButton>`
      - 1
@@ -583,6 +583,11 @@
      - 0
      - 0
      - ``src/features/story/media/StoryMediaDeck.jsx``
+   * - :doc:`src/features/story/media/StoryMediaEditor </api/javascript/features/story/media/StoryMediaEditor>`
+     - 1
+     - 0
+     - 9
+     - ``src/features/story/media/StoryMediaEditor.jsx``
    * - :doc:`src/features/story/media/StoryVideo </api/javascript/features/story/media/StoryVideo>`
      - 0
      - 0
@@ -742,6 +747,7 @@
    /api/javascript/features/story/StoryReader
    /api/javascript/features/story/StorySelectorButton
    /api/javascript/features/story/media/StoryMediaDeck
+   /api/javascript/features/story/media/StoryMediaEditor
    /api/javascript/features/story/media/StoryVideo
    /api/javascript/features/story/media/storyMediaLayout
    /api/javascript/features/tools/components/ConversationToolsDialog

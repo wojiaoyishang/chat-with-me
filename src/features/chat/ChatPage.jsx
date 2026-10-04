@@ -1017,6 +1017,34 @@ function ChatPage({
         [conversationId, t],
     );
 
+    const updateStoryPartMedia = useCallback(
+        async (storyId, partId, changes) => {
+            if (!conversationId) throw new Error(t('story_media_save_failed', '保存失败，请重试。'));
+            const data = await apiClient.patch(
+                `${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}/parts/${partId}/media`,
+                changes,
+                { params: { conversationId } },
+            );
+            const nextStory = data.story;
+            setStories((current) =>
+                current.map((item) => (Number(item.storyId) === Number(storyId) ? { ...item, ...nextStory } : item)),
+            );
+            setActiveStory((current) => {
+                if (Number(current?.storyId) !== Number(storyId)) return current;
+                return {
+                    ...current,
+                    ...nextStory,
+                    parts: (current.parts || []).map((item) =>
+                        Number(item.partId) === Number(partId) ? data.part : item,
+                    ),
+                };
+            });
+            toast.success(t('story_media_saved', '故事媒体已更新'));
+            return data;
+        },
+        [conversationId, t],
+    );
+
     const renameStory = useCallback(
         async (storyId, title) => {
             if (!conversationId || !storyId) return null;
@@ -3702,6 +3730,7 @@ function ChatPage({
                         stopStorySpeech();
                         setStoryReaderOpen(false);
                     }}
+                    onUpdatePartMedia={updateStoryPartMedia}
                     onSpeakPart={speakStoryPart}
                     onStopSpeech={stopStorySpeech}
                     speechState={speechState}
