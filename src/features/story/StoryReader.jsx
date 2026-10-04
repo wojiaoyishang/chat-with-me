@@ -1,16 +1,29 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {BookOpen, Captions, ChevronLeft, ChevronRight, Loader2, LockKeyhole, Play, Settings2, Square, X} from 'lucide-react';
-import {Button} from '@/components/ui/button.tsx';
-import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover.tsx';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    BookOpen,
+    Captions,
+    ChevronLeft,
+    ChevronRight,
+    Loader2,
+    LockKeyhole,
+    Play,
+    Settings2,
+    Square,
+    X,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button.tsx';
+import { Slider } from '@/components/ui/slider';
+import { useLocalSetting } from '@/lib/tools.jsx';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover.tsx';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 import SpeechOverlayHighlighter from '@/features/chat/ui/message/components/SpeechOverlayHighlighter.jsx';
-import {resolveResourceUrl} from '@/lib/virtualUrl.js';
+import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import StoryMediaDeck from '@/features/story/media/StoryMediaDeck.jsx';
 import StoryVideo from '@/features/story/media/StoryVideo.jsx';
-import {normalizeVideoTiming, resolveStoryMediaLayout} from '@/features/story/media/storyMediaLayout.js';
+import { normalizeVideoTiming, resolveStoryMediaLayout } from '@/features/story/media/storyMediaLayout.js';
 
-const FONT_SCALES = {small: .88, compact: .95, normal: 1, large: 1.15, extraLarge: 1.32};
-const FONT_LABELS = {small: '小', compact: '较小', normal: '标准', large: '较大', extraLarge: '大'};
+const FONT_SCALES = { small: 0.88, compact: 0.95, normal: 1, large: 1.15, extraLarge: 1.32 };
+const FONT_LABELS = { small: '小', compact: '较小', normal: '标准', large: '较大', extraLarge: '大' };
 const FONT_KEY = 'storyReader:fontScale';
 export default function StoryReader({
     story,
@@ -25,6 +38,10 @@ export default function StoryReader({
     t,
 }) {
     const [sequence, setSequence] = useState(1);
+    const [savedVideoVolume, setVideoVolume] = useLocalSetting('storyReader:videoVolume', 1);
+    const videoVolume = Number.isFinite(Number(savedVideoVolume))
+        ? Math.max(0, Math.min(1, Number(savedVideoVolume)))
+        : 1;
     const [fontKey, setFontKey] = useState(() => localStorage.getItem(FONT_KEY) || 'normal');
     const [autoPlayActive, setAutoPlayActive] = useState(false);
     const [autoPlayStage, setAutoPlayStage] = useState('idle');
@@ -34,21 +51,34 @@ export default function StoryReader({
     const [speechDone, setSpeechDone] = useState(false);
     const [videoPlaybackError, setVideoPlaybackError] = useState('');
     const [suppressedVideoAutoplayKey, setSuppressedVideoAutoplayKey] = useState('');
-    const [viewportWidth, setViewportWidth] = useState(() => typeof window === 'undefined' ? 1024 : window.innerWidth);
+    const [viewportWidth, setViewportWidth] = useState(() =>
+        typeof window === 'undefined' ? 1024 : window.innerWidth,
+    );
     const [videoAspectRatio, setVideoAspectRatio] = useState(null);
     const storyContentRef = useRef(null);
     const wasOpenRef = useRef(false);
     const activeStoryIdRef = useRef(null);
     const videoRef = useRef(null);
+    const attachVideo = useCallback(
+        (video) => {
+            videoRef.current = video;
+            // Apply on mount and preference changes without restarting playback.
+            if (video) video.volume = videoVolume;
+        },
+        [videoVolume],
+    );
     const activePlaybackKeyRef = useRef('');
     const renderedPartKeyRef = useRef('');
     const currentPartRef = useRef(null);
-    const speechCycleRef = useRef({key: '', started: false, sawActive: false});
+    const speechCycleRef = useRef({ key: '', started: false, sawActive: false });
     const videoDoneKeyRef = useRef('');
     const speechDoneKeyRef = useRef('');
     const parts = useMemo(() => [...(story?.parts || [])].sort((a, b) => a.sequence - b.sequence), [story?.parts]);
 
-    const partIndex = Math.max(0, parts.findIndex(part => part.sequence === sequence));
+    const partIndex = Math.max(
+        0,
+        parts.findIndex((part) => part.sequence === sequence),
+    );
     const part = parts[partIndex] || parts[0];
     const partKey = part ? `${story?.storyId || 'story'}:${part.partId}` : '';
     renderedPartKeyRef.current = partKey;
@@ -91,7 +121,7 @@ export default function StoryReader({
             setAutoPlayActive(false);
             setAutoPlayStage('idle');
             activePlaybackKeyRef.current = '';
-            speechCycleRef.current = {key: '', started: false, sawActive: false};
+            speechCycleRef.current = { key: '', started: false, sawActive: false };
             videoDoneKeyRef.current = '';
             speechDoneKeyRef.current = '';
             pauseVideo(false);
@@ -104,7 +134,7 @@ export default function StoryReader({
         }
         activeStoryIdRef.current = story.storyId;
         activePlaybackKeyRef.current = '';
-        speechCycleRef.current = {key: '', started: false, sawActive: false};
+        speechCycleRef.current = { key: '', started: false, sawActive: false };
         videoDoneKeyRef.current = '';
         speechDoneKeyRef.current = '';
         setAutoPlayActive(false);
@@ -113,7 +143,7 @@ export default function StoryReader({
         setWaitingForNext(false);
         setVideoPlaybackError('');
         setSuppressedVideoAutoplayKey('');
-        setSequence(parts.some(item => item.sequence === saved) ? saved : (parts[0]?.sequence || 1));
+        setSequence(parts.some((item) => item.sequence === saved) ? saved : parts[0]?.sequence || 1);
     }, [open, story?.storyId, onStopSpeech, pauseVideo]);
 
     const stopAutoPlay = useCallback(() => {
@@ -125,7 +155,7 @@ export default function StoryReader({
         setSpeechDone(false);
         setSuppressedVideoAutoplayKey(currentPartKey);
         activePlaybackKeyRef.current = '';
-        speechCycleRef.current = {key: '', started: false, sawActive: false};
+        speechCycleRef.current = { key: '', started: false, sawActive: false };
         videoDoneKeyRef.current = '';
         speechDoneKeyRef.current = '';
         onStopSpeech?.();
@@ -136,7 +166,7 @@ export default function StoryReader({
         setAutoPlayActive(false);
         setAutoPlayStage('idle');
         activePlaybackKeyRef.current = '';
-        speechCycleRef.current = {key: '', started: false, sawActive: false};
+        speechCycleRef.current = { key: '', started: false, sawActive: false };
         videoDoneKeyRef.current = '';
         speechDoneKeyRef.current = '';
         pauseVideo(false);
@@ -166,34 +196,39 @@ export default function StoryReader({
         onChangePart?.(part.sequence);
     }, [open, part?.sequence, story?.storyId, onChangePart]);
 
-    const playCurrentVideo = useCallback(async ({reset = true, playbackKey = ''} = {}) => {
-        const video = videoRef.current;
-        if (!video || !videoSrc) {
-            if (playbackKey && activePlaybackKeyRef.current === playbackKey) {
-                videoDoneKeyRef.current = playbackKey;
-                setVideoDone(true);
+    const playCurrentVideo = useCallback(
+        async ({ reset = true, playbackKey = '' } = {}) => {
+            const video = videoRef.current;
+            if (!video || !videoSrc) {
+                if (playbackKey && activePlaybackKeyRef.current === playbackKey) {
+                    videoDoneKeyRef.current = playbackKey;
+                    setVideoDone(true);
+                }
+                return false;
             }
-            return false;
-        }
-        try {
-            if (reset) {
-                video.pause();
-                video.currentTime = 0;
+            try {
+                if (reset) {
+                    video.pause();
+                    video.currentTime = 0;
+                }
+                video.muted = videoMuted;
+                setVideoPlaybackError('');
+                await video.play();
+                return true;
+            } catch (error) {
+                console.warn('Story video autoplay failed:', error);
+                setVideoPlaybackError(
+                    t('story_video_autoplay_blocked', '浏览器阻止了视频自动播放，可点击视频手动播放。'),
+                );
+                if (playbackKey && activePlaybackKeyRef.current === playbackKey) {
+                    videoDoneKeyRef.current = playbackKey;
+                    setVideoDone(true);
+                }
+                return false;
             }
-            video.muted = videoMuted;
-            setVideoPlaybackError('');
-            await video.play();
-            return true;
-        } catch (error) {
-            console.warn('Story video autoplay failed:', error);
-            setVideoPlaybackError(t('story_video_autoplay_blocked', '浏览器阻止了视频自动播放，可点击视频手动播放。'));
-            if (playbackKey && activePlaybackKeyRef.current === playbackKey) {
-                videoDoneKeyRef.current = playbackKey;
-                setVideoDone(true);
-            }
-            return false;
-        }
-    }, [t, videoMuted, videoSrc]);
+        },
+        [t, videoMuted, videoSrc],
+    );
 
     // A part-level video can autoplay even when the Story autoplay session is not active.
     // When Story autoplay is running, the orchestrator below owns video timing instead.
@@ -201,35 +236,43 @@ export default function StoryReader({
         if (!open || !partKey || autoPlayActive || !videoAutoplay || !videoSrc) return;
         if (suppressedVideoAutoplayKey === partKey) return;
         const timer = window.setTimeout(() => {
-            void playCurrentVideo({reset: true});
+            void playCurrentVideo({ reset: true });
         }, 0);
         return () => window.clearTimeout(timer);
     }, [open, partKey, autoPlayActive, videoAutoplay, videoSrc, suppressedVideoAutoplayKey, playCurrentVideo]);
 
-    const advanceAutoPlay = useCallback((playbackKey) => {
-        if (!autoPlayActive || activePlaybackKeyRef.current !== playbackKey) return;
-        const currentIndex = parts.findIndex(item => `${story?.storyId || 'story'}:${item.partId}` === playbackKey);
-        const next = currentIndex >= 0 ? parts[currentIndex + 1] : null;
-        if (!next) {
-            setWaitingForNext(true);
-            setAutoPlayStage('waiting');
-            return;
-        }
-        setWaitingForNext(false);
-        setSequence(next.sequence);
-    }, [autoPlayActive, parts, story?.storyId]);
+    const advanceAutoPlay = useCallback(
+        (playbackKey) => {
+            if (!autoPlayActive || activePlaybackKeyRef.current !== playbackKey) return;
+            const currentIndex = parts.findIndex(
+                (item) => `${story?.storyId || 'story'}:${item.partId}` === playbackKey,
+            );
+            const next = currentIndex >= 0 ? parts[currentIndex + 1] : null;
+            if (!next) {
+                setWaitingForNext(true);
+                setAutoPlayStage('waiting');
+                return;
+            }
+            setWaitingForNext(false);
+            setSequence(next.sequence);
+        },
+        [autoPlayActive, parts, story?.storyId],
+    );
 
-    const startNarration = useCallback((playbackKey, targetPart) => {
-        if (!targetPart || activePlaybackKeyRef.current !== playbackKey) return;
-        speechCycleRef.current = {key: playbackKey, started: false, sawActive: false};
-        const started = Boolean(onSpeakPart?.({storyId: story?.storyId}, targetPart));
-        if (!started) {
-            speechDoneKeyRef.current = playbackKey;
-            setSpeechDone(true);
-            return;
-        }
-        speechCycleRef.current = {key: playbackKey, started: true, sawActive: false};
-    }, [onSpeakPart, story?.storyId]);
+    const startNarration = useCallback(
+        (playbackKey, targetPart) => {
+            if (!targetPart || activePlaybackKeyRef.current !== playbackKey) return;
+            speechCycleRef.current = { key: playbackKey, started: false, sawActive: false };
+            const started = Boolean(onSpeakPart?.({ storyId: story?.storyId }, targetPart));
+            if (!started) {
+                speechDoneKeyRef.current = playbackKey;
+                setSpeechDone(true);
+                return;
+            }
+            speechCycleRef.current = { key: playbackKey, started: true, sawActive: false };
+        },
+        [onSpeakPart, story?.storyId],
+    );
 
     // Starting autoplay, switching manually while it is active, and automatic next-part
     // advancement all converge here. The session itself remains active until the user
@@ -238,7 +281,7 @@ export default function StoryReader({
         if (!open || !autoPlayActive || !part || !partKey) return;
 
         activePlaybackKeyRef.current = partKey;
-        speechCycleRef.current = {key: partKey, started: false, sawActive: false};
+        speechCycleRef.current = { key: partKey, started: false, sawActive: false };
         videoDoneKeyRef.current = '';
         speechDoneKeyRef.current = '';
         setSuppressedVideoAutoplayKey('');
@@ -253,12 +296,12 @@ export default function StoryReader({
             if (activePlaybackKeyRef.current !== partKey) return;
             if (videoAutoplay && videoTiming === 'before') {
                 setAutoPlayStage('video_before');
-                void playCurrentVideo({reset: true, playbackKey: partKey});
+                void playCurrentVideo({ reset: true, playbackKey: partKey });
                 return;
             }
             if (videoAutoplay && videoTiming === 'alongside') {
                 setAutoPlayStage('parallel');
-                void playCurrentVideo({reset: true, playbackKey: partKey});
+                void playCurrentVideo({ reset: true, playbackKey: partKey });
                 startNarration(partKey, currentPartRef.current);
                 return;
             }
@@ -313,7 +356,7 @@ export default function StoryReader({
         if (autoPlayStage === 'narrating') {
             if (videoAutoplay && videoTiming === 'after' && !videoDone) {
                 setAutoPlayStage('video_after');
-                void playCurrentVideo({reset: true, playbackKey: partKey});
+                void playCurrentVideo({ reset: true, playbackKey: partKey });
                 return;
             }
             advanceAutoPlay(partKey);
@@ -349,20 +392,11 @@ export default function StoryReader({
         if (autoPlayStage === 'video_after') {
             advanceAutoPlay(partKey);
         }
-    }, [
-        open,
-        autoPlayActive,
-        partKey,
-        videoDone,
-        speechDone,
-        autoPlayStage,
-        startNarration,
-        advanceAutoPlay,
-    ]);
+    }, [open, autoPlayActive, partKey, videoDone, speechDone, autoPlayStage, startNarration, advanceAutoPlay]);
 
     useEffect(() => {
         if (!open || !autoPlayActive || !waitingForNext || !part) return;
-        const next = parts.find(item => item.sequence > part.sequence);
+        const next = parts.find((item) => item.sequence > part.sequence);
         if (!next) return;
         setWaitingForNext(false);
         setSequence(next.sequence);
@@ -371,11 +405,11 @@ export default function StoryReader({
     if (!open || !story) return null;
 
     const scale = FONT_SCALES[fontKey] || 1;
-    const mediaLayout = resolveStoryMediaLayout({part, fontScale: scale, viewportWidth, videoAspectRatio});
+    const mediaLayout = resolveStoryMediaLayout({ part, fontScale: scale, viewportWidth, videoAspectRatio });
     const videoPosition = mediaLayout.videoPosition;
     const sideVideo = mediaLayout.mode === 'video_side';
     const imageLayout = mediaLayout.imageLayout;
-    const setPart = next => {
+    const setPart = (next) => {
         if (!next) return;
         setWaitingForNext(false);
         setSuppressedVideoAutoplayKey('');
@@ -397,11 +431,11 @@ export default function StoryReader({
         // finishes the current cycle before advancing.
         if (videoLoop) {
             if (!autoPlayActive || !videoAutoplay) {
-                void playCurrentVideo({reset: true});
+                void playCurrentVideo({ reset: true });
                 return;
             }
             if (activePlaybackKeyRef.current === currentKey && videoTiming === 'alongside' && !speechDone) {
-                void playCurrentVideo({reset: true, playbackKey: currentKey});
+                void playCurrentVideo({ reset: true, playbackKey: currentKey });
                 return;
             }
         }
@@ -420,7 +454,7 @@ export default function StoryReader({
 
     const videoElement = videoSrc ? (
         <StoryVideo
-            ref={videoRef}
+            ref={attachVideo}
             src={videoSrc}
             muted={videoMuted}
             aspectRatio={mediaLayout.mode === 'media_pair' ? mediaLayout.videoAspectRatio : videoAspectRatio}
@@ -431,24 +465,40 @@ export default function StoryReader({
     ) : null;
 
     const storyArticle = part ? (
-        <article className={`grid min-w-0 gap-7 ${imageLayout === 'image_left' || imageLayout === 'image_right' ? 'items-center lg:grid-cols-[minmax(0,45%)_minmax(0,55%)]' : 'grid-cols-1'}`}>
+        <article
+            className={`grid min-w-0 gap-7 ${imageLayout === 'image_left' || imageLayout === 'image_right' ? 'items-center lg:grid-cols-[minmax(0,45%)_minmax(0,55%)]' : 'grid-cols-1'}`}
+        >
             {part.imageUrl && mediaLayout.renderImageInArticle && (
-                <figure className={`overflow-hidden rounded-3xl bg-amber-100 shadow-lg ${imageLayout === 'image_right' ? 'lg:order-2' : ''}`}>
-                    <img src={resolveResourceUrl(part.imageUrl)} alt={part.imageAlt || ''} className="max-h-[64vh] w-full object-contain"/>
+                <figure
+                    className={`overflow-hidden rounded-3xl bg-amber-100 shadow-lg ${imageLayout === 'image_right' ? 'lg:order-2' : ''}`}
+                >
+                    <img
+                        src={resolveResourceUrl(part.imageUrl)}
+                        alt={part.imageAlt || ''}
+                        className="max-h-[64vh] w-full object-contain"
+                    />
                 </figure>
             )}
             <div
                 ref={storyContentRef}
                 className={`relative mx-auto w-full max-w-3xl ${imageLayout === 'image_right' ? 'lg:order-1' : ''}`}
-                style={{fontSize: `calc(1.125rem * ${scale})`, lineHeight: 1.85}}
+                style={{ fontSize: `calc(1.125rem * ${scale})`, lineHeight: 1.85 }}
                 data-tts-message-id={speechMessageId}
                 data-speech-message-id={speechMessageId}
             >
                 <div className="relative z-[2]">
-                    {part.title && <h2 className="mb-5 text-center text-2xl font-bold text-amber-950 sm:text-3xl">{part.title}</h2>}
-                    <div className="story-reader-content"><MarkdownRenderer content={part.bodyMarkdown || ''}/></div>
+                    {part.title && (
+                        <h2 className="mb-5 text-center text-2xl font-bold text-amber-950 sm:text-3xl">{part.title}</h2>
+                    )}
+                    <div className="story-reader-content">
+                        <MarkdownRenderer content={part.bodyMarkdown || ''} />
+                    </div>
                 </div>
-                <SpeechOverlayHighlighter containerRef={storyContentRef} msgId={speechMessageId} speechState={speechState}/>
+                <SpeechOverlayHighlighter
+                    containerRef={storyContentRef}
+                    msgId={speechMessageId}
+                    speechState={speechState}
+                />
             </div>
         </article>
     ) : null;
@@ -457,16 +507,27 @@ export default function StoryReader({
         <div className="fixed inset-0 z-[120000] flex flex-col bg-[#fffaf0] text-gray-900">
             <header className="flex h-14 shrink-0 items-center justify-between border-b border-amber-100 bg-white/90 px-3 backdrop-blur sm:px-5">
                 <div className="flex min-w-0 items-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={closeReader}><X className="h-5 w-5"/></Button>
-                    <BookOpen className="h-5 w-5 shrink-0 text-amber-700"/>
+                    <Button variant="ghost" size="icon" onClick={closeReader}>
+                        <X className="h-5 w-5" />
+                    </Button>
+                    <BookOpen className="h-5 w-5 shrink-0 text-amber-700" />
                     <div className="min-w-0">
                         <div className="truncate text-sm font-semibold sm:text-base">{story.title}</div>
                         <div className="flex items-center gap-1 text-[11px] text-gray-500">
-                            <span>{part ? `${part.sequence} / ${parts.length}` : t('story_no_parts', '等待第一个篇幅')}</span>
-                            {autoPlayActive && <span className="text-amber-700">· {waitingForNext ? t('story_autoplay_waiting', '自动播放等待中') : t('story_autoplay_active', '自动播放中')}</span>}
+                            <span>
+                                {part ? `${part.sequence} / ${parts.length}` : t('story_no_parts', '等待第一个篇幅')}
+                            </span>
+                            {autoPlayActive && (
+                                <span className="text-amber-700">
+                                    ·{' '}
+                                    {waitingForNext
+                                        ? t('story_autoplay_waiting', '自动播放等待中')
+                                        : t('story_autoplay_active', '自动播放中')}
+                                </span>
+                            )}
                             {story.canEdit === false && (
                                 <span className="inline-flex items-center gap-0.5 rounded-full bg-gray-100 px-1.5 py-0.5">
-                                    <LockKeyhole className="h-2.5 w-2.5"/>
+                                    <LockKeyhole className="h-2.5 w-2.5" />
                                     {t('story_read_only', '只读')}
                                 </span>
                             )}
@@ -475,18 +536,57 @@ export default function StoryReader({
                 </div>
                 <div className="flex items-center gap-1">
                     <Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
-                        <PopoverTrigger asChild><Button variant="ghost" size="icon" title={t('story_display_settings', '阅读设置')}><Settings2 className="h-5 w-5"/></Button></PopoverTrigger>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" title={t('story_display_settings', '阅读设置')}>
+                                <Settings2 className="h-5 w-5" />
+                            </Button>
+                        </PopoverTrigger>
                         <PopoverContent align="end" sideOffset={8} className="z-[120100] w-64">
                             <div className="text-sm font-semibold">{t('story_font_size', '文字大小')}</div>
                             <div className="mt-3 grid grid-cols-5 gap-1">
-                                {Object.keys(FONT_SCALES).map(key => <button key={key} onClick={() => {setFontKey(key); localStorage.setItem(FONT_KEY, key);}} className={`rounded-lg px-1 py-2 text-xs ${fontKey === key ? 'bg-amber-100 font-semibold text-amber-800' : 'hover:bg-gray-50'}`}>{FONT_LABELS[key]}</button>)}
+                                {Object.keys(FONT_SCALES).map((key) => (
+                                    <button
+                                        key={key}
+                                        onClick={() => {
+                                            setFontKey(key);
+                                            localStorage.setItem(FONT_KEY, key);
+                                        }}
+                                        className={`rounded-lg px-1 py-2 text-xs ${fontKey === key ? 'bg-amber-100 font-semibold text-amber-800' : 'hover:bg-gray-50'}`}
+                                    >
+                                        {FONT_LABELS[key]}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="mt-4 space-y-3">
+                                <div className="flex items-center justify-between gap-2 text-sm">
+                                    <span>{t('story_default_video_volume', '默认视频音量')}</span>
+                                    <span className="tabular-nums text-gray-500">{Math.round(videoVolume * 100)}%</span>
+                                </div>
+                                <Slider
+                                    aria-label={t('story_default_video_volume', '默认视频音量')}
+                                    min={0}
+                                    max={100}
+                                    step={1}
+                                    value={[Math.round(videoVolume * 100)]}
+                                    onValueChange={([value]) => setVideoVolume(value / 100)}
+                                />
                             </div>
                             <div className="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">
-                                {t('story_autoplay_help', '自动播放会朗读当前篇幅，并按篇幅配置协调视频；切换篇幅后仍会继续，直到手动结束或关闭故事。')}
+                                {t(
+                                    'story_autoplay_help',
+                                    '自动播放会朗读当前篇幅，并按篇幅配置协调视频；切换篇幅后仍会继续，直到手动结束或关闭故事。',
+                                )}
                             </div>
                             <label className="mt-3 flex items-center justify-between gap-3 text-sm">
-                                <span className="inline-flex items-center gap-1.5"><Captions className="h-4 w-4 text-amber-700"/>{t('speech_subtitles_short', '外挂字幕')}</span>
-                                <input type="checkbox" checked={subtitlesEnabled} onChange={e => onSubtitlesToggle?.(e.target.checked)}/>
+                                <span className="inline-flex items-center gap-1.5">
+                                    <Captions className="h-4 w-4 text-amber-700" />
+                                    {t('speech_subtitles_short', '外挂字幕')}
+                                </span>
+                                <input
+                                    type="checkbox"
+                                    checked={subtitlesEnabled}
+                                    onChange={(e) => onSubtitlesToggle?.(e.target.checked)}
+                                />
                             </label>
                         </PopoverContent>
                     </Popover>
@@ -495,21 +595,32 @@ export default function StoryReader({
                         size="sm"
                         disabled={!part}
                         onClick={autoPlayActive ? stopAutoPlay : startAutoPlay}
-                        title={autoPlayActive ? t('story_stop_autoplay', '结束自动播放') : t('story_start_autoplay', '自动播放')}
+                        title={
+                            autoPlayActive
+                                ? t('story_stop_autoplay', '结束自动播放')
+                                : t('story_start_autoplay', '自动播放')
+                        }
                         className={autoPlayActive ? 'gap-1.5 border-amber-200 text-amber-800' : 'gap-1.5'}
                     >
-                        {autoPlayActive ? <Square className="h-4 w-4 fill-current"/> : <Play className="h-4 w-4"/>}
-                        <span className="hidden sm:inline">{autoPlayActive ? t('story_stop_autoplay', '结束自动播放') : t('story_start_autoplay', '自动播放')}</span>
+                        {autoPlayActive ? <Square className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4" />}
+                        <span className="hidden sm:inline">
+                            {autoPlayActive
+                                ? t('story_stop_autoplay', '结束自动播放')
+                                : t('story_start_autoplay', '自动播放')}
+                        </span>
                     </Button>
                 </div>
             </header>
 
             <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-10">
                 {!part ? (
-                    <div className="flex h-full flex-col items-center justify-center gap-3 text-amber-700"><Loader2 className="h-7 w-7 animate-spin"/><span>{t('story_waiting_first_part', '正在创作第一个篇幅…')}</span></div>
+                    <div className="flex h-full flex-col items-center justify-center gap-3 text-amber-700">
+                        <Loader2 className="h-7 w-7 animate-spin" />
+                        <span>{t('story_waiting_first_part', '正在创作第一个篇幅…')}</span>
+                    </div>
                 ) : mediaLayout.mode === 'media_pair' ? (
                     <div className="mx-auto max-w-6xl space-y-8">
-                        <StoryMediaDeck part={part} layout={mediaLayout} videoElement={videoElement}/>
+                        <StoryMediaDeck part={part} layout={mediaLayout} videoElement={videoElement} />
                         {storyArticle}
                     </div>
                 ) : sideVideo ? (
@@ -527,9 +638,25 @@ export default function StoryReader({
             </main>
 
             <footer className="flex h-16 shrink-0 items-center justify-center gap-4 border-t border-amber-100 bg-white/90 px-4 backdrop-blur">
-                <Button variant="outline" onClick={() => setPart(parts[partIndex - 1])} disabled={partIndex <= 0}><ChevronLeft className="mr-1 h-4 w-4"/>{t('story_previous_part', '上一篇')}</Button>
-                <span className="min-w-24 text-center text-sm text-gray-500">{waitingForNext ? t('story_waiting_next_part', '等待新篇幅…') : (part ? `${part.sequence} / ${parts.length}` : `0 / ${parts.length}`)}</span>
-                <Button variant="outline" onClick={() => setPart(parts[partIndex + 1])} disabled={partIndex >= parts.length - 1}>{t('story_next_part', '下一篇')}<ChevronRight className="ml-1 h-4 w-4"/></Button>
+                <Button variant="outline" onClick={() => setPart(parts[partIndex - 1])} disabled={partIndex <= 0}>
+                    <ChevronLeft className="mr-1 h-4 w-4" />
+                    {t('story_previous_part', '上一篇')}
+                </Button>
+                <span className="min-w-24 text-center text-sm text-gray-500">
+                    {waitingForNext
+                        ? t('story_waiting_next_part', '等待新篇幅…')
+                        : part
+                          ? `${part.sequence} / ${parts.length}`
+                          : `0 / ${parts.length}`}
+                </span>
+                <Button
+                    variant="outline"
+                    onClick={() => setPart(parts[partIndex + 1])}
+                    disabled={partIndex >= parts.length - 1}
+                >
+                    {t('story_next_part', '下一篇')}
+                    <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
             </footer>
         </div>
     );

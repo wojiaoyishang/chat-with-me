@@ -17,23 +17,23 @@ src/features/story/StoryReader 模块
 * **模块标识**：``src/features/story/StoryReader``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：44
+* **局部函数与匿名回调**：46
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``@/components/ui/button.tsx``、``@/components/ui/popover.tsx``、``@/components/markdown/MarkdownRenderer.jsx``、``@/features/chat/ui/message/components/SpeechOverlayHighlighter.jsx``、``@/lib/virtualUrl.js``、``@/features/story/media/StoryMediaDeck.jsx``、``@/features/story/media/StoryVideo.jsx``、``@/features/story/media/storyMediaLayout.js``。
+``react``、``lucide-react``、``@/components/ui/button.tsx``、``@/components/ui/slider``、``@/lib/tools.jsx``、``@/components/ui/popover.tsx``、``@/components/markdown/MarkdownRenderer.jsx``、``@/features/chat/ui/message/components/SpeechOverlayHighlighter.jsx``、``@/lib/virtualUrl.js``、``@/features/story/media/StoryMediaDeck.jsx``、``@/features/story/media/StoryVideo.jsx``、``@/features/story/media/storyMediaLayout.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:1040:25173:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:1199:29344:FUNCTION
 
 .. js:function:: StoryReader({ story, open, onClose, onChangePart, onSpeakPart, onStopSpeech, speechState, subtitlesEnabled = tr…)
 
    渲染 ``StoryReader`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``15``—``536`` 行。
+   **性质**：同步函数；导出 API；源码第 ``28``—``663`` 行。
 
    **参数**
 
@@ -50,26 +50,26 @@ src/features/story/StoryReader 模块
    * 读取或修改浏览器持久化状态。
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-   **主要协作调用**：``useState``、``useRef``、``useMemo``、``Math.max``、``parts.findIndex``、``resolveResourceUrl``、``Boolean``、``normalizeVideoTiming``、``useEffect``、``useCallback``、``resolveStoryMediaLayout``、``t``。
+   **主要协作调用**：``useState``、``useLocalSetting``、``Number.isFinite``、``Number``、``Math.max``、``Math.min``、``useRef``、``useCallback``、``useMemo``、``parts.findIndex``、``resolveResourceUrl``、``Boolean``。
 
-   **内部回调数量**：30。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：32。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:1339:1387:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:1732:1780:FUNCTION
 
-.. rubric:: ``useState callback @ 28``
+.. rubric:: ``useState callback @ 45``
 
 .. code-block:: javascript
 
-   useState callback @ 28()
+   useState callback @ 45()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``28``—``28`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``45``—``45`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -85,17 +85,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``localStorage.getItem``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:1968:2030:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:2361:2431:FUNCTION
 
-.. rubric:: ``useState callback @ 37``
+.. rubric:: ``useState callback @ 54``
 
 .. code-block:: javascript
 
-   useState callback @ 37()
+   useState callback @ 54()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``37``—``37`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``54``—``55`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -109,17 +109,38 @@ src/features/story/StoryReader 模块
 
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:2575:2646:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:2702:2904:FUNCTION
 
-.. rubric:: ``useMemo callback @ 49``
+.. rubric:: ``useCallback callback @ 63``
 
 .. code-block:: javascript
 
-   useMemo callback @ 49()
+   useCallback callback @ 63(video)
+
+封装 ``Callback`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``63``—``67`` 行；所属函数 ``StoryReader``。
+
+**参数**
+
+``video``
+   调用方传入的 ``video`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:3254:3325:FUNCTION
+
+.. rubric:: ``useMemo callback @ 76``
+
+.. code-block:: javascript
+
+   useMemo callback @ 76()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``49``—``49`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``76``—``76`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -133,17 +154,17 @@ src/features/story/StoryReader 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:2612:2645:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:3291:3324:FUNCTION
 
-.. rubric:: ``[...(story?.parts || [])].sort callback @ 49``
+.. rubric:: ``[...(story?.parts || [])].sort callback @ 76``
 
 .. code-block:: javascript
 
-   [...(story?.parts || [])].sort callback @ 49(a, b)
+   [...(story?.parts || [])].sort callback @ 76(a, b)
 
 作为 ``[...(story?.parts || [])].sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``49``—``49`` 行；所属函数 ``useMemo callback @ 49``。
+**性质**：同步局部函数；源码第 ``76``—``76`` 行；所属函数 ``useMemo callback @ 76``。
 
 **参数**
 
@@ -157,17 +178,17 @@ src/features/story/StoryReader 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:2716:2750:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:3412:3448:FUNCTION
 
-.. rubric:: ``parts.findIndex callback @ 51``
+.. rubric:: ``parts.findIndex callback @ 80``
 
 .. code-block:: javascript
 
-   parts.findIndex callback @ 51(part)
+   parts.findIndex callback @ 80(part)
 
 实现 ``parts.findIndex`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``51``—``51`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``80``—``80`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -178,17 +199,17 @@ src/features/story/StoryReader 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:3370:3646:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:4074:4350:FUNCTION
 
-.. rubric:: ``useEffect callback @ 63``
+.. rubric:: ``useEffect callback @ 93``
 
 .. code-block:: javascript
 
-   useEffect callback @ 63()
+   useEffect callback @ 93()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``63``—``68`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``93``—``98`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -207,7 +228,7 @@ src/features/story/StoryReader 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:3467:3509:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:4171:4213:FUNCTION
 
 .. rubric:: ``handleResize``
 
@@ -217,7 +238,7 @@ src/features/story/StoryReader 模块
 
 处理 ``Resize`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``65``—``65`` 行；所属函数 ``useEffect callback @ 63``。
+**性质**：同步局部函数；源码第 ``95``—``95`` 行；所属函数 ``useEffect callback @ 93``。
 
 **参数**
 
@@ -233,17 +254,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setViewportWidth``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:3582:3639:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:4286:4343:FUNCTION
 
-.. rubric:: ``returned callback @ 67``
+.. rubric:: ``returned callback @ 97``
 
 .. code-block:: javascript
 
-   returned callback @ 67()
+   returned callback @ 97()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``67``—``67`` 行；所属函数 ``useEffect callback @ 63``。
+**性质**：同步局部函数；源码第 ``97``—``97`` 行；所属函数 ``useEffect callback @ 93``。
 
 **参数**
 
@@ -259,17 +280,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:3668:3716:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:4372:4420:FUNCTION
 
-.. rubric:: ``useEffect callback @ 70``
+.. rubric:: ``useEffect callback @ 100``
 
 .. code-block:: javascript
 
-   useEffect callback @ 70()
+   useEffect callback @ 100()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``70``—``72`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``100``—``102`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -281,17 +302,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setVideoAspectRatio``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:3767:4069:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:4471:4773:FUNCTION
 
-.. rubric:: ``useCallback callback @ 74``
+.. rubric:: ``useCallback callback @ 104``
 
 .. code-block:: javascript
 
-   useCallback callback @ 74(reset)
+   useCallback callback @ 104(reset)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``74``—``83`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``104``—``113`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -304,17 +325,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``video.pause``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:4091:5506:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:4795:6214:FUNCTION
 
-.. rubric:: ``useEffect callback @ 85``
+.. rubric:: ``useEffect callback @ 115``
 
 .. code-block:: javascript
 
-   useEffect callback @ 85()
+   useEffect callback @ 115()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``85``—``117`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``115``—``147`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -332,17 +353,17 @@ src/features/story/StoryReader 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:5430:5461:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:6138:6171:FUNCTION
 
-.. rubric:: ``parts.some callback @ 116``
+.. rubric:: ``parts.some callback @ 146``
 
 .. code-block:: javascript
 
-   parts.some callback @ 116(item)
+   parts.some callback @ 146(item)
 
 作为 ``parts.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``116``—``116`` 行；所属函数 ``useEffect callback @ 85``。
+**性质**：同步局部函数；源码第 ``146``—``146`` 行；所属函数 ``useEffect callback @ 115``。
 
 **参数**
 
@@ -353,17 +374,17 @@ src/features/story/StoryReader 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:5597:6136:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:6305:6846:FUNCTION
 
-.. rubric:: ``useCallback callback @ 119``
+.. rubric:: ``useCallback callback @ 149``
 
 .. code-block:: javascript
 
-   useCallback callback @ 119()
+   useCallback callback @ 149()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``119``—``133`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``149``—``163`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -375,17 +396,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setAutoPlayActive``、``setAutoPlayStage``、``setWaitingForNext``、``setVideoDone``、``setSpeechDone``、``setSuppressedVideoAutoplayKey``、``onStopSpeech``、``pauseVideo``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:6204:6531:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:6914:7243:FUNCTION
 
-.. rubric:: ``useCallback callback @ 135``
+.. rubric:: ``useCallback callback @ 165``
 
 .. code-block:: javascript
 
-   useCallback callback @ 135()
+   useCallback callback @ 165()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``135``—``144`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``165``—``174`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -397,17 +418,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setAutoPlayActive``、``setAutoPlayStage``、``pauseVideo``、``onClose``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:6572:7031:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:7284:7743:FUNCTION
 
-.. rubric:: ``useEffect callback @ 146``
+.. rubric:: ``useEffect callback @ 176``
 
 .. code-block:: javascript
 
-   useEffect callback @ 146()
+   useEffect callback @ 176()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``146``—``159`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``176``—``189`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -426,7 +447,7 @@ src/features/story/StoryReader 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:6646:6890:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:7358:7602:FUNCTION
 
 .. rubric:: ``handleKeyDown``
 
@@ -436,7 +457,7 @@ src/features/story/StoryReader 模块
 
 处理 ``Key Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``148``—``156`` 行；所属函数 ``useEffect callback @ 146``。
+**性质**：同步局部函数；源码第 ``178``—``186`` 行；所属函数 ``useEffect callback @ 176``。
 
 **参数**
 
@@ -449,17 +470,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setSettingsOpen``、``event.preventDefault``、``closeReader``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:6965:7024:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:7677:7736:FUNCTION
 
-.. rubric:: ``returned callback @ 158``
+.. rubric:: ``returned callback @ 188``
 
 .. code-block:: javascript
 
-   returned callback @ 158()
+   returned callback @ 188()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``158``—``158`` 行；所属函数 ``useEffect callback @ 146``。
+**性质**：同步局部函数；源码第 ``188``—``188`` 行；所属函数 ``useEffect callback @ 176``。
 
 **参数**
 
@@ -475,17 +496,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:7084:7113:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:7796:7825:FUNCTION
 
-.. rubric:: ``useEffect callback @ 161``
+.. rubric:: ``useEffect callback @ 191``
 
 .. code-block:: javascript
 
-   useEffect callback @ 161()
+   useEffect callback @ 191()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``161``—``161`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -497,17 +518,17 @@ src/features/story/StoryReader 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:7089:7113:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:7801:7825:FUNCTION
 
-.. rubric:: ``anonymous callback @ 161``
+.. rubric:: ``anonymous callback @ 191``
 
 .. code-block:: javascript
 
-   anonymous callback @ 161()
+   anonymous callback @ 191()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``161``—``161`` 行；所属函数 ``useEffect callback @ 161``。
+**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``useEffect callback @ 191``。
 
 **参数**
 
@@ -519,17 +540,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``pauseVideo``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:7145:7346:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:7857:8058:FUNCTION
 
-.. rubric:: ``useEffect callback @ 163``
+.. rubric:: ``useEffect callback @ 193``
 
 .. code-block:: javascript
 
-   useEffect callback @ 163()
+   useEffect callback @ 193()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``163``—``167`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``193``—``197`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -545,21 +566,21 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``localStorage.setItem``、``String``、``onChangePart``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:7445:8461:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:8157:9331:FUNCTION
 
-.. rubric:: ``useCallback callback @ 169``
+.. rubric:: ``useCallback callback @ 200``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 169({reset = true, playbackKey = ''})
+   async useCallback callback @ 200({ reset = true, playbackKey = '' })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``169``—``196`` 行；所属函数 ``StoryReader``。
+**性质**：异步局部函数；源码第 ``200``—``229`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
-``{reset = true, playbackKey = ''}``（默认值 ``{}``）
+``{ reset = true, playbackKey = '' }``（默认值 ``{}``）
    调用方传入的 ``reset = true, playbackKey = ''`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -568,17 +589,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setVideoDone``、``video.pause``、``setVideoPlaybackError``、``video.play``、``console.warn``、``t``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:8686:9009:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:9570:9895:FUNCTION
 
-.. rubric:: ``useEffect callback @ 200``
+.. rubric:: ``useEffect callback @ 235``
 
 .. code-block:: javascript
 
-   useEffect callback @ 200()
+   useEffect callback @ 235()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``200``—``207`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``235``—``242`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -596,17 +617,17 @@ src/features/story/StoryReader 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:8882:8949:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:9766:9835:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 203``
+.. rubric:: ``window.setTimeout callback @ 238``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 203()
+   window.setTimeout callback @ 238()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``203``—``205`` 行；所属函数 ``useEffect callback @ 200``。
+**性质**：同步局部函数；源码第 ``238``—``240`` 行；所属函数 ``useEffect callback @ 235``。
 
 **参数**
 
@@ -618,17 +639,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``playCurrentVideo``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:8969:9002:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:9855:9888:FUNCTION
 
-.. rubric:: ``returned callback @ 206``
+.. rubric:: ``returned callback @ 241``
 
 .. code-block:: javascript
 
-   returned callback @ 206()
+   returned callback @ 241()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``206``—``206`` 行；所属函数 ``useEffect callback @ 200``。
+**性质**：同步局部函数；源码第 ``241``—``241`` 行；所属函数 ``useEffect callback @ 235``。
 
 **参数**
 
@@ -644,17 +665,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:9157:9655:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:10043:10627:FUNCTION
 
-.. rubric:: ``useCallback callback @ 209``
+.. rubric:: ``useCallback callback @ 245``
 
 .. code-block:: javascript
 
-   useCallback callback @ 209(playbackKey)
+   useCallback callback @ 245(playbackKey)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``209``—``220`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``245``—``258`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -669,17 +690,17 @@ src/features/story/StoryReader 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:9306:9375:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:10209:10297:FUNCTION
 
-.. rubric:: ``parts.findIndex callback @ 211``
+.. rubric:: ``parts.findIndex callback @ 248``
 
 .. code-block:: javascript
 
-   parts.findIndex callback @ 211(item)
+   parts.findIndex callback @ 248(item)
 
 实现 ``parts.findIndex`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``211``—``211`` 行；所属函数 ``useCallback callback @ 209``。
+**性质**：同步局部函数；源码第 ``248``—``248`` 行；所属函数 ``useCallback callback @ 245``。
 
 **参数**
 
@@ -690,17 +711,17 @@ src/features/story/StoryReader 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:9739:10255:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:10725:11296:FUNCTION
 
-.. rubric:: ``useCallback callback @ 222``
+.. rubric:: ``useCallback callback @ 263``
 
 .. code-block:: javascript
 
-   useCallback callback @ 222(playbackKey, targetPart)
+   useCallback callback @ 263(playbackKey, targetPart)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``222``—``232`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``263``—``273`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -716,17 +737,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``Boolean``、``onSpeakPart``、``setSpeechDone``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:10536:11856:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:11591:12917:FUNCTION
 
-.. rubric:: ``useEffect callback @ 237``
+.. rubric:: ``useEffect callback @ 280``
 
 .. code-block:: javascript
 
-   useEffect callback @ 237()
+   useEffect callback @ 280()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``237``—``270`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``280``—``313`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -744,17 +765,17 @@ src/features/story/StoryReader 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:11093:11794:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:12150:12855:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 252``
+.. rubric:: ``window.setTimeout callback @ 295``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 252()
+   window.setTimeout callback @ 295()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``252``—``267`` 行；所属函数 ``useEffect callback @ 237``。
+**性质**：同步局部函数；源码第 ``295``—``310`` 行；所属函数 ``useEffect callback @ 280``。
 
 **参数**
 
@@ -766,17 +787,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setAutoPlayStage``、``playCurrentVideo``、``startNarration``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:11816:11849:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:12877:12910:FUNCTION
 
-.. rubric:: ``returned callback @ 269``
+.. rubric:: ``returned callback @ 312``
 
 .. code-block:: javascript
 
-   returned callback @ 269()
+   returned callback @ 312()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``269``—``269`` 行；所属函数 ``useEffect callback @ 237``。
+**性质**：同步局部函数；源码第 ``312``—``312`` 行；所属函数 ``useEffect callback @ 280``。
 
 **参数**
 
@@ -792,17 +813,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:12074:12848:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:13135:13909:FUNCTION
 
-.. rubric:: ``useEffect callback @ 282``
+.. rubric:: ``useEffect callback @ 325``
 
 .. code-block:: javascript
 
-   useEffect callback @ 282()
+   useEffect callback @ 325()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``282``—``302`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``325``—``345`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -814,17 +835,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setSpeechDone``、``['loading', 'playing', 'paused'].includes``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:12961:13608:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:14022:14671:FUNCTION
 
-.. rubric:: ``useEffect callback @ 304``
+.. rubric:: ``useEffect callback @ 347``
 
 .. code-block:: javascript
 
-   useEffect callback @ 304()
+   useEffect callback @ 347()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``304``—``321`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``347``—``364`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -836,17 +857,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``advanceAutoPlay``、``setAutoPlayStage``、``playCurrentVideo``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:13847:14516:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:14910:15579:FUNCTION
 
-.. rubric:: ``useEffect callback @ 334``
+.. rubric:: ``useEffect callback @ 377``
 
 .. code-block:: javascript
 
-   useEffect callback @ 334()
+   useEffect callback @ 377()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``334``—``352`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``377``—``395`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -858,17 +879,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setAutoPlayStage``、``setSpeechDone``、``startNarration``、``advanceAutoPlay``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:14709:14965:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:15701:15959:FUNCTION
 
-.. rubric:: ``useEffect callback @ 363``
+.. rubric:: ``useEffect callback @ 397``
 
 .. code-block:: javascript
 
-   useEffect callback @ 363()
+   useEffect callback @ 397()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``363``—``369`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``397``—``403`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -882,17 +903,17 @@ src/features/story/StoryReader 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:14823:14860:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:15815:15854:FUNCTION
 
-.. rubric:: ``parts.find callback @ 365``
+.. rubric:: ``parts.find callback @ 399``
 
 .. code-block:: javascript
 
-   parts.find callback @ 365(item)
+   parts.find callback @ 399(item)
 
 作为 ``parts.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``365``—``365`` 行；所属函数 ``useEffect callback @ 363``。
+**性质**：同步局部函数；源码第 ``399``—``399`` 行；所属函数 ``useEffect callback @ 397``。
 
 **参数**
 
@@ -903,7 +924,7 @@ src/features/story/StoryReader 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:15392:15548:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:16388:16546:FUNCTION
 
 .. rubric:: ``setPart``
 
@@ -913,7 +934,7 @@ src/features/story/StoryReader 模块
 
 设置与 ``Part`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``378``—``383`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``412``—``417`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -926,7 +947,7 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setWaitingForNext``、``setSuppressedVideoAutoplayKey``、``setSequence``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:15576:15693:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:16574:16691:FUNCTION
 
 .. rubric:: ``startAutoPlay``
 
@@ -936,7 +957,7 @@ src/features/story/StoryReader 模块
 
 启动与 ``Auto Play`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``385``—``389`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``419``—``423`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -948,7 +969,7 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setSuppressedVideoAutoplayKey``、``setAutoPlayActive``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:15724:16690:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:16722:17692:FUNCTION
 
 .. rubric:: ``handleVideoEnded``
 
@@ -958,7 +979,7 @@ src/features/story/StoryReader 模块
 
 处理 ``Video Ended`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``391``—``412`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``425``—``446`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -970,7 +991,7 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``playCurrentVideo``、``setVideoDone``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:16724:16971:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:17726:17973:FUNCTION
 
 .. rubric:: ``handleVideoMetadata``
 
@@ -980,7 +1001,7 @@ src/features/story/StoryReader 模块
 
 处理 ``Video Metadata`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``414``—``419`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``448``—``453`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -993,17 +1014,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``Number``、``setVideoAspectRatio``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:21077:21330:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:22890:23582:FUNCTION
 
-.. rubric:: ``Object.keys(FONT_SCALES).map callback @ 482``
+.. rubric:: ``Object.keys(FONT_SCALES).map callback @ 547``
 
 .. code-block:: javascript
 
-   Object.keys(FONT_SCALES).map callback @ 482(key)
+   Object.keys(FONT_SCALES).map callback @ 547(key)
 
 作为 ``Object.keys(FONT_SCALES).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``482``—``482`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``547``—``558`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -1020,17 +1041,17 @@ src/features/story/StoryReader 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:21111:21172:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:23044:23235:FUNCTION
 
-.. rubric:: ``onClick callback @ 482``
+.. rubric:: ``onClick callback @ 550``
 
 .. code-block:: javascript
 
-   onClick callback @ 482()
+   onClick callback @ 550()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``482``—``482`` 行；所属函数 ``Object.keys(FONT_SCALES).map callback @ 482``。
+**性质**：同步局部函数；源码第 ``550``—``553`` 行；所属函数 ``Object.keys(FONT_SCALES).map callback @ 547``。
 
 **参数**
 
@@ -1046,17 +1067,40 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setFontKey``、``localStorage.setItem``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:21995:22037:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:24425:24465:FUNCTION
 
-.. rubric:: ``onChange callback @ 489``
+.. rubric:: ``onValueChange callback @ 571``
 
 .. code-block:: javascript
 
-   onChange callback @ 489(e)
+   onValueChange callback @ 571([value])
+
+处理 ``Value Change`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``571``—``571`` 行；所属函数 ``StoryReader``。
+
+**参数**
+
+``[value]``
+   待读取、转换或校验的值。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``setVideoVolume``。
+
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:25487:25531:FUNCTION
+
+.. rubric:: ``onChange callback @ 588``
+
+.. code-block:: javascript
+
+   onChange callback @ 588(e)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``489``—``489`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``588``—``588`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -1069,17 +1113,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``onSubtitlesToggle``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:24561:24596:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:28399:28434:FUNCTION
 
-.. rubric:: ``onClick callback @ 530``
+.. rubric:: ``onClick callback @ 641``
 
 .. code-block:: javascript
 
-   onClick callback @ 530()
+   onClick callback @ 641()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``530``—``530`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``641``—``641`` 行；所属函数 ``StoryReader``。
 
 **参数**
 
@@ -1091,17 +1135,17 @@ src/features/story/StoryReader 模块
 
 **主要协作调用**：``setPart``。
 
-.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:24971:25006:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StoryReader.jsx:29045:29080:FUNCTION
 
-.. rubric:: ``onClick callback @ 532``
+.. rubric:: ``onClick callback @ 654``
 
 .. code-block:: javascript
 
-   onClick callback @ 532()
+   onClick callback @ 654()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``532``—``532`` 行；所属函数 ``StoryReader``。
+**性质**：同步局部函数；源码第 ``654``—``654`` 行；所属函数 ``StoryReader``。
 
 **参数**
 

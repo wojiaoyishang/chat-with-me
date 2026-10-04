@@ -571,7 +571,7 @@
    * - :doc:`src/features/story/StoryReader </api/javascript/features/story/StoryReader>`
      - 1
      - 0
-     - 44
+     - 46
      - ``src/features/story/StoryReader.jsx``
    * - :doc:`src/features/story/StorySelectorButton </api/javascript/features/story/StorySelectorButton>`
      - 1
