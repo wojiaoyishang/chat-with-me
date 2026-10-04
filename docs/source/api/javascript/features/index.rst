@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 242
+     - 245
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -78,6 +78,11 @@
      - 0
      - 6
      - ``src/features/chat/page/components/ChatHeader.jsx``
+   * - :doc:`src/features/chat/page/components/ChatHistoryViewport </api/javascript/features/chat/page/components/ChatHistoryViewport>`
+     - 1
+     - 0
+     - 3
+     - ``src/features/chat/page/components/ChatHistoryViewport.jsx``
    * - :doc:`src/features/chat/page/components/LoadingScreens </api/javascript/features/chat/page/components/LoadingScreens>`
      - 2
      - 0
@@ -441,7 +446,7 @@
    * - :doc:`src/features/chat/voice/RealtimeVoiceSurface </api/javascript/features/chat/voice/RealtimeVoiceSurface>`
      - 8
      - 0
-     - 6
+     - 9
      - ``src/features/chat/voice/RealtimeVoiceSurface.jsx``
    * - :doc:`src/features/chat/voice/index </api/javascript/features/chat/voice/index>`
      - 0
@@ -616,6 +621,7 @@
    /api/javascript/features/chat/index
    /api/javascript/features/chat/modelCapabilities
    /api/javascript/features/chat/page/components/ChatHeader
+   /api/javascript/features/chat/page/components/ChatHistoryViewport
    /api/javascript/features/chat/page/components/LoadingScreens
    /api/javascript/features/chat/page/components/MessageSummaryItem
    /api/javascript/features/chat/page/components/ModelItem

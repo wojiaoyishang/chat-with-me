@@ -27,22 +27,22 @@ Non-modal scene host leaves the chat composer available for typing.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:461:2474:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:475:3439:FUNCTION
 
-.. js:function:: AvatarScenePanel({conversationId, onClose, hostElement, expanded, onToggleExpanded})
+.. js:function:: AvatarScenePanel({ conversationId, onClose, hostElement, expanded, onToggleExpanded, onOpenHistory, })
 
    Non-modal scene host leaves the chat composer available for typing.
 
-   **性质**：同步函数；导出 API；源码第 ``11``—``41`` 行。
+   **性质**：同步函数；导出 API；源码第 ``11``—``86`` 行。
 
    **参数**
 
-   ``{conversationId, onClose, hostElement, expanded, onToggleExpanded}``
-      调用方传入的 ``conversationId, onClose, hostElement, expanded, onToggleExpanded`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ conversationId, onClose, hostElement, expanded, onToggleExpanded, onOpenHistory, }``
+      调用方传入的 ``conversationId, onClose, hostElement, expanded, onToggleExpanded, onOpenHistory,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<FloatingDockWindow open title="3D 动作模式" onClose={onClose} portalTarget={hostElement} expanded={expanded} compactMobile zIndex={50} defaultLayout={{width: 380, height: 440}} stora…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <FloatingDockWindow open title="3D 动作模式" onClose={onClose} portalTarget={hostElement} expanded={expanded} compactMobile zIndex={50} defaultLayout={{ width: 380, height: 440 }} s…``。
 
    **副作用**
 
@@ -60,7 +60,7 @@ Non-modal scene host leaves the chat composer available for typing.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:426:459:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:440:473:FUNCTION
 
 .. rubric:: ``lazy callback @ 8``
 
@@ -82,17 +82,17 @@ Non-modal scene host leaves the chat composer available for typing.
 
 **主要协作调用**：``import``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:719:1034:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:777:1094:FUNCTION
 
-.. rubric:: ``useEffect callback @ 13``
+.. rubric:: ``useEffect callback @ 20``
 
 .. code-block:: javascript
 
-   useEffect callback @ 13()
+   useEffect callback @ 20()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``13``—``20`` 行；所属函数 ``AvatarScenePanel``。
+**性质**：同步局部函数；源码第 ``20``—``27`` 行；所属函数 ``AvatarScenePanel``。
 
 **参数**
 
@@ -111,7 +111,7 @@ Non-modal scene host leaves the chat composer available for typing.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:793:901:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:851:961:FUNCTION
 
 .. rubric:: ``onKeyDown``
 
@@ -121,7 +121,7 @@ Non-modal scene host leaves the chat composer available for typing.
 
 处理 ``Key Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``15``—``17`` 行；所属函数 ``useEffect callback @ 13``。
+**性质**：同步局部函数；源码第 ``22``—``24`` 行；所属函数 ``useEffect callback @ 20``。
 
 **参数**
 
@@ -134,17 +134,17 @@ Non-modal scene host leaves the chat composer available for typing.
 
 **主要协作调用**：``onToggleExpanded``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:972:1027:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:1032:1087:FUNCTION
 
-.. rubric:: ``returned callback @ 19``
+.. rubric:: ``returned callback @ 26``
 
 .. code-block:: javascript
 
-   returned callback @ 19()
+   returned callback @ 26()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``19``—``19`` 行；所属函数 ``useEffect callback @ 13``。
+**性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``useEffect callback @ 20``。
 
 **参数**
 
@@ -160,17 +160,17 @@ Non-modal scene host leaves the chat composer available for typing.
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:1104:1511:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:1164:1608:FUNCTION
 
-.. rubric:: ``useCallback callback @ 21``
+.. rubric:: ``useCallback callback @ 29``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 21(event, payload)
+   async useCallback callback @ 29(event, payload)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``21``—``27`` 行；所属函数 ``AvatarScenePanel``。
+**性质**：异步局部函数；源码第 ``29``—``35`` 行；所属函数 ``AvatarScenePanel``。
 
 **参数**
 
@@ -182,7 +182,7 @@ Non-modal scene host leaves the chat composer available for typing.
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{payload: result}``。
+根据执行分支返回结果；代表性返回表达式为 ``{ payload: result }``。
 
 **副作用**
 

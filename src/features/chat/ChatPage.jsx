@@ -1,6 +1,6 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useImmer} from 'use-immer';
-import {produce} from 'immer';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useImmer } from 'use-immer';
+import { produce } from 'immer';
 import {
     generateUUID,
     getLocalSetting,
@@ -8,28 +8,29 @@ import {
     useIsMobile,
     useLocalSetting,
 } from '@/lib/tools.jsx';
-import {toast} from 'sonner';
-import {motion} from 'framer-motion';
-import {emitEvent, onEvent} from '@/context/useEventStore.jsx';
-import {useTranslation} from 'react-i18next';
-import {useLocation} from 'react-router-dom';
+import { toast } from 'sonner';
+import { motion } from 'framer-motion';
+import { emitEvent, onEvent } from '@/context/useEventStore.jsx';
+import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import apiClient from '@/lib/apiClient.js';
-import {apiEndpoint} from '@/config.js';
-import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
+import { apiEndpoint } from '@/config.js';
+import { DeleteConfirmDialog } from '@/components/ui/DeleteConfirmDialog';
 import RuntimeInspectorDialog from '@/features/chat/page/components/RuntimeInspectorDialog.jsx';
 import useRuntimeInspector from '@/features/chat/page/hooks/useRuntimeInspector.js';
 import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
 import StoryReader from '@/features/story/StoryReader.jsx';
-import {ExecutionHost} from '@/features/execution';
-import {clearWorkspaceTransfers, upsertWorkspaceTransfer} from '@/features/workspace/useWorkspaceTransferStore.js';
-import {getVisionAttachmentIds, normalizeAttachmentList} from './attachmentVision.js';
-import {normalizeRemoteChatModel} from './modelCapabilities.js';
-import {WidgetPresentationProvider} from './widgets/WidgetPresentationContext.jsx';
-import {RealtimeVoiceSurface, useRealtimeVoiceConversation} from './voice/index.js';
+import { ExecutionHost } from '@/features/execution';
+import { clearWorkspaceTransfers, upsertWorkspaceTransfer } from '@/features/workspace/useWorkspaceTransferStore.js';
+import { getVisionAttachmentIds, normalizeAttachmentList } from './attachmentVision.js';
+import { normalizeRemoteChatModel } from './modelCapabilities.js';
+import { WidgetPresentationProvider } from './widgets/WidgetPresentationContext.jsx';
+import { RealtimeVoiceSurface, useRealtimeVoiceConversation } from './voice/index.js';
+import ChatHistoryViewport from './page/components/ChatHistoryViewport.jsx';
 import AvatarScenePanel from '@/features/avatar-scene/AvatarScenePanel.jsx';
 import useImmersiveComposer from '@/features/avatar-scene/useImmersiveComposer.js';
-import {Button} from '@/components/ui/button';
-import {useBrowserBackLayer} from '@/lib/browserHistoryLayers.js';
+import { Button } from '@/components/ui/button';
+import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
 import {
     getMessageSummaryAppendCursor,
     mergeMessageSummaryItems,
@@ -87,15 +88,15 @@ const normalizeSpeechRecognitionLanguage = (language) => {
     return value;
 };
 
-
 const ASR_AUDIO_MIME_TYPE = 'audio/mpeg';
 const ASR_DEFAULT_TIMEOUT_MS = 5000;
 const ASR_POLL_INTERVAL_MS = 1000;
 
-const sleep = (delay) => new Promise((resolve) => {
-    const timer = typeof window !== 'undefined' ? window.setTimeout : setTimeout;
-    timer(resolve, delay);
-});
+const sleep = (delay) =>
+    new Promise((resolve) => {
+        const timer = typeof window !== 'undefined' ? window.setTimeout : setTimeout;
+        timer(resolve, delay);
+    });
 
 const getAsrEndpoint = () => String(apiEndpoint?.ASR_ENDPOINT || '').trim();
 
@@ -104,19 +105,18 @@ const joinAsrTaskEndpoint = (endpoint, id) => {
     return `${baseEndpoint}/${encodeURIComponent(String(id))}`;
 };
 
-const hasAsrText = (data) => (
+const hasAsrText = (data) =>
     data &&
     typeof data === 'object' &&
     Object.prototype.hasOwnProperty.call(data, 'text') &&
     data.text !== null &&
-    data.text !== undefined
-);
+    data.text !== undefined;
 
 const isAsrFinished = (data) => data?.finish === true || hasAsrText(data);
 
 const getAsrTextResult = (data) => {
     if (!hasAsrText(data)) return null;
-    return {text: String(data.text ?? '')};
+    return { text: String(data.text ?? '') };
 };
 
 const getAsrTimeout = (data) => {
@@ -128,17 +128,13 @@ const getPcm16kRequestBody = (payload) => {
     const buffer = payload?.pcm16kBuffer;
 
     if (buffer instanceof ArrayBuffer) {
-        return typeof Blob !== 'undefined'
-            ? new Blob([buffer], {type: ASR_AUDIO_MIME_TYPE})
-            : buffer;
+        return typeof Blob !== 'undefined' ? new Blob([buffer], { type: ASR_AUDIO_MIME_TYPE }) : buffer;
     }
 
     if (ArrayBuffer.isView(payload?.pcm16k)) {
         const pcm16k = payload.pcm16k;
         const pcmBuffer = pcm16k.buffer.slice(pcm16k.byteOffset, pcm16k.byteOffset + pcm16k.byteLength);
-        return typeof Blob !== 'undefined'
-            ? new Blob([pcmBuffer], {type: ASR_AUDIO_MIME_TYPE})
-            : pcmBuffer;
+        return typeof Blob !== 'undefined' ? new Blob([pcmBuffer], { type: ASR_AUDIO_MIME_TYPE }) : pcmBuffer;
     }
 
     if (payload?.blob) {
@@ -155,18 +151,18 @@ const translateWithFallback = (t, key, fallback, options) => {
 
 // ========== 主组件 ==========
 function ChatPage({
-                      conversationId,
-                      documentId,
-                      pageType,
-                      onNewConversationId,
-                      showWindowButton = true,
-                      showMinimizeButton = false,   // 是否显示最小化按钮（默认为 false）
-                      onMinimize,                   // 最小化按钮点击回调
-                      visible = true,               // 是否显示整个 ChatPage（默认为 true，变化时带动画）
-                      onWindowModeChange,           // 窗口化模式变化回调
-                      settingsRefreshVersions = {}, // 设置页关闭后按 scope 触发的定向刷新版本
-                  }) {
-    const {t, i18n} = useTranslation();
+    conversationId,
+    documentId,
+    pageType,
+    onNewConversationId,
+    showWindowButton = true,
+    showMinimizeButton = false, // 是否显示最小化按钮（默认为 false）
+    onMinimize, // 最小化按钮点击回调
+    visible = true, // 是否显示整个 ChatPage（默认为 true，变化时带动画）
+    onWindowModeChange, // 窗口化模式变化回调
+    settingsRefreshVersions = {}, // 设置页关闭后按 scope 触发的定向刷新版本
+}) {
+    const { t, i18n } = useTranslation();
     const routeLocation = useLocation();
     const chatPageRef = useRef(null);
     const messagesContainerRef = useRef(null);
@@ -194,10 +190,7 @@ function ChatPage({
     const liveStreamRunMessagesRef = useRef(new Map());
     const lastHydratedConversationIdRef = useRef(null);
 
-    const [showQuickUserMessageNavigator] = useLocalSetting(
-        MESSAGE_NAVIGATOR_SETTING_KEY,
-        true
-    );
+    const [showQuickUserMessageNavigator] = useLocalSetting(MESSAGE_NAVIGATOR_SETTING_KEY, true);
     const [messageSummaries, setMessageSummaries] = useState([]);
     const [messageSummaryLoading, setMessageSummaryLoading] = useState(false);
     const {
@@ -242,7 +235,7 @@ function ChatPage({
     const [isFirstMessageSend, setIsFirstMessageSend] = useState(false);
 
     const [models, setModels] = useState([]);
-    const [selectedModel, setSelectedModel] = useState({name: t("no_models")});
+    const [selectedModel, setSelectedModel] = useState({ name: t('no_models') });
     const selectedModelRef = useRef(selectedModel);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [advancedSettings, setAdvancedSettings] = useState([]);
@@ -261,12 +254,15 @@ function ChatPage({
         selectedModelRef.current = selectedModel;
     }, [selectedModel]);
 
-    useEffect(() => () => {
-        if (contextCompactionClearTimerRef.current) {
-            clearTimeout(contextCompactionClearTimerRef.current);
-            contextCompactionClearTimerRef.current = null;
-        }
-    }, []);
+    useEffect(
+        () => () => {
+            if (contextCompactionClearTimerRef.current) {
+                clearTimeout(contextCompactionClearTimerRef.current);
+                contextCompactionClearTimerRef.current = null;
+            }
+        },
+        [],
+    );
 
     const applyContextCompactionState = useCallback((nextState) => {
         const normalized = nextState && typeof nextState === 'object' ? nextState : {};
@@ -279,11 +275,9 @@ function ChatPage({
         if (['completed', 'failed', 'discarded'].includes(status)) {
             const delay = status === 'completed' ? 1800 : 800;
             contextCompactionClearTimerRef.current = setTimeout(() => {
-                setContextCompactionState((current) => (
-                    current?.jobId && normalized?.jobId && current.jobId !== normalized.jobId
-                        ? current
-                        : {}
-                ));
+                setContextCompactionState((current) =>
+                    current?.jobId && normalized?.jobId && current.jobId !== normalized.jobId ? current : {},
+                );
                 contextCompactionClearTimerRef.current = null;
             }, delay);
         }
@@ -298,9 +292,7 @@ function ChatPage({
     const activeVoiceRecognitionEngineRef = useRef('remote');
     const browserSpeechRecognitionRef = useRef(null);
 
-
-
-// ========== 窗口化、滚动和上传模块 ==========
+    // ========== 窗口化、滚动和上传模块 ==========
     const {
         isReady,
         isWindowMode,
@@ -318,7 +310,7 @@ function ChatPage({
         handleDragTouchEnd,
         handleResizeMouseDown,
         handleResizeTouchStart,
-    } = useChatWindowMode({onWindowModeChange});
+    } = useChatWindowMode({ onWindowModeChange });
 
     const {
         showScrollToBottomButton,
@@ -356,8 +348,9 @@ function ChatPage({
         if (!runMessages) return;
         liveStreamRunMessagesRef.current.delete(normalizedRunId);
         runMessages.forEach((messageId) => {
-            const stillOwned = Array.from(liveStreamRunMessagesRef.current.values())
-                .some((messageIds) => messageIds.has(messageId));
+            const stillOwned = Array.from(liveStreamRunMessagesRef.current.values()).some((messageIds) =>
+                messageIds.has(messageId),
+            );
             if (!stillOwned) liveStreamMessageIdsRef.current.delete(messageId);
         });
     }, []);
@@ -379,93 +372,98 @@ function ChatPage({
         }
         if (nextOrder === messagesOrderRef.current) return;
         if (
-            nextOrder.length === messagesOrderRef.current.length
-            && nextOrder.every((messageId, index) => messageId === messagesOrderRef.current[index])
-        ) return;
+            nextOrder.length === messagesOrderRef.current.length &&
+            nextOrder.every((messageId, index) => messageId === messagesOrderRef.current[index])
+        )
+            return;
 
         messagesOrderRef.current = nextOrder;
         setMessagesOrder(nextOrder);
     }, []);
 
-    const decorateMessages = useCallback((sourceMessages = {}) => produce(sourceMessages, (draft) => {
-        Object.keys(draft || {}).forEach((key) => {
-            const msgDraft = draft[key];
-            if (!msgDraft || typeof msgDraft !== 'object') return;
-            if (typeof msgDraft.registerComponent === 'function') return;
+    const decorateMessages = useCallback(
+        (sourceMessages = {}) =>
+            produce(sourceMessages, (draft) => {
+                Object.keys(draft || {}).forEach((key) => {
+                    const msgDraft = draft[key];
+                    if (!msgDraft || typeof msgDraft !== 'object') return;
+                    if (typeof msgDraft.registerComponent === 'function') return;
 
-            const mountPoints = {};
-            msgDraft.registerComponent = (componentKey, componentRef) => {
-                mountPoints[componentKey] = componentRef;
-            };
-            msgDraft.unregisterComponent = (componentKey) => {
-                delete mountPoints[componentKey];
-            };
-            msgDraft.getComponent = (componentKey) => mountPoints[componentKey];
-        });
-    }), []);
-
-    const loadMessageSummaries = useCallback(async ({silent = false, append = false} = {}) => {
-        if (!conversationId) {
-            setMessageSummaries([]);
-            messageSummariesRef.current = [];
-            messageSummaryFingerprintRef.current = null;
-            messageSummaryTailIdRef.current = null;
-            return [];
-        }
-
-        const requestVersion = summaryRequestVersionRef.current + 1;
-        summaryRequestVersionRef.current = requestVersion;
-        if (!silent) setMessageSummaryLoading(true);
-
-        try {
-            const collected = [];
-            const existingItems = append ? messageSummariesRef.current : [];
-            let cursor = append
-                ? getMessageSummaryAppendCursor(existingItems)
-                : 0;
-            let fingerprint = null;
-            do {
-                const data = await apiClient.get(apiEndpoint.CHAT_MESSAGE_SUMMARIES_ENDPOINT, {
-                    params: {
-                        conversationId: conversationId,
-                        scope: 'active',
-                        cursor,
-                        limit: MESSAGE_SUMMARY_PAGE_SIZE,
-                        previewChars: 120,
-                    }
+                    const mountPoints = {};
+                    msgDraft.registerComponent = (componentKey, componentRef) => {
+                        mountPoints[componentKey] = componentRef;
+                    };
+                    msgDraft.unregisterComponent = (componentKey) => {
+                        delete mountPoints[componentKey];
+                    };
+                    msgDraft.getComponent = (componentKey) => mountPoints[componentKey];
                 });
-                if (requestVersion !== summaryRequestVersionRef.current) return [];
-                collected.push(...(data.items || []));
-                fingerprint = data.orderFingerprint || fingerprint;
-                cursor = data.nextCursor;
-            } while (cursor !== null && cursor !== undefined);
+            }),
+        [],
+    );
 
-            if (append && collected.length === 0) {
-                if (fingerprint) {
-                    messageSummaryFingerprintRef.current = fingerprint;
+    const loadMessageSummaries = useCallback(
+        async ({ silent = false, append = false } = {}) => {
+            if (!conversationId) {
+                setMessageSummaries([]);
+                messageSummariesRef.current = [];
+                messageSummaryFingerprintRef.current = null;
+                messageSummaryTailIdRef.current = null;
+                return [];
+            }
+
+            const requestVersion = summaryRequestVersionRef.current + 1;
+            summaryRequestVersionRef.current = requestVersion;
+            if (!silent) setMessageSummaryLoading(true);
+
+            try {
+                const collected = [];
+                const existingItems = append ? messageSummariesRef.current : [];
+                let cursor = append ? getMessageSummaryAppendCursor(existingItems) : 0;
+                let fingerprint = null;
+                do {
+                    const data = await apiClient.get(apiEndpoint.CHAT_MESSAGE_SUMMARIES_ENDPOINT, {
+                        params: {
+                            conversationId: conversationId,
+                            scope: 'active',
+                            cursor,
+                            limit: MESSAGE_SUMMARY_PAGE_SIZE,
+                            previewChars: 120,
+                        },
+                    });
+                    if (requestVersion !== summaryRequestVersionRef.current) return [];
+                    collected.push(...(data.items || []));
+                    fingerprint = data.orderFingerprint || fingerprint;
+                    cursor = data.nextCursor;
+                } while (cursor !== null && cursor !== undefined);
+
+                if (append && collected.length === 0) {
+                    if (fingerprint) {
+                        messageSummaryFingerprintRef.current = fingerprint;
+                    }
+                    return existingItems;
                 }
-                return existingItems;
-            }
 
-            const nextItems = mergeMessageSummaryItems(existingItems, collected, {append});
+                const nextItems = mergeMessageSummaryItems(existingItems, collected, { append });
 
-            setMessageSummaries(nextItems);
-            messageSummariesRef.current = nextItems;
-            messageSummaryFingerprintRef.current = fingerprint;
-            messageSummaryTailIdRef.current = nextItems[nextItems.length - 1]?.messageId || null;
-            return nextItems;
-        } catch (error) {
-            if (!silent) {
-                toast.error(t('load_message_summaries_failed') || error?.message || '加载消息概览失败');
+                setMessageSummaries(nextItems);
+                messageSummariesRef.current = nextItems;
+                messageSummaryFingerprintRef.current = fingerprint;
+                messageSummaryTailIdRef.current = nextItems[nextItems.length - 1]?.messageId || null;
+                return nextItems;
+            } catch (error) {
+                if (!silent) {
+                    toast.error(t('load_message_summaries_failed') || error?.message || '加载消息概览失败');
+                }
+                return [];
+            } finally {
+                if (requestVersion === summaryRequestVersionRef.current) {
+                    setMessageSummaryLoading(false);
+                }
             }
-            return [];
-        } finally {
-            if (requestVersion === summaryRequestVersionRef.current) {
-                setMessageSummaryLoading(false);
-            }
-        }
-    }, [conversationId, t]);
-
+        },
+        [conversationId, t],
+    );
 
     // ========== Popover 相关函数 ==========
     const scrollToSelectedItem = useCallback((modelListRef) => {
@@ -475,36 +473,45 @@ function ChatPage({
                 requestAnimationFrame(() => {
                     selectedItem.scrollIntoView({
                         behavior: 'smooth',
-                        block: 'nearest'
+                        block: 'nearest',
                     });
                 });
             }
         }
     }, []);
-    const handlePopoverOpenChange = useCallback((open) => {
-        setIsModelPopoverOpen(open);
-        if (!open) {
-            setPreviewModel(null);
-        } else {
-            setPreviewModel(selectedModel);
-        }
-    }, [selectedModel]);
-    const handleModelItemClick = useCallback((model) => {
-        setSelectedModel(model);
-        setAdvancedSettings(Array.isArray(model?.options) ? model.options : []);
-        if (!isMobile) {
-            setIsModelPopoverOpen(false);
-        } else {
-            setPreviewModel(model);
-        }
-    }, [isMobile]);
-    const handleModelItemMouseEnter = useCallback((model) => {
-        if (!isMobile) {
-            setPreviewModel(model);
-        }
-    }, [isMobile]);
+    const handlePopoverOpenChange = useCallback(
+        (open) => {
+            setIsModelPopoverOpen(open);
+            if (!open) {
+                setPreviewModel(null);
+            } else {
+                setPreviewModel(selectedModel);
+            }
+        },
+        [selectedModel],
+    );
+    const handleModelItemClick = useCallback(
+        (model) => {
+            setSelectedModel(model);
+            setAdvancedSettings(Array.isArray(model?.options) ? model.options : []);
+            if (!isMobile) {
+                setIsModelPopoverOpen(false);
+            } else {
+                setPreviewModel(model);
+            }
+        },
+        [isMobile],
+    );
+    const handleModelItemMouseEnter = useCallback(
+        (model) => {
+            if (!isMobile) {
+                setPreviewModel(model);
+            }
+        },
+        [isMobile],
+    );
 
-// ========= 上传相关 =========
+    // ========= 上传相关 =========
     const {
         uploadFiles,
         attachments,
@@ -517,29 +524,27 @@ function ChatPage({
         handleFilePicker,
         handlePicPicker,
         handleSelectedFiles,
-    } = useFileUpload({conversationId, t});
+    } = useFileUpload({ conversationId, t });
 
     const getDefaultVoiceRecognitionEngine = useCallback(() => {
-        return normalizeVoiceRecognitionEngine(
-            getLocalSetting(VOICE_RECOGNITION_ENGINE_SETTING_KEY, 'remote')
-        );
+        return normalizeVoiceRecognitionEngine(getLocalSetting(VOICE_RECOGNITION_ENGINE_SETTING_KEY, 'remote'));
     }, []);
 
     const getDefaultVoiceRecognitionLanguage = useCallback(() => {
         const fallbackLanguage = i18n?.language || (typeof navigator !== 'undefined' ? navigator.language : 'en-US');
         return normalizeSpeechRecognitionLanguage(
-            getLocalSetting(VOICE_RECOGNITION_LANGUAGE_SETTING_KEY, fallbackLanguage)
+            getLocalSetting(VOICE_RECOGNITION_LANGUAGE_SETTING_KEY, fallbackLanguage),
         );
     }, [i18n?.language]);
 
-    const stopBrowserSpeechRecognition = useCallback(({cancel = false} = {}) => {
+    const stopBrowserSpeechRecognition = useCallback(({ cancel = false } = {}) => {
         const current = browserSpeechRecognitionRef.current;
         if (!current) {
-            return Promise.resolve({text: '', error: null});
+            return Promise.resolve({ text: '', error: null });
         }
 
         browserSpeechRecognitionRef.current = null;
-        const {recognition, session} = current;
+        const { recognition, session } = current;
 
         return new Promise((resolve) => {
             let settled = false;
@@ -548,7 +553,7 @@ function ChatPage({
                 settled = true;
                 window.clearTimeout?.(timer);
                 const text = cancel ? '' : `${session.finalTranscript} ${session.interimTranscript}`.trim();
-                resolve({text, error: session.error});
+                resolve({ text, error: session.error });
             };
 
             const timer = window.setTimeout?.(settle, 900);
@@ -575,7 +580,7 @@ function ChatPage({
         }
 
         // 防止上一次异常残留的识别实例继续占用麦克风。
-        stopBrowserSpeechRecognition({cancel: true});
+        stopBrowserSpeechRecognition({ cancel: true });
 
         const recognition = new SpeechRecognitionConstructor();
         const session = {
@@ -620,7 +625,7 @@ function ChatPage({
             return false;
         }
 
-        browserSpeechRecognitionRef.current = {recognition, session};
+        browserSpeechRecognitionRef.current = { recognition, session };
         return true;
     }, [getDefaultVoiceRecognitionLanguage, stopBrowserSpeechRecognition, t]);
 
@@ -629,124 +634,138 @@ function ChatPage({
         activeVoiceRecognitionEngineRef.current = engine;
 
         if (engine !== 'local') {
-            return {engine: 'remote'};
+            return { engine: 'remote' };
         }
 
         const started = startBrowserSpeechRecognition();
         if (!started) {
             // 浏览器不支持 Web Speech API 或启动失败时，不打断录音，保留 PCM 给 remote 流程兜底。
             activeVoiceRecognitionEngineRef.current = 'remote';
-            return {engine: 'remote', fallback: true};
+            return { engine: 'remote', fallback: true };
         }
 
-        return {engine: 'local'};
+        return { engine: 'local' };
     }, [getDefaultVoiceRecognitionEngine, startBrowserSpeechRecognition]);
 
-    const handleRemoteVoicePcmReady = useCallback(async (payload) => {
-        const endpoint = getAsrEndpoint();
-        if (!endpoint) {
-            toast.error(translateWithFallback(
-                t,
-                'voice_input_remote_recognition_not_configured',
-                'Remote voice recognition endpoint is not configured.'
-            ));
-            return null;
-        }
-
-        const requestBody = getPcm16kRequestBody(payload);
-        if (!requestBody) {
-            toast.error(translateWithFallback(
-                t,
-                'voice_input_remote_recognition_no_audio',
-                'No valid voice recording was captured. Please try again.'
-            ));
-            return null;
-        }
-
-        try {
-            const initialData = await apiClient.post(endpoint, requestBody, {
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': ASR_AUDIO_MIME_TYPE,
-                },
-            });
-
-            const initialTextResult = getAsrTextResult(initialData);
-            if (initialTextResult) {
-                return initialTextResult;
-            }
-
-            if (isAsrFinished(initialData)) {
+    const handleRemoteVoicePcmReady = useCallback(
+        async (payload) => {
+            const endpoint = getAsrEndpoint();
+            if (!endpoint) {
+                toast.error(
+                    translateWithFallback(
+                        t,
+                        'voice_input_remote_recognition_not_configured',
+                        'Remote voice recognition endpoint is not configured.',
+                    ),
+                );
                 return null;
             }
 
-            const taskId = initialData?.id;
-            if (!taskId) {
-                throw new Error('ASR task id is missing.');
+            const requestBody = getPcm16kRequestBody(payload);
+            if (!requestBody) {
+                toast.error(
+                    translateWithFallback(
+                        t,
+                        'voice_input_remote_recognition_no_audio',
+                        'No valid voice recording was captured. Please try again.',
+                    ),
+                );
+                return null;
             }
 
-            const timeout = getAsrTimeout(initialData);
-            const pollingDeadline = Date.now() + timeout;
-            const pollingEndpoint = joinAsrTaskEndpoint(endpoint, taskId);
+            try {
+                const initialData = await apiClient.post(endpoint, requestBody, {
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': ASR_AUDIO_MIME_TYPE,
+                    },
+                });
 
-            while (Date.now() < pollingDeadline) {
-                await sleep(Math.min(ASR_POLL_INTERVAL_MS, Math.max(0, pollingDeadline - Date.now())));
-
-                const pollingData = await apiClient.get(pollingEndpoint);
-                const pollingTextResult = getAsrTextResult(pollingData);
-                if (pollingTextResult) {
-                    return pollingTextResult;
+                const initialTextResult = getAsrTextResult(initialData);
+                if (initialTextResult) {
+                    return initialTextResult;
                 }
 
-                if (isAsrFinished(pollingData)) {
+                if (isAsrFinished(initialData)) {
                     return null;
                 }
+
+                const taskId = initialData?.id;
+                if (!taskId) {
+                    throw new Error('ASR task id is missing.');
+                }
+
+                const timeout = getAsrTimeout(initialData);
+                const pollingDeadline = Date.now() + timeout;
+                const pollingEndpoint = joinAsrTaskEndpoint(endpoint, taskId);
+
+                while (Date.now() < pollingDeadline) {
+                    await sleep(Math.min(ASR_POLL_INTERVAL_MS, Math.max(0, pollingDeadline - Date.now())));
+
+                    const pollingData = await apiClient.get(pollingEndpoint);
+                    const pollingTextResult = getAsrTextResult(pollingData);
+                    if (pollingTextResult) {
+                        return pollingTextResult;
+                    }
+
+                    if (isAsrFinished(pollingData)) {
+                        return null;
+                    }
+                }
+
+                toast.info(
+                    translateWithFallback(
+                        t,
+                        'voice_input_remote_recognition_timeout',
+                        'Voice recognition is still processing. Please try again.',
+                    ),
+                );
+                return null;
+            } catch (error) {
+                console.error('Remote voice recognition failed:', error);
+                toast.error(
+                    translateWithFallback(
+                        t,
+                        'voice_input_remote_recognition_failed',
+                        `Remote voice recognition failed: ${error?.message || t('unknown_error')}`,
+                        { message: error?.message || t('unknown_error') },
+                    ),
+                );
+                return null;
+            }
+        },
+        [t],
+    );
+
+    const handleVoicePcmReady = useCallback(
+        async (payload) => {
+            const engine = activeVoiceRecognitionEngineRef.current || getDefaultVoiceRecognitionEngine();
+
+            if (engine === 'local') {
+                const { text, error } = await stopBrowserSpeechRecognition({ cancel: false });
+                activeVoiceRecognitionEngineRef.current = 'remote';
+
+                if (text) {
+                    return { text };
+                }
+
+                if (error && !['aborted', 'no-speech'].includes(String(error))) {
+                    toast.error(t('voice_input_local_recognition_failed'));
+                } else {
+                    toast.info(t('voice_input_no_speech_detected'));
+                }
+
+                return null;
             }
 
-            toast.info(translateWithFallback(
-                t,
-                'voice_input_remote_recognition_timeout',
-                'Voice recognition is still processing. Please try again.'
-            ));
-            return null;
-        } catch (error) {
-            console.error('Remote voice recognition failed:', error);
-            toast.error(translateWithFallback(
-                t,
-                'voice_input_remote_recognition_failed',
-                `Remote voice recognition failed: ${error?.message || t('unknown_error')}`,
-                {message: error?.message || t('unknown_error')}
-            ));
-            return null;
-        }
-    }, [t]);
-
-    const handleVoicePcmReady = useCallback(async (payload) => {
-        const engine = activeVoiceRecognitionEngineRef.current || getDefaultVoiceRecognitionEngine();
-
-        if (engine === 'local') {
-            const {text, error} = await stopBrowserSpeechRecognition({cancel: false});
             activeVoiceRecognitionEngineRef.current = 'remote';
-
-            if (text) {
-                return {text};
-            }
-
-            if (error && !['aborted', 'no-speech'].includes(String(error))) {
-                toast.error(t('voice_input_local_recognition_failed'));
-            } else {
-                toast.info(t('voice_input_no_speech_detected'));
-            }
-
-            return null;
-        }
-
-        activeVoiceRecognitionEngineRef.current = 'remote';
-        return handleRemoteVoicePcmReady(payload);
-    }, [getDefaultVoiceRecognitionEngine, handleRemoteVoicePcmReady, stopBrowserSpeechRecognition, t]);
+            return handleRemoteVoicePcmReady(payload);
+        },
+        [getDefaultVoiceRecognitionEngine, handleRemoteVoicePcmReady, stopBrowserSpeechRecognition, t],
+    );
 
     const handleVoiceRecordingCancel = useCallback(() => {
-        stopBrowserSpeechRecognition({cancel: true});
+        stopBrowserSpeechRecognition({ cancel: true });
         activeVoiceRecognitionEngineRef.current = 'remote';
     }, [stopBrowserSpeechRecognition]);
 
@@ -772,7 +791,6 @@ function ChatPage({
         userScrollStateRef.current.programmaticScrollUntil = Date.now() + duration;
     }, []);
 
-
     const unlockAutoScrollByUser = useCallback(() => {
         userAutoScrollUnlockUntilRef.current = Date.now() + USER_SCROLL_UNLOCK_MS;
         isAutoScrollEnabledRef.current = false;
@@ -794,58 +812,63 @@ function ChatPage({
 
     // replace/content/network 等更新经常只改变消息内部高度，不会改变滚动容器自身高度。
     // 因此需要在 React 提交 DOM 后再滚动，并额外监听内容区的 resize / mutation。
-    const scrollToBottomAfterRender = useCallback((shouldAutoScroll = isAutoScrollEnabledRef.current, options = {}) => {
-        const {streaming = false, delay = 0} = options;
+    const scrollToBottomAfterRender = useCallback(
+        (shouldAutoScroll = isAutoScrollEnabledRef.current, options = {}) => {
+            const { streaming = false, delay = 0 } = options;
 
-        const doScroll = () => {
-            const container = messagesContainerRef.current;
-            if (!container) return;
+            const doScroll = () => {
+                const container = messagesContainerRef.current;
+                if (!container) return;
 
-            const userUnlocked = isUserAutoScrollUnlocked();
-            const shouldStickToBottom = !userUnlocked && (shouldAutoScroll || pendingScrollRef.current);
+                const userUnlocked = isUserAutoScrollUnlocked();
+                const shouldStickToBottom = !userUnlocked && (shouldAutoScroll || pendingScrollRef.current);
 
-            if (shouldStickToBottom) {
-                // 内容变化前用户就在底部时，保持自动滚动状态，避免 scrollHeight 增加后被误判为离底。
-                isAutoScrollEnabledRef.current = true;
-                markProgrammaticScroll(streaming ? 700 : 450);
+                if (shouldStickToBottom) {
+                    // 内容变化前用户就在底部时，保持自动滚动状态，避免 scrollHeight 增加后被误判为离底。
+                    isAutoScrollEnabledRef.current = true;
+                    markProgrammaticScroll(streaming ? 700 : 450);
 
-                if (streaming) {
-                    smoothScrollToBottom(true);
+                    if (streaming) {
+                        smoothScrollToBottom(true);
+                    } else {
+                        requestScrollToBottom();
+                    }
+
+                    checkScrollPosition(true);
+                } else if (userUnlocked) {
+                    setShowScrollToBottomButton(
+                        container.scrollHeight > container.clientHeight + BOTTOM_RELOCK_THRESHOLD,
+                    );
                 } else {
-                    requestScrollToBottom();
+                    checkScrollPosition(true);
                 }
+            };
 
-                checkScrollPosition(true);
-            } else if (userUnlocked) {
-                setShowScrollToBottomButton(container.scrollHeight > container.clientHeight + BOTTOM_RELOCK_THRESHOLD);
+            const runAfterPaint = () => {
+                requestAnimationFrame(() => {
+                    doScroll();
+                    // 很多 replace 渲染链路里会有 Markdown / 高亮 / 图表等二次布局，再补一帧更稳。
+                    requestAnimationFrame(doScroll);
+                });
+            };
+
+            if (delay > 0) {
+                setTimeout(runAfterPaint, delay);
             } else {
-                checkScrollPosition(true);
+                runAfterPaint();
             }
-        };
-
-        const runAfterPaint = () => {
-            requestAnimationFrame(() => {
-                doScroll();
-                // 很多 replace 渲染链路里会有 Markdown / 高亮 / 图表等二次布局，再补一帧更稳。
-                requestAnimationFrame(doScroll);
-            });
-        };
-
-        if (delay > 0) {
-            setTimeout(runAfterPaint, delay);
-        } else {
-            runAfterPaint();
-        }
-    }, [
-        checkScrollPosition,
-        isAutoScrollEnabledRef,
-        isUserAutoScrollUnlocked,
-        markProgrammaticScroll,
-        pendingScrollRef,
-        requestScrollToBottom,
-        setShowScrollToBottomButton,
-        smoothScrollToBottom,
-    ]);
+        },
+        [
+            checkScrollPosition,
+            isAutoScrollEnabledRef,
+            isUserAutoScrollUnlocked,
+            markProgrammaticScroll,
+            pendingScrollRef,
+            requestScrollToBottom,
+            setShowScrollToBottomButton,
+            smoothScrollToBottom,
+        ],
+    );
 
     const handleManualScrollToBottomClick = useCallback(() => {
         if (historyNavigationLockedRef.current && restoreLatestMessagesRef.current) {
@@ -901,11 +924,21 @@ function ChatPage({
 
     const [avatarSceneOpen, setAvatarSceneOpen] = useState(false);
     const [avatarExpanded, setAvatarExpanded] = useState(false);
+    const [avatarHistoryOpen, setAvatarHistoryOpen] = useState(false);
     const avatarImmersive = avatarSceneOpen && avatarExpanded;
-    const immersiveComposer = useImmersiveComposer({enabled: avatarImmersive, hostRef: chatPageRef});
-    const toggleAvatarScene = useCallback(() => { setAvatarExpanded(true); setAvatarSceneOpen(value => !value); }, []);
-    const toggleAvatarExpanded = useCallback(() => setAvatarExpanded(value => !value), []);
-    const closeAvatarScene = useCallback(() => { setAvatarExpanded(false); setAvatarSceneOpen(false); }, []);
+    useEffect(() => {
+        if (!avatarImmersive) setAvatarHistoryOpen(false);
+    }, [avatarImmersive]);
+    const immersiveComposer = useImmersiveComposer({ enabled: avatarImmersive, hostRef: chatPageRef });
+    const toggleAvatarScene = useCallback(() => {
+        setAvatarExpanded(true);
+        setAvatarSceneOpen((value) => !value);
+    }, []);
+    const toggleAvatarExpanded = useCallback(() => setAvatarExpanded((value) => !value), []);
+    const closeAvatarScene = useCallback(() => {
+        setAvatarExpanded(false);
+        setAvatarSceneOpen(false);
+    }, []);
 
     const realtimeVoice = useRealtimeVoiceConversation({
         textInputEnabled: avatarSceneOpen,
@@ -942,7 +975,9 @@ function ChatPage({
             return [];
         }
         try {
-            const data = await apiClient.get(apiEndpoint.CHAT_STORIES_ENDPOINT, {params: {conversationId: conversationId}});
+            const data = await apiClient.get(apiEndpoint.CHAT_STORIES_ENDPOINT, {
+                params: { conversationId: conversationId },
+            });
             const values = Array.isArray(data?.stories) ? data.stories : [];
             setStories(values);
             return values;
@@ -952,70 +987,105 @@ function ChatPage({
         }
     }, [conversationId]);
 
-    const openStory = useCallback(async (storyId) => {
-        if (!conversationId || !storyId) return;
-        try {
-            const data = await apiClient.get(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {
-                params: {conversationId: conversationId, includeParts: true},
-            });
-            if (data?.story) {
-                setActiveStory(data.story);
-                setStoryReaderOpen(true);
-            }
-        } catch (error) {
-            toast.error(t('story_load_failed', {defaultValue: '无法打开故事：{{message}}', message: error?.message || t('unknown_error')}));
-        }
-    }, [conversationId, t]);
-
-    const renameStory = useCallback(async (storyId, title) => {
-        if (!conversationId || !storyId) return null;
-        try {
-            const data = await apiClient.patch(
-                `${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`,
-                {title},
-                {params: {conversationId: conversationId}},
-            );
-            const nextStory = data?.story;
-            if (nextStory) {
-                setStories(current => current.map(item => Number(item.storyId) === Number(storyId) ? {...item, ...nextStory} : item));
-                setActiveStory(current => Number(current?.storyId) === Number(storyId) ? {...current, ...nextStory} : current);
-            }
-            toast.success(t('story_rename_success', '故事已重命名'));
-            return nextStory;
-        } catch (error) {
-            toast.error(t('story_rename_failed', {defaultValue: '重命名失败：{{message}}', message: error?.message || t('unknown_error')}));
-            throw error;
-        }
-    }, [conversationId, t]);
-
-    const deleteStory = useCallback(async (storyId) => {
-        if (!conversationId || !storyId) return false;
-        try {
-            await apiClient.delete(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {params: {conversationId: conversationId}});
-            setStories(current => current.filter(item => Number(item.storyId) !== Number(storyId)));
-            setActiveStory(current => {
-                if (Number(current?.storyId) === Number(storyId)) {
-                    setStoryReaderOpen(false);
-                    return null;
+    const openStory = useCallback(
+        async (storyId) => {
+            if (!conversationId || !storyId) return;
+            try {
+                const data = await apiClient.get(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {
+                    params: { conversationId: conversationId, includeParts: true },
+                });
+                if (data?.story) {
+                    setActiveStory(data.story);
+                    setStoryReaderOpen(true);
                 }
-                return current;
-            });
-            toast.success(t('story_delete_success', '故事已删除'));
-            return true;
-        } catch (error) {
-            toast.error(t('story_delete_failed', {defaultValue: '删除失败：{{message}}', message: error?.message || t('unknown_error')}));
-            throw error;
-        }
-    }, [conversationId, t]);
+            } catch (error) {
+                toast.error(
+                    t('story_load_failed', {
+                        defaultValue: '无法打开故事：{{message}}',
+                        message: error?.message || t('unknown_error'),
+                    }),
+                );
+            }
+        },
+        [conversationId, t],
+    );
 
-    const speakStoryPart = useCallback((story, part) => {
-        if (!story || !part) return false;
-        const text = [part.title, part.bodyMarkdown].filter(Boolean).join('\n\n');
-        return handleSpeakContentRequest({
-            messageId: `story:${story.storyId}:part:${part.partId}`,
-            text,
-        });
-    }, [handleSpeakContentRequest]);
+    const renameStory = useCallback(
+        async (storyId, title) => {
+            if (!conversationId || !storyId) return null;
+            try {
+                const data = await apiClient.patch(
+                    `${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`,
+                    { title },
+                    { params: { conversationId: conversationId } },
+                );
+                const nextStory = data?.story;
+                if (nextStory) {
+                    setStories((current) =>
+                        current.map((item) =>
+                            Number(item.storyId) === Number(storyId) ? { ...item, ...nextStory } : item,
+                        ),
+                    );
+                    setActiveStory((current) =>
+                        Number(current?.storyId) === Number(storyId) ? { ...current, ...nextStory } : current,
+                    );
+                }
+                toast.success(t('story_rename_success', '故事已重命名'));
+                return nextStory;
+            } catch (error) {
+                toast.error(
+                    t('story_rename_failed', {
+                        defaultValue: '重命名失败：{{message}}',
+                        message: error?.message || t('unknown_error'),
+                    }),
+                );
+                throw error;
+            }
+        },
+        [conversationId, t],
+    );
+
+    const deleteStory = useCallback(
+        async (storyId) => {
+            if (!conversationId || !storyId) return false;
+            try {
+                await apiClient.delete(`${apiEndpoint.CHAT_STORIES_ENDPOINT}/${storyId}`, {
+                    params: { conversationId: conversationId },
+                });
+                setStories((current) => current.filter((item) => Number(item.storyId) !== Number(storyId)));
+                setActiveStory((current) => {
+                    if (Number(current?.storyId) === Number(storyId)) {
+                        setStoryReaderOpen(false);
+                        return null;
+                    }
+                    return current;
+                });
+                toast.success(t('story_delete_success', '故事已删除'));
+                return true;
+            } catch (error) {
+                toast.error(
+                    t('story_delete_failed', {
+                        defaultValue: '删除失败：{{message}}',
+                        message: error?.message || t('unknown_error'),
+                    }),
+                );
+                throw error;
+            }
+        },
+        [conversationId, t],
+    );
+
+    const speakStoryPart = useCallback(
+        (story, part) => {
+            if (!story || !part) return false;
+            const text = [part.title, part.bodyMarkdown].filter(Boolean).join('\n\n');
+            return handleSpeakContentRequest({
+                messageId: `story:${story.storyId}:part:${part.partId}`,
+                text,
+            });
+        },
+        [handleSpeakContentRequest],
+    );
 
     const stopStorySpeech = useCallback(() => {
         cancelActiveSpeech(true);
@@ -1027,170 +1097,176 @@ function ChatPage({
         setActiveStory(null);
     }, [conversationId, loadStories]);
 
-    useEffect(() => onEvent({
-        event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'],
-        conversationId,
-        includeGlobal: true,
-    }).then(({event, payload}) => {
-        const value = payload?.value || {};
-        if (event === 'story.open') {
-            openStory(value.storyId);
-            return;
-        }
-        if (event === 'story.deleted') {
-            const deletedId = Number(value.storyId);
-            setStories(current => current.filter(item => Number(item.storyId) !== deletedId));
-            setActiveStory(current => {
-                if (Number(current?.storyId) === deletedId) {
-                    setStoryReaderOpen(false);
-                    return null;
+    useEffect(
+        () =>
+            onEvent({
+                event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'],
+                conversationId,
+                includeGlobal: true,
+            }).then(({ event, payload }) => {
+                const value = payload?.value || {};
+                if (event === 'story.open') {
+                    openStory(value.storyId);
+                    return;
                 }
-                return current;
-            });
-            return;
-        }
+                if (event === 'story.deleted') {
+                    const deletedId = Number(value.storyId);
+                    setStories((current) => current.filter((item) => Number(item.storyId) !== deletedId));
+                    setActiveStory((current) => {
+                        if (Number(current?.storyId) === deletedId) {
+                            setStoryReaderOpen(false);
+                            return null;
+                        }
+                        return current;
+                    });
+                    return;
+                }
 
-        const incomingStory = value.story || value;
-        if (!incomingStory?.storyId) return;
-        const operation = payload?.operation || null;
+                const incomingStory = value.story || value;
+                if (!incomingStory?.storyId) return;
+                const operation = payload?.operation || null;
 
-        // 故事广播是用户级资源事件；是否可见、是否可编辑仍由当前
-        // Conversation 的服务端快照决定，不能从发送方权限推断。
-        if (
-            event === 'story.permissions.changed'
-            || ['created', 'renamed'].includes(operation)
-        ) {
-            void loadStories().then(values => {
-                setActiveStory(current => {
-                    if (!current?.storyId) return current;
-                    const visible = values.some(item => Number(item.storyId) === Number(current.storyId));
-                    if (!visible) {
-                        setStoryReaderOpen(false);
-                        return null;
+                // 故事广播是用户级资源事件；是否可见、是否可编辑仍由当前
+                // Conversation 的服务端快照决定，不能从发送方权限推断。
+                if (event === 'story.permissions.changed' || ['created', 'renamed'].includes(operation)) {
+                    void loadStories().then((values) => {
+                        setActiveStory((current) => {
+                            if (!current?.storyId) return current;
+                            const visible = values.some((item) => Number(item.storyId) === Number(current.storyId));
+                            if (!visible) {
+                                setStoryReaderOpen(false);
+                                return null;
+                            }
+                            return current;
+                        });
+                    });
+                }
+
+                setStories((current) => {
+                    const index = current.findIndex((item) => Number(item.storyId) === Number(incomingStory.storyId));
+                    if (index < 0) return current;
+                    const next = [...current];
+                    const merged = { ...next[index], ...incomingStory };
+                    if (incomingStory.canEdit === undefined && next[index].canEdit !== undefined) {
+                        merged.canEdit = next[index].canEdit;
                     }
-                    return current;
+                    next[index] = merged;
+                    return next;
                 });
-            });
-        }
-
-        setStories(current => {
-            const index = current.findIndex(item => Number(item.storyId) === Number(incomingStory.storyId));
-            if (index < 0) return current;
-            const next = [...current];
-            const merged = {...next[index], ...incomingStory};
-            if (incomingStory.canEdit === undefined && next[index].canEdit !== undefined) {
-                merged.canEdit = next[index].canEdit;
-            }
-            next[index] = merged;
-            return next;
-        });
-        setActiveStory(current => {
-            if (Number(current?.storyId) !== Number(incomingStory.storyId)) return current;
-            const next = {...current, ...incomingStory};
-            if (incomingStory.canEdit === undefined && current.canEdit !== undefined) {
-                next.canEdit = current.canEdit;
-            }
-            if (operation === 'part_appended' && value.part) {
-                const existing = Array.isArray(current.parts) ? current.parts : [];
-                next.parts = [...existing.filter(item => item.partId !== value.part.partId), value.part]
-                    .sort((a, b) => a.sequence - b.sequence);
-            } else if (operation === 'part_updated' && value.part) {
-                next.parts = (current.parts || []).map(item => item.partId === value.part.partId ? value.part : item);
-            }
-            return next;
-        });
-    }), [conversationId, loadStories, openStory]);
-
-
+                setActiveStory((current) => {
+                    if (Number(current?.storyId) !== Number(incomingStory.storyId)) return current;
+                    const next = { ...current, ...incomingStory };
+                    if (incomingStory.canEdit === undefined && current.canEdit !== undefined) {
+                        next.canEdit = current.canEdit;
+                    }
+                    if (operation === 'part_appended' && value.part) {
+                        const existing = Array.isArray(current.parts) ? current.parts : [];
+                        next.parts = [...existing.filter((item) => item.partId !== value.part.partId), value.part].sort(
+                            (a, b) => a.sequence - b.sequence,
+                        );
+                    } else if (operation === 'part_updated' && value.part) {
+                        next.parts = (current.parts || []).map((item) =>
+                            item.partId === value.part.partId ? value.part : item,
+                        );
+                    }
+                    return next;
+                });
+            }),
+        [conversationId, loadStories, openStory],
+    );
 
     // ========= 消息删除 =========
-    const deleteMessageLocally = useCallback((msgId) => {
-        if (!msgId) {
-            toast.error(t("delete_error"));
-            return false;
-        }
-
-        const currentMessages = messagesRef.current || {};
-        const currentOrder = messagesOrderRef.current || [];
-
-        const deleteOrderIndex = currentOrder.indexOf(msgId);
-
-        if (!currentMessages[msgId] || deleteOrderIndex === -1) {
-            toast.error(t("delete_error"));
-            return false;
-        }
-
-        const targetMessage = currentMessages[msgId];
-        const parentId = targetMessage.prevMessage;
-        const parentMessage = parentId ? currentMessages[parentId] : null;
-
-        let replacementMsgId = null;
-        const newMessages = {...currentMessages};
-
-        if (parentMessage) {
-            const oldChildren = Array.isArray(parentMessage.messages)
-                ? parentMessage.messages
-                : [];
-
-            const deleteChildIndex = oldChildren.indexOf(msgId);
-            const newChildren = oldChildren.filter(childId => childId !== msgId);
-
-            if (deleteChildIndex > 0) {
-                replacementMsgId = oldChildren[deleteChildIndex - 1];
+    const deleteMessageLocally = useCallback(
+        (msgId) => {
+            if (!msgId) {
+                toast.error(t('delete_error'));
+                return false;
             }
 
-            newMessages[parentId] = {
-                ...parentMessage,
-                messages: newChildren,
-                nextMessage: replacementMsgId || null,
-            };
-        }
+            const currentMessages = messagesRef.current || {};
+            const currentOrder = messagesOrderRef.current || [];
 
+            const deleteOrderIndex = currentOrder.indexOf(msgId);
 
-        setMessages(newMessages);
-        messagesRef.current = newMessages;
+            if (!currentMessages[msgId] || deleteOrderIndex === -1) {
+                toast.error(t('delete_error'));
+                return false;
+            }
 
-        if (replacementMsgId) {
-            loadSwitchMessage(parentId, replacementMsgId);
-        } else {
-            const newOrder = [
-                ...currentOrder.slice(0, deleteOrderIndex),
-                ...(replacementMsgId ? [replacementMsgId] : []),
-            ]
+            const targetMessage = currentMessages[msgId];
+            const parentId = targetMessage.prevMessage;
+            const parentMessage = parentId ? currentMessages[parentId] : null;
 
-            setMessagesOrder(newOrder);
-            messagesOrderRef.current = newOrder;
-        }
+            let replacementMsgId = null;
+            const newMessages = { ...currentMessages };
 
-        scrollToBottomAfterRender(isAutoScrollEnabledRef.current, {delay: 50});
+            if (parentMessage) {
+                const oldChildren = Array.isArray(parentMessage.messages) ? parentMessage.messages : [];
 
-        return true;
-    }, [
-        t,
-        setMessages,
-        setMessagesOrder,
-        isAutoScrollEnabledRef,
-        scrollToBottomAfterRender,
-    ]);
+                const deleteChildIndex = oldChildren.indexOf(msgId);
+                const newChildren = oldChildren.filter((childId) => childId !== msgId);
+
+                if (deleteChildIndex > 0) {
+                    replacementMsgId = oldChildren[deleteChildIndex - 1];
+                }
+
+                newMessages[parentId] = {
+                    ...parentMessage,
+                    messages: newChildren,
+                    nextMessage: replacementMsgId || null,
+                };
+            }
+
+            setMessages(newMessages);
+            messagesRef.current = newMessages;
+
+            if (replacementMsgId) {
+                loadSwitchMessage(parentId, replacementMsgId);
+            } else {
+                const newOrder = [
+                    ...currentOrder.slice(0, deleteOrderIndex),
+                    ...(replacementMsgId ? [replacementMsgId] : []),
+                ];
+
+                setMessagesOrder(newOrder);
+                messagesOrderRef.current = newOrder;
+            }
+
+            scrollToBottomAfterRender(isAutoScrollEnabledRef.current, { delay: 50 });
+
+            return true;
+        },
+        [t, setMessages, setMessagesOrder, isAutoScrollEnabledRef, scrollToBottomAfterRender],
+    );
 
     // ========= 消息相关 =========
-    const persistPendingWorkspaceSelection = useCallback(async (targetConversationId) => {
-        if (!targetConversationId) return [];
-        const workspaceIds = [...new Set((
-            Array.isArray(advancedSettingsValues?.workspaceIds)
-                ? advancedSettingsValues.workspaceIds
-                : (advancedSettingsValues?.workspaceId ? [advancedSettingsValues.workspaceId] : [])
-        ).map((item) => String(item || '').trim()).filter(Boolean))];
-        if (workspaceIds.length === 0) return workspaceIds;
-        await apiClient.put(
-            `${apiEndpoint.WORKSPACES_ENDPOINT}/conversation/${encodeURIComponent(targetConversationId)}`,
-            {workspaceIds},
-        );
-        return workspaceIds;
-    }, [advancedSettingsValues]);
+    const persistPendingWorkspaceSelection = useCallback(
+        async (targetConversationId) => {
+            if (!targetConversationId) return [];
+            const workspaceIds = [
+                ...new Set(
+                    (Array.isArray(advancedSettingsValues?.workspaceIds)
+                        ? advancedSettingsValues.workspaceIds
+                        : advancedSettingsValues?.workspaceId
+                          ? [advancedSettingsValues.workspaceId]
+                          : []
+                    )
+                        .map((item) => String(item || '').trim())
+                        .filter(Boolean),
+                ),
+            ];
+            if (workspaceIds.length === 0) return workspaceIds;
+            await apiClient.put(
+                `${apiEndpoint.WORKSPACES_ENDPOINT}/conversation/${encodeURIComponent(targetConversationId)}`,
+                { workspaceIds },
+            );
+            return workspaceIds;
+        },
+        [advancedSettingsValues],
+    );
 
-    const handleSendMessage = useCallback((
-        {
+    const handleSendMessage = useCallback(
+        ({
             messageContent,
             toolsStatus,
             isEditMessage = false,
@@ -1204,167 +1280,198 @@ function ChatPage({
             admissionPolicy = 'auto',
             inputSource = 'chat',
             idempotencyKey = '',
-        }
-    ) => {
-        if (uploadFiles.length !== 0) {
-            toast.error(t("file_upload_not_complete"));
-            return;
-        }
-        const outboundAttachments = normalizeAttachmentList(attachments);
-        const sendMessage = (conversationId) => {
-            if (isFirstMessageSend) {
-                emitEvent({
-                    event: 'sidebar.conversation.date_changed',
-                    localOnly: true,
-                    payload: {},
-                    conversationId: conversationId,
-                });
-                setIsFirstMessageSend(false);
-            }
-            const eventPayload = {
-                event: 'turn.start',
-                turnId: generateUUID(),
-                payload: {
-                    content: messageContent,
-                    toolsStatus: toolsStatus,
-                    attachments: outboundAttachments,
-                    visionAttachmentIds: getVisionAttachmentIds(outboundAttachments),
-                    isEdit: isEditMessage,
-                    model: selectedModel.id,
-                    sendButtonStatus: sendButtonStatus,
-                    isRegenerate: isRegenerate,
-                    isProgenerate: isProgenerate,
-                    isFork: isFork,
-                    role: role,
-                    options: advancedSettingsValues,
-                    pageType: pageType,
-                    documentId: documentId,
-                    admissionPolicy: admissionPolicy,
-                    inputSource: inputSource,
-                    idempotencyKey: idempotencyKey || currentTurnIdempotencyKeyRef.current,
-                },
-                conversationId: conversationId,
-                documentId: documentId,
-            };
-            if (isEditMessage) {
-                eventPayload.payload.msgId = editMessageId;
-            }
-            return emitEvent(eventPayload).then((payload) => {
-                if (payload.success) {
-                    currentTurnIdempotencyKeyRef.current = generateUUID();
-                } else {
-                    toast.error(t("send_message_error", {message: payload.value}));
-                }
-                // Always expose the authoritative conversation used for this Turn.
-                // A brand-new conversation is created inside this callback before the
-                // parent ChatBox receives the updated conversationId prop, so callers
-                // must not rely on a later React effect to rewrite pending draft state.
-                return {
-                    ...payload,
-                    conversationId,
-                };
-            });
-        };
-        if (!conversationId) {
-            return emitEvent({
-                event: 'conversation.create',
-                payload: {
-                    idempotencyKey: currentTurnIdempotencyKeyRef.current
-                }
-            })
-                .then((payload) => {
-                    if (payload.success) {
-                        // Mark this synchronously before the parent updates conversationId.
-                        // The conversationId effect uses it to preserve the pending Workspace
-                        // and advanced settings selected for the conversation being created.
-                        isNewConversationIdRef.current = true;
-                        setIsNewConversationId(true);
-                        onNewConversationId(payload.value);
-
-                        // A conversationless composer can already have Workspace
-                        // selections. Persist them before the first Turn because the
-                        // Gateway intentionally treats the server-side selection as
-                        // authoritative.
-                        return persistPendingWorkspaceSelection(payload.value)
-                            .then(() => sendMessage(payload.value));
-                    } else {
-                        throw new Error(payload.value);
-                    }
-                })
-                .catch((error) => {
-                    toast.error(t("get_conversation_id_error", {message: error?.message}));
-                    return {success: false, value: error?.message || String(error)};
-                });
-        } else {
-            return sendMessage(conversationId);
-        }
-    }, [conversationId, documentId, isFirstMessageSend, selectedModel, advancedSettingsValues, pageType, t, uploadFiles, onNewConversationId, persistPendingWorkspaceSelection]);
-
-    const handleRealtimeVoiceStart = useCallback(async ({toolsStatus = {}, composerStatus = 'normal'} = {}) => {
-        // conversation.create happens before the Voice Surface becomes active for a
-        // conversationless chat.  Prevent a rapid double-click from starting two
-        // independent create/start pipelines during that short window.
-        if (realtimeVoiceStartInFlightRef.current) return;
-        realtimeVoiceStartInFlightRef.current = true;
-
-        try {
-            if (!selectedModel?.id) {
-                toast.error(t('no_models', {defaultValue: '没有可用模型'}));
-                return;
-            }
+        }) => {
             if (uploadFiles.length !== 0) {
                 toast.error(t('file_upload_not_complete'));
                 return;
             }
-            if (composerStatus === 'loading' || composerStatus === 'disabled') {
-                toast.error(t('realtime_voice_composer_busy', {defaultValue: '当前对话正在切换状态，暂时无法启动实时语音。'}));
-                return;
-            }
-
-            const startForConversation = async (targetConversationId) => {
-                await realtimeVoice.start({
-                    conversationId: targetConversationId,
-                    model: selectedModel.id,
-                    toolsStatus,
-                    options: advancedSettingsValues,
-                    pageType,
-                    documentId,
-                    ttsEngine: advancedSettingsValues?.speakEngine || 'browser',
-                    composerStatus,
+            const outboundAttachments = normalizeAttachmentList(attachments);
+            const sendMessage = (conversationId) => {
+                if (isFirstMessageSend) {
+                    emitEvent({
+                        event: 'sidebar.conversation.date_changed',
+                        localOnly: true,
+                        payload: {},
+                        conversationId: conversationId,
+                    });
+                    setIsFirstMessageSend(false);
+                }
+                const eventPayload = {
+                    event: 'turn.start',
+                    turnId: generateUUID(),
+                    payload: {
+                        content: messageContent,
+                        toolsStatus: toolsStatus,
+                        attachments: outboundAttachments,
+                        visionAttachmentIds: getVisionAttachmentIds(outboundAttachments),
+                        isEdit: isEditMessage,
+                        model: selectedModel.id,
+                        sendButtonStatus: sendButtonStatus,
+                        isRegenerate: isRegenerate,
+                        isProgenerate: isProgenerate,
+                        isFork: isFork,
+                        role: role,
+                        options: advancedSettingsValues,
+                        pageType: pageType,
+                        documentId: documentId,
+                        admissionPolicy: admissionPolicy,
+                        inputSource: inputSource,
+                        idempotencyKey: idempotencyKey || currentTurnIdempotencyKeyRef.current,
+                    },
+                    conversationId: conversationId,
+                    documentId: documentId,
+                };
+                if (isEditMessage) {
+                    eventPayload.payload.msgId = editMessageId;
+                }
+                return emitEvent(eventPayload).then((payload) => {
+                    if (payload.success) {
+                        currentTurnIdempotencyKeyRef.current = generateUUID();
+                    } else {
+                        toast.error(t('send_message_error', { message: payload.value }));
+                    }
+                    // Always expose the authoritative conversation used for this Turn.
+                    // A brand-new conversation is created inside this callback before the
+                    // parent ChatBox receives the updated conversationId prop, so callers
+                    // must not rely on a later React effect to rewrite pending draft state.
+                    return {
+                        ...payload,
+                        conversationId,
+                    };
                 });
             };
+            if (!conversationId) {
+                return emitEvent({
+                    event: 'conversation.create',
+                    payload: {
+                        idempotencyKey: currentTurnIdempotencyKeyRef.current,
+                    },
+                })
+                    .then((payload) => {
+                        if (payload.success) {
+                            // Mark this synchronously before the parent updates conversationId.
+                            // The conversationId effect uses it to preserve the pending Workspace
+                            // and advanced settings selected for the conversation being created.
+                            isNewConversationIdRef.current = true;
+                            setIsNewConversationId(true);
+                            onNewConversationId(payload.value);
 
-            // Desktop Realtime Voice is an embedded right dock. Reuse the existing
-            // conversation sidebar slot instead of squeezing two right-side panels.
-            setIsSidebarOpen(false);
-            if (conversationId) {
-                await startForConversation(conversationId);
-                return;
+                            // A conversationless composer can already have Workspace
+                            // selections. Persist them before the first Turn because the
+                            // Gateway intentionally treats the server-side selection as
+                            // authoritative.
+                            return persistPendingWorkspaceSelection(payload.value).then(() =>
+                                sendMessage(payload.value),
+                            );
+                        } else {
+                            throw new Error(payload.value);
+                        }
+                    })
+                    .catch((error) => {
+                        toast.error(t('get_conversation_id_error', { message: error?.message }));
+                        return { success: false, value: error?.message || String(error) };
+                    });
+            } else {
+                return sendMessage(conversationId);
             }
+        },
+        [
+            conversationId,
+            documentId,
+            isFirstMessageSend,
+            selectedModel,
+            advancedSettingsValues,
+            pageType,
+            t,
+            uploadFiles,
+            onNewConversationId,
+            persistPendingWorkspaceSelection,
+        ],
+    );
 
-            // Voice-only conversation creation is a distinct user action from a
-            // normal turn.start.  Do not reuse currentTurnIdempotencyKeyRef here:
-            // voice startup does not pass through the ordinary successful Turn path
-            // that rotates that key, so a later New Conversation could otherwise be
-            // rejected as a duplicate conversation.create request.
-            const voiceConversationCreateKey = generateUUID();
-            const payload = await emitEvent({
-                event: 'conversation.create',
-                payload: {idempotencyKey: voiceConversationCreateKey},
-            });
-            // emitEvent is a thenable; await resolves its reply payload.
-            if (!payload?.success) throw new Error(payload?.value || 'Unable to create conversation');
-            isNewConversationIdRef.current = true;
-            setIsNewConversationId(true);
-            onNewConversationId(payload.value);
-            await persistPendingWorkspaceSelection(payload.value);
-            await startForConversation(payload.value);
-        } catch (error) {
-            toast.error(error?.message || '无法启动实时语音');
-        } finally {
-            realtimeVoiceStartInFlightRef.current = false;
-        }
-    }, [advancedSettingsValues, conversationId, documentId, onNewConversationId, pageType, persistPendingWorkspaceSelection, realtimeVoice, selectedModel, t, uploadFiles.length]);
+    const handleRealtimeVoiceStart = useCallback(
+        async ({ toolsStatus = {}, composerStatus = 'normal' } = {}) => {
+            // conversation.create happens before the Voice Surface becomes active for a
+            // conversationless chat.  Prevent a rapid double-click from starting two
+            // independent create/start pipelines during that short window.
+            if (realtimeVoiceStartInFlightRef.current) return;
+            realtimeVoiceStartInFlightRef.current = true;
+
+            try {
+                if (!selectedModel?.id) {
+                    toast.error(t('no_models', { defaultValue: '没有可用模型' }));
+                    return;
+                }
+                if (uploadFiles.length !== 0) {
+                    toast.error(t('file_upload_not_complete'));
+                    return;
+                }
+                if (composerStatus === 'loading' || composerStatus === 'disabled') {
+                    toast.error(
+                        t('realtime_voice_composer_busy', {
+                            defaultValue: '当前对话正在切换状态，暂时无法启动实时语音。',
+                        }),
+                    );
+                    return;
+                }
+
+                const startForConversation = async (targetConversationId) => {
+                    await realtimeVoice.start({
+                        conversationId: targetConversationId,
+                        model: selectedModel.id,
+                        toolsStatus,
+                        options: advancedSettingsValues,
+                        pageType,
+                        documentId,
+                        ttsEngine: advancedSettingsValues?.speakEngine || 'browser',
+                        composerStatus,
+                    });
+                };
+
+                // Desktop Realtime Voice is an embedded right dock. Reuse the existing
+                // conversation sidebar slot instead of squeezing two right-side panels.
+                setIsSidebarOpen(false);
+                if (conversationId) {
+                    await startForConversation(conversationId);
+                    return;
+                }
+
+                // Voice-only conversation creation is a distinct user action from a
+                // normal turn.start.  Do not reuse currentTurnIdempotencyKeyRef here:
+                // voice startup does not pass through the ordinary successful Turn path
+                // that rotates that key, so a later New Conversation could otherwise be
+                // rejected as a duplicate conversation.create request.
+                const voiceConversationCreateKey = generateUUID();
+                const payload = await emitEvent({
+                    event: 'conversation.create',
+                    payload: { idempotencyKey: voiceConversationCreateKey },
+                });
+                // emitEvent is a thenable; await resolves its reply payload.
+                if (!payload?.success) throw new Error(payload?.value || 'Unable to create conversation');
+                isNewConversationIdRef.current = true;
+                setIsNewConversationId(true);
+                onNewConversationId(payload.value);
+                await persistPendingWorkspaceSelection(payload.value);
+                await startForConversation(payload.value);
+            } catch (error) {
+                toast.error(error?.message || '无法启动实时语音');
+            } finally {
+                realtimeVoiceStartInFlightRef.current = false;
+            }
+        },
+        [
+            advancedSettingsValues,
+            conversationId,
+            documentId,
+            onNewConversationId,
+            pageType,
+            persistPendingWorkspaceSelection,
+            realtimeVoice,
+            selectedModel,
+            t,
+            uploadFiles.length,
+        ],
+    );
 
     const loadMoreHistory = useCallback(async () => {
         if (historyLoadInFlightRef.current) return historyLoadInFlightRef.current;
@@ -1387,14 +1494,14 @@ function ChatPage({
                     conversationId: conversationId,
                     prevId: firstLoadedMessageId,
                     limit: HISTORY_PAGE_SIZE,
-                }
+                },
             });
             if (activeConversationIdRef.current !== conversationId) return false;
 
             const latestOrder = messagesOrderRef.current;
             const loadedOrder = latestOrder[0] === '<PREV_MORE>' ? latestOrder.slice(1) : latestOrder;
             const loadedIds = new Set(loadedOrder);
-            const prependedOrder = (data.messagesOrder || []).filter(messageId => !loadedIds.has(messageId));
+            const prependedOrder = (data.messagesOrder || []).filter((messageId) => !loadedIds.has(messageId));
             const nextOrder = data.haveMore
                 ? ['<PREV_MORE>', ...prependedOrder, ...loadedOrder]
                 : [...prependedOrder, ...loadedOrder];
@@ -1408,7 +1515,7 @@ function ChatPage({
             setMessages(nextMessages);
             setMessagesOrder(nextOrder);
 
-            await new Promise(resolve => {
+            await new Promise((resolve) => {
                 requestAnimationFrame(() => requestAnimationFrame(resolve));
             });
 
@@ -1452,46 +1559,53 @@ function ChatPage({
             return undefined;
         }
 
-        const observer = new IntersectionObserver((entries) => {
-            if (!entries.some(entry => entry.isIntersecting)) return;
-            loadMoreHistory().catch((error) => {
-                toast.error(t('load_more_error', {message: error?.message || t('unknown_error')}));
-            });
-        }, {
-            root: container,
-            rootMargin: HISTORY_AUTO_LOAD_ROOT_MARGIN,
-            threshold: 0.01,
-        });
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (!entries.some((entry) => entry.isIntersecting)) return;
+                loadMoreHistory().catch((error) => {
+                    toast.error(t('load_more_error', { message: error?.message || t('unknown_error') }));
+                });
+            },
+            {
+                root: container,
+                rootMargin: HISTORY_AUTO_LOAD_ROOT_MARGIN,
+                threshold: 0.01,
+            },
+        );
 
         observer.observe(sentinel);
         return () => observer.disconnect();
     }, [conversationId, historyAutoLoadReady, loadMoreHistory, messagesOrder, t]);
 
-    const scrollToRenderedMessage = useCallback((messageId, behavior = 'smooth') => {
-        const container = messagesContainerRef.current;
-        if (!container || !messageId) return false;
-        const escaped = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(String(messageId)) : String(messageId);
-        const element = container.querySelector(`[data-message-id="${escaped}"]`);
-        if (!element) return false;
+    const scrollToRenderedMessage = useCallback(
+        (messageId, behavior = 'smooth') => {
+            const container = messagesContainerRef.current;
+            if (!container || !messageId) return false;
+            const escaped =
+                typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(String(messageId)) : String(messageId);
+            const element = container.querySelector(`[data-message-id="${escaped}"]`);
+            if (!element) return false;
 
-        historyNavigationLockedRef.current = true;
-        isAutoScrollEnabledRef.current = false;
-        pendingScrollRef.current = false;
-        setShowScrollToBottomButton(true);
-        setActiveVisibleMessageId(String(messageId));
-        setHighlightedMessageId(String(messageId));
-        element.scrollIntoView({behavior, block: 'center'});
-        window.setTimeout(() => {
-            setHighlightedMessageId(current => current === String(messageId) ? null : current);
-        }, 1800);
-        return true;
-    }, [isAutoScrollEnabledRef, pendingScrollRef, setShowScrollToBottomButton]);
+            historyNavigationLockedRef.current = true;
+            isAutoScrollEnabledRef.current = false;
+            pendingScrollRef.current = false;
+            setShowScrollToBottomButton(true);
+            setActiveVisibleMessageId(String(messageId));
+            setHighlightedMessageId(String(messageId));
+            element.scrollIntoView({ behavior, block: 'center' });
+            window.setTimeout(() => {
+                setHighlightedMessageId((current) => (current === String(messageId) ? null : current));
+            }, 1800);
+            return true;
+        },
+        [isAutoScrollEnabledRef, pendingScrollRef, setShowScrollToBottomButton],
+    );
 
     const restoreLatestMessages = useCallback(async () => {
         if (!conversationId) return false;
         try {
             const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                params: {conversationId: conversationId, limit: HISTORY_PAGE_SIZE}
+                params: { conversationId: conversationId, limit: HISTORY_PAGE_SIZE },
             });
             const decorated = decorateMessages(data.messages || {});
             const snapshotOrder = data.haveMore
@@ -1526,7 +1640,7 @@ function ChatPage({
             });
             return true;
         } catch (error) {
-            toast.error(t('load_messages_error', {message: error?.message || t('unknown_error')}));
+            toast.error(t('load_messages_error', { message: error?.message || t('unknown_error') }));
             return false;
         }
     }, [
@@ -1550,82 +1664,85 @@ function ChatPage({
         };
     }, [restoreLatestMessages]);
 
-    const jumpToMessage = useCallback(async (messageId) => {
-        if (!messageId) return false;
+    const jumpToMessage = useCallback(
+        async (messageId) => {
+            if (!messageId) return false;
 
-        if (scrollToRenderedMessage(messageId)) return true;
+            if (scrollToRenderedMessage(messageId)) return true;
 
-        const loadTargetWindow = async (summaryItems, expectedOrderFingerprint) => {
-            const summaryIndex = summaryItems.findIndex(item => item.messageId === messageId);
-            if (summaryIndex < 0) {
-                throw new Error(t('jump_to_message_failed') || '跳转消息失败');
-            }
+            const loadTargetWindow = async (summaryItems, expectedOrderFingerprint) => {
+                const summaryIndex = summaryItems.findIndex((item) => item.messageId === messageId);
+                if (summaryIndex < 0) {
+                    throw new Error(t('jump_to_message_failed') || '跳转消息失败');
+                }
 
-            const start = Math.max(0, summaryIndex - HISTORY_JUMP_BEFORE);
-            const end = Math.min(summaryItems.length, summaryIndex + HISTORY_JUMP_AFTER + 1);
-            const messageIds = summaryItems.slice(start, end).map(item => item.messageId);
-            const data = await apiClient.post(apiEndpoint.CHAT_MESSAGES_BATCH_ENDPOINT, {
-                conversationId: conversationId,
-                messageIds,
-                expectedOrderFingerprint,
-                requireContiguous: true,
-            });
-            const decorated = decorateMessages(data.messages || {});
-            const nextMessages = {...messagesRef.current, ...decorated};
-            const nextOrder = data.haveMoreBefore
-                ? ['<PREV_MORE>', ...(data.messagesOrder || [])]
-                : [...(data.messagesOrder || [])];
+                const start = Math.max(0, summaryIndex - HISTORY_JUMP_BEFORE);
+                const end = Math.min(summaryItems.length, summaryIndex + HISTORY_JUMP_AFTER + 1);
+                const messageIds = summaryItems.slice(start, end).map((item) => item.messageId);
+                const data = await apiClient.post(apiEndpoint.CHAT_MESSAGES_BATCH_ENDPOINT, {
+                    conversationId: conversationId,
+                    messageIds,
+                    expectedOrderFingerprint,
+                    requireContiguous: true,
+                });
+                const decorated = decorateMessages(data.messages || {});
+                const nextMessages = { ...messagesRef.current, ...decorated };
+                const nextOrder = data.haveMoreBefore
+                    ? ['<PREV_MORE>', ...(data.messagesOrder || [])]
+                    : [...(data.messagesOrder || [])];
 
-            messagesRef.current = nextMessages;
-            messagesOrderRef.current = nextOrder;
-            setMessages(nextMessages);
-            setMessagesOrder(nextOrder);
-            historyNavigationLockedRef.current = true;
-            isAutoScrollEnabledRef.current = false;
-            pendingScrollRef.current = false;
-            setHistoryAutoLoadReady(true);
-            setShowScrollToBottomButton(true);
-            if (data.orderFingerprint) {
-                messageSummaryFingerprintRef.current = data.orderFingerprint;
-            }
+                messagesRef.current = nextMessages;
+                messagesOrderRef.current = nextOrder;
+                setMessages(nextMessages);
+                setMessagesOrder(nextOrder);
+                historyNavigationLockedRef.current = true;
+                isAutoScrollEnabledRef.current = false;
+                pendingScrollRef.current = false;
+                setHistoryAutoLoadReady(true);
+                setShowScrollToBottomButton(true);
+                if (data.orderFingerprint) {
+                    messageSummaryFingerprintRef.current = data.orderFingerprint;
+                }
 
-            await new Promise(resolve => {
-                requestAnimationFrame(() => requestAnimationFrame(resolve));
-            });
-            if (!scrollToRenderedMessage(messageId, 'auto')) {
-                throw new Error(t('jump_to_message_failed') || '跳转消息失败');
-            }
-            return true;
-        };
-
-        try {
-            let summaryItems = messageSummariesRef.current;
-            if (!summaryItems.some(item => item.messageId === messageId)) {
-                summaryItems = await loadMessageSummaries();
-            }
+                await new Promise((resolve) => {
+                    requestAnimationFrame(() => requestAnimationFrame(resolve));
+                });
+                if (!scrollToRenderedMessage(messageId, 'auto')) {
+                    throw new Error(t('jump_to_message_failed') || '跳转消息失败');
+                }
+                return true;
+            };
 
             try {
-                return await loadTargetWindow(summaryItems, messageSummaryFingerprintRef.current);
+                let summaryItems = messageSummariesRef.current;
+                if (!summaryItems.some((item) => item.messageId === messageId)) {
+                    summaryItems = await loadMessageSummaries();
+                }
+
+                try {
+                    return await loadTargetWindow(summaryItems, messageSummaryFingerprintRef.current);
+                } catch (error) {
+                    if (Number(error?.code) !== 409) throw error;
+                    const refreshedItems = await loadMessageSummaries({ silent: true });
+                    return await loadTargetWindow(refreshedItems, messageSummaryFingerprintRef.current);
+                }
             } catch (error) {
-                if (Number(error?.code) !== 409) throw error;
-                const refreshedItems = await loadMessageSummaries({silent: true});
-                return await loadTargetWindow(refreshedItems, messageSummaryFingerprintRef.current);
+                toast.error(error?.message || t('jump_to_message_failed') || '跳转消息失败');
+                return false;
             }
-        } catch (error) {
-            toast.error(error?.message || t('jump_to_message_failed') || '跳转消息失败');
-            return false;
-        }
-    }, [
-        conversationId,
-        decorateMessages,
-        isAutoScrollEnabledRef,
-        loadMessageSummaries,
-        pendingScrollRef,
-        scrollToRenderedMessage,
-        setMessages,
-        setShowScrollToBottomButton,
-        t,
-    ]);
+        },
+        [
+            conversationId,
+            decorateMessages,
+            isAutoScrollEnabledRef,
+            loadMessageSummaries,
+            pendingScrollRef,
+            scrollToRenderedMessage,
+            setMessages,
+            setShowScrollToBottomButton,
+            t,
+        ],
+    );
 
     useEffect(() => {
         if (!conversationId || messagesOrder.length === 0) return;
@@ -1643,127 +1760,134 @@ function ChatPage({
         });
     }, [conversationId, jumpToMessage, messagesOrder.length, routeLocation.pathname, routeLocation.search]);
 
-    const loadSwitchMessage = useCallback(async (msgId, newMsgId) => {
-        if (!(msgId in messagesRef.current)) return false;
-        let newOrders = [];
-        let loadStartId = newMsgId;
-        let needsLoad = !(newMsgId in messagesRef.current);
+    const loadSwitchMessage = useCallback(
+        async (msgId, newMsgId) => {
+            if (!(msgId in messagesRef.current)) return false;
+            let newOrders = [];
+            let loadStartId = newMsgId;
+            let needsLoad = !(newMsgId in messagesRef.current);
 
-        if (!needsLoad) {
-            let cursor = messagesRef.current[newMsgId];
-            newOrders.push(newMsgId);
-            while (cursor.nextMessage) {
-                const nextId = cursor.nextMessage;
-                if (nextId in messagesRef.current) {
-                    newOrders.push(nextId);
-                    cursor = messagesRef.current[nextId];
-                } else {
-                    needsLoad = true;
-                    loadStartId = nextId;
-                    break;
+            if (!needsLoad) {
+                let cursor = messagesRef.current[newMsgId];
+                newOrders.push(newMsgId);
+                while (cursor.nextMessage) {
+                    const nextId = cursor.nextMessage;
+                    if (nextId in messagesRef.current) {
+                        newOrders.push(nextId);
+                        cursor = messagesRef.current[nextId];
+                    } else {
+                        needsLoad = true;
+                        loadStartId = nextId;
+                        break;
+                    }
                 }
             }
-        }
-        let finalMessagesMap = messagesRef.current;
+            let finalMessagesMap = messagesRef.current;
 
-        if (needsLoad) {
-            try {
-                const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                    params: {conversationId: conversationId, nextId: loadStartId},
-                });
-                finalMessagesMap = {
-                    ...finalMessagesMap,
-                    ...decorateMessages(data.messages || {}),
-                };
+            if (needsLoad) {
+                try {
+                    const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
+                        params: { conversationId: conversationId, nextId: loadStartId },
+                    });
+                    finalMessagesMap = {
+                        ...finalMessagesMap,
+                        ...decorateMessages(data.messages || {}),
+                    };
+                    const insertPoint = messagesOrderRef.current.indexOf(msgId) + 1;
+                    const newOrder = [
+                        ...messagesOrderRef.current.slice(0, insertPoint),
+                        ...newOrders,
+                        ...data.messagesOrder,
+                    ];
+                    messagesOrderRef.current = newOrder;
+                    setMessagesOrder(newOrder);
+                } catch (error) {
+                    toast.error(t('load_more_error', { message: error?.message || t('unknown_error') }));
+                    return false;
+                }
+            } else {
                 const insertPoint = messagesOrderRef.current.indexOf(msgId) + 1;
-                const newOrder = [
-                    ...messagesOrderRef.current.slice(0, insertPoint),
-                    ...newOrders,
-                    ...data.messagesOrder,
-                ];
+                const newOrder = [...messagesOrderRef.current.slice(0, insertPoint), ...newOrders];
                 messagesOrderRef.current = newOrder;
                 setMessagesOrder(newOrder);
-            } catch (error) {
-                toast.error(t("load_more_error", {message: error?.message || t("unknown_error")}));
-                return false;
-            }
-        } else {
-            const insertPoint = messagesOrderRef.current.indexOf(msgId) + 1;
-            const newOrder = [...messagesOrderRef.current.slice(0, insertPoint), ...newOrders];
-            messagesOrderRef.current = newOrder;
-            setMessagesOrder(newOrder);
-        }
-
-        const nextMessagesState = produce(finalMessagesMap, (draft) => {
-            // 原有逻辑：设置 nextMessage
-            if (draft[msgId]) {
-                draft[msgId].nextMessage = newMsgId;
             }
 
-            // 确保新消息也有挂载点功能（安全版本）
-            if (newMsgId && draft[newMsgId]) {
-                const msgDraft = draft[newMsgId];
-
-                // 幂等保护：如果已经注入过，就不再重复注入
-                if (typeof msgDraft.registerComponent === 'function') {
-                    return;
+            const nextMessagesState = produce(finalMessagesMap, (draft) => {
+                // 原有逻辑：设置 nextMessage
+                if (draft[msgId]) {
+                    draft[msgId].nextMessage = newMsgId;
                 }
 
-                // === 使用闭包存储 mountPoints，不依赖 draft ===
-                const mountPoints = {};
+                // 确保新消息也有挂载点功能（安全版本）
+                if (newMsgId && draft[newMsgId]) {
+                    const msgDraft = draft[newMsgId];
 
-                // 添加注册函数
-                msgDraft.registerComponent = (componentKey, componentRef) => {
-                    mountPoints[componentKey] = componentRef;
-                };
+                    // 幂等保护：如果已经注入过，就不再重复注入
+                    if (typeof msgDraft.registerComponent === 'function') {
+                        return;
+                    }
 
-                // 添加注销函数
-                msgDraft.unregisterComponent = (componentKey) => {
-                    delete mountPoints[componentKey];
-                };
+                    // === 使用闭包存储 mountPoints，不依赖 draft ===
+                    const mountPoints = {};
 
-                // 添加获取函数
-                msgDraft.getComponent = (componentKey) => {
-                    return mountPoints[componentKey];
-                };
+                    // 添加注册函数
+                    msgDraft.registerComponent = (componentKey, componentRef) => {
+                        mountPoints[componentKey] = componentRef;
+                    };
+
+                    // 添加注销函数
+                    msgDraft.unregisterComponent = (componentKey) => {
+                        delete mountPoints[componentKey];
+                    };
+
+                    // 添加获取函数
+                    msgDraft.getComponent = (componentKey) => {
+                        return mountPoints[componentKey];
+                    };
+                }
+            });
+
+            messagesRef.current = nextMessagesState;
+            setMessages(nextMessagesState);
+            return true;
+        },
+        [conversationId, decorateMessages, t, setMessages],
+    );
+
+    const switchMessage = useCallback(
+        async (msg, msgId, targetMessageOrDelta, options = {}) => {
+            const currentIndex = msg.messages.indexOf(msg.nextMessage);
+            const newMsgId =
+                typeof targetMessageOrDelta === 'number'
+                    ? msg.messages[currentIndex + targetMessageOrDelta]
+                    : targetMessageOrDelta;
+
+            if (!newMsgId || newMsgId === msg.nextMessage) return true;
+
+            const response = await emitEvent({
+                event: 'conversation.branch.switch',
+                payload: {
+                    msgId,
+                    nextMessage: newMsgId,
+                    expectedCurrentChildId: options.expectedCurrentChildId,
+                    expectedOrderFingerprint: options.expectedOrderFingerprint,
+                },
+                conversationId: conversationId,
+            });
+
+            if (!response?.success) {
+                const error = new Error(response?.value || t('switch_message_failed') || '切换消息失败');
+                error.code = response?.code;
+                throw error;
             }
-        });
 
-        messagesRef.current = nextMessagesState;
-        setMessages(nextMessagesState);
-        return true;
-    }, [conversationId, decorateMessages, t, setMessages]);
-
-    const switchMessage = useCallback(async (msg, msgId, targetMessageOrDelta, options = {}) => {
-        const currentIndex = msg.messages.indexOf(msg.nextMessage);
-        const newMsgId = typeof targetMessageOrDelta === 'number'
-            ? msg.messages[currentIndex + targetMessageOrDelta]
-            : targetMessageOrDelta;
-
-        if (!newMsgId || newMsgId === msg.nextMessage) return true;
-
-        const response = await emitEvent({
-            event: 'conversation.branch.switch',
-            payload: {
-                msgId,
-                nextMessage: newMsgId,
-                expectedCurrentChildId: options.expectedCurrentChildId,
-                expectedOrderFingerprint: options.expectedOrderFingerprint,
-            },
-            conversationId: conversationId
-        });
-
-        if (!response?.success) {
-            const error = new Error(response?.value || t('switch_message_failed') || '切换消息失败');
-            error.code = response?.code;
-            throw error;
-        }
-
-        const loaded = await loadSwitchMessage(msgId, newMsgId);
-        if (!loaded) return false;
-        loadMessageSummaries({silent: true});
-        return true;
-    }, [conversationId, loadMessageSummaries, loadSwitchMessage, t]);
+            const loaded = await loadSwitchMessage(msgId, newMsgId);
+            if (!loaded) return false;
+            loadMessageSummaries({ silent: true });
+            return true;
+        },
+        [conversationId, loadMessageSummaries, loadSwitchMessage, t],
+    );
 
     const emitMessagesLoaded = () => {
         setTimeout(() => {
@@ -1772,21 +1896,24 @@ function ChatPage({
                 event: 'conversation.messages.loaded',
                 payload: {
                     idempotencyKey: messagesLoadedIdempotencyKeyRef.current,
-                    messagesOrder: messagesOrderRef.current[0] === '<PREV_MORE>' ? messagesOrderRef.current.slice(1) : messagesOrderRef.current
+                    messagesOrder:
+                        messagesOrderRef.current[0] === '<PREV_MORE>'
+                            ? messagesOrderRef.current.slice(1)
+                            : messagesOrderRef.current,
                 },
                 conversationId: conversationId,
                 onTimeout: () => {
-                    toast.warning(t("cannot_load_tasks"));
-                }
+                    toast.warning(t('cannot_load_tasks'));
+                },
             }).then((payload) => {
                 if (payload.success) {
                     messagesLoadedIdempotencyKeyRef.current = generateUUID();
                 } else {
-                    console.error("Cannot to load the tasks,", payload.value);
+                    console.error('Cannot to load the tasks,', payload.value);
                 }
             });
-        }, 0)
-    }
+        }, 0);
+    };
 
     useEffect(() => {
         const container = messagesContainerRef.current;
@@ -1812,7 +1939,9 @@ function ChatPage({
                     requestScrollToBottom();
                     checkScrollPosition(true);
                 } else if (isUserAutoScrollUnlocked()) {
-                    setShowScrollToBottomButton(container.scrollHeight > container.clientHeight + BOTTOM_RELOCK_THRESHOLD);
+                    setShowScrollToBottomButton(
+                        container.scrollHeight > container.clientHeight + BOTTOM_RELOCK_THRESHOLD,
+                    );
                 } else {
                     checkScrollPosition(true);
                 }
@@ -1909,7 +2038,11 @@ function ChatPage({
             const isProgrammaticScroll = now < state.programmaticScrollUntil;
             const isSpeechFollowScroll = now < speechFollowProgrammaticScrollUntilRef.current;
 
-            if (!isProgrammaticScroll && !isSpeechFollowScroll && Math.abs(currentScrollTop - previousScrollTop) > USER_SCROLL_UP_DELTA) {
+            if (
+                !isProgrammaticScroll &&
+                !isSpeechFollowScroll &&
+                Math.abs(currentScrollTop - previousScrollTop) > USER_SCROLL_UP_DELTA
+            ) {
                 disableSpeechAutoFollowByUser();
             }
 
@@ -1929,10 +2062,10 @@ function ChatPage({
             }
         };
 
-        container.addEventListener('wheel', handleWheel, {passive: true});
-        container.addEventListener('touchstart', handleTouchStart, {passive: true});
-        container.addEventListener('touchmove', handleTouchMove, {passive: true});
-        container.addEventListener('scroll', handleScroll, {passive: true});
+        container.addEventListener('wheel', handleWheel, { passive: true });
+        container.addEventListener('touchstart', handleTouchStart, { passive: true });
+        container.addEventListener('touchmove', handleTouchMove, { passive: true });
+        container.addEventListener('scroll', handleScroll, { passive: true });
 
         return () => {
             container.removeEventListener('wheel', handleWheel);
@@ -1971,7 +2104,6 @@ function ChatPage({
         requestScrollToBottom,
     ]);
 
-
     useEffect(() => {
         setMessageSummaries([]);
         messageSummariesRef.current = [];
@@ -1987,12 +2119,12 @@ function ChatPage({
 
     useEffect(() => {
         if (conversationId && showQuickUserMessageNavigator) {
-            loadMessageSummaries({silent: true});
+            loadMessageSummaries({ silent: true });
         }
     }, [conversationId, loadMessageSummaries, showQuickUserMessageNavigator]);
 
     const handleOpenRuntimeInspector = useCallback(() => {
-        openInspector({focusMessageId: activeVisibleMessageId});
+        openInspector({ focusMessageId: activeVisibleMessageId });
         if (!messageSummaryLoading) {
             loadMessageSummaries({
                 silent: messageSummariesRef.current.length > 0,
@@ -2000,15 +2132,18 @@ function ChatPage({
         }
     }, [activeVisibleMessageId, loadMessageSummaries, messageSummaryLoading, openInspector]);
 
-    const handleRuntimeInspectorTabChange = useCallback((tabId) => {
-        selectRuntimeInspectorTab(tabId, {focusMessageId: activeVisibleMessageId});
-    }, [activeVisibleMessageId, selectRuntimeInspectorTab]);
+    const handleRuntimeInspectorTabChange = useCallback(
+        (tabId) => {
+            selectRuntimeInspectorTab(tabId, { focusMessageId: activeVisibleMessageId });
+        },
+        [activeVisibleMessageId, selectRuntimeInspectorTab],
+    );
 
     const handleRefreshRuntimeInspector = useCallback(async () => {
         if (runtimeInspectorActiveTab === 'brief' && !messageSummaryLoading) {
-            loadMessageSummaries({silent: true});
+            loadMessageSummaries({ silent: true });
         }
-        await refreshRuntimeInspector({focusMessageId: activeVisibleMessageId});
+        await refreshRuntimeInspector({ focusMessageId: activeVisibleMessageId });
     }, [
         activeVisibleMessageId,
         loadMessageSummaries,
@@ -2019,23 +2154,24 @@ function ChatPage({
 
     useEffect(() => {
         if (
-            !conversationId
-            || (!showQuickUserMessageNavigator && !runtimeInspectorOpen)
-            || messageSummaryLoading
-            || messageSummariesRef.current.length === 0
-        ) return undefined;
+            !conversationId ||
+            (!showQuickUserMessageNavigator && !runtimeInspectorOpen) ||
+            messageSummaryLoading ||
+            messageSummariesRef.current.length === 0
+        )
+            return undefined;
 
-        const renderedOrder = messagesOrder.filter(messageId => messageId !== '<PREV_MORE>');
+        const renderedOrder = messagesOrder.filter((messageId) => messageId !== '<PREV_MORE>');
         const renderedTailId = renderedOrder[renderedOrder.length - 1] || null;
         if (!renderedTailId || renderedTailId === messageSummaryTailIdRef.current) return undefined;
 
         let cancelled = false;
         const timer = window.setTimeout(() => {
-            loadMessageSummaries({silent: true, append: true}).then((items) => {
+            loadMessageSummaries({ silent: true, append: true }).then((items) => {
                 if (cancelled) return;
                 const loadedTailId = items[items.length - 1]?.messageId || null;
                 if (loadedTailId !== renderedTailId) {
-                    loadMessageSummaries({silent: true});
+                    loadMessageSummaries({ silent: true });
                 }
             });
         }, 350);
@@ -2087,8 +2223,8 @@ function ChatPage({
                     );
                     const elements = document.elementsFromPoint(centerX, probeY);
                     const messageElement = elements
-                        .map(element => element.closest?.('[data-message-id]'))
-                        .find(element => element && container.contains(element));
+                        .map((element) => element.closest?.('[data-message-id]'))
+                        .find((element) => element && container.contains(element));
                     if (messageElement) {
                         activeId = messageElement.getAttribute('data-message-id');
                         break;
@@ -2096,13 +2232,13 @@ function ChatPage({
                 }
 
                 if (activeId) {
-                    setActiveVisibleMessageId(current => current === activeId ? current : activeId);
+                    setActiveVisibleMessageId((current) => (current === activeId ? current : activeId));
                 }
             });
         };
 
         updateActiveMessage();
-        container.addEventListener('scroll', updateActiveMessage, {passive: true});
+        container.addEventListener('scroll', updateActiveMessage, { passive: true });
         const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateActiveMessage) : null;
         resizeObserver?.observe(container);
         return () => {
@@ -2111,7 +2247,6 @@ function ChatPage({
             resizeObserver?.disconnect();
         };
     }, [messagesOrder]);
-
 
     useEffect(() => {
         const unsubscribe1 = onEvent({
@@ -2138,447 +2273,594 @@ function ChatPage({
                 'speech.segment.seek',
             ],
             conversationId,
-        })
-            .then(({event, payload, reply, eventRunId}) => {
-                switch (event) {
-                    case 'speech.play.requested':
-                        handleSpeakMessageRequest(payload, reply);
-                        break;
-                    case 'speech.stop.requested':
-                        cancelActiveSpeech(true);
-                        reply({success: true});
-                        break;
-                    case 'speech.pause.requested':
-                        reply({success: pauseActiveSpeech()});
-                        break;
-                    case 'speech.resume.requested':
-                        reply({success: resumeActiveSpeech()});
-                        break;
-                    case 'speech.rate.set':
-                        updateSpeechRate(payload.value ?? payload.rate);
-                        reply({success: true});
-                        break;
-                    case 'speech.segment.previous':
-                        reply({success: seekSpeechSegment(-1)});
-                        break;
-                    case 'speech.segment.next':
-                        reply({success: seekSpeechSegment(1)});
-                        break;
-                    case 'speech.segment.seek':
-                        reply({success: seekSpeechSegment({
+        }).then(({ event, payload, reply, eventRunId }) => {
+            switch (event) {
+                case 'speech.play.requested':
+                    handleSpeakMessageRequest(payload, reply);
+                    break;
+                case 'speech.stop.requested':
+                    cancelActiveSpeech(true);
+                    reply({ success: true });
+                    break;
+                case 'speech.pause.requested':
+                    reply({ success: pauseActiveSpeech() });
+                    break;
+                case 'speech.resume.requested':
+                    reply({ success: resumeActiveSpeech() });
+                    break;
+                case 'speech.rate.set':
+                    updateSpeechRate(payload.value ?? payload.rate);
+                    reply({ success: true });
+                    break;
+                case 'speech.segment.previous':
+                    reply({ success: seekSpeechSegment(-1) });
+                    break;
+                case 'speech.segment.next':
+                    reply({ success: seekSpeechSegment(1) });
+                    break;
+                case 'speech.segment.seek':
+                    reply({
+                        success: seekSpeechSegment(
+                            {
                                 segmentId: payload.segmentId,
                                 segmentPosition: payload.segmentPosition,
-                            }, {absolute: true})});
-                        break;
-                    case 'message.delete.requested':
-                        if (payload.value) {
-                            const msgId = payload.value;
-                            const silent = payload.silent === true;
+                            },
+                            { absolute: true },
+                        ),
+                    });
+                    break;
+                case 'message.delete.requested':
+                    if (payload.value) {
+                        const msgId = payload.value;
+                        const silent = payload.silent === true;
 
-                            if (!messagesRef.current?.[msgId] || !messagesOrderRef.current?.includes(msgId)) {
-                                toast.error(t("delete_error"));
-                                reply({success: false});
+                        if (!messagesRef.current?.[msgId] || !messagesOrderRef.current?.includes(msgId)) {
+                            toast.error(t('delete_error'));
+                            reply({ success: false });
+                            return;
+                        }
+
+                        if (silent) {
+                            apiClient
+                                .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, {
+                                    params: { conversationId: conversationId },
+                                })
+                                .then(() => {
+                                    deleteMessageLocally(msgId);
+                                })
+                                .catch((error) => {
+                                    toast.error(t('delete_error', { message: error?.message || t('unknown_error') }));
+                                });
+                            reply({ success: true });
+                        } else {
+                            setPendingDeleteMsgId(msgId);
+                            setShowDeleteConfirm(true);
+                            reply({ success: true });
+                        }
+                    } else {
+                        reply({ success: false });
+                    }
+                    break;
+                case 'message.created':
+                    if (payload.value && typeof payload.value === 'object') {
+                        const messageIds = Object.keys(payload.value);
+                        if (eventRunId) markLiveStreamMessages(messageIds, eventRunId);
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
+                        let newMessages = { ...messagesRef.current };
+
+                        for (const [key, newValue] of Object.entries(payload.value)) {
+                            if (payload.isEdit && !newMessages[key]) {
+                                reply({ success: false });
                                 return;
                             }
 
-                            if (silent) {
-                                apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + msgId,
-                                    {params: {conversationId: conversationId}})
-                                    .then(() => {
-                                        deleteMessageLocally(msgId);
-                                    })
-                                    .catch((error) => {
-                                        toast.error(t("delete_error", {message: error?.message || t("unknown_error")}));
-                                    })
-                                reply({success: true});
-                            } else {
-                                setPendingDeleteMsgId(msgId);
-                                setShowDeleteConfirm(true);
-                                reply({success: true});
-                            }
-                        } else {
-                            reply({success: false});
-                        }
-                        break;
-                    case 'message.created':
-                        if (payload.value && typeof payload.value === 'object') {
-                            const messageIds = Object.keys(payload.value);
-                            if (eventRunId) markLiveStreamMessages(messageIds, eventRunId);
-                            const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            let newMessages = {...messagesRef.current};
-
-                            for (const [key, newValue] of Object.entries(payload.value)) {
-                                if (payload.isEdit && !newMessages[key]) {
-                                    reply({success: false});
-                                    return;
-                                }
-
-                                const incomingValue = newValue && typeof newValue === 'object'
+                            const incomingValue =
+                                newValue && typeof newValue === 'object'
                                     ? {
-                                        ...newValue,
-                                        messages: newValue.messages === undefined ? [] : newValue.messages,
-                                    }
+                                          ...newValue,
+                                          messages: newValue.messages === undefined ? [] : newValue.messages,
+                                      }
                                     : newValue;
 
-                                if (incomingValue && typeof incomingValue === 'object') {
-                                    const oldMessage = newMessages[key];
+                            if (incomingValue && typeof incomingValue === 'object') {
+                                const oldMessage = newMessages[key];
 
-                                    if (oldMessage && typeof oldMessage === 'object') {
-                                        const mergedMessage = {...oldMessage, ...incomingValue};
+                                if (oldMessage && typeof oldMessage === 'object') {
+                                    const mergedMessage = { ...oldMessage, ...incomingValue };
 
-                                        // extraInfo 是增量协议的一部分。流式阶段可能只更新审计信息，
-                                        // 不能覆盖已经累积的 replacement/task/context 等字段。
-                                        if (oldMessage.extraInfo || incomingValue.extraInfo) {
-                                            mergedMessage.extraInfo = {
-                                                ...(oldMessage.extraInfo || {}),
-                                                ...(incomingValue.extraInfo || {}),
-                                            };
-                                        }
-
-                                        // network 必须做增量合并，避免message.created 的短快照覆盖 message.knowledge.network_added 已追加的数据。
-                                        if (oldMessage.network || incomingValue.network) {
-                                            mergedMessage.network = mergeNetworkData(oldMessage.network, incomingValue.network);
-                                        }
-
-                                        newMessages[key] = mergedMessage;
-                                    } else {
-                                        newMessages[key] = incomingValue;
-
-                                        if (incomingValue.network) {
-                                            newMessages[key].network = mergeNetworkData(undefined, incomingValue.network);
-                                        }
+                                    // extraInfo 是增量协议的一部分。流式阶段可能只更新审计信息，
+                                    // 不能覆盖已经累积的 replacement/task/context 等字段。
+                                    if (oldMessage.extraInfo || incomingValue.extraInfo) {
+                                        mergedMessage.extraInfo = {
+                                            ...(oldMessage.extraInfo || {}),
+                                            ...(incomingValue.extraInfo || {}),
+                                        };
                                     }
+
+                                    // network 必须做增量合并，避免message.created 的短快照覆盖 message.knowledge.network_added 已追加的数据。
+                                    if (oldMessage.network || incomingValue.network) {
+                                        mergedMessage.network = mergeNetworkData(
+                                            oldMessage.network,
+                                            incomingValue.network,
+                                        );
+                                    }
+
+                                    newMessages[key] = mergedMessage;
                                 } else {
                                     newMessages[key] = incomingValue;
-                                }
 
-                                // === 安全注入 registerComponent / getComponent===
-                                const msg = newMessages[key];
-                                if (msg && typeof msg === 'object' && !msg.registerComponent) {
-                                    const mountPoints = {};   // 真正的存储容器（不在 draft 上）
-
-                                    msg.registerComponent = (componentKey, componentRef) => {
-                                        mountPoints[componentKey] = componentRef;
-                                    };
-
-                                    msg.unregisterComponent = (componentKey) => {
-                                        delete mountPoints[componentKey];
-                                    };
-
-                                    msg.getComponent = (componentKey) => {
-                                        return mountPoints[componentKey];
-                                    };
-                                }
-                            }
-
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-                            if (eventRunId) ensureStreamMessagesVisible(messageIds);
-
-                            scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
-
-                            reply({success: true});
-                        }
-                        break;
-                    case 'message.order.changed':
-                        if (Array.isArray(payload.value) && payload.value.length > 0) {
-                            scrollToBottomAfterRender(isAutoScrollEnabledRef.current, {delay: 50});
-                            setMessagesOrder(payload.value);
-                            messagesOrderRef.current = payload.value;
-                            reply({value: payload.value});
-                        } else {
-                            reply({value: messagesOrderRef.current});
-                        }
-                        break;
-                    case 'message.content.set':
-                        if (payload.value && typeof payload.value === 'object') {
-                            const messageIds = Object.keys(payload.value);
-                            markLiveStreamMessages(messageIds, eventRunId);
-                            const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            updateStreamingStatus();
-                            const newMessages = produce(messagesRef.current, draft => {
-                                for (const [msgId, newContent] of Object.entries(payload.value)) {
-                                    if (draft[msgId]) {
-                                        draft[msgId].content = newContent || '';
+                                    if (incomingValue.network) {
+                                        newMessages[key].network = mergeNetworkData(undefined, incomingValue.network);
                                     }
                                 }
-                            });
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-                            ensureStreamMessagesVisible(messageIds);
-                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
-                            if (payload.reply) reply({success: true});
-                        } else {
-                            reply({success: false});
-                        }
-                        break;
-                    case 'message.content.delta':
-                        if (payload.value && typeof payload.value === 'object') {
-                            const messageIds = Object.keys(payload.value);
-                            markLiveStreamMessages(messageIds, eventRunId);
-                            const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            updateStreamingStatus();
-                            const newMessages = produce(messagesRef.current, draft => {
-                                for (const [msgId, newContent] of Object.entries(payload.value)) {
-                                    if (draft[msgId]) {
-                                        draft[msgId].content = (draft[msgId].content || '') + (newContent || '');
-                                    }
-                                }
-                            });
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-                            ensureStreamMessagesVisible(messageIds);
-                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
-                            if (payload.reply) reply({success: true});
-                        } else {
-                            reply({success: false});
-                        }
-                        break;
-                    case 'message.replacement.set':
-                        if (payload.value && typeof payload.value === 'object') {
-                            const messageIds = Object.keys(payload.value);
-                            markLiveStreamMessages(messageIds, eventRunId);
-                            const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            const newMessages = produce(messagesRef.current, draft => {
-                                for (const [msgId, newReplaces] of Object.entries(payload.value)) {
-                                    if (draft[msgId]) {
-                                        if (!draft[msgId].extraInfo) {
-                                            draft[msgId].extraInfo = {};
-                                        }
-                                        const currentReplace = draft[msgId].extraInfo.replace || {};
-                                        draft[msgId].extraInfo.replace = {...currentReplace, ...newReplaces};
-                                    }
-                                }
-                            });
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-                            ensureStreamMessagesVisible(messageIds);
-                            scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
-                            if (payload.reply) reply({success: true});
-                        } else {
-                            reply({success: false});
-                        }
-                        break;
-                    case 'message.replacement.delta':
-                        if (payload.value && typeof payload.value === 'object') {
-                            const messageIds = Object.keys(payload.value);
-                            markLiveStreamMessages(messageIds, eventRunId);
-                            const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            updateStreamingStatus();
-                            const newMessages = produce(messagesRef.current, draft => {
-                                for (const [msgId, appendFields] of Object.entries(payload.value)) {
-                                    if (draft[msgId]) {
-                                        if (!draft[msgId].extraInfo) {
-                                            draft[msgId].extraInfo = {};
-                                        }
-                                        if (!draft[msgId].extraInfo.replace) {
-                                            draft[msgId].extraInfo.replace = {};
-                                        }
-                                        for (const [key, appendString] of Object.entries(appendFields)) {
-                                            const currentValue = draft[msgId].extraInfo.replace[key] || '';
-                                            draft[msgId].extraInfo.replace[key] = currentValue + appendString;
-                                        }
-                                    }
-                                }
-                            });
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-                            ensureStreamMessagesVisible(messageIds);
-                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
-                            if (payload.reply) reply({success: true});
-                        } else {
-                            if (payload.reply) reply({success: false});
-                        }
-                        break;
-                    case 'workspace.transfer.state_changed': {
-                        const transfer = payload.value;
-                        if (transfer && typeof transfer === 'object' && transfer.transferId) {
-                            // Transfer progress is a standalone Workspace domain state.
-                            // Conversation Replace Cards and Task Window consume the same
-                            // store; attachments remain immutable file entities.
-                            upsertWorkspaceTransfer(transfer);
-                            if (payload.reply) reply({success: true});
-                        } else if (payload.reply) {
-                            reply({success: false});
-                        }
-                        break;
-                    }
-                    case 'message.attachments.set':
-                        if (payload.value && typeof payload.value === 'object') {
-                            const messageIds = Object.keys(payload.value);
-                            if (eventRunId) markLiveStreamMessages(messageIds, eventRunId);
-                            const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            const newMessages = produce(messagesRef.current, draft => {
-                                for (const [msgId, newAttachments] of Object.entries(payload.value)) {
-                                    if (draft[msgId]) {
-                                        draft[msgId].attachments = newAttachments;
-                                    }
-                                }
-                            });
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-                            if (eventRunId) ensureStreamMessagesVisible(messageIds);
-                            scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
-                            if (payload.reply) reply({success: true});
-                        } else {
-                            reply({success: false});
-                        }
-                        break;
-                    case 'message.background_tools.set':
-                        if (payload.value && typeof payload.value === 'object') {
-                            const messageIds = Object.keys(payload.value);
-                            if (eventRunId) markLiveStreamMessages(messageIds, eventRunId);
-                            const newMessages = produce(messagesRef.current, draft => {
-                                for (const [msgId, backgroundTools] of Object.entries(payload.value)) {
-                                    if (draft[msgId]) {
-                                        draft[msgId].backgroundTools = backgroundTools || {active: false};
-                                    }
-                                }
-                            });
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-                            if (eventRunId) ensureStreamMessagesVisible(messageIds);
-                            if (payload.reply) reply({success: true});
-                        } else if (payload.reply) {
-                            reply({success: false});
-                        }
-                        break;
-                    case 'message.children.changed':
-                        if (payload.msgId && payload.value) {
-                            const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            if (!messagesRef.current[payload.msgId]) {
-                                reply({success: false});
-                                return;
-                            }
-                            if (messagesRef.current[payload.msgId].messages.includes(payload.value)) {
-                                reply({success: false});
-                                return;
-                            }
-                            const newMessages = produce(messagesRef.current, draft => {
-                                draft[payload.msgId].messages = [...draft[payload.msgId].messages, payload.value];
-                                if (payload.switch) {
-                                    draft[payload.msgId].nextMessage = payload.value;
-                                }
-                            });
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-                            if (messagesRef.current[payload.value].nextMessage) {
-                                emitEvent({
-                                    event: 'message.switching.changed',
-                                    payload: {
-                                        value: payload.value
-                                    },
-                                    conversationId: conversationId,
-                                    localOnly: true,
-                                }).then(() => {
-                                    loadSwitchMessage(payload.msgId, payload.value).then(() => {
-                                        emitEvent({
-                                            event: 'message.switching.changed',
-                                            payload: {
-                                                value: null
-                                            },
-                                            conversationId: conversationId,
-                                            localOnly: true,
-                                        })
-                                        scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
-                                    });
-                                });
                             } else {
-                                scrollToBottomAfterRender(wasAutoScroll, {delay: 50});
+                                newMessages[key] = incomingValue;
                             }
-                            reply({success: true});
+
+                            // === 安全注入 registerComponent / getComponent===
+                            const msg = newMessages[key];
+                            if (msg && typeof msg === 'object' && !msg.registerComponent) {
+                                const mountPoints = {}; // 真正的存储容器（不在 draft 上）
+
+                                msg.registerComponent = (componentKey, componentRef) => {
+                                    mountPoints[componentKey] = componentRef;
+                                };
+
+                                msg.unregisterComponent = (componentKey) => {
+                                    delete mountPoints[componentKey];
+                                };
+
+                                msg.getComponent = (componentKey) => {
+                                    return mountPoints[componentKey];
+                                };
+                            }
                         }
-                        break;
-                    case 'message.branch.loaded':
-                        emitEvent({
-                            event: 'message.switching.changed',
-                            payload: {
-                                value: payload.nextMessage
-                            },
-                            conversationId: conversationId,
-                            localOnly: true,
-                        }).then(() => {
-                            loadSwitchMessage(payload.msgId, payload.nextMessage).then(() => {
-                                emitEvent({
-                                    event: 'message.switching.changed',
-                                    payload: {
-                                        value: null
-                                    },
-                                    conversationId: conversationId,
-                                    localOnly: true,
-                                })
+
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+                        if (eventRunId) ensureStreamMessagesVisible(messageIds);
+
+                        scrollToBottomAfterRender(wasAutoScroll, { delay: 50 });
+
+                        reply({ success: true });
+                    }
+                    break;
+                case 'message.order.changed':
+                    if (Array.isArray(payload.value) && payload.value.length > 0) {
+                        scrollToBottomAfterRender(isAutoScrollEnabledRef.current, { delay: 50 });
+                        setMessagesOrder(payload.value);
+                        messagesOrderRef.current = payload.value;
+                        reply({ value: payload.value });
+                    } else {
+                        reply({ value: messagesOrderRef.current });
+                    }
+                    break;
+                case 'message.content.set':
+                    if (payload.value && typeof payload.value === 'object') {
+                        const messageIds = Object.keys(payload.value);
+                        markLiveStreamMessages(messageIds, eventRunId);
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
+                        updateStreamingStatus();
+                        const newMessages = produce(messagesRef.current, (draft) => {
+                            for (const [msgId, newContent] of Object.entries(payload.value)) {
+                                if (draft[msgId]) {
+                                    draft[msgId].content = newContent || '';
+                                }
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+                        ensureStreamMessagesVisible(messageIds);
+                        scrollToBottomAfterRender(wasAutoScroll, { streaming: true });
+                        if (payload.reply) reply({ success: true });
+                    } else {
+                        reply({ success: false });
+                    }
+                    break;
+                case 'message.content.delta':
+                    if (payload.value && typeof payload.value === 'object') {
+                        const messageIds = Object.keys(payload.value);
+                        markLiveStreamMessages(messageIds, eventRunId);
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
+                        updateStreamingStatus();
+                        const newMessages = produce(messagesRef.current, (draft) => {
+                            for (const [msgId, newContent] of Object.entries(payload.value)) {
+                                if (draft[msgId]) {
+                                    draft[msgId].content = (draft[msgId].content || '') + (newContent || '');
+                                }
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+                        ensureStreamMessagesVisible(messageIds);
+                        scrollToBottomAfterRender(wasAutoScroll, { streaming: true });
+                        if (payload.reply) reply({ success: true });
+                    } else {
+                        reply({ success: false });
+                    }
+                    break;
+                case 'message.replacement.set':
+                    if (payload.value && typeof payload.value === 'object') {
+                        const messageIds = Object.keys(payload.value);
+                        markLiveStreamMessages(messageIds, eventRunId);
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
+                        const newMessages = produce(messagesRef.current, (draft) => {
+                            for (const [msgId, newReplaces] of Object.entries(payload.value)) {
+                                if (draft[msgId]) {
+                                    if (!draft[msgId].extraInfo) {
+                                        draft[msgId].extraInfo = {};
+                                    }
+                                    const currentReplace = draft[msgId].extraInfo.replace || {};
+                                    draft[msgId].extraInfo.replace = { ...currentReplace, ...newReplaces };
+                                }
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+                        ensureStreamMessagesVisible(messageIds);
+                        scrollToBottomAfterRender(wasAutoScroll, { delay: 50 });
+                        if (payload.reply) reply({ success: true });
+                    } else {
+                        reply({ success: false });
+                    }
+                    break;
+                case 'message.replacement.delta':
+                    if (payload.value && typeof payload.value === 'object') {
+                        const messageIds = Object.keys(payload.value);
+                        markLiveStreamMessages(messageIds, eventRunId);
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
+                        updateStreamingStatus();
+                        const newMessages = produce(messagesRef.current, (draft) => {
+                            for (const [msgId, appendFields] of Object.entries(payload.value)) {
+                                if (draft[msgId]) {
+                                    if (!draft[msgId].extraInfo) {
+                                        draft[msgId].extraInfo = {};
+                                    }
+                                    if (!draft[msgId].extraInfo.replace) {
+                                        draft[msgId].extraInfo.replace = {};
+                                    }
+                                    for (const [key, appendString] of Object.entries(appendFields)) {
+                                        const currentValue = draft[msgId].extraInfo.replace[key] || '';
+                                        draft[msgId].extraInfo.replace[key] = currentValue + appendString;
+                                    }
+                                }
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+                        ensureStreamMessagesVisible(messageIds);
+                        scrollToBottomAfterRender(wasAutoScroll, { streaming: true });
+                        if (payload.reply) reply({ success: true });
+                    } else {
+                        if (payload.reply) reply({ success: false });
+                    }
+                    break;
+                case 'workspace.transfer.state_changed': {
+                    const transfer = payload.value;
+                    if (transfer && typeof transfer === 'object' && transfer.transferId) {
+                        // Transfer progress is a standalone Workspace domain state.
+                        // Conversation Replace Cards and Task Window consume the same
+                        // store; attachments remain immutable file entities.
+                        upsertWorkspaceTransfer(transfer);
+                        if (payload.reply) reply({ success: true });
+                    } else if (payload.reply) {
+                        reply({ success: false });
+                    }
+                    break;
+                }
+                case 'message.attachments.set':
+                    if (payload.value && typeof payload.value === 'object') {
+                        const messageIds = Object.keys(payload.value);
+                        if (eventRunId) markLiveStreamMessages(messageIds, eventRunId);
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
+                        const newMessages = produce(messagesRef.current, (draft) => {
+                            for (const [msgId, newAttachments] of Object.entries(payload.value)) {
+                                if (draft[msgId]) {
+                                    draft[msgId].attachments = newAttachments;
+                                }
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+                        if (eventRunId) ensureStreamMessagesVisible(messageIds);
+                        scrollToBottomAfterRender(wasAutoScroll, { delay: 50 });
+                        if (payload.reply) reply({ success: true });
+                    } else {
+                        reply({ success: false });
+                    }
+                    break;
+                case 'message.background_tools.set':
+                    if (payload.value && typeof payload.value === 'object') {
+                        const messageIds = Object.keys(payload.value);
+                        if (eventRunId) markLiveStreamMessages(messageIds, eventRunId);
+                        const newMessages = produce(messagesRef.current, (draft) => {
+                            for (const [msgId, backgroundTools] of Object.entries(payload.value)) {
+                                if (draft[msgId]) {
+                                    draft[msgId].backgroundTools = backgroundTools || { active: false };
+                                }
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+                        if (eventRunId) ensureStreamMessagesVisible(messageIds);
+                        if (payload.reply) reply({ success: true });
+                    } else if (payload.reply) {
+                        reply({ success: false });
+                    }
+                    break;
+                case 'message.children.changed':
+                    if (payload.msgId && payload.value) {
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
+                        if (!messagesRef.current[payload.msgId]) {
+                            reply({ success: false });
+                            return;
+                        }
+                        if (messagesRef.current[payload.msgId].messages.includes(payload.value)) {
+                            reply({ success: false });
+                            return;
+                        }
+                        const newMessages = produce(messagesRef.current, (draft) => {
+                            draft[payload.msgId].messages = [...draft[payload.msgId].messages, payload.value];
+                            if (payload.switch) {
+                                draft[payload.msgId].nextMessage = payload.value;
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+                        if (messagesRef.current[payload.value].nextMessage) {
+                            emitEvent({
+                                event: 'message.switching.changed',
+                                payload: {
+                                    value: payload.value,
+                                },
+                                conversationId: conversationId,
+                                localOnly: true,
+                            }).then(() => {
+                                loadSwitchMessage(payload.msgId, payload.value).then(() => {
+                                    emitEvent({
+                                        event: 'message.switching.changed',
+                                        payload: {
+                                            value: null,
+                                        },
+                                        conversationId: conversationId,
+                                        localOnly: true,
+                                    });
+                                    scrollToBottomAfterRender(wasAutoScroll, { delay: 50 });
+                                });
+                            });
+                        } else {
+                            scrollToBottomAfterRender(wasAutoScroll, { delay: 50 });
+                        }
+                        reply({ success: true });
+                    }
+                    break;
+                case 'message.branch.loaded':
+                    emitEvent({
+                        event: 'message.switching.changed',
+                        payload: {
+                            value: payload.nextMessage,
+                        },
+                        conversationId: conversationId,
+                        localOnly: true,
+                    }).then(() => {
+                        loadSwitchMessage(payload.msgId, payload.nextMessage).then(() => {
+                            emitEvent({
+                                event: 'message.switching.changed',
+                                payload: {
+                                    value: null,
+                                },
+                                conversationId: conversationId,
+                                localOnly: true,
                             });
                         });
-                        break;
-                    case 'widget.state.changed': {
-                        const widget = payload.value && typeof payload.value === 'object' ? payload.value : {};
-                        const messageId = String(widget.originMessageId || '');
-                        const replacementId = String(widget.replacementId || '');
-                        if (messageId && replacementId) {
-                            const newMessages = produce(messagesRef.current, draft => {
-                                const message = draft[messageId];
-                                if (!message) return;
-                                if (!message.extraInfo || typeof message.extraInfo !== 'object') message.extraInfo = {};
-                                if (!message.extraInfo.replace || typeof message.extraInfo.replace !== 'object') {
-                                    message.extraInfo.replace = {};
-                                }
-                                const current = message.extraInfo.replace[replacementId];
-                                if (current && typeof current === 'object') {
-                                    current.frontend = JSON.stringify(widget);
-                                    current.type = 'widget';
-                                } else {
-                                    message.extraInfo.replace[replacementId] = {
-                                        frontend: JSON.stringify(widget),
-                                        type: 'widget',
-                                    };
-                                }
-                            });
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-                        }
-                        if (payload.reply) reply({success: true});
-                        break;
+                    });
+                    break;
+                case 'widget.state.changed': {
+                    const widget = payload.value && typeof payload.value === 'object' ? payload.value : {};
+                    const messageId = String(widget.originMessageId || '');
+                    const replacementId = String(widget.replacementId || '');
+                    if (messageId && replacementId) {
+                        const newMessages = produce(messagesRef.current, (draft) => {
+                            const message = draft[messageId];
+                            if (!message) return;
+                            if (!message.extraInfo || typeof message.extraInfo !== 'object') message.extraInfo = {};
+                            if (!message.extraInfo.replace || typeof message.extraInfo.replace !== 'object') {
+                                message.extraInfo.replace = {};
+                            }
+                            const current = message.extraInfo.replace[replacementId];
+                            if (current && typeof current === 'object') {
+                                current.frontend = JSON.stringify(widget);
+                                current.type = 'widget';
+                            } else {
+                                message.extraInfo.replace[replacementId] = {
+                                    frontend: JSON.stringify(widget),
+                                    type: 'widget',
+                                };
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
                     }
-                    case 'context.compaction_state.changed': {
-                        applyContextCompactionState(payload.value || {});
-                        reply({success: true});
-                        break;
-                    }
-                    case 'context.state.changed': {
-                        const messageStates = payload.messageStates && typeof payload.messageStates === 'object'
-                            ? payload.messageStates
-                            : {};
-                        const replacementStates = payload.replacementStates && typeof payload.replacementStates === 'object'
+                    if (payload.reply) reply({ success: true });
+                    break;
+                }
+                case 'context.compaction_state.changed': {
+                    applyContextCompactionState(payload.value || {});
+                    reply({ success: true });
+                    break;
+                }
+                case 'context.state.changed': {
+                    const messageStates =
+                        payload.messageStates && typeof payload.messageStates === 'object' ? payload.messageStates : {};
+                    const replacementStates =
+                        payload.replacementStates && typeof payload.replacementStates === 'object'
                             ? payload.replacementStates
                             : {};
 
-                        const newMessages = produce(messagesRef.current, draft => {
-                            for (const [messageId, state] of Object.entries(messageStates)) {
-                                if (!draft[messageId]) continue;
-                                draft[messageId].contextState = state && typeof state === 'object' ? state : {};
+                    const newMessages = produce(messagesRef.current, (draft) => {
+                        for (const [messageId, state] of Object.entries(messageStates)) {
+                            if (!draft[messageId]) continue;
+                            draft[messageId].contextState = state && typeof state === 'object' ? state : {};
+                        }
+
+                        for (const [messageId, replacements] of Object.entries(replacementStates)) {
+                            const message = draft[messageId];
+                            if (!message || !replacements || typeof replacements !== 'object') continue;
+                            if (!message.extraInfo || typeof message.extraInfo !== 'object') message.extraInfo = {};
+                            if (!message.extraInfo.replace || typeof message.extraInfo.replace !== 'object') {
+                                message.extraInfo.replace = {};
                             }
 
-                            for (const [messageId, replacements] of Object.entries(replacementStates)) {
-                                const message = draft[messageId];
-                                if (!message || !replacements || typeof replacements !== 'object') continue;
-                                if (!message.extraInfo || typeof message.extraInfo !== 'object') message.extraInfo = {};
-                                if (!message.extraInfo.replace || typeof message.extraInfo.replace !== 'object') {
-                                    message.extraInfo.replace = {};
+                            for (const [replacementId, contextStatus] of Object.entries(replacements)) {
+                                const current = message.extraInfo.replace[replacementId];
+                                if (current && typeof current === 'object') {
+                                    current.contextStatus =
+                                        contextStatus && typeof contextStatus === 'object' ? contextStatus : {};
+                                } else {
+                                    message.extraInfo.replace[replacementId] = {
+                                        frontend: typeof current === 'string' ? current : '',
+                                        contextStatus:
+                                            contextStatus && typeof contextStatus === 'object' ? contextStatus : {},
+                                    };
                                 }
+                            }
+                        }
+                    });
 
-                                for (const [replacementId, contextStatus] of Object.entries(replacements)) {
-                                    const current = message.extraInfo.replace[replacementId];
-                                    if (current && typeof current === 'object') {
-                                        current.contextStatus = contextStatus && typeof contextStatus === 'object'
-                                            ? contextStatus
-                                            : {};
-                                    } else {
-                                        message.extraInfo.replace[replacementId] = {
-                                            frontend: typeof current === 'string' ? current : '',
-                                            contextStatus: contextStatus && typeof contextStatus === 'object'
-                                                ? contextStatus
-                                                : {},
-                                        };
+                    setMessages(newMessages);
+                    messagesRef.current = newMessages;
+                    if (payload.reply) reply({ success: true });
+                    break;
+                }
+                case 'turn.completed':
+                case 'turn.cancelled':
+                case 'turn.failed':
+                    // Control lane can arrive slightly ahead of the final queued stream
+                    // frames. Keep the live-tail protection briefly so a terminal event
+                    // cannot make an immediately-following final delta vulnerable to a
+                    // stale HTTP/reconcile snapshot.
+                    if (eventRunId) {
+                        window.setTimeout(() => clearLiveStreamRun(eventRunId), 1800);
+                    }
+                    // 后端只会在最终消息写入数据库之后发送终态 Turn 事件。
+                    // 重新读取摘要，替换生成开始时缓存下来的空 Assistant 占位。
+                    if (
+                        messageSummariesRef.current.length > 0 ||
+                        showQuickUserMessageNavigator ||
+                        runtimeInspectorOpenRef.current
+                    ) {
+                        loadMessageSummaries({ silent: true });
+                    }
+                    if (runtimeInspectorOpenRef.current) {
+                        markRuntimeInspectorStale();
+                    }
+                    if (payload.reply) reply({ success: true });
+                    break;
+                case 'conversation.tree.changed':
+                    // AI 工具或其他客户端修改了对话树。统一重新加载当前活动分支，
+                    // 避免本地 messagesOrder 与后端 treeRevision 不一致。
+                    setRandomMark(generateUUID());
+                    if (
+                        messageSummariesRef.current.length > 0 ||
+                        showQuickUserMessageNavigator ||
+                        runtimeInspectorOpenRef.current
+                    ) {
+                        loadMessageSummaries({ silent: true });
+                    }
+                    if (runtimeInspectorOpenRef.current) {
+                        markRuntimeInspectorStale();
+                    }
+                    reply({ success: true, treeRevision: payload.treeRevision });
+                    break;
+                case 'conversation.deleted':
+                    // 当前页面对应的子智能体会话已经被删除，返回会话列表。
+                    reply({ success: true });
+                    window.location.assign('/chat');
+                    break;
+                case 'conversation.messages.reload_requested':
+                    setRandomMark(generateUUID());
+                    break;
+                case 'conversation.messages.reconciled':
+                    emitMessagesLoaded();
+                    break;
+                case 'message.knowledge.nodes_added':
+                    if (payload.value && typeof payload.value === 'object') {
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
+                        updateStreamingStatus();
+                        const newMessages = produce(messagesRef.current, (draft) => {
+                            for (const [msgId, newNodes] of Object.entries(payload.value)) {
+                                if (draft[msgId]) {
+                                    draft[msgId].network = mergeNetworkData(draft[msgId].network, {
+                                        nodes: Array.isArray(newNodes) ? newNodes : [],
+                                    });
+                                }
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+                        scrollToBottomAfterRender(wasAutoScroll, { streaming: true });
+                        if (payload.reply) reply({ success: true });
+                    } else {
+                        reply({ success: false });
+                    }
+                    break;
+                case 'message.knowledge.network_added':
+                    if (payload.value && typeof payload.value === 'object') {
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
+                        updateStreamingStatus();
+                        const newMessages = produce(messagesRef.current, (draft) => {
+                            for (const [msgId, networkUpdate] of Object.entries(payload.value)) {
+                                if (draft[msgId] && networkUpdate && typeof networkUpdate === 'object') {
+                                    draft[msgId].network = mergeNetworkData(draft[msgId].network, networkUpdate);
+                                }
+                            }
+                        });
+                        setMessages(newMessages);
+                        messagesRef.current = newMessages;
+
+                        scrollToBottomAfterRender(wasAutoScroll, { streaming: true });
+
+                        if (payload.reply) reply({ success: true });
+                    } else {
+                        reply({ success: false });
+                    }
+                    break;
+                case 'message.knowledge.network_removed':
+                    if (payload.value && typeof payload.value === 'object') {
+                        const wasAutoScroll = isAutoScrollEnabledRef.current;
+                        updateStreamingStatus();
+
+                        const newMessages = produce(messagesRef.current, (draft) => {
+                            for (const [msgId, networkDelete] of Object.entries(payload.value)) {
+                                if (draft[msgId] && networkDelete && typeof networkDelete === 'object') {
+                                    const network = draft[msgId].network;
+
+                                    if (!network) {
+                                        continue;
+                                    }
+
+                                    if (networkDelete.nodes !== undefined) {
+                                        const deleteNodeKeys = toDeleteKeySet(networkDelete.nodes, getNodeMergeKey);
+
+                                        if (Array.isArray(network.nodes) && deleteNodeKeys.size > 0) {
+                                            network.nodes = network.nodes.filter(
+                                                (node) => !deleteNodeKeys.has(getNodeMergeKey(node)),
+                                            );
+                                        }
+                                    }
+
+                                    const normalizedNetworkDelete = normalizeNetworkData(networkDelete);
+                                    if (normalizedNetworkDelete.relationships !== undefined) {
+                                        const deleteRelKeys = toDeleteKeySet(
+                                            normalizedNetworkDelete.relationships,
+                                            getRelationshipMergeKey,
+                                        );
+
+                                        if (Array.isArray(network.relationships) && deleteRelKeys.size > 0) {
+                                            network.relationships = network.relationships.filter(
+                                                (rel) => !deleteRelKeys.has(getRelationshipMergeKey(rel)),
+                                            );
+                                        }
                                     }
                                 }
                             }
@@ -2586,186 +2868,44 @@ function ChatPage({
 
                         setMessages(newMessages);
                         messagesRef.current = newMessages;
-                        if (payload.reply) reply({success: true});
-                        break;
+
+                        scrollToBottomAfterRender(wasAutoScroll, { streaming: true });
+
+                        if (payload.reply) reply({ success: true });
+                    } else {
+                        reply({ success: false });
                     }
-                    case 'turn.completed':
-                    case 'turn.cancelled':
-                    case 'turn.failed':
-                        // Control lane can arrive slightly ahead of the final queued stream
-                        // frames. Keep the live-tail protection briefly so a terminal event
-                        // cannot make an immediately-following final delta vulnerable to a
-                        // stale HTTP/reconcile snapshot.
-                        if (eventRunId) {
-                            window.setTimeout(() => clearLiveStreamRun(eventRunId), 1800);
-                        }
-                        // 后端只会在最终消息写入数据库之后发送终态 Turn 事件。
-                        // 重新读取摘要，替换生成开始时缓存下来的空 Assistant 占位。
-                        if (
-                            messageSummariesRef.current.length > 0
-                            || showQuickUserMessageNavigator
-                            || runtimeInspectorOpenRef.current
-                        ) {
-                            loadMessageSummaries({silent: true});
-                        }
-                        if (runtimeInspectorOpenRef.current) {
-                            markRuntimeInspectorStale();
-                        }
-                        if (payload.reply) reply({success: true});
-                        break;
-                    case 'conversation.tree.changed':
-                        // AI 工具或其他客户端修改了对话树。统一重新加载当前活动分支，
-                        // 避免本地 messagesOrder 与后端 treeRevision 不一致。
-                        setRandomMark(generateUUID());
-                        if (
-                            messageSummariesRef.current.length > 0
-                            || showQuickUserMessageNavigator
-                            || runtimeInspectorOpenRef.current
-                        ) {
-                            loadMessageSummaries({silent: true});
-                        }
-                        if (runtimeInspectorOpenRef.current) {
-                            markRuntimeInspectorStale();
-                        }
-                        reply({success: true, treeRevision: payload.treeRevision});
-                        break;
-                    case 'conversation.deleted':
-                        // 当前页面对应的子智能体会话已经被删除，返回会话列表。
-                        reply({success: true});
-                        window.location.assign('/chat');
-                        break;
-                    case 'conversation.messages.reload_requested':
-                        setRandomMark(generateUUID());
-                        break;
-                    case 'conversation.messages.reconciled':
-                        emitMessagesLoaded();
-                        break;
-                    case 'message.knowledge.nodes_added':
-                        if (payload.value && typeof payload.value === 'object') {
-                            const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            updateStreamingStatus();
-                            const newMessages = produce(messagesRef.current, draft => {
-                                for (const [msgId, newNodes] of Object.entries(payload.value)) {
-                                    if (draft[msgId]) {
-                                        draft[msgId].network = mergeNetworkData(
-                                            draft[msgId].network,
-                                            {nodes: Array.isArray(newNodes) ? newNodes : []}
-                                        );
+                    break;
+                case 'message.knowledge.focused':
+                    if (payload.value && typeof payload.value === 'object') {
+                        for (const [msgId, nodeIds] of Object.entries(payload.value)) {
+                            const msg = messagesRef.current[msgId];
+
+                            if (msg && nodeIds) {
+                                const nvlInstance = msg.getComponent('nvlInstance');
+
+                                // 将需要聚焦的节点挂载到 msg 中
+                                msg.registerComponent('focusNode', nodeIds);
+
+                                if (nvlInstance) {
+                                    if (typeof nvlInstance.focusNetwork === 'function') {
+                                        nvlInstance.focusNetwork(nodeIds);
+                                        // 如果成功了，就取消挂载
+                                        msg.unregisterComponent('focusNode');
                                     }
-                                }
-                            });
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
-                            if (payload.reply) reply({success: true});
-                        } else {
-                            reply({success: false});
-                        }
-                        break;
-                    case 'message.knowledge.network_added':
-                        if (payload.value && typeof payload.value === 'object') {
-                            const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            updateStreamingStatus();
-                            const newMessages = produce(messagesRef.current, draft => {
-                                for (const [msgId, networkUpdate] of Object.entries(payload.value)) {
-                                    if (draft[msgId] && networkUpdate && typeof networkUpdate === 'object') {
-                                        draft[msgId].network = mergeNetworkData(
-                                            draft[msgId].network,
-                                            networkUpdate
-                                        );
-                                    }
-                                }
-                            });
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-
-                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
-
-                            if (payload.reply) reply({success: true});
-                        } else {
-                            reply({success: false});
-                        }
-                        break;
-                    case 'message.knowledge.network_removed':
-                        if (payload.value && typeof payload.value === 'object') {
-                            const wasAutoScroll = isAutoScrollEnabledRef.current;
-                            updateStreamingStatus();
-
-                            const newMessages = produce(messagesRef.current, draft => {
-                                for (const [msgId, networkDelete] of Object.entries(payload.value)) {
-                                    if (draft[msgId] && networkDelete && typeof networkDelete === 'object') {
-                                        const network = draft[msgId].network;
-
-                                        if (!network) {
-                                            continue;
-                                        }
-
-                                        if (networkDelete.nodes !== undefined) {
-                                            const deleteNodeKeys = toDeleteKeySet(networkDelete.nodes, getNodeMergeKey);
-
-                                            if (Array.isArray(network.nodes) && deleteNodeKeys.size > 0) {
-                                                network.nodes = network.nodes.filter(
-                                                    node => !deleteNodeKeys.has(getNodeMergeKey(node))
-                                                );
-                                            }
-                                        }
-
-                                        const normalizedNetworkDelete = normalizeNetworkData(networkDelete);
-                                        if (normalizedNetworkDelete.relationships !== undefined) {
-                                            const deleteRelKeys = toDeleteKeySet(normalizedNetworkDelete.relationships, getRelationshipMergeKey);
-
-                                            if (Array.isArray(network.relationships) && deleteRelKeys.size > 0) {
-                                                network.relationships = network.relationships.filter(
-                                                    rel => !deleteRelKeys.has(getRelationshipMergeKey(rel))
-                                                );
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-
-                            setMessages(newMessages);
-                            messagesRef.current = newMessages;
-
-                            scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
-
-                            if (payload.reply) reply({success: true});
-                        } else {
-                            reply({success: false});
-                        }
-                        break;
-                    case 'message.knowledge.focused':
-                        if (payload.value && typeof payload.value === 'object') {
-                            for (const [msgId, nodeIds] of Object.entries(payload.value)) {
-                                const msg = messagesRef.current[msgId];
-
-                                if (msg && nodeIds) {
-
-                                    const nvlInstance = msg.getComponent("nvlInstance");
-
-                                    // 将需要聚焦的节点挂载到 msg 中
-                                    msg.registerComponent("focusNode", nodeIds);
-
-                                    if (nvlInstance) {
-                                        if (typeof nvlInstance.focusNetwork === 'function') {
-                                            nvlInstance.focusNetwork(nodeIds);
-                                            // 如果成功了，就取消挂载
-                                            msg.unregisterComponent("focusNode");
-                                        }
-                                    } else {
-                                        reply({success: false})
-                                    }
-
+                                } else {
+                                    reply({ success: false });
                                 }
                             }
-
-                            if (payload.reply) reply({success: true});
-                        } else {
-                            if (payload.reply) reply({success: false});
                         }
-                        break;
-                }
-            });
+
+                        if (payload.reply) reply({ success: true });
+                    } else {
+                        if (payload.reply) reply({ success: false });
+                    }
+                    break;
+            }
+        });
         const unsubscribe2 = onEvent({
             event: 'transport.connected',
         }).then(() => {
@@ -2775,7 +2915,7 @@ function ChatPage({
             event: 'speech.*',
             conversationId,
             direction: 'incoming',
-        }).then(({event, payload, reply}) => {
+        }).then(({ event, payload, reply }) => {
             handleBackendSpeechEvent(event, payload, reply);
         });
         return () => {
@@ -2783,7 +2923,30 @@ function ChatPage({
             unsubscribe2();
             unsubscribe3();
         };
-    }, [conversationId, checkScrollPosition, requestScrollToBottom, scrollToBottomAfterRender, smoothScrollToBottom, updateStreamingStatus, setMessages, loadSwitchMessage, loadMessageSummaries, showQuickUserMessageNavigator, markRuntimeInspectorStale, handleSpeakMessageRequest, cancelActiveSpeech, pauseActiveSpeech, resumeActiveSpeech, updateSpeechRate, seekSpeechSegment, handleBackendSpeechEvent, applyContextCompactionState, markLiveStreamMessages, clearLiveStreamRun, ensureStreamMessagesVisible]);
+    }, [
+        conversationId,
+        checkScrollPosition,
+        requestScrollToBottom,
+        scrollToBottomAfterRender,
+        smoothScrollToBottom,
+        updateStreamingStatus,
+        setMessages,
+        loadSwitchMessage,
+        loadMessageSummaries,
+        showQuickUserMessageNavigator,
+        markRuntimeInspectorStale,
+        handleSpeakMessageRequest,
+        cancelActiveSpeech,
+        pauseActiveSpeech,
+        resumeActiveSpeech,
+        updateSpeechRate,
+        seekSpeechSegment,
+        handleBackendSpeechEvent,
+        applyContextCompactionState,
+        markLiveStreamMessages,
+        clearLiveStreamRun,
+        ensureStreamMessagesVisible,
+    ]);
 
     useEffect(() => {
         return () => {
@@ -2797,15 +2960,10 @@ function ChatPage({
 
     useEffect(() => {
         const previousConversationId = previousConversationIdRef.current;
-        const isCreatingConversation = (
-            !previousConversationId
-            && Boolean(conversationId)
-            && isNewConversationIdRef.current
-        );
-        const switchedAwayFromActiveConversation = (
-            Boolean(previousConversationId)
-            && previousConversationId !== conversationId
-        );
+        const isCreatingConversation =
+            !previousConversationId && Boolean(conversationId) && isNewConversationIdRef.current;
+        const switchedAwayFromActiveConversation =
+            Boolean(previousConversationId) && previousConversationId !== conversationId;
         previousConversationIdRef.current = conversationId;
 
         if (switchedAwayFromActiveConversation) {
@@ -2859,7 +3017,8 @@ function ChatPage({
     useEffect(() => {
         if (!conversationId) return undefined;
         let cancelled = false;
-        apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}`)
+        apiClient
+            .get(`${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}`)
             .then((items) => {
                 if (cancelled || !Array.isArray(items)) return;
                 items.slice().reverse().forEach(upsertWorkspaceTransfer);
@@ -2872,55 +3031,54 @@ function ChatPage({
         };
     }, [conversationId]);
 
-    const loadAvailableModels = useCallback(async ({preserveSelection = false, timeoutMs = null} = {}) => {
-        try {
-            const modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
-                params: {conversationId: conversationId},
-                ...(Number.isFinite(timeoutMs) ? {timeout: timeoutMs} : {}),
-            });
-            // Bind model capabilities to the remotely fetched model objects.
-            // ChatBox receives selectedModel directly from this list, so keeping
-            // support_vision here makes the eye toggle react to model refreshes
-            // and model switches without a second settings request.
-            const normalizedModels = Array.isArray(modelsData)
-                ? modelsData.map(normalizeRemoteChatModel)
-                : [];
-            setModels(normalizedModels);
+    const loadAvailableModels = useCallback(
+        async ({ preserveSelection = false, timeoutMs = null } = {}) => {
+            try {
+                const modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
+                    params: { conversationId: conversationId },
+                    ...(Number.isFinite(timeoutMs) ? { timeout: timeoutMs } : {}),
+                });
+                // Bind model capabilities to the remotely fetched model objects.
+                // ChatBox receives selectedModel directly from this list, so keeping
+                // support_vision here makes the eye toggle react to model refreshes
+                // and model switches without a second settings request.
+                const normalizedModels = Array.isArray(modelsData) ? modelsData.map(normalizeRemoteChatModel) : [];
+                setModels(normalizedModels);
 
-            if (normalizedModels.length === 0) {
-                const emptyModel = {name: t("no_models")};
-                selectedModelRef.current = emptyModel;
-                setSelectedModel(emptyModel);
-                setAdvancedSettings([]);
+                if (normalizedModels.length === 0) {
+                    const emptyModel = { name: t('no_models') };
+                    selectedModelRef.current = emptyModel;
+                    setSelectedModel(emptyModel);
+                    setAdvancedSettings([]);
+                    return normalizedModels;
+                }
+
+                const currentModelId = preserveSelection ? selectedModelRef.current?.id : null;
+                const nextModel =
+                    (currentModelId ? normalizedModels.find((item) => item.id === currentModelId) : null) ||
+                    normalizedModels[0];
+
+                selectedModelRef.current = nextModel;
+                setSelectedModel(nextModel);
+                setAdvancedSettings(Array.isArray(nextModel?.options) ? nextModel.options : []);
                 return normalizedModels;
+            } catch (error) {
+                toast.error(t('load_models_error', { message: error?.message || t('unknown_error') }));
+                return [];
             }
-
-            const currentModelId = preserveSelection ? selectedModelRef.current?.id : null;
-            const nextModel = (currentModelId
-                ? normalizedModels.find((item) => item.id === currentModelId)
-                : null) || normalizedModels[0];
-
-            selectedModelRef.current = nextModel;
-            setSelectedModel(nextModel);
-            setAdvancedSettings(Array.isArray(nextModel?.options) ? nextModel.options : []);
-            return normalizedModels;
-        } catch (error) {
-            toast.error(t("load_models_error", {message: error?.message || t("unknown_error")}));
-            return [];
-        }
-    }, [conversationId, t]);
+        },
+        [conversationId, t],
+    );
 
     const modelSettingsRefreshRevision = Number(settingsRefreshVersions?.['chat.models'] || 0);
     const runtimeOptionsRefreshRevision = Number(settingsRefreshVersions?.['chat.runtime-options'] || 0);
-    const lastSettingsModelRefreshRef = useRef(
-        `${modelSettingsRefreshRevision}:${runtimeOptionsRefreshRevision}`
-    );
+    const lastSettingsModelRefreshRef = useRef(`${modelSettingsRefreshRevision}:${runtimeOptionsRefreshRevision}`);
 
     useEffect(() => {
         const refreshKey = `${modelSettingsRefreshRevision}:${runtimeOptionsRefreshRevision}`;
         if (lastSettingsModelRefreshRef.current === refreshKey) return;
         lastSettingsModelRefreshRef.current = refreshKey;
-        loadAvailableModels({preserveSelection: true});
+        loadAvailableModels({ preserveSelection: true });
     }, [loadAvailableModels, modelSettingsRefreshRevision, runtimeOptionsRefreshRevision]);
 
     useEffect(() => {
@@ -2936,12 +3094,12 @@ function ChatPage({
             loadingStageRef.current = 'conversation';
             setLoadingStage('conversation');
             try {
-                let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + "/" + conversationId, {
+                let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + '/' + conversationId, {
                     timeout: CHAT_BOOTSTRAP_TIMEOUT_MS,
                 });
                 setConversationMeta(data);
                 applyContextCompactionState(data?.contextCompactionState || {});
-                const foundModel = modelsData.find(item => item.id === data.model)
+                const foundModel = modelsData.find((item) => item.id === data.model);
                 if (foundModel) setSelectedModel(foundModel);
                 if (data.options) {
                     setAdvancedSettings(data.options);
@@ -2951,9 +3109,9 @@ function ChatPage({
                     setInitialSettingValues(data.defaultOptions);
                 }
             } catch (error) {
-                toast.error(t("load_conversation_error", {message: error?.message || t("unknown_error")}));
+                toast.error(t('load_conversation_error', { message: error?.message || t('unknown_error') }));
             }
-        }
+        };
         const requestModels = async () => {
             loadingStageRef.current = 'models';
             setLoadingStage('models');
@@ -2968,28 +3126,27 @@ function ChatPage({
             try {
                 setHistoryAutoLoadReady(false);
                 const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
-                    params: {conversationId: conversationId, limit: HISTORY_PAGE_SIZE},
+                    params: { conversationId: conversationId, limit: HISTORY_PAGE_SIZE },
                     timeout: CHAT_BOOTSTRAP_TIMEOUT_MS,
                 });
 
                 const snapshotMessages = decorateMessages(messagesData.messages || {});
                 let snapshotOrder = messagesData.messagesOrder;
-                if (messagesData.haveMore) snapshotOrder = ["<PREV_MORE>", ...messagesData.messagesOrder];
+                if (messagesData.haveMore) snapshotOrder = ['<PREV_MORE>', ...messagesData.messagesOrder];
 
-                const shouldPreserveLiveState = (
-                    lastHydratedConversationIdRef.current === conversationId
-                    && !historyNavigationLockedRef.current
-                    && liveStreamMessageIdsRef.current.size > 0
-                );
+                const shouldPreserveLiveState =
+                    lastHydratedConversationIdRef.current === conversationId &&
+                    !historyNavigationLockedRef.current &&
+                    liveStreamMessageIdsRef.current.size > 0;
                 const reconciled = shouldPreserveLiveState
                     ? reconcileHistorySnapshotWithLiveState({
-                        snapshotMessages,
-                        snapshotOrder,
-                        currentMessages: messagesRef.current,
-                        currentOrder: messagesOrderRef.current,
-                        liveMessageIds: liveStreamMessageIdsRef.current,
-                    })
-                    : {messages: snapshotMessages, order: snapshotOrder};
+                          snapshotMessages,
+                          snapshotOrder,
+                          currentMessages: messagesRef.current,
+                          currentOrder: messagesOrderRef.current,
+                          liveMessageIds: liveStreamMessageIdsRef.current,
+                      })
+                    : { messages: snapshotMessages, order: snapshotOrder };
 
                 setMessages(reconciled.messages);
                 messagesRef.current = reconciled.messages;
@@ -3008,7 +3165,7 @@ function ChatPage({
                         executePendingScroll();
                         const container = messagesContainerRef.current;
                         if (container) {
-                            const {scrollHeight, clientHeight} = container;
+                            const { scrollHeight, clientHeight } = container;
                             const shouldShowButton = scrollHeight > clientHeight + 100;
                             setShowScrollToBottomButton(shouldShowButton);
                         }
@@ -3016,18 +3173,21 @@ function ChatPage({
                 }, 100);
                 emitMessagesLoaded();
             } catch (error) {
-                errorToastsIds.current.set(toast(t("load_messages_error", {message: error?.message || t("unknown_error")}), {
-                    action: {
-                        label: t("retry"),
-                        onClick: () => {
-                            setIsLoading(true);
-                            setIsLoadingError(false);
-                            loadData();
+                errorToastsIds.current.set(
+                    toast(t('load_messages_error', { message: error?.message || t('unknown_error') }), {
+                        action: {
+                            label: t('retry'),
+                            onClick: () => {
+                                setIsLoading(true);
+                                setIsLoadingError(false);
+                                loadData();
+                            },
                         },
-                    },
-                    closeButton: true,
-                    duration: Infinity,
-                }), true);
+                        closeButton: true,
+                        duration: Infinity,
+                    }),
+                    true,
+                );
                 setIsLoadingError(true);
             } finally {
                 setIsLoading(false);
@@ -3088,369 +3248,447 @@ function ChatPage({
     ]);
 
     const handleSidebarToggle = useCallback(() => {
-        setIsSidebarOpen(prev => !prev);
+        setIsSidebarOpen((prev) => !prev);
     }, []);
 
-    useBrowserBackLayer(isSidebarOpen, () => {
-        setIsSidebarOpen(false);
-        return true;
-    }, {kind: 'chat-sidebar'});
+    useBrowserBackLayer(
+        isSidebarOpen,
+        () => {
+            setIsSidebarOpen(false);
+            return true;
+        },
+        { kind: 'chat-sidebar' },
+    );
 
     return (
-        <WidgetPresentationProvider
-            chatBoxHostElement={widgetChatBoxHostElement}
-        >
+        <WidgetPresentationProvider chatBoxHostElement={widgetChatBoxHostElement}>
             <>
-            <motion.div
-                ref={windowRef}
-                data-chat-layout-root="true"
-                data-cwm-conversation-id={conversationId || ''}
-                className={`flex overflow-hidden bg-white ${
-                    isWindowMode ? 'shadow-2xl border-2 border-gray-300' : ''
-                }`}
-                animate={{
-                    left: isWindowMode ? windowPos.left : 0,
-                    top: isWindowMode ? windowPos.top : 0,
-                    width: isWindowMode ? windowDimensions.width : '100%',
-                    height: isWindowMode ? windowDimensions.height : '100%',
-                    borderRadius: isWindowMode ? 16 : 0,
-                    scale: isWindowMode && isDragReady ? 1.02 : (visible ? 1 : 0.95),
-                    opacity: visible ? 1 : 0,
-                    boxShadow: isWindowMode
-                        ? (isDragReady ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' : '0 10px 30px -5px rgba(0, 0, 0, 0.2)')
-                        : 'none'
-                }}
-                style={{
-                    position: isWindowMode ? 'fixed' : 'relative',
-                    zIndex: isWindowMode ? 9999 : 0,
-                    pointerEvents: visible ? 'auto' : 'none',
-                    width: isWindowMode ? undefined : '100%',
-                    height: isWindowMode ? undefined : '100%',
-                }}
-                initial={false}
-                layout={isReady}
-                transition={
-                    (isResizing || isDragging)
-                        ? {duration: 0}
-                        : {
-                            duration: 0.35,
-                            ease: [0.25, 0.1, 0.25, 1],
-                            layout: {
-                                duration: 0.35
-                            },
-                            width: {
-                                type: "spring",
-                                stiffness: 300,
-                                damping: 30,
-                                restDelta: 0.5
-                            },
-                            left: {type: "tween", duration: isResizing || isDragging ? 0 : 0.35},
-                            top: {type: "tween", duration: isResizing || isDragging ? 0 : 0.35},
-                            opacity: {duration: 0.25},
-                            scale: {duration: 0.25}
-                        }
-                }
-            >
-                <div
-                    className="flex-1 min-w-0 flex flex-col relative h-full w-full overflow-hidden"
-                    ref={chatPageRef}
-                    data-chat-page-root="true"
+                <motion.div
+                    ref={windowRef}
+                    data-chat-layout-root="true"
                     data-cwm-conversation-id={conversationId || ''}
+                    className={`flex overflow-hidden bg-white ${
+                        isWindowMode ? 'shadow-2xl border-2 border-gray-300' : ''
+                    }`}
+                    animate={{
+                        left: isWindowMode ? windowPos.left : 0,
+                        top: isWindowMode ? windowPos.top : 0,
+                        width: isWindowMode ? windowDimensions.width : '100%',
+                        height: isWindowMode ? windowDimensions.height : '100%',
+                        borderRadius: isWindowMode ? 16 : 0,
+                        scale: isWindowMode && isDragReady ? 1.02 : visible ? 1 : 0.95,
+                        opacity: visible ? 1 : 0,
+                        boxShadow: isWindowMode
+                            ? isDragReady
+                                ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                                : '0 10px 30px -5px rgba(0, 0, 0, 0.2)'
+                            : 'none',
+                    }}
+                    style={{
+                        position: isWindowMode ? 'fixed' : 'relative',
+                        zIndex: isWindowMode ? 9999 : 0,
+                        pointerEvents: visible ? 'auto' : 'none',
+                        width: isWindowMode ? undefined : '100%',
+                        height: isWindowMode ? undefined : '100%',
+                    }}
+                    initial={false}
+                    layout={isReady}
+                    transition={
+                        isResizing || isDragging
+                            ? { duration: 0 }
+                            : {
+                                  duration: 0.35,
+                                  ease: [0.25, 0.1, 0.25, 1],
+                                  layout: {
+                                      duration: 0.35,
+                                  },
+                                  width: {
+                                      type: 'spring',
+                                      stiffness: 300,
+                                      damping: 30,
+                                      restDelta: 0.5,
+                                  },
+                                  left: { type: 'tween', duration: isResizing || isDragging ? 0 : 0.35 },
+                                  top: { type: 'tween', duration: isResizing || isDragging ? 0 : 0.35 },
+                                  opacity: { duration: 0.25 },
+                                  scale: { duration: 0.25 },
+                              }
+                    }
                 >
-                    <ChatHeader
-                        models={models}
-                        selectedModel={selectedModel}
-                        isModelPopoverOpen={isModelPopoverOpen}
-                        previewModel={previewModel}
-                        isMobile={isMobile}
-                        t={t}
-                        handlePopoverOpenChange={handlePopoverOpenChange}
-                        handleModelItemClick={handleModelItemClick}
-                        handleModelItemMouseEnter={handleModelItemMouseEnter}
-                        scrollToSelectedItem={scrollToSelectedItem}
-                        handleSidebarToggle={handleSidebarToggle}
-                        conversationId={conversationId}
-                        onOpenRuntimeInspector={handleOpenRuntimeInspector}
-                        runtimeInspectorDisabled={!conversationId}
-                        isWindowMode={isWindowMode}
-                        handleDragMouseDown={handleDragMouseDown}
-                        handleDragTouchStart={handleDragTouchStart}
-                        handleDragTouchMove={handleDragTouchMove}
-                        handleDragTouchEnd={handleDragTouchEnd}
-                        isDragReady={isDragReady}
-                        showWindowButton={showWindowButton}
-                        onToggleWindow={toggleWindowMode}
-                        showMinimizeButton={showMinimizeButton}
-                        onMinimize={onMinimize}
-                        conversationMeta={conversationMeta}
-                        contextCompactionState={contextCompactionState}
-                        stories={stories}
-                        onOpenStory={openStory}
-                        onRenameStory={renameStory}
-                        onDeleteStory={deleteStory}
-                    />
+                    <div
+                        className="flex-1 min-w-0 flex flex-col relative h-full w-full overflow-hidden"
+                        ref={chatPageRef}
+                        data-chat-page-root="true"
+                        data-cwm-conversation-id={conversationId || ''}
+                    >
+                        <ChatHeader
+                            models={models}
+                            selectedModel={selectedModel}
+                            isModelPopoverOpen={isModelPopoverOpen}
+                            previewModel={previewModel}
+                            isMobile={isMobile}
+                            t={t}
+                            handlePopoverOpenChange={handlePopoverOpenChange}
+                            handleModelItemClick={handleModelItemClick}
+                            handleModelItemMouseEnter={handleModelItemMouseEnter}
+                            scrollToSelectedItem={scrollToSelectedItem}
+                            handleSidebarToggle={handleSidebarToggle}
+                            conversationId={conversationId}
+                            onOpenRuntimeInspector={handleOpenRuntimeInspector}
+                            runtimeInspectorDisabled={!conversationId}
+                            isWindowMode={isWindowMode}
+                            handleDragMouseDown={handleDragMouseDown}
+                            handleDragTouchStart={handleDragTouchStart}
+                            handleDragTouchMove={handleDragTouchMove}
+                            handleDragTouchEnd={handleDragTouchEnd}
+                            isDragReady={isDragReady}
+                            showWindowButton={showWindowButton}
+                            onToggleWindow={toggleWindowMode}
+                            showMinimizeButton={showMinimizeButton}
+                            onMinimize={onMinimize}
+                            conversationMeta={conversationMeta}
+                            contextCompactionState={contextCompactionState}
+                            stories={stories}
+                            onOpenStory={openStory}
+                            onRenameStory={renameStory}
+                            onDeleteStory={deleteStory}
+                        />
 
-                    <div className="flex-1 min-h-0 w-full relative overflow-hidden">
-                        <div
-                            ref={messagesContainerRef}
-                            className="h-full overflow-y-auto pb-20 pretty-scrollbar"
-                            style={{maxHeight: 'calc(120vh - 256px)'}}
-                        >
-                            <MessageContainer
-                                key={conversationId}
-                                messagesOrder={messagesOrder}
-                                messages={messages}
-                                onLoadMore={loadMoreHistory}
-                                isLoadingMore={isLoadingMoreHistory}
-                                onSwitchMessage={switchMessage}
-                                conversationId={conversationId}
-                                speechState={speechState}
-                                onSpeechTextClick={handleSpeechTextClick}
-                                highlightedMessageId={highlightedMessageId}
+                        <div className="flex-1 min-h-0 w-full relative overflow-hidden">
+                            <ChatHistoryViewport
+                                open={avatarImmersive && avatarHistoryOpen}
+                                onClose={() => setAvatarHistoryOpen(false)}
+                                hostElement={chatPageRef.current}
+                            >
+                                <div
+                                    ref={messagesContainerRef}
+                                    className="h-full overflow-y-auto pb-20 pretty-scrollbar"
+                                    style={{ maxHeight: 'calc(120vh - 256px)' }}
+                                >
+                                    <MessageContainer
+                                        key={conversationId}
+                                        messagesOrder={messagesOrder}
+                                        messages={messages}
+                                        onLoadMore={loadMoreHistory}
+                                        isLoadingMore={isLoadingMoreHistory}
+                                        onSwitchMessage={switchMessage}
+                                        conversationId={conversationId}
+                                        speechState={speechState}
+                                        onSpeechTextClick={handleSpeechTextClick}
+                                        highlightedMessageId={highlightedMessageId}
+                                    />
+                                </div>
+                            </ChatHistoryViewport>
+                            <QuickUserMessageNavigator
+                                items={messageSummaries}
+                                activeMessageId={activeVisibleMessageId}
+                                onSelect={jumpToMessage}
+                                visible={Boolean(
+                                    conversationId &&
+                                    showQuickUserMessageNavigator &&
+                                    !isMobile &&
+                                    isMessageNavigatorWide,
+                                )}
+                                t={t}
                             />
+
+                            {isLoading && <LoadingScreen t={t} stage={loadingStage} />}
+                            {isLoadingError && <LoadingFailedScreen t={t} />}
                         </div>
 
-
-                        <QuickUserMessageNavigator
-                            items={messageSummaries}
-                            activeMessageId={activeVisibleMessageId}
-                            onSelect={jumpToMessage}
-                            visible={Boolean(
-                                conversationId &&
-                                showQuickUserMessageNavigator &&
-                                !isMobile &&
-                                isMessageNavigatorWide
-                            )}
-                            t={t}
+                        <ScrollToBottomButton
+                            isVisible={showScrollToBottomButton}
+                            chatBoxHeight={chatBoxHeight}
+                            onClick={handleManualScrollToBottomClick}
                         />
 
-                        {isLoading && <LoadingScreen t={t} stage={loadingStage}/>}
-                        {isLoadingError && <LoadingFailedScreen t={t}/>}
-                    </div>
-
-                    <ScrollToBottomButton
-                        isVisible={showScrollToBottomButton}
-                        chatBoxHeight={chatBoxHeight}
-                        onClick={handleManualScrollToBottomClick}
-                    />
-
-                    <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
-                        <SpeechSubtitleOverlay
-                            speechState={speechState}
-                            enabled={speechSubtitlesEnabled}
-                            t={t}
-                        />
-                        <SpeechPlayer
-                            speechState={speechState}
-                            message={speechState?.messageId ? messages?.[speechState.messageId] : null}
-                            autoFollowEnabled={speechAutoFollowEnabled}
-                            onAutoFollowToggle={handleSpeechAutoFollowToggle}
-                            subtitlesEnabled={speechSubtitlesEnabled}
-                            onSubtitlesToggle={updateSpeechSubtitlesEnabled}
-                            onPause={pauseActiveSpeech}
-                            onResume={resumeActiveSpeech}
-                            onStop={() => cancelActiveSpeech(true)}
-                            onPrevious={() => seekSpeechSegment(-1)}
-                            onNext={() => seekSpeechSegment(1)}
-                            onRateChange={updateSpeechRate}
-                            browserSpeechVoices={browserSpeechVoices}
-                            selectedBrowserSpeechVoiceURI={selectedBrowserSpeechVoiceURI}
-                            onBrowserSpeechVoiceChange={updateBrowserSpeechVoice}
-                            t={t}
-                        />
-                    </div>
-                        <div ref={immersiveComposer.composerRef}
+                        <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
+                            <SpeechSubtitleOverlay speechState={speechState} enabled={speechSubtitlesEnabled} t={t} />
+                            <SpeechPlayer
+                                speechState={speechState}
+                                message={speechState?.messageId ? messages?.[speechState.messageId] : null}
+                                autoFollowEnabled={speechAutoFollowEnabled}
+                                onAutoFollowToggle={handleSpeechAutoFollowToggle}
+                                subtitlesEnabled={speechSubtitlesEnabled}
+                                onSubtitlesToggle={updateSpeechSubtitlesEnabled}
+                                onPause={pauseActiveSpeech}
+                                onResume={resumeActiveSpeech}
+                                onStop={() => cancelActiveSpeech(true)}
+                                onPrevious={() => seekSpeechSegment(-1)}
+                                onNext={() => seekSpeechSegment(1)}
+                                onRateChange={updateSpeechRate}
+                                browserSpeechVoices={browserSpeechVoices}
+                                selectedBrowserSpeechVoiceURI={selectedBrowserSpeechVoiceURI}
+                                onBrowserSpeechVoiceChange={updateBrowserSpeechVoice}
+                                t={t}
+                            />
+                        </div>
+                        <div
+                            ref={immersiveComposer.composerRef}
                             data-avatar-composer="true"
                             onFocusCapture={immersiveComposer.onFocusCapture}
                             onBlurCapture={immersiveComposer.onBlurCapture}
                             inert={avatarImmersive && !immersiveComposer.visible ? true : undefined}
-                            className={avatarImmersive ? 'absolute inset-x-0 bottom-0 z-[60] max-h-[80%] overflow-y-auto rounded-t-3xl border-t border-border/50 shadow-[0_-12px_40px_rgba(0,0,0,0.12)] transition-[transform,opacity] duration-200 ease-out bg-background/95 backdrop-blur-md' : 'contents'}
-                            style={avatarImmersive ? {transform: immersiveComposer.visible ? 'translateY(0)' : 'translateY(24px)', opacity: immersiveComposer.visible ? 1 : 0, pointerEvents: immersiveComposer.visible ? 'auto' : 'none'} : undefined}>
-                        {avatarImmersive && <div className="flex items-center justify-center gap-2 px-4 pt-3">
-                            <Button variant="destructive" size="sm" onClick={() => { closeAvatarScene(); void realtimeVoice.stop(); }}>挂断</Button>
-                            <Button variant="secondary" size="sm" aria-pressed={realtimeVoice.state.muted} onClick={realtimeVoice.toggleMute}>{realtimeVoice.state.muted ? '取消静音' : '静音'}</Button>
-                            <Button variant="secondary" size="sm" onClick={toggleAvatarExpanded}>窗口化</Button>
-                        </div>}
-                        <div
-                            ref={setWidgetChatBoxHostElement}
-                            data-widget-chatbox-floating-host="true"
-                            className="pointer-events-auto relative z-20 mx-auto w-full max-w-225 px-4"
-                        />
-                        <ChatBox
-                            immersive={avatarImmersive}
-                            onSendMessage={handleSendMessage}
-                            conversationId={conversationId}
-                            attachmentsMeta={attachments}
-                            setAttachments={setAttachments}
-                            onAttachmentRemove={onAttachmentRemove}
-                            uploadFiles={uploadFiles}
-                            FilePickerCallback={handleFilePicker}
-                            PicPickerCallback={handlePicPicker}
-                            onImagePaste={handleImagePaste}
-                            onRetryUpload={handleRetryUpload}
-                            onCancelUpload={handleCancelUpload}
-                            onDropFiles={handleSelectedFiles}
-                            onFolderDetected={handleFolderDetected}
-                            onHeightChange={handleChatBoxHeightChange}
-                            dropTargetRef={chatPageRef}
-                            editorHostRef={chatPageRef}
-                            selectedModel={selectedModel}
-                            isWindowMode={isWindowMode}
-                            onVoiceRecordingStart={handleVoiceRecordingStart}
-                            onVoicePcmReady={handleVoicePcmReady}
-                            onVoiceRecordingCancel={handleVoiceRecordingCancel}
-                            onRealtimeVoiceStart={handleRealtimeVoiceStart}
-                            selectedWorkspaceIds={Array.isArray(advancedSettingsValues?.workspaceIds)
-                                ? advancedSettingsValues.workspaceIds
-                                : (advancedSettingsValues?.workspaceId ? [advancedSettingsValues.workspaceId] : [])}
-                            onWorkspaceChange={(workspaceIds) => {
-                                const normalized = Array.isArray(workspaceIds) ? workspaceIds : [];
-                                setAdvancedSettingsValues(current => ({
-                                    ...current,
-                                    workspaceIds: normalized,
-                                    workspaceId: normalized.length === 1 ? normalized[0] : null,
-                                }));
-                                setInitialSettingValues(null);
-                            }}
-                        />
+                            className={
+                                avatarImmersive
+                                    ? 'absolute inset-x-0 bottom-0 z-[60] max-h-[80%] overflow-y-auto rounded-t-3xl border-t border-border/50 shadow-[0_-12px_40px_rgba(0,0,0,0.12)] transition-[transform,opacity] duration-200 ease-out bg-background/95 backdrop-blur-md'
+                                    : 'contents'
+                            }
+                            style={
+                                avatarImmersive
+                                    ? {
+                                          transform: immersiveComposer.visible ? 'translateY(0)' : 'translateY(24px)',
+                                          opacity: immersiveComposer.visible ? 1 : 0,
+                                          pointerEvents: immersiveComposer.visible ? 'auto' : 'none',
+                                      }
+                                    : undefined
+                            }
+                        >
+                            {avatarImmersive && (
+                                <div className="flex items-center justify-center gap-2 px-4 pt-3">
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() => {
+                                            closeAvatarScene();
+                                            void realtimeVoice.stop();
+                                        }}
+                                    >
+                                        挂断
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        aria-pressed={realtimeVoice.state.muted}
+                                        onClick={realtimeVoice.toggleMute}
+                                    >
+                                        {realtimeVoice.state.muted ? '取消静音' : '静音'}
+                                    </Button>
+                                    <Button variant="secondary" size="sm" onClick={toggleAvatarExpanded}>
+                                        窗口化
+                                    </Button>
+                                </div>
+                            )}
+                            <div
+                                ref={setWidgetChatBoxHostElement}
+                                data-widget-chatbox-floating-host="true"
+                                className="pointer-events-auto relative z-20 mx-auto w-full max-w-225 px-4"
+                            />
+                            <ChatBox
+                                immersive={avatarImmersive}
+                                onSendMessage={handleSendMessage}
+                                conversationId={conversationId}
+                                attachmentsMeta={attachments}
+                                setAttachments={setAttachments}
+                                onAttachmentRemove={onAttachmentRemove}
+                                uploadFiles={uploadFiles}
+                                FilePickerCallback={handleFilePicker}
+                                PicPickerCallback={handlePicPicker}
+                                onImagePaste={handleImagePaste}
+                                onRetryUpload={handleRetryUpload}
+                                onCancelUpload={handleCancelUpload}
+                                onDropFiles={handleSelectedFiles}
+                                onFolderDetected={handleFolderDetected}
+                                onHeightChange={handleChatBoxHeightChange}
+                                dropTargetRef={chatPageRef}
+                                editorHostRef={chatPageRef}
+                                selectedModel={selectedModel}
+                                isWindowMode={isWindowMode}
+                                onVoiceRecordingStart={handleVoiceRecordingStart}
+                                onVoicePcmReady={handleVoicePcmReady}
+                                onVoiceRecordingCancel={handleVoiceRecordingCancel}
+                                onRealtimeVoiceStart={handleRealtimeVoiceStart}
+                                selectedWorkspaceIds={
+                                    Array.isArray(advancedSettingsValues?.workspaceIds)
+                                        ? advancedSettingsValues.workspaceIds
+                                        : advancedSettingsValues?.workspaceId
+                                          ? [advancedSettingsValues.workspaceId]
+                                          : []
+                                }
+                                onWorkspaceChange={(workspaceIds) => {
+                                    const normalized = Array.isArray(workspaceIds) ? workspaceIds : [];
+                                    setAdvancedSettingsValues((current) => ({
+                                        ...current,
+                                        workspaceIds: normalized,
+                                        workspaceId: normalized.length === 1 ? normalized[0] : null,
+                                    }));
+                                    setInitialSettingValues(null);
+                                }}
+                            />
                         </div>
 
-                    <RuntimeInspectorDialog
-                        open={runtimeInspectorOpen}
-                        document={runtimeInspectorDocument}
-                        loading={runtimeInspectorLoading}
-                        error={runtimeInspectorError}
-                        stale={runtimeInspectorStale}
-                        activeMessageId={activeVisibleMessageId}
-                        briefItems={messageSummaries}
-                        briefLoading={messageSummaryLoading}
-                        modelCallLoadingId={runtimeInspectorModelCallLoadingId}
-                        toolCallLoadingId={runtimeInspectorToolCallLoadingId}
-                        onClose={closeInspector}
-                        onJumpToMessage={jumpToMessage}
-                        onRefresh={handleRefreshRuntimeInspector}
-                        onTabChange={handleRuntimeInspectorTabChange}
-                        onLoadModelCall={loadRuntimeInspectorModelCall}
-                        onLoadToolCall={loadRuntimeInspectorToolCall}
+                        <RuntimeInspectorDialog
+                            open={runtimeInspectorOpen}
+                            document={runtimeInspectorDocument}
+                            loading={runtimeInspectorLoading}
+                            error={runtimeInspectorError}
+                            stale={runtimeInspectorStale}
+                            activeMessageId={activeVisibleMessageId}
+                            briefItems={messageSummaries}
+                            briefLoading={messageSummaryLoading}
+                            modelCallLoadingId={runtimeInspectorModelCallLoadingId}
+                            toolCallLoadingId={runtimeInspectorToolCallLoadingId}
+                            onClose={closeInspector}
+                            onJumpToMessage={jumpToMessage}
+                            onRefresh={handleRefreshRuntimeInspector}
+                            onTabChange={handleRuntimeInspectorTabChange}
+                            onLoadModelCall={loadRuntimeInspectorModelCall}
+                            onLoadToolCall={loadRuntimeInspectorToolCall}
+                        />
+
+                        {avatarImmersive && !immersiveComposer.visible && (
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                className="absolute bottom-2 left-1/2 z-[70] -translate-x-1/2 shadow"
+                                onPointerEnter={immersiveComposer.show}
+                                onFocus={immersiveComposer.show}
+                                onClick={immersiveComposer.show}
+                                aria-label="显示输入框"
+                            >
+                                输入消息
+                            </Button>
+                        )}
+                        <footer
+                            className={
+                                avatarImmersive
+                                    ? 'hidden'
+                                    : 'flex h-8 shrink-0 items-center justify-center px-4 bg-background'
+                            }
+                        >
+                            <span className="text-xs text-gray-500">
+                                © {new Date().getFullYear()} lovePikachu. All rights reserved.
+                            </span>
+                        </footer>
+                    </div>
+
+                    <div
+                        data-execution-dock-root="true"
+                        data-cwm-conversation-id={conversationId || ''}
+                        className="relative h-full w-0 shrink-0 overflow-hidden bg-white"
+                    />
+                    <ExecutionHost conversationId={conversationId} messageOrder={messagesOrder} messages={messages} />
+
+                    {avatarSceneOpen && (
+                        <AvatarScenePanel
+                            conversationId={conversationId}
+                            onClose={closeAvatarScene}
+                            hostElement={chatPageRef.current}
+                            expanded={avatarExpanded}
+                            onToggleExpanded={toggleAvatarExpanded}
+                            onOpenHistory={() => setAvatarHistoryOpen(true)}
+                        />
+                    )}
+                    <RealtimeVoiceSurface
+                        avatarSceneOpen={avatarSceneOpen}
+                        onToggleAvatarScene={() => {
+                            toggleAvatarScene();
+                            realtimeVoice.setMinimized(true);
+                        }}
+                        state={{ ...realtimeVoice.state, minimized: avatarImmersive || realtimeVoice.state.minimized }}
+                        minimizedHost={avatarImmersive ? chatPageRef.current : null}
+                        minimizedBottom={
+                            avatarImmersive && immersiveComposer.visible
+                                ? (immersiveComposer.composerRef.current?.getBoundingClientRect().height || 0) + 12
+                                : 16
+                        }
+                        onEnd={() => {
+                            closeAvatarScene();
+                            void realtimeVoice.stop();
+                        }}
+                        onMinimize={() => realtimeVoice.setMinimized(true)}
+                        onRestore={() => {
+                            setAvatarExpanded(false);
+                            realtimeVoice.setMinimized(false);
+                        }}
+                        onToggleMute={realtimeVoice.toggleMute}
                     />
 
-                    {avatarImmersive && !immersiveComposer.visible && <Button
-                        variant="secondary" size="sm" className="absolute bottom-2 left-1/2 z-[70] -translate-x-1/2 shadow"
-                        onPointerEnter={immersiveComposer.show} onFocus={immersiveComposer.show} onClick={immersiveComposer.show}
-                        aria-label="显示输入框">输入消息</Button>}
-                    <footer
-                        className={avatarImmersive ? 'hidden' : 'flex h-8 shrink-0 items-center justify-center px-4 bg-background'}>
-                        <span className="text-xs text-gray-500">
-                          © {new Date().getFullYear()} lovePikachu. All rights reserved.
-                        </span>
-                    </footer>
-                </div>
+                    <RightSidebar
+                        isOpen={isSidebarOpen}
+                        onClose={handleSidebarToggle}
+                        advancedSettings={advancedSettings}
+                        initialSettingValues={initialSettingValues || advancedSettingsValues}
+                        settingsInstanceKey={settingsInstanceKey}
+                        conversationId={conversationId}
+                        onSettingChange={(values) => {
+                            setAdvancedSettingsValues(values);
+                            setInitialSettingValues(null);
+                        }}
+                        t={t}
+                        containerRef={chatPageRef}
+                        isWindowMode={isWindowMode}
+                    />
+                    {isWindowMode && (
+                        <ResizeHandles
+                            onResizeMouseDown={handleResizeMouseDown}
+                            onResizeTouchStart={handleResizeTouchStart}
+                        />
+                    )}
+                </motion.div>
 
-                <div
-                    data-execution-dock-root="true"
-                    data-cwm-conversation-id={conversationId || ''}
-                    className="relative h-full w-0 shrink-0 overflow-hidden bg-white"
-                />
-                <ExecutionHost conversationId={conversationId} messageOrder={messagesOrder} messages={messages}/>
-
-                {avatarSceneOpen && <AvatarScenePanel conversationId={conversationId} onClose={closeAvatarScene} hostElement={chatPageRef.current} expanded={avatarExpanded} onToggleExpanded={toggleAvatarExpanded}/>}
-                <RealtimeVoiceSurface
-                    avatarSceneOpen={avatarSceneOpen}
-                    onToggleAvatarScene={() => { toggleAvatarScene(); realtimeVoice.setMinimized(true); }}
-                    state={{...realtimeVoice.state, minimized: avatarImmersive || realtimeVoice.state.minimized}}
-                    minimizedHost={avatarImmersive ? chatPageRef.current : null}
-                    minimizedBottom={avatarImmersive && immersiveComposer.visible ? (immersiveComposer.composerRef.current?.getBoundingClientRect().height || 0) + 12 : 16}
-                    onEnd={() => { closeAvatarScene(); void realtimeVoice.stop(); }}
-                    onMinimize={() => realtimeVoice.setMinimized(true)}
-                    onRestore={() => { setAvatarExpanded(false); realtimeVoice.setMinimized(false); }}
-                    onToggleMute={realtimeVoice.toggleMute}
-                />
-
-                <RightSidebar
-                    isOpen={isSidebarOpen}
-                    onClose={handleSidebarToggle}
-                    advancedSettings={advancedSettings}
-                    initialSettingValues={initialSettingValues || advancedSettingsValues}
-                    settingsInstanceKey={settingsInstanceKey}
-                    conversationId={conversationId}
-                    onSettingChange={(values) => {
-                        setAdvancedSettingsValues(values);
-                        setInitialSettingValues(null);
-                    }}
-                    t={t}
-                    containerRef={chatPageRef}
-                    isWindowMode={isWindowMode}
-                />
-                {isWindowMode && (
-                    <ResizeHandles
-                        onResizeMouseDown={handleResizeMouseDown}
-                        onResizeTouchStart={handleResizeTouchStart}
+                {isWindowMode && (isDragging || isResizing) && (
+                    <div
+                        className="fixed inset-0 bg-transparent pointer-events-auto z-[9998]"
+                        style={{
+                            cursor: ghostCursor,
+                        }}
                     />
                 )}
-            </motion.div>
 
-            {isWindowMode && (isDragging || isResizing) && (
-                <div
-                    className="fixed inset-0 bg-transparent pointer-events-auto z-[9998]"
-                    style={{
-                        cursor: ghostCursor,
+                <StoryReader
+                    story={activeStory}
+                    open={storyReaderOpen}
+                    onClose={() => {
+                        stopStorySpeech();
+                        setStoryReaderOpen(false);
+                    }}
+                    onSpeakPart={speakStoryPart}
+                    onStopSpeech={stopStorySpeech}
+                    speechState={speechState}
+                    subtitlesEnabled={speechSubtitlesEnabled}
+                    onSubtitlesToggle={updateSpeechSubtitlesEnabled}
+                    t={t}
+                />
+
+                <DeleteConfirmDialog
+                    open={showDeleteConfirm}
+                    onOpenChange={(open) => {
+                        setShowDeleteConfirm(open);
+
+                        if (!open) {
+                            setPendingDeleteMsgId(null);
+                        }
+                    }}
+                    isDeleting={isDeletingMessage}
+                    title={t('confirm_delete_title')}
+                    description={t('confirm_delete_description')}
+                    cancelText={t('cancel')}
+                    confirmText={t('confirm')}
+                    onConfirm={() => {
+                        if (!pendingDeleteMsgId) {
+                            setShowDeleteConfirm(false);
+                            return;
+                        }
+
+                        setIsDeletingMessage(true);
+
+                        apiClient
+                            .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, {
+                                params: { conversationId: conversationId },
+                            })
+                            .then(() => {
+                                deleteMessageLocally(pendingDeleteMsgId);
+                            })
+                            .catch((error) => {
+                                toast.error(t('delete_error', { message: error?.message || t('unknown_error') }));
+                            });
+
+                        setIsDeletingMessage(false);
+                        setPendingDeleteMsgId(null);
+                        setShowDeleteConfirm(false);
                     }}
                 />
-            )}
-
-
-            <StoryReader
-                story={activeStory}
-                open={storyReaderOpen}
-                onClose={() => {
-                    stopStorySpeech();
-                    setStoryReaderOpen(false);
-                }}
-                onSpeakPart={speakStoryPart}
-                onStopSpeech={stopStorySpeech}
-                speechState={speechState}
-                subtitlesEnabled={speechSubtitlesEnabled}
-                onSubtitlesToggle={updateSpeechSubtitlesEnabled}
-                t={t}
-            />
-
-            <DeleteConfirmDialog
-                open={showDeleteConfirm}
-                onOpenChange={(open) => {
-                    setShowDeleteConfirm(open);
-
-                    if (!open) {
-                        setPendingDeleteMsgId(null);
-                    }
-                }}
-                isDeleting={isDeletingMessage}
-                title={t("confirm_delete_title")}
-                description={t("confirm_delete_description")}
-                cancelText={t("cancel")}
-                confirmText={t("confirm")}
-                onConfirm={() => {
-                    if (!pendingDeleteMsgId) {
-                        setShowDeleteConfirm(false);
-                        return;
-                    }
-
-                    setIsDeletingMessage(true);
-
-                    apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + "/" + pendingDeleteMsgId,
-                        {params: {conversationId: conversationId}}
-                    )
-                        .then(() => {
-                            deleteMessageLocally(pendingDeleteMsgId);
-                        })
-                        .catch((error) => {
-                            toast.error(t("delete_error", {message: error?.message || t("unknown_error")}));
-                        })
-
-                    setIsDeletingMessage(false);
-                    setPendingDeleteMsgId(null);
-                    setShowDeleteConfirm(false);
-                }}
-            />
             </>
         </WidgetPresentationProvider>
     );
