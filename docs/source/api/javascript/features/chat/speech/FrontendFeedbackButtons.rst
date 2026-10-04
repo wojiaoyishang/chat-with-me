@@ -17,7 +17,7 @@ src/features/chat/speech/FrontendFeedbackButtons 模块
 * **模块标识**：``src/features/chat/speech/FrontendFeedbackButtons``
 * **顶层函数/组件/Hook**：2
 * **类**：0
-* **局部函数与匿名回调**：11
+* **局部函数与匿名回调**：12
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,13 +27,13 @@ src/features/chat/speech/FrontendFeedbackButtons 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/speech/FrontendFeedbackButtons.jsx:191:2835:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/speech/FrontendFeedbackButtons.jsx:191:3581:FUNCTION
 
 .. js:function:: FeedbackButton({ item, conversationId, messageId })
 
    渲染 ``FeedbackButton`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``6``—``76`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``6``—``92`` 行。
 
    **参数**
 
@@ -42,7 +42,7 @@ src/features/chat/speech/FrontendFeedbackButtons 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <Button type="button" size="sm" variant="outline" className="h-7 shrink-0 px-2 text-xs" disabled={disabled} title={state?.message || '触发已登记的工具调用'} onClick={trigger} > {state?.st…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className="min-w-0 flex-1"> <Button type="button" size="sm" variant="outline" className="h-7 shrink-0 px-2 text-xs" disabled={disabled} title={state?.message || '触发已登记的工具调用…``。
 
    **副作用**
 
@@ -50,17 +50,17 @@ src/features/chat/speech/FrontendFeedbackButtons 模块
    * 注册事件、DOM 或运行时订阅。
    * 更新 React 或全局 Store 状态。
 
-   **主要协作调用**：``useState``、``useEffect``。
+   **主要协作调用**：``useState``、``useEffect``、``state?.results?.map``。
 
-   **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/speech/FrontendFeedbackButtons.jsx:2835:3307:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/speech/FrontendFeedbackButtons.jsx:3581:4055:FUNCTION
 
 .. js:function:: FrontendFeedbackButtons({ items, conversationId, messageId })
 
    渲染 ``FrontendFeedbackButtons`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``78``—``87`` 行。
+   **性质**：同步函数；导出 API；源码第 ``94``—``103`` 行。
 
    **参数**
 
@@ -69,7 +69,7 @@ src/features/chat/speech/FrontendFeedbackButtons 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <span className="flex flex-wrap items-center gap-1" onClick={(event) => event.stopPropagation()}> {items.map((item) => ( <FeedbackButton key={item.toolid} item={item} conversati…``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="mt-2 flex flex-wrap items-start gap-2" onClick={(event) => event.stopPropagation()}> {items.map((item) => ( <FeedbackButton key={item.toolid} item={item} convers…``。
 
    **主要协作调用**：``items.map``。
 
@@ -309,17 +309,41 @@ src/features/chat/speech/FrontendFeedbackButtons 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/speech/FrontendFeedbackButtons.jsx:3076:3110:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/speech/FrontendFeedbackButtons.jsx:2985:3326:FUNCTION
 
-.. rubric:: ``onClick callback @ 81``
+.. rubric:: ``state?.results?.map callback @ 76``
 
 .. code-block:: javascript
 
-   onClick callback @ 81(event)
+   state?.results?.map callback @ 76(result, index)
+
+作为 ``state?.results?.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``76``—``84`` 行；所属函数 ``FeedbackButton``。
+
+**参数**
+
+``result``
+   调用方传入的 ``result`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+``index``
+   调用方传入的 ``index`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/speech/FrontendFeedbackButtons.jsx:3825:3859:FUNCTION
+
+.. rubric:: ``onClick callback @ 97``
+
+.. code-block:: javascript
+
+   onClick callback @ 97(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``81``—``81`` 行；所属函数 ``FrontendFeedbackButtons``。
+**性质**：同步局部函数；源码第 ``97``—``97`` 行；所属函数 ``FrontendFeedbackButtons``。
 
 **参数**
 
@@ -332,17 +356,17 @@ src/features/chat/speech/FrontendFeedbackButtons 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/chat/speech/FrontendFeedbackButtons.jsx:3136:3280:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/speech/FrontendFeedbackButtons.jsx:3885:4029:FUNCTION
 
-.. rubric:: ``items.map callback @ 82``
+.. rubric:: ``items.map callback @ 98``
 
 .. code-block:: javascript
 
-   items.map callback @ 82(item)
+   items.map callback @ 98(item)
 
 作为 ``items.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``82``—``84`` 行；所属函数 ``FrontendFeedbackButtons``。
+**性质**：同步局部函数；源码第 ``98``—``100`` 行；所属函数 ``FrontendFeedbackButtons``。
 
 **参数**
 

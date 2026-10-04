@@ -344,15 +344,6 @@ const StatusWidget = memo(
                     progress={progress}
                     truncatedLastLine={truncatedLastLine}
                     titleAccessory={toolContextIndicator}
-                    rightAccessory={
-                        type === 'toolCalling' ? (
-                            <FrontendFeedbackButtons
-                                items={parseFrontendFeedback(content)}
-                                conversationId={conversationId}
-                                messageId={contextId}
-                            />
-                        ) : null
-                    }
                     waitingApprovalLabel={
                         isWaitingSubagent
                             ? t('tool_subagent_waiting_status', 'Waiting for sub-agent')
@@ -360,6 +351,14 @@ const StatusWidget = memo(
                     }
                     resumingLabel={t('tool_subagent_resuming_status', 'Sub-agent finished, resuming')}
                 />
+
+                {type === 'toolCalling' && (
+                    <FrontendFeedbackButtons
+                        items={parseFrontendFeedback(content)}
+                        conversationId={conversationId}
+                        messageId={contextId}
+                    />
+                )}
 
                 <StatusBody
                     cleanContent={cleanContent}

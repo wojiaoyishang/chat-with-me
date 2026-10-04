@@ -70,7 +70,7 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:2611:16125:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:2611:16007:FUNCTION
 
 .. rubric:: ``memo callback @ 71``
 
@@ -80,7 +80,7 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``71``—``374`` 行。
+**性质**：同步局部函数；源码第 ``71``—``373`` 行。
 
 **参数**
 
@@ -279,17 +279,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **主要协作调用**：``String``、``rawId.endsWith``、``rawId.slice``、``String(resultStatus?.status || rootStatus?.status || '').toLowerCase``、``Array.isArray``、``t``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:16126:16942:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:16008:16824:FUNCTION
 
-.. rubric:: ``memo callback @ 375``
+.. rubric:: ``memo callback @ 374``
 
 .. code-block:: javascript
 
-   memo callback @ 375(prev, next)
+   memo callback @ 374(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``375``—``393`` 行。
+**性质**：同步局部函数；源码第 ``374``—``392`` 行。
 
 **参数**
 

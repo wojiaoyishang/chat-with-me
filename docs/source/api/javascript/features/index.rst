@@ -186,7 +186,7 @@
    * - :doc:`src/features/chat/speech/FrontendFeedbackButtons </api/javascript/features/chat/speech/FrontendFeedbackButtons>`
      - 2
      - 0
-     - 11
+     - 12
      - ``src/features/chat/speech/FrontendFeedbackButtons.jsx``
    * - :doc:`src/features/chat/speech/SpeechVolumeControl </api/javascript/features/chat/speech/SpeechVolumeControl>`
      - 1
