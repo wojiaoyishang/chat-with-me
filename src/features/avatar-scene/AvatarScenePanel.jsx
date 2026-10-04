@@ -55,6 +55,7 @@ export default function AvatarScenePanel({
                     )}
                     <Button
                         size="icon"
+                        className="size-8"
                         variant="ghost"
                         onClick={onToggleExpanded}
                         aria-label={expanded ? '还原 3D 窗口' : '放大 3D 窗口'}
