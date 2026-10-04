@@ -29,22 +29,22 @@ src/components/markdown/card-block/status/StatusBody 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusBody.jsx:169:914:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusBody.jsx:169:865:FUNCTION
 
-.. rubric:: ``memo callback @ 6``
+.. rubric:: ``memo callback @ 7``
 
 .. code-block:: javascript
 
-   memo callback @ 6({ cleanContent, expandedKey, isFailed = false, isFinished = false, isToolCalling = false, renderMar…)
+   memo callback @ 7({ children, cleanContent, expandedKey, isFailed = false, isFinished = false, isToolCalling = false,…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``6``—``27`` 行。
+**性质**：同步局部函数；源码第 ``7``—``30`` 行。
 
 **参数**
 
-``{ cleanContent, expandedKey, isFailed = false, isFinished = false, isToolCalling = false, renderMar…``
-   调用方传入的 ``cleanContent, expandedKey, isFailed = false, isFinished = false, isToolCalling = false, renderMar…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ children, cleanContent, expandedKey, isFailed = false, isFinished = false, isToolCalling = false,…``
+   调用方传入的 ``children, cleanContent, expandedKey, isFailed = false, isFinished = false, isToolCalling = false,…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -52,17 +52,17 @@ src/components/markdown/card-block/status/StatusBody 模块
 
 **主要协作调用**：``useExpandedState``、``renderMarkdown``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusBody.jsx:915:1250:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusBody.jsx:866:1288:FUNCTION
 
-.. rubric:: ``memo callback @ 27``
+.. rubric:: ``memo callback @ 31``
 
 .. code-block:: javascript
 
-   memo callback @ 27(prev, next)
+   memo callback @ 31(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``27``—``36`` 行。
+**性质**：同步局部函数；源码第 ``31``—``41`` 行。
 
 **参数**
 
@@ -74,4 +74,4 @@ src/components/markdown/card-block/status/StatusBody 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( prev.cleanContent === next.cleanContent && prev.expandedKey === next.expandedKey && prev.isFailed === next.isFailed && prev.isFinished === next.isFinished && prev.isToolCalling…``。
+根据执行分支返回结果；代表性返回表达式为 ``( prev.children === next.children && prev.cleanContent === next.cleanContent && prev.expandedKey === next.expandedKey && prev.isFailed === next.isFailed && prev.isFinished === nex…``。

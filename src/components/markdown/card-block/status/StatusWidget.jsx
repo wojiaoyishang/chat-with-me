@@ -1,3 +1,5 @@
+import useFrontendFeedback from '@/features/chat/speech/useFrontendFeedback.js';
+import ToolLogBlock from '../blocks/ToolLogBlock.jsx';
 import FrontendFeedbackButtons from '@/features/chat/speech/FrontendFeedbackButtons.jsx';
 import { parseFrontendFeedback, stripFrontendFeedback } from '@/features/chat/speech/frontendFeedback.js';
 import { memo, useEffect, useMemo } from 'react';
@@ -97,9 +99,30 @@ const StatusWidget = memo(
             return getExpandedKey(contextId, id, scopedType);
         }, [contextId, id, renderSurface, type]);
 
+        const feedbackItems = useMemo(
+            () => (type === 'toolCalling' ? parseFrontendFeedback(content) : []),
+            [content, type],
+        );
+        const feedback = useFrontendFeedback({ items: feedbackItems, conversationId, messageId: contextId });
+        const feedbackStates = feedbackItems.map((item) => feedback.states[item.toolid]);
+        const feedbackStatus = feedbackStates.some((state) => state?.status === 'failed')
+            ? 'failed'
+            : feedbackStates.length && feedbackStates.every((state) => state?.status === 'completed')
+              ? 'completed'
+              : feedbackStates.some((state) => state?.status === 'running')
+                ? 'running'
+                : feedbackStates.some((state) => state?.status === 'scheduled')
+                  ? 'scheduled'
+                  : null;
+
         const { badges, actions, cleanContent, isDone, isFailed, lastLine, progress, toolStatus, isToolCallRepair } =
             useMemo(() => {
-                const safeContent = stripFrontendFeedback(toSafeString(content));
+                let safeContent = stripFrontendFeedback(toSafeString(content));
+                if (feedbackStatus) {
+                    safeContent = safeContent.replace(STATUS_MARKER_REGEX, '');
+                    if (feedbackStatus === 'completed') safeContent += '\n[DONE]';
+                    if (feedbackStatus === 'failed') safeContent += '\n[FAILED]';
+                }
 
                 const badges = [...safeContent.matchAll(BADGE_MARKER_REGEX)]
                     .map((match) => {
@@ -173,7 +196,7 @@ const StatusWidget = memo(
                     toolStatus,
                     isToolCallRepair,
                 };
-            }, [content, type]);
+            }, [content, type, feedbackStatus]);
 
         const truncatedLastLine = useMemo(() => {
             if (!lastLine) return '';
@@ -192,7 +215,7 @@ const StatusWidget = memo(
         const isWaitingSubagent = toolStatus === 'waiting_subagent' && !isDone && !isFailed;
         const isResumingSubagent = toolStatus === 'resuming_subagent' && !isDone && !isFailed;
         const isWaitingToolState = isWaitingApproval || isWaitingSubagent;
-        const isProgressComplete = isToolCalling && progress?.isComplete === true;
+        const isProgressComplete = isToolCalling && !feedbackStatus && progress?.isComplete === true;
         const isFinished = isDone || isFailed || isProgressComplete;
 
         // Successful completion is the only state eligible for automatic collapse.
@@ -344,6 +367,7 @@ const StatusWidget = memo(
                     progress={progress}
                     truncatedLastLine={truncatedLastLine}
                     titleAccessory={toolContextIndicator}
+                    rightAccessory={<FrontendFeedbackButtons items={feedbackItems} feedback={feedback} />}
                     waitingApprovalLabel={
                         isWaitingSubagent
                             ? t('tool_subagent_waiting_status', 'Waiting for sub-agent')
@@ -352,14 +376,6 @@ const StatusWidget = memo(
                     resumingLabel={t('tool_subagent_resuming_status', 'Sub-agent finished, resuming')}
                 />
 
-                {type === 'toolCalling' && (
-                    <FrontendFeedbackButtons
-                        items={parseFrontendFeedback(content)}
-                        conversationId={conversationId}
-                        messageId={contextId}
-                    />
-                )}
-
                 <StatusBody
                     cleanContent={cleanContent}
                     expandedKey={expandedKey}
@@ -367,7 +383,23 @@ const StatusWidget = memo(
                     isFinished={isFinished}
                     isToolCalling={isToolCalling}
                     renderMarkdown={renderMarkdown}
-                />
+                >
+                    {feedbackItems.map((item) => {
+                        const state = feedback.states[item.toolid];
+                        const results = state?.results?.length
+                            ? state.results
+                            : state?.status === 'failed'
+                              ? [{ success: false, content: state.message || '调用失败' }]
+                              : [];
+                        return results.map((result, index) => (
+                            <ToolLogBlock
+                                key={`${item.toolid}:${state.revision}:${index}`}
+                                id={`${id}:feedback:${item.toolid}:${index}`}
+                                content={`[TITLE:工具返回值]\n${result.content ?? '工具未返回内容'}\n[${result.success ? 'DONE' : 'FAILED'}]`}
+                            />
+                        ));
+                    })}
+                </StatusBody>
             </div>
         );
     },

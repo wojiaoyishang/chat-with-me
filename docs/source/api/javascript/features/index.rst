@@ -186,7 +186,7 @@
    * - :doc:`src/features/chat/speech/FrontendFeedbackButtons </api/javascript/features/chat/speech/FrontendFeedbackButtons>`
      - 2
      - 0
-     - 12
+     - 2
      - ``src/features/chat/speech/FrontendFeedbackButtons.jsx``
    * - :doc:`src/features/chat/speech/SpeechVolumeControl </api/javascript/features/chat/speech/SpeechVolumeControl>`
      - 1
@@ -233,6 +233,11 @@
      - 0
      - 1
      - ``src/features/chat/speech/textMatching.js``
+   * - :doc:`src/features/chat/speech/useFrontendFeedback </api/javascript/features/chat/speech/useFrontendFeedback>`
+     - 1
+     - 0
+     - 13
+     - ``src/features/chat/speech/useFrontendFeedback.js``
    * - :doc:`src/features/chat/ui/AttachmentShowcase </api/javascript/features/chat/ui/AttachmentShowcase>`
      - 2
      - 0
@@ -667,6 +672,7 @@
    /api/javascript/features/chat/speech/speechState
    /api/javascript/features/chat/speech/subtitleSettings
    /api/javascript/features/chat/speech/textMatching
+   /api/javascript/features/chat/speech/useFrontendFeedback
    /api/javascript/features/chat/ui/AttachmentShowcase
    /api/javascript/features/chat/ui/ChatBox
    /api/javascript/features/chat/ui/ChatBoxHeader
