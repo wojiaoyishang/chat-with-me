@@ -1,3 +1,4 @@
+import { Mic, MicOff, Minimize2, PhoneOff } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useImmer } from 'use-immer';
 import { produce } from 'immer';
@@ -3359,6 +3360,8 @@ function ChatPage({
                                 open={avatarImmersive && avatarHistoryOpen}
                                 onClose={() => setAvatarHistoryOpen(false)}
                                 hostElement={chatPageRef.current}
+                                onScrollToBottom={handleScrollToBottomClick}
+                                scrollContainerRef={messagesContainerRef}
                             >
                                 <div
                                     ref={messagesContainerRef}
@@ -3445,27 +3448,43 @@ function ChatPage({
                             }
                         >
                             {avatarImmersive && (
-                                <div className="flex items-center justify-center gap-2 px-4 pt-3">
+                                <div
+                                    className="flex items-center justify-center gap-4 px-4 pt-3"
+                                    aria-label="实时语音控制"
+                                >
                                     <Button
-                                        variant="destructive"
-                                        size="sm"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="cwm-voice-control-button cwm-voice-control-button--end"
+                                        title="挂断"
+                                        aria-label="挂断"
                                         onClick={() => {
                                             closeAvatarScene();
                                             void realtimeVoice.stop();
                                         }}
                                     >
-                                        挂断
+                                        <PhoneOff size={22} />
                                     </Button>
                                     <Button
-                                        variant="secondary"
-                                        size="sm"
+                                        variant="ghost"
+                                        size="icon"
+                                        className={`cwm-voice-control-button ${realtimeVoice.state.muted ? 'cwm-voice-control-button--muted' : ''}`}
+                                        title={realtimeVoice.state.muted ? '恢复麦克风' : '麦克风静音'}
+                                        aria-label={realtimeVoice.state.muted ? '恢复麦克风' : '麦克风静音'}
                                         aria-pressed={realtimeVoice.state.muted}
                                         onClick={realtimeVoice.toggleMute}
                                     >
-                                        {realtimeVoice.state.muted ? '取消静音' : '静音'}
+                                        {realtimeVoice.state.muted ? <MicOff size={21} /> : <Mic size={21} />}
                                     </Button>
-                                    <Button variant="secondary" size="sm" onClick={toggleAvatarExpanded}>
-                                        窗口化
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="cwm-voice-control-button"
+                                        title="窗口化"
+                                        aria-label="窗口化"
+                                        onClick={toggleAvatarExpanded}
+                                    >
+                                        <Minimize2 size={21} />
                                     </Button>
                                 </div>
                             )}

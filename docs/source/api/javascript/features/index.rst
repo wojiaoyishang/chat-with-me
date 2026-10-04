@@ -81,7 +81,7 @@
    * - :doc:`src/features/chat/page/components/ChatHistoryViewport </api/javascript/features/chat/page/components/ChatHistoryViewport>`
      - 1
      - 0
-     - 3
+     - 6
      - ``src/features/chat/page/components/ChatHistoryViewport.jsx``
    * - :doc:`src/features/chat/page/components/LoadingScreens </api/javascript/features/chat/page/components/LoadingScreens>`
      - 2

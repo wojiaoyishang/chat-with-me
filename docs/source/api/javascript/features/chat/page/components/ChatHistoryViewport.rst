@@ -17,28 +17,28 @@ Relocate the single message viewport; never instantiate another ChatPage.
 * **模块标识**：``src/features/chat/page/components/ChatHistoryViewport``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：3
+* **局部函数与匿名回调**：6
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``react-dom``、``@/components/window``。
+``react``、``react-dom``、``lucide-react``、``@/components/ui/button``、``@/components/window``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHistoryViewport.jsx:158:1381:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHistoryViewport.jsx:249:2503:FUNCTION
 
-.. js:function:: ChatHistoryViewport({ open, onClose, hostElement, children })
+.. js:function:: ChatHistoryViewport({ open, onClose, hostElement, onScrollToBottom, scrollContainerRef, children, })
 
    Relocate the single message viewport; never instantiate another ChatPage.
 
-   **性质**：同步函数；导出 API；源码第 ``6``—``34`` 行。
+   **性质**：同步函数；导出 API；源码第 ``8``—``64`` 行。
 
    **参数**
 
-   ``{ open, onClose, hostElement, children }``
-      调用方传入的 ``open, onClose, hostElement, children`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ open, onClose, hostElement, onScrollToBottom, scrollContainerRef, children, }``
+      调用方传入的 ``open, onClose, hostElement, onScrollToBottom, scrollContainerRef, children,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -50,24 +50,24 @@ Relocate the single message viewport; never instantiate another ChatPage.
 
    **主要协作调用**：``useRef``、``useState``、``useLayoutEffect``、``createPortal``。
 
-   **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHistoryViewport.jsx:435:470:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHistoryViewport.jsx:589:624:FUNCTION
 
-.. rubric:: ``useState callback @ 9``
+.. rubric:: ``useState callback @ 18``
 
 .. code-block:: javascript
 
-   useState callback @ 9()
+   useState callback @ 18()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``9``—``9`` 行；所属函数 ``ChatHistoryViewport``。
+**性质**：同步局部函数；源码第 ``18``—``18`` 行；所属函数 ``ChatHistoryViewport``。
 
 **参数**
 
@@ -83,17 +83,17 @@ Relocate the single message viewport; never instantiate another ChatPage.
 
 **主要协作调用**：``document.createElement``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHistoryViewport.jsx:493:681:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHistoryViewport.jsx:647:835:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 10``
+.. rubric:: ``useLayoutEffect callback @ 19``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 10()
+   useLayoutEffect callback @ 19()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``10``—``14`` 行；所属函数 ``ChatHistoryViewport``。
+**性质**：同步局部函数；源码第 ``19``—``23`` 行；所属函数 ``ChatHistoryViewport``。
 
 **参数**
 
@@ -107,17 +107,17 @@ Relocate the single message viewport; never instantiate another ChatPage.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHistoryViewport.jsx:650:674:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHistoryViewport.jsx:804:828:FUNCTION
 
-.. rubric:: ``returned callback @ 13``
+.. rubric:: ``returned callback @ 22``
 
 .. code-block:: javascript
 
-   returned callback @ 13()
+   returned callback @ 22()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``13``—``13`` 行；所属函数 ``useLayoutEffect callback @ 10``。
+**性质**：同步局部函数；源码第 ``22``—``22`` 行；所属函数 ``useLayoutEffect callback @ 19``。
 
 **参数**
 
@@ -128,3 +128,71 @@ Relocate the single message viewport; never instantiate another ChatPage.
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
 **主要协作调用**：``viewport.remove``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHistoryViewport.jsx:876:1206:FUNCTION
+
+.. rubric:: ``useLayoutEffect callback @ 24``
+
+.. code-block:: javascript
+
+   useLayoutEffect callback @ 24()
+
+作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
+
+**性质**：同步局部函数；源码第 ``24``—``32`` 行；所属函数 ``ChatHistoryViewport``。
+
+**参数**
+
+无。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``undefined``、``() => cancelAnimationFrame(frame)``。
+
+**主要协作调用**：``requestAnimationFrame``。
+
+**内部回调数量**：2。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHistoryViewport.jsx:965:1148:FUNCTION
+
+.. rubric:: ``requestAnimationFrame callback @ 26``
+
+.. code-block:: javascript
+
+   requestAnimationFrame callback @ 26()
+
+实现 ``requestAnimationFrame`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``26``—``30`` 行；所属函数 ``useLayoutEffect callback @ 24``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``onScrollToBottom``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHistoryViewport.jsx:1165:1199:FUNCTION
+
+.. rubric:: ``returned callback @ 31``
+
+.. code-block:: javascript
+
+   returned callback @ 31()
+
+实现 ``returned`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``31``—``31`` 行；所属函数 ``useLayoutEffect callback @ 24``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``cancelAnimationFrame``。
