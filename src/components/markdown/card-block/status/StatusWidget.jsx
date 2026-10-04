@@ -386,6 +386,14 @@ const StatusWidget = memo(
                 >
                     {feedbackItems.map((item) => {
                         const state = feedback.states[item.toolid];
+                        if (state?.logs?.length)
+                            return state.logs.map((log) => (
+                                <ToolLogBlock
+                                    key={`${item.toolid}:${state.revision}:${log.id}`}
+                                    id={log.id}
+                                    content={log.content}
+                                />
+                            ));
                         const results = state?.results?.length
                             ? state.results
                             : state?.status === 'failed'
@@ -395,7 +403,7 @@ const StatusWidget = memo(
                             <ToolLogBlock
                                 key={`${item.toolid}:${state.revision}:${index}`}
                                 id={`${id}:feedback:${item.toolid}:${index}`}
-                                content={`[TITLE:工具返回值]\n${result.content ?? '工具未返回内容'}\n[${result.success ? 'DONE' : 'FAILED'}]`}
+                                content={`${result.content ?? '工具未返回内容'}\n[${result.success ? 'DONE' : 'FAILED'}]`}
                             />
                         ));
                     })}

@@ -141,7 +141,7 @@
    * - :doc:`src/components/markdown/card-block/status/StatusWidget </api/javascript/components/markdown/card-block/status/StatusWidget>`
      - 2
      - 0
-     - 18
+     - 19
      - ``src/components/markdown/card-block/status/StatusWidget.jsx``
    * - :doc:`src/components/markdown/card-block/status/ToolCallingRightStatus </api/javascript/components/markdown/card-block/status/ToolCallingRightStatus>`
      - 0
