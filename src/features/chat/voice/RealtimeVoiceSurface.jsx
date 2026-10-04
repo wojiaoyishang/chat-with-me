@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Activity, ChevronDown, ChevronUp, Mic, MicOff, Minimize2, PhoneOff } from 'lucide-react';
 import './RealtimeVoiceSurface.css';
 import { Button } from '@/components/ui/button';
+import SpeechVolumeControl from '@/features/chat/speech/SpeechVolumeControl.jsx';
 
 const STATUS_LABELS = {
     authorizing: '正在准备',
@@ -168,6 +169,8 @@ export default function RealtimeVoiceSurface({
     onToggleMute,
     avatarSceneOpen,
     onToggleAvatarScene,
+    speechVolume = 1,
+    onSpeechVolumeChange,
     minimizedHost = null,
     minimizedBottom = 16,
 }) {
@@ -205,28 +208,33 @@ export default function RealtimeVoiceSurface({
 
     if (state.minimized) {
         const minimizedView = (
-            <button
-                type="button"
-                onClick={onRestore}
-                className="cwm-voice-minimized"
+            <div
+                className="cwm-voice-minimized max-w-[calc(100%-2rem)]"
                 style={minimizedHost ? { position: 'absolute', bottom: minimizedBottom, zIndex: 80 } : undefined}
-                title="恢复语音窗口"
             >
                 {bubble && (
                     <span key={bubble.id} className="cwm-voice-transcript-bubble" role="status">
                         {bubble.text}
                     </span>
                 )}
-                <MiniVoiceOrb state={state} />
-                <span className="min-w-0 text-left">
-                    <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {statusLabel}
-                        {connectionHealthy && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                <button
+                    type="button"
+                    onClick={onRestore}
+                    title="恢复语音窗口"
+                    className="flex min-w-0 flex-1 items-center gap-3"
+                >
+                    <MiniVoiceOrb state={state} />
+                    <span className="min-w-0 text-left">
+                        <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                            {statusLabel}
+                            {connectionHealthy && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                        </span>
+                        <span className="block max-w-40 truncate text-xs text-slate-400">{summary}</span>
                     </span>
-                    <span className="block max-w-40 truncate text-xs text-slate-400">{summary}</span>
-                </span>
-                <ChevronUp className="ml-1 text-slate-400" size={17} />
-            </button>
+                    <ChevronUp className="ml-1 text-slate-400" size={17} />
+                </button>
+                <SpeechVolumeControl volume={speechVolume} onChange={onSpeechVolumeChange} />
+            </div>
         );
         return minimizedHost ? createPortal(minimizedView, minimizedHost) : minimizedView;
     }
@@ -254,6 +262,7 @@ export default function RealtimeVoiceSurface({
                         >
                             3D
                         </Button>
+                        <SpeechVolumeControl volume={speechVolume} onChange={onSpeechVolumeChange} />
                         <ProtocolIndicator profile={state.profile} />
                         <button
                             type="button"

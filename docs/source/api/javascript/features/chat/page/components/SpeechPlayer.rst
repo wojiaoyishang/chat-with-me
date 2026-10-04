@@ -17,23 +17,23 @@ src/features/chat/page/components/SpeechPlayer 模块
 * **模块标识**：``src/features/chat/page/components/SpeechPlayer``
 * **顶层函数/组件/Hook**：21
 * **类**：0
-* **局部函数与匿名回调**：134
+* **局部函数与匿名回调**：135
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``react-dom``、``@headlessui/react``、``lucide-react``、``@/lib/tools.jsx``、``@/features/chat/speech/subtitleSettings.js``。
+``@/features/chat/speech/SpeechVolumeControl.jsx``、``react``、``react-dom``、``@headlessui/react``、``lucide-react``、``@/lib/tools.jsx``、``@/features/chat/speech/subtitleSettings.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:1456:1846:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:1528:1920:FUNCTION
 
 .. js:function:: getVisualViewportMetrics()
 
    读取与 ``Visual Viewport Metrics`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``55``—``67`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``51``—``63`` 行。
 
    **参数**
 
@@ -41,19 +41,19 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{width: 0, height: 0, offsetLeft: 0, offsetTop: 0}``、``{ width: viewport?.width ?? window.innerWidth, height: viewport?.height ?? window.innerHeight, offsetLeft: viewport?.offsetLeft ?? 0, offsetTop: viewport?.offsetTop ?? 0, }``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ width: 0, height: 0, offsetLeft: 0, offsetTop: 0 }``、``{ width: viewport?.width ?? window.innerWidth, height: viewport?.height ?? window.innerHeight, offsetLeft: viewport?.offsetLeft ?? 0, offsetTop: viewport?.offsetTop ?? 0, }``。
 
    **副作用**
 
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:1869:1977:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:1943:2051:FUNCTION
 
 .. js:function:: fallbackText(t, key, fallback)
 
    实现 ``fallbackText`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``69``—``72`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``65``—``68`` 行。
 
    **参数**
 
@@ -72,13 +72,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:1993:2097:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:2067:2171:FUNCTION
 
 .. js:function:: clamp(value, min, max)
 
    实现 ``clamp`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``74``—``77`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``70``—``73`` 行。
 
    **参数**
 
@@ -97,13 +97,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``Math.min``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:2125:2278:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:2199:2352:FUNCTION
 
 .. js:function:: normalizeProgress(value)
 
    规范化与 ``Progress`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``79``—``83`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``75``—``79`` 行。
 
    **参数**
 
@@ -116,17 +116,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``Number``、``Number.isFinite``、``clamp``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:2307:4105:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:2381:4186:FUNCTION
 
-.. js:function:: SpeechProgressRail({speechState, className = ''})
+.. js:function:: SpeechProgressRail({ speechState, className = '' })
 
    渲染 ``SpeechProgressRail`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``85``—``122`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``81``—``116`` 行。
 
    **参数**
 
-   ``{speechState, className = ''}``
+   ``{ speechState, className = '' }``
       调用方传入的 ``speechState, className = ''`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -135,13 +135,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``Number``、``Number.isInteger``、``Math.max``、``normalizeProgress``、``Math.round``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:4131:4301:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:4212:4382:FUNCTION
 
 .. js:function:: getViewportSize()
 
    读取与 ``Viewport Size`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``124``—``127`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``118``—``121`` 行。
 
    **参数**
 
@@ -155,13 +155,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:4329:4383:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:4410:4464:FUNCTION
 
 .. js:function:: isCompactViewport(viewportWidth)
 
    判断与 ``Compact Viewport`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``129``—``129`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``123``—``123`` 行。
 
    **参数**
 
@@ -172,13 +172,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:4410:4622:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:4491:4703:FUNCTION
 
 .. js:function:: getMaxPanelWidth(viewportWidth)
 
    读取与 ``Max Panel Width`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``131``—``137`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``125``—``131`` 行。
 
    **参数**
 
@@ -191,13 +191,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``isCompactViewport``、``Math.max``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:4649:4794:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:4730:4868:FUNCTION
 
 .. js:function:: getMinPanelWidth(viewportWidth)
 
    读取与 ``Min Panel Width`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``139``—``142`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``133``—``134`` 行。
 
    **参数**
 
@@ -210,13 +210,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``Math.min``、``isCompactViewport``、``getMaxPanelWidth``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:4820:5220:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:4894:5294:FUNCTION
 
 .. js:function:: getDefaultWidth(viewport)
 
    读取与 ``Default Width`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``144``—``153`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``136``—``145`` 行。
 
    **参数**
 
@@ -229,13 +229,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``getViewportSize``、``getMaxPanelWidth``、``getMinPanelWidth``、``isCompactViewport``、``Math.round``、``clamp``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:5243:5323:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:5317:5397:FUNCTION
 
 .. js:function:: getMinPanelY(viewport)
 
    读取与 ``Min Panel Y`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``155``—``155`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``147``—``147`` 行。
 
    **参数**
 
@@ -248,13 +248,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``getViewportSize``、``isCompactViewport``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:5347:5454:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:5421:5524:FUNCTION
 
 .. js:function:: getDockedSide(state)
 
    读取与 ``Docked Side`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``157``—``159`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``149``—``150`` 行。
 
    **参数**
 
@@ -265,13 +265,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:5481:5779:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:5551:5849:FUNCTION
 
 .. js:function:: getDockCandidate(x, width, viewport, snapDistance)
 
    读取与 ``Dock Candidate`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``161``—``167`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``152``—``158`` 行。
 
    **参数**
 
@@ -291,13 +291,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``null``、``leftDistance <= rightDistance ? 'left' : 'right'``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:5800:5927:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:5870:5993:FUNCTION
 
 .. js:function:: getDockedX(side, width, viewport)
 
    读取与 ``Docked X`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``169``—``171`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``160``—``161`` 行。
 
    **参数**
 
@@ -316,13 +316,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:5957:7164:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:6023:7206:FUNCTION
 
 .. js:function:: normalizePanelState(state, viewport, measuredHeight)
 
    规范化与 ``Panel State`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``173``—``205`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``163``—``193`` 行。
 
    **参数**
 
@@ -341,13 +341,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``getViewportSize``、``clamp``、``getDefaultWidth``、``getMinPanelWidth``、``getMaxPanelWidth``、``getDockedSide``、``Math.max``、``Math.round``、``getDockedX``、``getMinPanelY``、``isCompactViewport``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:7193:7543:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:7235:7587:FUNCTION
 
 .. js:function:: getInitialPosition()
 
    读取与 ``Initial Position`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``207``—``218`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``195``—``206`` 行。
 
    **参数**
 
@@ -355,17 +355,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{x: 24, y: 120, width: 720, dockedSide: null, collapsed: false}``、``normalizePanelState(saved)``、``normalizePanelState({})``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ x: 24, y: 120, width: 720, dockedSide: null, collapsed: false }``、``normalizePanelState(saved)``、``normalizePanelState({})``。
 
    **主要协作调用**：``getLocalSetting``、``normalizePanelState``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:7576:7926:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:7620:7970:FUNCTION
 
 .. js:function:: getIsMobileInteraction()
 
    读取与 ``Is Mobile Interaction`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``220``—``228`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``208``—``216`` 行。
 
    **参数**
 
@@ -381,13 +381,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``window.matchMedia``、``Boolean``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:7962:14793:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:8006:14963:FUNCTION
 
 .. js:function:: BrowserVoiceOptionsPortal({ open, anchorRef, menuRef, options, selectedValue, defaultLabel, onOpenChange, onPointerEnter, onP…)
 
    渲染 ``BrowserVoiceOptionsPortal`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``230``—``384`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``218``—``376`` 行。
 
    **参数**
 
@@ -407,13 +407,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:14834:15620:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:15003:15789:FUNCTION
 
 .. js:function:: getSubtitleQuickPositionLabel(t, id)
 
    读取与 ``Subtitle Quick Position Label`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``387``—``401`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``378``—``392`` 行。
 
    **参数**
 
@@ -429,17 +429,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **主要协作调用**：``fallbackText``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:15649:16346:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:15818:16564:FUNCTION
 
-.. js:function:: SubtitleSettingRow({label, value, min, max, step, suffix, onChange})
+.. js:function:: SubtitleSettingRow({ label, value, min, max, step, suffix, onChange })
 
    渲染 ``SubtitleSettingRow`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``403``—``419`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``394``—``413`` 行。
 
    **参数**
 
-   ``{label, value, min, max, step, suffix, onChange}``
+   ``{ label, value, min, max, step, suffix, onChange }``
       调用方传入的 ``label, value, min, max, step, suffix, onChange`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -448,13 +448,13 @@ src/features/chat/page/components/SpeechPlayer 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:16383:25765:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:16601:26257:FUNCTION
 
 .. js:function:: SubtitleSettingsMenuPortal({ open, anchorRef, menuRef, position, settings, onPositionSelect, onSettingsChange, onReset, onPoin…)
 
    渲染 ``SubtitleSettingsMenuPortal`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``421``—``607`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``415``—``614`` 行。
 
    **参数**
 
@@ -479,17 +479,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:8194:8325:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:8238:8369:FUNCTION
 
-.. rubric:: ``useEffect callback @ 244``
+.. rubric:: ``useEffect callback @ 232``
 
 .. code-block:: javascript
 
-   useEffect callback @ 244()
+   useEffect callback @ 232()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``244``—``249`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
+**性质**：同步局部函数；源码第 ``232``—``237`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
 
 **参数**
 
@@ -503,17 +503,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:8255:8318:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:8299:8362:FUNCTION
 
-.. rubric:: ``returned callback @ 246``
+.. rubric:: ``returned callback @ 234``
 
 .. code-block:: javascript
 
-   returned callback @ 246()
+   returned callback @ 234()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``246``—``248`` 行；所属函数 ``useEffect callback @ 244``。
+**性质**：同步局部函数；源码第 ``234``—``236`` 行；所属函数 ``useEffect callback @ 232``。
 
 **参数**
 
@@ -525,17 +525,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``onOpenChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:8365:12005:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:8409:12049:FUNCTION
 
-.. rubric:: ``useEffect callback @ 251``
+.. rubric:: ``useEffect callback @ 239``
 
 .. code-block:: javascript
 
-   useEffect callback @ 251()
+   useEffect callback @ 239()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``251``—``327`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
+**性质**：同步局部函数；源码第 ``239``—``315`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
 
 **参数**
 
@@ -554,7 +554,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:8490:11107:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:8534:11151:FUNCTION
 
 .. rubric:: ``updatePosition``
 
@@ -564,7 +564,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 更新与 ``Position`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``256``—``307`` 行；所属函数 ``useEffect callback @ 251``。
+**性质**：同步局部函数；源码第 ``244``—``295`` 行；所属函数 ``useEffect callback @ 239``。
 
 **参数**
 
@@ -576,7 +576,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``anchor.getBoundingClientRect``、``getVisualViewportMetrics``、``Math.min``、``Math.max``、``setPosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:11140:11292:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:11184:11336:FUNCTION
 
 .. rubric:: ``scheduleUpdate``
 
@@ -586,7 +586,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 实现 ``scheduleUpdate`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``309``—``312`` 行；所属函数 ``useEffect callback @ 251``。
+**性质**：同步局部函数；源码第 ``297``—``300`` 行；所属函数 ``useEffect callback @ 239``。
 
 **参数**
 
@@ -602,17 +602,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``、``window.requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:11610:11998:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:11654:12042:FUNCTION
 
-.. rubric:: ``returned callback @ 320``
+.. rubric:: ``returned callback @ 308``
 
 .. code-block:: javascript
 
-   returned callback @ 320()
+   returned callback @ 308()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``320``—``326`` 行；所属函数 ``useEffect callback @ 251``。
+**性质**：同步局部函数；源码第 ``308``—``314`` 行；所属函数 ``useEffect callback @ 239``。
 
 **参数**
 
@@ -628,7 +628,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``、``window.removeEventListener``、``window.visualViewport?.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:12143:12378:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:12187:12422:FUNCTION
 
 .. rubric:: ``renderOptionLabel``
 
@@ -638,7 +638,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 渲染与 ``Option Label`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``331``—``335`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
+**性质**：同步局部函数；源码第 ``319``—``323`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
 
 **参数**
 
@@ -651,17 +651,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``fallbackText``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:13051:13085:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:13095:13129:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 350``
+.. rubric:: ``onPointerDown callback @ 338``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 350(event)
+   onPointerDown callback @ 338(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``350``—``350`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
+**性质**：同步局部函数；源码第 ``338``—``338`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
 
 **参数**
 
@@ -674,38 +674,38 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:13489:13791:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:13533:13894:FUNCTION
 
-.. rubric:: ``anonymous callback @ 358``
+.. rubric:: ``anonymous callback @ 346``
 
 .. code-block:: javascript
 
-   anonymous callback @ 358({selected})
+   anonymous callback @ 346({ selected })
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``358``—``363`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
+**性质**：同步局部函数；源码第 ``346``—``353`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
 
 **参数**
 
-``{selected}``
+``{ selected }``
    调用方传入的 ``selected`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:13847:14732:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:13950:14902:FUNCTION
 
-.. rubric:: ``options.map callback @ 365``
+.. rubric:: ``options.map callback @ 355``
 
 .. code-block:: javascript
 
-   options.map callback @ 365(voice)
+   options.map callback @ 355(voice)
 
 作为 ``options.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``365``—``380`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
+**性质**：同步局部函数；源码第 ``355``—``372`` 行；所属函数 ``BrowserVoiceOptionsPortal``。
 
 **参数**
 
@@ -718,21 +718,21 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:14243:14684:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:14346:14854:FUNCTION
 
-.. rubric:: ``anonymous callback @ 371``
+.. rubric:: ``anonymous callback @ 361``
 
 .. code-block:: javascript
 
-   anonymous callback @ 371({selected})
+   anonymous callback @ 361({ selected })
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``371``—``378`` 行；所属函数 ``options.map callback @ 365``。
+**性质**：同步局部函数；源码第 ``361``—``370`` 行；所属函数 ``options.map callback @ 355``。
 
 **参数**
 
-``{selected}``
+``{ selected }``
    调用方传入的 ``selected`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -741,17 +741,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``renderOptionLabel``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:16203:16252:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:16421:16470:FUNCTION
 
-.. rubric:: ``onChange callback @ 415``
+.. rubric:: ``onChange callback @ 409``
 
 .. code-block:: javascript
 
-   onChange callback @ 415(event)
+   onChange callback @ 409(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``415``—``415`` 行；所属函数 ``SubtitleSettingRow``。
+**性质**：同步局部函数；源码第 ``409``—``409`` 行；所属函数 ``SubtitleSettingRow``。
 
 **参数**
 
@@ -764,17 +764,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``onChange``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:16640:19120:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:16858:19466:FUNCTION
 
-.. rubric:: ``useEffect callback @ 436``
+.. rubric:: ``useEffect callback @ 430``
 
 .. code-block:: javascript
 
-   useEffect callback @ 436()
+   useEffect callback @ 430()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``436``—``481`` 行；所属函数 ``SubtitleSettingsMenuPortal``。
+**性质**：同步局部函数；源码第 ``430``—``483`` 行；所属函数 ``SubtitleSettingsMenuPortal``。
 
 **参数**
 
@@ -793,7 +793,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:16775:18270:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:16993:18616:FUNCTION
 
 .. rubric:: ``updatePosition``
 
@@ -803,7 +803,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 更新与 ``Position`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``440``—``463`` 行；所属函数 ``useEffect callback @ 436``。
+**性质**：同步局部函数；源码第 ``434``—``465`` 行；所属函数 ``useEffect callback @ 430``。
 
 **参数**
 
@@ -815,7 +815,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``anchorRef.current?.getBoundingClientRect``、``getVisualViewportMetrics``、``Math.max``、``Math.min``、``clamp``、``setMenuPosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:18296:18448:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:18642:18794:FUNCTION
 
 .. rubric:: ``schedule``
 
@@ -825,7 +825,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 实现 ``schedule`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``464``—``467`` 行；所属函数 ``useEffect callback @ 436``。
+**性质**：同步局部函数；源码第 ``466``—``469`` 行；所属函数 ``useEffect callback @ 430``。
 
 **参数**
 
@@ -841,17 +841,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``、``window.requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:18745:19113:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:19091:19459:FUNCTION
 
-.. rubric:: ``returned callback @ 474``
+.. rubric:: ``returned callback @ 476``
 
 .. code-block:: javascript
 
-   returned callback @ 474()
+   returned callback @ 476()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``474``—``480`` 行；所属函数 ``useEffect callback @ 436``。
+**性质**：同步局部函数；源码第 ``476``—``482`` 行；所属函数 ``useEffect callback @ 430``。
 
 **参数**
 
@@ -867,7 +867,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``、``window.removeEventListener``、``window.visualViewport?.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:19249:19313:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:19595:19661:FUNCTION
 
 .. rubric:: ``updateSetting``
 
@@ -877,7 +877,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 更新与 ``Setting`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``485``—``485`` 行；所属函数 ``SubtitleSettingsMenuPortal``。
+**性质**：同步局部函数；源码第 ``487``—``487`` 行；所属函数 ``SubtitleSettingsMenuPortal``。
 
 **参数**
 
@@ -893,17 +893,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``onSettingsChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:19956:19990:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:20304:20338:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 499``
+.. rubric:: ``onPointerDown callback @ 501``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 499(event)
+   onPointerDown callback @ 501(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``499``—``499`` 行；所属函数 ``SubtitleSettingsMenuPortal``。
+**性质**：同步局部函数；源码第 ``501``—``501`` 行；所属函数 ``SubtitleSettingsMenuPortal``。
 
 **参数**
 
@@ -916,17 +916,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:21711:23606:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:22061:24003:FUNCTION
 
-.. rubric:: ``SUBTITLE_QUICK_POSITIONS.map callback @ 531``
+.. rubric:: ``SUBTITLE_QUICK_POSITIONS.map callback @ 533``
 
 .. code-block:: javascript
 
-   SUBTITLE_QUICK_POSITIONS.map callback @ 531(item)
+   SUBTITLE_QUICK_POSITIONS.map callback @ 533(item)
 
 作为 ``SUBTITLE_QUICK_POSITIONS.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``531``—``560`` 行；所属函数 ``SubtitleSettingsMenuPortal``。
+**性质**：同步局部函数；源码第 ``533``—``563`` 行；所属函数 ``SubtitleSettingsMenuPortal``。
 
 **参数**
 
@@ -941,17 +941,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:22220:22250:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:22572:22602:FUNCTION
 
-.. rubric:: ``onClick callback @ 540``
+.. rubric:: ``onClick callback @ 542``
 
 .. code-block:: javascript
 
-   onClick callback @ 540()
+   onClick callback @ 542()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``540``—``540`` 行；所属函数 ``SUBTITLE_QUICK_POSITIONS.map callback @ 531``。
+**性质**：同步局部函数；源码第 ``542``—``542`` 行；所属函数 ``SUBTITLE_QUICK_POSITIONS.map callback @ 533``。
 
 **参数**
 
@@ -963,30 +963,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``onPositionSelect``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:24197:24242:FUNCTION
-
-.. rubric:: ``onChange callback @ 573``
-
-.. code-block:: javascript
-
-   onChange callback @ 573(value)
-
-处理 ``Change`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``573``—``573`` 行；所属函数 ``SubtitleSettingsMenuPortal``。
-
-**参数**
-
-``value``
-   待读取、转换或校验的值。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``updateSetting``。
-
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:24551:24597:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:24689:24734:FUNCTION
 
 .. rubric:: ``onChange callback @ 580``
 
@@ -1009,7 +986,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``updateSetting``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:24903:24948:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:25043:25089:FUNCTION
 
 .. rubric:: ``onChange callback @ 587``
 
@@ -1032,7 +1009,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``updateSetting``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:25277:25329:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:25395:25440:FUNCTION
 
 .. rubric:: ``onChange callback @ 594``
 
@@ -1055,7 +1032,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``updateSetting``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:25633:25678:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:25769:25821:FUNCTION
 
 .. rubric:: ``onChange callback @ 601``
 
@@ -1078,17 +1055,40 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``updateSetting``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:25793:79837:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:26125:26170:FUNCTION
 
-.. rubric:: ``memo callback @ 608``
+.. rubric:: ``onChange callback @ 608``
 
 .. code-block:: javascript
 
-   memo callback @ 608({ speechState, message, autoFollowEnabled = false, onAutoFollowToggle, subtitlesEnabled = true, onS…)
+   onChange callback @ 608(value)
+
+处理 ``Change`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``608``—``608`` 行；所属函数 ``SubtitleSettingsMenuPortal``。
+
+**参数**
+
+``value``
+   待读取、转换或校验的值。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``updateSetting``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:26285:88765:FUNCTION
+
+.. rubric:: ``memo callback @ 616``
+
+.. code-block:: javascript
+
+   memo callback @ 616({ speechState, message, autoFollowEnabled = false, onAutoFollowToggle, subtitlesEnabled = true, onS…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``608``—``1675`` 行。
+**性质**：同步局部函数；源码第 ``616``—``1792`` 行。
 
 **参数**
 
@@ -1106,19 +1106,19 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``ACTIVE_STATUSES.has``、``useRef``、``useState``、``useMemo``、``useEffect``、``useCallback``、``segments.findIndex``、``Math.max``、``fallbackText``、``Number``、``Array.isArray``、``browserVoiceOptions.some``。
 
-**内部回调数量**：55。这些回调也会在本页逐项说明。
+**内部回调数量**：56。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:28346:29083:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:28737:29524:FUNCTION
 
-.. rubric:: ``useMemo callback @ 654``
+.. rubric:: ``useMemo callback @ 666``
 
 .. code-block:: javascript
 
-   useMemo callback @ 654()
+   useMemo callback @ 666()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``654``—``670`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``666``—``682`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1132,17 +1132,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:28592:28656:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:28999:29065:FUNCTION
 
-.. rubric:: ``segments.find callback @ 659``
+.. rubric:: ``segments.find callback @ 671``
 
 .. code-block:: javascript
 
-   segments.find callback @ 659(item)
+   segments.find callback @ 671(item)
 
 作为 ``segments.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``659``—``659`` 行；所属函数 ``useMemo callback @ 654``。
+**性质**：同步局部函数；源码第 ``671``—``671`` 行；所属函数 ``useMemo callback @ 666``。
 
 **参数**
 
@@ -1155,17 +1155,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:29228:29371:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:29732:29887:FUNCTION
 
-.. rubric:: ``useEffect callback @ 672``
+.. rubric:: ``useEffect callback @ 689``
 
 .. code-block:: javascript
 
-   useEffect callback @ 672()
+   useEffect callback @ 689()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``672``—``675`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``689``—``692`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1177,17 +1177,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setLocalSetting``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:29407:30078:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:29926:30637:FUNCTION
 
-.. rubric:: ``useEffect callback @ 678``
+.. rubric:: ``useEffect callback @ 694``
 
 .. code-block:: javascript
 
-   useEffect callback @ 678()
+   useEffect callback @ 694()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``678``—``688`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``694``—``704`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1206,7 +1206,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:29512:29585:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:30039:30112:FUNCTION
 
 .. rubric:: ``handlePositionChange``
 
@@ -1216,7 +1216,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 处理 ``Position Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``680``—``680`` 行；所属函数 ``useEffect callback @ 678``。
+**性质**：同步局部函数；源码第 ``696``—``696`` 行；所属函数 ``useEffect callback @ 694``。
 
 **参数**
 
@@ -1229,7 +1229,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitlePosition``、``normalizeSubtitlePosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:29620:29687:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:30151:30218:FUNCTION
 
 .. rubric:: ``handleStyleChange``
 
@@ -1239,7 +1239,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 处理 ``Style Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``681``—``681`` 行；所属函数 ``useEffect callback @ 678``。
+**性质**：同步局部函数；源码第 ``697``—``697`` 行；所属函数 ``useEffect callback @ 694``。
 
 **参数**
 
@@ -1252,17 +1252,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitleStyle``、``normalizeSubtitleStyle``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:29871:30071:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:30414:30626:FUNCTION
 
-.. rubric:: ``returned callback @ 684``
+.. rubric:: ``returned callback @ 700``
 
 .. code-block:: javascript
 
-   returned callback @ 684()
+   returned callback @ 700()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``684``—``687`` 行；所属函数 ``useEffect callback @ 678``。
+**性质**：同步局部函数；源码第 ``700``—``703`` 行；所属函数 ``useEffect callback @ 694``。
 
 **参数**
 
@@ -1278,17 +1278,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:30100:30243:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:30663:30818:FUNCTION
 
-.. rubric:: ``useEffect callback @ 690``
+.. rubric:: ``useEffect callback @ 706``
 
 .. code-block:: javascript
 
-   useEffect callback @ 690()
+   useEffect callback @ 706()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``690``—``693`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``706``—``709`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1302,17 +1302,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:30203:30236:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:30774:30807:FUNCTION
 
-.. rubric:: ``returned callback @ 692``
+.. rubric:: ``returned callback @ 708``
 
 .. code-block:: javascript
 
-   returned callback @ 692()
+   returned callback @ 708()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``692``—``692`` 行；所属函数 ``useEffect callback @ 690``。
+**性质**：同步局部函数；源码第 ``708``—``708`` 行；所属函数 ``useEffect callback @ 706``。
 
 **参数**
 
@@ -1324,17 +1324,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``showSubtitlePreview``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:30343:30930:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:30922:31575:FUNCTION
 
-.. rubric:: ``useCallback callback @ 695``
+.. rubric:: ``useCallback callback @ 711``
 
 .. code-block:: javascript
 
-   useCallback callback @ 695()
+   useCallback callback @ 711()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``695``—``712`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``711``—``728`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1348,17 +1348,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:30491:30922:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:31082:31563:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 699``
+.. rubric:: ``setFloatingState callback @ 715``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 699(prev)
+   setFloatingState callback @ 715(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``699``—``711`` 行；所属函数 ``useCallback callback @ 695``。
+**性质**：同步局部函数；源码第 ``715``—``727`` 行；所属函数 ``useCallback callback @ 711``。
 
 **参数**
 
@@ -1371,17 +1371,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``normalizePanelState``、``getViewportSize``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:30952:31398:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:31601:32083:FUNCTION
 
-.. rubric:: ``useEffect callback @ 714``
+.. rubric:: ``useEffect callback @ 730``
 
 .. code-block:: javascript
 
-   useEffect callback @ 714()
+   useEffect callback @ 730()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``714``—``724`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``730``—``740`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1400,17 +1400,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:31213:31391:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:31882:32072:FUNCTION
 
-.. rubric:: ``returned callback @ 720``
+.. rubric:: ``returned callback @ 736``
 
 .. code-block:: javascript
 
-   returned callback @ 720()
+   returned callback @ 736()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``720``—``723`` 行；所属函数 ``useEffect callback @ 714``。
+**性质**：同步局部函数；源码第 ``736``—``739`` 行；所属函数 ``useEffect callback @ 730``。
 
 **参数**
 
@@ -1426,17 +1426,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.removeEventListener``、``window.visualViewport?.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:31439:31624:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:32128:32329:FUNCTION
 
-.. rubric:: ``useEffect callback @ 726``
+.. rubric:: ``useEffect callback @ 742``
 
 .. code-block:: javascript
 
-   useEffect callback @ 726()
+   useEffect callback @ 742()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``726``—``730`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``742``—``746`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1454,17 +1454,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:31576:31617:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:32277:32318:FUNCTION
 
-.. rubric:: ``returned callback @ 729``
+.. rubric:: ``returned callback @ 745``
 
 .. code-block:: javascript
 
-   returned callback @ 729()
+   returned callback @ 745()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``729``—``729`` 行；所属函数 ``useEffect callback @ 726``。
+**性质**：同步局部函数；源码第 ``745``—``745`` 行；所属函数 ``useEffect callback @ 742``。
 
 **参数**
 
@@ -1480,17 +1480,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:31755:32536:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:32547:33394:FUNCTION
 
-.. rubric:: ``useEffect callback @ 732``
+.. rubric:: ``useEffect callback @ 755``
 
 .. code-block:: javascript
 
-   useEffect callback @ 732()
+   useEffect callback @ 755()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``732``—``752`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``755``—``775`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1504,7 +1504,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:31969:32162:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:32777:32984:FUNCTION
 
 .. rubric:: ``updateWidth``
 
@@ -1514,7 +1514,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 更新与 ``Width`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``738``—``741`` 行；所属函数 ``useEffect callback @ 732``。
+**性质**：同步局部函数；源码第 ``761``—``764`` 行；所属函数 ``useEffect callback @ 755``。
 
 **参数**
 
@@ -1529,17 +1529,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:32080:32150:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:32896:32968:FUNCTION
 
-.. rubric:: ``setMeasuredPanelWidth callback @ 740``
+.. rubric:: ``setMeasuredPanelWidth callback @ 763``
 
 .. code-block:: javascript
 
-   setMeasuredPanelWidth callback @ 740(prev)
+   setMeasuredPanelWidth callback @ 763(prev)
 
 设置与 ``Measured Panel Width`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``740``—``740`` 行；所属函数 ``updateWidth``。
+**性质**：同步局部函数；源码第 ``763``—``763`` 行；所属函数 ``updateWidth``。
 
 **参数**
 
@@ -1552,17 +1552,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``Math.abs``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:32337:32451:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:33171:33297:FUNCTION
 
-.. rubric:: ``anonymous callback @ 746``
+.. rubric:: ``anonymous callback @ 769``
 
 .. code-block:: javascript
 
-   anonymous callback @ 746(entries)
+   anonymous callback @ 769(entries)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``746``—``749`` 行；所属函数 ``useEffect callback @ 732``。
+**性质**：同步局部函数；源码第 ``769``—``772`` 行；所属函数 ``useEffect callback @ 755``。
 
 **参数**
 
@@ -1575,17 +1575,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``updateWidth``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:32501:32529:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:33355:33383:FUNCTION
 
-.. rubric:: ``returned callback @ 751``
+.. rubric:: ``returned callback @ 774``
 
 .. code-block:: javascript
 
-   returned callback @ 751()
+   returned callback @ 774()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``751``—``751`` 行；所属函数 ``useEffect callback @ 732``。
+**性质**：同步局部函数；源码第 ``774``—``774`` 行；所属函数 ``useEffect callback @ 755``。
 
 **参数**
 
@@ -1597,17 +1597,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``observer.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:32618:33864:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:33480:34842:FUNCTION
 
-.. rubric:: ``useEffect callback @ 754``
+.. rubric:: ``useEffect callback @ 777``
 
 .. code-block:: javascript
 
-   useEffect callback @ 754()
+   useEffect callback @ 777()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``754``—``787`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``777``—``810`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1626,7 +1626,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:32960:33040:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:33850:33938:FUNCTION
 
 .. rubric:: ``updateInteractionMode``
 
@@ -1636,7 +1636,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 更新与 ``Interaction Mode`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``763``—``765`` 行；所属函数 ``useEffect callback @ 754``。
+**性质**：同步局部函数；源码第 ``786``—``788`` 行；所属函数 ``useEffect callback @ 777``。
 
 **参数**
 
@@ -1648,17 +1648,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setIsMobileInteraction``、``getIsMobileInteraction``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:33105:33359:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:34011:34289:FUNCTION
 
-.. rubric:: ``mediaQueries.forEach callback @ 768``
+.. rubric:: ``mediaQueries.forEach callback @ 791``
 
 .. code-block:: javascript
 
-   mediaQueries.forEach callback @ 768(query)
+   mediaQueries.forEach callback @ 791(query)
 
 作为 ``mediaQueries.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``768``—``774`` 行；所属函数 ``useEffect callback @ 754``。
+**性质**：同步局部函数；源码第 ``791``—``797`` 行；所属函数 ``useEffect callback @ 777``。
 
 **参数**
 
@@ -1675,17 +1675,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``query.addEventListener``、``query.addListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:33443:33857:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:34381:34831:FUNCTION
 
-.. rubric:: ``returned callback @ 777``
+.. rubric:: ``returned callback @ 800``
 
 .. code-block:: javascript
 
-   returned callback @ 777()
+   returned callback @ 800()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``777``—``786`` 行；所属函数 ``useEffect callback @ 754``。
+**性质**：同步局部函数；源码第 ``800``—``809`` 行；所属函数 ``useEffect callback @ 777``。
 
 **参数**
 
@@ -1703,17 +1703,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:33485:33772:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:34427:34738:FUNCTION
 
-.. rubric:: ``mediaQueries.forEach callback @ 778``
+.. rubric:: ``mediaQueries.forEach callback @ 801``
 
 .. code-block:: javascript
 
-   mediaQueries.forEach callback @ 778(query)
+   mediaQueries.forEach callback @ 801(query)
 
 作为 ``mediaQueries.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``778``—``784`` 行；所属函数 ``returned callback @ 777``。
+**性质**：同步局部函数；源码第 ``801``—``807`` 行；所属函数 ``returned callback @ 800``。
 
 **参数**
 
@@ -1726,17 +1726,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``query.removeEventListener``、``query.removeListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:33920:34886:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:34902:36028:FUNCTION
 
-.. rubric:: ``useCallback callback @ 789``
+.. rubric:: ``useCallback callback @ 812``
 
 .. code-block:: javascript
 
-   useCallback callback @ 789()
+   useCallback callback @ 812()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``789``—``809`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``812``—``838`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1748,17 +1748,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``speedButtonRef.current?.getBoundingClientRect``、``getViewportSize``、``clamp``、``Math.max``、``setSpeedMenuPosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:34934:35207:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:36080:36385:FUNCTION
 
-.. rubric:: ``useCallback callback @ 811``
+.. rubric:: ``useCallback callback @ 840``
 
 .. code-block:: javascript
 
-   useCallback callback @ 811()
+   useCallback callback @ 840()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``811``—``819`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``840``—``848`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1776,17 +1776,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:34967:35199:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:36117:36373:FUNCTION
 
-.. rubric:: ``setSpeedMenuOpen callback @ 812``
+.. rubric:: ``setSpeedMenuOpen callback @ 841``
 
 .. code-block:: javascript
 
-   setSpeedMenuOpen callback @ 812(open)
+   setSpeedMenuOpen callback @ 841(open)
 
 设置与 ``Speed Menu Open`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``812``—``818`` 行；所属函数 ``useCallback callback @ 811``。
+**性质**：同步局部函数；源码第 ``841``—``847`` 行；所属函数 ``useCallback callback @ 840``。
 
 **参数**
 
@@ -1803,17 +1803,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:35252:35859:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:36434:37085:FUNCTION
 
-.. rubric:: ``useEffect callback @ 821``
+.. rubric:: ``useEffect callback @ 850``
 
 .. code-block:: javascript
 
-   useEffect callback @ 821()
+   useEffect callback @ 850()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``821``—``834`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``850``—``863`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1832,17 +1832,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:35585:35852:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:36791:37074:FUNCTION
 
-.. rubric:: ``returned callback @ 829``
+.. rubric:: ``returned callback @ 858``
 
 .. code-block:: javascript
 
-   returned callback @ 829()
+   returned callback @ 858()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``829``—``833`` 行；所属函数 ``useEffect callback @ 821``。
+**性质**：同步局部函数；源码第 ``858``—``862`` 行；所属函数 ``useEffect callback @ 850``。
 
 **参数**
 
@@ -1858,17 +1858,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.removeEventListener``、``window.visualViewport?.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:35919:36747:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:37149:38049:FUNCTION
 
-.. rubric:: ``useEffect callback @ 836``
+.. rubric:: ``useEffect callback @ 865``
 
 .. code-block:: javascript
 
-   useEffect callback @ 836()
+   useEffect callback @ 865()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``836``—``857`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``865``—``886`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1887,7 +1887,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:36007:36307:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:37245:37569:FUNCTION
 
 .. rubric:: ``handlePointerDown``
 
@@ -1897,7 +1897,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``839``—``845`` 行；所属函数 ``useEffect callback @ 836``。
+**性质**：同步局部函数；源码第 ``868``—``874`` 行；所属函数 ``useEffect callback @ 865``。
 
 **参数**
 
@@ -1910,7 +1910,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``panelRef.current?.contains``、``speedMenuRef.current?.contains``、``subtitlePositionMenuRef.current?.contains``、``setSpeedMenuOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:36339:36427:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:37605:37701:FUNCTION
 
 .. rubric:: ``handleKeyDown``
 
@@ -1920,7 +1920,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 处理 ``Key Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``847``—``849`` 行；所属函数 ``useEffect callback @ 836``。
+**性质**：同步局部函数；源码第 ``876``—``878`` 行；所属函数 ``useEffect callback @ 865``。
 
 **参数**
 
@@ -1933,17 +1933,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSpeedMenuOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:36576:36740:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:37862:38038:FUNCTION
 
-.. rubric:: ``returned callback @ 853``
+.. rubric:: ``returned callback @ 882``
 
 .. code-block:: javascript
 
-   returned callback @ 853()
+   returned callback @ 882()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``853``—``856`` 行；所属函数 ``useEffect callback @ 836``。
+**性质**：同步局部函数；源码第 ``882``—``885`` 行；所属函数 ``useEffect callback @ 865``。
 
 **参数**
 
@@ -1959,17 +1959,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:36782:37595:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:38088:38969:FUNCTION
 
-.. rubric:: ``useEffect callback @ 859``
+.. rubric:: ``useEffect callback @ 888``
 
 .. code-block:: javascript
 
-   useEffect callback @ 859()
+   useEffect callback @ 888()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``859``—``878`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``888``—``907`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -1988,7 +1988,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:36881:37145:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:38195:38479:FUNCTION
 
 .. rubric:: ``handlePointerDown``
 
@@ -1998,7 +1998,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``862``—``867`` 行；所属函数 ``useEffect callback @ 859``。
+**性质**：同步局部函数；源码第 ``891``—``896`` 行；所属函数 ``useEffect callback @ 888``。
 
 **参数**
 
@@ -2011,7 +2011,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``subtitlePositionButtonRef.current?.contains``、``subtitlePositionMenuRef.current?.contains``、``setSubtitlePositionMenuOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:37176:37275:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:38514:38621:FUNCTION
 
 .. rubric:: ``handleKeyDown``
 
@@ -2021,7 +2021,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 处理 ``Key Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``868``—``870`` 行；所属函数 ``useEffect callback @ 859``。
+**性质**：同步局部函数；源码第 ``897``—``899`` 行；所属函数 ``useEffect callback @ 888``。
 
 **参数**
 
@@ -2034,17 +2034,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitlePositionMenuOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:37424:37588:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:38782:38958:FUNCTION
 
-.. rubric:: ``returned callback @ 874``
+.. rubric:: ``returned callback @ 903``
 
 .. code-block:: javascript
 
-   returned callback @ 874()
+   returned callback @ 903()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``874``—``877`` 行；所属函数 ``useEffect callback @ 859``。
+**性质**：同步局部函数；源码第 ``903``—``906`` 行；所属函数 ``useEffect callback @ 888``。
 
 **参数**
 
@@ -2060,17 +2060,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:37674:37793:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:39052:39185:FUNCTION
 
-.. rubric:: ``useCallback callback @ 880``
+.. rubric:: ``useCallback callback @ 909``
 
 .. code-block:: javascript
 
-   useCallback callback @ 880(item)
+   useCallback callback @ 909(item)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``880``—``883`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``909``—``912`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2083,17 +2083,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``saveSubtitlePosition``、``setSubtitlePosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:37845:37942:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:39241:39350:FUNCTION
 
-.. rubric:: ``useCallback callback @ 885``
+.. rubric:: ``useCallback callback @ 914``
 
 .. code-block:: javascript
 
-   useCallback callback @ 885(value)
+   useCallback callback @ 914(value)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``885``—``888`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``914``—``917`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2106,17 +2106,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``saveSubtitleStyle``、``setSubtitleStyle``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:37996:38139:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:39408:39567:FUNCTION
 
-.. rubric:: ``useCallback callback @ 890``
+.. rubric:: ``useCallback callback @ 919``
 
 .. code-block:: javascript
 
-   useCallback callback @ 890()
+   useCallback callback @ 919()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``890``—``894`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``919``—``923`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2128,17 +2128,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``resetSubtitleAppearance``、``setSubtitlePosition``、``setSubtitleStyle``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:38190:38357:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:39622:39809:FUNCTION
 
-.. rubric:: ``useCallback callback @ 896``
+.. rubric:: ``useCallback callback @ 925``
 
 .. code-block:: javascript
 
-   useCallback callback @ 896()
+   useCallback callback @ 925()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``896``—``901`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``925``—``930`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2154,17 +2154,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:38410:38816:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:39866:40306:FUNCTION
 
-.. rubric:: ``useCallback callback @ 903``
+.. rubric:: ``useCallback callback @ 932``
 
 .. code-block:: javascript
 
-   useCallback callback @ 903()
+   useCallback callback @ 932()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``903``—``911`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``932``—``940`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2182,17 +2182,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:38608:38803:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:40076:40289:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 907``
+.. rubric:: ``window.setTimeout callback @ 936``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 907()
+   window.setTimeout callback @ 936()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``907``—``910`` 行；所属函数 ``useCallback callback @ 903``。
+**性质**：同步局部函数；源码第 ``936``—``939`` 行；所属函数 ``useCallback callback @ 932``。
 
 **参数**
 
@@ -2206,17 +2206,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:38732:38791:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:40208:40273:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 909``
+.. rubric:: ``setFloatingState callback @ 938``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 909(prev)
+   setFloatingState callback @ 938(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``909``—``909`` 行；所属函数 ``window.setTimeout callback @ 907``。
+**性质**：同步局部函数；源码第 ``938``—``938`` 行；所属函数 ``window.setTimeout callback @ 936``。
 
 **参数**
 
@@ -2227,17 +2227,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:38909:38998:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:40403:40504:FUNCTION
 
-.. rubric:: ``useCallback callback @ 913``
+.. rubric:: ``useCallback callback @ 942``
 
 .. code-block:: javascript
 
-   useCallback callback @ 913()
+   useCallback callback @ 942()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``913``—``916`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``942``—``945`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2249,17 +2249,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``clearCollapseTimer``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:39070:39162:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:40580:40684:FUNCTION
 
-.. rubric:: ``useCallback callback @ 918``
+.. rubric:: ``useCallback callback @ 947``
 
 .. code-block:: javascript
 
-   useCallback callback @ 918()
+   useCallback callback @ 947()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``918``—``921`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``947``—``950`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2271,17 +2271,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``scheduleDockCollapse``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:39247:39312:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:40773:40846:FUNCTION
 
-.. rubric:: ``useCallback callback @ 923``
+.. rubric:: ``useCallback callback @ 952``
 
 .. code-block:: javascript
 
-   useCallback callback @ 923(open)
+   useCallback callback @ 952(open)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``923``—``925`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``952``—``954`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2294,17 +2294,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setBrowserVoiceMenuOpen``、``Boolean``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:39334:39981:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:40872:41611:FUNCTION
 
-.. rubric:: ``useEffect callback @ 927``
+.. rubric:: ``useEffect callback @ 956``
 
 .. code-block:: javascript
 
-   useEffect callback @ 927()
+   useEffect callback @ 956()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``927``—``942`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``956``—``972`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2318,17 +2318,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:39728:39787:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:41328:41393:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 935``
+.. rubric:: ``setFloatingState callback @ 965``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 935(prev)
+   setFloatingState callback @ 965(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``935``—``935`` 行；所属函数 ``useEffect callback @ 927``。
+**性质**：同步局部函数；源码第 ``965``—``965`` 行；所属函数 ``useEffect callback @ 956``。
 
 **参数**
 
@@ -2339,17 +2339,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:40245:41171:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:41939:43160:FUNCTION
 
-.. rubric:: ``useCallback callback @ 952``
+.. rubric:: ``useCallback callback @ 984``
 
 .. code-block:: javascript
 
-   useCallback callback @ 952(clientX, clientY)
+   useCallback callback @ 984(clientX, clientY)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``952``—``968`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``984``—``1008`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2367,17 +2367,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:41094:41163:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:43071:43144:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 967``
+.. rubric:: ``setFloatingState callback @ 1007``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 967(prev)
+   setFloatingState callback @ 1007(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``967``—``967`` 行；所属函数 ``useCallback callback @ 952``。
+**性质**：同步局部函数；源码第 ``1007``—``1007`` 行；所属函数 ``useCallback callback @ 984``。
 
 **参数**
 
@@ -2388,17 +2388,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:41271:42445:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:43286:44723:FUNCTION
 
-.. rubric:: ``useCallback callback @ 970``
+.. rubric:: ``useCallback callback @ 1013``
 
 .. code-block:: javascript
 
-   useCallback callback @ 970(clientX, clientY)
+   useCallback callback @ 1013(clientX, clientY)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``970``—``1003`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1013``—``1046`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2416,17 +2416,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:42252:42437:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:44464:44707:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 995``
+.. rubric:: ``setFloatingState callback @ 1038``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 995(prev)
+   setFloatingState callback @ 1038(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``995``—``1002`` 行；所属函数 ``useCallback callback @ 970``。
+**性质**：同步局部函数；源码第 ``1038``—``1045`` 行；所属函数 ``useCallback callback @ 1013``。
 
 **参数**
 
@@ -2439,17 +2439,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``getDockedX``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:42509:43972:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:44813:46394:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1005``
+.. rubric:: ``useCallback callback @ 1050``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1005(clientX)
+   useCallback callback @ 1050(clientX)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1005``—``1038`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1050``—``1083`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2464,17 +2464,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:43827:43964:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:46219:46382:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 1031``
+.. rubric:: ``setFloatingState callback @ 1076``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 1031(prev)
+   setFloatingState callback @ 1076(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1031``—``1037`` 行；所属函数 ``useCallback callback @ 1005``。
+**性质**：同步局部函数；源码第 ``1076``—``1082`` 行；所属函数 ``useCallback callback @ 1050``。
 
 **参数**
 
@@ -2485,17 +2485,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:44022:45967:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:46448:48587:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1040``
+.. rubric:: ``useCallback callback @ 1085``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1040()
+   useCallback callback @ 1085()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1040``—``1094`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1085``—``1139`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2513,17 +2513,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:44607:44644:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:47083:47124:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 1055``
+.. rubric:: ``setFloatingState callback @ 1100``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 1055(prev)
+   setFloatingState callback @ 1100(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1055``—``1055`` 行；所属函数 ``useCallback callback @ 1040``。
+**性质**：同步局部函数；源码第 ``1100``—``1100`` 行；所属函数 ``useCallback callback @ 1085``。
 
 **参数**
 
@@ -2534,17 +2534,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:44715:45138:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:47207:47668:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 1059``
+.. rubric:: ``setFloatingState callback @ 1104``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 1059(prev)
+   setFloatingState callback @ 1104(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1059``—``1069`` 行；所属函数 ``useCallback callback @ 1040``。
+**性质**：同步局部函数；源码第 ``1104``—``1114`` 行；所属函数 ``useCallback callback @ 1085``。
 
 **参数**
 
@@ -2557,17 +2557,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``normalizePanelState``、``getDockedX``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:45171:45251:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:47705:47793:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 1070``
+.. rubric:: ``window.setTimeout callback @ 1115``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 1070()
+   window.setTimeout callback @ 1115()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1070``—``1072`` 行；所属函数 ``useCallback callback @ 1040``。
+**性质**：同步局部函数；源码第 ``1115``—``1117`` 行；所属函数 ``useCallback callback @ 1085``。
 
 **参数**
 
@@ -2577,17 +2577,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:45351:45959:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:47909:48575:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 1078``
+.. rubric:: ``setFloatingState callback @ 1123``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 1078(prev)
+   setFloatingState callback @ 1123(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1078``—``1093`` 行；所属函数 ``useCallback callback @ 1040``。
+**性质**：同步局部函数；源码第 ``1123``—``1138`` 行；所属函数 ``useCallback callback @ 1085``。
 
 **参数**
 
@@ -2600,17 +2600,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``normalizePanelState``、``getDockCandidate``、``getDockedX``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:46008:47032:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:48632:49744:FUNCTION
 
-.. rubric:: ``useEffect callback @ 1096``
+.. rubric:: ``useEffect callback @ 1141``
 
 .. code-block:: javascript
 
-   useEffect callback @ 1096()
+   useEffect callback @ 1141()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1096``—``1121`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1141``—``1166`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2629,7 +2629,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:46049:46514:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:48677:49186:FUNCTION
 
 .. rubric:: ``handlePointerMove``
 
@@ -2639,7 +2639,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 处理 ``Pointer Move`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1097``—``1108`` 行；所属函数 ``useEffect callback @ 1096``。
+**性质**：同步局部函数；源码第 ``1142``—``1153`` 行；所属函数 ``useEffect callback @ 1141``。
 
 **参数**
 
@@ -2652,7 +2652,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``updateResize``、``updateCollapsedDragPosition``、``updateDragPosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:46548:46574:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:49224:49250:FUNCTION
 
 .. rubric:: ``handlePointerUp``
 
@@ -2662,7 +2662,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 处理 ``Pointer Up`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1110``—``1110`` 行；所属函数 ``useEffect callback @ 1096``。
+**性质**：同步局部函数；源码第 ``1155``—``1155`` 行；所属函数 ``useEffect callback @ 1141``。
 
 **参数**
 
@@ -2674,17 +2674,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``finishInteraction``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:46789:47025:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:49481:49733:FUNCTION
 
-.. rubric:: ``returned callback @ 1116``
+.. rubric:: ``returned callback @ 1161``
 
 .. code-block:: javascript
 
-   returned callback @ 1116()
+   returned callback @ 1161()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1116``—``1120`` 行；所属函数 ``useEffect callback @ 1096``。
+**性质**：同步局部函数；源码第 ``1161``—``1165`` 行；所属函数 ``useEffect callback @ 1141``。
 
 **参数**
 
@@ -2700,17 +2700,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:47160:47940:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:49876:50825:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1123``
+.. rubric:: ``useCallback callback @ 1169``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1123(event)
+   useCallback callback @ 1169(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1123``—``1144`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1169``—``1190`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2729,17 +2729,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:47863:47900:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:50728:50769:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 1142``
+.. rubric:: ``setFloatingState callback @ 1188``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 1142(prev)
+   setFloatingState callback @ 1188(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1142``—``1142`` 行；所属函数 ``useCallback callback @ 1123``。
+**性质**：同步局部函数；源码第 ``1188``—``1188`` 行；所属函数 ``useCallback callback @ 1169``。
 
 **参数**
 
@@ -2750,17 +2750,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:48015:48926:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:50926:52026:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1146``
+.. rubric:: ``useCallback callback @ 1195``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1146(event)
+   useCallback callback @ 1195(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1146``—``1171`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1195``—``1220`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2777,17 +2777,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSpeedMenuOpen``、``clearCollapseTimer``、``event.currentTarget?.getBoundingClientRect``、``event.currentTarget?.setPointerCapture``、``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:49016:49836:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:52141:53146:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1174``
+.. rubric:: ``useCallback callback @ 1225``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1174(event, direction)
+   useCallback callback @ 1225(event, direction)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1174``—``1197`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1225``—``1248`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2809,17 +2809,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:49726:49763:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:53008:53049:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 1194``
+.. rubric:: ``setFloatingState callback @ 1245``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 1194(prev)
+   setFloatingState callback @ 1245(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1194``—``1194`` 行；所属函数 ``useCallback callback @ 1174``。
+**性质**：同步局部函数；源码第 ``1245``—``1245`` 行；所属函数 ``useCallback callback @ 1225``。
 
 **参数**
 
@@ -2830,17 +2830,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:49918:50416:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:53254:53923:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1199``
+.. rubric:: ``useCallback callback @ 1252``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1199(side)
+   useCallback callback @ 1252(side)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1199``—``1212`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1252``—``1270`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2851,21 +2851,21 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``setSpeedMenuOpen``、``getViewportSize``、``setFloatingState``。
+**主要协作调用**：``setSpeedMenuOpen``、``setVolumeMenuOpen``、``getViewportSize``、``setFloatingState``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:50042:50408:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:53428:53911:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 1202``
+.. rubric:: ``setFloatingState callback @ 1256``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 1202(prev)
+   setFloatingState callback @ 1256(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1202``—``1211`` 行；所属函数 ``useCallback callback @ 1199``。
+**性质**：同步局部函数；源码第 ``1256``—``1269`` 行；所属函数 ``useCallback callback @ 1252``。
 
 **参数**
 
@@ -2878,17 +2878,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``clamp``、``getDefaultWidth``、``getMinPanelWidth``、``getMaxPanelWidth``、``getDockedX``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:50460:50485:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:53971:53996:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1214``
+.. rubric:: ``useCallback callback @ 1272``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1214()
+   useCallback callback @ 1272()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1214``—``1214`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1272``—``1272`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2900,17 +2900,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``dockToSide``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:50534:50642:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:54049:54173:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1216``
+.. rubric:: ``useCallback callback @ 1274``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1216()
+   useCallback callback @ 1274()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1216``—``1219`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1274``—``1277`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2924,17 +2924,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:50597:50634:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:54120:54161:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 1218``
+.. rubric:: ``setFloatingState callback @ 1276``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 1218(prev)
+   setFloatingState callback @ 1276(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1218``—``1218`` 行；所属函数 ``useCallback callback @ 1216``。
+**性质**：同步局部函数；源码第 ``1276``—``1276`` 行；所属函数 ``useCallback callback @ 1274``。
 
 **参数**
 
@@ -2945,17 +2945,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:50713:50956:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:54248:54568:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1221``
+.. rubric:: ``useCallback callback @ 1280``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1221(event)
+   useCallback callback @ 1280(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1221``—``1229`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1280``—``1288`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2968,17 +2968,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``undock``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:51009:51172:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:54647:54870:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1231``
+.. rubric:: ``useCallback callback @ 1292``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1231()
+   useCallback callback @ 1292()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1231``—``1235`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1292``—``1297`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -2988,21 +2988,21 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``clearCollapseTimer``、``setSpeedMenuOpen``、``setFloatingState``。
+**主要协作调用**：``clearCollapseTimer``、``setSpeedMenuOpen``、``setVolumeMenuOpen``、``setFloatingState``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:51105:51164:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:54793:54858:FUNCTION
 
-.. rubric:: ``setFloatingState callback @ 1234``
+.. rubric:: ``setFloatingState callback @ 1296``
 
 .. code-block:: javascript
 
-   setFloatingState callback @ 1234(prev)
+   setFloatingState callback @ 1296(prev)
 
 设置与 ``Floating State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1234``—``1234`` 行；所属函数 ``useCallback callback @ 1231``。
+**性质**：同步局部函数；源码第 ``1296``—``1296`` 行；所属函数 ``useCallback callback @ 1292``。
 
 **参数**
 
@@ -3013,17 +3013,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:51212:52289:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:54914:56158:FUNCTION
 
-.. rubric:: ``useEffect callback @ 1237``
+.. rubric:: ``useEffect callback @ 1299``
 
 .. code-block:: javascript
 
-   useEffect callback @ 1237()
+   useEffect callback @ 1299()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1237``—``1264`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1299``—``1327`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3042,7 +3042,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:51407:51809:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:55125:55630:FUNCTION
 
 .. rubric:: ``handlePointerDownOutside``
 
@@ -3052,7 +3052,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 处理 ``Pointer Down Outside`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1242``—``1249`` 行；所属函数 ``useEffect callback @ 1237``。
+**性质**：同步局部函数；源码第 ``1304``—``1312`` 行；所属函数 ``useEffect callback @ 1299``。
 
 **参数**
 
@@ -3063,9 +3063,9 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``panelRef.current?.contains``、``speedMenuRef.current?.contains``、``browserVoiceMenuRef.current?.contains``、``subtitlePositionMenuRef.current?.contains``、``collapseToDock``。
+**主要协作调用**：``panelRef.current?.contains``、``speedMenuRef.current?.contains``、``volumeMenuRef.current?.contains``、``browserVoiceMenuRef.current?.contains``、``subtitlePositionMenuRef.current?.contains``、``collapseToDock``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:51841:51954:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:55666:55795:FUNCTION
 
 .. rubric:: ``handleKeyDown``
 
@@ -3075,7 +3075,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 处理 ``Key Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1251``—``1255`` 行；所属函数 ``useEffect callback @ 1237``。
+**性质**：同步局部函数；源码第 ``1314``—``1318`` 行；所属函数 ``useEffect callback @ 1299``。
 
 **参数**
 
@@ -3088,17 +3088,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``collapseToDock``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:52111:52282:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:55964:56147:FUNCTION
 
-.. rubric:: ``returned callback @ 1260``
+.. rubric:: ``returned callback @ 1323``
 
 .. code-block:: javascript
 
-   returned callback @ 1260()
+   returned callback @ 1323()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1260``—``1263`` 行；所属函数 ``useEffect callback @ 1237``。
+**性质**：同步局部函数；源码第 ``1323``—``1326`` 行；所属函数 ``useEffect callback @ 1299``。
 
 **参数**
 
@@ -3114,17 +3114,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:52408:52440:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:56281:56313:FUNCTION
 
-.. rubric:: ``useEffect callback @ 1266``
+.. rubric:: ``useEffect callback @ 1329``
 
 .. code-block:: javascript
 
-   useEffect callback @ 1266()
+   useEffect callback @ 1329()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1266``—``1266`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1329``—``1329`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3136,17 +3136,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:52413:52440:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:56286:56313:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1266``
+.. rubric:: ``anonymous callback @ 1329``
 
 .. code-block:: javascript
 
-   anonymous callback @ 1266()
+   anonymous callback @ 1329()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1266``—``1266`` 行；所属函数 ``useEffect callback @ 1266``。
+**性质**：同步局部函数；源码第 ``1329``—``1329`` 行；所属函数 ``useEffect callback @ 1329``。
 
 **参数**
 
@@ -3158,17 +3158,39 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``clearCollapseTimer``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:52721:52758:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:56357:56428:FUNCTION
 
-.. rubric:: ``segments.findIndex callback @ 1273``
+.. rubric:: ``useEffect callback @ 1331``
 
 .. code-block:: javascript
 
-   segments.findIndex callback @ 1273(item)
+   useEffect callback @ 1331()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``1331``—``1333`` 行；所属函数 ``memo callback @ 616``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``setVolumeMenuOpen``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:56720:56759:FUNCTION
+
+.. rubric:: ``segments.findIndex callback @ 1340``
+
+.. code-block:: javascript
+
+   segments.findIndex callback @ 1340(item)
 
 实现 ``segments.findIndex`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1273``—``1273`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1340``—``1340`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3179,17 +3201,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:53388:53443:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:57417:57487:FUNCTION
 
-.. rubric:: ``browserVoiceOptions.some callback @ 1283``
+.. rubric:: ``browserVoiceOptions.some callback @ 1350``
 
 .. code-block:: javascript
 
-   browserVoiceOptions.some callback @ 1283(item)
+   browserVoiceOptions.some callback @ 1350(item)
 
 作为 ``browserVoiceOptions.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1283``—``1283`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1350``—``1350`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3200,17 +3222,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:54310:54765:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:58424:58961:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1298``
+.. rubric:: ``anonymous callback @ 1366``
 
 .. code-block:: javascript
 
-   anonymous callback @ 1298()
+   anonymous callback @ 1366()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1298``—``1304`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1366``—``1374`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3224,17 +3246,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:54377:54428:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:58497:58550:FUNCTION
 
-.. rubric:: ``browserVoiceOptions.find callback @ 1299``
+.. rubric:: ``browserVoiceOptions.find callback @ 1367``
 
 .. code-block:: javascript
 
-   browserVoiceOptions.find callback @ 1299(item)
+   browserVoiceOptions.find callback @ 1367(item)
 
 作为 ``browserVoiceOptions.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1299``—``1299`` 行；所属函数 ``anonymous callback @ 1298``。
+**性质**：同步局部函数；源码第 ``1367``—``1367`` 行；所属函数 ``anonymous callback @ 1366``。
 
 **参数**
 
@@ -3245,7 +3267,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:54833:56775:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:59037:61244:FUNCTION
 
 .. rubric:: ``renderSpeedMenu``
 
@@ -3255,7 +3277,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 渲染与 ``Speed Menu`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1307``—``1347`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1377``—``1421`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3269,17 +3291,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:55187:55221:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:59510:59544:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 1312``
+.. rubric:: ``onPointerDown callback @ 1387``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 1312(event)
+   onPointerDown callback @ 1387(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1312``—``1312`` 行；所属函数 ``renderSpeedMenu``。
+**性质**：同步局部函数；源码第 ``1387``—``1387`` 行；所属函数 ``renderSpeedMenu``。
 
 **参数**
 
@@ -3292,17 +3314,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:55295:55376:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:59626:59715:FUNCTION
 
-.. rubric:: ``onMouseLeave callback @ 1314``
+.. rubric:: ``onMouseLeave callback @ 1389``
 
 .. code-block:: javascript
 
-   onMouseLeave callback @ 1314()
+   onMouseLeave callback @ 1389()
 
 处理 ``Mouse Leave`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1314``—``1316`` 行；所属函数 ``renderSpeedMenu``。
+**性质**：同步局部函数；源码第 ``1389``—``1391`` 行；所属函数 ``renderSpeedMenu``。
 
 **参数**
 
@@ -3314,17 +3336,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``scheduleDockCollapse``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:55644:56752:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:59973:61213:FUNCTION
 
-.. rubric:: ``SPEEDS.map callback @ 1323``
+.. rubric:: ``SPEEDS.map callback @ 1396``
 
 .. code-block:: javascript
 
-   SPEEDS.map callback @ 1323(item)
+   SPEEDS.map callback @ 1396(item)
 
 作为 ``SPEEDS.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1323``—``1345`` 行；所属函数 ``renderSpeedMenu``。
+**性质**：同步局部函数；源码第 ``1396``—``1419`` 行；所属函数 ``renderSpeedMenu``。
 
 **参数**
 
@@ -3339,17 +3361,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:55874:56010:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:60229:60377:FUNCTION
 
-.. rubric:: ``onClick callback @ 1329``
+.. rubric:: ``onClick callback @ 1402``
 
 .. code-block:: javascript
 
-   onClick callback @ 1329()
+   onClick callback @ 1402()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1329``—``1332`` 行；所属函数 ``SPEEDS.map callback @ 1323``。
+**性质**：同步局部函数；源码第 ``1402``—``1405`` 行；所属函数 ``SPEEDS.map callback @ 1396``。
 
 **参数**
 
@@ -3361,17 +3383,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``onRateChange``、``setSpeedMenuOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:57401:57509:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:61913:62033:FUNCTION
 
-.. rubric:: ``onPointerEnter callback @ 1364``
+.. rubric:: ``onPointerEnter callback @ 1436``
 
 .. code-block:: javascript
 
-   onPointerEnter callback @ 1364()
+   onPointerEnter callback @ 1436()
 
 处理 ``Pointer Enter`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1364``—``1367`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1436``—``1439`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3383,17 +3405,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitlePreviewHovered``、``clearCollapseTimer``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:57539:57681:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:62067:62221:FUNCTION
 
-.. rubric:: ``onPointerLeave callback @ 1368``
+.. rubric:: ``onPointerLeave callback @ 1440``
 
 .. code-block:: javascript
 
-   onPointerLeave callback @ 1368()
+   onPointerLeave callback @ 1440()
 
 处理 ``Pointer Leave`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1368``—``1371`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1440``—``1443`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3405,17 +3427,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitlePreviewHovered``、``scheduleDockCollapse``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:60451:60494:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:65145:65188:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 1439``
+.. rubric:: ``onPointerDown callback @ 1505``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 1439(event)
+   onPointerDown callback @ 1505(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1439``—``1439`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1505``—``1505`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3428,17 +3450,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``handleResizeStart``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:61026:61070:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:65748:65792:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 1446``
+.. rubric:: ``onPointerDown callback @ 1512``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 1446(event)
+   onPointerDown callback @ 1512(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1446``—``1446`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1512``—``1512`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3451,17 +3473,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``handleResizeStart``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:65405:65451:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:71498:71544:FUNCTION
 
-.. rubric:: ``onChange callback @ 1497``
+.. rubric:: ``onChange callback @ 1581``
 
 .. code-block:: javascript
 
-   onChange callback @ 1497(value)
+   onChange callback @ 1581(value)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1497``—``1497`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1581``—``1581`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3474,21 +3496,21 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``onBrowserSpeechVoiceChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:65503:68238:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:71649:75409:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1498``
+.. rubric:: ``anonymous callback @ 1583``
 
 .. code-block:: javascript
 
-   anonymous callback @ 1498({open})
+   anonymous callback @ 1583({ open })
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1498``—``1525`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1583``—``1624`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
-``{open}``
+``{ open }``
    调用方传入的 ``open`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -3499,17 +3521,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:67835:68003:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:74982:75158:FUNCTION
 
-.. rubric:: ``onPointerLeave callback @ 1519``
+.. rubric:: ``onPointerLeave callback @ 1618``
 
 .. code-block:: javascript
 
-   onPointerLeave callback @ 1519()
+   onPointerLeave callback @ 1618()
 
 处理 ``Pointer Leave`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1519``—``1521`` 行；所属函数 ``anonymous callback @ 1498``。
+**性质**：同步局部函数；源码第 ``1618``—``1620`` 行；所属函数 ``anonymous callback @ 1583``。
 
 **参数**
 
@@ -3521,17 +3543,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``scheduleDockCollapse``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:69810:69856:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:77227:77273:FUNCTION
 
-.. rubric:: ``onClick callback @ 1546``
+.. rubric:: ``onClick callback @ 1648``
 
 .. code-block:: javascript
 
-   onClick callback @ 1546()
+   onClick callback @ 1648()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1546``—``1546`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1648``—``1648`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3543,17 +3565,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``onAutoFollowToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:71276:71313:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:78970:79007:FUNCTION
 
-.. rubric:: ``onMouseEnter callback @ 1564``
+.. rubric:: ``onMouseEnter callback @ 1669``
 
 .. code-block:: javascript
 
-   onMouseEnter callback @ 1564()
+   onMouseEnter callback @ 1669()
 
 处理 ``Mouse Enter`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1564``—``1564`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1669``—``1669`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3565,17 +3587,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitlePreviewHovered``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:71373:71411:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79071:79109:FUNCTION
 
-.. rubric:: ``onMouseLeave callback @ 1565``
+.. rubric:: ``onMouseLeave callback @ 1670``
 
 .. code-block:: javascript
 
-   onMouseLeave callback @ 1565()
+   onMouseLeave callback @ 1670()
 
 处理 ``Mouse Leave`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1565``—``1565`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1670``—``1670`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3587,17 +3609,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitlePreviewHovered``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:71473:71510:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79175:79212:FUNCTION
 
-.. rubric:: ``onFocusCapture callback @ 1566``
+.. rubric:: ``onFocusCapture callback @ 1671``
 
 .. code-block:: javascript
 
-   onFocusCapture callback @ 1566()
+   onFocusCapture callback @ 1671()
 
 处理 ``Focus Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1566``—``1566`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1671``—``1671`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3609,17 +3631,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitlePreviewHovered``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:71571:71871:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79277:79593:FUNCTION
 
-.. rubric:: ``onBlurCapture callback @ 1567``
+.. rubric:: ``onBlurCapture callback @ 1672``
 
 .. code-block:: javascript
 
-   onBlurCapture callback @ 1567(event)
+   onBlurCapture callback @ 1672(event)
 
 处理 ``Blur Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1567``—``1571`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1672``—``1676`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3632,17 +3654,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``event.currentTarget.contains``、``setSubtitlePreviewHovered``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:72086:72130:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79824:79868:FUNCTION
 
-.. rubric:: ``onClick callback @ 1575``
+.. rubric:: ``onClick callback @ 1680``
 
 .. code-block:: javascript
 
-   onClick callback @ 1575()
+   onClick callback @ 1680()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1575``—``1575`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1680``—``1680`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3654,17 +3676,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``onSubtitlesToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:73650:73880:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:81913:82157:FUNCTION
 
-.. rubric:: ``onClick callback @ 1592``
+.. rubric:: ``onClick callback @ 1705``
 
 .. code-block:: javascript
 
-   onClick callback @ 1592()
+   onClick callback @ 1705()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1592``—``1595`` 行；所属函数 ``memo callback @ 608``。
+**性质**：同步局部函数；源码第 ``1705``—``1708`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3678,17 +3700,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:73815:73828:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:82086:82101:FUNCTION
 
-.. rubric:: ``setSubtitlePositionMenuOpen callback @ 1594``
+.. rubric:: ``setSubtitlePositionMenuOpen callback @ 1707``
 
 .. code-block:: javascript
 
-   setSubtitlePositionMenuOpen callback @ 1594(open)
+   setSubtitlePositionMenuOpen callback @ 1707(open)
 
 设置与 ``Subtitle Position Menu Open`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1594``—``1594`` 行；所属函数 ``onClick callback @ 1592``。
+**性质**：同步局部函数；源码第 ``1707``—``1707`` 行；所属函数 ``onClick callback @ 1705``。
 
 **参数**
 

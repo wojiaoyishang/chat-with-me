@@ -131,7 +131,7 @@
    * - :doc:`src/features/chat/page/components/SpeechPlayer </api/javascript/features/chat/page/components/SpeechPlayer>`
      - 21
      - 0
-     - 134
+     - 135
      - ``src/features/chat/page/components/SpeechPlayer.jsx``
    * - :doc:`src/features/chat/page/components/SpeechSubtitleOverlay </api/javascript/features/chat/page/components/SpeechSubtitleOverlay>`
      - 5
@@ -144,9 +144,9 @@
      - 22
      - ``src/features/chat/page/hooks/useChatScroll.js``
    * - :doc:`src/features/chat/page/hooks/useChatSpeech </api/javascript/features/chat/page/hooks/useChatSpeech>`
-     - 22
+     - 24
      - 0
-     - 270
+     - 272
      - ``src/features/chat/page/hooks/useChatSpeech.js``
    * - :doc:`src/features/chat/page/hooks/useChatWindowMode </api/javascript/features/chat/page/hooks/useChatWindowMode>`
      - 1
@@ -183,6 +183,11 @@
      - 0
      - 2
      - ``src/features/chat/page/utils/networkMerge.js``
+   * - :doc:`src/features/chat/speech/SpeechVolumeControl </api/javascript/features/chat/speech/SpeechVolumeControl>`
+     - 1
+     - 0
+     - 1
+     - ``src/features/chat/speech/SpeechVolumeControl.jsx``
    * - :doc:`src/features/chat/speech/backendAudio </api/javascript/features/chat/speech/backendAudio>`
      - 13
      - 0
@@ -642,6 +647,7 @@
    /api/javascript/features/chat/page/utils/messageMountPoints
    /api/javascript/features/chat/page/utils/messageSummaries
    /api/javascript/features/chat/page/utils/networkMerge
+   /api/javascript/features/chat/speech/SpeechVolumeControl
    /api/javascript/features/chat/speech/backendAudio
    /api/javascript/features/chat/speech/constants
    /api/javascript/features/chat/speech/playbackTiming

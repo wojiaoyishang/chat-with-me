@@ -1,11 +1,7 @@
-import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {createPortal} from 'react-dom';
-import {
-    Listbox,
-    ListboxButton,
-    ListboxOption,
-    ListboxOptions,
-} from '@headlessui/react';
+import SpeechVolumeControl from '@/features/chat/speech/SpeechVolumeControl.jsx';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
 import {
     Captions,
     ChevronDown,
@@ -20,9 +16,9 @@ import {
     Volume2,
     ChevronsRight,
     RotateCcw,
-    Settings2
+    Settings2,
 } from 'lucide-react';
-import {getLocalSetting, setLocalSetting, TTS_LOCAL_SETTING_KEYS} from '@/lib/tools.jsx';
+import { getLocalSetting, setLocalSetting, TTS_LOCAL_SETTING_KEYS } from '@/lib/tools.jsx';
 import {
     readSubtitlePosition,
     readSubtitleStyle,
@@ -54,7 +50,7 @@ const EDGE_MARGIN = 8;
 
 const getVisualViewportMetrics = () => {
     if (typeof window === 'undefined') {
-        return {width: 0, height: 0, offsetLeft: 0, offsetTop: 0};
+        return { width: 0, height: 0, offsetLeft: 0, offsetTop: 0 };
     }
 
     const viewport = window.visualViewport;
@@ -82,23 +78,21 @@ const normalizeProgress = (value) => {
     return clamp(parsed > 1 ? parsed / 100 : parsed, 0, 1);
 };
 
-const SpeechProgressRail = ({speechState, className = ''}) => {
+const SpeechProgressRail = ({ speechState, className = '' }) => {
     const totalSegments = Number(speechState?.totalSegments || speechState?.segments?.length || 0);
     const playbackPosition = Number(speechState?.playbackSegmentPosition ?? speechState?.currentSegmentPosition);
     const bufferedPosition = Number(speechState?.bufferedSegmentPosition);
 
-    const playbackFallback = totalSegments > 0 && Number.isInteger(playbackPosition) && playbackPosition >= 0
-        ? (playbackPosition + 0.08) / totalSegments
-        : 0;
-    const bufferFallback = totalSegments > 0 && Number.isInteger(bufferedPosition) && bufferedPosition >= 0
-        ? (bufferedPosition + 1) / totalSegments
-        : playbackFallback;
+    const playbackFallback =
+        totalSegments > 0 && Number.isInteger(playbackPosition) && playbackPosition >= 0
+            ? (playbackPosition + 0.08) / totalSegments
+            : 0;
+    const bufferFallback =
+        totalSegments > 0 && Number.isInteger(bufferedPosition) && bufferedPosition >= 0
+            ? (bufferedPosition + 1) / totalSegments
+            : playbackFallback;
     const playbackProgress = Math.max(normalizeProgress(speechState?.playbackPercent), playbackFallback);
-    const bufferProgress = Math.max(
-        playbackProgress,
-        normalizeProgress(speechState?.bufferPercent),
-        bufferFallback,
-    );
+    const bufferProgress = Math.max(playbackProgress, normalizeProgress(speechState?.bufferPercent), bufferFallback);
 
     return (
         <div
@@ -111,11 +105,11 @@ const SpeechProgressRail = ({speechState, className = ''}) => {
         >
             <div
                 className="absolute inset-y-0 left-0 bg-indigo-300/70 transition-[width] duration-300 ease-out"
-                style={{width: `${bufferProgress * 100}%`}}
+                style={{ width: `${bufferProgress * 100}%` }}
             />
             <div
                 className="absolute inset-y-0 left-0 bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.95)] transition-[width] duration-200 ease-out"
-                style={{width: `${playbackProgress * 100}%`}}
+                style={{ width: `${playbackProgress * 100}%` }}
             />
         </div>
     );
@@ -136,10 +130,8 @@ const getMaxPanelWidth = (viewportWidth) => {
     return Math.max(320, Math.min(DESKTOP_MAX_WIDTH, viewportWidth - 32));
 };
 
-const getMinPanelWidth = (viewportWidth) => Math.min(
-    isCompactViewport(viewportWidth) ? MOBILE_MIN_WIDTH : DESKTOP_MIN_WIDTH,
-    getMaxPanelWidth(viewportWidth),
-);
+const getMinPanelWidth = (viewportWidth) =>
+    Math.min(isCompactViewport(viewportWidth) ? MOBILE_MIN_WIDTH : DESKTOP_MIN_WIDTH, getMaxPanelWidth(viewportWidth));
 
 const getDefaultWidth = (viewport = getViewportSize()) => {
     const maxWidth = getMaxPanelWidth(viewport.width);
@@ -154,9 +146,8 @@ const getDefaultWidth = (viewport = getViewportSize()) => {
 
 const getMinPanelY = (viewport = getViewportSize()) => (isCompactViewport(viewport.width) ? 12 : 64);
 
-const getDockedSide = (state) => (
-    state?.dockedSide === 'left' || state?.dockedSide === 'right' ? state.dockedSide : null
-);
+const getDockedSide = (state) =>
+    state?.dockedSide === 'left' || state?.dockedSide === 'right' ? state.dockedSide : null;
 
 const getDockCandidate = (x, width, viewport, snapDistance) => {
     const leftDistance = x - EDGE_MARGIN;
@@ -166,9 +157,8 @@ const getDockCandidate = (x, width, viewport, snapDistance) => {
     return leftDistance <= rightDistance ? 'left' : 'right';
 };
 
-const getDockedX = (side, width, viewport) => (
-    side === 'left' ? EDGE_MARGIN : Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN)
-);
+const getDockedX = (side, width, viewport) =>
+    side === 'left' ? EDGE_MARGIN : Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN);
 
 const normalizePanelState = (state, viewport = getViewportSize(), measuredHeight) => {
     const width = clamp(
@@ -190,9 +180,7 @@ const normalizePanelState = (state, viewport = getViewportSize(), measuredHeight
         : Math.max(88, viewport.height - 220);
     const maxY = Math.max(
         minY,
-        typeof measuredHeight === 'number'
-            ? viewport.height - measuredHeight - EDGE_MARGIN
-            : viewport.height - 88,
+        typeof measuredHeight === 'number' ? viewport.height - measuredHeight - EDGE_MARGIN : viewport.height - 88,
     );
 
     return {
@@ -206,7 +194,7 @@ const normalizePanelState = (state, viewport = getViewportSize(), measuredHeight
 
 const getInitialPosition = () => {
     if (typeof window === 'undefined') {
-        return {x: 24, y: 120, width: 720, dockedSide: null, collapsed: false};
+        return { x: 24, y: 120, width: 720, dockedSide: null, collapsed: false };
     }
 
     const saved = getLocalSetting(TTS_LOCAL_SETTING_KEYS.playerPosition, null);
@@ -355,10 +343,12 @@ const BrowserVoiceOptionsPortal = ({
                 value=""
                 className="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-50 data-[selected]:font-semibold data-[selected]:text-indigo-600"
             >
-                {({selected}) => (
+                {({ selected }) => (
                     <>
                         <span className="min-w-0 flex-1 truncate">{defaultLabel}</span>
-                        {(selected || selectedValue === '') && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500"/>}
+                        {(selected || selectedValue === '') && (
+                            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
+                        )}
                     </>
                 )}
             </ListboxOption>
@@ -368,12 +358,14 @@ const BrowserVoiceOptionsPortal = ({
                     value={voice.voiceURI}
                     className="flex cursor-pointer items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-50 data-[selected]:font-semibold data-[selected]:text-indigo-600"
                 >
-                    {({selected}) => (
+                    {({ selected }) => (
                         <>
                             <span className="min-w-0 flex-1 truncate" title={renderOptionLabel(voice)}>
                                 {renderOptionLabel(voice)}
                             </span>
-                            {(selected || selectedValue === voice.voiceURI) && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500"/>}
+                            {(selected || selectedValue === voice.voiceURI) && (
+                                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
+                            )}
                         </>
                     )}
                 </ListboxOption>
@@ -382,7 +374,6 @@ const BrowserVoiceOptionsPortal = ({
         document.body,
     );
 };
-
 
 const getSubtitleQuickPositionLabel = (t, id) => {
     const labels = {
@@ -400,11 +391,14 @@ const getSubtitleQuickPositionLabel = (t, id) => {
     return fallbackText(t, key, fallback);
 };
 
-const SubtitleSettingRow = ({label, value, min, max, step, suffix, onChange}) => (
+const SubtitleSettingRow = ({ label, value, min, max, step, suffix, onChange }) => (
     <label className="block rounded-xl border border-gray-100 bg-gray-50/70 px-2.5 py-2">
         <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px]">
             <span className="font-medium text-gray-600">{label}</span>
-            <span className="tabular-nums text-gray-400">{value}{suffix}</span>
+            <span className="tabular-nums text-gray-400">
+                {value}
+                {suffix}
+            </span>
         </div>
         <input
             type="range"
@@ -455,11 +449,19 @@ const SubtitleSettingsMenuPortal = ({
             const openAbove = availableBelow < Math.min(estimatedHeight, 360) && availableAbove > availableBelow;
             const rawTop = openAbove ? rect.top - gap - Math.min(estimatedHeight, availableAbove) : rect.bottom + gap;
             const rawLeft = rect.left + rect.width / 2 - width / 2;
-            const left = clamp(rawLeft, viewportLeft + padding, Math.max(viewportLeft + padding, viewportRight - width - padding));
+            const left = clamp(
+                rawLeft,
+                viewportLeft + padding,
+                Math.max(viewportLeft + padding, viewportRight - width - padding),
+            );
             const maxHeight = Math.max(180, viewport.height - padding * 2);
-            const top = clamp(rawTop, viewportTop + padding, Math.max(viewportTop + padding, viewportBottom - Math.min(estimatedHeight, maxHeight) - padding));
+            const top = clamp(
+                rawTop,
+                viewportTop + padding,
+                Math.max(viewportTop + padding, viewportBottom - Math.min(estimatedHeight, maxHeight) - padding),
+            );
 
-            setMenuPosition({top, left, width, maxHeight, openAbove});
+            setMenuPosition({ top, left, width, maxHeight, openAbove });
         };
         const schedule = () => {
             if (rafId !== null) window.cancelAnimationFrame(rafId);
@@ -482,7 +484,7 @@ const SubtitleSettingsMenuPortal = ({
 
     if (!open || !menuPosition || typeof document === 'undefined') return null;
 
-    const updateSetting = (key, value) => onSettingsChange?.({...settings, [key]: value});
+    const updateSetting = (key, value) => onSettingsChange?.({ ...settings, [key]: value });
 
     return createPortal(
         <div
@@ -505,7 +507,7 @@ const SubtitleSettingsMenuPortal = ({
             <div className="mb-3 flex items-start justify-between gap-3 px-0.5">
                 <div>
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-800">
-                        <Settings2 size={15} className="text-amber-500"/>
+                        <Settings2 size={15} className="text-amber-500" />
                         {fallbackText(t, 'speech_subtitle_settings', '字幕设置')}
                     </div>
                     <div className="mt-0.5 text-[11px] leading-relaxed text-gray-400">
@@ -518,7 +520,7 @@ const SubtitleSettingsMenuPortal = ({
                     className="flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 text-[11px] text-gray-500 transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700"
                     title={fallbackText(t, 'speech_subtitle_reset', '恢复字幕默认设置')}
                 >
-                    <RotateCcw size={13}/>
+                    <RotateCcw size={13} />
                     {fallbackText(t, 'reset', '重置')}
                 </button>
             </div>
@@ -528,7 +530,7 @@ const SubtitleSettingsMenuPortal = ({
                     {fallbackText(t, 'speech_subtitle_position_setting', '字幕位置')}
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
-                    {SUBTITLE_QUICK_POSITIONS.map(item => {
+                    {SUBTITLE_QUICK_POSITIONS.map((item) => {
                         const active = Math.abs(position.x - item.x) < 0.04 && Math.abs(position.y - item.y) < 0.04;
                         const label = getSubtitleQuickPositionLabel(t, item.id);
                         return (
@@ -538,9 +540,10 @@ const SubtitleSettingsMenuPortal = ({
                                 role="radio"
                                 aria-checked={active}
                                 onClick={() => onPositionSelect?.(item)}
-                                className={`group flex min-h-11 items-center justify-center rounded-xl border transition-colors active:scale-[0.98] ${active
-                                    ? 'border-amber-300 bg-amber-50 text-amber-700 ring-1 ring-amber-100'
-                                    : 'border-gray-200 bg-gray-50/80 text-gray-500 hover:border-amber-200 hover:bg-amber-50/70 hover:text-amber-700'
+                                className={`group flex min-h-11 items-center justify-center rounded-xl border transition-colors active:scale-[0.98] ${
+                                    active
+                                        ? 'border-amber-300 bg-amber-50 text-amber-700 ring-1 ring-amber-100'
+                                        : 'border-gray-200 bg-gray-50/80 text-gray-500 hover:border-amber-200 hover:bg-amber-50/70 hover:text-amber-700'
                                 }`}
                                 aria-label={label}
                                 title={label}
@@ -560,7 +563,11 @@ const SubtitleSettingsMenuPortal = ({
                     })}
                 </div>
                 <div className="mt-1.5 px-0.5 text-[10px] leading-relaxed text-gray-400">
-                    {fallbackText(t, 'speech_subtitle_no_edge_padding_hint', '拖动位置不保留屏幕边距，字幕自身尺寸由下方设置限制')}
+                    {fallbackText(
+                        t,
+                        'speech_subtitle_no_edge_padding_hint',
+                        '拖动位置不保留屏幕边距，字幕自身尺寸由下方设置限制',
+                    )}
                 </div>
             </div>
 
@@ -605,1074 +612,1185 @@ const SubtitleSettingsMenuPortal = ({
         document.body,
     );
 };
-const SpeechPlayer = memo(({
-                               speechState,
-                               message,
-                               autoFollowEnabled = false,
-                               onAutoFollowToggle,
-                               subtitlesEnabled = true,
-                               onSubtitlesToggle,
-                               onPause,
-                               onResume,
-                               onStop,
-                               onPrevious,
-                               onNext,
-                               onRateChange,
-                               browserSpeechVoices = [],
-                               selectedBrowserSpeechVoiceURI = '',
-                               onBrowserSpeechVoiceChange,
-                               t,
-                           }) => {
-    const isVisible = ACTIVE_STATUSES.has(speechState?.status);
-    const panelRef = useRef(null);
-    const speedButtonRef = useRef(null);
-    const subtitlePositionButtonRef = useRef(null);
-    const subtitlePositionMenuRef = useRef(null);
-    const browserVoiceButtonRef = useRef(null);
-    const browserVoiceMenuRef = useRef(null);
-    const speedMenuRef = useRef(null);
-    const collapseTimerRef = useRef(null);
-    const panelPointerInsideRef = useRef(false);
-    const secondaryMenuOpenRef = useRef(false);
-    const wasSecondaryMenuOpenRef = useRef(false);
-    const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
-    const [subtitlePositionMenuOpen, setSubtitlePositionMenuOpen] = useState(false);
-    const [subtitlePreviewHovered, setSubtitlePreviewHovered] = useState(false);
-    const [subtitlePosition, setSubtitlePosition] = useState(readSubtitlePosition);
-    const [subtitleStyle, setSubtitleStyle] = useState(readSubtitleStyle);
-    const [browserVoiceMenuOpen, setBrowserVoiceMenuOpen] = useState(false);
-    const [speedMenuPosition, setSpeedMenuPosition] = useState({top: 0, left: 0});
-    const interactionRef = useRef({active: false, type: null});
-    const suppressCollapsedClickRef = useRef(false);
-    const [floatingState, setFloatingState] = useState(getInitialPosition);
-    const [isMobileInteraction, setIsMobileInteraction] = useState(getIsMobileInteraction);
-    const [measuredPanelWidth, setMeasuredPanelWidth] = useState(null);
-    const effectivePanelWidth = measuredPanelWidth ?? floatingState.width ?? DESKTOP_MIN_WIDTH;
-    const isCompactPanel = effectivePanelWidth < COMPACT_PANEL_WIDTH;
-    const isVeryCompactPanel = effectivePanelWidth < VERY_COMPACT_PANEL_WIDTH;
+const SpeechPlayer = memo(
+    ({
+        speechState,
+        message,
+        autoFollowEnabled = false,
+        onAutoFollowToggle,
+        subtitlesEnabled = true,
+        onSubtitlesToggle,
+        onPause,
+        onResume,
+        onStop,
+        onPrevious,
+        onNext,
+        onRateChange,
+        speechVolume = 1,
+        onSpeechVolumeChange,
+        browserSpeechVoices = [],
+        selectedBrowserSpeechVoiceURI = '',
+        onBrowserSpeechVoiceChange,
+        t,
+    }) => {
+        const isVisible = ACTIVE_STATUSES.has(speechState?.status);
+        const panelRef = useRef(null);
+        const speedButtonRef = useRef(null);
+        const subtitlePositionButtonRef = useRef(null);
+        const subtitlePositionMenuRef = useRef(null);
+        const browserVoiceButtonRef = useRef(null);
+        const browserVoiceMenuRef = useRef(null);
+        const speedMenuRef = useRef(null);
+        const volumeMenuRef = useRef(null);
+        const [volumeMenuOpen, setVolumeMenuOpen] = useState(false);
+        const collapseTimerRef = useRef(null);
+        const panelPointerInsideRef = useRef(false);
+        const secondaryMenuOpenRef = useRef(false);
+        const wasSecondaryMenuOpenRef = useRef(false);
+        const [speedMenuOpen, setSpeedMenuOpen] = useState(false);
+        const [subtitlePositionMenuOpen, setSubtitlePositionMenuOpen] = useState(false);
+        const [subtitlePreviewHovered, setSubtitlePreviewHovered] = useState(false);
+        const [subtitlePosition, setSubtitlePosition] = useState(readSubtitlePosition);
+        const [subtitleStyle, setSubtitleStyle] = useState(readSubtitleStyle);
+        const [browserVoiceMenuOpen, setBrowserVoiceMenuOpen] = useState(false);
+        const [speedMenuPosition, setSpeedMenuPosition] = useState({ top: 0, left: 0 });
+        const interactionRef = useRef({ active: false, type: null });
+        const suppressCollapsedClickRef = useRef(false);
+        const [floatingState, setFloatingState] = useState(getInitialPosition);
+        const [isMobileInteraction, setIsMobileInteraction] = useState(getIsMobileInteraction);
+        const [measuredPanelWidth, setMeasuredPanelWidth] = useState(null);
+        const effectivePanelWidth = measuredPanelWidth ?? floatingState.width ?? DESKTOP_MIN_WIDTH;
+        const isCompactPanel = effectivePanelWidth < COMPACT_PANEL_WIDTH;
+        const isVeryCompactPanel = effectivePanelWidth < VERY_COMPACT_PANEL_WIDTH;
 
-    const currentSegment = useMemo(() => {
-        const segments = speechState?.segments || [];
-        if (!segments.length) return null;
+        const currentSegment = useMemo(() => {
+            const segments = speechState?.segments || [];
+            if (!segments.length) return null;
 
-        if (speechState?.currentSegmentId !== undefined && speechState?.currentSegmentId !== null) {
-            const byId = segments.find(item => String(item.id) === String(speechState.currentSegmentId));
-            if (byId) return byId;
-        }
-
-        const position = Number(speechState?.currentSegmentPosition);
-        if (Number.isInteger(position) && position >= 0 && position < segments.length) return segments[position];
-
-        const index = Number(speechState?.currentSegmentIndex);
-        if (Number.isInteger(index) && index >= 0 && index < segments.length) return segments[index];
-
-        return null;
-    }, [speechState?.segments, speechState?.currentSegmentId, speechState?.currentSegmentIndex, speechState?.currentSegmentPosition]);
-
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-        setLocalSetting(TTS_LOCAL_SETTING_KEYS.playerPosition, floatingState);
-    }, [floatingState]);
-
-
-    useEffect(() => {
-        if (typeof window === 'undefined') return undefined;
-        const handlePositionChange = (event) => setSubtitlePosition(normalizeSubtitlePosition(event?.detail));
-        const handleStyleChange = (event) => setSubtitleStyle(normalizeSubtitleStyle(event?.detail));
-        window.addEventListener(SUBTITLE_POSITION_CHANGE_EVENT, handlePositionChange);
-        window.addEventListener(SUBTITLE_STYLE_CHANGE_EVENT, handleStyleChange);
-        return () => {
-            window.removeEventListener(SUBTITLE_POSITION_CHANGE_EVENT, handlePositionChange);
-            window.removeEventListener(SUBTITLE_STYLE_CHANGE_EVENT, handleStyleChange);
-        };
-    }, []);
-
-    useEffect(() => {
-        showSubtitlePreview(subtitlePreviewHovered || subtitlePositionMenuOpen);
-        return () => showSubtitlePreview(false);
-    }, [subtitlePositionMenuOpen, subtitlePreviewHovered]);
-
-    const keepPanelInViewport = useCallback(() => {
-        if (typeof window === 'undefined') return;
-        const measuredHeight = panelRef.current?.offsetHeight;
-
-        setFloatingState(prev => {
-            const next = normalizePanelState(prev, getViewportSize(), measuredHeight);
-            if (
-                prev.x === next.x &&
-                prev.y === next.y &&
-                prev.width === next.width &&
-                prev.dockedSide === next.dockedSide &&
-                prev.collapsed === next.collapsed
-            ) {
-                return prev;
+            if (speechState?.currentSegmentId !== undefined && speechState?.currentSegmentId !== null) {
+                const byId = segments.find((item) => String(item.id) === String(speechState.currentSegmentId));
+                if (byId) return byId;
             }
-            return next;
-        });
-    }, []);
 
-    useEffect(() => {
-        if (typeof window === 'undefined') return undefined;
+            const position = Number(speechState?.currentSegmentPosition);
+            if (Number.isInteger(position) && position >= 0 && position < segments.length) return segments[position];
 
-        keepPanelInViewport();
-        window.addEventListener('resize', keepPanelInViewport);
-        window.visualViewport?.addEventListener?.('resize', keepPanelInViewport);
-        return () => {
-            window.removeEventListener('resize', keepPanelInViewport);
-            window.visualViewport?.removeEventListener?.('resize', keepPanelInViewport);
-        };
-    }, [keepPanelInViewport]);
+            const index = Number(speechState?.currentSegmentIndex);
+            if (Number.isInteger(index) && index >= 0 && index < segments.length) return segments[index];
 
-    useEffect(() => {
-        if (!isVisible) return undefined;
-        const frame = window.requestAnimationFrame(keepPanelInViewport);
-        return () => window.cancelAnimationFrame(frame);
-    }, [isVisible, keepPanelInViewport, currentSegment?.text, speedMenuOpen, subtitlePositionMenuOpen, isCompactPanel]);
+            return null;
+        }, [
+            speechState?.segments,
+            speechState?.currentSegmentId,
+            speechState?.currentSegmentIndex,
+            speechState?.currentSegmentPosition,
+        ]);
 
-    useEffect(() => {
-        if (!isVisible || (floatingState.dockedSide && floatingState.collapsed)) return undefined;
+        useEffect(() => {
+            if (typeof window === 'undefined') return;
+            setLocalSetting(TTS_LOCAL_SETTING_KEYS.playerPosition, floatingState);
+        }, [floatingState]);
 
-        const panel = panelRef.current;
-        if (!panel) return undefined;
+        useEffect(() => {
+            if (typeof window === 'undefined') return undefined;
+            const handlePositionChange = (event) => setSubtitlePosition(normalizeSubtitlePosition(event?.detail));
+            const handleStyleChange = (event) => setSubtitleStyle(normalizeSubtitleStyle(event?.detail));
+            window.addEventListener(SUBTITLE_POSITION_CHANGE_EVENT, handlePositionChange);
+            window.addEventListener(SUBTITLE_STYLE_CHANGE_EVENT, handleStyleChange);
+            return () => {
+                window.removeEventListener(SUBTITLE_POSITION_CHANGE_EVENT, handlePositionChange);
+                window.removeEventListener(SUBTITLE_STYLE_CHANGE_EVENT, handleStyleChange);
+            };
+        }, []);
 
-        const updateWidth = (width) => {
-            if (!Number.isFinite(width) || width <= 0) return;
-            setMeasuredPanelWidth(prev => (prev !== null && Math.abs(prev - width) < 0.5 ? prev : width));
-        };
+        useEffect(() => {
+            showSubtitlePreview(subtitlePreviewHovered || subtitlePositionMenuOpen);
+            return () => showSubtitlePreview(false);
+        }, [subtitlePositionMenuOpen, subtitlePreviewHovered]);
 
-        updateWidth(panel.getBoundingClientRect().width);
-        if (typeof ResizeObserver === 'undefined') return undefined;
+        const keepPanelInViewport = useCallback(() => {
+            if (typeof window === 'undefined') return;
+            const measuredHeight = panelRef.current?.offsetHeight;
 
-        const observer = new ResizeObserver((entries) => {
-            const width = entries[0]?.contentRect?.width;
-            updateWidth(width);
-        });
-        observer.observe(panel);
-        return () => observer.disconnect();
-    }, [floatingState.collapsed, floatingState.dockedSide, isVisible]);
+            setFloatingState((prev) => {
+                const next = normalizePanelState(prev, getViewportSize(), measuredHeight);
+                if (
+                    prev.x === next.x &&
+                    prev.y === next.y &&
+                    prev.width === next.width &&
+                    prev.dockedSide === next.dockedSide &&
+                    prev.collapsed === next.collapsed
+                ) {
+                    return prev;
+                }
+                return next;
+            });
+        }, []);
 
-    useEffect(() => {
-        if (typeof window === 'undefined') return undefined;
+        useEffect(() => {
+            if (typeof window === 'undefined') return undefined;
 
-        const mediaQueries = [
-            window.matchMedia?.('(pointer: coarse)'),
-            window.matchMedia?.('(hover: none)'),
-            window.matchMedia?.(`(max-width: ${MOBILE_BREAKPOINT}px)`),
-        ].filter(Boolean);
+            keepPanelInViewport();
+            window.addEventListener('resize', keepPanelInViewport);
+            window.visualViewport?.addEventListener?.('resize', keepPanelInViewport);
+            return () => {
+                window.removeEventListener('resize', keepPanelInViewport);
+                window.visualViewport?.removeEventListener?.('resize', keepPanelInViewport);
+            };
+        }, [keepPanelInViewport]);
 
-        const updateInteractionMode = () => {
-            setIsMobileInteraction(getIsMobileInteraction());
-        };
+        useEffect(() => {
+            if (!isVisible) return undefined;
+            const frame = window.requestAnimationFrame(keepPanelInViewport);
+            return () => window.cancelAnimationFrame(frame);
+        }, [
+            isVisible,
+            keepPanelInViewport,
+            currentSegment?.text,
+            speedMenuOpen,
+            subtitlePositionMenuOpen,
+            isCompactPanel,
+        ]);
 
-        updateInteractionMode();
-        mediaQueries.forEach((query) => {
-            if (typeof query.addEventListener === 'function') {
-                query.addEventListener('change', updateInteractionMode);
-            } else {
-                query.addListener?.(updateInteractionMode);
-            }
-        });
-        window.addEventListener('resize', updateInteractionMode);
+        useEffect(() => {
+            if (!isVisible || (floatingState.dockedSide && floatingState.collapsed)) return undefined;
 
-        return () => {
+            const panel = panelRef.current;
+            if (!panel) return undefined;
+
+            const updateWidth = (width) => {
+                if (!Number.isFinite(width) || width <= 0) return;
+                setMeasuredPanelWidth((prev) => (prev !== null && Math.abs(prev - width) < 0.5 ? prev : width));
+            };
+
+            updateWidth(panel.getBoundingClientRect().width);
+            if (typeof ResizeObserver === 'undefined') return undefined;
+
+            const observer = new ResizeObserver((entries) => {
+                const width = entries[0]?.contentRect?.width;
+                updateWidth(width);
+            });
+            observer.observe(panel);
+            return () => observer.disconnect();
+        }, [floatingState.collapsed, floatingState.dockedSide, isVisible]);
+
+        useEffect(() => {
+            if (typeof window === 'undefined') return undefined;
+
+            const mediaQueries = [
+                window.matchMedia?.('(pointer: coarse)'),
+                window.matchMedia?.('(hover: none)'),
+                window.matchMedia?.(`(max-width: ${MOBILE_BREAKPOINT}px)`),
+            ].filter(Boolean);
+
+            const updateInteractionMode = () => {
+                setIsMobileInteraction(getIsMobileInteraction());
+            };
+
+            updateInteractionMode();
             mediaQueries.forEach((query) => {
-                if (typeof query.removeEventListener === 'function') {
-                    query.removeEventListener('change', updateInteractionMode);
+                if (typeof query.addEventListener === 'function') {
+                    query.addEventListener('change', updateInteractionMode);
                 } else {
-                    query.removeListener?.(updateInteractionMode);
+                    query.addListener?.(updateInteractionMode);
                 }
             });
-            window.removeEventListener('resize', updateInteractionMode);
-        };
-    }, []);
+            window.addEventListener('resize', updateInteractionMode);
 
-    const updateSpeedMenuPosition = useCallback(() => {
-        if (typeof window === 'undefined') return;
+            return () => {
+                mediaQueries.forEach((query) => {
+                    if (typeof query.removeEventListener === 'function') {
+                        query.removeEventListener('change', updateInteractionMode);
+                    } else {
+                        query.removeListener?.(updateInteractionMode);
+                    }
+                });
+                window.removeEventListener('resize', updateInteractionMode);
+            };
+        }, []);
 
-        const rect = speedButtonRef.current?.getBoundingClientRect();
-        if (!rect) return;
+        const updateSpeedMenuPosition = useCallback(() => {
+            if (typeof window === 'undefined') return;
 
-        const viewport = getViewportSize();
-        const menuWidth = 152;
-        const estimatedMenuHeight = 214;
-        const hasRoomBelow = viewport.height - rect.bottom >= estimatedMenuHeight + 16;
-        const rawTop = hasRoomBelow ? rect.bottom + 8 : rect.top - estimatedMenuHeight - 8;
-        const alignCenter = viewport.width <= MOBILE_BREAKPOINT;
-        const rawLeft = alignCenter
-            ? rect.left + rect.width / 2 - menuWidth / 2
-            : rect.right - menuWidth;
+            const rect = speedButtonRef.current?.getBoundingClientRect();
+            if (!rect) return;
 
-        const nextTop = clamp(rawTop, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.height - estimatedMenuHeight - EDGE_MARGIN));
-        const nextLeft = clamp(rawLeft, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.width - menuWidth - EDGE_MARGIN));
+            const viewport = getViewportSize();
+            const menuWidth = 152;
+            const estimatedMenuHeight = 214;
+            const hasRoomBelow = viewport.height - rect.bottom >= estimatedMenuHeight + 16;
+            const rawTop = hasRoomBelow ? rect.bottom + 8 : rect.top - estimatedMenuHeight - 8;
+            const alignCenter = viewport.width <= MOBILE_BREAKPOINT;
+            const rawLeft = alignCenter ? rect.left + rect.width / 2 - menuWidth / 2 : rect.right - menuWidth;
 
-        setSpeedMenuPosition({top: nextTop, left: nextLeft});
-    }, []);
+            const nextTop = clamp(
+                rawTop,
+                EDGE_MARGIN,
+                Math.max(EDGE_MARGIN, viewport.height - estimatedMenuHeight - EDGE_MARGIN),
+            );
+            const nextLeft = clamp(
+                rawLeft,
+                EDGE_MARGIN,
+                Math.max(EDGE_MARGIN, viewport.width - menuWidth - EDGE_MARGIN),
+            );
 
-    const toggleSpeedMenu = useCallback(() => {
-        setSpeedMenuOpen((open) => {
-            const nextOpen = !open;
-            if (nextOpen && typeof window !== 'undefined') {
-                window.requestAnimationFrame(updateSpeedMenuPosition);
+            setSpeedMenuPosition({ top: nextTop, left: nextLeft });
+        }, []);
+
+        const toggleSpeedMenu = useCallback(() => {
+            setSpeedMenuOpen((open) => {
+                const nextOpen = !open;
+                if (nextOpen && typeof window !== 'undefined') {
+                    window.requestAnimationFrame(updateSpeedMenuPosition);
+                }
+                return nextOpen;
+            });
+        }, [updateSpeedMenuPosition]);
+
+        useEffect(() => {
+            if (!speedMenuOpen) return undefined;
+
+            updateSpeedMenuPosition();
+            window.addEventListener('resize', updateSpeedMenuPosition);
+            window.addEventListener('scroll', updateSpeedMenuPosition, true);
+            window.visualViewport?.addEventListener?.('resize', updateSpeedMenuPosition);
+
+            return () => {
+                window.removeEventListener('resize', updateSpeedMenuPosition);
+                window.removeEventListener('scroll', updateSpeedMenuPosition, true);
+                window.visualViewport?.removeEventListener?.('resize', updateSpeedMenuPosition);
+            };
+        }, [speedMenuOpen, updateSpeedMenuPosition]);
+
+        useEffect(() => {
+            if (!speedMenuOpen) return undefined;
+
+            const handlePointerDown = (event) => {
+                const target = event.target;
+                if (panelRef.current?.contains(target)) return;
+                if (speedMenuRef.current?.contains(target)) return;
+                if (subtitlePositionMenuRef.current?.contains(target)) return;
+                setSpeedMenuOpen(false);
+            };
+
+            const handleKeyDown = (event) => {
+                if (event.key === 'Escape') setSpeedMenuOpen(false);
+            };
+
+            window.addEventListener('pointerdown', handlePointerDown, true);
+            window.addEventListener('keydown', handleKeyDown);
+            return () => {
+                window.removeEventListener('pointerdown', handlePointerDown, true);
+                window.removeEventListener('keydown', handleKeyDown);
+            };
+        }, [speedMenuOpen]);
+
+        useEffect(() => {
+            if (!subtitlePositionMenuOpen) return undefined;
+
+            const handlePointerDown = (event) => {
+                const target = event.target;
+                if (subtitlePositionButtonRef.current?.contains(target)) return;
+                if (subtitlePositionMenuRef.current?.contains(target)) return;
+                setSubtitlePositionMenuOpen(false);
+            };
+            const handleKeyDown = (event) => {
+                if (event.key === 'Escape') setSubtitlePositionMenuOpen(false);
+            };
+
+            window.addEventListener('pointerdown', handlePointerDown, true);
+            window.addEventListener('keydown', handleKeyDown);
+            return () => {
+                window.removeEventListener('pointerdown', handlePointerDown, true);
+                window.removeEventListener('keydown', handleKeyDown);
+            };
+        }, [subtitlePositionMenuOpen]);
+
+        const selectSubtitlePosition = useCallback((item) => {
+            const next = saveSubtitlePosition({ x: item.x, y: item.y });
+            setSubtitlePosition(next);
+        }, []);
+
+        const updateSubtitleStyle = useCallback((value) => {
+            const next = saveSubtitleStyle(value);
+            setSubtitleStyle(next);
+        }, []);
+
+        const resetSubtitleSettings = useCallback(() => {
+            const next = resetSubtitleAppearance();
+            setSubtitlePosition(next.position);
+            setSubtitleStyle(next.style);
+        }, []);
+
+        const clearCollapseTimer = useCallback(() => {
+            if (collapseTimerRef.current) {
+                window.clearTimeout(collapseTimerRef.current);
+                collapseTimerRef.current = null;
             }
-            return nextOpen;
-        });
-    }, [updateSpeedMenuPosition]);
+        }, []);
 
-    useEffect(() => {
-        if (!speedMenuOpen) return undefined;
+        const scheduleDockCollapse = useCallback(() => {
+            if (isMobileInteraction || panelPointerInsideRef.current || secondaryMenuOpenRef.current) return;
 
-        updateSpeedMenuPosition();
-        window.addEventListener('resize', updateSpeedMenuPosition);
-        window.addEventListener('scroll', updateSpeedMenuPosition, true);
-        window.visualViewport?.addEventListener?.('resize', updateSpeedMenuPosition);
-
-        return () => {
-            window.removeEventListener('resize', updateSpeedMenuPosition);
-            window.removeEventListener('scroll', updateSpeedMenuPosition, true);
-            window.visualViewport?.removeEventListener?.('resize', updateSpeedMenuPosition);
-        };
-    }, [speedMenuOpen, updateSpeedMenuPosition]);
-
-    useEffect(() => {
-        if (!speedMenuOpen) return undefined;
-
-        const handlePointerDown = (event) => {
-            const target = event.target;
-            if (panelRef.current?.contains(target)) return;
-            if (speedMenuRef.current?.contains(target)) return;
-            if (subtitlePositionMenuRef.current?.contains(target)) return;
-            setSpeedMenuOpen(false);
-        };
-
-        const handleKeyDown = (event) => {
-            if (event.key === 'Escape') setSpeedMenuOpen(false);
-        };
-
-        window.addEventListener('pointerdown', handlePointerDown, true);
-        window.addEventListener('keydown', handleKeyDown);
-        return () => {
-            window.removeEventListener('pointerdown', handlePointerDown, true);
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [speedMenuOpen]);
-
-    useEffect(() => {
-        if (!subtitlePositionMenuOpen) return undefined;
-
-        const handlePointerDown = (event) => {
-            const target = event.target;
-            if (subtitlePositionButtonRef.current?.contains(target)) return;
-            if (subtitlePositionMenuRef.current?.contains(target)) return;
-            setSubtitlePositionMenuOpen(false);
-        };
-        const handleKeyDown = (event) => {
-            if (event.key === 'Escape') setSubtitlePositionMenuOpen(false);
-        };
-
-        window.addEventListener('pointerdown', handlePointerDown, true);
-        window.addEventListener('keydown', handleKeyDown);
-        return () => {
-            window.removeEventListener('pointerdown', handlePointerDown, true);
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [subtitlePositionMenuOpen]);
-
-    const selectSubtitlePosition = useCallback((item) => {
-        const next = saveSubtitlePosition({x: item.x, y: item.y});
-        setSubtitlePosition(next);
-    }, []);
-
-    const updateSubtitleStyle = useCallback((value) => {
-        const next = saveSubtitleStyle(value);
-        setSubtitleStyle(next);
-    }, []);
-
-    const resetSubtitleSettings = useCallback(() => {
-        const next = resetSubtitleAppearance();
-        setSubtitlePosition(next.position);
-        setSubtitleStyle(next.style);
-    }, []);
-
-    const clearCollapseTimer = useCallback(() => {
-        if (collapseTimerRef.current) {
-            window.clearTimeout(collapseTimerRef.current);
-            collapseTimerRef.current = null;
-        }
-    }, []);
-
-    const scheduleDockCollapse = useCallback(() => {
-        if (isMobileInteraction || panelPointerInsideRef.current || secondaryMenuOpenRef.current) return;
-
-        clearCollapseTimer();
-        collapseTimerRef.current = window.setTimeout(() => {
-            if (panelPointerInsideRef.current || secondaryMenuOpenRef.current) return;
-            setFloatingState(prev => prev.dockedSide ? {...prev, collapsed: true} : prev);
-        }, 380);
-    }, [clearCollapseTimer, isMobileInteraction]);
-
-    const handlePanelMouseEnter = useCallback(() => {
-        panelPointerInsideRef.current = true;
-        clearCollapseTimer();
-    }, [clearCollapseTimer]);
-
-    const handlePanelMouseLeave = useCallback(() => {
-        panelPointerInsideRef.current = false;
-        scheduleDockCollapse();
-    }, [scheduleDockCollapse]);
-
-    const handleBrowserVoiceMenuOpenChange = useCallback((open) => {
-        setBrowserVoiceMenuOpen(Boolean(open));
-    }, []);
-
-    useEffect(() => {
-        const hasOpenSecondaryMenu = speedMenuOpen || browserVoiceMenuOpen || subtitlePositionMenuOpen;
-        const wasOpen = wasSecondaryMenuOpenRef.current;
-        secondaryMenuOpenRef.current = hasOpenSecondaryMenu;
-        wasSecondaryMenuOpenRef.current = hasOpenSecondaryMenu;
-
-        if (hasOpenSecondaryMenu) {
             clearCollapseTimer();
-            setFloatingState(prev => prev.collapsed ? {...prev, collapsed: false} : prev);
-            return;
-        }
+            collapseTimerRef.current = window.setTimeout(() => {
+                if (panelPointerInsideRef.current || secondaryMenuOpenRef.current) return;
+                setFloatingState((prev) => (prev.dockedSide ? { ...prev, collapsed: true } : prev));
+            }, 380);
+        }, [clearCollapseTimer, isMobileInteraction]);
 
-        if (wasOpen && !isMobileInteraction && floatingState.dockedSide && !panelPointerInsideRef.current) {
+        const handlePanelMouseEnter = useCallback(() => {
+            panelPointerInsideRef.current = true;
+            clearCollapseTimer();
+        }, [clearCollapseTimer]);
+
+        const handlePanelMouseLeave = useCallback(() => {
+            panelPointerInsideRef.current = false;
             scheduleDockCollapse();
-        }
-    }, [
-        browserVoiceMenuOpen,
-        clearCollapseTimer,
-        floatingState.dockedSide,
-        isMobileInteraction,
-        scheduleDockCollapse,
-        speedMenuOpen,
-        subtitlePositionMenuOpen,
-    ]);
+        }, [scheduleDockCollapse]);
 
-    const updateDragPosition = useCallback((clientX, clientY) => {
-        const viewport = getViewportSize();
-        const width = interactionRef.current.width || floatingState.width || getDefaultWidth(viewport);
-        const height = panelRef.current?.offsetHeight || 120;
-        const minY = getMinPanelY(viewport);
-        const x = clamp(clientX - interactionRef.current.offsetX, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN));
-        const y = clamp(clientY - interactionRef.current.offsetY, minY, Math.max(minY, viewport.height - height - EDGE_MARGIN));
-        const dockedSide = getDockCandidate(
-            x,
-            width,
-            viewport,
-            isMobileInteraction ? MOBILE_SIDE_SNAP_DISTANCE : SIDE_SNAP_DISTANCE,
-        );
-        const nextX = dockedSide ? getDockedX(dockedSide, width, viewport) : x;
+        const handleBrowserVoiceMenuOpenChange = useCallback((open) => {
+            setBrowserVoiceMenuOpen(Boolean(open));
+        }, []);
 
-        setFloatingState(prev => ({...prev, x: nextX, y, width, dockedSide, collapsed: false}));
-    }, [floatingState.width, isMobileInteraction]);
+        useEffect(() => {
+            const hasOpenSecondaryMenu =
+                speedMenuOpen || browserVoiceMenuOpen || subtitlePositionMenuOpen || volumeMenuOpen;
+            const wasOpen = wasSecondaryMenuOpenRef.current;
+            secondaryMenuOpenRef.current = hasOpenSecondaryMenu;
+            wasSecondaryMenuOpenRef.current = hasOpenSecondaryMenu;
 
-    const updateCollapsedDragPosition = useCallback((clientX, clientY) => {
-        const viewport = getViewportSize();
-        const interaction = interactionRef.current;
-        const tabHeight = interaction.height || 64;
-        const width = clamp(
-            interaction.panelWidth || floatingState.width || getDefaultWidth(viewport),
-            getMinPanelWidth(viewport.width),
-            getMaxPanelWidth(viewport.width),
-        );
-        const minY = getMinPanelY(viewport);
-        const y = clamp(
-            clientY - interaction.offsetY,
-            minY,
-            Math.max(minY, viewport.height - tabHeight - EDGE_MARGIN),
-        );
-        const movedDistance = Math.hypot(
-            clientX - (interaction.startClientX || clientX),
-            clientY - (interaction.startClientY || clientY),
-        );
-        if (movedDistance > 4) {
-            suppressCollapsedClickRef.current = true;
-        }
-
-        const dockedSide = clientX <= viewport.width / 2 ? 'left' : 'right';
-
-        setFloatingState(prev => ({
-            ...prev,
-            x: getDockedX(dockedSide, width, viewport),
-            y,
-            width,
-            dockedSide,
-            collapsed: true,
-        }));
-    }, [floatingState.width]);
-
-    const updateResize = useCallback((clientX) => {
-        const viewport = getViewportSize();
-        const minWidth = getMinPanelWidth(viewport.width);
-        const maxPanelWidth = getMaxPanelWidth(viewport.width);
-        const interaction = interactionRef.current;
-        const deltaX = clientX - interaction.startX;
-        const startLeft = interaction.startLeft;
-        const startWidth = interaction.startWidth;
-        const startRight = startLeft + startWidth;
-
-        let width;
-        let x;
-
-        if (interaction.direction === 'left') {
-            const maxWidth = Math.min(maxPanelWidth, Math.max(minWidth, startRight - EDGE_MARGIN));
-            width = clamp(startWidth - deltaX, minWidth, maxWidth);
-            x = clamp(startRight - width, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN));
-        } else {
-            const maxWidth = Math.min(maxPanelWidth, Math.max(minWidth, viewport.width - startLeft - EDGE_MARGIN));
-            width = clamp(startWidth + deltaX, minWidth, maxWidth);
-            x = clamp(startLeft, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN));
-        }
-
-        const dockedSide = getDockCandidate(x, width, viewport, SIDE_SNAP_DISTANCE);
-        const nextX = dockedSide ? getDockedX(dockedSide, width, viewport) : x;
-
-        setFloatingState(prev => ({
-            ...prev,
-            x: nextX,
-            width,
-            dockedSide,
-            collapsed: false,
-        }));
-    }, []);
-
-    const finishInteraction = useCallback(() => {
-        if (!interactionRef.current.active) return;
-        const type = interactionRef.current.type;
-        interactionRef.current = {active: false, type: null};
-        document.body.style.userSelect = '';
-        document.body.style.cursor = '';
-        document.body.style.touchAction = '';
-
-        const viewport = getViewportSize();
-        const measuredHeight = panelRef.current?.offsetHeight;
-
-        if (type === 'collapsed-drag') {
-            const wasDragged = suppressCollapsedClickRef.current;
-
-            if (!wasDragged) {
-                setFloatingState(prev => ({...prev, collapsed: false}));
+            if (hasOpenSecondaryMenu) {
+                clearCollapseTimer();
+                setFloatingState((prev) => (prev.collapsed ? { ...prev, collapsed: false } : prev));
                 return;
             }
 
-            setFloatingState(prev => {
+            if (wasOpen && !isMobileInteraction && floatingState.dockedSide && !panelPointerInsideRef.current) {
+                scheduleDockCollapse();
+            }
+        }, [
+            browserVoiceMenuOpen,
+            volumeMenuOpen,
+            clearCollapseTimer,
+            floatingState.dockedSide,
+            isMobileInteraction,
+            scheduleDockCollapse,
+            speedMenuOpen,
+            subtitlePositionMenuOpen,
+        ]);
+
+        const updateDragPosition = useCallback(
+            (clientX, clientY) => {
+                const viewport = getViewportSize();
+                const width = interactionRef.current.width || floatingState.width || getDefaultWidth(viewport);
+                const height = panelRef.current?.offsetHeight || 120;
+                const minY = getMinPanelY(viewport);
+                const x = clamp(
+                    clientX - interactionRef.current.offsetX,
+                    EDGE_MARGIN,
+                    Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN),
+                );
+                const y = clamp(
+                    clientY - interactionRef.current.offsetY,
+                    minY,
+                    Math.max(minY, viewport.height - height - EDGE_MARGIN),
+                );
+                const dockedSide = getDockCandidate(
+                    x,
+                    width,
+                    viewport,
+                    isMobileInteraction ? MOBILE_SIDE_SNAP_DISTANCE : SIDE_SNAP_DISTANCE,
+                );
+                const nextX = dockedSide ? getDockedX(dockedSide, width, viewport) : x;
+
+                setFloatingState((prev) => ({ ...prev, x: nextX, y, width, dockedSide, collapsed: false }));
+            },
+            [floatingState.width, isMobileInteraction],
+        );
+
+        const updateCollapsedDragPosition = useCallback(
+            (clientX, clientY) => {
+                const viewport = getViewportSize();
+                const interaction = interactionRef.current;
+                const tabHeight = interaction.height || 64;
+                const width = clamp(
+                    interaction.panelWidth || floatingState.width || getDefaultWidth(viewport),
+                    getMinPanelWidth(viewport.width),
+                    getMaxPanelWidth(viewport.width),
+                );
+                const minY = getMinPanelY(viewport);
+                const y = clamp(
+                    clientY - interaction.offsetY,
+                    minY,
+                    Math.max(minY, viewport.height - tabHeight - EDGE_MARGIN),
+                );
+                const movedDistance = Math.hypot(
+                    clientX - (interaction.startClientX || clientX),
+                    clientY - (interaction.startClientY || clientY),
+                );
+                if (movedDistance > 4) {
+                    suppressCollapsedClickRef.current = true;
+                }
+
+                const dockedSide = clientX <= viewport.width / 2 ? 'left' : 'right';
+
+                setFloatingState((prev) => ({
+                    ...prev,
+                    x: getDockedX(dockedSide, width, viewport),
+                    y,
+                    width,
+                    dockedSide,
+                    collapsed: true,
+                }));
+            },
+            [floatingState.width],
+        );
+
+        const updateResize = useCallback((clientX) => {
+            const viewport = getViewportSize();
+            const minWidth = getMinPanelWidth(viewport.width);
+            const maxPanelWidth = getMaxPanelWidth(viewport.width);
+            const interaction = interactionRef.current;
+            const deltaX = clientX - interaction.startX;
+            const startLeft = interaction.startLeft;
+            const startWidth = interaction.startWidth;
+            const startRight = startLeft + startWidth;
+
+            let width;
+            let x;
+
+            if (interaction.direction === 'left') {
+                const maxWidth = Math.min(maxPanelWidth, Math.max(minWidth, startRight - EDGE_MARGIN));
+                width = clamp(startWidth - deltaX, minWidth, maxWidth);
+                x = clamp(startRight - width, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN));
+            } else {
+                const maxWidth = Math.min(maxPanelWidth, Math.max(minWidth, viewport.width - startLeft - EDGE_MARGIN));
+                width = clamp(startWidth + deltaX, minWidth, maxWidth);
+                x = clamp(startLeft, EDGE_MARGIN, Math.max(EDGE_MARGIN, viewport.width - width - EDGE_MARGIN));
+            }
+
+            const dockedSide = getDockCandidate(x, width, viewport, SIDE_SNAP_DISTANCE);
+            const nextX = dockedSide ? getDockedX(dockedSide, width, viewport) : x;
+
+            setFloatingState((prev) => ({
+                ...prev,
+                x: nextX,
+                width,
+                dockedSide,
+                collapsed: false,
+            }));
+        }, []);
+
+        const finishInteraction = useCallback(() => {
+            if (!interactionRef.current.active) return;
+            const type = interactionRef.current.type;
+            interactionRef.current = { active: false, type: null };
+            document.body.style.userSelect = '';
+            document.body.style.cursor = '';
+            document.body.style.touchAction = '';
+
+            const viewport = getViewportSize();
+            const measuredHeight = panelRef.current?.offsetHeight;
+
+            if (type === 'collapsed-drag') {
+                const wasDragged = suppressCollapsedClickRef.current;
+
+                if (!wasDragged) {
+                    setFloatingState((prev) => ({ ...prev, collapsed: false }));
+                    return;
+                }
+
+                setFloatingState((prev) => {
+                    const normalized = normalizePanelState(prev, viewport, measuredHeight);
+                    const dockedSide = normalized.dockedSide || prev.dockedSide || 'right';
+
+                    return {
+                        ...normalized,
+                        x: getDockedX(dockedSide, normalized.width, viewport),
+                        dockedSide,
+                        collapsed: true,
+                    };
+                });
+                window.setTimeout(() => {
+                    suppressCollapsedClickRef.current = false;
+                }, 0);
+                return;
+            }
+
+            if (type !== 'drag') return;
+
+            setFloatingState((prev) => {
                 const normalized = normalizePanelState(prev, viewport, measuredHeight);
-                const dockedSide = normalized.dockedSide || prev.dockedSide || 'right';
+                const dockedSide = getDockCandidate(
+                    normalized.x,
+                    normalized.width,
+                    viewport,
+                    isMobileInteraction ? MOBILE_SIDE_SNAP_DISTANCE : SIDE_SNAP_DISTANCE,
+                );
 
                 return {
                     ...normalized,
-                    x: getDockedX(dockedSide, normalized.width, viewport),
+                    x: dockedSide ? getDockedX(dockedSide, normalized.width, viewport) : normalized.x,
                     dockedSide,
+                    collapsed: dockedSide ? !isMobileInteraction : false,
+                };
+            });
+        }, [isMobileInteraction]);
+
+        useEffect(() => {
+            const handlePointerMove = (event) => {
+                if (!interactionRef.current.active) return;
+                if (interactionRef.current.type === 'resize') {
+                    updateResize(event.clientX);
+                    return;
+                }
+                if (interactionRef.current.type === 'collapsed-drag') {
+                    updateCollapsedDragPosition(event.clientX, event.clientY);
+                    return;
+                }
+                updateDragPosition(event.clientX, event.clientY);
+            };
+
+            const handlePointerUp = () => finishInteraction();
+
+            window.addEventListener('pointermove', handlePointerMove);
+            window.addEventListener('pointerup', handlePointerUp);
+            window.addEventListener('pointercancel', handlePointerUp);
+
+            return () => {
+                window.removeEventListener('pointermove', handlePointerMove);
+                window.removeEventListener('pointerup', handlePointerUp);
+                window.removeEventListener('pointercancel', handlePointerUp);
+            };
+        }, [finishInteraction, updateCollapsedDragPosition, updateDragPosition, updateResize]);
+
+        const handleDragStart = useCallback(
+            (event) => {
+                if (event.button !== undefined && event.button !== 0) return;
+                setSpeedMenuOpen(false);
+                clearCollapseTimer();
+                const rect = panelRef.current?.getBoundingClientRect();
+                if (!rect) return;
+
+                interactionRef.current = {
+                    active: true,
+                    type: 'drag',
+                    offsetX: event.clientX - rect.left,
+                    offsetY: event.clientY - rect.top,
+                    width: rect.width,
+                };
+
+                event.currentTarget?.setPointerCapture?.(event.pointerId);
+                document.body.style.userSelect = 'none';
+                document.body.style.cursor = 'grabbing';
+                document.body.style.touchAction = 'none';
+                setFloatingState((prev) => ({ ...prev, collapsed: false }));
+                event.preventDefault();
+            },
+            [clearCollapseTimer],
+        );
+
+        const handleCollapsedDragStart = useCallback(
+            (event) => {
+                if (event.button !== undefined && event.button !== 0) return;
+                setSpeedMenuOpen(false);
+                clearCollapseTimer();
+                suppressCollapsedClickRef.current = false;
+
+                const rect = event.currentTarget?.getBoundingClientRect?.();
+                if (!rect) return;
+
+                interactionRef.current = {
+                    active: true,
+                    type: 'collapsed-drag',
+                    offsetX: event.clientX - rect.left,
+                    offsetY: event.clientY - rect.top,
+                    height: rect.height,
+                    panelWidth: floatingState.width,
+                    startClientX: event.clientX,
+                    startClientY: event.clientY,
+                };
+
+                event.currentTarget?.setPointerCapture?.(event.pointerId);
+                document.body.style.userSelect = 'none';
+                document.body.style.cursor = 'grabbing';
+                document.body.style.touchAction = 'none';
+                event.preventDefault();
+            },
+            [clearCollapseTimer, floatingState.width],
+        );
+
+        const handleResizeStart = useCallback(
+            (event, direction) => {
+                if (event.button !== undefined && event.button !== 0) return;
+                if (isMobileInteraction) return;
+                setSpeedMenuOpen(false);
+                clearCollapseTimer();
+                const rect = panelRef.current?.getBoundingClientRect();
+                if (!rect) return;
+
+                interactionRef.current = {
+                    active: true,
+                    type: 'resize',
+                    direction,
+                    startX: event.clientX,
+                    startLeft: rect.left,
+                    startWidth: rect.width,
+                };
+
+                event.currentTarget?.setPointerCapture?.(event.pointerId);
+                document.body.style.userSelect = 'none';
+                document.body.style.cursor = 'ew-resize';
+                setFloatingState((prev) => ({ ...prev, collapsed: false }));
+                event.preventDefault();
+                event.stopPropagation();
+            },
+            [clearCollapseTimer, isMobileInteraction],
+        );
+
+        const dockToSide = useCallback((side = 'right') => {
+            setSpeedMenuOpen(false);
+            setVolumeMenuOpen(false);
+            const viewport = getViewportSize();
+            setFloatingState((prev) => {
+                const width = clamp(
+                    prev.width || getDefaultWidth(viewport),
+                    getMinPanelWidth(viewport.width),
+                    getMaxPanelWidth(viewport.width),
+                );
+                return {
+                    ...prev,
+                    width,
+                    x: getDockedX(side, width, viewport),
+                    dockedSide: side,
                     collapsed: true,
                 };
             });
-            window.setTimeout(() => {
-                suppressCollapsedClickRef.current = false;
-            }, 0);
-            return;
-        }
+        }, []);
 
-        if (type !== 'drag') return;
+        const dockToRight = useCallback(() => dockToSide('right'), [dockToSide]);
 
-        setFloatingState(prev => {
-            const normalized = normalizePanelState(prev, viewport, measuredHeight);
-            const dockedSide = getDockCandidate(
-                normalized.x,
-                normalized.width,
-                viewport,
-                isMobileInteraction ? MOBILE_SIDE_SNAP_DISTANCE : SIDE_SNAP_DISTANCE,
-            );
+        const undock = useCallback(() => {
+            clearCollapseTimer();
+            setFloatingState((prev) => ({ ...prev, collapsed: false }));
+        }, [clearCollapseTimer]);
 
-            return {
-                ...normalized,
-                x: dockedSide ? getDockedX(dockedSide, normalized.width, viewport) : normalized.x,
-                dockedSide,
-                collapsed: dockedSide ? !isMobileInteraction : false,
-            };
-        });
-    }, [isMobileInteraction]);
+        const handleCollapsedClick = useCallback(
+            (event) => {
+                if (suppressCollapsedClickRef.current) {
+                    suppressCollapsedClickRef.current = false;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return;
+                }
+                undock();
+            },
+            [undock],
+        );
 
-    useEffect(() => {
-        const handlePointerMove = (event) => {
-            if (!interactionRef.current.active) return;
-            if (interactionRef.current.type === 'resize') {
-                updateResize(event.clientX);
-                return;
+        const collapseToDock = useCallback(() => {
+            clearCollapseTimer();
+            setSpeedMenuOpen(false);
+            setVolumeMenuOpen(false);
+            setFloatingState((prev) => (prev.dockedSide ? { ...prev, collapsed: true } : prev));
+        }, [clearCollapseTimer]);
+
+        useEffect(() => {
+            if (!isVisible || !isMobileInteraction || !floatingState.dockedSide || floatingState.collapsed) {
+                return undefined;
             }
-            if (interactionRef.current.type === 'collapsed-drag') {
-                updateCollapsedDragPosition(event.clientX, event.clientY);
-                return;
-            }
-            updateDragPosition(event.clientX, event.clientY);
-        };
 
-        const handlePointerUp = () => finishInteraction();
-
-        window.addEventListener('pointermove', handlePointerMove);
-        window.addEventListener('pointerup', handlePointerUp);
-        window.addEventListener('pointercancel', handlePointerUp);
-
-        return () => {
-            window.removeEventListener('pointermove', handlePointerMove);
-            window.removeEventListener('pointerup', handlePointerUp);
-            window.removeEventListener('pointercancel', handlePointerUp);
-        };
-    }, [finishInteraction, updateCollapsedDragPosition, updateDragPosition, updateResize]);
-
-    const handleDragStart = useCallback((event) => {
-        if (event.button !== undefined && event.button !== 0) return;
-        setSpeedMenuOpen(false);
-        clearCollapseTimer();
-        const rect = panelRef.current?.getBoundingClientRect();
-        if (!rect) return;
-
-        interactionRef.current = {
-            active: true,
-            type: 'drag',
-            offsetX: event.clientX - rect.left,
-            offsetY: event.clientY - rect.top,
-            width: rect.width,
-        };
-
-        event.currentTarget?.setPointerCapture?.(event.pointerId);
-        document.body.style.userSelect = 'none';
-        document.body.style.cursor = 'grabbing';
-        document.body.style.touchAction = 'none';
-        setFloatingState(prev => ({...prev, collapsed: false}));
-        event.preventDefault();
-    }, [clearCollapseTimer]);
-
-    const handleCollapsedDragStart = useCallback((event) => {
-        if (event.button !== undefined && event.button !== 0) return;
-        setSpeedMenuOpen(false);
-        clearCollapseTimer();
-        suppressCollapsedClickRef.current = false;
-
-        const rect = event.currentTarget?.getBoundingClientRect?.();
-        if (!rect) return;
-
-        interactionRef.current = {
-            active: true,
-            type: 'collapsed-drag',
-            offsetX: event.clientX - rect.left,
-            offsetY: event.clientY - rect.top,
-            height: rect.height,
-            panelWidth: floatingState.width,
-            startClientX: event.clientX,
-            startClientY: event.clientY,
-        };
-
-        event.currentTarget?.setPointerCapture?.(event.pointerId);
-        document.body.style.userSelect = 'none';
-        document.body.style.cursor = 'grabbing';
-        document.body.style.touchAction = 'none';
-        event.preventDefault();
-    }, [clearCollapseTimer, floatingState.width]);
-
-
-    const handleResizeStart = useCallback((event, direction) => {
-        if (event.button !== undefined && event.button !== 0) return;
-        if (isMobileInteraction) return;
-        setSpeedMenuOpen(false);
-        clearCollapseTimer();
-        const rect = panelRef.current?.getBoundingClientRect();
-        if (!rect) return;
-
-        interactionRef.current = {
-            active: true,
-            type: 'resize',
-            direction,
-            startX: event.clientX,
-            startLeft: rect.left,
-            startWidth: rect.width,
-        };
-
-        event.currentTarget?.setPointerCapture?.(event.pointerId);
-        document.body.style.userSelect = 'none';
-        document.body.style.cursor = 'ew-resize';
-        setFloatingState(prev => ({...prev, collapsed: false}));
-        event.preventDefault();
-        event.stopPropagation();
-    }, [clearCollapseTimer, isMobileInteraction]);
-
-    const dockToSide = useCallback((side = 'right') => {
-        setSpeedMenuOpen(false);
-        const viewport = getViewportSize();
-        setFloatingState(prev => {
-            const width = clamp(prev.width || getDefaultWidth(viewport), getMinPanelWidth(viewport.width), getMaxPanelWidth(viewport.width));
-            return {
-                ...prev,
-                width,
-                x: getDockedX(side, width, viewport),
-                dockedSide: side,
-                collapsed: true,
-            };
-        });
-    }, []);
-
-    const dockToRight = useCallback(() => dockToSide('right'), [dockToSide]);
-
-    const undock = useCallback(() => {
-        clearCollapseTimer();
-        setFloatingState(prev => ({...prev, collapsed: false}));
-    }, [clearCollapseTimer]);
-
-    const handleCollapsedClick = useCallback((event) => {
-        if (suppressCollapsedClickRef.current) {
-            suppressCollapsedClickRef.current = false;
-            event.preventDefault();
-            event.stopPropagation();
-            return;
-        }
-        undock();
-    }, [undock]);
-
-    const collapseToDock = useCallback(() => {
-        clearCollapseTimer();
-        setSpeedMenuOpen(false);
-        setFloatingState(prev => prev.dockedSide ? {...prev, collapsed: true} : prev);
-    }, [clearCollapseTimer]);
-
-    useEffect(() => {
-        if (!isVisible || !isMobileInteraction || !floatingState.dockedSide || floatingState.collapsed) {
-            return undefined;
-        }
-
-        const handlePointerDownOutside = (event) => {
-            if (interactionRef.current.active) return;
-            if (panelRef.current?.contains(event.target)) return;
-            if (speedMenuRef.current?.contains(event.target)) return;
-            if (browserVoiceMenuRef.current?.contains(event.target)) return;
-            if (subtitlePositionMenuRef.current?.contains(event.target)) return;
-            collapseToDock();
-        };
-
-        const handleKeyDown = (event) => {
-            if (event.key === 'Escape') {
+            const handlePointerDownOutside = (event) => {
+                if (interactionRef.current.active) return;
+                if (panelRef.current?.contains(event.target)) return;
+                if (speedMenuRef.current?.contains(event.target)) return;
+                if (volumeMenuRef.current?.contains(event.target)) return;
+                if (browserVoiceMenuRef.current?.contains(event.target)) return;
+                if (subtitlePositionMenuRef.current?.contains(event.target)) return;
                 collapseToDock();
-            }
-        };
+            };
 
-        window.addEventListener('pointerdown', handlePointerDownOutside, true);
-        window.addEventListener('keydown', handleKeyDown);
+            const handleKeyDown = (event) => {
+                if (event.key === 'Escape') {
+                    collapseToDock();
+                }
+            };
 
-        return () => {
-            window.removeEventListener('pointerdown', handlePointerDownOutside, true);
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [collapseToDock, floatingState.collapsed, floatingState.dockedSide, isMobileInteraction, isVisible]);
+            window.addEventListener('pointerdown', handlePointerDownOutside, true);
+            window.addEventListener('keydown', handleKeyDown);
 
-    useEffect(() => () => clearCollapseTimer(), [clearCollapseTimer]);
+            return () => {
+                window.removeEventListener('pointerdown', handlePointerDownOutside, true);
+                window.removeEventListener('keydown', handleKeyDown);
+            };
+        }, [collapseToDock, floatingState.collapsed, floatingState.dockedSide, isMobileInteraction, isVisible]);
 
-    if (!isVisible) return null;
+        useEffect(() => () => clearCollapseTimer(), [clearCollapseTimer]);
 
-    const isPaused = speechState.status === 'paused';
-    const isLoading = speechState.status === 'loading';
-    const segments = speechState?.segments || [];
-    const currentIndex = currentSegment ? segments.findIndex(item => item.id === currentSegment.id) : -1;
-    const progressText = currentIndex >= 0
-        ? `${currentIndex + 1}/${Math.max(segments.length, 1)}`
-        : `0/${segments.length || 0}`;
-    const canGoPrevious = currentIndex > 0;
-    const canGoNext = currentIndex >= 0 && currentIndex < segments.length - 1;
-    const title = message?.name || fallbackText(t, 'speech_player_title', '语音朗读');
-    const rate = Number(speechState?.rate || 1);
-    const isBrowserSpeech = speechState?.engine === 'browser';
-    const browserVoiceOptions = Array.isArray(browserSpeechVoices) ? browserSpeechVoices : [];
-    const selectedBrowserVoiceValue = browserVoiceOptions.some(item => item.voiceURI === selectedBrowserSpeechVoiceURI)
-        ? selectedBrowserSpeechVoiceURI
-        : '';
-    const canSelectBrowserVoice = isBrowserSpeech && browserVoiceOptions.length > 0;
-    const dockedSide = floatingState.dockedSide;
-    const isCollapsed = Boolean(dockedSide && floatingState.collapsed);
-    const autoFollowLabel = autoFollowEnabled
-        ? fallbackText(t, 'speech_auto_follow_on', '已开启跟随朗读，点击关闭')
-        : fallbackText(t, 'speech_auto_follow_off', '跟随当前朗读位置');
-    const subtitlesLabel = subtitlesEnabled
-        ? fallbackText(t, 'speech_subtitles_on', '已开启外挂字幕，点击关闭')
-        : fallbackText(t, 'speech_subtitles_off', '显示外挂字幕');
-    const subtitleSettingsLabel = fallbackText(t, 'speech_subtitle_settings', '字幕设置');
-    const browserVoiceDefaultLabel = fallbackText(t, 'speech_voice_browser_default', '浏览器默认');
-    const selectedBrowserVoiceLabel = selectedBrowserVoiceValue
-        ? (() => {
-            const selectedVoice = browserVoiceOptions.find(item => item.voiceURI === selectedBrowserVoiceValue);
-            if (!selectedVoice) return browserVoiceDefaultLabel;
-            const lang = selectedVoice.lang ? ` (${selectedVoice.lang})` : '';
-            const defaultMark = selectedVoice.default ? ` · ${fallbackText(t, 'speech_voice_default', '默认')}` : '';
-            return `${selectedVoice.name}${lang}${defaultMark}`;
-        })()
-        : browserVoiceDefaultLabel;
+        useEffect(() => {
+            if (!isVisible) setVolumeMenuOpen(false);
+        }, [isVisible]);
 
-    const renderSpeedMenu = () => (
-        <div
-            ref={speedMenuRef}
-            className="fixed rounded-2xl border border-gray-200 bg-white/[0.98] p-1.5 shadow-2xl shadow-slate-900/15 ring-1 ring-black/5 backdrop-blur-xl"
-            style={{top: speedMenuPosition.top, left: speedMenuPosition.left, width: 152, zIndex: PLAYER_Z_INDEX + 2}}
-            onPointerDown={(event) => event.stopPropagation()}
-            onMouseEnter={clearCollapseTimer}
-            onMouseLeave={() => {
-                if (!speedMenuOpen) scheduleDockCollapse();
-            }}
-            role="menu"
-            aria-label={fallbackText(t, 'speech_speed', '播放速度')}
-        >
-            <div className="px-2 py-1 text-[11px] text-gray-400">
-                {fallbackText(t, 'speech_speed', '播放速度')}
-            </div>
-            {SPEEDS.map(item => {
-                const active = Math.abs(rate - item) < 0.01;
-                return (
-                    <button
-                        key={item}
-                        type="button"
-                        onClick={() => {
-                            onRateChange?.(item);
-                            setSpeedMenuOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between rounded-xl px-2.5 py-2 text-xs transition-colors cursor-pointer ${active
-                            ? 'bg-indigo-50 text-indigo-600 font-semibold'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
-                        aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${item}x`}
-                        role="menuitemradio"
-                        aria-checked={active}
-                    >
-                        <span>{item}x</span>
-                        {active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500"/>}
-                    </button>
-                );
-            })}
-        </div>
-    );
+        if (!isVisible) return null;
 
-    const speedMenuPortal = speedMenuOpen && typeof document !== 'undefined'
-        ? createPortal(renderSpeedMenu(), document.body)
-        : null;
+        const isPaused = speechState.status === 'paused';
+        const isLoading = speechState.status === 'loading';
+        const segments = speechState?.segments || [];
+        const currentIndex = currentSegment ? segments.findIndex((item) => item.id === currentSegment.id) : -1;
+        const progressText =
+            currentIndex >= 0 ? `${currentIndex + 1}/${Math.max(segments.length, 1)}` : `0/${segments.length || 0}`;
+        const canGoPrevious = currentIndex > 0;
+        const canGoNext = currentIndex >= 0 && currentIndex < segments.length - 1;
+        const title = message?.name || fallbackText(t, 'speech_player_title', '语音朗读');
+        const rate = Number(speechState?.rate || 1);
+        const isBrowserSpeech = speechState?.engine === 'browser';
+        const browserVoiceOptions = Array.isArray(browserSpeechVoices) ? browserSpeechVoices : [];
+        const selectedBrowserVoiceValue = browserVoiceOptions.some(
+            (item) => item.voiceURI === selectedBrowserSpeechVoiceURI,
+        )
+            ? selectedBrowserSpeechVoiceURI
+            : '';
+        const canSelectBrowserVoice = isBrowserSpeech && browserVoiceOptions.length > 0;
+        const dockedSide = floatingState.dockedSide;
+        const isCollapsed = Boolean(dockedSide && floatingState.collapsed);
+        const autoFollowLabel = autoFollowEnabled
+            ? fallbackText(t, 'speech_auto_follow_on', '已开启跟随朗读，点击关闭')
+            : fallbackText(t, 'speech_auto_follow_off', '跟随当前朗读位置');
+        const subtitlesLabel = subtitlesEnabled
+            ? fallbackText(t, 'speech_subtitles_on', '已开启外挂字幕，点击关闭')
+            : fallbackText(t, 'speech_subtitles_off', '显示外挂字幕');
+        const subtitleSettingsLabel = fallbackText(t, 'speech_subtitle_settings', '字幕设置');
+        const browserVoiceDefaultLabel = fallbackText(t, 'speech_voice_browser_default', '浏览器默认');
+        const selectedBrowserVoiceLabel = selectedBrowserVoiceValue
+            ? (() => {
+                  const selectedVoice = browserVoiceOptions.find((item) => item.voiceURI === selectedBrowserVoiceValue);
+                  if (!selectedVoice) return browserVoiceDefaultLabel;
+                  const lang = selectedVoice.lang ? ` (${selectedVoice.lang})` : '';
+                  const defaultMark = selectedVoice.default
+                      ? ` · ${fallbackText(t, 'speech_voice_default', '默认')}`
+                      : '';
+                  return `${selectedVoice.name}${lang}${defaultMark}`;
+              })()
+            : browserVoiceDefaultLabel;
 
-
-    const subtitlePositionMenuPortal = (
-        <SubtitleSettingsMenuPortal
-            open={subtitlePositionMenuOpen}
-            anchorRef={subtitlePositionButtonRef}
-            menuRef={subtitlePositionMenuRef}
-            position={subtitlePosition}
-            settings={subtitleStyle}
-            onPositionSelect={selectSubtitlePosition}
-            onSettingsChange={updateSubtitleStyle}
-            onReset={resetSubtitleSettings}
-            onPointerEnter={() => {
-                setSubtitlePreviewHovered(true);
-                clearCollapseTimer();
-            }}
-            onPointerLeave={() => {
-                setSubtitlePreviewHovered(false);
-                if (!subtitlePositionMenuOpen) scheduleDockCollapse();
-            }}
-            t={t}
-        />
-    );
-
-    if (isCollapsed) {
-        const tabStyle = {
-            top: `${floatingState.y}px`,
-            [dockedSide]: 0,
-            zIndex: PLAYER_Z_INDEX,
-        };
-        const tabSideClass = dockedSide === 'left'
-            ? 'rounded-r-2xl border-l-0'
-            : 'rounded-l-2xl border-r-0';
-
-        const collapsedLabel = `${fallbackText(t, 'expand_speech_player', '展开朗读播放器')} · ${progressText}`;
-
-        const collapsedPlayer = (
+        const renderSpeedMenu = () => (
             <div
-                ref={panelRef}
-                className="fixed pointer-events-auto touch-none"
-                style={tabStyle}
+                ref={speedMenuRef}
+                className="fixed rounded-2xl border border-gray-200 bg-white/[0.98] p-1.5 shadow-2xl shadow-slate-900/15 ring-1 ring-black/5 backdrop-blur-xl"
+                style={{
+                    top: speedMenuPosition.top,
+                    left: speedMenuPosition.left,
+                    width: 152,
+                    zIndex: PLAYER_Z_INDEX + 2,
+                }}
+                onPointerDown={(event) => event.stopPropagation()}
+                onMouseEnter={clearCollapseTimer}
+                onMouseLeave={() => {
+                    if (!speedMenuOpen) scheduleDockCollapse();
+                }}
+                role="menu"
+                aria-label={fallbackText(t, 'speech_speed', '播放速度')}
             >
-                <div className={`relative overflow-hidden border border-indigo-100 bg-white/95 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl ring-1 ring-white/60 ${tabSideClass}`}>
-                    <button
-                        type="button"
-                        onPointerDown={handleCollapsedDragStart}
-                        onClick={handleCollapsedClick}
-                        className="flex min-h-16 min-w-12 max-w-24 cursor-grab touch-none select-none flex-col items-center justify-center gap-1.5 bg-transparent px-2 py-2 text-indigo-600 transition-all hover:bg-indigo-50 active:cursor-grabbing"
-                        aria-label={collapsedLabel}
-                        title={collapsedLabel}
-                    >
-                        <Volume2 size={18} className="shrink-0"/>
-                        <span className="max-w-full truncate whitespace-nowrap rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-indigo-600">
-                            {progressText}
-                        </span>
-                    </button>
-                    <SpeechProgressRail speechState={speechState}/>
-                </div>
+                <div className="px-2 py-1 text-[11px] text-gray-400">{fallbackText(t, 'speech_speed', '播放速度')}</div>
+                {SPEEDS.map((item) => {
+                    const active = Math.abs(rate - item) < 0.01;
+                    return (
+                        <button
+                            key={item}
+                            type="button"
+                            onClick={() => {
+                                onRateChange?.(item);
+                                setSpeedMenuOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between rounded-xl px-2.5 py-2 text-xs transition-colors cursor-pointer ${
+                                active
+                                    ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                            aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${item}x`}
+                            role="menuitemradio"
+                            aria-checked={active}
+                        >
+                            <span>{item}x</span>
+                            {active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />}
+                        </button>
+                    );
+                })}
             </div>
         );
 
-        return typeof document !== 'undefined'
-            ? createPortal(collapsedPlayer, document.body)
-            : collapsedPlayer;
-    }
+        const speedMenuPortal =
+            speedMenuOpen && typeof document !== 'undefined' ? createPortal(renderSpeedMenu(), document.body) : null;
 
-    const panelStyle = {
-        left: `${floatingState.x}px`,
-        top: `${floatingState.y}px`,
-        width: `${floatingState.width}px`,
-        maxWidth: 'calc(100vw - 16px)',
-        maxHeight: 'calc(100dvh - max(24px, env(safe-area-inset-bottom)))',
-        zIndex: PLAYER_Z_INDEX,
-    };
+        const subtitlePositionMenuPortal = (
+            <SubtitleSettingsMenuPortal
+                open={subtitlePositionMenuOpen}
+                anchorRef={subtitlePositionButtonRef}
+                menuRef={subtitlePositionMenuRef}
+                position={subtitlePosition}
+                settings={subtitleStyle}
+                onPositionSelect={selectSubtitlePosition}
+                onSettingsChange={updateSubtitleStyle}
+                onReset={resetSubtitleSettings}
+                onPointerEnter={() => {
+                    setSubtitlePreviewHovered(true);
+                    clearCollapseTimer();
+                }}
+                onPointerLeave={() => {
+                    setSubtitlePreviewHovered(false);
+                    if (!subtitlePositionMenuOpen) scheduleDockCollapse();
+                }}
+                t={t}
+            />
+        );
 
-    const speechPlayerContent = (
-        <>
-            <div
-                ref={panelRef}
-                className="fixed pointer-events-auto"
-                style={panelStyle}
-                onMouseEnter={handlePanelMouseEnter}
-                onMouseLeave={handlePanelMouseLeave}
-            >
-                <div className="relative overflow-visible rounded-3xl">
-                    <button
-                        type="button"
-                        onPointerDown={(event) => handleResizeStart(event, 'left')}
-                        className="absolute left-0 top-4 bottom-4 z-20 hidden w-2 -translate-x-1 cursor-ew-resize rounded-full hover:bg-indigo-300/30 focus:outline-none focus:ring-2 focus:ring-indigo-300/50 sm:block"
-                        aria-label={fallbackText(t, 'resize_speech_player_left', '向左调整播放器宽度')}
-                        title={fallbackText(t, 'resize_speech_player_left', '向左调整播放器宽度')}
-                    />
-                    <button
-                        type="button"
-                        onPointerDown={(event) => handleResizeStart(event, 'right')}
-                        className="absolute right-0 top-4 bottom-4 z-20 hidden w-2 translate-x-1 cursor-ew-resize rounded-full hover:bg-indigo-300/30 focus:outline-none focus:ring-2 focus:ring-indigo-300/50 sm:block"
-                        aria-label={fallbackText(t, 'resize_speech_player_right', '向右调整播放器宽度')}
-                        title={fallbackText(t, 'resize_speech_player_right', '向右调整播放器宽度')}
-                    />
-                    <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-[0_22px_70px_rgba(15,23,42,0.20)] backdrop-blur-2xl ring-1 ring-indigo-100/70">
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-50/80 via-white/40 to-violet-50/70"/>
-                        <div className="relative px-3 py-3 sm:px-3.5">
-                            <div className={isCompactPanel
-                                ? 'flex flex-col gap-2.5'
-                                : 'flex items-center gap-3'
-                            }>
-                                <div className={`flex min-w-0 items-center gap-2.5 sm:gap-3 ${isCompactPanel ? 'w-full' : 'flex-1'}`}>
-                                    <button
-                                        type="button"
-                                        onPointerDown={handleDragStart}
-                                        className="flex h-10 w-8 flex-shrink-0 touch-none items-center justify-center rounded-2xl text-gray-400 transition-colors hover:bg-white/80 hover:text-gray-700 cursor-grab active:cursor-grabbing"
-                                        aria-label={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
-                                        title={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
+        if (isCollapsed) {
+            const tabStyle = {
+                top: `${floatingState.y}px`,
+                [dockedSide]: 0,
+                zIndex: PLAYER_Z_INDEX,
+            };
+            const tabSideClass = dockedSide === 'left' ? 'rounded-r-2xl border-l-0' : 'rounded-l-2xl border-r-0';
+
+            const collapsedLabel = `${fallbackText(t, 'expand_speech_player', '展开朗读播放器')} · ${progressText}`;
+
+            const collapsedPlayer = (
+                <div ref={panelRef} className="fixed pointer-events-auto touch-none" style={tabStyle}>
+                    <div
+                        className={`relative overflow-hidden border border-indigo-100 bg-white/95 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl ring-1 ring-white/60 ${tabSideClass}`}
+                    >
+                        <button
+                            type="button"
+                            onPointerDown={handleCollapsedDragStart}
+                            onClick={handleCollapsedClick}
+                            className="flex min-h-16 min-w-12 max-w-24 cursor-grab touch-none select-none flex-col items-center justify-center gap-1.5 bg-transparent px-2 py-2 text-indigo-600 transition-all hover:bg-indigo-50 active:cursor-grabbing"
+                            aria-label={collapsedLabel}
+                            title={collapsedLabel}
+                        >
+                            <Volume2 size={18} className="shrink-0" />
+                            <span className="max-w-full truncate whitespace-nowrap rounded-full bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-indigo-600">
+                                {progressText}
+                            </span>
+                        </button>
+                        <SpeechProgressRail speechState={speechState} />
+                    </div>
+                </div>
+            );
+
+            return typeof document !== 'undefined' ? createPortal(collapsedPlayer, document.body) : collapsedPlayer;
+        }
+
+        const panelStyle = {
+            left: `${floatingState.x}px`,
+            top: `${floatingState.y}px`,
+            width: `${floatingState.width}px`,
+            maxWidth: 'calc(100vw - 16px)',
+            maxHeight: 'calc(100dvh - max(24px, env(safe-area-inset-bottom)))',
+            zIndex: PLAYER_Z_INDEX,
+        };
+
+        const speechPlayerContent = (
+            <>
+                <div
+                    ref={panelRef}
+                    className="fixed pointer-events-auto"
+                    style={panelStyle}
+                    onMouseEnter={handlePanelMouseEnter}
+                    onMouseLeave={handlePanelMouseLeave}
+                >
+                    <div className="relative overflow-visible rounded-3xl">
+                        <button
+                            type="button"
+                            onPointerDown={(event) => handleResizeStart(event, 'left')}
+                            className="absolute left-0 top-4 bottom-4 z-20 hidden w-2 -translate-x-1 cursor-ew-resize rounded-full hover:bg-indigo-300/30 focus:outline-none focus:ring-2 focus:ring-indigo-300/50 sm:block"
+                            aria-label={fallbackText(t, 'resize_speech_player_left', '向左调整播放器宽度')}
+                            title={fallbackText(t, 'resize_speech_player_left', '向左调整播放器宽度')}
+                        />
+                        <button
+                            type="button"
+                            onPointerDown={(event) => handleResizeStart(event, 'right')}
+                            className="absolute right-0 top-4 bottom-4 z-20 hidden w-2 translate-x-1 cursor-ew-resize rounded-full hover:bg-indigo-300/30 focus:outline-none focus:ring-2 focus:ring-indigo-300/50 sm:block"
+                            aria-label={fallbackText(t, 'resize_speech_player_right', '向右调整播放器宽度')}
+                            title={fallbackText(t, 'resize_speech_player_right', '向右调整播放器宽度')}
+                        />
+                        <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-[0_22px_70px_rgba(15,23,42,0.20)] backdrop-blur-2xl ring-1 ring-indigo-100/70">
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-indigo-50/80 via-white/40 to-violet-50/70" />
+                            <div className="relative px-3 py-3 sm:px-3.5">
+                                <div className={isCompactPanel ? 'flex flex-col gap-2.5' : 'flex items-center gap-3'}>
+                                    <div
+                                        className={`flex min-w-0 items-center gap-2.5 sm:gap-3 ${isCompactPanel ? 'w-full' : 'flex-1'}`}
                                     >
-                                        <GripVertical size={17}/>
-                                    </button>
-
-                                    <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25">
-                                        <Volume2 size={18}/>
-                                        {speechState.status === 'playing' && (
-                                            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white"/>
-                                        )}
-                                    </div>
-
-                                    <div className="min-w-0 flex-1 basis-0">
-                                        <div className="flex min-w-0 items-center gap-2">
-                                            <span className="truncate text-sm font-semibold text-gray-900">
-                                                {title}
-                                            </span>
-                                            <span className="flex-shrink-0 rounded-full border border-indigo-100 bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-600">
-                                                {isLoading ? fallbackText(t, 'speech_loading', '准备中') : progressText}
-                                            </span>
-                                        </div>
-                                        <div className="mt-1 truncate text-xs text-gray-500">
-                                            {currentSegment?.text || fallbackText(t, 'speech_waiting_segment', '正在准备朗读内容...')}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className={isCompactPanel
-                                    ? 'grid w-full min-w-0 grid-cols-1 gap-2'
-                                    : 'flex min-w-0 items-center justify-end gap-2'
-                                }>
-                                    <div className={`flex min-w-0 items-center gap-1.5 rounded-2xl bg-white/30 p-0.5 ${isCompactPanel ? 'w-full overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden' : 'shrink-0'}`}>
-                                        {canSelectBrowserVoice && (
-                                            <Listbox value={selectedBrowserVoiceValue} onChange={(value) => onBrowserSpeechVoiceChange?.(value)}>
-                                                {({open}) => (
-                                                    <div className={isCompactPanel ? 'min-w-0 flex-1' : 'min-w-0 max-w-[190px] shrink'}>
-                                                        <ListboxButton
-                                                            ref={browserVoiceButtonRef}
-                                                            className="flex h-8 min-w-0 w-full cursor-pointer items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-2 text-left text-xs font-medium text-gray-700 shadow-sm outline-none transition-colors hover:bg-white focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100"
-                                                            aria-label={fallbackText(t, 'speech_voice', '朗读角色')}
-                                                            title={selectedBrowserVoiceLabel}
-                                                        >
-                                                            <Volume2 size={14} className="shrink-0 text-indigo-500"/>
-                                                            <span className="min-w-0 flex-1 truncate">{selectedBrowserVoiceLabel}</span>
-                                                            <ChevronDown size={13} className={`shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}/>
-                                                        </ListboxButton>
-                                                        <BrowserVoiceOptionsPortal
-                                                            open={open}
-                                                            anchorRef={browserVoiceButtonRef}
-                                                            menuRef={browserVoiceMenuRef}
-                                                            options={browserVoiceOptions}
-                                                            selectedValue={selectedBrowserVoiceValue}
-                                                            defaultLabel={browserVoiceDefaultLabel}
-                                                            onOpenChange={handleBrowserVoiceMenuOpenChange}
-                                                            onPointerEnter={clearCollapseTimer}
-                                                            onPointerLeave={() => {
-                                                                if (!open) scheduleDockCollapse();
-                                                            }}
-                                                            t={t}
-                                                        />
-                                                    </div>
-                                                )}
-                                            </Listbox>
-                                        )}
-                                        <div className="relative shrink-0">
-                                            <button
-                                                ref={speedButtonRef}
-                                                type="button"
-                                                onClick={toggleSpeedMenu}
-                                                className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-2.5 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-white"
-                                                aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${rate}x`}
-                                                aria-haspopup="menu"
-                                                aria-expanded={speedMenuOpen}
-                                            >
-                                                <Gauge size={14} className="text-indigo-500"/>
-                                                <span>{rate}x</span>
-                                                <ChevronDown size={13} className={`text-gray-400 transition-transform ${speedMenuOpen ? 'rotate-180' : ''}`}/>
-                                            </button>
-                                        </div>
-
                                         <button
                                             type="button"
-                                            onClick={() => onAutoFollowToggle?.(!autoFollowEnabled)}
-                                            className={`flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-2 text-xs font-medium shadow-sm transition-colors ${autoFollowEnabled
-                                                ? 'border-indigo-200 bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'
-                                                : 'border-gray-200/80 bg-white/80 text-gray-600 hover:bg-white hover:text-indigo-600'
-                                            }`}
-                                            aria-label={autoFollowLabel}
-                                            title={autoFollowLabel}
-                                            aria-pressed={autoFollowEnabled}
+                                            onPointerDown={handleDragStart}
+                                            className="flex h-10 w-8 flex-shrink-0 touch-none items-center justify-center rounded-2xl text-gray-400 transition-colors hover:bg-white/80 hover:text-gray-700 cursor-grab active:cursor-grabbing"
+                                            aria-label={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
+                                            title={fallbackText(t, 'drag_speech_player', '拖动朗读播放器')}
                                         >
-                                            <Target size={14} className={autoFollowEnabled ? 'text-indigo-500' : 'text-gray-500'}/>
-                                            <span className={isVeryCompactPanel ? 'sr-only' : 'whitespace-nowrap'}>
-                                                {fallbackText(t, 'speech_auto_follow_short', '跟随')}
-                                            </span>
+                                            <GripVertical size={17} />
                                         </button>
 
+                                        <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25">
+                                            <Volume2 size={18} />
+                                            {speechState.status === 'playing' && (
+                                                <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" />
+                                            )}
+                                        </div>
 
+                                        <div className="min-w-0 flex-1 basis-0">
+                                            <div className="flex min-w-0 items-center gap-2">
+                                                <span className="truncate text-sm font-semibold text-gray-900">
+                                                    {title}
+                                                </span>
+                                                <span className="flex-shrink-0 rounded-full border border-indigo-100 bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-600">
+                                                    {isLoading
+                                                        ? fallbackText(t, 'speech_loading', '准备中')
+                                                        : progressText}
+                                                </span>
+                                            </div>
+                                            <div className="mt-1 truncate text-xs text-gray-500">
+                                                {currentSegment?.text ||
+                                                    fallbackText(t, 'speech_waiting_segment', '正在准备朗读内容...')}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        className={
+                                            isCompactPanel
+                                                ? 'grid w-full min-w-0 grid-cols-1 gap-2'
+                                                : 'flex min-w-0 items-center justify-end gap-2'
+                                        }
+                                    >
                                         <div
-                                            className="flex shrink-0 items-center rounded-full"
-                                            onMouseEnter={() => setSubtitlePreviewHovered(true)}
-                                            onMouseLeave={() => setSubtitlePreviewHovered(false)}
-                                            onFocusCapture={() => setSubtitlePreviewHovered(true)}
-                                            onBlurCapture={(event) => {
-                                                if (!event.currentTarget.contains(event.relatedTarget)) {
-                                                    setSubtitlePreviewHovered(false);
-                                                }
-                                            }}
+                                            className={`flex min-w-0 items-center gap-1.5 rounded-2xl bg-white/30 p-0.5 ${isCompactPanel ? 'w-full overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden' : 'shrink-0'}`}
                                         >
+                                            <SpeechVolumeControl
+                                                volume={speechVolume}
+                                                onChange={onSpeechVolumeChange}
+                                                open={volumeMenuOpen}
+                                                onOpenChange={setVolumeMenuOpen}
+                                                contentRef={volumeMenuRef}
+                                                popoverZIndex={PLAYER_Z_INDEX + 2}
+                                                triggerClassName="h-8 w-8 border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm"
+                                            />
+                                            {canSelectBrowserVoice && (
+                                                <Listbox
+                                                    value={selectedBrowserVoiceValue}
+                                                    onChange={(value) => onBrowserSpeechVoiceChange?.(value)}
+                                                >
+                                                    {({ open }) => (
+                                                        <div
+                                                            className={
+                                                                isCompactPanel
+                                                                    ? 'min-w-0 flex-1'
+                                                                    : 'min-w-0 max-w-[190px] shrink'
+                                                            }
+                                                        >
+                                                            <ListboxButton
+                                                                ref={browserVoiceButtonRef}
+                                                                className="flex h-8 min-w-0 w-full cursor-pointer items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-2 text-left text-xs font-medium text-gray-700 shadow-sm outline-none transition-colors hover:bg-white focus:border-indigo-200 focus:ring-2 focus:ring-indigo-100"
+                                                                aria-label={fallbackText(t, 'speech_voice', '朗读角色')}
+                                                                title={selectedBrowserVoiceLabel}
+                                                            >
+                                                                <Volume2
+                                                                    size={14}
+                                                                    className="shrink-0 text-indigo-500"
+                                                                />
+                                                                <span className="min-w-0 flex-1 truncate">
+                                                                    {selectedBrowserVoiceLabel}
+                                                                </span>
+                                                                <ChevronDown
+                                                                    size={13}
+                                                                    className={`shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
+                                                                />
+                                                            </ListboxButton>
+                                                            <BrowserVoiceOptionsPortal
+                                                                open={open}
+                                                                anchorRef={browserVoiceButtonRef}
+                                                                menuRef={browserVoiceMenuRef}
+                                                                options={browserVoiceOptions}
+                                                                selectedValue={selectedBrowserVoiceValue}
+                                                                defaultLabel={browserVoiceDefaultLabel}
+                                                                onOpenChange={handleBrowserVoiceMenuOpenChange}
+                                                                onPointerEnter={clearCollapseTimer}
+                                                                onPointerLeave={() => {
+                                                                    if (!open) scheduleDockCollapse();
+                                                                }}
+                                                                t={t}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </Listbox>
+                                            )}
+                                            <div className="relative shrink-0">
+                                                <button
+                                                    ref={speedButtonRef}
+                                                    type="button"
+                                                    onClick={toggleSpeedMenu}
+                                                    className="flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/80 px-2.5 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-white"
+                                                    aria-label={`${fallbackText(t, 'speech_speed', '速度')} ${rate}x`}
+                                                    aria-haspopup="menu"
+                                                    aria-expanded={speedMenuOpen}
+                                                >
+                                                    <Gauge size={14} className="text-indigo-500" />
+                                                    <span>{rate}x</span>
+                                                    <ChevronDown
+                                                        size={13}
+                                                        className={`text-gray-400 transition-transform ${speedMenuOpen ? 'rotate-180' : ''}`}
+                                                    />
+                                                </button>
+                                            </div>
+
                                             <button
                                                 type="button"
-                                                onClick={() => onSubtitlesToggle?.(!subtitlesEnabled)}
-                                                className={`flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-l-full border px-2 text-xs font-medium shadow-sm transition-colors sm:h-8 ${subtitlesEnabled
-                                                    ? 'border-amber-200 bg-amber-50 text-amber-700 ring-1 ring-amber-100'
-                                                    : 'border-gray-200/80 bg-white/80 text-gray-600 hover:bg-white hover:text-amber-700'
+                                                onClick={() => onAutoFollowToggle?.(!autoFollowEnabled)}
+                                                className={`flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-2 text-xs font-medium shadow-sm transition-colors ${
+                                                    autoFollowEnabled
+                                                        ? 'border-indigo-200 bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'
+                                                        : 'border-gray-200/80 bg-white/80 text-gray-600 hover:bg-white hover:text-indigo-600'
                                                 }`}
-                                                aria-label={subtitlesLabel}
-                                                title={subtitlesLabel}
-                                                aria-pressed={subtitlesEnabled}
+                                                aria-label={autoFollowLabel}
+                                                title={autoFollowLabel}
+                                                aria-pressed={autoFollowEnabled}
                                             >
-                                                <Captions size={14} className={subtitlesEnabled ? 'text-amber-600' : 'text-gray-500'}/>
+                                                <Target
+                                                    size={14}
+                                                    className={autoFollowEnabled ? 'text-indigo-500' : 'text-gray-500'}
+                                                />
                                                 <span className={isVeryCompactPanel ? 'sr-only' : 'whitespace-nowrap'}>
-                                                    {fallbackText(t, 'speech_subtitles_short', '字幕')}
+                                                    {fallbackText(t, 'speech_auto_follow_short', '跟随')}
                                                 </span>
                                             </button>
-                                            <button
-                                                ref={subtitlePositionButtonRef}
-                                                type="button"
-                                                onClick={() => {
-                                                    setSpeedMenuOpen(false);
-                                                    setSubtitlePositionMenuOpen(open => !open);
+
+                                            <div
+                                                className="flex shrink-0 items-center rounded-full"
+                                                onMouseEnter={() => setSubtitlePreviewHovered(true)}
+                                                onMouseLeave={() => setSubtitlePreviewHovered(false)}
+                                                onFocusCapture={() => setSubtitlePreviewHovered(true)}
+                                                onBlurCapture={(event) => {
+                                                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                                                        setSubtitlePreviewHovered(false);
+                                                    }
                                                 }}
-                                                className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-r-full border border-l-0 shadow-sm transition-colors sm:h-8 sm:w-8 ${subtitlePositionMenuOpen
-                                                    ? 'border-amber-300 bg-amber-100 text-amber-700'
-                                                    : 'border-gray-200/80 bg-white/80 text-gray-500 hover:bg-amber-50 hover:text-amber-700'
-                                                }`}
-                                                aria-label={subtitleSettingsLabel}
-                                                title={subtitleSettingsLabel}
-                                                aria-haspopup="dialog"
-                                                aria-expanded={subtitlePositionMenuOpen}
                                             >
-                                                <Settings2 size={14}/>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onSubtitlesToggle?.(!subtitlesEnabled)}
+                                                    className={`flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-l-full border px-2 text-xs font-medium shadow-sm transition-colors sm:h-8 ${
+                                                        subtitlesEnabled
+                                                            ? 'border-amber-200 bg-amber-50 text-amber-700 ring-1 ring-amber-100'
+                                                            : 'border-gray-200/80 bg-white/80 text-gray-600 hover:bg-white hover:text-amber-700'
+                                                    }`}
+                                                    aria-label={subtitlesLabel}
+                                                    title={subtitlesLabel}
+                                                    aria-pressed={subtitlesEnabled}
+                                                >
+                                                    <Captions
+                                                        size={14}
+                                                        className={
+                                                            subtitlesEnabled ? 'text-amber-600' : 'text-gray-500'
+                                                        }
+                                                    />
+                                                    <span
+                                                        className={isVeryCompactPanel ? 'sr-only' : 'whitespace-nowrap'}
+                                                    >
+                                                        {fallbackText(t, 'speech_subtitles_short', '字幕')}
+                                                    </span>
+                                                </button>
+                                                <button
+                                                    ref={subtitlePositionButtonRef}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSpeedMenuOpen(false);
+                                                        setSubtitlePositionMenuOpen((open) => !open);
+                                                    }}
+                                                    className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-r-full border border-l-0 shadow-sm transition-colors sm:h-8 sm:w-8 ${
+                                                        subtitlePositionMenuOpen
+                                                            ? 'border-amber-300 bg-amber-100 text-amber-700'
+                                                            : 'border-gray-200/80 bg-white/80 text-gray-500 hover:bg-amber-50 hover:text-amber-700'
+                                                    }`}
+                                                    aria-label={subtitleSettingsLabel}
+                                                    title={subtitleSettingsLabel}
+                                                    aria-haspopup="dialog"
+                                                    aria-expanded={subtitlePositionMenuOpen}
+                                                >
+                                                    <Settings2 size={14} />
+                                                </button>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={dockToRight}
+                                                className="flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/70 bg-white/70 px-2 text-xs text-gray-500 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
+                                                aria-label={fallbackText(t, 'dock_speech_player', '收起到右侧')}
+                                                title={fallbackText(t, 'dock_speech_player', '收起到右侧')}
+                                            >
+                                                <ChevronsRight size={14} strokeWidth={1.5} />
                                             </button>
                                         </div>
 
-
-                                        <button
-                                            type="button"
-                                            onClick={dockToRight}
-                                            className="flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/70 bg-white/70 px-2 text-xs text-gray-500 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
-                                            aria-label={fallbackText(t, 'dock_speech_player', '收起到右侧')}
-                                            title={fallbackText(t, 'dock_speech_player', '收起到右侧')}
+                                        <div
+                                            className={`flex shrink-0 items-center justify-center gap-1.5 rounded-2xl bg-white/30 p-0.5 ${isCompactPanel ? 'w-full' : ''}`}
                                         >
-                                            <ChevronsRight size={14} strokeWidth={1.5}/>
-                                        </button>
-                                    </div>
-
-                                    <div className={`flex shrink-0 items-center justify-center gap-1.5 rounded-2xl bg-white/30 p-0.5 ${isCompactPanel ? 'w-full' : ''}`}>
-                                        <button
-                                            type="button"
-                                            onClick={onPrevious}
-                                            disabled={!canGoPrevious}
-                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
-                                            aria-label={fallbackText(t, 'previous_speech_segment', '上一句')}
-                                            title={fallbackText(t, 'previous_speech_segment', '上一句')}
-                                        >
-                                            <SkipBack size={14}/>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={isPaused ? onResume : onPause}
-                                            disabled={isLoading}
-                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-40"
-                                            aria-label={isPaused ? fallbackText(t, 'resume_speech', '继续') : fallbackText(t, 'pause_speech', '暂停')}
-                                        >
-                                            {isPaused ? <Play size={15}/> : <Pause size={15}/>}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={onNext}
-                                            disabled={!canGoNext}
-                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
-                                            aria-label={fallbackText(t, 'next_speech_segment', '下一句')}
-                                            title={fallbackText(t, 'next_speech_segment', '下一句')}
-                                        >
-                                            <SkipForward size={14}/>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={onStop}
-                                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-red-50 hover:text-red-600"
-                                            aria-label={fallbackText(t, 'stop_speech', '停止')}
-                                        >
-                                            <Square size={14}/>
-                                        </button>
+                                            <button
+                                                type="button"
+                                                onClick={onPrevious}
+                                                disabled={!canGoPrevious}
+                                                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
+                                                aria-label={fallbackText(t, 'previous_speech_segment', '上一句')}
+                                                title={fallbackText(t, 'previous_speech_segment', '上一句')}
+                                            >
+                                                <SkipBack size={14} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={isPaused ? onResume : onPause}
+                                                disabled={isLoading}
+                                                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-40"
+                                                aria-label={
+                                                    isPaused
+                                                        ? fallbackText(t, 'resume_speech', '继续')
+                                                        : fallbackText(t, 'pause_speech', '暂停')
+                                                }
+                                            >
+                                                {isPaused ? <Play size={15} /> : <Pause size={15} />}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={onNext}
+                                                disabled={!canGoNext}
+                                                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-white hover:text-indigo-600 disabled:cursor-not-allowed disabled:opacity-35"
+                                                aria-label={fallbackText(t, 'next_speech_segment', '下一句')}
+                                                title={fallbackText(t, 'next_speech_segment', '下一句')}
+                                            >
+                                                <SkipForward size={14} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={onStop}
+                                                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm transition-colors hover:bg-red-50 hover:text-red-600"
+                                                aria-label={fallbackText(t, 'stop_speech', '停止')}
+                                            >
+                                                <Square size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <SpeechProgressRail speechState={speechState} />
                         </div>
-                        <SpeechProgressRail speechState={speechState}/>
                     </div>
                 </div>
-            </div>
-            {speedMenuPortal}
-            {subtitlePositionMenuPortal}
-        </>
-    );
+                {speedMenuPortal}
+                {subtitlePositionMenuPortal}
+            </>
+        );
 
-    return typeof document !== 'undefined'
-        ? createPortal(speechPlayerContent, document.body)
-        : speechPlayerContent;
-});
+        return typeof document !== 'undefined' ? createPortal(speechPlayerContent, document.body) : speechPlayerContent;
+    },
+);
 
 SpeechPlayer.displayName = 'SpeechPlayer';
 

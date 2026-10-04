@@ -902,6 +902,8 @@ function ChatPage({
         pauseActiveSpeech,
         resumeActiveSpeech,
         updateSpeechRate,
+        speechVolume,
+        updateSpeechVolume,
         updateSpeechSubtitlesEnabled,
         updateBrowserSpeechVoice,
         browserSpeechVoices,
@@ -3408,6 +3410,8 @@ function ChatPage({
                         <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
                             <SpeechSubtitleOverlay speechState={speechState} enabled={speechSubtitlesEnabled} t={t} />
                             <SpeechPlayer
+                                speechVolume={speechVolume}
+                                onSpeechVolumeChange={updateSpeechVolume}
                                 speechState={speechState}
                                 message={speechState?.messageId ? messages?.[speechState.messageId] : null}
                                 autoFollowEnabled={speechAutoFollowEnabled}
@@ -3599,6 +3603,8 @@ function ChatPage({
                         />
                     )}
                     <RealtimeVoiceSurface
+                        speechVolume={speechVolume}
+                        onSpeechVolumeChange={updateSpeechVolume}
                         avatarSceneOpen={avatarSceneOpen}
                         onToggleAvatarScene={() => {
                             toggleAvatarScene();
