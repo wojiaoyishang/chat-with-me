@@ -10,6 +10,8 @@ const AvatarScene = lazy(() => import('./AvatarScene.jsx'));
 /** Non-modal scene host leaves the chat composer available for typing. */
 export default function AvatarScenePanel({
     conversationId,
+    modelId,
+    modelRevision,
     onClose,
     hostElement,
     expanded,
@@ -73,6 +75,8 @@ export default function AvatarScenePanel({
                             key={connectionId}
                             requestScene={requestScene}
                             conversationId={conversationId}
+                            modelId={modelId}
+                            modelRevision={modelRevision}
                             immersive={expanded}
                         />
                     </Suspense>

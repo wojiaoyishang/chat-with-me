@@ -33,6 +33,27 @@ gltf.scene.traverse((object) => {
 assert(skinned > 0);
 for (const expression of ['Angry', 'Surprised', 'Sad']) assert(expression in expressions);
 console.log('PASS: fresh scene commands, bundled skeleton, animation and expression compatibility');
+// The new asset animates rigid nodes; skeletal skinning is not required.
+globalThis.self = globalThis;
+globalThis.createImageBitmap = async () => ({ width: 1, height: 1, close() {} });
+const flyingBytes = fs.readFileSync(new URL('../public/models/flying-robot/FlyingRobot.glb', import.meta.url));
+const flying = await new GLTFLoader().parseAsync(
+    flyingBytes.buffer.slice(flyingBytes.byteOffset, flyingBytes.byteOffset + flyingBytes.byteLength),
+    '',
+);
+const manifest = JSON.parse(
+    fs.readFileSync('E:/Programming/Python/Chat-With-Me-Backend/application/avatar_scene/flying_robot.json', 'utf8'),
+);
+for (const pose of manifest.poses) {
+    const clip = flying.animations.find((item) => item.name === pose.clip);
+    assert(clip && clip.duration > 0 && clip.tracks.length > 0);
+}
+assert.deepEqual(
+    manifest.expressions.map((item) => item.id),
+    ['neutral'],
+);
+assert.equal(flying.asset.extras.author, 'Shayan (https://sketchfab.com/mshayan02)');
+console.log('PASS: flying robot loads through the production GLTFLoader, animation mapping and attribution');
 
 // Run the panel's actual request callback: disconnected operations must not queue.
 const panel = fs.readFileSync(new URL('../src/features/avatar-scene/AvatarScenePanel.jsx', import.meta.url), 'utf8');

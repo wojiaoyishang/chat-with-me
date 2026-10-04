@@ -925,6 +925,10 @@ function ChatPage({
         setShowScrollToBottomButton,
     });
 
+    const [avatarModelRevision, setAvatarModelRevision] = useState(0);
+    const avatarSelectionQueue = useRef(Promise.resolve());
+    const avatarConversationRef = useRef(conversationId);
+    avatarConversationRef.current = conversationId;
     const [avatarSceneOpen, setAvatarSceneOpen] = useState(false);
     const [avatarExpanded, setAvatarExpanded] = useState(false);
     const [avatarHistoryOpen, setAvatarHistoryOpen] = useState(false);
@@ -3594,6 +3598,8 @@ function ChatPage({
 
                     {avatarSceneOpen && (
                         <AvatarScenePanel
+                            modelId={conversationId ? undefined : advancedSettingsValues.avatarModelId}
+                            modelRevision={avatarModelRevision}
                             conversationId={conversationId}
                             onClose={closeAvatarScene}
                             hostElement={chatPageRef.current}
@@ -3630,6 +3636,35 @@ function ChatPage({
                         settingsInstanceKey={settingsInstanceKey}
                         conversationId={conversationId}
                         onSettingChange={(values) => {
+                            if (
+                                conversationId &&
+                                values.avatarModelId &&
+                                values.avatarModelId !== advancedSettingsValues.avatarModelId
+                            ) {
+                                const targetConversation = conversationId;
+                                const previousModel = advancedSettingsValues.avatarModelId;
+                                avatarSelectionQueue.current = avatarSelectionQueue.current
+                                    .catch(() => {})
+                                    .then(async () => {
+                                        const result = await emitEvent({
+                                            event: 'avatar.scene.select',
+                                            conversationId: targetConversation,
+                                            payload: { modelId: values.avatarModelId },
+                                        });
+                                        if (!result.success) throw new Error(result.message || '角色模型保存失败');
+                                        if (avatarConversationRef.current === targetConversation)
+                                            setAvatarModelRevision((revision) => revision + 1);
+                                    })
+                                    .catch((error) => {
+                                        toast.error(error.message || '角色模型保存失败');
+                                        if (avatarConversationRef.current === targetConversation)
+                                            setAdvancedSettingsValues((current) =>
+                                                current.avatarModelId === values.avatarModelId
+                                                    ? { ...current, avatarModelId: previousModel }
+                                                    : current,
+                                            );
+                                    });
+                            }
                             setAdvancedSettingsValues(values);
                             setInitialSettingValues(null);
                         }}
