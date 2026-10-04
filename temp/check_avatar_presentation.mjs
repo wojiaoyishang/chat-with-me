@@ -115,6 +115,17 @@ const flushTimers = () => {
         fn();
     }
 };
+const floatingControl = { closest: (selector) => (selector === '[data-immersive-interactive="true"]' ? {} : null) };
+move(990, 690, floatingControl);
+hook = render();
+assert.equal(hook.visible, false, 'floating voice/TTS controls must not reveal the composer');
+move(500, 670);
+hook = render();
+assert.equal(hook.visible, true);
+move(990, 690, floatingControl);
+flushTimers();
+hook = render();
+assert.equal(hook.visible, false, 'leaving composer for a floating control must allow it to hide');
 move(500, 670);
 hook = render();
 assert.equal(hook.visible, true);

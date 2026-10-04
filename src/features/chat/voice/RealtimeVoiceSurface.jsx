@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Activity, ChevronDown, ChevronUp, Mic, MicOff, Minimize2, PhoneOff } from 'lucide-react';
 import './RealtimeVoiceSurface.css';
 import { Button } from '@/components/ui/button';
-import SpeechVolumeControl from '@/features/chat/speech/SpeechVolumeControl.jsx';
 
 const STATUS_LABELS = {
     authorizing: '正在准备',
@@ -169,8 +168,6 @@ export default function RealtimeVoiceSurface({
     onToggleMute,
     avatarSceneOpen,
     onToggleAvatarScene,
-    speechVolume = 1,
-    onSpeechVolumeChange,
     minimizedHost = null,
     minimizedBottom = 16,
 }) {
@@ -209,6 +206,7 @@ export default function RealtimeVoiceSurface({
     if (state.minimized) {
         const minimizedView = (
             <div
+                data-immersive-interactive="true"
                 className="cwm-voice-minimized max-w-[calc(100%-2rem)]"
                 style={minimizedHost ? { position: 'absolute', bottom: minimizedBottom, zIndex: 80 } : undefined}
             >
@@ -233,14 +231,13 @@ export default function RealtimeVoiceSurface({
                     </span>
                     <ChevronUp className="ml-1 text-slate-400" size={17} />
                 </button>
-                <SpeechVolumeControl volume={speechVolume} onChange={onSpeechVolumeChange} />
             </div>
         );
         return minimizedHost ? createPortal(minimizedView, minimizedHost) : minimizedView;
     }
 
     return (
-        <aside className="cwm-voice-dock">
+        <aside className="cwm-voice-dock" data-immersive-interactive="true">
             <section className="cwm-voice-surface">
                 <header className="cwm-voice-header">
                     <div className="min-w-0">
@@ -262,7 +259,6 @@ export default function RealtimeVoiceSurface({
                         >
                             3D
                         </Button>
-                        <SpeechVolumeControl volume={speechVolume} onChange={onSpeechVolumeChange} />
                         <ProtocolIndicator profile={state.profile} />
                         <button
                             type="button"

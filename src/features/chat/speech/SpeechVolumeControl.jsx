@@ -28,6 +28,7 @@ export default function SpeechVolumeControl({
                 </Button>
             </PopoverTrigger>
             <PopoverContent
+                data-immersive-interactive="true"
                 ref={contentRef}
                 side="top"
                 align="end"

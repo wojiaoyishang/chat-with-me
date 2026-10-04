@@ -156,3 +156,12 @@ new Function(
 )({ target: inside });
 assert.equal(outsideCollapsed, 0);
 console.log('PASS: TTS volume popover pins dock open and its portal does not trigger mobile outside-collapse');
+
+assert.ok(!surface.includes('SpeechVolumeControl'), 'call window must not duplicate global volume settings');
+assert.ok(player.includes('<SpeechVolumeControl'), 'global TTS player retains volume settings');
+const page = fs.readFileSync('src/features/chat/ChatPage.jsx', 'utf8');
+assert.ok(
+    !page.includes('minimizedBottom={'),
+    'composer visibility must not move the call window away from the pointer',
+);
+console.log('PASS: global TTS-only volume control and stable call window position');

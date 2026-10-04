@@ -27,13 +27,13 @@ src/features/chat/speech/SpeechVolumeControl 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/speech/SpeechVolumeControl.jsx:256:1727:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/speech/SpeechVolumeControl.jsx:256:1777:FUNCTION
 
 .. js:function:: SpeechVolumeControl({ volume = 1, onChange, onOpenChange, open, contentRef, popoverZIndex = 10030, triggerClassName = '…)
 
    渲染 ``SpeechVolumeControl`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``52`` 行。
+   **性质**：同步函数；导出 API；源码第 ``7``—``53`` 行。
 
    **参数**
 
@@ -53,17 +53,17 @@ src/features/chat/speech/SpeechVolumeControl 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/speech/SpeechVolumeControl.jsx:1613:1649:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/speech/SpeechVolumeControl.jsx:1663:1699:FUNCTION
 
-.. rubric:: ``onValueChange callback @ 47``
+.. rubric:: ``onValueChange callback @ 48``
 
 .. code-block:: javascript
 
-   onValueChange callback @ 47([value])
+   onValueChange callback @ 48([value])
 
 处理 ``Value Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``47``—``47`` 行；所属函数 ``SpeechVolumeControl``。
+**性质**：同步局部函数；源码第 ``48``—``48`` 行；所属函数 ``SpeechVolumeControl``。
 
 **参数**
 

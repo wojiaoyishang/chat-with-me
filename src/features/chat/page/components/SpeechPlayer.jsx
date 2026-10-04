@@ -1456,7 +1456,12 @@ const SpeechPlayer = memo(
             const collapsedLabel = `${fallbackText(t, 'expand_speech_player', '展开朗读播放器')} · ${progressText}`;
 
             const collapsedPlayer = (
-                <div ref={panelRef} className="fixed pointer-events-auto touch-none" style={tabStyle}>
+                <div
+                    data-immersive-interactive="true"
+                    ref={panelRef}
+                    className="fixed pointer-events-auto touch-none"
+                    style={tabStyle}
+                >
                     <div
                         className={`relative overflow-hidden border border-indigo-100 bg-white/95 shadow-2xl shadow-indigo-900/10 backdrop-blur-xl ring-1 ring-white/60 ${tabSideClass}`}
                     >
@@ -1494,6 +1499,7 @@ const SpeechPlayer = memo(
             <>
                 <div
                     ref={panelRef}
+                    data-immersive-interactive="true"
                     className="fixed pointer-events-auto"
                     style={panelStyle}
                     onMouseEnter={handlePanelMouseEnter}

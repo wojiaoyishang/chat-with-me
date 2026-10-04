@@ -1078,7 +1078,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``updateSetting``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:26285:88765:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:26285:88950:FUNCTION
 
 .. rubric:: ``memo callback @ 616``
 
@@ -1088,7 +1088,7 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``616``—``1792`` 行。
+**性质**：同步局部函数；源码第 ``616``—``1798`` 行。
 
 **参数**
 
@@ -3427,17 +3427,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitlePreviewHovered``、``scheduleDockCollapse``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:65145:65188:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:65330:65373:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 1505``
+.. rubric:: ``onPointerDown callback @ 1511``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 1505(event)
+   onPointerDown callback @ 1511(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1505``—``1505`` 行；所属函数 ``memo callback @ 616``。
+**性质**：同步局部函数；源码第 ``1511``—``1511`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3450,17 +3450,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``handleResizeStart``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:65748:65792:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:65933:65977:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 1512``
+.. rubric:: ``onPointerDown callback @ 1518``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 1512(event)
+   onPointerDown callback @ 1518(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1512``—``1512`` 行；所属函数 ``memo callback @ 616``。
+**性质**：同步局部函数；源码第 ``1518``—``1518`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3473,17 +3473,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``handleResizeStart``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:71498:71544:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:71683:71729:FUNCTION
 
-.. rubric:: ``onChange callback @ 1581``
+.. rubric:: ``onChange callback @ 1587``
 
 .. code-block:: javascript
 
-   onChange callback @ 1581(value)
+   onChange callback @ 1587(value)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1581``—``1581`` 行；所属函数 ``memo callback @ 616``。
+**性质**：同步局部函数；源码第 ``1587``—``1587`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3496,17 +3496,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``onBrowserSpeechVoiceChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:71649:75409:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:71834:75594:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1583``
+.. rubric:: ``anonymous callback @ 1589``
 
 .. code-block:: javascript
 
-   anonymous callback @ 1583({ open })
+   anonymous callback @ 1589({ open })
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1583``—``1624`` 行；所属函数 ``memo callback @ 616``。
+**性质**：同步局部函数；源码第 ``1589``—``1630`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3521,17 +3521,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:74982:75158:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:75167:75343:FUNCTION
 
-.. rubric:: ``onPointerLeave callback @ 1618``
+.. rubric:: ``onPointerLeave callback @ 1624``
 
 .. code-block:: javascript
 
-   onPointerLeave callback @ 1618()
+   onPointerLeave callback @ 1624()
 
 处理 ``Pointer Leave`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1618``—``1620`` 行；所属函数 ``anonymous callback @ 1583``。
+**性质**：同步局部函数；源码第 ``1624``—``1626`` 行；所属函数 ``anonymous callback @ 1589``。
 
 **参数**
 
@@ -3543,17 +3543,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``scheduleDockCollapse``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:77227:77273:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:77412:77458:FUNCTION
 
-.. rubric:: ``onClick callback @ 1648``
+.. rubric:: ``onClick callback @ 1654``
 
 .. code-block:: javascript
 
-   onClick callback @ 1648()
+   onClick callback @ 1654()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1648``—``1648`` 行；所属函数 ``memo callback @ 616``。
+**性质**：同步局部函数；源码第 ``1654``—``1654`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3565,17 +3565,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``onAutoFollowToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:78970:79007:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79155:79192:FUNCTION
 
-.. rubric:: ``onMouseEnter callback @ 1669``
+.. rubric:: ``onMouseEnter callback @ 1675``
 
 .. code-block:: javascript
 
-   onMouseEnter callback @ 1669()
+   onMouseEnter callback @ 1675()
 
 处理 ``Mouse Enter`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1669``—``1669`` 行；所属函数 ``memo callback @ 616``。
+**性质**：同步局部函数；源码第 ``1675``—``1675`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3587,17 +3587,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitlePreviewHovered``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79071:79109:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79256:79294:FUNCTION
 
-.. rubric:: ``onMouseLeave callback @ 1670``
+.. rubric:: ``onMouseLeave callback @ 1676``
 
 .. code-block:: javascript
 
-   onMouseLeave callback @ 1670()
+   onMouseLeave callback @ 1676()
 
 处理 ``Mouse Leave`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1670``—``1670`` 行；所属函数 ``memo callback @ 616``。
+**性质**：同步局部函数；源码第 ``1676``—``1676`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3609,17 +3609,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitlePreviewHovered``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79175:79212:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79360:79397:FUNCTION
 
-.. rubric:: ``onFocusCapture callback @ 1671``
+.. rubric:: ``onFocusCapture callback @ 1677``
 
 .. code-block:: javascript
 
-   onFocusCapture callback @ 1671()
+   onFocusCapture callback @ 1677()
 
 处理 ``Focus Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1671``—``1671`` 行；所属函数 ``memo callback @ 616``。
+**性质**：同步局部函数；源码第 ``1677``—``1677`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3631,17 +3631,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``setSubtitlePreviewHovered``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79277:79593:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79462:79778:FUNCTION
 
-.. rubric:: ``onBlurCapture callback @ 1672``
+.. rubric:: ``onBlurCapture callback @ 1678``
 
 .. code-block:: javascript
 
-   onBlurCapture callback @ 1672(event)
+   onBlurCapture callback @ 1678(event)
 
 处理 ``Blur Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1672``—``1676`` 行；所属函数 ``memo callback @ 616``。
+**性质**：同步局部函数；源码第 ``1678``—``1682`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3654,17 +3654,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``event.currentTarget.contains``、``setSubtitlePreviewHovered``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:79824:79868:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:80009:80053:FUNCTION
 
-.. rubric:: ``onClick callback @ 1680``
+.. rubric:: ``onClick callback @ 1686``
 
 .. code-block:: javascript
 
-   onClick callback @ 1680()
+   onClick callback @ 1686()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1680``—``1680`` 行；所属函数 ``memo callback @ 616``。
+**性质**：同步局部函数；源码第 ``1686``—``1686`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3676,17 +3676,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **主要协作调用**：``onSubtitlesToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:81913:82157:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:82098:82342:FUNCTION
 
-.. rubric:: ``onClick callback @ 1705``
+.. rubric:: ``onClick callback @ 1711``
 
 .. code-block:: javascript
 
-   onClick callback @ 1705()
+   onClick callback @ 1711()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1705``—``1708`` 行；所属函数 ``memo callback @ 616``。
+**性质**：同步局部函数；源码第 ``1711``—``1714`` 行；所属函数 ``memo callback @ 616``。
 
 **参数**
 
@@ -3700,17 +3700,17 @@ src/features/chat/page/components/SpeechPlayer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:82086:82101:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechPlayer.jsx:82271:82286:FUNCTION
 
-.. rubric:: ``setSubtitlePositionMenuOpen callback @ 1707``
+.. rubric:: ``setSubtitlePositionMenuOpen callback @ 1713``
 
 .. code-block:: javascript
 
-   setSubtitlePositionMenuOpen callback @ 1707(open)
+   setSubtitlePositionMenuOpen callback @ 1713(open)
 
 设置与 ``Subtitle Position Menu Open`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1707``—``1707`` 行；所属函数 ``onClick callback @ 1705``。
+**性质**：同步局部函数；源码第 ``1713``—``1713`` 行；所属函数 ``onClick callback @ 1711``。
 
 **参数**
 

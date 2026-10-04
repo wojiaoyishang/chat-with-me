@@ -27,22 +27,22 @@ Reveals the existing composer without unmounting its editor or draft.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:119:1943:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:121:2423:FUNCTION
 
-.. js:function:: useImmersiveComposer({enabled, hostRef})
+.. js:function:: useImmersiveComposer({ enabled, hostRef })
 
    Reveals the existing composer without unmounting its editor or draft.
 
-   **性质**：同步函数；导出 API；源码第 ``6``—``38`` 行。
+   **性质**：同步函数；导出 API；源码第 ``6``—``64`` 行。
 
    **参数**
 
-   ``{enabled, hostRef}``
+   ``{ enabled, hostRef }``
       调用方传入的 ``enabled, hostRef`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{ composerRef, visible, show, onFocusCapture: () => { focusedRef.current = true; show(); }, onBlurCapture: event => { if (event.currentTarget.contains(event.relatedTarget)) return…``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ composerRef, visible, show, onFocusCapture: () => { focusedRef.current = true; show(); }, onBlurCapture: (event) => { if (event.currentTarget.contains(event.relatedTarget)) retu…``。
 
    **副作用**
 
@@ -58,7 +58,7 @@ Reveals the existing composer without unmounting its editor or draft.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:457:543:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:461:575:FUNCTION
 
 .. rubric:: ``useCallback callback @ 11``
 
@@ -68,7 +68,7 @@ Reveals the existing composer without unmounting its editor or draft.
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``11``—``11`` 行；所属函数 ``useImmersiveComposer``。
+**性质**：同步局部函数；源码第 ``11``—``15`` 行；所属函数 ``useImmersiveComposer``。
 
 **参数**
 
@@ -80,17 +80,17 @@ Reveals the existing composer without unmounting its editor or draft.
 
 **主要协作调用**：``clearTimeout``、``setVisible``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:564:1627:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:596:2057:FUNCTION
 
-.. rubric:: ``useEffect callback @ 12``
+.. rubric:: ``useEffect callback @ 16``
 
 .. code-block:: javascript
 
-   useEffect callback @ 12()
+   useEffect callback @ 16()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``12``—``29`` 行；所属函数 ``useImmersiveComposer``。
+**性质**：同步局部函数；源码第 ``16``—``50`` 行；所属函数 ``useImmersiveComposer``。
 
 **参数**
 
@@ -109,7 +109,7 @@ Reveals the existing composer without unmounting its editor or draft.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:695:893:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:735:977:FUNCTION
 
 .. rubric:: ``scheduleHide``
 
@@ -119,7 +119,7 @@ Reveals the existing composer without unmounting its editor or draft.
 
 实现 ``scheduleHide`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``15``—``18`` 行；所属函数 ``useEffect callback @ 12``。
+**性质**：同步局部函数；源码第 ``20``—``26`` 行；所属函数 ``useEffect callback @ 16``。
 
 **参数**
 
@@ -133,17 +133,17 @@ Reveals the existing composer without unmounting its editor or draft.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:812:866:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:852:950:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 17``
+.. rubric:: ``setTimeout callback @ 22``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 17()
+   setTimeout callback @ 22()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``17``—``17`` 行；所属函数 ``scheduleHide``。
+**性质**：同步局部函数；源码第 ``22``—``25`` 行；所属函数 ``scheduleHide``。
 
 **参数**
 
@@ -155,7 +155,7 @@ Reveals the existing composer without unmounting its editor or draft.
 
 **主要协作调用**：``setVisible``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:924:1410:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:1008:1796:FUNCTION
 
 .. rubric:: ``onPointerMove``
 
@@ -165,7 +165,7 @@ Reveals the existing composer without unmounting its editor or draft.
 
 处理 ``Pointer Move`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``19``—``26`` 行；所属函数 ``useEffect callback @ 12``。
+**性质**：同步局部函数；源码第 ``27``—``43`` 行；所属函数 ``useEffect callback @ 16``。
 
 **参数**
 
@@ -176,19 +176,19 @@ Reveals the existing composer without unmounting its editor or draft.
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``hostRef.current?.getBoundingClientRect``、``composerRef.current?.contains``、``show``、``scheduleHide``。
+**主要协作调用**：``event.target?.closest``、``scheduleHide``、``hostRef.current?.getBoundingClientRect``、``composerRef.current?.contains``、``show``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:1491:1620:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:1877:2050:FUNCTION
 
-.. rubric:: ``returned callback @ 28``
+.. rubric:: ``returned callback @ 45``
 
 .. code-block:: javascript
 
-   returned callback @ 28()
+   returned callback @ 45()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``28``—``28`` 行；所属函数 ``useEffect callback @ 12``。
+**性质**：同步局部函数；源码第 ``45``—``49`` 行；所属函数 ``useEffect callback @ 16``。
 
 **参数**
 
@@ -204,7 +204,7 @@ Reveals the existing composer without unmounting its editor or draft.
 
 **主要协作调用**：``document.removeEventListener``、``clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:1728:1773:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:2174:2251:FUNCTION
 
 .. rubric:: ``onFocusCapture``
 
@@ -214,7 +214,7 @@ Reveals the existing composer without unmounting its editor or draft.
 
 处理 ``Focus Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``32``—``32`` 行；所属函数 ``useImmersiveComposer``。
+**性质**：同步局部函数；源码第 ``55``—``58`` 行；所属函数 ``useImmersiveComposer``。
 
 **参数**
 
@@ -226,7 +226,7 @@ Reveals the existing composer without unmounting its editor or draft.
 
 **主要协作调用**：``show``。
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:1797:1933:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/useImmersiveComposer.js:2275:2413:FUNCTION
 
 .. rubric:: ``onBlurCapture``
 
@@ -236,7 +236,7 @@ Reveals the existing composer without unmounting its editor or draft.
 
 处理 ``Blur Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``33``—``36`` 行；所属函数 ``useImmersiveComposer``。
+**性质**：同步局部函数；源码第 ``59``—``62`` 行；所属函数 ``useImmersiveComposer``。
 
 **参数**
 

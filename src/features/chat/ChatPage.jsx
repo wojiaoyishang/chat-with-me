@@ -3603,8 +3603,6 @@ function ChatPage({
                         />
                     )}
                     <RealtimeVoiceSurface
-                        speechVolume={speechVolume}
-                        onSpeechVolumeChange={updateSpeechVolume}
                         avatarSceneOpen={avatarSceneOpen}
                         onToggleAvatarScene={() => {
                             toggleAvatarScene();
@@ -3612,11 +3610,6 @@ function ChatPage({
                         }}
                         state={{ ...realtimeVoice.state, minimized: avatarImmersive || realtimeVoice.state.minimized }}
                         minimizedHost={avatarImmersive ? chatPageRef.current : null}
-                        minimizedBottom={
-                            avatarImmersive && immersiveComposer.visible
-                                ? (immersiveComposer.composerRef.current?.getBoundingClientRect().height || 0) + 12
-                                : 16
-                        }
                         onEnd={() => {
                             closeAvatarScene();
                             void realtimeVoice.stop();
