@@ -1,3 +1,4 @@
+import { createSpeechFeedbackDispatcher } from '../../speech/frontendFeedback.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { generateUUID, getLocalSetting, setLocalSetting, TTS_LOCAL_SETTING_KEYS } from '@/lib/tools.jsx';
@@ -378,6 +379,10 @@ export default function useChatSpeech({
     checkScrollPosition,
     setShowScrollToBottomButton,
 }) {
+    const feedbackConversationRef = useRef(conversationId);
+    feedbackConversationRef.current = conversationId;
+    const feedbackDispatcherRef = useRef(null);
+    if (!feedbackDispatcherRef.current) feedbackDispatcherRef.current = createSpeechFeedbackDispatcher(emitEvent);
     // 语音朗读相关：由 useChatSpeech 统一处理播放状态和当前高亮句子。
     const [speechState, setSpeechState] = useState(createPersistentSpeechState);
     const speechStateRef = useRef(speechState);
@@ -2326,6 +2331,12 @@ export default function useChatSpeech({
                     const markUtteranceStarted = () => {
                         if (utteranceStarted || isStale()) return;
                         utteranceStarted = true;
+                        feedbackDispatcherRef.current({
+                            conversationId: feedbackConversationRef.current,
+                            messageId,
+                            requestId,
+                            segment,
+                        });
                         controller.currentUtterance = utterance;
                         controller.currentIndex = segmentIndex;
                         controller.nativeStartRetryCounts.delete(segmentIndex);
@@ -2639,6 +2650,12 @@ export default function useChatSpeech({
                     )
                         return;
                     utteranceStarted = true;
+                    feedbackDispatcherRef.current({
+                        conversationId: feedbackConversationRef.current,
+                        messageId,
+                        requestId,
+                        segment,
+                    });
                     controller.nativeStartRetryCounts.delete(segmentIndex);
                     setSpeechState((prev) => ({
                         ...prev,
@@ -4371,6 +4388,12 @@ export default function useChatSpeech({
 
         audio.onplaying = () => {
             if (isStalePlayback()) return;
+            feedbackDispatcherRef.current({
+                conversationId: feedbackConversationRef.current,
+                messageId: controller.messageId,
+                requestId: controller.requestId,
+                segment: controller.segments?.[segmentPosition],
+            });
             schedulePlaybackSegmentHighlight();
         };
 

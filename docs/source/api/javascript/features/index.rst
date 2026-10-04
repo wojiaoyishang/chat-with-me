@@ -183,6 +183,11 @@
      - 0
      - 2
      - ``src/features/chat/page/utils/networkMerge.js``
+   * - :doc:`src/features/chat/speech/FrontendFeedbackButtons </api/javascript/features/chat/speech/FrontendFeedbackButtons>`
+     - 2
+     - 0
+     - 11
+     - ``src/features/chat/speech/FrontendFeedbackButtons.jsx``
    * - :doc:`src/features/chat/speech/SpeechVolumeControl </api/javascript/features/chat/speech/SpeechVolumeControl>`
      - 1
      - 0
@@ -198,6 +203,11 @@
      - 0
      - 0
      - ``src/features/chat/speech/constants.js``
+   * - :doc:`src/features/chat/speech/frontendFeedback </api/javascript/features/chat/speech/frontendFeedback>`
+     - 3
+     - 0
+     - 3
+     - ``src/features/chat/speech/frontendFeedback.js``
    * - :doc:`src/features/chat/speech/playbackTiming </api/javascript/features/chat/speech/playbackTiming>`
      - 0
      - 0
@@ -439,9 +449,9 @@
      - 3
      - ``src/features/chat/ui/message/utils/messageActions.js``
    * - :doc:`src/features/chat/ui/message/utils/speechContent </api/javascript/features/chat/ui/message/utils/speechContent>`
-     - 22
+     - 24
      - 0
-     - 6
+     - 9
      - ``src/features/chat/ui/message/utils/speechContent.js``
    * - :doc:`src/features/chat/voice/RealtimeVoiceButton </api/javascript/features/chat/voice/RealtimeVoiceButton>`
      - 1
@@ -647,9 +657,11 @@
    /api/javascript/features/chat/page/utils/messageMountPoints
    /api/javascript/features/chat/page/utils/messageSummaries
    /api/javascript/features/chat/page/utils/networkMerge
+   /api/javascript/features/chat/speech/FrontendFeedbackButtons
    /api/javascript/features/chat/speech/SpeechVolumeControl
    /api/javascript/features/chat/speech/backendAudio
    /api/javascript/features/chat/speech/constants
+   /api/javascript/features/chat/speech/frontendFeedback
    /api/javascript/features/chat/speech/playbackTiming
    /api/javascript/features/chat/speech/speechRuntime
    /api/javascript/features/chat/speech/speechState

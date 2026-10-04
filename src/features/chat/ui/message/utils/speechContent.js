@@ -1,3 +1,4 @@
+import { parseFrontendFeedback, stripFrontendFeedback } from '@/features/chat/speech/frontendFeedback.js';
 import {
     getCardReplaceIdFromAttributes,
     normalizeReplacementEntry,
@@ -13,17 +14,16 @@ const HTML_TAG_PATTERN = /<[^>]+>/g;
 const MARKDOWN_TABLE_SEPARATOR_ROW_PATTERN = /^[ \t]*\|?[ \t:|.-]*-{3,}[ \t:|.-]*\|?[ \t]*$/gm;
 
 const SENTENCE_END_CHARS = new Set(['。', '！', '？', '!', '?', '；', ';']);
-const CLOSING_SENTENCE_CHARS = new Set([
-    '”', '’', '"', "'", '」', '』', '）', ')', '】', ']', '》', '〉', '｝', '}',
-]);
+const CLOSING_SENTENCE_CHARS = new Set(['”', '’', '"', "'", '」', '』', '）', ')', '】', ']', '》', '〉', '｝', '}']);
 const MARKDOWN_ORDERED_LIST_PATTERN = /^\s{0,3}\d{1,4}$/;
 const ASCII_ELLIPSIS = '...';
 const CJK_ELLIPSIS_CHAR = '…';
 
-export const normalizeSpeechText = (value = '') => String(value ?? '')
-    .replace(/[\u200B-\u200D\uFEFF]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+export const normalizeSpeechText = (value = '') =>
+    String(value ?? '')
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
 
 const normalizeWhitespace = normalizeSpeechText;
 
@@ -44,14 +44,16 @@ const isReplaceDirective = (directiveName, attributes, replacement) => {
     if (normalizedName === 'card-replace' || normalizedName === 'cardreplace') return true;
 
     if (normalizedName !== 'card') return false;
-    if (String(attributes?.type || '').trim().toLowerCase() === 'replace') return true;
+    if (
+        String(attributes?.type || '')
+            .trim()
+            .toLowerCase() === 'replace'
+    )
+        return true;
 
     const id = getCardReplaceIdFromAttributes(attributes);
     return Boolean(
-        id
-        && replacement
-        && typeof replacement === 'object'
-        && Object.prototype.hasOwnProperty.call(replacement, id),
+        id && replacement && typeof replacement === 'object' && Object.prototype.hasOwnProperty.call(replacement, id),
     );
 };
 
@@ -83,7 +85,7 @@ const collectCardReplaceDirectiveMatches = (source) => {
 
     matches.sort((left, right) => {
         if (left.start !== right.start) return left.start - right.start;
-        return (right.end - right.start) - (left.end - left.start);
+        return right.end - right.start - (left.end - left.start);
     });
 
     const nonOverlapping = [];
@@ -98,17 +100,8 @@ const collectCardReplaceDirectiveMatches = (source) => {
     return nonOverlapping;
 };
 
-const resolveReplacementSpeechContent = (
-    directiveName,
-    rawAttributes,
-    replacement,
-    options,
-) => {
-    const {
-        depth,
-        maxDepth,
-        visitedIds,
-    } = options;
+const resolveReplacementSpeechContent = (directiveName, rawAttributes, replacement, options) => {
+    const { depth, maxDepth, visitedIds, feedback = false } = options;
     const attributes = parseCardReplaceAttributes(rawAttributes);
 
     if (!isReplaceDirective(directiveName, attributes, replacement)) return '';
@@ -118,12 +111,7 @@ const resolveReplacementSpeechContent = (
 
     const rawTokenType = String(attributes.type || '').trim();
     const tokenType = rawTokenType.toLowerCase() === 'replace' ? '' : rawTokenType;
-    const normalized = normalizeReplacementEntry(
-        replacement,
-        replacementId,
-        tokenType,
-        false,
-    );
+    const normalized = normalizeReplacementEntry(replacement, replacementId, tokenType, false);
 
     if (!normalized.exists) return '';
 
@@ -138,17 +126,33 @@ const resolveReplacementSpeechContent = (
         maxDepth,
         visitedIds: [...visitedIds, replacementId],
         includeOwnText,
+        feedback,
     });
 };
 
+const resolveSpeechFragment = (source, includeOwnText, feedback) => {
+    const items = feedback ? parseFrontendFeedback(source) : [];
+    if (!includeOwnText)
+        return items
+            .filter((item) => item.trigger === 'next_speech_start')
+            .map((item) => `\n\uE000${item.toolid}\uE001\n`)
+            .join('');
+    let result = source;
+    for (const item of items) {
+        const marker = `[FRONTEND_FEEDBACK ID:${item.toolid} ONCE:${item.once} TRIGGER:${item.trigger}]`;
+        result = result.replaceAll(
+            marker,
+            item.trigger === 'next_speech_start' ? `\n\uE000${item.toolid}\uE001\n` : '',
+        );
+    }
+    return stripFrontendFeedback(result);
+};
+
 export const resolveMarkdownSpeechContent = (content, replacement = {}, options = {}) => {
-    const {
-        depth = 0,
-        maxDepth = 10,
-        visitedIds = [],
-        includeOwnText = true,
-    } = options;
-    const source = String(content ?? '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const { depth = 0, maxDepth = 10, visitedIds = [], includeOwnText = true, feedback = false } = options;
+    const source = String(content ?? '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n');
 
     if (!source) return '';
 
@@ -162,22 +166,22 @@ export const resolveMarkdownSpeechContent = (content, replacement = {}, options 
     }
 
     const directiveMatches = collectCardReplaceDirectiveMatches(source);
-    if (directiveMatches.length === 0) return includeOwnText ? source : '';
+    if (directiveMatches.length === 0) return resolveSpeechFragment(source, includeOwnText, feedback);
 
     let cursor = 0;
     let result = '';
 
     directiveMatches.forEach((match) => {
-        if (includeOwnText && match.start > cursor) {
-            result += source.slice(cursor, match.start);
+        if (match.start > cursor) {
+            result += resolveSpeechFragment(source.slice(cursor, match.start), includeOwnText, feedback);
         }
 
-        const nestedContent = resolveReplacementSpeechContent(
-            match.directiveName,
-            match.rawAttributes,
-            replacement,
-            {depth, maxDepth, visitedIds},
-        );
+        const nestedContent = resolveReplacementSpeechContent(match.directiveName, match.rawAttributes, replacement, {
+            depth,
+            maxDepth,
+            visitedIds,
+            feedback,
+        });
 
         if (nestedContent) {
             result += `\n${nestedContent}\n`;
@@ -186,8 +190,8 @@ export const resolveMarkdownSpeechContent = (content, replacement = {}, options 
         cursor = match.end;
     });
 
-    if (includeOwnText && cursor < source.length) {
-        result += source.slice(cursor);
+    if (cursor < source.length) {
+        result += resolveSpeechFragment(source.slice(cursor), includeOwnText, feedback);
     }
 
     return result;
@@ -202,7 +206,7 @@ const stripIncompleteFencedCodeTail = (value) => {
     while ((match = fencePattern.exec(source)) !== null) {
         const marker = match.groups?.fence || match[0].trim().slice(0, 3);
         if (!openFence) {
-            openFence = {marker, start: match.index};
+            openFence = { marker, start: match.index };
         } else if (openFence.marker === marker) {
             openFence = null;
         }
@@ -212,7 +216,7 @@ const stripIncompleteFencedCodeTail = (value) => {
     return openFence ? source.slice(0, openFence.start) : source;
 };
 
-const cleanSpeakableMarkdown = (value, {preserveTrailingBoundary = false} = {}) => {
+const cleanSpeakableMarkdown = (value, { preserveTrailingBoundary = false } = {}) => {
     const cleaned = String(value || '')
         // 跳过 fenced code block；表格不跳过，只清理表格分隔行。
         .replace(FENCED_CODE_PATTERN, '\n')
@@ -234,17 +238,7 @@ const cleanSpeakableMarkdown = (value, {preserveTrailingBoundary = false} = {}) 
     return preserveTrailingBoundary ? cleaned.replace(/^\s+/, '') : cleaned.trim();
 };
 
-export const getSpeakableContent = (msg) => cleanSpeakableMarkdown(resolveMarkdownSpeechContent(
-    String(msg?.content || ''),
-    msg?.extraInfo?.replace || {},
-));
-
-const getStreamingSpeakableContent = (msg) => cleanSpeakableMarkdown(stripIncompleteFencedCodeTail(
-    resolveMarkdownSpeechContent(
-        String(msg?.content || ''),
-        msg?.extraInfo?.replace || {},
-    ),
-), {preserveTrailingBoundary: true});
+export const getSpeakableContent = (msg) => feedbackSpeechSource(msg).source;
 
 const isDigit = (char) => /\d/.test(char || '');
 
@@ -357,7 +351,7 @@ const createSpeechSegment = (source, rawStart, rawEnd, msgId, index, occurrenceM
     };
 };
 
-const splitSourceIntoSpeechSlices = (source, {includeTrailing = true} = {}) => {
+const splitSourceIntoSpeechSlices = (source, { includeTrailing = true } = {}) => {
     const slices = [];
     let segmentStart = 0;
     let index = 0;
@@ -434,14 +428,40 @@ export const splitSpeakableSegments = (text, msgId) => {
     return segments;
 };
 
-export const getSpeakableSegments = (msg, msgId) => splitSpeakableSegments(getSpeakableContent(msg), msgId);
+const feedbackSpeechSource = (msg, streaming = false) => {
+    let source = resolveMarkdownSpeechContent(String(msg?.content || ''), msg?.extraInfo?.replace || {}, {
+        feedback: true,
+    });
+    if (streaming) source = stripIncompleteFencedCodeTail(source);
+    source = cleanSpeakableMarkdown(source, { preserveTrailingBoundary: streaming });
+    const anchors = [];
+    let removed = 0;
+    for (const match of source.matchAll(/\uE000([a-f0-9-]{36})\uE001/g)) {
+        anchors.push({ toolid: match[1], offset: match.index - removed });
+        removed += match[0].length;
+    }
+    return { source: source.replace(/\uE000[a-f0-9-]{36}\uE001/g, ''), anchors };
+};
 
-export const getStreamingSpeakableSegments = (msg, msgId, {final = false} = {}) => {
-    const source = getStreamingSpeakableContent(msg);
+const attachFeedback = (segments, anchors) => {
+    for (const anchor of anchors) {
+        const segment = segments.find((item) => item.rawEnd > anchor.offset);
+        if (segment) segment.feedbackToolIds = [...new Set([...(segment.feedbackToolIds || []), anchor.toolid])];
+    }
+    return segments;
+};
+
+export const getSpeakableSegments = (msg, msgId) => {
+    const { source, anchors } = feedbackSpeechSource(msg);
+    return attachFeedback(splitSpeakableSegments(source, msgId), anchors);
+};
+
+export const getStreamingSpeakableSegments = (msg, msgId, { final = false } = {}) => {
+    const { source, anchors } = feedbackSpeechSource(msg, true);
     const segments = [];
     const occurrenceMap = new Map();
 
-    splitSourceIntoSpeechSlices(source, {includeTrailing: Boolean(final)}).forEach((slice) => {
+    splitSourceIntoSpeechSlices(source, { includeTrailing: Boolean(final) }).forEach((slice) => {
         const segment = createSpeechSegment(
             source,
             slice.rawStart,
@@ -456,7 +476,7 @@ export const getStreamingSpeakableSegments = (msg, msgId, {final = false} = {}) 
     // Final messages keep the same fallback behavior as manual TTS. Streaming
     // messages deliberately wait for a stable sentence/newline boundary.
     if (final && segments.length === 0 && normalizeWhitespace(source)) {
-        return splitSpeakableSegments(source, msgId);
+        return attachFeedback(splitSpeakableSegments(source, msgId), anchors);
     }
-    return segments;
+    return attachFeedback(segments, anchors);
 };
