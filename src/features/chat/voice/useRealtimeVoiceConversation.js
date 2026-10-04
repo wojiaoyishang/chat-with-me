@@ -239,6 +239,16 @@ export function useRealtimeVoiceConversation({
                 ? currentPosition
                 : Math.min(Math.max(completedPosition + 1, 0), knownSegmentCount);
         const boundarySegment = segments[boundaryPosition] || null;
+        const completedSegments = [];
+        let completedLength = 0;
+        for (const segment of segments.slice(0, Math.min(boundaryPosition, 10000))) {
+            const text = Array.from(String(segment.text || ''))
+                .slice(0, 1200)
+                .join('');
+            if (completedLength + text.length > 64000) break;
+            completedSegments.push(text);
+            completedLength += text.length;
+        }
 
         return {
             messageId,
@@ -246,6 +256,7 @@ export function useRealtimeVoiceConversation({
             segmentPosition: boundaryPosition,
             segmentId: boundarySegment?.id || currentSpeech?.currentSegmentId || null,
             segmentText: String(boundarySegment?.text || '').slice(0, 1200),
+            completedSegments,
             totalSegments: knownSegmentCount,
             messageFinalized: Boolean(streamingSnapshot?.finalized),
             streaming: Boolean(streamingSnapshot && !streamingSnapshot.finalized),
