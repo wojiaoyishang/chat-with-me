@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect, useCallback, memo} from 'react';
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import {
     Plus,
     FileInput,
@@ -8,27 +8,22 @@ import {
     Settings,
     Trash2,
     Save,
-    ChevronLeft, AlertTriangle
+    ChevronLeft,
+    AlertTriangle,
 } from 'lucide-react';
-import {useTranslation} from "react-i18next";
-import {format} from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { format } from 'date-fns';
 
-import {fileUpload, processSelectedFiles, UnifiedLoadingScreen} from "@/lib/tools.jsx";
-import apiClient from "@/lib/apiClient.js";
-import {apiEndpoint} from "@/config.js";
-import {toast} from "sonner";
-import {resolveResourceUrl} from "@/lib/virtualUrl.js";
+import { fileUpload, processSelectedFiles, UnifiedLoadingScreen } from '@/lib/tools.jsx';
+import apiClient from '@/lib/apiClient.js';
+import { apiEndpoint } from '@/config.js';
+import { toast } from 'sonner';
+import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 import {
     AlertDialog,
@@ -38,18 +33,12 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle
-} from "@/components/ui/alert-dialog";
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
-import {
-    Field,
-    FieldContent,
-    FieldDescription,
-    FieldLabel, FieldTitle
-} from "@/components/ui/field";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group.tsx";
-import {registerButton} from "@/components/sidebar/sidebarRegistry.js";
-import ChatWithEditor from "@/pages/ChatWithEditor.jsx";
+import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from '@/components/ui/field';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group.tsx';
+import ChatWithEditor from '@/pages/ChatWithEditor.jsx';
 
 // ====================================================================
 // 开始：模拟依赖和子组件
@@ -60,7 +49,8 @@ const createFilePicker = (onSelect) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.multiple = true;
-    input.accept = ".doc, .docx, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    input.accept =
+        '.doc, .docx, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document';
     input.onchange = (e) => {
         onSelect(e.target.files);
     };
@@ -68,8 +58,8 @@ const createFilePicker = (onSelect) => {
 };
 
 // 文档卡片组件（原 TemplateCard）
-const DocumentCard = memo(({onSettingsClick, onCardClick, item}) => {
-    const {t} = useTranslation();
+const DocumentCard = memo(({ onSettingsClick, onCardClick, item }) => {
+    const { t } = useTranslation();
 
     const title = item.title;
     const previewImage = resolveResourceUrl(item.preview);
@@ -93,7 +83,7 @@ const DocumentCard = memo(({onSettingsClick, onCardClick, item}) => {
                     <img
                         src={previewImage}
                         alt={`${title} Preview`}
-                        style={{objectPosition: 'top'}}
+                        style={{ objectPosition: 'top' }}
                         className="w-full h-full object-cover absolute inset-0"
                     />
                 ) : (
@@ -117,13 +107,11 @@ const DocumentCard = memo(({onSettingsClick, onCardClick, item}) => {
                              transition-all duration-200 hover:bg-white hover:text-blue-600
                              shadow-md z-10"
                 >
-                    <Settings className="w-4 h-4"/>
+                    <Settings className="w-4 h-4" />
                 </button>
             </div>
             <div className="p-3 flex items-center gap-2">
-                <div
-                    className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0"
-                >
+                <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0">
                     W
                 </div>
                 <span className="text-sm font-medium text-gray-700 truncate">{title}</span>
@@ -133,10 +121,10 @@ const DocumentCard = memo(({onSettingsClick, onCardClick, item}) => {
 });
 
 // 上传文件卡片组件
-const UploadFileCard = memo(({file, onCancel}) => {
+const UploadFileCard = memo(({ file, onCancel }) => {
     const isError = file.error;
     const progressColor = isError ? 'bg-red-500' : 'bg-blue-500';
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     return (
         <div
@@ -145,41 +133,41 @@ const UploadFileCard = memo(({file, onCancel}) => {
             <div
                 className={`h-32 p-3 flex flex-col items-center justify-center relative ${isError ? 'bg-red-50' : 'bg-blue-50'}`}
             >
-                <FileText size={40} className={`mb-2 ${isError ? 'text-red-600' : 'text-blue-600'}`}/>
+                <FileText size={40} className={`mb-2 ${isError ? 'text-red-600' : 'text-blue-600'}`} />
                 <span
                     className={`text-xs truncate w-full px-2 text-center ${isError ? 'text-red-700' : 'text-gray-600'}`}
                 >
-          {file.name}
-        </span>
+                    {file.name}
+                </span>
 
                 <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-200">
-                    <div className={`h-full ${progressColor}`} style={{width: `${file.progress}%`}}></div>
+                    <div className={`h-full ${progressColor}`} style={{ width: `${file.progress}%` }}></div>
                 </div>
 
                 <button
                     onClick={onCancel}
                     className="absolute top-2 right-2 p-1 rounded-full bg-black/10 text-white hover:bg-black/30 transition-colors"
-                    title="取消上传"
+                    title={t('documents_cancel_upload')}
                 >
-                    <X size={14}/>
+                    <X size={14} />
                 </button>
             </div>
 
             <div className="p-3 flex items-center justify-between">
-        <span className={`text-xs font-medium ${isError ? 'text-red-600' : 'text-gray-500'}`}>
-          {isError
-              ? t('file_upload.status.error')
-              : file.progress < 100
-                  ? `${file.progress}%`
-                  : t('file_upload.status.processing')}
-        </span>
+                <span className={`text-xs font-medium ${isError ? 'text-red-600' : 'text-gray-500'}`}>
+                    {isError
+                        ? t('file_upload.status.error')
+                        : file.progress < 100
+                          ? `${file.progress}%`
+                          : t('file_upload.status.processing')}
+                </span>
             </div>
         </div>
     );
 });
 
 // 处理中模态框组件
-const ProcessingModal = memo(({show, t}) => {
+const ProcessingModal = memo(({ show, t }) => {
     if (!show) return null;
 
     return (
@@ -190,8 +178,8 @@ const ProcessingModal = memo(({show, t}) => {
                     <AlertDialogDescription>{t('processing_file_warning')}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="flex flex-col items-center">
-                    <Loader2 size={32} className="text-blue-600 animate-spin mb-4"/>
-                    <p className="text-xs text-gray-500">文件解析中...</p>
+                    <Loader2 size={32} className="text-blue-600 animate-spin mb-4" />
+                    <p className="text-xs text-gray-500">{t('documents_processing_file')}</p>
                 </div>
             </AlertDialogContent>
         </AlertDialog>
@@ -199,8 +187,8 @@ const ProcessingModal = memo(({show, t}) => {
 });
 
 // 编辑文档模态框组件
-const EditDocumentModal = memo(({show, onClose, documentData, onSave, onDelete}) => {
-    const {t} = useTranslation();
+const EditDocumentModal = memo(({ show, onClose, documentData, onSave, onDelete }) => {
+    const { t } = useTranslation();
     const [documentName, setDocumentName] = useState(documentData?.title || '');
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
@@ -219,15 +207,19 @@ const EditDocumentModal = memo(({show, onClose, documentData, onSave, onDelete})
         setIsDeleteConfirmOpen(true);
     };
 
-    const updateDate = documentData?.updateDate ? format(new Date(documentData.updateDate), 'yyyy-MM-dd HH:mm') : t('unknown');
-    const createDate = documentData?.createDate ? format(new Date(documentData.createDate), 'yyyy-MM-dd HH:mm') : updateDate;
+    const updateDate = documentData?.updateDate
+        ? format(new Date(documentData.updateDate), 'yyyy-MM-dd HH:mm')
+        : t('unknown');
+    const createDate = documentData?.createDate
+        ? format(new Date(documentData.createDate), 'yyyy-MM-dd HH:mm')
+        : updateDate;
 
     return (
         <Dialog open={show} onOpenChange={onClose}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <Settings size={20} className="text-blue-600"/>
+                        <Settings size={20} className="text-blue-600" />
                         {t('edit_document_settings')}
                     </DialogTitle>
                 </DialogHeader>
@@ -256,18 +248,24 @@ const EditDocumentModal = memo(({show, onClose, documentData, onSave, onDelete})
                     </div>
                 </div>
                 <DialogFooter className="flex justify-between">
-                    <Button variant="destructive" onClick={handleDelete}
-                            className="flex items-center gap-1 cursor-pointer">
-                        <Trash2 size={16}/>
+                    <Button
+                        variant="destructive"
+                        onClick={handleDelete}
+                        className="flex items-center gap-1 cursor-pointer"
+                    >
+                        <Trash2 size={16} />
                         {t('delete')}
                     </Button>
                     <div className="flex gap-2">
                         <Button variant="outline" onClick={onClose} className="cursor-pointer">
                             {t('cancel')}
                         </Button>
-                        <Button onClick={handleSave} disabled={!documentName || documentName === documentData?.title}
-                                className="flex items-center gap-1 cursor-pointer">
-                            <Save size={16}/>
+                        <Button
+                            onClick={handleSave}
+                            disabled={!documentName || documentName === documentData?.title}
+                            className="flex items-center gap-1 cursor-pointer"
+                        >
+                            <Save size={16} />
                             {t('submit')}
                         </Button>
                     </div>
@@ -283,11 +281,16 @@ const EditDocumentModal = memo(({show, onClose, documentData, onSave, onDelete})
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel className="cursor-pointer">{t('cancel')}</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => {
-                            onDelete(documentData.documentId);
-                            setIsDeleteConfirmOpen(false);
-                            onClose();
-                        }} className="cursor-pointer">{t('delete')}</AlertDialogAction>
+                        <AlertDialogAction
+                            onClick={() => {
+                                onDelete(documentData.documentId);
+                                setIsDeleteConfirmOpen(false);
+                                onClose();
+                            }}
+                            className="cursor-pointer"
+                        >
+                            {t('delete')}
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -296,11 +299,11 @@ const EditDocumentModal = memo(({show, onClose, documentData, onSave, onDelete})
 });
 
 // 新建文档模态框组件
-const NewDocumentModal = memo(({show, onClose, onCreate}) => {
-    const {t} = useTranslation();
+const NewDocumentModal = memo(({ show, onClose, onCreate }) => {
+    const { t } = useTranslation();
 
     const [documentTitle, setDocumentTitle] = useState('');
-    const [documentType, setDocumentType] = useState('collabora');
+    const [documentType, setDocumentType] = useState('markdown');
 
     const handleCreate = () => {
         if (documentTitle) {
@@ -314,7 +317,7 @@ const NewDocumentModal = memo(({show, onClose, onCreate}) => {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <Plus size={20} className="text-blue-600"/>
+                        <Plus size={20} className="text-blue-600" />
                         {t('create_new_document')}
                     </DialogTitle>
                 </DialogHeader>
@@ -337,27 +340,23 @@ const NewDocumentModal = memo(({show, onClose, onCreate}) => {
                 <Field>
                     <FieldLabel htmlFor="title">{t('document_type')}</FieldLabel>
                     <FieldContent>
-                        <RadioGroup defaultValue="collabora" className="max-w-full">
+                        <RadioGroup value={documentType} onValueChange={setDocumentType} className="max-w-full">
                             <FieldLabel htmlFor="markdown" className="cursor-pointer">
                                 <Field orientation="horizontal" onClick={() => setDocumentType('markdown')}>
                                     <FieldContent>
                                         <FieldTitle>Markdown</FieldTitle>
-                                        <FieldDescription>
-                                            {t('document_type_markdown_intro')}
-                                        </FieldDescription>
+                                        <FieldDescription>{t('document_type_markdown_intro')}</FieldDescription>
                                     </FieldContent>
-                                    <RadioGroupItem value="markdown" id="markdown"/>
+                                    <RadioGroupItem value="markdown" id="markdown" />
                                 </Field>
                             </FieldLabel>
                             <FieldLabel htmlFor="collabora" className="cursor-pointer">
-                                <Field orientation="horizontal" onClick={() => setDocumentType('collabora')}>
+                                <Field orientation="horizontal" onClick={() => setDocumentType('docx')}>
                                     <FieldContent>
                                         <FieldTitle>Collabora Online Word</FieldTitle>
-                                        <FieldDescription>
-                                            {t('document_type_collabora_intro')}
-                                        </FieldDescription>
+                                        <FieldDescription>{t('document_type_collabora_intro')}</FieldDescription>
                                     </FieldContent>
-                                    <RadioGroupItem value="collabora" id="collabora"/>
+                                    <RadioGroupItem value="docx" id="collabora" />
                                 </Field>
                             </FieldLabel>
                         </RadioGroup>
@@ -368,9 +367,12 @@ const NewDocumentModal = memo(({show, onClose, onCreate}) => {
                     <Button variant="outline" onClick={onClose} className="cursor-pointer">
                         {t('cancel')}
                     </Button>
-                    <Button onClick={handleCreate} disabled={!documentTitle}
-                            className="cursor-pointer flex items-center gap-1">
-                        <Save size={16}/>
+                    <Button
+                        onClick={handleCreate}
+                        disabled={!documentTitle}
+                        className="cursor-pointer flex items-center gap-1"
+                    >
+                        <Save size={16} />
                         {t('create')}
                     </Button>
                 </DialogFooter>
@@ -379,14 +381,14 @@ const NewDocumentModal = memo(({show, onClose, onCreate}) => {
     );
 });
 
-const DiscardChangesDialog = ({open, onOpenChange, onConfirm, t}) => {
+const DiscardChangesDialog = ({ open, onOpenChange, onConfirm, t }) => {
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent className="sm:max-w-md">
                 <AlertDialogHeader className="text-left">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="p-2 bg-orange-100 rounded-full">
-                            <AlertTriangle className="w-6 h-6 text-orange-600"/>
+                            <AlertTriangle className="w-6 h-6 text-orange-600" />
                         </div>
                         <AlertDialogTitle className="text-lg font-bold text-gray-900">
                             {t('document_home.unsaved_changes_title')}
@@ -397,9 +399,7 @@ const DiscardChangesDialog = ({open, onOpenChange, onConfirm, t}) => {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="sm:justify-end gap-2 mt-4">
-                    <AlertDialogCancel className="cursor-pointer min-w-[80px]">
-                        {t('cancel')}
-                    </AlertDialogCancel>
+                    <AlertDialogCancel className="cursor-pointer min-w-[80px]">{t('cancel')}</AlertDialogCancel>
                     <AlertDialogAction
                         onClick={onConfirm}
                         className="cursor-pointer min-w-[80px] bg-orange-600 hover:bg-orange-700 focus:ring-orange-500"
@@ -418,13 +418,14 @@ const DiscardChangesDialog = ({open, onOpenChange, onConfirm, t}) => {
 
 // 编辑器主页组件
 const DocEditorHome = ({
-                           conversationId,
-                           documentId,
-                           onNewConversationId,
-                           onNewDocumentId,
-                           settingsRefreshVersions,
-                       }) => {
-    const {t} = useTranslation();
+    onChatMode,
+    conversationId,
+    documentId,
+    onNewConversationId,
+    onNewDocumentId,
+    settingsRefreshVersions,
+}) => {
+    const { t } = useTranslation();
 
     // 所有状态和 refs 放在顶部
     const [isLoading, setIsLoading] = useState(true);
@@ -443,6 +444,7 @@ const DocEditorHome = ({
     // 是否打开文档编辑
     const [isOpenDocEditorOpen, setIsOpenDocEditorOpen] = useState(false);
     const [docEditorUrl, setDocEditorUrl] = useState('');
+    const [editorType, setEditorType] = useState(null);
 
     // 保存状态相关
     const [isDiscardConfirmOpen, setIsDiscardConfirmOpen] = useState(false);
@@ -453,15 +455,15 @@ const DocEditorHome = ({
     const handleFileUpload = (newUploadFiles) => {
         if (newUploadFiles.length === 0) return;
 
-        setUploadFiles(prev => [...prev, ...newUploadFiles]);
+        setUploadFiles((prev) => [...prev, ...newUploadFiles]);
 
-        newUploadFiles.forEach(uploadFile => {
+        newUploadFiles.forEach((uploadFile) => {
             const handleProgressUpdate = (uploadId, progress) => {
-                setUploadFiles(prev => {
-                    const idx = prev.findIndex(f => f.id === uploadId);
+                setUploadFiles((prev) => {
+                    const idx = prev.findIndex((f) => f.id === uploadId);
                     if (idx === -1) return prev;
                     const updated = [...prev];
-                    updated[idx] = {...updated[idx], progress, error: false};
+                    updated[idx] = { ...updated[idx], progress, error: false };
                     return updated;
                 });
             };
@@ -472,9 +474,9 @@ const DocEditorHome = ({
             };
 
             const handleError = (error) => {
-                toast.error(t("file_upload.error", {message: error?.message || 'Upload failed'}));
-                setUploadFiles(prev =>
-                    prev.map(f => f.id === uploadFile.id ? {...f, error: true, progress: 0} : f)
+                toast.error(t('file_upload.error', { message: error?.message || 'Upload failed' }));
+                setUploadFiles((prev) =>
+                    prev.map((f) => (f.id === uploadFile.id ? { ...f, error: true, progress: 0 } : f)),
                 );
                 uploadIntervals.current.delete(uploadFile.id);
                 setIsProcessing(false);
@@ -507,11 +509,7 @@ const DocEditorHome = ({
             // 创建新文档
             const data = await apiClient.post(apiEndpoint.DOCUMENT_ENDPOINT, {
                 title: documentTitle,
-                type: documentType,
-            }, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                }
+                format: documentType,
             });
 
             // 假设响应包含新创建的 documentId 和其他信息
@@ -525,13 +523,13 @@ const DocEditorHome = ({
             };
 
             // 更新本地状态
-            setDocumentCards(prev => [...prev, newItem]); // 原 setMainTemplates
+            setDocumentCards((prev) => [...prev, newItem]); // 原 setMainTemplates
 
-            toast.success(t("document_create_success"));
+            toast.success(t('document_create_success'));
             setIsNewModalOpen(false);
         } catch (error) {
-            console.error("Failed to create document:", error);
-            toast.error(t("document_create_error", {message: error?.message || 'Failed to create document'}));
+            console.error('Failed to create document:', error);
+            toast.error(t('document_create_error', { message: error?.message || 'Failed to create document' }));
         }
     };
 
@@ -543,26 +541,22 @@ const DocEditorHome = ({
 
     const handleSaveDocumentEdit = async (documentId, newTitle) => {
         try {
-            await apiClient.post(`${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}`, {
-                    title: newTitle,
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    }
-                });
+            await apiClient.patch(`${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}`, { title: newTitle });
 
-            setDocumentCards(prev => // 原 setMainTemplates
-                prev.map(item =>
-                    item.documentId === documentId ? {...item, title: newTitle, updateDate: new Date().toISOString()} : item
-                )
+            setDocumentCards((prev) =>
+                // 原 setMainTemplates
+                prev.map((item) =>
+                    item.documentId === documentId
+                        ? { ...item, title: newTitle, updateDate: new Date().toISOString() }
+                        : item,
+                ),
             );
 
-            toast.success(t("document_update_success"));
+            toast.success(t('document_update_success'));
             setIsEditModalOpen(false);
         } catch (error) {
-            console.error("Failed to update document:", error);
-            toast.error(t("document_update_error", {message: error?.message || 'Failed to update document'}));
+            console.error('Failed to update document:', error);
+            toast.error(t('document_update_error', { message: error?.message || 'Failed to update document' }));
         }
     };
 
@@ -570,49 +564,40 @@ const DocEditorHome = ({
         try {
             await apiClient.delete(`${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}`);
 
-            setDocumentCards(prev => prev.filter(item => item.documentId !== documentId)); // 原 setMainTemplates
+            setDocumentCards((prev) => prev.filter((item) => item.documentId !== documentId)); // 原 setMainTemplates
 
-            toast.success(t("document_delete_success"));
+            toast.success(t('document_delete_success'));
             setIsEditModalOpen(false);
         } catch (error) {
-            console.error("Failed to delete document:", error);
-            toast.error(t("document_delete_error", {message: error?.message || 'Failed to delete document'}));
+            console.error('Failed to delete document:', error);
+            toast.error(t('document_delete_error', { message: error?.message || 'Failed to delete document' }));
         }
     };
 
     // 打开编辑器
-    const handleOpenDocEditor = useCallback((newDocumentId) => {
-
-        apiClient.get(`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}`)
-            .then((data) => {
-                setTimeout(() => {
-                    setDocEditorUrl(data.url);
-                });
-            })
-            .catch((error) => {
-                toast.error(t("document_home.open_error", {message: error?.message || 'Failed to open document'}));
-            });
-
-        // 设置 documentId
-        onNewDocumentId(newDocumentId);
-
-    }, [])
+    const handleOpenDocEditor = useCallback(
+        (newDocumentId) => {
+            onNewDocumentId(newDocumentId);
+        },
+        [onNewDocumentId],
+    );
 
     // 关闭编辑器
     const handleCloseDocEditorConfirm = useCallback(() => {
         setIsDiscardConfirmOpen(false);
         setIsOpenDocEditorOpen(false);
-        onNewConversationId(null);
+        setEditorType(null);
+        setDocEditorUrl('');
         onNewDocumentId(null);
-    }, [])
+    }, [onNewDocumentId]);
 
     const handleCloseDocEditor = useCallback(() => {
-        if (docModifiedStatusRef.current === "Modified") {
+        if (docModifiedStatusRef.current === 'Modified') {
             setIsDiscardConfirmOpen(true);
             return;
         }
         handleCloseDocEditorConfirm();
-    }, [])
+    }, [handleCloseDocEditorConfirm]);
 
     useEffect(() => {
         docModifiedStatusRef.current = docModifiedStatus;
@@ -621,7 +606,7 @@ const DocEditorHome = ({
     // 清理上传效果
     useEffect(() => {
         return () => {
-            uploadIntervals.current.forEach(cleanup => cleanup());
+            uploadIntervals.current.forEach((cleanup) => cleanup());
         };
     }, []);
 
@@ -631,18 +616,18 @@ const DocEditorHome = ({
         const requestInfo = async () => {
             try {
                 const data = await apiClient.get(apiEndpoint.DOCUMENT_ENDPOINT);
-                const newData = data.map(item => ({
+                const newData = data.map((item) => ({
                     updateDate: item.updateDate,
                     createDate: item.createDate || item.updateDate,
                     title: item.title,
-                    documentId: item.documentId,   // 这里的 documentId 是 documentId
+                    documentId: item.documentId, // 这里的 documentId 是 documentId
                     type: 'document',
                     preview: item?.preview,
                 }));
                 setDocumentCards(newData);
             } catch (error) {
-                console.error("Failed to load documents:", error); // 原 "Failed to load templates"
-                toast.error(t("load_templates_error"));
+                console.error('Failed to load documents:', error); // 原 "Failed to load templates"
+                toast.error(t('load_templates_error'));
             } finally {
                 setIsLoading(false);
             }
@@ -650,49 +635,36 @@ const DocEditorHome = ({
         requestInfo();
     }, []);
 
-    // 注册侧边栏按钮
     useEffect(() => {
-
-        if (isOpenDocEditorOpen) {
-
-            // 创建一个自定义按钮组件
-            const BackButton = (
-                <button
-                    onClick={handleCloseDocEditor}
-                    className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer w-full justify-start"
-                >
-                    <ChevronLeft className="w-5 h-5 mr-2"/>
-                    {t("back_document")}
-                </button>
-            );
-
-            // 注册按钮
-            const unregister = registerButton(BackButton);
-
-            // 组件卸载时注销
-            return () => unregister();
-
+        if (!documentId) {
+            setIsOpenDocEditorOpen(false);
+            return;
         }
-
-    }, [isOpenDocEditorOpen, handleCloseDocEditor]);
-
-    // 查一下有没有 documentId 如果有就打开编辑器
-    useEffect(() => {
-        if (documentId && !docEditorUrl) {
-            handleOpenDocEditor(documentId);
-        } else if (documentId && docEditorUrl) {
-            setIsOpenDocEditorOpen(true);
-        }
-    }, [documentId, docEditorUrl]);
+        const controller = new AbortController();
+        setIsOpenDocEditorOpen(false);
+        apiClient
+            .get(`${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}/editor`, { signal: controller.signal })
+            .then((data) => {
+                if (controller.signal.aborted) return;
+                setEditorType(data.editor);
+                setDocEditorUrl(data.url || '');
+                setDocModifiedStatus('Saved');
+                setIsOpenDocEditorOpen(true);
+            })
+            .catch((error) => {
+                if (!controller.signal.aborted) toast.error(error.message);
+            });
+        return () => controller.abort();
+    }, [documentId]);
 
     // 渲染元素
-    const uploadingFileCards = uploadFiles.map(file => (
+    const uploadingFileCards = uploadFiles.map((file) => (
         <UploadFileCard
             key={file.id}
             file={file}
             onCancel={() => {
                 uploadIntervals.current.get(file.id)?.();
-                setUploadFiles(prev => prev.filter(f => f.id !== file.id));
+                setUploadFiles((prev) => prev.filter((f) => f.id !== file.id));
             }}
         />
     ));
@@ -707,7 +679,7 @@ const DocEditorHome = ({
                 onClick={createNewDocument}
             >
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                    <Plus size={20} strokeWidth={3}/>
+                    <Plus size={20} strokeWidth={3} />
                 </div>
             </div>
             <div className="p-3 flex items-center justify-between">
@@ -716,17 +688,19 @@ const DocEditorHome = ({
                     onClick={handleImportButtonClick}
                     className="cursor-pointer flex items-center gap-1 px-2 py-1 border border-gray-200 rounded-md text-xs text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                    <FileInput size={12}/>
+                    <FileInput size={12} />
                     <span>{t('import')}</span>
                 </button>
             </div>
         </div>
     );
 
-    const allDocumentCards = [ // 原 allTemplates
+    const allDocumentCards = [
+        // 原 allTemplates
         NewDocumentCard,
         ...uploadingFileCards,
-        ...documentCards.map(item => ( // 原 mainTemplates.map
+        ...documentCards.map((item) => (
+            // 原 mainTemplates.map
             <DocumentCard // 原 TemplateCard
                 key={item.documentId}
                 item={item}
@@ -735,22 +709,21 @@ const DocEditorHome = ({
                 }}
                 onSettingsClick={handleOpenEditModal}
             />
-        ))
+        )),
     ];
 
     // 加载中
     if (isLoading) {
         return (
             <div className="min-h-screen relative">
-                <UnifiedLoadingScreen text={t("loading_dashboard_data")}/>
+                <UnifiedLoadingScreen text={t('loading_dashboard_data')} />
             </div>
         );
     }
 
     // 最终渲染
     return !isOpenDocEditorOpen ? (
-        <div className="min-h-screen bg-[#F9FAFB] p-6 relative">
-
+        <div className="min-h-full bg-[#F9FAFB] p-6 relative">
             <div className="max-w-7xl mx-auto space-y-8">
                 <div>
                     <div className="flex justify-between items-center mb-4">
@@ -760,17 +733,15 @@ const DocEditorHome = ({
                         {allDocumentCards}
                     </div>
                     {documentCards.length === 0 && uploadFiles.length === 0 && (
-                        <div
-                            className="mt-6 p-4 bg-white rounded-xl border border-dashed border-gray-300 text-center">
+                        <div className="mt-6 p-4 bg-white rounded-xl border border-dashed border-gray-300 text-center">
                             <p className="text-gray-500">{t('empty_section_message')}</p>
                         </div>
                     )}
                 </div>
             </div>
 
-
             {/* 模态框和加载组件 */}
-            <ProcessingModal show={isProcessing} t={t}/>
+            <ProcessingModal show={isProcessing} t={t} />
             <EditDocumentModal
                 show={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
@@ -784,14 +755,19 @@ const DocEditorHome = ({
                 onCreate={handleCreateNewDocument}
             />
         </div>
-
     ) : (
         <>
-            <ChatWithEditor url={docEditorUrl} conversationId={conversationId}
-                            documentId={documentId}
-                            settingsRefreshVersions={settingsRefreshVersions}
-                            setDocModifiedStatus={setDocModifiedStatus}
-                            onNewConversationId={onNewConversationId}/>
+            <ChatWithEditor
+                onChatMode={onChatMode}
+                onBack={handleCloseDocEditor}
+                editorType={editorType}
+                url={docEditorUrl}
+                conversationId={conversationId}
+                documentId={documentId}
+                settingsRefreshVersions={settingsRefreshVersions}
+                setDocModifiedStatus={setDocModifiedStatus}
+                onNewConversationId={onNewConversationId}
+            />
             <DiscardChangesDialog
                 open={isDiscardConfirmOpen}
                 onOpenChange={setIsDiscardConfirmOpen}
@@ -799,7 +775,7 @@ const DocEditorHome = ({
                 t={t}
             />
         </>
-    )
+    );
 };
 
 export default DocEditorHome;

@@ -28,3 +28,5 @@ _build
 
 __pycache__
 !temp/check_avatar_scene.mjs
+
+.worktrees/

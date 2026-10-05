@@ -17,23 +17,23 @@ src/pages/DocEditorHome 模块
 * **模块标识**：``src/pages/DocEditorHome``
 * **顶层函数/组件/Hook**：3
 * **类**：0
-* **局部函数与匿名回调**：63
+* **局部函数与匿名回调**：61
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``react-i18next``、``date-fns``、``@/lib/tools.jsx``、``@/lib/apiClient.js``、``@/config.js``、``sonner``、``@/lib/virtualUrl.js``、``@/components/ui/button``、``@/components/ui/input``、``@/components/ui/dialog``、``@/components/ui/alert-dialog``、``@/components/ui/field``、``@/components/ui/radio-group.tsx``、``@/components/sidebar/sidebarRegistry.js``、``@/pages/ChatWithEditor.jsx``。
+``react``、``lucide-react``、``react-i18next``、``date-fns``、``@/lib/tools.jsx``、``@/lib/apiClient.js``、``@/config.js``、``sonner``、``@/lib/virtualUrl.js``、``@/components/ui/button``、``@/components/ui/input``、``@/components/ui/dialog``、``@/components/ui/alert-dialog``、``@/components/ui/field``、``@/components/ui/radio-group.tsx``、``@/pages/ChatWithEditor.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:1550:1888:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:1468:1814:FUNCTION
 
 .. js:function:: createFilePicker(onSelect)
 
    创建与 ``File Picker`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``59``—``68`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``48``—``58`` 行。
 
    **参数**
 
@@ -52,17 +52,17 @@ src/pages/DocEditorHome 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:15452:17053:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:15737:17295:FUNCTION
 
-.. js:function:: DiscardChangesDialog({open, onOpenChange, onConfirm, t})
+.. js:function:: DiscardChangesDialog({ open, onOpenChange, onConfirm, t })
 
    渲染 ``DiscardChangesDialog`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``382``—``413`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``384``—``413`` 行。
 
    **参数**
 
-   ``{open, onOpenChange, onConfirm, t}``
+   ``{ open, onOpenChange, onConfirm, t }``
       调用方传入的 ``open, onOpenChange, onConfirm, t`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -71,22 +71,22 @@ src/pages/DocEditorHome 模块
 
    **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:17248:31020:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:17490:30569:FUNCTION
 
-.. js:function:: DocEditorHome({ conversationId, documentId, onNewConversationId, onNewDocumentId, settingsRefreshVersions, })
+.. js:function:: DocEditorHome({ onChatMode, conversationId, documentId, onNewConversationId, onNewDocumentId, settingsRefreshVers…)
 
    渲染 ``DocEditorHome`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``420``—``803`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``420``—``779`` 行。
 
    **参数**
 
-   ``{ conversationId, documentId, onNewConversationId, onNewDocumentId, settingsRefreshVersions, }``
-      调用方传入的 ``conversationId, documentId, onNewConversationId, onNewDocumentId, settingsRefreshVersions,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ onChatMode, conversationId, documentId, onNewConversationId, onNewDocumentId, settingsRefreshVers…``
+      调用方传入的 ``onChatMode, conversationId, documentId, onNewConversationId, onNewDocumentId, settingsRefreshVers…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <div className="min-h-screen relative"> <UnifiedLoadingScreen text={t("loading_dashboard_data")}/> </div> )``、``!isOpenDocEditorOpen ? ( <div className="min-h-screen bg-[#F9FAFB] p-6 relative"> <div className="max-w-7xl mx-auto space-y-8"> <div> <div className="flex justify-between items-ce…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className="min-h-screen relative"> <UnifiedLoadingScreen text={t('loading_dashboard_data')} /> </div> )``、``!isOpenDocEditorOpen ? ( <div className="min-h-full bg-[#F9FAFB] p-6 relative"> <div className="max-w-7xl mx-auto space-y-8"> <div> <div className="flex justify-between items-cent…``。
 
    **副作用**
 
@@ -94,24 +94,24 @@ src/pages/DocEditorHome 模块
 
    **主要协作调用**：``useTranslation``、``useState``、``useRef``、``useCallback``、``useEffect``、``uploadFiles.map``、``t``、``documentCards.map``。
 
-   **内部回调数量**：19。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：18。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:1817:1866:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:1743:1792:FUNCTION
 
-.. rubric:: ``anonymous callback @ 64``
+.. rubric:: ``anonymous callback @ 54``
 
 .. code-block:: javascript
 
-   anonymous callback @ 64(e)
+   anonymous callback @ 54(e)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``64``—``66`` 行；所属函数 ``createFilePicker``。
+**性质**：同步局部函数；源码第 ``54``—``56`` 行；所属函数 ``createFilePicker``。
 
 **参数**
 
@@ -124,22 +124,22 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``onSelect``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:1943:4573:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:1869:4469:FUNCTION
 
-.. rubric:: ``memo callback @ 71``
+.. rubric:: ``memo callback @ 61``
 
 .. code-block:: javascript
 
-   memo callback @ 71({onSettingsClick, onCardClick, item})
+   memo callback @ 61({ onSettingsClick, onCardClick, item })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``71``—``133`` 行。
+**性质**：同步局部函数；源码第 ``61``—``121`` 行。
 
 **参数**
 
-``{onSettingsClick, onCardClick, item}``
-   调用方提供的事件回调。
+``{ onSettingsClick, onCardClick, item }``
+   调用方传入的 ``onSettingsClick, onCardClick, item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -149,7 +149,7 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:2143:2263:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:2073:2193:FUNCTION
 
 .. rubric:: ``handleSettingsClick``
 
@@ -159,7 +159,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Settings Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``77``—``82`` 行；所属函数 ``memo callback @ 71``。
+**性质**：同步局部函数；源码第 ``67``—``72`` 行；所属函数 ``memo callback @ 61``。
 
 **参数**
 
@@ -172,17 +172,17 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``e.stopPropagation``、``onSettingsClick``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:2313:2386:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:2243:2316:FUNCTION
 
-.. rubric:: ``onClick callback @ 86``
+.. rubric:: ``onClick callback @ 76``
 
 .. code-block:: javascript
 
-   onClick callback @ 86()
+   onClick callback @ 76()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``86``—``88`` 行；所属函数 ``memo callback @ 71``。
+**性质**：同步局部函数；源码第 ``76``—``78`` 行；所属函数 ``memo callback @ 61``。
 
 **参数**
 
@@ -194,21 +194,21 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``onCardClick``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:4617:6412:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:4513:6420:FUNCTION
 
-.. rubric:: ``memo callback @ 136``
+.. rubric:: ``memo callback @ 124``
 
 .. code-block:: javascript
 
-   memo callback @ 136({file, onCancel})
+   memo callback @ 124({ file, onCancel })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``136``—``179`` 行。
+**性质**：同步局部函数；源码第 ``124``—``167`` 行。
 
 **参数**
 
-``{file, onCancel}``
+``{ file, onCancel }``
    调用方传入的 ``file, onCancel`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -217,21 +217,21 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``useTranslation``、``t``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:6457:7146:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:6465:7181:FUNCTION
 
-.. rubric:: ``memo callback @ 182``
+.. rubric:: ``memo callback @ 170``
 
 .. code-block:: javascript
 
-   memo callback @ 182({show, t})
+   memo callback @ 170({ show, t })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``182``—``199`` 行。
+**性质**：同步局部函数；源码第 ``170``—``187`` 行。
 
 **参数**
 
-``{show, t}``
+``{ show, t }``
    调用方传入的 ``show, t`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -240,42 +240,42 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:7194:11638:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:7229:12005:FUNCTION
 
-.. rubric:: ``memo callback @ 202``
+.. rubric:: ``memo callback @ 190``
 
 .. code-block:: javascript
 
-   memo callback @ 202({show, onClose, documentData, onSave, onDelete})
+   memo callback @ 190({ show, onClose, documentData, onSave, onDelete })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``202``—``296`` 行。
+**性质**：同步局部函数；源码第 ``190``—``299`` 行。
 
 **参数**
 
-``{show, onClose, documentData, onSave, onDelete}``
+``{ show, onClose, documentData, onSave, onDelete }``
    调用方传入的 ``show, onClose, documentData, onSave, onDelete`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <Dialog open={show} onOpenChange={onClose}> <DialogContent> <DialogHeader> <DialogTitle className="flex items-center gap-2"> <Settings size={20} className="text-blue-600"/> {t('…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <Dialog open={show} onOpenChange={onClose}> <DialogContent> <DialogHeader> <DialogTitle className="flex items-center gap-2"> <Settings size={20} className="text-blue-600" /> {t(…``。
 
 **主要协作调用**：``useTranslation``、``useState``、``useEffect``、``format``、``t``。
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:7454:7519:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:7493:7558:FUNCTION
 
-.. rubric:: ``useEffect callback @ 207``
+.. rubric:: ``useEffect callback @ 195``
 
 .. code-block:: javascript
 
-   useEffect callback @ 207()
+   useEffect callback @ 195()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``207``—``209`` 行；所属函数 ``memo callback @ 202``。
+**性质**：同步局部函数；源码第 ``195``—``197`` 行；所属函数 ``memo callback @ 190``。
 
 **参数**
 
@@ -287,7 +287,7 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``setDocumentName``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:7561:7730:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:7600:7769:FUNCTION
 
 .. rubric:: ``handleSave``
 
@@ -297,7 +297,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Save`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``211``—``216`` 行；所属函数 ``memo callback @ 202``。
+**性质**：同步局部函数；源码第 ``199``—``204`` 行；所属函数 ``memo callback @ 190``。
 
 **参数**
 
@@ -309,7 +309,7 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``onSave``、``onClose``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:7757:7809:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:7796:7848:FUNCTION
 
 .. rubric:: ``handleDelete``
 
@@ -319,7 +319,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Delete`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``218``—``220`` 行；所属函数 ``memo callback @ 202``。
+**性质**：同步局部函数；源码第 ``206``—``208`` 行；所属函数 ``memo callback @ 190``。
 
 **参数**
 
@@ -331,17 +331,17 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``setIsDeleteConfirmOpen``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:8918:8956:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:8990:9028:FUNCTION
 
-.. rubric:: ``onChange callback @ 243``
+.. rubric:: ``onChange callback @ 235``
 
 .. code-block:: javascript
 
-   onChange callback @ 243(e)
+   onChange callback @ 235(e)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``243``—``243`` 行；所属函数 ``memo callback @ 202``。
+**性质**：同步局部函数；源码第 ``235``—``235`` 行；所属函数 ``memo callback @ 190``。
 
 **参数**
 
@@ -354,17 +354,17 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``setDocumentName``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:11249:11443:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:11493:11703:FUNCTION
 
-.. rubric:: ``onClick callback @ 286``
+.. rubric:: ``onClick callback @ 285``
 
 .. code-block:: javascript
 
-   onClick callback @ 286()
+   onClick callback @ 285()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``286``—``290`` 行；所属函数 ``memo callback @ 202``。
+**性质**：同步局部函数；源码第 ``285``—``289`` 行；所属函数 ``memo callback @ 190``。
 
 **参数**
 
@@ -376,32 +376,32 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``onDelete``、``setIsDeleteConfirmOpen``、``onClose``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:11685:15420:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:12052:15705:FUNCTION
 
-.. rubric:: ``memo callback @ 299``
+.. rubric:: ``memo callback @ 302``
 
 .. code-block:: javascript
 
-   memo callback @ 299({show, onClose, onCreate})
+   memo callback @ 302({ show, onClose, onCreate })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``299``—``380`` 行。
+**性质**：同步局部函数；源码第 ``302``—``382`` 行。
 
 **参数**
 
-``{show, onClose, onCreate}``
+``{ show, onClose, onCreate }``
    调用方传入的 ``show, onClose, onCreate`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <Dialog open={show} onOpenChange={onClose}> <DialogContent> <DialogHeader> <DialogTitle className="flex items-center gap-2"> <Plus size={20} className="text-blue-600"/> {t('crea…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <Dialog open={show} onOpenChange={onClose}> <DialogContent> <DialogHeader> <DialogTitle className="flex items-center gap-2"> <Plus size={20} className="text-blue-600" /> {t('cre…``。
 
 **主要协作调用**：``useTranslation``、``useState``、``t``。
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:11905:12028:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:12275:12398:FUNCTION
 
 .. rubric:: ``handleCreate``
 
@@ -411,7 +411,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Create`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``305``—``310`` 行；所属函数 ``memo callback @ 299``。
+**性质**：同步局部函数；源码第 ``308``—``313`` 行；所属函数 ``memo callback @ 302``。
 
 **参数**
 
@@ -423,17 +423,17 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``onCreate``、``onClose``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:12783:12822:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:13154:13193:FUNCTION
 
-.. rubric:: ``onChange callback @ 330``
+.. rubric:: ``onChange callback @ 333``
 
 .. code-block:: javascript
 
-   onChange callback @ 330(e)
+   onChange callback @ 333(e)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``330``—``330`` 行；所属函数 ``memo callback @ 299``。
+**性质**：同步局部函数；源码第 ``333``—``333`` 行；所属函数 ``memo callback @ 302``。
 
 **参数**
 
@@ -446,17 +446,17 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``setDocumentTitle``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:13402:13435:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:13801:13834:FUNCTION
 
-.. rubric:: ``onClick callback @ 342``
+.. rubric:: ``onClick callback @ 345``
 
 .. code-block:: javascript
 
-   onClick callback @ 342()
+   onClick callback @ 345()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``342``—``342`` 行；所属函数 ``memo callback @ 299``。
+**性质**：同步局部函数；源码第 ``345``—``345`` 行；所属函数 ``memo callback @ 302``。
 
 **参数**
 
@@ -468,17 +468,17 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``setDocumentType``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:14143:14177:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:14457:14486:FUNCTION
 
-.. rubric:: ``onClick callback @ 353``
+.. rubric:: ``onClick callback @ 354``
 
 .. code-block:: javascript
 
-   onClick callback @ 353()
+   onClick callback @ 354()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``353``—``353`` 行；所属函数 ``memo callback @ 299``。
+**性质**：同步局部函数；源码第 ``354``—``354`` 行；所属函数 ``memo callback @ 302``。
 
 **参数**
 
@@ -490,7 +490,7 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``setDocumentType``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:18528:19883:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:18706:20082:FUNCTION
 
 .. rubric:: ``handleFileUpload``
 
@@ -500,7 +500,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``File Upload`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``453``—``486`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``455``—``488`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -515,17 +515,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:18624:18660:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:18802:18840:FUNCTION
 
-.. rubric:: ``setUploadFiles callback @ 456``
+.. rubric:: ``setUploadFiles callback @ 458``
 
 .. code-block:: javascript
 
-   setUploadFiles callback @ 456(prev)
+   setUploadFiles callback @ 458(prev)
 
 设置与 ``Upload Files`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``456``—``456`` 行；所属函数 ``handleFileUpload``。
+**性质**：同步局部函数；源码第 ``458``—``458`` 行；所属函数 ``handleFileUpload``。
 
 **参数**
 
@@ -536,17 +536,17 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:18695:19875:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:18875:20074:FUNCTION
 
-.. rubric:: ``newUploadFiles.forEach callback @ 458``
+.. rubric:: ``newUploadFiles.forEach callback @ 460``
 
 .. code-block:: javascript
 
-   newUploadFiles.forEach callback @ 458(uploadFile)
+   newUploadFiles.forEach callback @ 460(uploadFile)
 
 作为 ``newUploadFiles.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``458``—``485`` 行；所属函数 ``handleFileUpload``。
+**性质**：同步局部函数；源码第 ``460``—``487`` 行；所属函数 ``handleFileUpload``。
 
 **参数**
 
@@ -561,7 +561,7 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:18751:19134:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:18933:19322:FUNCTION
 
 .. rubric:: ``handleProgressUpdate``
 
@@ -571,7 +571,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Progress Update`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``459``—``467`` 行；所属函数 ``newUploadFiles.forEach callback @ 458``。
+**性质**：同步局部函数；源码第 ``461``—``469`` 行；所属函数 ``newUploadFiles.forEach callback @ 460``。
 
 **参数**
 
@@ -589,17 +589,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:18809:19118:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:18991:19306:FUNCTION
 
-.. rubric:: ``setUploadFiles callback @ 460``
+.. rubric:: ``setUploadFiles callback @ 462``
 
 .. code-block:: javascript
 
-   setUploadFiles callback @ 460(prev)
+   setUploadFiles callback @ 462(prev)
 
 设置与 ``Upload Files`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``460``—``466`` 行；所属函数 ``handleProgressUpdate``。
+**性质**：同步局部函数；源码第 ``462``—``468`` 行；所属函数 ``handleProgressUpdate``。
 
 **参数**
 
@@ -614,17 +614,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:18866:18888:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:19050:19074:FUNCTION
 
-.. rubric:: ``prev.findIndex callback @ 461``
+.. rubric:: ``prev.findIndex callback @ 463``
 
 .. code-block:: javascript
 
-   prev.findIndex callback @ 461(f)
+   prev.findIndex callback @ 463(f)
 
 实现 ``prev.findIndex`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``461``—``461`` 行；所属函数 ``setUploadFiles callback @ 460``。
+**性质**：同步局部函数；源码第 ``463``—``463`` 行；所属函数 ``setUploadFiles callback @ 462``。
 
 **参数**
 
@@ -635,7 +635,7 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:19171:19277:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:19359:19465:FUNCTION
 
 .. rubric:: ``handleComplete``
 
@@ -645,7 +645,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Complete`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``469``—``472`` 行；所属函数 ``newUploadFiles.forEach callback @ 458``。
+**性质**：同步局部函数；源码第 ``471``—``474`` 行；所属函数 ``newUploadFiles.forEach callback @ 460``。
 
 **参数**
 
@@ -657,7 +657,7 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``setIsProcessing``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:19311:19695:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:19499:19894:FUNCTION
 
 .. rubric:: ``handleError``
 
@@ -667,7 +667,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``474``—``481`` 行；所属函数 ``newUploadFiles.forEach callback @ 458``。
+**性质**：同步局部函数；源码第 ``476``—``483`` 行；所属函数 ``newUploadFiles.forEach callback @ 460``。
 
 **参数**
 
@@ -682,17 +682,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:19455:19559:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:19645:19757:FUNCTION
 
-.. rubric:: ``setUploadFiles callback @ 476``
+.. rubric:: ``setUploadFiles callback @ 478``
 
 .. code-block:: javascript
 
-   setUploadFiles callback @ 476(prev)
+   setUploadFiles callback @ 478(prev)
 
 设置与 ``Upload Files`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``476``—``477`` 行；所属函数 ``handleError``。
+**性质**：同步局部函数；源码第 ``478``—``479`` 行；所属函数 ``handleError``。
 
 **参数**
 
@@ -707,17 +707,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:19492:19558:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:19684:19756:FUNCTION
 
-.. rubric:: ``prev.map callback @ 477``
+.. rubric:: ``prev.map callback @ 479``
 
 .. code-block:: javascript
 
-   prev.map callback @ 477(f)
+   prev.map callback @ 479(f)
 
 作为 ``prev.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``477``—``477`` 行；所属函数 ``setUploadFiles callback @ 476``。
+**性质**：同步局部函数；源码第 ``479``—``479`` 行；所属函数 ``setUploadFiles callback @ 478``。
 
 **参数**
 
@@ -728,7 +728,7 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:19939:20209:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:20138:20408:FUNCTION
 
 .. rubric:: ``handleImportButtonClick``
 
@@ -738,7 +738,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Import Button Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``489``—``497`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``491``—``499`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -753,17 +753,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:20002:20201:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:20201:20400:FUNCTION
 
-.. rubric:: ``createFilePicker callback @ 491``
+.. rubric:: ``createFilePicker callback @ 493``
 
 .. code-block:: javascript
 
-   createFilePicker callback @ 491(files)
+   createFilePicker callback @ 493(files)
 
 创建与 ``File Picker`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``491``—``496`` 行；所属函数 ``handleImportButtonClick``。
+**性质**：同步局部函数；源码第 ``493``—``498`` 行；所属函数 ``handleImportButtonClick``。
 
 **参数**
 
@@ -776,17 +776,17 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``processSelectedFiles``、``handleFileUpload``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:20269:20315:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:20468:20514:FUNCTION
 
-.. rubric:: ``useCallback callback @ 500``
+.. rubric:: ``useCallback callback @ 502``
 
 .. code-block:: javascript
 
-   useCallback callback @ 500()
+   useCallback callback @ 502()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``500``—``502`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``502``—``504`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -798,7 +798,7 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``setIsNewModalOpen``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:20375:21536:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:20574:21606:FUNCTION
 
 .. rubric:: ``handleCreateNewDocument``
 
@@ -808,7 +808,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Create New Document`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``505``—``536`` 行；所属函数 ``DocEditorHome``。
+**性质**：异步局部函数；源码第 ``507``—``534`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -830,17 +830,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:21173:21199:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:21239:21267:FUNCTION
 
-.. rubric:: ``setDocumentCards callback @ 528``
+.. rubric:: ``setDocumentCards callback @ 526``
 
 .. code-block:: javascript
 
-   setDocumentCards callback @ 528(prev)
+   setDocumentCards callback @ 526(prev)
 
 设置与 ``Document Cards`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``528``—``528`` 行；所属函数 ``handleCreateNewDocument``。
+**性质**：同步局部函数；源码第 ``526``—``526`` 行；所属函数 ``handleCreateNewDocument``。
 
 **参数**
 
@@ -851,7 +851,7 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:21586:21696:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:21656:21766:FUNCTION
 
 .. rubric:: ``handleOpenEditModal``
 
@@ -861,7 +861,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Open Edit Modal`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``539``—``542`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``537``—``540`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -874,7 +874,7 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``setSelectedDocumentForEdit``、``setIsEditModalOpen``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:21733:22655:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:21803:22596:FUNCTION
 
 .. rubric:: ``handleSaveDocumentEdit``
 
@@ -884,7 +884,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Save Document Edit`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``544``—``567`` 行；所属函数 ``DocEditorHome``。
+**性质**：异步局部函数；源码第 ``542``—``561`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -898,25 +898,21 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**副作用**
-
-* 发起 HTTP 请求或访问外部服务。
-
-**主要协作调用**：``apiClient.post``、``setDocumentCards``、``toast.success``、``t``、``setIsEditModalOpen``、``console.error``、``toast.error``。
+**主要协作调用**：``apiClient.patch``、``setDocumentCards``、``toast.success``、``t``、``setIsEditModalOpen``、``console.error``、``toast.error``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:22121:22326:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:21988:22264:FUNCTION
 
-.. rubric:: ``setDocumentCards callback @ 555``
+.. rubric:: ``setDocumentCards callback @ 546``
 
 .. code-block:: javascript
 
-   setDocumentCards callback @ 555(prev)
+   setDocumentCards callback @ 546(prev)
 
 设置与 ``Document Cards`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``555``—``558`` 行；所属函数 ``handleSaveDocumentEdit``。
+**性质**：同步局部函数；源码第 ``546``—``552`` 行；所属函数 ``handleSaveDocumentEdit``。
 
 **参数**
 
@@ -931,17 +927,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:22176:22308:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:22061:22245:FUNCTION
 
-.. rubric:: ``prev.map callback @ 556``
+.. rubric:: ``prev.map callback @ 548``
 
 .. code-block:: javascript
 
-   prev.map callback @ 556(item)
+   prev.map callback @ 548(item)
 
 作为 ``prev.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``556``—``557`` 行；所属函数 ``setDocumentCards callback @ 555``。
+**性质**：同步局部函数；源码第 ``548``—``551`` 行；所属函数 ``setDocumentCards callback @ 546``。
 
 **参数**
 
@@ -954,7 +950,7 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``new Date().toISOString``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:22690:23242:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:22631:23189:FUNCTION
 
 .. rubric:: ``handleDeleteDocument``
 
@@ -964,7 +960,7 @@ src/pages/DocEditorHome 模块
 
 处理 ``Delete Document`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``569``—``581`` 行；所属函数 ``DocEditorHome``。
+**性质**：异步局部函数；源码第 ``563``—``575`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -979,17 +975,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:22845:22904:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:22786:22849:FUNCTION
 
-.. rubric:: ``setDocumentCards callback @ 573``
+.. rubric:: ``setDocumentCards callback @ 567``
 
 .. code-block:: javascript
 
-   setDocumentCards callback @ 573(prev)
+   setDocumentCards callback @ 567(prev)
 
 设置与 ``Document Cards`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``573``—``573`` 行；所属函数 ``handleDeleteDocument``。
+**性质**：同步局部函数；源码第 ``567``—``567`` 行；所属函数 ``handleDeleteDocument``。
 
 **参数**
 
@@ -1004,17 +1000,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:22865:22903:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:22808:22848:FUNCTION
 
-.. rubric:: ``prev.filter callback @ 573``
+.. rubric:: ``prev.filter callback @ 567``
 
 .. code-block:: javascript
 
-   prev.filter callback @ 573(item)
+   prev.filter callback @ 567(item)
 
 作为 ``prev.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``573``—``573`` 行；所属函数 ``setDocumentCards callback @ 573``。
+**性质**：同步局部函数；源码第 ``567``—``567`` 行；所属函数 ``setDocumentCards callback @ 567``。
 
 **参数**
 
@@ -1025,17 +1021,17 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:23302:23802:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:23249:23332:FUNCTION
 
-.. rubric:: ``useCallback callback @ 584``
+.. rubric:: ``useCallback callback @ 579``
 
 .. code-block:: javascript
 
-   useCallback callback @ 584(newDocumentId)
+   useCallback callback @ 579(newDocumentId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``584``—``599`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``579``—``581`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -1046,50 +1042,19 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**副作用**
+**主要协作调用**：``onNewDocumentId``。
 
-* 发起 HTTP 请求或访问外部服务。
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:23434:23615:FUNCTION
 
-**主要协作调用**：``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then((data) => { setTimeout(()…``、``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then``、``apiClient.get``、``onNewDocumentId``。
-
-**内部回调数量**：2。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:23437:23564:FUNCTION
-
-.. rubric:: ``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then callback @ 587``
+.. rubric:: ``useCallback callback @ 586``
 
 .. code-block:: javascript
 
-   apiClient.get(`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}`) .then callback @ 587(data)
+   useCallback callback @ 586()
 
-处理 ``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then callback`` 对应的事件或订阅结果。
+封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``587``—``591`` 行；所属函数 ``useCallback callback @ 584``。
-
-**参数**
-
-``data``
-   调用方传入的 ``data`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``setTimeout``。
-
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:23476:23548:FUNCTION
-
-.. rubric:: ``setTimeout callback @ 588``
-
-.. code-block:: javascript
-
-   setTimeout callback @ 588()
-
-设置与 ``Timeout`` 相关的数据或状态。
-
-**性质**：同步局部函数；源码第 ``588``—``590`` 行；所属函数 ``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then callback @ 587``。
+**性质**：同步局部函数；源码第 ``586``—``592`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -1099,64 +1064,19 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``setDocEditorUrl``。
+**主要协作调用**：``setIsDiscardConfirmOpen``、``setIsOpenDocEditorOpen``、``setEditorType``、``setDocEditorUrl``、``onNewDocumentId``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:23585:23727:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:23683:23867:FUNCTION
 
-.. rubric:: ``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then((data) => { setTimeout(()… callback @ 592``
-
-.. code-block:: javascript
-
-   apiClient.get(`${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}`) .then((data) => { setTimeout(()… callback @ 592(error)
-
-实现 ``apiClient.get(\x60${apiEndpoint.DOCUMENT_COLLABORA_DIRECTION_ENDPOINT}/${newDocumentId}\x60) .then((data) => { setTimeout(()…`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``592``—``594`` 行；所属函数 ``useCallback callback @ 584``。
-
-**参数**
-
-``error``
-   调用方传入的 ``error`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``toast.error``、``t``。
-
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:23874:24032:FUNCTION
-
-.. rubric:: ``useCallback callback @ 602``
+.. rubric:: ``useCallback callback @ 594``
 
 .. code-block:: javascript
 
-   useCallback callback @ 602()
+   useCallback callback @ 594()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``602``—``607`` 行；所属函数 ``DocEditorHome``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``setIsDiscardConfirmOpen``、``setIsOpenDocEditorOpen``、``onNewConversationId``、``onNewDocumentId``。
-
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24084:24268:FUNCTION
-
-.. rubric:: ``useCallback callback @ 609``
-
-.. code-block:: javascript
-
-   useCallback callback @ 609()
-
-封装 ``Callback`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``609``—``615`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``594``—``600`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -1168,17 +1088,17 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``setIsDiscardConfirmOpen``、``handleCloseDocEditorConfirm``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24289:24360:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:23916:23987:FUNCTION
 
-.. rubric:: ``useEffect callback @ 617``
+.. rubric:: ``useEffect callback @ 602``
 
 .. code-block:: javascript
 
-   useEffect callback @ 617()
+   useEffect callback @ 602()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``617``—``619`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``602``—``604`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -1188,17 +1108,17 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24413:24527:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24040:24156:FUNCTION
 
-.. rubric:: ``useEffect callback @ 622``
+.. rubric:: ``useEffect callback @ 607``
 
 .. code-block:: javascript
 
-   useEffect callback @ 622()
+   useEffect callback @ 607()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``622``—``626`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``607``—``611`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -1206,21 +1126,21 @@ src/pages/DocEditorHome 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``() => { uploadIntervals.current.forEach(cleanup => cleanup()); }``。
+根据执行分支返回结果；代表性返回表达式为 ``() => { uploadIntervals.current.forEach((cleanup) => cleanup()); }``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24435:24520:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24062:24149:FUNCTION
 
-.. rubric:: ``returned callback @ 623``
+.. rubric:: ``returned callback @ 608``
 
 .. code-block:: javascript
 
-   returned callback @ 623()
+   returned callback @ 608()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``623``—``625`` 行；所属函数 ``useEffect callback @ 622``。
+**性质**：同步局部函数；源码第 ``608``—``610`` 行；所属函数 ``useEffect callback @ 607``。
 
 **参数**
 
@@ -1234,17 +1154,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24488:24508:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24115:24137:FUNCTION
 
-.. rubric:: ``uploadIntervals.current.forEach callback @ 624``
+.. rubric:: ``uploadIntervals.current.forEach callback @ 609``
 
 .. code-block:: javascript
 
-   uploadIntervals.current.forEach callback @ 624(cleanup)
+   uploadIntervals.current.forEach callback @ 609(cleanup)
 
 作为 ``uploadIntervals.current.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``624``—``624`` 行；所属函数 ``returned callback @ 623``。
+**性质**：同步局部函数；源码第 ``609``—``609`` 行；所属函数 ``returned callback @ 608``。
 
 **参数**
 
@@ -1257,17 +1177,17 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``cleanup``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24563:25475:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24192:25104:FUNCTION
 
-.. rubric:: ``useEffect callback @ 629``
+.. rubric:: ``useEffect callback @ 614``
 
 .. code-block:: javascript
 
-   useEffect callback @ 629()
+   useEffect callback @ 614()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``629``—``651`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``614``—``636`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -1285,7 +1205,7 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24626:25445:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24255:25074:FUNCTION
 
 .. rubric:: ``requestInfo``
 
@@ -1295,7 +1215,7 @@ src/pages/DocEditorHome 模块
 
 实现 ``requestInfo`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``631``—``649`` 行；所属函数 ``useEffect callback @ 629``。
+**性质**：异步局部函数；源码第 ``616``—``634`` 行；所属函数 ``useEffect callback @ 614``。
 
 **参数**
 
@@ -1313,17 +1233,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24781:25130:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:24410:24759:FUNCTION
 
-.. rubric:: ``data.map callback @ 634``
+.. rubric:: ``data.map callback @ 619``
 
 .. code-block:: javascript
 
-   data.map callback @ 634(item)
+   data.map callback @ 619(item)
 
 作为 ``data.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``634``—``641`` 行；所属函数 ``requestInfo``。
+**性质**：同步局部函数；源码第 ``619``—``626`` 行；所属函数 ``requestInfo``。
 
 **参数**
 
@@ -1334,17 +1254,17 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:25512:26163:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:25126:25902:FUNCTION
 
-.. rubric:: ``useEffect callback @ 654``
+.. rubric:: ``useEffect callback @ 638``
 
 .. code-block:: javascript
 
-   useEffect callback @ 654()
+   useEffect callback @ 638()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``654``—``677`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``638``—``658`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -1352,23 +1272,73 @@ src/pages/DocEditorHome 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``() => unregister()``。
+根据执行分支返回结果；代表性返回表达式为 ``undefined``、``() => controller.abort()``。
 
-**主要协作调用**：``t``、``registerButton``。
+**副作用**
 
-**内部回调数量**：1。这些回调也会在本页逐项说明。
+* 发起 HTTP 请求或访问外部服务。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:26125:26144:FUNCTION
+**主要协作调用**：``setIsOpenDocEditorOpen``、``apiClient .get(\x60${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}/editor\x60, { signal: controller.signal }) .then((data) =>…``、``apiClient .get(\x60${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}/editor\x60, { signal: controller.signal }) .then``、``apiClient .get``。
 
-.. rubric:: ``returned callback @ 673``
+**内部回调数量**：3。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:25464:25730:FUNCTION
+
+.. rubric:: ``apiClient .get(\x60${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}/editor\x60, { signal: controller.signal }) .then callback @ 647``
 
 .. code-block:: javascript
 
-   returned callback @ 673()
+   apiClient .get(`${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}/editor`, { signal: controller.signal }) .then callback @ 647(data)
+
+处理 ``apiClient .get(\x60${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}/editor\x60, { signal: controller.signal }) .then callback`` 对应的事件或订阅结果。
+
+**性质**：同步局部函数；源码第 ``647``—``653`` 行；所属函数 ``useEffect callback @ 638``。
+
+**参数**
+
+``data``
+   调用方传入的 ``data`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+**主要协作调用**：``setEditorType``、``setDocEditorUrl``、``setDocModifiedStatus``、``setIsOpenDocEditorOpen``。
+
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:25751:25853:FUNCTION
+
+.. rubric:: ``apiClient .get(\x60${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}/editor\x60, { signal: controller.signal }) .then((data) =>… callback @ 654``
+
+.. code-block:: javascript
+
+   apiClient .get(`${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}/editor`, { signal: controller.signal }) .then((data) =>… callback @ 654(error)
+
+实现 ``apiClient .get(\x60${apiEndpoint.DOCUMENT_ENDPOINT}/${documentId}/editor\x60, { signal: controller.signal }) .then((data) =>…`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``654``—``656`` 行；所属函数 ``useEffect callback @ 638``。
+
+**参数**
+
+``error``
+   调用方传入的 ``error`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``toast.error``。
+
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:25870:25895:FUNCTION
+
+.. rubric:: ``returned callback @ 657``
+
+.. code-block:: javascript
+
+   returned callback @ 657()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``673``—``673`` 行；所属函数 ``useEffect callback @ 654``。
+**性质**：同步局部函数；源码第 ``657``—``657`` 行；所属函数 ``useEffect callback @ 638``。
 
 **参数**
 
@@ -1378,41 +1348,19 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``unregister``。
+**主要协作调用**：``controller.abort``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:26261:26463:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:25979:26264:FUNCTION
 
-.. rubric:: ``useEffect callback @ 680``
-
-.. code-block:: javascript
-
-   useEffect callback @ 680()
-
-封装 ``Effect`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``680``—``686`` 行；所属函数 ``DocEditorHome``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``handleOpenDocEditor``、``setIsOpenDocEditorOpen``。
-
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:26554:26833:FUNCTION
-
-.. rubric:: ``uploadFiles.map callback @ 689``
+.. rubric:: ``uploadFiles.map callback @ 661``
 
 .. code-block:: javascript
 
-   uploadFiles.map callback @ 689(file)
+   uploadFiles.map callback @ 661(file)
 
 作为 ``uploadFiles.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``689``—``698`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``661``—``670`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -1429,17 +1377,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:26660:26815:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:26087:26246:FUNCTION
 
-.. rubric:: ``onCancel callback @ 693``
+.. rubric:: ``onCancel callback @ 665``
 
 .. code-block:: javascript
 
-   onCancel callback @ 693()
+   onCancel callback @ 665()
 
 处理 ``Cancel`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``693``—``696`` 行；所属函数 ``uploadFiles.map callback @ 689``。
+**性质**：同步局部函数；源码第 ``665``—``668`` 行；所属函数 ``uploadFiles.map callback @ 661``。
 
 **参数**
 
@@ -1457,17 +1405,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:26757:26799:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:26184:26230:FUNCTION
 
-.. rubric:: ``setUploadFiles callback @ 695``
+.. rubric:: ``setUploadFiles callback @ 667``
 
 .. code-block:: javascript
 
-   setUploadFiles callback @ 695(prev)
+   setUploadFiles callback @ 667(prev)
 
 设置与 ``Upload Files`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``695``—``695`` 行；所属函数 ``onCancel callback @ 693``。
+**性质**：同步局部函数；源码第 ``667``—``667`` 行；所属函数 ``onCancel callback @ 665``。
 
 **参数**
 
@@ -1482,17 +1430,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:26777:26798:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:26206:26229:FUNCTION
 
-.. rubric:: ``prev.filter callback @ 695``
+.. rubric:: ``prev.filter callback @ 667``
 
 .. code-block:: javascript
 
-   prev.filter callback @ 695(f)
+   prev.filter callback @ 667(f)
 
 作为 ``prev.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``695``—``695`` 行；所属函数 ``setUploadFiles callback @ 695``。
+**性质**：同步局部函数；源码第 ``667``—``667`` 行；所属函数 ``setUploadFiles callback @ 667``。
 
 **参数**
 
@@ -1503,17 +1451,17 @@ src/pages/DocEditorHome 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:28263:28602:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:27704:28057:FUNCTION
 
-.. rubric:: ``documentCards.map callback @ 729``
+.. rubric:: ``documentCards.map callback @ 702``
 
 .. code-block:: javascript
 
-   documentCards.map callback @ 729(item)
+   documentCards.map callback @ 702(item)
 
 作为 ``documentCards.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``729``—``738`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``702``—``712`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -1526,17 +1474,17 @@ src/pages/DocEditorHome 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:28435:28522:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:27890:27977:FUNCTION
 
-.. rubric:: ``onCardClick callback @ 733``
+.. rubric:: ``onCardClick callback @ 707``
 
 .. code-block:: javascript
 
-   onCardClick callback @ 733(item)
+   onCardClick callback @ 707(item)
 
 处理 ``Card Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``733``—``735`` 行；所属函数 ``documentCards.map callback @ 729``。
+**性质**：同步局部函数；源码第 ``707``—``709`` 行；所属函数 ``documentCards.map callback @ 702``。
 
 **参数**
 
@@ -1549,17 +1497,17 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``handleOpenDocEditor``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:29995:30026:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:29421:29452:FUNCTION
 
-.. rubric:: ``onClose callback @ 776``
+.. rubric:: ``onClose callback @ 747``
 
 .. code-block:: javascript
 
-   onClose callback @ 776()
+   onClose callback @ 747()
 
 处理 ``Close`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``776``—``776`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``747``—``747`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 
@@ -1571,17 +1519,17 @@ src/pages/DocEditorHome 模块
 
 **主要协作调用**：``setIsEditModalOpen``。
 
-.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:30287:30317:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DocEditorHome.jsx:29713:29743:FUNCTION
 
-.. rubric:: ``onClose callback @ 783``
+.. rubric:: ``onClose callback @ 754``
 
 .. code-block:: javascript
 
-   onClose callback @ 783()
+   onClose callback @ 754()
 
 处理 ``Close`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``783``—``783`` 行；所属函数 ``DocEditorHome``。
+**性质**：同步局部函数；源码第 ``754``—``754`` 行；所属函数 ``DocEditorHome``。
 
 **参数**
 

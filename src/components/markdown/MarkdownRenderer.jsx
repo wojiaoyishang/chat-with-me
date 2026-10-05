@@ -1,13 +1,10 @@
-import React, {memo, useEffect, useMemo, useRef} from 'react';
-import ReactMarkdown, {defaultUrlTransform} from 'react-markdown';
+import React, { memo, useEffect, useMemo, useRef } from 'react';
+import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-import {
-    rehypeInlineCodeProperty,
-    remarkCardReplace,
-} from './remarkDirectiveToComponent.js';
+import { rehypeInlineCodeProperty, remarkCardReplace } from './remarkDirectiveToComponent.js';
 
 import CodeBlock from './CodeBlock.jsx';
 import CardBlock from './card-block/CardBlock.jsx';
@@ -23,8 +20,11 @@ import {
 
 import 'katex/dist/katex.min.css';
 
-import {resolveCwmUrl} from '@/lib/virtualUrl.js';
-import {isUniversalModalLink, openUniversalModalLink} from '@/components/modal/universalModal.js';
+import { resolveCwmUrl } from '@/lib/virtualUrl.js';
+import { downloadDocumentResource, isDocumentDownloadUrl } from '@/lib/resourceDownload.js';
+import ResourceImage from './ResourceImage.jsx';
+import { toast } from 'sonner';
+import { isUniversalModalLink, openUniversalModalLink } from '@/components/modal/universalModal.js';
 
 const CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE = /:{2,3}\s*(card|card-replace)\s*\{([^}]*)\}\s*:{2,3}/g;
 const CARD_REPLACE_BLOCK_DIRECTIVE_RE = /:{3}\s*(card|card-replace)\s*\{([^}]*)\}\s*\n[\s\S]*?\n:{3}/g;
@@ -42,7 +42,7 @@ const getVisitedKey = (visitedIds) => {
 
 const allowCustomScheme = (uri, key, node) => {
     if (isUniversalModalLink(uri)) return uri;
-    const resolved = resolveCwmUrl(uri);
+    const resolved = resolveCwmUrl(uri, { download: key === 'href' });
     if (resolved !== null) return resolved;
     return defaultUrlTransform(uri, key, node);
 };
@@ -57,11 +57,7 @@ const preprocessContent = (text) => {
         .replace(/\\\)/g, '$');
 };
 
-const CARD_REPLACE_TOKEN_NAMES = [
-    'cardReplace',
-    'card-replace',
-    'card',
-];
+const CARD_REPLACE_TOKEN_NAMES = ['cardReplace', 'card-replace', 'card'];
 
 const stripDanglingStreamingCardToken = (content) => {
     if (typeof content !== 'string' || !content) return content;
@@ -74,9 +70,7 @@ const stripDanglingStreamingCardToken = (content) => {
 
     const tokenBody = tokenTail.slice(2).trimStart();
     const mayBeCardToken = CARD_REPLACE_TOKEN_NAMES.some((name) => {
-        return name.startsWith(tokenBody)
-            || tokenBody === name
-            || tokenBody.startsWith(`${name} `);
+        return name.startsWith(tokenBody) || tokenBody === name || tokenBody.startsWith(`${name} `);
     });
 
     // 流式增量可能正好截断在 {{cardReplace ... 中间。此时交给 Markdown
@@ -130,7 +124,7 @@ const extractCopyTextFromReplacementValue = (value, seenObjects = new WeakSet())
 
     if (Array.isArray(value)) {
         return value
-            .map(item => extractCopyTextFromReplacementValue(item, seenObjects))
+            .map((item) => extractCopyTextFromReplacementValue(item, seenObjects))
             .filter(Boolean)
             .join('\n');
     }
@@ -212,11 +206,7 @@ const isReplaceDirective = (directiveName, attributes) => {
 };
 
 const replaceCopyDirectives = (source, directiveRegex, replacement, options) => {
-    const {
-        depth,
-        maxDepth,
-        visitedIds,
-    } = options;
+    const { depth, maxDepth, visitedIds } = options;
 
     directiveRegex.lastIndex = 0;
 
@@ -260,11 +250,7 @@ const replaceCopyDirectives = (source, directiveRegex, replacement, options) => 
 };
 
 export const resolveMarkdownCopyContent = (content, replacement = {}, options = {}) => {
-    const {
-        depth = 0,
-        maxDepth = 10,
-        visitedIds = [],
-    } = options;
+    const { depth = 0, maxDepth = 10, visitedIds = [] } = options;
 
     const source = normalizeLineBreaks(content);
 
@@ -281,25 +267,24 @@ export const resolveMarkdownCopyContent = (content, replacement = {}, options = 
         );
     }
 
-    const withoutBlockDirectives = replaceCopyDirectives(
-        source,
-        CARD_REPLACE_BLOCK_DIRECTIVE_RE,
-        replacement,
-        {depth, maxDepth, visitedIds},
-    );
+    const withoutBlockDirectives = replaceCopyDirectives(source, CARD_REPLACE_BLOCK_DIRECTIVE_RE, replacement, {
+        depth,
+        maxDepth,
+        visitedIds,
+    });
 
     const withoutSelfClosingDirectives = replaceCopyDirectives(
         withoutBlockDirectives,
         CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE,
         replacement,
-        {depth, maxDepth, visitedIds},
+        { depth, maxDepth, visitedIds },
     );
 
     const withoutMustacheDirectives = replaceCopyDirectives(
         withoutSelfClosingDirectives,
         CARD_REPLACE_MUSTACHE_RE,
         replacement,
-        {depth, maxDepth, visitedIds},
+        { depth, maxDepth, visitedIds },
     );
 
     return normalizeCopyText(withoutMustacheDirectives);
@@ -323,20 +308,19 @@ export const createMarkdownCopyContentComponent = (copyContent) => {
     };
 };
 
-
 const createComponents = ({
-                              contextId = '',
-                              conversationId = null,
-                              replacementRef,
-                              depth = 0,
-                              maxDepth = 10,
-                              visitedIds = [],
-                              isStreaming = false,
-                              messageContextState = null,
-                              messageReadonly = false,
-                              messageIsLatest = true,
-                              renderSurface = 'conversation',
-                          }) => {
+    contextId = '',
+    conversationId = null,
+    replacementRef,
+    depth = 0,
+    maxDepth = 10,
+    visitedIds = [],
+    isStreaming = false,
+    messageContextState = null,
+    messageReadonly = false,
+    messageIsLatest = true,
+    renderSurface = 'conversation',
+}) => {
     const getCurrentReplacement = () => {
         return replacementRef?.current || {};
     };
@@ -360,45 +344,29 @@ const createComponents = ({
     };
 
     return {
-        p: ({children}) => <p className="my-2">{children}</p>,
+        p: ({ children }) => <p className="my-2">{children}</p>,
 
-        ul: ({children}) => (
-            <ul className="list-disc pl-5 my-2">{children}</ul>
+        ul: ({ children }) => <ul className="list-disc pl-5 my-2">{children}</ul>,
+
+        ol: ({ children }) => <ol className="list-decimal pl-5 my-2">{children}</ol>,
+
+        li: ({ children }) => <li className="my-1">{children}</li>,
+
+        h1: ({ children }) => (
+            <h1 className="text-2xl font-bold mt-8 mb-4 pb-2 border-b border-gray-100 text-gray-900">{children}</h1>
         ),
 
-        ol: ({children}) => (
-            <ol className="list-decimal pl-5 my-2">{children}</ol>
+        h2: ({ children }) => <h2 className="text-xl font-semibold mt-6 mb-3 text-gray-800">{children}</h2>,
+
+        h3: ({ children }) => <h3 className="text-lg font-medium mt-5 mb-2 text-gray-800">{children}</h3>,
+
+        hr: () => <hr className="my-4 border-t border-gray-300" />,
+
+        blockquote: ({ children }) => (
+            <blockquote className="border-l-4 border-gray-300 pl-4 italic my-2 text-gray-600">{children}</blockquote>
         ),
 
-        li: ({children}) => <li className="my-1">{children}</li>,
-
-        h1: ({children}) => (
-            <h1 className="text-2xl font-bold mt-8 mb-4 pb-2 border-b border-gray-100 text-gray-900">
-                {children}
-            </h1>
-        ),
-
-        h2: ({children}) => (
-            <h2 className="text-xl font-semibold mt-6 mb-3 text-gray-800">
-                {children}
-            </h2>
-        ),
-
-        h3: ({children}) => (
-            <h3 className="text-lg font-medium mt-5 mb-2 text-gray-800">
-                {children}
-            </h3>
-        ),
-
-        hr: () => <hr className="my-4 border-t border-gray-300"/>,
-
-        blockquote: ({children}) => (
-            <blockquote className="border-l-4 border-gray-300 pl-4 italic my-2 text-gray-600">
-                {children}
-            </blockquote>
-        ),
-
-        a: ({href, children}) => {
+        a: ({ href, children }) => {
             const modalLink = isUniversalModalLink(href);
             return (
                 <a
@@ -406,83 +374,68 @@ const createComponents = ({
                     target={modalLink ? undefined : '_blank'}
                     rel={modalLink ? undefined : 'noopener noreferrer'}
                     className="text-blue-600 hover:underline"
-                    onClick={modalLink ? (event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        openUniversalModalLink(href);
-                    } : undefined}
+                    onClick={
+                        modalLink
+                            ? (event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  openUniversalModalLink(href);
+                              }
+                            : isDocumentDownloadUrl(href)
+                              ? (event) => {
+                                    event.preventDefault();
+                                    void downloadDocumentResource(href).catch((error) => toast.error(error.message));
+                                }
+                              : undefined
+                    }
                 >
                     {children}
                 </a>
             );
         },
 
-        code({className, children, isCodeBlock, ...props}) {
+        code({ className, children, isCodeBlock, ...props }) {
             const match = /\blanguage-([^\s]+)/.exec(className || '');
             const language = match ? match[1] : '';
 
             if (!isCodeBlock) {
                 return (
-                    <code
-                        className="bg-gray-100 px-1 py-0.5 rounded-md text-xs font-mono text-gray-800"
-                        {...props}
-                    >
+                    <code className="bg-gray-100 px-1 py-0.5 rounded-md text-xs font-mono text-gray-800" {...props}>
                         {children}
                     </code>
                 );
             }
 
-            return (
-                <CodeBlock
-                    codeString={String(children || '').replace(/\n$/, '')}
-                    language={language}
-                />
-            );
+            return <CodeBlock codeString={String(children || '').replace(/\n$/, '')} language={language} />;
         },
 
-        table: ({children}) => (
+        table: ({ children }) => (
             <div className="my-4 w-full overflow-x-auto rounded-xl border border-gray-200 pretty-scrollbar">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                    {children}
-                </table>
+                <table className="min-w-full divide-y divide-gray-200 text-sm">{children}</table>
             </div>
         ),
 
-        thead: ({children}) => (
-            <thead className="bg-gray-50">
-            {children}
-            </thead>
-        ),
+        thead: ({ children }) => <thead className="bg-gray-50">{children}</thead>,
 
-        tbody: ({children}) => (
-            <tbody className="divide-y divide-gray-200 bg-white">
-            {children}
-            </tbody>
-        ),
+        tbody: ({ children }) => <tbody className="divide-y divide-gray-200 bg-white">{children}</tbody>,
 
-        tr: ({children}) => (
-            <tr className="transition-colors hover:bg-gray-50/50">
-                {children}
-            </tr>
-        ),
+        tr: ({ children }) => <tr className="transition-colors hover:bg-gray-50/50">{children}</tr>,
 
-        th: ({children}) => (
+        th: ({ children }) => (
             <th className="px-4 py-3 text-left font-bold text-gray-900 border-r border-gray-200 last:border-r-0 whitespace-nowrap">
                 {children}
             </th>
         ),
 
-        td: ({children}) => (
-            <td className="px-4 py-3 text-gray-700 border-r border-gray-200 last:border-r-0">
-                {children}
-            </td>
+        td: ({ children }) => (
+            <td className="px-4 py-3 text-gray-700 border-r border-gray-200 last:border-r-0">{children}</td>
         ),
 
-        img: ({src, alt, ...props}) => {
-            return <img src={src} alt={alt} {...props}/>;
+        img: ({ src, alt, ...props }) => {
+            return <ResourceImage key={src} src={src} alt={alt} {...props} />;
         },
 
-        'card-replace': ({id, type, node}) => {
+        'card-replace': ({ id, type, node }) => {
             const finalId = String(id || node?.properties?.id || '');
             const tokenType = String(type || node?.properties?.type || '');
             const currentReplacement = getCurrentReplacement();
@@ -572,12 +525,7 @@ const createComponents = ({
                 );
             }
 
-            const normalized = normalizeReplacementEntry(
-                currentReplacement,
-                finalId,
-                tokenType,
-                isStreaming,
-            );
+            const normalized = normalizeReplacementEntry(currentReplacement, finalId, tokenType, isStreaming);
 
             // 情况 5：有 id，但 replacement 找不到
             // 按你的要求：只 console.warn，不渲染组件
@@ -628,20 +576,21 @@ const createComponents = ({
 };
 
 function MarkdownRendererInner({
-                                   contextId = '',
-                                   conversationId = null,
-                                   content,
-                                   replacement = {},
-                                   depth = 0,
-                                   maxDepth = 10,
-                                   visitedIds = [],
-                                   msg = null,
-                                   messageContextState: messageContextStateProp = null,
-                                   isStreaming: isStreamingProp = null,
-                                   messageIsLatest: messageIsLatestProp = null,
-                                   copyContentComponentName = MARKDOWN_COPY_CONTENT_COMPONENT_NAME,
-                                   renderSurface = 'conversation',
-                               }) {
+    resourceBaseUrl = null,
+    contextId = '',
+    conversationId = null,
+    content,
+    replacement = {},
+    depth = 0,
+    maxDepth = 10,
+    visitedIds = [],
+    msg = null,
+    messageContextState: messageContextStateProp = null,
+    isStreaming: isStreamingProp = null,
+    messageIsLatest: messageIsLatestProp = null,
+    copyContentComponentName = MARKDOWN_COPY_CONTENT_COMPONENT_NAME,
+    renderSurface = 'conversation',
+}) {
     const replacementRef = useRef(replacement);
     replacementRef.current = replacement;
     const isStreaming = isStreamingProp ?? msg?.readonly === true;
@@ -732,15 +681,18 @@ function MarkdownRendererInner({
 
     return (
         <ReactMarkdown
-            remarkPlugins={[
-                remarkGfm,
-                remarkMath,
-                remarkCardReplace,
-                rehypeInlineCodeProperty,
-            ]}
+            remarkPlugins={[remarkGfm, remarkMath, remarkCardReplace, rehypeInlineCodeProperty]}
             rehypePlugins={[rehypeKatex]}
             components={components}
-            urlTransform={allowCustomScheme}
+            urlTransform={(uri, key, node) => {
+                const safe = allowCustomScheme(uri, key, node);
+                if (resourceBaseUrl && safe?.startsWith('assets/')) {
+                    const relative = safe.slice('assets/'.length);
+                    if (relative.split('/').some((part) => part === '..' || part === '.')) return '';
+                    return resourceBaseUrl + relative.split('/').map(encodeURIComponent).join('/');
+                }
+                return safe;
+            }}
         >
             {processedContent}
         </ReactMarkdown>
@@ -760,6 +712,7 @@ const areVisitedIdsEqual = (prev = [], next = []) => {
 
 const MarkdownRenderer = memo(MarkdownRendererInner, (prev, next) => {
     return (
+        prev.resourceBaseUrl === next.resourceBaseUrl &&
         prev.contextId === next.contextId &&
         prev.content === next.content &&
         prev.replacement === next.replacement &&

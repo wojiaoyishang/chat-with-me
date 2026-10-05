@@ -89,3 +89,9 @@ V53 的 Model Call 标题区会显示后端返回的 ``apiProtocol``、``openaiC
 该信息用于把“用户选择是否回传历史思考”与“Provider 为了形成合法 Tool continuation 必须携带
 ``reasoning_content``”区分开。实际请求是否满足约束仍以后端 Provider Capture / Wire Request 为准。
 
+
+首次打开先读取 overview，再按其 defaultTab 加载当前页面正文（brief 复用消息摘要）。Dialog 的 activeTab 由 useRuntimeInspector 统一控制，不独立保存标签状态；关闭重开及刷新时展示页面与请求页面保持一致。
+
+同一会话关闭重开及刷新保留最后有效标签，切换会话重置。原始消息和模型上下文投影使用 Virtuoso 虚拟列表；折叠诊断详情展开后才挂载正文，避免全量 JSON 详情同时渲染。
+
+请求缓存 documentRef 必须在 updateDocument 中同步更新，再提交 React 状态；不能在 React 函数状态更新回调中写入引用，否则异步请求续接可能读到旧 loaded 状态并跳过正文请求。

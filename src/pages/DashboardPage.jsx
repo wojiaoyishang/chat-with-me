@@ -1,17 +1,19 @@
-import React, {useEffect, useState, useRef, useCallback} from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
 import ChatPage from '@/pages/ChatPage.jsx';
-import {UnifiedErrorScreen, UnifiedLoadingScreen, updateURL} from "@/lib/tools.jsx";
-import apiClient, {isAuthRedirectError} from "@/lib/apiClient.js";
-import {apiEndpoint} from "@/config.js";
-import {useTranslation} from "react-i18next";
-import DocEditorHome from "@/pages/DocEditorHome.jsx";
-import {emitEvent} from "@/context/useEventStore.jsx";
-import {toast} from "sonner";
-import {useUserStore} from "@/context/userContext.jsx";
-import {motion, AnimatePresence} from 'framer-motion';
-import {useLocation, useOutlet, useParams} from "react-router-dom";
-import NotificationHost from "@/features/notification/NotificationHost.jsx";
+import { UnifiedErrorScreen, UnifiedLoadingScreen, updateURL } from '@/lib/tools.jsx';
+import apiClient, { isAuthRedirectError } from '@/lib/apiClient.js';
+import { apiEndpoint } from '@/config.js';
+import { useTranslation } from 'react-i18next';
+import DocEditorHome from '@/pages/DocEditorHome.jsx';
+import { emitEvent } from '@/context/useEventStore.jsx';
+import { toast } from 'sonner';
+import { useUserStore } from '@/context/userContext.jsx';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation, useOutlet, useParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import NotificationHost from '@/features/notification/NotificationHost.jsx';
 
 const readDashboardLocation = () => {
     if (typeof window === 'undefined') return null;
@@ -23,27 +25,33 @@ const readDashboardLocation = () => {
         pathname = pathname.slice(normalizedBase.length) || '/';
     }
 
-    const parts = pathname.split('/').filter(Boolean).map((part) => {
-        try { return decodeURIComponent(part); } catch { return part; }
-    });
+    const parts = pathname
+        .split('/')
+        .filter(Boolean)
+        .map((part) => {
+            try {
+                return decodeURIComponent(part);
+            } catch {
+                return part;
+            }
+        });
 
     if (parts[0] === 'chat') {
-        return {pageType: 'chat', conversationId: parts[1] || null, documentId: null};
+        return { pageType: 'chat', conversationId: parts[1] || null, documentId: null };
     }
     if (parts[0] === 'doc') {
-        return {pageType: 'doc', documentId: parts[1] || null, conversationId: parts[2] || null};
+        return { pageType: 'doc', documentId: parts[1] || null, conversationId: parts[2] || null };
     }
     return null;
 };
 
-const DashboardPage = ({type = "chat"}) => {
-
+const DashboardPage = ({ type = 'chat' }) => {
     const urlParams = useParams();
     const location = useLocation();
     const outlet = useOutlet();
 
-    const previousConversationIdRef = useRef("");
-    const previousDocumentIdRef = useRef("");
+    const previousConversationIdRef = useRef('');
+    const previousDocumentIdRef = useRef('');
 
     const [conversationId, setConversationId] = useState(urlParams.conversationId || null);
     const [documentId, setDocumentId] = useState(urlParams.documentId || null);
@@ -56,9 +64,9 @@ const DashboardPage = ({type = "chat"}) => {
 
     const [pageType, setPageType] = useState(type);
 
-    const {setUser} = useUserStore();
+    const { setUser } = useUserStore();
 
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     // Child routes share this Dashboard and its live ChatPage. Read the actual
     // URL because legacy selection still updates native history directly.
@@ -84,13 +92,15 @@ const DashboardPage = ({type = "chat"}) => {
     }, []);
 
     const handleSettingsRefresh = useCallback((scopes = []) => {
-        const normalizedScopes = [...new Set((Array.isArray(scopes) ? scopes : [scopes])
-            .map((scope) => String(scope || '').trim())
-            .filter(Boolean))];
+        const normalizedScopes = [
+            ...new Set(
+                (Array.isArray(scopes) ? scopes : [scopes]).map((scope) => String(scope || '').trim()).filter(Boolean),
+            ),
+        ];
         if (normalizedScopes.length === 0) return;
 
         setSettingsRefreshVersions((current) => {
-            const next = {...current};
+            const next = { ...current };
             normalizedScopes.forEach((scope) => {
                 next[scope] = Number(next[scope] || 0) + 1;
             });
@@ -113,8 +123,8 @@ const DashboardPage = ({type = "chat"}) => {
             const user = await apiClient.get(apiEndpoint.USER_INFO_ENDPOINT);
 
             if (!user.username) {
-                user.username = "User";
-                console.warn("UserInfo is missing username.")
+                user.username = 'User';
+                console.warn('UserInfo is missing username.');
             }
 
             // 设置默认内容
@@ -122,7 +132,7 @@ const DashboardPage = ({type = "chat"}) => {
 
             // 全局共享
             setUser(user);
-        }
+        };
 
         const loadAll = async () => {
             try {
@@ -132,35 +142,29 @@ const DashboardPage = ({type = "chat"}) => {
                 if (isAuthRedirectError(error)) {
                     setIsAuthRedirecting(true);
                 } else {
-                    toast.error(t("load_page_error", {message: error?.message || t("unknown_error")}));
+                    toast.error(t('load_page_error', { message: error?.message || t('unknown_error') }));
                     setIsLoadingError(true);
                 }
             } finally {
                 setIsLoading(false);
             }
-        }
+        };
 
         loadAll();
-
     }, []);
 
-    const LoadingScreen = () => (
-        <UnifiedLoadingScreen
-            text={t("loading_dashboard")}
-        />
-    );
+    const LoadingScreen = () => <UnifiedLoadingScreen text={t('loading_dashboard')} />;
 
     const LoadingFailedScreen = () => (
         <UnifiedErrorScreen
-            title={t("load_dashboard_error")}
-            subtitle={t("retry_after_network")}
-            retryText={t("retry")}
+            title={t('load_dashboard_error')}
+            subtitle={t('retry_after_network')}
+            retryText={t('retry')}
             onRetry={() => window.location.reload()}
         />
     );
 
     useEffect(() => {
-
         emitEvent({
             event: 'dashboard.selection.change',
             payload: {
@@ -168,125 +172,165 @@ const DashboardPage = ({type = "chat"}) => {
                 conversationId: conversationId,
                 previousConversationId: previousConversationIdRef.current,
                 documentId: documentId,
-                previousDocumentId: previousDocumentIdRef.current
-            }
-        })
+                previousDocumentId: previousDocumentIdRef.current,
+            },
+        });
 
         previousConversationIdRef.current = conversationId;
         previousDocumentIdRef.current = documentId;
     }, [pageType, conversationId, documentId]);
 
     // 处理聊天 ConversationId 变化，组件中不能直接call这个函数，不然不知道是设为空还是真的没有提供
-    const handleConversationIdSelect = useCallback(({newConversationId, newDocumentId}) => {
+    const handleConversationIdSelect = useCallback(
+        ({ newConversationId, newDocumentId }) => {
+            const urlNewConversationId = newConversationId ? `/${newConversationId}` : '';
+            const urlNewDocumentId = newDocumentId ? `/${newDocumentId}` : '';
 
-        const urlNewConversationId = newConversationId ? `/${newConversationId}` : "";
-        const urlNewDocumentId = newDocumentId ? `/${newDocumentId}` : '';
+            setConversationId(newConversationId);
+            setDocumentId(newDocumentId);
 
-        setConversationId(newConversationId);
-        setDocumentId(newDocumentId);
-
-        if (pageType === "chat") {
-            updateURL(`/chat${urlNewConversationId}`);
-        } else if (pageType === "doc") {
-            updateURL(`/doc${urlNewDocumentId}${urlNewConversationId}`);
-        }
-    }, [pageType])
+            if (pageType === 'chat') {
+                updateURL(`/chat${urlNewConversationId}`);
+            } else if (pageType === 'doc') {
+                updateURL(`/doc${urlNewDocumentId}${urlNewConversationId}`);
+            }
+        },
+        [pageType],
+    );
 
     return (
         <>
-        <div className="flex full-screen-height bg-white relative" inert={outlet ? true : undefined}>
-            {!isLoading && !isLoadingError && !isAuthRedirecting && (
-                <NotificationHost
-                    currentConversationId={conversationId}
-                    isConversationVisible={pageType === "chat"}
-                    onOpenConversation={(conversationId) => {
-                        setPageType("chat");
-                        setConversationId(conversationId);
-                        setDocumentId(null);
-                        updateURL(`/chat/${conversationId}`);
-                    }}
-                />
-            )}
-            {isLoadingError ? (
-                <LoadingFailedScreen/>
-            ) : isLoading || isAuthRedirecting ? (
-                <LoadingScreen/>
-            ) : (
-                <>
+            <div className="flex full-screen-height bg-white relative" inert={outlet ? true : undefined}>
+                {!isLoading && !isLoadingError && !isAuthRedirecting && (
+                    <NotificationHost
+                        currentConversationId={conversationId}
+                        isConversationVisible={pageType === 'chat' || Boolean(documentId)}
+                        onOpenConversation={(conversationId) => {
+                            setPageType('chat');
+                            setConversationId(conversationId);
+                            setDocumentId(null);
+                            updateURL(`/chat/${conversationId}`);
+                        }}
+                    />
+                )}
+                {isLoadingError ? (
+                    <LoadingFailedScreen />
+                ) : isLoading || isAuthRedirecting ? (
+                    <LoadingScreen />
+                ) : (
+                    <>
+                        {pageType === 'chat' && (
+                            <Sidebar
+                                conversationId={conversationId}
+                                setConversationId={setConversationId}
+                                settings={sidebarSettings}
+                                pageType={pageType}
+                                setPageType={setPageType}
+                                onSettingsRefresh={handleSettingsRefresh}
+                                onConversationIdSelect={(newConversationId) => {
+                                    handleConversationIdSelect({
+                                        newConversationId: newConversationId,
+                                        newDocumentId: documentId,
+                                    });
+                                }}
+                            />
+                        )}
 
-                    <Sidebar conversationId={conversationId} setConversationId={setConversationId} settings={sidebarSettings}
-                             pageType={pageType} setPageType={setPageType}
-                             onSettingsRefresh={handleSettingsRefresh}
-                             onConversationIdSelect={(newConversationId) => {
-                                 handleConversationIdSelect({
-                                     newConversationId: newConversationId,
-                                     newDocumentId: documentId,
-                                 });
-                             }}/>
-
-                    <main className="flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
-                        <AnimatePresence mode="wait">
-                            {pageType === "chat" && (
-                                <motion.div
-                                    key="chat"
-                                    initial={{opacity: 0, x: 50}}
-                                    animate={{opacity: 1, x: 0}}
-                                    exit={{opacity: 0, x: -50}}
-                                    transition={{duration: 0.3, ease: "easeInOut"}}
-                                    className="absolute inset-0"
-                                >
-                                    <ChatPage
-                                              conversationId={conversationId}
-                                              onNewConversationId={(newConversationId) => {
-                                                  handleConversationIdSelect({
-                                                      newConversationId: newConversationId,
-                                                      newDocumentId: documentId,
-                                                  });
-                                              }}
-                                              showWindowButton={false}
-                                              settingsRefreshVersions={settingsRefreshVersions}
-                                    />
-                                </motion.div>
-                            )}
-                            {pageType === "doc" && (
-                                <motion.div
-                                    key="doc"
-                                    initial={{opacity: 0, x: 50}}
-                                    animate={{opacity: 1, x: 0}}
-                                    exit={{opacity: 0, x: -50}}
-                                    transition={{duration: 0.3, ease: "easeInOut"}}
-                                    className="absolute inset-0"
-                                >
-                                    <DocEditorHome
-                                                   documentId={documentId}
-                                                   conversationId={conversationId}
-                                                   onNewConversationId={(newConversationId) => {
-                                                       handleConversationIdSelect({
-                                                           newConversationId: newConversationId,
-                                                           newDocumentId: documentId,
-                                                       });
-                                                   }}
-                                                   settingsRefreshVersions={settingsRefreshVersions}
-                                                   onNewDocumentId={(newDocumentId) => {
-                                                       handleConversationIdSelect({
-                                                           newConversationId: conversationId,
-                                                           newDocumentId: newDocumentId,
-                                                       });
-                                                   }}
-                                    />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </main>
-
-                </>
-            )}
-        </div>
-        {outlet && (
-            <div className="fixed inset-0 z-[2147483301] bg-background" role="region" aria-label="消息历史地图">
-                {outlet}
+                        <main className="flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
+                            <AnimatePresence mode="wait">
+                                {pageType === 'chat' && (
+                                    <motion.div
+                                        key="chat"
+                                        initial={{ opacity: 0, x: 50 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -50 }}
+                                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                        className="absolute inset-0"
+                                    >
+                                        <ChatPage
+                                            conversationId={conversationId}
+                                            onNewConversationId={(newConversationId) => {
+                                                handleConversationIdSelect({
+                                                    newConversationId: newConversationId,
+                                                    newDocumentId: documentId,
+                                                });
+                                            }}
+                                            showWindowButton={false}
+                                            settingsRefreshVersions={settingsRefreshVersions}
+                                        />
+                                    </motion.div>
+                                )}
+                                {pageType === 'doc' && (
+                                    <motion.div
+                                        key="doc"
+                                        initial={{ opacity: 0, x: 50 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -50 }}
+                                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                        className="absolute inset-0"
+                                    >
+                                        <div className="flex h-full min-h-0 flex-col">
+                                            {!documentId && (
+                                                <header className="flex shrink-0 items-center gap-3 border-b bg-background px-3 py-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setPageType('chat');
+                                                            setConversationId(null);
+                                                            setDocumentId(null);
+                                                            updateURL('/chat');
+                                                        }}
+                                                    >
+                                                        <ArrowLeft className="size-4" />
+                                                        {t('documents_chat')}
+                                                    </Button>
+                                                    <span className="text-sm font-medium">
+                                                        {t('documents_document_workspace')}
+                                                    </span>
+                                                </header>
+                                            )}
+                                            <div className="min-h-0 flex-1 overflow-auto">
+                                                <DocEditorHome
+                                                    onChatMode={() => {
+                                                        setPageType('chat');
+                                                        setDocumentId(null);
+                                                        updateURL(conversationId ? `/chat/${conversationId}` : '/chat');
+                                                    }}
+                                                    documentId={documentId}
+                                                    conversationId={conversationId}
+                                                    onNewConversationId={(newConversationId) => {
+                                                        handleConversationIdSelect({
+                                                            newConversationId: newConversationId,
+                                                            newDocumentId: documentId,
+                                                        });
+                                                    }}
+                                                    settingsRefreshVersions={settingsRefreshVersions}
+                                                    onNewDocumentId={(newDocumentId) => {
+                                                        handleConversationIdSelect({
+                                                            newConversationId: null,
+                                                            newDocumentId: newDocumentId,
+                                                        });
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </main>
+                    </>
+                )}
             </div>
-        )}
+            {outlet && (
+                <div
+                    className="fixed inset-0 z-[2147483301] bg-background"
+                    role="region"
+                    aria-label={t('documents_message_history_map')}
+                >
+                    {outlet}
+                </div>
+            )}
         </>
     );
 };

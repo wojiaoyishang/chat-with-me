@@ -1,7 +1,6 @@
-
-export const BASE_BACKEND_URL = '/api'
-export const WEBSOCKET_URL = '/ws'
-export const REALTIME_VOICE_WEBSOCKET_URL = '/ws/realtime'
+export const BASE_BACKEND_URL = '/api';
+export const WEBSOCKET_URL = '/ws';
+export const REALTIME_VOICE_WEBSOCKET_URL = '/ws/realtime';
 
 export const apiEndpoint = {
     CHATBOX_ENDPOINT: '/chat/chatbox',
@@ -29,10 +28,8 @@ export const apiEndpoint = {
     ADMIN_USERS_ENDPOINT: '/user/admin/users',
     ADMIN_TOOL_CATALOG_ENDPOINT: '/user/admin/tool-catalog',
     DOCUMENT_ENDPOINT: '/document',
-    DOCUMENT_COLLABORA_DIRECTION_ENDPOINT: '/document/redirect',
     SETTING_TABS_ENDPOINT: '/setting/tabs',
     ASR_ENDPOINT: '/asr',
     NOTIFICATION_TYPES_ENDPOINT: '/notification/types',
     NOTIFICATION_PENDING_ENDPOINT: '/notification/pending',
 };
-

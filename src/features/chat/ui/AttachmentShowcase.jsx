@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { Transition } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
-import {Eye, EyeOff, X} from 'lucide-react';
-import {resolveResourceUrl} from '@/lib/virtualUrl.js';
-import {isAttachmentVisionEnabled, isImageAttachment, normalizeAttachmentList} from '../attachmentVision.js';
+import { Eye, EyeOff, X, ImageOff } from 'lucide-react';
+import { resolveResourceUrl } from '@/lib/virtualUrl.js';
+import { isAttachmentVisionEnabled, isImageAttachment, normalizeAttachmentList } from '../attachmentVision.js';
 
 // 将格式化文件大小的函数移到组件外部，避免每次渲染都重新创建
 const formatFileSize = (bytes) => {
@@ -18,7 +18,9 @@ const formatFileSize = (bytes) => {
 
 const isDefaultFileIcon = (attachment) => {
     if (attachment?.previewType === 'icon') return true;
-    const preview = String(attachment?.preview || '').trim().toLowerCase();
+    const preview = String(attachment?.preview || '')
+        .trim()
+        .toLowerCase();
     return preview.startsWith('cwm://public/icons/');
 };
 
@@ -26,143 +28,158 @@ const isDefaultFileIcon = (attachment) => {
  * 单个附件项组件
  * 使用memo包裹，避免不必要的重新渲染
  */
-const AttachmentItem = memo(({
-    attachment,
-    index,
-    onRemove,
-    onVisionToggle,
-    visionSupported,
-    msgMode,
-    t,
-}) => {
-    const resolvedPreviewUrl = attachment.previewType === 'svg' ? attachment.preview : resolveResourceUrl(attachment.preview);
-    const resolvedDownloadUrl = resolveResourceUrl(attachment.downloadUrl);
-    const usesDefaultIcon = isDefaultFileIcon(attachment);
-    const imageAttachment = isImageAttachment(attachment);
-    const visionEnabled = isAttachmentVisionEnabled(attachment);
-    const showVisionToggle = !msgMode && visionSupported && imageAttachment;
+const AttachmentItem = memo(
+    ({ attachment, index, onRemove, onVisionToggle, visionSupported, msgMode, t }) => {
+        const resolvedPreviewUrl =
+            attachment.previewType === 'svg' ? attachment.preview : resolveResourceUrl(attachment.preview);
+        const resolvedDownloadUrl = resolveResourceUrl(attachment.downloadUrl);
+        const unavailable = attachment.artifactStatus === 'unavailable';
+        const usesDefaultIcon = isDefaultFileIcon(attachment);
+        const imageAttachment = isImageAttachment(attachment);
+        const visionEnabled = isAttachmentVisionEnabled(attachment);
+        const showVisionToggle = !unavailable && !msgMode && visionSupported && imageAttachment;
 
-    const handleRemove = useCallback((e) => {
-        e.stopPropagation();
-        onRemove(attachment);
-    }, [attachment, onRemove]);
+        const handleRemove = useCallback(
+            (e) => {
+                e.stopPropagation();
+                onRemove(attachment);
+            },
+            [attachment, onRemove],
+        );
 
-    const handleClick = useCallback(() => {
-        if (resolvedDownloadUrl) {
-            window.open(resolvedDownloadUrl, '_blank', 'noopener,noreferrer');
-        }
-    }, [resolvedDownloadUrl]);
+        const handleClick = useCallback(() => {
+            if (resolvedDownloadUrl) {
+                window.open(resolvedDownloadUrl, '_blank', 'noopener,noreferrer');
+            }
+        }, [resolvedDownloadUrl]);
 
-    const handleVisionToggle = useCallback((event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        onVisionToggle?.(attachment, !visionEnabled);
-    }, [attachment, onVisionToggle, visionEnabled]);
+        const handleVisionToggle = useCallback(
+            (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onVisionToggle?.(attachment, !visionEnabled);
+            },
+            [attachment, onVisionToggle, visionEnabled],
+        );
 
-    return (
-        <div key={index} className="relative flex-shrink-0">
-            {!msgMode && (
-                <button
-                    type="button"
-                    onClick={handleRemove}
-                    className="absolute top-1 right-1 z-30 w-4 h-4 bg-gray-600/30 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 focus:outline-none cursor-pointer"
-                    aria-label={t('remove_attachment')}
-                    style={{ transform: 'translate(50%, -50%)' }}
-                >
-                    <X className="w-3.5 h-3.5" />
-                </button>
-            )}
-
-            <div
-                className={`relative flex items-center overflow-hidden rounded-lg bg-gray-100 ${
-                    resolvedDownloadUrl ? 'cursor-pointer transition-shadow hover:shadow-sm' : ''
-                }`}
-                onClick={handleClick}
-            >
-                <div
-                    className={`w-10 h-10 flex-shrink-0 flex items-center justify-center overflow-hidden ${
-                        usesDefaultIcon ? 'bg-slate-100/80 p-1' : 'bg-gray-100'
-                    }`}
-                >
-                    {attachment.previewType === 'svg' ? (
-                        <div className="w-full h-full flex items-center justify-center">
-                            <span
-                                className="w-full h-full"
-                                style={{
-                                    transform: 'scale(1.2)',
-                                    transformOrigin: 'center center',
-                                }}
-                                dangerouslySetInnerHTML={{ __html: attachment.preview }}
-                            />
-                        </div>
-                    ) : (
-                        <img
-                            src={resolvedPreviewUrl}
-                            alt={t('attachment_preview')}
-                            className={usesDefaultIcon
-                                ? 'w-full h-full rounded-md object-contain'
-                                : 'w-full h-full object-cover'}
-                        />
-                    )}
-                </div>
-
-                <div className={`ml-2 min-w-[140px] max-w-[190px] py-1.5 ${showVisionToggle ? 'pr-8' : 'pr-2'}`}>
-                    <div className="text-sm font-medium text-gray-800 truncate max-w-[180px]">
-                        {attachment.name}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                        {formatFileSize(attachment.size)}
-                    </div>
-                </div>
-
-                {showVisionToggle ? (
+        return (
+            <div key={index} className="relative flex-shrink-0">
+                {!msgMode && (
                     <button
                         type="button"
-                        onClick={handleVisionToggle}
-                        className={`absolute bottom-0 right-0 z-20 flex h-6 w-7 items-center justify-center rounded-tl-md border-l border-t transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-neutral-400 ${
-                            visionEnabled
-                                ? 'border-neutral-500/60 bg-neutral-600 text-white hover:bg-neutral-700 dark:border-neutral-300/60 dark:bg-neutral-300 dark:text-neutral-900 dark:hover:bg-neutral-200'
-                                : 'border-neutral-500/35 bg-neutral-300/90 text-neutral-700 hover:bg-neutral-400/80 dark:border-neutral-400/35 dark:bg-neutral-600/85 dark:text-neutral-100 dark:hover:bg-neutral-500/85'
-                        }`}
-                        title={visionEnabled
-                            ? t('attachment_vision_enabled', '此图片会提供给 AI 识别，点击关闭')
-                            : t('attachment_vision_disabled', '此图片仅作为普通附件，点击允许 AI 识别')}
-                        aria-label={visionEnabled
-                            ? t('attachment_vision_disable_action', '禁止 AI 识别此图片')
-                            : t('attachment_vision_enable_action', '允许 AI 识别此图片')}
-                        aria-pressed={visionEnabled}
+                        onClick={handleRemove}
+                        className="absolute top-1 right-1 z-30 w-4 h-4 bg-gray-600/30 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 focus:outline-none cursor-pointer"
+                        aria-label={t('remove_attachment')}
+                        style={{ transform: 'translate(50%, -50%)' }}
                     >
-                        {visionEnabled
-                            ? <Eye className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true"/>
-                            : <EyeOff className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true"/>}
+                        <X className="w-3.5 h-3.5" />
                     </button>
-                ) : null}
-            </div>
-        </div>
-    );
-}, (prevProps, nextProps) => {
-    // 自定义比较函数，只有当附件属性变化时才重新渲染
-    const prevAttachment = prevProps.attachment;
-    const nextAttachment = nextProps.attachment;
+                )}
 
-    return (
-        prevAttachment.id === nextAttachment.id &&
-        prevAttachment.preview === nextAttachment.preview &&
-        prevAttachment.previewType === nextAttachment.previewType &&
-        prevAttachment.name === nextAttachment.name &&
-        prevAttachment.size === nextAttachment.size &&
-        prevAttachment.downloadUrl === nextAttachment.downloadUrl &&
-        prevAttachment.fileType === nextAttachment.fileType &&
-        prevAttachment.mimeType === nextAttachment.mimeType &&
-        prevAttachment.visionEnabled === nextAttachment.visionEnabled &&
-        (prevAttachment.artifactId || prevAttachment.serverId) === (nextAttachment.artifactId || nextAttachment.serverId) &&
-        prevProps.msgMode === nextProps.msgMode &&
-        prevProps.onRemove === nextProps.onRemove &&
-        prevProps.onVisionToggle === nextProps.onVisionToggle &&
-        prevProps.visionSupported === nextProps.visionSupported &&
-        prevProps.t === nextProps.t
-    );
-});
+                <div
+                    className={`relative flex items-center overflow-hidden rounded-lg bg-gray-100 ${
+                        resolvedDownloadUrl ? 'cursor-pointer transition-shadow hover:shadow-sm' : ''
+                    }`}
+                    onClick={handleClick}
+                >
+                    <div
+                        className={`w-10 h-10 flex-shrink-0 flex items-center justify-center overflow-hidden ${
+                            usesDefaultIcon ? 'bg-slate-100/80 p-1' : 'bg-gray-100'
+                        }`}
+                    >
+                        {unavailable ? (
+                            <ImageOff className="size-5 text-muted-foreground" />
+                        ) : attachment.previewType === 'svg' ? (
+                            <div className="w-full h-full flex items-center justify-center">
+                                <span
+                                    className="w-full h-full"
+                                    style={{
+                                        transform: 'scale(1.2)',
+                                        transformOrigin: 'center center',
+                                    }}
+                                    dangerouslySetInnerHTML={{ __html: attachment.preview }}
+                                />
+                            </div>
+                        ) : (
+                            <img
+                                src={resolvedPreviewUrl}
+                                alt={t('attachment_preview')}
+                                className={
+                                    usesDefaultIcon
+                                        ? 'w-full h-full rounded-md object-contain'
+                                        : 'w-full h-full object-cover'
+                                }
+                            />
+                        )}
+                    </div>
+
+                    <div className={`ml-2 min-w-[140px] max-w-[190px] py-1.5 ${showVisionToggle ? 'pr-8' : 'pr-2'}`}>
+                        <div className="text-sm font-medium text-gray-800 truncate max-w-[180px]">
+                            {attachment.name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                            {unavailable ? t('resource_unavailable') : formatFileSize(attachment.size)}
+                        </div>
+                    </div>
+
+                    {showVisionToggle ? (
+                        <button
+                            type="button"
+                            onClick={handleVisionToggle}
+                            className={`absolute bottom-0 right-0 z-20 flex h-6 w-7 items-center justify-center rounded-tl-md border-l border-t transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-neutral-400 ${
+                                visionEnabled
+                                    ? 'border-neutral-500/60 bg-neutral-600 text-white hover:bg-neutral-700 dark:border-neutral-300/60 dark:bg-neutral-300 dark:text-neutral-900 dark:hover:bg-neutral-200'
+                                    : 'border-neutral-500/35 bg-neutral-300/90 text-neutral-700 hover:bg-neutral-400/80 dark:border-neutral-400/35 dark:bg-neutral-600/85 dark:text-neutral-100 dark:hover:bg-neutral-500/85'
+                            }`}
+                            title={
+                                visionEnabled
+                                    ? t('attachment_vision_enabled', '此图片会提供给 AI 识别，点击关闭')
+                                    : t('attachment_vision_disabled', '此图片仅作为普通附件，点击允许 AI 识别')
+                            }
+                            aria-label={
+                                visionEnabled
+                                    ? t('attachment_vision_disable_action', '禁止 AI 识别此图片')
+                                    : t('attachment_vision_enable_action', '允许 AI 识别此图片')
+                            }
+                            aria-pressed={visionEnabled}
+                        >
+                            {visionEnabled ? (
+                                <Eye className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+                            ) : (
+                                <EyeOff className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+                            )}
+                        </button>
+                    ) : null}
+                </div>
+            </div>
+        );
+    },
+    (prevProps, nextProps) => {
+        // 自定义比较函数，只有当附件属性变化时才重新渲染
+        const prevAttachment = prevProps.attachment;
+        const nextAttachment = nextProps.attachment;
+
+        return (
+            prevAttachment.id === nextAttachment.id &&
+            prevAttachment.artifactStatus === nextAttachment.artifactStatus &&
+            prevAttachment.preview === nextAttachment.preview &&
+            prevAttachment.previewType === nextAttachment.previewType &&
+            prevAttachment.name === nextAttachment.name &&
+            prevAttachment.size === nextAttachment.size &&
+            prevAttachment.downloadUrl === nextAttachment.downloadUrl &&
+            prevAttachment.fileType === nextAttachment.fileType &&
+            prevAttachment.mimeType === nextAttachment.mimeType &&
+            prevAttachment.visionEnabled === nextAttachment.visionEnabled &&
+            (prevAttachment.artifactId || prevAttachment.serverId) ===
+                (nextAttachment.artifactId || nextAttachment.serverId) &&
+            prevProps.msgMode === nextProps.msgMode &&
+            prevProps.onRemove === nextProps.onRemove &&
+            prevProps.onVisionToggle === nextProps.onVisionToggle &&
+            prevProps.visionSupported === nextProps.visionSupported &&
+            prevProps.t === nextProps.t
+        );
+    },
+);
 
 AttachmentItem.displayName = 'AttachmentItem';
 
@@ -170,44 +187,45 @@ AttachmentItem.displayName = 'AttachmentItem';
  * 滚动箭头按钮组件
  * 使用memo包裹
  */
-const ScrollArrow = memo(({ direction, onClick, t, show }) => {
-    if (!show) return null;
+const ScrollArrow = memo(
+    ({ direction, onClick, t, show }) => {
+        if (!show) return null;
 
-    const ariaLabel = direction === 'left'
-        ? t('scroll_attachments_left')
-        : t('scroll_attachments_right');
+        const ariaLabel = direction === 'left' ? t('scroll_attachments_left') : t('scroll_attachments_right');
 
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className={`cursor-pointer absolute ${direction === 'left' ? 'left-0' : 'right-0'} inset-y-0 my-auto h-7 w-7 rounded-full bg-white shadow-md ring-1 ring-black/5 flex items-center z-30 justify-center opacity-80 hover:opacity-100 transition-all duration-200 hover:scale-110`}
-            aria-label={ariaLabel}
-        >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-gray-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+        return (
+            <button
+                type="button"
+                onClick={onClick}
+                className={`cursor-pointer absolute ${direction === 'left' ? 'left-0' : 'right-0'} inset-y-0 my-auto h-7 w-7 rounded-full bg-white shadow-md ring-1 ring-black/5 flex items-center z-30 justify-center opacity-80 hover:opacity-100 transition-all duration-200 hover:scale-110`}
+                aria-label={ariaLabel}
             >
-                <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={direction === 'left' ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}
-                />
-            </svg>
-        </button>
-    );
-}, (prevProps, nextProps) => {
-    return (
-        prevProps.direction === nextProps.direction &&
-        prevProps.show === nextProps.show &&
-        prevProps.onClick === nextProps.onClick &&
-        prevProps.t === nextProps.t
-    );
-});
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 text-gray-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d={direction === 'left' ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}
+                    />
+                </svg>
+            </button>
+        );
+    },
+    (prevProps, nextProps) => {
+        return (
+            prevProps.direction === nextProps.direction &&
+            prevProps.show === nextProps.show &&
+            prevProps.onClick === nextProps.onClick &&
+            prevProps.t === nextProps.t
+        );
+    },
+);
 
 ScrollArrow.displayName = 'ScrollArrow';
 
@@ -215,23 +233,25 @@ ScrollArrow.displayName = 'ScrollArrow';
  * 阴影遮罩组件
  * 使用memo包裹
  */
-const ShadowOverlay = memo(({ side, show }) => {
-    if (!show) return null;
+const ShadowOverlay = memo(
+    ({ side, show }) => {
+        if (!show) return null;
 
-    const gradientClass = side === 'left'
-        ? 'bg-gradient-to-r from-white to-transparent'
-        : 'bg-gradient-to-l from-white to-transparent';
+        const gradientClass =
+            side === 'left'
+                ? 'bg-gradient-to-r from-white to-transparent'
+                : 'bg-gradient-to-l from-white to-transparent';
 
-    const positionClass = side === 'left' ? 'left-0' : 'right-0';
+        const positionClass = side === 'left' ? 'left-0' : 'right-0';
 
-    return (
-        <div
-            className={`absolute ${positionClass} top-0 bottom-0 w-8 ${gradientClass} z-20 pointer-events-none`}
-        />
-    );
-}, (prevProps, nextProps) => {
-    return prevProps.side === nextProps.side && prevProps.show === nextProps.show;
-});
+        return (
+            <div className={`absolute ${positionClass} top-0 bottom-0 w-8 ${gradientClass} z-20 pointer-events-none`} />
+        );
+    },
+    (prevProps, nextProps) => {
+        return prevProps.side === nextProps.side && prevProps.show === nextProps.show;
+    },
+);
 
 ShadowOverlay.displayName = 'ShadowOverlay';
 
@@ -241,198 +261,196 @@ ShadowOverlay.displayName = 'ShadowOverlay';
  * msgMode 决定是否处于消息上方
  * 使用React.memo优化性能
  */
-const AttachmentShowcase = memo(({
-    attachmentsMeta,
-    onRemove,
-    onVisionToggle,
-    visionSupported = false,
-    msgMode,
-}) => {
-    const { t } = useTranslation();
+const AttachmentShowcase = memo(
+    ({ attachmentsMeta, onRemove, onVisionToggle, visionSupported = false, msgMode }) => {
+        const { t } = useTranslation();
 
-    const containerRef = useRef(null);
-    const scrollContainerRef = useRef(null);
-    const [showLeftShadow, setShowLeftShadow] = useState(false);
-    const [showRightShadow, setShowRightShadow] = useState(false);
-    const normalizedAttachments = useMemo(() => normalizeAttachmentList(attachmentsMeta), [attachmentsMeta]);
+        const containerRef = useRef(null);
+        const scrollContainerRef = useRef(null);
+        const [showLeftShadow, setShowLeftShadow] = useState(false);
+        const [showRightShadow, setShowRightShadow] = useState(false);
+        const normalizedAttachments = useMemo(() => normalizeAttachmentList(attachmentsMeta), [attachmentsMeta]);
 
-    // 使用useCallback缓存函数，避免每次渲染都创建新函数
-    const checkScrollShadows = useCallback(() => {
-        const container = scrollContainerRef.current;
-        if (!container) return;
+        // 使用useCallback缓存函数，避免每次渲染都创建新函数
+        const checkScrollShadows = useCallback(() => {
+            const container = scrollContainerRef.current;
+            if (!container) return;
 
-        const { scrollLeft, scrollWidth, clientWidth } = container;
-        const maxScrollLeft = Math.max(0, scrollWidth - clientWidth);
-        const hasOverflow = maxScrollLeft > 1;
+            const { scrollLeft, scrollWidth, clientWidth } = container;
+            const maxScrollLeft = Math.max(0, scrollWidth - clientWidth);
+            const hasOverflow = maxScrollLeft > 1;
 
-        setShowLeftShadow(hasOverflow && scrollLeft > 1);
-        setShowRightShadow(hasOverflow && scrollLeft < maxScrollLeft - 1);
-    }, []);
+            setShowLeftShadow(hasOverflow && scrollLeft > 1);
+            setShowRightShadow(hasOverflow && scrollLeft < maxScrollLeft - 1);
+        }, []);
 
-    const scrollAttachments = useCallback((direction) => {
-        if (!scrollContainerRef.current) return;
+        const scrollAttachments = useCallback((direction) => {
+            if (!scrollContainerRef.current) return;
 
-        const container = scrollContainerRef.current;
-        const scrollAmount = direction === 'left' ? -100 : 100;
+            const container = scrollContainerRef.current;
+            const scrollAmount = direction === 'left' ? -100 : 100;
 
-        container.scrollTo({
-            left: container.scrollLeft + scrollAmount,
-            behavior: 'smooth',
-        });
-    }, []);
+            container.scrollTo({
+                left: container.scrollLeft + scrollAmount,
+                behavior: 'smooth',
+            });
+        }, []);
 
-    // 使用useMemo缓存空状态
-    const emptyState = useMemo(() => (
-        <div
-            className="overflow-hidden transition-all duration-300 ease-in-out"
-            style={{ height: 0 }}
-        />
-    ), []);
+        // 使用useMemo缓存空状态
+        const emptyState = useMemo(
+            () => <div className="overflow-hidden transition-all duration-300 ease-in-out" style={{ height: 0 }} />,
+            [],
+        );
 
-    // 使用useMemo缓存附件项列表
-    const attachmentItems = useMemo(() => {
+        // 使用useMemo缓存附件项列表
+        const attachmentItems = useMemo(() => {
+            if (normalizedAttachments.length === 0) {
+                return null;
+            }
+
+            return normalizedAttachments.map((attachment, index) => (
+                <AttachmentItem
+                    key={attachment.id || index}
+                    attachment={attachment}
+                    index={index}
+                    onRemove={onRemove}
+                    onVisionToggle={onVisionToggle}
+                    visionSupported={visionSupported}
+                    msgMode={msgMode}
+                    t={t}
+                />
+            ));
+        }, [normalizedAttachments, onRemove, onVisionToggle, visionSupported, msgMode, t]);
+
+        useLayoutEffect(() => {
+            const container = scrollContainerRef.current;
+            if (!container) return undefined;
+
+            let frameId = window.requestAnimationFrame(checkScrollShadows);
+            const scheduleCheck = () => {
+                window.cancelAnimationFrame(frameId);
+                frameId = window.requestAnimationFrame(checkScrollShadows);
+            };
+
+            container.addEventListener('scroll', scheduleCheck, { passive: true });
+            window.addEventListener('resize', scheduleCheck);
+
+            const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(scheduleCheck) : null;
+            resizeObserver?.observe(container);
+            if (container.parentElement) resizeObserver?.observe(container.parentElement);
+
+            return () => {
+                window.cancelAnimationFrame(frameId);
+                container.removeEventListener('scroll', scheduleCheck);
+                window.removeEventListener('resize', scheduleCheck);
+                resizeObserver?.disconnect();
+            };
+        }, [normalizedAttachments, checkScrollShadows]);
+
+        useEffect(() => {
+            const frameId = window.requestAnimationFrame(checkScrollShadows);
+            return () => window.cancelAnimationFrame(frameId);
+        }, [attachmentItems, checkScrollShadows]);
+
         if (normalizedAttachments.length === 0) {
-            return null;
+            return emptyState;
         }
 
-        return normalizedAttachments.map((attachment, index) => (
-            <AttachmentItem
-                key={attachment.id || index}
-                attachment={attachment}
-                index={index}
-                onRemove={onRemove}
-                onVisionToggle={onVisionToggle}
-                visionSupported={visionSupported}
-                msgMode={msgMode}
-                t={t}
-            />
-        ));
-    }, [normalizedAttachments, onRemove, onVisionToggle, visionSupported, msgMode, t]);
-
-    useLayoutEffect(() => {
-        const container = scrollContainerRef.current;
-        if (!container) return undefined;
-
-        let frameId = window.requestAnimationFrame(checkScrollShadows);
-        const scheduleCheck = () => {
-            window.cancelAnimationFrame(frameId);
-            frameId = window.requestAnimationFrame(checkScrollShadows);
-        };
-
-        container.addEventListener('scroll', scheduleCheck, { passive: true });
-        window.addEventListener('resize', scheduleCheck);
-
-        const resizeObserver = typeof ResizeObserver !== 'undefined'
-            ? new ResizeObserver(scheduleCheck)
-            : null;
-        resizeObserver?.observe(container);
-        if (container.parentElement) resizeObserver?.observe(container.parentElement);
-
-        return () => {
-            window.cancelAnimationFrame(frameId);
-            container.removeEventListener('scroll', scheduleCheck);
-            window.removeEventListener('resize', scheduleCheck);
-            resizeObserver?.disconnect();
-        };
-    }, [normalizedAttachments, checkScrollShadows]);
-
-    useEffect(() => {
-        const frameId = window.requestAnimationFrame(checkScrollShadows);
-        return () => window.cancelAnimationFrame(frameId);
-    }, [attachmentItems, checkScrollShadows]);
-
-    if (normalizedAttachments.length === 0) {
-        return emptyState;
-    }
-
-    return (
-        <Transition
-            show={true}
-            appear={true}
-            enter="transition-all duration-300 ease-out"
-            enterFrom="opacity-0 transform translate-y-2"
-            enterTo="opacity-100 transform translate-y-0"
-            leave="transition-all duration-300 ease-in"
-            leaveFrom="opacity-100 transform translate-y-0"
-            leaveTo="opacity-0 transform translate-y-2"
-        >
-            <div
-                ref={containerRef}
-                className={'relative isolate overflow-visible px-2 py-1 ' + (msgMode ? 'z-0' : 'z-10 border-b border-gray-200')}
+        return (
+            <Transition
+                show={true}
+                appear={true}
+                enter="transition-all duration-300 ease-out"
+                enterFrom="opacity-0 transform translate-y-2"
+                enterTo="opacity-100 transform translate-y-0"
+                leave="transition-all duration-300 ease-in"
+                leaveFrom="opacity-100 transform translate-y-0"
+                leaveTo="opacity-0 transform translate-y-2"
             >
-                <div className="relative min-h-12 overflow-visible">
-                    <ShadowOverlay side="left" show={showLeftShadow} />
-                    <ShadowOverlay side="right" show={showRightShadow} />
+                <div
+                    ref={containerRef}
+                    className={
+                        'relative isolate overflow-visible px-2 py-1 ' +
+                        (msgMode ? 'z-0' : 'z-10 border-b border-gray-200')
+                    }
+                >
+                    <div className="relative min-h-12 overflow-visible">
+                        <ShadowOverlay side="left" show={showLeftShadow} />
+                        <ShadowOverlay side="right" show={showRightShadow} />
 
-                    <div
-                        ref={scrollContainerRef}
-                        className="flex min-h-12 flex-nowrap items-center gap-2 overflow-x-auto scrollbar-hide overscroll-x-contain p-1"
-                        style={{
-                            WebkitOverflowScrolling: 'touch',
-                            scrollbarWidth: 'none',
-                            scrollBehavior: 'smooth',
-                        }}
-                    >
-                        {attachmentItems}
+                        <div
+                            ref={scrollContainerRef}
+                            className="flex min-h-12 flex-nowrap items-center gap-2 overflow-x-auto scrollbar-hide overscroll-x-contain p-1"
+                            style={{
+                                WebkitOverflowScrolling: 'touch',
+                                scrollbarWidth: 'none',
+                                scrollBehavior: 'smooth',
+                            }}
+                        >
+                            {attachmentItems}
+                        </div>
+
+                        <ScrollArrow
+                            direction="left"
+                            onClick={() => scrollAttachments('left')}
+                            t={t}
+                            show={showLeftShadow}
+                        />
+
+                        <ScrollArrow
+                            direction="right"
+                            onClick={() => scrollAttachments('right')}
+                            t={t}
+                            show={showRightShadow}
+                        />
                     </div>
-
-                    <ScrollArrow
-                        direction="left"
-                        onClick={() => scrollAttachments('left')}
-                        t={t}
-                        show={showLeftShadow}
-                    />
-
-                    <ScrollArrow
-                        direction="right"
-                        onClick={() => scrollAttachments('right')}
-                        t={t}
-                        show={showRightShadow}
-                    />
                 </div>
-            </div>
-        </Transition>
-    );
-}, (prevProps, nextProps) => {
-    // 自定义比较函数，优化组件重新渲染
-    const prevAttachments = normalizeAttachmentList(prevProps.attachmentsMeta);
-    const nextAttachments = normalizeAttachmentList(nextProps.attachmentsMeta);
+            </Transition>
+        );
+    },
+    (prevProps, nextProps) => {
+        // 自定义比较函数，优化组件重新渲染
+        const prevAttachments = normalizeAttachmentList(prevProps.attachmentsMeta);
+        const nextAttachments = normalizeAttachmentList(nextProps.attachmentsMeta);
 
-    // 如果数量不同，需要重新渲染
-    if (prevAttachments.length !== nextAttachments.length) {
-        return false;
-    }
-
-    // 检查每个附件是否变化
-    for (let i = 0; i < prevAttachments.length; i++) {
-        const prevAttachment = prevAttachments[i];
-        const nextAttachment = nextAttachments[i];
-
-        // 比较附件的关键属性
-        if (
-            prevAttachment.id !== nextAttachment.id ||
-            prevAttachment.preview !== nextAttachment.preview ||
-            prevAttachment.previewType !== nextAttachment.previewType ||
-            prevAttachment.name !== nextAttachment.name ||
-            prevAttachment.size !== nextAttachment.size ||
-            prevAttachment.downloadUrl !== nextAttachment.downloadUrl ||
-            prevAttachment.fileType !== nextAttachment.fileType ||
-            prevAttachment.mimeType !== nextAttachment.mimeType ||
-            prevAttachment.visionEnabled !== nextAttachment.visionEnabled ||
-            (prevAttachment.artifactId || prevAttachment.serverId) !== (nextAttachment.artifactId || nextAttachment.serverId)
-        ) {
+        // 如果数量不同，需要重新渲染
+        if (prevAttachments.length !== nextAttachments.length) {
             return false;
         }
-    }
 
-    // 检查其他props是否变化
-    return (
-        prevProps.msgMode === nextProps.msgMode &&
-        prevProps.onRemove === nextProps.onRemove &&
-        prevProps.onVisionToggle === nextProps.onVisionToggle &&
-        prevProps.visionSupported === nextProps.visionSupported
-    );
-});
+        // 检查每个附件是否变化
+        for (let i = 0; i < prevAttachments.length; i++) {
+            const prevAttachment = prevAttachments[i];
+            const nextAttachment = nextAttachments[i];
+
+            // 比较附件的关键属性
+            if (
+                prevAttachment.id !== nextAttachment.id ||
+                prevAttachment.artifactStatus !== nextAttachment.artifactStatus ||
+                prevAttachment.preview !== nextAttachment.preview ||
+                prevAttachment.previewType !== nextAttachment.previewType ||
+                prevAttachment.name !== nextAttachment.name ||
+                prevAttachment.size !== nextAttachment.size ||
+                prevAttachment.downloadUrl !== nextAttachment.downloadUrl ||
+                prevAttachment.fileType !== nextAttachment.fileType ||
+                prevAttachment.mimeType !== nextAttachment.mimeType ||
+                prevAttachment.visionEnabled !== nextAttachment.visionEnabled ||
+                (prevAttachment.artifactId || prevAttachment.serverId) !==
+                    (nextAttachment.artifactId || nextAttachment.serverId)
+            ) {
+                return false;
+            }
+        }
+
+        // 检查其他props是否变化
+        return (
+            prevProps.msgMode === nextProps.msgMode &&
+            prevProps.onRemove === nextProps.onRemove &&
+            prevProps.onVisionToggle === nextProps.onVisionToggle &&
+            prevProps.visionSupported === nextProps.visionSupported
+        );
+    },
+);
 
 AttachmentShowcase.displayName = 'AttachmentShowcase';
 

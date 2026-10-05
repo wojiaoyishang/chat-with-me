@@ -23,6 +23,21 @@
      - 0
      - 3
      - ``src/components/editor/SimpleMDEditor.jsx``
+   * - :doc:`src/components/files/FileManager </api/javascript/components/files/FileManager>`
+     - 1
+     - 0
+     - 35
+     - ``src/components/files/FileManager.jsx``
+   * - :doc:`src/components/files/FileUploadProgress </api/javascript/components/files/FileUploadProgress>`
+     - 1
+     - 0
+     - 1
+     - ``src/components/files/FileUploadProgress.jsx``
+   * - :doc:`src/components/files/uploadPolicy </api/javascript/components/files/uploadPolicy>`
+     - 1
+     - 0
+     - 2
+     - ``src/components/files/uploadPolicy.js``
    * - :doc:`src/components/markdown/CodeBlock </api/javascript/components/markdown/CodeBlock>`
      - 1
      - 0
@@ -31,8 +46,13 @@
    * - :doc:`src/components/markdown/MarkdownRenderer </api/javascript/components/markdown/MarkdownRenderer>`
      - 16
      - 0
-     - 42
+     - 46
      - ``src/components/markdown/MarkdownRenderer.jsx``
+   * - :doc:`src/components/markdown/ResourceImage </api/javascript/components/markdown/ResourceImage>`
+     - 1
+     - 0
+     - 1
+     - ``src/components/markdown/ResourceImage.jsx``
    * - :doc:`src/components/markdown/card-block/CardBlock </api/javascript/components/markdown/card-block/CardBlock>`
      - 1
      - 0
@@ -350,8 +370,12 @@
 
    /api/javascript/components/editor/CollaboraOnlineEditor
    /api/javascript/components/editor/SimpleMDEditor
+   /api/javascript/components/files/FileManager
+   /api/javascript/components/files/FileUploadProgress
+   /api/javascript/components/files/uploadPolicy
    /api/javascript/components/markdown/CodeBlock
    /api/javascript/components/markdown/MarkdownRenderer
+   /api/javascript/components/markdown/ResourceImage
    /api/javascript/components/markdown/card-block/CardBlock
    /api/javascript/components/markdown/card-block/agent/AgentBody
    /api/javascript/components/markdown/card-block/agent/AgentHeader

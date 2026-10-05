@@ -35,7 +35,7 @@ src/lib/apiClient 模块
 
    .. rubric:: 方法
 
-   .. CWM-AST-FUNCTION src/lib/apiClient.js:253:440:FUNCTION
+   .. CWM-AST-FUNCTION src/lib/apiClient.js:255:442:FUNCTION
 
    .. js:method:: constructor(message)
 
@@ -57,13 +57,13 @@ src/lib/apiClient 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:478:566:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:480:561:FUNCTION
 
 .. js:function:: isAuthRedirectError(error)
 
    判断与 ``Auth Redirect Error`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``20``—``22`` 行。
+   **性质**：同步函数；导出 API；源码第 ``20``—``20`` 行。
 
    **参数**
 
@@ -76,13 +76,13 @@ src/lib/apiClient 模块
 
    **主要协作调用**：``Boolean``。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:592:984:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:587:979:FUNCTION
 
 .. js:function:: redirectToLogin()
 
    实现 ``redirectToLogin`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``24``—``32`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``22``—``30`` 行。
 
    **参数**
 
@@ -98,13 +98,13 @@ src/lib/apiClient 模块
 
    **主要协作调用**：``encodeURIComponent``、``window.location.replace``。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:1013:1098:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:1008:1093:FUNCTION
 
 .. js:function:: rejectUnauthorized()
 
    实现 ``rejectUnauthorized`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``34``—``37`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``32``—``35`` 行。
 
    **参数**
 
@@ -121,17 +121,17 @@ src/lib/apiClient 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:1189:1339:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:1184:1334:FUNCTION
 
-.. rubric:: ``apiClient.interceptors.request.use callback @ 41``
+.. rubric:: ``apiClient.interceptors.request.use callback @ 39``
 
 .. code-block:: javascript
 
-   apiClient.interceptors.request.use callback @ 41(config)
+   apiClient.interceptors.request.use callback @ 39(config)
 
 实现 ``apiClient.interceptors.request.use`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``41``—``44`` 行。
+**性质**：同步局部函数；源码第 ``39``—``42`` 行。
 
 **参数**
 
@@ -142,17 +142,17 @@ src/lib/apiClient 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``config``。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:1340:1377:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:1335:1372:FUNCTION
 
-.. rubric:: ``apiClient.interceptors.request.use callback @ 45``
+.. rubric:: ``apiClient.interceptors.request.use callback @ 43``
 
 .. code-block:: javascript
 
-   apiClient.interceptors.request.use callback @ 45(error)
+   apiClient.interceptors.request.use callback @ 43(error)
 
 实现 ``apiClient.interceptors.request.use`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``45``—``45`` 行。
+**性质**：同步局部函数；源码第 ``43``—``43`` 行。
 
 **参数**
 
@@ -165,17 +165,17 @@ src/lib/apiClient 模块
 
 **主要协作调用**：``Promise.reject``。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:1419:1875:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:1414:1930:FUNCTION
 
-.. rubric:: ``apiClient.interceptors.response.use callback @ 49``
+.. rubric:: ``apiClient.interceptors.response.use callback @ 47``
 
 .. code-block:: javascript
 
-   apiClient.interceptors.response.use callback @ 49(response)
+   apiClient.interceptors.response.use callback @ 47(response)
 
 实现 ``apiClient.interceptors.response.use`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``49``—``64`` 行。
+**性质**：同步局部函数；源码第 ``47``—``63`` 行。
 
 **参数**
 
@@ -184,23 +184,23 @@ src/lib/apiClient 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``rejectUnauthorized()``、``data``。
+根据执行分支返回结果；代表性返回表达式为 ``response``、``rejectUnauthorized()``、``data``。
 
 **显式抛出**：``error``。
 
 **主要协作调用**：``rejectUnauthorized``。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:1876:2249:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:1931:2304:FUNCTION
 
-.. rubric:: ``apiClient.interceptors.response.use callback @ 65``
+.. rubric:: ``apiClient.interceptors.response.use callback @ 64``
 
 .. code-block:: javascript
 
-   apiClient.interceptors.response.use callback @ 65(error)
+   apiClient.interceptors.response.use callback @ 64(error)
 
 实现 ``apiClient.interceptors.response.use`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``65``—``73`` 行。
+**性质**：同步局部函数；源码第 ``64``—``72`` 行。
 
 **参数**
 

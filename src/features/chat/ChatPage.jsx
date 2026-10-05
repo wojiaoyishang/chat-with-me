@@ -1380,6 +1380,7 @@ function ChatPage({
                     event: 'conversation.create',
                     payload: {
                         idempotencyKey: currentTurnIdempotencyKeyRef.current,
+                        toolsStatus,
                     },
                 })
                     .then((payload) => {
@@ -1479,7 +1480,10 @@ function ChatPage({
                 const voiceConversationCreateKey = generateUUID();
                 const payload = await emitEvent({
                     event: 'conversation.create',
-                    payload: { idempotencyKey: voiceConversationCreateKey },
+                    payload: {
+                        toolsStatus,
+                        idempotencyKey: voiceConversationCreateKey,
+                    },
                 });
                 // emitEvent is a thenable; await resolves its reply payload.
                 if (!payload?.success) throw new Error(payload?.value || 'Unable to create conversation');
@@ -3584,6 +3588,7 @@ function ChatPage({
                             loading={runtimeInspectorLoading}
                             error={runtimeInspectorError}
                             stale={runtimeInspectorStale}
+                            activeTab={runtimeInspectorActiveTab}
                             activeMessageId={activeVisibleMessageId}
                             briefItems={messageSummaries}
                             briefLoading={messageSummaryLoading}

@@ -27,7 +27,7 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:69:279:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:71:283:FUNCTION
 
 .. js:function:: decodeSegments(path)
 
@@ -42,13 +42,13 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``String(path || '') .split('/') .filter(Boolean) .map(segment => decodeURIComponent(segment))``、``null``。
+   根据执行分支返回结果；代表性返回表达式为 ``String(path || '') .split('/') .filter(Boolean) .map((segment) => decodeURIComponent(segment))``、``null``。
 
    **主要协作调用**：``String(path || '') .split('/') .filter(Boolean) .map``、``String(path || '') .split('/') .filter``、``String(path || '') .split``、``String``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:304:381:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:308:387:FUNCTION
 
 .. js:function:: encodeSegments(segments)
 
@@ -65,17 +65,17 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``segments.map(segment => encodeURIComponent(segment)).join``、``segments.map``。
+   **主要协作调用**：``segments.map((segment) => encodeURIComponent(segment)).join``、``segments.map``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:604:1253:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:609:1268:FUNCTION
 
 .. js:function:: classifyCwmUrl(value)
 
    实现 ``classifyCwmUrl`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``21``—``37`` 行。
+   **性质**：同步函数；导出 API；源码第 ``20``—``36`` 行。
 
    **参数**
 
@@ -84,15 +84,34 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``{kind: 'invalid', authority: ''}``、``{kind: 'browser-renderable', authority}``、``{kind: 'tool-only', authority}``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``{ kind: 'invalid', authority: '' }``、``{ kind: 'browser-renderable', authority }``、``{ kind: 'tool-only', authority }``。
 
    **主要协作调用**：``value.trim``、``raw.toLowerCase().startsWith``、``raw.toLowerCase``、``/[?#]/.test``、``/^cwm:\/\/([a-z]+)(?:\/(.*))?$/i.exec``、``match[1].toLowerCase``、``BROWSER_RENDERABLE_AUTHORITIES.has``、``TOOL_ONLY_AUTHORITIES.has``。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:1296:1360:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:1311:1375:FUNCTION
 
 .. js:function:: isBrowserRenderableCwmUrl(value)
 
    判断与 ``Browser Renderable Cwm Url`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``38``—``38`` 行。
+
+   **参数**
+
+   ``value``
+      待读取、转换或校验的值。
+
+   **返回值**
+
+   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+   **主要协作调用**：``classifyCwmUrl``。
+
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:1408:1463:FUNCTION
+
+.. js:function:: isToolOnlyCwmUrl(value)
+
+   判断与 ``Tool Only Cwm Url`` 相关的数据或状态。
 
    **性质**：同步函数；导出 API；源码第 ``39``—``39`` 行。
 
@@ -107,37 +126,21 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
    **主要协作调用**：``classifyCwmUrl``。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:1393:1448:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:1871:3891:FUNCTION
 
-.. js:function:: isToolOnlyCwmUrl(value)
-
-   判断与 ``Tool Only Cwm Url`` 相关的数据或状态。
-
-   **性质**：同步函数；导出 API；源码第 ``40``—``40`` 行。
-
-   **参数**
-
-   ``value``
-      待读取、转换或校验的值。
-
-   **返回值**
-
-   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-   **主要协作调用**：``classifyCwmUrl``。
-
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:1856:3256:FUNCTION
-
-.. js:function:: resolveCwmUrl(value)
+.. js:function:: resolveCwmUrl(value, { download = false })
 
    解析并确定与 ``Cwm Url`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``50``—``78`` 行。
+   **性质**：同步函数；导出 API；源码第 ``49``—``103`` 行。
 
    **参数**
 
    ``value``
       待读取、转换或校验的值。
+
+   ``{ download = false }``（默认值 ``{}``）
+      调用方传入的 ``download = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -147,13 +150,13 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:3292:3399:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:3927:4034:FUNCTION
 
 .. js:function:: resolveResourceUrl(value)
 
    解析并确定与 ``Resource Url`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``80``—``83`` 行。
+   **性质**：同步函数；导出 API；源码第 ``105``—``108`` 行。
 
    **参数**
 
@@ -166,13 +169,13 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
    **主要协作调用**：``resolveCwmUrl``。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:3443:3623:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:4077:4257:FUNCTION
 
 .. js:function:: artifactPreviewVirtualUrl(serverId)
 
    实现 ``artifactPreviewVirtualUrl`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``86``—``90`` 行。
+   **性质**：同步函数；导出 API；源码第 ``110``—``114`` 行。
 
    **参数**
 
@@ -190,7 +193,7 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:196:234:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:198:238:FUNCTION
 
 .. rubric:: ``String(path || '') .split('/') .filter(Boolean) .map callback @ 8``
 
@@ -213,7 +216,7 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
 **主要协作调用**：``decodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:332:370:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:336:376:FUNCTION
 
 .. rubric:: ``segments.map callback @ 14``
 
@@ -236,17 +239,17 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
 **主要协作调用**：``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:2271:2380:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:2330:2470:FUNCTION
 
-.. rubric:: ``segments.some callback @ 60``
+.. rubric:: ``segments.some callback @ 62``
 
 .. code-block:: javascript
 
-   segments.some callback @ 60(segment)
+   segments.some callback @ 62(segment)
 
 作为 ``segments.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``60``—``60`` 行；所属函数 ``resolveCwmUrl``。
+**性质**：同步局部函数；源码第 ``62``—``63`` 行；所属函数 ``resolveCwmUrl``。
 
 **参数**
 

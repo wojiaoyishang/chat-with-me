@@ -119,9 +119,9 @@
      - 21
      - ``src/features/chat/page/components/RightSidebar.jsx``
    * - :doc:`src/features/chat/page/components/RuntimeInspectorDialog </api/javascript/features/chat/page/components/RuntimeInspectorDialog>`
-     - 12
+     - 13
      - 0
-     - 56
+     - 58
      - ``src/features/chat/page/components/RuntimeInspectorDialog.jsx``
    * - :doc:`src/features/chat/page/components/ScrollToBottomButton </api/javascript/features/chat/page/components/ScrollToBottomButton>`
      - 0
@@ -281,7 +281,7 @@
    * - :doc:`src/features/chat/ui/ToolButtons </api/javascript/features/chat/ui/ToolButtons>`
      - 6
      - 0
-     - 36
+     - 39
      - ``src/features/chat/ui/ToolButtons.jsx``
    * - :doc:`src/features/chat/ui/chatbox/components/ChatBoxInteractionHost </api/javascript/features/chat/ui/chatbox/components/ChatBoxInteractionHost>`
      - 8
@@ -483,6 +483,66 @@
      - 0
      - 1
      - ``src/features/chat/widgets/WidgetPresentationContext.jsx``
+   * - :doc:`src/features/documents/DocumentCollaborators </api/javascript/features/documents/DocumentCollaborators>`
+     - 2
+     - 0
+     - 3
+     - ``src/features/documents/DocumentCollaborators.jsx``
+   * - :doc:`src/features/documents/DocumentConversationControls </api/javascript/features/documents/DocumentConversationControls>`
+     - 1
+     - 0
+     - 7
+     - ``src/features/documents/DocumentConversationControls.jsx``
+   * - :doc:`src/features/documents/DocumentDiff </api/javascript/features/documents/DocumentDiff>`
+     - 1
+     - 0
+     - 6
+     - ``src/features/documents/DocumentDiff.jsx``
+   * - :doc:`src/features/documents/DocumentHistory </api/javascript/features/documents/DocumentHistory>`
+     - 1
+     - 0
+     - 18
+     - ``src/features/documents/DocumentHistory.jsx``
+   * - :doc:`src/features/documents/MarkdownDocumentEditor </api/javascript/features/documents/MarkdownDocumentEditor>`
+     - 1
+     - 0
+     - 62
+     - ``src/features/documents/MarkdownDocumentEditor.jsx``
+   * - :doc:`src/features/documents/collaboratorPosition </api/javascript/features/documents/collaboratorPosition>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/documents/collaboratorPosition.js``
+   * - :doc:`src/features/documents/commands </api/javascript/features/documents/commands>`
+     - 2
+     - 0
+     - 3
+     - ``src/features/documents/commands.js``
+   * - :doc:`src/features/documents/diffConnections </api/javascript/features/documents/diffConnections>`
+     - 1
+     - 0
+     - 13
+     - ``src/features/documents/diffConnections.js``
+   * - :doc:`src/features/documents/images </api/javascript/features/documents/images>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/documents/images.js``
+   * - :doc:`src/features/documents/presence </api/javascript/features/documents/presence>`
+     - 2
+     - 0
+     - 15
+     - ``src/features/documents/presence.js``
+   * - :doc:`src/features/documents/sync </api/javascript/features/documents/sync>`
+     - 3
+     - 0
+     - 1
+     - ``src/features/documents/sync.js``
+   * - :doc:`src/features/documents/useCollaborativeDocument </api/javascript/features/documents/useCollaborativeDocument>`
+     - 1
+     - 0
+     - 27
+     - ``src/features/documents/useCollaborativeDocument.js``
    * - :doc:`src/features/execution/ExecutionGuidanceAction </api/javascript/features/execution/ExecutionGuidanceAction>`
      - 1
      - 0
@@ -503,6 +563,11 @@
      - 0
      - 8
      - ``src/features/execution/ExecutionStatus.jsx``
+   * - :doc:`src/features/execution/ExecutionThinkingControl </api/javascript/features/execution/ExecutionThinkingControl>`
+     - 1
+     - 0
+     - 1
+     - ``src/features/execution/ExecutionThinkingControl.jsx``
    * - :doc:`src/features/execution/ExecutionWindow </api/javascript/features/execution/ExecutionWindow>`
      - 7
      - 0
@@ -514,7 +579,7 @@
      - 0
      - ``src/features/execution/index.js``
    * - :doc:`src/features/execution/useExecutionStore </api/javascript/features/execution/useExecutionStore>`
-     - 11
+     - 12
      - 0
      - 17
      - ``src/features/execution/useExecutionStore.js``
@@ -732,10 +797,23 @@
    /api/javascript/features/chat/voice/index
    /api/javascript/features/chat/voice/useRealtimeVoiceConversation
    /api/javascript/features/chat/widgets/WidgetPresentationContext
+   /api/javascript/features/documents/DocumentCollaborators
+   /api/javascript/features/documents/DocumentConversationControls
+   /api/javascript/features/documents/DocumentDiff
+   /api/javascript/features/documents/DocumentHistory
+   /api/javascript/features/documents/MarkdownDocumentEditor
+   /api/javascript/features/documents/collaboratorPosition
+   /api/javascript/features/documents/commands
+   /api/javascript/features/documents/diffConnections
+   /api/javascript/features/documents/images
+   /api/javascript/features/documents/presence
+   /api/javascript/features/documents/sync
+   /api/javascript/features/documents/useCollaborativeDocument
    /api/javascript/features/execution/ExecutionGuidanceAction
    /api/javascript/features/execution/ExecutionGuidanceBubble
    /api/javascript/features/execution/ExecutionHost
    /api/javascript/features/execution/ExecutionStatus
+   /api/javascript/features/execution/ExecutionThinkingControl
    /api/javascript/features/execution/ExecutionWindow
    /api/javascript/features/execution/index
    /api/javascript/features/execution/useExecutionStore

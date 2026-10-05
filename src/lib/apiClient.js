@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {BASE_BACKEND_URL} from '@/config.js';
+import { BASE_BACKEND_URL } from '@/config.js';
 
 const apiClient = axios.create({
     baseURL: BASE_BACKEND_URL,
@@ -17,9 +17,7 @@ export class AuthRedirectError extends Error {
     }
 }
 
-export const isAuthRedirectError = (error) => Boolean(
-    error?.isAuthRedirect || error?.name === 'AuthRedirectError',
-);
+export const isAuthRedirectError = (error) => Boolean(error?.isAuthRedirect || error?.name === 'AuthRedirectError');
 
 const redirectToLogin = () => {
     if (typeof window === 'undefined' || authRedirectInProgress) return;
@@ -47,7 +45,8 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
     (response) => {
-        const {success, code, msg, data = {}} = response.data;
+        if (response.config.rawResponse) return response;
+        const { success, code, msg, data = {} } = response.data;
         if (!success) {
             if (code === 401 && !response.config.skipAuthCheck) {
                 return rejectUnauthorized();

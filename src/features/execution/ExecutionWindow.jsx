@@ -1,3 +1,4 @@
+import ExecutionThinkingControl from './ExecutionThinkingControl.jsx';
 import ExecutionGuidanceAction from './ExecutionGuidanceAction.jsx';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -307,7 +308,12 @@ const ExecutionWindow = memo(
                 storageKey="cwm:task-mode-window:v1"
                 title={title}
                 description="任务模式工作区：执行计划、完整 Tool Calling、用户补充、恢复与完成状态。这里不展示隐藏思维链。"
-                headerActions={autoFollowAction}
+                headerActions={
+                    <div className="flex items-center gap-1">
+                        <ExecutionThinkingControl execution={execution} />
+                        {autoFollowAction}
+                    </div>
+                }
                 footer={footer}
             >
                 <div
