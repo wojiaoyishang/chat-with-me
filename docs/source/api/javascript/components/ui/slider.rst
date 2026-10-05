@@ -27,22 +27,22 @@ src/components/ui/slider 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/ui/slider.tsx:117:1957:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/slider.tsx:120:2325:FUNCTION
 
-.. js:function:: Slider({ className, defaultValue, value, min = 0, max = 100, ...props })
+.. js:function:: Slider({ className, defaultValue, value, min = 0, max = 100, thumbProps, ...props })
 
    渲染 ``Slider`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``6``—``59`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``6``—``58`` 行。
 
    **参数**
 
-   ``{ className, defaultValue, value, min = 0, max = 100, ...props }``（类型 ``React.ComponentProps<typeof SliderPrimitive.Root>``）
-      调用方传入的 ``className, defaultValue, value, min = 0, max = 100, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ className, defaultValue, value, min = 0, max = 100, thumbProps, ...props }``（类型 ``React.ComponentProps<typeof SliderPrimitive.Root> & { thumbProps?: React.ComponentProps<typeof SliderPrimitive.Thumb>; }``）
+      调用方传入的 ``className, defaultValue, value, min = 0, max = 100, thumbProps, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <SliderPrimitive.Root data-slot="slider" defaultValue={defaultValue} value={value} min={min} max={max} className={cn( "relative flex w-full touch-none items-center select-none d…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <SliderPrimitive.Root data-slot="slider" defaultValue={defaultValue} value={value} min={min} max={max} className={cn( 'relative flex w-full touch-none items-center select-none d…``。
 
    **主要协作调用**：``React.useMemo``、``cn``、``Array.from``。
 
@@ -53,17 +53,17 @@ src/components/ui/slider 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/ui/slider.tsx:298:437:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/slider.tsx:406:509:FUNCTION
 
-.. rubric:: ``React.useMemo callback @ 15``
+.. rubric:: ``React.useMemo callback @ 18``
 
 .. code-block:: javascript
 
-   React.useMemo callback @ 15()
+   React.useMemo callback @ 18()
 
 实现 ``React.useMemo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``15``—``20`` 行；所属函数 ``Slider``。
+**性质**：同步局部函数；源码第 ``18``—``18`` 行；所属函数 ``Slider``。
 
 **参数**
 
@@ -75,17 +75,17 @@ src/components/ui/slider 模块
 
 **主要协作调用**：``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/components/ui/slider.tsx:1545:1921:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/slider.tsx:1818:2282:FUNCTION
 
-.. rubric:: ``Array.from callback @ 50``
+.. rubric:: ``Array.from callback @ 48``
 
 .. code-block:: javascript
 
-   Array.from callback @ 50(_, index)
+   Array.from callback @ 48(_, index)
 
 实现 ``Array.from`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``50``—``56`` 行；所属函数 ``Slider``。
+**性质**：同步局部函数；源码第 ``48``—``55`` 行；所属函数 ``Slider``。
 
 **参数**
 

@@ -715,5 +715,22 @@
         "cursorColor": "Cursor color",
         "noCursor": "This collaborator has no active cursor or selection.",
         "self": "(me)"
-    }
+    },
+    "orderedOptions": {
+        "id": "Level ID",
+        "name": "Display name",
+        "up": "Move up",
+        "down": "Move down",
+        "remove": "Remove level",
+        "add": "Add level",
+        "hint": "Order slider levels from left to right. IDs are API values; names can be customized."
+    },
+    "无推理 / None": "Off",
+    "最少 / Minimal": "Minimal",
+    "低 / Low": "Low",
+    "中 / Medium": "Medium",
+    "高 / High": "High",
+    "极高 / XHigh": "Extra high",
+    "最大 / Max": "Maximum",
+    "支持的推理强度": "Supported reasoning levels"
 }

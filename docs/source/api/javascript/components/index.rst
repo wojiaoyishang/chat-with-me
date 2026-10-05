@@ -214,10 +214,15 @@
      - 7
      - ``src/components/modal/universalModal.js``
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
-     - 52
+     - 53
      - 0
-     - 282
+     - 283
      - ``src/components/setting/DynamicSettings.jsx``
+   * - :doc:`src/components/setting/OrderedOptionsEditor </api/javascript/components/setting/OrderedOptionsEditor>`
+     - 1
+     - 0
+     - 16
+     - ``src/components/setting/OrderedOptionsEditor.jsx``
    * - :doc:`src/components/setting/UserProfileCard </api/javascript/components/setting/UserProfileCard>`
      - 1
      - 0
@@ -409,6 +414,7 @@
    /api/javascript/components/modal/UniversalModalHost
    /api/javascript/components/modal/universalModal
    /api/javascript/components/setting/DynamicSettings
+   /api/javascript/components/setting/OrderedOptionsEditor
    /api/javascript/components/setting/UserProfileCard
    /api/javascript/components/sidebar/ConversationsList
    /api/javascript/components/sidebar/Sidebar

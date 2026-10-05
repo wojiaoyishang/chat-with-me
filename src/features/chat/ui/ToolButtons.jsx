@@ -1,3 +1,4 @@
+import BuiltinSliderButton from './BuiltinSliderButton.jsx';
 import React, { useState, useMemo, useCallback, useRef, useLayoutEffect, memo } from 'react';
 import { IoMdAdd } from 'react-icons/io';
 import {
@@ -121,6 +122,15 @@ const BuiltinToolIcon = ({ tool, isActive = false, t, className = '' }) => {
  * 单个内置工具按钮组件
  */
 const BuiltinToolButton = memo(({ tool, isActive, onToggle }) => {
+    if (tool.mode === 'slider')
+        return (
+            <BuiltinSliderButton
+                tool={tool}
+                value={isActive}
+                onChange={(value) => onToggle(null, value)}
+                icon={<BuiltinToolIcon tool={tool} isActive={isActive !== 'none'} t={(key) => key} />}
+            />
+        );
     const iconData = getBuiltinToolIconData(tool);
 
     if (!iconData) return null;
@@ -142,6 +152,17 @@ const BuiltinToolButton = memo(({ tool, isActive, onToggle }) => {
 BuiltinToolButton.displayName = 'BuiltinToolButton';
 
 const BuiltinToolMenuItem = memo(({ tool, isActive, onToggle, t }) => {
+    if (tool.mode === 'slider')
+        return (
+            <div className="px-2 py-1">
+                <BuiltinSliderButton
+                    tool={tool}
+                    value={isActive}
+                    onChange={(value) => onToggle(null, value)}
+                    icon={<BuiltinToolIcon tool={tool} isActive={isActive !== 'none'} t={t} />}
+                />
+            </div>
+        );
     if (!getBuiltinToolIconData(tool)) return null;
 
     const label = t(tool.text || tool.name || 'tool');

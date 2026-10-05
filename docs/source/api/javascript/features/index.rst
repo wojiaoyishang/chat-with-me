@@ -243,10 +243,15 @@
      - 0
      - 24
      - ``src/features/chat/ui/AttachmentShowcase.jsx``
+   * - :doc:`src/features/chat/ui/BuiltinSliderButton </api/javascript/features/chat/ui/BuiltinSliderButton>`
+     - 1
+     - 0
+     - 4
+     - ``src/features/chat/ui/BuiltinSliderButton.jsx``
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 8
      - 0
-     - 184
+     - 187
      - ``src/features/chat/ui/ChatBox.jsx``
    * - :doc:`src/features/chat/ui/ChatBoxHeader </api/javascript/features/chat/ui/ChatBoxHeader>`
      - 0
@@ -281,8 +286,13 @@
    * - :doc:`src/features/chat/ui/ToolButtons </api/javascript/features/chat/ui/ToolButtons>`
      - 6
      - 0
-     - 39
+     - 42
      - ``src/features/chat/ui/ToolButtons.jsx``
+   * - :doc:`src/features/chat/ui/builtinToolValue </api/javascript/features/chat/ui/builtinToolValue>`
+     - 1
+     - 0
+     - 4
+     - ``src/features/chat/ui/builtinToolValue.js``
    * - :doc:`src/features/chat/ui/chatbox/components/ChatBoxInteractionHost </api/javascript/features/chat/ui/chatbox/components/ChatBoxInteractionHost>`
      - 8
      - 0
@@ -749,6 +759,7 @@
    /api/javascript/features/chat/speech/textMatching
    /api/javascript/features/chat/speech/useFrontendFeedback
    /api/javascript/features/chat/ui/AttachmentShowcase
+   /api/javascript/features/chat/ui/BuiltinSliderButton
    /api/javascript/features/chat/ui/ChatBox
    /api/javascript/features/chat/ui/ChatBoxHeader
    /api/javascript/features/chat/ui/ChatButton
@@ -757,6 +768,7 @@
    /api/javascript/features/chat/ui/MessageContainer
    /api/javascript/features/chat/ui/QuickOptions
    /api/javascript/features/chat/ui/ToolButtons
+   /api/javascript/features/chat/ui/builtinToolValue
    /api/javascript/features/chat/ui/chatbox/components/ChatBoxInteractionHost
    /api/javascript/features/chat/ui/chatbox/components/ComposerPrimaryAction
    /api/javascript/features/chat/ui/chatbox/components/EditMessageIndicator

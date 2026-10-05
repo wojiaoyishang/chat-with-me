@@ -1,3 +1,4 @@
+import { normalizeBuiltinToolValue } from './builtinToolValue.js';
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -615,16 +616,20 @@ function ChatBox({
         [selectedModel?.available_builtin_tools],
     );
     const visibleBuiltinTools = useMemo(
-        () => tools.filter((tool) => availableBuiltinToolNames.has(tool.name)),
-        [availableBuiltinToolNames, tools],
+        () =>
+            tools
+                .filter((tool) => availableBuiltinToolNames.has(tool.name))
+                .map((tool) => ({
+                    ...tool,
+                    ...(selectedModel?.builtin_tools?.find((item) => item.name === tool.name) || {}),
+                })),
+        [availableBuiltinToolNames, selectedModel?.builtin_tools, tools],
     );
     const activeBuiltinToolStatus = useMemo(() => {
         const saved = selectedModelId ? builtinToolStateByModelRef.current[selectedModelId] || {} : {};
         const status = {};
         visibleBuiltinTools.forEach((tool) => {
-            status[tool.name] = Object.prototype.hasOwnProperty.call(saved, tool.name)
-                ? Boolean(saved[tool.name])
-                : Boolean(tool?.isActive);
+            status[tool.name] = normalizeBuiltinToolValue(tool, saved[tool.name]);
         });
         return status;
     }, [selectedModelId, visibleBuiltinTools, toolsStatus.builtin_tools]);
@@ -639,7 +644,10 @@ function ChatBox({
     const handleBuiltinToolToggle = useCallback(
         (toolName, newIsActive) => {
             if (!availableBuiltinToolNames.has(toolName)) return;
-            const nextValue = Boolean(newIsActive);
+            const nextValue = normalizeBuiltinToolValue(
+                visibleBuiltinTools.find((tool) => tool.name === toolName),
+                newIsActive,
+            );
             if (selectedModelId) {
                 builtinToolStateByModelRef.current[selectedModelId] = {
                     ...(builtinToolStateByModelRef.current[selectedModelId] || {}),
@@ -651,13 +659,13 @@ function ChatBox({
                 builtin_tools: { ...(prev.builtin_tools || {}), [toolName]: nextValue },
             }));
         },
-        [availableBuiltinToolNames, selectedModelId],
+        [availableBuiltinToolNames, selectedModelId, visibleBuiltinTools],
     );
 
     const buildOutboundToolsStatus = useCallback(() => {
         const builtinTools = {};
         visibleBuiltinTools.forEach((tool) => {
-            builtinTools[tool.name] = Boolean(activeBuiltinToolStatus[tool.name]);
+            builtinTools[tool.name] = normalizeBuiltinToolValue(tool, activeBuiltinToolStatus[tool.name]);
         });
         const localPermissions = collectToolPermissions(extraTools, toolsStatus.extra_tools || {});
         const authoritativePermissions = conversationId ? conversationToolPermissionsRef.current : localPermissions;
