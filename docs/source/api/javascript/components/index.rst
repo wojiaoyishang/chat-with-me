@@ -216,12 +216,12 @@
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
      - 53
      - 0
-     - 283
+     - 289
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/OrderedOptionsEditor </api/javascript/components/setting/OrderedOptionsEditor>`
      - 1
      - 0
-     - 16
+     - 14
      - ``src/components/setting/OrderedOptionsEditor.jsx``
    * - :doc:`src/components/setting/UserProfileCard </api/javascript/components/setting/UserProfileCard>`
      - 1

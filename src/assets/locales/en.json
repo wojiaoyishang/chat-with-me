@@ -723,7 +723,7 @@
         "down": "Move down",
         "remove": "Remove level",
         "add": "Add level",
-        "hint": "Order slider levels from left to right. IDs are API values; names can be customized."
+        "hint": "Enter the raw provider value on the left and its display name on the right. Levels follow this order; add as many as needed."
     },
     "无推理 / None": "Off",
     "最少 / Minimal": "Minimal",
@@ -732,5 +732,17 @@
     "高 / High": "High",
     "极高 / XHigh": "Extra high",
     "最大 / Max": "Maximum",
-    "支持的推理强度": "Supported reasoning levels"
+    "支持的推理强度": "Supported reasoning levels",
+    "reasoningLevels": {
+        "none": "No thinking",
+        "minimal": "Minimal",
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "xhigh": "Extra high",
+        "max": "Maximum"
+    },
+    "模型名称": "Model name",
+    "模型 ID": "Model ID",
+    "API Key": "API Key"
 }

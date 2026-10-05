@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { ArrowUp, ArrowDown, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 export default function OrderedOptionsEditor({ value = [], options = [], onChange }) {
     const { t } = useTranslation();
@@ -14,29 +13,23 @@ export default function OrderedOptionsEditor({ value = [], options = [], onChang
         [next[index], next[index + offset]] = [next[index + offset], next[index]];
         onChange(next);
     };
-    const unused = options.filter((option) => !entries.some((entry) => entry.id === option.id));
+    const add = () => {
+        const preset = options.find((option) => !entries.some((entry) => entry.id === option.id));
+        let number = entries.length + 1;
+        while (entries.some((entry) => entry.id === `level_${number}`)) number += 1;
+        onChange([...entries, preset || { id: `level_${number}`, name: '' }]);
+    };
     return (
         <div className="space-y-2">
             {entries.map((entry, index) => (
-                <div key={index} className="flex flex-wrap items-center gap-2 rounded-md border p-2">
+                <div key={index} className="flex flex-wrap items-center gap-2 rounded-md border px-3 py-2">
                     <span className="w-4 text-xs text-muted-foreground">{index + 1}</span>
-                    <Select value={entry.id} onValueChange={(id) => change(index, { id })}>
-                        <SelectTrigger className="w-28" aria-label={t('orderedOptions.id')}>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {options
-                                .filter(
-                                    (option) =>
-                                        option.id === entry.id || !entries.some((item) => item.id === option.id),
-                                )
-                                .map((option) => (
-                                    <SelectItem key={option.id} value={option.id}>
-                                        {option.id}
-                                    </SelectItem>
-                                ))}
-                        </SelectContent>
-                    </Select>
+                    <Input
+                        value={entry.id}
+                        className="w-28 sm:w-36 shrink-0"
+                        aria-label={t('orderedOptions.id')}
+                        onChange={(event) => change(index, { id: event.target.value })}
+                    />
                     <Input
                         value={entry.name || ''}
                         className="min-w-24 flex-1"
@@ -79,13 +72,7 @@ export default function OrderedOptionsEditor({ value = [], options = [], onChang
                     </div>
                 </div>
             ))}
-            <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={!unused.length}
-                onClick={() => onChange([...entries, unused[0]])}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={add}>
                 <Plus className="mr-1 size-4" />
                 {t('orderedOptions.add')}
             </Button>

@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -545,6 +546,8 @@ function ListItem({ item, path }) {
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [selectedTemplateId, setSelectedTemplateId] = useState(addTemplates[0]?.id || '');
     const [newEntryId, setNewEntryId] = useState(null);
+    const [templateInputs, setTemplateInputs] = useState({});
+    const selectedTemplate = addTemplates.find((entry) => entry.id === selectedTemplateId) || addTemplates[0];
 
     useEffect(() => {
         if (!addTemplates.length) return;
@@ -631,6 +634,7 @@ function ListItem({ item, path }) {
             setSelectedTemplateId((current) =>
                 addTemplates.some((template) => template.id === current) ? current : addTemplates[0]?.id || '',
             );
+            setTemplateInputs({});
             setAddDialogOpen(true);
             return;
         }
@@ -640,9 +644,15 @@ function ListItem({ item, path }) {
     const confirmTemplateAdd = useCallback(() => {
         const template = addTemplates.find((entry) => entry.id === selectedTemplateId) || addTemplates[0];
         if (!template) return;
-        addItem(template);
+        const overrides = Object.fromEntries(
+            (template.fields || []).map((field) => [
+                field.name,
+                templateInputs[field.name] ?? template.values?.[field.name] ?? '',
+            ]),
+        );
+        addItem({ ...template, values: { ...template.values, ...overrides } });
         setAddDialogOpen(false);
-    }, [addItem, addTemplates, selectedTemplateId]);
+    }, [addItem, addTemplates, selectedTemplateId, templateInputs]);
 
     const removeItem = useCallback(
         (internalId) => {
@@ -714,7 +724,7 @@ function ListItem({ item, path }) {
                                 {item.addDialogTitle || `${t('ds.add')} ${item.text || ''}`}
                             </DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-4 px-5 py-4">
+                        <div className="max-h-[65vh] overflow-y-auto space-y-4 px-5 py-4">
                             {item.addDialogTips && (
                                 <div className="rounded-xl border border-[#d0d7de] bg-[#f8f9fa] px-3 py-2.5 text-xs leading-relaxed text-[#656d76] dark:border-[#3a3f45] dark:bg-[#25282c] dark:text-[#9ca3af]">
                                     {item.addDialogTips}
@@ -722,7 +732,13 @@ function ListItem({ item, path }) {
                             )}
                             <div className="space-y-2">
                                 <div className="text-sm font-medium text-[#1a1d21] dark:text-[#e4e7eb]">配置模板</div>
-                                <Listbox value={selectedTemplateId} onChange={setSelectedTemplateId}>
+                                <Listbox
+                                    value={selectedTemplateId}
+                                    onChange={(id) => {
+                                        setSelectedTemplateId(id);
+                                        setTemplateInputs({});
+                                    }}
+                                >
                                     <div className="relative">
                                         <ListboxButton className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[#d0d7de] bg-white px-3 py-2 text-left text-sm text-[#1a1d21] transition hover:border-[#2563eb] dark:border-[#3a3f45] dark:bg-[#25282c] dark:text-[#e4e7eb]">
                                             <span className="min-w-0 flex-1 truncate">
@@ -753,6 +769,24 @@ function ListItem({ item, path }) {
                                     </div>
                                 </Listbox>
                             </div>
+                            {(selectedTemplate?.fields || []).map((field) => (
+                                <label key={field.name} className="block space-y-1.5 text-sm">
+                                    <span>{t(field.text)}</span>
+                                    <Input
+                                        type={field.type === 'password' ? 'password' : 'text'}
+                                        autoComplete={field.type === 'password' ? 'new-password' : 'off'}
+                                        value={
+                                            templateInputs[field.name] ?? selectedTemplate.values?.[field.name] ?? ''
+                                        }
+                                        onChange={(event) =>
+                                            setTemplateInputs((previous) => ({
+                                                ...previous,
+                                                [field.name]: event.target.value,
+                                            }))
+                                        }
+                                    />
+                                </label>
+                            ))}
                             {(() => {
                                 const selected =
                                     addTemplates.find((entry) => entry.id === selectedTemplateId) || addTemplates[0];
@@ -3232,7 +3266,7 @@ function OrderedOptionsItem({ item, path }) {
     const { values, update } = useSettings();
     const { t } = useTranslation();
     return (
-        <div className="space-y-2 py-2">
+        <SettingRow fullWidth className="space-y-2">
             <div className="text-sm font-medium">{t(item.text)}</div>
             <OrderedOptionsEditor
                 value={deepGet(values, path) ?? item.default}
@@ -3240,7 +3274,7 @@ function OrderedOptionsItem({ item, path }) {
                 onChange={(value) => update(path, value)}
             />
             <p className="text-xs text-muted-foreground">{t('orderedOptions.hint')}</p>
-        </div>
+        </SettingRow>
     );
 }
 
