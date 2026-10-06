@@ -2810,6 +2810,7 @@ function ChatBox({
                                         isActive={activeToolsStatus.builtin_tools?.[tool.name] ?? false}
                                         onToggle={(_event, value) => handleBuiltinToolToggle(tool.name, value)}
                                         compact={isSmallScreen}
+                                        fixedWidth
                                     />
                                 ))}
                             {/* 靠底隐藏按钮 */}

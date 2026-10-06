@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Bot, Check, Shield, ShieldCheck, ShieldOff } from 'lucide-react';
+import { ArrowLeft, Bot, Check, ShieldCheck, ShieldOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -38,6 +38,7 @@ const MODES = [
 export default function ToolAuditModeSwitch({ value = 'auto', onChange, t, isMobile = false, layerClass = '' }) {
     const [open, setOpen] = useState(false);
     const current = MODES.find((mode) => mode.id === value) || MODES[2];
+    const CurrentIcon = current.icon;
     const options = (
         <div role="group" aria-label={t('tool_audit_policy')}>
             {MODES.map(({ id, icon: Icon, label, description, color }) => (
@@ -72,7 +73,7 @@ export default function ToolAuditModeSwitch({ value = 'auto', onChange, t, isMob
             aria-label={`${t('tool_audit_policy')}：${t(current.label)}`}
             className={`h-7 max-w-30 shrink-0 cursor-pointer gap-1.5 bg-transparent pl-1 pr-0 text-sm font-normal hover:bg-transparent has-[>svg]:pl-1 has-[>svg]:pr-0 dark:hover:bg-transparent ${current.color}`}
         >
-            <Shield className="size-4.5" />
+            <CurrentIcon className="size-4.5" />
             {!isMobile && <span className="truncate">{t(current.label)}</span>}
         </Button>
     );

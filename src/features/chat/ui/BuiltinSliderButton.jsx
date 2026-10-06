@@ -9,7 +9,7 @@ import { normalizeBuiltinToolValue } from './builtinToolValue.js';
 
 const chargeColors = ['#94a3b8', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef'];
 
-export default function BuiltinSliderButton({ tool, value, onChange, onCommit, compact = false }) {
+export default function BuiltinSliderButton({ tool, value, onChange, onCommit, compact = false, fixedWidth = false }) {
     const { t } = useTranslation();
     const [particles] = useState(() =>
         Array.from({ length: 18 }, () => ({
@@ -37,7 +37,13 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
                     type="button"
                     variant="ghost"
                     disabled={tool.disabled}
-                    className={`h-9 max-w-36 cursor-pointer gap-1.5 bg-transparent px-2 text-sm disabled:cursor-not-allowed text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=open]:text-foreground ${compact ? 'size-7 p-1 has-[>svg]:px-1' : ''}`}
+                    className={`h-9 shrink-0 cursor-pointer gap-1.5 text-sm disabled:cursor-not-allowed text-muted-foreground hover:text-foreground data-[state=open]:text-foreground ${
+                        fixedWidth
+                            ? 'rounded-full bg-muted/60 hover:bg-muted ' +
+                              (compact ? 'size-7 p-1 has-[>svg]:px-1' : 'w-32 min-w-32 max-w-32 px-3')
+                            : 'max-w-36 bg-transparent px-2 hover:bg-transparent ' +
+                              (compact ? 'size-7 p-1 has-[>svg]:px-1' : '')
+                    }`}
                     title={`${t(tool.text)} · ${name(items[index])}`}
                     aria-label={`${t(tool.text)} · ${name(items[index])}`}
                 >
@@ -45,7 +51,9 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
                         <Brain className="size-4.5" />
                     ) : (
                         <>
-                            <span className="truncate">{name(items[index])}</span>
+                            <span className={`min-w-0 truncate ${fixedWidth ? 'flex-1 text-center' : ''}`}>
+                                {name(items[index])}
+                            </span>
                             <ChevronDown className="size-3.5 shrink-0 opacity-60" />
                         </>
                     )}
@@ -58,7 +66,8 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
                 aria-label={t(tool.text)}
             >
                 <div
-                    className="text-center text-base font-medium"
+                    className="truncate text-center text-base font-medium"
+                    title={name(items[index])}
                     style={{ color: index > 0 ? chargeColor : undefined }}
                 >
                     {name(items[index])}

@@ -185,13 +185,13 @@ src/features/chat/ui/ChatBox 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:7947:129909:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:7947:129960:FUNCTION
 
 .. js:function:: ChatBox({ onSendMessage, readOnly = false, FilePickerCallback, PicPickerCallback, conversationId, attachmen…)
 
    渲染 ``ChatBox`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``204``—``2924`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``204``—``2925`` 行。
 
    **参数**
 
@@ -4646,7 +4646,7 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:123202:123730:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:123202:123781:FUNCTION
 
 .. rubric:: ``visibleBuiltinTools .filter((tool) => tool.name === 'enable_thinking') .map callback @ 2806``
 
@@ -4656,7 +4656,7 @@ src/features/chat/ui/ChatBox 模块
 
 作为 ``visibleBuiltinTools .filter((tool) => tool.name === 'enable_thinking') .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``2806``—``2814`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2806``—``2815`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -4695,37 +4695,15 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``handleBuiltinToolToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:129767:129805:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:129818:129856:FUNCTION
 
-.. rubric:: ``onConfirm callback @ 2919``
+.. rubric:: ``onConfirm callback @ 2920``
 
 .. code-block:: javascript
 
-   onConfirm callback @ 2919()
+   onConfirm callback @ 2920()
 
 处理 ``Confirm`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``2919``—``2919`` 行；所属函数 ``ChatBox``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``closeVoicePermissionDialog``。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:129833:129872:FUNCTION
-
-.. rubric:: ``onCancel callback @ 2920``
-
-.. code-block:: javascript
-
-   onCancel callback @ 2920()
-
-处理 ``Cancel`` 用户交互或运行时事件。
 
 **性质**：同步局部函数；源码第 ``2920``—``2920`` 行；所属函数 ``ChatBox``。
 
@@ -4739,17 +4717,39 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``closeVoicePermissionDialog``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:129973:132687:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:129884:129923:FUNCTION
 
-.. rubric:: ``memo callback @ 2927``
+.. rubric:: ``onCancel callback @ 2921``
 
 .. code-block:: javascript
 
-   memo callback @ 2927(prevProps, nextProps)
+   onCancel callback @ 2921()
+
+处理 ``Cancel`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``2921``—``2921`` 行；所属函数 ``ChatBox``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``closeVoicePermissionDialog``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:130024:132738:FUNCTION
+
+.. rubric:: ``memo callback @ 2928``
+
+.. code-block:: javascript
+
+   memo callback @ 2928(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2927``—``2980`` 行。
+**性质**：同步局部函数；源码第 ``2928``—``2981`` 行。
 
 **参数**
 
