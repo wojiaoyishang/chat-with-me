@@ -27,13 +27,13 @@ src/features/chat/ui/MobileSettingsContent 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/MobileSettingsContent.jsx:102:714:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/MobileSettingsContent.jsx:102:744:FUNCTION
 
 .. js:function:: MobileSettingsContent({ title, children, className, ...props })
 
    渲染 ``MobileSettingsContent`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``4``—``19`` 行。
+   **性质**：同步函数；导出 API；源码第 ``4``—``20`` 行。
 
    **参数**
 
@@ -42,6 +42,6 @@ src/features/chat/ui/MobileSettingsContent 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <DialogContent {...props} aria-describedby={undefined} overlayClassName="z-[2147483299] bg-black/40 backdrop-blur-sm" className={cn( 'z-[2147483300] w-80 max-h-[80dvh] max-w-[ca…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <DialogContent {...props} aria-describedby={undefined} showCloseButton={false} overlayClassName="z-[2147483299] bg-black/10 backdrop-blur-sm" className={cn( 'z-[2147483300] w-80…``。
 
    **主要协作调用**：``cn``。

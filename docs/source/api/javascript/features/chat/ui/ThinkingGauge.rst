@@ -22,7 +22,7 @@ src/features/chat/ui/ThinkingGauge 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ThinkingGauge.jsx:0:716:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ThinkingGauge.jsx:0:681:FUNCTION
 
 .. js:function:: ThinkingGauge({ progress, color })
 
@@ -37,6 +37,6 @@ src/features/chat/ui/ThinkingGauge 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <svg viewBox="0 0 24 24" className="size-4.5" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" > <path d="M3.35 17a10 10 0 1 1 17.3 0" opaci…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" > {/* Outline follows the…``。
 
    **主要协作调用**：``Math.max``、``Math.min``、``Math.cos``、``Math.sin``。

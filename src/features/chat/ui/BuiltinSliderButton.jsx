@@ -82,20 +82,22 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
             <Content
                 className={
                     isMobile
-                        ? 'space-y-4'
+                        ? 'space-y-7 overflow-visible border-0 bg-transparent p-2 shadow-none'
                         : 'w-64 max-w-[calc(100vw-2rem)] space-y-4 rounded-2xl border-border/50 bg-background/95 px-4 py-4 shadow-sm'
                 }
                 {...(isMobile ? { title: t(tool.text) } : { align: 'start', sideOffset: 8 })}
                 aria-label={t(tool.text)}
             >
                 <div
-                    className="truncate text-center text-base font-medium"
+                    className={`truncate text-center font-medium ${isMobile ? 'text-2xl' : 'text-base'}`}
                     title={name(items[index])}
                     style={{ color: index > 0 ? chargeColor : undefined }}
                 >
                     {name(items[index])}
                 </div>
-                <div className="relative h-8 rounded-full bg-muted">
+                <div
+                    className={`relative h-8 rounded-full bg-muted ${isMobile ? 'ring-8 ring-background shadow-lg' : ''}`}
+                >
                     <div
                         aria-hidden="true"
                         className="pointer-events-none absolute inset-y-0 left-0 overflow-hidden rounded-full transition-[width,opacity] duration-200"

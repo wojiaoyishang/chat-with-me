@@ -27,13 +27,13 @@ src/features/chat/ui/BuiltinSliderButton 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:735:8085:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:735:8266:FUNCTION
 
 .. js:function:: BuiltinSliderButton({ tool, value, onChange, onCommit, compact = false, fixedWidth = false })
 
    渲染 ``BuiltinSliderButton`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``16``—``146`` 行。
+   **性质**：同步函数；导出 API；源码第 ``16``—``148`` 行。
 
    **参数**
 
@@ -164,17 +164,17 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 **主要协作调用**：``name``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:5809:6809:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:5990:6990:FUNCTION
 
-.. rubric:: ``particles.map callback @ 112``
+.. rubric:: ``particles.map callback @ 114``
 
 .. code-block:: javascript
 
-   particles.map callback @ 112(particle, particleIndex)
+   particles.map callback @ 114(particle, particleIndex)
 
 作为 ``particles.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``112``—``127`` 行；所属函数 ``BuiltinSliderButton``。
+**性质**：同步局部函数；源码第 ``114``—``129`` 行；所属函数 ``BuiltinSliderButton``。
 
 **参数**
 
@@ -188,17 +188,17 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:7832:7879:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:8013:8060:FUNCTION
 
-.. rubric:: ``onValueChange callback @ 139``
+.. rubric:: ``onValueChange callback @ 141``
 
 .. code-block:: javascript
 
-   onValueChange callback @ 139([number])
+   onValueChange callback @ 141([number])
 
 处理 ``Value Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``139``—``139`` 行；所属函数 ``BuiltinSliderButton``。
+**性质**：同步局部函数；源码第 ``141``—``141`` 行；所属函数 ``BuiltinSliderButton``。
 
 **参数**
 
@@ -211,17 +211,17 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 **主要协作调用**：``onChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:7930:7978:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:8111:8159:FUNCTION
 
-.. rubric:: ``anonymous callback @ 140``
+.. rubric:: ``anonymous callback @ 142``
 
 .. code-block:: javascript
 
-   anonymous callback @ 140([number])
+   anonymous callback @ 142([number])
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``140``—``140`` 行；所属函数 ``BuiltinSliderButton``。
+**性质**：同步局部函数；源码第 ``142``—``142`` 行；所属函数 ``BuiltinSliderButton``。
 
 **参数**
 
