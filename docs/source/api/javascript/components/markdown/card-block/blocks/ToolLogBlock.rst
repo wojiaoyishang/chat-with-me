@@ -339,7 +339,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``<ToolLogTerminalBlock content={segment.content} />``、``( <pre className={\x60m-0 whitespace-pre-wrap break-words font-mono text-[11px] leading-5 ${tone.body}\x60}> {segment.content} </pre> )``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11873:18161:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11873:18441:FUNCTION
 
 .. rubric:: ``memo callback @ 375``
 
@@ -349,7 +349,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``375``—``507`` 行。
+**性质**：同步局部函数；源码第 ``375``—``512`` 行。
 
 **参数**
 
@@ -543,17 +543,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:17508:17977:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:17788:18257:FUNCTION
 
-.. rubric:: ``bodySegments.map callback @ 491``
+.. rubric:: ``bodySegments.map callback @ 496``
 
 .. code-block:: javascript
 
-   bodySegments.map callback @ 491(segment, index)
+   bodySegments.map callback @ 496(segment, index)
 
 作为 ``bodySegments.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``491``—``499`` 行；所属函数 ``memo callback @ 375``。
+**性质**：同步局部函数；源码第 ``496``—``504`` 行；所属函数 ``memo callback @ 375``。
 
 **参数**
 
@@ -567,17 +567,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <ToolLogBodySegment key={\x60${segment.type}-${index}\x60} segment={segment} tone={tone} /> )``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:18162:18259:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:18442:18539:FUNCTION
 
-.. rubric:: ``memo callback @ 508``
+.. rubric:: ``memo callback @ 513``
 
 .. code-block:: javascript
 
-   memo callback @ 508(prev, next)
+   memo callback @ 513(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``508``—``510`` 行。
+**性质**：同步局部函数；源码第 ``513``—``515`` 行。
 
 **参数**
 

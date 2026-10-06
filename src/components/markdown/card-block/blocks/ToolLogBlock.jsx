@@ -458,7 +458,12 @@ const ToolLogBlock = memo(
 
                 {showAudit && auditStatus ? (
                     <div className={`mt-1.5 -mx-2.5 border-t px-2.5 py-2 text-xs ${tone.bodyWrap}`}>
-                        <div className="font-medium">{t(`tool_review_${auditStatus}`)}</div>
+                        <div className="flex items-center gap-2 font-medium" role="status">
+                            {auditStatus === 'reviewing' && (
+                                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                            )}
+                            {t(`tool_review_${auditStatus}`)}
+                        </div>
                         {typeof auditDetails?.reason === 'string' && (
                             <p className="mt-1 whitespace-pre-wrap break-words">{auditDetails.reason}</p>
                         )}
