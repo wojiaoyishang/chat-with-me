@@ -847,5 +847,7 @@
     "tool_review_cancelled": "Review cancelled",
     "tool_review_show_details": "Show review details",
     "tool_review_show_output": "Show tool output",
-    "tool_review_model": "Review model"
+    "tool_review_model": "Review model",
+    "thinking_disabled": "Thinking off",
+    "thinking_enabled": "Thinking on"
 }

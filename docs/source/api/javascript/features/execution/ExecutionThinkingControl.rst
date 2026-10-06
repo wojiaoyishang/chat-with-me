@@ -27,13 +27,13 @@ src/features/execution/ExecutionThinkingControl 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionThinkingControl.jsx:306:2287:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionThinkingControl.jsx:306:2329:FUNCTION
 
 .. js:function:: ExecutionThinkingControl({ execution })
 
    渲染 ``ExecutionThinkingControl`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``57`` 行。
+   **性质**：同步函数；导出 API；源码第 ``7``—``58`` 行。
 
    **参数**
 
@@ -42,7 +42,7 @@ src/features/execution/ExecutionThinkingControl 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <BuiltinSliderButton tool={{ mode: 'slider', text: 'executionThinking.nextRequest', items, disabled: pending || !thinking.supported || !execution?.active || execution.status ===…``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <BuiltinSliderButton tool={{ mode: 'slider', text: 'executionThinking.nextRequest', items, disabled: pending || !thinking.supported || !execution?.active || execution.status ===…``。
 
    **副作用**
 

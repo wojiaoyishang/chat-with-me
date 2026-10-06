@@ -838,5 +838,7 @@
     "tool_review_cancelled": "审核取消",
     "tool_review_show_details": "查看审核详情",
     "tool_review_show_output": "查看工具输出",
-    "tool_review_model": "审核模型"
+    "tool_review_model": "审核模型",
+    "thinking_disabled": "关闭思考",
+    "thinking_enabled": "开启思考"
 }

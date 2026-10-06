@@ -41,6 +41,7 @@ export default function ExecutionThinkingControl({ execution }) {
             setDraft(null);
         }
     };
+    if (!thinking.supported) return null;
     return (
         <BuiltinSliderButton
             tool={{

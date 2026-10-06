@@ -32,7 +32,7 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
     if (!items.length) return null;
     const id = normalizeBuiltinToolValue({ ...tool, mode: 'slider' }, value);
     const index = items.findIndex((item) => item.id === id);
-    const name = (item) => item.name || item.id;
+    const name = (item) => (item.labelKey ? t(item.labelKey) : item.name || item.id);
     const progress = items.length > 1 ? index / (items.length - 1) : 0;
     const chargeColor = chargeColors[Math.round(progress * (chargeColors.length - 1))];
     const isHighest = items.length > 1 && index === items.length - 1 && id !== 'none';
