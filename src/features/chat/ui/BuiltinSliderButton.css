@@ -33,9 +33,32 @@
     }
 }
 @media (prefers-reduced-motion: reduce) {
+    .thinking-gauge-bubble {
+        display: none;
+    }
     .builtin-slider-particle {
         animation: none;
         left: var(--particle-resting-x);
         opacity: var(--particle-opacity);
+    }
+}
+
+.thinking-gauge-bubble {
+    pointer-events: none;
+    animation: thinking-gauge-rise 2s ease-out infinite;
+}
+
+@keyframes thinking-gauge-rise {
+    0%,
+    100% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+    20% {
+        opacity: 0.65;
+    }
+    85% {
+        opacity: 0;
+        transform: translate(var(--bubble-drift), -10px);
     }
 }

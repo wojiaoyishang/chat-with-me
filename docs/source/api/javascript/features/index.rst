@@ -301,7 +301,7 @@
    * - :doc:`src/features/chat/ui/ThinkingGauge </api/javascript/features/chat/ui/ThinkingGauge>`
      - 1
      - 0
-     - 0
+     - 1
      - ``src/features/chat/ui/ThinkingGauge.jsx``
    * - :doc:`src/features/chat/ui/ToolAuditModeSwitch </api/javascript/features/chat/ui/ToolAuditModeSwitch>`
      - 1

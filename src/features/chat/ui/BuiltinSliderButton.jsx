@@ -35,7 +35,8 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
     const name = (item) => item.name || item.id;
     const progress = items.length > 1 ? index / (items.length - 1) : 0;
     const chargeColor = chargeColors[Math.round(progress * (chargeColors.length - 1))];
-    const gaugeColor = index === items.length - 1 ? '#8b7b9d' : chargeColor;
+    const isHighest = items.length > 1 && index === items.length - 1 && id !== 'none';
+    const gaugeColor = isHighest ? '#a855f7' : '#3b82f6';
     const Root = isMobile ? Dialog : Popover;
     const Trigger = isMobile ? DialogTrigger : PopoverTrigger;
     const Content = isMobile ? MobileSettingsContent : PopoverContent;
@@ -57,7 +58,7 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
                     aria-label={`${t(tool.text)} · ${name(items[index])}`}
                 >
                     {compact ? (
-                        <ThinkingGauge progress={progress} color={gaugeColor} />
+                        <ThinkingGauge progress={progress} color={gaugeColor} bubbles={isHighest} />
                     ) : (
                         <>
                             {fixedWidth ? (
