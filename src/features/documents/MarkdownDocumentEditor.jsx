@@ -1,3 +1,12 @@
+import LocalMarkdownEditor from './LocalMarkdownEditor.jsx';
+import { useTaskStore } from '@/features/tasks/useTaskStore.js';
+import { Download, Loader2 } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import { collaboratorPosition } from './collaboratorPosition.js';
 import FileUploadProgress from '@/components/files/FileUploadProgress.jsx';
 import { insertUploadedImages, DOCUMENT_IMAGE_UPLOAD_POLICY } from './images.js';
@@ -51,7 +60,11 @@ import DocumentHistory from './DocumentHistory.jsx';
 import { wrapSelection, prefixLines } from './commands.js';
 import useCollaborativeDocument from './useCollaborativeDocument.js';
 
-export default function MarkdownDocumentEditor({ documentId, onStatus, headerContainer }) {
+export default function MarkdownDocumentEditor(props) {
+    return props.mode === 'simple' ? <LocalMarkdownEditor {...props} /> : <CollaborativeMarkdownEditor {...props} />;
+}
+
+function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer }) {
     const { t } = useTranslation();
     const [filesOpen, setFilesOpen] = useState(false);
     const [filesRevision, setFilesRevision] = useState(0);
@@ -449,6 +462,24 @@ export default function MarkdownDocumentEditor({ documentId, onStatus, headerCon
             }}
         />
     );
+    const [exporting, setExporting] = useState(false);
+    const exportDocument = async (format) => {
+        if (exporting) return;
+        setExporting(true);
+        try {
+            const saved = await save();
+            const task = await apiClient.post(`/document/${documentId}/export-task`, {
+                format,
+                revision: saved.revision,
+            });
+            useTaskStore.getState().merge([task]);
+            useTaskStore.getState().show(task.taskId);
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setExporting(false);
+        }
+    };
     return (
         <div className="flex h-full min-h-0 flex-col bg-background font-sans text-foreground">
             {headerContainer ? createPortal(documentHeader, headerContainer) : documentHeader}
@@ -525,6 +556,7 @@ export default function MarkdownDocumentEditor({ documentId, onStatus, headerCon
                 </div>
                 <div className="ml-auto flex max-w-full items-center gap-2 overflow-x-auto">
                     {documentControls}
+
                     <Button
                         variant="ghost"
                         size="icon"
@@ -534,8 +566,33 @@ export default function MarkdownDocumentEditor({ documentId, onStatus, headerCon
                         title={t('document_upload_image')}
                         onClick={() => uploadInput.current?.click()}
                     >
-                        <Upload className="size-4" />
+                        <Download className="size-4" />
                     </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8"
+                                disabled={!resource || saving || exporting}
+                                title={t('taskCenter.export')}
+                                aria-label={t('taskCenter.export')}
+                            >
+                                {exporting ? (
+                                    <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                    <Upload className="size-4" />
+                                )}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            {['md', 'pdf', 'zip'].map((format) => (
+                                <DropdownMenuItem key={format} onSelect={() => void exportDocument(format)}>
+                                    {t(`taskCenter.format_${format}`)}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <Button
                         variant="ghost"
                         size="icon"

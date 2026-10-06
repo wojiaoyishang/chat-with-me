@@ -1,15 +1,15 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
-import {resolveResourceUrl} from '@/lib/virtualUrl.js';
-import {ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut, MessageSquare} from 'lucide-react';
-import {getLocalSetting, setLocalSetting, updateURL} from "@/lib/tools.jsx";
-import {Transition} from '@headlessui/react';
-import {useTranslation} from "react-i18next";
-import {useIsMobile} from "@/lib/tools.jsx";
-import apiClient from "@/lib/apiClient.js";
-import {apiEndpoint} from "@/config.js";
-import {onEvent} from "@/context/useEventStore.jsx";
-import {Avatar, AvatarImage, AvatarFallback} from "@/components/ui/avatar";
-import {useUserStore} from "@/context/userContext.jsx";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { resolveResourceUrl } from '@/lib/virtualUrl.js';
+import { ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut, MessageSquare } from 'lucide-react';
+import { getLocalSetting, setLocalSetting, updateURL } from '@/lib/tools.jsx';
+import { Transition } from '@headlessui/react';
+import { useTranslation } from 'react-i18next';
+import { useIsMobile } from '@/lib/tools.jsx';
+import apiClient from '@/lib/apiClient.js';
+import { apiEndpoint } from '@/config.js';
+import { onEvent } from '@/context/useEventStore.jsx';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useUserStore } from '@/context/userContext.jsx';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -17,14 +17,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {toast} from "sonner";
-import {useNavigate} from 'react-router-dom';
-import SettingPage from "@/pages/SettingPage.jsx";
-import {motion, AnimatePresence} from 'framer-motion';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import SettingPage from '@/pages/SettingPage.jsx';
+import { motion, AnimatePresence } from 'framer-motion';
 import { setOnChange } from './sidebarRegistry';
-import {useBrowserBackLayer} from '@/lib/browserHistoryLayers.js';
+import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
 
-import ConversationsList from './ConversationsList.jsx'
+import ConversationsList from './ConversationsList.jsx';
 
 const Sidebar = ({
     conversationId,
@@ -34,24 +34,29 @@ const Sidebar = ({
     settings,
     onConversationIdSelect,
     onSettingsRefresh,
+    forceClosed = false,
 }) => {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const isMobile = useIsMobile();
-    const [isOpen, setIsOpen] = useState(false);
+    const [preferredOpen, setIsOpen] = useState(false);
+    const isOpen = preferredOpen && !forceClosed;
     const [settingsOpen, setSettingsOpen] = useState(false);
-    const {user, clearUser} = useUserStore();
+    const { user, clearUser } = useUserStore();
 
     const conversationsListRef = useRef();
     const [registeredButtons, setRegisteredButtons] = useState([]);
 
     // 保存 SidebarOpen 状态（区分桌面端和移动端初始设置）
-    const handleSetIsOpen = useCallback((newValue) => {
-        setIsOpen(newValue);
-        const isDesktopMode = !isMobile;
-        const key = isDesktopMode ? 'sidebarOpenDesktop' : 'sidebarOpenMobile';
-        setLocalSetting(key, newValue);
-    }, [isMobile]);
+    const handleSetIsOpen = useCallback(
+        (newValue) => {
+            setIsOpen(newValue);
+            const isDesktopMode = !isMobile;
+            const key = isDesktopMode ? 'sidebarOpenDesktop' : 'sidebarOpenMobile';
+            setLocalSetting(key, newValue);
+        },
+        [isMobile],
+    );
 
     useEffect(() => {
         setOnChange(setRegisteredButtons);
@@ -80,20 +85,27 @@ const Sidebar = ({
         document.documentElement.style.setProperty('--sidebar-width', isOpen ? '16rem' : '0px');
     }, [isOpen]);
 
-    useBrowserBackLayer(Boolean(isMobile && isOpen), () => {
-        handleSetIsOpen(false);
-        return true;
-    }, {kind: 'mobile-main-sidebar'});
+    useBrowserBackLayer(
+        Boolean(isMobile && isOpen),
+        () => {
+            handleSetIsOpen(false);
+            return true;
+        },
+        { kind: 'mobile-main-sidebar' },
+    );
 
     // 事件监听（保持不变）
     useEffect(() => {
-        const unsubscribe = onEvent({event: 'sidebar.*'}).then(({event, payload, eventConversationId}) => {
+        const unsubscribe = onEvent({ event: 'sidebar.*' }).then(({ event, payload, eventConversationId }) => {
             switch (event) {
                 case 'sidebar.conversations.reload':
                     conversationsListRef.current?.reload();
                     break;
                 case 'sidebar.conversation.date_changed':
-                    conversationsListRef.current?.updateDate(eventConversationId, payload.value ? new Date(payload.value) : new Date());
+                    conversationsListRef.current?.updateDate(
+                        eventConversationId,
+                        payload.value ? new Date(payload.value) : new Date(),
+                    );
                     break;
                 case 'sidebar.conversation.title_changed':
                     conversationsListRef.current?.updateTitle(eventConversationId, payload.value);
@@ -116,22 +128,20 @@ const Sidebar = ({
     const handleLogout = async () => {
         try {
             await apiClient.get(apiEndpoint.LOGOUT_ENDPOINT);
-            toast.success(t("logout_success"));
+            toast.success(t('logout_success'));
             clearUser();
             navigate('/login');
         } catch (error) {
-            toast.error(t("logout_error", {message: error?.message || t("unknown_error")}));
+            toast.error(t('logout_error', { message: error?.message || t('unknown_error') }));
         }
     };
 
     let logoElement;
-    const resolvedLogo = settings?.logoType === 'image' && settings?.logo
-        ? resolveResourceUrl(settings.logo)
-        : '';
+    const resolvedLogo = settings?.logoType === 'image' && settings?.logo ? resolveResourceUrl(settings.logo) : '';
     if (settings?.logoType === 'image' && resolvedLogo) {
-        logoElement = <img src={resolvedLogo} alt="Logo" className="h-8 w-auto"/>;
+        logoElement = <img src={resolvedLogo} alt="Logo" className="h-8 w-auto" />;
     } else {
-        const text = (settings?.logoType === 'text' && settings?.logo) ? settings.logo : 'Logo';
+        const text = settings?.logoType === 'text' && settings?.logo ? settings.logo : 'Logo';
         logoElement = <h1 className="text-xl font-bold text-gray-800">{text}</h1>;
     }
 
@@ -144,22 +154,27 @@ const Sidebar = ({
                 handleLogout={handleLogout}
             />
 
-            <div className="fixed md:relative top-0 left-0 h-full bg-white shadow-lg z-40 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
-                 style={{width: 'var(--sidebar-width)'}}>
-                <div className="h-full w-[16rem] flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out"
-                     style={{opacity: isOpen ? 1 : 0, transform: isOpen ? 'translateX(0)' : 'translateX(-40px)'}}>
-
+            <div
+                className="fixed md:relative top-0 left-0 h-full bg-white shadow-lg z-40 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
+                style={{ width: 'var(--sidebar-width)' }}
+            >
+                <div
+                    className="h-full w-[16rem] flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out"
+                    style={{ opacity: isOpen ? 1 : 0, transform: isOpen ? 'translateX(0)' : 'translateX(-40px)' }}
+                >
                     {/* LOGO */}
                     <div className="flex items-center justify-between p-4 border-b">
                         {logoElement}
-                        <button onClick={() => handleSetIsOpen(false)} className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer">
-                            <X className="w-5 h-5"/>
+                        <button
+                            onClick={() => handleSetIsOpen(false)}
+                            className="text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
+                        >
+                            <X className="w-5 h-5" />
                         </button>
                     </div>
 
                     {/* 导航按钮区域 */}
                     <div className="p-4 border-b">
-
                         {/* 第一组：新建对话 + 注册按钮 */}
                         <div className="flex flex-col gap-2">
                             <button
@@ -168,7 +183,7 @@ const Sidebar = ({
                                 }}
                                 className="flex items-center p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer w-full justify-start"
                             >
-                                <Plus className="w-5 h-5 mr-2"/>
+                                <Plus className="w-5 h-5 mr-2" />
                                 {t('new_conversation')}
                             </button>
 
@@ -189,16 +204,13 @@ const Sidebar = ({
                                         }}
                                         transition={{
                                             duration: 0.32,
-                                            ease: [0.32, 0.72, 0, 1]
+                                            ease: [0.32, 0.72, 0, 1],
                                         }}
                                     >
-                                        <div className="w-full">
-                                            {component}
-                                        </div>
+                                        <div className="w-full">{component}</div>
                                     </motion.div>
                                 ))}
                             </AnimatePresence>
-
                         </div>
 
                         {/* 分隔线 */}
@@ -213,7 +225,9 @@ const Sidebar = ({
                                     setPageType('chat');
                                 }}
                                 className={`flex items-center p-2 rounded-lg transition-colors cursor-pointer w-full justify-start ${
-                                    pageType === 'chat' ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                                    pageType === 'chat'
+                                        ? 'bg-blue-100 text-blue-700'
+                                        : 'text-gray-700 hover:bg-gray-100'
                                 }`}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
@@ -253,7 +267,7 @@ const Sidebar = ({
                     <div className="border-t p-4 bg-white">
                         <div className="flex items-center gap-3 group">
                             <Avatar className="h-10 w-10 flex-shrink-0">
-                                <AvatarImage src={resolveResourceUrl(user.avatar)} alt={user.nickname}/>
+                                <AvatarImage src={resolveResourceUrl(user.avatar)} alt={user.nickname} />
                                 <AvatarFallback className="bg-gray-200 text-gray-700 font-medium">
                                     {user.nickname[0]}
                                 </AvatarFallback>
@@ -265,17 +279,20 @@ const Sidebar = ({
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <button className="cursor-pointer p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors opacity-60 group-hover:opacity-100">
-                                        <MoreHorizontal className="w-5 h-5"/>
+                                        <MoreHorizontal className="w-5 h-5" />
                                     </button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-fit min-w-[140px]">
                                     <DropdownMenuItem className="cursor-pointer" onClick={() => setSettingsOpen(true)}>
-                                        <Settings className="mr-2 h-4 w-4"/>
+                                        <Settings className="mr-2 h-4 w-4" />
                                         {t('settings')}
                                     </DropdownMenuItem>
-                                    <DropdownMenuSeparator/>
-                                    <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 cursor-pointer">
-                                        <LogOut className="mr-2 h-4 w-4 text-red-600"/>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={handleLogout}
+                                        className="text-red-600 focus:text-red-600 cursor-pointer"
+                                    >
+                                        <LogOut className="mr-2 h-4 w-4 text-red-600" />
                                         {t('logout')}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -286,16 +303,32 @@ const Sidebar = ({
             </div>
 
             {/* 移动端遮罩和按钮（保持不变） */}
-            <Transition show={isOpen} enter="transition-opacity duration-300" enterFrom="opacity-0" enterTo="opacity-100"
-                        leave="transition-opacity duration-300" leaveFrom="opacity-100" leaveTo="opacity-0">
-                <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => handleSetIsOpen(false)}/>
+            <Transition
+                show={isOpen}
+                enter="transition-opacity duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="transition-opacity duration-300"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+            >
+                <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => handleSetIsOpen(false)} />
             </Transition>
-            <Transition show={!isOpen} enter="transition-opacity duration-300" enterFrom="opacity-0" enterTo="opacity-100"
-                        leave="transition-opacity duration-300" leaveFrom="opacity-100" leaveTo="opacity-0">
-                <button onClick={() => handleSetIsOpen(true)}
-                        className="fixed left-0 top-1/2 -translate-y-1/2 z-50 w-4 h-32 bg-gray-100 shadow-lg flex items-center justify-center text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
-                        style={{clipPath: 'polygon(0 0, 100% 20%, 100% 80%, 0 100%)'}}>
-                    <ChevronRight className="w-3 h-3"/>
+            <Transition
+                show={!isOpen}
+                enter="transition-opacity duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="transition-opacity duration-300"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+            >
+                <button
+                    onClick={() => handleSetIsOpen(true)}
+                    className="fixed left-0 top-1/2 -translate-y-1/2 z-50 w-4 h-32 bg-gray-100 shadow-lg flex items-center justify-center text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
+                    style={{ clipPath: 'polygon(0 0, 100% 20%, 100% 80%, 0 100%)' }}
+                >
+                    <ChevronRight className="w-3 h-3" />
                 </button>
             </Transition>
         </>

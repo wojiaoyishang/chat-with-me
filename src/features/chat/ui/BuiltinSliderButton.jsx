@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import './BuiltinSliderButton.css';
 import { ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -7,11 +9,23 @@ import { normalizeBuiltinToolValue } from './builtinToolValue.js';
 
 const chargeColors = ['#94a3b8', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef'];
 
-export default function BuiltinSliderButton({ tool, value, onChange }) {
+export default function BuiltinSliderButton({ tool, value, onChange, onCommit }) {
     const { t } = useTranslation();
+    const [particles] = useState(() =>
+        Array.from({ length: 18 }, () => ({
+            y: 12 + Math.random() * 76,
+            size: 1 + Math.random() * 2,
+            opacity: 0.25 + Math.random() * 0.55,
+            speed: 0.7 + Math.random() * 1.7,
+            delay: -Math.random() * 8,
+            drift: (Math.random() - 0.5) * 9,
+            restingX: Math.random() * 100,
+        })),
+    );
+
     const items = tool.items || [];
     if (!items.length) return null;
-    const id = normalizeBuiltinToolValue(tool, value);
+    const id = normalizeBuiltinToolValue({ ...tool, mode: 'slider' }, value);
     const index = items.findIndex((item) => item.id === id);
     const name = (item) => item.name || item.id;
     const progress = items.length > 1 ? index / (items.length - 1) : 0;
@@ -45,21 +59,35 @@ export default function BuiltinSliderButton({ tool, value, onChange }) {
                 <div className="relative h-8 rounded-full bg-muted">
                     <div
                         aria-hidden="true"
-                        className="pointer-events-none absolute inset-y-0 left-0 rounded-full transition-[width,opacity] duration-200"
+                        className="pointer-events-none absolute inset-y-0 left-0 overflow-hidden rounded-full transition-[width,opacity] duration-200"
                         style={{
                             width: `calc(36px + (100% - 36px) * ${progress})`,
                             opacity: index > 0 ? 1 : 0,
                             background: `linear-gradient(100deg, #3730a3 0%, ${chargeColor} 100%)`,
                             boxShadow: `inset 0 1px 8px ${chargeColor}55`,
+                            '--particle-duration': `${3.6 - 2.8 * progress}s`,
                         }}
-                    />
-                    <div className="pointer-events-none absolute inset-x-[18px] inset-y-0 flex items-center justify-between">
-                        {items.map((item, tickIndex) => (
-                            <span
-                                key={item.id}
-                                className={`size-1 rounded-full ${tickIndex <= index && index > 0 ? 'bg-white/60' : 'bg-muted-foreground/30'}`}
-                            />
-                        ))}
+                    >
+                        {index > 0 && (
+                            <span className="builtin-slider-particles absolute inset-0">
+                                {particles.map((particle, particleIndex) => (
+                                    <i
+                                        key={particleIndex}
+                                        className="builtin-slider-particle"
+                                        style={{
+                                            top: `${particle.y}%`,
+                                            width: particle.size,
+                                            height: particle.size,
+                                            '--particle-opacity': particle.opacity,
+                                            '--particle-speed': particle.speed,
+                                            '--particle-delay': `${particle.delay}s`,
+                                            '--particle-drift': `${particle.drift}px`,
+                                            '--particle-resting-x': `${particle.restingX}%`,
+                                        }}
+                                    />
+                                ))}
+                            </span>
+                        )}
                     </div>
                     <Slider
                         className="relative h-8 cursor-pointer data-[disabled]:cursor-not-allowed [&_[data-slot=slider-thumb]]:cursor-pointer [&_[data-slot=slider-thumb]]:hover:ring-0 [&_[data-slot=slider-thumb]]:focus-visible:ring-2 [&_[data-slot=slider-track]]:h-8 [&_[data-slot=slider-track]]:bg-transparent [&_[data-slot=slider-track]]:overflow-visible [&_[data-slot=slider-range]]:bg-transparent [&_[data-slot=slider-thumb]]:size-9 [&_[data-slot=slider-thumb]]:border-border/70 [&_[data-slot=slider-thumb]]:shadow-sm"
@@ -70,6 +98,7 @@ export default function BuiltinSliderButton({ tool, value, onChange }) {
                         disabled={tool.disabled || items.length < 2}
                         thumbProps={{ 'aria-label': t(tool.text), 'aria-valuetext': name(items[index]) }}
                         onValueChange={([number]) => onChange(items[number]?.id || id)}
+                        onValueCommit={onCommit ? ([number]) => onCommit(items[number]?.id || id) : undefined}
                     />
                 </div>
             </PopoverContent>

@@ -2417,6 +2417,7 @@ function WorkspaceAclDialog({ workspace, open, onOpenChange, onChanged }) {
 }
 
 function WorkspaceManagementItem() {
+    const { t } = useTranslation();
     const [agents, setAgents] = useState([]);
     const [workspaces, setWorkspaces] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -2429,7 +2430,7 @@ function WorkspaceManagementItem() {
         if (!quiet) setLoading(true);
         try {
             const [agentData, localData, remoteData] = await Promise.all([
-                apiClient.get(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/connections`),
+                apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/connections`),
                 apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/`),
                 apiClient.get(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/workspaces`),
             ]);
@@ -2480,7 +2481,13 @@ function WorkspaceManagementItem() {
     };
 
     const revokeAgent = async (agent) => {
-        if (!agent?.id || !window.confirm(`撤销设备“${agent.name || agent.id}”吗？撤销后该设备必须重新注册。`)) return;
+        if (
+            !agent?.id ||
+            !window.confirm(
+                `撤销设备“${agent.builtin ? t('workspace_backend_connection') : agent.name || agent.id}”吗？撤销后该设备必须重新注册。`,
+            )
+        )
+            return;
         try {
             await apiClient.delete(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/agents/${encodeURIComponent(agent.id)}`);
             await refresh();
@@ -2512,7 +2519,7 @@ function WorkspaceManagementItem() {
                         <div className="mt-1 text-xl font-semibold">{workspaces.length}</div>
                     </div>
                     <div className="rounded-xl border border-black/10 p-3 dark:border-white/10">
-                        <div className="text-[11px] text-muted-foreground">远程设备</div>
+                        <div className="text-[11px] text-muted-foreground">{t('workspace_connections')}</div>
                         <div className="mt-1 text-xl font-semibold">{agents.length}</div>
                     </div>
                     <div className="rounded-xl border border-black/10 p-3 dark:border-white/10">
@@ -2582,7 +2589,7 @@ function WorkspaceManagementItem() {
                 <section className="space-y-2">
                     <div className="flex items-center justify-between">
                         <div>
-                            <div className="text-sm font-semibold">我的远程设备</div>
+                            <div className="text-sm font-semibold">{t('workspace_connections')}</div>
                             <div className="text-xs text-muted-foreground">
                                 IP 与主机信息用于审计和异常提示；设备身份由 Ed25519 密钥证明。
                             </div>
@@ -2615,11 +2622,18 @@ function WorkspaceManagementItem() {
                                             <div className="flex items-center gap-2">
                                                 <Server size={15} />
                                                 <span className="truncate text-sm font-semibold">
-                                                    {agent.name || agent.id}
+                                                    {agent.builtin
+                                                        ? t('workspace_backend_connection')
+                                                        : agent.name || agent.id}
                                                 </span>
                                             </div>
                                             <div className="mt-1 truncate text-[11px] text-muted-foreground">
                                                 {agent.hostname || '未知主机'} · {agent.platform || '未知平台'}
+                                                {agent.builtin && (
+                                                    <div className="mt-1 whitespace-normal">
+                                                        {t('workspace_backend_connection_hint')}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <RemoteWorkspaceStatusBadge online={!!agent.online} status={agent.status} />
@@ -2638,7 +2652,9 @@ function WorkspaceManagementItem() {
                                             </div>
                                         </div>
                                     </div>
-                                    {(agent.owned || user?.isSuperuser) && agent.status !== 'revoked' ? (
+                                    {!agent.builtin &&
+                                    (agent.owned || user?.isSuperuser) &&
+                                    agent.status !== 'revoked' ? (
                                         <div className="mt-2 flex justify-end">
                                             <button
                                                 onClick={() => revokeAgent(agent)}
@@ -2679,7 +2695,7 @@ function WorkspaceManagementItem() {
                                                     ? workspaceStatusLabel(workspace)
                                                     : workspace.available === false
                                                       ? '不可用'
-                                                      : '本机'}
+                                                      : t('workspace_backend_connection')}
                                             </span>
                                         </div>
                                         <div className="mt-0.5 truncate text-[11px] text-muted-foreground">

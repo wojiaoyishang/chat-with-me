@@ -31,12 +31,12 @@
    * - :doc:`src/pages/DocEditorHome </api/javascript/pages/DocEditorHome>`
      - 3
      - 0
-     - 61
+     - 68
      - ``src/pages/DocEditorHome.jsx``
    * - :doc:`src/pages/LoginPage </api/javascript/pages/LoginPage>`
      - 1
      - 0
-     - 5
+     - 6
      - ``src/pages/LoginPage.jsx``
    * - :doc:`src/pages/SettingPage </api/javascript/pages/SettingPage>`
      - 6

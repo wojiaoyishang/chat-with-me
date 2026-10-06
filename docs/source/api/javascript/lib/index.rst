@@ -24,7 +24,7 @@
      - 12
      - ``src/lib/browserHistoryLayers.js``
    * - :doc:`src/lib/resourceDownload </api/javascript/lib/resourceDownload>`
-     - 2
+     - 4
      - 0
      - 1
      - ``src/lib/resourceDownload.js``

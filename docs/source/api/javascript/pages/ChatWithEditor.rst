@@ -22,18 +22,18 @@ src/pages/ChatWithEditor 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react-i18next``、``react``、``@/pages/ChatPage.jsx``、``@/components/editor/CollaboraOnlineEditor.jsx``、``@/features/documents/MarkdownDocumentEditor.jsx``、``@/components/ui/button``、``lucide-react``、``@/features/documents/DocumentConversationControls.jsx``、``@/lib/tools.jsx``。
+``@/features/notification/NotificationCenter.jsx``、``@/features/tasks/TaskCenter.jsx``、``@/features/chat/page/hooks/useIndependentChatWindow.js``、``@/features/chat/page/openChatWindow.js``、``react-i18next``、``react``、``@/pages/ChatPage.jsx``、``@/components/editor/CollaboraOnlineEditor.jsx``、``@/features/documents/MarkdownDocumentEditor.jsx``、``@/components/ui/button``、``lucide-react``、``@/features/documents/DocumentConversationControls.jsx``、``@/lib/tools.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:599:13332:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:928:14035:FUNCTION
 
 .. js:function:: ChatWithEditor({ onBack, onChatMode, url, editorType, conversationId, documentId, setDocModifiedStatus, onNewConve…)
 
    渲染 ``ChatWithEditor`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``11``—``324`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``15``—``335`` 行。
 
    **参数**
 
@@ -49,7 +49,7 @@ src/pages/ChatWithEditor 模块
    * 注册事件、DOM 或运行时订阅。
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-   **主要协作调用**：``useTranslation``、``useState``、``useIsMobile``、``useRef``、``useCallback``、``useEffect``、``t``、``containerRef.current?.getBoundingClientRect``、``getSidebarOffset``。
+   **主要协作调用**：``useTranslation``、``useState``、``useIsMobile``、``useIndependentChatWindow``、``useRef``、``useCallback``、``useEffect``、``t``、``containerRef.current?.getBoundingClientRect``、``getSidebarOffset``。
 
    **内部回调数量**：10。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -58,17 +58,17 @@ src/pages/ChatWithEditor 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:1994:2001:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:2398:2405:FUNCTION
 
-.. rubric:: ``useCallback callback @ 53``
+.. rubric:: ``useCallback callback @ 58``
 
 .. code-block:: javascript
 
-   useCallback callback @ 53()
+   useCallback callback @ 58()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``53``—``53`` 行；所属函数 ``ChatWithEditor``。
+**性质**：同步局部函数；源码第 ``58``—``58`` 行；所属函数 ``ChatWithEditor``。
 
 **参数**
 
@@ -78,17 +78,17 @@ src/pages/ChatWithEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:2101:2689:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:2505:3093:FUNCTION
 
-.. rubric:: ``useCallback callback @ 57``
+.. rubric:: ``useCallback callback @ 62``
 
 .. code-block:: javascript
 
-   useCallback callback @ 57(e)
+   useCallback callback @ 62(e)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``57``—``70`` 行；所属函数 ``ChatWithEditor``。
+**性质**：同步局部函数；源码第 ``62``—``75`` 行；所属函数 ``ChatWithEditor``。
 
 **参数**
 
@@ -101,17 +101,17 @@ src/pages/ChatWithEditor 模块
 
 **主要协作调用**：``e.preventDefault``、``Date.now``、``containerRef.current.getBoundingClientRect``、``getSidebarOffset``、``setGhostPos``、``setIsResizing``。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:2819:3264:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:3223:3668:FUNCTION
 
-.. rubric:: ``useCallback callback @ 75``
+.. rubric:: ``useCallback callback @ 80``
 
 .. code-block:: javascript
 
-   useCallback callback @ 75(e)
+   useCallback callback @ 80(e)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``75``—``83`` 行；所属函数 ``ChatWithEditor``。
+**性质**：同步局部函数；源码第 ``80``—``88`` 行；所属函数 ``ChatWithEditor``。
 
 **参数**
 
@@ -124,17 +124,17 @@ src/pages/ChatWithEditor 模块
 
 **主要协作调用**：``containerRef.current.getBoundingClientRect``、``getSidebarOffset``、``Math.max``、``Math.min``、``setGhostPos``。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:3351:4545:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:3755:4949:FUNCTION
 
-.. rubric:: ``useCallback callback @ 87``
+.. rubric:: ``useCallback callback @ 92``
 
 .. code-block:: javascript
 
-   useCallback callback @ 87()
+   useCallback callback @ 92()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``87``—``119`` 行；所属函数 ``ChatWithEditor``。
+**性质**：同步局部函数；源码第 ``92``—``124`` 行；所属函数 ``ChatWithEditor``。
 
 **参数**
 
@@ -146,17 +146,17 @@ src/pages/ChatWithEditor 模块
 
 **主要协作调用**：``setIsResizing``、``Date.now``、``containerRef.current.getBoundingClientRect``、``getSidebarOffset``、``Math.abs``、``setIsCollapsed``、``setLeftWidth``、``Math.min``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:4631:4991:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:5035:5522:FUNCTION
 
-.. rubric:: ``useCallback callback @ 121``
+.. rubric:: ``useCallback callback @ 126``
 
 .. code-block:: javascript
 
-   useCallback callback @ 121()
+   useCallback callback @ 126()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``121``—``131`` 行；所属函数 ``ChatWithEditor``。
+**性质**：同步局部函数；源码第 ``126``—``140`` 行；所属函数 ``ChatWithEditor``。
 
 **参数**
 
@@ -166,21 +166,21 @@ src/pages/ChatWithEditor 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``setMobilePanel``、``setIsChatMinimized``、``setIsCollapsed``、``setLeftWidth``。
+**主要协作调用**：``openChatWindow``、``setMobilePanel``、``setIsChatMinimized``、``setIsCollapsed``、``setLeftWidth``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:4690:4741:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:5221:5272:FUNCTION
 
-.. rubric:: ``setMobilePanel callback @ 123``
+.. rubric:: ``setMobilePanel callback @ 132``
 
 .. code-block:: javascript
 
-   setMobilePanel callback @ 123(panel)
+   setMobilePanel callback @ 132(panel)
 
 设置与 ``Mobile Panel`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``123``—``123`` 行；所属函数 ``useCallback callback @ 121``。
+**性质**：同步局部函数；源码第 ``132``—``132`` 行；所属函数 ``useCallback callback @ 126``。
 
 **参数**
 
@@ -191,17 +191,17 @@ src/pages/ChatWithEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:5141:5188:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:5710:5757:FUNCTION
 
-.. rubric:: ``useCallback callback @ 134``
+.. rubric:: ``useCallback callback @ 143``
 
 .. code-block:: javascript
 
-   useCallback callback @ 134()
+   useCallback callback @ 143()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``134``—``136`` 行；所属函数 ``ChatWithEditor``。
+**性质**：同步局部函数；源码第 ``143``—``145`` 行；所属函数 ``ChatWithEditor``。
 
 **参数**
 
@@ -213,17 +213,17 @@ src/pages/ChatWithEditor 模块
 
 **主要协作调用**：``setIsChatMinimized``。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:5243:5355:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:5812:5924:FUNCTION
 
-.. rubric:: ``useCallback callback @ 138``
+.. rubric:: ``useCallback callback @ 147``
 
 .. code-block:: javascript
 
-   useCallback callback @ 138(newIsWindowMode)
+   useCallback callback @ 147(newIsWindowMode)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``138``—``141`` 行；所属函数 ``ChatWithEditor``。
+**性质**：同步局部函数；源码第 ``147``—``150`` 行；所属函数 ``ChatWithEditor``。
 
 **参数**
 
@@ -236,17 +236,17 @@ src/pages/ChatWithEditor 模块
 
 **主要协作调用**：``setIsWindowMode``。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:5431:5774:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:6000:6343:FUNCTION
 
-.. rubric:: ``useEffect callback @ 144``
+.. rubric:: ``useEffect callback @ 153``
 
 .. code-block:: javascript
 
-   useEffect callback @ 144()
+   useEffect callback @ 153()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``144``—``153`` 行；所属函数 ``ChatWithEditor``。
+**性质**：同步局部函数；源码第 ``153``—``162`` 行；所属函数 ``ChatWithEditor``。
 
 **参数**
 
@@ -265,17 +265,17 @@ src/pages/ChatWithEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:5616:5767:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:6185:6336:FUNCTION
 
-.. rubric:: ``returned callback @ 149``
+.. rubric:: ``returned callback @ 158``
 
 .. code-block:: javascript
 
-   returned callback @ 149()
+   returned callback @ 158()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``149``—``152`` 行；所属函数 ``useEffect callback @ 144``。
+**性质**：同步局部函数；源码第 ``158``—``161`` 行；所属函数 ``useEffect callback @ 153``。
 
 **参数**
 
@@ -291,17 +291,17 @@ src/pages/ChatWithEditor 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:5835:5954:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:6404:6523:FUNCTION
 
-.. rubric:: ``useEffect callback @ 155``
+.. rubric:: ``useEffect callback @ 164``
 
 .. code-block:: javascript
 
-   useEffect callback @ 155()
+   useEffect callback @ 164()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``155``—``158`` 行；所属函数 ``ChatWithEditor``。
+**性质**：同步局部函数；源码第 ``164``—``167`` 行；所属函数 ``ChatWithEditor``。
 
 **参数**
 
@@ -315,17 +315,17 @@ src/pages/ChatWithEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:5876:5900:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:6445:6469:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 156``
+.. rubric:: ``setTimeout callback @ 165``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 156()
+   setTimeout callback @ 165()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``156``—``156`` 行；所属函数 ``useEffect callback @ 155``。
+**性质**：同步局部函数；源码第 ``165``—``165`` 行；所属函数 ``useEffect callback @ 164``。
 
 **参数**
 
@@ -337,17 +337,17 @@ src/pages/ChatWithEditor 模块
 
 **主要协作调用**：``setIsMounted``。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:5921:5947:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:6490:6516:FUNCTION
 
-.. rubric:: ``returned callback @ 157``
+.. rubric:: ``returned callback @ 166``
 
 .. code-block:: javascript
 
-   returned callback @ 157()
+   returned callback @ 166()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``useEffect callback @ 155``。
+**性质**：同步局部函数；源码第 ``166``—``166`` 行；所属函数 ``useEffect callback @ 164``。
 
 **参数**
 
@@ -359,17 +359,17 @@ src/pages/ChatWithEditor 模块
 
 **主要协作调用**：``clearTimeout``。
 
-.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:6713:7090:FUNCTION
+.. CWM-AST-FUNCTION src/pages/ChatWithEditor.jsx:7332:7709:FUNCTION
 
-.. rubric:: ``useCallback callback @ 178``
+.. rubric:: ``useCallback callback @ 187``
 
 .. code-block:: javascript
 
-   useCallback callback @ 178(msg)
+   useCallback callback @ 187(msg)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``178``—``184`` 行；所属函数 ``ChatWithEditor``。
+**性质**：同步局部函数；源码第 ``187``—``193`` 行；所属函数 ``ChatWithEditor``。
 
 **参数**
 

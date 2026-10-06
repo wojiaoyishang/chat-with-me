@@ -1,5 +1,6 @@
+import { useTranslation } from 'react-i18next';
 import { memo, useEffect, useMemo } from 'react';
-import { Check, CircleAlert, CircleX, Loader2, LoaderCircle, RotateCcw } from 'lucide-react';
+import { Check, CircleAlert, CircleX, Loader2, LoaderCircle, RotateCcw, Pause } from 'lucide-react';
 
 import ExecutionGuidanceBubble from './ExecutionGuidanceBubble.jsx';
 import { openExecution, upsertExecution, useExecutionStore } from './useExecutionStore.js';
@@ -30,6 +31,7 @@ const parseExecution = (content, conversationId) => {
 };
 
 const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
+    const { t } = useTranslation();
     const execution = useMemo(() => parseExecution(content, conversationId), [content, conversationId]);
     const liveExecution = useExecutionStore((state) => {
         const cid = String(execution?.conversationId || conversationId || '').trim();
@@ -71,8 +73,20 @@ const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
     const renderable = failed || cancelled || recovering || active || completed || historicalDone;
     if (!renderable) return null;
 
-    const Icon = failed ? CircleAlert : cancelled ? CircleX : recovering ? RotateCcw : active ? Loader2 : Check;
+    const paused = active && Boolean((liveExecution?.thinking || execution.thinking)?.paused);
+    const Icon = paused
+        ? Pause
+        : failed
+          ? CircleAlert
+          : cancelled
+            ? CircleX
+            : recovering
+              ? RotateCcw
+              : active
+                ? Loader2
+                : Check;
     const label =
+        (paused ? t('executionPause.paused') : '') ||
         explicitLabel ||
         (completed
             ? '执行完成'
@@ -115,7 +129,7 @@ const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
                 title="查看执行过程"
             >
                 <span className="flex max-w-full items-center gap-2 text-[15px] leading-6">
-                    <Icon className={`h-4 w-4 shrink-0 ${active ? 'animate-spin' : ''}`} />
+                    <Icon className={`h-4 w-4 shrink-0 ${active && !paused ? 'animate-spin' : ''}`} />
                     <span className="truncate">{label}</span>
                     {execution.phase && (
                         <span className="hidden shrink-0 text-xs text-gray-300 group-hover:text-gray-400 sm:inline">

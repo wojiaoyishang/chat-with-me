@@ -1,3 +1,5 @@
+import DocumentThumbnail from '@/features/documents/DocumentThumbnail.jsx';
+import { onEvent } from '@/context/useEventStore.jsx';
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import {
     Plus,
@@ -79,7 +81,9 @@ const DocumentCard = memo(({ onSettingsClick, onCardClick, item }) => {
             className="group cursor-pointer flex flex-col border border-gray-200 bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
         >
             <div className="h-32 bg-gray-50 border-b border-gray-100 p-3 flex flex-col gap-2 relative">
-                {previewImage ? (
+                {item.format === 'markdown' ? (
+                    <DocumentThumbnail documentId={item.documentId} content={item.previewMarkdown} />
+                ) : previewImage ? (
                     <img
                         src={previewImage}
                         alt={`${title} Preview`}
@@ -112,9 +116,16 @@ const DocumentCard = memo(({ onSettingsClick, onCardClick, item }) => {
             </div>
             <div className="p-3 flex items-center gap-2">
                 <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center text-[10px] font-bold text-white shrink-0">
-                    W
+                    {item.format === 'markdown' ? 'M↓' : 'W'}
                 </div>
-                <span className="text-sm font-medium text-gray-700 truncate">{title}</span>
+                <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium text-gray-700">{title}</div>
+                    {item.updateDate && !Number.isNaN(new Date(item.updateDate).getTime()) && (
+                        <time dateTime={item.updateDate} className="mt-0.5 block text-xs text-muted-foreground">
+                            {format(new Date(item.updateDate), 'yyyy-MM-dd HH:mm')}
+                        </time>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -430,6 +441,7 @@ const DocEditorHome = ({
     // 所有状态和 refs 放在顶部
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
+    const previewUpdatesRef = useRef(new Map());
     const [documentCards, setDocumentCards] = useState([]); // 原 mainTemplates
     const [uploadFiles, setUploadFiles] = useState([]);
     const uploadIntervals = useRef(new Map());
@@ -520,6 +532,9 @@ const DocEditorHome = ({
                 documentId: data.documentId, // 假设 API 返回 documentId
                 type: 'document',
                 preview: data?.preview || null,
+                format: data.format,
+                previewMarkdown: data.previewMarkdown,
+                previewRevision: data.previewRevision || 0,
             };
 
             // 更新本地状态
@@ -610,6 +625,33 @@ const DocEditorHome = ({
         };
     }, []);
 
+    useEffect(
+        () =>
+            onEvent({ event: 'document.sync.changed' }).then((payload) => {
+                if (typeof payload.previewMarkdown !== 'string') return;
+                const previous = previewUpdatesRef.current.get(payload.documentId);
+                if (previous && previous.revision > payload.revision) return;
+                previewUpdatesRef.current.set(payload.documentId, {
+                    revision: payload.revision,
+                    previewMarkdown: payload.previewMarkdown,
+                    updateDate: payload.updateDate,
+                });
+                setDocumentCards((cards) =>
+                    cards.map((card) =>
+                        card.documentId === payload.documentId && (payload.revision || 0) >= (card.previewRevision || 0)
+                            ? {
+                                  ...card,
+                                  previewMarkdown: payload.previewMarkdown,
+                                  previewRevision: payload.revision,
+                                  updateDate: payload.updateDate || card.updateDate,
+                              }
+                            : card,
+                    ),
+                );
+            }),
+        [],
+    );
+
     // 数据加载效果
     useEffect(() => {
         setIsLoading(true);
@@ -623,8 +665,26 @@ const DocEditorHome = ({
                     documentId: item.documentId, // 这里的 documentId 是 documentId
                     type: 'document',
                     preview: item?.preview,
+                    format: item.format,
+                    previewMarkdown: item.previewMarkdown,
+                    previewRevision: item.previewRevision || 0,
                 }));
-                setDocumentCards(newData);
+                setDocumentCards((current) =>
+                    newData.map((item) => {
+                        const live = current.find((card) => card.documentId === item.documentId);
+                        const merged =
+                            live && (live.previewRevision || 0) > item.previewRevision ? { ...item, ...live } : item;
+                        const pending = previewUpdatesRef.current.get(item.documentId);
+                        return pending && pending.revision > (merged.previewRevision || 0)
+                            ? {
+                                  ...merged,
+                                  previewMarkdown: pending.previewMarkdown,
+                                  previewRevision: pending.revision,
+                                  updateDate: pending.updateDate || merged.updateDate,
+                              }
+                            : merged;
+                    }),
+                );
             } catch (error) {
                 console.error('Failed to load documents:', error); // 原 "Failed to load templates"
                 toast.error(t('load_templates_error'));

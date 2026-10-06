@@ -1,18 +1,8 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
-import {
-    X,
-    Maximize2,
-    Minimize2,
-    ChevronLeft,
-    User,
-    Layout,
-    Save,
-    Settings,
-    Upload,
-    Bell
-} from 'lucide-react';
-import {motion, AnimatePresence} from 'framer-motion';
-import {toast} from "sonner";
+import AccountSecurity from '@/components/setting/AccountSecurity.jsx';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { X, Maximize2, Minimize2, ChevronLeft, User, Layout, Save, Settings, Upload, Bell } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import {
     CONVERSATION_LIST_COMPACT_SETTING_KEY,
     CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY,
@@ -28,16 +18,16 @@ import {
     useLocalSetting,
     getLocalSetting,
     setLocalSetting,
-} from "@/lib/tools.jsx";
-import {useUserStore} from "@/context/userContext.jsx";
-import {onEvent} from "@/context/useEventStore.jsx";
-import {useTranslation} from "react-i18next";
-import {UserProfileCard} from "@/components/setting/UserProfileCard.jsx";
-import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
-import {useBrowserBackLayer} from "@/lib/browserHistoryLayers.js";
-import NotificationSettings from "@/features/notification/NotificationSettings.jsx";
-import apiClient from "@/lib/apiClient.js";
-import {apiEndpoint} from "@/config.js";
+} from '@/lib/tools.jsx';
+import { useUserStore } from '@/context/userContext.jsx';
+import { onEvent } from '@/context/useEventStore.jsx';
+import { useTranslation } from 'react-i18next';
+import { UserProfileCard } from '@/components/setting/UserProfileCard.jsx';
+import DynamicSettings from '@/components/setting/DynamicSettings.jsx';
+import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
+import NotificationSettings from '@/features/notification/NotificationSettings.jsx';
+import apiClient from '@/lib/apiClient.js';
+import { apiEndpoint } from '@/config.js';
 import {
     Dialog,
     DialogContent,
@@ -45,46 +35,48 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import {Switch} from "@/components/ui/switch";
-import {Separator} from "@/components/ui/separator";
-import {Badge} from "@/components/ui/badge";
-import {ROBOT_DEBUG_SETTING_KEY} from '@/features/avatar-scene/settings.js';
-import {artifactPreviewVirtualUrl, resolveResourceUrl} from '@/lib/virtualUrl.js';
+} from '@/components/ui/dialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { ROBOT_DEBUG_SETTING_KEY } from '@/features/avatar-scene/settings.js';
+import { artifactPreviewVirtualUrl, resolveResourceUrl } from '@/lib/virtualUrl.js';
 
 // ==================== 界面设置通用项 ====================
-const InterfaceSettingItem = ({title, description, checked, onCheckedChange, badge}) => (
+const InterfaceSettingItem = ({ title, description, checked, onCheckedChange, badge }) => (
     <div className="flex items-start gap-4 py-4">
         <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
                 <h3 className="text-sm font-medium text-foreground">{title}</h3>
-                {badge && <Badge variant="secondary" className="text-[10px]">{badge}</Badge>}
+                {badge && (
+                    <Badge variant="secondary" className="text-[10px]">
+                        {badge}
+                    </Badge>
+                )}
             </div>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
         </div>
-        <Switch
-            checked={Boolean(checked)}
-            onCheckedChange={onCheckedChange}
-            aria-label={title}
-            className="mt-0.5"
-        />
+        <Switch checked={Boolean(checked)} onCheckedChange={onCheckedChange} aria-label={title} className="mt-0.5" />
     </div>
 );
 
 // ==================== 图片上传进度弹窗 ====================
 const ImageUploadProgressDialog = ({ open, progress, fileName, onCancel, t }) => {
     return (
-        <Dialog open={open} onOpenChange={() => {if (open) onCancel();}}>
+        <Dialog
+            open={open}
+            onOpenChange={() => {
+                if (open) onCancel();
+            }}
+        >
             <DialogContent className="sm:max-w-[380px] z-[300]">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Upload className="w-5 h-5 text-blue-600" />
                         上传图片
                     </DialogTitle>
-                    <DialogDescription>
-                        {fileName || "正在上传..."}
-                    </DialogDescription>
+                    <DialogDescription>{fileName || '正在上传...'}</DialogDescription>
                 </DialogHeader>
 
                 <div className="py-4">
@@ -112,11 +104,11 @@ const ImageUploadProgressDialog = ({ open, progress, fileName, onCancel, t }) =>
     );
 };
 
-const SETTINGS_WINDOW_SIZE_KEY = "cwm:settings-window-size:v1";
-const DEFAULT_SETTINGS_WINDOW_SIZE = {width: 900, height: 600};
+const SETTINGS_WINDOW_SIZE_KEY = 'cwm:settings-window-size:v1';
+const DEFAULT_SETTINGS_WINDOW_SIZE = { width: 900, height: 600 };
 
 function clampSettingsWindowSize(size) {
-    if (typeof window === "undefined") return DEFAULT_SETTINGS_WINDOW_SIZE;
+    if (typeof window === 'undefined') return DEFAULT_SETTINGS_WINDOW_SIZE;
     const maxWidth = Math.max(560, window.innerWidth - 32);
     const maxHeight = Math.max(420, window.innerHeight - 32);
     return {
@@ -126,43 +118,38 @@ function clampSettingsWindowSize(size) {
 }
 
 function loadSettingsWindowSize() {
-    if (typeof window === "undefined") return DEFAULT_SETTINGS_WINDOW_SIZE;
+    if (typeof window === 'undefined') return DEFAULT_SETTINGS_WINDOW_SIZE;
     return clampSettingsWindowSize(getLocalSetting(SETTINGS_WINDOW_SIZE_KEY, DEFAULT_SETTINGS_WINDOW_SIZE));
 }
 
-const SettingPage = ({
-                         open,
-                         onClose,
-                         onRefreshRequested,
-                         handleLogout
-                     }) => {
+const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
     const isMobile = useIsMobile();
     const [robotDebugEnabled, setRobotDebugEnabled] = useLocalSetting(ROBOT_DEBUG_SETTING_KEY, false);
     const [showQuickUserMessageNavigator, setShowQuickUserMessageNavigator] = useLocalSetting(
         MESSAGE_NAVIGATOR_SETTING_KEY,
-        true
+        true,
     );
     const [compactConversationList, setCompactConversationList] = useLocalSetting(
         CONVERSATION_LIST_COMPACT_SETTING_KEY,
-        false
+        false,
     );
     const [showConversationTimestamps, setShowConversationTimestamps] = useLocalSetting(
         CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY,
-        true
+        true,
     );
     const [autoCollapseChatToolCalls, setAutoCollapseChatToolCalls] = useLocalSetting(
         CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
-        true
+        true,
     );
     const [autoCollapseTaskWindowToolCalls, setAutoCollapseTaskWindowToolCalls] = useLocalSetting(
         TASK_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
-        false
+        false,
     );
-    const {setUser} = useUserStore();
+    const { setUser } = useUserStore();
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [settingsWindowSize, setSettingsWindowSize] = useState(loadSettingsWindowSize);
     const resizeCleanupRef = useRef(null);
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
     // ==================== Tabs 状态 ====================
     const [activeTab, setActiveTab] = useState('account');
@@ -188,18 +175,19 @@ const SettingPage = ({
     const isStaticTab = useCallback((tabId) => ['account', 'interface', 'notifications'].includes(tabId), []);
 
     const normalizeRefreshScopes = useCallback((value) => {
-        const rawScopes = Array.isArray(value) ? value : (typeof value === 'string' ? [value] : []);
-        return [...new Set(rawScopes
-            .map((scope) => String(scope || '').trim())
-            .filter(Boolean))];
+        const rawScopes = Array.isArray(value) ? value : typeof value === 'string' ? [value] : [];
+        return [...new Set(rawScopes.map((scope) => String(scope || '').trim()).filter(Boolean))];
     }, []);
 
-    const markTabRefreshOnClose = useCallback((tabId) => {
-        const tab = dynamicTabs.find((item) => item?.id === tabId);
-        normalizeRefreshScopes(tab?.refreshOnClose).forEach((scope) => {
-            pendingRefreshScopesRef.current.add(scope);
-        });
-    }, [dynamicTabs, normalizeRefreshScopes]);
+    const markTabRefreshOnClose = useCallback(
+        (tabId) => {
+            const tab = dynamicTabs.find((item) => item?.id === tabId);
+            normalizeRefreshScopes(tab?.refreshOnClose).forEach((scope) => {
+                pendingRefreshScopesRef.current.add(scope);
+            });
+        },
+        [dynamicTabs, normalizeRefreshScopes],
+    );
 
     const closeSettings = useCallback(() => {
         const refreshScopes = [...pendingRefreshScopesRef.current];
@@ -238,90 +226,99 @@ const SettingPage = ({
 
     const uploadCleanupRef = useRef(null);
 
-    const toggleFullscreen = useCallback(() => setIsFullscreen(prev => !prev), []);
+    const toggleFullscreen = useCallback(() => setIsFullscreen((prev) => !prev), []);
 
     const isDynamicTab = !['account', 'interface', 'notifications'].includes(activeTab);
     const hasUnsavedChanges = isDynamicTab && !isConfigPristine;
 
     // ==================== 加载动态 Tabs 列表 ====================
-    const loadDynamicTabs = useCallback(async ({force = false, silent = false} = {}) => {
-        if (tabsLoadingRef.current || (tabsLoadedRef.current && !force)) return;
+    const loadDynamicTabs = useCallback(
+        async ({ force = false, silent = false } = {}) => {
+            if (tabsLoadingRef.current || (tabsLoadedRef.current && !force)) return;
 
-        tabsLoadingRef.current = true;
-        try {
-            setLoadingTabs(true);
-            setTabsError(false);
-            const response = await apiClient.get(apiEndpoint.SETTING_TABS_ENDPOINT);
-            const tabs = Array.isArray(response) ? response : [];
-            setDynamicTabs(tabs);
-            tabsLoadedRef.current = true;
-        } catch (error) {
-            console.error("Failed to load setting tabs:", error);
-            if (!tabsLoadedRef.current) setDynamicTabs([]);
-            setTabsError(true);
-            if (!silent) {
-                toast.error(t("load_tabs_error") || "Failed to load settings tabs");
+            tabsLoadingRef.current = true;
+            try {
+                setLoadingTabs(true);
+                setTabsError(false);
+                const response = await apiClient.get(apiEndpoint.SETTING_TABS_ENDPOINT);
+                const tabs = Array.isArray(response) ? response : [];
+                setDynamicTabs(tabs);
+                tabsLoadedRef.current = true;
+            } catch (error) {
+                console.error('Failed to load setting tabs:', error);
+                if (!tabsLoadedRef.current) setDynamicTabs([]);
+                setTabsError(true);
+                if (!silent) {
+                    toast.error(t('load_tabs_error') || 'Failed to load settings tabs');
+                }
+            } finally {
+                tabsLoadingRef.current = false;
+                setLoadingTabs(false);
             }
-        } finally {
-            tabsLoadingRef.current = false;
-            setLoadingTabs(false);
-        }
-    }, [t]);
+        },
+        [t],
+    );
 
     // ==================== 加载单个动态 Tab 配置 ====================
-    const loadDynamicConfig = useCallback(async (tabId) => {
-        if (!tabId || isStaticTab(tabId)) return;
+    const loadDynamicConfig = useCallback(
+        async (tabId) => {
+            if (!tabId || isStaticTab(tabId)) return;
 
-        if (abortControllerRef.current) abortControllerRef.current.abort();
+            if (abortControllerRef.current) abortControllerRef.current.abort();
 
-        const controller = new AbortController();
-        const requestId = latestDynamicConfigRequestRef.current + 1;
-        latestDynamicConfigRequestRef.current = requestId;
-        abortControllerRef.current = controller;
+            const controller = new AbortController();
+            const requestId = latestDynamicConfigRequestRef.current + 1;
+            latestDynamicConfigRequestRef.current = requestId;
+            abortControllerRef.current = controller;
 
-        try {
-            setLoadingDynamicConfig(true);
-            setDynamicConfigError(false);
-            // 切换到新的动态 tab 时先清空旧配置，避免新 tab 使用旧 tab 的 schema 渲染。
-            setDynamicConfig(null);
-            setDynamicValues({});
-            setOriginalDynamicValues({});
+            try {
+                setLoadingDynamicConfig(true);
+                setDynamicConfigError(false);
+                // 切换到新的动态 tab 时先清空旧配置，避免新 tab 使用旧 tab 的 schema 渲染。
+                setDynamicConfig(null);
+                setDynamicValues({});
+                setOriginalDynamicValues({});
 
-            const response = await apiClient.get(
-                `${apiEndpoint.SETTING_TABS_ENDPOINT}/${tabId}`,
-                {signal: controller.signal}
-            );
+                const response = await apiClient.get(`${apiEndpoint.SETTING_TABS_ENDPOINT}/${tabId}`, {
+                    signal: controller.signal,
+                });
 
-            if (controller.signal.aborted || latestDynamicConfigRequestRef.current !== requestId) return;
+                if (controller.signal.aborted || latestDynamicConfigRequestRef.current !== requestId) return;
 
-            const options = Array.isArray(response?.options) ? response.options : [];
-            const initial = cloneData(response?.defaultOptions || {});
+                const options = Array.isArray(response?.options) ? response.options : [];
+                const initial = cloneData(response?.defaultOptions || {});
 
-            setDynamicConfig({...(response || {}), options});
-            setDynamicValues(initial);
-            // 后续修改始终通过不可变更新生成新对象，因此这里可以共享初始快照，
-            // 避免加载大型模型配置时在主线程连续执行两次深拷贝。
-            setOriginalDynamicValues(initial);
-            setIsConfigPristine(true);
-
-        } catch (error) {
-            if (error?.name === 'AbortError' || controller.signal.aborted || latestDynamicConfigRequestRef.current !== requestId) return;
-            console.error("Failed to load tab config:", error);
-            setDynamicConfig(null);
-            setDynamicValues({});
-            setOriginalDynamicValues({});
-            setDynamicConfigError(true);
-            toast.error(t("load_config_error") || "Failed to load settings config");
-        } finally {
-            // 只允许当前最后一次请求收尾，避免被已 abort 的旧请求把 loading 关闭。
-            if (latestDynamicConfigRequestRef.current === requestId) {
-                setLoadingDynamicConfig(false);
-                if (abortControllerRef.current === controller) {
-                    abortControllerRef.current = null;
+                setDynamicConfig({ ...(response || {}), options });
+                setDynamicValues(initial);
+                // 后续修改始终通过不可变更新生成新对象，因此这里可以共享初始快照，
+                // 避免加载大型模型配置时在主线程连续执行两次深拷贝。
+                setOriginalDynamicValues(initial);
+                setIsConfigPristine(true);
+            } catch (error) {
+                if (
+                    error?.name === 'AbortError' ||
+                    controller.signal.aborted ||
+                    latestDynamicConfigRequestRef.current !== requestId
+                )
+                    return;
+                console.error('Failed to load tab config:', error);
+                setDynamicConfig(null);
+                setDynamicValues({});
+                setOriginalDynamicValues({});
+                setDynamicConfigError(true);
+                toast.error(t('load_config_error') || 'Failed to load settings config');
+            } finally {
+                // 只允许当前最后一次请求收尾，避免被已 abort 的旧请求把 loading 关闭。
+                if (latestDynamicConfigRequestRef.current === requestId) {
+                    setLoadingDynamicConfig(false);
+                    if (abortControllerRef.current === controller) {
+                        abortControllerRef.current = null;
+                    }
                 }
             }
-        }
-    }, [cloneData, isStaticTab, t]);
+        },
+        [cloneData, isStaticTab, t],
+    );
 
     useEffect(() => {
         if (!open) return;
@@ -342,10 +339,10 @@ const SettingPage = ({
     // SettingPage 始终挂载在侧边栏中。浏览器空闲时预取一次动态标签，
     // 绝大多数情况下用户真正打开设置时已经可以直接使用缓存。
     useEffect(() => {
-        const preload = () => loadDynamicTabs({silent: true});
+        const preload = () => loadDynamicTabs({ silent: true });
 
         if (typeof window.requestIdleCallback === 'function') {
-            const idleId = window.requestIdleCallback(preload, {timeout: 1200});
+            const idleId = window.requestIdleCallback(preload, { timeout: 1200 });
             return () => window.cancelIdleCallback?.(idleId);
         }
 
@@ -357,19 +354,19 @@ const SettingPage = ({
         if (!open) return undefined;
         const unsubscribe = onEvent({
             event: 'tool.default_permissions.changed',
-        }).then(({payload}) => {
-            if (activeTab !== "default-tool-permissions" || isSavingDynamicConfigRef.current) return;
+        }).then(({ payload }) => {
+            if (activeTab !== 'default-tool-permissions' || isSavingDynamicConfigRef.current) return;
 
             const nextValues = {
                 defaultToolPermissions: {
                     revision: Number(payload.revision) || 0,
                     baseRevision: Number(payload.revision) || 0,
-                    fallbackMode: payload.fallbackMode || "ask",
+                    fallbackMode: payload.fallbackMode || 'ask',
                     permissions: payload.permissions || {},
                 },
             };
             if (!isConfigPristine) {
-                toast.info("默认工具设置已在其他页面更新；保存前请重新加载。");
+                toast.info('默认工具设置已在其他页面更新；保存前请重新加载。');
                 return;
             }
             setDynamicValues(cloneData(nextValues));
@@ -379,18 +376,21 @@ const SettingPage = ({
     }, [activeTab, cloneData, isConfigPristine, open]);
 
     // ==================== Tab 切换 ====================
-    const handleTabChange = useCallback((newTab) => {
-        if (newTab === activeTab) return;
+    const handleTabChange = useCallback(
+        (newTab) => {
+            if (newTab === activeTab) return;
 
-        if (isDynamicTab && hasUnsavedChanges) {
-            setPendingAction('tabChange');
-            setPendingTabId(newTab);
-            setShowUnsavedDialog(true);
-            return;
-        }
+            if (isDynamicTab && hasUnsavedChanges) {
+                setPendingAction('tabChange');
+                setPendingTabId(newTab);
+                setShowUnsavedDialog(true);
+                return;
+            }
 
-        performTabChange(newTab);
-    }, [activeTab, isDynamicTab, hasUnsavedChanges]);
+            performTabChange(newTab);
+        },
+        [activeTab, isDynamicTab, hasUnsavedChanges],
+    );
 
     const performTabChange = (newTab) => {
         if (!newTab) return;
@@ -421,7 +421,7 @@ const SettingPage = ({
         try {
             const response = await apiClient.post(`${apiEndpoint.SETTING_TABS_ENDPOINT}/${activeTab}`, dynamicValues);
             const savedValues = cloneData(response?.defaultOptions || response?.values || dynamicValues);
-            toast.success(t("save_success"));
+            toast.success(t('save_success'));
 
             setDynamicValues(savedValues);
             setOriginalDynamicValues(cloneData(savedValues));
@@ -436,10 +436,10 @@ const SettingPage = ({
                 setDynamicValues(latest);
                 setOriginalDynamicValues(cloneData(latest));
                 setIsConfigPristine(true);
-                toast.error(error.message || "设置已在其他页面修改，已加载服务器最新状态。");
+                toast.error(error.message || '设置已在其他页面修改，已加载服务器最新状态。');
                 return;
             }
-            toast.error(t("save_error", {"message": error?.message}));
+            toast.error(t('save_error', { message: error?.message }));
         } finally {
             isSavingDynamicConfigRef.current = false;
         }
@@ -466,7 +466,7 @@ const SettingPage = ({
         return true;
     }, [isDynamicTab, hasUnsavedChanges, closeSettings]);
 
-    useBrowserBackLayer(Boolean(open), handleBrowserBackSettings, {kind: 'settings-layer'});
+    useBrowserBackLayer(Boolean(open), handleBrowserBackSettings, { kind: 'settings-layer' });
 
     // ==================== 未保存确认处理（已修复按钮文字闪烁 + 关闭后重置为默认值） ====================
     const handleUnsavedDialogOpenChange = useCallback((isOpen) => {
@@ -516,7 +516,6 @@ const SettingPage = ({
         isProgrammaticCloseRef.current = false;
     };
 
-
     // ==================== DynamicSettings onChange ====================
     const handleDynamicValuesChange = useCallback((newValues) => {
         // DynamicSettings 只会在真实用户交互时回调；初始化和重新挂载不会
@@ -558,7 +557,7 @@ const SettingPage = ({
                 const handleComplete = (_, attachment) => {
                     setUploadDialogOpen(false);
                     uploadCleanupRef.current = null;
-                    toast.success(t("upload_success") || "上传成功");
+                    toast.success(t('upload_success') || '上传成功');
                     const imageUrl = artifactPreviewVirtualUrl(attachment.serverId) || attachment.preview || '';
                     resolve(imageUrl);
                 };
@@ -566,7 +565,7 @@ const SettingPage = ({
                 const handleError = () => {
                     setUploadDialogOpen(false);
                     uploadCleanupRef.current = null;
-                    toast.error(t("upload_failed") || "上传失败");
+                    toast.error(t('upload_failed') || '上传失败');
                     resolve('');
                 };
 
@@ -586,38 +585,45 @@ const SettingPage = ({
         setUploadDialogOpen(false);
     }, []);
 
-    const beginSettingsResize = useCallback((event) => {
-        if (isMobile || isFullscreen || event.button !== 0) return;
-        event.preventDefault();
-        const startX = event.clientX;
-        const startY = event.clientY;
-        const startSize = clampSettingsWindowSize(settingsWindowSize);
+    const beginSettingsResize = useCallback(
+        (event) => {
+            if (isMobile || isFullscreen || event.button !== 0) return;
+            event.preventDefault();
+            const startX = event.clientX;
+            const startY = event.clientY;
+            const startSize = clampSettingsWindowSize(settingsWindowSize);
 
-        resizeCleanupRef.current?.();
-        const onMove = (moveEvent) => {
-            const next = clampSettingsWindowSize({
-                width: startSize.width + (moveEvent.clientX - startX) * 2,
-                height: startSize.height + (moveEvent.clientY - startY) * 2,
-            });
-            setSettingsWindowSize(next);
-        };
-        const onUp = () => {
-            window.removeEventListener('pointermove', onMove);
-            window.removeEventListener('pointerup', onUp);
-            resizeCleanupRef.current = null;
-            setSettingsWindowSize((current) => {
-                const next = clampSettingsWindowSize(current);
-                try { setLocalSetting(SETTINGS_WINDOW_SIZE_KEY, next); } catch {}
-                return next;
-            });
-        };
-        window.addEventListener('pointermove', onMove);
-        window.addEventListener('pointerup', onUp, {once: true});
-        resizeCleanupRef.current = () => {
-            window.removeEventListener('pointermove', onMove);
-            window.removeEventListener('pointerup', onUp);
-        };
-    }, [isFullscreen, isMobile, settingsWindowSize]);
+            resizeCleanupRef.current?.();
+            const onMove = (moveEvent) => {
+                const next = clampSettingsWindowSize({
+                    width: startSize.width + (moveEvent.clientX - startX) * 2,
+                    height: startSize.height + (moveEvent.clientY - startY) * 2,
+                });
+                setSettingsWindowSize(next);
+            };
+            const onUp = () => {
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onUp);
+                resizeCleanupRef.current = null;
+                setSettingsWindowSize((current) => {
+                    const next = clampSettingsWindowSize(current);
+                    try {
+                        setLocalSetting(SETTINGS_WINDOW_SIZE_KEY, next);
+                    } catch {
+                        // Keep resizing usable when browser storage is unavailable.
+                    }
+                    return next;
+                });
+            };
+            window.addEventListener('pointermove', onMove);
+            window.addEventListener('pointerup', onUp, { once: true });
+            resizeCleanupRef.current = () => {
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onUp);
+            };
+        },
+        [isFullscreen, isMobile, settingsWindowSize],
+    );
 
     useEffect(() => () => resizeCleanupRef.current?.(), []);
 
@@ -635,57 +641,61 @@ const SettingPage = ({
                 onClick={() => handleTabChange('account')}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === 'account' ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
             >
-                <User className="w-5 h-5 shrink-0"/>
-                {!isMobile && <span className="text-sm whitespace-nowrap">{t("Settings.Account")}</span>}
+                <User className="w-5 h-5 shrink-0" />
+                {!isMobile && <span className="text-sm whitespace-nowrap">{t('Settings.Account')}</span>}
             </button>
 
             <button
                 onClick={() => handleTabChange('interface')}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === 'interface' ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
             >
-                <Layout className="w-5 h-5 shrink-0"/>
-                {!isMobile && <span className="text-sm whitespace-nowrap">{t("Settings.Interface")}</span>}
+                <Layout className="w-5 h-5 shrink-0" />
+                {!isMobile && <span className="text-sm whitespace-nowrap">{t('Settings.Interface')}</span>}
             </button>
 
             <button
                 onClick={() => handleTabChange('notifications')}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === 'notifications' ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
             >
-                <Bell className="w-5 h-5 shrink-0"/>
+                <Bell className="w-5 h-5 shrink-0" />
                 {!isMobile && <span className="text-sm whitespace-nowrap">通知</span>}
             </button>
 
-            {(!tabsError && !loadingTabs && dynamicTabs.length > 0) && !isMobile && (
-                <div className="h-px bg-gray-200 my-2 mx-2"/>
+            {!tabsError && !loadingTabs && dynamicTabs.length > 0 && !isMobile && (
+                <div className="h-px bg-gray-200 my-2 mx-2" />
             )}
 
-            {loadingTabs ? <SidebarSkeleton/> : tabsError ? (
-                    <div className="px-3 py-3 mt-2">
-                        <UnifiedErrorScreen
-                            title={t("load_error")}
-                            subtitle={t("retry_after_network")}
-                            retryText={t("retry")}
-                            onRetry={() => loadDynamicTabs({force: true})}
-                            compact
+            {loadingTabs ? (
+                <SidebarSkeleton />
+            ) : tabsError ? (
+                <div className="px-3 py-3 mt-2">
+                    <UnifiedErrorScreen
+                        title={t('load_error')}
+                        subtitle={t('retry_after_network')}
+                        retryText={t('retry')}
+                        onRetry={() => loadDynamicTabs({ force: true })}
+                        compact
+                    />
+                </div>
+            ) : dynamicTabs.length > 0 ? (
+                dynamicTabs.map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => handleTabChange(tab.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === tab.id ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
+                    >
+                        <img
+                            src={resolveResourceUrl(tab.preview)}
+                            alt={tab.name}
+                            className="w-5 h-5 shrink-0 transition-colors"
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                            }}
                         />
-                    </div>
-                ) : dynamicTabs.length > 0 ? (
-                    dynamicTabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => handleTabChange(tab.id)}
-                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === tab.id ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
-                        >
-                            <img
-                                src={resolveResourceUrl(tab.preview)}
-                                alt={tab.name}
-                                className="w-5 h-5 shrink-0 transition-colors"
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                            />
-                            {!isMobile && <span className="text-sm whitespace-nowrap">{tab.name}</span>}
-                        </button>
-                    ))
-                ) : null}
+                        {!isMobile && <span className="text-sm whitespace-nowrap">{tab.name}</span>}
+                    </button>
+                ))
+            ) : null}
         </div>
     );
 
@@ -693,22 +703,27 @@ const SettingPage = ({
     const renderContent = () => {
         if (activeTab === 'account') {
             return (
-                <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="max-w-3xl mx-auto">
-                    <UserProfileCard handleLogout={handleLogout}/>
-                    <div className="mt-8 pt-8 border-t border-gray-100">
-                        <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">{t("Settings.Account")}</p>
-                        <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-gray-400 text-sm flex items-center justify-center h-32">No other settings to display</div>
-                    </div>
+                <motion.div
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="max-w-3xl mx-auto"
+                >
+                    <UserProfileCard handleLogout={handleLogout} />
+                    <AccountSecurity />
                 </motion.div>
             );
         }
 
         if (activeTab === 'interface') {
             return (
-                <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="mx-auto max-w-3xl space-y-6">
+                <motion.div
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="mx-auto max-w-3xl space-y-6"
+                >
                     <div>
                         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                            {t("Settings.Interface")}
+                            {t('Settings.Interface')}
                         </p>
                         <Card className="gap-0 py-0 shadow-sm">
                             <CardHeader className="border-b py-5">
@@ -722,7 +737,7 @@ const SettingPage = ({
                                     checked={compactConversationList}
                                     onCheckedChange={setCompactConversationList}
                                 />
-                                <Separator/>
+                                <Separator />
                                 <InterfaceSettingItem
                                     title={t('conversation_timestamps_setting')}
                                     description={t('conversation_timestamps_setting_tip')}
@@ -746,21 +761,21 @@ const SettingPage = ({
                                 onCheckedChange={setShowQuickUserMessageNavigator}
                                 badge={t('desktop_only')}
                             />
-                            <Separator/>
+                            <Separator />
                             <InterfaceSettingItem
                                 title={t('chat_tool_call_auto_collapse_setting')}
                                 description={t('chat_tool_call_auto_collapse_setting_tip')}
                                 checked={autoCollapseChatToolCalls}
                                 onCheckedChange={setAutoCollapseChatToolCalls}
                             />
-                            <Separator/>
+                            <Separator />
                             <InterfaceSettingItem
                                 title={t('task_window_tool_call_auto_collapse_setting')}
                                 description={t('task_window_tool_call_auto_collapse_setting_tip')}
                                 checked={autoCollapseTaskWindowToolCalls}
                                 onCheckedChange={setAutoCollapseTaskWindowToolCalls}
                             />
-                            <Separator/>
+                            <Separator />
                             <InterfaceSettingItem
                                 title="机器人调试"
                                 description="在 3D 场景中显示动作与表情测试按钮。"
@@ -775,24 +790,38 @@ const SettingPage = ({
 
         if (activeTab === 'notifications') {
             return (
-                <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}}>
-                    <NotificationSettings/>
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
+                    <NotificationSettings />
                 </motion.div>
             );
         }
 
         if (loadingDynamicConfig) {
-            return <div className="h-full flex items-center justify-center"><UnifiedLoadingScreen text={t("loading_config") || "Loading settings..."} compact/></div>;
+            return (
+                <div className="h-full flex items-center justify-center">
+                    <UnifiedLoadingScreen text={t('loading_config') || 'Loading settings...'} compact />
+                </div>
+            );
         }
 
         if (dynamicConfigError) {
-            return <div className="h-full flex items-center justify-center"><UnifiedErrorScreen title={t("load_config_error") || "加载配置失败"} subtitle={t("retry_after_network") || "请检查网络后重试"} retryText={t("retry") || "重试"} onRetry={() => loadDynamicConfig(activeTab)} compact/></div>;
+            return (
+                <div className="h-full flex items-center justify-center">
+                    <UnifiedErrorScreen
+                        title={t('load_config_error') || '加载配置失败'}
+                        subtitle={t('retry_after_network') || '请检查网络后重试'}
+                        retryText={t('retry') || '重试'}
+                        onRetry={() => loadDynamicConfig(activeTab)}
+                        compact
+                    />
+                </div>
+            );
         }
 
         if (!dynamicConfig) return null;
 
         return (
-            <motion.div initial={{opacity: 0, x: 10}} animate={{opacity: 1, x: 0}} className="w-full min-w-0">
+            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="w-full min-w-0">
                 <DynamicSettings
                     key={activeTab}
                     config={dynamicConfig.options || []}
@@ -809,26 +838,26 @@ const SettingPage = ({
             {open && (
                 <div className="fixed inset-0 z-[50] flex items-center justify-center overflow-hidden pretty-scrollbar">
                     <motion.div
-                        initial={{opacity: 0}}
-                        animate={{opacity: 1}}
-                        exit={{opacity: 0}}
-                        transition={{duration: 0.14, ease: "easeOut"}}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.14, ease: 'easeOut' }}
                         onClick={handleClose}
                         className="absolute inset-0 bg-black/45 cursor-pointer"
-                        style={{willChange: "opacity"}}
+                        style={{ willChange: 'opacity' }}
                     />
 
                     <motion.div
-                        initial={isMobile ? {y: "100%"} : {opacity: 0, scale: 0.95, y: 20}}
-                        animate={{scale: 1, y: 0, opacity: 1}}
-                        exit={isMobile ? {y: "100%"} : {opacity: 0, scale: 0.95, y: 20}}
-                        transition={isMobile
-                            ? {duration: 0.22, ease: [0.22, 1, 0.36, 1]}
-                            : {duration: 0.18, ease: [0.22, 1, 0.36, 1]}}
+                        initial={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ scale: 1, y: 0, opacity: 1 }}
+                        exit={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 20 }}
+                        transition={
+                            isMobile
+                                ? { duration: 0.22, ease: [0.22, 1, 0.36, 1] }
+                                : { duration: 0.18, ease: [0.22, 1, 0.36, 1] }
+                        }
                         className={`relative bg-white shadow-2xl flex flex-col overflow-hidden cursor-default ${
-                            isFullscreen || isMobile
-                                ? 'w-full h-full'
-                                : ''
+                            isFullscreen || isMobile ? 'w-full h-full' : ''
                         }`}
                         style={{
                             width: isFullscreen || isMobile ? '100%' : settingsWindowSize.width,
@@ -836,8 +865,8 @@ const SettingPage = ({
                             maxWidth: isFullscreen || isMobile ? '100%' : 'calc(100vw - 2rem)',
                             maxHeight: isFullscreen || isMobile ? '100%' : 'calc(100vh - 2rem)',
                             borderRadius: isFullscreen || isMobile ? 0 : 12,
-                            contain: "layout paint",
-                            willChange: "transform, opacity",
+                            contain: 'layout paint',
+                            willChange: 'transform, opacity',
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -849,8 +878,8 @@ const SettingPage = ({
                                 onPointerDown={beginSettingsResize}
                                 className="absolute bottom-1 right-1 z-20 h-5 w-5 cursor-se-resize rounded-sm opacity-45 transition-opacity hover:opacity-90 focus:outline-none"
                             >
-                                <span className="absolute bottom-[3px] right-[3px] h-[8px] w-[8px] border-b-2 border-r-2 border-gray-400"/>
-                                <span className="absolute bottom-[7px] right-[7px] h-[5px] w-[5px] border-b border-r border-gray-300"/>
+                                <span className="absolute bottom-[3px] right-[3px] h-[8px] w-[8px] border-b-2 border-r-2 border-gray-400" />
+                                <span className="absolute bottom-[7px] right-[7px] h-[5px] w-[5px] border-b border-r border-gray-300" />
                             </button>
                         )}
 
@@ -862,10 +891,10 @@ const SettingPage = ({
                                         onClick={handleClose}
                                         className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                                     >
-                                        <ChevronLeft className="w-5 h-5 text-gray-600"/>
+                                        <ChevronLeft className="w-5 h-5 text-gray-600" />
                                     </button>
                                 )}
-                                <h2 className="font-bold text-lg text-gray-800">{t("Settings.Settings")}</h2>
+                                <h2 className="font-bold text-lg text-gray-800">{t('Settings.Settings')}</h2>
                             </div>
 
                             <div className="flex items-center gap-2">
@@ -874,7 +903,11 @@ const SettingPage = ({
                                         onClick={toggleFullscreen}
                                         className="p-2 hover:bg-gray-100 rounded-md text-gray-500 transition-colors cursor-pointer"
                                     >
-                                        {isFullscreen ? <Minimize2 className="w-4 h-4"/> : <Maximize2 className="w-4 h-4"/>}
+                                        {isFullscreen ? (
+                                            <Minimize2 className="w-4 h-4" />
+                                        ) : (
+                                            <Maximize2 className="w-4 h-4" />
+                                        )}
                                     </button>
                                 )}
 
@@ -883,7 +916,7 @@ const SettingPage = ({
                                         onClick={handleSave}
                                         className="flex items-center gap-1.5 px-4 h-9 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
                                     >
-                                        <Save className="w-4 h-4"/> {t("save") || "保存"}
+                                        <Save className="w-4 h-4" /> {t('save') || '保存'}
                                     </button>
                                 )}
 
@@ -892,7 +925,7 @@ const SettingPage = ({
                                         onClick={handleClose}
                                         className="p-2 hover:bg-gray-100 rounded-md text-gray-500 transition-colors cursor-pointer"
                                     >
-                                        <X className="w-5 h-5"/>
+                                        <X className="w-5 h-5" />
                                     </button>
                                 )}
                             </div>
@@ -911,12 +944,10 @@ const SettingPage = ({
                         <DialogContent className="z-[300]">
                             <DialogHeader>
                                 <DialogTitle className="flex items-center gap-2">
-                                    <Settings size={20} className="text-blue-600"/>
+                                    <Settings size={20} className="text-blue-600" />
                                     {t('unsaved_changes_confirm')}
                                 </DialogTitle>
-                                <DialogDescription>
-                                    {t('unsaved_changes_confirm_close')}
-                                </DialogDescription>
+                                <DialogDescription>{t('unsaved_changes_confirm_close')}</DialogDescription>
                             </DialogHeader>
                             <DialogFooter className="flex justify-end gap-2">
                                 <button
@@ -929,7 +960,7 @@ const SettingPage = ({
                                     onClick={confirmUnsavedAction}
                                     className="px-4 h-9 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
                                 >
-                                    {pendingAction === 'close' ? (t('close') || '关闭') : (t('switch_tab') || '切换')}
+                                    {pendingAction === 'close' ? t('close') || '关闭' : t('switch_tab') || '切换'}
                                 </button>
                             </DialogFooter>
                         </DialogContent>
@@ -952,10 +983,7 @@ const SettingPage = ({
 const SidebarSkeleton = () => (
     <div className="flex flex-col gap-1">
         {[1, 2, 3].map((i) => (
-            <div
-                key={i}
-                className="w-full h-11 px-3 py-2.5 rounded-lg bg-gray-100 animate-pulse"
-            />
+            <div key={i} className="w-full h-11 px-3 py-2.5 rounded-lg bg-gray-100 animate-pulse" />
         ))}
     </div>
 );

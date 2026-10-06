@@ -1,3 +1,4 @@
+import useIndependentChatWindow from '@/features/chat/page/hooks/useIndependentChatWindow.js';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
 import ChatPage from '@/pages/ChatPage.jsx';
@@ -36,6 +37,13 @@ const readDashboardLocation = () => {
             }
         });
 
+    if (parts[0] === 'chat-window') {
+        return {
+            pageType: 'chat',
+            conversationId: parts[1] || null,
+            documentId: new URLSearchParams(window.location.search).get('documentId') || null,
+        };
+    }
     if (parts[0] === 'chat') {
         return { pageType: 'chat', conversationId: parts[1] || null, documentId: null };
     }
@@ -45,7 +53,7 @@ const readDashboardLocation = () => {
     return null;
 };
 
-const DashboardPage = ({ type = 'chat' }) => {
+const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
     const urlParams = useParams();
     const location = useLocation();
     const outlet = useOutlet();
@@ -54,7 +62,9 @@ const DashboardPage = ({ type = 'chat' }) => {
     const previousDocumentIdRef = useRef('');
 
     const [conversationId, setConversationId] = useState(urlParams.conversationId || null);
-    const [documentId, setDocumentId] = useState(urlParams.documentId || null);
+    const [documentId, setDocumentId] = useState(
+        urlParams.documentId || (standaloneChat ? new URLSearchParams(location.search).get('documentId') : null),
+    );
 
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingError, setIsLoadingError] = useState(false);
@@ -63,6 +73,7 @@ const DashboardPage = ({ type = 'chat' }) => {
     const [settingsRefreshVersions, setSettingsRefreshVersions] = useState({});
 
     const [pageType, setPageType] = useState(type);
+    const detached = useIndependentChatWindow(conversationId, documentId);
 
     const { setUser } = useUserStore();
 
@@ -189,13 +200,16 @@ const DashboardPage = ({ type = 'chat' }) => {
             setConversationId(newConversationId);
             setDocumentId(newDocumentId);
 
-            if (pageType === 'chat') {
+            if (standaloneChat) {
+                const query = newDocumentId ? `?documentId=${encodeURIComponent(newDocumentId)}` : '';
+                updateURL(`/chat-window${urlNewConversationId}${query}`);
+            } else if (pageType === 'chat') {
                 updateURL(`/chat${urlNewConversationId}`);
             } else if (pageType === 'doc') {
                 updateURL(`/doc${urlNewDocumentId}${urlNewConversationId}`);
             }
         },
-        [pageType],
+        [pageType, standaloneChat],
     );
 
     return (
@@ -219,8 +233,9 @@ const DashboardPage = ({ type = 'chat' }) => {
                     <LoadingScreen />
                 ) : (
                     <>
-                        {pageType === 'chat' && (
+                        {pageType === 'chat' && !standaloneChat && (
                             <Sidebar
+                                forceClosed={detached}
                                 conversationId={conversationId}
                                 setConversationId={setConversationId}
                                 settings={sidebarSettings}
@@ -256,6 +271,9 @@ const DashboardPage = ({ type = 'chat' }) => {
                                                 });
                                             }}
                                             showWindowButton={false}
+                                            standaloneWindow={standaloneChat}
+                                            documentId={standaloneChat ? documentId : undefined}
+                                            pageType={standaloneChat && documentId ? 'doc' : 'chat'}
                                             settingsRefreshVersions={settingsRefreshVersions}
                                         />
                                     </motion.div>

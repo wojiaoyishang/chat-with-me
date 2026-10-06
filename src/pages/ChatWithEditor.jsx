@@ -1,3 +1,7 @@
+import { NotificationCenterTrigger } from '@/features/notification/NotificationCenter.jsx';
+import { TaskCenterTrigger } from '@/features/tasks/TaskCenter.jsx';
+import useIndependentChatWindow from '@/features/chat/page/hooks/useIndependentChatWindow.js';
+import { openChatWindow } from '@/features/chat/page/openChatWindow.js';
 import { useTranslation } from 'react-i18next';
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import ChatPage from '@/pages/ChatPage.jsx';
@@ -23,6 +27,7 @@ const ChatWithEditor = ({
     const [headerContainer, setHeaderContainer] = useState(null);
     const [mobilePanel, setMobilePanel] = useState('document');
     const isMobile = useIsMobile();
+    const detached = useIndependentChatWindow(conversationId, documentId);
     const [isMounted, setIsMounted] = useState(false);
 
     // ==================== 核心状态 ====================
@@ -119,6 +124,10 @@ const ChatWithEditor = ({
     }, [isResizing, ghostPos, getSidebarOffset]);
 
     const toggleChatPanel = useCallback(() => {
+        if (detached && !isMobile) {
+            openChatWindow({ conversationId, documentId });
+            return;
+        }
         if (isMobile) {
             setMobilePanel((panel) => (panel === 'chat' ? 'document' : 'chat'));
             setIsChatMinimized(false);
@@ -128,7 +137,7 @@ const ChatWithEditor = ({
         setIsChatMinimized(!opening);
         setIsCollapsed(false);
         setLeftWidth(lastLeftWidthRef.current);
-    }, [isMobile, isChatMinimized, isCollapsed]);
+    }, [isMobile, isChatMinimized, isCollapsed, detached, conversationId, documentId]);
 
     // ==================== ChatPage 回调 ====================
     const handleMinimizeChat = useCallback(() => {
@@ -158,13 +167,13 @@ const ChatWithEditor = ({
     }, []);
 
     // ==================== 显示控制 ====================
-    const showChatPanel = !isCollapsed && !isChatMinimized && !isWindowMode; // aside 是否显示占位
-    const chatVisible = !isCollapsed && !isChatMinimized; // ChatPage 内部浮窗是否可见
+    const showChatPanel = !detached && !isCollapsed && !isChatMinimized && !isWindowMode; // aside 是否显示占位
+    const chatVisible = !detached && !isCollapsed && !isChatMinimized; // ChatPage 内部浮窗是否可见
 
     // ==================== 样式 ====================
     const desktopDocStyle = {
-        width: isCollapsed || isChatMinimized || isWindowMode ? '100%' : `${leftWidth}%`,
-        flex: isCollapsed || isChatMinimized || isWindowMode ? '1' : 'none',
+        width: detached || isCollapsed || isChatMinimized || isWindowMode ? '100%' : `${leftWidth}%`,
+        flex: detached || isCollapsed || isChatMinimized || isWindowMode ? '1' : 'none',
     };
 
     const desktopChatStyle = {
@@ -234,6 +243,8 @@ const ChatWithEditor = ({
                 >
                     <Bot className="size-4" />
                 </Button>
+                <NotificationCenterTrigger />
+                <TaskCenterTrigger />
                 <DocumentConversationControls
                     conversationId={conversationId}
                     onSelect={onNewConversationId}

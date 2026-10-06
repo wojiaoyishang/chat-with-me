@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 256
+     - 258
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -158,11 +158,21 @@
      - 0
      - 42
      - ``src/features/chat/page/hooks/useFileUpload.js``
+   * - :doc:`src/features/chat/page/hooks/useIndependentChatWindow </api/javascript/features/chat/page/hooks/useIndependentChatWindow>`
+     - 1
+     - 0
+     - 2
+     - ``src/features/chat/page/hooks/useIndependentChatWindow.js``
    * - :doc:`src/features/chat/page/hooks/useRuntimeInspector </api/javascript/features/chat/page/hooks/useRuntimeInspector>`
      - 4
      - 0
      - 29
      - ``src/features/chat/page/hooks/useRuntimeInspector.js``
+   * - :doc:`src/features/chat/page/openChatWindow </api/javascript/features/chat/page/openChatWindow>`
+     - 7
+     - 0
+     - 3
+     - ``src/features/chat/page/openChatWindow.js``
    * - :doc:`src/features/chat/page/utils/liveMessageReconcile </api/javascript/features/chat/page/utils/liveMessageReconcile>`
      - 7
      - 0
@@ -246,7 +256,7 @@
    * - :doc:`src/features/chat/ui/BuiltinSliderButton </api/javascript/features/chat/ui/BuiltinSliderButton>`
      - 1
      - 0
-     - 4
+     - 7
      - ``src/features/chat/ui/BuiltinSliderButton.jsx``
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 8
@@ -316,7 +326,7 @@
    * - :doc:`src/features/chat/ui/chatbox/components/FullscreenEditorModal </api/javascript/features/chat/ui/chatbox/components/FullscreenEditorModal>`
      - 0
      - 0
-     - 9
+     - 6
      - ``src/features/chat/ui/chatbox/components/FullscreenEditorModal.jsx``
    * - :doc:`src/features/chat/ui/chatbox/components/MessageInput </api/javascript/features/chat/ui/chatbox/components/MessageInput>`
      - 2
@@ -513,10 +523,20 @@
      - 0
      - 18
      - ``src/features/documents/DocumentHistory.jsx``
-   * - :doc:`src/features/documents/MarkdownDocumentEditor </api/javascript/features/documents/MarkdownDocumentEditor>`
+   * - :doc:`src/features/documents/DocumentThumbnail </api/javascript/features/documents/DocumentThumbnail>`
      - 1
      - 0
-     - 62
+     - 5
+     - ``src/features/documents/DocumentThumbnail.jsx``
+   * - :doc:`src/features/documents/LocalMarkdownEditor </api/javascript/features/documents/LocalMarkdownEditor>`
+     - 1
+     - 0
+     - 13
+     - ``src/features/documents/LocalMarkdownEditor.jsx``
+   * - :doc:`src/features/documents/MarkdownDocumentEditor </api/javascript/features/documents/MarkdownDocumentEditor>`
+     - 2
+     - 0
+     - 65
      - ``src/features/documents/MarkdownDocumentEditor.jsx``
    * - :doc:`src/features/documents/collaboratorPosition </api/javascript/features/documents/collaboratorPosition>`
      - 1
@@ -568,6 +588,11 @@
      - 0
      - 16
      - ``src/features/execution/ExecutionHost.jsx``
+   * - :doc:`src/features/execution/ExecutionPauseControl </api/javascript/features/execution/ExecutionPauseControl>`
+     - 1
+     - 0
+     - 1
+     - ``src/features/execution/ExecutionPauseControl.jsx``
    * - :doc:`src/features/execution/ExecutionStatus </api/javascript/features/execution/ExecutionStatus>`
      - 1
      - 0
@@ -576,7 +601,7 @@
    * - :doc:`src/features/execution/ExecutionThinkingControl </api/javascript/features/execution/ExecutionThinkingControl>`
      - 1
      - 0
-     - 1
+     - 4
      - ``src/features/execution/ExecutionThinkingControl.jsx``
    * - :doc:`src/features/execution/ExecutionWindow </api/javascript/features/execution/ExecutionWindow>`
      - 7
@@ -618,10 +643,15 @@
      - 0
      - 8
      - ``src/features/message-map/useMessageMapSearch.js``
+   * - :doc:`src/features/notification/NotificationCenter </api/javascript/features/notification/NotificationCenter>`
+     - 2
+     - 0
+     - 26
+     - ``src/features/notification/NotificationCenter.jsx``
    * - :doc:`src/features/notification/NotificationHost </api/javascript/features/notification/NotificationHost>`
      - 4
      - 0
-     - 58
+     - 61
      - ``src/features/notification/NotificationHost.jsx``
    * - :doc:`src/features/notification/NotificationSettings </api/javascript/features/notification/NotificationSettings>`
      - 1
@@ -678,6 +708,16 @@
      - 0
      - 0
      - ``src/features/story/media/storyMediaLayout.js``
+   * - :doc:`src/features/tasks/TaskCenter </api/javascript/features/tasks/TaskCenter>`
+     - 2
+     - 0
+     - 28
+     - ``src/features/tasks/TaskCenter.jsx``
+   * - :doc:`src/features/tasks/useTaskStore </api/javascript/features/tasks/useTaskStore>`
+     - 0
+     - 0
+     - 5
+     - ``src/features/tasks/useTaskStore.js``
    * - :doc:`src/features/tools/components/ConversationToolsDialog </api/javascript/features/tools/components/ConversationToolsDialog>`
      - 8
      - 0
@@ -686,7 +726,7 @@
    * - :doc:`src/features/workspace/WorkspaceSettingsDialog </api/javascript/features/workspace/WorkspaceSettingsDialog>`
      - 10
      - 0
-     - 95
+     - 99
      - ``src/features/workspace/WorkspaceSettingsDialog.jsx``
    * - :doc:`src/features/workspace/components/FolderBrowser </api/javascript/features/workspace/components/FolderBrowser>`
      - 2
@@ -698,6 +738,11 @@
      - 0
      - 1
      - ``src/features/workspace/components/FolderBrowserDialog.jsx``
+   * - :doc:`src/features/workspace/components/WorkspaceCommandEditor </api/javascript/features/workspace/components/WorkspaceCommandEditor>`
+     - 3
+     - 0
+     - 13
+     - ``src/features/workspace/components/WorkspaceCommandEditor.jsx``
    * - :doc:`src/features/workspace/components/WorkspaceTransferCard </api/javascript/features/workspace/components/WorkspaceTransferCard>`
      - 9
      - 0
@@ -742,7 +787,9 @@
    /api/javascript/features/chat/page/hooks/useChatSpeech
    /api/javascript/features/chat/page/hooks/useChatWindowMode
    /api/javascript/features/chat/page/hooks/useFileUpload
+   /api/javascript/features/chat/page/hooks/useIndependentChatWindow
    /api/javascript/features/chat/page/hooks/useRuntimeInspector
+   /api/javascript/features/chat/page/openChatWindow
    /api/javascript/features/chat/page/utils/liveMessageReconcile
    /api/javascript/features/chat/page/utils/messageMountPoints
    /api/javascript/features/chat/page/utils/messageSummaries
@@ -813,6 +860,8 @@
    /api/javascript/features/documents/DocumentConversationControls
    /api/javascript/features/documents/DocumentDiff
    /api/javascript/features/documents/DocumentHistory
+   /api/javascript/features/documents/DocumentThumbnail
+   /api/javascript/features/documents/LocalMarkdownEditor
    /api/javascript/features/documents/MarkdownDocumentEditor
    /api/javascript/features/documents/collaboratorPosition
    /api/javascript/features/documents/commands
@@ -824,6 +873,7 @@
    /api/javascript/features/execution/ExecutionGuidanceAction
    /api/javascript/features/execution/ExecutionGuidanceBubble
    /api/javascript/features/execution/ExecutionHost
+   /api/javascript/features/execution/ExecutionPauseControl
    /api/javascript/features/execution/ExecutionStatus
    /api/javascript/features/execution/ExecutionThinkingControl
    /api/javascript/features/execution/ExecutionWindow
@@ -834,6 +884,7 @@
    /api/javascript/features/message-map/MessageMapSearch
    /api/javascript/features/message-map/messageMapLayout.worker
    /api/javascript/features/message-map/useMessageMapSearch
+   /api/javascript/features/notification/NotificationCenter
    /api/javascript/features/notification/NotificationHost
    /api/javascript/features/notification/NotificationSettings
    /api/javascript/features/notification/NotificationToast
@@ -846,10 +897,13 @@
    /api/javascript/features/story/media/StoryMediaEditor
    /api/javascript/features/story/media/StoryVideo
    /api/javascript/features/story/media/storyMediaLayout
+   /api/javascript/features/tasks/TaskCenter
+   /api/javascript/features/tasks/useTaskStore
    /api/javascript/features/tools/components/ConversationToolsDialog
    /api/javascript/features/workspace/WorkspaceSettingsDialog
    /api/javascript/features/workspace/components/FolderBrowser
    /api/javascript/features/workspace/components/FolderBrowserDialog
+   /api/javascript/features/workspace/components/WorkspaceCommandEditor
    /api/javascript/features/workspace/components/WorkspaceTransferCard
    /api/javascript/features/workspace/useWorkspaceTransferStore
 

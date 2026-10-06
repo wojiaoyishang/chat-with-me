@@ -1,3 +1,4 @@
+import { openChatWindow } from './page/openChatWindow.js';
 import { Mic, MicOff, Minimize2, PhoneOff } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useImmer } from 'use-immer';
@@ -157,6 +158,7 @@ function ChatPage({
     pageType,
     onNewConversationId,
     showWindowButton = true,
+    standaloneWindow = false,
     showMinimizeButton = false, // 是否显示最小化按钮（默认为 false）
     onMinimize, // 最小化按钮点击回调
     visible = true, // 是否显示整个 ChatPage（默认为 true，变化时带动画）
@@ -327,6 +329,15 @@ function ChatPage({
         updateStreamingStatus,
         handleChatBoxHeightChange,
     } = useChatScroll(messagesContainerRef);
+
+    const openIndependentChat = useCallback(() => {
+        if (standaloneWindow) return;
+        if (!openChatWindow({ conversationId, documentId })) toast.error(t('chatWindow.blocked'));
+    }, [standaloneWindow, conversationId, documentId, t]);
+    const handleWindowMode = () => {
+        if (isMobile) toggleWindowMode();
+        else openIndependentChat();
+    };
 
     const markLiveStreamMessages = useCallback((messageIds, runId = null) => {
         const normalizedIds = (Array.isArray(messageIds) ? messageIds : [messageIds])
@@ -2295,6 +2306,7 @@ function ChatPage({
                 'conversation.deleted',
                 'conversation.messages.reload_requested',
                 'conversation.messages.reconciled',
+                'turn.started',
                 'turn.completed',
                 'turn.cancelled',
                 'turn.failed',
@@ -2771,6 +2783,16 @@ function ChatPage({
                     if (payload.reply) reply({ success: true });
                     break;
                 }
+                case 'turn.started':
+                    if (payload.resumed) {
+                        // Resume creates a new Run. Reload its history snapshot so
+                        // messages.loaded attaches a reader with matching cursors.
+                        if (payload.messageId && eventRunId) {
+                            markLiveStreamMessages([payload.messageId], eventRunId);
+                        }
+                        setRandomMark(generateUUID());
+                    }
+                    break;
                 case 'turn.completed':
                 case 'turn.cancelled':
                 case 'turn.failed':
@@ -3387,8 +3409,9 @@ function ChatPage({
                             handleDragTouchMove={handleDragTouchMove}
                             handleDragTouchEnd={handleDragTouchEnd}
                             isDragReady={isDragReady}
-                            showWindowButton={showWindowButton}
-                            onToggleWindow={toggleWindowMode}
+                            showTaskButton={standaloneWindow || !documentId}
+                            showWindowButton={showWindowButton && !standaloneWindow}
+                            onToggleWindow={handleWindowMode}
                             showMinimizeButton={showMinimizeButton}
                             onMinimize={onMinimize}
                             conversationMeta={conversationMeta}
@@ -3617,7 +3640,7 @@ function ChatPage({
                         )}
                         <footer
                             className={
-                                avatarImmersive
+                                avatarImmersive || standaloneWindow
                                     ? 'hidden'
                                     : 'flex h-8 shrink-0 items-center justify-center px-4 bg-background'
                             }
@@ -3644,7 +3667,14 @@ function ChatPage({
                             hostElement={chatPageRef.current}
                             expanded={avatarExpanded}
                             onToggleExpanded={toggleAvatarExpanded}
-                            onOpenHistory={() => setAvatarHistoryOpen(true)}
+                            onOpenHistory={
+                                standaloneWindow
+                                    ? undefined
+                                    : () => {
+                                          if (isMobile) setAvatarHistoryOpen(true);
+                                          else openIndependentChat();
+                                      }
+                            }
                         />
                     )}
                     <RealtimeVoiceSurface

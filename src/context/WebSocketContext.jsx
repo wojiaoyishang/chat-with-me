@@ -1,14 +1,16 @@
-import React, {createContext, useContext, useEffect, useRef, useState} from 'react';
-import {toast} from 'sonner';
-import {useTranslation} from 'react-i18next';
+import apiClient from '@/lib/apiClient.js';
+import { apiEndpoint } from '@/config.js';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 import FatalErrorPopoverElement from '@/context/FatalErrorPopover.jsx';
 import globalMessageCallback from '@/hooks/messageCallback.jsx';
-import {dispatchIncomingEvent, emitEvent} from '@/context/useEventStore.jsx';
-import {WEBSOCKET_URL} from '@/config.js';
-import {EventName} from '@/runtime/protocol/events.js';
-import {WebSocketTransport} from '@/runtime/transport/WebSocketTransport.js';
-import {flushRealtimeEvents, getRealtimeTransport, setRealtimeTransport} from '@/runtime/transport/channel.js';
+import { dispatchIncomingEvent, emitEvent } from '@/context/useEventStore.jsx';
+import { WEBSOCKET_URL } from '@/config.js';
+import { EventName } from '@/runtime/protocol/events.js';
+import { WebSocketTransport } from '@/runtime/transport/WebSocketTransport.js';
+import { flushRealtimeEvents, getRealtimeTransport, setRealtimeTransport } from '@/runtime/transport/channel.js';
 
 let globalTransport = null;
 let currentRetryFunction = null;
@@ -27,8 +29,8 @@ export const retryWebSocketConnection = () => {
     return Promise.reject(new Error('No active realtime retry handler is available'));
 };
 
-export const WebSocketProvider = ({children}) => {
-    const {t} = useTranslation();
+export const WebSocketProvider = ({ children }) => {
+    const { t } = useTranslation();
     const transportRef = useRef(null);
     const retryingRef = useRef(false);
     const initialConnectionRef = useRef(true);
@@ -87,12 +89,12 @@ export const WebSocketProvider = ({children}) => {
                     timestamp_ms: header.timestamp_ms ?? Date.now(),
                     sequence: Number.isFinite(Number(header.sequence)) ? Number(header.sequence) : 0,
                     reply_to: header.reply_to || null,
-                    payload: {...(header.metadata || {}), header, body},
+                    payload: { ...(header.metadata || {}), header, body },
                 });
             },
             onProtocolError: (error) => {
                 console.error('[CWM Protocol]', error);
-                emitEvent({event: EventName.PROTOCOL_ERROR, payload: {message: error.message}, localOnly: true});
+                emitEvent({ event: EventName.PROTOCOL_ERROR, payload: { message: error.message }, localOnly: true });
             },
             onClose: (event) => {
                 retryingRef.current = false;
@@ -105,17 +107,22 @@ export const WebSocketProvider = ({children}) => {
                 }
                 emitEvent({
                     event: EventName.TRANSPORT_DISCONNECTED,
-                    payload: {code: event.code, reason: event.reason || ''},
+                    payload: { code: event.code, reason: event.reason || '' },
                     localOnly: true,
                 });
 
+                if (event.code === 4401 && window.location.pathname !== '/login') {
+                    window.location.replace('/login');
+                    return;
+                }
                 if (event.code === 4401 || event.code === 1000 || initialConnectionRef.current) return;
                 if (event.code === 1012) {
                     window.setTimeout(() => {
                         toast.promise(createConnection(true), {
                             loading: t('websocket.reconnecting'),
                             success: () => t('websocket.connect_success'),
-                            error: (error) => t('websocket.connect_failed', {message: error.message || t('unknown_error')}),
+                            error: (error) =>
+                                t('websocket.connect_failed', { message: error.message || t('unknown_error') }),
                         });
                     }, 1000);
                     return;
@@ -125,18 +132,20 @@ export const WebSocketProvider = ({children}) => {
                     message: t('websocket.popover_content'),
                     showCloseButton: true,
                     showCancelButton: false,
-                    onRetry: () => toast.promise(createConnection(true), {
-                        loading: t('websocket.connecting'),
-                        success: () => t('websocket.connect_success'),
-                        error: (error) => t('websocket.connect_failed', {message: error.message || t('unknown_error')}),
-                    }),
+                    onRetry: () =>
+                        toast.promise(createConnection(true), {
+                            loading: t('websocket.connecting'),
+                            success: () => t('websocket.connect_success'),
+                            error: (error) =>
+                                t('websocket.connect_failed', { message: error.message || t('unknown_error') }),
+                        }),
                 });
             },
             onError: (error) => {
                 retryingRef.current = false;
                 emitEvent({
                     event: EventName.TRANSPORT_ERROR,
-                    payload: {message: error?.message || 'Unknown realtime transport error'},
+                    payload: { message: error?.message || 'Unknown realtime transport error' },
                     localOnly: true,
                 });
             },
@@ -167,15 +176,45 @@ export const WebSocketProvider = ({children}) => {
         };
     }, []);
 
+    useEffect(() => {
+        if (!isConnected) return undefined;
+        let timer,
+            disposed = false,
+            inFlight = false;
+        const renew = async () => {
+            if (disposed || inFlight) return;
+            inFlight = true;
+            clearTimeout(timer);
+            try {
+                const data = await apiClient.post(apiEndpoint.SESSION_REFRESH_ENDPOINT);
+                if (!disposed)
+                    timer = setTimeout(renew, Math.max(1000, Math.min(data.refreshAfterSeconds * 1000, 600000)));
+            } catch {
+                if (!disposed) timer = setTimeout(renew, 30000);
+            } finally {
+                inFlight = false;
+            }
+        };
+        void renew();
+        window.addEventListener('focus', renew);
+        return () => {
+            disposed = true;
+            clearTimeout(timer);
+            window.removeEventListener('focus', renew);
+        };
+    }, [isConnected]);
+
     return (
-        <WebSocketContext.Provider value={{
-            isConnected,
-            connectionId,
-            messages,
-            transport: transportRef.current,
-            sendMessage: sendWebSocketMessage,
-            retry: retryWebSocketConnection,
-        }}>
+        <WebSocketContext.Provider
+            value={{
+                isConnected,
+                connectionId,
+                messages,
+                transport: transportRef.current,
+                sendMessage: sendWebSocketMessage,
+                retry: retryWebSocketConnection,
+            }}
+        >
             {children}
         </WebSocketContext.Provider>
     );

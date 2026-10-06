@@ -18,11 +18,6 @@
      - 0
      - 12
      - ``src/components/editor/CollaboraOnlineEditor.jsx``
-   * - :doc:`src/components/editor/SimpleMDEditor </api/javascript/components/editor/SimpleMDEditor>`
-     - 1
-     - 0
-     - 3
-     - ``src/components/editor/SimpleMDEditor.jsx``
    * - :doc:`src/components/files/FileManager </api/javascript/components/files/FileManager>`
      - 1
      - 0
@@ -213,6 +208,11 @@
      - 0
      - 7
      - ``src/components/modal/universalModal.js``
+   * - :doc:`src/components/setting/AccountSecurity </api/javascript/components/setting/AccountSecurity>`
+     - 1
+     - 0
+     - 10
+     - ``src/components/setting/AccountSecurity.jsx``
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
      - 53
      - 0
@@ -338,6 +338,11 @@
      - 0
      - 0
      - ``src/components/ui/separator.tsx``
+   * - :doc:`src/components/ui/sheet </api/javascript/components/ui/sheet>`
+     - 1
+     - 0
+     - 0
+     - ``src/components/ui/sheet.jsx``
    * - :doc:`src/components/ui/slider </api/javascript/components/ui/slider>`
      - 1
      - 0
@@ -374,7 +379,6 @@
    :maxdepth: 1
 
    /api/javascript/components/editor/CollaboraOnlineEditor
-   /api/javascript/components/editor/SimpleMDEditor
    /api/javascript/components/files/FileManager
    /api/javascript/components/files/FileUploadProgress
    /api/javascript/components/files/uploadPolicy
@@ -413,6 +417,7 @@
    /api/javascript/components/markdown/replacementProtocol
    /api/javascript/components/modal/UniversalModalHost
    /api/javascript/components/modal/universalModal
+   /api/javascript/components/setting/AccountSecurity
    /api/javascript/components/setting/DynamicSettings
    /api/javascript/components/setting/OrderedOptionsEditor
    /api/javascript/components/setting/UserProfileCard
@@ -438,6 +443,7 @@
    /api/javascript/components/ui/radio-group
    /api/javascript/components/ui/select
    /api/javascript/components/ui/separator
+   /api/javascript/components/ui/sheet
    /api/javascript/components/ui/slider
    /api/javascript/components/ui/sonner
    /api/javascript/components/ui/switch

@@ -1,3 +1,4 @@
+import { resolveCwmUrl } from './virtualUrl.js';
 import apiClient from './apiClient.js';
 import { BASE_BACKEND_URL } from '@/config.js';
 
@@ -18,9 +19,21 @@ export function isDocumentDownloadUrl(value) {
 
 export async function downloadDocumentResource(url) {
     if (!isDocumentDownloadUrl(url)) throw new Error('Invalid document download URL');
+    return downloadAuthorizedResource(url);
+}
+
+export async function downloadAttachmentResource(value, filename) {
+    if (!/^cwm:\/\/artifact\/[A-Za-z0-9._-]+$/.test(value || '')) throw new Error('Invalid attachment download URL');
+    return downloadAuthorizedResource(resolveCwmUrl(value), filename);
+}
+
+async function downloadAuthorizedResource(url, preferredFilename) {
     let response;
     try {
-        response = await apiClient.get(url, { responseType: 'blob', rawResponse: true });
+        response = await apiClient.get(new URL(url, window.location.origin).href, {
+            responseType: 'blob',
+            rawResponse: true,
+        });
     } catch (error) {
         if (error.response?.data instanceof Blob) {
             try {
@@ -32,10 +45,14 @@ export async function downloadDocumentResource(url) {
         }
         throw error;
     }
+    if (response.headers['content-type']?.includes('application/json')) {
+        const body = JSON.parse(await response.data.text());
+        throw new Error(body.msg || 'Download failed');
+    }
     const disposition = response.headers['content-disposition'] || '';
     const encoded = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
     const plain = /filename="([^"]+)"/i.exec(disposition);
-    const filename = encoded ? decodeURIComponent(encoded[1]) : plain?.[1] || 'download';
+    const filename = preferredFilename || (encoded ? decodeURIComponent(encoded[1]) : plain?.[1] || 'download');
     const objectUrl = URL.createObjectURL(response.data);
     const link = document.createElement('a');
     link.href = objectUrl;

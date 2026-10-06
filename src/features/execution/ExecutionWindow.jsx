@@ -1,3 +1,4 @@
+import ExecutionPauseControl from './ExecutionPauseControl.jsx';
 import ExecutionThinkingControl from './ExecutionThinkingControl.jsx';
 import ExecutionGuidanceAction from './ExecutionGuidanceAction.jsx';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -270,6 +271,7 @@ const ExecutionWindow = memo(
                         : '任务执行记录仍可查看；可恢复任务会创建新的实际 Run 继续执行。'}
                 </div>
                 <div className="flex shrink-0 gap-2">
+                    {active && <ExecutionPauseControl execution={execution} />}
                     {recoverable && !active && (
                         <Button
                             variant="outline"

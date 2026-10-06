@@ -27,7 +27,7 @@ Non-modal scene host leaves the chat composer available for typing.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:475:3618:FUNCTION
+.. CWM-AST-FUNCTION src/features/avatar-scene/AvatarScenePanel.jsx:475:3635:FUNCTION
 
 .. js:function:: AvatarScenePanel({ conversationId, modelId, modelRevision, onClose, hostElement, expanded, onToggleExpanded, onOpenH…)
 

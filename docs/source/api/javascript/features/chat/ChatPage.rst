@@ -17,23 +17,23 @@ src/features/chat/ChatPage 模块
 * **模块标识**：``src/features/chat/ChatPage``
 * **顶层函数/组件/Hook**：13
 * **类**：0
-* **局部函数与匿名回调**：256
+* **局部函数与匿名回调**：258
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``lucide-react``、``react``、``use-immer``、``immer``、``@/lib/tools.jsx``、``sonner``、``framer-motion``、``@/context/useEventStore.jsx``、``react-i18next``、``react-router-dom``、``@/lib/apiClient.js``、``@/config.js``、``@/components/ui/DeleteConfirmDialog``、``@/features/chat/page/components/RuntimeInspectorDialog.jsx``、``@/features/chat/page/hooks/useRuntimeInspector.js``、``@/features/chat/page/components/QuickUserMessageNavigator.jsx``、``@/features/story/StoryReader.jsx``、``@/features/execution``、``@/features/workspace/useWorkspaceTransferStore.js``、``./attachmentVision.js``、``./modelCapabilities.js``、``./widgets/WidgetPresentationContext.jsx``、``./voice/index.js``、``./page/components/ChatHistoryViewport.jsx``、``@/features/avatar-scene/AvatarScenePanel.jsx``、``@/features/avatar-scene/useImmersiveComposer.js``、``@/components/ui/button``、``@/lib/browserHistoryLayers.js``、``@/features/chat/page/utils/messageSummaries.js``、``@/features/chat/page/utils/liveMessageReconcile.js``。
+``./page/openChatWindow.js``、``lucide-react``、``react``、``use-immer``、``immer``、``@/lib/tools.jsx``、``sonner``、``framer-motion``、``@/context/useEventStore.jsx``、``react-i18next``、``react-router-dom``、``@/lib/apiClient.js``、``@/config.js``、``@/components/ui/DeleteConfirmDialog``、``@/features/chat/page/components/RuntimeInspectorDialog.jsx``、``@/features/chat/page/hooks/useRuntimeInspector.js``、``@/features/chat/page/components/QuickUserMessageNavigator.jsx``、``@/features/story/StoryReader.jsx``、``@/features/execution``、``@/features/workspace/useWorkspaceTransferStore.js``、``./attachmentVision.js``、``./modelCapabilities.js``、``./widgets/WidgetPresentationContext.jsx``、``./voice/index.js``、``./page/components/ChatHistoryViewport.jsx``、``@/features/avatar-scene/AvatarScenePanel.jsx``、``@/features/avatar-scene/useImmersiveComposer.js``、``@/components/ui/button``、``@/lib/browserHistoryLayers.js``、``@/features/chat/page/utils/messageSummaries.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:3084:3184:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:3143:3243:FUNCTION
 
 .. js:function:: normalizeVoiceRecognitionEngine(value)
 
    规范化与 ``Voice Recognition Engine`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``75``—``77`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``76``—``78`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``String(value || 'remote').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:3233:3374:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:3292:3433:FUNCTION
 
 .. js:function:: getBrowserSpeechRecognitionConstructor()
 
    读取与 ``Browser Speech Recognition Constructor`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``79``—``82`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``80``—``83`` 行。
 
    **参数**
 
@@ -66,13 +66,13 @@ src/features/chat/ChatPage 模块
 
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:3419:3660:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:3478:3719:FUNCTION
 
 .. js:function:: normalizeSpeechRecognitionLanguage(language)
 
    规范化与 ``Speech Recognition Language`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``84``—``90`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``85``—``91`` 行。
 
    **参数**
 
@@ -85,13 +85,13 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``String(language || '').trim``、``String``、``value.toLowerCase().startsWith``、``value.toLowerCase``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:3791:3957:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:3850:4016:FUNCTION
 
 .. js:function:: sleep(delay)
 
    实现 ``sleep`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``96``—``100`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``97``—``101`` 行。
 
    **参数**
 
@@ -108,13 +108,13 @@ src/features/chat/ChatPage 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:3982:4035:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4041:4094:FUNCTION
 
 .. js:function:: getAsrEndpoint()
 
    读取与 ``Asr Endpoint`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``102``—``102`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``103``—``103`` 行。
 
    **参数**
 
@@ -126,13 +126,13 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``String(apiEndpoint?.ASR_ENDPOINT || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4065:4220:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4124:4279:FUNCTION
 
 .. js:function:: joinAsrTaskEndpoint(endpoint, id)
 
    实现 ``joinAsrTaskEndpoint`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``104``—``107`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``105``—``108`` 行。
 
    **参数**
 
@@ -148,13 +148,13 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``String(endpoint || '').replace``、``String``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4241:4407:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4300:4466:FUNCTION
 
 .. js:function:: hasAsrText(data)
 
    实现 ``hasAsrText`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``109``—``114`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``110``—``115`` 行。
 
    **参数**
 
@@ -167,13 +167,13 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``Object.prototype.hasOwnProperty.call``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4431:4483:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4490:4542:FUNCTION
 
 .. js:function:: isAsrFinished(data)
 
    判断与 ``Asr Finished`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``116``—``116`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``117``—``117`` 行。
 
    **参数**
 
@@ -186,13 +186,13 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``hasAsrText``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4510:4610:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4569:4669:FUNCTION
 
 .. js:function:: getAsrTextResult(data)
 
    读取与 ``Asr Text Result`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``118``—``121`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``119``—``122`` 行。
 
    **参数**
 
@@ -205,13 +205,13 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``hasAsrText``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4634:4779:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4693:4838:FUNCTION
 
 .. js:function:: getAsrTimeout(data)
 
    读取与 ``Asr Timeout`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``123``—``126`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``124``—``127`` 行。
 
    **参数**
 
@@ -224,13 +224,13 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``Number``、``Number.isFinite``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4810:5410:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:4869:5469:FUNCTION
 
 .. js:function:: getPcm16kRequestBody(payload)
 
    读取与 ``Pcm16k Request Body`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``128``—``146`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``129``—``147`` 行。
 
    **参数**
 
@@ -247,13 +247,13 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``ArrayBuffer.isView``、``pcm16k.buffer.slice``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:5442:5586:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:5501:5645:FUNCTION
 
 .. js:function:: translateWithFallback(t, key, fallback, options)
 
    实现 ``translateWithFallback`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``148``—``151`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``149``—``152`` 行。
 
    **参数**
 
@@ -275,18 +275,18 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:5587:168021:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:5646:169491:FUNCTION
 
-.. js:function:: ChatPage({ conversationId, documentId, pageType, onNewConversationId, showWindowButton = true, showMinimizeB…)
+.. js:function:: ChatPage({ conversationId, documentId, pageType, onNewConversationId, showWindowButton = true, standaloneWin…)
 
    渲染 ``ChatPage`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``154``—``3788`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``155``—``3818`` 行。
 
    **参数**
 
-   ``{ conversationId, documentId, pageType, onNewConversationId, showWindowButton = true, showMinimizeB…``
-      调用方传入的 ``conversationId, documentId, pageType, onNewConversationId, showWindowButton = true, showMinimizeB…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ conversationId, documentId, pageType, onNewConversationId, showWindowButton = true, standaloneWin…``
+      调用方传入的 ``conversationId, documentId, pageType, onNewConversationId, showWindowButton = true, standaloneWin…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -303,24 +303,24 @@ src/features/chat/ChatPage 模块
 
    **主要协作调用**：``useTranslation``、``useLocation``、``useRef``、``generateUUID``、``useState``、``useImmer``、``useLocalSetting``、``useRuntimeInspector``、``useIsMobile``、``t``、``useEffect``、``useCallback``。
 
-   **内部回调数量**：94。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：96。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:3819:3956:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:3878:4015:FUNCTION
 
-.. rubric:: ``anonymous callback @ 97``
+.. rubric:: ``anonymous callback @ 98``
 
 .. code-block:: javascript
 
-   anonymous callback @ 97(resolve)
+   anonymous callback @ 98(resolve)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``97``—``100`` 行；所属函数 ``sleep``。
+**性质**：同步局部函数；源码第 ``98``—``101`` 行；所属函数 ``sleep``。
 
 **参数**
 
@@ -337,17 +337,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``timer``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:10319:10357:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:10408:10446:FUNCTION
 
-.. rubric:: ``useState callback @ 246``
+.. rubric:: ``useState callback @ 248``
 
 .. code-block:: javascript
 
-   useState callback @ 246()
+   useState callback @ 248()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``246``—``246`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``248``—``248`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -359,17 +359,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Date.now``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:10751:10814:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:10840:10903:FUNCTION
 
-.. rubric:: ``useEffect callback @ 254``
+.. rubric:: ``useEffect callback @ 256``
 
 .. code-block:: javascript
 
-   useEffect callback @ 254()
+   useEffect callback @ 256()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``254``—``256`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``256``—``258`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -379,17 +379,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:10849:11086:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:10938:11175:FUNCTION
 
-.. rubric:: ``useEffect callback @ 259``
+.. rubric:: ``useEffect callback @ 261``
 
 .. code-block:: javascript
 
-   useEffect callback @ 259()
+   useEffect callback @ 261()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``259``—``264`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``261``—``266`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -401,17 +401,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:10863:11086:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:10952:11175:FUNCTION
 
-.. rubric:: ``anonymous callback @ 259``
+.. rubric:: ``anonymous callback @ 261``
 
 .. code-block:: javascript
 
-   anonymous callback @ 259()
+   anonymous callback @ 261()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``259``—``264`` 行；所属函数 ``useEffect callback @ 259``。
+**性质**：同步局部函数；源码第 ``261``—``266`` 行；所属函数 ``useEffect callback @ 261``。
 
 **参数**
 
@@ -423,17 +423,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:11160:12061:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:11249:12150:FUNCTION
 
-.. rubric:: ``useCallback callback @ 268``
+.. rubric:: ``useCallback callback @ 270``
 
 .. code-block:: javascript
 
-   useCallback callback @ 268(nextState)
+   useCallback callback @ 270(nextState)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``268``—``285`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``270``—``287`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -448,17 +448,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:11768:12036:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:11857:12125:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 278``
+.. rubric:: ``setTimeout callback @ 280``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 278()
+   setTimeout callback @ 280()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``278``—``283`` 行；所属函数 ``useCallback callback @ 268``。
+**性质**：同步局部函数；源码第 ``280``—``285`` 行；所属函数 ``useCallback callback @ 270``。
 
 **参数**
 
@@ -472,17 +472,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:11818:11939:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:11907:12028:FUNCTION
 
-.. rubric:: ``setContextCompactionState callback @ 279``
+.. rubric:: ``setContextCompactionState callback @ 281``
 
 .. code-block:: javascript
 
-   setContextCompactionState callback @ 279(current)
+   setContextCompactionState callback @ 281(current)
 
 设置与 ``Context Compaction State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``279``—``280`` 行；所属函数 ``setTimeout callback @ 278``。
+**性质**：同步局部函数；源码第 ``281``—``282`` 行；所属函数 ``setTimeout callback @ 280``。
 
 **参数**
 
@@ -493,17 +493,61 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:13448:14139:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:13534:13684:FUNCTION
 
-.. rubric:: ``useCallback callback @ 331``
+.. rubric:: ``useCallback callback @ 333``
 
 .. code-block:: javascript
 
-   useCallback callback @ 331(messageIds, runId)
+   useCallback callback @ 333()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``331``—``343`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``333``—``336`` 行；所属函数 ``ChatPage``。
+
+**参数**
+
+无。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+**主要协作调用**：``openChatWindow``、``toast.error``、``t``。
+
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:13766:13858:FUNCTION
+
+.. rubric:: ``handleWindowMode``
+
+.. code-block:: javascript
+
+   handleWindowMode()
+
+处理 ``Window Mode`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``337``—``340`` 行；所属函数 ``ChatPage``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``toggleWindowMode``、``openIndependentChat``。
+
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:13908:14599:FUNCTION
+
+.. rubric:: ``useCallback callback @ 342``
+
+.. code-block:: javascript
+
+   useCallback callback @ 342(messageIds, runId)
+
+封装 ``Callback`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``342``—``354`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -525,17 +569,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:13583:13620:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:14043:14080:FUNCTION
 
-.. rubric:: ``(Array.isArray(messageIds) ? messageIds : [messageIds]) .map callback @ 333``
+.. rubric:: ``(Array.isArray(messageIds) ? messageIds : [messageIds]) .map callback @ 344``
 
 .. code-block:: javascript
 
-   (Array.isArray(messageIds) ? messageIds : [messageIds]) .map callback @ 333(value)
+   (Array.isArray(messageIds) ? messageIds : [messageIds]) .map callback @ 344(value)
 
 作为 ``(Array.isArray(messageIds) ? messageIds : [messageIds]) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``333``—``333`` 行；所属函数 ``useCallback callback @ 331``。
+**性质**：同步局部函数；源码第 ``344``—``344`` 行；所属函数 ``useCallback callback @ 342``。
 
 **参数**
 
@@ -548,17 +592,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``String(value || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:13726:13787:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:14186:14247:FUNCTION
 
-.. rubric:: ``normalizedIds.forEach callback @ 337``
+.. rubric:: ``normalizedIds.forEach callback @ 348``
 
 .. code-block:: javascript
 
-   normalizedIds.forEach callback @ 337(messageId)
+   normalizedIds.forEach callback @ 348(messageId)
 
 作为 ``normalizedIds.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``337``—``337`` 行；所属函数 ``useCallback callback @ 331``。
+**性质**：同步局部函数；源码第 ``348``—``348`` 行；所属函数 ``useCallback callback @ 342``。
 
 **参数**
 
@@ -571,17 +615,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``liveStreamMessageIdsRef.current.add``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:14014:14055:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:14474:14515:FUNCTION
 
-.. rubric:: ``normalizedIds.forEach callback @ 341``
+.. rubric:: ``normalizedIds.forEach callback @ 352``
 
 .. code-block:: javascript
 
-   normalizedIds.forEach callback @ 341(messageId)
+   normalizedIds.forEach callback @ 352(messageId)
 
 作为 ``normalizedIds.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``341``—``341`` 行；所属函数 ``useCallback callback @ 331``。
+**性质**：同步局部函数；源码第 ``352``—``352`` 行；所属函数 ``useCallback callback @ 342``。
 
 **参数**
 
@@ -594,17 +638,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``runMessages.add``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:14190:14797:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:14650:15257:FUNCTION
 
-.. rubric:: ``useCallback callback @ 345``
+.. rubric:: ``useCallback callback @ 356``
 
 .. code-block:: javascript
 
-   useCallback callback @ 345(runId)
+   useCallback callback @ 356(runId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``345``—``357`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``356``—``368`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -623,17 +667,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:14519:14789:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:14979:15249:FUNCTION
 
-.. rubric:: ``runMessages.forEach callback @ 351``
+.. rubric:: ``runMessages.forEach callback @ 362``
 
 .. code-block:: javascript
 
-   runMessages.forEach callback @ 351(messageId)
+   runMessages.forEach callback @ 362(messageId)
 
 作为 ``runMessages.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``351``—``356`` 行；所属函数 ``useCallback callback @ 345``。
+**性质**：同步局部函数；源码第 ``362``—``367`` 行；所属函数 ``useCallback callback @ 356``。
 
 **参数**
 
@@ -648,17 +692,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:14626:14683:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:15086:15143:FUNCTION
 
-.. rubric:: ``Array.from(liveStreamRunMessagesRef.current.values()).some callback @ 352``
+.. rubric:: ``Array.from(liveStreamRunMessagesRef.current.values()).some callback @ 363``
 
 .. code-block:: javascript
 
-   Array.from(liveStreamRunMessagesRef.current.values()).some callback @ 352(messageIds)
+   Array.from(liveStreamRunMessagesRef.current.values()).some callback @ 363(messageIds)
 
 作为 ``Array.from(liveStreamRunMessagesRef.current.values()).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``352``—``353`` 行；所属函数 ``runMessages.forEach callback @ 351``。
+**性质**：同步局部函数；源码第 ``363``—``364`` 行；所属函数 ``runMessages.forEach callback @ 362``。
 
 **参数**
 
@@ -671,17 +715,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``messageIds.has``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:14857:15947:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:15317:16407:FUNCTION
 
-.. rubric:: ``useCallback callback @ 359``
+.. rubric:: ``useCallback callback @ 370``
 
 .. code-block:: javascript
 
-   useCallback callback @ 359(messageIds)
+   useCallback callback @ 370(messageIds)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``359``—``383`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``370``—``394`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -700,17 +744,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:15275:15312:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:15735:15772:FUNCTION
 
-.. rubric:: ``(Array.isArray(messageIds) ? messageIds : [messageIds]) .map callback @ 366``
+.. rubric:: ``(Array.isArray(messageIds) ? messageIds : [messageIds]) .map callback @ 377``
 
 .. code-block:: javascript
 
-   (Array.isArray(messageIds) ? messageIds : [messageIds]) .map callback @ 366(value)
+   (Array.isArray(messageIds) ? messageIds : [messageIds]) .map callback @ 377(value)
 
 作为 ``(Array.isArray(messageIds) ? messageIds : [messageIds]) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``366``—``366`` 行；所属函数 ``useCallback callback @ 359``。
+**性质**：同步局部函数；源码第 ``377``—``377`` 行；所属函数 ``useCallback callback @ 370``。
 
 **参数**
 
@@ -723,17 +767,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``String(value || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:15759:15826:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:16219:16286:FUNCTION
 
-.. rubric:: ``nextOrder.every callback @ 377``
+.. rubric:: ``nextOrder.every callback @ 388``
 
 .. code-block:: javascript
 
-   nextOrder.every callback @ 377(messageId, index)
+   nextOrder.every callback @ 388(messageId, index)
 
 作为 ``nextOrder.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``377``—``377`` 行；所属函数 ``useCallback callback @ 359``。
+**性质**：同步局部函数；源码第 ``388``—``388`` 行；所属函数 ``useCallback callback @ 370``。
 
 **参数**
 
@@ -747,17 +791,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:15996:16837:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:16456:17297:FUNCTION
 
-.. rubric:: ``useCallback callback @ 386``
+.. rubric:: ``useCallback callback @ 397``
 
 .. code-block:: javascript
 
-   useCallback callback @ 386(sourceMessages)
+   useCallback callback @ 397(sourceMessages)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``386``—``402`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``397``—``413`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -772,17 +816,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:16065:16836:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:16525:17296:FUNCTION
 
-.. rubric:: ``produce callback @ 387``
+.. rubric:: ``produce callback @ 398``
 
 .. code-block:: javascript
 
-   produce callback @ 387(draft)
+   produce callback @ 398(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``387``—``402`` 行；所属函数 ``useCallback callback @ 386``。
+**性质**：同步局部函数；源码第 ``398``—``413`` 行；所属函数 ``useCallback callback @ 397``。
 
 **参数**
 
@@ -797,17 +841,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:16128:16820:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:16588:17280:FUNCTION
 
-.. rubric:: ``Object.keys(draft || {}).forEach callback @ 388``
+.. rubric:: ``Object.keys(draft || {}).forEach callback @ 399``
 
 .. code-block:: javascript
 
-   Object.keys(draft || {}).forEach callback @ 388(key)
+   Object.keys(draft || {}).forEach callback @ 399(key)
 
 作为 ``Object.keys(draft || {}).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``388``—``401`` 行；所属函数 ``produce callback @ 387``。
+**性质**：同步局部函数；源码第 ``399``—``412`` 行；所属函数 ``produce callback @ 398``。
 
 **参数**
 
@@ -820,17 +864,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:16438:16560:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:16898:17020:FUNCTION
 
-.. rubric:: ``anonymous callback @ 394``
+.. rubric:: ``anonymous callback @ 405``
 
 .. code-block:: javascript
 
-   anonymous callback @ 394(componentKey, componentRef)
+   anonymous callback @ 405(componentKey, componentRef)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``394``—``396`` 行；所属函数 ``Object.keys(draft || {}).forEach callback @ 388``。
+**性质**：同步局部函数；源码第 ``405``—``407`` 行；所属函数 ``Object.keys(draft || {}).forEach callback @ 399``。
 
 **参数**
 
@@ -844,17 +888,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:16612:16712:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:17072:17172:FUNCTION
 
-.. rubric:: ``anonymous callback @ 397``
+.. rubric:: ``anonymous callback @ 408``
 
 .. code-block:: javascript
 
-   anonymous callback @ 397(componentKey)
+   anonymous callback @ 408(componentKey)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``397``—``399`` 行；所属函数 ``Object.keys(draft || {}).forEach callback @ 388``。
+**性质**：同步局部函数；源码第 ``408``—``410`` 行；所属函数 ``Object.keys(draft || {}).forEach callback @ 399``。
 
 **参数**
 
@@ -865,17 +909,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:16757:16801:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:17217:17261:FUNCTION
 
-.. rubric:: ``anonymous callback @ 400``
+.. rubric:: ``anonymous callback @ 411``
 
 .. code-block:: javascript
 
-   anonymous callback @ 400(componentKey)
+   anonymous callback @ 411(componentKey)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``400``—``400`` 行；所属函数 ``Object.keys(draft || {}).forEach callback @ 388``。
+**性质**：同步局部函数；源码第 ``411``—``411`` 行；所属函数 ``Object.keys(draft || {}).forEach callback @ 399``。
 
 **参数**
 
@@ -886,17 +930,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:16904:19561:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:17364:20021:FUNCTION
 
-.. rubric:: ``useCallback callback @ 407``
+.. rubric:: ``useCallback callback @ 418``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 407({ silent = false, append = false })
+   async useCallback callback @ 418({ silent = false, append = false })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``407``—``465`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``418``—``476`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -913,17 +957,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setMessageSummaries``、``setMessageSummaryLoading``、``getMessageSummaryAppendCursor``、``apiClient.get``、``collected.push``、``mergeMessageSummaryItems``、``toast.error``、``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:19687:20126:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:20147:20586:FUNCTION
 
-.. rubric:: ``useCallback callback @ 470``
+.. rubric:: ``useCallback callback @ 481``
 
 .. code-block:: javascript
 
-   useCallback callback @ 470(modelListRef)
+   useCallback callback @ 481(modelListRef)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``470``—``482`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``481``—``493`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -938,17 +982,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:19909:20094:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:20369:20554:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 474``
+.. rubric:: ``requestAnimationFrame callback @ 485``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 474()
+   requestAnimationFrame callback @ 485()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``474``—``479`` 行；所属函数 ``useCallback callback @ 470``。
+**性质**：同步局部函数；源码第 ``485``—``490`` 行；所属函数 ``useCallback callback @ 481``。
 
 **参数**
 
@@ -960,17 +1004,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``selectedItem.scrollIntoView``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:20181:20399:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:20641:20859:FUNCTION
 
-.. rubric:: ``useCallback callback @ 484``
+.. rubric:: ``useCallback callback @ 495``
 
 .. code-block:: javascript
 
-   useCallback callback @ 484(open)
+   useCallback callback @ 495(open)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``484``—``491`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``495``—``502`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -983,17 +1027,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setIsModelPopoverOpen``、``setPreviewModel``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:20478:20781:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:20938:21241:FUNCTION
 
-.. rubric:: ``useCallback callback @ 495``
+.. rubric:: ``useCallback callback @ 506``
 
 .. code-block:: javascript
 
-   useCallback callback @ 495(model)
+   useCallback callback @ 506(model)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``495``—``503`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``506``—``514`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1006,17 +1050,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setSelectedModel``、``setAdvancedSettings``、``Array.isArray``、``setIsModelPopoverOpen``、``setPreviewModel``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:20860:20974:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:21320:21434:FUNCTION
 
-.. rubric:: ``useCallback callback @ 507``
+.. rubric:: ``useCallback callback @ 518``
 
 .. code-block:: javascript
 
-   useCallback callback @ 507(model)
+   useCallback callback @ 518(model)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``507``—``511`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``518``—``522`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1029,17 +1073,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setPreviewModel``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:21437:21563:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:21897:22023:FUNCTION
 
-.. rubric:: ``useCallback callback @ 530``
+.. rubric:: ``useCallback callback @ 541``
 
 .. code-block:: javascript
 
-   useCallback callback @ 530()
+   useCallback callback @ 541()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``530``—``532`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``541``—``543`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1051,17 +1095,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``normalizeVoiceRecognitionEngine``、``getLocalSetting``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:21630:21910:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:22090:22370:FUNCTION
 
-.. rubric:: ``useCallback callback @ 534``
+.. rubric:: ``useCallback callback @ 545``
 
 .. code-block:: javascript
 
-   useCallback callback @ 534()
+   useCallback callback @ 545()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``534``—``539`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``545``—``550`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1073,17 +1117,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``normalizeSpeechRecognitionLanguage``、``getLocalSetting``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:21985:23084:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:22445:23544:FUNCTION
 
-.. rubric:: ``useCallback callback @ 541``
+.. rubric:: ``useCallback callback @ 552``
 
 .. code-block:: javascript
 
-   useCallback callback @ 541({ cancel = false })
+   useCallback callback @ 552({ cancel = false })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``541``—``574`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``552``—``585`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1102,17 +1146,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:22305:23076:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:22765:23536:FUNCTION
 
-.. rubric:: ``anonymous callback @ 550``
+.. rubric:: ``anonymous callback @ 561``
 
 .. code-block:: javascript
 
-   anonymous callback @ 550(resolve)
+   anonymous callback @ 561(resolve)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``550``—``573`` 行；所属函数 ``useCallback callback @ 541``。
+**性质**：同步局部函数；源码第 ``561``—``584`` 行；所属函数 ``useCallback callback @ 552``。
 
 **参数**
 
@@ -1131,7 +1175,7 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:22379:22682:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:22839:23142:FUNCTION
 
 .. rubric:: ``settle``
 
@@ -1141,7 +1185,7 @@ src/features/chat/ChatPage 模块
 
 实现 ``settle`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``552``—``558`` 行；所属函数 ``anonymous callback @ 550``。
+**性质**：同步局部函数；源码第 ``563``—``569`` 行；所属函数 ``anonymous callback @ 561``。
 
 **参数**
 
@@ -1157,17 +1201,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``window.clearTimeout``、``\x60${session.finalTranscript} ${session.interimTranscript}\x60.trim``、``resolve``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:23146:24974:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:23606:25434:FUNCTION
 
-.. rubric:: ``useCallback callback @ 576``
+.. rubric:: ``useCallback callback @ 587``
 
 .. code-block:: javascript
 
-   useCallback callback @ 576()
+   useCallback callback @ 587()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``576``—``631`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``587``—``642`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1181,17 +1225,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:23901:24515:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:24361:24975:FUNCTION
 
-.. rubric:: ``anonymous callback @ 598``
+.. rubric:: ``anonymous callback @ 609``
 
 .. code-block:: javascript
 
-   anonymous callback @ 598(event)
+   anonymous callback @ 609(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``598``—``613`` 行；所属函数 ``useCallback callback @ 576``。
+**性质**：同步局部函数；源码第 ``609``—``624`` 行；所属函数 ``useCallback callback @ 587``。
 
 **参数**
 
@@ -1204,17 +1248,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``\x60${session.finalTranscript} ${transcript}\x60.trim``、``\x60${interimTranscript} ${transcript}\x60.trim``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:24547:24621:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:25007:25081:FUNCTION
 
-.. rubric:: ``anonymous callback @ 615``
+.. rubric:: ``anonymous callback @ 626``
 
 .. code-block:: javascript
 
-   anonymous callback @ 615(event)
+   anonymous callback @ 626(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``615``—``617`` 行；所属函数 ``useCallback callback @ 576``。
+**性质**：同步局部函数；源码第 ``626``—``628`` 行；所属函数 ``useCallback callback @ 587``。
 
 **参数**
 
@@ -1225,17 +1269,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:24651:24660:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:25111:25120:FUNCTION
 
-.. rubric:: ``anonymous callback @ 619``
+.. rubric:: ``anonymous callback @ 630``
 
 .. code-block:: javascript
 
-   anonymous callback @ 619()
+   anonymous callback @ 630()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``619``—``619`` 行；所属函数 ``useCallback callback @ 576``。
+**性质**：同步局部函数；源码第 ``630``—``630`` 行；所属函数 ``useCallback callback @ 587``。
 
 **参数**
 
@@ -1245,17 +1289,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:25099:25637:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:25559:26097:FUNCTION
 
-.. rubric:: ``useCallback callback @ 633``
+.. rubric:: ``useCallback callback @ 644``
 
 .. code-block:: javascript
 
-   useCallback callback @ 633()
+   useCallback callback @ 644()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``633``—``649`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``644``—``660`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1267,17 +1311,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``getDefaultVoiceRecognitionEngine``、``startBrowserSpeechRecognition``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:25758:28991:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:26218:29451:FUNCTION
 
-.. rubric:: ``useCallback callback @ 652``
+.. rubric:: ``useCallback callback @ 663``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 652(payload)
+   async useCallback callback @ 663(payload)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``652``—``737`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``663``—``748`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1296,17 +1340,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``getAsrEndpoint``、``toast.error``、``translateWithFallback``、``getPcm16kRequestBody``、``apiClient.post``、``getAsrTextResult``、``isAsrFinished``、``getAsrTimeout``、``Date.now``、``joinAsrTaskEndpoint``、``sleep``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:29058:29924:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:29518:30384:FUNCTION
 
-.. rubric:: ``useCallback callback @ 742``
+.. rubric:: ``useCallback callback @ 753``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 742(payload)
+   async useCallback callback @ 753(payload)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``742``—``764`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``753``—``775`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1319,17 +1363,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``getDefaultVoiceRecognitionEngine``、``stopBrowserSpeechRecognition``、``['aborted', 'no-speech'].includes``、``String``、``toast.error``、``t``、``toast.info``、``handleRemoteVoicePcmReady``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:30089:30218:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:30549:30678:FUNCTION
 
-.. rubric:: ``useCallback callback @ 768``
+.. rubric:: ``useCallback callback @ 779``
 
 .. code-block:: javascript
 
-   useCallback callback @ 768()
+   useCallback callback @ 779()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``768``—``771`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``779``—``782`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1341,17 +1385,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``stopBrowserSpeechRecognition``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:30734:30851:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:31194:31311:FUNCTION
 
-.. rubric:: ``useCallback callback @ 787``
+.. rubric:: ``useCallback callback @ 798``
 
 .. code-block:: javascript
 
-   useCallback callback @ 787()
+   useCallback callback @ 798()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``787``—``789`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``798``—``800`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1363,17 +1407,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Date.now``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:30906:31017:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:31366:31477:FUNCTION
 
-.. rubric:: ``useCallback callback @ 791``
+.. rubric:: ``useCallback callback @ 802``
 
 .. code-block:: javascript
 
-   useCallback callback @ 791(duration)
+   useCallback callback @ 802(duration)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``791``—``793`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``802``—``804`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1386,17 +1430,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Date.now``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:31072:31474:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:31532:31934:FUNCTION
 
-.. rubric:: ``useCallback callback @ 795``
+.. rubric:: ``useCallback callback @ 806``
 
 .. code-block:: javascript
 
-   useCallback callback @ 795()
+   useCallback callback @ 806()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``795``—``804`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``806``—``815`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1408,17 +1452,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Date.now``、``setShowScrollToBottomButton``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:31600:31843:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:32060:32303:FUNCTION
 
-.. rubric:: ``useCallback callback @ 806``
+.. rubric:: ``useCallback callback @ 817``
 
 .. code-block:: javascript
 
-   useCallback callback @ 806()
+   useCallback callback @ 817()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``806``—``812`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``817``—``823`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1430,17 +1474,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``checkScrollPosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:32082:33780:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:32542:34240:FUNCTION
 
-.. rubric:: ``useCallback callback @ 817``
+.. rubric:: ``useCallback callback @ 828``
 
 .. code-block:: javascript
 
-   useCallback callback @ 817(shouldAutoScroll, options)
+   useCallback callback @ 828(shouldAutoScroll, options)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``817``—``861`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``828``—``872`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1458,7 +1502,7 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:32253:33338:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:32713:33798:FUNCTION
 
 .. rubric:: ``doScroll``
 
@@ -1468,7 +1512,7 @@ src/features/chat/ChatPage 模块
 
 实现 ``doScroll`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``820``—``846`` 行；所属函数 ``useCallback callback @ 817``。
+**性质**：同步局部函数；源码第 ``831``—``857`` 行；所属函数 ``useCallback callback @ 828``。
 
 **参数**
 
@@ -1480,7 +1524,7 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``isUserAutoScrollUnlocked``、``markProgrammaticScroll``、``smoothScrollToBottom``、``requestScrollToBottom``、``checkScrollPosition``、``setShowScrollToBottomButton``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:33374:33621:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:33834:34081:FUNCTION
 
 .. rubric:: ``runAfterPaint``
 
@@ -1490,7 +1534,7 @@ src/features/chat/ChatPage 模块
 
 实现 ``runAfterPaint`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``848``—``854`` 行；所属函数 ``useCallback callback @ 817``。
+**性质**：同步局部函数；源码第 ``859``—``865`` 行；所属函数 ``useCallback callback @ 828``。
 
 **参数**
 
@@ -1504,17 +1548,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:33421:33605:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:33881:34065:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 849``
+.. rubric:: ``requestAnimationFrame callback @ 860``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 849()
+   requestAnimationFrame callback @ 860()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``849``—``853`` 行；所属函数 ``runAfterPaint``。
+**性质**：同步局部函数；源码第 ``860``—``864`` 行；所属函数 ``runAfterPaint``。
 
 **参数**
 
@@ -1526,17 +1570,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``doScroll``、``requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:34150:34539:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:34610:34999:FUNCTION
 
-.. rubric:: ``useCallback callback @ 874``
+.. rubric:: ``useCallback callback @ 885``
 
 .. code-block:: javascript
 
-   useCallback callback @ 874()
+   useCallback callback @ 885()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``874``—``884`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``885``—``895`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1548,17 +1592,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``restoreLatestMessagesRef.current``、``markProgrammaticScroll``、``handleScrollToBottomClick``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:36373:36445:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:36833:36905:FUNCTION
 
-.. rubric:: ``useEffect callback @ 936``
+.. rubric:: ``useEffect callback @ 947``
 
 .. code-block:: javascript
 
-   useEffect callback @ 936()
+   useEffect callback @ 947()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``936``—``938`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``947``—``949`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1570,17 +1614,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setAvatarHistoryOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:36613:36706:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:37073:37166:FUNCTION
 
-.. rubric:: ``useCallback callback @ 940``
+.. rubric:: ``useCallback callback @ 951``
 
 .. code-block:: javascript
 
-   useCallback callback @ 940()
+   useCallback callback @ 951()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``940``—``943`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``951``—``954`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1594,17 +1638,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:36681:36698:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:37141:37158:FUNCTION
 
-.. rubric:: ``setAvatarSceneOpen callback @ 942``
+.. rubric:: ``setAvatarSceneOpen callback @ 953``
 
 .. code-block:: javascript
 
-   setAvatarSceneOpen callback @ 942(value)
+   setAvatarSceneOpen callback @ 953(value)
 
 设置与 ``Avatar Scene Open`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``942``—``942`` 行；所属函数 ``useCallback callback @ 940``。
+**性质**：同步局部函数；源码第 ``953``—``953`` 行；所属函数 ``useCallback callback @ 951``。
 
 **参数**
 
@@ -1615,17 +1659,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:36758:36800:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:37218:37260:FUNCTION
 
-.. rubric:: ``useCallback callback @ 944``
+.. rubric:: ``useCallback callback @ 955``
 
 .. code-block:: javascript
 
-   useCallback callback @ 944()
+   useCallback callback @ 955()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``944``—``944`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``955``—``955`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1639,17 +1683,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:36782:36799:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:37242:37259:FUNCTION
 
-.. rubric:: ``setAvatarExpanded callback @ 944``
+.. rubric:: ``setAvatarExpanded callback @ 955``
 
 .. code-block:: javascript
 
-   setAvatarExpanded callback @ 944(value)
+   setAvatarExpanded callback @ 955(value)
 
 设置与 ``Avatar Expanded`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``944``—``944`` 行；所属函数 ``useCallback callback @ 944``。
+**性质**：同步局部函数；源码第 ``955``—``955`` 行；所属函数 ``useCallback callback @ 955``。
 
 **参数**
 
@@ -1660,17 +1704,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:36848:36930:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:37308:37390:FUNCTION
 
-.. rubric:: ``useCallback callback @ 945``
+.. rubric:: ``useCallback callback @ 956``
 
 .. code-block:: javascript
 
-   useCallback callback @ 945()
+   useCallback callback @ 956()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``945``—``948`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``956``—``959`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1682,17 +1726,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setAvatarExpanded``、``setAvatarSceneOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:37325:37397:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:37785:37857:FUNCTION
 
-.. rubric:: ``useEffect callback @ 962``
+.. rubric:: ``useEffect callback @ 973``
 
 .. code-block:: javascript
 
-   useEffect callback @ 962()
+   useEffect callback @ 973()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``962``—``964`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``973``—``975`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1704,17 +1748,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``closeAvatarScene``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:37555:37701:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:38015:38161:FUNCTION
 
-.. rubric:: ``useEffect callback @ 967``
+.. rubric:: ``useEffect callback @ 978``
 
 .. code-block:: javascript
 
-   useEffect callback @ 967()
+   useEffect callback @ 978()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``967``—``970`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``978``—``981`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1726,17 +1770,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Boolean``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:38013:38057:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:38473:38517:FUNCTION
 
-.. rubric:: ``useEffect callback @ 975``
+.. rubric:: ``useEffect callback @ 986``
 
 .. code-block:: javascript
 
-   useEffect callback @ 975()
+   useEffect callback @ 986()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``975``—``977`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``986``—``988`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1748,17 +1792,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``syncStreamingSpeech``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:38130:38666:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:38590:39126:FUNCTION
 
-.. rubric:: ``useCallback callback @ 979``
+.. rubric:: ``useCallback callback @ 990``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 979()
+   async useCallback callback @ 990()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``979``—``995`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``990``—``1006`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1774,17 +1818,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setStories``、``apiClient.get``、``Array.isArray``、``console.error``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:38722:39477:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:39182:39937:FUNCTION
 
-.. rubric:: ``useCallback callback @ 998``
+.. rubric:: ``useCallback callback @ 1009``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 998(storyId)
+   async useCallback callback @ 1009(storyId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``998``—``1016`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``1009``—``1027`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1801,17 +1845,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``apiClient.get``、``setActiveStory``、``setStoryReaderOpen``、``toast.error``、``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:39561:40652:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:40021:41112:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1021``
+.. rubric:: ``useCallback callback @ 1032``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1021(storyId, partId, changes)
+   async useCallback callback @ 1032(storyId, partId, changes)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1021``—``1044`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``1032``—``1055`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1834,17 +1878,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:39991:40120:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:40451:40580:FUNCTION
 
-.. rubric:: ``setStories callback @ 1029``
+.. rubric:: ``setStories callback @ 1040``
 
 .. code-block:: javascript
 
-   setStories callback @ 1029(current)
+   setStories callback @ 1040(current)
 
 设置与 ``Stories`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1029``—``1030`` 行；所属函数 ``useCallback callback @ 1021``。
+**性质**：同步局部函数；源码第 ``1040``—``1041`` 行；所属函数 ``useCallback callback @ 1032``。
 
 **参数**
 
@@ -1859,17 +1903,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:40032:40119:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:40492:40579:FUNCTION
 
-.. rubric:: ``current.map callback @ 1030``
+.. rubric:: ``current.map callback @ 1041``
 
 .. code-block:: javascript
 
-   current.map callback @ 1030(item)
+   current.map callback @ 1041(item)
 
 作为 ``current.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1030``—``1030`` 行；所属函数 ``setStories callback @ 1029``。
+**性质**：同步局部函数；源码第 ``1041``—``1041`` 行；所属函数 ``setStories callback @ 1040``。
 
 **参数**
 
@@ -1882,17 +1926,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:40164:40553:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:40624:41013:FUNCTION
 
-.. rubric:: ``setActiveStory callback @ 1032``
+.. rubric:: ``setActiveStory callback @ 1043``
 
 .. code-block:: javascript
 
-   setActiveStory callback @ 1032(current)
+   setActiveStory callback @ 1043(current)
 
 设置与 ``Active Story`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1032``—``1041`` 行；所属函数 ``useCallback callback @ 1021``。
+**性质**：同步局部函数；源码第 ``1043``—``1052`` 行；所属函数 ``useCallback callback @ 1032``。
 
 **参数**
 
@@ -1907,17 +1951,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:40405:40496:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:40865:40956:FUNCTION
 
-.. rubric:: ``(current.parts || []).map callback @ 1037``
+.. rubric:: ``(current.parts || []).map callback @ 1048``
 
 .. code-block:: javascript
 
-   (current.parts || []).map callback @ 1037(item)
+   (current.parts || []).map callback @ 1048(item)
 
 作为 ``(current.parts || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1037``—``1038`` 行；所属函数 ``setActiveStory callback @ 1032``。
+**性质**：同步局部函数；源码第 ``1048``—``1049`` 行；所属函数 ``setActiveStory callback @ 1043``。
 
 **参数**
 
@@ -1930,17 +1974,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:40727:42039:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:41187:42499:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1049``
+.. rubric:: ``useCallback callback @ 1060``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1049(storyId, title)
+   async useCallback callback @ 1060(storyId, title)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1049``—``1079`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``1060``—``1090`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -1960,17 +2004,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:41192:41381:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:41652:41841:FUNCTION
 
-.. rubric:: ``setStories callback @ 1059``
+.. rubric:: ``setStories callback @ 1070``
 
 .. code-block:: javascript
 
-   setStories callback @ 1059(current)
+   setStories callback @ 1070(current)
 
 设置与 ``Stories`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1059``—``1062`` 行；所属函数 ``useCallback callback @ 1049``。
+**性质**：同步局部函数；源码第 ``1070``—``1073`` 行；所属函数 ``useCallback callback @ 1060``。
 
 **参数**
 
@@ -1985,17 +2029,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:41241:41354:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:41701:41814:FUNCTION
 
-.. rubric:: ``current.map callback @ 1060``
+.. rubric:: ``current.map callback @ 1071``
 
 .. code-block:: javascript
 
-   current.map callback @ 1060(item)
+   current.map callback @ 1071(item)
 
 作为 ``current.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1060``—``1061`` 行；所属函数 ``setStories callback @ 1059``。
+**性质**：同步局部函数；源码第 ``1071``—``1072`` 行；所属函数 ``setStories callback @ 1070``。
 
 **参数**
 
@@ -2008,17 +2052,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:41441:41563:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:41901:42023:FUNCTION
 
-.. rubric:: ``setActiveStory callback @ 1064``
+.. rubric:: ``setActiveStory callback @ 1075``
 
 .. code-block:: javascript
 
-   setActiveStory callback @ 1064(current)
+   setActiveStory callback @ 1075(current)
 
 设置与 ``Active Story`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1064``—``1065`` 行；所属函数 ``useCallback callback @ 1049``。
+**性质**：同步局部函数；源码第 ``1075``—``1076`` 行；所属函数 ``useCallback callback @ 1060``。
 
 **参数**
 
@@ -2031,17 +2075,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:42114:43216:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:42574:43676:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1084``
+.. rubric:: ``useCallback callback @ 1095``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1084(storyId)
+   async useCallback callback @ 1095(storyId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1084``—``1109`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``1095``—``1120`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -2058,17 +2102,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:42424:42503:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:42884:42963:FUNCTION
 
-.. rubric:: ``setStories callback @ 1090``
+.. rubric:: ``setStories callback @ 1101``
 
 .. code-block:: javascript
 
-   setStories callback @ 1090(current)
+   setStories callback @ 1101(current)
 
 设置与 ``Stories`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1090``—``1090`` 行；所属函数 ``useCallback callback @ 1084``。
+**性质**：同步局部函数；源码第 ``1101``—``1101`` 行；所属函数 ``useCallback callback @ 1095``。
 
 **参数**
 
@@ -2083,17 +2127,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:42452:42502:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:42912:42962:FUNCTION
 
-.. rubric:: ``current.filter callback @ 1090``
+.. rubric:: ``current.filter callback @ 1101``
 
 .. code-block:: javascript
 
-   current.filter callback @ 1090(item)
+   current.filter callback @ 1101(item)
 
 作为 ``current.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1090``—``1090`` 行；所属函数 ``setStories callback @ 1090``。
+**性质**：同步局部函数；源码第 ``1101``—``1101`` 行；所属函数 ``setStories callback @ 1101``。
 
 **参数**
 
@@ -2106,17 +2150,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:42537:42787:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:42997:43247:FUNCTION
 
-.. rubric:: ``setActiveStory callback @ 1091``
+.. rubric:: ``setActiveStory callback @ 1102``
 
 .. code-block:: javascript
 
-   setActiveStory callback @ 1091(current)
+   setActiveStory callback @ 1102(current)
 
 设置与 ``Active Story`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1091``—``1097`` 行；所属函数 ``useCallback callback @ 1084``。
+**性质**：同步局部函数；源码第 ``1102``—``1108`` 行；所属函数 ``useCallback callback @ 1095``。
 
 **参数**
 
@@ -2129,17 +2173,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Number``、``setStoryReaderOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:43294:43623:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:43754:44083:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1114``
+.. rubric:: ``useCallback callback @ 1125``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1114(story, part)
+   useCallback callback @ 1125(story, part)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1114``—``1121`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1125``—``1132`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -2155,17 +2199,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``[part.title, part.bodyMarkdown].filter(Boolean).join``、``[part.title, part.bodyMarkdown].filter``、``handleSpeakContentRequest``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:43710:43757:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:44170:44217:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1125``
+.. rubric:: ``useCallback callback @ 1136``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1125()
+   useCallback callback @ 1136()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1125``—``1127`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1136``—``1138`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -2177,17 +2221,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``cancelActiveSpeech``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:43797:43898:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:44257:44358:FUNCTION
 
-.. rubric:: ``useEffect callback @ 1129``
+.. rubric:: ``useEffect callback @ 1140``
 
 .. code-block:: javascript
 
-   useEffect callback @ 1129()
+   useEffect callback @ 1140()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1129``—``1133`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1140``—``1144`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -2199,17 +2243,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``loadStories``、``setStoryReaderOpen``、``setActiveStory``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:43947:47654:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:44407:48114:FUNCTION
 
-.. rubric:: ``useEffect callback @ 1136``
+.. rubric:: ``useEffect callback @ 1147``
 
 .. code-block:: javascript
 
-   useEffect callback @ 1136()
+   useEffect callback @ 1147()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1136``—``1209`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1147``—``1220`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -2227,17 +2271,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:44175:47653:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:44635:48113:FUNCTION
 
-.. rubric:: ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1141``
+.. rubric:: ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1152``
 
 .. code-block:: javascript
 
-   onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1141({ event, payload })
+   onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1152({ event, payload })
 
 处理 ``Event({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversation Id, include…`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1141``—``1209`` 行；所属函数 ``useEffect callback @ 1136``。
+**性质**：同步局部函数；源码第 ``1152``—``1220`` 行；所属函数 ``useEffect callback @ 1147``。
 
 **参数**
 
@@ -2252,17 +2296,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:44532:44605:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:44992:45065:FUNCTION
 
-.. rubric:: ``setStories callback @ 1149``
+.. rubric:: ``setStories callback @ 1160``
 
 .. code-block:: javascript
 
-   setStories callback @ 1149(current)
+   setStories callback @ 1160(current)
 
 设置与 ``Stories`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1149``—``1149`` 行；所属函数 ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1141``。
+**性质**：同步局部函数；源码第 ``1160``—``1160`` 行；所属函数 ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1152``。
 
 **参数**
 
@@ -2277,17 +2321,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:44560:44604:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:45020:45064:FUNCTION
 
-.. rubric:: ``current.filter callback @ 1149``
+.. rubric:: ``current.filter callback @ 1160``
 
 .. code-block:: javascript
 
-   current.filter callback @ 1149(item)
+   current.filter callback @ 1160(item)
 
 作为 ``current.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1149``—``1149`` 行；所属函数 ``setStories callback @ 1149``。
+**性质**：同步局部函数；源码第 ``1160``—``1160`` 行；所属函数 ``setStories callback @ 1160``。
 
 **参数**
 
@@ -2300,17 +2344,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:44643:44911:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:45103:45371:FUNCTION
 
-.. rubric:: ``setActiveStory callback @ 1150``
+.. rubric:: ``setActiveStory callback @ 1161``
 
 .. code-block:: javascript
 
-   setActiveStory callback @ 1150(current)
+   setActiveStory callback @ 1161(current)
 
 设置与 ``Active Story`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1150``—``1156`` 行；所属函数 ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1141``。
+**性质**：同步局部函数；源码第 ``1161``—``1167`` 行；所属函数 ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1152``。
 
 **参数**
 
@@ -2323,17 +2367,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Number``、``setStoryReaderOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:45388:45911:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:45848:46371:FUNCTION
 
-.. rubric:: ``loadStories().then callback @ 1167``
+.. rubric:: ``loadStories().then callback @ 1178``
 
 .. code-block:: javascript
 
-   loadStories().then callback @ 1167(values)
+   loadStories().then callback @ 1178(values)
 
 处理 ``loadStories().then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``1167``—``1177`` 行；所属函数 ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1141``。
+**性质**：同步局部函数；源码第 ``1178``—``1188`` 行；所属函数 ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1152``。
 
 **参数**
 
@@ -2348,17 +2392,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:45441:45887:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:45901:46347:FUNCTION
 
-.. rubric:: ``setActiveStory callback @ 1168``
+.. rubric:: ``setActiveStory callback @ 1179``
 
 .. code-block:: javascript
 
-   setActiveStory callback @ 1168(current)
+   setActiveStory callback @ 1179(current)
 
 设置与 ``Active Story`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1168``—``1176`` 行；所属函数 ``loadStories().then callback @ 1167``。
+**性质**：同步局部函数；源码第 ``1179``—``1187`` 行；所属函数 ``loadStories().then callback @ 1178``。
 
 **参数**
 
@@ -2373,17 +2417,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:45579:45637:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:46039:46097:FUNCTION
 
-.. rubric:: ``values.some callback @ 1170``
+.. rubric:: ``values.some callback @ 1181``
 
 .. code-block:: javascript
 
-   values.some callback @ 1170(item)
+   values.some callback @ 1181(item)
 
 作为 ``values.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1170``—``1170`` 行；所属函数 ``setActiveStory callback @ 1168``。
+**性质**：同步局部函数；源码第 ``1181``—``1181`` 行；所属函数 ``setActiveStory callback @ 1179``。
 
 **参数**
 
@@ -2396,17 +2440,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:45960:46541:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:46420:47001:FUNCTION
 
-.. rubric:: ``setStories callback @ 1180``
+.. rubric:: ``setStories callback @ 1191``
 
 .. code-block:: javascript
 
-   setStories callback @ 1180(current)
+   setStories callback @ 1191(current)
 
 设置与 ``Stories`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1180``—``1190`` 行；所属函数 ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1141``。
+**性质**：同步局部函数；源码第 ``1191``—``1201`` 行；所属函数 ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1152``。
 
 **参数**
 
@@ -2421,17 +2465,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:46027:46091:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:46487:46551:FUNCTION
 
-.. rubric:: ``current.findIndex callback @ 1181``
+.. rubric:: ``current.findIndex callback @ 1192``
 
 .. code-block:: javascript
 
-   current.findIndex callback @ 1181(item)
+   current.findIndex callback @ 1192(item)
 
 实现 ``current.findIndex`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1181``—``1181`` 行；所属函数 ``setStories callback @ 1180``。
+**性质**：同步局部函数；源码第 ``1192``—``1192`` 行；所属函数 ``setStories callback @ 1191``。
 
 **参数**
 
@@ -2444,17 +2488,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:46575:47637:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:47035:48097:FUNCTION
 
-.. rubric:: ``setActiveStory callback @ 1191``
+.. rubric:: ``setActiveStory callback @ 1202``
 
 .. code-block:: javascript
 
-   setActiveStory callback @ 1191(current)
+   setActiveStory callback @ 1202(current)
 
 设置与 ``Active Story`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1191``—``1208`` 行；所属函数 ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1141``。
+**性质**：同步局部函数；源码第 ``1202``—``1219`` 行；所属函数 ``onEvent({ event: ['story.open', 'story.changed', 'story.deleted', 'story.permissions.changed'], conversationId, include… callback @ 1152``。
 
 **参数**
 
@@ -2469,17 +2513,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:47151:47194:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:47611:47654:FUNCTION
 
-.. rubric:: ``existing.filter callback @ 1199``
+.. rubric:: ``existing.filter callback @ 1210``
 
 .. code-block:: javascript
 
-   existing.filter callback @ 1199(item)
+   existing.filter callback @ 1210(item)
 
 作为 ``existing.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1199``—``1199`` 行；所属函数 ``setActiveStory callback @ 1191``。
+**性质**：同步局部函数；源码第 ``1210``—``1210`` 行；所属函数 ``setActiveStory callback @ 1202``。
 
 **参数**
 
@@ -2490,17 +2534,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:47214:47276:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:47674:47736:FUNCTION
 
-.. rubric:: ``[...existing.filter((item) => item.partId !== value.part.partId), value.part].sort callback @ 1200``
+.. rubric:: ``[...existing.filter((item) => item.partId !== value.part.partId), value.part].sort callback @ 1211``
 
 .. code-block:: javascript
 
-   [...existing.filter((item) => item.partId !== value.part.partId), value.part].sort callback @ 1200(a, b)
+   [...existing.filter((item) => item.partId !== value.part.partId), value.part].sort callback @ 1211(a, b)
 
 作为 ``[...existing.filter((item) => item.partId !== value.part.partId), value.part].sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1200``—``1200`` 行；所属函数 ``setActiveStory callback @ 1191``。
+**性质**：同步局部函数；源码第 ``1211``—``1211`` 行；所属函数 ``setActiveStory callback @ 1202``。
 
 **参数**
 
@@ -2514,17 +2558,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:47445:47536:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:47905:47996:FUNCTION
 
-.. rubric:: ``(current.parts || []).map callback @ 1203``
+.. rubric:: ``(current.parts || []).map callback @ 1214``
 
 .. code-block:: javascript
 
-   (current.parts || []).map callback @ 1203(item)
+   (current.parts || []).map callback @ 1214(item)
 
 作为 ``(current.parts || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1203``—``1204`` 行；所属函数 ``setActiveStory callback @ 1191``。
+**性质**：同步局部函数；源码第 ``1214``—``1215`` 行；所属函数 ``setActiveStory callback @ 1202``。
 
 **参数**
 
@@ -2535,17 +2579,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:47791:49860:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:48251:50320:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1215``
+.. rubric:: ``useCallback callback @ 1226``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1215(msgId)
+   useCallback callback @ 1226(msgId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1215``—``1273`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1226``—``1284`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -2564,17 +2608,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:48846:48876:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:49306:49336:FUNCTION
 
-.. rubric:: ``oldChildren.filter callback @ 1242``
+.. rubric:: ``oldChildren.filter callback @ 1253``
 
 .. code-block:: javascript
 
-   oldChildren.filter callback @ 1242(childId)
+   oldChildren.filter callback @ 1253(childId)
 
 作为 ``oldChildren.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1242``—``1242`` 行；所属函数 ``useCallback callback @ 1215``。
+**性质**：同步局部函数；源码第 ``1253``—``1253`` 行；所属函数 ``useCallback callback @ 1226``。
 
 **参数**
 
@@ -2585,17 +2629,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:50054:50966:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:50514:51426:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1279``
+.. rubric:: ``useCallback callback @ 1290``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1279(targetConversationId)
+   async useCallback callback @ 1290(targetConversationId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1279``—``1299`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``1290``—``1310`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -2610,17 +2654,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:50554:50589:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:51014:51049:FUNCTION
 
-.. rubric:: ``(Array.isArray(advancedSettingsValues?.workspaceIds) ? advancedSettingsValues.workspaceIds : advancedSettingsValues?.wo… callback @ 1289``
+.. rubric:: ``(Array.isArray(advancedSettingsValues?.workspaceIds) ? advancedSettingsValues.workspaceIds : advancedSettingsValues?.wo… callback @ 1300``
 
 .. code-block:: javascript
 
-   (Array.isArray(advancedSettingsValues?.workspaceIds) ? advancedSettingsValues.workspaceIds : advancedSettingsValues?.wo… callback @ 1289(item)
+   (Array.isArray(advancedSettingsValues?.workspaceIds) ? advancedSettingsValues.workspaceIds : advancedSettingsValues?.wo… callback @ 1300(item)
 
 实现 ``(Array.isArray(advancedSettingsValues?.workspaceIds) ? advancedSettingsValues.workspaceIds : advancedSettingsValues?.wo…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1289``—``1289`` 行；所属函数 ``useCallback callback @ 1279``。
+**性质**：同步局部函数；源码第 ``1300``—``1300`` 行；所属函数 ``useCallback callback @ 1290``。
 
 **参数**
 
@@ -2633,17 +2677,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``String(item || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:51052:56185:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:51512:56645:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1304``
+.. rubric:: ``useCallback callback @ 1315``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1304({ messageContent, toolsStatus, isEditMessage = false, editMessageId, attachments, sendButtonStatus,…)
+   useCallback callback @ 1315({ messageContent, toolsStatus, isEditMessage = false, editMessageId, attachments, sendButtonStatus,…)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1304``—``1413`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1315``—``1424`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -2662,7 +2706,7 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:51721:54316:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:52181:54776:FUNCTION
 
 .. rubric:: ``sendMessage``
 
@@ -2672,7 +2716,7 @@ src/features/chat/ChatPage 模块
 
 发送与 ``Message`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1324``—``1377`` 行；所属函数 ``useCallback callback @ 1304``。
+**性质**：同步局部函数；源码第 ``1335``—``1388`` 行；所属函数 ``useCallback callback @ 1315``。
 
 **参数**
 
@@ -2691,17 +2735,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:53514:54300:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:53974:54760:FUNCTION
 
-.. rubric:: ``emitEvent(eventPayload).then callback @ 1362``
+.. rubric:: ``emitEvent(eventPayload).then callback @ 1373``
 
 .. code-block:: javascript
 
-   emitEvent(eventPayload).then callback @ 1362(payload)
+   emitEvent(eventPayload).then callback @ 1373(payload)
 
 处理 ``emitEvent(eventPayload).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``1362``—``1376`` 行；所属函数 ``sendMessage``。
+**性质**：同步局部函数；源码第 ``1373``—``1387`` 行；所属函数 ``sendMessage``。
 
 **参数**
 
@@ -2714,17 +2758,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``generateUUID``、``toast.error``、``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:54652:55834:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:55112:56294:FUNCTION
 
-.. rubric:: ``emitEvent({ event: 'conversation.create', payload: { idempotencyKey: currentTurnIdempotencyKeyRef.current, toolsStatus,… callback @ 1386``
+.. rubric:: ``emitEvent({ event: 'conversation.create', payload: { idempotencyKey: currentTurnIdempotencyKeyRef.current, toolsStatus,… callback @ 1397``
 
 .. code-block:: javascript
 
-   emitEvent({ event: 'conversation.create', payload: { idempotencyKey: currentTurnIdempotencyKeyRef.current, toolsStatus,… callback @ 1386(payload)
+   emitEvent({ event: 'conversation.create', payload: { idempotencyKey: currentTurnIdempotencyKeyRef.current, toolsStatus,… callback @ 1397(payload)
 
 发送事件与 ``Event({ event: 'conversation.create', payload: { idempotency Key: current Turn Idempotency Key Ref.current, tools Status,…`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1386``—``1405`` 行；所属函数 ``useCallback callback @ 1304``。
+**性质**：同步局部函数；源码第 ``1397``—``1416`` 行；所属函数 ``useCallback callback @ 1315``。
 
 **参数**
 
@@ -2741,17 +2785,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:55597:55661:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:56057:56121:FUNCTION
 
-.. rubric:: ``persistPendingWorkspaceSelection(payload.value).then callback @ 1399``
+.. rubric:: ``persistPendingWorkspaceSelection(payload.value).then callback @ 1410``
 
 .. code-block:: javascript
 
-   persistPendingWorkspaceSelection(payload.value).then callback @ 1399()
+   persistPendingWorkspaceSelection(payload.value).then callback @ 1410()
 
 处理 ``persistPendingWorkspaceSelection(payload.value).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``1399``—``1400`` 行；所属函数 ``emitEvent({ event: 'conversation.create', payload: { idempotencyKey: currentTurnIdempotencyKeyRef.current, toolsStatus,… callback @ 1386``。
+**性质**：同步局部函数；源码第 ``1410``—``1411`` 行；所属函数 ``emitEvent({ event: 'conversation.create', payload: { idempotencyKey: currentTurnIdempotencyKeyRef.current, toolsStatus,… callback @ 1397``。
 
 **参数**
 
@@ -2763,17 +2807,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``sendMessage``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:55863:56086:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:56323:56546:FUNCTION
 
-.. rubric:: ``emitEvent({ event: 'conversation.create', payload: { idempotencyKey: currentTurnIdempotencyKeyRef.current, toolsStatus,… callback @ 1406``
+.. rubric:: ``emitEvent({ event: 'conversation.create', payload: { idempotencyKey: currentTurnIdempotencyKeyRef.current, toolsStatus,… callback @ 1417``
 
 .. code-block:: javascript
 
-   emitEvent({ event: 'conversation.create', payload: { idempotencyKey: currentTurnIdempotencyKeyRef.current, toolsStatus,… callback @ 1406(error)
+   emitEvent({ event: 'conversation.create', payload: { idempotencyKey: currentTurnIdempotencyKeyRef.current, toolsStatus,… callback @ 1417(error)
 
 发送事件与 ``Event({ event: 'conversation.create', payload: { idempotency Key: current Turn Idempotency Key Ref.current, tools Status,…`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1406``—``1409`` 行；所属函数 ``useCallback callback @ 1304``。
+**性质**：同步局部函数；源码第 ``1417``—``1420`` 行；所属函数 ``useCallback callback @ 1315``。
 
 **参数**
 
@@ -2786,17 +2830,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``toast.error``、``t``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:56553:60059:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:57013:60519:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1429``
+.. rubric:: ``useCallback callback @ 1440``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1429({ toolsStatus = {}, composerStatus = 'normal' })
+   async useCallback callback @ 1440({ toolsStatus = {}, composerStatus = 'normal' })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1429``—``1500`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``1440``—``1511`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -2818,7 +2862,7 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:57730:58254:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:58190:58714:FUNCTION
 
 .. rubric:: ``startForConversation``
 
@@ -2828,7 +2872,7 @@ src/features/chat/ChatPage 模块
 
 启动与 ``For Conversation`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``1454``—``1465`` 行；所属函数 ``useCallback callback @ 1429``。
+**性质**：异步局部函数；源码第 ``1465``—``1476`` 行；所属函数 ``useCallback callback @ 1440``。
 
 **参数**
 
@@ -2841,17 +2885,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``realtimeVoice.start``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:60420:63261:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:60880:63721:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1515``
+.. rubric:: ``useCallback callback @ 1526``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1515()
+   async useCallback callback @ 1526()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1515``—``1580`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``1526``—``1591`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -2870,17 +2914,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:61079:62886:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:61539:63346:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1530``
+.. rubric:: ``anonymous callback @ 1541``
 
 .. code-block:: javascript
 
-   async anonymous callback @ 1530()
+   async anonymous callback @ 1541()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``1530``—``1569`` 行；所属函数 ``useCallback callback @ 1515``。
+**性质**：异步局部函数；源码第 ``1541``—``1580`` 行；所属函数 ``useCallback callback @ 1526``。
 
 **参数**
 
@@ -2899,17 +2943,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:61750:61790:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:62210:62250:FUNCTION
 
-.. rubric:: ``(data.messagesOrder || []).filter callback @ 1543``
+.. rubric:: ``(data.messagesOrder || []).filter callback @ 1554``
 
 .. code-block:: javascript
 
-   (data.messagesOrder || []).filter callback @ 1543(messageId)
+   (data.messagesOrder || []).filter callback @ 1554(messageId)
 
 作为 ``(data.messagesOrder || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1543``—``1543`` 行；所属函数 ``anonymous callback @ 1530``。
+**性质**：同步局部函数；源码第 ``1554``—``1554`` 行；所属函数 ``anonymous callback @ 1541``。
 
 **参数**
 
@@ -2922,17 +2966,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``loadedIds.has``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:62319:62424:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:62779:62884:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1557``
+.. rubric:: ``anonymous callback @ 1568``
 
 .. code-block:: javascript
 
-   anonymous callback @ 1557(resolve)
+   anonymous callback @ 1568(resolve)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1557``—``1559`` 行；所属函数 ``anonymous callback @ 1530``。
+**性质**：同步局部函数；源码第 ``1568``—``1570`` 行；所属函数 ``anonymous callback @ 1541``。
 
 **参数**
 
@@ -2947,17 +2991,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:62372:62408:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:62832:62868:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 1558``
+.. rubric:: ``requestAnimationFrame callback @ 1569``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 1558()
+   requestAnimationFrame callback @ 1569()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1558``—``1558`` 行；所属函数 ``anonymous callback @ 1557``。
+**性质**：同步局部函数；源码第 ``1569``—``1569`` 行；所属函数 ``anonymous callback @ 1568``。
 
 **参数**
 
@@ -2969,17 +3013,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:62898:63178:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:63358:63638:FUNCTION
 
-.. rubric:: ``(async () => { const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, { params: { conversationId: convers… callback @ 1569``
+.. rubric:: ``(async () => { const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, { params: { conversationId: convers… callback @ 1580``
 
 .. code-block:: javascript
 
-   (async () => { const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, { params: { conversationId: convers… callback @ 1569()
+   (async () => { const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, { params: { conversationId: convers… callback @ 1580()
 
 实现 ``(async () => { const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, { params: { conversationId: convers…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1569``—``1576`` 行；所属函数 ``useCallback callback @ 1515``。
+**性质**：同步局部函数；源码第 ``1580``—``1587`` 行；所属函数 ``useCallback callback @ 1526``。
 
 **参数**
 
@@ -2991,17 +3035,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setIsLoadingMoreHistory``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:63478:64493:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:63938:64953:FUNCTION
 
-.. rubric:: ``useEffect callback @ 1590``
+.. rubric:: ``useEffect callback @ 1601``
 
 .. code-block:: javascript
 
-   useEffect callback @ 1590()
+   useEffect callback @ 1601()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1590``—``1617`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1601``—``1628`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -3015,17 +3059,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:63944:64240:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:64404:64700:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1602``
+.. rubric:: ``anonymous callback @ 1613``
 
 .. code-block:: javascript
 
-   anonymous callback @ 1602(entries)
+   anonymous callback @ 1613(entries)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1602``—``1607`` 行；所属函数 ``useEffect callback @ 1590``。
+**性质**：同步局部函数；源码第 ``1613``—``1618`` 行；所属函数 ``useEffect callback @ 1601``。
 
 **参数**
 
@@ -3040,17 +3084,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:64006:64037:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:64466:64497:FUNCTION
 
-.. rubric:: ``entries.some callback @ 1603``
+.. rubric:: ``entries.some callback @ 1614``
 
 .. code-block:: javascript
 
-   entries.some callback @ 1603(entry)
+   entries.some callback @ 1614(entry)
 
 作为 ``entries.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1603``—``1603`` 行；所属函数 ``anonymous callback @ 1602``。
+**性质**：同步局部函数；源码第 ``1614``—``1614`` 行；所属函数 ``anonymous callback @ 1613``。
 
 **参数**
 
@@ -3061,17 +3105,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:64088:64224:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:64548:64684:FUNCTION
 
-.. rubric:: ``loadMoreHistory().catch callback @ 1604``
+.. rubric:: ``loadMoreHistory().catch callback @ 1615``
 
 .. code-block:: javascript
 
-   loadMoreHistory().catch callback @ 1604(error)
+   loadMoreHistory().catch callback @ 1615(error)
 
 处理 ``loadMoreHistory().catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``1604``—``1606`` 行；所属函数 ``anonymous callback @ 1602``。
+**性质**：同步局部函数；源码第 ``1615``—``1617`` 行；所属函数 ``anonymous callback @ 1613``。
 
 **参数**
 
@@ -3084,17 +3128,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``toast.error``、``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:64458:64486:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:64918:64946:FUNCTION
 
-.. rubric:: ``returned callback @ 1616``
+.. rubric:: ``returned callback @ 1627``
 
 .. code-block:: javascript
 
-   returned callback @ 1616()
+   returned callback @ 1627()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1616``—``1616`` 行；所属函数 ``useEffect callback @ 1590``。
+**性质**：同步局部函数；源码第 ``1627``—``1627`` 行；所属函数 ``useEffect callback @ 1601``。
 
 **参数**
 
@@ -3106,17 +3150,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``observer.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:64620:65628:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:65080:66088:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1620``
+.. rubric:: ``useCallback callback @ 1631``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1620(messageId, behavior)
+   useCallback callback @ 1631(messageId, behavior)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1620``—``1639`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1631``—``1650`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -3138,17 +3182,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:65460:65585:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:65920:66045:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 1635``
+.. rubric:: ``window.setTimeout callback @ 1646``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 1635()
+   window.setTimeout callback @ 1646()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1635``—``1637`` 行；所属函数 ``useCallback callback @ 1620``。
+**性质**：同步局部函数；源码第 ``1646``—``1648`` 行；所属函数 ``useCallback callback @ 1631``。
 
 **参数**
 
@@ -3162,17 +3206,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:65508:65569:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:65968:66029:FUNCTION
 
-.. rubric:: ``setHighlightedMessageId callback @ 1636``
+.. rubric:: ``setHighlightedMessageId callback @ 1647``
 
 .. code-block:: javascript
 
-   setHighlightedMessageId callback @ 1636(current)
+   setHighlightedMessageId callback @ 1647(current)
 
 设置与 ``Highlighted Message Id`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1636``—``1636`` 行；所属函数 ``window.setTimeout callback @ 1635``。
+**性质**：同步局部函数；源码第 ``1647``—``1647`` 行；所属函数 ``window.setTimeout callback @ 1646``。
 
 **参数**
 
@@ -3185,17 +3229,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:65765:67626:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:66225:68086:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1643``
+.. rubric:: ``useCallback callback @ 1654``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1643()
+   async useCallback callback @ 1654()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1643``—``1685`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``1654``—``1696`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -3214,17 +3258,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:67151:67429:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:67611:67889:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 1672``
+.. rubric:: ``requestAnimationFrame callback @ 1683``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 1672()
+   requestAnimationFrame callback @ 1683()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1672``—``1679`` 行；所属函数 ``useCallback callback @ 1643``。
+**性质**：同步局部函数；源码第 ``1683``—``1690`` 行；所属函数 ``useCallback callback @ 1654``。
 
 **参数**
 
@@ -3238,17 +3282,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:67197:67413:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:67657:67873:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 1673``
+.. rubric:: ``requestAnimationFrame callback @ 1684``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 1673()
+   requestAnimationFrame callback @ 1684()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1673``—``1678`` 行；所属函数 ``requestAnimationFrame callback @ 1672``。
+**性质**：同步局部函数；源码第 ``1684``—``1689`` 行；所属函数 ``requestAnimationFrame callback @ 1683``。
 
 **参数**
 
@@ -3260,17 +3304,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``markProgrammaticScroll``、``executePendingScroll``、``checkScrollPosition``、``setHistoryAutoLoadReady``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:67884:68146:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:68344:68606:FUNCTION
 
-.. rubric:: ``useEffect callback @ 1697``
+.. rubric:: ``useEffect callback @ 1708``
 
 .. code-block:: javascript
 
-   useEffect callback @ 1697()
+   useEffect callback @ 1708()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1697``—``1704`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1708``—``1715`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -3282,17 +3326,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:67972:68139:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:68432:68599:FUNCTION
 
-.. rubric:: ``returned callback @ 1699``
+.. rubric:: ``returned callback @ 1710``
 
 .. code-block:: javascript
 
-   returned callback @ 1699()
+   returned callback @ 1710()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1699``—``1703`` 行；所属函数 ``useEffect callback @ 1697``。
+**性质**：同步局部函数；源码第 ``1710``—``1714`` 行；所属函数 ``useEffect callback @ 1708``。
 
 **参数**
 
@@ -3302,17 +3346,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:68213:71392:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:68673:71852:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1707``
+.. rubric:: ``useCallback callback @ 1718``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1707(messageId)
+   async useCallback callback @ 1718(messageId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1707``—``1772`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``1718``—``1783`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -3334,7 +3378,7 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:68390:70533:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:68850:70993:FUNCTION
 
 .. rubric:: ``loadTargetWindow``
 
@@ -3344,7 +3388,7 @@ src/features/chat/ChatPage 模块
 
 加载与 ``Target Window`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``1712``—``1753`` 行；所属函数 ``useCallback callback @ 1707``。
+**性质**：异步局部函数；源码第 ``1723``—``1764`` 行；所属函数 ``useCallback callback @ 1718``。
 
 **参数**
 
@@ -3369,17 +3413,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:68503:68541:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:68963:69001:FUNCTION
 
-.. rubric:: ``summaryItems.findIndex callback @ 1713``
+.. rubric:: ``summaryItems.findIndex callback @ 1724``
 
 .. code-block:: javascript
 
-   summaryItems.findIndex callback @ 1713(item)
+   summaryItems.findIndex callback @ 1724(item)
 
 实现 ``summaryItems.findIndex`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1713``—``1713`` 行；所属函数 ``loadTargetWindow``。
+**性质**：同步局部函数；源码第 ``1724``—``1724`` 行；所属函数 ``loadTargetWindow``。
 
 **参数**
 
@@ -3390,17 +3434,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:68928:68952:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:69388:69412:FUNCTION
 
-.. rubric:: ``summaryItems.slice(start, end).map callback @ 1720``
+.. rubric:: ``summaryItems.slice(start, end).map callback @ 1731``
 
 .. code-block:: javascript
 
-   summaryItems.slice(start, end).map callback @ 1720(item)
+   summaryItems.slice(start, end).map callback @ 1731(item)
 
 作为 ``summaryItems.slice(start, end).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1720``—``1720`` 行；所属函数 ``loadTargetWindow``。
+**性质**：同步局部函数；源码第 ``1731``—``1731`` 行；所属函数 ``loadTargetWindow``。
 
 **参数**
 
@@ -3411,17 +3455,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:70212:70325:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:70672:70785:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1746``
+.. rubric:: ``anonymous callback @ 1757``
 
 .. code-block:: javascript
 
-   anonymous callback @ 1746(resolve)
+   anonymous callback @ 1757(resolve)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1746``—``1748`` 行；所属函数 ``loadTargetWindow``。
+**性质**：同步局部函数；源码第 ``1757``—``1759`` 行；所属函数 ``loadTargetWindow``。
 
 **参数**
 
@@ -3436,17 +3480,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:70269:70305:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:70729:70765:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 1747``
+.. rubric:: ``requestAnimationFrame callback @ 1758``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 1747()
+   requestAnimationFrame callback @ 1758()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1747``—``1747`` 行；所属函数 ``anonymous callback @ 1746``。
+**性质**：同步局部函数；源码第 ``1758``—``1758`` 行；所属函数 ``anonymous callback @ 1757``。
 
 **参数**
 
@@ -3458,17 +3502,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:70657:70695:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:71117:71155:FUNCTION
 
-.. rubric:: ``summaryItems.some callback @ 1757``
+.. rubric:: ``summaryItems.some callback @ 1768``
 
 .. code-block:: javascript
 
-   summaryItems.some callback @ 1757(item)
+   summaryItems.some callback @ 1768(item)
 
 作为 ``summaryItems.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1757``—``1757`` 行；所属函数 ``useCallback callback @ 1707``。
+**性质**：同步局部函数；源码第 ``1768``—``1768`` 行；所属函数 ``useCallback callback @ 1718``。
 
 **参数**
 
@@ -3479,17 +3523,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:71713:72364:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:72173:72824:FUNCTION
 
-.. rubric:: ``useEffect callback @ 1786``
+.. rubric:: ``useEffect callback @ 1797``
 
 .. code-block:: javascript
 
-   useEffect callback @ 1786()
+   useEffect callback @ 1797()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1786``—``1800`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1797``—``1811`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -3508,17 +3552,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:72181:72356:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:72641:72816:FUNCTION
 
-.. rubric:: ``jumpToMessage(targetMessageId).then callback @ 1795``
+.. rubric:: ``jumpToMessage(targetMessageId).then callback @ 1806``
 
 .. code-block:: javascript
 
-   jumpToMessage(targetMessageId).then callback @ 1795(success)
+   jumpToMessage(targetMessageId).then callback @ 1806(success)
 
 处理 ``jumpToMessage(targetMessageId).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``1795``—``1799`` 行；所属函数 ``useEffect callback @ 1786``。
+**性质**：同步局部函数；源码第 ``1806``—``1810`` 行；所属函数 ``useEffect callback @ 1797``。
 
 **参数**
 
@@ -3529,17 +3573,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:72511:76134:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:72971:76594:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1803``
+.. rubric:: ``useCallback callback @ 1814``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1803(msgId, newMsgId)
+   async useCallback callback @ 1814(msgId, newMsgId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1803``—``1892`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``1814``—``1903`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -3562,17 +3606,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:74818:75999:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:75278:76459:FUNCTION
 
-.. rubric:: ``produce callback @ 1854``
+.. rubric:: ``produce callback @ 1865``
 
 .. code-block:: javascript
 
-   produce callback @ 1854(draft)
+   produce callback @ 1865(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1854``—``1887`` 行；所属函数 ``useCallback callback @ 1803``。
+**性质**：同步局部函数；源码第 ``1865``—``1898`` 行；所属函数 ``useCallback callback @ 1814``。
 
 **参数**
 
@@ -3585,17 +3629,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:75485:75607:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:75945:76067:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1873``
+.. rubric:: ``anonymous callback @ 1884``
 
 .. code-block:: javascript
 
-   anonymous callback @ 1873(componentKey, componentRef)
+   anonymous callback @ 1884(componentKey, componentRef)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1873``—``1875`` 行；所属函数 ``produce callback @ 1854``。
+**性质**：同步局部函数；源码第 ``1884``—``1886`` 行；所属函数 ``produce callback @ 1865``。
 
 **参数**
 
@@ -3609,17 +3653,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:75690:75790:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:76150:76250:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1878``
+.. rubric:: ``anonymous callback @ 1889``
 
 .. code-block:: javascript
 
-   anonymous callback @ 1878(componentKey)
+   anonymous callback @ 1889(componentKey)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1878``—``1880`` 行；所属函数 ``produce callback @ 1854``。
+**性质**：同步局部函数；源码第 ``1889``—``1891`` 行；所属函数 ``produce callback @ 1865``。
 
 **参数**
 
@@ -3630,17 +3674,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:75866:75966:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:76326:76426:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1883``
+.. rubric:: ``anonymous callback @ 1894``
 
 .. code-block:: javascript
 
-   anonymous callback @ 1883(componentKey)
+   anonymous callback @ 1894(componentKey)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1883``—``1885`` 行；所属函数 ``produce callback @ 1854``。
+**性质**：同步局部函数；源码第 ``1894``—``1896`` 行；所属函数 ``produce callback @ 1865``。
 
 **参数**
 
@@ -3651,17 +3695,17 @@ src/features/chat/ChatPage 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``mountPoints[componentKey]``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:76242:77517:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:76702:77977:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1897``
+.. rubric:: ``useCallback callback @ 1908``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1897(msg, msgId, targetMessageOrDelta, options)
+   async useCallback callback @ 1908(msg, msgId, targetMessageOrDelta, options)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1897``—``1927`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``1908``—``1938`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -3689,7 +3733,7 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``msg.messages.indexOf``、``emitEvent``、``t``、``loadSwitchMessage``、``loadMessageSummaries``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:77627:78608:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:78087:79068:FUNCTION
 
 .. rubric:: ``emitMessagesLoaded``
 
@@ -3699,7 +3743,7 @@ src/features/chat/ChatPage 模块
 
 发送事件与 ``Messages Loaded`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1931``—``1955`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1942``—``1966`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -3717,17 +3761,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:77655:78597:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:78115:79057:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 1932``
+.. rubric:: ``setTimeout callback @ 1943``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 1932()
+   setTimeout callback @ 1943()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1932``—``1954`` 行；所属函数 ``emitMessagesLoaded``。
+**性质**：同步局部函数；源码第 ``1943``—``1965`` 行；所属函数 ``emitMessagesLoaded``。
 
 **参数**
 
@@ -3745,7 +3789,7 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:78211:78296:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:78671:78756:FUNCTION
 
 .. rubric:: ``onTimeout``
 
@@ -3755,7 +3799,7 @@ src/features/chat/ChatPage 模块
 
 处理 ``Timeout`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1944``—``1946`` 行；所属函数 ``setTimeout callback @ 1932``。
+**性质**：同步局部函数；源码第 ``1955``—``1957`` 行；所属函数 ``setTimeout callback @ 1943``。
 
 **参数**
 
@@ -3767,17 +3811,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``toast.warning``、``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:78318:78585:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:78778:79045:FUNCTION
 
-.. rubric:: ``emitEvent({ event: 'conversation.messages.loaded', payload: { idempotencyKey: messagesLoadedIdempotencyKeyRef.current,… callback @ 1947``
+.. rubric:: ``emitEvent({ event: 'conversation.messages.loaded', payload: { idempotencyKey: messagesLoadedIdempotencyKeyRef.current,… callback @ 1958``
 
 .. code-block:: javascript
 
-   emitEvent({ event: 'conversation.messages.loaded', payload: { idempotencyKey: messagesLoadedIdempotencyKeyRef.current,… callback @ 1947(payload)
+   emitEvent({ event: 'conversation.messages.loaded', payload: { idempotencyKey: messagesLoadedIdempotencyKeyRef.current,… callback @ 1958(payload)
 
 发送事件与 ``Event({ event: 'conversation.messages.loaded', payload: { idempotency Key: messages Loaded Idempotency Key Ref.current,…`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1947``—``1953`` 行；所属函数 ``setTimeout callback @ 1932``。
+**性质**：同步局部函数；源码第 ``1958``—``1964`` 行；所属函数 ``setTimeout callback @ 1943``。
 
 **参数**
 
@@ -3790,17 +3834,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``generateUUID``、``console.error``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:78625:80687:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:79085:81147:FUNCTION
 
-.. rubric:: ``useEffect callback @ 1957``
+.. rubric:: ``useEffect callback @ 1968``
 
 .. code-block:: javascript
 
-   useEffect callback @ 1957()
+   useEffect callback @ 1968()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1957``—``2019`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``1968``—``2030`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -3814,7 +3858,7 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:78826:79768:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:79286:80228:FUNCTION
 
 .. rubric:: ``scheduleCheck``
 
@@ -3824,7 +3868,7 @@ src/features/chat/ChatPage 模块
 
 实现 ``scheduleCheck`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1964``—``1988`` 行；所属函数 ``useEffect callback @ 1957``。
+**性质**：同步局部函数；源码第 ``1975``—``1999`` 行；所属函数 ``useEffect callback @ 1968``。
 
 **参数**
 
@@ -3838,17 +3882,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:79149:79756:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:79609:80216:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 1972``
+.. rubric:: ``requestAnimationFrame callback @ 1983``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 1972()
+   requestAnimationFrame callback @ 1983()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1972``—``1987`` 行；所属函数 ``scheduleCheck``。
+**性质**：同步局部函数；源码第 ``1983``—``1998`` 行；所属函数 ``scheduleCheck``。
 
 **参数**
 
@@ -3860,7 +3904,7 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``markProgrammaticScroll``、``requestScrollToBottom``、``checkScrollPosition``、``isUserAutoScrollUnlocked``、``setShowScrollToBottomButton``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:79868:80048:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:80328:80508:FUNCTION
 
 .. rubric:: ``observeElement``
 
@@ -3870,7 +3914,7 @@ src/features/chat/ChatPage 模块
 
 实现 ``observeElement`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1992``—``1996`` 行；所属函数 ``useEffect callback @ 1957``。
+**性质**：同步局部函数；源码第 ``2003``—``2007`` 行；所属函数 ``useEffect callback @ 1968``。
 
 **参数**
 
@@ -3883,17 +3927,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``observedElements.has``、``observedElements.add``、``resizeObserver.observe``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:80205:80319:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:80665:80779:FUNCTION
 
-.. rubric:: ``anonymous callback @ 2001``
+.. rubric:: ``anonymous callback @ 2012``
 
 .. code-block:: javascript
 
-   anonymous callback @ 2001()
+   anonymous callback @ 2012()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2001``—``2004`` 行；所属函数 ``useEffect callback @ 1957``。
+**性质**：同步局部函数；源码第 ``2012``—``2015`` 行；所属函数 ``useEffect callback @ 1968``。
 
 **参数**
 
@@ -3905,17 +3949,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Array.from(container.children).forEach``、``Array.from``、``scheduleCheck``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:80485:80680:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:80945:81140:FUNCTION
 
-.. rubric:: ``returned callback @ 2012``
+.. rubric:: ``returned callback @ 2023``
 
 .. code-block:: javascript
 
-   returned callback @ 2012()
+   returned callback @ 2023()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2012``—``2018`` 行；所属函数 ``useEffect callback @ 1957``。
+**性质**：同步局部函数；源码第 ``2023``—``2029`` 行；所属函数 ``useEffect callback @ 1968``。
 
 **参数**
 
@@ -3927,17 +3971,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``cancelAnimationFrame``、``resizeObserver.disconnect``、``mutationObserver.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:80935:84289:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:81395:84749:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2029``
+.. rubric:: ``useEffect callback @ 2040``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2029()
+   useEffect callback @ 2040()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2029``—``2115`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``2040``—``2126`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -3955,7 +3999,7 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:81169:81277:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:81629:81737:FUNCTION
 
 .. rubric:: ``getDistanceToBottom``
 
@@ -3965,7 +4009,7 @@ src/features/chat/ChatPage 模块
 
 读取与 ``Distance To Bottom`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``2036``—``2038`` 行；所属函数 ``useEffect callback @ 2029``。
+**性质**：同步局部函数；源码第 ``2047``—``2049`` 行；所属函数 ``useEffect callback @ 2040``。
 
 **参数**
 
@@ -3975,7 +4019,7 @@ src/features/chat/ChatPage 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``container.scrollHeight - container.scrollTop - container.clientHeight``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:81307:81627:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:81767:82087:FUNCTION
 
 .. rubric:: ``handleWheel``
 
@@ -3985,7 +4029,7 @@ src/features/chat/ChatPage 模块
 
 处理 ``Wheel`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2040``—``2048`` 行；所属函数 ``useEffect callback @ 2029``。
+**性质**：同步局部函数；源码第 ``2051``—``2059`` 行；所属函数 ``useEffect callback @ 2040``。
 
 **参数**
 
@@ -3998,7 +4042,7 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Math.abs``、``disableSpeechAutoFollowByUser``、``unlockAutoScrollByUser``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:81662:81753:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:82122:82213:FUNCTION
 
 .. rubric:: ``handleTouchStart``
 
@@ -4008,7 +4052,7 @@ src/features/chat/ChatPage 模块
 
 处理 ``Touch Start`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2050``—``2052`` 行；所属函数 ``useEffect callback @ 2029``。
+**性质**：同步局部函数；源码第 ``2061``—``2063`` 行；所属函数 ``useEffect callback @ 2040``。
 
 **参数**
 
@@ -4019,7 +4063,7 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:81787:82432:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:82247:82892:FUNCTION
 
 .. rubric:: ``handleTouchMove``
 
@@ -4029,7 +4073,7 @@ src/features/chat/ChatPage 模块
 
 处理 ``Touch Move`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2054``—``2071`` 行；所属函数 ``useEffect callback @ 2029``。
+**性质**：同步局部函数；源码第 ``2065``—``2082`` 行；所属函数 ``useEffect callback @ 2040``。
 
 **参数**
 
@@ -4042,7 +4086,7 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Math.abs``、``disableSpeechAutoFollowByUser``、``unlockAutoScrollByUser``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:82463:83638:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:82923:84098:FUNCTION
 
 .. rubric:: ``handleScroll``
 
@@ -4052,7 +4096,7 @@ src/features/chat/ChatPage 模块
 
 处理 ``Scroll`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2073``—``2102`` 行；所属函数 ``useEffect callback @ 2029``。
+**性质**：同步局部函数；源码第 ``2084``—``2113`` 行；所属函数 ``useEffect callback @ 2040``。
 
 **参数**
 
@@ -4064,17 +4108,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Date.now``、``Math.abs``、``disableSpeechAutoFollowByUser``、``unlockAutoScrollByUser``、``getDistanceToBottom``、``isUserAutoScrollUnlocked``、``relockAutoScrollAtBottom``、``checkScrollPosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:83984:84282:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:84444:84742:FUNCTION
 
-.. rubric:: ``returned callback @ 2109``
+.. rubric:: ``returned callback @ 2120``
 
 .. code-block:: javascript
 
-   returned callback @ 2109()
+   returned callback @ 2120()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2109``—``2114`` 行；所属函数 ``useEffect callback @ 2029``。
+**性质**：同步局部函数；源码第 ``2120``—``2125`` 行；所属函数 ``useEffect callback @ 2040``。
 
 **参数**
 
@@ -4086,17 +4130,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``container.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:84484:84949:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:84944:85409:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2123``
+.. rubric:: ``useEffect callback @ 2134``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2123()
+   useEffect callback @ 2134()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2123``—``2136`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``2134``—``2147`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -4110,17 +4154,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:84631:84931:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:85091:85391:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 2125``
+.. rubric:: ``requestAnimationFrame callback @ 2136``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 2125()
+   requestAnimationFrame callback @ 2136()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2125``—``2134`` 行；所属函数 ``useEffect callback @ 2123``。
+**性质**：同步局部函数；源码第 ``2136``—``2145`` 行；所属函数 ``useEffect callback @ 2134``。
 
 **参数**
 
@@ -4132,17 +4176,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``isUserAutoScrollUnlocked``、``markProgrammaticScroll``、``executePendingScroll``、``requestScrollToBottom``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:85184:85640:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:85644:86100:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2146``
+.. rubric:: ``useEffect callback @ 2157``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2146()
+   useEffect callback @ 2157()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2146``—``2157`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``2157``—``2168`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -4154,17 +4198,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setMessageSummaries``、``setActiveVisibleMessageId``、``setHistoryAutoLoadReady``、``setIsLoadingMoreHistory``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:85676:85814:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:86136:86274:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2159``
+.. rubric:: ``useEffect callback @ 2170``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2159()
+   useEffect callback @ 2170()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2159``—``2163`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``2170``—``2174`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -4176,17 +4220,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``loadMessageSummaries``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:85940:86183:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:86400:86643:FUNCTION
 
-.. rubric:: ``useCallback callback @ 2165``
+.. rubric:: ``useCallback callback @ 2176``
 
 .. code-block:: javascript
 
-   useCallback callback @ 2165()
+   useCallback callback @ 2176()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2165``—``2172`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``2176``—``2183`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -4198,17 +4242,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``openInspector``、``loadMessageSummaries``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:86329:86450:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:86789:86910:FUNCTION
 
-.. rubric:: ``useCallback callback @ 2175``
+.. rubric:: ``useCallback callback @ 2186``
 
 .. code-block:: javascript
 
-   useCallback callback @ 2175(tabId)
+   useCallback callback @ 2186(tabId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2175``—``2177`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``2186``—``2188`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -4221,17 +4265,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``selectRuntimeInspectorTab``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:86575:86818:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:87035:87278:FUNCTION
 
-.. rubric:: ``useCallback callback @ 2181``
+.. rubric:: ``useCallback callback @ 2192``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 2181()
+   async useCallback callback @ 2192()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``2181``—``2186`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``2192``—``2197`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -4243,17 +4287,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``loadMessageSummaries``、``refreshRuntimeInspector``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:87006:88097:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:87466:88557:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2194``
+.. rubric:: ``useEffect callback @ 2205``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2194()
+   useEffect callback @ 2205()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2194``—``2221`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``2205``—``2232`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -4271,17 +4315,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:87313:87355:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:87773:87815:FUNCTION
 
-.. rubric:: ``messagesOrder.filter callback @ 2203``
+.. rubric:: ``messagesOrder.filter callback @ 2214``
 
 .. code-block:: javascript
 
-   messagesOrder.filter callback @ 2203(messageId)
+   messagesOrder.filter callback @ 2214(messageId)
 
 作为 ``messagesOrder.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``2203``—``2203`` 行；所属函数 ``useEffect callback @ 2194``。
+**性质**：同步局部函数；源码第 ``2214``—``2214`` 行；所属函数 ``useEffect callback @ 2205``。
 
 **参数**
 
@@ -4292,17 +4336,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:87611:87980:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:88071:88440:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 2208``
+.. rubric:: ``window.setTimeout callback @ 2219``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 2208()
+   window.setTimeout callback @ 2219()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2208``—``2216`` 行；所属函数 ``useEffect callback @ 2194``。
+**性质**：同步局部函数；源码第 ``2219``—``2227`` 行；所属函数 ``useEffect callback @ 2205``。
 
 **参数**
 
@@ -4316,17 +4360,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:87689:87968:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:88149:88428:FUNCTION
 
-.. rubric:: ``loadMessageSummaries({ silent: true, append: true }).then callback @ 2209``
+.. rubric:: ``loadMessageSummaries({ silent: true, append: true }).then callback @ 2220``
 
 .. code-block:: javascript
 
-   loadMessageSummaries({ silent: true, append: true }).then callback @ 2209(items)
+   loadMessageSummaries({ silent: true, append: true }).then callback @ 2220(items)
 
 处理 ``loadMessageSummaries({ silent: true, append: true }).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``2209``—``2215`` 行；所属函数 ``window.setTimeout callback @ 2208``。
+**性质**：同步局部函数；源码第 ``2220``—``2226`` 行；所属函数 ``window.setTimeout callback @ 2219``。
 
 **参数**
 
@@ -4339,17 +4383,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``loadMessageSummaries``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:88002:88090:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:88462:88550:FUNCTION
 
-.. rubric:: ``returned callback @ 2217``
+.. rubric:: ``returned callback @ 2228``
 
 .. code-block:: javascript
 
-   returned callback @ 2217()
+   returned callback @ 2228()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2217``—``2220`` 行；所属函数 ``useEffect callback @ 2194``。
+**性质**：同步局部函数；源码第 ``2228``—``2231`` 行；所属函数 ``useEffect callback @ 2205``。
 
 **参数**
 
@@ -4365,17 +4409,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:88301:88809:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:88761:89269:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2230``
+.. rubric:: ``useEffect callback @ 2241``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2230()
+   useEffect callback @ 2241()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2230``—``2242`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``2241``—``2253`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -4394,7 +4438,7 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:88411:88468:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:88871:88928:FUNCTION
 
 .. rubric:: ``measure``
 
@@ -4404,7 +4448,7 @@ src/features/chat/ChatPage 模块
 
 实现 ``measure`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2233``—``2233`` 行；所属函数 ``useEffect callback @ 2230``。
+**性质**：同步局部函数；源码第 ``2244``—``2244`` 行；所属函数 ``useEffect callback @ 2241``。
 
 **参数**
 
@@ -4416,17 +4460,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setIsMessageNavigatorWide``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:88689:88802:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:89149:89262:FUNCTION
 
-.. rubric:: ``returned callback @ 2238``
+.. rubric:: ``returned callback @ 2249``
 
 .. code-block:: javascript
 
-   returned callback @ 2238()
+   returned callback @ 2249()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2238``—``2241`` 行；所属函数 ``useEffect callback @ 2230``。
+**性质**：同步局部函数；源码第 ``2249``—``2252`` 行；所属函数 ``useEffect callback @ 2241``。
 
 **参数**
 
@@ -4442,17 +4486,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``observer?.disconnect``、``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:88843:90903:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:89303:91363:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2244``
+.. rubric:: ``useEffect callback @ 2255``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2244()
+   useEffect callback @ 2255()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2244``—``2288`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``2255``—``2299`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -4471,7 +4515,7 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:89013:90400:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:89473:90860:FUNCTION
 
 .. rubric:: ``updateActiveMessage``
 
@@ -4481,7 +4525,7 @@ src/features/chat/ChatPage 模块
 
 更新与 ``Active Message`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``2249``—``2277`` 行；所属函数 ``useEffect callback @ 2244``。
+**性质**：同步局部函数；源码第 ``2260``—``2288`` 行；所属函数 ``useEffect callback @ 2255``。
 
 **参数**
 
@@ -4499,17 +4543,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:89131:90388:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:89591:90848:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 2251``
+.. rubric:: ``requestAnimationFrame callback @ 2262``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 2251()
+   requestAnimationFrame callback @ 2262()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2251``—``2276`` 行；所属函数 ``updateActiveMessage``。
+**性质**：同步局部函数；源码第 ``2262``—``2287`` 行；所属函数 ``updateActiveMessage``。
 
 **参数**
 
@@ -4527,17 +4571,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:89886:89937:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:90346:90397:FUNCTION
 
-.. rubric:: ``elements .map callback @ 2265``
+.. rubric:: ``elements .map callback @ 2276``
 
 .. code-block:: javascript
 
-   elements .map callback @ 2265(element)
+   elements .map callback @ 2276(element)
 
 作为 ``elements .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``2265``—``2265`` 行；所属函数 ``requestAnimationFrame callback @ 2251``。
+**性质**：同步局部函数；源码第 ``2276``—``2276`` 行；所属函数 ``requestAnimationFrame callback @ 2262``。
 
 **参数**
 
@@ -4550,17 +4594,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``element.closest``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:89969:90020:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:90429:90480:FUNCTION
 
-.. rubric:: ``elements .map((element) => element.closest?.('[data-message-id]')) .find callback @ 2266``
+.. rubric:: ``elements .map((element) => element.closest?.('[data-message-id]')) .find callback @ 2277``
 
 .. code-block:: javascript
 
-   elements .map((element) => element.closest?.('[data-message-id]')) .find callback @ 2266(element)
+   elements .map((element) => element.closest?.('[data-message-id]')) .find callback @ 2277(element)
 
 作为 ``elements .map((element) => element.closest?.('[data-message-id]')) .find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``2266``—``2266`` 行；所属函数 ``requestAnimationFrame callback @ 2251``。
+**性质**：同步局部函数；源码第 ``2277``—``2277`` 行；所属函数 ``requestAnimationFrame callback @ 2262``。
 
 **参数**
 
@@ -4573,17 +4617,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``container.contains``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:90298:90354:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:90758:90814:FUNCTION
 
-.. rubric:: ``setActiveVisibleMessageId callback @ 2274``
+.. rubric:: ``setActiveVisibleMessageId callback @ 2285``
 
 .. code-block:: javascript
 
-   setActiveVisibleMessageId callback @ 2274(current)
+   setActiveVisibleMessageId callback @ 2285(current)
 
 设置与 ``Active Visible Message Id`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``2274``—``2274`` 行；所属函数 ``requestAnimationFrame callback @ 2251``。
+**性质**：同步局部函数；源码第 ``2285``—``2285`` 行；所属函数 ``requestAnimationFrame callback @ 2262``。
 
 **参数**
 
@@ -4594,17 +4638,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:90697:90896:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:91157:91356:FUNCTION
 
-.. rubric:: ``returned callback @ 2283``
+.. rubric:: ``returned callback @ 2294``
 
 .. code-block:: javascript
 
-   returned callback @ 2283()
+   returned callback @ 2294()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2283``—``2287`` 行；所属函数 ``useEffect callback @ 2244``。
+**性质**：同步局部函数；源码第 ``2294``—``2298`` 行；所属函数 ``useEffect callback @ 2255``。
 
 **参数**
 
@@ -4616,17 +4660,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``cancelAnimationFrame``、``container.removeEventListener``、``resizeObserver?.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:90938:126597:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:91398:127615:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2290``
+.. rubric:: ``useEffect callback @ 2301``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2290()
+   useEffect callback @ 2301()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2290``—``2965`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``2301``—``2987`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -4647,17 +4691,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:91896:126033:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:92388:127051:FUNCTION
 
-.. rubric:: ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``
+.. rubric:: ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``
 
 .. code-block:: javascript
 
-   onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315({ event, payload, reply, eventRunId })
+   onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327({ event, payload, reply, eventRunId })
 
 处理 ``Event({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload requ…`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2315``—``2947`` 行；所属函数 ``useEffect callback @ 2290``。
+**性质**：同步局部函数；源码第 ``2327``—``2969`` 行；所属函数 ``useEffect callback @ 2301``。
 
 **参数**
 
@@ -4678,17 +4722,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：20。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:94257:94363:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:94749:94855:FUNCTION
 
-.. rubric:: ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, { params: { conversationId: conversationId }, }) .t… callback @ 2367``
+.. rubric:: ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, { params: { conversationId: conversationId }, }) .t… callback @ 2379``
 
 .. code-block:: javascript
 
-   apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, { params: { conversationId: conversationId }, }) .t… callback @ 2367()
+   apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, { params: { conversationId: conversationId }, }) .t… callback @ 2379()
 
 实现 ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, { params: { conversationId: conversationId }, }) .t…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2367``—``2369`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2379``—``2381`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4700,17 +4744,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``deleteMessageLocally``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:94404:94569:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:94896:95061:FUNCTION
 
-.. rubric:: ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, { params: { conversationId: conversationId }, }) .t… callback @ 2370``
+.. rubric:: ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, { params: { conversationId: conversationId }, }) .t… callback @ 2382``
 
 .. code-block:: javascript
 
-   apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, { params: { conversationId: conversationId }, }) .t… callback @ 2370(error)
+   apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, { params: { conversationId: conversationId }, }) .t… callback @ 2382(error)
 
 实现 ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, { params: { conversationId: conversationId }, }) .t…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2370``—``2372`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2382``—``2384`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4723,17 +4767,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``toast.error``、``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:98435:98581:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:98927:99073:FUNCTION
 
-.. rubric:: ``anonymous callback @ 2444``
+.. rubric:: ``anonymous callback @ 2456``
 
 .. code-block:: javascript
 
-   anonymous callback @ 2444(componentKey, componentRef)
+   anonymous callback @ 2456(componentKey, componentRef)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2444``—``2446`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2456``—``2458`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4747,17 +4791,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:98641:98765:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:99133:99257:FUNCTION
 
-.. rubric:: ``anonymous callback @ 2448``
+.. rubric:: ``anonymous callback @ 2460``
 
 .. code-block:: javascript
 
-   anonymous callback @ 2448(componentKey)
+   anonymous callback @ 2460(componentKey)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2448``—``2450`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2460``—``2462`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4768,17 +4812,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:98818:98942:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:99310:99434:FUNCTION
 
-.. rubric:: ``anonymous callback @ 2452``
+.. rubric:: ``anonymous callback @ 2464``
 
 .. code-block:: javascript
 
-   anonymous callback @ 2452(componentKey)
+   anonymous callback @ 2464(componentKey)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2452``—``2454`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2464``—``2466`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4789,17 +4833,17 @@ src/features/chat/ChatPage 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``mountPoints[componentKey]``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:100391:100718:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:100883:101210:FUNCTION
 
-.. rubric:: ``produce callback @ 2483``
+.. rubric:: ``produce callback @ 2495``
 
 .. code-block:: javascript
 
-   produce callback @ 2483(draft)
+   produce callback @ 2495(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2483``—``2489`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2495``—``2501`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4812,17 +4856,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Object.entries``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:101646:102006:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:102138:102498:FUNCTION
 
-.. rubric:: ``produce callback @ 2505``
+.. rubric:: ``produce callback @ 2517``
 
 .. code-block:: javascript
 
-   produce callback @ 2505(draft)
+   produce callback @ 2517(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2505``—``2511`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2517``—``2523`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4835,17 +4879,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Object.entries``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:102887:103517:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:103379:104009:FUNCTION
 
-.. rubric:: ``produce callback @ 2526``
+.. rubric:: ``produce callback @ 2538``
 
 .. code-block:: javascript
 
-   produce callback @ 2526(draft)
+   produce callback @ 2538(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2526``—``2536`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2538``—``2548`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4858,17 +4902,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Object.entries``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:104443:105410:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:104935:105902:FUNCTION
 
-.. rubric:: ``produce callback @ 2552``
+.. rubric:: ``produce callback @ 2564``
 
 .. code-block:: javascript
 
-   produce callback @ 2552(draft)
+   produce callback @ 2564(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2552``—``2567`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2564``—``2579`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4881,17 +4925,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Object.entries``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:107072:107405:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:107564:107897:FUNCTION
 
-.. rubric:: ``produce callback @ 2595``
+.. rubric:: ``produce callback @ 2607``
 
 .. code-block:: javascript
 
-   produce callback @ 2595(draft)
+   produce callback @ 2607(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2595``—``2601`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2607``—``2613`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4904,17 +4948,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Object.entries``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:108239:108599:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:108731:109091:FUNCTION
 
-.. rubric:: ``produce callback @ 2615``
+.. rubric:: ``produce callback @ 2627``
 
 .. code-block:: javascript
 
-   produce callback @ 2615(draft)
+   produce callback @ 2627(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2615``—``2621`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2627``—``2633`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4927,17 +4971,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Object.entries``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:109666:109978:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:110158:110470:FUNCTION
 
-.. rubric:: ``produce callback @ 2641``
+.. rubric:: ``produce callback @ 2653``
 
 .. code-block:: javascript
 
-   produce callback @ 2641(draft)
+   produce callback @ 2653(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2641``—``2646`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2653``—``2658`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4948,17 +4992,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:110561:111264:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:111053:111756:FUNCTION
 
-.. rubric:: ``emitEvent({ event: 'message.switching.changed', payload: { value: payload.value, }, conversationId: conversationId, loc… callback @ 2657``
+.. rubric:: ``emitEvent({ event: 'message.switching.changed', payload: { value: payload.value, }, conversationId: conversationId, loc… callback @ 2669``
 
 .. code-block:: javascript
 
-   emitEvent({ event: 'message.switching.changed', payload: { value: payload.value, }, conversationId: conversationId, loc… callback @ 2657()
+   emitEvent({ event: 'message.switching.changed', payload: { value: payload.value, }, conversationId: conversationId, loc… callback @ 2669()
 
 发送事件与 ``Event({ event: 'message.switching.changed', payload: { value: payload.value, }, conversation Id: conversation Id, loc…`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``2657``—``2669`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2669``—``2681`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -4976,17 +5020,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:110654:111232:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:111146:111724:FUNCTION
 
-.. rubric:: ``loadSwitchMessage(payload.msgId, payload.value).then callback @ 2658``
+.. rubric:: ``loadSwitchMessage(payload.msgId, payload.value).then callback @ 2670``
 
 .. code-block:: javascript
 
-   loadSwitchMessage(payload.msgId, payload.value).then callback @ 2658()
+   loadSwitchMessage(payload.msgId, payload.value).then callback @ 2670()
 
 处理 ``loadSwitchMessage(payload.msgId, payload.value).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``2658``—``2668`` 行；所属函数 ``emitEvent({ event: 'message.switching.changed', payload: { value: payload.value, }, conversationId: conversationId, loc… callback @ 2657``。
+**性质**：同步局部函数；源码第 ``2670``—``2680`` 行；所属函数 ``emitEvent({ event: 'message.switching.changed', payload: { value: payload.value, }, conversationId: conversationId, loc… callback @ 2669``。
 
 **参数**
 
@@ -5002,17 +5046,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``emitEvent``、``scrollToBottomAfterRender``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:111891:112419:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:112383:112911:FUNCTION
 
-.. rubric:: ``emitEvent({ event: 'message.switching.changed', payload: { value: payload.nextMessage, }, conversationId: conversationI… callback @ 2684``
+.. rubric:: ``emitEvent({ event: 'message.switching.changed', payload: { value: payload.nextMessage, }, conversationId: conversationI… callback @ 2696``
 
 .. code-block:: javascript
 
-   emitEvent({ event: 'message.switching.changed', payload: { value: payload.nextMessage, }, conversationId: conversationI… callback @ 2684()
+   emitEvent({ event: 'message.switching.changed', payload: { value: payload.nextMessage, }, conversationId: conversationI… callback @ 2696()
 
 发送事件与 ``Event({ event: 'message.switching.changed', payload: { value: payload.next Message, }, conversation Id: conversation I…`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``2684``—``2695`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2696``—``2707`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -5030,17 +5074,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:111982:112395:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:112474:112887:FUNCTION
 
-.. rubric:: ``loadSwitchMessage(payload.msgId, payload.nextMessage).then callback @ 2685``
+.. rubric:: ``loadSwitchMessage(payload.msgId, payload.nextMessage).then callback @ 2697``
 
 .. code-block:: javascript
 
-   loadSwitchMessage(payload.msgId, payload.nextMessage).then callback @ 2685()
+   loadSwitchMessage(payload.msgId, payload.nextMessage).then callback @ 2697()
 
 处理 ``loadSwitchMessage(payload.msgId, payload.nextMessage).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``2685``—``2694`` 行；所属函数 ``emitEvent({ event: 'message.switching.changed', payload: { value: payload.nextMessage, }, conversationId: conversationI… callback @ 2684``。
+**性质**：同步局部函数；源码第 ``2697``—``2706`` 行；所属函数 ``emitEvent({ event: 'message.switching.changed', payload: { value: payload.nextMessage, }, conversationId: conversationI… callback @ 2696``。
 
 **参数**
 
@@ -5056,17 +5100,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``emitEvent``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:112884:113950:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:113376:114442:FUNCTION
 
-.. rubric:: ``produce callback @ 2702``
+.. rubric:: ``produce callback @ 2714``
 
 .. code-block:: javascript
 
-   produce callback @ 2702(draft)
+   produce callback @ 2714(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2702``—``2719`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2714``—``2731`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -5079,17 +5123,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``JSON.stringify``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:114929:116805:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:115421:117297:FUNCTION
 
-.. rubric:: ``produce callback @ 2739``
+.. rubric:: ``produce callback @ 2751``
 
 .. code-block:: javascript
 
-   produce callback @ 2739(draft)
+   produce callback @ 2751(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2739``—``2767`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2751``—``2779`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -5102,17 +5146,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Object.entries``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:117534:117570:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:118552:118588:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 2782``
+.. rubric:: ``window.setTimeout callback @ 2804``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 2782()
+   window.setTimeout callback @ 2804()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2782``—``2782`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2804``—``2804`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -5124,17 +5168,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``clearLiveStreamRun``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:119848:120324:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:120866:121342:FUNCTION
 
-.. rubric:: ``produce callback @ 2829``
+.. rubric:: ``produce callback @ 2851``
 
 .. code-block:: javascript
 
-   produce callback @ 2829(draft)
+   produce callback @ 2851(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2829``—``2837`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2851``—``2859`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -5147,17 +5191,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Object.entries``、``mergeNetworkData``、``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:121054:121475:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:122072:122493:FUNCTION
 
-.. rubric:: ``produce callback @ 2850``
+.. rubric:: ``produce callback @ 2872``
 
 .. code-block:: javascript
 
-   produce callback @ 2850(draft)
+   produce callback @ 2872(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2850``—``2856`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2872``—``2878`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -5170,17 +5214,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Object.entries``、``mergeNetworkData``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:122210:124259:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:123228:125277:FUNCTION
 
-.. rubric:: ``produce callback @ 2872``
+.. rubric:: ``produce callback @ 2894``
 
 .. code-block:: javascript
 
-   produce callback @ 2872(draft)
+   produce callback @ 2894(draft)
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2872``—``2906`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2315``。
+**性质**：同步局部函数；源码第 ``2894``—``2928`` 行；所属函数 ``onEvent({ event: [ 'message.*', 'conversation.tree.changed', 'conversation.deleted', 'conversation.messages.reload_requ… callback @ 2327``。
 
 **参数**
 
@@ -5195,17 +5239,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:123023:123124:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:124041:124142:FUNCTION
 
-.. rubric:: ``network.nodes.filter callback @ 2886``
+.. rubric:: ``network.nodes.filter callback @ 2908``
 
 .. code-block:: javascript
 
-   network.nodes.filter callback @ 2886(node)
+   network.nodes.filter callback @ 2908(node)
 
 作为 ``network.nodes.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``2886``—``2886`` 行；所属函数 ``produce callback @ 2872``。
+**性质**：同步局部函数；源码第 ``2908``—``2908`` 行；所属函数 ``produce callback @ 2894``。
 
 **参数**
 
@@ -5218,17 +5262,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``deleteNodeKeys.has``、``getNodeMergeKey``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:123935:124041:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:124953:125059:FUNCTION
 
-.. rubric:: ``network.relationships.filter callback @ 2900``
+.. rubric:: ``network.relationships.filter callback @ 2922``
 
 .. code-block:: javascript
 
-   network.relationships.filter callback @ 2900(rel)
+   network.relationships.filter callback @ 2922(rel)
 
 作为 ``network.relationships.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``2900``—``2900`` 行；所属函数 ``produce callback @ 2872``。
+**性质**：同步局部函数；源码第 ``2922``—``2922`` 行；所属函数 ``produce callback @ 2894``。
 
 **参数**
 
@@ -5241,17 +5285,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``deleteRelKeys.has``、``getRelationshipMergeKey``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:126133:126216:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:127151:127234:FUNCTION
 
-.. rubric:: ``onEvent({ event: 'transport.connected', }).then callback @ 2950``
+.. rubric:: ``onEvent({ event: 'transport.connected', }).then callback @ 2972``
 
 .. code-block:: javascript
 
-   onEvent({ event: 'transport.connected', }).then callback @ 2950()
+   onEvent({ event: 'transport.connected', }).then callback @ 2972()
 
 处理 ``onEvent({ event: 'transport.connected', }).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``2950``—``2952`` 行；所属函数 ``useEffect callback @ 2290``。
+**性质**：同步局部函数；源码第 ``2972``—``2974`` 行；所属函数 ``useEffect callback @ 2301``。
 
 **参数**
 
@@ -5263,17 +5307,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``emitMessagesLoaded``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:126368:126471:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:127386:127489:FUNCTION
 
-.. rubric:: ``onEvent({ event: 'speech.*', conversationId, direction: 'incoming', }).then callback @ 2957``
+.. rubric:: ``onEvent({ event: 'speech.*', conversationId, direction: 'incoming', }).then callback @ 2979``
 
 .. code-block:: javascript
 
-   onEvent({ event: 'speech.*', conversationId, direction: 'incoming', }).then callback @ 2957({ event, payload, reply })
+   onEvent({ event: 'speech.*', conversationId, direction: 'incoming', }).then callback @ 2979({ event, payload, reply })
 
 处理 ``onEvent({ event: 'speech.*', conversationId, direction: 'incoming', }).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``2957``—``2959`` 行；所属函数 ``useEffect callback @ 2290``。
+**性质**：同步局部函数；源码第 ``2979``—``2981`` 行；所属函数 ``useEffect callback @ 2301``。
 
 **参数**
 
@@ -5286,17 +5330,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``handleBackendSpeechEvent``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:126488:126590:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:127506:127608:FUNCTION
 
-.. rubric:: ``returned callback @ 2960``
+.. rubric:: ``returned callback @ 2982``
 
 .. code-block:: javascript
 
-   returned callback @ 2960()
+   returned callback @ 2982()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2960``—``2964`` 行；所属函数 ``useEffect callback @ 2290``。
+**性质**：同步局部函数；源码第 ``2982``—``2986`` 行；所属函数 ``useEffect callback @ 2301``。
 
 **参数**
 
@@ -5312,17 +5356,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``unsubscribe1``、``unsubscribe2``、``unsubscribe3``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:127295:127380:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:128313:128398:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2990``
+.. rubric:: ``useEffect callback @ 3012``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2990()
+   useEffect callback @ 3012()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2990``—``2994`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3012``—``3016`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5334,17 +5378,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:127317:127373:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:128335:128391:FUNCTION
 
-.. rubric:: ``returned callback @ 2991``
+.. rubric:: ``returned callback @ 3013``
 
 .. code-block:: javascript
 
-   returned callback @ 2991()
+   returned callback @ 3013()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2991``—``2993`` 行；所属函数 ``useEffect callback @ 2990``。
+**性质**：同步局部函数；源码第 ``3013``—``3015`` 行；所属函数 ``useEffect callback @ 3012``。
 
 **参数**
 
@@ -5356,17 +5400,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``cancelActiveSpeech``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:127420:127495:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:128438:128513:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2996``
+.. rubric:: ``useEffect callback @ 3018``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2996()
+   useEffect callback @ 3018()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2996``—``2998`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3018``—``3020`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5376,17 +5420,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:127536:130057:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:128554:131075:FUNCTION
 
-.. rubric:: ``useEffect callback @ 3000``
+.. rubric:: ``useEffect callback @ 3022``
 
 .. code-block:: javascript
 
-   useEffect callback @ 3000()
+   useEffect callback @ 3022()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``3000``—``3054`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3022``—``3076`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5404,17 +5448,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:129981:130039:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:130999:131057:FUNCTION
 
-.. rubric:: ``errorToastsIds.current.forEach callback @ 3050``
+.. rubric:: ``errorToastsIds.current.forEach callback @ 3072``
 
 .. code-block:: javascript
 
-   errorToastsIds.current.forEach callback @ 3050(id)
+   errorToastsIds.current.forEach callback @ 3072(id)
 
 作为 ``errorToastsIds.current.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``3050``—``3052`` 行；所属函数 ``useEffect callback @ 3000``。
+**性质**：同步局部函数；源码第 ``3072``—``3074`` 行；所属函数 ``useEffect callback @ 3022``。
 
 **参数**
 
@@ -5427,17 +5471,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``toast.dismiss``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:130135:130734:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:131153:131752:FUNCTION
 
-.. rubric:: ``useEffect callback @ 3056``
+.. rubric:: ``useEffect callback @ 3078``
 
 .. code-block:: javascript
 
-   useEffect callback @ 3056()
+   useEffect callback @ 3078()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``3056``—``3071`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3078``—``3093`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5455,17 +5499,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:130360:130524:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:131378:131542:FUNCTION
 
-.. rubric:: ``apiClient .get(\x60${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}\x60) .then callback @ 3061``
+.. rubric:: ``apiClient .get(\x60${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}\x60) .then callback @ 3083``
 
 .. code-block:: javascript
 
-   apiClient .get(`${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}`) .then callback @ 3061(items)
+   apiClient .get(`${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}`) .then callback @ 3083(items)
 
 处理 ``apiClient .get(\x60${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}\x60) .then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``3061``—``3064`` 行；所属函数 ``useEffect callback @ 3056``。
+**性质**：同步局部函数；源码第 ``3083``—``3086`` 行；所属函数 ``useEffect callback @ 3078``。
 
 **参数**
 
@@ -5478,17 +5522,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``Array.isArray``、``items.slice().reverse().forEach``、``items.slice().reverse``、``items.slice``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:130545:130662:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:131563:131680:FUNCTION
 
-.. rubric:: ``apiClient .get(\x60${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}\x60) .then((items) => {… callback @ 3065``
+.. rubric:: ``apiClient .get(\x60${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}\x60) .then((items) => {… callback @ 3087``
 
 .. code-block:: javascript
 
-   apiClient .get(`${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}`) .then((items) => {… callback @ 3065()
+   apiClient .get(`${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}`) .then((items) => {… callback @ 3087()
 
 实现 ``apiClient .get(\x60${apiEndpoint.WORKSPACES_ENDPOINT}/transfers/${encodeURIComponent(conversationId)}\x60) .then((items) => {…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``3065``—``3067`` 行；所属函数 ``useEffect callback @ 3056``。
+**性质**：同步局部函数；源码第 ``3087``—``3089`` 行；所属函数 ``useEffect callback @ 3078``。
 
 **参数**
 
@@ -5498,17 +5542,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:130679:130727:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:131697:131745:FUNCTION
 
-.. rubric:: ``returned callback @ 3068``
+.. rubric:: ``returned callback @ 3090``
 
 .. code-block:: javascript
 
-   returned callback @ 3068()
+   returned callback @ 3090()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``3068``—``3070`` 行；所属函数 ``useEffect callback @ 3056``。
+**性质**：同步局部函数；源码第 ``3090``—``3092`` 行；所属函数 ``useEffect callback @ 3078``。
 
 **参数**
 
@@ -5518,17 +5562,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:130800:132677:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:131818:133695:FUNCTION
 
-.. rubric:: ``useCallback callback @ 3074``
+.. rubric:: ``useCallback callback @ 3096``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 3074({ preserveSelection = false, timeoutMs = null })
+   async useCallback callback @ 3096({ preserveSelection = false, timeoutMs = null })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``3074``—``3108`` 行；所属函数 ``ChatPage``。
+**性质**：异步局部函数；源码第 ``3096``—``3130`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5547,17 +5591,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:132165:132201:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:133183:133219:FUNCTION
 
-.. rubric:: ``normalizedModels.find callback @ 3097``
+.. rubric:: ``normalizedModels.find callback @ 3119``
 
 .. code-block:: javascript
 
-   normalizedModels.find callback @ 3097(item)
+   normalizedModels.find callback @ 3119(item)
 
 作为 ``normalizedModels.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``3097``—``3097`` 行；所属函数 ``useCallback callback @ 3074``。
+**性质**：同步局部函数；源码第 ``3119``—``3119`` 行；所属函数 ``useCallback callback @ 3096``。
 
 **参数**
 
@@ -5568,17 +5612,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:132730:132916:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:133748:133934:FUNCTION
 
-.. rubric:: ``useEffect callback @ 3112``
+.. rubric:: ``useEffect callback @ 3134``
 
 .. code-block:: javascript
 
-   useEffect callback @ 3112()
+   useEffect callback @ 3134()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``3112``—``3116`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3134``—``3138`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5590,17 +5634,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``loadAvailableModels``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:133291:133587:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:134309:134605:FUNCTION
 
-.. rubric:: ``useEffect callback @ 3122``
+.. rubric:: ``useEffect callback @ 3144``
 
 .. code-block:: javascript
 
-   useEffect callback @ 3122()
+   useEffect callback @ 3144()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``3122``—``3127`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3144``—``3149`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5612,17 +5656,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``loadAvailableModels``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:133689:140643:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:134707:141661:FUNCTION
 
-.. rubric:: ``useEffect callback @ 3129``
+.. rubric:: ``useEffect callback @ 3151``
 
 .. code-block:: javascript
 
-   useEffect callback @ 3129()
+   useEffect callback @ 3151()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``3129``—``3283`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3151``—``3305`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5641,7 +5685,7 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:134093:135153:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:135111:136171:FUNCTION
 
 .. rubric:: ``requestConversation``
 
@@ -5651,7 +5695,7 @@ src/features/chat/ChatPage 模块
 
 实现 ``requestConversation`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``3138``—``3159`` 行；所属函数 ``useEffect callback @ 3129``。
+**性质**：异步局部函数；源码第 ``3160``—``3181`` 行；所属函数 ``useEffect callback @ 3151``。
 
 **参数**
 
@@ -5670,17 +5714,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:134589:134621:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:135607:135639:FUNCTION
 
-.. rubric:: ``modelsData.find callback @ 3147``
+.. rubric:: ``modelsData.find callback @ 3169``
 
 .. code-block:: javascript
 
-   modelsData.find callback @ 3147(item)
+   modelsData.find callback @ 3169(item)
 
 作为 ``modelsData.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``3147``—``3147`` 行；所属函数 ``requestConversation``。
+**性质**：同步局部函数；源码第 ``3169``—``3169`` 行；所属函数 ``requestConversation``。
 
 **参数**
 
@@ -5691,7 +5735,7 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:135184:135460:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:136202:136478:FUNCTION
 
 .. rubric:: ``requestModels``
 
@@ -5701,7 +5745,7 @@ src/features/chat/ChatPage 模块
 
 实现 ``requestModels`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``3160``—``3167`` 行；所属函数 ``useEffect callback @ 3129``。
+**性质**：异步局部函数；源码第 ``3182``—``3189`` 行；所属函数 ``useEffect callback @ 3151``。
 
 **参数**
 
@@ -5713,7 +5757,7 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setLoadingStage``、``loadAvailableModels``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:135493:139566:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:136511:140584:FUNCTION
 
 .. rubric:: ``requestMessages``
 
@@ -5723,7 +5767,7 @@ src/features/chat/ChatPage 模块
 
 实现 ``requestMessages`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``3168``—``3252`` 行；所属函数 ``useEffect callback @ 3129``。
+**性质**：异步局部函数；源码第 ``3190``—``3274`` 行；所属函数 ``useEffect callback @ 3151``。
 
 **参数**
 
@@ -5742,17 +5786,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:137331:138141:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:138349:139159:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 3203``
+.. rubric:: ``setTimeout callback @ 3225``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 3203()
+   setTimeout callback @ 3225()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``3203``—``3218`` 行；所属函数 ``requestMessages``。
+**性质**：同步局部函数；源码第 ``3225``—``3240`` 行；所属函数 ``requestMessages``。
 
 **参数**
 
@@ -5766,17 +5810,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:137370:138117:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:138388:139135:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 3204``
+.. rubric:: ``setTimeout callback @ 3226``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 3204()
+   setTimeout callback @ 3226()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``3204``—``3217`` 行；所属函数 ``setTimeout callback @ 3203``。
+**性质**：同步局部函数；源码第 ``3226``—``3239`` 行；所属函数 ``setTimeout callback @ 3225``。
 
 **参数**
 
@@ -5788,7 +5832,7 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``markProgrammaticScroll``、``checkScrollPosition``、``executePendingScroll``、``setShowScrollToBottomButton``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:138483:138675:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:139501:139693:FUNCTION
 
 .. rubric:: ``onClick``
 
@@ -5798,7 +5842,7 @@ src/features/chat/ChatPage 模块
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3225``—``3229`` 行；所属函数 ``requestMessages``。
+**性质**：同步局部函数；源码第 ``3247``—``3251`` 行；所属函数 ``requestMessages``。
 
 **参数**
 
@@ -5810,17 +5854,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setIsLoading``、``setIsLoadingError``、``loadData``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:138989:139535:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:140007:140553:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 3239``
+.. rubric:: ``setTimeout callback @ 3261``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 3239()
+   setTimeout callback @ 3261()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``3239``—``3250`` 行；所属函数 ``requestMessages``。
+**性质**：同步局部函数；源码第 ``3261``—``3272`` 行；所属函数 ``requestMessages``。
 
 **参数**
 
@@ -5832,7 +5876,7 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``markProgrammaticScroll``、``executePendingScroll``、``setHistoryAutoLoadReady``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:139592:140361:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:140610:141379:FUNCTION
 
 .. rubric:: ``loadData``
 
@@ -5842,7 +5886,7 @@ src/features/chat/ChatPage 模块
 
 加载与 ``Data`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``3253``—``3273`` 行；所属函数 ``useEffect callback @ 3129``。
+**性质**：异步局部函数；源码第 ``3275``—``3295`` 行；所属函数 ``useEffect callback @ 3151``。
 
 **参数**
 
@@ -5854,17 +5898,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setIsLoading``、``performance.now``、``requestModels``、``requestConversation``、``requestMessages``、``console.error``、``Math.round``、``setIsLoadingError``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:140925:140981:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:141943:141999:FUNCTION
 
-.. rubric:: ``useCallback callback @ 3295``
+.. rubric:: ``useCallback callback @ 3317``
 
 .. code-block:: javascript
 
-   useCallback callback @ 3295()
+   useCallback callback @ 3317()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``3295``—``3297`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3317``—``3319`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5878,17 +5922,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:140958:140973:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:141976:141991:FUNCTION
 
-.. rubric:: ``setIsSidebarOpen callback @ 3296``
+.. rubric:: ``setIsSidebarOpen callback @ 3318``
 
 .. code-block:: javascript
 
-   setIsSidebarOpen callback @ 3296(prev)
+   setIsSidebarOpen callback @ 3318(prev)
 
 设置与 ``Is Sidebar Open`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``3296``—``3296`` 行；所属函数 ``useCallback callback @ 3295``。
+**性质**：同步局部函数；源码第 ``3318``—``3318`` 行；所属函数 ``useCallback callback @ 3317``。
 
 **参数**
 
@@ -5899,17 +5943,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:141036:141124:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:142054:142142:FUNCTION
 
-.. rubric:: ``useBrowserBackLayer callback @ 3301``
+.. rubric:: ``useBrowserBackLayer callback @ 3323``
 
 .. code-block:: javascript
 
-   useBrowserBackLayer callback @ 3301()
+   useBrowserBackLayer callback @ 3323()
 
 封装 ``BrowserBackLayer`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``3301``—``3304`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3323``—``3326`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5921,17 +5965,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setIsSidebarOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:146518:146551:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:147634:147667:FUNCTION
 
-.. rubric:: ``onClose callback @ 3405``
+.. rubric:: ``onClose callback @ 3428``
 
 .. code-block:: javascript
 
-   onClose callback @ 3405()
+   onClose callback @ 3428()
 
 处理 ``Close`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3405``—``3405`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3428``—``3428`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5943,17 +5987,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setAvatarHistoryOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:150131:150161:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:151247:151277:FUNCTION
 
-.. rubric:: ``onStop callback @ 3465``
+.. rubric:: ``onStop callback @ 3488``
 
 .. code-block:: javascript
 
-   onStop callback @ 3465()
+   onStop callback @ 3488()
 
 处理 ``Stop`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3465``—``3465`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3488``—``3488`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5965,17 +6009,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``cancelActiveSpeech``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:150207:150234:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:151323:151350:FUNCTION
 
-.. rubric:: ``onPrevious callback @ 3466``
+.. rubric:: ``onPrevious callback @ 3489``
 
 .. code-block:: javascript
 
-   onPrevious callback @ 3466()
+   onPrevious callback @ 3489()
 
 处理 ``Previous`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3466``—``3466`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3489``—``3489`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -5987,17 +6031,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``seekSpeechSegment``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:150276:150302:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:151392:151418:FUNCTION
 
-.. rubric:: ``onNext callback @ 3467``
+.. rubric:: ``onNext callback @ 3490``
 
 .. code-block:: javascript
 
-   onNext callback @ 3467()
+   onNext callback @ 3490()
 
 处理 ``Next`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3467``—``3467`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3490``—``3490`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6009,17 +6053,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``seekSpeechSegment``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:152826:153010:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:153942:154126:FUNCTION
 
-.. rubric:: ``onClick callback @ 3507``
+.. rubric:: ``onClick callback @ 3530``
 
 .. code-block:: javascript
 
-   onClick callback @ 3507()
+   onClick callback @ 3530()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3507``—``3510`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3530``—``3533`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6031,17 +6075,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``closeAvatarScene``、``realtimeVoice.stop``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:157044:157606:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:158160:158722:FUNCTION
 
-.. rubric:: ``onWorkspaceChange callback @ 3573``
+.. rubric:: ``onWorkspaceChange callback @ 3596``
 
 .. code-block:: javascript
 
-   onWorkspaceChange callback @ 3573(workspaceIds)
+   onWorkspaceChange callback @ 3596(workspaceIds)
 
 处理 ``Workspace Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3573``—``3581`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3596``—``3604`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6056,17 +6100,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:157230:157503:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:158346:158619:FUNCTION
 
-.. rubric:: ``setAdvancedSettingsValues callback @ 3575``
+.. rubric:: ``setAdvancedSettingsValues callback @ 3598``
 
 .. code-block:: javascript
 
-   setAdvancedSettingsValues callback @ 3575(current)
+   setAdvancedSettingsValues callback @ 3598(current)
 
 设置与 ``Advanced Settings Values`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``3575``—``3579`` 行；所属函数 ``onWorkspaceChange callback @ 3573``。
+**性质**：同步局部函数；源码第 ``3598``—``3602`` 行；所属函数 ``onWorkspaceChange callback @ 3596``。
 
 **参数**
 
@@ -6077,17 +6121,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:161139:161171:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:162410:162612:FUNCTION
 
-.. rubric:: ``onOpenHistory callback @ 3647``
+.. rubric:: ``anonymous callback @ 3673``
 
 .. code-block:: javascript
 
-   onOpenHistory callback @ 3647()
+   anonymous callback @ 3673()
 
-处理 ``Open History`` 用户交互或运行时事件。
+实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``3647``—``3647`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3673``—``3676`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6097,19 +6141,19 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``setAvatarHistoryOpen``。
+**主要协作调用**：``setAvatarHistoryOpen``、``openIndependentChat``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:161368:161512:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:162838:162982:FUNCTION
 
-.. rubric:: ``onToggleAvatarScene callback @ 3652``
+.. rubric:: ``onToggleAvatarScene callback @ 3682``
 
 .. code-block:: javascript
 
-   onToggleAvatarScene callback @ 3652()
+   onToggleAvatarScene callback @ 3682()
 
 处理 ``Toggle Avatar Scene`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3652``—``3655`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3682``—``3685`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6121,17 +6165,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``toggleAvatarScene``、``realtimeVoice.setMinimized``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:161750:161886:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:163220:163356:FUNCTION
 
-.. rubric:: ``onEnd callback @ 3658``
+.. rubric:: ``onEnd callback @ 3688``
 
 .. code-block:: javascript
 
-   onEnd callback @ 3658()
+   onEnd callback @ 3688()
 
 处理 ``End`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3658``—``3661`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3688``—``3691`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6143,17 +6187,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``closeAvatarScene``、``realtimeVoice.stop``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:161924:161962:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:163394:163432:FUNCTION
 
-.. rubric:: ``onMinimize callback @ 3662``
+.. rubric:: ``onMinimize callback @ 3692``
 
 .. code-block:: javascript
 
-   onMinimize callback @ 3662()
+   onMinimize callback @ 3692()
 
 处理 ``Minimize`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3662``—``3662`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3692``—``3692`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6165,17 +6209,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``realtimeVoice.setMinimized``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:161999:162149:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:163469:163619:FUNCTION
 
-.. rubric:: ``onRestore callback @ 3663``
+.. rubric:: ``onRestore callback @ 3693``
 
 .. code-block:: javascript
 
-   onRestore callback @ 3663()
+   onRestore callback @ 3693()
 
 处理 ``Restore`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3663``—``3666`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3693``—``3696`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6187,17 +6231,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setAvatarExpanded``、``realtimeVoice.setMinimized``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:162691:164878:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:164161:166348:FUNCTION
 
-.. rubric:: ``onSettingChange callback @ 3677``
+.. rubric:: ``onSettingChange callback @ 3707``
 
 .. code-block:: javascript
 
-   onSettingChange callback @ 3677(values)
+   onSettingChange callback @ 3707(values)
 
 处理 ``Setting Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3677``—``3709`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3707``—``3739`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6216,17 +6260,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:163272:163280:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:164742:164750:FUNCTION
 
-.. rubric:: ``avatarSelectionQueue.current .catch callback @ 3686``
+.. rubric:: ``avatarSelectionQueue.current .catch callback @ 3716``
 
 .. code-block:: javascript
 
-   avatarSelectionQueue.current .catch callback @ 3686()
+   avatarSelectionQueue.current .catch callback @ 3716()
 
 处理 ``avatarSelectionQueue.current .catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``3686``—``3686`` 行；所属函数 ``onSettingChange callback @ 3677``。
+**性质**：同步局部函数；源码第 ``3716``—``3716`` 行；所属函数 ``onSettingChange callback @ 3707``。
 
 **参数**
 
@@ -6236,17 +6280,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:163324:164036:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:164794:165506:FUNCTION
 
-.. rubric:: ``avatarSelectionQueue.current .catch(() => {}) .then callback @ 3687``
+.. rubric:: ``avatarSelectionQueue.current .catch(() => {}) .then callback @ 3717``
 
 .. code-block:: javascript
 
-   async avatarSelectionQueue.current .catch(() => {}) .then callback @ 3687()
+   async avatarSelectionQueue.current .catch(() => {}) .then callback @ 3717()
 
 处理 ``avatarSelectionQueue.current .catch(() => {}) .then callback`` 对应的事件或订阅结果。
 
-**性质**：异步局部函数；源码第 ``3687``—``3696`` 行；所属函数 ``onSettingChange callback @ 3677``。
+**性质**：异步局部函数；源码第 ``3717``—``3726`` 行；所属函数 ``onSettingChange callback @ 3707``。
 
 **参数**
 
@@ -6266,17 +6310,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:163970:163996:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:165440:165466:FUNCTION
 
-.. rubric:: ``setAvatarModelRevision callback @ 3695``
+.. rubric:: ``setAvatarModelRevision callback @ 3725``
 
 .. code-block:: javascript
 
-   setAvatarModelRevision callback @ 3695(revision)
+   setAvatarModelRevision callback @ 3725(revision)
 
 设置与 ``Avatar Model Revision`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``3695``—``3695`` 行；所属函数 ``avatarSelectionQueue.current .catch(() => {}) .then callback @ 3687``。
+**性质**：同步局部函数；源码第 ``3725``—``3725`` 行；所属函数 ``avatarSelectionQueue.current .catch(() => {}) .then callback @ 3717``。
 
 **参数**
 
@@ -6287,17 +6331,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:164081:164698:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:165551:166168:FUNCTION
 
-.. rubric:: ``avatarSelectionQueue.current .catch(() => {}) .then(async () => { const result = await emitEvent({ event: 'avatar.scene… callback @ 3697``
+.. rubric:: ``avatarSelectionQueue.current .catch(() => {}) .then(async () => { const result = await emitEvent({ event: 'avatar.scene… callback @ 3727``
 
 .. code-block:: javascript
 
-   avatarSelectionQueue.current .catch(() => {}) .then(async () => { const result = await emitEvent({ event: 'avatar.scene… callback @ 3697(error)
+   avatarSelectionQueue.current .catch(() => {}) .then(async () => { const result = await emitEvent({ event: 'avatar.scene… callback @ 3727(error)
 
 实现 ``avatarSelectionQueue.current .catch(() => {}) .then(async () => { const result = await emitEvent({ event: 'avatar.scene…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``3697``—``3705`` 行；所属函数 ``onSettingChange callback @ 3677``。
+**性质**：同步局部函数；源码第 ``3727``—``3735`` 行；所属函数 ``onSettingChange callback @ 3707``。
 
 **参数**
 
@@ -6312,17 +6356,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:164344:164612:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:165814:166082:FUNCTION
 
-.. rubric:: ``setAdvancedSettingsValues callback @ 3700``
+.. rubric:: ``setAdvancedSettingsValues callback @ 3730``
 
 .. code-block:: javascript
 
-   setAdvancedSettingsValues callback @ 3700(current)
+   setAdvancedSettingsValues callback @ 3730(current)
 
 设置与 ``Advanced Settings Values`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``3700``—``3703`` 行；所属函数 ``avatarSelectionQueue.current .catch(() => {}) .then(async () => { const result = await emitEvent({ event: 'avatar.scene… callback @ 3697``。
+**性质**：同步局部函数；源码第 ``3730``—``3733`` 行；所属函数 ``avatarSelectionQueue.current .catch(() => {}) .then(async () => { const result = await emitEvent({ event: 'avatar.scene… callback @ 3727``。
 
 **参数**
 
@@ -6333,17 +6377,17 @@ src/features/chat/ChatPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:165814:165937:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:167284:167407:FUNCTION
 
-.. rubric:: ``onClose callback @ 3734``
+.. rubric:: ``onClose callback @ 3764``
 
 .. code-block:: javascript
 
-   onClose callback @ 3734()
+   onClose callback @ 3764()
 
 处理 ``Close`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3734``—``3737`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3764``—``3767`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6355,17 +6399,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``stopStorySpeech``、``setStoryReaderOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:166439:166645:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:167909:168115:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 3749``
+.. rubric:: ``onOpenChange callback @ 3779``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 3749(open)
+   onOpenChange callback @ 3779(open)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3749``—``3755`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3779``—``3785`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6378,17 +6422,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``setShowDeleteConfirm``、``setPendingDeleteMsgId``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:166941:167938:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:168411:169408:FUNCTION
 
-.. rubric:: ``onConfirm callback @ 3761``
+.. rubric:: ``onConfirm callback @ 3791``
 
 .. code-block:: javascript
 
-   onConfirm callback @ 3761()
+   onConfirm callback @ 3791()
 
 处理 ``Confirm`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``3761``—``3783`` 行；所属函数 ``ChatPage``。
+**性质**：同步局部函数；源码第 ``3791``—``3813`` 行；所属函数 ``ChatPage``。
 
 **参数**
 
@@ -6402,17 +6446,17 @@ src/features/chat/ChatPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:167449:167560:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:168919:169030:FUNCTION
 
-.. rubric:: ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, { params: { conversationId: conversati… callback @ 3773``
+.. rubric:: ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, { params: { conversationId: conversati… callback @ 3803``
 
 .. code-block:: javascript
 
-   apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, { params: { conversationId: conversati… callback @ 3773()
+   apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, { params: { conversationId: conversati… callback @ 3803()
 
 实现 ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, { params: { conversationId: conversati…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``3773``—``3775`` 行；所属函数 ``onConfirm callback @ 3761``。
+**性质**：同步局部函数；源码第 ``3803``—``3805`` 行；所属函数 ``onConfirm callback @ 3791``。
 
 **参数**
 
@@ -6424,17 +6468,17 @@ src/features/chat/ChatPage 模块
 
 **主要协作调用**：``deleteMessageLocally``。
 
-.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:167597:167754:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ChatPage.jsx:169067:169224:FUNCTION
 
-.. rubric:: ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, { params: { conversationId: conversati… callback @ 3776``
+.. rubric:: ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, { params: { conversationId: conversati… callback @ 3806``
 
 .. code-block:: javascript
 
-   apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, { params: { conversationId: conversati… callback @ 3776(error)
+   apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, { params: { conversationId: conversati… callback @ 3806(error)
 
 实现 ``apiClient .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, { params: { conversationId: conversati…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``3776``—``3778`` 行；所属函数 ``onConfirm callback @ 3761``。
+**性质**：同步局部函数；源码第 ``3806``—``3808`` 行；所属函数 ``onConfirm callback @ 3791``。
 
 **参数**
 

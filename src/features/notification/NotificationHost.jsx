@@ -1,37 +1,33 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {toast} from 'sonner';
-import apiClient, {isAuthRedirectError} from '@/lib/apiClient.js';
-import {apiEndpoint} from '@/config.js';
-import {onEvent} from '@/context/useEventStore.jsx';
-import {useIsMobile} from '@/lib/tools.jsx';
+import NotificationCenter from './NotificationCenter.jsx';
+import TaskCenter from '@/features/tasks/TaskCenter.jsx';
+import { emitEvent } from '@/context/useEventStore.jsx';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import apiClient, { isAuthRedirectError } from '@/lib/apiClient.js';
+import { apiEndpoint } from '@/config.js';
+import { onEvent } from '@/context/useEventStore.jsx';
+import { useIsMobile } from '@/lib/tools.jsx';
 import NotificationToast from './NotificationToast.jsx';
-import {getNotificationRenderer, registerNotificationRenderer} from './notificationRegistry.js';
-import {useNotificationStore} from './useNotificationStore.js';
+import { getNotificationRenderer, registerNotificationRenderer } from './notificationRegistry.js';
+import { useNotificationStore } from './useNotificationStore.js';
 
 registerNotificationRenderer('tool.approval.required', NotificationToast);
+registerNotificationRenderer('task.finished', NotificationToast);
 
-const toastIdFor = (notificationId, mobile) => (
-    `notification:${notificationId}:${mobile ? 'mobile' : 'desktop'}`
-);
+const toastIdFor = (notificationId, mobile) => `notification:${notificationId}:${mobile ? 'mobile' : 'desktop'}`;
 
-const toastIdsFor = (notificationId) => [
-    toastIdFor(notificationId, false),
-    toastIdFor(notificationId, true),
-];
+const toastIdsFor = (notificationId) => [toastIdFor(notificationId, false), toastIdFor(notificationId, true)];
 
-const notificationTimestamp = (notification) => Number(
-    notification?.updatedAtTimestamp
-    || notification?.createdAtTimestamp
-    || (notification?.updatedAt ? Date.parse(notification.updatedAt) / 1000 : 0)
-    || (notification?.createdAt ? Date.parse(notification.createdAt) / 1000 : 0)
-    || 0
-);
+const notificationTimestamp = (notification) =>
+    Number(
+        notification?.updatedAtTimestamp ||
+            notification?.createdAtTimestamp ||
+            (notification?.updatedAt ? Date.parse(notification.updatedAt) / 1000 : 0) ||
+            (notification?.createdAt ? Date.parse(notification.createdAt) / 1000 : 0) ||
+            0,
+    );
 
-const NotificationHost = ({
-    currentConversationId,
-    isConversationVisible = true,
-    onOpenConversation,
-}) => {
+const NotificationHost = ({ currentConversationId, isConversationVisible = true, onOpenConversation }) => {
     const types = useNotificationStore((state) => state.types);
     const notificationsMap = useNotificationStore((state) => state.notifications);
     const subscriptions = useNotificationStore((state) => state.subscriptions);
@@ -55,23 +51,42 @@ const NotificationHost = ({
 
     const notifications = useMemo(() => Object.values(notificationsMap), [notificationsMap]);
 
-    const isToastEnabled = useCallback((notification) => {
-        const explicit = subscriptions[notification.typeId]?.toast;
-        if (typeof explicit === 'boolean') return explicit;
-        const spec = types.find((item) => item.typeId === notification.typeId);
-        return spec?.defaultSubscribed !== false;
-    }, [subscriptions, types]);
+    const isToastEnabled = useCallback(
+        (notification) => {
+            const explicit = subscriptions[notification.typeId]?.toast;
+            if (typeof explicit === 'boolean') return explicit;
+            const spec = types.find((item) => item.typeId === notification.typeId);
+            return spec?.defaultSubscribed !== false;
+        },
+        [subscriptions, types],
+    );
 
     const hideToast = useCallback((notificationId) => {
         toastIdsFor(notificationId).forEach((toastId) => toast.dismiss(toastId));
         shownRef.current.delete(notificationId);
     }, []);
 
-    const dismissToast = useCallback((notificationId, revision = null) => {
-        hideToast(notificationId);
-        backgroundRevisionRef.current.delete(notificationId);
-        if (revision !== null) hiddenRevisionRef.current.set(notificationId, Number(revision || 0));
-    }, [hideToast]);
+    const dismissToast = useCallback(
+        (notificationId, revision = null) => {
+            hideToast(notificationId);
+            backgroundRevisionRef.current.delete(notificationId);
+            if (revision !== null) hiddenRevisionRef.current.set(notificationId, Number(revision || 0));
+        },
+        [hideToast],
+    );
+
+    const markRead = useCallback(
+        async (notification) => {
+            try {
+                const result = await apiClient.post(`/notification/${encodeURIComponent(notification.id)}/close`);
+                resolveNotification(result.id, result.revision);
+                dismissToast(notification.id, notification.revision);
+            } catch (error) {
+                toast.error(error.message);
+            }
+        },
+        [dismissToast, resolveNotification],
+    );
 
     const rememberBackgroundNotifications = useCallback((items, since = null, baseline = null) => {
         for (const notification of items || []) {
@@ -79,75 +94,86 @@ const NotificationHost = ({
             const arrivedWhileHidden = document.visibilityState !== 'visible';
             const changedSinceHidden = since !== null && notificationTimestamp(notification) >= Number(since || 0);
             const baselineRevision = Number(baseline?.get(notification.id) || 0);
-            const changedSinceBaseline = baseline instanceof Map
-                && Number(notification.revision || 0) > baselineRevision;
+            const changedSinceBaseline =
+                baseline instanceof Map && Number(notification.revision || 0) > baselineRevision;
             if (arrivedWhileHidden || changedSinceHidden || changedSinceBaseline) {
-                backgroundRevisionRef.current.set(
-                    notification.id,
-                    Number(notification.revision || 0),
-                );
+                backgroundRevisionRef.current.set(notification.id, Number(notification.revision || 0));
             }
         }
     }, []);
 
-    const syncPendingNotifications = useCallback(({
-        backgroundSince = null,
-        backgroundBaseline = null,
-    } = {}) => {
-        if (syncPromiseRef.current) {
-            return syncPromiseRef.current.then((items) => {
-                rememberBackgroundNotifications(items, backgroundSince, backgroundBaseline);
-                return items;
-            });
-        }
-        const promise = apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT)
-            .then((response) => {
-                const items = response?.notifications || [];
-                rememberBackgroundNotifications(items, backgroundSince, backgroundBaseline);
-                // Initial/reconnect HTTP snapshots can race with a newer websocket upsert.
-                // Merge here; authoritative Notification-Sync broadcasts still replace.
-                mergeNotifications(items);
-                return items;
-            })
-            .finally(() => {
-                if (syncPromiseRef.current === promise) syncPromiseRef.current = null;
-            });
-        syncPromiseRef.current = promise;
-        return promise;
-    }, [mergeNotifications, rememberBackgroundNotifications]);
+    const syncPendingNotifications = useCallback(
+        ({ backgroundSince = null, backgroundBaseline = null } = {}) => {
+            if (syncPromiseRef.current) {
+                return syncPromiseRef.current.then((items) => {
+                    rememberBackgroundNotifications(items, backgroundSince, backgroundBaseline);
+                    return items;
+                });
+            }
+            const promise = apiClient
+                .get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT)
+                .then((response) => {
+                    const items = response?.notifications || [];
+                    rememberBackgroundNotifications(items, backgroundSince, backgroundBaseline);
+                    // Initial/reconnect HTTP snapshots can race with a newer websocket upsert.
+                    // Merge here; authoritative Notification-Sync broadcasts still replace.
+                    mergeNotifications(items);
+                    return items;
+                })
+                .finally(() => {
+                    if (syncPromiseRef.current === promise) syncPromiseRef.current = null;
+                });
+            syncPromiseRef.current = promise;
+            return promise;
+        },
+        [mergeNotifications, rememberBackgroundNotifications],
+    );
 
-    const openNotification = useCallback((notification) => {
-        const action = (notification.actions || []).find((item) => item.type === 'open-conversation');
-        const conversationId = action?.conversationId || notification.source?.conversationId;
-        if (conversationId) onOpenConversation?.(conversationId, notification);
-        dismissToast(notification.id, notification.revision);
-    }, [dismissToast, onOpenConversation]);
+    const openNotification = useCallback(
+        (notification) => {
+            const taskAction = (notification.actions || []).find((item) => item.type === 'open-tasks');
+            if (taskAction) {
+                emitEvent({ event: 'task.center.open', payload: { taskId: taskAction.taskId }, localOnly: true });
+                void apiClient
+                    .post(`${apiEndpoint.TASKS_ENDPOINT}/${encodeURIComponent(taskAction.taskId)}/acknowledge`)
+                    .catch((error) => console.warn('Failed to acknowledge task notification', error));
+                dismissToast(notification.id, notification.revision);
+                return;
+            }
+            const action = (notification.actions || []).find((item) => item.type === 'open-conversation');
+            const conversationId = action?.conversationId || notification.source?.conversationId;
+            if (conversationId) onOpenConversation?.(conversationId, notification);
+            dismissToast(notification.id, notification.revision);
+        },
+        [dismissToast, onOpenConversation],
+    );
 
     useEffect(() => {
         let active = true;
         Promise.all([
             apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT),
             apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT),
-        ]).then(([typeResponse, pendingResponse]) => {
-            if (!active) return;
-            setTypes(typeResponse?.types || []);
-            const pending = pendingResponse?.notifications || [];
-            rememberBackgroundNotifications(
-                pending,
-                document.hidden ? hiddenSinceRef.current : null,
-            );
-            // Do not clear an upsert that arrived after the HTTP snapshot was taken.
-            mergeNotifications(pending);
-        }).catch((error) => {
-            if (!isAuthRedirectError(error)) {
-                console.warn('Failed to initialize notifications:', error);
-            }
-        });
-        return () => { active = false; };
+        ])
+            .then(([typeResponse, pendingResponse]) => {
+                if (!active) return;
+                setTypes(typeResponse?.types || []);
+                const pending = pendingResponse?.notifications || [];
+                rememberBackgroundNotifications(pending, document.hidden ? hiddenSinceRef.current : null);
+                // Do not clear an upsert that arrived after the HTTP snapshot was taken.
+                mergeNotifications(pending);
+            })
+            .catch((error) => {
+                if (!isAuthRedirectError(error)) {
+                    console.warn('Failed to initialize notifications:', error);
+                }
+            });
+        return () => {
+            active = false;
+        };
     }, [mergeNotifications, rememberBackgroundNotifications, setTypes]);
 
     useEffect(() => {
-        const unsubscribe = onEvent({event: 'notification.*'}).then(({event, payload}) => {
+        const unsubscribe = onEvent({ event: 'notification.*' }).then(({ event, payload }) => {
             switch (event) {
                 case 'notification.upsert':
                     rememberBackgroundNotifications([payload.notification], hiddenSinceRef.current);
@@ -186,8 +212,8 @@ const NotificationHost = ({
     ]);
 
     useEffect(() => {
-        const unsubscribe = onEvent({event: 'transport.connected'}).then(() => {
-            syncPendingNotifications({backgroundSince: hiddenSinceRef.current}).catch((error) => {
+        const unsubscribe = onEvent({ event: 'transport.connected' }).then(() => {
+            syncPendingNotifications({ backgroundSince: hiddenSinceRef.current }).catch((error) => {
                 console.warn('Failed to reconcile notifications after websocket reconnect:', error);
             });
         });
@@ -223,7 +249,7 @@ const NotificationHost = ({
             hiddenSinceRef.current = null;
             hiddenBaselineRef.current = new Map();
             reloadSubscriptions();
-            syncPendingNotifications({backgroundSince, backgroundBaseline}).catch((error) => {
+            syncPendingNotifications({ backgroundSince, backgroundBaseline }).catch((error) => {
                 console.warn('Failed to reconcile notifications after returning to foreground:', error);
             });
         };
@@ -258,13 +284,12 @@ const NotificationHost = ({
             const backgroundRevision = Number(backgroundRevisionRef.current.get(notification.id) || 0);
             const needsBackgroundAttention = backgroundRevision >= revision;
             const sourceConversationId = notification.source?.conversationId;
-            const isCurrentVisibleConversation = (
-                isConversationVisible
-                && sourceConversationId
-                && sourceConversationId === currentConversationId
-                && visibilityState === 'visible'
-                && !needsBackgroundAttention
-            );
+            const isCurrentVisibleConversation =
+                isConversationVisible &&
+                sourceConversationId &&
+                sourceConversationId === currentConversationId &&
+                visibilityState === 'visible' &&
+                !needsBackgroundAttention;
             if (!isToastEnabled(notification) || isCurrentVisibleConversation) {
                 hideToast(notification.id);
                 continue;
@@ -277,23 +302,27 @@ const NotificationHost = ({
 
             const Renderer = getNotificationRenderer(notification.typeId) || NotificationToast;
             shownRef.current.set(notification.id, mode);
-            toast.custom(() => (
-                <Renderer
-                    notification={notification}
-                    mobile={mobile}
-                    onOpen={() => openNotification(notification)}
-                    onDismiss={() => dismissToast(notification.id, notification.revision)}
-                />
-            ), {
-                id: toastIdFor(notification.id, mobile),
-                duration: Infinity,
-                toasterId: mobile ? 'notifications-mobile' : 'notifications-desktop',
-                position: mobile ? 'top-center' : 'bottom-right',
-            });
+            toast.custom(
+                () => (
+                    <Renderer
+                        notification={notification}
+                        mobile={mobile}
+                        onOpen={() => openNotification(notification)}
+                        onDismiss={() => void markRead(notification)}
+                    />
+                ),
+                {
+                    id: toastIdFor(notification.id, mobile),
+                    duration: Infinity,
+                    toasterId: mobile ? 'notifications-mobile' : 'notifications-desktop',
+                    position: mobile ? 'top-center' : 'bottom-right',
+                },
+            );
         }
     }, [
         currentConversationId,
         dismissToast,
+        markRead,
         hideToast,
         isConversationVisible,
         isMobile,
@@ -328,14 +357,22 @@ const NotificationHost = ({
         };
     }, [isToastEnabled, notifications, visibilityState]);
 
-    useEffect(() => () => {
-        document.title = baseTitleRef.current;
-        if (typeof navigator.clearAppBadge === 'function') {
-            Promise.resolve(navigator.clearAppBadge()).catch(() => {});
-        }
-    }, []);
+    useEffect(
+        () => () => {
+            document.title = baseTitleRef.current;
+            if (typeof navigator.clearAppBadge === 'function') {
+                Promise.resolve(navigator.clearAppBadge()).catch(() => {});
+            }
+        },
+        [],
+    );
 
-    return null;
+    return (
+        <>
+            <TaskCenter />
+            <NotificationCenter onOpenNotification={openNotification} />
+        </>
+    );
 };
 
 export default NotificationHost;

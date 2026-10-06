@@ -36,7 +36,7 @@
    * - :doc:`src/context/WebSocketContext </api/javascript/context/WebSocketContext>`
      - 4
      - 0
-     - 18
+     - 21
      - ``src/context/WebSocketContext.jsx``
    * - :doc:`src/context/useEventStore </api/javascript/context/useEventStore>`
      - 11

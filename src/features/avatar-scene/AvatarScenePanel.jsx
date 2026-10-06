@@ -50,7 +50,7 @@ export default function AvatarScenePanel({
             storageKey="cwm:avatar-window:v1"
             headerActions={
                 <>
-                    {expanded && (
+                    {expanded && onOpenHistory && (
                         <Button size="sm" variant="ghost" onClick={onOpenHistory}>
                             查看聊天
                         </Button>
