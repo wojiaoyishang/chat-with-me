@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './BuiltinSliderButton.css';
-import { ChevronDown } from 'lucide-react';
+import { Brain, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -9,7 +9,7 @@ import { normalizeBuiltinToolValue } from './builtinToolValue.js';
 
 const chargeColors = ['#94a3b8', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef'];
 
-export default function BuiltinSliderButton({ tool, value, onChange, onCommit }) {
+export default function BuiltinSliderButton({ tool, value, onChange, onCommit, compact = false }) {
     const { t } = useTranslation();
     const [particles] = useState(() =>
         Array.from({ length: 18 }, () => ({
@@ -37,11 +37,18 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit })
                     type="button"
                     variant="ghost"
                     disabled={tool.disabled}
-                    className="h-9 max-w-36 cursor-pointer gap-1.5 bg-transparent px-2 text-sm disabled:cursor-not-allowed text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=open]:text-foreground"
+                    className={`h-9 max-w-36 cursor-pointer gap-1.5 bg-transparent px-2 text-sm disabled:cursor-not-allowed text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=open]:text-foreground ${compact ? 'size-7 p-1 has-[>svg]:px-1' : ''}`}
                     title={`${t(tool.text)} · ${name(items[index])}`}
+                    aria-label={`${t(tool.text)} · ${name(items[index])}`}
                 >
-                    <span className="truncate">{name(items[index])}</span>
-                    <ChevronDown className="size-3.5 shrink-0 opacity-60" />
+                    {compact ? (
+                        <Brain className="size-4.5" />
+                    ) : (
+                        <>
+                            <span className="truncate">{name(items[index])}</span>
+                            <ChevronDown className="size-3.5 shrink-0 opacity-60" />
+                        </>
+                    )}
                 </Button>
             </PopoverTrigger>
             <PopoverContent

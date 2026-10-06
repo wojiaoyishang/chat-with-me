@@ -27,22 +27,22 @@ src/features/chat/ui/BuiltinSliderButton 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:510:5930:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:517:6286:FUNCTION
 
-.. js:function:: BuiltinSliderButton({ tool, value, onChange, onCommit })
+.. js:function:: BuiltinSliderButton({ tool, value, onChange, onCommit, compact = false })
 
    渲染 ``BuiltinSliderButton`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``12``—``107`` 行。
+   **性质**：同步函数；导出 API；源码第 ``12``—``114`` 行。
 
    **参数**
 
-   ``{ tool, value, onChange, onCommit }``
-      调用方传入的 ``tool, value, onChange, onCommit`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ tool, value, onChange, onCommit, compact = false }``
+      调用方传入的 ``tool, value, onChange, onCommit, compact = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <Popover> <PopoverTrigger asChild> <Button type="button" variant="ghost" disabled={tool.disabled} className="h-9 max-w-36 cursor-pointer gap-1.5 bg-transparent px-2 text-sm disa…``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <Popover> <PopoverTrigger asChild> <Button type="button" variant="ghost" disabled={tool.disabled} className={\x60h-9 max-w-36 cursor-pointer gap-1.5 bg-transparent px-2 text-sm dis…``。
 
    **主要协作调用**：``useTranslation``、``useState``、``normalizeBuiltinToolValue``、``items.findIndex``、``Math.round``、``t``、``name``、``particles.map``、``Math.max``。
 
@@ -53,7 +53,7 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:664:1030:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:688:1054:FUNCTION
 
 .. rubric:: ``useState callback @ 14``
 
@@ -77,7 +77,7 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:704:1029:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:728:1053:FUNCTION
 
 .. rubric:: ``Array.from callback @ 15``
 
@@ -99,7 +99,7 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 **主要协作调用**：``Math.random``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:1224:1248:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:1248:1272:FUNCTION
 
 .. rubric:: ``items.findIndex callback @ 29``
 
@@ -120,7 +120,7 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:1267:1298:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:1291:1322:FUNCTION
 
 .. rubric:: ``name``
 
@@ -141,17 +141,17 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:3644:4644:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:4000:5000:FUNCTION
 
-.. rubric:: ``particles.map callback @ 73``
+.. rubric:: ``particles.map callback @ 80``
 
 .. code-block:: javascript
 
-   particles.map callback @ 73(particle, particleIndex)
+   particles.map callback @ 80(particle, particleIndex)
 
 作为 ``particles.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``73``—``88`` 行；所属函数 ``BuiltinSliderButton``。
+**性质**：同步局部函数；源码第 ``80``—``95`` 行；所属函数 ``BuiltinSliderButton``。
 
 **参数**
 
@@ -165,17 +165,17 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:5667:5714:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:6023:6070:FUNCTION
 
-.. rubric:: ``onValueChange callback @ 100``
+.. rubric:: ``onValueChange callback @ 107``
 
 .. code-block:: javascript
 
-   onValueChange callback @ 100([number])
+   onValueChange callback @ 107([number])
 
 处理 ``Value Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``BuiltinSliderButton``。
+**性质**：同步局部函数；源码第 ``107``—``107`` 行；所属函数 ``BuiltinSliderButton``。
 
 **参数**
 
@@ -188,17 +188,17 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 **主要协作调用**：``onChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:5765:5813:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:6121:6169:FUNCTION
 
-.. rubric:: ``anonymous callback @ 101``
+.. rubric:: ``anonymous callback @ 108``
 
 .. code-block:: javascript
 
-   anonymous callback @ 101([number])
+   anonymous callback @ 108([number])
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``101``—``101`` 行；所属函数 ``BuiltinSliderButton``。
+**性质**：同步局部函数；源码第 ``108``—``108`` 行；所属函数 ``BuiltinSliderButton``。
 
 **参数**
 

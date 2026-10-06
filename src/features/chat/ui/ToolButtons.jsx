@@ -122,11 +122,12 @@ const BuiltinToolIcon = ({ tool, isActive = false, t, className = '' }) => {
 /**
  * 单个内置工具按钮组件
  */
-const BuiltinToolButton = memo(({ tool, isActive, onToggle }) => {
+export const BuiltinToolButton = memo(({ tool, isActive, onToggle, compact = false }) => {
     if (tool.mode === 'slider')
         return (
             <BuiltinSliderButton
                 tool={tool}
+                compact={compact}
                 value={isActive}
                 onChange={(value) => onToggle(null, value)}
                 icon={<BuiltinToolIcon tool={tool} isActive={isActive !== 'none'} t={(key) => key} />}
@@ -638,7 +639,7 @@ const ToolButtons = memo(
 
                 {auditControl && (
                     <ToolAuditModeSwitch
-                        value={toolsStatus.extra_tools?.tool_audit_mode || 'off'}
+                        value={toolsStatus.extra_tools?.tool_audit_mode || 'auto'}
                         t={t}
                         isMobile={isMobileMenu}
                         layerClass={highZClass}

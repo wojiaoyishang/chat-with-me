@@ -9,7 +9,7 @@ import { getLocalSetting, setLocalSetting, useIsMobile } from '@/lib/tools.jsx';
 import { emitEvent, onEvent } from '@/context/useEventStore.jsx';
 
 import ChatBoxHeader from './ChatBoxHeader';
-import ToolButtons from './ToolButtons';
+import ToolButtons, { BuiltinToolButton } from './ToolButtons';
 import AttachmentShowcase from './AttachmentShowcase';
 import FileUploadProgress from './FileUploadProgress';
 import DropFileLayer from './DropFileLayer.jsx';
@@ -2585,7 +2585,7 @@ function ChatBox({
             toolsLoadedStatus,
             extraTools,
             attachmentTools,
-            tools: visibleBuiltinTools,
+            tools: visibleBuiltinTools.filter((tool) => tool.name !== 'enable_thinking'),
             toolsStatus: activeToolsStatus,
             setToolsStatus,
             onBuiltinToolToggle: handleBuiltinToolToggle,
@@ -2800,7 +2800,18 @@ function ChatBox({
                         <div className="h-7 min-w-0 flex-1 overflow-hidden">
                             <ToolButtons {...toolButtonsProps} />
                         </div>
-                        <div className="flex shrink-0 items-center space-x-2">
+                        <div className={`flex shrink-0 items-center ${isSmallScreen ? 'space-x-1' : 'space-x-2'}`}>
+                            {visibleBuiltinTools
+                                .filter((tool) => tool.name === 'enable_thinking')
+                                .map((tool) => (
+                                    <BuiltinToolButton
+                                        key={tool.name}
+                                        tool={tool}
+                                        isActive={activeToolsStatus.builtin_tools?.[tool.name] ?? false}
+                                        onToggle={(_event, value) => handleBuiltinToolToggle(tool.name, value)}
+                                        compact={isSmallScreen}
+                                    />
+                                ))}
                             {/* 靠底隐藏按钮 */}
                             <button
                                 type="button"

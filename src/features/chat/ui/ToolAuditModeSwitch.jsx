@@ -12,17 +12,35 @@ import {
 } from '@/components/ui/dialog';
 
 const MODES = [
-    { id: 'off', icon: ShieldOff, label: 'tool_audit_off', description: 'tool_audit_off_description' },
-    { id: 'semi', icon: ShieldCheck, label: 'tool_audit_semi', description: 'tool_audit_semi_description' },
-    { id: 'auto', icon: Bot, label: 'tool_audit_auto', description: 'tool_audit_auto_description' },
+    {
+        id: 'off',
+        icon: ShieldOff,
+        label: 'tool_audit_off',
+        description: 'tool_audit_off_description',
+        color: 'text-slate-500 dark:text-slate-400',
+    },
+    {
+        id: 'semi',
+        icon: ShieldCheck,
+        label: 'tool_audit_semi',
+        description: 'tool_audit_semi_description',
+        color: 'text-blue-600 dark:text-blue-400',
+    },
+    {
+        id: 'auto',
+        icon: Bot,
+        label: 'tool_audit_auto',
+        description: 'tool_audit_auto_description',
+        color: 'text-violet-600 dark:text-violet-400',
+    },
 ];
 
-export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobile = false, layerClass = '' }) {
+export default function ToolAuditModeSwitch({ value = 'auto', onChange, t, isMobile = false, layerClass = '' }) {
     const [open, setOpen] = useState(false);
-    const current = MODES.find((mode) => mode.id === value) || MODES[0];
+    const current = MODES.find((mode) => mode.id === value) || MODES[2];
     const options = (
         <div role="group" aria-label={t('tool_audit_policy')}>
-            {MODES.map(({ id, icon: Icon, label, description }) => (
+            {MODES.map(({ id, icon: Icon, label, description, color }) => (
                 <Button
                     key={id}
                     type="button"
@@ -34,9 +52,9 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
                     }}
                     className="h-auto w-full cursor-pointer justify-start gap-2.5 whitespace-normal rounded-lg px-3 py-2 text-left text-muted-foreground"
                 >
-                    <Icon className="size-5 shrink-0" />
+                    <Icon className={`size-5 shrink-0 ${color}`} />
                     <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-medium text-foreground">{t(label)}</span>
+                        <span className={`block text-sm font-medium ${color}`}>{t(label)}</span>
                         <span className="block text-xs font-normal leading-4 text-muted-foreground">
                             {t(description)}
                         </span>
@@ -52,7 +70,7 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
             variant="ghost"
             data-tool-audit-trigger
             aria-label={`${t('tool_audit_policy')}：${t(current.label)}`}
-            className="h-7 max-w-30 shrink-0 cursor-pointer gap-1.5 bg-transparent pl-1 pr-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=open]:text-foreground has-[>svg]:pl-1 has-[>svg]:pr-0 dark:hover:bg-transparent"
+            className={`h-7 max-w-30 shrink-0 cursor-pointer gap-1.5 bg-transparent pl-1 pr-0 text-sm font-normal hover:bg-transparent has-[>svg]:pl-1 has-[>svg]:pr-0 dark:hover:bg-transparent ${current.color}`}
         >
             <Shield className="size-4.5" />
             {!isMobile && <span className="truncate">{t(current.label)}</span>}

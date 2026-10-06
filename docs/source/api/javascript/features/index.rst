@@ -261,7 +261,7 @@
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 8
      - 0
-     - 187
+     - 191
      - ``src/features/chat/ui/ChatBox.jsx``
    * - :doc:`src/features/chat/ui/ChatBoxHeader </api/javascript/features/chat/ui/ChatBoxHeader>`
      - 0

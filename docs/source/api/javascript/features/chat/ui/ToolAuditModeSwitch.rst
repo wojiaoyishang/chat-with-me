@@ -27,18 +27,18 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:734:4666:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1004:4891:FUNCTION
 
-.. js:function:: ToolAuditModeSwitch({ value = 'off', onChange, t, isMobile = false, layerClass = '' })
+.. js:function:: ToolAuditModeSwitch({ value = 'auto', onChange, t, isMobile = false, layerClass = '' })
 
    渲染 ``ToolAuditModeSwitch`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``20``—``102`` 行。
+   **性质**：同步函数；导出 API；源码第 ``38``—``120`` 行。
 
    **参数**
 
-   ``{ value = 'off', onChange, t, isMobile = false, layerClass = '' }``
-      调用方传入的 ``value = 'off', onChange, t, isMobile = false, layerClass = ''`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ value = 'auto', onChange, t, isMobile = false, layerClass = '' }``
+      调用方传入的 ``value = 'auto', onChange, t, isMobile = false, layerClass = ''`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -53,17 +53,17 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:925:952:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1196:1223:FUNCTION
 
-.. rubric:: ``MODES.find callback @ 22``
+.. rubric:: ``MODES.find callback @ 40``
 
 .. code-block:: javascript
 
-   MODES.find callback @ 22(mode)
+   MODES.find callback @ 40(mode)
 
 作为 ``MODES.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``22``—``22`` 行；所属函数 ``ToolAuditModeSwitch``。
+**性质**：同步局部函数；源码第 ``40``—``40`` 行；所属函数 ``ToolAuditModeSwitch``。
 
 **参数**
 
@@ -74,22 +74,22 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1075:2146:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1346:2430:FUNCTION
 
-.. rubric:: ``MODES.map callback @ 25``
+.. rubric:: ``MODES.map callback @ 43``
 
 .. code-block:: javascript
 
-   MODES.map callback @ 25({ id, icon: Icon, label, description })
+   MODES.map callback @ 43({ id, icon: Icon, label, description, color })
 
 作为 ``MODES.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``25``—``46`` 行；所属函数 ``ToolAuditModeSwitch``。
+**性质**：同步局部函数；源码第 ``43``—``64`` 行；所属函数 ``ToolAuditModeSwitch``。
 
 **参数**
 
-``{ id, icon: Icon, label, description }``
-   调用方传入的 ``id, icon: Icon, label, description`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ id, icon: Icon, label, description, color }``
+   调用方传入的 ``id, icon: Icon, label, description, color`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -99,17 +99,17 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1326:1433:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1604:1711:FUNCTION
 
-.. rubric:: ``onClick callback @ 31``
+.. rubric:: ``onClick callback @ 49``
 
 .. code-block:: javascript
 
-   onClick callback @ 31()
+   onClick callback @ 49()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``31``—``34`` 行；所属函数 ``MODES.map callback @ 25``。
+**性质**：同步局部函数；源码第 ``49``—``52`` 行；所属函数 ``MODES.map callback @ 43``。
 
 **参数**
 
