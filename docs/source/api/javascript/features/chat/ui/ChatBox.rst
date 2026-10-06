@@ -185,13 +185,13 @@ src/features/chat/ui/ChatBox 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:8210:118279:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:8210:119453:FUNCTION
 
 .. js:function:: ChatBox({ onSendMessage, readOnly = false, FilePickerCallback, PicPickerCallback, conversationId, attachmen…)
 
    渲染 ``ChatBox`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``210``—``2659`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``210``—``2678`` 行。
 
    **参数**
 
@@ -4191,17 +4191,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``handleBuiltinToolToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:118137:118175:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:119311:119349:FUNCTION
 
-.. rubric:: ``onConfirm callback @ 2654``
+.. rubric:: ``onConfirm callback @ 2673``
 
 .. code-block:: javascript
 
-   onConfirm callback @ 2654()
+   onConfirm callback @ 2673()
 
 处理 ``Confirm`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2654``—``2654`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2673``—``2673`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -4213,17 +4213,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``closeVoicePermissionDialog``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:118203:118242:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:119377:119416:FUNCTION
 
-.. rubric:: ``onCancel callback @ 2655``
+.. rubric:: ``onCancel callback @ 2674``
 
 .. code-block:: javascript
 
-   onCancel callback @ 2655()
+   onCancel callback @ 2674()
 
 处理 ``Cancel`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2655``—``2655`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2674``—``2674`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -4235,17 +4235,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``closeVoicePermissionDialog``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:118343:121057:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:119517:122231:FUNCTION
 
-.. rubric:: ``memo callback @ 2662``
+.. rubric:: ``memo callback @ 2681``
 
 .. code-block:: javascript
 
-   memo callback @ 2662(prevProps, nextProps)
+   memo callback @ 2681(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2662``—``2715`` 行。
+**性质**：同步局部函数；源码第 ``2681``—``2734`` 行。
 
 **参数**
 

@@ -2581,7 +2581,7 @@ function ChatBox({
                             <button
                                 type="button"
                                 aria-label={t('zoom_in_input_box')}
-                                className="p-2.5 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-offset-2 transition-colors cursor-pointer"
+                                className={`${isSmallScreen ? 'p-1.5' : 'p-2.5'} rounded-full hover:bg-gray-200 focus:outline-none focus:ring-offset-2 transition-colors cursor-pointer`}
                                 onClick={openFullscreenEditor}
                             >
                                 <svg
@@ -2591,8 +2591,8 @@ function ChatBox({
                                     version="1.1"
                                     xmlns="http://www.w3.org/2000/svg"
                                     p-id="18774"
-                                    width="26"
-                                    height="26"
+                                    width={isSmallScreen ? 24 : 26}
+                                    height={isSmallScreen ? 24 : 26}
                                 >
                                     <path
                                         d="M463.04 896H169.152A41.152 41.152 0 0 1 128 854.848V560.96a41.152 41.152 0 1 1 82.304 0v252.8h252.736a41.152 41.152 0 1 1 0 82.24z m391.808-391.808a41.152 41.152 0 0 1-41.152-41.152v-252.8H560.96a41.152 41.152 0 1 1 0-82.24h293.888c22.72 0 41.152 18.432 41.152 41.152v293.888a41.152 41.152 0 0 1-41.152 41.152z"
@@ -2603,39 +2603,58 @@ function ChatBox({
                             </button>
 
                             {/* 角色选择按钮 */}
-                            <RoleSelector
-                                roles={roles}
-                                currentRole={currentRole}
-                                selectedModel={selectedModel}
-                                highZClass={highZClass}
-                                onRoleChange={handleRoleChange}
-                            />
+                            <div
+                                className={
+                                    isSmallScreen
+                                        ? 'flex size-9 items-center justify-center [&_[data-slot=avatar]]:size-9'
+                                        : 'flex items-center'
+                                }
+                            >
+                                <RoleSelector
+                                    roles={roles}
+                                    currentRole={currentRole}
+                                    selectedModel={selectedModel}
+                                    highZClass={highZClass}
+                                    onRoleChange={handleRoleChange}
+                                />
+                            </div>
 
                             {/* 主操作：空输入且后端声明支持时，实时语音替换禁用的发送按钮。 */}
-                            <ComposerPrimaryAction
-                                status={sendButtonStatus}
-                                messageContent={messageContent}
-                                attachmentsMeta={attachmentsMeta}
-                                onSend={handleSendMessage}
-                                executionActive={Boolean(activeExecution?.active)}
-                                executionStatus={activeExecution?.status || ''}
-                                executionGuidancePending={isExecutionGuidancePending}
-                                isEditMessage={isEditMessage}
-                                isForkMode={isForkMode}
-                                isReadOnly={isReadOnly}
-                                selectedModel={selectedModel}
-                                realtimeVoiceCapability={realtimeVoiceCapability}
-                                onRealtimeVoiceStart={handleRealtimeVoiceStartWithWorkspaceSync}
-                                realtimeVoicePayload={{
-                                    toolsStatus: activeToolsStatus,
-                                    composerStatus: sendButtonStatus,
-                                }}
-                                voiceInputBusy={
-                                    isMobileVoiceMode || isVoiceRecording || isVoiceRecognizing || voiceActionPending
+                            <div
+                                className={
+                                    isSmallScreen
+                                        ? 'flex size-9 items-center justify-center [&_button]:size-9 [&_button]:p-1.5 [&_button>svg]:size-5 [&_button>div]:scale-75'
+                                        : 'flex items-center'
                                 }
-                                uploadPending={uploadFiles.length > 0}
-                                t={t}
-                            />
+                            >
+                                <ComposerPrimaryAction
+                                    status={sendButtonStatus}
+                                    messageContent={messageContent}
+                                    attachmentsMeta={attachmentsMeta}
+                                    onSend={handleSendMessage}
+                                    executionActive={Boolean(activeExecution?.active)}
+                                    executionStatus={activeExecution?.status || ''}
+                                    executionGuidancePending={isExecutionGuidancePending}
+                                    isEditMessage={isEditMessage}
+                                    isForkMode={isForkMode}
+                                    isReadOnly={isReadOnly}
+                                    selectedModel={selectedModel}
+                                    realtimeVoiceCapability={realtimeVoiceCapability}
+                                    onRealtimeVoiceStart={handleRealtimeVoiceStartWithWorkspaceSync}
+                                    realtimeVoicePayload={{
+                                        toolsStatus: activeToolsStatus,
+                                        composerStatus: sendButtonStatus,
+                                    }}
+                                    voiceInputBusy={
+                                        isMobileVoiceMode ||
+                                        isVoiceRecording ||
+                                        isVoiceRecognizing ||
+                                        voiceActionPending
+                                    }
+                                    uploadPending={uploadFiles.length > 0}
+                                    t={t}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

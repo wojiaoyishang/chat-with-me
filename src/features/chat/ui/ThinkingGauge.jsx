@@ -4,7 +4,7 @@ export default function ThinkingGauge({ progress, color, bubbles = false }) {
     return (
         <svg
             viewBox="0 0 24 24"
-            className="size-6 overflow-visible text-foreground"
+            className="size-7 overflow-visible text-foreground"
             fill="none"
             strokeWidth="2.2"
             strokeLinecap="round"

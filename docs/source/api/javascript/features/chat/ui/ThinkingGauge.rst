@@ -37,7 +37,7 @@ src/features/chat/ui/ThinkingGauge 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <svg viewBox="0 0 24 24" className="size-6 overflow-visible text-foreground" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" > <pat…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <svg viewBox="0 0 24 24" className="size-7 overflow-visible text-foreground" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" > <pat…``。
 
    **主要协作调用**：``Math.max``、``Math.min``、``Math.cos``、``Math.sin``、``[ { x: 6, y: 8, duration: '1.8s', delay: '-0.3s', drift: '-2px' }, { x: 12, y: 5, duration: '2.3s', delay: '-1.4s', dri…``。
 
