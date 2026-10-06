@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Bot, Check, ShieldCheck, ShieldOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -32,6 +32,7 @@ const MODES = [
 export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobile = false, layerClass = '' }) {
     const [open, setOpen] = useState(false);
     const [displayValue, setDisplayValue] = useState(value);
+    const pendingChoiceRef = useRef(null);
     const handleOpenChange = (nextOpen) => {
         if (nextOpen) setDisplayValue(value);
         setOpen(nextOpen);
@@ -48,7 +49,8 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
                     variant="ghost"
                     aria-pressed={selectedOptionId === id}
                     onClick={() => {
-                        onChange(id);
+                        if (isMobile) pendingChoiceRef.current = id;
+                        else onChange(id);
                         setOpen(false);
                     }}
                     className="h-auto w-full cursor-pointer justify-start gap-2.5 whitespace-normal rounded-lg px-3 py-2 text-left text-muted-foreground"
@@ -84,7 +86,16 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
         return (
             <Dialog open={open} onOpenChange={handleOpenChange}>
                 <DialogTrigger asChild>{trigger}</DialogTrigger>
-                <MobileSettingsContent title={t('tool_audit_policy')}>{options}</MobileSettingsContent>
+                <MobileSettingsContent
+                    title={t('tool_audit_policy')}
+                    onCloseAutoFocus={() => {
+                        const choice = pendingChoiceRef.current;
+                        pendingChoiceRef.current = null;
+                        if (choice !== null) onChange(choice);
+                    }}
+                >
+                    {options}
+                </MobileSettingsContent>
             </Dialog>
         );
     }

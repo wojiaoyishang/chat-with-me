@@ -27,7 +27,7 @@ src/features/chat/ui/MobileSettingsContent 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/MobileSettingsContent.jsx:102:744:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/MobileSettingsContent.jsx:102:807:FUNCTION
 
 .. js:function:: MobileSettingsContent({ title, children, className, ...props })
 

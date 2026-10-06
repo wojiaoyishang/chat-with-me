@@ -9,7 +9,7 @@ export default function MobileSettingsContent({ title, children, className, ...p
             showCloseButton={false}
             overlayClassName="z-[2147483299] bg-black/10 backdrop-blur-sm"
             className={cn(
-                'z-[2147483300] w-80 max-h-[80dvh] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-3xl bg-background/95 p-4 shadow-lg',
+                'z-[2147483300] w-80 max-h-[80dvh] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-3xl bg-background/95 p-4 shadow-lg data-[state=open]:zoom-in-100 data-[state=closed]:zoom-out-100',
                 className,
             )}
         >
