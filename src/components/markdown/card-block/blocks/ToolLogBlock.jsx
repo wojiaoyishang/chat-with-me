@@ -432,7 +432,7 @@ const ToolLogBlock = memo(
                             aria-pressed={showAudit}
                             aria-label={t(showAudit ? 'tool_review_show_output' : 'tool_review_show_details')}
                             onClick={() => setShowAudit((value) => !value)}
-                            className={`inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium focus-visible:outline focus-visible:outline-2 ${showAudit ? 'ring-1 ring-current' : ''} ${auditStatus === 'passed' ? 'bg-emerald-100 text-emerald-700' : auditStatus === 'reviewing' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-800'}`}
+                            className={`inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium focus-visible:outline focus-visible:outline-2 ${showAudit ? 'ring-1 ring-current' : ''} ${auditStatus === 'passed' ? 'bg-emerald-100 text-emerald-700' : auditStatus === 'reviewing' ? 'bg-blue-100 text-blue-700' : auditStatus === 'denied' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}`}
                         >
                             {auditStatus === 'passed' ? (
                                 <ShieldCheck className="size-3" />

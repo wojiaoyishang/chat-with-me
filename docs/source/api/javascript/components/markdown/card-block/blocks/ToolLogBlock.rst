@@ -339,7 +339,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``<ToolLogTerminalBlock content={segment.content} />``、``( <pre className={\x60m-0 whitespace-pre-wrap break-words font-mono text-[11px] leading-5 ${tone.body}\x60}> {segment.content} </pre> )``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11873:18441:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11873:18496:FUNCTION
 
 .. rubric:: ``memo callback @ 375``
 
@@ -543,7 +543,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:17788:18257:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:17843:18312:FUNCTION
 
 .. rubric:: ``bodySegments.map callback @ 496``
 
@@ -567,7 +567,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <ToolLogBodySegment key={\x60${segment.type}-${index}\x60} segment={segment} tone={tone} /> )``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:18442:18539:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:18497:18594:FUNCTION
 
 .. rubric:: ``memo callback @ 513``
 

@@ -20,7 +20,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
@@ -254,9 +253,9 @@ const ToolButtons = memo(
         const setMobileOpenSections = controlledSetMobileOpenSections ?? setInternalMobileOpenSections;
 
         const highZClass = isWindowMode ? 'z-[100000]' : '';
-        const desktopMenuContentClass = `bg-white p-0 shadow-lg rounded-xl overflow-hidden w-[20rem] max-w-[calc(100vw-1rem)] ${highZClass}`;
+        const desktopMenuContentClass = `bg-white p-0 shadow-lg rounded-xl overflow-hidden w-max min-w-[14rem] max-w-[calc(100vw-1rem)] ${highZClass}`;
         const desktopBuiltinMenuContentClass = `bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar min-w-[12rem] w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
-        const mobileMenuContentClass = `bg-white p-0 shadow-lg rounded-xl overflow-hidden w-[20rem] max-w-[calc(100vw-1rem)] ${highZClass}`;
+        const mobileMenuContentClass = `bg-white p-0 shadow-lg rounded-xl overflow-hidden w-max min-w-[14rem] max-w-[calc(100vw-1rem)] ${highZClass}`;
         const mobileBuiltinMenuContentClass = `bg-white p-0 shadow-lg rounded-md overflow-hidden w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
         const menuContentClass = isMobileMenu ? mobileMenuContentClass : desktopMenuContentClass;
         const desktopSubMenuContentClass = `bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar min-w-[14rem] w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
@@ -383,7 +382,6 @@ const ToolButtons = memo(
                                 </div>
                             </div>
                         </div>
-                        <DropdownMenuSeparator />
                     </>
                 );
             }
@@ -409,7 +407,6 @@ const ToolButtons = memo(
                             {options}
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
-                    <DropdownMenuSeparator />
                 </>
             );
         }, [
