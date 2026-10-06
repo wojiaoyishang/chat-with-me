@@ -821,5 +821,8 @@
     "workspace_command_cwd": "工作目录（挂载内相对路径）",
     "workspace_command_timeout": "超时（秒）",
     "workspace_command_extra": "允许调用时追加参数",
-    "workspace_command_invalid": "请检查命令编号是否重复，以及 argv 是否为有效 JSON 列表。"
+    "workspace_command_invalid": "请检查命令编号是否重复，以及 argv 是否为有效 JSON 列表。",
+    "自动工具审核": "自动工具审核",
+    "工具审核模型": "工具审核模型",
+    "开启自动工具审核时使用。默认跟随当前模型；每个批量子调用单独审核。": "开启自动工具审核时使用。默认跟随当前模型；每个批量子调用单独审核。"
 }

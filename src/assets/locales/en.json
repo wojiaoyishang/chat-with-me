@@ -830,5 +830,8 @@
     "workspace_command_cwd": "Working directory (relative to mount)",
     "workspace_command_timeout": "Timeout (seconds)",
     "workspace_command_extra": "Allow additional arguments",
-    "workspace_command_invalid": "Check for duplicate command IDs and valid argv JSON lists."
+    "workspace_command_invalid": "Check for duplicate command IDs and valid argv JSON lists.",
+    "自动工具审核": "Automatic tool review",
+    "工具审核模型": "Tool review model",
+    "开启自动工具审核时使用。默认跟随当前模型；每个批量子调用单独审核。": "Used for automatic tool reviews. Follows the current model by default; batch items are reviewed separately."
 }
