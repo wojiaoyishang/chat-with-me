@@ -844,5 +844,8 @@
     "tool_review_passed": "Review passed",
     "tool_review_denied": "Review denied",
     "tool_review_failed": "Review failed",
-    "tool_review_cancelled": "Review cancelled"
+    "tool_review_cancelled": "Review cancelled",
+    "tool_review_show_details": "Show review details",
+    "tool_review_show_output": "Show tool output",
+    "tool_review_model": "Review model"
 }

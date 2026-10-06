@@ -17,7 +17,7 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 * **模块标识**：``src/components/markdown/card-block/blocks/ToolLogBlock``
 * **顶层函数/组件/Hook**：5
 * **类**：0
-* **局部函数与匿名回调**：18
+* **局部函数与匿名回调**：20
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -86,13 +86,13 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:2914:6262:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:2914:6799:FUNCTION
 
 .. js:function:: parseToolLogContent(content)
 
    解析与 ``Tool Log Content`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``110``—``218`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``110``—``230`` 行。
 
    **参数**
 
@@ -101,17 +101,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{ title: titleText || 'Tool Log', auditStatus, bodySegments: parseToolLogBodySegments(contentWithoutStatus.trimStart()), status, startTimeMs, doneTimeMs, failedTimeMs, }``、``{ title, auditStatus, bodySegments: parseToolLogBodySegments(body), status, startTimeMs, doneTimeMs, failedTimeMs, }``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ title: titleText || 'Tool Log', auditStatus, auditDetails, bodySegments: parseToolLogBodySegments(contentWithoutStatus.trimStart()), status, startTimeMs, doneTimeMs, failedTimeM…``、``{ title, auditStatus, auditDetails, bodySegments: parseToolLogBodySegments(body), status, startTimeMs, doneTimeMs, failedTimeMs, }``。
 
-   **主要协作调用**：``toSafeString(content) .replace(/^\uFEFF/, '') .replace(TOOL_LOG_PROTOCOL_BOUNDARY_RE, ']\n') .trimEnd``、``toSafeString(content) .replace(/^\uFEFF/, '') .replace``、``toSafeString(content) .replace``、``toSafeString``、``safeContent.split``、``line.match``、``TOOL_LOG_TERMINAL_OPEN_LINE_RE.test``、``contentLines.push``、``TOOL_LOG_TERMINAL_CLOSE_LINE_RE.test``、``titleMatch[1].trim``、``metaMatch[1].toUpperCase``、``metaMatch[2]?.trim``。
+   **主要协作调用**：``toSafeString(content) .replace(/^\uFEFF/, '') .replace(TOOL_LOG_PROTOCOL_BOUNDARY_RE, ']\n') .trimEnd``、``toSafeString(content) .replace(/^\uFEFF/, '') .replace``、``toSafeString(content) .replace``、``toSafeString``、``safeContent.split``、``line.startsWith``、``line.endsWith``、``JSON.parse``、``line.slice``、``Array.isArray``、``line.match``、``TOOL_LOG_TERMINAL_OPEN_LINE_RE.test``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:10274:11307:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:10811:11844:FUNCTION
 
 .. js:function:: getToolLogTone(status)
 
    读取与 ``Tool Log Tone`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``329``—``360`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``341``—``372`` 行。
 
    **参数**
 
@@ -149,17 +149,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **主要协作调用**：``buffer.join('\n').trimEnd``、``buffer.join``、``segmentContent.trim``、``segments.push``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:6294:7212:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:6831:7749:FUNCTION
 
-.. rubric:: ``memo callback @ 220``
+.. rubric:: ``memo callback @ 232``
 
 .. code-block:: javascript
 
-   memo callback @ 220({ className = '', endTimeMs, isRunning, startTimeMs })
+   memo callback @ 232({ className = '', endTimeMs, isRunning, startTimeMs })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``220``—``255`` 行。
+**性质**：同步局部函数；源码第 ``232``—``267`` 行。
 
 **参数**
 
@@ -178,17 +178,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:6394:6410:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:6931:6947:FUNCTION
 
-.. rubric:: ``useState callback @ 221``
+.. rubric:: ``useState callback @ 233``
 
 .. code-block:: javascript
 
-   useState callback @ 221()
+   useState callback @ 233()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``221``—``221`` 行；所属函数 ``memo callback @ 220``。
+**性质**：同步局部函数；源码第 ``233``—``233`` 行；所属函数 ``memo callback @ 232``。
 
 **参数**
 
@@ -200,17 +200,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **主要协作调用**：``Date.now``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:6428:6709:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:6965:7246:FUNCTION
 
-.. rubric:: ``useEffect callback @ 223``
+.. rubric:: ``useEffect callback @ 235``
 
 .. code-block:: javascript
 
-   useEffect callback @ 223()
+   useEffect callback @ 235()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``223``—``235`` 行；所属函数 ``memo callback @ 220``。
+**性质**：同步局部函数；源码第 ``235``—``247`` 行；所属函数 ``memo callback @ 232``。
 
 **参数**
 
@@ -228,17 +228,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:6568:6619:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:7105:7156:FUNCTION
 
-.. rubric:: ``window.setInterval callback @ 228``
+.. rubric:: ``window.setInterval callback @ 240``
 
 .. code-block:: javascript
 
-   window.setInterval callback @ 228()
+   window.setInterval callback @ 240()
 
 实现 ``window.setInterval`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``228``—``230`` 行；所属函数 ``useEffect callback @ 223``。
+**性质**：同步局部函数；源码第 ``240``—``242`` 行；所属函数 ``useEffect callback @ 235``。
 
 **参数**
 
@@ -250,17 +250,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **主要协作调用**：``setNowMs``、``Date.now``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:6643:6702:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:7180:7239:FUNCTION
 
-.. rubric:: ``returned callback @ 232``
+.. rubric:: ``returned callback @ 244``
 
 .. code-block:: javascript
 
-   returned callback @ 232()
+   returned callback @ 244()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``232``—``234`` 行；所属函数 ``useEffect callback @ 223``。
+**性质**：同步局部函数；源码第 ``244``—``246`` 行；所属函数 ``useEffect callback @ 235``。
 
 **参数**
 
@@ -276,17 +276,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **主要协作调用**：``window.clearInterval``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:7293:8627:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:7830:9164:FUNCTION
 
-.. rubric:: ``memo callback @ 259``
+.. rubric:: ``memo callback @ 271``
 
 .. code-block:: javascript
 
-   memo callback @ 259({ endTimeMs, isDone, isFailed, isRunning, shouldShowDuration, startTimeMs, tone })
+   memo callback @ 271({ endTimeMs, isDone, isFailed, isRunning, shouldShowDuration, startTimeMs, tone })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``259``—``290`` 行。
+**性质**：同步局部函数；源码第 ``271``—``302`` 行。
 
 **参数**
 
@@ -297,17 +297,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <div className="ml-2 flex shrink-0 items-center gap-1"> {shouldShowDuration && ( <ToolLogDuration className={\x60flex h-4 items-center whitespace-nowrap rounded bg-white/50 px-1 fo…``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:8711:9783:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:9248:10320:FUNCTION
 
-.. rubric:: ``memo callback @ 294``
+.. rubric:: ``memo callback @ 306``
 
 .. code-block:: javascript
 
-   memo callback @ 294({ content })
+   memo callback @ 306({ content })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``294``—``311`` 行。
+**性质**：同步局部函数；源码第 ``306``—``323`` 行。
 
 **参数**
 
@@ -318,17 +318,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <div className="overflow-hidden rounded-lg border border-neutral-700/80 bg-neutral-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_20px_rgba(15,23,42,0.16)]"> <div classN…``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:9879:10192:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:10416:10729:FUNCTION
 
-.. rubric:: ``memo callback @ 315``
+.. rubric:: ``memo callback @ 327``
 
 .. code-block:: javascript
 
-   memo callback @ 315({ segment, tone })
+   memo callback @ 327({ segment, tone })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``315``—``325`` 行。
+**性质**：同步局部函数；源码第 ``327``—``337`` 行。
 
 **参数**
 
@@ -339,17 +339,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``<ToolLogTerminalBlock content={segment.content} />``、``( <pre className={\x60m-0 whitespace-pre-wrap break-words font-mono text-[11px] leading-5 ${tone.body}\x60}> {segment.content} </pre> )``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11336:16261:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11873:18161:FUNCTION
 
-.. rubric:: ``memo callback @ 363``
+.. rubric:: ``memo callback @ 375``
 
 .. code-block:: javascript
 
-   memo callback @ 363({ content = '', id })
+   memo callback @ 375({ content = '', id })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``363``—``476`` 行。
+**性质**：同步局部函数；源码第 ``375``—``507`` 行。
 
 **参数**
 
@@ -360,21 +360,21 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60my-1.5 rounded-md border px-2.5 py-2 transition-colors duration-300 ${isRunning ? 'card-tool-log-running-breathe' : ''} ${tone.card}\x60} data-card-block-id={id} >…``。
 
-**主要协作调用**：``useTranslation``、``useMemo``、``useFollowOutputScroll``、``t``、``bodySegments.map``。
+**主要协作调用**：``useTranslation``、``useState``、``useMemo``、``useFollowOutputScroll``、``t``、``bodySegments.map``。
 
-**内部回调数量**：5。这些回调也会在本页逐项说明。
+**内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11517:11583:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:12139:12213:FUNCTION
 
-.. rubric:: ``useMemo callback @ 365``
+.. rubric:: ``useMemo callback @ 379``
 
 .. code-block:: javascript
 
-   useMemo callback @ 365()
+   useMemo callback @ 379()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``365``—``367`` 行；所属函数 ``memo callback @ 363``。
+**性质**：同步局部函数；源码第 ``379``—``381`` 行；所属函数 ``memo callback @ 375``。
 
 **参数**
 
@@ -386,17 +386,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **主要协作调用**：``parseToolLogContent``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11686:11783:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:12316:12413:FUNCTION
 
-.. rubric:: ``useMemo callback @ 370``
+.. rubric:: ``useMemo callback @ 384``
 
 .. code-block:: javascript
 
-   useMemo callback @ 370()
+   useMemo callback @ 384()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``370``—``372`` 行；所属函数 ``memo callback @ 363``。
+**性质**：同步局部函数；源码第 ``384``—``386`` 行；所属函数 ``memo callback @ 375``。
 
 **参数**
 
@@ -410,17 +410,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11731:11771:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:12361:12401:FUNCTION
 
-.. rubric:: ``bodySegments.some callback @ 371``
+.. rubric:: ``bodySegments.some callback @ 385``
 
 .. code-block:: javascript
 
-   bodySegments.some callback @ 371(segment)
+   bodySegments.some callback @ 385(segment)
 
 作为 ``bodySegments.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``371``—``371`` 行；所属函数 ``useMemo callback @ 370``。
+**性质**：同步局部函数；源码第 ``385``—``385`` 行；所属函数 ``useMemo callback @ 384``。
 
 **参数**
 
@@ -431,17 +431,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11838:12076:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:12468:12706:FUNCTION
 
-.. rubric:: ``useMemo callback @ 373``
+.. rubric:: ``useMemo callback @ 387``
 
 .. code-block:: javascript
 
-   useMemo callback @ 373()
+   useMemo callback @ 387()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``373``—``380`` 行；所属函数 ``memo callback @ 363``。
+**性质**：同步局部函数；源码第 ``387``—``394`` 行；所属函数 ``memo callback @ 375``。
 
 **参数**
 
@@ -455,17 +455,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:11909:11937:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:12539:12567:FUNCTION
 
-.. rubric:: ``bodySegments .map callback @ 375``
+.. rubric:: ``bodySegments .map callback @ 389``
 
 .. code-block:: javascript
 
-   bodySegments .map callback @ 375(segment)
+   bodySegments .map callback @ 389(segment)
 
 作为 ``bodySegments .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``375``—``375`` 行；所属函数 ``useMemo callback @ 373``。
+**性质**：同步局部函数；源码第 ``389``—``389`` 行；所属函数 ``useMemo callback @ 387``。
 
 **参数**
 
@@ -476,17 +476,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:12737:12797:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:13367:13427:FUNCTION
 
-.. rubric:: ``useMemo callback @ 401``
+.. rubric:: ``useMemo callback @ 415``
 
 .. code-block:: javascript
 
-   useMemo callback @ 401()
+   useMemo callback @ 415()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``401``—``403`` 行；所属函数 ``memo callback @ 363``。
+**性质**：同步局部函数；源码第 ``415``—``417`` 行；所属函数 ``memo callback @ 375``。
 
 **参数**
 
@@ -498,17 +498,62 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 **主要协作调用**：``getToolLogTone``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:15674:16111:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:14243:14280:FUNCTION
 
-.. rubric:: ``bodySegments.map callback @ 461``
+.. rubric:: ``onClick callback @ 434``
 
 .. code-block:: javascript
 
-   bodySegments.map callback @ 461(segment, index)
+   onClick callback @ 434()
+
+处理 ``Click`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``434``—``434`` 行；所属函数 ``memo callback @ 375``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``setShowAudit``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:14262:14279:FUNCTION
+
+.. rubric:: ``setShowAudit callback @ 434``
+
+.. code-block:: javascript
+
+   setShowAudit callback @ 434(value)
+
+设置与 ``Show Audit`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``434``—``434`` 行；所属函数 ``onClick callback @ 434``。
+
+**参数**
+
+``value``
+   待读取、转换或校验的值。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:17508:17977:FUNCTION
+
+.. rubric:: ``bodySegments.map callback @ 491``
+
+.. code-block:: javascript
+
+   bodySegments.map callback @ 491(segment, index)
 
 作为 ``bodySegments.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``461``—``469`` 行；所属函数 ``memo callback @ 363``。
+**性质**：同步局部函数；源码第 ``491``—``499`` 行；所属函数 ``memo callback @ 375``。
 
 **参数**
 
@@ -522,17 +567,17 @@ src/components/markdown/card-block/blocks/ToolLogBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <ToolLogBodySegment key={\x60${segment.type}-${index}\x60} segment={segment} tone={tone} /> )``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:16262:16359:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolLogBlock.jsx:18162:18259:FUNCTION
 
-.. rubric:: ``memo callback @ 477``
+.. rubric:: ``memo callback @ 508``
 
 .. code-block:: javascript
 
-   memo callback @ 477(prev, next)
+   memo callback @ 508(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``477``—``479`` 行。
+**性质**：同步局部函数；源码第 ``508``—``510`` 行。
 
 **参数**
 

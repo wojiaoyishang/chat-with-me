@@ -125,10 +125,20 @@ const parseToolLogContent = (content) => {
     let failedTimeText = '';
     let isInsideTerminal = false;
     let auditStatus = '';
+    let auditDetails = null;
 
     const contentLines = [];
 
     for (const line of lines) {
+        if (!isInsideTerminal && line.startsWith('[TOOL_AUDIT_DETAIL:') && line.endsWith(']')) {
+            try {
+                const detail = JSON.parse(line.slice('[TOOL_AUDIT_DETAIL:'.length, -1));
+                if (detail && typeof detail === 'object' && !Array.isArray(detail)) auditDetails = detail;
+            } catch {
+                /* A partial/malformed detail must not interrupt tool output. */
+            }
+            continue;
+        }
         const auditMatch =
             !isInsideTerminal && line.match(/^\s*\[TOOL_AUDIT:(reviewing|passed|denied|failed|cancelled)]\s*$/);
         if (auditMatch) {
@@ -194,6 +204,7 @@ const parseToolLogContent = (content) => {
         return {
             title: titleText || 'Tool Log',
             auditStatus,
+            auditDetails,
             bodySegments: parseToolLogBodySegments(contentWithoutStatus.trimStart()),
             status,
             startTimeMs,
@@ -209,6 +220,7 @@ const parseToolLogContent = (content) => {
     return {
         title,
         auditStatus,
+        auditDetails,
         bodySegments: parseToolLogBodySegments(body),
         status,
         startTimeMs,
@@ -362,9 +374,11 @@ const getToolLogTone = (status) => {
 const ToolLogBlock = memo(
     ({ content = '', id }) => {
         const { t } = useTranslation();
-        const { title, auditStatus, bodySegments, status, startTimeMs, doneTimeMs, failedTimeMs } = useMemo(() => {
-            return parseToolLogContent(content);
-        }, [content]);
+        const [showAudit, setShowAudit] = useState(false);
+        const { title, auditStatus, auditDetails, bodySegments, status, startTimeMs, doneTimeMs, failedTimeMs } =
+            useMemo(() => {
+                return parseToolLogContent(content);
+            }, [content]);
 
         const hasBody = bodySegments.length > 0;
         const hasCodeProcess = useMemo(() => {
@@ -413,9 +427,12 @@ const ToolLogBlock = memo(
                     </div>
 
                     {auditStatus && (
-                        <span
-                            role="status"
-                            className={`inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${auditStatus === 'passed' ? 'bg-emerald-100 text-emerald-700' : auditStatus === 'reviewing' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-800'}`}
+                        <button
+                            type="button"
+                            aria-pressed={showAudit}
+                            aria-label={t(showAudit ? 'tool_review_show_output' : 'tool_review_show_details')}
+                            onClick={() => setShowAudit((value) => !value)}
+                            className={`inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium focus-visible:outline focus-visible:outline-2 ${showAudit ? 'ring-1 ring-current' : ''} ${auditStatus === 'passed' ? 'bg-emerald-100 text-emerald-700' : auditStatus === 'reviewing' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-800'}`}
                         >
                             {auditStatus === 'passed' ? (
                                 <ShieldCheck className="size-3" />
@@ -425,7 +442,7 @@ const ToolLogBlock = memo(
                                 <ShieldAlert className="size-3" />
                             )}
                             {t(`tool_review_${auditStatus}`)}
-                        </span>
+                        </button>
                     )}
 
                     <ToolLogStatus
@@ -439,37 +456,51 @@ const ToolLogBlock = memo(
                     />
                 </div>
 
-                {hasBody && (
-                    <div className={`mt-1.5 -mx-2.5 overflow-hidden border-t ${tone.bodyWrap}`}>
-                        {hasCodeProcess && (
-                            <OutputToolbar
-                                copyContent={copyContent}
-                                isFollowing={isFollowing}
-                                onScrollToBottom={resumeFollowing}
-                                onToggleFollowing={toggleFollowing}
-                            />
+                {showAudit && auditStatus ? (
+                    <div className={`mt-1.5 -mx-2.5 border-t px-2.5 py-2 text-xs ${tone.bodyWrap}`}>
+                        <div className="font-medium">{t(`tool_review_${auditStatus}`)}</div>
+                        {typeof auditDetails?.reason === 'string' && (
+                            <p className="mt-1 whitespace-pre-wrap break-words">{auditDetails.reason}</p>
                         )}
+                        {typeof auditDetails?.modelId === 'string' && (
+                            <div className="mt-2 text-[10px] opacity-70">
+                                {t('tool_review_model')}: {auditDetails.modelId}
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    hasBody && (
+                        <div className={`mt-1.5 -mx-2.5 overflow-hidden border-t ${tone.bodyWrap}`}>
+                            {hasCodeProcess && (
+                                <OutputToolbar
+                                    copyContent={copyContent}
+                                    isFollowing={isFollowing}
+                                    onScrollToBottom={resumeFollowing}
+                                    onToggleFollowing={toggleFollowing}
+                                />
+                            )}
 
-                        <div
-                            ref={scrollContainerRef}
-                            onScroll={handleScroll}
-                            onTouchMove={handleTouchMove}
-                            onWheel={handleWheel}
-                            className="pretty-scrollbar max-h-[300px] overflow-auto px-2.5 py-1.5 [scrollbar-gutter:stable]"
-                        >
-                            <div className="space-y-1.5">
-                                {bodySegments.map((segment, index) => {
-                                    return (
-                                        <ToolLogBodySegment
-                                            key={`${segment.type}-${index}`}
-                                            segment={segment}
-                                            tone={tone}
-                                        />
-                                    );
-                                })}
+                            <div
+                                ref={scrollContainerRef}
+                                onScroll={handleScroll}
+                                onTouchMove={handleTouchMove}
+                                onWheel={handleWheel}
+                                className="pretty-scrollbar max-h-[300px] overflow-auto px-2.5 py-1.5 [scrollbar-gutter:stable]"
+                            >
+                                <div className="space-y-1.5">
+                                    {bodySegments.map((segment, index) => {
+                                        return (
+                                            <ToolLogBodySegment
+                                                key={`${segment.type}-${index}`}
+                                                segment={segment}
+                                                tone={tone}
+                                            />
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )
                 )}
             </div>
         );

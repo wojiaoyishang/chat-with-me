@@ -106,7 +106,7 @@
    * - :doc:`src/components/markdown/card-block/blocks/ToolLogBlock </api/javascript/components/markdown/card-block/blocks/ToolLogBlock>`
      - 5
      - 0
-     - 18
+     - 20
      - ``src/components/markdown/card-block/blocks/ToolLogBlock.jsx``
    * - :doc:`src/components/markdown/card-block/blocks/useFollowOutputScroll </api/javascript/components/markdown/card-block/blocks/useFollowOutputScroll>`
      - 2
