@@ -1,15 +1,9 @@
 import { useState } from 'react';
-import { ArrowLeft, Bot, Check, ShieldCheck, ShieldOff } from 'lucide-react';
+import { Bot, Check, ShieldCheck, ShieldOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import MobileSettingsContent from './MobileSettingsContent.jsx';
 
 const MODES = [
     {
@@ -82,24 +76,7 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
         return (
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>{trigger}</DialogTrigger>
-                <DialogContent
-                    showCloseButton={false}
-                    overlayClassName={layerClass}
-                    className={`inset-0 top-0 left-0 flex h-dvh w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none border-0 p-0 sm:max-w-none ${layerClass}`}
-                >
-                    <header className="flex shrink-0 items-center gap-3 border-b px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]">
-                        <DialogClose asChild>
-                            <Button variant="ghost" size="icon" aria-label={t('back')} className="cursor-pointer">
-                                <ArrowLeft className="size-5" />
-                            </Button>
-                        </DialogClose>
-                        <DialogTitle className="text-base">{t('tool_audit_policy')}</DialogTitle>
-                    </header>
-                    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
-                        <DialogDescription className="sr-only">{t('tool_audit_choose_description')}</DialogDescription>
-                        {options}
-                    </div>
-                </DialogContent>
+                <MobileSettingsContent title={t('tool_audit_policy')}>{options}</MobileSettingsContent>
             </Dialog>
         );
     }

@@ -166,7 +166,7 @@ src/features/execution/ExecutionWindow 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3705:30034:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3705:30067:FUNCTION
 
 .. rubric:: ``memo callback @ 86``
 
@@ -176,7 +176,7 @@ src/features/execution/ExecutionWindow 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``86``—``529`` 行。
+**性质**：同步局部函数；源码第 ``86``—``530`` 行。
 
 **参数**
 
@@ -185,7 +185,7 @@ src/features/execution/ExecutionWindow 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <FloatingDockWindow open={open} onClose={() => onOpenChange?.(false)} dockTarget={dockTarget} dockMount={dockMount} storageKey="cwm:task-mode-window:v1" title={title} descriptio…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <FloatingDockWindow mobileFullscreen open={open} onClose={() => onOpenChange?.(false)} dockTarget={dockTarget} dockMount={dockMount} storageKey="cwm:task-mode-window:v1" title={…``。
 
 **副作用**
 
@@ -738,17 +738,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``requestAction``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:13837:13864:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:13870:13897:FUNCTION
 
-.. rubric:: ``onClose callback @ 307``
+.. rubric:: ``onClose callback @ 308``
 
 .. code-block:: javascript
 
-   onClose callback @ 307()
+   onClose callback @ 308()
 
 处理 ``Close`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``307``—``307`` 行；所属函数 ``memo callback @ 86``。
+**性质**：同步局部函数；源码第 ``308``—``308`` 行；所属函数 ``memo callback @ 86``。
 
 **参数**
 
@@ -760,17 +760,17 @@ src/features/execution/ExecutionWindow 模块
 
 **主要协作调用**：``onOpenChange``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:15941:16454:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:15974:16487:FUNCTION
 
-.. rubric:: ``execution.plan.map callback @ 346``
+.. rubric:: ``execution.plan.map callback @ 347``
 
 .. code-block:: javascript
 
-   execution.plan.map callback @ 346(item)
+   execution.plan.map callback @ 347(item)
 
 作为 ``execution.plan.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``346``—``354`` 行；所属函数 ``memo callback @ 86``。
+**性质**：同步局部函数；源码第 ``347``—``355`` 行；所属函数 ``memo callback @ 86``。
 
 **参数**
 
@@ -781,17 +781,17 @@ src/features/execution/ExecutionWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:17216:29527:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:17249:29560:FUNCTION
 
-.. rubric:: ``timelineItems.map callback @ 369``
+.. rubric:: ``timelineItems.map callback @ 370``
 
 .. code-block:: javascript
 
-   timelineItems.map callback @ 369(item, index)
+   timelineItems.map callback @ 370(item, index)
 
 作为 ``timelineItems.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``369``—``515`` 行；所属函数 ``memo callback @ 86``。
+**性质**：同步局部函数；源码第 ``370``—``516`` 行；所属函数 ``memo callback @ 86``。
 
 **参数**
 

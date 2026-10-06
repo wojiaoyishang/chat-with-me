@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { GripHorizontal, PanelRightClose, PanelRightOpen, X } from 'lucide-react';
+import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
 
 const EDGE = 10;
 const MIN_WIDTH = 360;
@@ -76,6 +77,7 @@ const FloatingDockWindow = memo(
         portalTarget = null,
         expanded = false,
         compactMobile = false,
+        mobileFullscreen = false,
         defaultLayout = null,
         zIndex = 2147483200,
     }) => {
@@ -86,6 +88,15 @@ const FloatingDockWindow = memo(
         );
         const [dockTargetWidth, setDockTargetWidth] = useState(() => Number(dockTarget?.clientWidth || 0));
         const interactionRef = useRef(null);
+        const isMobilePage = isMobile && mobileFullscreen && !compactMobile;
+        useBrowserBackLayer(
+            open && isMobilePage,
+            () => {
+                onClose?.();
+                return true;
+            },
+            { kind: 'execution-window' },
+        );
 
         const commitLayout = useCallback(
             (updater) => {
@@ -258,6 +269,7 @@ const FloatingDockWindow = memo(
             if (expanded && portalTarget)
                 return { position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex };
             if (isMobile && !compactMobile) {
+                if (mobileFullscreen) return { position: 'fixed', inset: 0, width: '100%', height: '100dvh', zIndex };
                 return { position: 'fixed', inset: '8px', zIndex };
             }
             if (docked) {
@@ -277,7 +289,7 @@ const FloatingDockWindow = memo(
                 height: layout.height,
                 zIndex,
             };
-        }, [docked, isMobile, layout, expanded, compactMobile, portalTarget, zIndex]);
+        }, [docked, isMobile, layout, expanded, compactMobile, mobileFullscreen, portalTarget, zIndex]);
 
         if (!open || typeof document === 'undefined') return null;
 
@@ -286,7 +298,7 @@ const FloatingDockWindow = memo(
                 role="dialog"
                 aria-modal="false"
                 aria-label={typeof title === 'string' ? title : 'Execution'}
-                className={`flex min-h-0 flex-col overflow-hidden border border-gray-200 bg-white shadow-2xl ${docked || expanded ? 'rounded-none border-y-0 border-r-0' : 'rounded-2xl'} ${className}`}
+                className={`flex min-h-0 flex-col overflow-hidden border border-gray-200 bg-white shadow-2xl ${isMobilePage ? 'rounded-none border-0' : docked || expanded ? 'rounded-none border-y-0 border-r-0' : 'rounded-2xl'} ${className}`}
                 style={panelStyle}
             >
                 {docked && !isMobile && (
@@ -296,10 +308,10 @@ const FloatingDockWindow = memo(
                     />
                 )}
                 <header
-                    className={`flex shrink-0 select-none items-center gap-3 border-b border-gray-100 px-4 py-3 ${!expanded && !docked && (!isMobile || compactMobile) ? 'cursor-move touch-none' : ''}`}
+                    className={`flex shrink-0 select-none items-center gap-3 border-b border-gray-100 px-4 py-3 ${isMobilePage ? 'pt-[max(0.75rem,env(safe-area-inset-top))]' : ''} ${!expanded && !docked && (!isMobile || compactMobile) ? 'cursor-move touch-none' : ''}`}
                     onPointerDown={startDrag}
                 >
-                    <GripHorizontal className="mt-1 h-4 w-4 shrink-0 text-gray-300" />
+                    {!isMobilePage && <GripHorizontal className="mt-1 h-4 w-4 shrink-0 text-gray-300" />}
                     <div className="min-w-0 flex-1">
                         <div className="truncate text-sm font-semibold text-gray-800">{title}</div>
                         {description && (
@@ -337,7 +349,13 @@ const FloatingDockWindow = memo(
                 </header>
 
                 <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
-                {footer && <footer className="shrink-0 border-t border-gray-100 bg-white px-4 py-3">{footer}</footer>}
+                {footer && (
+                    <footer
+                        className={`shrink-0 border-t border-gray-100 bg-white px-4 py-3 ${isMobilePage ? 'pb-[max(0.75rem,env(safe-area-inset-bottom))]' : ''}`}
+                    >
+                        {footer}
+                    </footer>
+                )}
 
                 {!expanded && !docked && !isMobile && (
                     <div

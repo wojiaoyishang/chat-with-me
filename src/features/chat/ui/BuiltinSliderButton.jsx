@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import './BuiltinSliderButton.css';
-import { Brain, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { useIsMobile } from '@/lib/tools.jsx';
+import MobileSettingsContent from './MobileSettingsContent.jsx';
+import ThinkingGauge from './ThinkingGauge.jsx';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -11,6 +15,7 @@ const chargeColors = ['#94a3b8', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#a
 
 export default function BuiltinSliderButton({ tool, value, onChange, onCommit, compact = false, fixedWidth = false }) {
     const { t } = useTranslation();
+    const isMobile = useIsMobile();
     const [particles] = useState(() =>
         Array.from({ length: 18 }, () => ({
             y: 12 + Math.random() * 76,
@@ -30,9 +35,12 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
     const name = (item) => item.name || item.id;
     const progress = items.length > 1 ? index / (items.length - 1) : 0;
     const chargeColor = chargeColors[Math.round(progress * (chargeColors.length - 1))];
+    const Root = isMobile ? Dialog : Popover;
+    const Trigger = isMobile ? DialogTrigger : PopoverTrigger;
+    const Content = isMobile ? MobileSettingsContent : PopoverContent;
     return (
-        <Popover>
-            <PopoverTrigger asChild>
+        <Root>
+            <Trigger asChild>
                 <Button
                     type="button"
                     variant="ghost"
@@ -48,7 +56,7 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
                     aria-label={`${t(tool.text)} · ${name(items[index])}`}
                 >
                     {compact ? (
-                        <Brain className="size-4.5" />
+                        <ThinkingGauge progress={progress} color={chargeColor} />
                     ) : (
                         <>
                             {fixedWidth ? (
@@ -70,11 +78,14 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
                         </>
                     )}
                 </Button>
-            </PopoverTrigger>
-            <PopoverContent
-                className="w-64 max-w-[calc(100vw-2rem)] space-y-4 rounded-2xl border-border/50 bg-background/95 px-4 py-4 shadow-sm"
-                align="start"
-                sideOffset={8}
+            </Trigger>
+            <Content
+                className={
+                    isMobile
+                        ? 'space-y-4'
+                        : 'w-64 max-w-[calc(100vw-2rem)] space-y-4 rounded-2xl border-border/50 bg-background/95 px-4 py-4 shadow-sm'
+                }
+                {...(isMobile ? { title: t(tool.text) } : { align: 'start', sideOffset: 8 })}
                 aria-label={t(tool.text)}
             >
                 <div
@@ -129,7 +140,7 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
                         onValueCommit={onCommit ? ([number]) => onCommit(items[number]?.id || id) : undefined}
                     />
                 </div>
-            </PopoverContent>
-        </Popover>
+            </Content>
+        </Root>
     );
 }

@@ -288,11 +288,21 @@
      - 0
      - 7
      - ``src/features/chat/ui/MessageContainer.jsx``
+   * - :doc:`src/features/chat/ui/MobileSettingsContent </api/javascript/features/chat/ui/MobileSettingsContent>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/chat/ui/MobileSettingsContent.jsx``
    * - :doc:`src/features/chat/ui/QuickOptions </api/javascript/features/chat/ui/QuickOptions>`
      - 0
      - 0
      - 14
      - ``src/features/chat/ui/QuickOptions.jsx``
+   * - :doc:`src/features/chat/ui/ThinkingGauge </api/javascript/features/chat/ui/ThinkingGauge>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/chat/ui/ThinkingGauge.jsx``
    * - :doc:`src/features/chat/ui/ToolAuditModeSwitch </api/javascript/features/chat/ui/ToolAuditModeSwitch>`
      - 1
      - 0
@@ -818,7 +828,9 @@
    /api/javascript/features/chat/ui/DropFileLayer
    /api/javascript/features/chat/ui/FileUploadProgress
    /api/javascript/features/chat/ui/MessageContainer
+   /api/javascript/features/chat/ui/MobileSettingsContent
    /api/javascript/features/chat/ui/QuickOptions
+   /api/javascript/features/chat/ui/ThinkingGauge
    /api/javascript/features/chat/ui/ToolAuditModeSwitch
    /api/javascript/features/chat/ui/ToolButtons
    /api/javascript/features/chat/ui/builtinToolValue

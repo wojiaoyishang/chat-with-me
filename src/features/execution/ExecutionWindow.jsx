@@ -303,6 +303,7 @@ const ExecutionWindow = memo(
 
         return (
             <FloatingDockWindow
+                mobileFullscreen
                 open={open}
                 onClose={() => onOpenChange?.(false)}
                 dockTarget={dockTarget}
