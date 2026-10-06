@@ -22,13 +22,13 @@ src/features/chat/ui/ThinkingGauge 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ThinkingGauge.jsx:0:681:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ThinkingGauge.jsx:0:1073:FUNCTION
 
 .. js:function:: ThinkingGauge({ progress, color })
 
    渲染 ``ThinkingGauge`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``1``—``19`` 行。
+   **性质**：同步函数；导出 API；源码第 ``1``—``26`` 行。
 
    **参数**
 
@@ -37,6 +37,6 @@ src/features/chat/ui/ThinkingGauge 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" > {/* Outline follows the…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <svg viewBox="0 0 24 24" className="size-5 text-foreground" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" > <path d="M5.64 18.36a…``。
 
    **主要协作调用**：``Math.max``、``Math.min``、``Math.cos``、``Math.sin``。
