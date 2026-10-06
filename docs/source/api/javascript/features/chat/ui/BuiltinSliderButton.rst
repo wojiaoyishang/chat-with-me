@@ -27,7 +27,7 @@ src/features/chat/ui/BuiltinSliderButton 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:517:7476:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:517:7512:FUNCTION
 
 .. js:function:: BuiltinSliderButton({ tool, value, onChange, onCommit, compact = false, fixedWidth = false })
 
@@ -141,7 +141,7 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:2768:3281:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:2804:3317:FUNCTION
 
 .. rubric:: ``items.map callback @ 56``
 
@@ -164,7 +164,7 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 **主要协作调用**：``name``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:5190:6190:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:5226:6226:FUNCTION
 
 .. rubric:: ``particles.map callback @ 101``
 
@@ -188,7 +188,7 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:7213:7260:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:7249:7296:FUNCTION
 
 .. rubric:: ``onValueChange callback @ 128``
 
@@ -211,7 +211,7 @@ src/features/chat/ui/BuiltinSliderButton 模块
 
 **主要协作调用**：``onChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:7311:7359:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/BuiltinSliderButton.jsx:7347:7395:FUNCTION
 
 .. rubric:: ``anonymous callback @ 129``
 

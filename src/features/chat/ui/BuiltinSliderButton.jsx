@@ -39,7 +39,7 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
                     disabled={tool.disabled}
                     className={`h-9 shrink-0 cursor-pointer gap-1.5 text-sm disabled:cursor-not-allowed text-muted-foreground hover:text-foreground data-[state=open]:text-foreground ${
                         fixedWidth
-                            ? 'rounded-full bg-muted/60 hover:bg-muted ' +
+                            ? 'rounded-full bg-transparent hover:bg-muted/60 data-[state=open]:bg-muted/60 ' +
                               (compact ? 'size-7 p-1 has-[>svg]:px-1' : 'w-auto max-w-[min(16rem,30vw)] px-3')
                             : 'max-w-36 bg-transparent px-2 hover:bg-transparent ' +
                               (compact ? 'size-7 p-1 has-[>svg]:px-1' : '')
