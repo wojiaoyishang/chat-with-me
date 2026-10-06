@@ -306,7 +306,7 @@
    * - :doc:`src/features/chat/ui/ToolAuditModeSwitch </api/javascript/features/chat/ui/ToolAuditModeSwitch>`
      - 1
      - 0
-     - 3
+     - 4
      - ``src/features/chat/ui/ToolAuditModeSwitch.jsx``
    * - :doc:`src/features/chat/ui/ToolButtons </api/javascript/features/chat/ui/ToolButtons>`
      - 6

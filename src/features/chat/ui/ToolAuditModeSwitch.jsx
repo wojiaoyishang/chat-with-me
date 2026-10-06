@@ -31,7 +31,13 @@ const MODES = [
 
 export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobile = false, layerClass = '' }) {
     const [open, setOpen] = useState(false);
+    const [displayValue, setDisplayValue] = useState(value);
+    const handleOpenChange = (nextOpen) => {
+        if (nextOpen) setDisplayValue(value);
+        setOpen(nextOpen);
+    };
     const current = MODES.find((mode) => mode.id === value) || MODES[0];
+    const selectedOptionId = isMobile ? displayValue : current.id;
     const CurrentIcon = current.icon;
     const options = (
         <div role="group" aria-label={t('tool_audit_policy')}>
@@ -40,7 +46,7 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
                     key={id}
                     type="button"
                     variant="ghost"
-                    aria-pressed={current.id === id}
+                    aria-pressed={selectedOptionId === id}
                     onClick={() => {
                         onChange(id);
                         setOpen(false);
@@ -54,7 +60,9 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
                             {t(description)}
                         </span>
                     </span>
-                    {current.id === id && <Check className="size-4 shrink-0" />}
+                    <span className="size-4 shrink-0" aria-hidden="true">
+                        {selectedOptionId === id && <Check className="size-4" />}
+                    </span>
                 </Button>
             ))}
         </div>
@@ -74,7 +82,7 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
 
     if (isMobile) {
         return (
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={handleOpenChange}>
                 <DialogTrigger asChild>{trigger}</DialogTrigger>
                 <MobileSettingsContent title={t('tool_audit_policy')}>{options}</MobileSettingsContent>
             </Dialog>
