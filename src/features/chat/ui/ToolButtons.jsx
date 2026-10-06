@@ -1,4 +1,5 @@
 import BuiltinSliderButton from './BuiltinSliderButton.jsx';
+import ToolAuditModeSwitch from './ToolAuditModeSwitch.jsx';
 import React, { useState, useMemo, useCallback, useRef, useLayoutEffect, memo } from 'react';
 import { IoMdAdd } from 'react-icons/io';
 import {
@@ -245,16 +246,19 @@ const ToolButtons = memo(
         const setMobileOpenSections = controlledSetMobileOpenSections ?? setInternalMobileOpenSections;
 
         const highZClass = isWindowMode ? 'z-[100000]' : '';
-        const desktopMenuContentClass = `bg-white p-0 shadow-lg rounded-md overflow-hidden w-max min-w-[13.5rem] max-w-[min(18rem,calc(100vw-1rem))] ${highZClass}`;
+        const desktopMenuContentClass = `bg-white p-0 shadow-lg rounded-xl overflow-hidden w-[20rem] max-w-[calc(100vw-1rem)] ${highZClass}`;
         const desktopBuiltinMenuContentClass = `bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar min-w-[12rem] w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
-        const mobileMenuContentClass = `bg-white p-0 shadow-lg rounded-md overflow-hidden w-max min-w-[13.5rem] max-w-[min(16rem,calc(100vw-1rem))] ${highZClass}`;
+        const mobileMenuContentClass = `bg-white p-0 shadow-lg rounded-xl overflow-hidden w-[20rem] max-w-[calc(100vw-1rem)] ${highZClass}`;
         const mobileBuiltinMenuContentClass = `bg-white p-0 shadow-lg rounded-md overflow-hidden w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
         const menuContentClass = isMobileMenu ? mobileMenuContentClass : desktopMenuContentClass;
         const desktopSubMenuContentClass = `bg-white p-1 shadow-lg rounded-md max-h-[50vh] overflow-y-auto pretty-scrollbar min-w-[14rem] w-max max-w-[calc(100vw-1rem)] ${highZClass}`;
         const menuCollisionPadding = isMobileMenu ? 8 : 12;
         const toolRegion = useMemo(() => extraTools.find((item) => item?.type === 'tool-region') || null, [extraTools]);
-        const toolRegionItems = toolRegion?.children || extraTools;
-        const nonRegionExtraTools = toolRegion ? extraTools.filter((item) => item !== toolRegion) : [];
+        const auditControl = extraTools.find((item) => item?.name === 'tool_audit_mode');
+        const toolRegionItems = toolRegion?.children || extraTools.filter((item) => item !== auditControl);
+        const nonRegionExtraTools = toolRegion
+            ? extraTools.filter((item) => item !== toolRegion && item !== auditControl)
+            : [];
 
         const handleToggle = useCallback(
             (toolName, newIsActive) => {
@@ -537,6 +541,18 @@ const ToolButtons = memo(
                         className={menuContentClass}
                     >
                         <div className="flex max-h-[min(72vh,640px)] min-h-0 flex-col">
+                            {auditControl && (
+                                <ToolAuditModeSwitch
+                                    value={toolsStatus.extra_tools?.tool_audit_mode || 'off'}
+                                    t={t}
+                                    onChange={(mode) =>
+                                        setToolsStatus((prev) => ({
+                                            ...prev,
+                                            extra_tools: { ...prev.extra_tools, tool_audit_mode: mode },
+                                        }))
+                                    }
+                                />
+                            )}
                             <div className="shrink-0 border-b border-gray-100 p-1">
                                 {voiceRecognitionEngineMenu}
                                 {nonRegionExtraTools.length > 0 && renderMenuItems(nonRegionExtraTools)}

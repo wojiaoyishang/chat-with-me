@@ -293,10 +293,15 @@
      - 0
      - 14
      - ``src/features/chat/ui/QuickOptions.jsx``
+   * - :doc:`src/features/chat/ui/ToolAuditModeSwitch </api/javascript/features/chat/ui/ToolAuditModeSwitch>`
+     - 1
+     - 0
+     - 4
+     - ``src/features/chat/ui/ToolAuditModeSwitch.jsx``
    * - :doc:`src/features/chat/ui/ToolButtons </api/javascript/features/chat/ui/ToolButtons>`
      - 6
      - 0
-     - 42
+     - 46
      - ``src/features/chat/ui/ToolButtons.jsx``
    * - :doc:`src/features/chat/ui/builtinToolValue </api/javascript/features/chat/ui/builtinToolValue>`
      - 1
@@ -814,6 +819,7 @@
    /api/javascript/features/chat/ui/FileUploadProgress
    /api/javascript/features/chat/ui/MessageContainer
    /api/javascript/features/chat/ui/QuickOptions
+   /api/javascript/features/chat/ui/ToolAuditModeSwitch
    /api/javascript/features/chat/ui/ToolButtons
    /api/javascript/features/chat/ui/builtinToolValue
    /api/javascript/features/chat/ui/chatbox/components/ChatBoxInteractionHost
