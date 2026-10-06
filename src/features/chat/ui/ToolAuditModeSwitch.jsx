@@ -35,9 +35,9 @@ const MODES = [
     },
 ];
 
-export default function ToolAuditModeSwitch({ value = 'auto', onChange, t, isMobile = false, layerClass = '' }) {
+export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobile = false, layerClass = '' }) {
     const [open, setOpen] = useState(false);
-    const current = MODES.find((mode) => mode.id === value) || MODES[2];
+    const current = MODES.find((mode) => mode.id === value) || MODES[0];
     const CurrentIcon = current.icon;
     const options = (
         <div role="group" aria-label={t('tool_audit_policy')}>

@@ -329,7 +329,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``onToggle``、``releaseFocusAfterActivation``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:6767:36119:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:6767:36193:FUNCTION
 
 .. rubric:: ``memo callback @ 206``
 
@@ -339,7 +339,7 @@ src/features/chat/ui/ToolButtons 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``206``—``750`` 行。
+**性质**：同步局部函数；源码第 ``206``—``751`` 行。
 
 **参数**
 
@@ -1044,7 +1044,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``setOpen``、``onManageConversationTools``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:29822:30053:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:29821:30152:FUNCTION
 
 .. rubric:: ``onChange callback @ 647``
 
@@ -1054,7 +1054,7 @@ src/features/chat/ui/ToolButtons 模块
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``647``—``651`` 行；所属函数 ``memo callback @ 206``。
+**性质**：同步局部函数；源码第 ``647``—``653`` 行；所属函数 ``memo callback @ 206``。
 
 **参数**
 
@@ -1065,21 +1065,21 @@ src/features/chat/ui/ToolButtons 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``setToolsStatus``。
+**主要协作调用**：``setLocalSetting``、``setToolsStatus``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:29875:30052:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:29947:30124:FUNCTION
 
-.. rubric:: ``setToolsStatus callback @ 648``
+.. rubric:: ``setToolsStatus callback @ 649``
 
 .. code-block:: javascript
 
-   setToolsStatus callback @ 648(prev)
+   setToolsStatus callback @ 649(prev)
 
 设置与 ``Tools Status`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``648``—``651`` 行；所属函数 ``onChange callback @ 647``。
+**性质**：同步局部函数；源码第 ``649``—``652`` 行；所属函数 ``onChange callback @ 647``。
 
 **参数**
 
@@ -1090,38 +1090,15 @@ src/features/chat/ui/ToolButtons 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:30824:30857:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:30898:30931:FUNCTION
 
-.. rubric:: ``onMouseDown callback @ 663``
+.. rubric:: ``onMouseDown callback @ 664``
 
 .. code-block:: javascript
 
-   onMouseDown callback @ 663(event)
+   onMouseDown callback @ 664(event)
 
 处理 ``Mouse Down`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``663``—``663`` 行；所属函数 ``memo callback @ 206``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``event.preventDefault``。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:30900:30959:FUNCTION
-
-.. rubric:: ``onClick callback @ 664``
-
-.. code-block:: javascript
-
-   onClick callback @ 664(event)
-
-处理 ``Click`` 用户交互或运行时事件。
 
 **性质**：同步局部函数；源码第 ``664``—``664`` 行；所属函数 ``memo callback @ 206``。
 
@@ -1134,19 +1111,42 @@ src/features/chat/ui/ToolButtons 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``releaseFocusAfterActivation``。
+**主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:33285:33314:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:30974:31033:FUNCTION
 
-.. rubric:: ``onClick callback @ 705``
+.. rubric:: ``onClick callback @ 665``
 
 .. code-block:: javascript
 
-   onClick callback @ 705()
+   onClick callback @ 665(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``705``—``705`` 行；所属函数 ``memo callback @ 206``。
+**性质**：同步局部函数；源码第 ``665``—``665`` 行；所属函数 ``memo callback @ 206``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``releaseFocusAfterActivation``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:33359:33388:FUNCTION
+
+.. rubric:: ``onClick callback @ 706``
+
+.. code-block:: javascript
+
+   onClick callback @ 706()
+
+处理 ``Click`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``706``—``706`` 行；所属函数 ``memo callback @ 206``。
 
 **参数**
 
@@ -1158,17 +1158,17 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``setToolsLoadedStatus``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:34607:34640:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:34681:34714:FUNCTION
 
-.. rubric:: ``onMouseDown callback @ 723``
+.. rubric:: ``onMouseDown callback @ 724``
 
 .. code-block:: javascript
 
-   onMouseDown callback @ 723(event)
+   onMouseDown callback @ 724(event)
 
 处理 ``Mouse Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``723``—``723`` 行；所属函数 ``memo callback @ 206``。
+**性质**：同步局部函数；源码第 ``724``—``724`` 行；所属函数 ``memo callback @ 206``。
 
 **参数**
 
@@ -1181,17 +1181,17 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:34695:34754:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:34769:34828:FUNCTION
 
-.. rubric:: ``onClick callback @ 724``
+.. rubric:: ``onClick callback @ 725``
 
 .. code-block:: javascript
 
-   onClick callback @ 724(event)
+   onClick callback @ 725(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``724``—``724`` 行；所属函数 ``memo callback @ 206``。
+**性质**：同步局部函数；源码第 ``725``—``725`` 行；所属函数 ``memo callback @ 206``。
 
 **参数**
 

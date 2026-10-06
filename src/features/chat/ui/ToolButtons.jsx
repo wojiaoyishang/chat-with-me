@@ -640,16 +640,17 @@ const ToolButtons = memo(
 
                 {auditControl && (
                     <ToolAuditModeSwitch
-                        value={toolsStatus.extra_tools?.tool_audit_mode || 'auto'}
+                        value={toolsStatus.extra_tools?.tool_audit_mode || 'off'}
                         t={t}
                         isMobile={isMobileMenu}
                         layerClass={highZClass}
-                        onChange={(mode) =>
+                        onChange={(mode) => {
+                            setLocalSetting('ToolApprovalMode', mode);
                             setToolsStatus((prev) => ({
                                 ...prev,
                                 extra_tools: { ...prev.extra_tools, tool_audit_mode: mode },
-                            }))
-                        }
+                            }));
+                        }}
                     />
                 )}
 

@@ -67,6 +67,7 @@ const createExecutionGuidanceId = () => {
 
 const VOICE_WAVEFORM_BARS = 56;
 const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
+const TOOL_APPROVAL_MODE_SETTING_KEY = 'ToolApprovalMode';
 const CHATBOX_AUTO_HIDE_SETTING_KEY = 'ChatBoxBottomAutoHide';
 const CHATBOX_COLLAPSED_HEIGHT = 30;
 const CHATBOX_COLLAPSE_OVERSHOOT_PX = 24;
@@ -86,6 +87,15 @@ const applyLocalSettingBackedExtraToolStatus = (status, toolsConfig = []) => {
             }
             if (!item.name) return;
             const currentPath = [...parentPath, item.name];
+
+            if (item.type === 'radio' && item.name === 'tool_audit_mode') {
+                const savedMode = getLocalSetting(TOOL_APPROVAL_MODE_SETTING_KEY, 'off');
+                result = setNestedValue(
+                    result,
+                    currentPath,
+                    ['off', 'semi', 'auto'].includes(savedMode) ? savedMode : 'off',
+                );
+            }
 
             if (item.type === 'radio' && item.name === VOICE_RECOGNITION_ENGINE_SETTING_KEY) {
                 const allowedValues = new Set((item.children || []).map((child) => child?.name).filter(Boolean));

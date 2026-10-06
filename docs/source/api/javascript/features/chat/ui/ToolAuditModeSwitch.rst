@@ -27,9 +27,9 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:996:4926:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:996:4925:FUNCTION
 
-.. js:function:: ToolAuditModeSwitch({ value = 'auto', onChange, t, isMobile = false, layerClass = '' })
+.. js:function:: ToolAuditModeSwitch({ value = 'off', onChange, t, isMobile = false, layerClass = '' })
 
    渲染 ``ToolAuditModeSwitch`` React 组件，并协调该界面的状态、事件和子组件。
 
@@ -37,8 +37,8 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 
    **参数**
 
-   ``{ value = 'auto', onChange, t, isMobile = false, layerClass = '' }``
-      调用方传入的 ``value = 'auto', onChange, t, isMobile = false, layerClass = ''`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ value = 'off', onChange, t, isMobile = false, layerClass = '' }``
+      调用方传入的 ``value = 'off', onChange, t, isMobile = false, layerClass = ''`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -53,7 +53,7 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1188:1215:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1187:1214:FUNCTION
 
 .. rubric:: ``MODES.find callback @ 40``
 
@@ -74,7 +74,7 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1376:2460:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1375:2459:FUNCTION
 
 .. rubric:: ``MODES.map callback @ 44``
 
@@ -99,7 +99,7 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1634:1741:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1633:1740:FUNCTION
 
 .. rubric:: ``onClick callback @ 50``
 
