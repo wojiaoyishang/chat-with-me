@@ -17,23 +17,23 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 * **模块标识**：``src/features/chat/ui/ToolAuditModeSwitch``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：4
+* **局部函数与匿名回调**：3
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``@/components/ui/button``、``@/components/ui/popover``、``@/components/ui/dialog``、``@/components/ui/tooltip``。
+``react``、``lucide-react``、``@/components/ui/button``、``@/components/ui/popover``、``@/components/ui/dialog``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:834:5605:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:734:4551:FUNCTION
 
 .. js:function:: ToolAuditModeSwitch({ value = 'off', onChange, t, isMobile = false, layerClass = '' })
 
    渲染 ``ToolAuditModeSwitch`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``21``—``124`` 行。
+   **性质**：同步函数；导出 API；源码第 ``20``—``102`` 行。
 
    **参数**
 
@@ -42,28 +42,28 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <Dialog open={open} onOpenChange={setOpen}> <DialogTrigger asChild>{trigger}</DialogTrigger> <DialogContent showCloseButton={false} overlayClassName={layerClass} className={\x60ins…``、``( <Popover open={open} onOpenChange={(nextOpen) => { setOpen(nextOpen); setTooltipOpen(false); }} > <TooltipProvider delayDuration={300}> <Tooltip open={!open && tooltipOpen} onOp…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <Dialog open={open} onOpenChange={setOpen}> <DialogTrigger asChild>{trigger}</DialogTrigger> <DialogContent showCloseButton={false} overlayClassName={layerClass} className={\x60ins…``、``( <Popover open={open} onOpenChange={setOpen}> <PopoverTrigger asChild>{trigger}</PopoverTrigger> <PopoverContent side="top" align="start" sideOffset={8} collisionPadding={12} cla…``。
 
    **主要协作调用**：``useState``、``MODES.find``、``t``、``MODES.map``。
 
-   **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1084:1111:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:925:952:FUNCTION
 
-.. rubric:: ``MODES.find callback @ 24``
+.. rubric:: ``MODES.find callback @ 22``
 
 .. code-block:: javascript
 
-   MODES.find callback @ 24(mode)
+   MODES.find callback @ 22(mode)
 
 作为 ``MODES.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``24``—``24`` 行；所属函数 ``ToolAuditModeSwitch``。
+**性质**：同步局部函数；源码第 ``22``—``22`` 行；所属函数 ``ToolAuditModeSwitch``。
 
 **参数**
 
@@ -74,17 +74,17 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1256:2453:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1075:2146:FUNCTION
 
-.. rubric:: ``MODES.map callback @ 27``
+.. rubric:: ``MODES.map callback @ 25``
 
 .. code-block:: javascript
 
-   MODES.map callback @ 27({ id, icon: Icon, label, description })
+   MODES.map callback @ 25({ id, icon: Icon, label, description })
 
 作为 ``MODES.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``27``—``50`` 行；所属函数 ``ToolAuditModeSwitch``。
+**性质**：同步局部函数；源码第 ``25``—``46`` 行；所属函数 ``ToolAuditModeSwitch``。
 
 **参数**
 
@@ -99,17 +99,17 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1507:1614:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:1326:1433:FUNCTION
 
-.. rubric:: ``onClick callback @ 33``
+.. rubric:: ``onClick callback @ 31``
 
 .. code-block:: javascript
 
-   onClick callback @ 33()
+   onClick callback @ 31()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``33``—``36`` 行；所属函数 ``MODES.map callback @ 27``。
+**性质**：同步局部函数；源码第 ``31``—``34`` 行；所属函数 ``MODES.map callback @ 25``。
 
 **参数**
 
@@ -120,26 +120,3 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
 **主要协作调用**：``onChange``、``setOpen``。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:4376:4479:FUNCTION
-
-.. rubric:: ``onOpenChange callback @ 96``
-
-.. code-block:: javascript
-
-   onOpenChange callback @ 96(nextOpen)
-
-处理 ``Open Change`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``96``—``99`` 行；所属函数 ``ToolAuditModeSwitch``。
-
-**参数**
-
-``nextOpen``
-   调用方传入的 ``nextOpen`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``setOpen``、``setTooltipOpen``。

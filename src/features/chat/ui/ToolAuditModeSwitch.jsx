@@ -10,7 +10,6 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const MODES = [
     { id: 'off', icon: ShieldOff, label: 'tool_audit_off', description: 'tool_audit_off_description' },
@@ -20,10 +19,9 @@ const MODES = [
 
 export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobile = false, layerClass = '' }) {
     const [open, setOpen] = useState(false);
-    const [tooltipOpen, setTooltipOpen] = useState(false);
     const current = MODES.find((mode) => mode.id === value) || MODES[0];
     const options = (
-        <div className="space-y-1" role="group" aria-label={t('tool_audit_policy')}>
+        <div role="group" aria-label={t('tool_audit_policy')}>
             {MODES.map(({ id, icon: Icon, label, description }) => (
                 <Button
                     key={id}
@@ -34,18 +32,16 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
                         onChange(id);
                         setOpen(false);
                     }}
-                    className={`h-auto w-full cursor-pointer justify-start gap-3 whitespace-normal rounded-xl px-3 py-3 text-left ${
-                        current.id === id ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
-                    }`}
+                    className="h-auto w-full cursor-pointer justify-start gap-2.5 whitespace-normal rounded-lg px-3 py-2 text-left text-muted-foreground"
                 >
                     <Icon className="size-5 shrink-0" />
                     <span className="min-w-0 flex-1">
                         <span className="block text-sm font-medium text-foreground">{t(label)}</span>
-                        <span className="mt-1 block text-xs font-normal leading-5 text-muted-foreground">
+                        <span className="block text-xs font-normal leading-4 text-muted-foreground">
                             {t(description)}
                         </span>
                     </span>
-                    {current.id === id && <Check className="size-4 shrink-0 text-primary" />}
+                    {current.id === id && <Check className="size-4 shrink-0" />}
                 </Button>
             ))}
         </div>
@@ -54,13 +50,12 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
         <Button
             type="button"
             variant="ghost"
-            size="icon"
+            data-tool-audit-trigger
             aria-label={`${t('tool_audit_policy')}：${t(current.label)}`}
-            className={`size-7 shrink-0 cursor-pointer rounded-full p-0 ${
-                current.id === 'off' ? 'text-muted-foreground' : 'text-primary'
-            }`}
+            className="h-7 max-w-30 shrink-0 cursor-pointer gap-1.5 rounded-full bg-muted/70 px-2 text-xs font-normal text-muted-foreground hover:bg-muted"
         >
             <Shield className="size-4.5" />
+            {!isMobile && <span className="truncate">{t(current.label)}</span>}
         </Button>
     );
 
@@ -82,7 +77,7 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
                         <DialogTitle className="text-base">{t('tool_audit_policy')}</DialogTitle>
                     </header>
                     <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
-                        <DialogDescription className="mb-4">{t('tool_audit_choose_description')}</DialogDescription>
+                        <DialogDescription className="sr-only">{t('tool_audit_choose_description')}</DialogDescription>
                         {options}
                     </div>
                 </DialogContent>
@@ -91,32 +86,15 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
     }
 
     return (
-        <Popover
-            open={open}
-            onOpenChange={(nextOpen) => {
-                setOpen(nextOpen);
-                setTooltipOpen(false);
-            }}
-        >
-            <TooltipProvider delayDuration={300}>
-                <Tooltip open={!open && tooltipOpen} onOpenChange={setTooltipOpen}>
-                    <TooltipTrigger asChild>
-                        <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" sideOffset={8} className={`max-w-64 ${layerClass}`}>
-                        <div className="font-medium">{t(current.label)}</div>
-                        <div className="mt-1 leading-4">{t(current.description)}</div>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>{trigger}</PopoverTrigger>
             <PopoverContent
                 side="top"
                 align="start"
                 sideOffset={8}
                 collisionPadding={12}
-                className={`w-80 max-w-[calc(100vw-1rem)] rounded-xl p-2 ${layerClass}`}
+                className={`w-80 max-w-[calc(100vw-1rem)] rounded-2xl p-1.5 shadow-lg ${layerClass}`}
             >
-                <div className="px-3 pt-2 pb-2 text-xs font-medium text-muted-foreground">{t('tool_audit_policy')}</div>
                 {options}
             </PopoverContent>
         </Popover>

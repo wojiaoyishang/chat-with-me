@@ -226,15 +226,21 @@ const ToolButtons = memo(
     }) => {
         const toolRowRef = useRef(null);
         const [availableWidth, setAvailableWidth] = useState(null);
+        const [auditTriggerWidth, setAuditTriggerWidth] = useState(0);
         useLayoutEffect(() => {
             const row = toolRowRef.current;
             if (!row) return;
-            const measure = () => setAvailableWidth(row.getBoundingClientRect().width);
+            const auditTrigger = row.querySelector('[data-tool-audit-trigger]');
+            const measure = () => {
+                setAvailableWidth(row.getBoundingClientRect().width);
+                setAuditTriggerWidth(auditTrigger ? auditTrigger.getBoundingClientRect().width + 4 : 0);
+            };
             measure();
             const observer = new ResizeObserver(measure);
             observer.observe(row);
+            if (auditTrigger) observer.observe(auditTrigger);
             return () => observer.disconnect();
-        }, []);
+        }, [extraTools, isMobileMenu]);
         const [open, setOpen] = useState(false);
         const [builtinOpen, setBuiltinOpen] = useState(false);
         const [voiceRecognitionEngine, setVoiceRecognitionEngine] = useState(() =>
@@ -497,7 +503,7 @@ const ToolButtons = memo(
         const MAX_INLINE_TOOLS = 4;
         const COMPACT_THRESHOLD = 350;
 
-        const toolRowWidth = (availableWidth ?? containerWidth) - (auditControl ? 32 : 0);
+        const toolRowWidth = (availableWidth ?? containerWidth) - auditTriggerWidth;
         const isCompact =
             (tools?.length ?? 0) > MAX_INLINE_TOOLS || (toolRowWidth > 0 && toolRowWidth < COMPACT_THRESHOLD);
         // ============================================================
