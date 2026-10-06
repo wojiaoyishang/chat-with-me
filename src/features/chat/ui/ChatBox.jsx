@@ -2623,7 +2623,7 @@ function ChatBox({
                             <div
                                 className={
                                     isSmallScreen
-                                        ? 'flex size-9 items-center justify-center [&_button]:size-9 [&_button]:p-1.5 [&_button>svg]:size-5 [&_button>div]:scale-75'
+                                        ? 'flex size-9 items-center justify-center [&_button]:inline-flex [&_button]:size-9 [&_button]:items-center [&_button]:justify-center [&_button]:p-1.5 [&_button>svg]:size-5 [&_button>div]:scale-75'
                                         : 'flex items-center'
                                 }
                             >
