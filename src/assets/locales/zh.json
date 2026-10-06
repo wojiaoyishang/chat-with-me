@@ -834,5 +834,10 @@
     "tool_audit_auto_description": "允许类和询问类均由模型审核，不再人工询问；拒绝类不执行。",
     "半自动或自动审核时使用。默认跟随当前模型；每个批量子调用单独审核。": "半自动或自动审核时使用。默认跟随当前模型；每个批量子调用单独审核。",
     "tool_audit_choose_description": "选择工具调用前的审核方式。",
-    "back": "返回"
+    "back": "返回",
+    "tool_review_reviewing": "审核中",
+    "tool_review_passed": "审核通过",
+    "tool_review_denied": "审核拒绝",
+    "tool_review_failed": "审核失败",
+    "tool_review_cancelled": "审核取消"
 }

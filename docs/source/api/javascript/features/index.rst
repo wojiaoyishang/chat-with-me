@@ -256,7 +256,7 @@
    * - :doc:`src/features/chat/ui/BuiltinSliderButton </api/javascript/features/chat/ui/BuiltinSliderButton>`
      - 1
      - 0
-     - 7
+     - 8
      - ``src/features/chat/ui/BuiltinSliderButton.jsx``
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 8

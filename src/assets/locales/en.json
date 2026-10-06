@@ -843,5 +843,10 @@
     "tool_audit_auto_description": "Review both Allow and Ask without asking you; Deny never runs.",
     "半自动或自动审核时使用。默认跟随当前模型；每个批量子调用单独审核。": "Used for semi-automatic or automatic reviews. Follows the current model by default; batch items are reviewed separately.",
     "tool_audit_choose_description": "Choose how tool calls are reviewed before execution.",
-    "back": "Back"
+    "back": "Back",
+    "tool_review_reviewing": "Reviewing",
+    "tool_review_passed": "Review passed",
+    "tool_review_denied": "Review denied",
+    "tool_review_failed": "Review failed",
+    "tool_review_cancelled": "Review cancelled"
 }

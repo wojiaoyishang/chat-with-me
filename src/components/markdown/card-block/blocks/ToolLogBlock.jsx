@@ -1,21 +1,14 @@
-import {
-    memo,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
-import {
-    Check,
-    Loader2,
-    X,
-} from 'lucide-react';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { Check, Loader2, X, ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { toSafeString } from '../utils.js';
 import OutputToolbar from './OutputToolbar.jsx';
 import useFollowOutputScroll from './useFollowOutputScroll.js';
 
 const TOOL_LOG_TITLE_RE = /^\s*\[TITLE:([^\]]+)]\s*$/i;
-const TOOL_LOG_PROTOCOL_BOUNDARY_RE = /]\s*(?=\[(?:TITLE:|START(?::|])|DONE(?::|])|FAILED(?::|])|TERMINAL]|\/TERMINAL]))/gi;
+const TOOL_LOG_PROTOCOL_BOUNDARY_RE =
+    /]\s*(?=\[(?:TITLE:|START(?::|])|DONE(?::|])|FAILED(?::|])|TERMINAL]|\/TERMINAL]))/gi;
 const TOOL_LOG_META_LINE_WITH_VALUE_RE = /^\s*\[(START|DONE|FAILED)(?::([^\]]+))?]\s*$/i;
 const TOOL_LOG_TERMINAL_OPEN_LINE_RE = /^\s*\[TERMINAL]\s*$/i;
 const TOOL_LOG_TERMINAL_CLOSE_LINE_RE = /^\s*\[\/TERMINAL]\s*$/i;
@@ -131,10 +124,17 @@ const parseToolLogContent = (content) => {
     let doneTimeText = '';
     let failedTimeText = '';
     let isInsideTerminal = false;
+    let auditStatus = '';
 
     const contentLines = [];
 
     for (const line of lines) {
+        const auditMatch =
+            !isInsideTerminal && line.match(/^\s*\[TOOL_AUDIT:(reviewing|passed|denied|failed|cancelled)]\s*$/);
+        if (auditMatch) {
+            auditStatus = auditMatch[1];
+            continue;
+        }
         if (TOOL_LOG_TERMINAL_OPEN_LINE_RE.test(line)) {
             isInsideTerminal = true;
             contentLines.push(line);
@@ -147,9 +147,7 @@ const parseToolLogContent = (content) => {
             continue;
         }
 
-        const titleMatch = !isInsideTerminal
-            ? line.match(TOOL_LOG_TITLE_RE)
-            : null;
+        const titleMatch = !isInsideTerminal ? line.match(TOOL_LOG_TITLE_RE) : null;
 
         if (titleMatch) {
             // Keep the first title. A duplicate title can exist in legacy messages
@@ -160,9 +158,7 @@ const parseToolLogContent = (content) => {
             continue;
         }
 
-        const metaMatch = !isInsideTerminal
-            ? line.match(TOOL_LOG_META_LINE_WITH_VALUE_RE)
-            : null;
+        const metaMatch = !isInsideTerminal ? line.match(TOOL_LOG_META_LINE_WITH_VALUE_RE) : null;
 
         if (metaMatch) {
             const metaName = metaMatch[1].toUpperCase();
@@ -197,6 +193,7 @@ const parseToolLogContent = (content) => {
     if (titleText) {
         return {
             title: titleText || 'Tool Log',
+            auditStatus,
             bodySegments: parseToolLogBodySegments(contentWithoutStatus.trimStart()),
             status,
             startTimeMs,
@@ -211,6 +208,7 @@ const parseToolLogContent = (content) => {
 
     return {
         title,
+        auditStatus,
         bodySegments: parseToolLogBodySegments(body),
         status,
         startTimeMs,
@@ -219,12 +217,7 @@ const parseToolLogContent = (content) => {
     };
 };
 
-const ToolLogDuration = memo(({
-                                  className = '',
-                                  endTimeMs,
-                                  isRunning,
-                                  startTimeMs,
-                              }) => {
+const ToolLogDuration = memo(({ className = '', endTimeMs, isRunning, startTimeMs }) => {
     const [nowMs, setNowMs] = useState(() => Date.now());
 
     useEffect(() => {
@@ -241,9 +234,8 @@ const ToolLogDuration = memo(({
         };
     }, [isRunning, startTimeMs]);
 
-    const durationMs = startTimeMs !== null && (endTimeMs !== null || isRunning)
-        ? (endTimeMs ?? nowMs) - startTimeMs
-        : null;
+    const durationMs =
+        startTimeMs !== null && (endTimeMs !== null || isRunning) ? (endTimeMs ?? nowMs) - startTimeMs : null;
 
     const durationText = formatDuration(durationMs);
 
@@ -264,15 +256,7 @@ const ToolLogDuration = memo(({
 
 ToolLogDuration.displayName = 'ToolLogDuration';
 
-const ToolLogStatus = memo(({
-                                endTimeMs,
-                                isDone,
-                                isFailed,
-                                isRunning,
-                                shouldShowDuration,
-                                startTimeMs,
-                                tone,
-                            }) => {
+const ToolLogStatus = memo(({ endTimeMs, isDone, isFailed, isRunning, shouldShowDuration, startTimeMs, tone }) => {
     return (
         <div className="ml-2 flex shrink-0 items-center gap-1">
             {shouldShowDuration && (
@@ -289,7 +273,7 @@ const ToolLogStatus = memo(({
                     className="flex h-4 w-4 items-center justify-center text-amber-600"
                     aria-label="Tool log is running"
                 >
-                    <Loader2 className="h-3.5 w-3.5 animate-spin"/>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 </span>
             )}
 
@@ -298,11 +282,7 @@ const ToolLogStatus = memo(({
                     className={`flex h-4 w-4 items-center justify-center rounded-full border ${tone.icon}`}
                     aria-label={isDone ? 'Tool log finished' : 'Tool log failed'}
                 >
-                    {isDone ? (
-                        <Check className="h-2.5 w-2.5 stroke-[3]"/>
-                    ) : (
-                        <X className="h-2.5 w-2.5 stroke-[3]"/>
-                    )}
+                    {isDone ? <Check className="h-2.5 w-2.5 stroke-[3]" /> : <X className="h-2.5 w-2.5 stroke-[3]" />}
                 </span>
             )}
         </div>
@@ -311,32 +291,36 @@ const ToolLogStatus = memo(({
 
 ToolLogStatus.displayName = 'ToolLogStatus';
 
-const ToolLogTerminalBlock = memo(({content}) => {
+const ToolLogTerminalBlock = memo(({ content }) => {
     return (
         <div className="overflow-hidden rounded-lg border border-neutral-700/80 bg-neutral-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_20px_rgba(15,23,42,0.16)]">
             <div className="flex h-6 items-center gap-1.5 border-b border-white/10 bg-neutral-900/95 px-2">
-                <span className="h-2 w-2 rounded-full bg-red-400/90" aria-hidden="true"/>
-                <span className="h-2 w-2 rounded-full bg-amber-300/90" aria-hidden="true"/>
-                <span className="h-2 w-2 rounded-full bg-emerald-400/90" aria-hidden="true"/>
+                <span className="h-2 w-2 rounded-full bg-red-400/90" aria-hidden="true" />
+                <span className="h-2 w-2 rounded-full bg-amber-300/90" aria-hidden="true" />
+                <span className="h-2 w-2 rounded-full bg-emerald-400/90" aria-hidden="true" />
                 <span className="ml-1 truncate font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-neutral-400">
                     terminal
                 </span>
             </div>
 
-            <pre className="pretty-scrollbar m-0 overflow-x-auto whitespace-pre-wrap break-words px-3 py-2 font-mono text-[11px] leading-5 text-neutral-100 selection:bg-neutral-100 selection:text-neutral-950">{content}</pre>
+            <pre className="pretty-scrollbar m-0 overflow-x-auto whitespace-pre-wrap break-words px-3 py-2 font-mono text-[11px] leading-5 text-neutral-100 selection:bg-neutral-100 selection:text-neutral-950">
+                {content}
+            </pre>
         </div>
     );
 });
 
 ToolLogTerminalBlock.displayName = 'ToolLogTerminalBlock';
 
-const ToolLogBodySegment = memo(({segment, tone}) => {
+const ToolLogBodySegment = memo(({ segment, tone }) => {
     if (segment.type === 'terminal') {
-        return <ToolLogTerminalBlock content={segment.content}/>;
+        return <ToolLogTerminalBlock content={segment.content} />;
     }
 
     return (
-        <pre className={`m-0 whitespace-pre-wrap break-words font-mono text-[11px] leading-5 ${tone.body}`}>{segment.content}</pre>
+        <pre className={`m-0 whitespace-pre-wrap break-words font-mono text-[11px] leading-5 ${tone.body}`}>
+            {segment.content}
+        </pre>
     );
 });
 
@@ -375,119 +359,125 @@ const getToolLogTone = (status) => {
     };
 };
 
-const ToolLogBlock = memo(({content = '', id}) => {
-    const {
-        title,
-        bodySegments,
-        status,
-        startTimeMs,
-        doneTimeMs,
-        failedTimeMs,
-    } = useMemo(() => {
-        return parseToolLogContent(content);
-    }, [content]);
+const ToolLogBlock = memo(
+    ({ content = '', id }) => {
+        const { t } = useTranslation();
+        const { title, auditStatus, bodySegments, status, startTimeMs, doneTimeMs, failedTimeMs } = useMemo(() => {
+            return parseToolLogContent(content);
+        }, [content]);
 
-    const hasBody = bodySegments.length > 0;
-    const hasCodeProcess = useMemo(() => {
-        return bodySegments.some((segment) => segment.type === 'terminal');
-    }, [bodySegments]);
-    const copyContent = useMemo(() => {
-        const bodyText = bodySegments
-            .map((segment) => segment.content)
-            .filter(Boolean)
-            .join('\n\n');
+        const hasBody = bodySegments.length > 0;
+        const hasCodeProcess = useMemo(() => {
+            return bodySegments.some((segment) => segment.type === 'terminal');
+        }, [bodySegments]);
+        const copyContent = useMemo(() => {
+            const bodyText = bodySegments
+                .map((segment) => segment.content)
+                .filter(Boolean)
+                .join('\n\n');
 
-        return bodyText ? `${title}\n${bodyText}` : title;
-    }, [bodySegments, title]);
-    const isDone = status === 'done';
-    const isFailed = status === 'failed';
-    const isRunning = status === 'running';
+            return bodyText ? `${title}\n${bodyText}` : title;
+        }, [bodySegments, title]);
+        const isDone = status === 'done';
+        const isFailed = status === 'failed';
+        const isRunning = status === 'running';
 
-    const {
-        handleScroll,
-        handleTouchMove,
-        handleWheel,
-        isFollowing,
-        resumeFollowing,
-        scrollContainerRef,
-        toggleFollowing,
-    } = useFollowOutputScroll({
-        contentKey: content,
-    });
+        const {
+            handleScroll,
+            handleTouchMove,
+            handleWheel,
+            isFollowing,
+            resumeFollowing,
+            scrollContainerRef,
+            toggleFollowing,
+        } = useFollowOutputScroll({
+            contentKey: content,
+        });
 
-    const endTimeMs = isDone
-        ? doneTimeMs
-        : isFailed
-            ? failedTimeMs
-            : null;
+        const endTimeMs = isDone ? doneTimeMs : isFailed ? failedTimeMs : null;
 
-    const shouldShowDuration = startTimeMs !== null && (endTimeMs !== null || isRunning);
+        const shouldShowDuration = startTimeMs !== null && (endTimeMs !== null || isRunning);
 
-    const tone = useMemo(() => {
-        return getToolLogTone(status);
-    }, [status]);
+        const tone = useMemo(() => {
+            return getToolLogTone(status);
+        }, [status]);
 
-    return (
-        <div
-            className={`my-1.5 rounded-md border px-2.5 py-2 transition-colors duration-300 ${isRunning ? 'card-tool-log-running-breathe' : ''} ${tone.card}`}
-            data-card-block-id={id}
-        >
-            <div className="flex min-w-0 items-center gap-2">
-                <div className={`min-w-0 flex-1 truncate text-[11px] font-medium leading-4 ${tone.title}`}>
-                    {title}
-                </div>
+        return (
+            <div
+                className={`my-1.5 rounded-md border px-2.5 py-2 transition-colors duration-300 ${isRunning ? 'card-tool-log-running-breathe' : ''} ${tone.card}`}
+                data-card-block-id={id}
+            >
+                <div className="flex min-w-0 items-center gap-2">
+                    <div className={`min-w-0 flex-1 truncate text-[11px] font-medium leading-4 ${tone.title}`}>
+                        {title}
+                    </div>
 
-                <ToolLogStatus
-                    endTimeMs={endTimeMs}
-                    isDone={isDone}
-                    isFailed={isFailed}
-                    isRunning={isRunning}
-                    shouldShowDuration={shouldShowDuration}
-                    startTimeMs={startTimeMs}
-                    tone={tone}
-                />
-            </div>
-
-            {hasBody && (
-                <div className={`mt-1.5 -mx-2.5 overflow-hidden border-t ${tone.bodyWrap}`}>
-                    {hasCodeProcess && (
-                        <OutputToolbar
-                            copyContent={copyContent}
-                            isFollowing={isFollowing}
-                            onScrollToBottom={resumeFollowing}
-                            onToggleFollowing={toggleFollowing}
-                        />
+                    {auditStatus && (
+                        <span
+                            role="status"
+                            className={`inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${auditStatus === 'passed' ? 'bg-emerald-100 text-emerald-700' : auditStatus === 'reviewing' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-800'}`}
+                        >
+                            {auditStatus === 'passed' ? (
+                                <ShieldCheck className="size-3" />
+                            ) : auditStatus === 'reviewing' ? (
+                                <Shield className="size-3 animate-pulse" />
+                            ) : (
+                                <ShieldAlert className="size-3" />
+                            )}
+                            {t(`tool_review_${auditStatus}`)}
+                        </span>
                     )}
 
-                    <div
-                        ref={scrollContainerRef}
-                        onScroll={handleScroll}
-                        onTouchMove={handleTouchMove}
-                        onWheel={handleWheel}
-                        className="pretty-scrollbar max-h-[300px] overflow-auto px-2.5 py-1.5 [scrollbar-gutter:stable]"
-                    >
-                        <div className="space-y-1.5">
-                            {bodySegments.map((segment, index) => {
-                                return (
-                                    <ToolLogBodySegment
-                                        key={`${segment.type}-${index}`}
-                                        segment={segment}
-                                        tone={tone}
-                                    />
-                                );
-                            })}
+                    <ToolLogStatus
+                        endTimeMs={endTimeMs}
+                        isDone={isDone}
+                        isFailed={isFailed}
+                        isRunning={isRunning}
+                        shouldShowDuration={shouldShowDuration}
+                        startTimeMs={startTimeMs}
+                        tone={tone}
+                    />
+                </div>
+
+                {hasBody && (
+                    <div className={`mt-1.5 -mx-2.5 overflow-hidden border-t ${tone.bodyWrap}`}>
+                        {hasCodeProcess && (
+                            <OutputToolbar
+                                copyContent={copyContent}
+                                isFollowing={isFollowing}
+                                onScrollToBottom={resumeFollowing}
+                                onToggleFollowing={toggleFollowing}
+                            />
+                        )}
+
+                        <div
+                            ref={scrollContainerRef}
+                            onScroll={handleScroll}
+                            onTouchMove={handleTouchMove}
+                            onWheel={handleWheel}
+                            className="pretty-scrollbar max-h-[300px] overflow-auto px-2.5 py-1.5 [scrollbar-gutter:stable]"
+                        >
+                            <div className="space-y-1.5">
+                                {bodySegments.map((segment, index) => {
+                                    return (
+                                        <ToolLogBodySegment
+                                            key={`${segment.type}-${index}`}
+                                            segment={segment}
+                                            tone={tone}
+                                        />
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
-    );
-}, (prev, next) => {
-    return (
-        prev.id === next.id &&
-        prev.content === next.content
-    );
-});
+                )}
+            </div>
+        );
+    },
+    (prev, next) => {
+        return prev.id === next.id && prev.content === next.content;
+    },
+);
 
 ToolLogBlock.displayName = 'ToolLogBlock';
 
