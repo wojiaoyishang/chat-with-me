@@ -497,7 +497,7 @@ const ToolButtons = memo(
         const MAX_INLINE_TOOLS = 4;
         const COMPACT_THRESHOLD = 350;
 
-        const toolRowWidth = availableWidth ?? containerWidth;
+        const toolRowWidth = (availableWidth ?? containerWidth) - (auditControl ? 32 : 0);
         const isCompact =
             (tools?.length ?? 0) > MAX_INLINE_TOOLS || (toolRowWidth > 0 && toolRowWidth < COMPACT_THRESHOLD);
         // ============================================================
@@ -541,18 +541,6 @@ const ToolButtons = memo(
                         className={menuContentClass}
                     >
                         <div className="flex max-h-[min(72vh,640px)] min-h-0 flex-col">
-                            {auditControl && (
-                                <ToolAuditModeSwitch
-                                    value={toolsStatus.extra_tools?.tool_audit_mode || 'off'}
-                                    t={t}
-                                    onChange={(mode) =>
-                                        setToolsStatus((prev) => ({
-                                            ...prev,
-                                            extra_tools: { ...prev.extra_tools, tool_audit_mode: mode },
-                                        }))
-                                    }
-                                />
-                            )}
                             <div className="shrink-0 border-b border-gray-100 p-1">
                                 {voiceRecognitionEngineMenu}
                                 {nonRegionExtraTools.length > 0 && renderMenuItems(nonRegionExtraTools)}
@@ -641,6 +629,21 @@ const ToolButtons = memo(
 
                 {/* 语音输入按钮：位于拓展菜单和内建工具之间 */}
                 {voiceInputNode}
+
+                {auditControl && (
+                    <ToolAuditModeSwitch
+                        value={toolsStatus.extra_tools?.tool_audit_mode || 'off'}
+                        t={t}
+                        isMobile={isMobileMenu}
+                        layerClass={highZClass}
+                        onChange={(mode) =>
+                            setToolsStatus((prev) => ({
+                                ...prev,
+                                extra_tools: { ...prev.extra_tools, tool_audit_mode: mode },
+                            }))
+                        }
+                    />
+                )}
 
                 {/* 移动端内建工具独立菜单按钮 */}
                 {shouldShowMobileBuiltinButton && (

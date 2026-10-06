@@ -841,5 +841,7 @@
     "tool_audit_off_description": "Follow Allow, Ask and Deny rules without model review.",
     "tool_audit_semi_description": "Allow runs directly; Ask uses model review; Deny never runs.",
     "tool_audit_auto_description": "Review both Allow and Ask without asking you; Deny never runs.",
-    "半自动或自动审核时使用。默认跟随当前模型；每个批量子调用单独审核。": "Used for semi-automatic or automatic reviews. Follows the current model by default; batch items are reviewed separately."
+    "半自动或自动审核时使用。默认跟随当前模型；每个批量子调用单独审核。": "Used for semi-automatic or automatic reviews. Follows the current model by default; batch items are reviewed separately.",
+    "tool_audit_choose_description": "Choose how tool calls are reviewed before execution.",
+    "back": "Back"
 }
