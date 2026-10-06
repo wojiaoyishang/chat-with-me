@@ -52,7 +52,7 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
             variant="ghost"
             data-tool-audit-trigger
             aria-label={`${t('tool_audit_policy')}：${t(current.label)}`}
-            className="h-7 max-w-30 shrink-0 cursor-pointer gap-1.5 rounded-full bg-muted/70 px-2 text-xs font-normal text-muted-foreground hover:bg-muted"
+            className="h-7 max-w-30 shrink-0 cursor-pointer gap-1.5 bg-transparent pl-1 pr-0 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=open]:text-foreground has-[>svg]:pl-1 has-[>svg]:pr-0 dark:hover:bg-transparent"
         >
             <Shield className="size-4.5" />
             {!isMobile && <span className="truncate">{t(current.label)}</span>}

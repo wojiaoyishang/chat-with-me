@@ -27,7 +27,7 @@ src/features/chat/ui/ToolAuditModeSwitch 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:734:4551:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolAuditModeSwitch.jsx:734:4666:FUNCTION
 
 .. js:function:: ToolAuditModeSwitch({ value = 'off', onChange, t, isMobile = false, layerClass = '' })
 
