@@ -261,7 +261,7 @@
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 8
      - 0
-     - 191
+     - 170
      - ``src/features/chat/ui/ChatBox.jsx``
    * - :doc:`src/features/chat/ui/ChatBoxHeader </api/javascript/features/chat/ui/ChatBoxHeader>`
      - 0
@@ -336,7 +336,7 @@
    * - :doc:`src/features/chat/ui/chatbox/components/MessageInput </api/javascript/features/chat/ui/chatbox/components/MessageInput>`
      - 2
      - 0
-     - 22
+     - 21
      - ``src/features/chat/ui/chatbox/components/MessageInput.jsx``
    * - :doc:`src/features/chat/ui/chatbox/components/RoleSelector </api/javascript/features/chat/ui/chatbox/components/RoleSelector>`
      - 1

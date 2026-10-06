@@ -17,7 +17,7 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 * **模块标识**：``src/features/chat/ui/chatbox/components/MessageInput``
 * **顶层函数/组件/Hook**：2
 * **类**：0
-* **局部函数与匿名回调**：22
+* **局部函数与匿名回调**：21
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:312:409:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:320:421:FUNCTION
 
 .. js:function:: easeInOutCubic(t)
 
@@ -46,7 +46,7 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
    **主要协作调用**：``Math.pow``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:439:598:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:453:615:FUNCTION
 
 .. js:function:: getMotionPreference()
 
@@ -73,26 +73,26 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:627:11082:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:646:11019:FUNCTION
 
 .. rubric:: ``memo callback @ 20``
 
 .. code-block:: javascript
 
-   memo callback @ 20({ value, onChange, onPaste, onKeyDown, onInputActivity, onFocus, onBlur, isReadOnly, placeholder, t…)
+   memo callback @ 20({ value, onChange, onPaste, onKeyDown, onFocus, onBlur, isReadOnly, placeholder, textareaRef, isEdi…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``20``—``295`` 行。
+**性质**：同步局部函数；源码第 ``20``—``287`` 行。
 
 **参数**
 
-``{ value, onChange, onPaste, onKeyDown, onInputActivity, onFocus, onBlur, isReadOnly, placeholder, t…``
-   调用方传入的 ``value, onChange, onPaste, onKeyDown, onInputActivity, onFocus, onBlur, isReadOnly, placeholder, t…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ value, onChange, onPaste, onKeyDown, onFocus, onBlur, isReadOnly, placeholder, textareaRef, isEdi…``
+   调用方传入的 ``value, onChange, onPaste, onKeyDown, onFocus, onBlur, isReadOnly, placeholder, textareaRef, isEdi…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60flex min-h-[48px] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3\x60} role="status" aria-live="polite" aria-label={voiceRecogni…``、``( <div className={\x60flex min-h-[48px] w-full items-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3\x60} role="status" aria-live="polite" aria-label={voiceRecordingLabel} > <div…``、``( <textarea ref={textareaRef} value={value} onChange={handleChange} onPaste={handlePaste} onKeyDown={onKeyDown} onBeforeInput={handleInputActivity} onCompositionStart={handleInput…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className={\x60flex min-h-[48px] w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3\x60} role="status" aria-live="polite" aria-label={voiceRecogni…``、``( <div className={\x60flex min-h-[48px] w-full items-center overflow-hidden rounded-xl bg-gray-50 px-4 py-3\x60} role="status" aria-live="polite" aria-label={voiceRecordingLabel} > <div…``、``( <textarea ref={textareaRef} value={value} onChange={handleChange} onPaste={handlePaste} onKeyDown={onKeyDown} onFocus={handleFocus} onBlur={handleBlur} placeholder={placeholder}…``。
 
 **副作用**
 
@@ -100,19 +100,19 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``useRef``、``useCallback``、``useEffect``、``useLayoutEffect``、``Array.from``、``bars.map``。
 
-**内部回调数量**：16。这些回调也会在本页逐项说明。
+**内部回调数量**：15。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:1758:1929:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:1752:1928:FUNCTION
 
-.. rubric:: ``useCallback callback @ 44``
+.. rubric:: ``useCallback callback @ 43``
 
 .. code-block:: javascript
 
-   useCallback callback @ 44()
+   useCallback callback @ 43()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``44``—``49`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``43``—``48`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -124,17 +124,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:1979:2625:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:1980:2646:FUNCTION
 
-.. rubric:: ``useCallback callback @ 51``
+.. rubric:: ``useCallback callback @ 50``
 
 .. code-block:: javascript
 
-   useCallback callback @ 51()
+   useCallback callback @ 50()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``51``—``71`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``50``—``70`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -150,17 +150,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``textarea.cloneNode``、``Object.assign``、``document.body.appendChild``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:2689:2895:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:2712:2924:FUNCTION
 
-.. rubric:: ``useCallback callback @ 73``
+.. rubric:: ``useCallback callback @ 72``
 
 .. code-block:: javascript
 
-   useCallback callback @ 73()
+   useCallback callback @ 72()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``73``—``79`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``72``—``78`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -176,17 +176,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``cancelHeightAnimation``、``document.body.removeChild``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:2973:4165:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:3004:4221:FUNCTION
 
-.. rubric:: ``useCallback callback @ 81``
+.. rubric:: ``useCallback callback @ 80``
 
 .. code-block:: javascript
 
-   useCallback callback @ 81()
+   useCallback callback @ 80()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``81``—``106`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``80``—``105`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -198,17 +198,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``getComputedStyle``、``Math.max``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:4223:4575:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:4281:4640:FUNCTION
 
-.. rubric:: ``useCallback callback @ 108``
+.. rubric:: ``useCallback callback @ 107``
 
 .. code-block:: javascript
 
-   useCallback callback @ 108(textarea, contentHeight, targetHeight)
+   useCallback callback @ 107(textarea, contentHeight, targetHeight)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``108``—``115`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``107``—``114`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -229,17 +229,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:4628:6420:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:4695:6540:FUNCTION
 
-.. rubric:: ``useCallback callback @ 117``
+.. rubric:: ``useCallback callback @ 116``
 
 .. code-block:: javascript
 
-   useCallback callback @ 117(options)
+   useCallback callback @ 116(options)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``117``—``170`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``116``—``169`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -254,7 +254,7 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:5768:6305:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:5870:6421:FUNCTION
 
 .. rubric:: ``tick``
 
@@ -264,7 +264,7 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 实现 ``tick`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``152``—``166`` 行；所属函数 ``useCallback callback @ 117``。
+**性质**：同步局部函数；源码第 ``151``—``165`` 行；所属函数 ``useCallback callback @ 116``。
 
 **参数**
 
@@ -277,17 +277,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``Math.min``、``easeInOutCubic``、``requestAnimationFrame``、``settleTextarea``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:6537:6616:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:6659:6741:FUNCTION
 
-.. rubric:: ``useEffect callback @ 172``
+.. rubric:: ``useEffect callback @ 171``
 
 .. code-block:: javascript
 
-   useEffect callback @ 172()
+   useEffect callback @ 171()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``172``—``175`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``171``—``174`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -299,17 +299,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``initTextareaClone``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:6683:6815:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:6810:6946:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 177``
+.. rubric:: ``useLayoutEffect callback @ 176``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 177()
+   useLayoutEffect callback @ 176()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``177``—``181`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``176``—``180`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -321,17 +321,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``adjustTextareaHeight``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:6917:7616:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:7050:7765:FUNCTION
 
-.. rubric:: ``useEffect callback @ 183``
+.. rubric:: ``useEffect callback @ 182``
 
 .. code-block:: javascript
 
-   useEffect callback @ 183()
+   useEffect callback @ 182()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``183``—``199`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``182``—``198`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -345,17 +345,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:7230:7527:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:7370:7672:FUNCTION
 
-.. rubric:: ``anonymous callback @ 190``
+.. rubric:: ``anonymous callback @ 189``
 
 .. code-block:: javascript
 
-   anonymous callback @ 190(entries)
+   anonymous callback @ 189(entries)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``190``—``195`` 行；所属函数 ``useEffect callback @ 183``。
+**性质**：同步局部函数；源码第 ``189``—``194`` 行；所属函数 ``useEffect callback @ 182``。
 
 **参数**
 
@@ -368,17 +368,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``Math.abs``、``adjustTextareaHeight``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:7581:7609:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:7729:7757:FUNCTION
 
-.. rubric:: ``returned callback @ 198``
+.. rubric:: ``returned callback @ 197``
 
 .. code-block:: javascript
 
-   returned callback @ 198()
+   returned callback @ 197()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``198``—``198`` 行；所属函数 ``useEffect callback @ 183``。
+**性质**：同步局部函数；源码第 ``197``—``197`` 行；所属函数 ``useEffect callback @ 182``。
 
 **参数**
 
@@ -390,17 +390,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``observer.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:7732:7809:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:7883:7933:FUNCTION
 
-.. rubric:: ``useCallback callback @ 201``
+.. rubric:: ``useCallback callback @ 200``
 
 .. code-block:: javascript
 
-   useCallback callback @ 201(e)
+   useCallback callback @ 200(e)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``201``—``204`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``200``—``202`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -411,41 +411,19 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``onInputActivity``、``onChange``。
+**主要协作调用**：``onChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:7886:7928:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:7989:8035:FUNCTION
 
-.. rubric:: ``useCallback callback @ 206``
-
-.. code-block:: javascript
-
-   useCallback callback @ 206()
-
-封装 ``Callback`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``206``—``208`` 行；所属函数 ``memo callback @ 20``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``onInputActivity``。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:7987:8060:FUNCTION
-
-.. rubric:: ``useCallback callback @ 210``
+.. rubric:: ``useCallback callback @ 205``
 
 .. code-block:: javascript
 
-   useCallback callback @ 210(event)
+   useCallback callback @ 205(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``210``—``213`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``205``—``207`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -456,19 +434,19 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``onInputActivity``、``onFocus``。
+**主要协作调用**：``onFocus``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:8127:8170:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:8087:8132:FUNCTION
 
-.. rubric:: ``useCallback callback @ 215``
+.. rubric:: ``useCallback callback @ 209``
 
 .. code-block:: javascript
 
-   useCallback callback @ 215(event)
+   useCallback callback @ 209(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``215``—``217`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``209``—``211`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -481,17 +459,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``onBlur``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:8220:8367:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:8184:8337:FUNCTION
 
-.. rubric:: ``useCallback callback @ 219``
+.. rubric:: ``useCallback callback @ 213``
 
 .. code-block:: javascript
 
-   useCallback callback @ 219(e)
+   useCallback callback @ 213(e)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``219``—``225`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``213``—``219`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -506,17 +484,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:8321:8349:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:8289:8317:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 223``
+.. rubric:: ``requestAnimationFrame callback @ 217``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 223()
+   requestAnimationFrame callback @ 217()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``223``—``223`` 行；所属函数 ``useCallback callback @ 219``。
+**性质**：同步局部函数；源码第 ``217``—``217`` 行；所属函数 ``useCallback callback @ 213``。
 
 **参数**
 
@@ -528,17 +506,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``adjustTextareaHeight``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:9207:9215:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:9198:9206:FUNCTION
 
-.. rubric:: ``Array.from callback @ 246``
+.. rubric:: ``Array.from callback @ 240``
 
 .. code-block:: javascript
 
-   Array.from callback @ 246()
+   Array.from callback @ 240()
 
 实现 ``Array.from`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``246``—``246`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``240``—``240`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -548,17 +526,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:9620:10323:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:9621:10339:FUNCTION
 
-.. rubric:: ``bars.map callback @ 256``
+.. rubric:: ``bars.map callback @ 250``
 
 .. code-block:: javascript
 
-   bars.map callback @ 256(level, index)
+   bars.map callback @ 250(level, index)
 
 作为 ``bars.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``256``—``271`` 行；所属函数 ``memo callback @ 20``。
+**性质**：同步局部函数；源码第 ``250``—``265`` 行；所属函数 ``memo callback @ 20``。
 
 **参数**
 
@@ -574,17 +552,17 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **主要协作调用**：``Math.max``、``Math.min``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:11083:12130:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/MessageInput.jsx:11020:12018:FUNCTION
 
-.. rubric:: ``memo callback @ 295``
+.. rubric:: ``memo callback @ 287``
 
 .. code-block:: javascript
 
-   memo callback @ 295(prevProps, nextProps)
+   memo callback @ 287(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``295``—``314`` 行。
+**性质**：同步局部函数；源码第 ``287``—``305`` 行。
 
 **参数**
 

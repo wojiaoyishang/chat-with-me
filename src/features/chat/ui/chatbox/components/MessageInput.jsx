@@ -22,7 +22,6 @@ const MessageInput = memo(({
                                onChange,
                                onPaste,
                                onKeyDown,
-                               onInputActivity,
                                onFocus,
                                onBlur,
                                isReadOnly,
@@ -199,18 +198,13 @@ const MessageInput = memo(({
     }, [adjustTextareaHeight, isVoiceRecording, isVoiceRecognizing, textareaRef]);
 
     const handleChange = useCallback((e) => {
-        onInputActivity?.();
         onChange(e.target.value);
-    }, [onChange, onInputActivity]);
+    }, [onChange]);
 
-    const handleInputActivity = useCallback(() => {
-        onInputActivity?.();
-    }, [onInputActivity]);
 
     const handleFocus = useCallback((event) => {
-        onInputActivity?.();
         onFocus?.(event);
-    }, [onFocus, onInputActivity]);
+    }, [onFocus]);
 
     const handleBlur = useCallback((event) => {
         onBlur?.(event);
@@ -281,8 +275,6 @@ const MessageInput = memo(({
             onChange={handleChange}
             onPaste={handlePaste}
             onKeyDown={onKeyDown}
-            onBeforeInput={handleInputActivity}
-            onCompositionStart={handleInputActivity}
             onFocus={handleFocus}
             onBlur={handleBlur}
             placeholder={placeholder}
@@ -307,7 +299,6 @@ const MessageInput = memo(({
         prevProps.onChange === nextProps.onChange &&
         prevProps.onPaste === nextProps.onPaste &&
         prevProps.onKeyDown === nextProps.onKeyDown &&
-        prevProps.onInputActivity === nextProps.onInputActivity &&
         prevProps.onFocus === nextProps.onFocus &&
         prevProps.onBlur === nextProps.onBlur
     );

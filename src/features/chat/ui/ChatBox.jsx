@@ -68,10 +68,6 @@ const createExecutionGuidanceId = () => {
 const VOICE_WAVEFORM_BARS = 56;
 const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
 const TOOL_APPROVAL_MODE_SETTING_KEY = 'ToolApprovalMode';
-const CHATBOX_AUTO_HIDE_SETTING_KEY = 'ChatBoxBottomAutoHide';
-const CHATBOX_COLLAPSED_HEIGHT = 30;
-const CHATBOX_COLLAPSE_OVERSHOOT_PX = 24;
-const CHATBOX_AUTO_HIDE_DELAY_MS = 2200;
 const normalizeVoiceRecognitionEngine = (value) =>
     String(value || 'remote').toLowerCase() === 'local' ? 'local' : 'remote';
 
@@ -332,11 +328,6 @@ function ChatBox({
     });
     const [activeExecution, setActiveExecution] = useState(null);
     const [isExecutionGuidancePending, setIsExecutionGuidancePending] = useState(false);
-    const [isBottomAutoHideEnabled, setIsBottomAutoHideEnabled] = useState(() =>
-        Boolean(getLocalSetting(CHATBOX_AUTO_HIDE_SETTING_KEY, false)),
-    );
-    const [isChatBoxCollapsed, setIsChatBoxCollapsed] = useState(false);
-    const [collapsedTranslateY, setCollapsedTranslateY] = useState(0);
 
     // 语音输入相关
     const [isVoiceRecording, setIsVoiceRecording] = useState(false);
@@ -368,10 +359,6 @@ function ChatBox({
     const activeVoicePointerIdRef = useRef(null);
     const voicePermissionDialogResolverRef = useRef(null);
     const onVoiceRecordingCancelRef = useRef(onVoiceRecordingCancel);
-    const autoHideTimerRef = useRef(null);
-    const isInputFocusedRef = useRef(false);
-    const isPointerInsideChatBoxRef = useRef(false);
-    const isModalOpenRef = useRef(false);
     const draftConversationIdRef = useRef(conversationId);
     const editDraftRef = useRef(null);
     const pendingEditCommitRef = useRef(null);
@@ -537,72 +524,8 @@ function ChatBox({
         leaveEditMode();
     }, [leaveEditMode]);
 
-    const clearAutoHideTimer = useCallback(() => {
-        if (!autoHideTimerRef.current) return;
-        window.clearTimeout(autoHideTimerRef.current);
-        autoHideTimerRef.current = null;
-    }, []);
-
-    const showCollapsedChatBox = useCallback(
-        ({ focus = false } = {}) => {
-            clearAutoHideTimer();
-            setIsChatBoxCollapsed(false);
-
-            if (focus) {
-                requestAnimationFrame(() => textareaRef.current?.focus({ preventScroll: true }));
-            }
-        },
-        [clearAutoHideTimer],
-    );
-
-    const scheduleAutoHide = useCallback(() => {
-        clearAutoHideTimer();
-        if (isSmallScreen || !isBottomAutoHideEnabled) return;
-
-        autoHideTimerRef.current = window.setTimeout(() => {
-            autoHideTimerRef.current = null;
-
-            // 聚焦中的输入框不能随 ChatBox 一起做 transform 隐藏，否则浏览器会
-            // 自动滚动以保持焦点可见，造成 ChatBox 卡在半隐藏状态。
-            if (isInputFocusedRef.current || isModalOpenRef.current) return;
-
-            setIsChatBoxCollapsed(true);
-        }, CHATBOX_AUTO_HIDE_DELAY_MS);
-    }, [clearAutoHideTimer, isBottomAutoHideEnabled, isSmallScreen]);
-
-    const handleMessageInputFocus = useCallback(() => {
-        isInputFocusedRef.current = true;
-        showCollapsedChatBox();
-    }, [showCollapsedChatBox]);
-
-    const handleMessageInputBlur = useCallback(() => {
-        isInputFocusedRef.current = false;
-        if (!isPointerInsideChatBoxRef.current) {
-            scheduleAutoHide();
-        }
-    }, [scheduleAutoHide]);
-
-    const openFullscreenEditor = useCallback(() => {
-        isModalOpenRef.current = true;
-        clearAutoHideTimer();
-        setIsChatBoxCollapsed(false);
-        setIsModalOpen(true);
-    }, [clearAutoHideTimer]);
-
-    const closeFullscreenEditor = useCallback(() => {
-        isModalOpenRef.current = false;
-        setIsModalOpen(false);
-
-        if (!isPointerInsideChatBoxRef.current && !isInputFocusedRef.current) {
-            scheduleAutoHide();
-        }
-    }, [scheduleAutoHide]);
-
-    const handleInputActivity = useCallback(() => {
-        if (!isSmallScreen) {
-            showCollapsedChatBox();
-        }
-    }, [isSmallScreen, showCollapsedChatBox]);
+    const openFullscreenEditor = useCallback(() => setIsModalOpen(true), []);
+    const closeFullscreenEditor = useCallback(() => setIsModalOpen(false), []);
 
     const selectedModelId = selectedModel?.id || '';
     const selectedModelSupportsVision = modelSupportsVision(selectedModel);
@@ -1199,7 +1122,6 @@ function ChatBox({
 
     const handleKeyDown = useCallback(
         (e) => {
-            handleInputActivity();
             if (e.key !== 'Enter') return;
 
             // 移动端 Enter 始终作为普通换行处理，不拦截默认行为，也不触发发送。
@@ -1231,7 +1153,7 @@ function ChatBox({
             }
             handleSendMessage();
         },
-        [attachmentsMeta.length, handleInputActivity, handleSendMessage, isSmallScreen, t, tipMessageIsForNewLine],
+        [attachmentsMeta.length, handleSendMessage, isSmallScreen, t, tipMessageIsForNewLine],
     );
 
     const handleRoleChange = useCallback(
@@ -1247,8 +1169,6 @@ function ChatBox({
         (newValue) => {
             if (isReadOnly) return;
 
-            handleInputActivity();
-
             updateMessageContent(newValue);
 
             // 防抖处理快捷选项状态更新
@@ -1259,7 +1179,7 @@ function ChatBox({
                 }
             }
         },
-        [handleInputActivity, isReadOnly, selectedQuickOption, quickOptions, updateMessageContent],
+        [isReadOnly, selectedQuickOption, quickOptions, updateMessageContent],
     );
 
     const handlePaste = useCallback(
@@ -1594,36 +1514,6 @@ function ChatBox({
         [stopVoiceRecording],
     );
 
-    const handleAutoHideToggle = useCallback(() => {
-        clearAutoHideTimer();
-        if (isSmallScreen) {
-            setIsBottomAutoHideEnabled(true);
-            setIsChatBoxCollapsed(!isInputFocusedRef.current && !isModalOpenRef.current);
-            return;
-        }
-
-        setIsBottomAutoHideEnabled((previousValue) => {
-            const nextValue = !previousValue;
-            setLocalSetting(CHATBOX_AUTO_HIDE_SETTING_KEY, nextValue);
-            if (!nextValue) {
-                setIsChatBoxCollapsed(false);
-            }
-            return nextValue;
-        });
-    }, [clearAutoHideTimer, isSmallScreen]);
-
-    const handleChatBoxMouseEnter = useCallback(() => {
-        isPointerInsideChatBoxRef.current = true;
-        if (!isSmallScreen && isBottomAutoHideEnabled) {
-            showCollapsedChatBox();
-        }
-    }, [isBottomAutoHideEnabled, isSmallScreen, showCollapsedChatBox]);
-
-    const handleChatBoxMouseLeave = useCallback(() => {
-        isPointerInsideChatBoxRef.current = false;
-        scheduleAutoHide();
-    }, [scheduleAutoHide]);
-
     // ========== 工具初始化函数 ==========
 
     const initializeExtraTools = useCallback((toolsConfig) => {
@@ -1951,7 +1841,7 @@ function ChatBox({
                         if (seededDraft && targetMessage) {
                             mountComposerDraft(targetMessage, draftMode, seededDraft);
                         }
-                        showCollapsedChatBox({ focus: true });
+                        requestAnimationFrame(() => textareaRef.current?.focus({ preventScroll: true }));
                     }
 
                     break;
@@ -2095,7 +1985,6 @@ function ChatBox({
             persistActiveDraft,
             resolveDraftRole,
             setAttachments,
-            showCollapsedChatBox,
             t,
             toolsStatus,
             updateMessageContent,
@@ -2225,15 +2114,6 @@ function ChatBox({
             setIsMobileVoiceMode(false);
         }
     }, [isSmallScreen]);
-
-    // 桌面端为开关制靠底隐藏；移动端只保留点击隐藏/展开的按钮制。
-    useEffect(() => {
-        if (!isSmallScreen && !isBottomAutoHideEnabled) {
-            showCollapsedChatBox();
-        }
-    }, [isBottomAutoHideEnabled, isSmallScreen, showCollapsedChatBox]);
-
-    useEffect(() => () => clearAutoHideTimer(), [clearAutoHideTimer]);
 
     // 只读/卸载时停止录音并释放麦克风。
     useEffect(() => {
@@ -2374,77 +2254,6 @@ function ChatBox({
         };
     }, [attachmentsMeta]);
 
-    // 桌面端折叠位移必须覆盖 ChatBox 自身高度、它到 ChatPage 底部的间隙，
-    // 并额外越过边界一小段安全距离。折叠把手已独立渲染，因此 ChatBox 主体无需再保留
-    // collapsedHeight；这样可规避圆角、阴影、缩放和小数像素造成的残边。
-    useLayoutEffect(() => {
-        if (isSmallScreen) {
-            setCollapsedTranslateY(0);
-            return undefined;
-        }
-
-        const root = rootRef.current;
-        if (!root) return undefined;
-
-        const host = editorHostRef?.current || null;
-        let animationFrameId = null;
-
-        const readCurrentTranslateY = () => {
-            const transform = window.getComputedStyle(root).transform;
-            if (!transform || transform === 'none') return 0;
-
-            try {
-                return new window.DOMMatrixReadOnly(transform).m42 || 0;
-            } catch (_) {
-                const matrix3dMatch = transform.match(/^matrix3d\((.+)\)$/);
-                if (matrix3dMatch) {
-                    return Number(matrix3dMatch[1].split(',')[13]) || 0;
-                }
-
-                const matrixMatch = transform.match(/^matrix\((.+)\)$/);
-                return matrixMatch ? Number(matrixMatch[1].split(',')[5]) || 0 : 0;
-            }
-        };
-
-        const measureCollapsedTranslate = () => {
-            animationFrameId = null;
-
-            const rootRect = root.getBoundingClientRect();
-            const hostBottom = host?.getBoundingClientRect?.().bottom ?? window.innerHeight;
-            const currentTranslateY = readCurrentTranslateY();
-            const untransformedRootBottom = rootRect.bottom - currentTranslateY;
-            const bottomGap = Math.max(0, hostBottom - untransformedRootBottom);
-            const nextTranslateY = Math.max(0, rootRect.height + bottomGap + CHATBOX_COLLAPSE_OVERSHOOT_PX);
-
-            setCollapsedTranslateY((previousValue) =>
-                Math.abs(previousValue - nextTranslateY) < 0.5 ? previousValue : nextTranslateY,
-            );
-        };
-
-        const scheduleMeasurement = () => {
-            if (animationFrameId !== null) {
-                window.cancelAnimationFrame(animationFrameId);
-            }
-            animationFrameId = window.requestAnimationFrame(measureCollapsedTranslate);
-        };
-
-        // 首次同步测量，避免自动隐藏开启时出现一帧错误位移。
-        measureCollapsedTranslate();
-
-        const observer = new ResizeObserver(scheduleMeasurement);
-        observer.observe(root);
-        if (host && host !== root) observer.observe(host);
-        window.addEventListener('resize', scheduleMeasurement);
-
-        return () => {
-            observer.disconnect();
-            window.removeEventListener('resize', scheduleMeasurement);
-            if (animationFrameId !== null) {
-                window.cancelAnimationFrame(animationFrameId);
-            }
-        };
-    }, [editorHostRef, isSmallScreen]);
-
     // ChatBox 宽
     useLayoutEffect(() => {
         const el = rootRef.current;
@@ -2481,7 +2290,7 @@ function ChatBox({
             for (let entry of entries) {
                 const newHeight = entry.contentRect.height;
                 if (onHeightChange) {
-                    onHeightChange(isChatBoxCollapsed ? CHATBOX_COLLAPSED_HEIGHT : newHeight);
+                    onHeightChange(newHeight);
                 }
             }
         });
@@ -2494,20 +2303,16 @@ function ChatBox({
                 resizeObserver.unobserve(currentRoot);
             }
         };
-    }, [isChatBoxCollapsed, onHeightChange]);
+    }, [onHeightChange]);
 
     useEffect(() => {
         if (!onHeightChange) return;
-        if (isChatBoxCollapsed) {
-            onHeightChange(CHATBOX_COLLAPSED_HEIGHT);
-            return;
-        }
 
         const currentHeight = rootRef.current?.getBoundingClientRect?.().height;
         if (currentHeight) {
             onHeightChange(currentHeight);
         }
-    }, [isChatBoxCollapsed, onHeightChange]);
+    }, [onHeightChange]);
 
     // Keep the complete pending permission map while the conversation has no
     // conversationId yet. This includes direct toggles as well as dialog-based changes.
@@ -2635,13 +2440,6 @@ function ChatBox({
         ],
     );
 
-    const autoHideButtonLabel = isSmallScreen
-        ? t('chatbox_hide')
-        : isBottomAutoHideEnabled
-          ? t('chatbox_disable_auto_hide')
-          : t('chatbox_enable_auto_hide');
-    const collapsedButtonLabel = t('chatbox_show');
-    const isMobileCollapsed = !immersive && isSmallScreen && isChatBoxCollapsed;
     const rootMaxHeightStyle = attachmentHeight > 0 ? `calc(100% + ${attachmentHeight}px)` : '100%';
 
     return (
@@ -2678,51 +2476,10 @@ function ChatBox({
                 targetRef={dropTargetRef}
             />
             <ChatBoxInteractionHost conversationId={conversationId} />
-            {isMobileCollapsed && (
-                <div className="mx-auto w-full max-w-225 px-4 py-2 pointer-events-auto">
-                    <button
-                        type="button"
-                        aria-label={collapsedButtonLabel}
-                        title={collapsedButtonLabel}
-                        className="mx-auto flex h-8 items-center gap-2 rounded-full border border-gray-200 bg-white/95 px-4 text-xs font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50 cursor-pointer"
-                        onClick={showCollapsedChatBox}
-                    >
-                        <span className="h-1.5 w-10 rounded-full bg-gray-300" />
-                        <span>{collapsedButtonLabel}</span>
-                    </button>
-                </div>
-            )}
-            {!immersive && !isSmallScreen && isChatBoxCollapsed && (
-                <button
-                    type="button"
-                    aria-label={collapsedButtonLabel}
-                    title={collapsedButtonLabel}
-                    className="pointer-events-auto absolute left-1/2 -bottom-8 z-[5] flex h-5 w-16 -translate-x-1/2 items-center justify-center rounded-full opacity-40 transition-opacity duration-150 hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer"
-                    onMouseEnter={showCollapsedChatBox}
-                    onClick={showCollapsedChatBox}
-                >
-                    <span className="h-1 w-10 rounded-full bg-gray-400/80 shadow-sm" />
-                </button>
-            )}
             <div
                 ref={rootRef}
-                aria-hidden={!immersive && !isSmallScreen && isChatBoxCollapsed ? true : undefined}
                 className={`pointer-events-none relative isolate mx-auto flex w-full max-w-225 flex-col overflow-hidden px-4 pb-4 ${immersive ? 'pt-4' : 'pt-0'}`}
-                onMouseEnter={handleChatBoxMouseEnter}
-                onMouseLeave={handleChatBoxMouseLeave}
-                style={{
-                    transitionProperty: 'max-height, transform, opacity',
-                    transitionDuration: '0.3s, 0.34s, 0.14s',
-                    transitionTimingFunction: 'ease-in-out, cubic-bezier(0.4, 0, 0.2, 1), ease-out',
-                    transitionDelay: !immersive && !isSmallScreen && isChatBoxCollapsed ? '0s, 0s, 0.2s' : '0s, 0s, 0s',
-                    maxHeight: rootMaxHeightStyle,
-                    display: isMobileCollapsed ? 'none' : undefined,
-                    opacity: !immersive && !isSmallScreen && isChatBoxCollapsed ? 0 : 1,
-                    transform:
-                        !immersive && !isSmallScreen && isChatBoxCollapsed
-                            ? `translateY(${collapsedTranslateY}px)`
-                            : 'translateY(0)',
-                }}
+                style={{ maxHeight: rootMaxHeightStyle }}
             >
                 <ChatBoxHeader {...chatBoxHeaderProps} />
                 <div className="border-1 relative flex min-h-0 flex-col overflow-hidden rounded-2xl bg-white transition-shadow duration-200 ease-in-out hover:shadow-lg focus-within:shadow-lg pointer-events-auto">
@@ -2773,9 +2530,6 @@ function ChatBox({
                             onChange={handleInputChange}
                             onPaste={handlePaste}
                             onKeyDown={handleKeyDown}
-                            onInputActivity={handleInputActivity}
-                            onFocus={handleMessageInputFocus}
-                            onBlur={handleMessageInputBlur}
                             isReadOnly={isReadOnly}
                             placeholder={t('input_placeholder')}
                             textareaRef={textareaRef}
@@ -2823,36 +2577,6 @@ function ChatBox({
                                         fixedWidth
                                     />
                                 ))}
-                            {/* 靠底隐藏按钮 */}
-                            <button
-                                type="button"
-                                aria-label={autoHideButtonLabel}
-                                aria-pressed={!isSmallScreen ? isBottomAutoHideEnabled : undefined}
-                                title={autoHideButtonLabel}
-                                className={`p-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors cursor-pointer ${isBottomAutoHideEnabled && !isSmallScreen ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 focus:ring-blue-300' : 'text-gray-600 hover:bg-gray-200 focus:ring-gray-300'}`}
-                                onClick={handleAutoHideToggle}
-                            >
-                                <svg
-                                    className="icon"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    aria-hidden="true"
-                                >
-                                    <path d="M4 5h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                                    <path d="M4 19h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                                    <path
-                                        d="m8 11 4 4 4-4"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                </svg>
-                            </button>
-
                             {/* 放大按钮 */}
                             <button
                                 type="button"
