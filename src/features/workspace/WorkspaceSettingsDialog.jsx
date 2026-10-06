@@ -566,7 +566,7 @@ const WorkspaceSettingsDialog = ({
                                     {loading ? <Loader2 className="animate-spin" /> : <RefreshCw />}
                                 </Button>
                             </div>
-                            <div className="max-h-56 overflow-y-auto rounded-lg border bg-background pretty-scrollbar">
+                            <div className="max-h-56 overflow-y-auto rounded-lg border bg-background">
                                 {workspaces.length === 0 ? (
                                     <div className="px-3 py-6 text-center text-xs text-muted-foreground">
                                         暂无可用 Workspace。可挂载后端服务器目录；远程设备请先在“Workspace

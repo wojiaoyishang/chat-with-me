@@ -212,7 +212,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
    **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:4372:65414:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:4372:65397:FUNCTION
 
 .. js:function:: WorkspaceSettingsDialog({ open, onOpenChange, conversationId, selectedWorkspaceIds = [], onWorkspaceChange, runWorkspaceSel…)
 
@@ -1711,7 +1711,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:24204:32449:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:24187:32432:FUNCTION
 
 .. rubric:: ``workspaces.map callback @ 576``
 
@@ -1736,7 +1736,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:24773:24809:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:24756:24792:FUNCTION
 
 .. rubric:: ``onClick callback @ 583``
 
@@ -1758,7 +1758,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``setFocusedWorkspaceId``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:25054:25161:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:25037:25144:FUNCTION
 
 .. rubric:: ``onCheckedChange callback @ 587``
 
@@ -1781,7 +1781,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``toggleWorkspace``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:25277:25311:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:25260:25294:FUNCTION
 
 .. rubric:: ``onClick callback @ 590``
 
@@ -1804,7 +1804,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:30999:31027:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:30982:31010:FUNCTION
 
 .. rubric:: ``(item.mounts || []) .map callback @ 660``
 
@@ -1825,7 +1825,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:31619:31927:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:31602:31910:FUNCTION
 
 .. rubric:: ``onClick callback @ 669``
 
@@ -1848,7 +1848,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``event.stopPropagation``、``setFocusedWorkspaceId``、``beginEdit``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:33778:33815:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:33761:33798:FUNCTION
 
 .. rubric:: ``onClick callback @ 703``
 
@@ -1870,7 +1870,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``beginEdit``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:34576:34601:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:34559:34584:FUNCTION
 
 .. rubric:: ``onClick callback @ 716``
 
@@ -1892,7 +1892,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``setDeleteOpen``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:35021:35293:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:35004:35276:FUNCTION
 
 .. rubric:: ``(selected.mounts || []).map callback @ 723``
 
@@ -1913,7 +1913,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:36427:36465:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:36410:36448:FUNCTION
 
 .. rubric:: ``onChange callback @ 747``
 
@@ -1936,7 +1936,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``setName``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:38172:38198:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:38155:38181:FUNCTION
 
 .. rubric:: ``onClick callback @ 771``
 
@@ -1958,7 +1958,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``setBrowserOpen``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:39287:47238:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:39270:47221:FUNCTION
 
 .. rubric:: ``mounts.map callback @ 787``
 
@@ -1986,7 +1986,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41547:42011:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41530:41994:FUNCTION
 
 .. rubric:: ``onClick callback @ 812``
 
@@ -2010,7 +2010,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41635:41936:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41618:41919:FUNCTION
 
 .. rubric:: ``setMounts callback @ 813``
 
@@ -2035,7 +2035,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41739:41857:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:41722:41840:FUNCTION
 
 .. rubric:: ``current.filter callback @ 815``
 
@@ -2059,7 +2059,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:42936:43887:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:42919:43870:FUNCTION
 
 .. rubric:: ``onChange callback @ 828``
 
@@ -2084,7 +2084,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:43029:43812:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:43012:43795:FUNCTION
 
 .. rubric:: ``setMounts callback @ 829``
 
@@ -2109,7 +2109,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:43130:43733:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:43113:43716:FUNCTION
 
 .. rubric:: ``current.map callback @ 830``
 
@@ -2133,7 +2133,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45119:45238:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45102:45221:FUNCTION
 
 .. rubric:: ``roots.find callback @ 853``
 
@@ -2154,7 +2154,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45574:46280:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45557:46263:FUNCTION
 
 .. rubric:: ``onCheckedChange callback @ 857``
 
@@ -2179,7 +2179,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45673:46201:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45656:46184:FUNCTION
 
 .. rubric:: ``setMounts callback @ 858``
 
@@ -2204,7 +2204,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45778:46118:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:45761:46101:FUNCTION
 
 .. rubric:: ``current.map callback @ 859``
 
@@ -2228,7 +2228,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:49433:49454:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:49416:49437:FUNCTION
 
 .. rubric:: ``onClick callback @ 914``
 
@@ -2250,7 +2250,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``addAccessRule``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:49704:50301:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:49687:50284:FUNCTION
 
 .. rubric:: ``quickAccessRules.map callback @ 918``
 
@@ -2273,7 +2273,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:50071:50096:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:50054:50079:FUNCTION
 
 .. rubric:: ``onClick callback @ 924``
 
@@ -2295,7 +2295,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``addAccessRule``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:50873:57929:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:50856:57912:FUNCTION
 
 .. rubric:: ``accessRules.map callback @ 937``
 
@@ -2323,7 +2323,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:51584:51850:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:51567:51833:FUNCTION
 
 .. rubric:: ``onValueChange callback @ 946``
 
@@ -2346,7 +2346,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``updateAccessRule``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:53260:53833:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:53243:53816:FUNCTION
 
 .. rubric:: ``onChange callback @ 967``
 
@@ -2369,7 +2369,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``updateAccessRule``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:54655:54916:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:54638:54899:FUNCTION
 
 .. rubric:: ``onValueChange callback @ 985``
 
@@ -2392,7 +2392,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **主要协作调用**：``updateAccessRule``。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:57294:57568:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:57277:57551:FUNCTION
 
 .. rubric:: ``onClick callback @ 1017``
 
@@ -2416,7 +2416,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:57375:57505:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:57358:57488:FUNCTION
 
 .. rubric:: ``setAccessRules callback @ 1018``
 
@@ -2441,7 +2441,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:57467:57504:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:57450:57487:FUNCTION
 
 .. rubric:: ``current.filter callback @ 1019``
 
@@ -2465,7 +2465,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:61460:62631:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:61443:62614:FUNCTION
 
 .. rubric:: ``availableCommandIds.map callback @ 1076``
 
@@ -2490,7 +2490,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:61953:62415:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:61936:62398:FUNCTION
 
 .. rubric:: ``onCheckedChange callback @ 1081``
 
@@ -2515,7 +2515,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:62045:62352:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:62028:62335:FUNCTION
 
 .. rubric:: ``setAllowedCommands callback @ 1082``
 
@@ -2540,7 +2540,7 @@ src/features/workspace/WorkspaceSettingsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:62323:62351:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/WorkspaceSettingsDialog.jsx:62306:62334:FUNCTION
 
 .. rubric:: ``current.filter callback @ 1085``
 
