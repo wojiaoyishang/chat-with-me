@@ -138,6 +138,12 @@ export default function SubAgentPanel({ conversationId }) {
                                     第 {session.depth} 层 · {session.model} · {session.roundCount} 轮 · 结果{' '}
                                     {session.resultSlot?.length || 0} 字符
                                 </p>
+                                <p className="mt-1 text-xs text-gray-500">
+                                    结果验收：
+                                    {session.resultVerification?.status === 'verified'
+                                        ? '已通过确定性校验'
+                                        : '未验证，需主智能体验收'}
+                                </p>
                                 {session.lastError && <p className="mt-2 text-sm text-red-500">{session.lastError}</p>}
                                 <div className="mt-2 flex flex-wrap gap-2">
                                     <Button
