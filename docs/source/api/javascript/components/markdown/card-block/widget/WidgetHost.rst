@@ -27,7 +27,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:713:902:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:734:930:FUNCTION
 
 .. js:function:: parseWidget(content)
 
@@ -46,7 +46,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **主要协作调用**：``JSON.parse``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:927:991:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:957:1021:FUNCTION
 
 .. js:function:: getOptionValue(option)
 
@@ -65,7 +65,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:1015:1098:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:1046:1129:FUNCTION
 
 .. js:function:: getOptionLabel(option)
 
@@ -84,7 +84,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:1457:1735:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:1498:1785:FUNCTION
 
 .. js:function:: resolveWidgetImageUrl(value)
 
@@ -103,7 +103,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **主要协作调用**：``value.trim``、``resolveCwmUrl``、``/^https:\/\//i.test``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:1772:4296:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:1824:4395:FUNCTION
 
 .. js:function:: acquireImmersiveScrollLock(overlayRoot)
 
@@ -128,7 +128,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:4318:5043:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:4419:5155:FUNCTION
 
 .. js:function:: WidgetFrame({title, description, children, footer, className = ''})
 
@@ -145,7 +145,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:5063:5692:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:5177:5817:FUNCTION
 
 .. js:function:: DeckFrame({title, description, children, footer, className = ''})
 
@@ -162,7 +162,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:5718:7603:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:5845:7764:FUNCTION
 
 .. js:function:: CompletedWidget({widget})
 
@@ -181,7 +181,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **主要协作调用**：``useTranslation``、``Array.isArray``、``String``、``value.join``、``t``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:7634:10178:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:7797:10383:FUNCTION
 
 .. js:function:: CardDeckResumePrompt({descriptor, onResume})
 
@@ -202,7 +202,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:10216:11072:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:10423:11296:FUNCTION
 
 .. js:function:: EmbeddedCardDeckScrollGuard({children})
 
@@ -221,7 +221,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:11097:11577:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:11323:11816:FUNCTION
 
 .. js:function:: CardDeckWidget({widget, interactive, busy, act, onExit, initialReviewCategory, allowPageScroll = false})
 
@@ -238,7 +238,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``<CompletedWidget widget={widget}/>``、``( <CanvasCardDeck widget={widget} interactive={interactive} busy={busy} act={act} onExit={onExit} initialReviewCategory={initialReviewCategory} allowPageScroll={allowPageScroll} /…``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:11599:13397:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:11840:13669:FUNCTION
 
 .. js:function:: InputWidget({widget, interactive, busy, act})
 
@@ -259,7 +259,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:13420:16448:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:13694:16776:FUNCTION
 
 .. js:function:: ChoiceWidget({widget, interactive, busy, act})
 
@@ -280,7 +280,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:16472:17670:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:16802:18023:FUNCTION
 
 .. js:function:: ConfirmWidget({widget, interactive, busy, act})
 
@@ -304,7 +304,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:1846:1855:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:1899:1908:FUNCTION
 
 .. rubric:: ``returned callback @ 54``
 
@@ -324,7 +324,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:2795:2825:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:2863:2893:FUNCTION
 
 .. rubric:: ``Array.from(document.body.children) .filter callback @ 69``
 
@@ -345,7 +345,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:2844:2994:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:2913:3067:FUNCTION
 
 .. rubric:: ``Array.from(document.body.children) .filter((node) => node !== overlayRoot) .map callback @ 70``
 
@@ -368,7 +368,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``Boolean``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:3042:3188:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:3116:3265:FUNCTION
 
 .. rubric:: ``immersiveBackgroundSnapshots.forEach callback @ 75``
 
@@ -389,7 +389,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:3242:4293:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:3322:4391:FUNCTION
 
 .. rubric:: ``returned callback @ 81``
 
@@ -417,7 +417,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:3777:4013:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:3864:4104:FUNCTION
 
 .. rubric:: ``immersiveBackgroundSnapshots.forEach callback @ 88``
 
@@ -438,7 +438,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:8204:9518:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:8373:9709:FUNCTION
 
 .. rubric:: ``cards.map callback @ 170``
 
@@ -464,7 +464,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``resolveWidgetImageUrl``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:10708:10742:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:10923:10957:FUNCTION
 
 .. rubric:: ``onPointerDown callback @ 216``
 
@@ -487,7 +487,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:10767:10801:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:10983:11017:FUNCTION
 
 .. rubric:: ``onPointerMove callback @ 217``
 
@@ -510,7 +510,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:10824:10858:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:11041:11075:FUNCTION
 
 .. rubric:: ``onPointerUp callback @ 218``
 
@@ -533,7 +533,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:10885:10919:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:11103:11137:FUNCTION
 
 .. rubric:: ``onPointerCancel callback @ 219``
 
@@ -556,7 +556,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:10943:10977:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:11162:11196:FUNCTION
 
 .. rubric:: ``onTouchStart callback @ 220``
 
@@ -579,7 +579,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:10999:11033:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:11219:11253:FUNCTION
 
 .. rubric:: ``onTouchEnd callback @ 221``
 
@@ -602,7 +602,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:11798:11867:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:12042:12111:FUNCTION
 
 .. rubric:: ``useEffect callback @ 245``
 
@@ -624,7 +624,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``setValue``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:12160:12199:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:12411:12450:FUNCTION
 
 .. rubric:: ``onChange callback @ 252``
 
@@ -647,7 +647,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``setValue``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:12655:12786:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:12911:13044:FUNCTION
 
 .. rubric:: ``anonymous callback @ 257``
 
@@ -670,7 +670,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``act``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:13051:13084:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:13315:13348:FUNCTION
 
 .. rubric:: ``onClick callback @ 265``
 
@@ -692,7 +692,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``act``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:13742:13802:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:14021:14081:FUNCTION
 
 .. rubric:: ``useEffect callback @ 280``
 
@@ -714,7 +714,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``setValue``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:13937:14276:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:14219:14567:FUNCTION
 
 .. rubric:: ``toggle``
 
@@ -739,7 +739,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:14064:14268:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:14351:14558:FUNCTION
 
 .. rubric:: ``setValue callback @ 288``
 
@@ -764,7 +764,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:14203:14231:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:14492:14520:FUNCTION
 
 .. rubric:: ``list.filter callback @ 290``
 
@@ -785,7 +785,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:14443:15928:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:14738:16243:FUNCTION
 
 .. rubric:: ``options.map callback @ 296``
 
@@ -813,7 +813,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:14883:14908:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:15186:15211:FUNCTION
 
 .. rubric:: ``onClick callback @ 304``
 
@@ -835,7 +835,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``toggle``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:16160:16193:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:16480:16513:FUNCTION
 
 .. rubric:: ``onClick callback @ 321``
 
@@ -857,7 +857,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``act``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:16862:16890:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:17200:17228:FUNCTION
 
 .. rubric:: ``onClick callback @ 339``
 
@@ -879,7 +879,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``act``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:17324:17353:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:17670:17699:FUNCTION
 
 .. rubric:: ``onClick callback @ 347``
 
@@ -901,7 +901,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``act``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:17697:27544:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:18052:28177:FUNCTION
 
 .. rubric:: ``memo callback @ 356``
 
@@ -931,7 +931,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **内部回调数量**：20。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:17868:17894:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:18225:18251:FUNCTION
 
 .. rubric:: ``useMemo callback @ 358``
 
@@ -953,7 +953,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``parseWidget``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:18301:18444:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:18666:18813:FUNCTION
 
 .. rubric:: ``useState callback @ 366``
 
@@ -973,7 +973,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:18554:18815:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:18926:19193:FUNCTION
 
 .. rubric:: ``useEffect callback @ 373``
 
@@ -997,7 +997,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:18580:18807:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:18953:19184:FUNCTION
 
 .. rubric:: ``setWidget callback @ 374``
 
@@ -1020,7 +1020,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:18843:19371:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:19223:19761:FUNCTION
 
 .. rubric:: ``useEffect callback @ 381``
 
@@ -1042,7 +1042,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``setCardDeckPaused``、``Boolean``、``setCardDeckResumeState``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:19409:19492:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:19801:19886:FUNCTION
 
 .. rubric:: ``useEffect callback @ 393``
 
@@ -1064,7 +1064,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``setCardDeckPaused``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:20044:20642:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:20497:21107:FUNCTION
 
 .. rubric:: ``useEffect callback @ 412``
 
@@ -1088,7 +1088,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:20232:20526:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:20688:20986:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 415``
 
@@ -1110,7 +1110,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``panel?.querySelector``、``focusTarget?.focus``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:20543:20635:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:21004:21099:FUNCTION
 
 .. rubric:: ``returned callback @ 420``
 
@@ -1132,7 +1132,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``cancelAnimationFrame``、``releaseScrollLock``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:20702:20964:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:21169:21438:FUNCTION
 
 .. rubric:: ``useCallback callback @ 426``
 
@@ -1155,7 +1155,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``setCardDeckResumeState``、``setCardDeckPaused``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:21011:21058:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:21487:21536:FUNCTION
 
 .. rubric:: ``useCallback callback @ 435``
 
@@ -1177,7 +1177,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``setCardDeckPaused``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:21106:21174:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:21586:21657:FUNCTION
 
 .. rubric:: ``useBrowserBackLayer callback @ 439``
 
@@ -1199,7 +1199,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``setCardDeckPaused``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:21237:22173:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:21722:22682:FUNCTION
 
 .. rubric:: ``useCallback callback @ 444``
 
@@ -1229,7 +1229,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``setBusy``、``apiClient.post``、``encodeURIComponent``、``generateUUID``、``Number``、``setWidget``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:23641:24350:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:24187:24912:FUNCTION
 
 .. rubric:: ``renderFrame``
 
@@ -1250,7 +1250,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <Frame title={descriptor.title || descriptor.question || descriptor.prompt} description={descriptor.description || descriptor.prompt} className={className} footer={busy && widge…``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25011:25045:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25587:25621:FUNCTION
 
 .. rubric:: ``onPointerDown callback @ 535``
 
@@ -1273,7 +1273,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25086:25120:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25663:25697:FUNCTION
 
 .. rubric:: ``onPointerMove callback @ 536``
 
@@ -1296,7 +1296,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25159:25193:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25737:25771:FUNCTION
 
 .. rubric:: ``onPointerUp callback @ 537``
 
@@ -1319,7 +1319,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25236:25270:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25815:25849:FUNCTION
 
 .. rubric:: ``onPointerCancel callback @ 538``
 
@@ -1342,7 +1342,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25310:25344:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25890:25924:FUNCTION
 
 .. rubric:: ``onTouchStart callback @ 539``
 
@@ -1365,7 +1365,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25383:25417:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25964:25998:FUNCTION
 
 .. rubric:: ``onTouchMove callback @ 540``
 
@@ -1388,7 +1388,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25455:25489:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26037:26071:FUNCTION
 
 .. rubric:: ``onTouchEnd callback @ 541``
 
@@ -1411,7 +1411,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25524:25558:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26107:26141:FUNCTION
 
 .. rubric:: ``onWheel callback @ 542``
 
@@ -1434,7 +1434,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25973:26232:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26564:26828:FUNCTION
 
 .. rubric:: ``onKeyDownCapture callback @ 550``
 
@@ -1457,7 +1457,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:27545:27756:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:28178:28394:FUNCTION
 
 .. rubric:: ``memo callback @ 592``
 

@@ -395,7 +395,7 @@ const WidgetHost = memo(({content = '', conversationId = null, messageReadonly =
     }, [widget?.status]);
 
     const descriptor = widget?.descriptor || {};
-    const interactive = !messageReadonly && widget?.status === 'active';
+    const interactive = widget?.status === 'active' && (!messageReadonly || widget?.continuation === 'execution');
     const immersiveActive = Boolean(
         interactive
         && widget?.widgetType === 'card_deck'
