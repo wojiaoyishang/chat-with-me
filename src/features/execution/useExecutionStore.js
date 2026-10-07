@@ -19,7 +19,14 @@ const mergeActivity = (activities = [], incoming = {}) => {
     return next;
 };
 
-const mergeExecution = (previous, incoming) => ({
+export const shouldIgnoreExecutionUpdate = (previous = {}, incoming = {}) => {
+    if (previous.executionId !== incoming.executionId) return false;
+    if (Number(previous.updatedAt || 0) > Number(incoming.updatedAt || 0)) return true;
+    const terminal = ['completed', 'cancelled', 'failed', 'blocked'];
+    return terminal.includes(previous.status) && incoming.active === true && previous.runId === incoming.runId;
+};
+
+const mergeExecution = (previous, incoming) => shouldIgnoreExecutionUpdate(previous, incoming) ? previous : ({
     ...previous,
     ...incoming,
     thinking:

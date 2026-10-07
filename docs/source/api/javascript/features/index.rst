@@ -629,7 +629,7 @@
      - 0
      - ``src/features/execution/index.js``
    * - :doc:`src/features/execution/useExecutionStore </api/javascript/features/execution/useExecutionStore>`
-     - 12
+     - 13
      - 0
      - 17
      - ``src/features/execution/useExecutionStore.js``

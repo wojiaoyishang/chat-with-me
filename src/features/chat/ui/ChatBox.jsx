@@ -40,6 +40,7 @@ import ConversationToolsDialog from '@/features/tools/components/ConversationToo
 import {
     patchExecutionActivity,
     useExecutionStore,
+    shouldIgnoreExecutionUpdate,
     upsertExecution,
     upsertExecutionActivity,
 } from '@/features/execution/useExecutionStore.js';
@@ -382,6 +383,7 @@ function ChatBox({
     const messageContentRef = useRef(messageContent);
     const sendButtonStatusRef = useRef(sendButtonStatus);
     const activeExecutionRef = useRef(activeExecution);
+    const latestExecutionStateRef = useRef(null);
     const executionGuidancePendingRef = useRef(false);
 
     // 发送消息角色身份相关
@@ -1730,6 +1732,8 @@ function ChatBox({
                     break;
                 case 'execution.state.changed': {
                     const value = payload?.value && typeof payload.value === 'object' ? payload.value : payload;
+                    if (shouldIgnoreExecutionUpdate(latestExecutionStateRef.current || {}, value)) break;
+                    latestExecutionStateRef.current = value;
                     const selected = value?.active ? value : null;
                     activeExecutionRef.current = selected;
                     setActiveExecution(selected);
@@ -2033,6 +2037,7 @@ function ChatBox({
         setConversationToolDefaults({});
         setConversationToolsDialogOpen(false);
         activeExecutionRef.current = null;
+        latestExecutionStateRef.current = null;
         setActiveExecution(null);
         executionGuidancePendingRef.current = false;
         setIsExecutionGuidancePending(false);
