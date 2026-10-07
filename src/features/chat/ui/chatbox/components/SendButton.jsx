@@ -6,7 +6,7 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, exec
         const normalizedExecutionStatus = String(executionStatus || '').toLowerCase();
         const executionStopping = executionActive && normalizedExecutionStatus === 'cancelling';
         const canSendExecutionGuidance = executionActive && !executionStopping && Boolean(messageContent.trim()) && attachmentsMeta.length === 0;
-        const isEmpty = !hasInput && status === 'normal' && !executionActive;
+        const isEmpty = !hasInput && status !== 'generating' && !executionActive;
         const baseIcon = (
             <svg
                 t="1758800079268"

@@ -1387,6 +1387,13 @@ function ChatPage({
                 return;
             }
             const outboundAttachments = normalizeAttachmentList(attachments);
+            if (
+                !String(messageContent ?? '').trim() &&
+                outboundAttachments.length === 0 &&
+                sendButtonStatus !== 'generating' &&
+                !isRegenerate && !isProgenerate
+            ) return;
+
             const sendMessage = (conversationId) => {
                 if (isFirstMessageSend) {
                     emitEvent({

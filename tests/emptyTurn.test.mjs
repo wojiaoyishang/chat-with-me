@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const source=fs.readFileSync('src/features/chat/ChatPage.jsx','utf8');
+const start=source.indexOf('            if (uploadFiles.length !== 0)',source.indexOf('const handleSendMessage ='));
+const end=source.indexOf('            const sendMessage =',start);
+const admit=new Function('messageContent','attachments','sendButtonStatus','isRegenerate','isProgenerate','uploadFiles','normalizeAttachmentList','toast','t',source.slice(start,end)+'return true;');
+const check=(text,files=[],status='normal',regen=false,pro=false)=>admit(text,files,status,regen,pro,[],v=>v||[],{error(){}},v=>v);
+assert.equal(check(''),undefined);
+assert.equal(check(' \n\t '),undefined);
+assert.equal(check(null),undefined);
+assert.equal(check(''),undefined);
+assert.equal(check('正文'),true);
+assert.equal(check('',[{id:'attachment'}]),true);
+assert.equal(check('',[],'generating'),true);
+assert.equal(check('',[],'normal',true),true);
+assert.equal(check('',[],'normal',false,true),true);
+console.log('Empty turn admission regression checks passed');

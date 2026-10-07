@@ -1006,6 +1006,9 @@ function ChatBox({
             return;
         }
 
+        // All submit entry points must reject empty turns, independently of button state.
+        if (!currentContent.trim() && attachmentsMeta.length === 0) return;
+
         runtimeToolPermissionRevisionRef.current = 0;
         runtimeToolPermissionRunIdRef.current = null;
         setRuntimeToolPermissions({});

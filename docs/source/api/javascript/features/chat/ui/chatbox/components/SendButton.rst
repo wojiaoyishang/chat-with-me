@@ -29,7 +29,7 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:69:6645:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:71:6796:FUNCTION
 
 .. rubric:: ``memo callback @ 3``
 
@@ -54,7 +54,7 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:247:5854:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:250:5986:FUNCTION
 
 .. rubric:: ``useMemo callback @ 4``
 
@@ -76,7 +76,7 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 
 **主要协作调用**：``Boolean``、``messageContent.trim``、``String(executionStatus || '').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:6646:7144:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:6797:7305:FUNCTION
 
 .. rubric:: ``memo callback @ 148``
 

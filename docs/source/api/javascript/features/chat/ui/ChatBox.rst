@@ -185,13 +185,13 @@ src/features/chat/ui/ChatBox 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:8449:122554:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:8449:122725:FUNCTION
 
 .. js:function:: ChatBox({ onSendMessage, readOnly = false, FilePickerCallback, PicPickerCallback, conversationId, attachmen…)
 
    渲染 ``ChatBox`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``211``—``2683`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``211``—``2686`` 行。
 
    **参数**
 
@@ -1943,7 +1943,7 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``collectToolPermissions``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:37500:51292:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:37500:51463:FUNCTION
 
 .. rubric:: ``useCallback callback @ 842``
 
@@ -1953,7 +1953,7 @@ src/features/chat/ui/ChatBox 模块
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``842``—``1109`` 行；所属函数 ``ChatBox``。
+**性质**：异步局部函数；源码第 ``842``—``1112`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -1994,17 +1994,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:51697:52984:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:51868:53155:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1126``
+.. rubric:: ``useCallback callback @ 1129``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1126(e)
+   useCallback callback @ 1129(e)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1126``—``1157`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1129``—``1160`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2017,17 +2017,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``chatboxSetup``、``setLocalSetting``、``e.preventDefault``、``String(keyboardExecution?.status || '').toLowerCase``、``String``、``Boolean``、``messageContentRef.current.trim``、``toast.warning``、``t``、``handleSendMessage``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:53134:53328:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:53305:53499:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1162``
+.. rubric:: ``useCallback callback @ 1165``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1162(role)
+   useCallback callback @ 1165(role)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1162``—``1166`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1165``—``1169`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2040,17 +2040,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setCurrentRole``、``persistActiveDraft``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:53414:53875:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:53585:54046:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1171``
+.. rubric:: ``useCallback callback @ 1174``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1171(newValue)
+   useCallback callback @ 1174(newValue)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1171``—``1183`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1174``—``1186`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2065,17 +2065,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:53662:53701:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:53833:53872:FUNCTION
 
-.. rubric:: ``quickOptions.find callback @ 1178``
+.. rubric:: ``quickOptions.find callback @ 1181``
 
 .. code-block:: javascript
 
-   quickOptions.find callback @ 1178(opt)
+   quickOptions.find callback @ 1181(opt)
 
 作为 ``quickOptions.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1178``—``1178`` 行；所属函数 ``useCallback callback @ 1171``。
+**性质**：同步局部函数；源码第 ``1181``—``1181`` 行；所属函数 ``useCallback callback @ 1174``。
 
 **参数**
 
@@ -2086,17 +2086,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:54004:54685:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:54175:54856:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1188``
+.. rubric:: ``useCallback callback @ 1191``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1188(e)
+   useCallback callback @ 1191(e)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1188``—``1203`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1191``—``1206`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2113,17 +2113,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``items[i].type.indexOf``、``items[i].getAsFile``、``e.preventDefault``、``onImagePaste``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:54800:55338:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:54971:55509:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1208``
+.. rubric:: ``useCallback callback @ 1211``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1208(option)
+   useCallback callback @ 1211(option)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1208``—``1221`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1211``—``1224`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2136,17 +2136,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``updateMessageContent``、``setSelectedQuickOption``、``textareaRef.current?.focus``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:55456:55813:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:55627:55984:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1225``
+.. rubric:: ``useCallback callback @ 1228``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1225(result)
+   useCallback callback @ 1228(result)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1225``—``1232`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1228``—``1235`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2161,17 +2161,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:55638:55705:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:55809:55876:FUNCTION
 
-.. rubric:: ``setVoicePermissionDialog callback @ 1228``
+.. rubric:: ``setVoicePermissionDialog callback @ 1231``
 
 .. code-block:: javascript
 
-   setVoicePermissionDialog callback @ 1228(prev)
+   setVoicePermissionDialog callback @ 1231(prev)
 
 设置与 ``Voice Permission Dialog`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1228``—``1228`` 行；所属函数 ``useCallback callback @ 1225``。
+**性质**：同步局部函数；源码第 ``1231``—``1231`` 行；所属函数 ``useCallback callback @ 1228``。
 
 **参数**
 
@@ -2182,17 +2182,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:55873:56645:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:56044:56816:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1235``
+.. rubric:: ``useCallback callback @ 1238``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1235({ title = voiceText.input, description, confirmText = voiceText.permissionDeniedConfirm, cancelText…)
+   useCallback callback @ 1238({ title = voiceText.input, description, confirmText = voiceText.permissionDeniedConfirm, cancelText…)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1235``—``1255`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1238``—``1258`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2205,17 +2205,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:56148:56632:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:56319:56803:FUNCTION
 
-.. rubric:: ``anonymous callback @ 1242``
+.. rubric:: ``anonymous callback @ 1245``
 
 .. code-block:: javascript
 
-   anonymous callback @ 1242(resolve)
+   anonymous callback @ 1245(resolve)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1242``—``1254`` 行；所属函数 ``useCallback callback @ 1235``。
+**性质**：同步局部函数；源码第 ``1245``—``1257`` 行；所属函数 ``useCallback callback @ 1238``。
 
 **参数**
 
@@ -2228,17 +2228,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``voicePermissionDialogResolverRef.current``、``setVoicePermissionDialog``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:56801:57884:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:56972:58055:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1260``
+.. rubric:: ``useCallback callback @ 1263``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1260()
+   useCallback callback @ 1263()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1260``—``1281`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1263``—``1284`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2250,7 +2250,7 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:57064:57409:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:57235:57580:FUNCTION
 
 .. rubric:: ``onPermissionIntro``
 
@@ -2260,7 +2260,7 @@ src/features/chat/ui/ChatBox 模块
 
 处理 ``Permission Intro`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``1264``—``1271`` 行；所属函数 ``useCallback callback @ 1260``。
+**性质**：异步局部函数；源码第 ``1267``—``1274`` 行；所属函数 ``useCallback callback @ 1263``。
 
 **参数**
 
@@ -2273,7 +2273,7 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``showVoicePermissionDialog``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:57443:57871:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:57614:58042:FUNCTION
 
 .. rubric:: ``onPermissionDenied``
 
@@ -2283,7 +2283,7 @@ src/features/chat/ui/ChatBox 模块
 
 处理 ``Permission Denied`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``1272``—``1280`` 行；所属函数 ``useCallback callback @ 1260``。
+**性质**：异步局部函数；源码第 ``1275``—``1283`` 行；所属函数 ``useCallback callback @ 1263``。
 
 **参数**
 
@@ -2299,17 +2299,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``isVoicePermissionFlowCancelled``、``console.error``、``showVoicePermissionDialog``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:57992:58218:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:58163:58389:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1285``
+.. rubric:: ``useCallback callback @ 1288``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1285()
+   useCallback callback @ 1288()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1285``—``1294`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1288``—``1297`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2323,17 +2323,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:58070:58209:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:58241:58380:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 1288``
+.. rubric:: ``requestAnimationFrame callback @ 1291``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 1288()
+   requestAnimationFrame callback @ 1291()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1288``—``1293`` 行；所属函数 ``useCallback callback @ 1285``。
+**性质**：同步局部函数；源码第 ``1291``—``1296`` 行；所属函数 ``useCallback callback @ 1288``。
 
 **参数**
 
@@ -2345,17 +2345,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``textarea.blur``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:58292:58796:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:58463:58967:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1297``
+.. rubric:: ``useCallback callback @ 1300``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1297(text)
+   useCallback callback @ 1300(text)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1297``—``1309`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1300``—``1312`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2370,17 +2370,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:58455:58660:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:58626:58831:FUNCTION
 
-.. rubric:: ``updateMessageContent callback @ 1301``
+.. rubric:: ``updateMessageContent callback @ 1304``
 
 .. code-block:: javascript
 
-   updateMessageContent callback @ 1301(previousValue)
+   updateMessageContent callback @ 1304(previousValue)
 
 更新与 ``Message Content`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1301``—``1304`` 行；所属函数 ``useCallback callback @ 1297``。
+**性质**：同步局部函数；源码第 ``1304``—``1307`` 行；所属函数 ``useCallback callback @ 1300``。
 
 **参数**
 
@@ -2393,17 +2393,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``/\s$/.test``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:58913:59103:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:59084:59274:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1313``
+.. rubric:: ``useCallback callback @ 1316``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1313(result)
+   useCallback callback @ 1316(result)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1313``—``1317`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1316``—``1320`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2414,17 +2414,17 @@ src/features/chat/ui/ChatBox 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``result``、``''``、``result.text || result.transcript || result.messageContent || ''``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:59230:59800:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:59401:59971:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1321``
+.. rubric:: ``useCallback callback @ 1324``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1321(payload)
+   async useCallback callback @ 1324(payload)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1321``—``1337`` 行；所属函数 ``ChatBox``。
+**性质**：异步局部函数；源码第 ``1324``—``1340`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2437,17 +2437,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``onVoicePcmReady``、``appendVoiceRecognitionText``、``getVoiceRecognitionText``、``console.debug``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:59954:61818:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:60125:61989:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1341``
+.. rubric:: ``useCallback callback @ 1344``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1341()
+   async useCallback callback @ 1344()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1341``—``1388`` 行；所属函数 ``ChatBox``。
+**性质**：异步局部函数；源码第 ``1344``—``1391`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2459,17 +2459,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setVoiceActionPending``、``setVoiceWaveformLevels``、``createSilentWaveformLevels``、``requestMicrophoneStream``、``getMicrophoneRequestOptions``、``createPcm16kRecorder``、``setIsVoiceRecording``、``onVoiceRecordingStart``、``recorderToCancel.cancel``、``console.error``、``isVoicePermissionFlowCancelled``、``setIsVoiceRecognizing``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:62075:63386:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:62246:63557:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1399``
+.. rubric:: ``useCallback callback @ 1402``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1399({ emitPcm = true })
+   async useCallback callback @ 1402({ emitPcm = true })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1399``—``1432`` 行；所属函数 ``ChatBox``。
+**性质**：异步局部函数；源码第 ``1402``—``1435`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2482,17 +2482,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setIsVoiceRecording``、``setVoiceWaveformLevels``、``createSilentWaveformLevels``、``setVoiceActionPending``、``setIsVoiceRecognizing``、``Boolean``、``recorder.cancel``、``onVoiceRecordingCancel``、``recorder.stop``、``handleVoicePcmReady``、``console.error``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:63568:64808:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:63739:64979:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1436``
+.. rubric:: ``useCallback callback @ 1439``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1436()
+   async useCallback callback @ 1439()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1436``—``1470`` 行；所属函数 ``ChatBox``。
+**性质**：异步局部函数；源码第 ``1439``—``1473`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2506,17 +2506,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:63968:64002:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:64139:64173:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 1445``
+.. rubric:: ``requestAnimationFrame callback @ 1448``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 1445()
+   requestAnimationFrame callback @ 1448()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1445``—``1445`` 行；所属函数 ``useCallback callback @ 1436``。
+**性质**：同步局部函数；源码第 ``1448``—``1448`` 行；所属函数 ``useCallback callback @ 1439``。
 
 **参数**
 
@@ -2528,17 +2528,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``textareaRef.current?.focus``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:65132:65917:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:65303:66088:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1483``
+.. rubric:: ``useCallback callback @ 1486``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1483(event)
+   async useCallback callback @ 1486(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1483``—``1498`` 行；所属函数 ``ChatBox``。
+**性质**：异步局部函数；源码第 ``1486``—``1501`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2551,17 +2551,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``event.preventDefault``、``event.currentTarget.setPointerCapture``、``startVoiceRecording``、``stopVoiceRecording``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:66101:66636:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:66272:66807:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1503``
+.. rubric:: ``useCallback callback @ 1506``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 1503(event, emitPcm)
+   async useCallback callback @ 1506(event, emitPcm)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``1503``—``1515`` 行；所属函数 ``ChatBox``。
+**性质**：异步局部函数；源码第 ``1506``—``1518`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2577,17 +2577,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``event.preventDefault``、``event.currentTarget.releasePointerCapture``、``stopVoiceRecording``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:66765:68735:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:66936:68906:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1521``
+.. rubric:: ``useCallback callback @ 1524``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1521(toolsConfig)
+   useCallback callback @ 1524(toolsConfig)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1521``—``1560`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1524``—``1563`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2602,7 +2602,7 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:66813:68684:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:66984:68855:FUNCTION
 
 .. rubric:: ``processItems``
 
@@ -2612,7 +2612,7 @@ src/features/chat/ui/ChatBox 模块
 
 处理与 ``Items`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1522``—``1558`` 行；所属函数 ``useCallback callback @ 1521``。
+**性质**：同步局部函数；源码第 ``1525``—``1561`` 行；所属函数 ``useCallback callback @ 1524``。
 
 **参数**
 
@@ -2627,17 +2627,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:66886:68643:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:67057:68814:FUNCTION
 
-.. rubric:: ``items.forEach callback @ 1524``
+.. rubric:: ``items.forEach callback @ 1527``
 
 .. code-block:: javascript
 
-   items.forEach callback @ 1524(item)
+   items.forEach callback @ 1527(item)
 
 作为 ``items.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1524``—``1556`` 行；所属函数 ``processItems``。
+**性质**：同步局部函数；源码第 ``1527``—``1559`` 行；所属函数 ``processItems``。
 
 **参数**
 
@@ -2652,17 +2652,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:67953:67991:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:68124:68162:FUNCTION
 
-.. rubric:: ``item.children.find callback @ 1544``
+.. rubric:: ``item.children.find callback @ 1547``
 
 .. code-block:: javascript
 
-   item.children.find callback @ 1544(child)
+   item.children.find callback @ 1547(child)
 
 作为 ``item.children.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1544``—``1544`` 行；所属函数 ``items.forEach callback @ 1524``。
+**性质**：同步局部函数；源码第 ``1547``—``1547`` 行；所属函数 ``items.forEach callback @ 1527``。
 
 **参数**
 
@@ -2673,17 +2673,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:68822:76665:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:68993:76836:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1565``
+.. rubric:: ``useCallback callback @ 1568``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1565(data)
+   useCallback callback @ 1568(data)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1565``—``1707`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1568``—``1710`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2703,17 +2703,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:73991:74097:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:74162:74268:FUNCTION
 
-.. rubric:: ``data.builtin_tools.forEach callback @ 1644``
+.. rubric:: ``data.builtin_tools.forEach callback @ 1647``
 
 .. code-block:: javascript
 
-   data.builtin_tools.forEach callback @ 1644(tool)
+   data.builtin_tools.forEach callback @ 1647(tool)
 
 作为 ``data.builtin_tools.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1644``—``1646`` 行；所属函数 ``useCallback callback @ 1565``。
+**性质**：同步局部函数；源码第 ``1647``—``1649`` 行；所属函数 ``useCallback callback @ 1568``。
 
 **参数**
 
@@ -2724,17 +2724,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:74192:74375:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:74363:74546:FUNCTION
 
-.. rubric:: ``setToolsStatus callback @ 1650``
+.. rubric:: ``setToolsStatus callback @ 1653``
 
 .. code-block:: javascript
 
-   setToolsStatus callback @ 1650(prev)
+   setToolsStatus callback @ 1653(prev)
 
 设置与 ``Tools Status`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1650``—``1654`` 行；所属函数 ``useCallback callback @ 1565``。
+**性质**：同步局部函数；源码第 ``1653``—``1657`` 行；所属函数 ``useCallback callback @ 1568``。
 
 **参数**
 
@@ -2745,17 +2745,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:75364:75706:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:75535:75877:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 1678``
+.. rubric:: ``setTimeout callback @ 1681``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 1678()
+   setTimeout callback @ 1681()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1678``—``1684`` 行；所属函数 ``useCallback callback @ 1565``。
+**性质**：同步局部函数；源码第 ``1681``—``1687`` 行；所属函数 ``useCallback callback @ 1568``。
 
 **参数**
 
@@ -2769,17 +2769,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:75585:75615:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:75756:75786:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 1682``
+.. rubric:: ``setTimeout callback @ 1685``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 1682()
+   setTimeout callback @ 1685()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1682``—``1682`` 行；所属函数 ``setTimeout callback @ 1678``。
+**性质**：同步局部函数；源码第 ``1685``—``1685`` 行；所属函数 ``setTimeout callback @ 1681``。
 
 **参数**
 
@@ -2791,17 +2791,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setShowTipMessage``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:76307:76351:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:76478:76522:FUNCTION
 
-.. rubric:: ``data.roles.find callback @ 1700``
+.. rubric:: ``data.roles.find callback @ 1703``
 
 .. code-block:: javascript
 
-   data.roles.find callback @ 1700(role)
+   data.roles.find callback @ 1703(role)
 
 作为 ``data.roles.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1700``—``1700`` 行；所属函数 ``useCallback callback @ 1565``。
+**性质**：同步局部函数；源码第 ``1703``—``1703`` 行；所属函数 ``useCallback callback @ 1568``。
 
 **参数**
 
@@ -2812,17 +2812,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:76435:76457:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:76606:76628:FUNCTION
 
-.. rubric:: ``data.roles.find callback @ 1702``
+.. rubric:: ``data.roles.find callback @ 1705``
 
 .. code-block:: javascript
 
-   data.roles.find callback @ 1702(role)
+   data.roles.find callback @ 1705(role)
 
 作为 ``data.roles.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1702``—``1702`` 行；所属函数 ``useCallback callback @ 1565``。
+**性质**：同步局部函数；源码第 ``1705``—``1705`` 行；所属函数 ``useCallback callback @ 1568``。
 
 **参数**
 
@@ -2833,17 +2833,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:76874:92150:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:77045:92321:FUNCTION
 
-.. rubric:: ``useCallback callback @ 1714``
+.. rubric:: ``useCallback callback @ 1717``
 
 .. code-block:: javascript
 
-   useCallback callback @ 1714({ event, payload, reply })
+   useCallback callback @ 1717({ event, payload, reply })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``1714``—``1981`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``1717``—``1984`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -2862,17 +2862,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:79343:79482:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:79514:79653:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 1760``
+.. rubric:: ``setTimeout callback @ 1763``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 1760()
+   setTimeout callback @ 1763()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1760``—``1763`` 行；所属函数 ``useCallback callback @ 1714``。
+**性质**：同步局部函数；源码第 ``1763``—``1766`` 行；所属函数 ``useCallback callback @ 1717``。
 
 **参数**
 
@@ -2884,17 +2884,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setQuickOptions``、``setIsTransitioning``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:84617:84674:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:84788:84845:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 1848``
+.. rubric:: ``requestAnimationFrame callback @ 1851``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 1848()
+   requestAnimationFrame callback @ 1851()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1848``—``1848`` 行；所属函数 ``useCallback callback @ 1714``。
+**性质**：同步局部函数；源码第 ``1851``—``1851`` 行；所属函数 ``useCallback callback @ 1717``。
 
 **参数**
 
@@ -2906,17 +2906,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``textareaRef.current?.focus``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:86983:91872:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:87154:92043:FUNCTION
 
-.. rubric:: ``emitEvent({ event: 'message.order.changed', payload: {}, conversationId: conversationId, localOnly: true, }).then callback @ 1893``
+.. rubric:: ``emitEvent({ event: 'message.order.changed', payload: {}, conversationId: conversationId, localOnly: true, }).then callback @ 1896``
 
 .. code-block:: javascript
 
-   emitEvent({ event: 'message.order.changed', payload: {}, conversationId: conversationId, localOnly: true, }).then callback @ 1893(messagesOrder)
+   emitEvent({ event: 'message.order.changed', payload: {}, conversationId: conversationId, localOnly: true, }).then callback @ 1896(messagesOrder)
 
 处理 ``emitEvent({ event: 'message.order.changed', payload: {}, conversationId: conversationId, localOnly: true, }).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``1893``—``1973`` 行；所属函数 ``useCallback callback @ 1714``。
+**性质**：同步局部函数；源码第 ``1896``—``1976`` 行；所属函数 ``useCallback callback @ 1717``。
 
 **参数**
 
@@ -2935,17 +2935,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:88394:91843:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:88565:92014:FUNCTION
 
-.. rubric:: ``emitEvent({ event: 'message.created', payload: { value: { [payload.msgId]: payload.value, }, isEdit: payload.isEdit, },… callback @ 1915``
+.. rubric:: ``emitEvent({ event: 'message.created', payload: { value: { [payload.msgId]: payload.value, }, isEdit: payload.isEdit, },… callback @ 1918``
 
 .. code-block:: javascript
 
-   emitEvent({ event: 'message.created', payload: { value: { [payload.msgId]: payload.value, }, isEdit: payload.isEdit, },… callback @ 1915(data)
+   emitEvent({ event: 'message.created', payload: { value: { [payload.msgId]: payload.value, }, isEdit: payload.isEdit, },… callback @ 1918(data)
 
 发送事件与 ``Event({ event: 'message.created', payload: { value: { [payload.msg Id]: payload.value, }, is Edit: payload.is Edit, },…`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1915``—``1972`` 行；所属函数 ``emitEvent({ event: 'message.order.changed', payload: {}, conversationId: conversationId, localOnly: true, }).then callback @ 1893``。
+**性质**：同步局部函数；源码第 ``1918``—``1975`` 行；所属函数 ``emitEvent({ event: 'message.order.changed', payload: {}, conversationId: conversationId, localOnly: true, }).then callback @ 1896``。
 
 **参数**
 
@@ -2964,17 +2964,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:90451:91775:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:90622:91946:FUNCTION
 
-.. rubric:: ``emitEvent({ event: 'message.order.changed', payload: { value: newMessagesOrder, }, conversationId: conversationId, loca… callback @ 1952``
+.. rubric:: ``emitEvent({ event: 'message.order.changed', payload: { value: newMessagesOrder, }, conversationId: conversationId, loca… callback @ 1955``
 
 .. code-block:: javascript
 
-   emitEvent({ event: 'message.order.changed', payload: { value: newMessagesOrder, }, conversationId: conversationId, loca… callback @ 1952()
+   emitEvent({ event: 'message.order.changed', payload: { value: newMessagesOrder, }, conversationId: conversationId, loca… callback @ 1955()
 
 发送事件与 ``Event({ event: 'message.order.changed', payload: { value: new Messages Order, }, conversation Id: conversation Id, loca…`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1952``—``1970`` 行；所属函数 ``emitEvent({ event: 'message.created', payload: { value: { [payload.msgId]: payload.value, }, isEdit: payload.isEdit, },… callback @ 1915``。
+**性质**：同步局部函数；源码第 ``1955``—``1973`` 行；所属函数 ``emitEvent({ event: 'message.created', payload: { value: { [payload.msgId]: payload.value, }, isEdit: payload.isEdit, },… callback @ 1918``。
 
 **参数**
 
@@ -2992,17 +2992,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:91151:91734:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:91322:91905:FUNCTION
 
-.. rubric:: ``emitEvent({ event: 'message.children.changed', payload: { msgId: payload.value.prevMessage, value: payload.msgId, switc… callback @ 1963``
+.. rubric:: ``emitEvent({ event: 'message.children.changed', payload: { msgId: payload.value.prevMessage, value: payload.msgId, switc… callback @ 1966``
 
 .. code-block:: javascript
 
-   emitEvent({ event: 'message.children.changed', payload: { msgId: payload.value.prevMessage, value: payload.msgId, switc… callback @ 1963()
+   emitEvent({ event: 'message.children.changed', payload: { msgId: payload.value.prevMessage, value: payload.msgId, switc… callback @ 1966()
 
 发送事件与 ``Event({ event: 'message.children.changed', payload: { msg Id: payload.value.prev Message, value: payload.msg Id, switc…`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``1963``—``1969`` 行；所属函数 ``emitEvent({ event: 'message.order.changed', payload: { value: newMessagesOrder, }, conversationId: conversationId, loca… callback @ 1952``。
+**性质**：同步局部函数；源码第 ``1966``—``1972`` 行；所属函数 ``emitEvent({ event: 'message.order.changed', payload: { value: newMessagesOrder, }, conversationId: conversationId, loca… callback @ 1955``。
 
 **参数**
 
@@ -3014,17 +3014,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``reply``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:93005:94721:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:93176:94892:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2013``
+.. rubric:: ``useEffect callback @ 2016``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2013()
+   useEffect callback @ 2016()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2013``—``2044`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2016``—``2047`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3040,17 +3040,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``Boolean``、``Promise.resolve``、``toolPermissionPendingCountsRef.current.clear``、``setPendingToolPermissionNames``、``setConversationToolSyncCount``、``Object.keys``、``setRuntimeToolPermissions``、``setConversationToolDefaults``、``setConversationToolsDialogOpen``、``setActiveExecution``、``setIsExecutionGuidancePending``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:94759:95132:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:94930:95303:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2046``
+.. rubric:: ``useEffect callback @ 2049``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2046()
+   useEffect callback @ 2049()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2046``—``2056`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2049``—``2059`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3064,17 +3064,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:94878:95123:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:95049:95294:FUNCTION
 
-.. rubric:: ``setToolsStatus callback @ 2048``
+.. rubric:: ``setToolsStatus callback @ 2051``
 
 .. code-block:: javascript
 
-   setToolsStatus callback @ 2048(prev)
+   setToolsStatus callback @ 2051(prev)
 
 设置与 ``Tools Status`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``2048``—``2055`` 行；所属函数 ``useEffect callback @ 2046``。
+**性质**：同步局部函数；源码第 ``2051``—``2058`` 行；所属函数 ``useEffect callback @ 2049``。
 
 **参数**
 
@@ -3087,17 +3087,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``applyToolPermissionsToStatus``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:95166:96800:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:95337:96971:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2059``
+.. rubric:: ``useEffect callback @ 2062``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2059()
+   useEffect callback @ 2062()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2059``—``2093`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2062``—``2096`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3115,17 +3115,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:95310:96799:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:95481:96970:FUNCTION
 
-.. rubric:: ``onEvent({ event: 'tool.permission.changed', conversationId, }).then callback @ 2063``
+.. rubric:: ``onEvent({ event: 'tool.permission.changed', conversationId, }).then callback @ 2066``
 
 .. code-block:: javascript
 
-   onEvent({ event: 'tool.permission.changed', conversationId, }).then callback @ 2063({ payload, eventRunId })
+   onEvent({ event: 'tool.permission.changed', conversationId, }).then callback @ 2066({ payload, eventRunId })
 
 处理 ``onEvent({ event: 'tool.permission.changed', conversationId, }).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``2063``—``2093`` 行；所属函数 ``useEffect callback @ 2059``。
+**性质**：同步局部函数；源码第 ``2066``—``2096`` 行；所属函数 ``useEffect callback @ 2062``。
 
 **参数**
 
@@ -3138,17 +3138,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``applyConversationToolPermissions``、``Number``、``setRuntimeToolPermissions``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:96902:97146:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:97073:97317:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2098``
+.. rubric:: ``useEffect callback @ 2101``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2098()
+   useEffect callback @ 2101()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2098``—``2103`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2101``—``2106`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3158,17 +3158,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:97290:97627:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:97461:97798:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2106``
+.. rubric:: ``useEffect callback @ 2109``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2106()
+   useEffect callback @ 2109()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2106``—``2114`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2109``—``2117`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3180,17 +3180,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``Boolean``、``setIsSmallScreen``、``getLocalSetting``、``setTipMessage``、``setTipMessageIsForNewLine``、``setShowTipMessage``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:97728:97826:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:97899:97997:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2117``
+.. rubric:: ``useEffect callback @ 2120``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2117()
+   useEffect callback @ 2120()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2117``—``2121`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2120``—``2124`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3202,17 +3202,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setIsMobileVoiceMode``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:97889:98079:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:98060:98250:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2124``
+.. rubric:: ``useEffect callback @ 2127``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2124()
+   useEffect callback @ 2127()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2124``—``2130`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2127``—``2133`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3224,17 +3224,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setIsMobileVoiceMode``、``setIsVoiceRecognizing``、``stopVoiceRecording``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:98133:98350:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:98304:98521:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2132``
+.. rubric:: ``useEffect callback @ 2135``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2132()
+   useEffect callback @ 2135()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2132``—``2138`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2135``—``2141`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3246,17 +3246,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:98156:98342:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:98327:98513:FUNCTION
 
-.. rubric:: ``returned callback @ 2133``
+.. rubric:: ``returned callback @ 2136``
 
 .. code-block:: javascript
 
-   returned callback @ 2133()
+   returned callback @ 2136()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2133``—``2137`` 行；所属函数 ``useEffect callback @ 2132``。
+**性质**：同步局部函数；源码第 ``2136``—``2140`` 行；所属函数 ``useEffect callback @ 2135``。
 
 **参数**
 
@@ -3268,17 +3268,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``voiceRecorderRef.current?.cancel``、``onVoiceRecordingCancelRef.current``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:98480:99199:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:98651:99370:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2142``
+.. rubric:: ``useEffect callback @ 2145``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2142()
+   useEffect callback @ 2145()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2142``—``2166`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2145``—``2169`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3296,17 +3296,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:98874:99019:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:99045:99190:FUNCTION
 
-.. rubric:: ``apiClient .get(apiEndpoint.CHATBOX_ENDPOINT, { params: conversationId ? { conversationId } : undefined, }) .then callback @ 2154``
+.. rubric:: ``apiClient .get(apiEndpoint.CHATBOX_ENDPOINT, { params: conversationId ? { conversationId } : undefined, }) .then callback @ 2157``
 
 .. code-block:: javascript
 
-   apiClient .get(apiEndpoint.CHATBOX_ENDPOINT, { params: conversationId ? { conversationId } : undefined, }) .then callback @ 2154(data)
+   apiClient .get(apiEndpoint.CHATBOX_ENDPOINT, { params: conversationId ? { conversationId } : undefined, }) .then callback @ 2157(data)
 
 处理 ``apiClient .get(apiEndpoint.CHATBOX_ENDPOINT, { params: conversationId ? { conversationId } : undefined, }) .then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``2154``—``2158`` 行；所属函数 ``useEffect callback @ 2142``。
+**性质**：同步局部函数；源码第 ``2157``—``2161`` 行；所属函数 ``useEffect callback @ 2145``。
 
 **参数**
 
@@ -3319,17 +3319,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``chatboxSetup``、``setToolsLoadedStatus``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:99041:99121:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:99212:99292:FUNCTION
 
-.. rubric:: ``apiClient .get(apiEndpoint.CHATBOX_ENDPOINT, { params: conversationId ? { conversationId } : undefined, }) .then((data)… callback @ 2159``
+.. rubric:: ``apiClient .get(apiEndpoint.CHATBOX_ENDPOINT, { params: conversationId ? { conversationId } : undefined, }) .then((data)… callback @ 2162``
 
 .. code-block:: javascript
 
-   apiClient .get(apiEndpoint.CHATBOX_ENDPOINT, { params: conversationId ? { conversationId } : undefined, }) .then((data)… callback @ 2159()
+   apiClient .get(apiEndpoint.CHATBOX_ENDPOINT, { params: conversationId ? { conversationId } : undefined, }) .then((data)… callback @ 2162()
 
 实现 ``apiClient .get(apiEndpoint.CHATBOX_ENDPOINT, { params: conversationId ? { conversationId } : undefined, }) .then((data)…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2159``—``2161`` 行；所属函数 ``useEffect callback @ 2142``。
+**性质**：同步局部函数；源码第 ``2162``—``2164`` 行；所属函数 ``useEffect callback @ 2145``。
 
 **参数**
 
@@ -3341,17 +3341,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setToolsLoadedStatus``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:99141:99191:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:99312:99362:FUNCTION
 
-.. rubric:: ``returned callback @ 2163``
+.. rubric:: ``returned callback @ 2166``
 
 .. code-block:: javascript
 
-   returned callback @ 2163()
+   returned callback @ 2166()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2163``—``2165`` 行；所属函数 ``useEffect callback @ 2142``。
+**性质**：同步局部函数；源码第 ``2166``—``2168`` 行；所属函数 ``useEffect callback @ 2145``。
 
 **参数**
 
@@ -3361,17 +3361,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:99266:99552:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:99437:99723:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2169``
+.. rubric:: ``useEffect callback @ 2172``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2169()
+   useEffect callback @ 2172()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2169``—``2176`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2172``—``2179`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3389,17 +3389,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:99524:99544:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:99695:99715:FUNCTION
 
-.. rubric:: ``returned callback @ 2175``
+.. rubric:: ``returned callback @ 2178``
 
 .. code-block:: javascript
 
-   returned callback @ 2175()
+   returned callback @ 2178()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2175``—``2175`` 行；所属函数 ``useEffect callback @ 2169``。
+**性质**：同步局部函数；源码第 ``2178``—``2178`` 行；所属函数 ``useEffect callback @ 2172``。
 
 **参数**
 
@@ -3415,17 +3415,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:99738:101203:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:99909:101374:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2180``
+.. rubric:: ``useEffect callback @ 2183``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2180()
+   useEffect callback @ 2183()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2180``—``2211`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2183``—``2214`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3437,17 +3437,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``Boolean``、``persistActiveDraft``、``moveComposerConversationDrafts``、``setIsEditMessage``、``setIsForkMode``、``setEditMessageId``、``restoreNormalDraft``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:101504:101841:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:101675:102012:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2216``
+.. rubric:: ``useEffect callback @ 2219``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2216()
+   useEffect callback @ 2219()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2216``—``2224`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2219``—``2227`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3459,17 +3459,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``persistActiveDraft``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:101900:101949:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:102071:102120:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2226``
+.. rubric:: ``useEffect callback @ 2229``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2226()
+   useEffect callback @ 2229()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2226``—``2228`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2229``—``2231`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3479,17 +3479,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:101978:102167:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:102149:102338:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2230``
+.. rubric:: ``useEffect callback @ 2233``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2230()
+   useEffect callback @ 2233()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2230``—``2234`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2233``—``2237`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3501,17 +3501,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``persistActiveDraft``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:102325:103145:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:102496:103316:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 2238``
+.. rubric:: ``useLayoutEffect callback @ 2241``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 2238()
+   useLayoutEffect callback @ 2241()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``2238``—``2260`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2241``—``2263`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3530,7 +3530,7 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:102483:102697:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:102654:102868:FUNCTION
 
 .. rubric:: ``updateHeight``
 
@@ -3540,7 +3540,7 @@ src/features/chat/ui/ChatBox 模块
 
 更新与 ``Height`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``2243``—``2248`` 行；所属函数 ``useLayoutEffect callback @ 2238``。
+**性质**：同步局部函数；源码第 ``2246``—``2251`` 行；所属函数 ``useLayoutEffect callback @ 2241``。
 
 **参数**
 
@@ -3558,17 +3558,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:102595:102684:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:102766:102855:FUNCTION
 
-.. rubric:: ``window.requestAnimationFrame callback @ 2245``
+.. rubric:: ``window.requestAnimationFrame callback @ 2248``
 
 .. code-block:: javascript
 
-   window.requestAnimationFrame callback @ 2245()
+   window.requestAnimationFrame callback @ 2248()
 
 实现 ``window.requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2245``—``2247`` 行；所属函数 ``updateHeight``。
+**性质**：同步局部函数；源码第 ``2248``—``2250`` 行；所属函数 ``updateHeight``。
 
 **参数**
 
@@ -3580,17 +3580,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setAttachmentHeight``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:102959:103137:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103130:103308:FUNCTION
 
-.. rubric:: ``returned callback @ 2255``
+.. rubric:: ``returned callback @ 2258``
 
 .. code-block:: javascript
 
-   returned callback @ 2255()
+   returned callback @ 2258()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2255``—``2259`` 行；所属函数 ``useLayoutEffect callback @ 2238``。
+**性质**：同步局部函数；源码第 ``2258``—``2262`` 行；所属函数 ``useLayoutEffect callback @ 2241``。
 
 **参数**
 
@@ -3606,17 +3606,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``、``window.removeEventListener``、``resizeObserver?.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103208:103583:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103379:103754:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 2263``
+.. rubric:: ``useLayoutEffect callback @ 2266``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 2263()
+   useLayoutEffect callback @ 2266()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``2263``—``2275`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2266``—``2278`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3630,17 +3630,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103326:103420:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103497:103591:FUNCTION
 
-.. rubric:: ``anonymous callback @ 2267``
+.. rubric:: ``anonymous callback @ 2270``
 
 .. code-block:: javascript
 
-   anonymous callback @ 2267(entries)
+   anonymous callback @ 2270(entries)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2267``—``2269`` 行；所属函数 ``useLayoutEffect callback @ 2263``。
+**性质**：同步局部函数；源码第 ``2270``—``2272`` 行；所属函数 ``useLayoutEffect callback @ 2266``。
 
 **参数**
 
@@ -3653,17 +3653,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setContainerWidth``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103547:103575:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103718:103746:FUNCTION
 
-.. rubric:: ``returned callback @ 2274``
+.. rubric:: ``returned callback @ 2277``
 
 .. code-block:: javascript
 
-   returned callback @ 2274()
+   returned callback @ 2277()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2274``—``2274`` 行；所属函数 ``useLayoutEffect callback @ 2263``。
+**性质**：同步局部函数；源码第 ``2277``—``2277`` 行；所属函数 ``useLayoutEffect callback @ 2266``。
 
 **参数**
 
@@ -3675,17 +3675,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``observer.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103629:104076:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103800:104247:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 2278``
+.. rubric:: ``useLayoutEffect callback @ 2281``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 2278()
+   useLayoutEffect callback @ 2281()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``2278``—``2290`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2281``—``2293`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3704,7 +3704,7 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103665:103816:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103836:103987:FUNCTION
 
 .. rubric:: ``updateWidth``
 
@@ -3714,7 +3714,7 @@ src/features/chat/ui/ChatBox 模块
 
 更新与 ``Width`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``2279``—``2283`` 行；所属函数 ``useLayoutEffect callback @ 2278``。
+**性质**：同步局部函数；源码第 ``2282``—``2286`` 行；所属函数 ``useLayoutEffect callback @ 2281``。
 
 **参数**
 
@@ -3724,17 +3724,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:103947:104068:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:104118:104239:FUNCTION
 
-.. rubric:: ``returned callback @ 2286``
+.. rubric:: ``returned callback @ 2289``
 
 .. code-block:: javascript
 
-   returned callback @ 2286()
+   returned callback @ 2289()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2286``—``2289`` 行；所属函数 ``useLayoutEffect callback @ 2278``。
+**性质**：同步局部函数；源码第 ``2289``—``2292`` 行；所属函数 ``useLayoutEffect callback @ 2281``。
 
 **参数**
 
@@ -3750,17 +3750,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``clearTimeout``、``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:104128:104719:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:104299:104890:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2293``
+.. rubric:: ``useEffect callback @ 2296``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2293()
+   useEffect callback @ 2296()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2293``—``2311`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2296``—``2314`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3774,17 +3774,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:104187:104436:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:104358:104607:FUNCTION
 
-.. rubric:: ``anonymous callback @ 2294``
+.. rubric:: ``anonymous callback @ 2297``
 
 .. code-block:: javascript
 
-   anonymous callback @ 2294(entries)
+   anonymous callback @ 2297(entries)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2294``—``2301`` 行；所属函数 ``useEffect callback @ 2293``。
+**性质**：同步局部函数；源码第 ``2297``—``2304`` 行；所属函数 ``useEffect callback @ 2296``。
 
 **参数**
 
@@ -3797,17 +3797,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``onHeightChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:104589:104711:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:104760:104882:FUNCTION
 
-.. rubric:: ``returned callback @ 2306``
+.. rubric:: ``returned callback @ 2309``
 
 .. code-block:: javascript
 
-   returned callback @ 2306()
+   returned callback @ 2309()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2306``—``2310`` 行；所属函数 ``useEffect callback @ 2293``。
+**性质**：同步局部函数；源码第 ``2309``—``2313`` 行；所属函数 ``useEffect callback @ 2296``。
 
 **参数**
 
@@ -3819,17 +3819,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``resizeObserver.unobserve``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:104757:104978:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:104928:105149:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2313``
+.. rubric:: ``useEffect callback @ 2316``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2313()
+   useEffect callback @ 2316()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2313``—``2320`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2316``—``2323`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3841,17 +3841,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``rootRef.current?.getBoundingClientRect``、``onHeightChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:105185:105398:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:105356:105569:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2324``
+.. rubric:: ``useEffect callback @ 2327``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2324()
+   useEffect callback @ 2327()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2324``—``2330`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2327``—``2333`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3863,17 +3863,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``collectToolPermissions``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:105495:105911:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:105666:106082:FUNCTION
 
-.. rubric:: ``useEffect callback @ 2333``
+.. rubric:: ``useEffect callback @ 2336``
 
 .. code-block:: javascript
 
-   useEffect callback @ 2333()
+   useEffect callback @ 2336()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2333``—``2343`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2336``—``2346`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3889,17 +3889,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``extractLocalOnlyExtraToolStatus``、``localStorage.setItem``、``JSON.stringify``、``console.error``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:106072:106458:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:106243:106629:FUNCTION
 
-.. rubric:: ``useMemo callback @ 2348``
+.. rubric:: ``useMemo callback @ 2351``
 
 .. code-block:: javascript
 
-   useMemo callback @ 2348()
+   useMemo callback @ 2351()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2348``—``2360`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2351``—``2363`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3909,17 +3909,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:106790:107363:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:106961:107534:FUNCTION
 
-.. rubric:: ``useMemo callback @ 2375``
+.. rubric:: ``useMemo callback @ 2378``
 
 .. code-block:: javascript
 
-   useMemo callback @ 2375()
+   useMemo callback @ 2378()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2375``—``2389`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2378``—``2392`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3929,17 +3929,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:107729:108740:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:107900:108911:FUNCTION
 
-.. rubric:: ``useMemo callback @ 2404``
+.. rubric:: ``useMemo callback @ 2407``
 
 .. code-block:: javascript
 
-   useMemo callback @ 2404()
+   useMemo callback @ 2407()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``2404``—``2426`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2407``—``2429`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -3957,17 +3957,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:107882:107923:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:108053:108094:FUNCTION
 
-.. rubric:: ``visibleBuiltinTools.filter callback @ 2408``
+.. rubric:: ``visibleBuiltinTools.filter callback @ 2411``
 
 .. code-block:: javascript
 
-   visibleBuiltinTools.filter callback @ 2408(tool)
+   visibleBuiltinTools.filter callback @ 2411(tool)
 
 作为 ``visibleBuiltinTools.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``2408``—``2408`` 行；所属函数 ``useMemo callback @ 2404``。
+**性质**：同步局部函数；源码第 ``2411``—``2411`` 行；所属函数 ``useMemo callback @ 2407``。
 
 **参数**
 
@@ -3978,7 +3978,7 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:108434:108477:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:108605:108648:FUNCTION
 
 .. rubric:: ``onManageConversationTools``
 
@@ -3988,7 +3988,7 @@ src/features/chat/ui/ChatBox 模块
 
 处理 ``Manage Conversation Tools`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2421``—``2421`` 行；所属函数 ``useMemo callback @ 2404``。
+**性质**：同步局部函数；源码第 ``2424``—``2424`` 行；所属函数 ``useMemo callback @ 2407``。
 
 **参数**
 
@@ -4004,7 +4004,7 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setConversationToolsDialogOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:108632:108675:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:108803:108846:FUNCTION
 
 .. rubric:: ``onManageWorkspace``
 
@@ -4014,7 +4014,7 @@ src/features/chat/ui/ChatBox 模块
 
 处理 ``Manage Workspace`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2424``—``2424`` 行；所属函数 ``useMemo callback @ 2404``。
+**性质**：同步局部函数；源码第 ``2427``—``2427`` 行；所属函数 ``useMemo callback @ 2407``。
 
 **参数**
 
@@ -4026,17 +4026,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``setWorkspaceSettingsDialogOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:110428:110685:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:110599:110856:FUNCTION
 
-.. rubric:: ``onDropFiles callback @ 2473``
+.. rubric:: ``onDropFiles callback @ 2476``
 
 .. code-block:: javascript
 
-   onDropFiles callback @ 2473(files, items)
+   onDropFiles callback @ 2476(files, items)
 
 处理 ``Drop Files`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2473``—``2479`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2476``—``2482`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -4052,17 +4052,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``toast.error``、``t``、``onDropFiles``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:115138:115186:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:115309:115357:FUNCTION
 
-.. rubric:: ``onPointerUp callback @ 2557``
+.. rubric:: ``onPointerUp callback @ 2560``
 
 .. code-block:: javascript
 
-   onPointerUp callback @ 2557(event)
+   onPointerUp callback @ 2560(event)
 
 处理 ``Pointer Up`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2557``—``2557`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2560``—``2560`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -4075,17 +4075,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``finishMobileVoicePointer``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:115238:115287:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:115409:115458:FUNCTION
 
-.. rubric:: ``onPointerCancel callback @ 2558``
+.. rubric:: ``onPointerCancel callback @ 2561``
 
 .. code-block:: javascript
 
-   onPointerCancel callback @ 2558(event)
+   onPointerCancel callback @ 2561(event)
 
 处理 ``Pointer Cancel`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2558``—``2558`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2561``—``2561`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -4098,17 +4098,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``finishMobileVoicePointer``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:115337:115370:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:115508:115541:FUNCTION
 
-.. rubric:: ``onContextMenu callback @ 2559``
+.. rubric:: ``onContextMenu callback @ 2562``
 
 .. code-block:: javascript
 
-   onContextMenu callback @ 2559(event)
+   onContextMenu callback @ 2562(event)
 
 处理 ``Context Menu`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2559``—``2559`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2562``—``2562`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -4121,17 +4121,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:116217:116258:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:116388:116429:FUNCTION
 
-.. rubric:: ``visibleBuiltinTools .filter callback @ 2574``
+.. rubric:: ``visibleBuiltinTools .filter callback @ 2577``
 
 .. code-block:: javascript
 
-   visibleBuiltinTools .filter callback @ 2574(tool)
+   visibleBuiltinTools .filter callback @ 2577(tool)
 
 作为 ``visibleBuiltinTools .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``2574``—``2574`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2577``—``2577`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -4142,17 +4142,17 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:116298:116934:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:116469:117105:FUNCTION
 
-.. rubric:: ``visibleBuiltinTools .filter((tool) => tool.name === 'enable_thinking') .map callback @ 2575``
+.. rubric:: ``visibleBuiltinTools .filter((tool) => tool.name === 'enable_thinking') .map callback @ 2578``
 
 .. code-block:: javascript
 
-   visibleBuiltinTools .filter((tool) => tool.name === 'enable_thinking') .map callback @ 2575(tool)
+   visibleBuiltinTools .filter((tool) => tool.name === 'enable_thinking') .map callback @ 2578(tool)
 
 作为 ``visibleBuiltinTools .filter((tool) => tool.name === 'enable_thinking') .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``2575``—``2584`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2578``—``2587`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -4165,17 +4165,17 @@ src/features/chat/ui/ChatBox 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:116633:116693:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:116804:116864:FUNCTION
 
-.. rubric:: ``onToggle callback @ 2580``
+.. rubric:: ``onToggle callback @ 2583``
 
 .. code-block:: javascript
 
-   onToggle callback @ 2580(_event, value)
+   onToggle callback @ 2583(_event, value)
 
 处理 ``Toggle`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2580``—``2580`` 行；所属函数 ``visibleBuiltinTools .filter((tool) => tool.name === 'enable_thinking') .map callback @ 2575``。
+**性质**：同步局部函数；源码第 ``2583``—``2583`` 行；所属函数 ``visibleBuiltinTools .filter((tool) => tool.name === 'enable_thinking') .map callback @ 2578``。
 
 **参数**
 
@@ -4191,17 +4191,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``handleBuiltinToolToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122407:122445:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122578:122616:FUNCTION
 
-.. rubric:: ``onConfirm callback @ 2678``
+.. rubric:: ``onConfirm callback @ 2681``
 
 .. code-block:: javascript
 
-   onConfirm callback @ 2678()
+   onConfirm callback @ 2681()
 
 处理 ``Confirm`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2678``—``2678`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2681``—``2681`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -4213,17 +4213,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``closeVoicePermissionDialog``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122474:122513:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122645:122684:FUNCTION
 
-.. rubric:: ``onCancel callback @ 2679``
+.. rubric:: ``onCancel callback @ 2682``
 
 .. code-block:: javascript
 
-   onCancel callback @ 2679()
+   onCancel callback @ 2682()
 
 处理 ``Cancel`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``2679``—``2679`` 行；所属函数 ``ChatBox``。
+**性质**：同步局部函数；源码第 ``2682``—``2682`` 行；所属函数 ``ChatBox``。
 
 **参数**
 
@@ -4235,17 +4235,17 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``closeVoicePermissionDialog``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122621:125388:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122792:125559:FUNCTION
 
-.. rubric:: ``memo callback @ 2686``
+.. rubric:: ``memo callback @ 2689``
 
 .. code-block:: javascript
 
-   memo callback @ 2686(prevProps, nextProps)
+   memo callback @ 2689(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``2686``—``2739`` 行。
+**性质**：同步局部函数；源码第 ``2689``—``2742`` 行。
 
 **参数**
 
