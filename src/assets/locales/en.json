@@ -849,5 +849,7 @@
     "tool_review_show_output": "Show tool output",
     "tool_review_model": "Review model",
     "thinking_disabled": "Thinking off",
-    "thinking_enabled": "Thinking on"
+    "thinking_enabled": "Thinking on",
+    "widget_task_result_pending": "Submitted; waiting for the current task to continue",
+    "widget_task_result_delivered": "Added to the current task context"
 }

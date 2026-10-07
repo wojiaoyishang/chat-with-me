@@ -840,5 +840,7 @@
     "tool_review_show_output": "查看工具输出",
     "tool_review_model": "审核模型",
     "thinking_disabled": "关闭思考",
-    "thinking_enabled": "开启思考"
+    "thinking_enabled": "开启思考",
+    "widget_task_result_pending": "已提交，等待当前任务继续处理",
+    "widget_task_result_delivered": "已纳入当前任务上下文"
 }

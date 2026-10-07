@@ -9,6 +9,7 @@ import {
     X,
 } from 'lucide-react';
 import {toast} from 'sonner';
+import {useTranslation} from 'react-i18next';
 
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
@@ -125,6 +126,7 @@ const DeckFrame = ({title, description, children, footer, className = ''}) => (
 );
 
 const CompletedWidget = ({widget}) => {
+    const {t} = useTranslation();
     const type = widget?.widgetType;
     const result = widget?.result || {};
     let summary = '已完成交互';
@@ -143,7 +145,9 @@ const CompletedWidget = ({widget}) => {
         summary = result?.confirmed ? '已确认' : '已取消';
     }
     const deliveryStatus = String(widget?.deliveryStatus || '');
-    const deliveryHint = deliveryStatus === 'pending'
+    const deliveryHint = widget?.continuation === 'execution'
+        ? (deliveryStatus === 'pending' ? t('widget_task_result_pending') : deliveryStatus === 'delivered' ? t('widget_task_result_delivered') : '')
+        : deliveryStatus === 'pending'
         ? '已提交，等待当前回复结束后发送'
         : (deliveryStatus === 'delivered' ? '已作为用户消息发送' : '');
     return (
