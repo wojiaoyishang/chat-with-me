@@ -623,6 +623,11 @@
      - 0
      - 27
      - ``src/features/execution/ExecutionWindow.jsx``
+   * - :doc:`src/features/execution/SubAgentPanel </api/javascript/features/execution/SubAgentPanel>`
+     - 1
+     - 0
+     - 15
+     - ``src/features/execution/SubAgentPanel.jsx``
    * - :doc:`src/features/execution/WidgetResponseDetails </api/javascript/features/execution/WidgetResponseDetails>`
      - 1
      - 0
@@ -900,6 +905,7 @@
    /api/javascript/features/execution/ExecutionStatus
    /api/javascript/features/execution/ExecutionThinkingControl
    /api/javascript/features/execution/ExecutionWindow
+   /api/javascript/features/execution/SubAgentPanel
    /api/javascript/features/execution/WidgetResponseDetails
    /api/javascript/features/execution/index
    /api/javascript/features/execution/useExecutionStore
