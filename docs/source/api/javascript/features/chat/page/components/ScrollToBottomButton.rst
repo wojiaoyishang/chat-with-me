@@ -29,7 +29,7 @@ src/features/chat/page/components/ScrollToBottomButton 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ScrollToBottomButton.jsx:155:1104:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ScrollToBottomButton.jsx:155:1250:FUNCTION
 
 .. rubric:: ``memo callback @ 5``
 
@@ -39,7 +39,7 @@ src/features/chat/page/components/ScrollToBottomButton 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``5``—``24`` 行。
+**性质**：同步局部函数；源码第 ``5``—``27`` 行。
 
 **参数**
 
