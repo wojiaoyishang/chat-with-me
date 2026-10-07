@@ -29,7 +29,7 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:305:9051:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:305:9066:FUNCTION
 
 .. rubric:: ``memo callback @ 8``
 
@@ -54,7 +54,7 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:3573:5594:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:3588:5609:FUNCTION
 
 .. rubric:: ``steps.map callback @ 66``
 
@@ -75,7 +75,7 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <div key={step} className={\x60 relative flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold shadow-sm transition-all duration-300 ov…``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:6657:8662:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:6672:8677:FUNCTION
 
 .. rubric:: ``compactSteps.map callback @ 114``
 
@@ -96,7 +96,7 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <div key={step} className={\x60 relative flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold shadow-sm transition-all duration-300 overflow-visible $…``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:9052:9399:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:9067:9414:FUNCTION
 
 .. rubric:: ``memo callback @ 157``
 

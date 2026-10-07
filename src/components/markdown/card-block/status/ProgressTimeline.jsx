@@ -47,7 +47,7 @@ const ProgressTimeline = memo(
                         {current}/{total}
                     </span>
 
-                    <div className="relative flex items-center min-w-0 flex-1 py-1.5 overflow-x-auto">
+                    <div className="relative flex items-center min-w-0 flex-1 py-1.5 overflow-x-auto hide-scrollbar">
                         <div className="absolute left-2 right-2 top-1/2 h-3.5 -translate-y-1/2 rounded-full bg-zinc-200/90 overflow-hidden shadow-inner">
                             <AnimatedProgressFill
                                 className={`h-full rounded-full bg-gradient-to-r ${tone.fill} shadow-lg ${tone.glow} transition-[width] duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] origin-left`}
