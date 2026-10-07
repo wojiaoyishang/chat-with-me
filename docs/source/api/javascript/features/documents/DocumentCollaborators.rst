@@ -22,18 +22,18 @@ src/features/documents/DocumentCollaborators 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``react-i18next``、``@/components/ui/button``、``@/components/ui/avatar``、``@/components/ui/popover``。
+``@/lib/clientText.js``、``react``、``react-i18next``、``@/components/ui/button``、``@/components/ui/avatar``、``@/components/ui/popover``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentCollaborators.jsx:291:706:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentCollaborators.jsx:351:766:FUNCTION
 
 .. js:function:: PersonAvatar({ person })
 
    渲染 ``PersonAvatar`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``7``—``16`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``8``—``17`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/features/documents/DocumentCollaborators 模块
 
    **主要协作调用**：``(person.name || '?').slice``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentCollaborators.jsx:706:5541:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentCollaborators.jsx:766:5487:FUNCTION
 
 .. js:function:: DocumentCollaborators({ participants, onLocate })
 
    渲染 ``DocumentCollaborators`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``18``—``101`` 行。
+   **性质**：同步函数；导出 API；源码第 ``19``—``100`` 行。
 
    **参数**
 
@@ -72,17 +72,17 @@ src/features/documents/DocumentCollaborators 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentCollaborators.jsx:1344:1471:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentCollaborators.jsx:1404:1531:FUNCTION
 
-.. rubric:: ``participants.slice(0, 3).map callback @ 31``
+.. rubric:: ``participants.slice(0, 3).map callback @ 32``
 
 .. code-block:: javascript
 
-   participants.slice(0, 3).map callback @ 31(person)
+   participants.slice(0, 3).map callback @ 32(person)
 
 作为 ``participants.slice(0, 3).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``31``—``33`` 行；所属函数 ``DocumentCollaborators``。
+**性质**：同步局部函数；源码第 ``32``—``34`` 行；所属函数 ``DocumentCollaborators``。
 
 **参数**
 
@@ -93,17 +93,17 @@ src/features/documents/DocumentCollaborators 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentCollaborators.jsx:2107:5227:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentCollaborators.jsx:2167:5173:FUNCTION
 
-.. rubric:: ``participants.map callback @ 44``
+.. rubric:: ``participants.map callback @ 45``
 
 .. code-block:: javascript
 
-   participants.map callback @ 44(person)
+   participants.map callback @ 45(person)
 
 作为 ``participants.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``44``—``91`` 行；所属函数 ``DocumentCollaborators``。
+**性质**：同步局部函数；源码第 ``45``—``90`` 行；所属函数 ``DocumentCollaborators``。
 
 **参数**
 
@@ -114,21 +114,21 @@ src/features/documents/DocumentCollaborators 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``t``、``new Date(person.joinedAt).toLocaleString``。
+**主要协作调用**：``t``、``formatLocalTimestamp``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentCollaborators.jsx:2552:2669:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentCollaborators.jsx:2612:2729:FUNCTION
 
-.. rubric:: ``onClick callback @ 50``
+.. rubric:: ``onClick callback @ 51``
 
 .. code-block:: javascript
 
-   onClick callback @ 50()
+   onClick callback @ 51()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``50``—``52`` 行；所属函数 ``participants.map callback @ 44``。
+**性质**：同步局部函数；源码第 ``51``—``53`` 行；所属函数 ``participants.map callback @ 45``。
 
 **参数**
 

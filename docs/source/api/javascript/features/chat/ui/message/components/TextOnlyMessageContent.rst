@@ -29,32 +29,32 @@ src/features/chat/ui/message/components/TextOnlyMessageContent 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:421:3711:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:427:3737:FUNCTION
 
 .. rubric:: ``memo callback @ 8``
 
 .. code-block:: javascript
 
-   memo callback @ 8({msg, msgId, conversationId, isLeaving, speechState, onSpeechTextClick, avatarClickProps = {}})
+   memo callback @ 8({ msg, msgId, conversationId, isLeaving, speechState, onSpeechTextClick })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``8``—``68`` 行。
+**性质**：同步局部函数；源码第 ``8``—``76`` 行。
 
 **参数**
 
-``{msg, msgId, conversationId, isLeaving, speechState, onSpeechTextClick, avatarClickProps = {}}``
-   调用方传入的 ``msg, msgId, conversationId, isLeaving, speechState, onSpeechTextClick, avatarClickProps =`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ msg, msgId, conversationId, isLeaving, speechState, onSpeechTextClick }``
+   调用方传入的 ``msg, msgId, conversationId, isLeaving, speechState, onSpeechTextClick`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <> <KnowledgeGraphViewer key={msgId} msg={msg} className="w-[80%] mr-13" align="right"/> <div className="flex justify-end items-center gap-3 max-w-[80%] ml-auto"> <div ref={cont…``、``( <div className="w-full pl-2 pr-2 lg:pl-10 lg:pr-10"> <div className="text-gray-800 break-words max-w-none"> <KnowledgeGraphViewer key={msgId} msg={msg}/> <div ref={contentRef} d…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <> <KnowledgeGraphViewer key={msgId} msg={msg} className="w-[80%] mr-13" align="right" /> <div className="flex justify-end items-center gap-3 max-w-[80%] ml-auto"> <div ref={con…``、``( <div className="w-full pl-2 pr-2 lg:pl-10 lg:pr-10"> <div className="text-gray-800 break-words max-w-none"> <KnowledgeGraphViewer key={msgId} msg={msg} /> <div ref={contentRef}…``。
 
 **主要协作调用**：``useRef``、``['loading', 'playing', 'paused'].includes``、``resolveResourceUrl``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:1389:1432:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:1283:1326:FUNCTION
 
 .. rubric:: ``anonymous callback @ 24``
 
@@ -77,17 +77,17 @@ src/features/chat/ui/message/components/TextOnlyMessageContent 模块
 
 **主要协作调用**：``onSpeechTextClick``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:2949:2992:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:2858:2901:FUNCTION
 
-.. rubric:: ``anonymous callback @ 51``
+.. rubric:: ``anonymous callback @ 54``
 
 .. code-block:: javascript
 
-   anonymous callback @ 51(event)
+   anonymous callback @ 54(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``51``—``51`` 行；所属函数 ``memo callback @ 8``。
+**性质**：同步局部函数；源码第 ``54``—``54`` 行；所属函数 ``memo callback @ 8``。
 
 **参数**
 

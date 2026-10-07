@@ -1,3 +1,4 @@
+import { formatLocalTimestamp } from '@/lib/clientText.js';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -76,9 +77,7 @@ export default function DocumentCollaborators({ participants, onLocate }) {
                                     </div>
                                     <div className="text-xs text-muted-foreground">
                                         {t('documentCollaborators.joined', {
-                                            time: person.joinedAt
-                                                ? new Date(person.joinedAt).toLocaleString(i18n.language)
-                                                : '—',
+                                            time: person.joinedAt ? formatLocalTimestamp(person.joinedAt) : '—',
                                         })}
                                     </div>
                                     {person.kind !== 'ai' && (

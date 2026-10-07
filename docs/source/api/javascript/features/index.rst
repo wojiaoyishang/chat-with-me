@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 269
+     - 270
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -406,18 +406,13 @@
    * - :doc:`src/features/chat/ui/message/components/LeftAvatarName </api/javascript/features/chat/ui/message/components/LeftAvatarName>`
      - 0
      - 0
-     - 1
+     - 3
      - ``src/features/chat/ui/message/components/LeftAvatarName.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessageActions </api/javascript/features/chat/ui/message/components/MessageActions>`
      - 0
      - 0
      - 3
      - ``src/features/chat/ui/message/components/MessageActions.jsx``
-   * - :doc:`src/features/chat/ui/message/components/MessageAvatarMenu </api/javascript/features/chat/ui/message/components/MessageAvatarMenu>`
-     - 1
-     - 0
-     - 8
-     - ``src/features/chat/ui/message/components/MessageAvatarMenu.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessageContextBadges </api/javascript/features/chat/ui/message/components/MessageContextBadges>`
      - 0
      - 0
@@ -426,7 +421,7 @@
    * - :doc:`src/features/chat/ui/message/components/MessageItem </api/javascript/features/chat/ui/message/components/MessageItem>`
      - 0
      - 0
-     - 25
+     - 22
      - ``src/features/chat/ui/message/components/MessageItem.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessagePaginator </api/javascript/features/chat/ui/message/components/MessagePaginator>`
      - 0
@@ -863,7 +858,6 @@
    /api/javascript/features/chat/ui/message/components/KnowledgeGraphViewer
    /api/javascript/features/chat/ui/message/components/LeftAvatarName
    /api/javascript/features/chat/ui/message/components/MessageActions
-   /api/javascript/features/chat/ui/message/components/MessageAvatarMenu
    /api/javascript/features/chat/ui/message/components/MessageContextBadges
    /api/javascript/features/chat/ui/message/components/MessageItem
    /api/javascript/features/chat/ui/message/components/MessagePaginator

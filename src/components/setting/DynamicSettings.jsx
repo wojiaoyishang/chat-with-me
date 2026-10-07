@@ -1,3 +1,4 @@
+import { formatLocalTimestamp } from '@/lib/clientText.js';
 import OrderedOptionsEditor from './OrderedOptionsEditor.jsx';
 import React, { useState, useCallback, useEffect, useRef, useMemo, createContext, useContext, memo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -2568,7 +2569,7 @@ function WorkspaceManagementItem() {
                                 {tokenInfo.token}
                             </code>
                             <div className="text-[11px] text-muted-foreground">
-                                有效至：{tokenInfo.expiresAt ? new Date(tokenInfo.expiresAt).toLocaleString() : '—'} ·
+                                有效至：{tokenInfo.expiresAt ? formatLocalTimestamp(tokenInfo.expiresAt) : '—'} ·
                                 注册成功后即焚
                             </div>
                             <div className="flex items-start gap-2">

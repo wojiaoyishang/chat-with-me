@@ -1,3 +1,4 @@
+import { formatLocalTimestamp } from '@/lib/clientText.js';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClipboardList, Download, RefreshCw, X } from 'lucide-react';
@@ -136,7 +137,7 @@ export default function TaskCenter() {
                                     </div>
                                 ))}
                             <time className="block text-xs text-muted-foreground">
-                                {new Date(task.createdAt).toLocaleString()}
+                                {formatLocalTimestamp(task.createdAt)}
                             </time>
                             {task.submission && (
                                 <details className="text-xs text-muted-foreground">
@@ -158,8 +159,7 @@ export default function TaskCenter() {
                                 <ol className="mt-2 space-y-1">
                                     {(task.history || []).map((entry, index) => (
                                         <li key={index}>
-                                            {new Date(entry.time).toLocaleTimeString()} ·{' '}
-                                            {t(`taskCenter.${entry.stage}`)}
+                                            {formatLocalTimestamp(entry.time)} · {t(`taskCenter.${entry.stage}`)}
                                         </li>
                                     ))}
                                 </ol>

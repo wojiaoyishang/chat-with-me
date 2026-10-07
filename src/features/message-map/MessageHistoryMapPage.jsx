@@ -1,5 +1,6 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useNavigate, useParams, useSearchParams} from 'react-router-dom';
+import { formatLocalTimestamp } from '@/lib/clientText.js';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
     ArrowLeft,
     Bot,
@@ -16,11 +17,11 @@ import {
     ZoomIn,
     ZoomOut,
 } from 'lucide-react';
-import {toast} from 'sonner';
+import { toast } from 'sonner';
 import apiClient from '@/lib/apiClient.js';
-import {apiEndpoint} from '@/config.js';
-import {Button} from '@/components/ui/button';
-import {Badge} from '@/components/ui/badge';
+import { apiEndpoint } from '@/config.js';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import MessageMapSearch from './MessageMapSearch.jsx';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 
@@ -34,17 +35,12 @@ const FIT_PADDING = 72;
 const NODE_HOLD_DELAY_MS = 400;
 
 const roleMeta = {
-    user: {label: 'User', Icon: CircleUserRound},
-    assistant: {label: 'AI', Icon: Bot},
-    system: {label: 'System', Icon: MapIcon},
+    user: { label: 'User', Icon: CircleUserRound },
+    assistant: { label: 'AI', Icon: Bot },
+    system: { label: 'System', Icon: MapIcon },
 };
 
-const formatTime = (value) => {
-    if (!value) return '';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '';
-    return date.toLocaleString();
-};
+const formatTime = (value) => formatLocalTimestamp(value, { fallback: '—' });
 
 const rememberDetail = (cache, messageId, detail) => {
     if (cache.has(messageId)) cache.delete(messageId);
@@ -57,10 +53,8 @@ const rememberDetail = (cache, messageId, detail) => {
 
 const clampZoom = (value) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number(value) || 1));
 
-const getPointerDistance = (first, second) => Math.hypot(
-    Number(second?.x || 0) - Number(first?.x || 0),
-    Number(second?.y || 0) - Number(first?.y || 0),
-);
+const getPointerDistance = (first, second) =>
+    Math.hypot(Number(second?.x || 0) - Number(first?.x || 0), Number(second?.y || 0) - Number(first?.y || 0));
 
 const getPointerMidpoint = (first, second) => ({
     x: (Number(first?.x || 0) + Number(second?.x || 0)) / 2,
@@ -68,7 +62,7 @@ const getPointerMidpoint = (first, second) => ({
 });
 
 const MessageHistoryMapPage = () => {
-    const {conversationId} = useParams();
+    const { conversationId } = useParams();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const initialFocusId = String(searchParams.get('focus') || '');
@@ -82,8 +76,8 @@ const MessageHistoryMapPage = () => {
     const [detail, setDetail] = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
     const [nodeOffsets, setNodeOffsets] = useState({});
-    const [viewportSize, setViewportSize] = useState({width: 0, height: 0});
-    const [viewTransform, setViewTransform] = useState({x: 0, y: 0, scale: 1});
+    const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+    const [viewTransform, setViewTransform] = useState({ x: 0, y: 0, scale: 1 });
     const [isCanvasDragging, setIsCanvasDragging] = useState(false);
     const [expandedMessageIds, setExpandedMessageIds] = useState(() => new Set());
     const [branchSwitching, setBranchSwitching] = useState(false);
@@ -122,9 +116,12 @@ const MessageHistoryMapPage = () => {
         });
     }, []);
 
-    useEffect(() => () => {
-        if (transformFrameRef.current !== null) cancelAnimationFrame(transformFrameRef.current);
-    }, []);
+    useEffect(
+        () => () => {
+            if (transformFrameRef.current !== null) cancelAnimationFrame(transformFrameRef.current);
+        },
+        [],
+    );
 
     const loadMap = useCallback(async () => {
         if (!conversationId) return;
@@ -135,7 +132,7 @@ const MessageHistoryMapPage = () => {
         setLoadError('');
         try {
             const data = await apiClient.get(apiEndpoint.CHAT_MESSAGE_MAP_ENDPOINT, {
-                params: {conversationId, previewChars: 104},
+                params: { conversationId, previewChars: 104 },
                 signal: controller.signal,
             });
             setMapData(data);
@@ -163,21 +160,26 @@ const MessageHistoryMapPage = () => {
         return () => mapAbortRef.current?.abort();
     }, [initialFocusId, loadMap]);
 
-    const layoutPositionById = useMemo(() => new Map(
-        (layout?.positions || []).map(position => [String(position.messageId), position]),
-    ), [layout]);
+    const layoutPositionById = useMemo(
+        () => new Map((layout?.positions || []).map((position) => [String(position.messageId), position])),
+        [layout],
+    );
     // Resolve offsets only for visible nodes and their edges, not every node on each drag.
-    const positionById = useMemo(() => ({
-        has: messageId => layoutPositionById.has(messageId),
-        get: messageId => {
-            const point = layoutPositionById.get(messageId);
-            const offset = nodeOffsets[messageId];
-            return point && offset ? {...point, x: point.x + offset.x, y: point.y + offset.y} : point;
-        },
-    }), [layoutPositionById, nodeOffsets]);
-    const nodeById = useMemo(() => new Map(
-        (mapData?.nodes || []).map(node => [String(node.messageId), node]),
-    ), [mapData]);
+    const positionById = useMemo(
+        () => ({
+            has: (messageId) => layoutPositionById.has(messageId),
+            get: (messageId) => {
+                const point = layoutPositionById.get(messageId);
+                const offset = nodeOffsets[messageId];
+                return point && offset ? { ...point, x: point.x + offset.x, y: point.y + offset.y } : point;
+            },
+        }),
+        [layoutPositionById, nodeOffsets],
+    );
+    const nodeById = useMemo(
+        () => new Map((mapData?.nodes || []).map((node) => [String(node.messageId), node])),
+        [mapData],
+    );
     const childrenByParent = useMemo(() => {
         const result = new Map();
         (mapData?.nodes || []).forEach((node) => {
@@ -188,12 +190,16 @@ const MessageHistoryMapPage = () => {
         });
         return result;
     }, [mapData]);
-    const rootMessageIds = useMemo(() => (mapData?.nodes || [])
-        .filter((node) => {
-            const parentId = String(node?.parentMessageId || '');
-            return !parentId || !nodeById.has(parentId);
-        })
-        .map(node => String(node.messageId)), [mapData, nodeById]);
+    const rootMessageIds = useMemo(
+        () =>
+            (mapData?.nodes || [])
+                .filter((node) => {
+                    const parentId = String(node?.parentMessageId || '');
+                    return !parentId || !nodeById.has(parentId);
+                })
+                .map((node) => String(node.messageId)),
+        [mapData, nodeById],
+    );
     const displayedMessageIds = useMemo(() => {
         const visible = new Set();
         const stack = [...rootMessageIds].reverse();
@@ -209,19 +215,21 @@ const MessageHistoryMapPage = () => {
         }
         return visible;
     }, [childrenByParent, expandedMessageIds, nodeById, rootMessageIds]);
-    const displayedNodes = useMemo(() => (mapData?.nodes || [])
-        .filter(node => displayedMessageIds.has(String(node.messageId))), [displayedMessageIds, mapData]);
+    const displayedNodes = useMemo(
+        () => (mapData?.nodes || []).filter((node) => displayedMessageIds.has(String(node.messageId))),
+        [displayedMessageIds, mapData],
+    );
 
     useEffect(() => {
         if (!displayedNodes.length) {
             setLayout(null);
             return undefined;
         }
-        const worker = new Worker(new URL('./messageMapLayout.worker.js', import.meta.url), {type: 'module'});
+        const worker = new Worker(new URL('./messageMapLayout.worker.js', import.meta.url), { type: 'module' });
         layoutWorkerRef.current = worker;
         worker.onmessage = (event) => setLayout(event.data || null);
         worker.onerror = () => toast.error('消息地图布局失败');
-        worker.postMessage({nodes: displayedNodes});
+        worker.postMessage({ nodes: displayedNodes });
         return () => {
             worker.terminate();
             if (layoutWorkerRef.current === worker) layoutWorkerRef.current = null;
@@ -239,71 +247,82 @@ const MessageHistoryMapPage = () => {
         return result;
     }, [layout]);
 
-    const collectDescendantIds = useCallback((messageId) => {
-        const descendants = new Set();
-        const stack = [...(childrenByParent.get(String(messageId || '')) || [])];
-        while (stack.length) {
-            const childId = String(stack.pop() || '');
-            if (!childId || descendants.has(childId)) continue;
-            descendants.add(childId);
-            (childrenByParent.get(childId) || []).forEach(id => stack.push(id));
-        }
-        return descendants;
-    }, [childrenByParent]);
-
-    const toggleMessageBranch = useCallback((messageId) => {
-        const targetId = String(messageId || '');
-        if (!(childrenByParent.get(targetId) || []).length) return;
-        setExpandedMessageIds((previous) => {
-            const next = new Set(previous);
-            if (next.has(targetId)) {
-                next.delete(targetId);
-                collectDescendantIds(targetId).forEach(id => next.delete(id));
-            } else {
-                next.add(targetId);
+    const collectDescendantIds = useCallback(
+        (messageId) => {
+            const descendants = new Set();
+            const stack = [...(childrenByParent.get(String(messageId || '')) || [])];
+            while (stack.length) {
+                const childId = String(stack.pop() || '');
+                if (!childId || descendants.has(childId)) continue;
+                descendants.add(childId);
+                (childrenByParent.get(childId) || []).forEach((id) => stack.push(id));
             }
-            return next;
-        });
-    }, [childrenByParent, collectDescendantIds]);
+            return descendants;
+        },
+        [childrenByParent],
+    );
 
-    const revealMessageBranch = useCallback((messageId, {select = true, expandTarget = true} = {}) => {
-        const targetId = String(messageId || '');
-        if (!targetId || !nodeById.has(targetId)) return false;
-        const expansion = new Set();
-        let cursorId = targetId;
-        const seen = new Set();
-        while (cursorId && !seen.has(cursorId)) {
-            seen.add(cursorId);
-            const node = nodeById.get(cursorId);
-            const parentId = String(node?.parentMessageId || '');
-            if (!parentId || !nodeById.has(parentId)) break;
-            expansion.add(parentId);
-            cursorId = parentId;
-        }
-        if (expandTarget && (childrenByParent.get(targetId) || []).length) expansion.add(targetId);
-        setExpandedMessageIds((previous) => {
-            const next = new Set(previous);
-            expansion.forEach(id => next.add(id));
-            return next;
-        });
-        setFocusedMessageId(targetId);
-        if (select) setSelectedMessageId(targetId);
-        pendingLocateRef.current = {messageId: targetId, select};
-        return true;
-    }, [childrenByParent, nodeById]);
+    const toggleMessageBranch = useCallback(
+        (messageId) => {
+            const targetId = String(messageId || '');
+            if (!(childrenByParent.get(targetId) || []).length) return;
+            setExpandedMessageIds((previous) => {
+                const next = new Set(previous);
+                if (next.has(targetId)) {
+                    next.delete(targetId);
+                    collectDescendantIds(targetId).forEach((id) => next.delete(id));
+                } else {
+                    next.add(targetId);
+                }
+                return next;
+            });
+        },
+        [childrenByParent, collectDescendantIds],
+    );
+
+    const revealMessageBranch = useCallback(
+        (messageId, { select = true, expandTarget = true } = {}) => {
+            const targetId = String(messageId || '');
+            if (!targetId || !nodeById.has(targetId)) return false;
+            const expansion = new Set();
+            let cursorId = targetId;
+            const seen = new Set();
+            while (cursorId && !seen.has(cursorId)) {
+                seen.add(cursorId);
+                const node = nodeById.get(cursorId);
+                const parentId = String(node?.parentMessageId || '');
+                if (!parentId || !nodeById.has(parentId)) break;
+                expansion.add(parentId);
+                cursorId = parentId;
+            }
+            if (expandTarget && (childrenByParent.get(targetId) || []).length) expansion.add(targetId);
+            setExpandedMessageIds((previous) => {
+                const next = new Set(previous);
+                expansion.forEach((id) => next.add(id));
+                return next;
+            });
+            setFocusedMessageId(targetId);
+            if (select) setSelectedMessageId(targetId);
+            pendingLocateRef.current = { messageId: targetId, select };
+            return true;
+        },
+        [childrenByParent, nodeById],
+    );
 
     useEffect(() => {
         if (!latestRequestedRef.current || !mapData) return;
         latestRequestedRef.current = false;
-        revealMessageBranch(mapData.activeLeafMessageId, {select: true, expandTarget: false});
+        revealMessageBranch(mapData.activeLeafMessageId, { select: true, expandTarget: false });
     }, [mapData, revealMessageBranch]);
 
     const expandAllBranches = useCallback(() => {
-        setExpandedMessageIds(new Set(
-            (mapData?.nodes || [])
-                .filter(node => (childrenByParent.get(String(node.messageId)) || []).length > 0)
-                .map(node => String(node.messageId)),
-        ));
+        setExpandedMessageIds(
+            new Set(
+                (mapData?.nodes || [])
+                    .filter((node) => (childrenByParent.get(String(node.messageId)) || []).length > 0)
+                    .map((node) => String(node.messageId)),
+            ),
+        );
         fitAfterLayoutRef.current = true;
     }, [childrenByParent, mapData]);
 
@@ -316,7 +335,7 @@ const MessageHistoryMapPage = () => {
         const element = canvasRef.current;
         if (!element) return undefined;
         const updateSize = () => {
-            setViewportSize({width: element.clientWidth, height: element.clientHeight});
+            setViewportSize({ width: element.clientWidth, height: element.clientHeight });
         };
         updateSize();
         const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateSize) : null;
@@ -324,25 +343,31 @@ const MessageHistoryMapPage = () => {
         return () => observer?.disconnect();
     }, [layout]);
 
-    const zoomAtViewportPoint = useCallback((nextScale, viewportX, viewportY) => {
-        const current = viewTransformRef.current;
-        const scale = clampZoom(nextScale);
-        if (Math.abs(scale - current.scale) < 0.0001) return;
-        const graphX = (Number(viewportX || 0) - current.x) / current.scale;
-        const graphY = (Number(viewportY || 0) - current.y) / current.scale;
-        scheduleViewTransform({
-            x: Number(viewportX || 0) - graphX * scale,
-            y: Number(viewportY || 0) - graphY * scale,
-            scale,
-        });
-    }, [scheduleViewTransform]);
+    const zoomAtViewportPoint = useCallback(
+        (nextScale, viewportX, viewportY) => {
+            const current = viewTransformRef.current;
+            const scale = clampZoom(nextScale);
+            if (Math.abs(scale - current.scale) < 0.0001) return;
+            const graphX = (Number(viewportX || 0) - current.x) / current.scale;
+            const graphY = (Number(viewportY || 0) - current.y) / current.scale;
+            scheduleViewTransform({
+                x: Number(viewportX || 0) - graphX * scale,
+                y: Number(viewportY || 0) - graphY * scale,
+                scale,
+            });
+        },
+        [scheduleViewTransform],
+    );
 
-    const zoomAtCenter = useCallback((factor) => {
-        const element = canvasRef.current;
-        if (!element) return;
-        const current = viewTransformRef.current;
-        zoomAtViewportPoint(current.scale * factor, element.clientWidth / 2, element.clientHeight / 2);
-    }, [zoomAtViewportPoint]);
+    const zoomAtCenter = useCallback(
+        (factor) => {
+            const element = canvasRef.current;
+            if (!element) return;
+            const current = viewTransformRef.current;
+            zoomAtViewportPoint(current.scale * factor, element.clientWidth / 2, element.clientHeight / 2);
+        },
+        [zoomAtViewportPoint],
+    );
 
     const fitCanvas = useCallback(() => {
         const element = canvasRef.current;
@@ -357,34 +382,33 @@ const MessageHistoryMapPage = () => {
         });
     }, [layout, scheduleViewTransform]);
 
-    const locateMessage = useCallback((messageId, {select = true, scale = null} = {}) => {
-        const targetId = String(messageId || '');
-        const point = positionById.get(targetId);
-        const element = canvasRef.current;
-        if (!point || !element || !layout) return false;
-        const nodeWidth = layout.nodeWidth || 240;
-        const nodeHeight = layout.nodeHeight || 82;
-        const nextScale = clampZoom(scale ?? viewTransformRef.current.scale);
-        scheduleViewTransform({
-            x: element.clientWidth / 2 - (point.x + nodeWidth / 2) * nextScale,
-            y: element.clientHeight / 2 - (point.y + nodeHeight / 2) * nextScale,
-            scale: nextScale,
-        });
-        setFocusedMessageId(targetId);
-        if (select) setSelectedMessageId(targetId);
-        return true;
-    }, [layout, positionById, scheduleViewTransform]);
+    const locateMessage = useCallback(
+        (messageId, { select = true, scale = null } = {}) => {
+            const targetId = String(messageId || '');
+            const point = positionById.get(targetId);
+            const element = canvasRef.current;
+            if (!point || !element || !layout) return false;
+            const nodeWidth = layout.nodeWidth || 240;
+            const nodeHeight = layout.nodeHeight || 82;
+            const nextScale = clampZoom(scale ?? viewTransformRef.current.scale);
+            scheduleViewTransform({
+                x: element.clientWidth / 2 - (point.x + nodeWidth / 2) * nextScale,
+                y: element.clientHeight / 2 - (point.y + nodeHeight / 2) * nextScale,
+                scale: nextScale,
+            });
+            setFocusedMessageId(targetId);
+            if (select) setSelectedMessageId(targetId);
+            return true;
+        },
+        [layout, positionById, scheduleViewTransform],
+    );
 
     useEffect(() => {
         if (initialLocationHandledRef.current || !mapData || !nodeById.size) return;
 
-        const requestedFocusId = initialFocusId && nodeById.has(initialFocusId)
-            ? initialFocusId
-            : '';
+        const requestedFocusId = initialFocusId && nodeById.has(initialFocusId) ? initialFocusId : '';
         const activeLeafId = String(
-            mapData.activeLeafMessageId
-            || (mapData.nodes || []).find(node => node?.isActiveLeaf)?.messageId
-            || '',
+            mapData.activeLeafMessageId || (mapData.nodes || []).find((node) => node?.isActiveLeaf)?.messageId || '',
         );
         const defaultTargetId = requestedFocusId || (nodeById.has(activeLeafId) ? activeLeafId : '');
 
@@ -403,7 +427,7 @@ const MessageHistoryMapPage = () => {
         if (!pending?.messageId || !layout || viewportSize.width <= 0 || viewportSize.height <= 0) return;
         if (!positionById.has(String(pending.messageId))) return;
         pendingLocateRef.current = null;
-        requestAnimationFrame(() => locateMessage(pending.messageId, {select: pending.select !== false}));
+        requestAnimationFrame(() => locateMessage(pending.messageId, { select: pending.select !== false }));
     }, [layout, locateMessage, positionById, viewportSize]);
 
     useEffect(() => {
@@ -436,7 +460,7 @@ const MessageHistoryMapPage = () => {
             zoomAtViewportPoint(viewTransformRef.current.scale * zoomFactor, localX, localY);
         };
 
-        element.addEventListener('wheel', handleWheel, {passive: false});
+        element.addEventListener('wheel', handleWheel, { passive: false });
         return () => element.removeEventListener('wheel', handleWheel);
     }, [loading, zoomAtViewportPoint]);
 
@@ -448,7 +472,7 @@ const MessageHistoryMapPage = () => {
         const element = canvasRef.current;
         if (!element) return false;
         const rect = element.getBoundingClientRect();
-        const localMidpoint = {x: midpoint.x - rect.left, y: midpoint.y - rect.top};
+        const localMidpoint = { x: midpoint.x - rect.left, y: midpoint.y - rect.top };
         const startTransform = viewTransformRef.current;
         gestureRef.current = {
             mode: 'pinch',
@@ -462,127 +486,138 @@ const MessageHistoryMapPage = () => {
         return true;
     }, []);
 
-    const handleCanvasPointerDown = useCallback((event) => {
-        const element = canvasRef.current;
-        if (!element) return;
-        const isNodeOrControl = Boolean(event.target?.closest?.('[data-message-map-node="true"], [data-message-map-control="true"]'));
+    const handleCanvasPointerDown = useCallback(
+        (event) => {
+            const element = canvasRef.current;
+            if (!element) return;
+            const isNodeOrControl = Boolean(
+                event.target?.closest?.('[data-message-map-node="true"], [data-message-map-control="true"]'),
+            );
 
-        if (event.pointerType === 'touch') {
-            activePointersRef.current.set(event.pointerId, {x: event.clientX, y: event.clientY});
-            if (activePointersRef.current.size >= 2) {
-                window.clearTimeout(nodeHoldRef.current?.timer);
-                nodeHoldRef.current = null;
-                activePointersRef.current.forEach((_, pointerId) => {
+            if (event.pointerType === 'touch') {
+                activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+                if (activePointersRef.current.size >= 2) {
+                    window.clearTimeout(nodeHoldRef.current?.timer);
+                    nodeHoldRef.current = null;
+                    activePointersRef.current.forEach((_, pointerId) => {
+                        try {
+                            element.setPointerCapture(pointerId);
+                        } catch {
+                            // Pointer capture is best-effort on embedded/mobile browsers.
+                        }
+                    });
+                    event.preventDefault();
+                    beginPinchGesture();
+                    return;
+                }
+                if (!isNodeOrControl) {
                     try {
-                        element.setPointerCapture(pointerId);
+                        element.setPointerCapture(event.pointerId);
                     } catch {
                         // Pointer capture is best-effort on embedded/mobile browsers.
                     }
-                });
-                event.preventDefault();
-                beginPinchGesture();
-                return;
-            }
-            if (!isNodeOrControl) {
-                try {
-                    element.setPointerCapture(event.pointerId);
-                } catch {
-                    // Pointer capture is best-effort on embedded/mobile browsers.
+                    gestureRef.current = {
+                        mode: 'pan',
+                        pointerId: event.pointerId,
+                        startX: event.clientX,
+                        startY: event.clientY,
+                        startTransform: viewTransformRef.current,
+                        moved: false,
+                    };
+                    setIsCanvasDragging(true);
                 }
-                gestureRef.current = {
-                    mode: 'pan',
-                    pointerId: event.pointerId,
-                    startX: event.clientX,
-                    startY: event.clientY,
-                    startTransform: viewTransformRef.current,
-                    moved: false,
-                };
-                setIsCanvasDragging(true);
-            }
-            return;
-        }
-
-        const middleButton = event.button === 1;
-        const blankPrimaryButton = event.button === 0 && !isNodeOrControl;
-        if (!middleButton && !blankPrimaryButton) return;
-        event.preventDefault();
-        try {
-            element.setPointerCapture(event.pointerId);
-        } catch {
-            // no-op
-        }
-        gestureRef.current = {
-            mode: 'pan',
-            pointerId: event.pointerId,
-            startX: event.clientX,
-            startY: event.clientY,
-            startTransform: viewTransformRef.current,
-            moved: false,
-        };
-        setIsCanvasDragging(true);
-    }, [beginPinchGesture]);
-
-    const handleCanvasPointerMove = useCallback((event) => {
-        const hold = nodeHoldRef.current;
-        if (hold?.pointerId === event.pointerId) {
-            const dx = event.clientX - hold.startX;
-            const dy = event.clientY - hold.startY;
-            if (hold.dragging) {
-                setNodeOffsets(previous => ({...previous, [hold.messageId]: {
-                    x: hold.offset.x + dx / viewTransformRef.current.scale,
-                    y: hold.offset.y + dy / viewTransformRef.current.scale,
-                }}));
-                suppressNodeClickUntilRef.current = Date.now() + 350;
-                event.preventDefault();
                 return;
             }
-            if (Math.hypot(dx, dy) > 6) {
-                window.clearTimeout(hold.timer);
-                nodeHoldRef.current = null;
+
+            const middleButton = event.button === 1;
+            const blankPrimaryButton = event.button === 0 && !isNodeOrControl;
+            if (!middleButton && !blankPrimaryButton) return;
+            event.preventDefault();
+            try {
+                element.setPointerCapture(event.pointerId);
+            } catch {
+                // no-op
             }
-        }
-        if (event.pointerType === 'touch' && activePointersRef.current.has(event.pointerId)) {
-            activePointersRef.current.set(event.pointerId, {x: event.clientX, y: event.clientY});
-            if (activePointersRef.current.size >= 2) {
-                if (gestureRef.current?.mode !== 'pinch') beginPinchGesture();
-                const gesture = gestureRef.current;
-                if (gesture?.mode === 'pinch') {
-                    const pointers = Array.from(activePointersRef.current.values()).slice(0, 2);
-                    const distance = Math.max(1, getPointerDistance(pointers[0], pointers[1]));
-                    const midpoint = getPointerMidpoint(pointers[0], pointers[1]);
-                    const element = canvasRef.current;
-                    if (!element) return;
-                    const rect = element.getBoundingClientRect();
-                    const localX = midpoint.x - rect.left;
-                    const localY = midpoint.y - rect.top;
-                    const scale = clampZoom(gesture.startScale * (distance / gesture.startDistance));
-                    scheduleViewTransform({
-                        x: localX - gesture.graphX * scale,
-                        y: localY - gesture.graphY * scale,
-                        scale,
-                    });
+            gestureRef.current = {
+                mode: 'pan',
+                pointerId: event.pointerId,
+                startX: event.clientX,
+                startY: event.clientY,
+                startTransform: viewTransformRef.current,
+                moved: false,
+            };
+            setIsCanvasDragging(true);
+        },
+        [beginPinchGesture],
+    );
+
+    const handleCanvasPointerMove = useCallback(
+        (event) => {
+            const hold = nodeHoldRef.current;
+            if (hold?.pointerId === event.pointerId) {
+                const dx = event.clientX - hold.startX;
+                const dy = event.clientY - hold.startY;
+                if (hold.dragging) {
+                    setNodeOffsets((previous) => ({
+                        ...previous,
+                        [hold.messageId]: {
+                            x: hold.offset.x + dx / viewTransformRef.current.scale,
+                            y: hold.offset.y + dy / viewTransformRef.current.scale,
+                        },
+                    }));
                     suppressNodeClickUntilRef.current = Date.now() + 350;
                     event.preventDefault();
+                    return;
                 }
-                return;
+                if (Math.hypot(dx, dy) > 6) {
+                    window.clearTimeout(hold.timer);
+                    nodeHoldRef.current = null;
+                }
             }
-        }
+            if (event.pointerType === 'touch' && activePointersRef.current.has(event.pointerId)) {
+                activePointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+                if (activePointersRef.current.size >= 2) {
+                    if (gestureRef.current?.mode !== 'pinch') beginPinchGesture();
+                    const gesture = gestureRef.current;
+                    if (gesture?.mode === 'pinch') {
+                        const pointers = Array.from(activePointersRef.current.values()).slice(0, 2);
+                        const distance = Math.max(1, getPointerDistance(pointers[0], pointers[1]));
+                        const midpoint = getPointerMidpoint(pointers[0], pointers[1]);
+                        const element = canvasRef.current;
+                        if (!element) return;
+                        const rect = element.getBoundingClientRect();
+                        const localX = midpoint.x - rect.left;
+                        const localY = midpoint.y - rect.top;
+                        const scale = clampZoom(gesture.startScale * (distance / gesture.startDistance));
+                        scheduleViewTransform({
+                            x: localX - gesture.graphX * scale,
+                            y: localY - gesture.graphY * scale,
+                            scale,
+                        });
+                        suppressNodeClickUntilRef.current = Date.now() + 350;
+                        event.preventDefault();
+                    }
+                    return;
+                }
+            }
 
-        const gesture = gestureRef.current;
-        if (gesture?.mode !== 'pan' || gesture.pointerId !== event.pointerId) return;
-        const dx = event.clientX - gesture.startX;
-        const dy = event.clientY - gesture.startY;
-        if (!gesture.moved && Math.hypot(dx, dy) > 4) {
-            gesture.moved = true;
-            suppressNodeClickUntilRef.current = Date.now() + 250;
-        }
-        scheduleViewTransform({
-            ...gesture.startTransform,
-            x: gesture.startTransform.x + dx,
-            y: gesture.startTransform.y + dy,
-        });
-        event.preventDefault();
-    }, [beginPinchGesture, scheduleViewTransform]);
+            const gesture = gestureRef.current;
+            if (gesture?.mode !== 'pan' || gesture.pointerId !== event.pointerId) return;
+            const dx = event.clientX - gesture.startX;
+            const dy = event.clientY - gesture.startY;
+            if (!gesture.moved && Math.hypot(dx, dy) > 4) {
+                gesture.moved = true;
+                suppressNodeClickUntilRef.current = Date.now() + 250;
+            }
+            scheduleViewTransform({
+                ...gesture.startTransform,
+                x: gesture.startTransform.x + dx,
+                y: gesture.startTransform.y + dy,
+            });
+            event.preventDefault();
+        },
+        [beginPinchGesture, scheduleViewTransform],
+    );
 
     const endCanvasPointer = useCallback((event) => {
         if (nodeHoldRef.current?.pointerId === event.pointerId) {
@@ -625,38 +660,48 @@ const MessageHistoryMapPage = () => {
         detailAbortRef.current = controller;
         setDetail(null);
         setDetailLoading(true);
-        apiClient.get(`${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}`, {
-            params: {conversationId},
-            signal: controller.signal,
-        }).then((data) => {
-            rememberDetail(detailCacheRef.current, selectedMessageId, data);
-            setDetail(data);
-        }).catch((error) => {
-            if (error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED') return;
-            toast.error(error?.message || '无法读取完整消息');
-        }).finally(() => {
-            if (detailAbortRef.current === controller) {
-                detailAbortRef.current = null;
-                setDetailLoading(false);
-            }
-        });
+        apiClient
+            .get(`${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}`, {
+                params: { conversationId },
+                signal: controller.signal,
+            })
+            .then((data) => {
+                rememberDetail(detailCacheRef.current, selectedMessageId, data);
+                setDetail(data);
+            })
+            .catch((error) => {
+                if (error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED') return;
+                toast.error(error?.message || '无法读取完整消息');
+            })
+            .finally(() => {
+                if (detailAbortRef.current === controller) {
+                    detailAbortRef.current = null;
+                    setDetailLoading(false);
+                }
+            });
         return () => controller.abort();
     }, [conversationId, selectedMessageId]);
 
     useEffect(() => () => window.clearTimeout(nodeHoldRef.current?.timer), []);
 
-    const selectSearchResult = useCallback((item) => {
-        if (!revealMessageBranch(item.messageId, {select: true, expandTarget: false})) {
-            setSelectedMessageId(item.messageId);
-            toast.info('已打开完整消息；该消息超出地图绘制范围');
-        }
-    }, [revealMessageBranch]);
+    const selectSearchResult = useCallback(
+        (item) => {
+            if (!revealMessageBranch(item.messageId, { select: true, expandTarget: false })) {
+                setSelectedMessageId(item.messageId);
+                toast.info('已打开完整消息；该消息超出地图绘制范围');
+            }
+        },
+        [revealMessageBranch],
+    );
 
-    const openMessageInConversation = useCallback((messageId) => {
-        const targetId = String(messageId || '').trim();
-        if (!targetId || !conversationId) return;
-        navigate(`/chat/${encodeURIComponent(conversationId)}?message=${encodeURIComponent(targetId)}`);
-    }, [conversationId, navigate]);
+    const openMessageInConversation = useCallback(
+        (messageId) => {
+            const targetId = String(messageId || '').trim();
+            if (!targetId || !conversationId) return;
+            navigate(`/chat/${encodeURIComponent(conversationId)}?message=${encodeURIComponent(targetId)}`);
+        },
+        [conversationId, navigate],
+    );
 
     const activateBranchAndLocate = useCallback(async () => {
         const targetId = String(selectedMessageId || '').trim();
@@ -686,14 +731,23 @@ const MessageHistoryMapPage = () => {
         } finally {
             setBranchSwitching(false);
         }
-    }, [branchSwitching, conversationId, detail?.isActivePath, loadMap, mapData?.treeRevision, nodeById, openMessageInConversation, selectedMessageId]);
+    }, [
+        branchSwitching,
+        conversationId,
+        detail?.isActivePath,
+        loadMap,
+        mapData?.treeRevision,
+        nodeById,
+        openMessageInConversation,
+        selectedMessageId,
+    ]);
 
     const visibleGraphBounds = useMemo(() => {
         const scale = Math.max(MIN_ZOOM, viewTransform.scale || 1);
         const buffer = VIEWPORT_BUFFER / scale;
         return {
-            left: (-viewTransform.x) / scale - buffer,
-            top: (-viewTransform.y) / scale - buffer,
+            left: -viewTransform.x / scale - buffer,
+            top: -viewTransform.y / scale - buffer,
             right: (viewportSize.width - viewTransform.x) / scale + buffer,
             bottom: (viewportSize.height - viewTransform.y) / scale + buffer,
         };
@@ -703,17 +757,17 @@ const MessageHistoryMapPage = () => {
         if (!layout || viewportSize.width <= 0 || viewportSize.height <= 0) return [];
         const nodeWidth = layout.nodeWidth || 240;
         const nodeHeight = layout.nodeHeight || 82;
-        const {left, top, right, bottom} = visibleGraphBounds;
+        const { left, top, right, bottom } = visibleGraphBounds;
         const minCellX = Math.floor(left / SPATIAL_CELL_SIZE);
         const maxCellX = Math.floor(right / SPATIAL_CELL_SIZE);
         const minCellY = Math.floor(top / SPATIAL_CELL_SIZE);
         const maxCellY = Math.floor(bottom / SPATIAL_CELL_SIZE);
         const candidateIds = new Set();
-        Object.keys(nodeOffsets).forEach(messageId => candidateIds.add(messageId));
+        Object.keys(nodeOffsets).forEach((messageId) => candidateIds.add(messageId));
 
         for (let cellX = minCellX; cellX <= maxCellX; cellX += 1) {
             for (let cellY = minCellY; cellY <= maxCellY; cellY += 1) {
-                (spatialBuckets.get(`${cellX}:${cellY}`) || []).forEach(messageId => candidateIds.add(messageId));
+                (spatialBuckets.get(`${cellX}:${cellY}`) || []).forEach((messageId) => candidateIds.add(messageId));
             }
         }
 
@@ -738,7 +792,7 @@ const MessageHistoryMapPage = () => {
             edgeNodeIds.add(messageId);
             const parentId = String(node.parentMessageId || '');
             if (parentId) edgeNodeIds.add(parentId);
-            (childrenByParent.get(messageId) || []).forEach(childId => edgeNodeIds.add(childId));
+            (childrenByParent.get(messageId) || []).forEach((childId) => edgeNodeIds.add(childId));
         });
 
         const result = [];
@@ -782,7 +836,7 @@ const MessageHistoryMapPage = () => {
     if (loading) {
         return (
             <div className="flex h-screen w-screen items-center justify-center bg-background text-muted-foreground">
-                <Loader2 className="mr-2 size-5 animate-spin"/> 正在加载消息历史地图…
+                <Loader2 className="mr-2 size-5 animate-spin" /> 正在加载消息历史地图…
             </div>
         );
     }
@@ -792,7 +846,12 @@ const MessageHistoryMapPage = () => {
             <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center">
                 <p className="text-sm text-destructive">{loadError || '消息地图不可用'}</p>
                 <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => navigate(`/chat/${encodeURIComponent(conversationId || '')}`)}>返回对话</Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => navigate(`/chat/${encodeURIComponent(conversationId || '')}`)}
+                    >
+                        返回对话
+                    </Button>
                     <Button onClick={loadMap}>重试</Button>
                 </div>
             </div>
@@ -802,31 +861,64 @@ const MessageHistoryMapPage = () => {
     return (
         <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
             <header className="relative z-30 flex min-h-16 flex-wrap items-center gap-2 border-b bg-background/95 px-3 py-2 backdrop-blur sm:gap-3 sm:px-4">
-                <Button type="button" variant="ghost" size="icon" onClick={() => navigate(`/chat/${encodeURIComponent(conversationId || '')}`)} title="返回对话">
-                    <ArrowLeft/>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate(`/chat/${encodeURIComponent(conversationId || '')}`)}
+                    title="返回对话"
+                >
+                    <ArrowLeft />
                 </Button>
                 <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                        <MapIcon className="size-4 shrink-0"/>
+                        <MapIcon className="size-4 shrink-0" />
                         <h1 className="truncate text-sm font-semibold">消息历史地图</h1>
                     </div>
-                    <p className="max-w-[60vw] truncate sm:max-w-[34vw] text-xs text-muted-foreground">{mapData.conversationTitle || conversationId}</p>
+                    <p className="max-w-[60vw] truncate sm:max-w-[34vw] text-xs text-muted-foreground">
+                        {mapData.conversationTitle || conversationId}
+                    </p>
                 </div>
 
-                <MessageMapSearch key={conversationId} conversationId={conversationId} onSelect={selectSearchResult}/>
+                <MessageMapSearch key={conversationId} conversationId={conversationId} onSelect={selectSearchResult} />
 
                 <div className="order-4 ml-auto flex w-full shrink-0 items-center gap-2 overflow-x-auto pb-1 sm:order-none sm:w-auto sm:pb-0">
-                    <Badge variant="outline">{displayedNodes.length} / {mapData.nodeCount} 条消息</Badge>
-                    <Button type="button" variant="outline" size="sm" onClick={expandAllBranches} disabled={!mapData.nodeCount}>
+                    <Badge variant="outline">
+                        {displayedNodes.length} / {mapData.nodeCount} 条消息
+                    </Badge>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={expandAllBranches}
+                        disabled={!mapData.nodeCount}
+                    >
                         展开全部
                     </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={collapseAllBranches} disabled={!mapData.nodeCount}>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={collapseAllBranches}
+                        disabled={!mapData.nodeCount}
+                    >
                         折叠全部
                     </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => { latestRequestedRef.current = true; void loadMap(); }} disabled={!mapData.activeLeafMessageId || loading}>
-                        <LocateFixed/> 回到最新分支
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                            latestRequestedRef.current = true;
+                            void loadMap();
+                        }}
+                        disabled={!mapData.activeLeafMessageId || loading}
+                    >
+                        <LocateFixed /> 回到最新分支
                     </Button>
-                    <Button type="button" variant="ghost" size="icon" onClick={loadMap} title="刷新地图"><RefreshCw/></Button>
+                    <Button type="button" variant="ghost" size="icon" onClick={loadMap} title="刷新地图">
+                        <RefreshCw />
+                    </Button>
                 </div>
             </header>
 
@@ -851,10 +943,12 @@ const MessageHistoryMapPage = () => {
                     onPointerUp={endCanvasPointer}
                     onPointerCancel={endCanvasPointer}
                     onLostPointerCapture={endCanvasPointer}
-                    onAuxClick={event => event.preventDefault()}
+                    onAuxClick={(event) => event.preventDefault()}
                 >
                     {(mapData.nodes || []).length === 0 ? (
-                        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">当前对话还没有可绘制的消息历史。</div>
+                        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                            当前对话还没有可绘制的消息历史。
+                        </div>
                     ) : layout ? (
                         <div
                             className="absolute left-0 top-0"
@@ -866,8 +960,13 @@ const MessageHistoryMapPage = () => {
                                 willChange: 'transform',
                             }}
                         >
-                            <svg className="pointer-events-none absolute inset-0 overflow-visible" width={layout.width} height={layout.height} aria-hidden="true">
-                                {visibleEdges.map(edge => {
+                            <svg
+                                className="pointer-events-none absolute inset-0 overflow-visible"
+                                width={layout.width}
+                                height={layout.height}
+                                aria-hidden="true"
+                            >
+                                {visibleEdges.map((edge) => {
                                     const bend = Math.max(36, (edge.x2 - edge.x1) * 0.45);
                                     return (
                                         <path
@@ -895,21 +994,38 @@ const MessageHistoryMapPage = () => {
                                         tabIndex={0}
                                         key={node.messageId}
                                         data-message-map-node="true"
-                                        onContextMenu={event => event.preventDefault()}
-                                        onKeyDown={event => {
-                                            if (event.target !== event.currentTarget || !['Enter', ' '].includes(event.key)) return;
+                                        onContextMenu={(event) => event.preventDefault()}
+                                        onKeyDown={(event) => {
+                                            if (
+                                                event.target !== event.currentTarget ||
+                                                !['Enter', ' '].includes(event.key)
+                                            )
+                                                return;
                                             event.preventDefault();
                                             setSelectedMessageId(node.messageId);
                                             setFocusedMessageId(node.messageId);
                                         }}
-                                        onPointerDown={event => {
-                                            if (event.button !== 0 || event.target.closest('[data-message-map-control="true"]')) return;
+                                        onPointerDown={(event) => {
+                                            if (
+                                                event.button !== 0 ||
+                                                event.target.closest('[data-message-map-control="true"]')
+                                            )
+                                                return;
                                             window.clearTimeout(nodeHoldRef.current?.timer);
-                                            const hold = {messageId: String(node.messageId), pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, offset: nodeOffsets[String(node.messageId)] || {x: 0, y: 0}, dragging: false};
+                                            const hold = {
+                                                messageId: String(node.messageId),
+                                                pointerId: event.pointerId,
+                                                startX: event.clientX,
+                                                startY: event.clientY,
+                                                offset: nodeOffsets[String(node.messageId)] || { x: 0, y: 0 },
+                                                dragging: false,
+                                            };
                                             hold.timer = window.setTimeout(() => {
                                                 hold.dragging = true;
                                                 suppressNodeClickUntilRef.current = Date.now() + 350;
-                                                try { canvasRef.current?.setPointerCapture(hold.pointerId); } catch {
+                                                try {
+                                                    canvasRef.current?.setPointerCapture(hold.pointerId);
+                                                } catch {
                                                     // The pointer may have ended while this timer was queued.
                                                     hold.dragging = false;
                                                 }
@@ -922,37 +1038,78 @@ const MessageHistoryMapPage = () => {
                                             setFocusedMessageId(node.messageId);
                                         }}
                                         className={`absolute flex flex-col rounded-xl border bg-background px-3 py-2 text-left shadow-sm transition-[border-color,box-shadow,opacity] hover:border-primary/50 hover:shadow-md ${
-                                            node.isActivePath ? 'border-blue-300' : 'border-border/80 opacity-80 hover:opacity-100'
+                                            node.isActivePath
+                                                ? 'border-blue-300'
+                                                : 'border-border/80 opacity-80 hover:opacity-100'
                                         } ${selected ? 'ring-2 ring-primary ring-offset-2' : ''} ${focused ? 'shadow-lg' : ''}`}
-                                        style={{left: point.x, top: point.y, width: layout.nodeWidth, height: layout.nodeHeight}}
+                                        style={{
+                                            left: point.x,
+                                            top: point.y,
+                                            width: layout.nodeWidth,
+                                            height: layout.nodeHeight,
+                                        }}
                                         title="点击查看完整消息，长按拖动节点"
                                     >
                                         <span className="flex w-full items-center gap-2 text-xs text-muted-foreground">
-                                            <Icon className="size-3.5"/>
+                                            <Icon className="size-3.5" />
                                             <span>{meta.label}</span>
-                                            {node.isActiveLeaf && <Badge className="ml-auto h-5 px-1.5 text-[10px]">当前</Badge>}
+                                            {node.isActiveLeaf && (
+                                                <Badge className="ml-auto h-5 px-1.5 text-[10px]">当前</Badge>
+                                            )}
                                             {node.childCount > 0 && (
                                                 <span className="ml-auto flex items-center gap-1">
                                                     {node.childCount > 1 && <span>{node.childCount} 个分支</span>}
-                                                    <Button data-message-map-control="true" variant="ghost" size="icon" className="size-6" aria-label={expandedMessageIds.has(String(node.messageId)) ? '折叠子消息' : '展开子消息'} onClick={event => {event.stopPropagation(); toggleMessageBranch(node.messageId);}}>
-                                                    {expandedMessageIds.has(String(node.messageId)) ? <ChevronDown className="size-3.5"/> : <ChevronRight className="size-3.5"/>}
+                                                    <Button
+                                                        data-message-map-control="true"
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="size-6"
+                                                        aria-label={
+                                                            expandedMessageIds.has(String(node.messageId))
+                                                                ? '折叠子消息'
+                                                                : '展开子消息'
+                                                        }
+                                                        onClick={(event) => {
+                                                            event.stopPropagation();
+                                                            toggleMessageBranch(node.messageId);
+                                                        }}
+                                                    >
+                                                        {expandedMessageIds.has(String(node.messageId)) ? (
+                                                            <ChevronDown className="size-3.5" />
+                                                        ) : (
+                                                            <ChevronRight className="size-3.5" />
+                                                        )}
                                                     </Button>
                                                 </span>
                                             )}
                                         </span>
-                                        <span className="mt-1 line-clamp-2 text-sm leading-5 text-foreground">{node.preview}</span>
+                                        <span className="mt-1 line-clamp-2 text-sm leading-5 text-foreground">
+                                            {node.preview}
+                                        </span>
                                     </div>
                                 );
                             })}
                         </div>
                     ) : (
-                        <div className="flex h-full items-center justify-center text-sm text-muted-foreground"><Loader2 className="mr-2 size-4 animate-spin"/>正在计算树布局…</div>
+                        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                            <Loader2 className="mr-2 size-4 animate-spin" />
+                            正在计算树布局…
+                        </div>
                     )}
 
                     {layout && (
-                        <div data-message-map-control="true" className="absolute bottom-4 left-4 z-20 flex items-center gap-1 rounded-xl border bg-background/95 p-1 shadow-lg backdrop-blur">
-                            <Button type="button" variant="ghost" size="icon" onClick={() => zoomAtCenter(1 / ZOOM_BUTTON_FACTOR)} title="缩小">
-                                <ZoomOut className="size-4"/>
+                        <div
+                            data-message-map-control="true"
+                            className="absolute bottom-4 left-4 z-20 flex items-center gap-1 rounded-xl border bg-background/95 p-1 shadow-lg backdrop-blur"
+                        >
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => zoomAtCenter(1 / ZOOM_BUTTON_FACTOR)}
+                                title="缩小"
+                            >
+                                <ZoomOut className="size-4" />
                             </Button>
                             <button
                                 type="button"
@@ -962,12 +1119,18 @@ const MessageHistoryMapPage = () => {
                             >
                                 {zoomPercent}%
                             </button>
-                            <Button type="button" variant="ghost" size="icon" onClick={() => zoomAtCenter(ZOOM_BUTTON_FACTOR)} title="放大">
-                                <ZoomIn className="size-4"/>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => zoomAtCenter(ZOOM_BUTTON_FACTOR)}
+                                title="放大"
+                            >
+                                <ZoomIn className="size-4" />
                             </Button>
-                            <span className="mx-0.5 h-5 w-px bg-border"/>
+                            <span className="mx-0.5 h-5 w-px bg-border" />
                             <Button type="button" variant="ghost" size="icon" onClick={fitCanvas} title="适合画布">
-                                <Maximize className="size-4"/>
+                                <Maximize className="size-4" />
                             </Button>
                         </div>
                     )}
@@ -980,26 +1143,49 @@ const MessageHistoryMapPage = () => {
                     </div>
                 </div>
 
-                <aside className={`absolute inset-y-0 right-0 z-20 flex w-[min(92vw,26rem)] flex-col border-l bg-background shadow-xl transition-transform lg:static lg:w-96 lg:shadow-none ${selectedMessageId ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
+                <aside
+                    className={`absolute inset-y-0 right-0 z-20 flex w-[min(92vw,26rem)] flex-col border-l bg-background shadow-xl transition-transform lg:static lg:w-96 lg:shadow-none ${selectedMessageId ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}
+                >
                     <div className="flex min-h-14 items-center gap-2 border-b px-4">
                         <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium">消息详情</p>
-                            <p className="truncate text-xs text-muted-foreground">{selectedMessageId || '选择一个节点查看完整消息'}</p>
+                            <p className="truncate text-xs text-muted-foreground">
+                                {selectedMessageId || '选择一个节点查看完整消息'}
+                            </p>
                         </div>
-                        <Button type="button" variant="ghost" size="icon" className="lg:hidden" onClick={() => setSelectedMessageId(null)}><X/></Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="lg:hidden"
+                            onClick={() => setSelectedMessageId(null)}
+                        >
+                            <X />
+                        </Button>
                     </div>
 
                     <div className="min-h-0 flex-1 overflow-y-auto p-4">
                         {!selectedMessageId ? (
-                            <div className="flex h-full items-center justify-center text-center text-sm text-muted-foreground">点击消息节点会展开其下级分支，并按需加载完整正文。</div>
+                            <div className="flex h-full items-center justify-center text-center text-sm text-muted-foreground">
+                                点击消息节点会展开其下级分支，并按需加载完整正文。
+                            </div>
                         ) : detailLoading ? (
-                            <div className="flex h-40 items-center justify-center text-sm text-muted-foreground"><Loader2 className="mr-2 size-4 animate-spin"/>正在读取完整消息…</div>
+                            <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
+                                <Loader2 className="mr-2 size-4 animate-spin" />
+                                正在读取完整消息…
+                            </div>
                         ) : message ? (
                             <div className="space-y-4">
                                 <div className="flex flex-wrap items-center gap-2">
-                                    <Badge variant="outline">{(roleMeta[message.role] || roleMeta.assistant).label}</Badge>
-                                    <Badge variant={detail?.isActivePath ? 'default' : 'secondary'}>{detail?.isActivePath ? '当前分支' : '历史分支'}</Badge>
-                                    <span className="text-xs text-muted-foreground">{formatTime(message.createdAt || selectedNode?.createdAt)}</span>
+                                    <Badge variant="outline">
+                                        {(roleMeta[message.role] || roleMeta.assistant).label}
+                                    </Badge>
+                                    <Badge variant={detail?.isActivePath ? 'default' : 'secondary'}>
+                                        {detail?.isActivePath ? '当前分支' : '历史分支'}
+                                    </Badge>
+                                    <span className="text-xs text-muted-foreground">
+                                        {formatTime(message.createdAt || selectedNode?.createdAt)}
+                                    </span>
                                 </div>
                                 <div className="select-text break-words rounded-xl border bg-muted/20 p-3 text-sm leading-6 text-foreground">
                                     {String(message.content || '').trim() ? (
@@ -1021,9 +1207,18 @@ const MessageHistoryMapPage = () => {
                                     <div className="space-y-2">
                                         <p className="text-xs font-medium text-muted-foreground">附件</p>
                                         {attachments.map((attachment, index) => (
-                                            <div key={attachment?.serverId || attachment?.artifactId || index} className="rounded-lg border px-3 py-2 text-sm">
-                                                <p className="truncate font-medium">{attachment?.filename || attachment?.name || `附件 ${index + 1}`}</p>
-                                                {attachment?.size != null && <p className="text-xs text-muted-foreground">{attachment.size} bytes</p>}
+                                            <div
+                                                key={attachment?.serverId || attachment?.artifactId || index}
+                                                className="rounded-lg border px-3 py-2 text-sm"
+                                            >
+                                                <p className="truncate font-medium">
+                                                    {attachment?.filename || attachment?.name || `附件 ${index + 1}`}
+                                                </p>
+                                                {attachment?.size != null && (
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {attachment.size} bytes
+                                                    </p>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -1042,9 +1237,13 @@ const MessageHistoryMapPage = () => {
                                 variant={detail?.isActivePath ? 'default' : 'outline'}
                                 disabled={detailLoading || branchSwitching || !message}
                                 onClick={activateBranchAndLocate}
-                                title={detail?.isActivePath ? '回到原对话并定位到这条消息' : '把 Conversation 活动链切换到这条历史消息所在分支，然后回到原对话定位'}
+                                title={
+                                    detail?.isActivePath
+                                        ? '回到原对话并定位到这条消息'
+                                        : '把 Conversation 活动链切换到这条历史消息所在分支，然后回到原对话定位'
+                                }
                             >
-                                {branchSwitching ? <Loader2 className="animate-spin"/> : <CornerUpLeft/>}
+                                {branchSwitching ? <Loader2 className="animate-spin" /> : <CornerUpLeft />}
                                 {detail?.isActivePath ? '定位到对话' : '切换到此分支并定位'}
                             </Button>
                             {!detail?.isActivePath && (

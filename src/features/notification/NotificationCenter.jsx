@@ -1,3 +1,4 @@
+import { formatLocalTimestamp } from '@/lib/clientText.js';
 import { useEffect, useRef, useState } from 'react';
 import { create } from 'zustand';
 import { useTranslation } from 'react-i18next';
@@ -169,7 +170,7 @@ export default function NotificationCenter({ onOpenNotification }) {
                                 </p>
                             )}
                             <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                                <time>{new Date(item.createdAt).toLocaleString()}</time>
+                                <time>{formatLocalTimestamp(item.createdAt)}</time>
                                 <span>
                                     {t(item.status === 'pending' ? 'messageCenter.pending' : 'messageCenter.closed')}
                                 </span>

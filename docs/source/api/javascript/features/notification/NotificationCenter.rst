@@ -22,18 +22,18 @@ src/features/notification/NotificationCenter 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``zustand``、``react-i18next``、``lucide-react``、``@/components/ui/sheet``、``@/components/ui/button``、``@/lib/apiClient.js``、``@/context/useEventStore.jsx``、``./useNotificationStore.js``、``sonner``。
+``@/lib/clientText.js``、``react``、``zustand``、``react-i18next``、``lucide-react``、``@/components/ui/sheet``、``@/components/ui/button``、``@/lib/apiClient.js``、``@/context/useEventStore.jsx``、``./useNotificationStore.js``、``sonner``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:639:1665:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:699:1725:FUNCTION
 
 .. js:function:: NotificationCenterTrigger({ listItem = false })
 
    渲染 ``NotificationCenterTrigger`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``13``—``37`` 行。
+   **性质**：同步函数；导出 API；源码第 ``14``—``38`` 行。
 
    **参数**
 
@@ -48,13 +48,13 @@ src/features/notification/NotificationCenter 模块
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:1665:9897:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:1725:9952:FUNCTION
 
 .. js:function:: NotificationCenter({ onOpenNotification })
 
    渲染 ``NotificationCenter`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``38``—``206`` 行。
+   **性质**：同步函数；导出 API；源码第 ``39``—``207`` 行。
 
    **参数**
 
@@ -80,17 +80,17 @@ src/features/notification/NotificationCenter 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:577:637:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:637:697:FUNCTION
 
-.. rubric:: ``create callback @ 12``
+.. rubric:: ``create callback @ 13``
 
 .. code-block:: javascript
 
-   create callback @ 12(set)
+   create callback @ 13(set)
 
 创建与 ``create`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``12``—``12`` 行。
+**性质**：同步局部函数；源码第 ``13``—``13`` 行。
 
 **参数**
 
@@ -103,7 +103,7 @@ src/features/notification/NotificationCenter 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:610:634:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:670:694:FUNCTION
 
 .. rubric:: ``setOpen``
 
@@ -113,7 +113,7 @@ src/features/notification/NotificationCenter 模块
 
 设置与 ``Open`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``12``—``12`` 行；所属函数 ``create callback @ 12``。
+**性质**：同步局部函数；源码第 ``13``—``13`` 行；所属函数 ``create callback @ 13``。
 
 **参数**
 
@@ -126,36 +126,15 @@ src/features/notification/NotificationCenter 模块
 
 **主要协作调用**：``set``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:777:801:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:837:861:FUNCTION
 
-.. rubric:: ``useCenter callback @ 15``
+.. rubric:: ``useCenter callback @ 16``
 
 .. code-block:: javascript
 
-   useCenter callback @ 15(state)
+   useCenter callback @ 16(state)
 
 封装 ``Center`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``15``—``15`` 行；所属函数 ``NotificationCenterTrigger``。
-
-**参数**
-
-``state``
-   调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:851:881:FUNCTION
-
-.. rubric:: ``useNotificationStore callback @ 16``
-
-.. code-block:: javascript
-
-   useNotificationStore callback @ 16(state)
-
-封装 ``NotificationStore`` 的 React 状态、订阅与生命周期。
 
 **性质**：同步局部函数；源码第 ``16``—``16`` 行；所属函数 ``NotificationCenterTrigger``。
 
@@ -168,17 +147,38 @@ src/features/notification/NotificationCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:1252:1271:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:911:941:FUNCTION
 
-.. rubric:: ``onClick callback @ 26``
+.. rubric:: ``useNotificationStore callback @ 17``
 
 .. code-block:: javascript
 
-   onClick callback @ 26()
+   useNotificationStore callback @ 17(state)
+
+封装 ``NotificationStore`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``17``—``17`` 行；所属函数 ``NotificationCenterTrigger``。
+
+**参数**
+
+``state``
+   调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:1312:1331:FUNCTION
+
+.. rubric:: ``onClick callback @ 27``
+
+.. code-block:: javascript
+
+   onClick callback @ 27()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``NotificationCenterTrigger``。
+**性质**：同步局部函数；源码第 ``27``—``27`` 行；所属函数 ``NotificationCenterTrigger``。
 
 **参数**
 
@@ -190,28 +190,7 @@ src/features/notification/NotificationCenter 模块
 
 **主要协作调用**：``setOpen``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:1855:1885:FUNCTION
-
-.. rubric:: ``useNotificationStore callback @ 41``
-
-.. code-block:: javascript
-
-   useNotificationStore callback @ 41(state)
-
-封装 ``NotificationStore`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``41``—``41`` 行；所属函数 ``NotificationCenter``。
-
-**参数**
-
-``state``
-   调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:1930:1964:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:1915:1945:FUNCTION
 
 .. rubric:: ``useNotificationStore callback @ 42``
 
@@ -232,7 +211,7 @@ src/features/notification/NotificationCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:2008:2044:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:1990:2024:FUNCTION
 
 .. rubric:: ``useNotificationStore callback @ 43``
 
@@ -253,17 +232,38 @@ src/features/notification/NotificationCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:2476:3322:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:2068:2104:FUNCTION
 
-.. rubric:: ``anonymous callback @ 53``
+.. rubric:: ``useNotificationStore callback @ 44``
 
 .. code-block:: javascript
 
-   async anonymous callback @ 53(offset)
+   useNotificationStore callback @ 44(state)
+
+封装 ``NotificationStore`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``44``—``44`` 行；所属函数 ``NotificationCenter``。
+
+**参数**
+
+``state``
+   调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:2536:3382:FUNCTION
+
+.. rubric:: ``anonymous callback @ 54``
+
+.. code-block:: javascript
+
+   async anonymous callback @ 54(offset)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``53``—``72`` 行；所属函数 ``NotificationCenter``。
+**性质**：异步局部函数；源码第 ``54``—``73`` 行；所属函数 ``NotificationCenter``。
 
 **参数**
 
@@ -282,17 +282,17 @@ src/features/notification/NotificationCenter 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:2779:3036:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:2839:3096:FUNCTION
 
-.. rubric:: ``setHistory callback @ 60``
+.. rubric:: ``setHistory callback @ 61``
 
 .. code-block:: javascript
 
-   setHistory callback @ 60(previous)
+   setHistory callback @ 61(previous)
 
 设置与 ``History`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``60``—``64`` 行；所属函数 ``anonymous callback @ 53``。
+**性质**：同步局部函数；源码第 ``61``—``65`` 行；所属函数 ``anonymous callback @ 54``。
 
 **参数**
 
@@ -307,17 +307,17 @@ src/features/notification/NotificationCenter 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:2863:2888:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:2923:2948:FUNCTION
 
-.. rubric:: ``(offset ? previous : []).map callback @ 61``
+.. rubric:: ``(offset ? previous : []).map callback @ 62``
 
 .. code-block:: javascript
 
-   (offset ? previous : []).map callback @ 61(item)
+   (offset ? previous : []).map callback @ 62(item)
 
 作为 ``(offset ? previous : []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``61``—``61`` 行；所属函数 ``setHistory callback @ 60``。
+**性质**：同步局部函数；源码第 ``62``—``62`` 行；所属函数 ``setHistory callback @ 61``。
 
 **参数**
 
@@ -328,17 +328,17 @@ src/features/notification/NotificationCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:3338:3622:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:3398:3682:FUNCTION
 
-.. rubric:: ``useEffect callback @ 73``
+.. rubric:: ``useEffect callback @ 74``
 
 .. code-block:: javascript
 
-   useEffect callback @ 73()
+   useEffect callback @ 74()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``73``—``82`` 行；所属函数 ``NotificationCenter``。
+**性质**：同步局部函数；源码第 ``74``—``83`` 行；所属函数 ``NotificationCenter``。
 
 **参数**
 
@@ -356,17 +356,17 @@ src/features/notification/NotificationCenter 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:3502:3530:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:3562:3590:FUNCTION
 
-.. rubric:: ``onEvent({ event: 'notification.*' }).then callback @ 77``
+.. rubric:: ``onEvent({ event: 'notification.*' }).then callback @ 78``
 
 .. code-block:: javascript
 
-   onEvent({ event: 'notification.*' }).then callback @ 77()
+   onEvent({ event: 'notification.*' }).then callback @ 78()
 
 处理 ``onEvent({ event: 'notification.*' }).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``useEffect callback @ 73``。
+**性质**：同步局部函数；源码第 ``78``—``78`` 行；所属函数 ``useEffect callback @ 74``。
 
 **参数**
 
@@ -378,17 +378,17 @@ src/features/notification/NotificationCenter 模块
 
 **主要协作调用**：``loadRef.current``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:3547:3615:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:3607:3675:FUNCTION
 
-.. rubric:: ``returned callback @ 78``
+.. rubric:: ``returned callback @ 79``
 
 .. code-block:: javascript
 
-   returned callback @ 78()
+   returned callback @ 79()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``78``—``81`` 行；所属函数 ``useEffect callback @ 73``。
+**性质**：同步局部函数；源码第 ``79``—``82`` 行；所属函数 ``useEffect callback @ 74``。
 
 **参数**
 
@@ -400,7 +400,7 @@ src/features/notification/NotificationCenter 模块
 
 **主要协作调用**：``off``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:3650:4288:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:3710:4348:FUNCTION
 
 .. rubric:: ``close``
 
@@ -410,7 +410,7 @@ src/features/notification/NotificationCenter 模块
 
 关闭与 ``close`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``83``—``99`` 行；所属函数 ``NotificationCenter``。
+**性质**：异步局部函数；源码第 ``84``—``100`` 行；所属函数 ``NotificationCenter``。
 
 **参数**
 
@@ -427,17 +427,17 @@ src/features/notification/NotificationCenter 模块
 
 **主要协作调用**：``setBusy``、``apiClient.post``、``encodeURIComponent``、``resolve``、``loadRef.current``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:4326:4351:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:4386:4411:FUNCTION
 
-.. rubric:: ``history.map callback @ 100``
+.. rubric:: ``history.map callback @ 101``
 
 .. code-block:: javascript
 
-   history.map callback @ 100(item)
+   history.map callback @ 101(item)
 
 作为 ``history.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``NotificationCenter``。
+**性质**：同步局部函数；源码第 ``101``—``101`` 行；所属函数 ``NotificationCenter``。
 
 **参数**
 
@@ -448,17 +448,17 @@ src/features/notification/NotificationCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:4522:4609:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:4582:4669:FUNCTION
 
-.. rubric:: ``(tab === 'current' ? Object.values(pending) : [...all.values()]) .map callback @ 103``
+.. rubric:: ``(tab === 'current' ? Object.values(pending) : [...all.values()]) .map callback @ 104``
 
 .. code-block:: javascript
 
-   (tab === 'current' ? Object.values(pending) : [...all.values()]) .map callback @ 103(item)
+   (tab === 'current' ? Object.values(pending) : [...all.values()]) .map callback @ 104(item)
 
 作为 ``(tab === 'current' ? Object.values(pending) : [...all.values()]) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``103``—``103`` 行；所属函数 ``NotificationCenter``。
+**性质**：同步局部函数；源码第 ``104``—``104`` 行；所属函数 ``NotificationCenter``。
 
 **参数**
 
@@ -469,17 +469,17 @@ src/features/notification/NotificationCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:4625:4684:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:4685:4744:FUNCTION
 
-.. rubric:: ``(tab === 'current' ? Object.values(pending) : [...all.values()]) .map((item) => (resolved[item.id] >= item.revision ? {… callback @ 104``
+.. rubric:: ``(tab === 'current' ? Object.values(pending) : [...all.values()]) .map((item) => (resolved[item.id] >= item.revision ? {… callback @ 105``
 
 .. code-block:: javascript
 
-   (tab === 'current' ? Object.values(pending) : [...all.values()]) .map((item) => (resolved[item.id] >= item.revision ? {… callback @ 104(a, b)
+   (tab === 'current' ? Object.values(pending) : [...all.values()]) .map((item) => (resolved[item.id] >= item.revision ? {… callback @ 105(a, b)
 
 实现 ``(tab === 'current' ? Object.values(pending) : [...all.values()]) .map((item) => (resolved[item.id] >= item.revision ? {…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``104``—``104`` 行；所属函数 ``NotificationCenter``。
+**性质**：同步局部函数；源码第 ``105``—``105`` 行；所属函数 ``NotificationCenter``。
 
 **参数**
 
@@ -495,17 +495,17 @@ src/features/notification/NotificationCenter 模块
 
 **主要协作调用**：``Date.parse``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:4891:5075:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:4951:5135:FUNCTION
 
-.. rubric:: ``onInteractOutside callback @ 109``
+.. rubric:: ``onInteractOutside callback @ 110``
 
 .. code-block:: javascript
 
-   onInteractOutside callback @ 109(event)
+   onInteractOutside callback @ 110(event)
 
 处理 ``Interact Outside`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``109``—``112`` 行；所属函数 ``NotificationCenter``。
+**性质**：同步局部函数；源码第 ``110``—``113`` 行；所属函数 ``NotificationCenter``。
 
 **参数**
 
@@ -518,17 +518,17 @@ src/features/notification/NotificationCenter 模块
 
 **主要协作调用**：``event.target.closest``、``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:5464:5917:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:5524:5977:FUNCTION
 
-.. rubric:: ``['current', 'history'].map callback @ 119``
+.. rubric:: ``['current', 'history'].map callback @ 120``
 
 .. code-block:: javascript
 
-   ['current', 'history'].map callback @ 119(value)
+   ['current', 'history'].map callback @ 120(value)
 
 作为 ``['current', 'history'].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``119``—``129`` 行；所属函数 ``NotificationCenter``。
+**性质**：同步局部函数；源码第 ``120``—``130`` 行；所属函数 ``NotificationCenter``。
 
 **参数**
 
@@ -543,17 +543,17 @@ src/features/notification/NotificationCenter 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:5757:5776:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:5817:5836:FUNCTION
 
-.. rubric:: ``onClick callback @ 125``
+.. rubric:: ``onClick callback @ 126``
 
 .. code-block:: javascript
 
-   onClick callback @ 125()
+   onClick callback @ 126()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``125``—``125`` 行；所属函数 ``['current', 'history'].map callback @ 119``。
+**性质**：同步局部函数；源码第 ``126``—``126`` 行；所属函数 ``['current', 'history'].map callback @ 120``。
 
 **参数**
 
@@ -565,17 +565,17 @@ src/features/notification/NotificationCenter 模块
 
 **主要协作调用**：``setTab``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:6171:6189:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:6231:6249:FUNCTION
 
-.. rubric:: ``onClick callback @ 135``
+.. rubric:: ``onClick callback @ 136``
 
 .. code-block:: javascript
 
-   onClick callback @ 135()
+   onClick callback @ 136()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``135``—``135`` 行；所属函数 ``NotificationCenter``。
+**性质**：同步局部函数；源码第 ``136``—``136`` 行；所属函数 ``NotificationCenter``。
 
 **参数**
 
@@ -587,17 +587,17 @@ src/features/notification/NotificationCenter 模块
 
 **主要协作调用**：``close``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:6860:9341:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:6920:9396:FUNCTION
 
-.. rubric:: ``items.map callback @ 148``
+.. rubric:: ``items.map callback @ 149``
 
 .. code-block:: javascript
 
-   items.map callback @ 148(item)
+   items.map callback @ 149(item)
 
 作为 ``items.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``148``—``191`` 行；所属函数 ``NotificationCenter``。
+**性质**：同步局部函数；源码第 ``149``—``192`` 行；所属函数 ``NotificationCenter``。
 
 **参数**
 
@@ -608,21 +608,21 @@ src/features/notification/NotificationCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``t``、``new Date(item.createdAt).toLocaleString``。
+**主要协作调用**：``t``、``formatLocalTimestamp``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:7678:7700:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:7738:7760:FUNCTION
 
-.. rubric:: ``onClick callback @ 160``
+.. rubric:: ``onClick callback @ 161``
 
 .. code-block:: javascript
 
-   onClick callback @ 160()
+   onClick callback @ 161()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``160``—``160`` 行；所属函数 ``items.map callback @ 148``。
+**性质**：同步局部函数；源码第 ``161``—``161`` 行；所属函数 ``items.map callback @ 149``。
 
 **参数**
 
@@ -634,17 +634,17 @@ src/features/notification/NotificationCenter 模块
 
 **主要协作调用**：``close``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:8870:9037:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:8925:9092:FUNCTION
 
-.. rubric:: ``onClick callback @ 181``
+.. rubric:: ``onClick callback @ 182``
 
 .. code-block:: javascript
 
-   onClick callback @ 181()
+   onClick callback @ 182()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``181``—``184`` 行；所属函数 ``items.map callback @ 148``。
+**性质**：同步局部函数；源码第 ``182``—``185`` 行；所属函数 ``items.map callback @ 149``。
 
 **参数**
 
@@ -656,17 +656,17 @@ src/features/notification/NotificationCenter 模块
 
 **主要协作调用**：``setOpen``、``onOpenNotification``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:9608:9646:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationCenter.jsx:9663:9701:FUNCTION
 
-.. rubric:: ``onClick callback @ 197``
+.. rubric:: ``onClick callback @ 198``
 
 .. code-block:: javascript
 
-   onClick callback @ 197()
+   onClick callback @ 198()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``197``—``197`` 行；所属函数 ``NotificationCenter``。
+**性质**：同步局部函数；源码第 ``198``—``198`` 行；所属函数 ``NotificationCenter``。
 
 **参数**
 

@@ -1,3 +1,4 @@
+import { formatLocalTimestamp } from '@/lib/clientText.js';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { onEvent } from '@/context/useEventStore.jsx';
@@ -111,7 +112,7 @@ export default function DocumentHistory({ documentId, open, onOpenChange, restor
                         <div className="min-h-0 flex-1 overflow-auto p-2">
                             {versions
                                 .filter((version) =>
-                                    `${version.note} ${version.actor?.name || ''} ${new Date(version.createdAt).toLocaleString(i18n.language)}`
+                                    `${version.note} ${version.actor?.name || ''} ${formatLocalTimestamp(version.createdAt)}`
                                         .toLowerCase()
                                         .includes(query.toLowerCase()),
                                 )
@@ -126,7 +127,7 @@ export default function DocumentHistory({ documentId, open, onOpenChange, restor
                                         <span className="min-w-0">
                                             <span className="block text-sm">{version.note}</span>
                                             <span className="mt-1 block text-xs text-muted-foreground">
-                                                {new Date(version.createdAt).toLocaleString(i18n.language)}
+                                                {formatLocalTimestamp(version.createdAt)}
                                             </span>
                                             <span className="mt-1 block truncate text-xs text-muted-foreground">
                                                 {version.actor?.name}
@@ -143,9 +144,9 @@ export default function DocumentHistory({ documentId, open, onOpenChange, restor
                         <DocumentDiff
                             before={detail.content}
                             current={currentContent}
-                            versionLabel={new Date(
-                                versions.find((version) => version.commit === selected)?.createdAt || Date.now(),
-                            ).toLocaleString(i18n.language)}
+                            versionLabel={formatLocalTimestamp(
+                                versions.find((version) => version.commit === selected)?.createdAt,
+                            )}
                         />
                     ) : (
                         <div className="flex min-h-0 flex-1 items-center justify-center text-sm text-muted-foreground">

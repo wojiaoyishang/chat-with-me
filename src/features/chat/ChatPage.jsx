@@ -1391,8 +1391,10 @@ function ChatPage({
                 !String(messageContent ?? '').trim() &&
                 outboundAttachments.length === 0 &&
                 sendButtonStatus !== 'generating' &&
-                !isRegenerate && !isProgenerate
-            ) return;
+                !isRegenerate &&
+                !isProgenerate
+            )
+                return;
 
             const sendMessage = (conversationId) => {
                 if (isFirstMessageSend) {
@@ -2549,6 +2551,19 @@ function ChatPage({
                         reply({ value: messagesOrderRef.current });
                     }
                     break;
+                case 'message.indicators.changed': {
+                    const updates = payload?.value;
+                    if (!updates || typeof updates !== 'object') break;
+                    const next = produce(messagesRef.current, (draft) => {
+                        for (const [id, indicators] of Object.entries(updates)) {
+                            if (!draft[id] || !Array.isArray(indicators)) continue;
+                            draft[id].extraInfo = { ...(draft[id].extraInfo || {}), indicators };
+                        }
+                    });
+                    setMessages(next);
+                    messagesRef.current = next;
+                    break;
+                }
                 case 'message.content.set':
                     if (payload.value && typeof payload.value === 'object') {
                         const messageIds = Object.keys(payload.value);
