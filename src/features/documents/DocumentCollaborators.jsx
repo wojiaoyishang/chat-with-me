@@ -1,3 +1,4 @@
+import { openChatWindow } from '@/features/chat/page/openChatWindow.js';
 import { formatLocalTimestamp } from '@/lib/clientText.js';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +17,7 @@ function PersonAvatar({ person }) {
     );
 }
 
-export default function DocumentCollaborators({ participants, onLocate }) {
+export default function DocumentCollaborators({ participants, onLocate, onOpenConversation }) {
     const { t, i18n } = useTranslation();
     const [open, setOpen] = useState(false);
     return (
@@ -47,9 +48,17 @@ export default function DocumentCollaborators({ participants, onLocate }) {
                                 type="button"
                                 key={person.participantId}
                                 className="flex w-full gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                title={t('documentCollaborators.locate')}
+                                title={person.kind === 'ai' ? '查看来源会话' : t('documentCollaborators.locate')}
                                 onClick={() => {
-                                    if (onLocate?.(person)) setOpen(false);
+                                    const handled =
+                                        person.kind === 'ai'
+                                            ? onOpenConversation
+                                                ? onOpenConversation(person.conversationId)
+                                                : person.conversationId
+                                                  ? openChatWindow({ conversationId: person.conversationId })
+                                                  : false
+                                            : onLocate?.(person);
+                                    if (handled) setOpen(false);
                                 }}
                             >
                                 <PersonAvatar person={person} />
@@ -80,6 +89,14 @@ export default function DocumentCollaborators({ participants, onLocate }) {
                                             time: person.joinedAt ? formatLocalTimestamp(person.joinedAt) : '—',
                                         })}
                                     </div>
+                                    {person.kind === 'ai' && person.conversationId && (
+                                        <div
+                                            className="break-all text-xs text-muted-foreground"
+                                            title={person.conversationId}
+                                        >
+                                            来源会话：<span className="font-mono">{person.conversationId}</span>
+                                        </div>
+                                    )}
                                     {person.kind !== 'ai' && (
                                         <div className="break-all text-xs text-muted-foreground">
                                             IP: {person.ip || '—'}

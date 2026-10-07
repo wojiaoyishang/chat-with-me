@@ -45,19 +45,34 @@ export default function useCollaborativeDocument(documentId, onStatus) {
         const text = doc.getText('content');
         const presence = createDocumentPresence(doc, documentId, (people) => {
             const roster = people
-                .map(({ userId, name, avatar, color, kind, resourceId, clientId, joinedAt, ip, sessionNumber }) => ({
-                    userId,
-                    clientId,
-                    isSelf: clientId === doc.clientID,
-                    name,
-                    avatar,
-                    color,
-                    kind,
-                    joinedAt,
-                    ip,
-                    sessionNumber,
-                    participantId: kind === 'ai' ? `ai:${resourceId || clientId}` : `user:${userId}:${clientId}`,
-                }))
+                .map(
+                    ({
+                        userId,
+                        name,
+                        avatar,
+                        color,
+                        kind,
+                        resourceId,
+                        conversationId,
+                        clientId,
+                        joinedAt,
+                        ip,
+                        sessionNumber,
+                    }) => ({
+                        userId,
+                        clientId,
+                        conversationId,
+                        isSelf: clientId === doc.clientID,
+                        name,
+                        avatar,
+                        color,
+                        kind,
+                        joinedAt,
+                        ip,
+                        sessionNumber,
+                        participantId: kind === 'ai' ? `ai:${resourceId || clientId}` : `user:${userId}:${clientId}`,
+                    }),
+                )
                 .sort(
                     (a, b) =>
                         a.userId - b.userId ||

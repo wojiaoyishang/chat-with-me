@@ -64,7 +64,7 @@ export default function MarkdownDocumentEditor(props) {
     return props.mode === 'simple' ? <LocalMarkdownEditor {...props} /> : <CollaborativeMarkdownEditor {...props} />;
 }
 
-function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer }) {
+function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, onOpenCollaboratorConversation }) {
     const { t } = useTranslation();
     const [filesOpen, setFilesOpen] = useState(false);
     const [filesRevision, setFilesRevision] = useState(0);
@@ -397,7 +397,11 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer }) 
                     {lastActor?.kind === 'ai' ? t('documents_last_edited_by_ai') : ''}
                 </TooltipContent>
             </Tooltip>
-            <DocumentCollaborators participants={participants} onLocate={locateCollaborator} />
+            <DocumentCollaborators
+                participants={participants}
+                onLocate={locateCollaborator}
+                onOpenConversation={onOpenCollaboratorConversation}
+            />
             <div className="flex shrink-0 items-center gap-0.5 rounded-lg bg-muted/60 p-0.5">
                 {[
                     { value: 'edit', label: t('documents_edit'), icon: <Code2 className="size-3.5" /> },

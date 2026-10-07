@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import { NotificationCenterTrigger } from '@/features/notification/NotificationCenter.jsx';
 import { TaskCenterTrigger } from '@/features/tasks/TaskCenter.jsx';
 import useIndependentChatWindow from '@/features/chat/page/hooks/useIndependentChatWindow.js';
@@ -36,6 +37,28 @@ const ChatWithEditor = ({
     const [isChatMinimized, setIsChatMinimized] = useState(false); // 仅最小化按钮触发
     const [isWindowMode, setIsWindowMode] = useState(false); // ChatPage 窗口化状态
     const lastLeftWidthRef = useRef(70);
+    const chatPanelRef = useRef(null);
+    const attentionTimerRef = useRef(null);
+    const [chatAttention, setChatAttention] = useState(false);
+    useEffect(() => () => clearTimeout(attentionTimerRef.current), []);
+    const openCollaboratorConversation = useCallback(
+        (targetId) => {
+            if (!targetId) return false;
+            if (targetId !== conversationId || detached) {
+                return openChatWindow({ conversationId: targetId, documentId });
+            }
+            setIsCollapsed(false);
+            setIsChatMinimized(false);
+            setMobilePanel('chat');
+            if (isCollapsed || isChatMinimized) setLeftWidth(lastLeftWidthRef.current);
+            clearTimeout(attentionTimerRef.current);
+            setChatAttention(true);
+            attentionTimerRef.current = setTimeout(() => setChatAttention(false), 2800);
+            requestAnimationFrame(() => chatPanelRef.current?.focus({ preventScroll: true }));
+            return true;
+        },
+        [conversationId, detached, documentId, isCollapsed, isChatMinimized],
+    );
 
     const [isResizing, setIsResizing] = useState(false);
     const [ghostPos, setGhostPos] = useState(0);
@@ -282,6 +305,7 @@ const ChatWithEditor = ({
                         {editorType === 'markdown' ? (
                             <MarkdownDocumentEditor
                                 headerContainer={headerContainer}
+                                onOpenCollaboratorConversation={openCollaboratorConversation}
                                 key={documentId}
                                 documentId={documentId}
                                 onStatus={setDocModifiedStatus}
@@ -307,7 +331,10 @@ const ChatWithEditor = ({
 
                 {/* 右侧：AI 聊天面板 */}
                 <aside
-                    className={`h-full border-l border-gray-200 bg-white flex flex-col relative min-w-0 transition-all duration-300 ${isWindowMode ? 'border-none' : ''}`}
+                    ref={chatPanelRef}
+                    tabIndex={-1}
+                    aria-label="会话聊天区域"
+                    className={`h-full border-l border-gray-200 bg-white flex flex-col relative min-w-0 transition-all duration-300 ${isWindowMode ? 'border-none' : ''} ${chatAttention ? 'ring-4 ring-inset ring-blue-400 shadow-[inset_0_0_24px_rgba(59,130,246,0.15)]' : ''}`}
                     style={
                         isMobile
                             ? { flex: 1, width: '100%', display: mobilePanel === 'chat' ? undefined : 'none' }
@@ -328,6 +355,18 @@ const ChatWithEditor = ({
                             settingsRefreshVersions={settingsRefreshVersions}
                         />
                     </div>
+                    <AnimatePresence>
+                        {chatAttention && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.25 }}
+                                className="pointer-events-none absolute inset-0 z-50 border-3 border-blue-400 bg-blue-500/5"
+                                aria-hidden="true"
+                            />
+                        )}
+                    </AnimatePresence>
                 </aside>
             </div>
         </div>

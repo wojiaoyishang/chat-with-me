@@ -44,18 +44,18 @@ src/features/documents/MarkdownDocumentEditor 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``props.mode === 'simple' ? <LocalMarkdownEditor {...props} /> : <CollaborativeMarkdownEditor {...props} />``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:2608:33046:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:2608:33190:FUNCTION
 
-.. js:function:: CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer })
+.. js:function:: CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, onOpenCollaboratorConversation })
 
    渲染 ``CollaborativeMarkdownEditor`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``67``—``709`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``67``—``713`` 行。
 
    **参数**
 
-   ``{ documentId, onStatus, headerContainer }``
-      调用方传入的 ``documentId, onStatus, headerContainer`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ documentId, onStatus, headerContainer, onOpenCollaboratorConversation }``
+      调用方传入的 ``documentId, onStatus, headerContainer, onOpenCollaboratorConversation`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -77,7 +77,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:3767:6256:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:3799:6288:FUNCTION
 
 .. rubric:: ``uploadImages``
 
@@ -109,7 +109,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4139:4174:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4171:4206:FUNCTION
 
 .. rubric:: ``isCurrent``
 
@@ -129,7 +129,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4199:6052:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4231:6084:FUNCTION
 
 .. rubric:: ``upload``
 
@@ -160,7 +160,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4503:4680:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4535:4712:FUNCTION
 
 .. rubric:: ``setUploads callback @ 108``
 
@@ -183,7 +183,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``previous.slice``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4717:4904:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4749:4936:FUNCTION
 
 .. rubric:: ``update``
 
@@ -208,7 +208,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4764:4877:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4796:4909:FUNCTION
 
 .. rubric:: ``setUploads callback @ 113``
 
@@ -233,7 +233,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4819:4876:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:4851:4908:FUNCTION
 
 .. rubric:: ``previous.map callback @ 114``
 
@@ -254,7 +254,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:5248:5752:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:5280:5784:FUNCTION
 
 .. rubric:: ``onUploadProgress``
 
@@ -277,7 +277,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``update``、``Math.min``、``Math.max``、``performance.now``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6099:6119:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6131:6151:FUNCTION
 
 .. rubric:: ``setFilesRevision callback @ 139``
 
@@ -298,7 +298,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6330:7841:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6362:7873:FUNCTION
 
 .. rubric:: ``useMemo callback @ 148``
 
@@ -324,7 +324,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6365:6444:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6397:6476:FUNCTION
 
 .. rubric:: ``list``
 
@@ -351,7 +351,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``apiClient.get``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6472:6638:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6504:6670:FUNCTION
 
 .. rubric:: ``prepareDelete``
 
@@ -378,7 +378,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``save``、``apiClient.get``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6659:6876:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6691:6908:FUNCTION
 
 .. rubric:: ``remove``
 
@@ -404,7 +404,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``apiClient.delete``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6895:7261:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:6927:7293:FUNCTION
 
 .. rubric:: ``move``
 
@@ -434,7 +434,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``save``、``apiClient.get``、``apiClient.post``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:7281:7373:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:7313:7405:FUNCTION
 
 .. rubric:: ``mkdir``
 
@@ -464,7 +464,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``apiClient.post``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:7394:7829:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:7426:7861:FUNCTION
 
 .. rubric:: ``rename``
 
@@ -494,7 +494,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``save``、``apiClient.get``、``apiClient.patch``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:7892:8079:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:7924:8111:FUNCTION
 
 .. rubric:: ``useEffect callback @ 182``
 
@@ -523,7 +523,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8004:8064:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8036:8096:FUNCTION
 
 .. rubric:: ``onEvent({ event: 'document.files.changed', documentId, direction: 'incoming' }).then callback @ 183``
 
@@ -547,7 +547,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8043:8063:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8075:8095:FUNCTION
 
 .. rubric:: ``setFilesRevision callback @ 184``
 
@@ -568,7 +568,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8124:12366:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8156:12398:FUNCTION
 
 .. rubric:: ``useEffect callback @ 188``
 
@@ -592,7 +592,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8290:8324:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8322:8356:FUNCTION
 
 .. rubric:: ``update``
 
@@ -614,7 +614,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``setContent``、``text.toString``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8605:9079:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8637:9111:FUNCTION
 
 .. rubric:: ``paste``
 
@@ -639,7 +639,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8734:8806:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:8766:8838:FUNCTION
 
 .. rubric:: ``[...(event.clipboardData?.files || [])].filter callback @ 202``
 
@@ -662,7 +662,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``file.type.startsWith``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:11753:11930:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:11785:11962:FUNCTION
 
 .. rubric:: ``syncLocalColor``
 
@@ -684,7 +684,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``resource.awareness.getLocalState``、``editor.dom.style.setProperty``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:12104:12359:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:12136:12391:FUNCTION
 
 .. rubric:: ``returned callback @ 269``
 
@@ -706,7 +706,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``resource.awareness.off``、``editor.destroy``、``undoManager.destroy``、``text.unobserve``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:12411:13159:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:12443:13191:FUNCTION
 
 .. rubric:: ``locateCollaborator``
 
@@ -735,7 +735,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:12737:13130:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:12769:13162:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 285``
 
@@ -761,7 +761,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``collaboratorPosition``、``editorRef.current.dispatch``、``EditorView.scrollIntoView``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13183:13376:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13215:13408:FUNCTION
 
 .. rubric:: ``handleSave``
 
@@ -783,7 +783,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``save``、``toast.success``、``t``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13392:14023:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13424:14055:FUNCTION
 
 .. rubric:: ``useEffect callback @ 302``
 
@@ -812,7 +812,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13429:13870:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13461:13902:FUNCTION
 
 .. rubric:: ``interceptSave``
 
@@ -837,7 +837,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13725:13774:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13757:13806:FUNCTION
 
 .. rubric:: ``save() .then callback @ 309``
 
@@ -859,7 +859,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``toast.success``、``t``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13807:13844:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13839:13876:FUNCTION
 
 .. rubric:: ``save() .then(() => toast.success(t('documents_version_saved'))) .catch callback @ 310``
 
@@ -882,7 +882,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13951:14016:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:13983:14048:FUNCTION
 
 .. rubric:: ``returned callback @ 314``
 
@@ -908,7 +908,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14056:14292:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14088:14324:FUNCTION
 
 .. rubric:: ``command``
 
@@ -931,7 +931,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``setPane``、``undoRef.current.stopCapturing``、``callback``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14373:14402:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14405:14434:FUNCTION
 
 .. rubric:: ``run``
 
@@ -953,7 +953,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``undoRef.current.undo``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14465:14494:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14497:14526:FUNCTION
 
 .. rubric:: ``run``
 
@@ -975,7 +975,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``undoRef.current.redo``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14563:14598:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14595:14630:FUNCTION
 
 .. rubric:: ``run``
 
@@ -998,7 +998,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``prefixLines``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14696:14759:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14728:14791:FUNCTION
 
 .. rubric:: ``run``
 
@@ -1021,7 +1021,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``wrapSelection``、``t``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14870:14931:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:14902:14963:FUNCTION
 
 .. rubric:: ``run``
 
@@ -1044,7 +1044,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``wrapSelection``、``t``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15056:15119:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15088:15151:FUNCTION
 
 .. rubric:: ``run``
 
@@ -1067,7 +1067,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``wrapSelection``、``t``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15197:15231:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15229:15263:FUNCTION
 
 .. rubric:: ``run``
 
@@ -1090,7 +1090,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``prefixLines``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15309:15344:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15341:15376:FUNCTION
 
 .. rubric:: ``run``
 
@@ -1113,7 +1113,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``prefixLines``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15408:15442:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15440:15474:FUNCTION
 
 .. rubric:: ``run``
 
@@ -1136,7 +1136,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``prefixLines``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15546:15615:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15578:15647:FUNCTION
 
 .. rubric:: ``run``
 
@@ -1159,7 +1159,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``wrapSelection``、``t``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15657:16312:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15689:16344:FUNCTION
 
 .. rubric:: ``insertLink``
 
@@ -1184,7 +1184,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15966:16242:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:15998:16274:FUNCTION
 
 .. rubric:: ``command callback @ 358``
 
@@ -1207,17 +1207,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``wrapSelection``、``url.replaceAll('(', '%28').replaceAll``、``url.replaceAll``、``t``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:18319:19252:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:18463:19396:FUNCTION
 
-.. rubric:: ``[ { value: 'edit', label: t('documents_edit'), icon: <Code2 className="size-3.5" /> }, { value: 'split', label: t('docu… callback @ 406``
+.. rubric:: ``[ { value: 'edit', label: t('documents_edit'), icon: <Code2 className="size-3.5" /> }, { value: 'split', label: t('docu… callback @ 410``
 
 .. code-block:: javascript
 
-   [ { value: 'edit', label: t('documents_edit'), icon: <Code2 className="size-3.5" /> }, { value: 'split', label: t('docu… callback @ 406({ value, label, icon })
+   [ { value: 'edit', label: t('documents_edit'), icon: <Code2 className="size-3.5" /> }, { value: 'split', label: t('docu… callback @ 410({ value, label, icon })
 
 实现 ``[ { value: 'edit', label: t('documents_edit'), icon: <Code2 className="size-3.5" /> }, { value: 'split', label: t('docu…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``406``—``423`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``410``—``427`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1230,17 +1230,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:18968:18988:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:19112:19132:FUNCTION
 
-.. rubric:: ``onClick callback @ 416``
+.. rubric:: ``onClick callback @ 420``
 
 .. code-block:: javascript
 
-   onClick callback @ 416()
+   onClick callback @ 420()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``416``—``416`` 行；所属函数 ``[ { value: 'edit', label: t('documents_edit'), icon: <Code2 className="size-3.5" /> }, { value: 'split', label: t('docu… callback @ 406``。
+**性质**：同步局部函数；源码第 ``420``—``420`` 行；所属函数 ``[ { value: 'edit', label: t('documents_edit'), icon: <Code2 className="size-3.5" /> }, { value: 'split', label: t('docu… callback @ 410``。
 
 **参数**
 
@@ -1252,17 +1252,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``setPane``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:20120:20145:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:20264:20289:FUNCTION
 
-.. rubric:: ``onClick callback @ 447``
+.. rubric:: ``onClick callback @ 451``
 
 .. code-block:: javascript
 
-   onClick callback @ 447()
+   onClick callback @ 451()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``447``—``447`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``451``—``451`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1274,17 +1274,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``setFilesOpen``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:20468:20728:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:20612:20872:FUNCTION
 
-.. rubric:: ``onOpen callback @ 457``
+.. rubric:: ``onOpen callback @ 461``
 
 .. code-block:: javascript
 
-   onOpen callback @ 457(file)
+   onOpen callback @ 461(file)
 
 处理 ``Open`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``457``—``462`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``461``—``466`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1299,17 +1299,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:20563:20639:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:20707:20783:FUNCTION
 
-.. rubric:: ``command callback @ 459``
+.. rubric:: ``command callback @ 463``
 
 .. code-block:: javascript
 
-   command callback @ 459(view)
+   command callback @ 463(view)
 
 实现 ``command`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``459``—``459`` 行；所属函数 ``onOpen callback @ 457``。
+**性质**：同步局部函数；源码第 ``463``—``463`` 行；所属函数 ``onOpen callback @ 461``。
 
 **参数**
 
@@ -1322,7 +1322,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``wrapSelection``、``encodeURI``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:20829:21372:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:20973:21516:FUNCTION
 
 .. rubric:: ``exportDocument``
 
@@ -1332,7 +1332,7 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 实现 ``exportDocument`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``466``—``482`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：异步局部函数；源码第 ``470``—``486`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1349,17 +1349,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``setExporting``、``save``、``apiClient.post``、``useTaskStore.getState().merge``、``useTaskStore.getState``、``useTaskStore.getState().show``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:21810:22764:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:21954:22908:FUNCTION
 
-.. rubric:: ``tools.map callback @ 488``
+.. rubric:: ``tools.map callback @ 492``
 
 .. code-block:: javascript
 
-   tools.map callback @ 488({ label, icon, run })
+   tools.map callback @ 492({ label, icon, run })
 
 作为 ``tools.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``488``—``506`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``492``—``510`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1372,17 +1372,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:22374:22407:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:22518:22551:FUNCTION
 
-.. rubric:: ``onMouseDown callback @ 498``
+.. rubric:: ``onMouseDown callback @ 502``
 
 .. code-block:: javascript
 
-   onMouseDown callback @ 498(event)
+   onMouseDown callback @ 502(event)
 
 处理 ``Mouse Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``498``—``498`` 行；所属函数 ``tools.map callback @ 488``。
+**性质**：同步局部函数；源码第 ``502``—``502`` 行；所属函数 ``tools.map callback @ 492``。
 
 **参数**
 
@@ -1395,17 +1395,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:22454:22472:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:22598:22616:FUNCTION
 
-.. rubric:: ``onClick callback @ 499``
+.. rubric:: ``onClick callback @ 503``
 
 .. code-block:: javascript
 
-   onClick callback @ 499()
+   onClick callback @ 503()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``499``—``499`` 行；所属函数 ``tools.map callback @ 488``。
+**性质**：同步局部函数；源码第 ``503``—``503`` 行；所属函数 ``tools.map callback @ 492``。
 
 **参数**
 
@@ -1417,17 +1417,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``command``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:23944:23969:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:24088:24113:FUNCTION
 
-.. rubric:: ``onClick callback @ 527``
+.. rubric:: ``onClick callback @ 531``
 
 .. code-block:: javascript
 
-   onClick callback @ 527()
+   onClick callback @ 531()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``527``—``527`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``531``—``531`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1439,17 +1439,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``setImageLink``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:24447:24471:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:24591:24615:FUNCTION
 
-.. rubric:: ``onClick callback @ 536``
+.. rubric:: ``onClick callback @ 540``
 
 .. code-block:: javascript
 
-   onClick callback @ 536()
+   onClick callback @ 540()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``536``—``536`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``540``—``540`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1461,17 +1461,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``setImageLink``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:25125:25166:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:25269:25310:FUNCTION
 
-.. rubric:: ``onChange callback @ 548``
+.. rubric:: ``onChange callback @ 552``
 
 .. code-block:: javascript
 
-   onChange callback @ 548(event)
+   onChange callback @ 552(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``548``—``548`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``552``—``552`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1484,17 +1484,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``setLinkUrl``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:26024:26058:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:26168:26202:FUNCTION
 
-.. rubric:: ``onClick callback @ 567``
+.. rubric:: ``onClick callback @ 571``
 
 .. code-block:: javascript
 
-   onClick callback @ 567()
+   onClick callback @ 571()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``567``—``567`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``571``—``571`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1506,17 +1506,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``uploadInput.current?.click``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:27124:27399:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:27268:27543:FUNCTION
 
-.. rubric:: ``['md', 'pdf', 'zip'].map callback @ 589``
+.. rubric:: ``['md', 'pdf', 'zip'].map callback @ 593``
 
 .. code-block:: javascript
 
-   ['md', 'pdf', 'zip'].map callback @ 589(format)
+   ['md', 'pdf', 'zip'].map callback @ 593(format)
 
 作为 ``['md', 'pdf', 'zip'].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``589``—``593`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``593``—``597`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1531,17 +1531,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:27211:27244:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:27355:27388:FUNCTION
 
-.. rubric:: ``onSelect callback @ 590``
+.. rubric:: ``onSelect callback @ 594``
 
 .. code-block:: javascript
 
-   onSelect callback @ 590()
+   onSelect callback @ 594()
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``590``—``590`` 行；所属函数 ``['md', 'pdf', 'zip'].map callback @ 589``。
+**性质**：同步局部函数；源码第 ``594``—``594`` 行；所属函数 ``['md', 'pdf', 'zip'].map callback @ 593``。
 
 **参数**
 
@@ -1553,17 +1553,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``exportDocument``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:27783:27807:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:27927:27951:FUNCTION
 
-.. rubric:: ``onClick callback @ 602``
+.. rubric:: ``onClick callback @ 606``
 
 .. code-block:: javascript
 
-   onClick callback @ 602()
+   onClick callback @ 606()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``602``—``602`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``606``—``606`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1575,17 +1575,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``setFilesOpen``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:28464:28487:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:28608:28631:FUNCTION
 
-.. rubric:: ``onClick callback @ 615``
+.. rubric:: ``onClick callback @ 619``
 
 .. code-block:: javascript
 
-   onClick callback @ 615()
+   onClick callback @ 619()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``615``—``615`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``619``—``619`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1597,17 +1597,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``handleSave``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:29272:29298:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:29416:29442:FUNCTION
 
-.. rubric:: ``onClick callback @ 630``
+.. rubric:: ``onClick callback @ 634``
 
 .. code-block:: javascript
 
-   onClick callback @ 630()
+   onClick callback @ 634()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``630``—``630`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``634``—``634`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 
@@ -1619,17 +1619,17 @@ src/features/documents/MarkdownDocumentEditor 模块
 
 **主要协作调用**：``setHistoryOpen``。
 
-.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:29903:30083:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/MarkdownDocumentEditor.jsx:30047:30227:FUNCTION
 
-.. rubric:: ``onChange callback @ 646``
+.. rubric:: ``onChange callback @ 650``
 
 .. code-block:: javascript
 
-   onChange callback @ 646(event)
+   onChange callback @ 650(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``646``—``650`` 行；所属函数 ``CollaborativeMarkdownEditor``。
+**性质**：同步局部函数；源码第 ``650``—``654`` 行；所属函数 ``CollaborativeMarkdownEditor``。
 
 **参数**
 

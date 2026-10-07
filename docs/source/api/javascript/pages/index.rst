@@ -21,7 +21,7 @@
    * - :doc:`src/pages/ChatWithEditor </api/javascript/pages/ChatWithEditor>`
      - 1
      - 0
-     - 14
+     - 19
      - ``src/pages/ChatWithEditor.jsx``
    * - :doc:`src/pages/DashboardPage </api/javascript/pages/DashboardPage>`
      - 2
