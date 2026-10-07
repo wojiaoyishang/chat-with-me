@@ -187,33 +187,6 @@ const ChatHeader = memo(
                         isWindowMode={isWindowMode}
                     />
 
-                    <MessageHistoryMapButton
-                        conversationId={conversationId}
-                        disabled={!conversationId}
-                        label={t('message_history_map', { defaultValue: '消息历史地图' })}
-                    />
-
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={onOpenRuntimeInspector}
-                        disabled={runtimeInspectorDisabled}
-                        className="cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
-                        aria-label={t('runtime_inspector') || '运行时检查器'}
-                        title={t('runtime_inspector') || '运行时检查器'}
-                    >
-                        <Activity className="h-5 w-5 text-gray-600" />
-                    </Button>
-
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleSidebarToggle}
-                        className="cursor-pointer hover:bg-gray-100"
-                    >
-                        <PanelRight className="h-5 w-5 text-gray-600" />
-                    </Button>
-
                     {showTaskButton && (
                         <>
                             <NotificationCenterTrigger />
@@ -246,6 +219,32 @@ const ChatHeader = memo(
                             <Minus className="h-5 w-5 text-gray-600" />
                         </Button>
                     )}
+                    <MessageHistoryMapButton
+                        conversationId={conversationId}
+                        disabled={!conversationId}
+                        label={t('message_history_map', { defaultValue: '消息历史地图' })}
+                    />
+
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onOpenRuntimeInspector}
+                        disabled={runtimeInspectorDisabled}
+                        className="cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                        aria-label={t('runtime_inspector') || '运行时检查器'}
+                        title={t('runtime_inspector') || '运行时检查器'}
+                    >
+                        <Activity className="h-5 w-5 text-gray-600" />
+                    </Button>
+
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleSidebarToggle}
+                        className="cursor-pointer hover:bg-gray-100"
+                    >
+                        <PanelRight className="h-5 w-5 text-gray-600" />
+                    </Button>
                 </div>
             </header>
         );

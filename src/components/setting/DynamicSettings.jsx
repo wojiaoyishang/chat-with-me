@@ -3814,6 +3814,54 @@ function ToolPermissionMatrixItem({ item, path }) {
     );
 }
 
+function MultiSelectItem({ item, path }) {
+    const { values, update } = useSettings();
+    const value = deepGet(values, path);
+    const unrestricted = value == null;
+    const selected = Array.isArray(value) ? value : [];
+    return (
+        <div className="py-3">
+            <div className="mb-2 font-medium">{item.text}</div>
+            <label className="mb-3 flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                    type="checkbox"
+                    checked={unrestricted}
+                    onChange={(event) =>
+                        update(path, event.target.checked ? null : (item.options || []).map((option) => option.value))
+                    }
+                />
+                不限模型
+            </label>
+            <div className="grid gap-2 sm:grid-cols-2">
+                {(item.options || []).map((option) => (
+                    <label
+                        key={option.value}
+                        className="flex cursor-pointer items-center gap-2 rounded-lg border p-2 text-sm"
+                    >
+                        <input
+                            type="checkbox"
+                            checked={unrestricted || selected.includes(option.value)}
+                            onChange={(event) => {
+                                const previous = unrestricted
+                                    ? (item.options || []).map((option) => option.value)
+                                    : selected;
+                                update(
+                                    path,
+                                    event.target.checked
+                                        ? [...new Set([...previous, option.value])]
+                                        : previous.filter((value) => value !== option.value),
+                                );
+                            }}
+                        />
+                        {option.label}
+                    </label>
+                ))}
+            </div>
+            {item.tips && <p className="mt-2 text-xs text-gray-500">{item.tips}</p>}
+        </div>
+    );
+}
+
 // ─── Item Renderer ─────────────────────────────────────────────────
 function SettingItemRenderer({ item, path }) {
     const { values } = useSettings();
@@ -3859,8 +3907,20 @@ function SettingItemRenderer({ item, path }) {
             return <CheckboxItem item={item} path={path} />;
         case 'radio':
             return <RadioItem item={item} path={path} />;
-        case 'select':
-            return <SelectItem item={item} path={path} />;
+        case 'multiselect':
+            return <MultiSelectItem item={item} path={path} />;
+        case 'select': {
+            const allowed = item.allowedBy ? deepGet(values, [...path.slice(0, -1), item.allowedBy]) : null;
+            const filtered = Array.isArray(allowed)
+                ? {
+                      ...item,
+                      options: (item.options || []).filter(
+                          (option) => option.value === '' || allowed.includes(option.value),
+                      ),
+                  }
+                : item;
+            return <SelectItem item={filtered} path={path} />;
+        }
         case 'custom':
             return <CustomItem item={item} path={path} />;
         case 'json':

@@ -214,9 +214,9 @@
      - 10
      - ``src/components/setting/AccountSecurity.jsx``
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
-     - 53
+     - 54
      - 0
-     - 289
+     - 296
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/OrderedOptionsEditor </api/javascript/components/setting/OrderedOptionsEditor>`
      - 1

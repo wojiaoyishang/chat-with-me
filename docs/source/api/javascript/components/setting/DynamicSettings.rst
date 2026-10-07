@@ -15,9 +15,9 @@ src/components/setting/DynamicSettings 模块
 
 * **源码文件**：``src/components/setting/DynamicSettings.jsx``
 * **模块标识**：``src/components/setting/DynamicSettings``
-* **顶层函数/组件/Hook**：53
+* **顶层函数/组件/Hook**：54
 * **类**：0
-* **局部函数与匿名回调**：289
+* **局部函数与匿名回调**：296
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -1063,13 +1063,34 @@ src/components/setting/DynamicSettings 模块
 
    **内部回调数量**：12。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:182332:184456:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:182332:184442:FUNCTION
+
+.. js:function:: MultiSelectItem({ item, path })
+
+   渲染 ``MultiSelectItem`` React 组件，并协调该界面的状态、事件和子组件。
+
+   **性质**：同步函数；模块内部入口；源码第 ``3817``—``3863`` 行。
+
+   **参数**
+
+   ``{ item, path }``
+      调用方传入的 ``item, path`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className="py-3"> <div className="mb-2 font-medium">{item.text}</div> <label className="mb-3 flex cursor-pointer items-center gap-2 text-sm"> <input type="checkbox" checked…``。
+
+   **主要协作调用**：``useSettings``、``deepGet``、``Array.isArray``、``(item.options || []).map``。
+
+   **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:184442:187108:FUNCTION
 
 .. js:function:: SettingItemRenderer({ item, path })
 
    渲染 ``SettingItemRenderer`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``3818``—``3875`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``3866``—``3935`` 行。
 
    **参数**
 
@@ -1080,15 +1101,17 @@ src/components/setting/DynamicSettings 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``null``、``<ListItem item={item} path={path} />``、``<ImageItem item={item} path={path} />``、``<GroupItem item={item} path={path} />``。
 
-   **主要协作调用**：``useSettings``、``Array.isArray``、``path.slice``、``Object.entries``、``deepGet``、``expected.includes``。
+   **主要协作调用**：``useSettings``、``Array.isArray``、``path.slice``、``Object.entries``、``deepGet``、``expected.includes``、``(item.options || []).filter``。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:184456:186319:FUNCTION
+   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:187108:188971:FUNCTION
 
 .. js:function:: DynamicSettings({ config, onChange, initialValues, className, onImageUpload, runtimeContext })
 
    渲染 ``DynamicSettings`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``3878``—``3923`` 行。
+   **性质**：同步函数；导出 API；源码第 ``3938``—``3983`` 行。
 
    **参数**
 
@@ -1107,13 +1130,13 @@ src/components/setting/DynamicSettings 模块
 
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:186319:189154:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:188971:191806:FUNCTION
 
 .. js:function:: buildDefaults(config, initialValues)
 
    构造与 ``Defaults`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``3926``—``3986`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``3986``—``4046`` 行。
 
    **参数**
 
@@ -1131,13 +1154,13 @@ src/components/setting/DynamicSettings 模块
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:189154:189955:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:191806:192607:FUNCTION
 
 .. js:function:: deepMerge(base, overrides)
 
    实现 ``deepMerge`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``3988``—``4010`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``4048``—``4070`` 行。
 
    **参数**
 
@@ -7660,17 +7683,178 @@ src/components/setting/DynamicSettings 模块
 
 **主要协作调用**：``setToolMode``。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:184691:184733:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:182884:183013:FUNCTION
 
-.. rubric:: ``useState callback @ 3879``
+.. rubric:: ``onChange callback @ 3829``
 
 .. code-block:: javascript
 
-   useState callback @ 3879()
+   onChange callback @ 3829(event)
+
+处理 ``Change`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``3829``—``3830`` 行；所属函数 ``MultiSelectItem``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``update``、``(item.options || []).map``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:182987:183011:FUNCTION
+
+.. rubric:: ``(item.options || []).map callback @ 3830``
+
+.. code-block:: javascript
+
+   (item.options || []).map callback @ 3830(option)
+
+作为 ``(item.options || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``3830``—``3830`` 行；所属函数 ``onChange callback @ 3829``。
+
+**参数**
+
+``option``
+   调用方传入的 ``option`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:183195:184312:FUNCTION
+
+.. rubric:: ``(item.options || []).map callback @ 3836``
+
+.. code-block:: javascript
+
+   (item.options || []).map callback @ 3836(option)
+
+作为 ``(item.options || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``3836``—``3858`` 行；所属函数 ``MultiSelectItem``。
+
+**参数**
+
+``option``
+   调用方传入的 ``option`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``selected.includes``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:183605:184198:FUNCTION
+
+.. rubric:: ``onChange callback @ 3844``
+
+.. code-block:: javascript
+
+   onChange callback @ 3844(event)
+
+处理 ``Change`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``3844``—``3854`` 行；所属函数 ``(item.options || []).map callback @ 3836``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``(item.options || []).map``、``update``、``previous.filter``。
+
+**内部回调数量**：2。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:183743:183767:FUNCTION
+
+.. rubric:: ``(item.options || []).map callback @ 3846``
+
+.. code-block:: javascript
+
+   (item.options || []).map callback @ 3846(option)
+
+作为 ``(item.options || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``3846``—``3846`` 行；所属函数 ``onChange callback @ 3844``。
+
+**参数**
+
+``option``
+   调用方传入的 ``option`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:184098:184131:FUNCTION
+
+.. rubric:: ``previous.filter callback @ 3852``
+
+.. code-block:: javascript
+
+   previous.filter callback @ 3852(value)
+
+作为 ``previous.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``3852``—``3852`` 行；所属函数 ``onChange callback @ 3844``。
+
+**参数**
+
+``value``
+   待读取、转换或校验的值。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:186475:186567:FUNCTION
+
+.. rubric:: ``(item.options || []).filter callback @ 3918``
+
+.. code-block:: javascript
+
+   (item.options || []).filter callback @ 3918(option)
+
+作为 ``(item.options || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``3918``—``3918`` 行；所属函数 ``SettingItemRenderer``。
+
+**参数**
+
+``option``
+   调用方传入的 ``option`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``allowed.includes``。
+
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:187343:187385:FUNCTION
+
+.. rubric:: ``useState callback @ 3939``
+
+.. code-block:: javascript
+
+   useState callback @ 3939()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``3879``—``3879`` 行；所属函数 ``DynamicSettings``。
+**性质**：同步局部函数；源码第 ``3939``—``3939`` 行；所属函数 ``DynamicSettings``。
 
 **参数**
 
@@ -7682,17 +7866,17 @@ src/components/setting/DynamicSettings 模块
 
 **主要协作调用**：``buildDefaults``。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:184930:185262:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:187582:187914:FUNCTION
 
-.. rubric:: ``useCallback callback @ 3885``
+.. rubric:: ``useCallback callback @ 3945``
 
 .. code-block:: javascript
 
-   useCallback callback @ 3885(path, value)
+   useCallback callback @ 3945(path, value)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``3885``—``3893`` 行；所属函数 ``DynamicSettings``。
+**性质**：同步局部函数；源码第 ``3945``—``3953`` 行；所属函数 ``DynamicSettings``。
 
 **参数**
 
@@ -7712,17 +7896,17 @@ src/components/setting/DynamicSettings 模块
 
 **主要协作调用**：``deepSet``、``setValues``、``onChangeRef.current``。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:185284:185560:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:187936:188212:FUNCTION
 
-.. rubric:: ``useEffect callback @ 3895``
+.. rubric:: ``useEffect callback @ 3955``
 
 .. code-block:: javascript
 
-   useEffect callback @ 3895()
+   useEffect callback @ 3955()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``3895``—``3903`` 行；所属函数 ``DynamicSettings``。
+**性质**：同步局部函数；源码第 ``3955``—``3963`` 行；所属函数 ``DynamicSettings``。
 
 **参数**
 
@@ -7734,17 +7918,17 @@ src/components/setting/DynamicSettings 模块
 
 **主要协作调用**：``buildDefaults``、``setValues``。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:185613:185679:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:188265:188331:FUNCTION
 
-.. rubric:: ``useMemo callback @ 3906``
+.. rubric:: ``useMemo callback @ 3966``
 
 .. code-block:: javascript
 
-   useMemo callback @ 3906()
+   useMemo callback @ 3966()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``3906``—``3906`` 行；所属函数 ``DynamicSettings``。
+**性质**：同步局部函数；源码第 ``3966``—``3966`` 行；所属函数 ``DynamicSettings``。
 
 **参数**
 
@@ -7754,17 +7938,17 @@ src/components/setting/DynamicSettings 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:186001:186253:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:188653:188905:FUNCTION
 
-.. rubric:: ``config.map callback @ 3915``
+.. rubric:: ``config.map callback @ 3975``
 
 .. code-block:: javascript
 
-   config.map callback @ 3915(item, i)
+   config.map callback @ 3975(item, i)
 
 作为 ``config.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``3915``—``3919`` 行；所属函数 ``DynamicSettings``。
+**性质**：同步局部函数；源码第 ``3975``—``3979`` 行；所属函数 ``DynamicSettings``。
 
 **参数**
 
@@ -7778,17 +7962,17 @@ src/components/setting/DynamicSettings 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``<SettingItemRenderer key={key} item={item} path={path} />``。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:186798:186940:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:189450:189592:FUNCTION
 
-.. rubric:: ``initList.map callback @ 3934``
+.. rubric:: ``initList.map callback @ 3994``
 
 .. code-block:: javascript
 
-   initList.map callback @ 3934(entry)
+   initList.map callback @ 3994(entry)
 
 作为 ``initList.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``3934``—``3937`` 行；所属函数 ``buildDefaults``。
+**性质**：同步局部函数；源码第 ``3994``—``3997`` 行；所属函数 ``buildDefaults``。
 
 **参数**
 
@@ -7801,17 +7985,17 @@ src/components/setting/DynamicSettings 模块
 
 **主要协作调用**：``generateInternalId``。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:187112:187137:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:189764:189789:FUNCTION
 
-.. rubric:: ``item.children.some callback @ 3942``
+.. rubric:: ``item.children.some callback @ 4002``
 
 .. code-block:: javascript
 
-   item.children.some callback @ 3942(c)
+   item.children.some callback @ 4002(c)
 
 作为 ``item.children.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``3942``—``3942`` 行；所属函数 ``buildDefaults``。
+**性质**：同步局部函数；源码第 ``4002``—``4002`` 行；所属函数 ``buildDefaults``。
 
 **参数**
 
@@ -7822,17 +8006,17 @@ src/components/setting/DynamicSettings 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:187228:187253:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:189880:189905:FUNCTION
 
-.. rubric:: ``item.children.filter callback @ 3944``
+.. rubric:: ``item.children.filter callback @ 4004``
 
 .. code-block:: javascript
 
-   item.children.filter callback @ 3944(c)
+   item.children.filter callback @ 4004(c)
 
 作为 ``item.children.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``3944``—``3944`` 行；所属函数 ``buildDefaults``。
+**性质**：同步局部函数；源码第 ``4004``—``4004`` 行；所属函数 ``buildDefaults``。
 
 **参数**
 
@@ -7843,17 +8027,17 @@ src/components/setting/DynamicSettings 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:187312:187328:FUNCTION
+.. CWM-AST-FUNCTION src/components/setting/DynamicSettings.jsx:189964:189980:FUNCTION
 
-.. rubric:: ``radioChildren.find callback @ 3945``
+.. rubric:: ``radioChildren.find callback @ 4005``
 
 .. code-block:: javascript
 
-   radioChildren.find callback @ 3945(c)
+   radioChildren.find callback @ 4005(c)
 
 作为 ``radioChildren.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``3945``—``3945`` 行；所属函数 ``buildDefaults``。
+**性质**：同步局部函数；源码第 ``4005``—``4005`` 行；所属函数 ``buildDefaults``。
 
 **参数**
 

@@ -29,7 +29,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:842:12213:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:842:12212:FUNCTION
 
 .. rubric:: ``memo callback @ 14``
 
@@ -39,7 +39,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``14``—``252`` 行。
+**性质**：同步局部函数；源码第 ``14``—``251`` 行。
 
 **参数**
 
