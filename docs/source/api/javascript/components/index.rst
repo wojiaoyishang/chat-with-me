@@ -68,6 +68,11 @@
      - 0
      - 5
      - ``src/components/markdown/card-block/agent/AgentWidget.jsx``
+   * - :doc:`src/components/markdown/card-block/agent/agentContent </api/javascript/components/markdown/card-block/agent/agentContent>`
+     - 1
+     - 0
+     - 1
+     - ``src/components/markdown/card-block/agent/agentContent.js``
    * - :doc:`src/components/markdown/card-block/blocks/ErrorBlock </api/javascript/components/markdown/card-block/blocks/ErrorBlock>`
      - 0
      - 0
@@ -389,6 +394,7 @@
    /api/javascript/components/markdown/card-block/agent/AgentBody
    /api/javascript/components/markdown/card-block/agent/AgentHeader
    /api/javascript/components/markdown/card-block/agent/AgentWidget
+   /api/javascript/components/markdown/card-block/agent/agentContent
    /api/javascript/components/markdown/card-block/blocks/ErrorBlock
    /api/javascript/components/markdown/card-block/blocks/HtmlBlock
    /api/javascript/components/markdown/card-block/blocks/MarkdownBlock

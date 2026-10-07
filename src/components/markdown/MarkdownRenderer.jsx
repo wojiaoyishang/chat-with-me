@@ -8,6 +8,7 @@ import { rehypeInlineCodeProperty, remarkCardReplace } from './remarkDirectiveTo
 
 import CodeBlock from './CodeBlock.jsx';
 import CardBlock from './card-block/CardBlock.jsx';
+import { parseAgentContent } from './card-block/agent/agentContent.js';
 import ReplacementContextBadge from '@/features/chat/ui/message/components/ReplacementContextBadge.jsx';
 import {
     getCardReplaceIdFromAttributes,
@@ -180,7 +181,9 @@ const normalizeReplacementCopyEntry = (replacement, id, explicitType) => {
     // what the conversation surface actually shows instead of expanding hidden
     // command/log/result payloads back into the copied answer.
     if (
-        ['taskwindowtool', 'workspacetransfer', 'executionstatus'].includes(String(explicitType || entry?.type || protocol.type || '').toLowerCase())
+        ['taskwindowtool', 'workspacetransfer', 'executionstatus'].includes(
+            String(explicitType || entry?.type || protocol.type || '').toLowerCase(),
+        )
     ) {
         return {
             exists: true,
@@ -192,7 +195,10 @@ const normalizeReplacementCopyEntry = (replacement, id, explicitType) => {
     return {
         exists: true,
         id: normalizedId,
-        content: stripCopyTypeMarker(rawCopyContent),
+        content:
+            String(explicitType || entry?.type || protocol.type || '').toLowerCase() === 'agent'
+                ? parseAgentContent(stripCopyTypeMarker(rawCopyContent)).cleanContent
+                : stripCopyTypeMarker(rawCopyContent),
     };
 };
 

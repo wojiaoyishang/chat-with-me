@@ -1,18 +1,12 @@
-import {
-    memo,
-    useMemo,
-} from 'react';
+import { memo, useMemo } from 'react';
 import { Bot } from 'lucide-react';
 
 import { defaultRenderMarkdown } from '../constants.jsx';
 import { getExpandedKey } from '../expandedStore.js';
 import useExpandedState from '../useExpandedState.js';
-import {
-    getLastLineForPreview,
-    stripCardReplaceTokensForPreview,
-    toSafeString,
-} from '../utils.js';
+import { getLastLineForPreview, stripCardReplaceTokensForPreview, toSafeString } from '../utils.js';
 import AgentBody from './AgentBody.jsx';
+import { parseAgentContent } from './agentContent.js';
 import AgentHeader from './AgentHeader.jsx';
 
 const MARKDOWN_PROTOCOL_MARKER = '[markdown]';
@@ -51,133 +45,122 @@ const stripLeadingMarkdownMarker = (content) => {
     return normalized;
 };
 
-const AgentWidget = memo(({
-                              content = '',
-                              Icon = Bot,
-                              id,
-                              isProcessing = false,
-                              title = 'Sub-Agent',
-                              defaultExpanded = false,
-                              contextId = '',
-                              type = 'agent',
-                              renderMarkdown = defaultRenderMarkdown,
-                          }) => {
-    const expandedKey = useMemo(() => {
-        return getExpandedKey(contextId, id, type);
-    }, [contextId, id, type]);
+const AgentWidget = memo(
+    ({
+        content = '',
+        Icon = Bot,
+        id,
+        isProcessing = false,
+        title = 'Sub-Agent',
+        defaultExpanded = false,
+        contextId = '',
+        type = 'agent',
+        renderMarkdown = defaultRenderMarkdown,
+    }) => {
+        const expandedKey = useMemo(() => {
+            return getExpandedKey(contextId, id, type);
+        }, [contextId, id, type]);
 
-    useExpandedState(expandedKey, defaultExpanded);
+        useExpandedState(expandedKey, defaultExpanded);
 
-    const {
-        cleanContent,
-        isDone,
-        isFailed,
-        lastLine,
-        hasContent,
-    } = useMemo(() => {
-        // Historical/persisted sub-agent replacements may keep the generic
-        // [markdown] renderer marker even though the outer token is explicitly
-        // type=agent. It is protocol metadata, not part of the agent response.
-        const safeContent = stripLeadingMarkdownMarker(content);
-        const trimmedRaw = safeContent.trim();
+        const { cleanContent, isDone, isFailed, lastLine, hasContent, modelName, modelId } = useMemo(() => {
+            // Historical/persisted sub-agent replacements may keep the generic
+            // [markdown] renderer marker even though the outer token is explicitly
+            // type=agent. It is protocol metadata, not part of the agent response.
+            const safeContent = stripLeadingMarkdownMarker(content);
+            const { cleanContent: clean, isDone, isFailed, modelName, modelId } = parseAgentContent(safeContent);
 
-        const isDone = trimmedRaw.endsWith('[AGENT-DONE]');
-        const isFailed = trimmedRaw.endsWith('[AGENT-FAILED]');
+            const previewContent = stripCardReplaceTokensForPreview(clean);
+            const lastLine = getLastLineForPreview(previewContent);
+            const hasContent = clean.length > 0;
 
-        let clean = safeContent;
-
-        if (isDone) {
-            clean = safeContent.replace(/\n?\[AGENT-DONE\]\s*$/, '').trim();
-        } else if (isFailed) {
-            clean = safeContent.replace(/\n?\[AGENT-FAILED\]\s*$/, '').trim();
-        } else {
-            clean = clean.trim();
-        }
-
-        const previewContent = stripCardReplaceTokensForPreview(clean);
-        const lastLine = getLastLineForPreview(previewContent);
-        const hasContent = clean.length > 0;
-
-        return {
-            cleanContent: clean,
-            isDone,
-            isFailed,
-            lastLine,
-            hasContent,
-        };
-    }, [content]);
-
-    const isFinished = isDone || isFailed;
-
-    const statusConfig = useMemo(() => {
-        if (isFailed) {
             return {
-                bg: 'bg-red-50/50',
-                border: 'border-red-100',
-                iconBg: 'bg-red-100 text-red-600',
-                dot: 'bg-red-500',
-                label: 'Failed',
+                cleanContent: clean,
+                isDone,
+                isFailed,
+                lastLine,
+                hasContent,
+                modelName,
+                modelId,
             };
-        }
+        }, [content]);
 
-        if (isDone) {
+        const isFinished = isDone || isFailed;
+
+        const statusConfig = useMemo(() => {
+            if (isFailed) {
+                return {
+                    bg: 'bg-red-50/50',
+                    border: 'border-red-100',
+                    iconBg: 'bg-red-100 text-red-600',
+                    dot: 'bg-red-500',
+                    label: 'Failed',
+                };
+            }
+
+            if (isDone) {
+                return {
+                    bg: 'bg-zinc-50/30',
+                    border: 'border-zinc-200/60',
+                    iconBg: 'bg-emerald-100 text-emerald-600',
+                    dot: 'bg-emerald-500',
+                    label: 'Completed',
+                };
+            }
+
             return {
-                bg: 'bg-zinc-50/30',
-                border: 'border-zinc-200/60',
-                iconBg: 'bg-emerald-100 text-emerald-600',
-                dot: 'bg-emerald-500',
-                label: 'Completed',
+                bg: 'bg-white',
+                border: 'border-zinc-200',
+                iconBg: 'bg-blue-50 text-blue-600',
+                dot: 'bg-blue-500',
+                label: 'Running',
             };
-        }
+        }, [isDone, isFailed]);
 
-        return {
-            bg: 'bg-white',
-            border: 'border-zinc-200',
-            iconBg: 'bg-blue-50 text-blue-600',
-            dot: 'bg-blue-500',
-            label: 'Running',
-        };
-    }, [isDone, isFailed]);
-
-    return (
-        <div
-            className={`
+        return (
+            <div
+                className={`
                 w-full my-2 border rounded-lg overflow-hidden transition-colors duration-200
                 ${statusConfig.bg} ${statusConfig.border}
             `}
-        >
-            <AgentHeader
-                Icon={Icon}
-                expandedKey={expandedKey}
-                isDone={isDone}
-                isFailed={isFailed}
-                isFinished={isFinished}
-                isProcessing={isProcessing}
-                lastLine={lastLine}
-                statusConfig={statusConfig}
-                title={title}
-            />
+            >
+                <AgentHeader
+                    Icon={Icon}
+                    expandedKey={expandedKey}
+                    isDone={isDone}
+                    isFailed={isFailed}
+                    isFinished={isFinished}
+                    isProcessing={isProcessing}
+                    lastLine={lastLine}
+                    statusConfig={statusConfig}
+                    title={title}
+                    modelName={modelName}
+                    modelId={modelId}
+                />
 
-            <AgentBody
-                cleanContent={cleanContent}
-                expandedKey={expandedKey}
-                hasContent={hasContent}
-                renderMarkdown={renderMarkdown}
-            />
-        </div>
-    );
-}, (prev, next) => {
-    return (
-        prev.contextId === next.contextId &&
-        prev.content === next.content &&
-        prev.id === next.id &&
-        prev.isProcessing === next.isProcessing &&
-        prev.title === next.title &&
-        prev.defaultExpanded === next.defaultExpanded &&
-        prev.type === next.type &&
-        prev.renderMarkdown === next.renderMarkdown
-    );
-});
+                <AgentBody
+                    cleanContent={cleanContent}
+                    expandedKey={expandedKey}
+                    hasContent={hasContent}
+                    isFinished={isFinished}
+                    renderMarkdown={renderMarkdown}
+                />
+            </div>
+        );
+    },
+    (prev, next) => {
+        return (
+            prev.contextId === next.contextId &&
+            prev.content === next.content &&
+            prev.id === next.id &&
+            prev.isProcessing === next.isProcessing &&
+            prev.title === next.title &&
+            prev.defaultExpanded === next.defaultExpanded &&
+            prev.type === next.type &&
+            prev.renderMarkdown === next.renderMarkdown
+        );
+    },
+);
 
 AgentWidget.displayName = 'AgentWidget';
 

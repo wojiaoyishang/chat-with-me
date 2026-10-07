@@ -22,18 +22,18 @@ src/components/markdown/card-block/agent/AgentWidget 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``../constants.jsx``、``../expandedStore.js``、``../useExpandedState.js``、``../utils.js``、``./AgentBody.jsx``、``./AgentHeader.jsx``。
+``react``、``lucide-react``、``../constants.jsx``、``../expandedStore.js``、``../useExpandedState.js``、``../utils.js``、``./AgentBody.jsx``、``./agentContent.js``、``./AgentHeader.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:535:1845:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:568:1878:FUNCTION
 
 .. js:function:: stripLeadingMarkdownMarker(content)
 
    实现 ``stripLeadingMarkdownMarker`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``20``—``52`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``14``—``46`` 行。
 
    **参数**
 
@@ -51,17 +51,17 @@ src/components/markdown/card-block/agent/AgentWidget 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:1873:5495:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:1906:5389:FUNCTION
 
-.. rubric:: ``memo callback @ 54``
+.. rubric:: ``memo callback @ 49``
 
 .. code-block:: javascript
 
-   memo callback @ 54({ content = '', Icon = Bot, id, isProcessing = false, title = 'Sub-Agent', defaultExpanded = false,…)
+   memo callback @ 49({ content = '', Icon = Bot, id, isProcessing = false, title = 'Sub-Agent', defaultExpanded = false,…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``54``—``169`` 行。
+**性质**：同步局部函数；源码第 ``49``—``150`` 行。
 
 **参数**
 
@@ -76,17 +76,17 @@ src/components/markdown/card-block/agent/AgentWidget 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:2382:2447:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:2204:2277:FUNCTION
 
-.. rubric:: ``useMemo callback @ 65``
+.. rubric:: ``useMemo callback @ 60``
 
 .. code-block:: javascript
 
-   useMemo callback @ 65()
+   useMemo callback @ 60()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``65``—``67`` 行；所属函数 ``memo callback @ 54``。
+**性质**：同步局部函数；源码第 ``60``—``62`` 行；所属函数 ``memo callback @ 49``。
 
 **参数**
 
@@ -98,17 +98,17 @@ src/components/markdown/card-block/agent/AgentWidget 模块
 
 **主要协作调用**：``getExpandedKey``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:2649:3772:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:2462:3334:FUNCTION
 
-.. rubric:: ``useMemo callback @ 77``
+.. rubric:: ``useMemo callback @ 66``
 
 .. code-block:: javascript
 
-   useMemo callback @ 77()
+   useMemo callback @ 66()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``77``—``108`` 行；所属函数 ``memo callback @ 54``。
+**性质**：同步局部函数；源码第 ``66``—``86`` 行；所属函数 ``memo callback @ 49``。
 
 **参数**
 
@@ -116,21 +116,21 @@ src/components/markdown/card-block/agent/AgentWidget 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{ cleanContent: clean, isDone, isFailed, lastLine, hasContent, }``。
+根据执行分支返回结果；代表性返回表达式为 ``{ cleanContent: clean, isDone, isFailed, lastLine, hasContent, modelName, modelId, }``。
 
-**主要协作调用**：``stripLeadingMarkdownMarker``、``safeContent.trim``、``trimmedRaw.endsWith``、``safeContent.replace(/\n?\[AGENT-DONE\]\s*$/, '').trim``、``safeContent.replace``、``safeContent.replace(/\n?\[AGENT-FAILED\]\s*$/, '').trim``、``clean.trim``、``stripCardReplaceTokensForPreview``、``getLastLineForPreview``。
+**主要协作调用**：``stripLeadingMarkdownMarker``、``parseAgentContent``、``stripCardReplaceTokensForPreview``、``getLastLineForPreview``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:3864:4636:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:3434:4310:FUNCTION
 
-.. rubric:: ``useMemo callback @ 112``
+.. rubric:: ``useMemo callback @ 90``
 
 .. code-block:: javascript
 
-   useMemo callback @ 112()
+   useMemo callback @ 90()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``112``—``140`` 行；所属函数 ``memo callback @ 54``。
+**性质**：同步局部函数；源码第 ``90``—``118`` 行；所属函数 ``memo callback @ 49``。
 
 **参数**
 
@@ -140,17 +140,17 @@ src/components/markdown/card-block/agent/AgentWidget 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``{ bg: 'bg-red-50/50', border: 'border-red-100', iconBg: 'bg-red-100 text-red-600', dot: 'bg-red-500', label: 'Failed', }``、``{ bg: 'bg-zinc-50/30', border: 'border-zinc-200/60', iconBg: 'bg-emerald-100 text-emerald-600', dot: 'bg-emerald-500', label: 'Completed', }``、``{ bg: 'bg-white', border: 'border-zinc-200', iconBg: 'bg-blue-50 text-blue-600', dot: 'bg-blue-500', label: 'Running', }``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:5496:5885:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentWidget.jsx:5390:5827:FUNCTION
 
-.. rubric:: ``memo callback @ 169``
+.. rubric:: ``memo callback @ 151``
 
 .. code-block:: javascript
 
-   memo callback @ 169(prev, next)
+   memo callback @ 151(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``169``—``180`` 行。
+**性质**：同步局部函数；源码第 ``151``—``162`` 行。
 
 **参数**
 

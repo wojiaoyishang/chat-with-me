@@ -29,22 +29,22 @@ src/components/markdown/card-block/agent/AgentHeader 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentHeader.jsx:218:2627:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentHeader.jsx:218:2922:FUNCTION
 
-.. rubric:: ``memo callback @ 7``
+.. rubric:: ``memo callback @ 8``
 
 .. code-block:: javascript
 
-   memo callback @ 7({ Icon, expandedKey, isDone, isFailed, isFinished, isProcessing, lastLine, statusConfig, title, })
+   memo callback @ 8({ Icon, expandedKey, isDone, isFailed, isFinished, isProcessing, lastLine, statusConfig, title, mod…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``7``—``63`` 行。
+**性质**：同步局部函数；源码第 ``8``—``73`` 行。
 
 **参数**
 
-``{ Icon, expandedKey, isDone, isFailed, isFinished, isProcessing, lastLine, statusConfig, title, }``
-   调用方传入的 ``Icon, expandedKey, isDone, isFailed, isFinished, isProcessing, lastLine, statusConfig, title,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ Icon, expandedKey, isDone, isFailed, isFinished, isProcessing, lastLine, statusConfig, title, mod…``
+   调用方传入的 ``Icon, expandedKey, isDone, isFailed, isFinished, isProcessing, lastLine, statusConfig, title, mod…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -52,17 +52,17 @@ src/components/markdown/card-block/agent/AgentHeader 模块
 
 **主要协作调用**：``useExpandedState``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentHeader.jsx:2628:3060:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/agent/AgentHeader.jsx:2923:3501:FUNCTION
 
-.. rubric:: ``memo callback @ 63``
+.. rubric:: ``memo callback @ 74``
 
 .. code-block:: javascript
 
-   memo callback @ 63(prev, next)
+   memo callback @ 74(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``63``—``75`` 行。
+**性质**：同步局部函数；源码第 ``74``—``88`` 行。
 
 **参数**
 

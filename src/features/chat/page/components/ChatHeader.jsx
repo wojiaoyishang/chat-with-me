@@ -1,4 +1,3 @@
-import SubAgentPanel from '@/features/execution/SubAgentPanel.jsx';
 import { NotificationCenterTrigger } from '@/features/notification/NotificationCenter.jsx';
 import { TaskCenterTrigger } from '@/features/tasks/TaskCenter.jsx';
 import React, { memo, useEffect, useMemo, useRef } from 'react';
@@ -191,7 +190,6 @@ const ChatHeader = memo(
                         <>
                             <NotificationCenterTrigger />
                             <TaskCenterTrigger />
-                            <SubAgentPanel conversationId={conversationId} />
                         </>
                     )}
                     {showWindowButton && (

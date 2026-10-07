@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { parseAgentContent } from '../src/components/markdown/card-block/agent/agentContent.js';
+const historical = parseAgentContent('服务器错误\n[AGENT-FAILED] 模型不可用');
+assert.equal(historical.isFailed,true);assert.equal(historical.isDone,false);assert.equal(historical.cleanContent,'服务器错误\n 模型不可用');
+const conflicting=parseAgentContent('结果\n[AGENT-DONE]\n[AGENT-FAILED]');
+assert.equal(conflicting.isFailed,true);assert.equal(conflicting.isDone,false);assert.equal(conflicting.cleanContent,'结果');
+const waiting=parseAgentContent('[AGENT-META] {"modelName":"测试模型","modelId":"provider/model"}\n');
+assert.equal(waiting.modelName,'测试模型');assert.equal(waiting.modelId,'provider/model');assert.equal(waiting.cleanContent,'');assert.equal(waiting.isDone,false);
+assert.equal(parseAgentContent('回答\n[AGENT-DONE]').cleanContent,'回答');
+console.log('Agent card regression checks passed');
