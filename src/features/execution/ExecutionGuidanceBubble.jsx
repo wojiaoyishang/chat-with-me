@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Check, CircleAlert, LoaderCircle, MessageSquarePlus } from 'lucide-react';
+import { Check, CircleAlert, LoaderCircle, MessageSquarePlus, ListChecks } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
 import { useUserStore } from '@/context/userContext.jsx';
@@ -34,6 +34,27 @@ const ExecutionGuidanceBubble = memo(({ activity, execution }) => {
     const Icon = meta.Icon;
     const displayName = String(user?.nickname || user?.username || user?.name || 'U').trim() || 'U';
     const avatar = user?.avatar ? resolveResourceUrl(user.avatar) : '';
+
+    const widgetResponse = activity?.source === 'widget_response' || String(activity?.id || '').startsWith('widget-');
+    if (widgetResponse) {
+        return (
+            <div
+                className="my-3 flex gap-3 rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3"
+                data-widget-response="true"
+            >
+                <ListChecks className="mt-0.5 h-5 w-5 shrink-0 text-gray-500" aria-hidden="true" />
+                <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center gap-2 text-xs font-medium text-gray-500">
+                        <span>小组件反馈</span>
+                        <span className={meta.tone}>
+                            {failed ? '未送达' : state === 'consumed' || state === 'responded' ? '已接收' : '已提交'}
+                        </span>
+                    </div>
+                    <div className="whitespace-pre-wrap break-words text-sm leading-6 text-gray-700">{content}</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div

@@ -27,13 +27,13 @@ src/features/execution/ExecutionGuidanceAction 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:287:1971:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:287:2084:FUNCTION
 
 .. js:function:: ExecutionGuidanceAction({ activity, execution })
 
    渲染 ``ExecutionGuidanceAction`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``8``—``48`` 行。
+   **性质**：同步函数；导出 API；源码第 ``8``—``49`` 行。
 
    **参数**
 
@@ -48,7 +48,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
    * 发送本地或远程 CWM 事件/媒体帧。
 
-   **主要协作调用**：``useState``。
+   **主要协作调用**：``useState``、``String(activity?.id || '').startsWith``、``String``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -57,7 +57,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:712:1588:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:825:1701:FUNCTION
 
 .. rubric:: ``change``
 
@@ -67,7 +67,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 实现 ``change`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``14``—``33`` 行；所属函数 ``ExecutionGuidanceAction``。
+**性质**：异步局部函数；源码第 ``15``—``34`` 行；所属函数 ``ExecutionGuidanceAction``。
 
 **参数**
 

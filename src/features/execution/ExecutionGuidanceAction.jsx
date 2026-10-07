@@ -7,6 +7,7 @@ import { upsertExecution } from './useExecutionStore.js';
 
 export default function ExecutionGuidanceAction({ activity, execution }) {
     const [pending, setPending] = useState(false);
+    if (activity?.source === 'widget_response' || String(activity?.id || '').startsWith('widget-')) return null;
     if (activity?.canToggle !== true || !execution?.active || execution.status === 'cancelling') return null;
     const withdrawn = activity.state === 'withdrawn';
     const label = withdrawn ? '恢复补充' : '撤回补充';

@@ -27,7 +27,7 @@ src/features/execution/ExecutionGuidanceBubble 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:400:1139:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:412:1151:FUNCTION
 
 .. js:function:: stateMeta(state)
 
@@ -51,7 +51,7 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1179:3311:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1191:4353:FUNCTION
 
 .. rubric:: ``memo callback @ 25``
 
@@ -61,7 +61,7 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``25``—``70`` 行。
+**性质**：同步局部函数；源码第 ``25``—``91`` 行。
 
 **参数**
 
@@ -70,13 +70,13 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="my-3 flex w-full items-end justify-end gap-3" data-execution-guidance-bubble="true" data-guidance-id={activity?.id || undefined} > <div className={\x60max-w-[80%] r…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="my-3 flex gap-3 rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3" data-widget-response="true" > <ListChecks className="mt-0.5 h-5 w-5 shrink-0 text-gray…``、``( <div className="my-3 flex w-full items-end justify-end gap-3" data-execution-guidance-bubble="true" data-guidance-id={activity?.id || undefined} > <div className={\x60max-w-[80%] r…``。
 
-**主要协作调用**：``useUserStore``、``String(activity?.content || activity?.label || '').trim``、``String``、``String(activity?.state || 'pending').toLowerCase``、``stateMeta``、``String(user?.nickname || user?.username || user?.name || 'U').trim``、``resolveResourceUrl``。
+**主要协作调用**：``useUserStore``、``String(activity?.content || activity?.label || '').trim``、``String``、``String(activity?.state || 'pending').toLowerCase``、``stateMeta``、``String(user?.nickname || user?.username || user?.name || 'U').trim``、``resolveResourceUrl``、``String(activity?.id || '').startsWith``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1240:1261:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1252:1273:FUNCTION
 
 .. rubric:: ``useUserStore callback @ 26``
 
