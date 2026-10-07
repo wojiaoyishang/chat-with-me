@@ -475,6 +475,13 @@ const WidgetHost = memo(({content = '', conversationId = null, messageReadonly =
         );
     }
 
+    if (widget?.status === 'expired') {
+        return <div className="my-3 rounded-2xl border border-gray-200 bg-gray-50 p-4 text-gray-400">
+            <div className="font-medium line-through">{descriptor.title || '问询'}</div>
+            <div className="mt-1 text-xs">任务已结束，此问询已失效</div>
+        </div>;
+    }
+
     if (cardDeckPaused && interactive && widget.widgetType === 'card_deck') {
         return <CardDeckResumePrompt descriptor={descriptor} onResume={resumeCardDeck}/>;
     }

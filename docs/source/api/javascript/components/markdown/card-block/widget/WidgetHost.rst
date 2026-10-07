@@ -901,7 +901,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``act``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:18052:28177:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:18052:28497:FUNCTION
 
 .. rubric:: ``memo callback @ 356``
 
@@ -911,7 +911,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``356``—``592`` 行。
+**性质**：同步局部函数；源码第 ``356``—``599`` 行。
 
 **参数**
 
@@ -920,7 +920,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className="my-2 w-full rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700"> 小组件数据无效。 </div> )``、``<CardDeckResumePrompt descriptor={descriptor} onResume={resumeCardDeck}/>``、``( <> <div className="my-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500"> 卡片选择已进入沉浸模式，请在居中的选择器中完成操作。 </div> {createPortal( <div ref={immersiv…``、``( <> <div className="my-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500"> 问询已显示在输入框上方，可直接完成选择或输入。 </div> {createPortal( <div className="prett…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className="my-2 w-full rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700"> 小组件数据无效。 </div> )``、``<div className="my-3 rounded-2xl border border-gray-200 bg-gray-50 p-4 text-gray-400"> <div className="font-medium line-through">{descriptor.title || '问询'}</div> <div className="m…``、``<CardDeckResumePrompt descriptor={descriptor} onResume={resumeCardDeck}/>``、``( <> <div className="my-2 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500"> 卡片选择已进入沉浸模式，请在居中的选择器中完成操作。 </div> {createPortal( <div ref={immersiv…``。
 
 **副作用**
 
@@ -1229,7 +1229,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``setBusy``、``apiClient.post``、``encodeURIComponent``、``generateUUID``、``Number``、``setWidget``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:24187:24912:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:24507:25232:FUNCTION
 
 .. rubric:: ``renderFrame``
 
@@ -1239,7 +1239,7 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 渲染与 ``Frame`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``505``—``521`` 行；所属函数 ``memo callback @ 356``。
+**性质**：同步局部函数；源码第 ``512``—``528`` 行；所属函数 ``memo callback @ 356``。
 
 **参数**
 
@@ -1250,176 +1250,15 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <Frame title={descriptor.title || descriptor.question || descriptor.prompt} description={descriptor.description || descriptor.prompt} className={className} footer={busy && widge…``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25587:25621:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25907:25941:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 535``
+.. rubric:: ``onPointerDown callback @ 542``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 535(event)
+   onPointerDown callback @ 542(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``535``—``535`` 行；所属函数 ``memo callback @ 356``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``event.stopPropagation``。
-
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25663:25697:FUNCTION
-
-.. rubric:: ``onPointerMove callback @ 536``
-
-.. code-block:: javascript
-
-   onPointerMove callback @ 536(event)
-
-处理 ``Pointer Move`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``536``—``536`` 行；所属函数 ``memo callback @ 356``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``event.stopPropagation``。
-
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25737:25771:FUNCTION
-
-.. rubric:: ``onPointerUp callback @ 537``
-
-.. code-block:: javascript
-
-   onPointerUp callback @ 537(event)
-
-处理 ``Pointer Up`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``537``—``537`` 行；所属函数 ``memo callback @ 356``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``event.stopPropagation``。
-
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25815:25849:FUNCTION
-
-.. rubric:: ``onPointerCancel callback @ 538``
-
-.. code-block:: javascript
-
-   onPointerCancel callback @ 538(event)
-
-处理 ``Pointer Cancel`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``538``—``538`` 行；所属函数 ``memo callback @ 356``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``event.stopPropagation``。
-
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25890:25924:FUNCTION
-
-.. rubric:: ``onTouchStart callback @ 539``
-
-.. code-block:: javascript
-
-   onTouchStart callback @ 539(event)
-
-处理 ``Touch Start`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``539``—``539`` 行；所属函数 ``memo callback @ 356``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``event.stopPropagation``。
-
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25964:25998:FUNCTION
-
-.. rubric:: ``onTouchMove callback @ 540``
-
-.. code-block:: javascript
-
-   onTouchMove callback @ 540(event)
-
-处理 ``Touch Move`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``540``—``540`` 行；所属函数 ``memo callback @ 356``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``event.stopPropagation``。
-
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26037:26071:FUNCTION
-
-.. rubric:: ``onTouchEnd callback @ 541``
-
-.. code-block:: javascript
-
-   onTouchEnd callback @ 541(event)
-
-处理 ``Touch End`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``541``—``541`` 行；所属函数 ``memo callback @ 356``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``event.stopPropagation``。
-
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26107:26141:FUNCTION
-
-.. rubric:: ``onWheel callback @ 542``
-
-.. code-block:: javascript
-
-   onWheel callback @ 542(event)
-
-处理 ``Wheel`` 用户交互或运行时事件。
 
 **性质**：同步局部函数；源码第 ``542``—``542`` 行；所属函数 ``memo callback @ 356``。
 
@@ -1434,17 +1273,178 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26564:26828:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:25983:26017:FUNCTION
 
-.. rubric:: ``onKeyDownCapture callback @ 550``
+.. rubric:: ``onPointerMove callback @ 543``
 
 .. code-block:: javascript
 
-   onKeyDownCapture callback @ 550(event)
+   onPointerMove callback @ 543(event)
+
+处理 ``Pointer Move`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``543``—``543`` 行；所属函数 ``memo callback @ 356``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.stopPropagation``。
+
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26057:26091:FUNCTION
+
+.. rubric:: ``onPointerUp callback @ 544``
+
+.. code-block:: javascript
+
+   onPointerUp callback @ 544(event)
+
+处理 ``Pointer Up`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``544``—``544`` 行；所属函数 ``memo callback @ 356``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.stopPropagation``。
+
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26135:26169:FUNCTION
+
+.. rubric:: ``onPointerCancel callback @ 545``
+
+.. code-block:: javascript
+
+   onPointerCancel callback @ 545(event)
+
+处理 ``Pointer Cancel`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``545``—``545`` 行；所属函数 ``memo callback @ 356``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.stopPropagation``。
+
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26210:26244:FUNCTION
+
+.. rubric:: ``onTouchStart callback @ 546``
+
+.. code-block:: javascript
+
+   onTouchStart callback @ 546(event)
+
+处理 ``Touch Start`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``546``—``546`` 行；所属函数 ``memo callback @ 356``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.stopPropagation``。
+
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26284:26318:FUNCTION
+
+.. rubric:: ``onTouchMove callback @ 547``
+
+.. code-block:: javascript
+
+   onTouchMove callback @ 547(event)
+
+处理 ``Touch Move`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``547``—``547`` 行；所属函数 ``memo callback @ 356``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.stopPropagation``。
+
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26357:26391:FUNCTION
+
+.. rubric:: ``onTouchEnd callback @ 548``
+
+.. code-block:: javascript
+
+   onTouchEnd callback @ 548(event)
+
+处理 ``Touch End`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``548``—``548`` 行；所属函数 ``memo callback @ 356``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.stopPropagation``。
+
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26427:26461:FUNCTION
+
+.. rubric:: ``onWheel callback @ 549``
+
+.. code-block:: javascript
+
+   onWheel callback @ 549(event)
+
+处理 ``Wheel`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``549``—``549`` 行；所属函数 ``memo callback @ 356``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.stopPropagation``。
+
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:26884:27148:FUNCTION
+
+.. rubric:: ``onKeyDownCapture callback @ 557``
+
+.. code-block:: javascript
+
+   onKeyDownCapture callback @ 557(event)
 
 处理 ``Key Down Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``550``—``555`` 行；所属函数 ``memo callback @ 356``。
+**性质**：同步局部函数；源码第 ``557``—``562`` 行；所属函数 ``memo callback @ 356``。
 
 **参数**
 
@@ -1457,17 +1457,17 @@ src/components/markdown/card-block/widget/WidgetHost 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:28178:28394:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/widget/WidgetHost.jsx:28498:28714:FUNCTION
 
-.. rubric:: ``memo callback @ 592``
+.. rubric:: ``memo callback @ 599``
 
 .. code-block:: javascript
 
-   memo callback @ 592(prev, next)
+   memo callback @ 599(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``592``—``597`` 行。
+**性质**：同步局部函数；源码第 ``599``—``604`` 行。
 
 **参数**
 
