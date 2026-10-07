@@ -22,18 +22,18 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``。
+``@/features/execution/WidgetResponseDetails.jsx``、``react``、``lucide-react``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:163:289:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:251:373:FUNCTION
 
 .. js:function:: normalizeItems(response)
 
    规范化与 ``Items`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``4``—``6`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``5``—``6`` 行。
 
    **参数**
 
@@ -48,13 +48,13 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:311:498:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:395:600:FUNCTION
 
 .. js:function:: compactText(value, max)
 
    实现 ``compactText`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``8``—``12`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``8``—``14`` 行。
 
    **参数**
 
@@ -68,15 +68,15 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``text``、``\x60${text.slice(0, Math.max(0, max - 1))}…\x60``。
 
-   **主要协作调用**：``String(value ?? '').replace(/\s+/g, ' ').trim``、``String(value ?? '').replace``、``String``、``text.slice``、``Math.max``。
+   **主要协作调用**：``String(value ?? '') .replace(/\s+/g, ' ') .trim``、``String(value ?? '') .replace``、``String``、``text.slice``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:520:704:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:622:806:FUNCTION
 
 .. js:function:: iconForType(type)
 
    实现 ``iconForType`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``14``—``19`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``16``—``21`` 行。
 
    **参数**
 
@@ -87,13 +87,13 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``Layers3``、``ListChecks``、``ShieldCheck``、``MessageSquareText``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:726:1754:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:828:1879:FUNCTION
 
 .. js:function:: itemSummary(item)
 
    实现 ``itemSummary`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``21``—``38`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``23``—``42`` 行。
 
    **参数**
 
@@ -111,17 +111,17 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:237:279:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:325:367:FUNCTION
 
-.. rubric:: ``response.items.filter callback @ 5``
+.. rubric:: ``response.items.filter callback @ 6``
 
 .. code-block:: javascript
 
-   response.items.filter callback @ 5(item)
+   response.items.filter callback @ 6(item)
 
 作为 ``response.items.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``5``—``5`` 行；所属函数 ``normalizeItems``。
+**性质**：同步局部函数；源码第 ``6``—``6`` 行；所属函数 ``normalizeItems``。
 
 **参数**
 
@@ -132,21 +132,21 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:1792:3764:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:1917:4032:FUNCTION
 
-.. rubric:: ``memo callback @ 40``
+.. rubric:: ``memo callback @ 44``
 
 .. code-block:: javascript
 
-   memo callback @ 40({response})
+   memo callback @ 44({ response })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``40``—``77`` 行。
+**性质**：同步局部函数；源码第 ``44``—``83`` 行。
 
 **参数**
 
-``{response}``
+``{ response }``
    调用方传入的 ``response`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -157,17 +157,17 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:1836:1866:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:1963:1993:FUNCTION
 
-.. rubric:: ``useMemo callback @ 41``
+.. rubric:: ``useMemo callback @ 45``
 
 .. code-block:: javascript
 
-   useMemo callback @ 41()
+   useMemo callback @ 45()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``41``—``41`` 行；所属函数 ``memo callback @ 40``。
+**性质**：同步局部函数；源码第 ``45``—``45`` 行；所属函数 ``memo callback @ 44``。
 
 **参数**
 
@@ -179,17 +179,17 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 
 **主要协作调用**：``normalizeItems``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:2550:3573:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/WidgetResponseMessage.jsx:2678:3881:FUNCTION
 
-.. rubric:: ``items.map callback @ 53``
+.. rubric:: ``items.map callback @ 57``
 
 .. code-block:: javascript
 
-   items.map callback @ 53(item, index)
+   items.map callback @ 57(item, index)
 
 作为 ``items.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``53``—``70`` 行；所属函数 ``memo callback @ 40``。
+**性质**：同步局部函数；源码第 ``57``—``78`` 行；所属函数 ``memo callback @ 44``。
 
 **参数**
 
@@ -201,6 +201,6 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={item?.widgetId || \x60${item?.widgetType || 'widget'}-${index}\x60} className="flex items-start gap-2.5 px-3.5 py-2.5"> <div className="mt-0.5 rounded-lg bg-white/75 p-1.5 t…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={item?.widgetId || \x60${item?.widgetType || 'widget'}-${index}\x60} className="flex items-start gap-2.5 px-3.5 py-2.5" > <div className="mt-0.5 rounded-lg bg-white/75 p-1.5…``。
 
 **主要协作调用**：``iconForType``、``itemSummary``。

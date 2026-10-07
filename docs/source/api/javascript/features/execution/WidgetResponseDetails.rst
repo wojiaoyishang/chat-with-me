@@ -22,7 +22,7 @@ src/features/execution/WidgetResponseDetails 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/WidgetResponseDetails.jsx:0:2512:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WidgetResponseDetails.jsx:0:2559:FUNCTION
 
 .. js:function:: WidgetResponseDetails({ response, fallback = '' })
 
@@ -48,7 +48,7 @@ src/features/execution/WidgetResponseDetails 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/WidgetResponseDetails.jsx:549:2302:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WidgetResponseDetails.jsx:549:2349:FUNCTION
 
 .. rubric:: ``['left', 'right', 'middle'].map callback @ 8``
 
@@ -73,7 +73,7 @@ src/features/execution/WidgetResponseDetails 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/WidgetResponseDetails.jsx:1075:2014:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WidgetResponseDetails.jsx:1122:2061:FUNCTION
 
 .. rubric:: ``cards.map callback @ 17``
 

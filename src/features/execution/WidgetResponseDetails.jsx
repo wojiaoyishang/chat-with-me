@@ -6,7 +6,7 @@ export default function WidgetResponseDetails({ response, fallback = '' }) {
                 {response?.title && <div className="font-medium text-gray-800">{response.title}</div>}
                 {response?.widgetType === 'card_deck' ? (
                     ['left', 'right', 'middle'].map((pile) => {
-                        const cards = response[pile] || [];
+                        const cards = response[pile] || (pile === 'right' ? response.selected : []) || [];
                         return (
                             <section key={pile}>
                                 <div className="mb-1 text-xs font-medium text-gray-500">
