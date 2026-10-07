@@ -13,6 +13,11 @@
      - 方法
      - 局部/回调
      - 源码
+   * - :doc:`src/components/ClientText </api/javascript/components/ClientText>`
+     - 1
+     - 0
+     - 0
+     - ``src/components/ClientText.jsx``
    * - :doc:`src/components/editor/CollaboraOnlineEditor </api/javascript/components/editor/CollaboraOnlineEditor>`
      - 0
      - 0
@@ -383,6 +388,7 @@
    :hidden:
    :maxdepth: 1
 
+   /api/javascript/components/ClientText
    /api/javascript/components/editor/CollaboraOnlineEditor
    /api/javascript/components/files/FileManager
    /api/javascript/components/files/FileUploadProgress

@@ -23,6 +23,11 @@
      - 0
      - 12
      - ``src/lib/browserHistoryLayers.js``
+   * - :doc:`src/lib/clientText </api/javascript/lib/clientText>`
+     - 3
+     - 0
+     - 1
+     - ``src/lib/clientText.js``
    * - :doc:`src/lib/resourceDownload </api/javascript/lib/resourceDownload>`
      - 4
      - 0
@@ -50,6 +55,7 @@
 
    /api/javascript/lib/apiClient
    /api/javascript/lib/browserHistoryLayers
+   /api/javascript/lib/clientText
    /api/javascript/lib/resourceDownload
    /api/javascript/lib/tools
    /api/javascript/lib/utils

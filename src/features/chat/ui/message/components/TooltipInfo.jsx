@@ -1,41 +1,25 @@
-import React, {memo, useMemo, useState} from 'react';
-import {Info} from 'lucide-react';
-import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
-import {Dialog, DialogContent, DialogTitle, DialogTrigger} from '@/components/ui/dialog';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {useIsMobile} from '@/lib/tools.jsx';
-import {apiEndpoint} from '@/config.js';
-import {
-    openRemoteUniversalModal,
-    openUniversalModalLink,
-} from '@/components/modal/universalModal.js';
+import ClientText from '@/components/ClientText.jsx';
+import { formatLocalTimestamp } from '@/lib/clientText.js';
+import React, { memo, useMemo, useState } from 'react';
+import { Info } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useIsMobile } from '@/lib/tools.jsx';
+import { apiEndpoint } from '@/config.js';
+import { openRemoteUniversalModal, openUniversalModalLink } from '@/components/modal/universalModal.js';
 
 const toNumber = (value) => {
     const number = Number(value);
     return Number.isFinite(number) ? number : 0;
 };
 
-const formatNumber = (value, maximumFractionDigits = 6) => toNumber(value).toLocaleString(undefined, {
-    maximumFractionDigits,
-});
-
-const formatDatetime = (value) => {
-    if (!value) return '—';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return String(value);
-    return date.toLocaleString(undefined, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
+const formatNumber = (value, maximumFractionDigits = 6) =>
+    toNumber(value).toLocaleString(undefined, {
+        maximumFractionDigits,
     });
-};
+
+const formatDatetime = (value) => formatLocalTimestamp(value, { fallback: value ? String(value) : '—' });
 
 const normalizeAudit = (value) => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
@@ -46,34 +30,30 @@ const normalizeAudit = (value) => {
 const contextDisplay = (contextState) => {
     const state = contextState && typeof contextState === 'object' ? contextState : {};
     const compactions = Array.isArray(state.compactions) ? state.compactions : [];
-    if (state.forgotten === true) return {text: '已忽略', actionable: true};
+    if (state.forgotten === true) return { text: '已忽略', actionable: true };
     if (compactions.length > 0) {
         return {
             text: `已压缩${compactions.length > 1 ? ` ×${compactions.length}` : ''}`,
             actionable: true,
         };
     }
-    return {text: '活动', actionable: false};
+    return { text: '活动', actionable: false };
 };
 
-const TooltipInfo = memo(({
-    tip,
-    contextState,
-    conversationId,
-    messageId,
-    msg = null,
-    t,
-}) => {
+const TooltipInfo = memo(({ tip, contextState, conversationId, messageId, msg = null, t }) => {
     const isMobile = useIsMobile();
     const [detailsOpen, setDetailsOpen] = useState(false);
 
     const extraInfo = msg?.extraInfo || msg?.extra_info || {};
     const auditInfo = useMemo(
-        () => extraInfo?.enable_audit_info === true ? normalizeAudit(extraInfo?.audit_info) : null,
+        () => (extraInfo?.enable_audit_info === true ? normalizeAudit(extraInfo?.audit_info) : null),
         [extraInfo],
     );
     const modernAuditEnabled = Boolean(auditInfo);
-    const currentContext = useMemo(() => contextDisplay(contextState || msg?.contextState), [contextState, msg?.contextState]);
+    const currentContext = useMemo(
+        () => contextDisplay(contextState || msg?.contextState),
+        [contextState, msg?.contextState],
+    );
     const hasLegacyContextDetail = !modernAuditEnabled && currentContext.actionable;
     const useInteractivePopover = isMobile || modernAuditEnabled || hasLegacyContextDetail;
 
@@ -83,10 +63,11 @@ const TooltipInfo = memo(({
         event?.preventDefault?.();
         event?.stopPropagation?.();
         setDetailsOpen(false);
-        openRemoteUniversalModal(
-            apiEndpoint.CHAT_CONTEXT_STATE_DETAIL_ENDPOINT,
-            {conversationId, messageId, presentation: 'modal'},
-        );
+        openRemoteUniversalModal(apiEndpoint.CHAT_CONTEXT_STATE_DETAIL_ENDPOINT, {
+            conversationId,
+            messageId,
+            presentation: 'modal',
+        });
     };
 
     const openHref = (href, event) => {
@@ -103,12 +84,13 @@ const TooltipInfo = memo(({
 
     const renderAuditValue = (item, key) => {
         const format = String(item?.format || 'text');
-        const toneClass = ({
-            success: 'text-emerald-600 dark:text-emerald-400',
-            danger: 'text-red-600 dark:text-red-400',
-            warning: 'text-amber-600 dark:text-amber-400',
-            info: 'text-sky-600 dark:text-sky-400',
-        })[String(item?.tone || '')] || '';
+        const toneClass =
+            {
+                success: 'text-emerald-600 dark:text-emerald-400',
+                danger: 'text-red-600 dark:text-red-400',
+                warning: 'text-amber-600 dark:text-amber-400',
+                info: 'text-sky-600 dark:text-sky-400',
+            }[String(item?.tone || '')] || '';
         let value = item?.value;
         let node = null;
 
@@ -127,7 +109,9 @@ const TooltipInfo = memo(({
                 >
                     {currentContext.text}
                 </button>
-            ) : <span>{currentContext.text}</span>;
+            ) : (
+                <span>{currentContext.text}</span>
+            );
         } else if (format === 'datetime') {
             node = <span className="tabular-nums">{formatDatetime(value)}</span>;
         } else if (format === 'number') {
@@ -167,11 +151,11 @@ const TooltipInfo = memo(({
         } else if (format === 'code') {
             node = <span className="font-mono">{String(value ?? '—')}</span>;
         } else {
-            node = <span>{String(value ?? '—')}</span>;
+            node = <ClientText text={value ?? '—'} />;
         }
 
         if (format !== 'context_state') {
-            const prefix = item?.approximate ? '≈ ' : (item?.prefix || '');
+            const prefix = item?.approximate ? '≈ ' : item?.prefix || '';
             const suffix = item?.suffix || '';
             if (prefix || suffix) {
                 node = (
@@ -236,7 +220,9 @@ const TooltipInfo = memo(({
                                 const key = `${sectionIndex}-${itemIndex}-${item.label || ''}`;
                                 return (
                                     <React.Fragment key={key}>
-                                        <span className="min-w-0 truncate opacity-65" title={item.label}>{item.label || '—'}</span>
+                                        <span className="min-w-0 truncate opacity-65" title={item.label}>
+                                            {item.label || '—'}
+                                        </span>
                                         {renderAuditValue(item, key)}
                                     </React.Fragment>
                                 );
@@ -251,10 +237,14 @@ const TooltipInfo = memo(({
     const legacyContent = !modernAuditEnabled ? (
         <div className="min-w-0 space-y-2">
             {tip && (
-                <div className="whitespace-pre-line text-[11px] leading-5 opacity-95">{tip}</div>
+                <div className="whitespace-pre-line text-[11px] leading-5 opacity-95">
+                    <ClientText text={tip} />
+                </div>
             )}
             {hasLegacyContextDetail && (
-                <div className={`${tip ? 'border-t border-current/15 pt-2' : ''} grid grid-cols-[7.25rem_minmax(0,1fr)] gap-x-3 text-[11px] leading-4`}>
+                <div
+                    className={`${tip ? 'border-t border-current/15 pt-2' : ''} grid grid-cols-[7.25rem_minmax(0,1fr)] gap-x-3 text-[11px] leading-4`}
+                >
                     <span className="opacity-65">上下文</span>
                     <button
                         type="button"
@@ -275,7 +265,7 @@ const TooltipInfo = memo(({
             className="p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer"
             aria-label={t('message_info')}
         >
-            <Info size={16} className="text-gray-600 hover:text-gray-800"/>
+            <Info size={16} className="text-gray-600 hover:text-gray-800" />
         </button>
     );
 
@@ -285,16 +275,10 @@ const TooltipInfo = memo(({
     if (isMobile && modernAuditEnabled) {
         return (
             <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <DialogTrigger asChild>
-                    {trigger}
-                </DialogTrigger>
-                <DialogContent
-                    className="!top-1/2 !left-1/2 !w-[calc(100vw-1.5rem)] !max-w-none !max-h-[calc(100dvh-1.5rem)] !translate-x-[-50%] !translate-y-[-50%] overflow-hidden rounded-xl border-primary/20 !bg-primary p-0 !text-primary-foreground shadow-2xl"
-                >
+                <DialogTrigger asChild>{trigger}</DialogTrigger>
+                <DialogContent className="!top-1/2 !left-1/2 !w-[calc(100vw-1.5rem)] !max-w-none !max-h-[calc(100dvh-1.5rem)] !translate-x-[-50%] !translate-y-[-50%] overflow-hidden rounded-xl border-primary/20 !bg-primary p-0 !text-primary-foreground shadow-2xl">
                     <DialogTitle className="sr-only">{auditInfo?.title || t('message_info')}</DialogTitle>
-                    <div
-                        className="pretty-scrollbar max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-12"
-                    >
+                    <div className="pretty-scrollbar max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-12">
                         {content}
                     </div>
                 </DialogContent>
@@ -305,9 +289,7 @@ const TooltipInfo = memo(({
     if (useInteractivePopover) {
         return (
             <Popover open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <PopoverTrigger asChild>
-                    {trigger}
-                </PopoverTrigger>
+                <PopoverTrigger asChild>{trigger}</PopoverTrigger>
                 <PopoverContent
                     side="top"
                     align="center"
@@ -332,9 +314,7 @@ const TooltipInfo = memo(({
 
     return (
         <Tooltip>
-            <TooltipTrigger asChild>
-                {trigger}
-            </TooltipTrigger>
+            <TooltipTrigger asChild>{trigger}</TooltipTrigger>
             <TooltipContent
                 className="pretty-scrollbar overflow-x-hidden overflow-y-auto overscroll-contain px-3 py-2"
                 sideOffset={6}
