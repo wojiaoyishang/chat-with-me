@@ -3410,6 +3410,15 @@ function ChatPage({
         { kind: 'chat-sidebar' },
     );
 
+    const notificationFocusRef = useRef(null);
+    useEffect(() => {
+        const id = new URLSearchParams(window.location.search).get('focusMessage');
+        const key = `${conversationId}:${id}`;
+        if (!id || !isMessageLoadedRef.current || notificationFocusRef.current === key) return;
+        notificationFocusRef.current = key;
+        void jumpToMessage(id);
+    }, [conversationId, isLoading, messagesOrder.length, jumpToMessage]);
+
     return (
         <WidgetPresentationProvider chatBoxHostElement={widgetChatBoxHostElement}>
             <>
@@ -3468,6 +3477,7 @@ function ChatPage({
                     <div
                         className="flex-1 min-w-0 flex flex-col relative h-full w-full overflow-hidden"
                         ref={chatPageRef}
+                        data-notification-conversation-id={conversationId}
                         data-chat-page-root="true"
                         data-cwm-conversation-id={conversationId || ''}
                     >

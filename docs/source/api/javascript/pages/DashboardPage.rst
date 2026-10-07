@@ -52,13 +52,13 @@ src/pages/DashboardPage 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:2226:16361:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:2226:16598:FUNCTION
 
 .. js:function:: DashboardPage({ type = 'chat', standaloneChat = false })
 
    渲染 ``DashboardPage`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``56``—``354`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``56``—``357`` 行。
 
    **参数**
 
@@ -544,22 +544,25 @@ src/pages/DashboardPage 模块
 
 **主要协作调用**：``setConversationId``、``setDocumentId``、``encodeURIComponent``、``updateURL``。
 
-.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:8388:8662:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:8401:8899:FUNCTION
 
 .. rubric:: ``onOpenConversation callback @ 222``
 
 .. code-block:: javascript
 
-   onOpenConversation callback @ 222(conversationId)
+   onOpenConversation callback @ 222(conversationId, notification)
 
 处理 ``Open Conversation`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``222``—``227`` 行；所属函数 ``DashboardPage``。
+**性质**：同步局部函数；源码第 ``222``—``230`` 行；所属函数 ``DashboardPage``。
 
 **参数**
 
 ``conversationId``
    Conversation 的公共 UUID。
+
+``notification``
+   调用方传入的 ``notification`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -569,19 +572,19 @@ src/pages/DashboardPage 模块
 
 * 更新 React 或全局 Store 状态。
 
-**主要协作调用**：``setPageType``、``setConversationId``、``setDocumentId``、``updateURL``。
+**主要协作调用**：``setPageType``、``setConversationId``、``setDocumentId``、``updateURL``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:9518:9826:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:9755:10063:FUNCTION
 
-.. rubric:: ``onConversationIdSelect callback @ 245``
+.. rubric:: ``onConversationIdSelect callback @ 248``
 
 .. code-block:: javascript
 
-   onConversationIdSelect callback @ 245(newConversationId)
+   onConversationIdSelect callback @ 248(newConversationId)
 
 处理 ``Conversation Id Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``245``—``250`` 行；所属函数 ``DashboardPage``。
+**性质**：同步局部函数；源码第 ``248``—``253`` 行；所属函数 ``DashboardPage``。
 
 **参数**
 
@@ -594,17 +597,17 @@ src/pages/DashboardPage 模块
 
 **主要协作调用**：``handleConversationIdSelect``。
 
-.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:10818:11186:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:11055:11423:FUNCTION
 
-.. rubric:: ``onNewConversationId callback @ 267``
+.. rubric:: ``onNewConversationId callback @ 270``
 
 .. code-block:: javascript
 
-   onNewConversationId callback @ 267(newConversationId)
+   onNewConversationId callback @ 270(newConversationId)
 
 处理 ``New Conversation Id`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``267``—``272`` 行；所属函数 ``DashboardPage``。
+**性质**：同步局部函数；源码第 ``270``—``275`` 行；所属函数 ``DashboardPage``。
 
 **参数**
 
@@ -617,17 +620,17 @@ src/pages/DashboardPage 模块
 
 **主要协作调用**：``handleConversationIdSelect``。
 
-.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:12867:13259:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:13104:13496:FUNCTION
 
-.. rubric:: ``onClick callback @ 296``
+.. rubric:: ``onClick callback @ 299``
 
 .. code-block:: javascript
 
-   onClick callback @ 296()
+   onClick callback @ 299()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``296``—``301`` 行；所属函数 ``DashboardPage``。
+**性质**：同步局部函数；源码第 ``299``—``304`` 行；所属函数 ``DashboardPage``。
 
 **参数**
 
@@ -643,17 +646,17 @@ src/pages/DashboardPage 模块
 
 **主要协作调用**：``setPageType``、``setConversationId``、``setDocumentId``、``updateURL``。
 
-.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:14110:14446:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:14347:14683:FUNCTION
 
-.. rubric:: ``onChatMode callback @ 313``
+.. rubric:: ``onChatMode callback @ 316``
 
 .. code-block:: javascript
 
-   onChatMode callback @ 313()
+   onChatMode callback @ 316()
 
 处理 ``Chat Mode`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``313``—``317`` 行；所属函数 ``DashboardPage``。
+**性质**：同步局部函数；源码第 ``316``—``320`` 行；所属函数 ``DashboardPage``。
 
 **参数**
 
@@ -665,17 +668,17 @@ src/pages/DashboardPage 模块
 
 **主要协作调用**：``setPageType``、``setDocumentId``、``updateURL``。
 
-.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:14681:15089:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:14918:15326:FUNCTION
 
-.. rubric:: ``onNewConversationId callback @ 320``
+.. rubric:: ``onNewConversationId callback @ 323``
 
 .. code-block:: javascript
 
-   onNewConversationId callback @ 320(newConversationId)
+   onNewConversationId callback @ 323(newConversationId)
 
 处理 ``New Conversation Id`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``320``—``325`` 行；所属函数 ``DashboardPage``。
+**性质**：同步局部函数；源码第 ``323``—``328`` 行；所属函数 ``DashboardPage``。
 
 **参数**
 
@@ -688,17 +691,17 @@ src/pages/DashboardPage 模块
 
 **主要协作调用**：``handleConversationIdSelect``。
 
-.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:15262:15656:FUNCTION
+.. CWM-AST-FUNCTION src/pages/DashboardPage.jsx:15499:15893:FUNCTION
 
-.. rubric:: ``onNewDocumentId callback @ 327``
+.. rubric:: ``onNewDocumentId callback @ 330``
 
 .. code-block:: javascript
 
-   onNewDocumentId callback @ 327(newDocumentId)
+   onNewDocumentId callback @ 330(newDocumentId)
 
 处理 ``New Document Id`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``327``—``332`` 行；所属函数 ``DashboardPage``。
+**性质**：同步局部函数；源码第 ``330``—``335`` 行；所属函数 ``DashboardPage``。
 
 **参数**
 

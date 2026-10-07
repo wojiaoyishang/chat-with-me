@@ -218,12 +218,15 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                 {!isLoading && !isLoadingError && !isAuthRedirecting && (
                     <NotificationHost
                         currentConversationId={conversationId}
-                        isConversationVisible={pageType === 'chat' || Boolean(documentId)}
-                        onOpenConversation={(conversationId) => {
+                        isConversationVisible={!outlet && (pageType === 'chat' || Boolean(documentId))}
+                        onOpenConversation={(conversationId, notification) => {
                             setPageType('chat');
                             setConversationId(conversationId);
                             setDocumentId(null);
-                            updateURL(`/chat/${conversationId}`);
+                            const messageId = notification?.source?.messageId;
+                            updateURL(
+                                `/chat/${conversationId}${messageId ? `?focusMessage=${encodeURIComponent(messageId)}` : ''}`,
+                            );
                         }}
                     />
                 )}

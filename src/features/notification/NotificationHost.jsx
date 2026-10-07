@@ -1,3 +1,11 @@
+import { widgetNotificationChannel } from './widgetNotificationPolicy.js';
+import {
+    isNotificationConversationOpen,
+    requestSystemNotificationPermission,
+    updateNotificationPresence,
+    removeNotificationPresence,
+    showWidgetSystemNotification,
+} from './systemNotifications.js';
 import NotificationCenter from './NotificationCenter.jsx';
 import TaskCenter from '@/features/tasks/TaskCenter.jsx';
 import { emitEvent } from '@/context/useEventStore.jsx';
@@ -13,6 +21,7 @@ import { useNotificationStore } from './useNotificationStore.js';
 
 registerNotificationRenderer('tool.approval.required', NotificationToast);
 registerNotificationRenderer('task.finished', NotificationToast);
+registerNotificationRenderer('widget.available', NotificationToast);
 
 const toastIdFor = (notificationId, mobile) => `notification:${notificationId}:${mobile ? 'mobile' : 'desktop'}`;
 
@@ -39,7 +48,40 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
     const removeNotification = useNotificationStore((state) => state.removeNotification);
     const reloadSubscriptions = useNotificationStore((state) => state.reloadSubscriptions);
     const isMobile = useIsMobile();
+    const [presenceRevision, setPresenceRevision] = useState(0);
+    const [focused, setFocused] = useState(() => document.hasFocus());
     const [visibilityState, setVisibilityState] = useState(() => document.visibilityState);
+
+    useEffect(() => {
+        void requestSystemNotificationPermission({ automatic: true });
+    }, []);
+    useEffect(() => {
+        const update = () => {
+            const focus = document.hasFocus();
+            setFocused(focus);
+            setPresenceRevision((revision) => revision + 1);
+            updateNotificationPresence({
+                visible: document.visibilityState === 'visible',
+                focused: focus,
+                conversationId: currentConversationId,
+                conversationVisible: isConversationVisible && isNotificationConversationOpen(currentConversationId),
+            });
+        };
+        update();
+        const timer = setInterval(update, 2000);
+        window.addEventListener('focus', update);
+        window.addEventListener('blur', update);
+        window.addEventListener('system-notification-settings-changed', update);
+        document.addEventListener('visibilitychange', update);
+        return () => {
+            clearInterval(timer);
+            window.removeEventListener('focus', update);
+            window.removeEventListener('blur', update);
+            window.removeEventListener('system-notification-settings-changed', update);
+            document.removeEventListener('visibilitychange', update);
+            removeNotificationPresence();
+        };
+    }, [currentConversationId, isConversationVisible]);
 
     const shownRef = useRef(new Map());
     const hiddenRevisionRef = useRef(new Map());
@@ -221,7 +263,10 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
     }, [syncPendingNotifications]);
 
     useEffect(() => {
-        const handleChange = () => reloadSubscriptions();
+        const handleChange = (event) => {
+            if (event.key?.startsWith('widgetNotificationTabPresence:')) return;
+            reloadSubscriptions();
+        };
         window.addEventListener('notification-subscriptions-changed', handleChange);
         window.addEventListener('storage', handleChange);
         return () => {
@@ -281,10 +326,35 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
                 continue;
             }
 
+            if (notification.typeId === 'widget.available') {
+                const channel = widgetNotificationChannel({
+                    visible: visibilityState === 'visible',
+                    focused,
+                    currentConversationId,
+                    targetConversationId: notification.source?.conversationId,
+                    conversationVisible: isConversationVisible && isNotificationConversationOpen(currentConversationId),
+                });
+                if (!isToastEnabled(notification)) {
+                    hideToast(notification.id);
+                    continue;
+                }
+                if (channel === 'none') {
+                    hiddenRevisionRef.current.set(notification.id, revision);
+                    hideToast(notification.id);
+                    continue;
+                }
+                if (channel === 'system') {
+                    hideToast(notification.id);
+                    void showWidgetSystemNotification(notification, openNotification);
+                    continue;
+                }
+            }
+
             const backgroundRevision = Number(backgroundRevisionRef.current.get(notification.id) || 0);
             const needsBackgroundAttention = backgroundRevision >= revision;
             const sourceConversationId = notification.source?.conversationId;
             const isCurrentVisibleConversation =
+                notification.typeId !== 'widget.available' &&
                 isConversationVisible &&
                 sourceConversationId &&
                 sourceConversationId === currentConversationId &&
@@ -321,6 +391,8 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
         }
     }, [
         currentConversationId,
+        focused,
+        presenceRevision,
         dismissToast,
         markRead,
         hideToast,

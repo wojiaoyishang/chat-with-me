@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 270
+     - 271
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentVision </api/javascript/features/chat/attachmentVision>`
      - 6
@@ -676,12 +676,12 @@
    * - :doc:`src/features/notification/NotificationHost </api/javascript/features/notification/NotificationHost>`
      - 4
      - 0
-     - 61
+     - 67
      - ``src/features/notification/NotificationHost.jsx``
    * - :doc:`src/features/notification/NotificationSettings </api/javascript/features/notification/NotificationSettings>`
      - 1
      - 0
-     - 15
+     - 20
      - ``src/features/notification/NotificationSettings.jsx``
    * - :doc:`src/features/notification/NotificationToast </api/javascript/features/notification/NotificationToast>`
      - 1
@@ -693,11 +693,21 @@
      - 0
      - 4
      - ``src/features/notification/notificationRegistry.js``
+   * - :doc:`src/features/notification/systemNotifications </api/javascript/features/notification/systemNotifications>`
+     - 9
+     - 0
+     - 9
+     - ``src/features/notification/systemNotifications.js``
    * - :doc:`src/features/notification/useNotificationStore </api/javascript/features/notification/useNotificationStore>`
      - 2
      - 0
      - 17
      - ``src/features/notification/useNotificationStore.js``
+   * - :doc:`src/features/notification/widgetNotificationPolicy </api/javascript/features/notification/widgetNotificationPolicy>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/notification/widgetNotificationPolicy.js``
    * - :doc:`src/features/story/StoryCard </api/javascript/features/story/StoryCard>`
      - 1
      - 0
@@ -919,7 +929,9 @@
    /api/javascript/features/notification/NotificationSettings
    /api/javascript/features/notification/NotificationToast
    /api/javascript/features/notification/notificationRegistry
+   /api/javascript/features/notification/systemNotifications
    /api/javascript/features/notification/useNotificationStore
+   /api/javascript/features/notification/widgetNotificationPolicy
    /api/javascript/features/story/StoryCard
    /api/javascript/features/story/StoryReader
    /api/javascript/features/story/StorySelectorButton
