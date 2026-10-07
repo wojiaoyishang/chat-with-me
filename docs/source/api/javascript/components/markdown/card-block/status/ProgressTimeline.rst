@@ -22,24 +22,24 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``./AnimatedProgressFill.jsx``、``./progressUtils.js``。
+``react``、``lucide-react``、``framer-motion``、``./AnimatedProgressFill.jsx``、``./progressUtils.js``。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:386:10049:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:449:10897:FUNCTION
 
-.. rubric:: ``memo callback @ 14``
+.. rubric:: ``memo callback @ 15``
 
 .. code-block:: javascript
 
-   memo callback @ 14({ progress, progressKey, isFailed, isDisappearing = false })
+   memo callback @ 15({ progress, progressKey, isFailed, isDisappearing = false })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``14``—``181`` 行。
+**性质**：同步局部函数；源码第 ``15``—``194`` 行。
 
 **参数**
 
@@ -50,21 +50,21 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\x60w-full min-w-0 flex-1 overflow-visible transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${isDisappearing ? 'opacity-0 scale-x-[0.985] blur-[0.5px…``。
 
-**主要协作调用**：``Boolean``、``useRef``、``useState``、``useEffect``、``getProgressNodeCapacity``、``getVisibleProgressSteps``、``getCompactProgressSteps``、``getVisualProgressPercent``、``Math.min``、``getProgressStorageKey``、``Math.max``、``steps.map``。
+**主要协作调用**：``useReducedMotion``、``Boolean``、``useRef``、``useState``、``useEffect``、``getProgressNodeCapacity``、``getVisibleProgressSteps``、``getCompactProgressSteps``、``getVisualProgressPercent``、``Math.min``、``getProgressStorageKey``、``Math.max``。
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:625:988:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:732:1087:FUNCTION
 
-.. rubric:: ``useEffect callback @ 18``
+.. rubric:: ``useEffect callback @ 20``
 
 .. code-block:: javascript
 
-   useEffect callback @ 18()
+   useEffect callback @ 20()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``18``—``26`` 行；所属函数 ``memo callback @ 14``。
+**性质**：同步局部函数；源码第 ``20``—``28`` 行；所属函数 ``memo callback @ 15``。
 
 **参数**
 
@@ -78,7 +78,7 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:746:804:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:850:908:FUNCTION
 
 .. rubric:: ``measure``
 
@@ -88,7 +88,7 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 实现 ``measure`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``21``—``21`` 行；所属函数 ``useEffect callback @ 18``。
+**性质**：同步局部函数；源码第 ``23``—``23`` 行；所属函数 ``useEffect callback @ 20``。
 
 **参数**
 
@@ -100,17 +100,17 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 **主要协作调用**：``setNodeWidth``、``element.getBoundingClientRect``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:948:976:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:1048:1076:FUNCTION
 
-.. rubric:: ``returned callback @ 25``
+.. rubric:: ``returned callback @ 27``
 
 .. code-block:: javascript
 
-   returned callback @ 25()
+   returned callback @ 27()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``25``—``25`` 行；所属函数 ``useEffect callback @ 18``。
+**性质**：同步局部函数；源码第 ``27``—``27`` 行；所属函数 ``useEffect callback @ 20``。
 
 **参数**
 
@@ -122,17 +122,17 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 **主要协作调用**：``observer.disconnect``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:4571:6592:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:4688:7453:FUNCTION
 
-.. rubric:: ``steps.map callback @ 91``
+.. rubric:: ``steps.map callback @ 94``
 
 .. code-block:: javascript
 
-   steps.map callback @ 91(step)
+   steps.map callback @ 94(step)
 
 作为 ``steps.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``91``—``121`` 行；所属函数 ``memo callback @ 14``。
+**性质**：同步局部函数；源码第 ``94``—``133`` 行；所属函数 ``memo callback @ 15``。
 
 **参数**
 
@@ -141,19 +141,19 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={step} className={\x60 relative flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold shadow-sm transition-all duration-300 ov…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <motion.div key={step} layout="position" initial={{ opacity: 0, x: reduceMotion ? 0 : 32 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: reduceMotion ? 0 : -32 }} trans…``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:7655:9660:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:8545:10520:FUNCTION
 
-.. rubric:: ``compactSteps.map callback @ 139``
+.. rubric:: ``compactSteps.map callback @ 152``
 
 .. code-block:: javascript
 
-   compactSteps.map callback @ 139(step)
+   compactSteps.map callback @ 152(step)
 
 作为 ``compactSteps.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``139``—``169`` 行；所属函数 ``memo callback @ 14``。
+**性质**：同步局部函数；源码第 ``152``—``182`` 行；所属函数 ``memo callback @ 15``。
 
 **参数**
 
@@ -164,17 +164,17 @@ src/components/markdown/card-block/status/ProgressTimeline 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <div key={step} className={\x60 relative flex h-6 w-6 items-center justify-center rounded-full border text-[10px] font-bold shadow-sm transition-all duration-300 overflow-visible $…``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:10050:10397:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/ProgressTimeline.jsx:10898:11236:FUNCTION
 
-.. rubric:: ``memo callback @ 182``
+.. rubric:: ``memo callback @ 195``
 
 .. code-block:: javascript
 
-   memo callback @ 182(prev, next)
+   memo callback @ 195(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``182``—``190`` 行。
+**性质**：同步局部函数；源码第 ``195``—``203`` 行。
 
 **参数**
 

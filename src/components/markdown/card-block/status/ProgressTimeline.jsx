@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { Check } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 import AnimatedProgressFill from './AnimatedProgressFill.jsx';
 import {
@@ -12,6 +13,7 @@ import {
 
 const ProgressTimeline = memo(
     ({ progress, progressKey, isFailed, isDisappearing = false }) => {
+        const reduceMotion = useReducedMotion();
         const hasProgress = Boolean(progress);
         const nodeAreaRef = useRef(null);
         const [nodeWidth, setNodeWidth] = useState(0);
@@ -88,37 +90,48 @@ const ProgressTimeline = memo(
                         </div>
 
                         <div className="relative z-[1] flex items-center justify-between gap-1 w-full min-w-0">
-                            {steps.map((step) => {
-                                const isCompleted = step <= current;
-                                const isLatestCompleted = step === latestCompletedStep && !isFailed;
+                            <AnimatePresence initial={false} mode="popLayout">
+                                {steps.map((step) => {
+                                    const isCompleted = step <= current;
+                                    const isLatestCompleted = step === latestCompletedStep && !isFailed;
 
-                                return (
-                                    <div
-                                        key={step}
-                                        className={`
-                                        relative flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold shadow-sm transition-all duration-300 overflow-visible
+                                    return (
+                                        <motion.div
+                                            key={step}
+                                            layout="position"
+                                            initial={{ opacity: 0, x: reduceMotion ? 0 : 32 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: reduceMotion ? 0 : -32 }}
+                                            transition={
+                                                reduceMotion
+                                                    ? { duration: 0 }
+                                                    : { type: 'spring', stiffness: 260, damping: 30 }
+                                            }
+                                            className={`
+                                        relative flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-bold shadow-sm transition-colors duration-300 overflow-visible
                                         ${isCompleted ? tone.active : 'border-zinc-300 bg-white text-zinc-400'}
                                         ${isLatestCompleted ? 'card-progress-node-breathe' : ''}
                                     `}
-                                    >
-                                        {isLatestCompleted && (
-                                            <span
-                                                className="card-progress-node-halo pointer-events-none absolute inset-[2px] rounded-full"
-                                                style={{
-                                                    background:
-                                                        'radial-gradient(circle, rgba(254, 240, 138, 0.82) 0%, rgba(250, 204, 21, 0.34) 52%, rgba(250, 204, 21, 0) 74%)',
-                                                }}
-                                            />
-                                        )}
+                                        >
+                                            {isLatestCompleted && (
+                                                <span
+                                                    className="card-progress-node-halo pointer-events-none absolute inset-[2px] rounded-full"
+                                                    style={{
+                                                        background:
+                                                            'radial-gradient(circle, rgba(254, 240, 138, 0.82) 0%, rgba(250, 204, 21, 0.34) 52%, rgba(250, 204, 21, 0) 74%)',
+                                                    }}
+                                                />
+                                            )}
 
-                                        {isCompleted ? (
-                                            <Check className="relative z-[1] h-3.5 w-3.5 stroke-[3]" />
-                                        ) : (
-                                            <span className="relative z-[1]">{step}</span>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                            {isCompleted ? (
+                                                <Check className="relative z-[1] h-3.5 w-3.5 stroke-[3]" />
+                                            ) : (
+                                                <span className="relative z-[1]">{step}</span>
+                                            )}
+                                        </motion.div>
+                                    );
+                                })}
+                            </AnimatePresence>
                         </div>
                     </div>
                 </div>
