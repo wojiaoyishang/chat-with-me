@@ -24,7 +24,7 @@ const VoiceInputButton = memo(({
                 type="button"
                 onClick={onClick}
                 disabled={isDisabled}
-                className="inline-flex h-7 items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex shrink-0 h-7 items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 aria-label={text.cancelRecording}
             >
                 {text.cancelRecording}
@@ -40,7 +40,7 @@ const VoiceInputButton = memo(({
             type="button"
             onClick={onClick}
             disabled={isDisabled}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition-colors hover:bg-gray-100 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex shrink-0 h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition-colors hover:bg-gray-100 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
             aria-label={label}
             title={label}
         >

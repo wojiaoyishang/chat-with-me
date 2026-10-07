@@ -517,7 +517,7 @@ const ToolButtons = memo(
                     <DropdownMenuTrigger asChild>
                         <button
                             type="button"
-                            className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                            className="inline-flex shrink-0 items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer"
                             aria-label={
                                 conversationToolsSyncing
                                     ? t('conversation_tools_syncing', '正在同步工具状态…')
@@ -637,6 +637,7 @@ const ToolButtons = memo(
 
                 {auditControl && (
                     <ToolAuditModeSwitch
+                        compact={containerWidth > 0 && containerWidth < 640}
                         value={toolsStatus.extra_tools?.tool_audit_mode || 'off'}
                         t={t}
                         isMobile={isMobileMenu}
@@ -657,7 +658,7 @@ const ToolButtons = memo(
                         <DropdownMenuTrigger asChild>
                             <button
                                 type="button"
-                                className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex shrink-0 items-center justify-center w-7 h-7 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 cursor-pointer outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
                                 onMouseDown={(event) => event.preventDefault()}
                                 onClick={(event) => releaseFocusAfterActivation(event.currentTarget)}
                                 aria-label={t('builtin_tools', { defaultValue: 'Built-in tools' })}

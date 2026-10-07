@@ -29,7 +29,14 @@ const MODES = [
     },
 ];
 
-export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobile = false, layerClass = '' }) {
+export default function ToolAuditModeSwitch({
+    value = 'off',
+    onChange,
+    t,
+    isMobile = false,
+    compact = false,
+    layerClass = '',
+}) {
     const [open, setOpen] = useState(false);
     const [displayValue, setDisplayValue] = useState(value);
     const pendingChoiceRef = useRef(null);
@@ -78,7 +85,7 @@ export default function ToolAuditModeSwitch({ value = 'off', onChange, t, isMobi
             className={`h-7 max-w-30 shrink-0 cursor-pointer gap-1.5 bg-transparent pl-1 pr-0 text-sm font-normal hover:bg-transparent has-[>svg]:pl-1 has-[>svg]:pr-0 dark:hover:bg-transparent ${current.color}`}
         >
             <CurrentIcon className="size-4.5" />
-            {!isMobile && <span className="truncate">{t(current.label)}</span>}
+            {!isMobile && !compact && <span className="truncate">{t(current.label)}</span>}
         </Button>
     );
 

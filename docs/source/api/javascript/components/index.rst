@@ -141,7 +141,7 @@
    * - :doc:`src/components/markdown/card-block/status/ProgressTimeline </api/javascript/components/markdown/card-block/status/ProgressTimeline>`
      - 0
      - 0
-     - 5
+     - 4
      - ``src/components/markdown/card-block/status/ProgressTimeline.jsx``
    * - :doc:`src/components/markdown/card-block/status/StableStepsButton </api/javascript/components/markdown/card-block/status/StableStepsButton>`
      - 0
@@ -169,9 +169,9 @@
      - 2
      - ``src/components/markdown/card-block/status/ToolCallingRightStatus.jsx``
    * - :doc:`src/components/markdown/card-block/status/progressUtils </api/javascript/components/markdown/card-block/status/progressUtils>`
-     - 3
+     - 4
      - 0
-     - 0
+     - 1
      - ``src/components/markdown/card-block/status/progressUtils.js``
    * - :doc:`src/components/markdown/card-block/useExpandedState </api/javascript/components/markdown/card-block/useExpandedState>`
      - 1

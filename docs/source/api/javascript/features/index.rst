@@ -76,7 +76,7 @@
    * - :doc:`src/features/chat/page/components/ChatHeader </api/javascript/features/chat/page/components/ChatHeader>`
      - 0
      - 0
-     - 6
+     - 9
      - ``src/features/chat/page/components/ChatHeader.jsx``
    * - :doc:`src/features/chat/page/components/ChatHistoryViewport </api/javascript/features/chat/page/components/ChatHistoryViewport>`
      - 1

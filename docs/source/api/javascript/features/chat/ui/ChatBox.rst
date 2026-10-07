@@ -185,7 +185,7 @@ src/features/chat/ui/ChatBox 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:8449:122506:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:8449:122554:FUNCTION
 
 .. js:function:: ChatBox({ onSendMessage, readOnly = false, FilePickerCallback, PicPickerCallback, conversationId, attachmen…)
 
@@ -4142,7 +4142,7 @@ src/features/chat/ui/ChatBox 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:116298:116886:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:116298:116934:FUNCTION
 
 .. rubric:: ``visibleBuiltinTools .filter((tool) => tool.name === 'enable_thinking') .map callback @ 2575``
 
@@ -4191,7 +4191,7 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``handleBuiltinToolToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122359:122397:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122407:122445:FUNCTION
 
 .. rubric:: ``onConfirm callback @ 2678``
 
@@ -4213,7 +4213,7 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``closeVoicePermissionDialog``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122426:122465:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122474:122513:FUNCTION
 
 .. rubric:: ``onCancel callback @ 2679``
 
@@ -4235,7 +4235,7 @@ src/features/chat/ui/ChatBox 模块
 
 **主要协作调用**：``closeVoicePermissionDialog``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122573:125340:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ChatBox.jsx:122621:125388:FUNCTION
 
 .. rubric:: ``memo callback @ 2686``
 

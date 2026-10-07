@@ -29,7 +29,7 @@ src/features/chat/ui/chatbox/components/VoiceInputButton 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/VoiceInputButton.jsx:106:1986:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/VoiceInputButton.jsx:109:2053:FUNCTION
 
 .. rubric:: ``memo callback @ 4``
 
@@ -48,4 +48,4 @@ src/features/chat/ui/chatbox/components/VoiceInputButton 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <button type="button" onClick={onClick} disabled={isDisabled} className="inline-flex h-7 items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 text-xs fo…``、``( <button type="button" onClick={onClick} disabled={isDisabled} className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-6…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <button type="button" onClick={onClick} disabled={isDisabled} className="inline-flex shrink-0 h-7 items-center justify-center rounded-full border border-red-200 bg-red-50 px-3 t…``、``( <button type="button" onClick={onClick} disabled={isDisabled} className="inline-flex shrink-0 h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-white te…``。

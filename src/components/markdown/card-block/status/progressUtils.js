@@ -27,3 +27,11 @@ export const getVisualProgressPercent = (current, total) => {
 
     return Math.max(0, Math.min(96, (visualCurrent / total) * 100));
 };
+
+/** Bound the visible tool nodes while keeping the current position in view. */
+export const getVisibleProgressSteps = (current, total, limit = 6) => {
+    const count = Math.max(0, Math.floor(Number(total) || 0));
+    const size = Math.min(count, Math.max(1, Math.floor(Number(limit) || 6)));
+    const start = Math.max(1, Math.min(Math.max(1, current) - 2, count - size + 1));
+    return Array.from({ length: size }, (_, index) => start + index);
+};

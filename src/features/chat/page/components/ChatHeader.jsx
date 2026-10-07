@@ -1,7 +1,18 @@
 import { NotificationCenterTrigger } from '@/features/notification/NotificationCenter.jsx';
 import { TaskCenterTrigger } from '@/features/tasks/TaskCenter.jsx';
-import React, { memo, useEffect, useMemo, useRef } from 'react';
-import { Bot, Check, ChevronDown, LoaderCircle, Activity, Maximize2, Minimize2, Minus, PanelRight } from 'lucide-react';
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    Menu,
+    Bot,
+    Check,
+    ChevronDown,
+    LoaderCircle,
+    Activity,
+    Maximize2,
+    Minimize2,
+    Minus,
+    PanelRight,
+} from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import ModelItem from './ModelItem.jsx';
@@ -44,6 +55,16 @@ const ChatHeader = memo(
         onDeleteStory,
     }) => {
         const modelListRef = useRef(null);
+        const headerRef = useRef(null);
+        const [compactHeader, setCompactHeader] = useState(false);
+        useEffect(() => {
+            const element = headerRef.current;
+            if (!element) return;
+            const observer = new ResizeObserver(([entry]) => setCompactHeader(entry.contentRect.width < 640));
+            observer.observe(element);
+            return () => observer.disconnect();
+        }, []);
+
         const isAgentSession = conversationMeta?.conversationKind === 'agent_session';
         const agentSessionName = conversationMeta?.agentSession?.name;
         const agentSessionDepth = Number(conversationMeta?.agentSession?.depth || 1);
@@ -83,7 +104,7 @@ const ChatHeader = memo(
         }, [models, isMobile, handleModelItemClick, handleModelItemMouseEnter, selectedModel, t]);
 
         return (
-            <header className="relative w-full min-w-0 bg-white flex items-center justify-between gap-2 px-2 py-4 sm:px-4 h-14">
+            <header ref={headerRef} className="relative w-full min-w-0 bg-white flex items-center justify-between gap-2 px-2 py-4 sm:px-4 h-14">
                 <Popover
                     open={isAgentSession ? false : isModelPopoverOpen}
                     onOpenChange={isAgentSession ? undefined : handlePopoverOpenChange}
@@ -177,20 +198,85 @@ const ChatHeader = memo(
                 )}
 
                 <div className="ml-auto flex shrink-0 items-center gap-0 sm:gap-2">
-                    <StorySelectorButton
-                        stories={stories}
-                        onOpenStory={onOpenStory}
-                        onRenameStory={onRenameStory}
-                        onDeleteStory={onDeleteStory}
-                        t={t}
-                        isWindowMode={isWindowMode}
-                    />
+                    {compactHeader ? (
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="ghost" size="icon" className="shrink-0" aria-label="更多功能">
+                                    <Menu className="h-5 w-5" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent align="end" className="w-auto max-w-[calc(100vw-1rem)] p-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <StorySelectorButton
+                                        stories={stories}
+                                        onOpenStory={onOpenStory}
+                                        onRenameStory={onRenameStory}
+                                        onDeleteStory={onDeleteStory}
+                                        t={t}
+                                        isWindowMode={isWindowMode}
+                                    />
 
-                    {showTaskButton && (
-                        <>
-                            <NotificationCenterTrigger />
-                            <TaskCenterTrigger />
-                        </>
+                                    {showTaskButton && (
+                                        <>
+                                            <NotificationCenterTrigger />
+                                            <TaskCenterTrigger />
+                                        </>
+                                    )}
+                                    <MessageHistoryMapButton
+                                        conversationId={conversationId}
+                                        disabled={!conversationId}
+                                        label={t('message_history_map', { defaultValue: '消息历史地图' })}
+                                    />
+
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={onOpenRuntimeInspector}
+                                        disabled={runtimeInspectorDisabled}
+                                        className="cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                        aria-label={t('runtime_inspector') || '运行时检查器'}
+                                        title={t('runtime_inspector') || '运行时检查器'}
+                                    >
+                                        <Activity className="h-5 w-5 text-gray-600" />
+                                    </Button>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    ) : (
+                        <div className="flex shrink-0 items-center gap-2">
+                            <StorySelectorButton
+                                stories={stories}
+                                onOpenStory={onOpenStory}
+                                onRenameStory={onRenameStory}
+                                onDeleteStory={onDeleteStory}
+                                t={t}
+                                isWindowMode={isWindowMode}
+                            />
+
+                            {showTaskButton && (
+                                <>
+                                    <NotificationCenterTrigger />
+                                    <TaskCenterTrigger />
+                                </>
+                            )}
+                            <MessageHistoryMapButton
+                                conversationId={conversationId}
+                                disabled={!conversationId}
+                                label={t('message_history_map', { defaultValue: '消息历史地图' })}
+                            />
+
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={onOpenRuntimeInspector}
+                                disabled={runtimeInspectorDisabled}
+                                className="cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                aria-label={t('runtime_inspector') || '运行时检查器'}
+                                title={t('runtime_inspector') || '运行时检查器'}
+                            >
+                                <Activity className="h-5 w-5 text-gray-600" />
+                            </Button>
+                        </div>
                     )}
                     {showWindowButton && (
                         <Button
@@ -217,24 +303,6 @@ const ChatHeader = memo(
                             <Minus className="h-5 w-5 text-gray-600" />
                         </Button>
                     )}
-                    <MessageHistoryMapButton
-                        conversationId={conversationId}
-                        disabled={!conversationId}
-                        label={t('message_history_map', { defaultValue: '消息历史地图' })}
-                    />
-
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={onOpenRuntimeInspector}
-                        disabled={runtimeInspectorDisabled}
-                        className="cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
-                        aria-label={t('runtime_inspector') || '运行时检查器'}
-                        title={t('runtime_inspector') || '运行时检查器'}
-                    >
-                        <Activity className="h-5 w-5 text-gray-600" />
-                    </Button>
-
                     <Button
                         variant="ghost"
                         size="icon"
