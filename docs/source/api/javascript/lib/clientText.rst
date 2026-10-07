@@ -22,13 +22,13 @@ Require an explicit timezone; never guess the timezone of historical data.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/lib/clientText.js:278:906:FUNCTION
+.. CWM-AST-FUNCTION src/lib/clientText.js:218:828:FUNCTION
 
 .. js:function:: parseTimestamp(value)
 
    解析与 ``Timestamp`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``5``—``23`` 行。
+   **性质**：同步函数；导出 API；源码第 ``4``—``22`` 行。
 
    **参数**
 
@@ -41,13 +41,13 @@ Require an explicit timezone; never guess the timezone of historical data.
 
    **主要协作调用**：``TIMESTAMP.exec``、``new Date(Date.UTC(Number(year), Number(month), 0)).getUTCDate``、``Date.UTC``、``Number``、``Number.isNaN``、``date.getTime``。
 
-.. CWM-AST-FUNCTION src/lib/clientText.js:946:1351:FUNCTION
+.. CWM-AST-FUNCTION src/lib/clientText.js:866:1259:FUNCTION
 
 .. js:function:: formatLocalTimestamp(value, { locale, timeZone, fallback = '—' })
 
    格式化与 ``Local Timestamp`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``25``—``37`` 行。
+   **性质**：同步函数；导出 API；源码第 ``24``—``36`` 行。
 
    **参数**
 
@@ -63,13 +63,13 @@ Require an explicit timezone; never guess the timezone of historical data.
 
    **主要协作调用**：``parseTimestamp``、``new Intl.DateTimeFormat(locale, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'…``。
 
-.. CWM-AST-FUNCTION src/lib/clientText.js:1472:1826:FUNCTION
+.. CWM-AST-FUNCTION src/lib/clientText.js:1377:1658:FUNCTION
 
 .. js:function:: resolveClientText(value, options)
 
    解析并确定与 ``Client Text`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``40``—``48`` 行。
+   **性质**：同步函数；导出 API；源码第 ``39``—``45`` 行。
 
    **参数**
 
@@ -81,9 +81,9 @@ Require an explicit timezone; never guess the timezone of historical data.
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``text``、``text .slice(CLIENT_TEXT_MARKER.length) .replace(/\{\{datetime:([^{}\n]+)\}\}/g, (marker, timestamp) => formatLocalTimestamp(timestamp, { ...options, fallback: marker }), )``。
+   根据执行分支返回结果；代表性返回表达式为 ``text``、``text.replace(/\{\{datetime:([^{}\n]+)\}\}/g, (marker, timestamp) => formatLocalTimestamp(timestamp, { ...options, fallback: marker }), )``。
 
-   **主要协作调用**：``String``、``text.startsWith``、``text .slice(CLIENT_TEXT_MARKER.length) .replace``、``text .slice``。
+   **主要协作调用**：``String``、``text.replace``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -92,17 +92,17 @@ Require an explicit timezone; never guess the timezone of historical data.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/lib/clientText.js:1708:1810:FUNCTION
+.. CWM-AST-FUNCTION src/lib/clientText.js:1551:1648:FUNCTION
 
-.. rubric:: ``text .slice(CLIENT_TEXT_MARKER.length) .replace callback @ 45``
+.. rubric:: ``text.replace callback @ 42``
 
 .. code-block:: javascript
 
-   text .slice(CLIENT_TEXT_MARKER.length) .replace callback @ 45(marker, timestamp)
+   text.replace callback @ 42(marker, timestamp)
 
-实现 ``text .slice(CLIENT_TEXT_MARKER.length) .replace`` 对应的前端处理。
+实现 ``text.replace`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``45``—``46`` 行；所属函数 ``resolveClientText``。
+**性质**：同步局部函数；源码第 ``42``—``43`` 行；所属函数 ``resolveClientText``。
 
 **参数**
 

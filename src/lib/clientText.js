@@ -1,4 +1,3 @@
-export const CLIENT_TEXT_MARKER = '[client-text:v1]\n';
 const TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,9}))?(Z|[+-]\d{2}:\d{2})$/;
 
 /** Require an explicit timezone; never guess the timezone of historical data. */
@@ -39,10 +38,8 @@ export const formatLocalTimestamp = (value, { locale, timeZone, fallback = '—'
 /** Explicit opt-in, text-only parsing. This never interprets HTML or Markdown. */
 export const resolveClientText = (value, options = {}) => {
     const text = String(value ?? '');
-    if (!text.startsWith(CLIENT_TEXT_MARKER)) return text;
-    return text
-        .slice(CLIENT_TEXT_MARKER.length)
-        .replace(/\{\{datetime:([^{}\n]+)\}\}/g, (marker, timestamp) =>
-            formatLocalTimestamp(timestamp, { ...options, fallback: marker }),
-        );
+    if (options.useTextFormat !== true) return text;
+    return text.replace(/\{\{datetime:([^{}\n]+)\}\}/g, (marker, timestamp) =>
+        formatLocalTimestamp(timestamp, { ...options, fallback: marker }),
+    );
 };

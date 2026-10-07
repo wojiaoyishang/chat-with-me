@@ -130,13 +130,13 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:1771:14674:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:1771:14755:FUNCTION
 
 .. rubric:: ``memo callback @ 43``
 
 .. code-block:: javascript
 
-   memo callback @ 43({ tip, contextState, conversationId, messageId, msg = null, t })
+   memo callback @ 43({ tip, useTextFormat, contextState, conversationId, messageId, msg = null, t })
 
 实现 ``memo`` 对应的前端处理。
 
@@ -144,8 +144,8 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **参数**
 
-``{ tip, contextState, conversationId, messageId, msg = null, t }``
-   调用方传入的 ``tip, contextState, conversationId, messageId, msg = null, t`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ tip, useTextFormat, contextState, conversationId, messageId, msg = null, t }``
+   调用方传入的 ``tip, useTextFormat, contextState, conversationId, messageId, msg = null, t`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -159,7 +159,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **内部回调数量**：7。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2031:2132:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2046:2147:FUNCTION
 
 .. rubric:: ``useMemo callback @ 49``
 
@@ -181,7 +181,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``normalizeAudit``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2248:2312:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2263:2327:FUNCTION
 
 .. rubric:: ``useMemo callback @ 54``
 
@@ -203,7 +203,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``contextDisplay``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2649:2951:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2664:2966:FUNCTION
 
 .. rubric:: ``openContextDetail``
 
@@ -226,7 +226,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``event?.preventDefault``、``event?.stopPropagation``、``setDetailsOpen``、``openRemoteUniversalModal``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2974:3331:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2989:3346:FUNCTION
 
 .. rubric:: ``openHref``
 
@@ -256,7 +256,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``event?.preventDefault``、``event?.stopPropagation``、``setDetailsOpen``、``String(href).startsWith``、``String``、``openUniversalModalLink``、``window.open``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:3362:8600:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:3377:8651:FUNCTION
 
 .. rubric:: ``renderAuditValue``
 
@@ -284,7 +284,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:6304:6342:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:6319:6357:FUNCTION
 
 .. rubric:: ``onClick callback @ 140``
 
@@ -307,7 +307,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``openHref``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:7930:8138:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:7981:8189:FUNCTION
 
 .. rubric:: ``onClick callback @ 179``
 
@@ -330,7 +330,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``navigator.clipboard?.writeText``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:8889:10494:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:8940:10545:FUNCTION
 
 .. rubric:: ``auditInfo.sections.map callback @ 206``
 
@@ -358,7 +358,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:9684:10397:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:9735:10448:FUNCTION
 
 .. rubric:: ``items.map callback @ 218``
 
@@ -384,7 +384,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``renderAuditValue``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:13402:13435:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:13483:13516:FUNCTION
 
 .. rubric:: ``onOpenAutoFocus callback @ 300``
 

@@ -40,7 +40,7 @@ const contextDisplay = (contextState) => {
     return { text: '活动', actionable: false };
 };
 
-const TooltipInfo = memo(({ tip, contextState, conversationId, messageId, msg = null, t }) => {
+const TooltipInfo = memo(({ tip, useTextFormat, contextState, conversationId, messageId, msg = null, t }) => {
     const isMobile = useIsMobile();
     const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -151,7 +151,7 @@ const TooltipInfo = memo(({ tip, contextState, conversationId, messageId, msg = 
         } else if (format === 'code') {
             node = <span className="font-mono">{String(value ?? '—')}</span>;
         } else {
-            node = <ClientText text={value ?? '—'} />;
+            node = <ClientText text={value ?? '—'} useTextFormat={item?.useTextFormat} />;
         }
 
         if (format !== 'context_state') {
@@ -238,7 +238,7 @@ const TooltipInfo = memo(({ tip, contextState, conversationId, messageId, msg = 
         <div className="min-w-0 space-y-2">
             {tip && (
                 <div className="whitespace-pre-line text-[11px] leading-5 opacity-95">
-                    <ClientText text={tip} />
+                    <ClientText text={tip} useTextFormat={useTextFormat} />
                 </div>
             )}
             {hasLegacyContextDetail && (

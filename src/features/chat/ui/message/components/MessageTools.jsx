@@ -1,43 +1,30 @@
-import React, {memo} from 'react';
-import {useTranslation} from 'react-i18next';
-import {
-    PenLine,
-    Copy,
-    RotateCw,
-    GitBranch,
-    Trash,
-    StepForward,
-    Volume2,
-    Square,
-    Bug
-} from 'lucide-react';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {handleMessageAction} from '../utils/messageActions.js';
-import {canSpeakMessage} from '../utils/speechContent.js';
+import React, { memo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { PenLine, Copy, RotateCw, GitBranch, Trash, StepForward, Volume2, Square, Bug } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { handleMessageAction } from '../utils/messageActions.js';
+import { canSpeakMessage } from '../utils/speechContent.js';
 import TooltipInfo from './TooltipInfo.jsx';
-import {openRemoteUniversalModal} from '@/components/modal/universalModal.js';
-import {apiEndpoint} from '@/config.js';
-import {useUserStore} from '@/context/userContext.jsx';
+import { openRemoteUniversalModal } from '@/components/modal/universalModal.js';
+import { apiEndpoint } from '@/config.js';
+import { useUserStore } from '@/context/userContext.jsx';
 
 const isActiveSpeechStatus = (status) => ['loading', 'playing', 'paused'].includes(status);
 const toolButtonClassName = 'shrink-0 p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer';
 
-const MessageTools = memo(({msg, msgId, conversationId, readonly = false, speechState}) => {
-    const {t} = useTranslation();
-    const showContextDebugButtons = useUserStore(state => Boolean(state.user?.showContextDebugButtons));
-    const actionContext = {msgId, conversationId};
+const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speechState }) => {
+    const { t } = useTranslation();
+    const showContextDebugButtons = useUserStore((state) => Boolean(state.user?.showContextDebugButtons));
+    const actionContext = { msgId, conversationId };
     const canSpeak = !readonly && canSpeakMessage(msg);
-    const isSpeakingThisMessage = canSpeak && speechState?.messageId === msgId && isActiveSpeechStatus(speechState?.status);
+    const isSpeakingThisMessage =
+        canSpeak && speechState?.messageId === msgId && isActiveSpeechStatus(speechState?.status);
     const backgroundTools = msg.backgroundTools || {};
     const hasActiveBackgroundTools = Boolean(
         backgroundTools.active ||
         backgroundTools.pending > 0 ||
         backgroundTools.running > 0 ||
-        backgroundTools.cancelling
+        backgroundTools.cancelling,
     );
     const isCancellingBackgroundTools = Boolean(backgroundTools.cancelling);
 
@@ -52,7 +39,9 @@ const MessageTools = memo(({msg, msgId, conversationId, readonly = false, speech
                             className="shrink-0 cursor-pointer rounded-sm bg-orange-500/15 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                             aria-label={t('cancel_background_tools')}
                         >
-                            {isCancellingBackgroundTools ? t('cancelling_background_tools') : t('cancel_background_tools')}
+                            {isCancellingBackgroundTools
+                                ? t('cancelling_background_tools')
+                                : t('cancel_background_tools')}
                         </button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -69,12 +58,10 @@ const MessageTools = memo(({msg, msgId, conversationId, readonly = false, speech
                             className={toolButtonClassName}
                             aria-label={t('edit_message')}
                         >
-                            <PenLine size={16} className="text-gray-600 hover:text-gray-800"/>
+                            <PenLine size={16} className="text-gray-600 hover:text-gray-800" />
                         </button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                        {t('edit_message')}
-                    </TooltipContent>
+                    <TooltipContent>{t('edit_message')}</TooltipContent>
                 </Tooltip>
             )}
 
@@ -86,12 +73,10 @@ const MessageTools = memo(({msg, msgId, conversationId, readonly = false, speech
                             className={toolButtonClassName}
                             aria-label={t('fork_message')}
                         >
-                            <GitBranch size={16} className="text-gray-600 hover:text-gray-800"/>
+                            <GitBranch size={16} className="text-gray-600 hover:text-gray-800" />
                         </button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                        {t('fork_message')}
-                    </TooltipContent>
+                    <TooltipContent>{t('fork_message')}</TooltipContent>
                 </Tooltip>
             )}
 
@@ -103,12 +88,10 @@ const MessageTools = memo(({msg, msgId, conversationId, readonly = false, speech
                             className={toolButtonClassName}
                             aria-label={t('copy_message')}
                         >
-                            <Copy size={16} className="text-gray-600 hover:text-gray-800"/>
+                            <Copy size={16} className="text-gray-600 hover:text-gray-800" />
                         </button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                        {t('copy_message')}
-                    </TooltipContent>
+                    <TooltipContent>{t('copy_message')}</TooltipContent>
                 </Tooltip>
             )}
 
@@ -116,14 +99,21 @@ const MessageTools = memo(({msg, msgId, conversationId, readonly = false, speech
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <button
-                            onClick={() => handleMessageAction(isSpeakingThisMessage ? 'stopSpeak' : 'speak', msg, actionContext, t)}
+                            onClick={() =>
+                                handleMessageAction(
+                                    isSpeakingThisMessage ? 'stopSpeak' : 'speak',
+                                    msg,
+                                    actionContext,
+                                    t,
+                                )
+                            }
                             className={toolButtonClassName}
                             aria-label={isSpeakingThisMessage ? t('stop_speak_message') : t('speak_message')}
                         >
                             {isSpeakingThisMessage ? (
-                                <Square size={16} className="text-gray-600 hover:text-gray-800"/>
+                                <Square size={16} className="text-gray-600 hover:text-gray-800" />
                             ) : (
-                                <Volume2 size={16} className="text-gray-600 hover:text-gray-800"/>
+                                <Volume2 size={16} className="text-gray-600 hover:text-gray-800" />
                             )}
                         </button>
                     </TooltipTrigger>
@@ -141,15 +131,10 @@ const MessageTools = memo(({msg, msgId, conversationId, readonly = false, speech
                             className={`${toolButtonClassName} group hover:bg-red-200`}
                             aria-label={t('delete_message')}
                         >
-                            <Trash
-                                size={16}
-                                className="text-gray-600 transition-colors group-hover:text-red-600"
-                            />
+                            <Trash size={16} className="text-gray-600 transition-colors group-hover:text-red-600" />
                         </button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                        {t('delete_message')}
-                    </TooltipContent>
+                    <TooltipContent>{t('delete_message')}</TooltipContent>
                 </Tooltip>
             )}
 
@@ -161,12 +146,10 @@ const MessageTools = memo(({msg, msgId, conversationId, readonly = false, speech
                             className={toolButtonClassName}
                             aria-label={t('progenerate_message')}
                         >
-                            <StepForward size={16} className="text-gray-600 hover:text-gray-800"/>
+                            <StepForward size={16} className="text-gray-600 hover:text-gray-800" />
                         </button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                        {t('progenerate_message')}
-                    </TooltipContent>
+                    <TooltipContent>{t('progenerate_message')}</TooltipContent>
                 </Tooltip>
             )}
 
@@ -178,12 +161,10 @@ const MessageTools = memo(({msg, msgId, conversationId, readonly = false, speech
                             className={toolButtonClassName}
                             aria-label={t('regenerate_message')}
                         >
-                            <RotateCw size={16} className="text-gray-600 hover:text-gray-800"/>
+                            <RotateCw size={16} className="text-gray-600 hover:text-gray-800" />
                         </button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                        {t('regenerate_message')}
-                    </TooltipContent>
+                    <TooltipContent>{t('regenerate_message')}</TooltipContent>
                 </Tooltip>
             )}
 
@@ -192,24 +173,26 @@ const MessageTools = memo(({msg, msgId, conversationId, readonly = false, speech
                     <TooltipTrigger asChild>
                         <button
                             type="button"
-                            onClick={() => openRemoteUniversalModal(
-                                apiEndpoint.CHAT_CONTEXT_DEBUG_ENDPOINT,
-                                {conversationId, messageId: msgId, presentation: 'modal'},
-                            )}
+                            onClick={() =>
+                                openRemoteUniversalModal(apiEndpoint.CHAT_CONTEXT_DEBUG_ENDPOINT, {
+                                    conversationId,
+                                    messageId: msgId,
+                                    presentation: 'modal',
+                                })
+                            }
                             className={toolButtonClassName}
                             aria-label={t('context_debug_button')}
                         >
-                            <Bug size={16} className="text-violet-600 hover:text-violet-800"/>
+                            <Bug size={16} className="text-violet-600 hover:text-violet-800" />
                         </button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                        {t('context_debug_button')}
-                    </TooltipContent>
+                    <TooltipContent>{t('context_debug_button')}</TooltipContent>
                 </Tooltip>
             )}
 
             <TooltipInfo
                 tip={msg.tip}
+                useTextFormat={msg.useTextFormat ?? msg.extraInfo?.useTextFormat}
                 contextState={msg?.contextState}
                 conversationId={conversationId}
                 messageId={msgId}

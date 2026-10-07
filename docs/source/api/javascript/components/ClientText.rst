@@ -27,9 +27,9 @@ Shared opt-in backend text renderer, escaped by React.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/ClientText.jsx:56:280:FUNCTION
+.. CWM-AST-FUNCTION src/components/ClientText.jsx:56:318:FUNCTION
 
-.. js:function:: ClientText({ text, locale, timeZone, ...props })
+.. js:function:: ClientText({ text, useTextFormat = false, locale, timeZone, ...props })
 
    Shared opt-in backend text renderer, escaped by React.
 
@@ -37,11 +37,11 @@ Shared opt-in backend text renderer, escaped by React.
 
    **参数**
 
-   ``{ text, locale, timeZone, ...props }``
-      调用方传入的 ``text, locale, timeZone, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ text, useTextFormat = false, locale, timeZone, ...props }``
+      调用方传入的 ``text, useTextFormat = false, locale, timeZone, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<span {...props}>{resolveClientText(text, { locale, timeZone })}</span>``。
+   根据执行分支返回结果；代表性返回表达式为 ``<span {...props}>{resolveClientText(text, { useTextFormat, locale, timeZone })}</span>``。
 
    **主要协作调用**：``resolveClientText``。
