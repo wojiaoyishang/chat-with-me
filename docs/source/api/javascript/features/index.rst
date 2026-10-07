@@ -126,7 +126,7 @@
    * - :doc:`src/features/chat/page/components/ScrollToBottomButton </api/javascript/features/chat/page/components/ScrollToBottomButton>`
      - 0
      - 0
-     - 3
+     - 1
      - ``src/features/chat/page/components/ScrollToBottomButton.jsx``
    * - :doc:`src/features/chat/page/components/SpeechPlayer </api/javascript/features/chat/page/components/SpeechPlayer>`
      - 21

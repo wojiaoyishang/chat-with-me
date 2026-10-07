@@ -3510,6 +3510,10 @@ function ChatPage({
                                     />
                                 </div>
                             </ChatHistoryViewport>
+                            <ScrollToBottomButton
+                                isVisible={showScrollToBottomButton}
+                                onClick={handleManualScrollToBottomClick}
+                            />
                             <QuickUserMessageNavigator
                                 items={messageSummaries}
                                 activeMessageId={activeVisibleMessageId}
@@ -3526,12 +3530,6 @@ function ChatPage({
                             {isLoading && <LoadingScreen t={t} stage={loadingStage} />}
                             {isLoadingError && <LoadingFailedScreen t={t} />}
                         </div>
-
-                        <ScrollToBottomButton
-                            isVisible={showScrollToBottomButton}
-                            chatBoxHeight={chatBoxHeight}
-                            onClick={handleManualScrollToBottomClick}
-                        />
 
                         <div className="absolute z-10 inset-x-0 bottom-10 pointer-events-none">
                             <SpeechSubtitleOverlay speechState={speechState} enabled={speechSubtitlesEnabled} t={t} />
