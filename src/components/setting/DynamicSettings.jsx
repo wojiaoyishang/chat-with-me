@@ -3827,8 +3827,7 @@ function MultiSelectItem({ item, path }) {
     );
     const label = unrestricted ? '不限模型' : selected.length ? `已选择 ${selected.length} 个模型` : '未选择模型';
     return (
-        <div className="py-3">
-            <div className="mb-2 font-medium">{item.text}</div>
+        <SettingRow text={item.text} tips={item.tips} required={item.required} controlFillAvailable>
             <Popover
                 open={open}
                 onOpenChange={(next) => {
@@ -3839,10 +3838,12 @@ function MultiSelectItem({ item, path }) {
                 <PopoverTrigger asChild>
                     <button
                         type="button"
-                        className="flex w-full cursor-pointer items-center justify-between rounded-xl border px-3 py-2.5 text-sm hover:bg-gray-50"
+                        className="flex items-center gap-1.5 h-8 px-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer text-sm font-sans w-full sm:min-w-[140px] text-left transition-colors hover:border-[#2563eb] dark:hover:border-[#3b82f6] outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
                         aria-label={item.text}
                     >
-                        <span>{label}</span>
+                        <AutoScrollText className="flex-1 min-w-0" title={label}>
+                            {label}
+                        </AutoScrollText>
                         <ChevronDown className="size-4 text-gray-400" />
                     </button>
                 </PopoverTrigger>
@@ -3914,8 +3915,7 @@ function MultiSelectItem({ item, path }) {
                     </div>
                 </PopoverContent>
             </Popover>
-            {item.tips && <p className="mt-2 text-xs text-gray-500">{item.tips}</p>}
-        </div>
+        </SettingRow>
     );
 }
 
