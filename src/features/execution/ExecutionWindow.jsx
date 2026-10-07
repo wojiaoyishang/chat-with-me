@@ -477,7 +477,7 @@ const ExecutionWindow = memo(
                                                             activity={activity}
                                                             userGuidance={userGuidance}
                                                         />
-                                                        {userGuidance && (
+                                                        {userGuidance && activity.source !== 'widget_response' && (
                                                             <ExecutionGuidanceAction
                                                                 activity={activity}
                                                                 execution={execution}
@@ -485,9 +485,11 @@ const ExecutionWindow = memo(
                                                         )}
                                                         <span>
                                                             {userGuidance
-                                                                ? activity.state === 'withdrawn'
-                                                                    ? '用户补充 · 已撤回'
-                                                                    : '用户补充'
+                                                                ? activity.source === 'widget_response'
+                                                                    ? '小组件结果'
+                                                                    : activity.state === 'withdrawn'
+                                                                      ? '用户补充 · 已撤回'
+                                                                      : '用户补充'
                                                                 : activity.kind === 'model'
                                                                   ? '模型'
                                                                   : '任务活动'}
@@ -496,9 +498,22 @@ const ExecutionWindow = memo(
                                                     <div
                                                         className={`whitespace-pre-wrap break-words text-sm leading-6 ${activity.state === 'withdrawn' ? 'text-gray-400' : 'text-gray-700'}`}
                                                     >
-                                                        {userGuidance
-                                                            ? activity.content || activity.label || '执行补充'
-                                                            : activity.label || activity.kind || '任务活动'}
+                                                        {userGuidance ? (
+                                                            activity.source === 'widget_response' ? (
+                                                                <details>
+                                                                    <summary className="cursor-pointer font-medium">
+                                                                        {activity.widgetTitle || '小组件'} · 已确认
+                                                                    </summary>
+                                                                    <div className="mt-2 rounded-lg bg-white/70 p-3 text-xs">
+                                                                        {activity.content}
+                                                                    </div>
+                                                                </details>
+                                                            ) : (
+                                                                activity.content || activity.label || '执行补充'
+                                                            )
+                                                        ) : (
+                                                            activity.label || activity.kind || '任务活动'
+                                                        )}
                                                     </div>
                                                     {Array.isArray(activity.tools) && activity.tools.length > 0 && (
                                                         <div className="mt-0.5 truncate font-mono text-[11px] text-gray-400">

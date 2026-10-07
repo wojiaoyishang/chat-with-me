@@ -166,7 +166,7 @@ src/features/execution/ExecutionWindow 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3705:30067:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:3705:31399:FUNCTION
 
 .. rubric:: ``memo callback @ 86``
 
@@ -176,7 +176,7 @@ src/features/execution/ExecutionWindow 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``86``—``530`` 行。
+**性质**：同步局部函数；源码第 ``86``—``545`` 行。
 
 **参数**
 
@@ -781,7 +781,7 @@ src/features/execution/ExecutionWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:17249:29560:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:17249:30892:FUNCTION
 
 .. rubric:: ``timelineItems.map callback @ 370``
 
@@ -791,7 +791,7 @@ src/features/execution/ExecutionWindow 模块
 
 作为 ``timelineItems.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``370``—``516`` 行；所属函数 ``memo callback @ 86``。
+**性质**：同步局部函数；源码第 ``370``—``531`` 行；所属函数 ``memo callback @ 86``。
 
 **参数**
 
