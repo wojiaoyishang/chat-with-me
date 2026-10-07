@@ -22,18 +22,18 @@ src/features/execution/ExecutionGuidanceBubble 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``@/components/ui/avatar.tsx``、``@/context/userContext.jsx``、``@/lib/virtualUrl.js``、``./ExecutionGuidanceAction.jsx``。
+``./WidgetResponseDetails.jsx``、``react``、``lucide-react``、``@/components/ui/avatar.tsx``、``@/context/userContext.jsx``、``@/lib/virtualUrl.js``、``./ExecutionGuidanceAction.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:412:1151:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:477:1216:FUNCTION
 
 .. js:function:: stateMeta(state)
 
    实现 ``stateMeta`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``9``—``23`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``10``—``24`` 行。
 
    **参数**
 
@@ -51,17 +51,17 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1191:4353:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1256:4600:FUNCTION
 
-.. rubric:: ``memo callback @ 25``
+.. rubric:: ``memo callback @ 26``
 
 .. code-block:: javascript
 
-   memo callback @ 25({ activity, execution })
+   memo callback @ 26({ activity, execution })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``25``—``91`` 行。
+**性质**：同步局部函数；源码第 ``26``—``95`` 行。
 
 **参数**
 
@@ -76,17 +76,17 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1252:1273:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1317:1338:FUNCTION
 
-.. rubric:: ``useUserStore callback @ 26``
+.. rubric:: ``useUserStore callback @ 27``
 
 .. code-block:: javascript
 
-   useUserStore callback @ 26(state)
+   useUserStore callback @ 27(state)
 
 封装 ``UserStore`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``memo callback @ 25``。
+**性质**：同步局部函数；源码第 ``27``—``27`` 行；所属函数 ``memo callback @ 26``。
 
 **参数**
 

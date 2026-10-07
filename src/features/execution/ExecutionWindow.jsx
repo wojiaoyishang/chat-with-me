@@ -1,3 +1,4 @@
+import WidgetResponseDetails from './WidgetResponseDetails.jsx';
 import ExecutionPauseControl from './ExecutionPauseControl.jsx';
 import ExecutionThinkingControl from './ExecutionThinkingControl.jsx';
 import ExecutionGuidanceAction from './ExecutionGuidanceAction.jsx';
@@ -500,14 +501,10 @@ const ExecutionWindow = memo(
                                                     >
                                                         {userGuidance ? (
                                                             activity.source === 'widget_response' ? (
-                                                                <details>
-                                                                    <summary className="cursor-pointer font-medium">
-                                                                        {activity.widgetTitle || '小组件'} · 已确认
-                                                                    </summary>
-                                                                    <div className="mt-2 rounded-lg bg-white/70 p-3 text-xs">
-                                                                        {activity.content}
-                                                                    </div>
-                                                                </details>
+                                                                <WidgetResponseDetails
+                                                                    response={activity.widgetResponse}
+                                                                    fallback={activity.content}
+                                                                />
                                                             ) : (
                                                                 activity.content || activity.label || '执行补充'
                                                             )

@@ -623,6 +623,11 @@
      - 0
      - 27
      - ``src/features/execution/ExecutionWindow.jsx``
+   * - :doc:`src/features/execution/WidgetResponseDetails </api/javascript/features/execution/WidgetResponseDetails>`
+     - 1
+     - 0
+     - 2
+     - ``src/features/execution/WidgetResponseDetails.jsx``
    * - :doc:`src/features/execution/index </api/javascript/features/execution/index>`
      - 0
      - 0
@@ -895,6 +900,7 @@
    /api/javascript/features/execution/ExecutionStatus
    /api/javascript/features/execution/ExecutionThinkingControl
    /api/javascript/features/execution/ExecutionWindow
+   /api/javascript/features/execution/WidgetResponseDetails
    /api/javascript/features/execution/index
    /api/javascript/features/execution/useExecutionStore
    /api/javascript/features/message-map/MessageHistoryMapButton

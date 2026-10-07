@@ -1,3 +1,4 @@
+import WidgetResponseDetails from './WidgetResponseDetails.jsx';
 import { memo } from 'react';
 import { Check, CircleAlert, LoaderCircle, MessageSquarePlus, ListChecks } from 'lucide-react';
 
@@ -50,7 +51,10 @@ const ExecutionGuidanceBubble = memo(({ activity, execution }) => {
                             {failed ? '未送达' : state === 'consumed' || state === 'responded' ? '已接收' : '已提交'}
                         </span>
                     </div>
-                    <div className="whitespace-pre-wrap break-words text-sm leading-6 text-gray-700">{content}</div>
+                    <div className="whitespace-pre-wrap break-words text-sm leading-6 text-gray-700">
+                        {activity.widgetResponse?.summary || content}
+                    </div>
+                    <WidgetResponseDetails response={activity.widgetResponse} fallback={content} />
                 </div>
             </div>
         );
