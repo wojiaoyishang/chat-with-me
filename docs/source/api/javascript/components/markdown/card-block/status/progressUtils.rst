@@ -15,7 +15,7 @@ Bound the visible tool nodes while keeping the current position in view.
 
 * **源码文件**：``src/components/markdown/card-block/status/progressUtils.js``
 * **模块标识**：``src/components/markdown/card-block/status/progressUtils``
-* **顶层函数/组件/Hook**：4
+* **顶层函数/组件/Hook**：5
 * **类**：0
 * **局部函数与匿名回调**：1
 
@@ -86,7 +86,7 @@ Bound the visible tool nodes while keeping the current position in view.
 
    **主要协作调用**：``Math.min``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/progressUtils.js:917:1254:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/progressUtils.js:917:1279:FUNCTION
 
 .. js:function:: getVisibleProgressSteps(current, total, limit)
 
@@ -113,12 +113,31 @@ Bound the visible tool nodes while keeping the current position in view.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/progressUtils.js:1402:1490:FUNCTION
+
+.. js:function:: getProgressNodeCapacity(width)
+
+   读取与 ``Progress Node Capacity`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``40``—``41`` 行。
+
+   **参数**
+
+   ``width``
+      调用方传入的 ``width`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+   **主要协作调用**：``Math.max``、``Math.floor``、``Number``。
+
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/progressUtils.js:1221:1249:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/progressUtils.js:1246:1274:FUNCTION
 
 .. rubric:: ``Array.from callback @ 36``
 

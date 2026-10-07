@@ -1,19 +1,38 @@
-import { memo } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Check } from 'lucide-react';
 
 import AnimatedProgressFill from './AnimatedProgressFill.jsx';
-import { getVisibleProgressSteps, getCompactProgressSteps, getProgressStorageKey, getVisualProgressPercent } from './progressUtils.js';
+import {
+    getProgressNodeCapacity,
+    getVisibleProgressSteps,
+    getCompactProgressSteps,
+    getProgressStorageKey,
+    getVisualProgressPercent,
+} from './progressUtils.js';
 
 const ProgressTimeline = memo(
     ({ progress, progressKey, isFailed, isDisappearing = false }) => {
+        const hasProgress = Boolean(progress);
+        const nodeAreaRef = useRef(null);
+        const [nodeWidth, setNodeWidth] = useState(0);
+        useEffect(() => {
+            const element = nodeAreaRef.current;
+            if (!element) return;
+            const measure = () => setNodeWidth(element.getBoundingClientRect().width);
+            measure();
+            const observer = new ResizeObserver(measure);
+            observer.observe(element);
+            return () => observer.disconnect();
+        }, [hasProgress]);
         if (!progress) {
             return null;
         }
 
         const { current, total, isNotStarted } = progress;
-        const steps = getVisibleProgressSteps(current, total);
-    const start = steps[0] || 1;
-    const compactSteps = getCompactProgressSteps(current, total);
+        const capacity = getProgressNodeCapacity(nodeWidth);
+        const steps = capacity ? getVisibleProgressSteps(current, total, capacity) : [];
+        const start = steps[0] || 1;
+        const compactSteps = getCompactProgressSteps(current, total);
         const progressPercent = getVisualProgressPercent(current, total);
         const isComplete = current >= total;
         const shouldBreathe = !isFailed && current > 0 && !isComplete;
@@ -47,7 +66,10 @@ const ProgressTimeline = memo(
                         {current}/{total}
                     </span>
 
-                    <div className="relative flex items-center min-w-0 flex-1 py-1.5 overflow-x-auto hide-scrollbar">
+                    <div
+                        ref={nodeAreaRef}
+                        className="relative flex items-center min-w-0 flex-1 py-1.5 px-1 overflow-hidden"
+                    >
                         <div className="absolute left-2 right-2 top-1/2 h-3.5 -translate-y-1/2 rounded-full bg-zinc-200/90 overflow-hidden shadow-inner">
                             <AnimatedProgressFill
                                 className={`h-full rounded-full bg-gradient-to-r ${tone.fill} shadow-lg ${tone.glow} transition-[width] duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)] origin-left`}
@@ -55,8 +77,11 @@ const ProgressTimeline = memo(
                                 progressKey={progressKey}
                                 storageKey={`${progressStorageKey}::desktop`}
                                 targetPercent={
-                                    total > 6
-                                        ? Math.max(0, Math.min(100, ((current - start) / 5) * 100))
+                                    total > steps.length
+                                        ? Math.max(
+                                              0,
+                                              Math.min(100, ((current - start) / Math.max(1, steps.length - 1)) * 100),
+                                          )
                                         : progressPercent
                                 }
                             />
