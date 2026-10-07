@@ -152,7 +152,7 @@ const extractCopyTextFromReplacementValue = (value, seenObjects = new WeakSet())
     return '';
 };
 
-const normalizeReplacementCopyEntry = (replacement, id) => {
+const normalizeReplacementCopyEntry = (replacement, id, explicitType) => {
     const normalizedId = String(id || '');
 
     if (!replacement || typeof replacement !== 'object') {
@@ -171,14 +171,17 @@ const normalizeReplacementCopyEntry = (replacement, id) => {
         };
     }
 
-    const rawCopyContent = extractCopyTextFromReplacementValue(replacement[normalizedId]);
+    const entry = replacement[normalizedId];
+    const rawCopyContent = extractCopyTextFromReplacementValue(entry);
     const protocol = parseReplacementProtocol(rawCopyContent);
 
     // Tool details routed exclusively to Task Window are deliberately absent from
     // the Assistant transcript. Keep message-level copy/TTS semantics aligned with
     // what the conversation surface actually shows instead of expanding hidden
     // command/log/result payloads back into the copied answer.
-    if (['taskwindowtool', 'workspacetransfer'].includes(String(protocol.type || '').toLowerCase())) {
+    if (
+        ['taskwindowtool', 'workspacetransfer', 'executionstatus'].includes(String(explicitType || entry?.type || protocol.type || '').toLowerCase())
+    ) {
         return {
             exists: true,
             id: normalizedId,
@@ -235,7 +238,7 @@ const replaceCopyDirectives = (source, directiveRegex, replacement, options) => 
             return '';
         }
 
-        const normalized = normalizeReplacementCopyEntry(replacement, finalId);
+        const normalized = normalizeReplacementCopyEntry(replacement, finalId, attributes.type);
 
         if (!normalized.exists) {
             return '';

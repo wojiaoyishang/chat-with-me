@@ -31,7 +31,7 @@
    * - :doc:`src/lib/tools </api/javascript/lib/tools>`
      - 18
      - 0
-     - 19
+     - 20
      - ``src/lib/tools.jsx``
    * - :doc:`src/lib/utils </api/javascript/lib/utils>`
      - 1

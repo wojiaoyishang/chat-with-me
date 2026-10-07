@@ -1,7 +1,7 @@
-import {apiEndpoint} from '@/config.js';
+import { apiEndpoint } from '@/config.js';
 import apiClient from '@/lib/apiClient';
-import {useEffect, useState} from "react";
-import ThreeDotLoading from "@/components/ui/ThreeDotLoading.jsx";
+import { useEffect, useState } from 'react';
+import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
 
 export const LOCAL_SETTING_CHANGE_EVENT = 'chat-local-setting-change';
 export const MESSAGE_NAVIGATOR_SETTING_KEY = 'ShowQuickUserMessageNavigator';
@@ -28,20 +28,18 @@ export function processSelectedFiles(files) {
         return [];
     }
 
-    const fileArray = Array.from(files).filter(file =>
-        file && file.name && file.size > 0
-    );
+    const fileArray = Array.from(files).filter((file) => file && file.name && file.size > 0);
 
     if (fileArray.length === 0) {
         return [];
     }
 
-    return fileArray.map(file => ({
+    return fileArray.map((file) => ({
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name: file.name,
         progress: 0,
         serverId: null,
-        file: file
+        file: file,
     }));
 }
 
@@ -57,8 +55,7 @@ export function fileUpload(uploadFile, onProgressUpdate, onComplete, onError) {
     if (!uploadFile || !uploadFile.file || !onProgressUpdate || !onComplete) {
         console.error('Missing required parameters for fileUpload');
         onError?.(new Error('Invalid parameters'));
-        return () => {
-        };
+        return () => {};
     }
 
     const formData = new FormData();
@@ -193,14 +190,8 @@ export function generateUUID() {
     bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant RFC4122
 
     // 转换为十六进制字符串并格式化
-    const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
-    return [
-        hex.slice(0, 8),
-        hex.slice(8, 12),
-        hex.slice(12, 16),
-        hex.slice(16, 20),
-        hex.slice(20)
-    ].join('-');
+    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+    return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join('-');
 }
 
 export function getLastLine(str) {
@@ -228,9 +219,11 @@ export function setLocalSetting(key, value) {
         localStorage.setItem('LocalSetting', JSON.stringify(currentSettings));
 
         if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent(LOCAL_SETTING_CHANGE_EVENT, {
-                detail: {key, value}
-            }));
+            window.dispatchEvent(
+                new CustomEvent(LOCAL_SETTING_CHANGE_EVENT, {
+                    detail: { key, value },
+                }),
+            );
         }
 
         console.log(`Setting ${key} saved successfully`);
@@ -294,41 +287,49 @@ export function useLocalSetting(key, defaultValue = null) {
     return [value, updateValue];
 }
 
-
-export function copyTextToClipboard(text) {
-    return new Promise((resolve, reject) => {
+export async function copyTextToClipboard(text) {
+    const value = String(text ?? '');
+    if (navigator.clipboard && window.isSecureContext) {
         try {
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text)
-                    .then(resolve)
-                    .catch(reject);
-            } else {
-                // 降级处理
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed';
-                textarea.style.left = '-9999px';
-                document.body.appendChild(textarea);
-                textarea.focus();
-                textarea.select();
-
-                const successful = document.execCommand('copy');
-                document.body.removeChild(textarea);
-
-                if (successful) {
-                    resolve();
-                } else {
-                    reject(new Error('document.execCommand("copy") failed'));
-                }
-            }
-        } catch (err) {
-            reject(err);
+            await navigator.clipboard.writeText(value);
+            return;
+        } catch {
+            // Browser permissions/focus can reject the modern API; try the legacy path.
         }
-    });
+    }
+    const previousFocus = document.activeElement;
+    const selection = window.getSelection();
+    const ranges = selection
+        ? Array.from({ length: selection.rangeCount }, (_, index) => selection.getRangeAt(index).cloneRange())
+        : [];
+    const inputSelection =
+        previousFocus && typeof previousFocus.selectionStart === 'number'
+            ? [previousFocus.selectionStart, previousFocus.selectionEnd, previousFocus.selectionDirection]
+            : null;
+    const textarea = document.createElement('textarea');
+    textarea.value = value;
+    textarea.setAttribute('readonly', '');
+    textarea.style.cssText = 'position:fixed;left:0;top:0;opacity:0;pointer-events:none;';
+    // Keep the fallback within an open modal's focus scope when one exists.
+    const modal = Array.from(document.querySelectorAll('[role="dialog"][aria-modal="true"]')).at(-1);
+    (modal || document.body).appendChild(textarea);
+    try {
+        textarea.focus({ preventScroll: true });
+        textarea.select();
+        textarea.setSelectionRange(0, value.length);
+        if (!document.execCommand('copy')) throw new Error('Clipboard copy failed');
+    } finally {
+        textarea.remove();
+        previousFocus?.focus?.({ preventScroll: true });
+        if (inputSelection) previousFocus.setSelectionRange(...inputSelection);
+        else if (selection) {
+            selection.removeAllRanges();
+            ranges.forEach((range) => selection.addRange(range));
+        }
+    }
 }
 
 export function updateURL(path) {
-
     // 获取 Vite 的 base 配置
     const base = import.meta.env.BASE_URL || '/';
 
@@ -383,9 +384,11 @@ export function getRelativeDate(date) {
 
 // 检查是否为同一天
 function isSameDay(date1, date2) {
-    return date1.getFullYear() === date2.getFullYear() &&
+    return (
+        date1.getFullYear() === date2.getFullYear() &&
         date1.getMonth() === date2.getMonth() &&
-        date1.getDate() === date2.getDate();
+        date1.getDate() === date2.getDate()
+    );
 }
 
 export function isMobile() {
@@ -411,21 +414,13 @@ export function useIsMobile() {
  * @param {string} zIndex - Tailwind z-index 类名 (如 "z-20")，默认为空
  * @param {boolean} compact - 是否启用紧凑模式（用于侧边栏、卡片等狭窄区域），默认为 false
  */
-export const UnifiedLoadingScreen = ({
-                                         text,
-                                         zIndex = "",
-                                         compact = false
-                                     }) => {
+export const UnifiedLoadingScreen = ({ text, zIndex = '', compact = false }) => {
     // 紧凑模式：仅显示加载动画 + 文字（无全屏遮罩、无背景）
     if (compact) {
         return (
             <div className="flex flex-col items-center py-8">
                 <ThreeDotLoading />
-                {text && (
-                    <span className="mt-3 text-xs text-gray-500 text-center">
-                        {text}
-                    </span>
-                )}
+                {text && <span className="mt-3 text-xs text-gray-500 text-center">{text}</span>}
             </div>
         );
     }
@@ -435,11 +430,7 @@ export const UnifiedLoadingScreen = ({
         <div className={`absolute ${zIndex} inset-0 bg-white flex items-center justify-center`}>
             <div className="flex flex-col items-center">
                 <ThreeDotLoading />
-                {text && (
-                    <span className="mt-2 text-sm text-gray-500">
-                        {text}
-                    </span>
-                )}
+                {text && <span className="mt-2 text-sm text-gray-500">{text}</span>}
             </div>
         </div>
     );
@@ -454,21 +445,14 @@ export const UnifiedLoadingScreen = ({
  * @param {string} zIndex - Tailwind z-index 类名 (如 "z-51"), 默认为空
  * @param {boolean} compact - 是否使用紧凑模式（侧边栏专用）
  */
-export const UnifiedErrorScreen = ({
-                                       title,
-                                       subtitle,
-                                       onRetry,
-                                       retryText,
-                                       zIndex = "",
-                                       compact = false
-                                   }) => {
+export const UnifiedErrorScreen = ({ title, subtitle, onRetry, retryText, zIndex = '', compact = false }) => {
     if (compact) {
         // 紧凑模式 - 专为侧边栏设计（内联、无覆盖）
         return (
             <div className="flex flex-col items-center px-2 py-4 text-center">
                 <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
                     <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </div>
                 <p className="text-gray-700 text-sm font-medium">{title}</p>
@@ -492,7 +476,7 @@ export const UnifiedErrorScreen = ({
             <div className="flex flex-col items-center">
                 <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mb-3">
                     <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </div>
                 <p className="text-gray-700 text-base font-medium">{title}</p>

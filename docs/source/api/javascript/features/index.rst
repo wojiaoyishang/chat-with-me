@@ -486,7 +486,7 @@
    * - :doc:`src/features/chat/ui/message/utils/messageActions </api/javascript/features/chat/ui/message/utils/messageActions>`
      - 1
      - 0
-     - 3
+     - 4
      - ``src/features/chat/ui/message/utils/messageActions.js``
    * - :doc:`src/features/chat/ui/message/utils/speechContent </api/javascript/features/chat/ui/message/utils/speechContent>`
      - 24
