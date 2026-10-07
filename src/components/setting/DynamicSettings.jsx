@@ -3816,47 +3816,104 @@ function ToolPermissionMatrixItem({ item, path }) {
 
 function MultiSelectItem({ item, path }) {
     const { values, update } = useSettings();
+    const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState('');
     const value = deepGet(values, path);
     const unrestricted = value == null;
     const selected = Array.isArray(value) ? value : [];
+    const options = item.options || [];
+    const filtered = options.filter((option) =>
+        `${option.label} ${option.value}`.toLowerCase().includes(search.trim().toLowerCase()),
+    );
+    const label = unrestricted ? '不限模型' : selected.length ? `已选择 ${selected.length} 个模型` : '未选择模型';
     return (
         <div className="py-3">
             <div className="mb-2 font-medium">{item.text}</div>
-            <label className="mb-3 flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                    type="checkbox"
-                    checked={unrestricted}
-                    onChange={(event) =>
-                        update(path, event.target.checked ? null : (item.options || []).map((option) => option.value))
-                    }
-                />
-                不限模型
-            </label>
-            <div className="grid gap-2 sm:grid-cols-2">
-                {(item.options || []).map((option) => (
-                    <label
-                        key={option.value}
-                        className="flex cursor-pointer items-center gap-2 rounded-lg border p-2 text-sm"
+            <Popover
+                open={open}
+                onOpenChange={(next) => {
+                    setOpen(next);
+                    if (!next) setSearch('');
+                }}
+            >
+                <PopoverTrigger asChild>
+                    <button
+                        type="button"
+                        className="flex w-full cursor-pointer items-center justify-between rounded-xl border px-3 py-2.5 text-sm hover:bg-gray-50"
+                        aria-label={item.text}
                     >
-                        <input
-                            type="checkbox"
-                            checked={unrestricted || selected.includes(option.value)}
-                            onChange={(event) => {
-                                const previous = unrestricted
-                                    ? (item.options || []).map((option) => option.value)
-                                    : selected;
+                        <span>{label}</span>
+                        <ChevronDown className="size-4 text-gray-400" />
+                    </button>
+                </PopoverTrigger>
+                <PopoverContent
+                    align="start"
+                    className="w-[var(--radix-popover-trigger-width)] min-w-[240px] max-w-[calc(100vw-2rem)] p-2"
+                >
+                    <div className="mb-2 flex items-center gap-2 rounded-lg border px-2">
+                        <Search className="size-4 shrink-0 text-gray-400" />
+                        <Input
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            placeholder="搜索模型"
+                            className="border-0 shadow-none focus-visible:ring-0"
+                        />
+                    </div>
+                    <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-gray-50">
+                        <Checkbox
+                            checked={unrestricted}
+                            onCheckedChange={(checked) =>
+                                update(path, checked ? null : options.map((option) => option.value))
+                            }
+                        />
+                        不限模型
+                    </label>
+                    <div className="my-1 flex justify-between border-y px-2 py-1 text-xs text-gray-500">
+                        <button
+                            type="button"
+                            className="cursor-pointer py-1"
+                            onClick={() =>
                                 update(
                                     path,
-                                    event.target.checked
-                                        ? [...new Set([...previous, option.value])]
-                                        : previous.filter((value) => value !== option.value),
-                                );
-                            }}
-                        />
-                        {option.label}
-                    </label>
-                ))}
-            </div>
+                                    options.map((option) => option.value),
+                                )
+                            }
+                        >
+                            选择全部
+                        </button>
+                        <button type="button" className="cursor-pointer py-1" onClick={() => update(path, [])}>
+                            清空
+                        </button>
+                    </div>
+                    <div className="pretty-scrollbar max-h-64 overflow-y-auto">
+                        {filtered.map((option) => (
+                            <label
+                                key={option.value}
+                                className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-gray-50"
+                            >
+                                <Checkbox
+                                    checked={unrestricted || selected.includes(option.value)}
+                                    onCheckedChange={(checked) => {
+                                        const previous = unrestricted
+                                            ? options.map((option) => option.value)
+                                            : selected;
+                                        update(
+                                            path,
+                                            checked
+                                                ? [...new Set([...previous, option.value])]
+                                                : previous.filter((value) => value !== option.value),
+                                        );
+                                    }}
+                                />
+                                <span className="min-w-0 break-words">{option.label}</span>
+                            </label>
+                        ))}
+                        {filtered.length === 0 && (
+                            <p className="p-3 text-center text-xs text-gray-400">没有匹配的模型</p>
+                        )}
+                    </div>
+                </PopoverContent>
+            </Popover>
             {item.tips && <p className="mt-2 text-xs text-gray-500">{item.tips}</p>}
         </div>
     );

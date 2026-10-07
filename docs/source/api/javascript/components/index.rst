@@ -216,7 +216,7 @@
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
      - 54
      - 0
-     - 296
+     - 302
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/OrderedOptionsEditor </api/javascript/components/setting/OrderedOptionsEditor>`
      - 1
