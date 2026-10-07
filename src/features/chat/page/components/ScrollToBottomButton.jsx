@@ -11,11 +11,11 @@ const ScrollToBottomButton = memo(({ isVisible, onClick }) => (
         leave="transition duration-150 ease-in"
         leaveFrom="opacity-100 scale-100"
         leaveTo="opacity-0 scale-95"
-        className="absolute bottom-4 right-4 z-30"
+        className="pointer-events-none absolute inset-x-0 bottom-full mb-3 z-30 flex justify-center"
     >
         <button
             onClick={onClick}
-            className="cursor-pointer w-10 h-10 rounded-full bg-white border border-gray-200 shadow-lg flex items-center justify-center hover:shadow-xl hover:bg-gray-50 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200"
+            className="pointer-events-auto cursor-pointer w-10 h-10 rounded-full bg-white border border-gray-200 shadow-lg flex items-center justify-center hover:shadow-xl hover:bg-gray-50 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200"
             aria-label="Scroll to bottom"
         >
             <ArrowDown className="text-gray-600 w-5 h-5" />

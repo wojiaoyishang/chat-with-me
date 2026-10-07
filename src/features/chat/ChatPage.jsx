@@ -3510,10 +3510,7 @@ function ChatPage({
                                     />
                                 </div>
                             </ChatHistoryViewport>
-                            <ScrollToBottomButton
-                                isVisible={showScrollToBottomButton}
-                                onClick={handleManualScrollToBottomClick}
-                            />
+
                             <QuickUserMessageNavigator
                                 items={messageSummaries}
                                 activeMessageId={activeVisibleMessageId}
@@ -3621,47 +3618,53 @@ function ChatPage({
                                 data-widget-chatbox-floating-host="true"
                                 className="pointer-events-auto relative z-20 mx-auto w-full max-w-225 px-4"
                             />
-                            <ChatBox
-                                immersive={avatarImmersive}
-                                onSendMessage={handleSendMessage}
-                                conversationId={conversationId}
-                                attachmentsMeta={attachments}
-                                setAttachments={setAttachments}
-                                onAttachmentRemove={onAttachmentRemove}
-                                uploadFiles={uploadFiles}
-                                FilePickerCallback={handleFilePicker}
-                                PicPickerCallback={handlePicPicker}
-                                onImagePaste={handleImagePaste}
-                                onRetryUpload={handleRetryUpload}
-                                onCancelUpload={handleCancelUpload}
-                                onDropFiles={handleSelectedFiles}
-                                onFolderDetected={handleFolderDetected}
-                                onHeightChange={handleChatBoxHeightChange}
-                                dropTargetRef={chatPageRef}
-                                editorHostRef={chatPageRef}
-                                selectedModel={selectedModel}
-                                isWindowMode={isWindowMode}
-                                onVoiceRecordingStart={handleVoiceRecordingStart}
-                                onVoicePcmReady={handleVoicePcmReady}
-                                onVoiceRecordingCancel={handleVoiceRecordingCancel}
-                                onRealtimeVoiceStart={handleRealtimeVoiceStart}
-                                selectedWorkspaceIds={
-                                    Array.isArray(advancedSettingsValues?.workspaceIds)
-                                        ? advancedSettingsValues.workspaceIds
-                                        : advancedSettingsValues?.workspaceId
-                                          ? [advancedSettingsValues.workspaceId]
-                                          : []
-                                }
-                                onWorkspaceChange={(workspaceIds) => {
-                                    const normalized = Array.isArray(workspaceIds) ? workspaceIds : [];
-                                    setAdvancedSettingsValues((current) => ({
-                                        ...current,
-                                        workspaceIds: normalized,
-                                        workspaceId: normalized.length === 1 ? normalized[0] : null,
-                                    }));
-                                    setInitialSettingValues(null);
-                                }}
-                            />
+                            <div className="relative shrink-0 w-full">
+                                <ScrollToBottomButton
+                                    isVisible={showScrollToBottomButton}
+                                    onClick={handleManualScrollToBottomClick}
+                                />
+                                <ChatBox
+                                    immersive={avatarImmersive}
+                                    onSendMessage={handleSendMessage}
+                                    conversationId={conversationId}
+                                    attachmentsMeta={attachments}
+                                    setAttachments={setAttachments}
+                                    onAttachmentRemove={onAttachmentRemove}
+                                    uploadFiles={uploadFiles}
+                                    FilePickerCallback={handleFilePicker}
+                                    PicPickerCallback={handlePicPicker}
+                                    onImagePaste={handleImagePaste}
+                                    onRetryUpload={handleRetryUpload}
+                                    onCancelUpload={handleCancelUpload}
+                                    onDropFiles={handleSelectedFiles}
+                                    onFolderDetected={handleFolderDetected}
+                                    onHeightChange={handleChatBoxHeightChange}
+                                    dropTargetRef={chatPageRef}
+                                    editorHostRef={chatPageRef}
+                                    selectedModel={selectedModel}
+                                    isWindowMode={isWindowMode}
+                                    onVoiceRecordingStart={handleVoiceRecordingStart}
+                                    onVoicePcmReady={handleVoicePcmReady}
+                                    onVoiceRecordingCancel={handleVoiceRecordingCancel}
+                                    onRealtimeVoiceStart={handleRealtimeVoiceStart}
+                                    selectedWorkspaceIds={
+                                        Array.isArray(advancedSettingsValues?.workspaceIds)
+                                            ? advancedSettingsValues.workspaceIds
+                                            : advancedSettingsValues?.workspaceId
+                                              ? [advancedSettingsValues.workspaceId]
+                                              : []
+                                    }
+                                    onWorkspaceChange={(workspaceIds) => {
+                                        const normalized = Array.isArray(workspaceIds) ? workspaceIds : [];
+                                        setAdvancedSettingsValues((current) => ({
+                                            ...current,
+                                            workspaceIds: normalized,
+                                            workspaceId: normalized.length === 1 ? normalized[0] : null,
+                                        }));
+                                        setInitialSettingValues(null);
+                                    }}
+                                />
+                            </div>
                         </div>
 
                         <RuntimeInspectorDialog
