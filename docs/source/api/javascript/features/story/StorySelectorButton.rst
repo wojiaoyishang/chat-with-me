@@ -27,22 +27,22 @@ src/features/story/StorySelectorButton 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:719:9678:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:733:11612:FUNCTION
 
-.. js:function:: StorySelectorButton({ stories = [], onOpenStory, onRenameStory, onDeleteStory, t, isWindowMode = false, })
+.. js:function:: StorySelectorButton({ stories = [], onOpenStory, onRenameStory, onDeleteStory, t, isWindowMode = false, listItem = fals…)
 
    渲染 ``StorySelectorButton`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``23``—``192`` 行。
+   **性质**：同步函数；导出 API；源码第 ``23``—``236`` 行。
 
    **参数**
 
-   ``{ stories = [], onOpenStory, onRenameStory, onDeleteStory, t, isWindowMode = false, }``
-      调用方传入的 ``stories = , onOpenStory, onRenameStory, onDeleteStory, t, isWindowMode = false,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ stories = [], onOpenStory, onRenameStory, onDeleteStory, t, isWindowMode = false, listItem = fals…``
+      调用方传入的 ``stories = , onOpenStory, onRenameStory, onDeleteStory, t, isWindowMode = false, listItem = fals…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <> {!!stories.length && ( <Popover open={popoverOpen} onOpenChange={setPopoverOpen}> <PopoverTrigger asChild> <Button variant="ghost" size="icon" className="relative hover:bg-am…``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <> {!!stories.length && ( <Popover open={popoverOpen} onOpenChange={setPopoverOpen}> <PopoverTrigger asChild> <Button variant="ghost" size={listItem ? 'default' : 'icon'} classN…``。
 
    **主要协作调用**：``useState``、``useEffect``、``t``、``stories.map``、``Boolean``、``draftTitle.trim``。
 
@@ -53,17 +53,17 @@ src/features/story/StorySelectorButton 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:1232:1294:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:1268:1330:FUNCTION
 
-.. rubric:: ``useEffect callback @ 38``
+.. rubric:: ``useEffect callback @ 39``
 
 .. code-block:: javascript
 
-   useEffect callback @ 38()
+   useEffect callback @ 39()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``38``—``40`` 行；所属函数 ``StorySelectorButton``。
+**性质**：同步局部函数；源码第 ``39``—``41`` 行；所属函数 ``StorySelectorButton``。
 
 **参数**
 
@@ -75,7 +75,7 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``setDraftTitle``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:1405:1489:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:1441:1525:FUNCTION
 
 .. rubric:: ``openStory``
 
@@ -85,7 +85,7 @@ src/features/story/StorySelectorButton 模块
 
 打开与 ``Story`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``44``—``47`` 行；所属函数 ``StorySelectorButton``。
+**性质**：同步局部函数；源码第 ``45``—``48`` 行；所属函数 ``StorySelectorButton``。
 
 **参数**
 
@@ -98,7 +98,7 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``setPopoverOpen``、``onOpenStory``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:1514:1595:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:1550:1631:FUNCTION
 
 .. rubric:: ``openRename``
 
@@ -108,7 +108,7 @@ src/features/story/StorySelectorButton 模块
 
 打开与 ``Rename`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``49``—``52`` 行；所属函数 ``StorySelectorButton``。
+**性质**：同步局部函数；源码第 ``50``—``53`` 行；所属函数 ``StorySelectorButton``。
 
 **参数**
 
@@ -121,7 +121,7 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``setPopoverOpen``、``setRenameStory``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:1620:1701:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:1656:1737:FUNCTION
 
 .. rubric:: ``openDelete``
 
@@ -131,7 +131,7 @@ src/features/story/StorySelectorButton 模块
 
 打开与 ``Delete`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``54``—``57`` 行；所属函数 ``StorySelectorButton``。
+**性质**：同步局部函数；源码第 ``55``—``58`` 行；所属函数 ``StorySelectorButton``。
 
 **参数**
 
@@ -144,7 +144,7 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``setPopoverOpen``、``setDeleteStory``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:1728:2091:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:1764:2127:FUNCTION
 
 .. rubric:: ``handleRename``
 
@@ -154,7 +154,7 @@ src/features/story/StorySelectorButton 模块
 
 处理 ``Rename`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``59``—``70`` 行；所属函数 ``StorySelectorButton``。
+**性质**：异步局部函数；源码第 ``60``—``71`` 行；所属函数 ``StorySelectorButton``。
 
 **参数**
 
@@ -167,7 +167,7 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``event.preventDefault``、``draftTitle.trim``、``setIsSaving``、``onRenameStory``、``setRenameStory``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:2118:2392:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:2154:2428:FUNCTION
 
 .. rubric:: ``handleDelete``
 
@@ -177,7 +177,7 @@ src/features/story/StorySelectorButton 模块
 
 处理 ``Delete`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``72``—``81`` 行；所属函数 ``StorySelectorButton``。
+**性质**：异步局部函数；源码第 ``73``—``82`` 行；所属函数 ``StorySelectorButton``。
 
 **参数**
 
@@ -189,17 +189,17 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``setIsDeleting``、``onDeleteStory``、``setDeleteStory``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:3419:7450:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:3910:9267:FUNCTION
 
-.. rubric:: ``stories.map callback @ 96``
+.. rubric:: ``stories.map callback @ 109``
 
 .. code-block:: javascript
 
-   stories.map callback @ 96(story)
+   stories.map callback @ 109(story)
 
 作为 ``stories.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``96``—``146`` 行；所属函数 ``StorySelectorButton``。
+**性质**：同步局部函数；源码第 ``109``—``186`` 行；所属函数 ``StorySelectorButton``。
 
 **参数**
 
@@ -214,17 +214,17 @@ src/features/story/StorySelectorButton 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:3706:3736:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:4304:4334:FUNCTION
 
-.. rubric:: ``onClick callback @ 100``
+.. rubric:: ``onClick callback @ 116``
 
 .. code-block:: javascript
 
-   onClick callback @ 100()
+   onClick callback @ 116()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``stories.map callback @ 96``。
+**性质**：同步局部函数；源码第 ``116``—``116`` 行；所属函数 ``stories.map callback @ 109``。
 
 **参数**
 
@@ -236,17 +236,17 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``openStory``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:6168:6202:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:7662:7696:FUNCTION
 
-.. rubric:: ``onClick callback @ 129``
+.. rubric:: ``onClick callback @ 162``
 
 .. code-block:: javascript
 
-   onClick callback @ 129(event)
+   onClick callback @ 162(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``129``—``129`` 行；所属函数 ``stories.map callback @ 96``。
+**性质**：同步局部函数；源码第 ``162``—``162`` 行；所属函数 ``stories.map callback @ 109``。
 
 **参数**
 
@@ -259,17 +259,17 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:6651:6674:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:8277:8300:FUNCTION
 
-.. rubric:: ``onSelect callback @ 135``
+.. rubric:: ``onSelect callback @ 171``
 
 .. code-block:: javascript
 
-   onSelect callback @ 135()
+   onSelect callback @ 171()
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``135``—``135`` 行；所属函数 ``stories.map callback @ 96``。
+**性质**：同步局部函数；源码第 ``171``—``171`` 行；所属函数 ``stories.map callback @ 109``。
 
 **参数**
 
@@ -281,17 +281,17 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``openRename``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:7006:7029:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:8729:8752:FUNCTION
 
-.. rubric:: ``onSelect callback @ 139``
+.. rubric:: ``onSelect callback @ 177``
 
 .. code-block:: javascript
 
-   onSelect callback @ 139()
+   onSelect callback @ 177()
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``139``—``139`` 行；所属函数 ``stories.map callback @ 96``。
+**性质**：同步局部函数；源码第 ``177``—``177`` 行；所属函数 ``stories.map callback @ 109``。
 
 **参数**
 
@@ -303,17 +303,17 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``openDelete``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:7627:7666:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:9444:9483:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 152``
+.. rubric:: ``onOpenChange callback @ 192``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 152(open)
+   onOpenChange callback @ 192(open)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``152``—``152`` 行；所属函数 ``StorySelectorButton``。
+**性质**：同步局部函数；源码第 ``192``—``192`` 行；所属函数 ``StorySelectorButton``。
 
 **参数**
 
@@ -326,17 +326,17 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``setRenameStory``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:8315:8359:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:10186:10230:FUNCTION
 
-.. rubric:: ``onChange callback @ 163``
+.. rubric:: ``onChange callback @ 205``
 
 .. code-block:: javascript
 
-   onChange callback @ 163(event)
+   onChange callback @ 205(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``163``—``163`` 行；所属函数 ``StorySelectorButton``。
+**性质**：同步局部函数；源码第 ``205``—``205`` 行；所属函数 ``StorySelectorButton``。
 
 **参数**
 
@@ -349,17 +349,17 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``setDraftTitle``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:8583:8609:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:10454:10480:FUNCTION
 
-.. rubric:: ``onClick callback @ 167``
+.. rubric:: ``onClick callback @ 209``
 
 .. code-block:: javascript
 
-   onClick callback @ 167()
+   onClick callback @ 209()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``167``—``167`` 行；所属函数 ``StorySelectorButton``。
+**性质**：同步局部函数；源码第 ``209``—``209`` 行；所属函数 ``StorySelectorButton``。
 
 **参数**
 
@@ -371,17 +371,17 @@ src/features/story/StorySelectorButton 模块
 
 **主要协作调用**：``setRenameStory``。
 
-.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:9142:9181:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/StorySelectorButton.jsx:11076:11115:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 179``
+.. rubric:: ``onOpenChange callback @ 223``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 179(open)
+   onOpenChange callback @ 223(open)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``179``—``179`` 行；所属函数 ``StorySelectorButton``。
+**性质**：同步局部函数；源码第 ``223``—``223`` 行；所属函数 ``StorySelectorButton``。
 
 **参数**
 

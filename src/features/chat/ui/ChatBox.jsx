@@ -2578,7 +2578,7 @@ function ChatBox({
                                         tool={tool}
                                         isActive={activeToolsStatus.builtin_tools?.[tool.name] ?? false}
                                         onToggle={(_event, value) => handleBuiltinToolToggle(tool.name, value)}
-                                        compact={isSmallScreen || (containerWidth > 0 && containerWidth < 640)}
+                                        compact={isSmallScreen || (containerWidth > 0 && containerWidth < 480)}
                                         fixedWidth
                                     />
                                 ))}

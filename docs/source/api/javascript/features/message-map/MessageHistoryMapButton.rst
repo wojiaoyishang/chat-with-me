@@ -29,26 +29,26 @@ src/features/message-map/MessageHistoryMapButton 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapButton.jsx:281:1632:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapButton.jsx:291:1908:FUNCTION
 
-.. rubric:: ``memo callback @ 7``
+.. rubric:: ``memo callback @ 8``
 
 .. code-block:: javascript
 
-   memo callback @ 7({ conversationId, focusMessageId = '', disabled = false, label = '消息历史地图', })
+   memo callback @ 8({ conversationId, focusMessageId = '', disabled = false, label = '消息历史地图', listItem = false })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``7``—``42`` 行。
+**性质**：同步局部函数；源码第 ``8``—``39`` 行。
 
 **参数**
 
-``{ conversationId, focusMessageId = '', disabled = false, label = '消息历史地图', }``
-   调用方传入的 ``conversationId, focusMessageId = '', disabled = false, label = '消息历史地图',`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ conversationId, focusMessageId = '', disabled = false, label = '消息历史地图', listItem = false }``
+   调用方传入的 ``conversationId, focusMessageId = '', disabled = false, label = '消息历史地图', listItem = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <Tooltip> <TooltipTrigger asChild> <Button type="button" variant="ghost" size="icon" disabled={isDisabled} onClick={() => { if (isDisabled) return; const focusQuery = resolvedFo…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <Tooltip> <TooltipTrigger asChild> <Button type="button" variant="ghost" size={listItem ? 'default' : 'icon'} disabled={isDisabled} onClick={() => { if (isDisabled) return; cons…``。
 
 **副作用**
 
@@ -58,17 +58,17 @@ src/features/message-map/MessageHistoryMapButton 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapButton.jsx:887:1263:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapButton.jsx:980:1380:FUNCTION
 
-.. rubric:: ``onClick callback @ 26``
+.. rubric:: ``onClick callback @ 22``
 
 .. code-block:: javascript
 
-   onClick callback @ 26()
+   onClick callback @ 22()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``26``—``32`` 行；所属函数 ``memo callback @ 7``。
+**性质**：同步局部函数；源码第 ``22``—``28`` 行；所属函数 ``memo callback @ 8``。
 
 **参数**
 

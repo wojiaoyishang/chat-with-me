@@ -2,7 +2,7 @@ import { NotificationCenterTrigger } from '@/features/notification/NotificationC
 import { TaskCenterTrigger } from '@/features/tasks/TaskCenter.jsx';
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    Menu,
+    MoreHorizontal,
     Bot,
     Check,
     ChevronDown,
@@ -104,7 +104,10 @@ const ChatHeader = memo(
         }, [models, isMobile, handleModelItemClick, handleModelItemMouseEnter, selectedModel, t]);
 
         return (
-            <header ref={headerRef} className="relative w-full min-w-0 bg-white flex items-center justify-between gap-2 px-2 py-4 sm:px-4 h-14">
+            <header
+                ref={headerRef}
+                className="relative w-full min-w-0 bg-white flex items-center justify-between gap-2 px-2 py-4 sm:px-4 h-14"
+            >
                 <Popover
                     open={isAgentSession ? false : isModelPopoverOpen}
                     onOpenChange={isAgentSession ? undefined : handlePopoverOpenChange}
@@ -202,12 +205,13 @@ const ChatHeader = memo(
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button variant="ghost" size="icon" className="shrink-0" aria-label="更多功能">
-                                    <Menu className="h-5 w-5" />
+                                    <MoreHorizontal className="h-5 w-5" />
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent align="end" className="w-auto max-w-[calc(100vw-1rem)] p-2">
-                                <div className="flex flex-wrap items-center gap-2">
+                            <PopoverContent align="end" className="w-52 max-w-[calc(100vw-1rem)] p-1.5">
+                                <div className="flex flex-col gap-0.5">
                                     <StorySelectorButton
+                                        listItem
                                         stories={stories}
                                         onOpenStory={onOpenStory}
                                         onRenameStory={onRenameStory}
@@ -218,11 +222,12 @@ const ChatHeader = memo(
 
                                     {showTaskButton && (
                                         <>
-                                            <NotificationCenterTrigger />
-                                            <TaskCenterTrigger />
+                                            <NotificationCenterTrigger listItem />
+                                            <TaskCenterTrigger listItem />
                                         </>
                                     )}
                                     <MessageHistoryMapButton
+                                        listItem
                                         conversationId={conversationId}
                                         disabled={!conversationId}
                                         label={t('message_history_map', { defaultValue: '消息历史地图' })}
@@ -230,14 +235,15 @@ const ChatHeader = memo(
 
                                     <Button
                                         variant="ghost"
-                                        size="icon"
+                                        size="default"
                                         onClick={onOpenRuntimeInspector}
                                         disabled={runtimeInspectorDisabled}
-                                        className="cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                        className="w-full justify-start gap-3 cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
                                         aria-label={t('runtime_inspector') || '运行时检查器'}
                                         title={t('runtime_inspector') || '运行时检查器'}
                                     >
                                         <Activity className="h-5 w-5 text-gray-600" />
+                                        <span>{t('runtime_inspector', { defaultValue: '运行时检查器' })}</span>
                                     </Button>
                                 </div>
                             </PopoverContent>

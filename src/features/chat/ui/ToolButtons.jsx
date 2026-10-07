@@ -637,7 +637,7 @@ const ToolButtons = memo(
 
                 {auditControl && (
                     <ToolAuditModeSwitch
-                        compact={containerWidth > 0 && containerWidth < 640}
+                        compact={containerWidth > 0 && containerWidth < 480}
                         value={toolsStatus.extra_tools?.tool_audit_mode || 'off'}
                         t={t}
                         isMobile={isMobileMenu}

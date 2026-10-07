@@ -11,7 +11,7 @@ import { useTaskStore } from './useTaskStore.js';
 import { downloadAttachmentResource } from '@/lib/resourceDownload.js';
 import { toast } from 'sonner';
 
-export function TaskCenterTrigger() {
+export function TaskCenterTrigger({ listItem = false } = {}) {
     const { t } = useTranslation();
     const show = useTaskStore((s) => s.show);
     const tasks = useTaskStore((s) => s.tasks);
@@ -21,13 +21,15 @@ export function TaskCenterTrigger() {
     return (
         <Button
             variant="ghost"
-            size="icon"
-            className="relative shrink-0"
+            size={listItem ? 'default' : 'icon'}
+            className={`relative shrink-0 ${listItem ? 'w-full justify-start gap-3' : ''}`}
+
             aria-label={t('taskCenter.title')}
             title={t('taskCenter.title')}
             onClick={() => show()}
         >
-            <ClipboardList className="size-4" />
+            <ClipboardList className="size-4 shrink-0" />
+            {listItem && <span>{t('taskCenter.title')}</span>}
             {count > 0 && (
                 <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1 text-[10px] text-primary-foreground">
                     {count}

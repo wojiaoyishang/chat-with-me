@@ -10,7 +10,7 @@ import { useNotificationStore } from './useNotificationStore.js';
 import { toast } from 'sonner';
 
 const useCenter = create((set) => ({ open: false, setOpen: (open) => set({ open }) }));
-export function NotificationCenterTrigger() {
+export function NotificationCenterTrigger({ listItem = false } = {}) {
     const { t } = useTranslation();
     const setOpen = useCenter((state) => state.setOpen);
     const notifications = useNotificationStore((state) => state.notifications);
@@ -18,13 +18,15 @@ export function NotificationCenterTrigger() {
     return (
         <Button
             variant="ghost"
-            size="icon"
-            className="relative shrink-0"
+            size={listItem ? 'default' : 'icon'}
+            className={`relative shrink-0 ${listItem ? 'w-full justify-start gap-3' : ''}`}
+
             title={t('messageCenter.title')}
             aria-label={t('messageCenter.title')}
             onClick={() => setOpen(true)}
         >
-            <Bell className="size-4" />
+            <Bell className="size-4 shrink-0" />
+            {listItem && <span>{t('messageCenter.title')}</span>}
             {count > 0 && (
                 <span className="absolute -right-1 -top-1 rounded-full bg-primary px-1 text-[10px] text-primary-foreground">
                     {count > 99 ? '99+' : count}
