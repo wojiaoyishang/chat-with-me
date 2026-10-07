@@ -247,6 +247,60 @@ function ChatPage({
     const [widgetChatBoxHostElement, setWidgetChatBoxHostElement] = useState(null);
     const [settingsInstanceKey, setSettingsInstanceKey] = useState(() => `conversationless-${Date.now()}`);
     const [conversationMeta, setConversationMeta] = useState(null);
+    const agentConfigurationTimerRef = useRef(null);
+    const pendingAgentConfigurationRef = useRef(null);
+    const agentConfigurationQueueRef = useRef(Promise.resolve());
+    const modelCatalogRef = useRef(models);
+    modelCatalogRef.current = models;
+    const applyAgentConfiguration = useCallback((data) => {
+        if (data?.session?.conversationId !== activeConversationIdRef.current) return;
+        setConversationMeta((current) => ({ ...current, model: data.session.model, agentSession: data.session }));
+        const model = modelCatalogRef.current.find((entry) => entry.id === data.session.model);
+        if (model) setSelectedModel(model);
+        if (!pendingAgentConfigurationRef.current) {
+            setAdvancedSettings(data.schema || []);
+            setAdvancedSettingsValues(data.options || {});
+            setInitialSettingValues(data.options || {});
+        }
+    }, []);
+    const flushAgentConfiguration = useCallback(() => {
+        const pending = pendingAgentConfigurationRef.current;
+        pendingAgentConfigurationRef.current = null;
+        if (!pending) return;
+        agentConfigurationQueueRef.current = agentConfigurationQueueRef.current
+            .catch(() => {})
+            .then(async () => {
+                const data = await apiClient.post(
+                    `/chat/agent-sessions/${encodeURIComponent(pending.conversationId)}/configuration`,
+                    { patch: pending.patch },
+                );
+                applyAgentConfiguration(data);
+            })
+            .catch((error) => toast.error(error.message || '子会话配置保存失败'));
+    }, [applyAgentConfiguration]);
+    const queueAgentConfiguration = useCallback(
+        (patch) => {
+            const target = activeConversationIdRef.current;
+            if (!target) return;
+            const current = pendingAgentConfigurationRef.current;
+            if (current && current.conversationId !== target) flushAgentConfiguration();
+            const previous = pendingAgentConfigurationRef.current?.patch || {};
+            pendingAgentConfigurationRef.current = {
+                conversationId: target,
+                patch: { ...previous, ...patch, options: { ...(previous.options || {}), ...(patch.options || {}) } },
+            };
+            clearTimeout(agentConfigurationTimerRef.current);
+            agentConfigurationTimerRef.current = setTimeout(flushAgentConfiguration, 300);
+        },
+        [flushAgentConfiguration],
+    );
+    useEffect(
+        () => () => {
+            clearTimeout(agentConfigurationTimerRef.current);
+            flushAgentConfiguration();
+        },
+        [conversationId, flushAgentConfiguration],
+    );
     const [contextCompactionState, setContextCompactionState] = useState({});
     const contextCompactionClearTimerRef = useRef(null);
     const [stories, setStories] = useState([]);
@@ -504,6 +558,7 @@ function ChatPage({
     );
     const handleModelItemClick = useCallback(
         (model) => {
+            if (conversationMeta?.conversationKind === 'agent_session') queueAgentConfiguration({ model: model.id });
             setSelectedModel(model);
             setAdvancedSettings(Array.isArray(model?.options) ? model.options : []);
             if (!isMobile) {
@@ -512,7 +567,7 @@ function ChatPage({
                 setPreviewModel(model);
             }
         },
-        [isMobile],
+        [isMobile, conversationMeta?.conversationKind, queueAgentConfiguration],
     );
     const handleModelItemMouseEnter = useCallback(
         (model) => {
@@ -2314,6 +2369,7 @@ function ChatPage({
                 'context.compaction_state.changed',
                 'workspace.transfer.state_changed',
                 'widget.state.changed',
+                'conversation.agent_configuration.changed',
                 'speech.play.requested',
                 'speech.stop.requested',
                 'speech.pause.requested',
@@ -2706,6 +2762,10 @@ function ChatPage({
                         });
                     });
                     break;
+                case 'conversation.agent_configuration.changed': {
+                    applyAgentConfiguration(payload.value);
+                    break;
+                }
                 case 'widget.state.changed': {
                     const widget = payload.value && typeof payload.value === 'object' ? payload.value : {};
                     const messageId = String(widget.originMessageId || '');
@@ -3007,6 +3067,7 @@ function ChatPage({
         markLiveStreamMessages,
         clearLiveStreamRun,
         ensureStreamMessagesVisible,
+        applyAgentConfiguration,
     ]);
 
     useEffect(() => {
@@ -3705,6 +3766,17 @@ function ChatPage({
                         settingsInstanceKey={settingsInstanceKey}
                         conversationId={conversationId}
                         onSettingChange={(values) => {
+                            if (conversationMeta?.conversationKind === 'agent_session') {
+                                const changed = Object.fromEntries(
+                                    Object.entries(values).filter(
+                                        ([key, value]) =>
+                                            key !== 'avatarModelId' &&
+                                            JSON.stringify(value) !== JSON.stringify(advancedSettingsValues[key]),
+                                    ),
+                                );
+                                if (Object.keys(changed).length) queueAgentConfiguration({ options: changed });
+                            }
+
                             if (
                                 conversationId &&
                                 values.avatarModelId &&
