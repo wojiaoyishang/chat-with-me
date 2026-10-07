@@ -406,7 +406,7 @@
    * - :doc:`src/features/chat/ui/message/components/LeftAvatarName </api/javascript/features/chat/ui/message/components/LeftAvatarName>`
      - 0
      - 0
-     - 3
+     - 1
      - ``src/features/chat/ui/message/components/LeftAvatarName.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessageActions </api/javascript/features/chat/ui/message/components/MessageActions>`
      - 0
@@ -418,6 +418,11 @@
      - 0
      - 1
      - ``src/features/chat/ui/message/components/MessageContextBadges.jsx``
+   * - :doc:`src/features/chat/ui/message/components/MessageIndicators </api/javascript/features/chat/ui/message/components/MessageIndicators>`
+     - 1
+     - 0
+     - 2
+     - ``src/features/chat/ui/message/components/MessageIndicators.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessageItem </api/javascript/features/chat/ui/message/components/MessageItem>`
      - 0
      - 0
@@ -859,6 +864,7 @@
    /api/javascript/features/chat/ui/message/components/LeftAvatarName
    /api/javascript/features/chat/ui/message/components/MessageActions
    /api/javascript/features/chat/ui/message/components/MessageContextBadges
+   /api/javascript/features/chat/ui/message/components/MessageIndicators
    /api/javascript/features/chat/ui/message/components/MessageItem
    /api/javascript/features/chat/ui/message/components/MessagePaginator
    /api/javascript/features/chat/ui/message/components/MessageTools
