@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 export default function StickyStatusHeader({ children, expanded }) {
     const markerRef = useRef(null);
+    const headerRef = useRef(null);
     const [stickyMarker, setStickyMarker] = useState(null);
 
     useEffect(() => {
@@ -17,10 +18,15 @@ export default function StickyStatusHeader({ children, expanded }) {
         }
         if (root === document.documentElement) root = null;
 
+        // Sticky is inset from the scroll surface's padded content edge.
+        // Cover that padding too, so task-window text cannot peek above the card.
+        const topInset = 12 + (root ? parseFloat(getComputedStyle(root).paddingTop) || 0 : 0);
+        headerRef.current?.style.setProperty('--sticky-top-mask', `${topInset}px`);
+
         const observer = new IntersectionObserver(([entry]) => {
             const stuck = !entry.isIntersecting && entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0);
             setStickyMarker(stuck ? marker : null);
-        }, { root, rootMargin: '-12px 0px 0px 0px', threshold: 0 });
+        }, { root, rootMargin: `-${topInset}px 0px 0px 0px`, threshold: 0 });
         observer.observe(marker);
         return () => observer.disconnect();
     }, [expanded]);
@@ -33,11 +39,15 @@ export default function StickyStatusHeader({ children, expanded }) {
     return (
         <>
             <div ref={markerRef} aria-hidden="true" className="pointer-events-none h-px -mb-px" />
-            <div className="sticky top-3 z-10 rounded-xl bg-background">
+            <div ref={headerRef} className="sticky top-3 z-10 rounded-xl bg-background">
                 {isSticky && (
                     <div
                         aria-hidden="true"
-                        className="pointer-events-none absolute -inset-x-2 -top-3 h-3 bg-white"
+                        className="pointer-events-none absolute -inset-x-2 bg-white"
+                        style={{
+                            top: 'calc(-1 * var(--sticky-top-mask, 12px))',
+                            height: 'var(--sticky-top-mask, 12px)',
+                        }}
                     />
                 )}
                 <div
