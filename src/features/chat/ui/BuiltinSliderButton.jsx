@@ -108,7 +108,6 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
                             opacity: index > 0 ? 1 : 0,
                             background: `linear-gradient(100deg, #3730a3 0%, ${chargeColor} 100%)`,
                             boxShadow: `inset 0 1px 8px ${chargeColor}55`,
-                            '--particle-duration': `${3.6 - 2.8 * progress}s`,
                         }}
                     >
                         {index > 0 && (
@@ -122,7 +121,7 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
                                             width: particle.size,
                                             height: particle.size,
                                             '--particle-opacity': particle.opacity,
-                                            '--particle-speed': particle.speed,
+                                            '--particle-duration': `${(3.6 - 2.8 * progress) * particle.speed}s`,
                                             '--particle-delay': `${particle.delay}s`,
                                             '--particle-drift': `${particle.drift}px`,
                                             '--particle-resting-x': `${particle.restingX}%`,

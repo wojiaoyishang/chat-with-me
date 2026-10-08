@@ -9,7 +9,7 @@
     box-shadow: 0 0 3px #ffffff66;
     opacity: 0;
     animation: builtin-slider-drift linear infinite;
-    animation-duration: calc(var(--particle-duration, 3.6s) * var(--particle-speed));
+    animation-duration: var(--particle-duration, 3.6s);
     animation-delay: var(--particle-delay);
 }
 @keyframes builtin-slider-drift {
