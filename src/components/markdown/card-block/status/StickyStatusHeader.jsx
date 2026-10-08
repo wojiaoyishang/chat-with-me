@@ -34,11 +34,11 @@ export default function StickyStatusHeader({ children, expanded }) {
         <>
             <div ref={markerRef} aria-hidden="true" className="pointer-events-none h-px -mb-px" />
             <div className="sticky top-0 z-10 bg-background">
-                {children}
                 <div
                     aria-hidden="true"
-                    className={`pointer-events-none absolute inset-x-0 top-full h-3 bg-gradient-to-b from-black/[0.045] to-transparent transition-opacity duration-300 ease-out ${isSticky ? 'opacity-100' : 'opacity-0'}`}
+                    className={`pointer-events-none absolute -inset-x-2 -inset-y-1 rounded-lg border border-border/60 bg-muted transition-opacity duration-200 ease-out ${isSticky ? 'opacity-100' : 'opacity-0'}`}
                 />
+                <div className="relative">{children}</div>
             </div>
         </>
     );
