@@ -166,8 +166,8 @@ const MessageItem = memo(
         }, [isMid, msg.content, msg.extraInfo?.replace, msg.attachments?.length]);
 
         const renderLeftAvatarName = () => (
-            <div className="flex items-center gap-1">
-                <div className="inline-flex select-none">
+            <div className="flex w-full min-w-0 items-center gap-1">
+                <div className="min-w-0 flex-1 select-none">
                     <LeftAvatarName
                         msg={msg}
                         isLeaving={leavingMessages.has(msgId)}

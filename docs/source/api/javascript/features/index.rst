@@ -406,7 +406,7 @@
    * - :doc:`src/features/chat/ui/message/components/LeftAvatarName </api/javascript/features/chat/ui/message/components/LeftAvatarName>`
      - 0
      - 0
-     - 1
+     - 11
      - ``src/features/chat/ui/message/components/LeftAvatarName.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessageActions </api/javascript/features/chat/ui/message/components/MessageActions>`
      - 0
