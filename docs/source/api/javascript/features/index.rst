@@ -426,7 +426,7 @@
    * - :doc:`src/features/chat/ui/message/components/MessageItem </api/javascript/features/chat/ui/message/components/MessageItem>`
      - 0
      - 0
-     - 22
+     - 24
      - ``src/features/chat/ui/message/components/MessageItem.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessagePaginator </api/javascript/features/chat/ui/message/components/MessagePaginator>`
      - 0

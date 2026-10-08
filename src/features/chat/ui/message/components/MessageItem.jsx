@@ -66,13 +66,12 @@ const MessageItem = memo(
         const [isHovered, setIsHovered] = useState(false);
         const canRevealActions = !readonly && (isRight || isMid);
         const isActionActive = !canRevealActions || isHovered || isMobileActive;
-        const hoverHandlers =
-            !isMobile && canRevealActions
-                ? {
-                      onMouseEnter: () => setIsHovered(true),
-                      onMouseLeave: () => setIsHovered(false),
-                  }
-                : {};
+        const hoverHandlers = !isMobile
+            ? {
+                  onMouseEnter: () => setIsHovered(true),
+                  onMouseLeave: () => setIsHovered(false),
+              }
+            : {};
 
         const getLabel = useCallback(
             (key, fallback) => {
@@ -99,7 +98,7 @@ const MessageItem = memo(
 
         const handleRootClick = useCallback(
             (event) => {
-                if (!isMobile || !canRevealActions) return;
+                if (!isMobile) return;
 
                 const target = event.target;
                 if (!(target instanceof Element)) return;
@@ -113,7 +112,7 @@ const MessageItem = memo(
 
                 setIsMobileActive(true);
             },
-            [canRevealActions, isMobile],
+            [isMobile],
         );
 
         useEffect(() => {
@@ -169,7 +168,11 @@ const MessageItem = memo(
         const renderLeftAvatarName = () => (
             <div className="flex items-center gap-1">
                 <div className="inline-flex select-none">
-                    <LeftAvatarName msg={msg} isLeaving={leavingMessages.has(msgId)} />
+                    <LeftAvatarName
+                        msg={msg}
+                        isLeaving={leavingMessages.has(msgId)}
+                        showDetails={isMobile ? isMobileActive : isHovered}
+                    />
                 </div>
                 {isMessageCompacted && (
                     <CompactedContextIndicator
@@ -399,6 +402,13 @@ const MessageItem = memo(
                 data-message-role={msg?.role || (isMid ? 'system' : isRight ? 'user' : 'assistant')}
                 className={`group/message relative flex flex-col w-full rounded-2xl transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'} ${animationClass} ${highlighted ? 'ring-2 ring-blue-400/80 ring-offset-4 ring-offset-white' : ''}`}
                 style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 260px' }}
+                tabIndex={isMobile ? 0 : undefined}
+                onFocus={() => {
+                    if (isMobile) setIsMobileActive(true);
+                }}
+                onBlur={(event) => {
+                    if (isMobile && !event.currentTarget.contains(event.relatedTarget)) setIsMobileActive(false);
+                }}
                 onClick={handleRootClick}
                 {...hoverHandlers}
             >

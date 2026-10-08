@@ -29,22 +29,22 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:319:1459:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:319:1663:FUNCTION
 
 .. rubric:: ``memo callback @ 7``
 
 .. code-block:: javascript
 
-   memo callback @ 7({ msg, isLeaving })
+   memo callback @ 7({ msg, isLeaving, showDetails })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``7``—``31`` 行。
+**性质**：同步局部函数；源码第 ``7``—``33`` 行。
 
 **参数**
 
-``{ msg, isLeaving }``
-   调用方传入的 ``msg, isLeaving`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ msg, isLeaving, showDetails }``
+   调用方传入的 ``msg, isLeaving, showDetails`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
