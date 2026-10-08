@@ -20,7 +20,7 @@ export default function StickyStatusHeader({ children, expanded }) {
         const observer = new IntersectionObserver(([entry]) => {
             const stuck = !entry.isIntersecting && entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0);
             setStickyMarker(stuck ? marker : null);
-        }, { root, threshold: 0 });
+        }, { root, rootMargin: '-12px 0px 0px 0px', threshold: 0 });
         observer.observe(marker);
         return () => observer.disconnect();
     }, [expanded]);
@@ -33,10 +33,10 @@ export default function StickyStatusHeader({ children, expanded }) {
     return (
         <>
             <div ref={markerRef} aria-hidden="true" className="pointer-events-none h-px -mb-px" />
-            <div className="sticky top-0 z-10 bg-background">
+            <div className="sticky top-3 z-10 rounded-xl bg-background">
                 <div
                     aria-hidden="true"
-                    className={`pointer-events-none absolute -inset-x-2 -inset-y-1 rounded-lg border border-border/60 bg-muted transition-opacity duration-200 ease-out ${isSticky ? 'opacity-100' : 'opacity-0'}`}
+                    className={`pointer-events-none absolute -inset-x-2 -inset-y-1.5 rounded-xl border border-slate-200/60 bg-white shadow-[0_4px_16px_rgba(15,23,42,0.10),0_1px_3px_rgba(15,23,42,0.04)] transition-opacity duration-200 ease-out ${isSticky ? 'opacity-100' : 'opacity-0'}`}
                 />
                 <div className="relative">{children}</div>
             </div>
