@@ -543,11 +543,6 @@
      - 0
      - 5
      - ``src/features/documents/DocumentThumbnail.jsx``
-   * - :doc:`src/features/documents/EscDraftPreview </api/javascript/features/documents/EscDraftPreview>`
-     - 1
-     - 0
-     - 24
-     - ``src/features/documents/EscDraftPreview.jsx``
    * - :doc:`src/features/documents/LocalMarkdownEditor </api/javascript/features/documents/LocalMarkdownEditor>`
      - 1
      - 0
@@ -556,7 +551,7 @@
    * - :doc:`src/features/documents/MarkdownDocumentEditor </api/javascript/features/documents/MarkdownDocumentEditor>`
      - 2
      - 0
-     - 65
+     - 73
      - ``src/features/documents/MarkdownDocumentEditor.jsx``
    * - :doc:`src/features/documents/collaboratorPosition </api/javascript/features/documents/collaboratorPosition>`
      - 1
@@ -573,6 +568,11 @@
      - 0
      - 13
      - ``src/features/documents/diffConnections.js``
+   * - :doc:`src/features/documents/escDecorations </api/javascript/features/documents/escDecorations>`
+     - 2
+     - 5
+     - 10
+     - ``src/features/documents/escDecorations.js``
    * - :doc:`src/features/documents/images </api/javascript/features/documents/images>`
      - 1
      - 0
@@ -593,6 +593,11 @@
      - 0
      - 27
      - ``src/features/documents/useCollaborativeDocument.js``
+   * - :doc:`src/features/documents/useEscDrafts </api/javascript/features/documents/useEscDrafts>`
+     - 1
+     - 0
+     - 14
+     - ``src/features/documents/useEscDrafts.js``
    * - :doc:`src/features/execution/ExecutionGuidanceAction </api/javascript/features/execution/ExecutionGuidanceAction>`
      - 1
      - 0
@@ -904,16 +909,17 @@
    /api/javascript/features/documents/DocumentDiff
    /api/javascript/features/documents/DocumentHistory
    /api/javascript/features/documents/DocumentThumbnail
-   /api/javascript/features/documents/EscDraftPreview
    /api/javascript/features/documents/LocalMarkdownEditor
    /api/javascript/features/documents/MarkdownDocumentEditor
    /api/javascript/features/documents/collaboratorPosition
    /api/javascript/features/documents/commands
    /api/javascript/features/documents/diffConnections
+   /api/javascript/features/documents/escDecorations
    /api/javascript/features/documents/images
    /api/javascript/features/documents/presence
    /api/javascript/features/documents/sync
    /api/javascript/features/documents/useCollaborativeDocument
+   /api/javascript/features/documents/useEscDrafts
    /api/javascript/features/execution/ExecutionGuidanceAction
    /api/javascript/features/execution/ExecutionGuidanceBubble
    /api/javascript/features/execution/ExecutionHost

@@ -586,6 +586,7 @@ const createComponents = ({
 
 function MarkdownRendererInner({
     resourceBaseUrl = null,
+    extraRehypePlugins = [],
     contextId = '',
     conversationId = null,
     content,
@@ -691,7 +692,7 @@ function MarkdownRendererInner({
     return (
         <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath, remarkCardReplace, rehypeInlineCodeProperty]}
-            rehypePlugins={[rehypeKatex]}
+            rehypePlugins={[rehypeKatex, ...extraRehypePlugins]}
             components={components}
             urlTransform={(uri, key, node) => {
                 const safe = allowCustomScheme(uri, key, node);
@@ -722,6 +723,7 @@ const areVisitedIdsEqual = (prev = [], next = []) => {
 const MarkdownRenderer = memo(MarkdownRendererInner, (prev, next) => {
     return (
         prev.resourceBaseUrl === next.resourceBaseUrl &&
+        prev.extraRehypePlugins === next.extraRehypePlugins &&
         prev.contextId === next.contextId &&
         prev.content === next.content &&
         prev.replacement === next.replacement &&

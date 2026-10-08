@@ -1,4 +1,6 @@
-import EscDraftPreview from './EscDraftPreview.jsx';
+import useEscDrafts from './useEscDrafts.js';
+import { escDecorations, escTheme, setEscDrafts, draftPreviewPlugin } from './escDecorations.js';
+import { copyTextToClipboard } from '@/lib/tools.jsx';
 import LocalMarkdownEditor from './LocalMarkdownEditor.jsx';
 import { useTaskStore } from '@/features/tasks/useTaskStore.js';
 import { Download, Loader2 } from 'lucide-react';
@@ -88,7 +90,51 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
     const [pane, setPane] = useState('split');
     const isMobile = useIsMobile();
     const activePane = isMobile && pane === 'split' ? 'edit' : pane;
-    const preview = useDeferredValue(content);
+    const { streams, busy: escBusy, act: actEsc } = useEscDrafts(documentId);
+    const escActions = useRef(null);
+    escActions.current = (row, action) =>
+        action === 'copy' ? copyTextToClipboard(row.text || '') : void actEsc(row, action);
+    const escAnchors = useRef(new Map());
+    const inlineDrafts = useMemo(() => {
+        if (!resource) return [];
+        return streams.map((row) => {
+            const key = `${documentId}:${row.streamId}`;
+            if (!escAnchors.current.has(key)) {
+                const index = Array.from(resource.text.toString()).slice(0, row.position).join('').length;
+                escAnchors.current.set(key, Y.createRelativePositionFromTypeIndex(resource.text, index));
+            }
+            const position = Y.createAbsolutePositionFromRelativePosition(escAnchors.current.get(key), resource.doc);
+            return {
+                ...row,
+                displayPosition: position?.index ?? content.length,
+                owned: Number(resource.metadata.viewerUserId) === Number(row.userId),
+                busy: escBusy === row.streamId,
+            };
+        });
+    }, [resource, streams, content, documentId, escBusy]);
+    const mergedPreview = useMemo(() => {
+        let value = content;
+        const ranges = [];
+        for (const row of [...inlineDrafts].sort((a, b) => b.displayPosition - a.displayPosition)) {
+            const position = Math.min(row.displayPosition, value.length);
+            const length = (row.text || '').length;
+            for (const range of ranges) {
+                range.from += length;
+                range.to += length;
+            }
+            ranges.push({ from: position, to: position + length, modelName: row.modelName, status: row.status });
+            value = value.slice(0, position) + (row.text || '') + value.slice(position);
+        }
+        return { value, ranges };
+    }, [content, inlineDrafts]);
+    const previewData = useDeferredValue(mergedPreview);
+    const preview = previewData.value;
+    const draftPlugins = useMemo(() => [[draftPreviewPlugin, { ranges: previewData.ranges }]], [previewData]);
+    const latestDrafts = useRef(inlineDrafts);
+    latestDrafts.current = inlineDrafts;
+    useEffect(() => {
+        if (editorRef.current) editorRef.current.dispatch({ effects: setEscDrafts.of(inlineDrafts) });
+    }, [inlineDrafts]);
     const uploadImages = async (files, directory = 'assets') => {
         const text = resource?.text;
         const editor = editorRef.current;
@@ -209,6 +255,8 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                             return true;
                         },
                     }),
+                    escDecorations((row, action) => escActions.current?.(row, action)),
+                    escTheme,
                     lineNumbers(),
                     highlightActiveLine(),
                     drawSelection(),
@@ -266,6 +314,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
         syncLocalColor();
         resource.awareness.on('update', syncLocalColor);
         editorRef.current = editor;
+        editor.dispatch({ effects: setEscDrafts.of(latestDrafts.current) });
         undoRef.current = undoManager;
         return () => {
             editorRef.current = null;
@@ -679,7 +728,6 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                 currentContent={content}
             />
             {error && <p className="border-b px-4 py-2 text-xs text-destructive">{error}</p>}
-            <EscDraftPreview documentId={documentId} viewerId={resource?.metadata.viewerUserId} />
             <div className="relative min-h-0 flex-1 overflow-hidden">
                 <div className={`grid h-full min-h-0 ${pane === 'split' ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
                     <div
@@ -694,6 +742,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                             <MarkdownRenderer
                                 resourceBaseUrl={`/api/document/${documentId}/assets/`}
                                 content={preview}
+                                extraRehypePlugins={draftPlugins}
                                 contextId={`document:${documentId}`}
                             />
                         </div>
