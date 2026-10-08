@@ -43,6 +43,7 @@ export default function useCollaborativeDocument(documentId, onStatus) {
             syncError = null;
         const doc = new Y.Doc();
         const text = doc.getText('content');
+        const escAccepts = new Set();
         const presence = createDocumentPresence(doc, documentId, (people) => {
             const roster = people
                 .map(
@@ -179,7 +180,7 @@ export default function useCollaborativeDocument(documentId, onStatus) {
             restore: (commit) => action('restore', { commit }),
         };
         const handleUpdate = (_update, origin) => {
-            if (origin === 'server' || disposed) return;
+            if (origin === 'server' || origin === 'esc-accept' || disposed) return;
             version += 1;
             setSyncStatus('正在同步');
             if (!timer)
@@ -192,7 +193,8 @@ export default function useCollaborativeDocument(documentId, onStatus) {
         const unsubscribe = onEvent({ event: 'document.sync.changed', documentId, direction: 'incoming' }).then(
             ({ payload }) => {
                 if (disposed) return;
-                applyRemoteState(doc, payload.update);
+                const ownAccept = escAccepts.delete(payload.actor?.escStreamId);
+                Y.applyUpdate(doc, fromBase64(payload.update), ownAccept ? 'esc-accept' : 'server');
                 serverRevision = Math.max(serverRevision, payload.revision);
                 setRevision((current) => Math.max(current, payload.revision));
                 setLastActor(payload.actor);
@@ -215,7 +217,7 @@ export default function useCollaborativeDocument(documentId, onStatus) {
                 if (disposed) return;
                 initialized = true;
                 presence.setUser(metadata);
-                setResource({ doc, text, metadata, awareness: presence.awareness });
+                setResource({ doc, text, metadata, escAccepts, awareness: presence.awareness });
                 await sync();
             } catch (cause) {
                 if (!disposed) {

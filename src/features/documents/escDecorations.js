@@ -38,11 +38,37 @@ class DraftWidget extends WidgetType {
         label.textContent = `${this.row.modelName || 'AI'} · ${this.row.status === 'streaming' ? '撰写中 · 暂存' : this.row.status === 'awaiting_confirmation' ? '等待确认 · 暂存' : this.row.status === 'conflict' ? '版本冲突 · 暂存' : '已中断 · 暂存'}`;
         root.append(label);
         if (this.row.error) root.title = this.row.error;
+        const toolbar = document.createElement('span');
+        toolbar.className = 'cm-esc-actions';
+        toolbar.style.display = 'none';
+        const show = (event) => {
+            if (toolbar.contains(event.target)) return;
+            const range = document.caretRangeFromPoint?.(event.clientX, event.clientY);
+            const rect = range?.getBoundingClientRect() || event.target.getBoundingClientRect();
+            toolbar.style.display = 'flex';
+            toolbar.style.left = `${Math.max(8, Math.min(event.clientX - 70, window.innerWidth - 180))}px`;
+            toolbar.style.top = `${Math.max(8, rect.top - 42)}px`;
+        };
+        root.addEventListener('pointermove', (event) => {
+            if (event.pointerType !== 'touch') show(event);
+        });
+        root.addEventListener('click', show);
+        let hideTimer;
+        root.addEventListener('pointerleave', () => {
+            hideTimer = setTimeout(() => {
+                toolbar.style.display = 'none';
+            }, 180);
+        });
+        root.addEventListener('pointerenter', () => clearTimeout(hideTimer));
+        toolbar.addEventListener('pointerenter', () => clearTimeout(hideTimer));
+        root.addEventListener('focusout', () => {
+            toolbar.style.display = 'none';
+        });
         if (this.row.owned)
             for (const [title, action] of [
                 ['复制', 'copy'],
-                ['确认', 'commit'],
-                ['丢弃', 'discard'],
+                ['接受', 'commit'],
+                ['拒绝', 'discard'],
             ]) {
                 if (action === 'commit' && !['interrupted', 'awaiting_confirmation'].includes(this.row.status))
                     continue;
@@ -55,8 +81,9 @@ class DraftWidget extends WidgetType {
                     event.stopPropagation();
                     this.actions(this.row, action);
                 });
-                root.append(button);
+                toolbar.append(button);
             }
+        root.append(toolbar);
         return root;
     }
     ignoreEvent() {
@@ -99,6 +126,16 @@ export const escTheme = EditorView.baseTheme({
         padding: '2px 6px',
         textDecoration: 'none',
         whiteSpace: 'nowrap',
+    },
+    '.cm-esc-actions': {
+        position: 'fixed',
+        zIndex: '100',
+        gap: '4px',
+        padding: '6px',
+        background: 'var(--background, white)',
+        borderRadius: '10px',
+        boxShadow: '0 3px 16px #0002',
+        textDecoration: 'none',
     },
     '.cm-esc-draft button': {
         fontSize: '11px',

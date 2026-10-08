@@ -92,8 +92,16 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
     const activePane = isMobile && pane === 'split' ? 'edit' : pane;
     const { streams, busy: escBusy, act: actEsc } = useEscDrafts(documentId);
     const escActions = useRef(null);
-    escActions.current = (row, action) =>
-        action === 'copy' ? copyTextToClipboard(row.text || '') : void actEsc(row, action);
+    escActions.current = async (row, action) => {
+        if (action === 'copy') return copyTextToClipboard(row.text || '');
+        if (action === 'commit') {
+            undoRef.current?.stopCapturing();
+            resource?.escAccepts.add(row.streamId);
+        }
+        await actEsc(row, action);
+        undoRef.current?.stopCapturing();
+        editorRef.current?.focus();
+    };
     const escAnchors = useRef(new Map());
     const inlineDrafts = useMemo(() => {
         if (!resource) return [];
@@ -273,7 +281,10 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
     useEffect(() => {
         if (!resource || !host.current) return;
         const { text } = resource;
-        const undoManager = new Y.UndoManager(text);
+        const undoManager = new Y.UndoManager(text, { trackedOrigins: new Set([null, 'esc-accept']) });
+        undoManager.on('stack-item-added', ({ origin }) => {
+            if (origin === 'esc-accept') undoManager.stopCapturing();
+        });
         const update = () => setContent(text.toString());
         text.observe(update);
         update();

@@ -26,3 +26,19 @@ test('rendered draft text gets temporary styling and a cursor without source mar
     assert.equal(tree.children[2].children[0].value, '▏');
     assert.equal(tree.children[3].value, 'tail');
 });
+
+import * as Y from 'yjs';
+test('accepted remote drafts can be undone without undoing other collaborators', () => {
+    const doc = new Y.Doc(); const text = doc.getText('content');
+    text.insert(0, 'original');
+    const undo = new Y.UndoManager(text, {trackedOrigins: new Set([null, 'esc-accept'])});
+    const remote = new Y.Doc(); Y.applyUpdate(remote, Y.encodeStateAsUpdate(doc));
+    remote.getText('content').insert(8, ' accepted');
+    Y.applyUpdate(doc, Y.encodeStateAsUpdate(remote), 'esc-accept');
+    undo.stopCapturing();
+    remote.getText('content').insert(0, 'other ');
+    Y.applyUpdate(doc, Y.encodeStateAsUpdate(remote), 'server');
+    undo.undo(); assert.equal(text.toString(), 'other original');
+    undo.redo(); assert.equal(text.toString(), 'other original accepted');
+    undo.destroy(); doc.destroy(); remote.destroy();
+});
