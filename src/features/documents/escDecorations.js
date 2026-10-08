@@ -45,10 +45,12 @@ class DraftWidget extends WidgetType {
         toolbar.style.display = 'none';
         const show = (event) => {
             if (toolbar.contains(event.target)) return;
-            const range = document.caretRangeFromPoint?.(event.clientX, event.clientY);
-            const rect = range?.getBoundingClientRect() || event.target.getBoundingClientRect();
+            const range = document.createRange();
+            range.setStart(body.firstChild || body, 0);
+            range.collapse(true);
+            const rect = range.getBoundingClientRect();
             toolbar.style.display = 'flex';
-            toolbar.style.left = `${Math.max(8, Math.min(event.clientX - toolbar.offsetWidth / 2, window.innerWidth - toolbar.offsetWidth - 8))}px`;
+            toolbar.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - toolbar.offsetWidth - 8))}px`;
             toolbar.style.top = `${Math.max(8, rect.top - toolbar.offsetHeight - 8)}px`;
         };
         root.addEventListener('pointermove', (event) => {
@@ -154,11 +156,11 @@ export const escTheme = EditorView.baseTheme({
         position: 'fixed',
         zIndex: '100',
         gap: '3px',
-        padding: '5px',
+        padding: '3px',
         background: 'var(--background, #fff)',
         color: 'var(--foreground, #334155)',
         border: '1px solid color-mix(in srgb, currentColor 12%, transparent)',
-        borderRadius: '14px',
+        borderRadius: '10px',
         boxShadow: '0 8px 28px #0002, 0 1px 4px #0001',
         whiteSpace: 'nowrap',
         textDecoration: 'none',
@@ -169,7 +171,7 @@ export const escTheme = EditorView.baseTheme({
         gap: '5px',
         fontSize: '12px',
         fontWeight: '500',
-        padding: '7px 10px',
+        padding: '4px 7px',
         border: 'none',
         borderRadius: '9px',
         cursor: 'pointer',
@@ -177,7 +179,7 @@ export const escTheme = EditorView.baseTheme({
         color: 'inherit',
         transition: 'background 150ms ease',
     },
-    '.cm-esc-actions button svg': { width: '15px', height: '15px' },
+    '.cm-esc-actions button svg': { width: '13px', height: '13px' },
     '.cm-esc-actions button:hover': { background: 'color-mix(in srgb, currentColor 8%, transparent)' },
     '.cm-esc-actions button[data-action=commit]': { color: '#16835d' },
     '.cm-esc-actions button[data-action=discard]': { color: '#dc5263' },
