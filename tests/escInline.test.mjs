@@ -42,3 +42,18 @@ test('accepted remote drafts can be undone without undoing other collaborators',
     undo.redo(); assert.equal(text.toString(), 'other original accepted');
     undo.destroy(); doc.destroy(); remote.destroy();
 });
+
+test('user undo follows one ordered stack for local and AI edits', () => {
+    const doc = new Y.Doc(); const text = doc.getText('content'); text.insert(0, 'base');
+    const undo = new Y.UndoManager(text, {trackedOrigins: new Set([null, 'document-edit'])});
+    text.insert(4, ' user'); undo.stopCapturing();
+    const remote = new Y.Doc(); Y.applyUpdate(remote, Y.encodeStateAsUpdate(doc));
+    remote.getText('content').insert(9, ' AI');
+    Y.applyUpdate(doc, Y.encodeStateAsUpdate(remote), 'document-edit'); undo.stopCapturing();
+    text.insert(12, ' last'); undo.stopCapturing();
+    undo.undo(); assert.equal(text.toString(), 'base user AI');
+    undo.undo(); assert.equal(text.toString(), 'base user');
+    undo.undo(); assert.equal(text.toString(), 'base');
+    undo.redo(); undo.redo(); undo.redo(); assert.equal(text.toString(), 'base user AI last');
+    undo.destroy(); doc.destroy(); remote.destroy();
+});

@@ -281,9 +281,10 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
     useEffect(() => {
         if (!resource || !host.current) return;
         const { text } = resource;
-        const undoManager = new Y.UndoManager(text, { trackedOrigins: new Set([null, 'esc-accept']) });
+        const undoManager = new Y.UndoManager(text, { trackedOrigins: new Set([null, 'esc-accept', 'document-edit']) });
+        resource.undoManager = undoManager;
         undoManager.on('stack-item-added', ({ origin }) => {
-            if (origin === 'esc-accept') undoManager.stopCapturing();
+            if (origin === 'esc-accept' || origin === 'document-edit') undoManager.stopCapturing();
         });
         const update = () => setContent(text.toString());
         text.observe(update);
@@ -382,6 +383,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
             undoRef.current = null;
             resource.awareness.off('update', syncLocalColor);
             editor.destroy();
+            resource.undoManager = null;
             undoManager.destroy();
             text.unobserve(update);
         };

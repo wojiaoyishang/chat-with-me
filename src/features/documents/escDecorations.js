@@ -40,14 +40,16 @@ class DraftWidget extends WidgetType {
         if (this.row.error) root.title = this.row.error;
         const toolbar = document.createElement('span');
         toolbar.className = 'cm-esc-actions';
+        toolbar.setAttribute('role', 'toolbar');
+        toolbar.setAttribute('aria-label', 'AI 草稿操作');
         toolbar.style.display = 'none';
         const show = (event) => {
             if (toolbar.contains(event.target)) return;
             const range = document.caretRangeFromPoint?.(event.clientX, event.clientY);
             const rect = range?.getBoundingClientRect() || event.target.getBoundingClientRect();
             toolbar.style.display = 'flex';
-            toolbar.style.left = `${Math.max(8, Math.min(event.clientX - 70, window.innerWidth - 180))}px`;
-            toolbar.style.top = `${Math.max(8, rect.top - 42)}px`;
+            toolbar.style.left = `${Math.max(8, Math.min(event.clientX - toolbar.offsetWidth / 2, window.innerWidth - toolbar.offsetWidth - 8))}px`;
+            toolbar.style.top = `${Math.max(8, rect.top - toolbar.offsetHeight - 8)}px`;
         };
         root.addEventListener('pointermove', (event) => {
             if (event.pointerType !== 'touch') show(event);
@@ -74,7 +76,28 @@ class DraftWidget extends WidgetType {
                     continue;
                 const button = document.createElement('button');
                 button.type = 'button';
-                button.textContent = title;
+                button.dataset.action = action;
+                const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                icon.setAttribute('viewBox', '0 0 24 24');
+                icon.setAttribute('fill', 'none');
+                icon.setAttribute('stroke', 'currentColor');
+                icon.setAttribute('stroke-width', '1.8');
+                icon.setAttribute('stroke-linecap', 'round');
+                icon.setAttribute('stroke-linejoin', 'round');
+                icon.setAttribute('aria-hidden', 'true');
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute(
+                    'd',
+                    {
+                        copy: 'M9 9h11v11H9z M5 15H4V4h11v1',
+                        commit: 'm5 12 4 4L19 6',
+                        discard: 'm6 6 12 12 M18 6 6 18',
+                    }[action],
+                );
+                icon.append(path);
+                const text = document.createElement('span');
+                text.textContent = title;
+                button.append(icon, text);
                 button.disabled = this.row.busy;
                 button.addEventListener('click', (event) => {
                     event.preventDefault();
@@ -130,21 +153,36 @@ export const escTheme = EditorView.baseTheme({
     '.cm-esc-actions': {
         position: 'fixed',
         zIndex: '100',
-        gap: '4px',
-        padding: '6px',
-        background: 'var(--background, white)',
-        borderRadius: '10px',
-        boxShadow: '0 3px 16px #0002',
+        gap: '3px',
+        padding: '5px',
+        background: 'var(--background, #fff)',
+        color: 'var(--foreground, #334155)',
+        border: '1px solid color-mix(in srgb, currentColor 12%, transparent)',
+        borderRadius: '14px',
+        boxShadow: '0 8px 28px #0002, 0 1px 4px #0001',
+        whiteSpace: 'nowrap',
         textDecoration: 'none',
     },
-    '.cm-esc-draft button': {
-        fontSize: '11px',
-        margin: '0 3px',
-        padding: '1px 4px',
-        border: '1px solid #93c5fd',
-        borderRadius: '4px',
+    '.cm-esc-actions button': {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '5px',
+        fontSize: '12px',
+        fontWeight: '500',
+        padding: '7px 10px',
+        border: 'none',
+        borderRadius: '9px',
         cursor: 'pointer',
+        background: 'transparent',
+        color: 'inherit',
+        transition: 'background 150ms ease',
     },
+    '.cm-esc-actions button svg': { width: '15px', height: '15px' },
+    '.cm-esc-actions button:hover': { background: 'color-mix(in srgb, currentColor 8%, transparent)' },
+    '.cm-esc-actions button[data-action=commit]': { color: '#16835d' },
+    '.cm-esc-actions button[data-action=discard]': { color: '#dc5263' },
+    '.cm-esc-actions button:focus-visible': { outline: '2px solid #60a5fa', outlineOffset: '1px' },
+    '.cm-esc-actions button:disabled': { opacity: '0.45', cursor: 'wait' },
     '@keyframes esc-caret': { '50%': { opacity: '0.25' } },
     '@media (prefers-reduced-motion: reduce)': { '.cm-esc-cursor.is-writing': { animation: 'none' } },
 });
