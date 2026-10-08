@@ -16,6 +16,9 @@ class DraftWidget extends WidgetType {
     toDOM() {
         const root = document.createElement('span');
         root.className = 'cm-esc-draft';
+        root.dataset.streamId = this.row.streamId || '';
+        root.style.display = 'inline';
+        root.style.whiteSpace = 'pre-wrap';
         root.contentEditable = 'false';
         root.setAttribute('aria-label', 'AI 暂存正文');
         const body = document.createElement('span');
@@ -24,6 +27,11 @@ class DraftWidget extends WidgetType {
         const cursor = document.createElement('span');
         cursor.className = `cm-esc-cursor ${this.row.status === 'streaming' ? 'is-writing' : ''}`;
         cursor.textContent = '▏';
+        cursor.style.color = '#3b82f6';
+        cursor.style.borderLeft = '2px solid #3b82f6';
+        cursor.style.display = 'inline-block';
+        cursor.style.height = '1em';
+        cursor.style.verticalAlign = 'text-bottom';
         root.append(cursor);
         const label = document.createElement('span');
         label.className = 'cm-esc-label';

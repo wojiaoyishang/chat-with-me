@@ -94,13 +94,13 @@ src/features/documents/escDecorations 模块
 
       **主要协作调用**：``JSON.stringify``。
 
-   .. CWM-AST-FUNCTION src/features/documents/escDecorations.js:514:2188:FUNCTION
+   .. CWM-AST-FUNCTION src/features/documents/escDecorations.js:514:2559:FUNCTION
 
    .. js:method:: toDOM()
 
       实现 ``toDOM`` 对应的前端处理。
 
-      **性质**：同步函数；局部实现；源码第 ``16``—``52`` 行。
+      **性质**：同步函数；局部实现；源码第 ``16``—``60`` 行。
 
       **参数**
 
@@ -119,13 +119,13 @@ src/features/documents/escDecorations 模块
 
       **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-   .. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2188:2235:FUNCTION
+   .. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2559:2606:FUNCTION
 
    .. js:method:: ignoreEvent()
 
       实现 ``ignoreEvent`` 对应的前端处理。
 
-      **性质**：同步函数；局部实现；源码第 ``53``—``55`` 行。
+      **性质**：同步函数；局部实现；源码第 ``61``—``63`` 行。
 
       **参数**
 
@@ -138,13 +138,13 @@ src/features/documents/escDecorations 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2237:3064:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2608:3435:FUNCTION
 
 .. js:function:: escDecorations(actions)
 
    实现 ``escDecorations`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``57``—``76`` 行。
+   **性质**：同步函数；导出 API；源码第 ``65``—``84`` 行。
 
    **参数**
 
@@ -159,13 +159,13 @@ src/features/documents/escDecorations 模块
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4051:6281:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4422:6652:FUNCTION
 
 .. js:function:: draftPreviewPlugin({ ranges = [] })
 
    实现 ``draftPreviewPlugin`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``107``—``150`` 行。
+   **性质**：同步函数；导出 API；源码第 ``115``—``158`` 行。
 
    **参数**
 
@@ -183,17 +183,17 @@ src/features/documents/escDecorations 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:1936:2108:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2307:2479:FUNCTION
 
-.. rubric:: ``button.addEventListener callback @ 44``
+.. rubric:: ``button.addEventListener callback @ 52``
 
 .. code-block:: javascript
 
-   button.addEventListener callback @ 44(event)
+   button.addEventListener callback @ 52(event)
 
 处理 ``button.addEventListener callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``44``—``48`` 行；所属函数 ``toDOM``。
+**性质**：同步局部函数；源码第 ``52``—``56`` 行；所属函数 ``toDOM``。
 
 **参数**
 
@@ -206,7 +206,7 @@ src/features/documents/escDecorations 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``this.actions``。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2326:2348:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2697:2719:FUNCTION
 
 .. rubric:: ``create``
 
@@ -216,7 +216,7 @@ src/features/documents/escDecorations 模块
 
 创建与 ``create`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``59``—``59`` 行；所属函数 ``escDecorations``。
+**性质**：同步局部函数；源码第 ``67``—``67`` 行；所属函数 ``escDecorations``。
 
 **参数**
 
@@ -226,7 +226,7 @@ src/features/documents/escDecorations 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2349:2989:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2720:3360:FUNCTION
 
 .. rubric:: ``update``
 
@@ -236,7 +236,7 @@ src/features/documents/escDecorations 模块
 
 更新与 ``update`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``60``—``73`` 行；所属函数 ``escDecorations``。
+**性质**：同步局部函数；源码第 ``68``—``81`` 行；所属函数 ``escDecorations``。
 
 **参数**
 
@@ -254,17 +254,17 @@ src/features/documents/escDecorations 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2623:2872:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2994:3243:FUNCTION
 
-.. rubric:: ``effect.value.map callback @ 65``
+.. rubric:: ``effect.value.map callback @ 73``
 
 .. code-block:: javascript
 
-   effect.value.map callback @ 65(row)
+   effect.value.map callback @ 73(row)
 
 作为 ``effect.value.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``65``—``68`` 行；所属函数 ``update``。
+**性质**：同步局部函数；源码第 ``73``—``76`` 行；所属函数 ``update``。
 
 **参数**
 
@@ -277,7 +277,7 @@ src/features/documents/escDecorations 模块
 
 **主要协作调用**：``Decoration.widget({ widget: new DraftWidget(row, actions), side: 1 }).range``、``Decoration.widget``、``Math.max``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:3007:3053:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:3378:3424:FUNCTION
 
 .. rubric:: ``provide``
 
@@ -287,7 +287,7 @@ src/features/documents/escDecorations 模块
 
 实现 ``provide`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``74``—``74`` 行；所属函数 ``escDecorations``。
+**性质**：同步局部函数；源码第 ``82``—``82`` 行；所属函数 ``escDecorations``。
 
 **参数**
 
@@ -300,17 +300,17 @@ src/features/documents/escDecorations 模块
 
 **主要协作调用**：``EditorView.decorations.from``。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4198:6278:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4569:6649:FUNCTION
 
-.. rubric:: ``returned callback @ 108``
+.. rubric:: ``returned callback @ 116``
 
 .. code-block:: javascript
 
-   returned callback @ 108(tree)
+   returned callback @ 116(tree)
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``108``—``149`` 行；所属函数 ``draftPreviewPlugin``。
+**性质**：同步局部函数；源码第 ``116``—``157`` 行；所属函数 ``draftPreviewPlugin``。
 
 **参数**
 
@@ -325,7 +325,7 @@ src/features/documents/escDecorations 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4232:6250:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4603:6621:FUNCTION
 
 .. rubric:: ``visit``
 
@@ -335,7 +335,7 @@ src/features/documents/escDecorations 模块
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``109``—``147`` 行；所属函数 ``returned callback @ 108``。
+**性质**：同步局部函数；源码第 ``117``—``155`` 行；所属函数 ``returned callback @ 116``。
 
 **参数**
 
@@ -350,17 +350,17 @@ src/features/documents/escDecorations 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4343:6238:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4714:6609:FUNCTION
 
-.. rubric:: ``parent.children.flatMap callback @ 111``
+.. rubric:: ``parent.children.flatMap callback @ 119``
 
 .. code-block:: javascript
 
-   parent.children.flatMap callback @ 111(node)
+   parent.children.flatMap callback @ 119(node)
 
 实现 ``parent.children.flatMap`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``111``—``146`` 行；所属函数 ``visit``。
+**性质**：同步局部函数；源码第 ``119``—``154`` 行；所属函数 ``visit``。
 
 **参数**
 
@@ -375,17 +375,17 @@ src/features/documents/escDecorations 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4684:4731:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:5055:5102:FUNCTION
 
-.. rubric:: ``ranges.filter callback @ 118``
+.. rubric:: ``ranges.filter callback @ 126``
 
 .. code-block:: javascript
 
-   ranges.filter callback @ 118(range)
+   ranges.filter callback @ 126(range)
 
 作为 ``ranges.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``118``—``118`` 行；所属函数 ``parent.children.flatMap callback @ 111``。
+**性质**：同步局部函数；源码第 ``126``—``126`` 行；所属函数 ``parent.children.flatMap callback @ 119``。
 
 **参数**
 
@@ -396,17 +396,17 @@ src/features/documents/escDecorations 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4904:4929:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:5275:5300:FUNCTION
 
-.. rubric:: ``matching.sort callback @ 122``
+.. rubric:: ``matching.sort callback @ 130``
 
 .. code-block:: javascript
 
-   matching.sort callback @ 122(a, b)
+   matching.sort callback @ 130(a, b)
 
 作为 ``matching.sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``122``—``122`` 行；所属函数 ``parent.children.flatMap callback @ 111``。
+**性质**：同步局部函数；源码第 ``130``—``130`` 行；所属函数 ``parent.children.flatMap callback @ 119``。
 
 **参数**
 

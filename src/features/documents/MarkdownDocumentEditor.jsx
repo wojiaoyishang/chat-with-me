@@ -132,8 +132,46 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
     const draftPlugins = useMemo(() => [[draftPreviewPlugin, { ranges: previewData.ranges }]], [previewData]);
     const latestDrafts = useRef(inlineDrafts);
     latestDrafts.current = inlineDrafts;
+    const escFollow = useRef(true);
+    const escSeen = useRef(new Set());
     useEffect(() => {
-        if (editorRef.current) editorRef.current.dispatch({ effects: setEscDrafts.of(inlineDrafts) });
+        const editor = editorRef.current;
+        if (!editor) return;
+        const writing = inlineDrafts.filter((row) => row.status === 'streaming');
+        const fresh = writing.some((row) => !escSeen.current.has(row.streamId));
+        for (const row of writing) escSeen.current.add(row.streamId);
+        if (fresh) escFollow.current = true;
+        const target = writing.at(-1);
+        const effects = [setEscDrafts.of(inlineDrafts)];
+        const visibleWidget =
+            target &&
+            [...editor.dom.querySelectorAll('.cm-esc-draft')].some((node) => node.dataset.streamId === target.streamId);
+        if (target && escFollow.current && (fresh || !visibleWidget))
+            effects.push(EditorView.scrollIntoView(target.displayPosition, { y: 'nearest' }));
+        editor.dispatch({ effects });
+        const frame = requestAnimationFrame(() => {
+            if (editorRef.current !== editor || !target || !escFollow.current) return;
+            editor.requestMeasure({
+                read: () => {
+                    const widget = [...editor.dom.querySelectorAll('.cm-esc-draft')].find(
+                        (node) => node.dataset.streamId === target.streamId,
+                    );
+                    const cursor = widget?.querySelector('.cm-esc-cursor');
+                    if (!cursor) return 0;
+                    const rect = cursor.getBoundingClientRect();
+                    const viewport = editor.scrollDOM.getBoundingClientRect();
+                    return rect.bottom > viewport.bottom - 28
+                        ? rect.bottom - viewport.bottom + 28
+                        : rect.top < viewport.top + 20
+                          ? rect.top - viewport.top - 20
+                          : 0;
+                },
+                write: (delta) => {
+                    if (delta) editor.scrollDOM.scrollTop += delta;
+                },
+            });
+        });
+        return () => cancelAnimationFrame(frame);
     }, [inlineDrafts]);
     const uploadImages = async (files, directory = 'assets') => {
         const text = resource?.text;
@@ -245,6 +283,18 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                 doc: text.toString(),
                 extensions: [
                     EditorView.domEventHandlers({
+                        wheel(event) {
+                            if (event.deltaY < 0) escFollow.current = false;
+                            return false;
+                        },
+                        touchstart() {
+                            escFollow.current = false;
+                            return false;
+                        },
+                        pointerdown(event) {
+                            if (!event.target.closest('.cm-esc-draft')) escFollow.current = false;
+                            return false;
+                        },
                         paste(event) {
                             const files = [...(event.clipboardData?.files || [])].filter((file) =>
                                 file.type.startsWith('image/'),

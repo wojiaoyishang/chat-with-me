@@ -551,7 +551,7 @@
    * - :doc:`src/features/documents/MarkdownDocumentEditor </api/javascript/features/documents/MarkdownDocumentEditor>`
      - 2
      - 0
-     - 73
+     - 84
      - ``src/features/documents/MarkdownDocumentEditor.jsx``
    * - :doc:`src/features/documents/collaboratorPosition </api/javascript/features/documents/collaboratorPosition>`
      - 1
