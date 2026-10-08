@@ -1,3 +1,4 @@
+import EscDraftPreview from './EscDraftPreview.jsx';
 import LocalMarkdownEditor from './LocalMarkdownEditor.jsx';
 import { useTaskStore } from '@/features/tasks/useTaskStore.js';
 import { Download, Loader2 } from 'lucide-react';
@@ -678,6 +679,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                 currentContent={content}
             />
             {error && <p className="border-b px-4 py-2 text-xs text-destructive">{error}</p>}
+            <EscDraftPreview documentId={documentId} viewerId={resource?.metadata.viewerUserId} />
             <div className="relative min-h-0 flex-1 overflow-hidden">
                 <div className={`grid h-full min-h-0 ${pane === 'split' ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
                     <div

@@ -543,6 +543,11 @@
      - 0
      - 5
      - ``src/features/documents/DocumentThumbnail.jsx``
+   * - :doc:`src/features/documents/EscDraftPreview </api/javascript/features/documents/EscDraftPreview>`
+     - 1
+     - 0
+     - 24
+     - ``src/features/documents/EscDraftPreview.jsx``
    * - :doc:`src/features/documents/LocalMarkdownEditor </api/javascript/features/documents/LocalMarkdownEditor>`
      - 1
      - 0
@@ -899,6 +904,7 @@
    /api/javascript/features/documents/DocumentDiff
    /api/javascript/features/documents/DocumentHistory
    /api/javascript/features/documents/DocumentThumbnail
+   /api/javascript/features/documents/EscDraftPreview
    /api/javascript/features/documents/LocalMarkdownEditor
    /api/javascript/features/documents/MarkdownDocumentEditor
    /api/javascript/features/documents/collaboratorPosition
