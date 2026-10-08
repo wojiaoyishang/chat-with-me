@@ -181,7 +181,7 @@ const normalizeReplacementCopyEntry = (replacement, id, explicitType) => {
     // what the conversation surface actually shows instead of expanding hidden
     // command/log/result payloads back into the copied answer.
     if (
-        ['taskwindowtool', 'workspacetransfer', 'executionstatus'].includes(
+        ['taskwindowtool', 'workspacetransfer', 'executionstatus', 'escstatus'].includes(
             String(explicitType || entry?.type || protocol.type || '').toLowerCase(),
         )
     ) {

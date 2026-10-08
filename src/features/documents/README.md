@@ -11,3 +11,6 @@ presence.js 独立管理 WebSocket 在线/掉线事件、y-protocols Awareness �
 
 ### 用户统一撤销记录
 文档实时同步事件使用 document-edit origin，用户的 Yjs UndoManager 统一记录本机及远端已提交的用户/AI正文编辑，每次远端编辑前后独立分组；初始化/轮询补全仍使用 server origin，不把整份历史快照加入撤销。撤销增量正常同步给协作者。AI未暴露共享用户撤销记录的入口，不允许借用用户 Ctrl+Z 栈；现有文档工具不提供 undo/redo。浮动草稿工具栏使用图标、语义色、圆角和视口边界定位。
+
+### 聊天正文中的ESC撰写提示
+EscWritingStatus渲染后端escStatus replacement，显示撰写、片段已上屏、待确认或停止状态，监听对应文档的document.esc.changed以更新接受/丢弃结果。任务模式仍投影在正文，不自动打开任务窗口。复制逻辑忽略占位内部JSON。
