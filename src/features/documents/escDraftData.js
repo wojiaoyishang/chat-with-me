@@ -14,6 +14,7 @@ export function escDraftData(value) {
         'createdAt',
         'updatedAt',
         'modelName',
+        'inline',
     ];
     return Object.fromEntries(keys.filter((key) => value?.[key] !== undefined).map((key) => [key, value[key]]));
 }

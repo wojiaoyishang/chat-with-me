@@ -68,3 +68,15 @@ test('HTTP draft responses drop circular transport metadata', () => {
     assert.doesNotThrow(() => JSON.stringify(clean));
     assert.deepEqual(clean, escDraftData(clean));
 });
+
+test('AI marked text participates in ordinary editing and undo', () => {
+    const doc = new Y.Doc(); const text = doc.getText('content'); text.insert(0, 'old');
+    const undo = new Y.UndoManager(text);
+    text.insert(3, 'draft', {esc:'s'}); undo.stopCapturing();
+    text.delete(4, 2); undo.stopCapturing();
+    assert.equal(text.toString(), 'olddft');
+    undo.undo(); assert.equal(text.toString(), 'olddraft');
+    text.insert(4, 'H', {esc:null});
+    assert.equal(text.toDelta().filter(part => part.attributes?.esc === 's').length, 2);
+    undo.destroy(); doc.destroy();
+});

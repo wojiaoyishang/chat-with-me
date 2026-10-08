@@ -68,21 +68,10 @@ export default function useEscDrafts(documentId) {
     const act = async (stream, action, payload) => {
         setBusy(stream.streamId);
         try {
-            const result = await apiClient.post(
+            await apiClient.post(
                 `/document/${encodeURIComponent(documentId)}/esc/${encodeURIComponent(stream.streamId)}/${action}`,
                 payload,
             );
-            if (action === 'delete_text') {
-                setStreams((current) => {
-                    if (
-                        terminal.current.has(stream.streamId) ||
-                        Date.parse(current[stream.streamId]?.updatedAt) > Date.parse(result.updatedAt)
-                    )
-                        return current;
-                    return { ...current, [stream.streamId]: escDraftData(result) };
-                });
-                return;
-            }
             terminal.current.add(stream.streamId);
             setStreams((current) => {
                 const next = { ...current };

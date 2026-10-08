@@ -1,5 +1,5 @@
 import { StateEffect, StateField } from '@codemirror/state';
-import { Decoration, EditorView, WidgetType } from '@codemirror/view';
+import { Decoration, EditorView, WidgetType, ViewPlugin } from '@codemirror/view';
 export const setEscDrafts = StateEffect.define();
 class DraftWidget extends WidgetType {
     constructor(row, actions) {
@@ -8,7 +8,7 @@ class DraftWidget extends WidgetType {
         this.actions = actions;
     }
     get lineBreaks() {
-        return (this.row.text || '').split('\n').length - 1;
+        return this.row.inline ? 0 : (this.row.text || '').split('\n').length - 1;
     }
     eq(other) {
         return JSON.stringify(this.row) === JSON.stringify(other.row);
@@ -22,36 +22,10 @@ class DraftWidget extends WidgetType {
         root.contentEditable = 'false';
         root.setAttribute('aria-label', 'AI 暂存正文');
         const body = document.createElement('span');
-        body.textContent = this.row.text || '';
+        body.textContent = this.row.inline ? '' : this.row.text || '';
         body.style.userSelect = 'text';
         body.tabIndex = 0;
-        body.contentEditable = this.row.owned && !this.row.busy ? 'plaintext-only' : 'false';
-        const removeSelection = (event) => {
-            if (!this.row.owned || this.row.busy) return false;
-            const selection = window.getSelection();
-            if (!selection?.rangeCount || selection.isCollapsed) return false;
-            const range = selection.getRangeAt(0);
-            if (!body.contains(range.startContainer) || !body.contains(range.endContainer)) return false;
-            event.preventDefault();
-            event.stopPropagation();
-            const prefix = document.createRange();
-            prefix.selectNodeContents(body);
-            prefix.setEnd(range.startContainer, range.startOffset);
-            const start = Array.from(prefix.toString()).length;
-            const end = start + Array.from(range.toString()).length;
-            this.actions(this.row, 'delete_text', { start, end, expectedText: this.row.text || '' });
-            return true;
-        };
-        body.addEventListener('keydown', (event) => {
-            if (['Backspace', 'Delete'].includes(event.key)) {
-                if (!removeSelection(event)) event.preventDefault();
-            }
-        });
-        body.addEventListener('beforeinput', (event) => {
-            if (event.inputType.startsWith('delete')) removeSelection(event);
-            event.preventDefault();
-        });
-
+        body.contentEditable = !this.row.inline && this.row.owned && !this.row.busy ? 'plaintext-only' : 'false';
         root.append(body);
         const cursor = document.createElement('span');
         cursor.className = `cm-esc-cursor ${this.row.status === 'streaming' ? 'is-writing' : ''}`;
@@ -74,8 +48,10 @@ class DraftWidget extends WidgetType {
         toolbar.style.display = 'none';
         const show = (event) => {
             if (toolbar.contains(event.target)) return;
-            let range = document.caretRangeFromPoint?.(event.clientX, event.clientY);
-            if (!range && document.caretPositionFromPoint) {
+            let range = event.detail?.paragraphRect
+                ? null
+                : document.caretRangeFromPoint?.(event.clientX, event.clientY);
+            if (!range && !event.detail?.paragraphRect && document.caretPositionFromPoint) {
                 const caret = document.caretPositionFromPoint(event.clientX, event.clientY);
                 if (caret) {
                     range = document.createRange();
@@ -83,15 +59,17 @@ class DraftWidget extends WidgetType {
                     range.collapse(true);
                 }
             }
-            const rect = range?.getBoundingClientRect() || event.target.getBoundingClientRect();
+            let rect = range?.getBoundingClientRect() || event.target.getBoundingClientRect();
+            if (event.detail?.paragraphRect) rect = event.detail.paragraphRect;
             toolbar.style.display = 'flex';
-            toolbar.style.left = `${Math.max(8, Math.min(event.clientX - toolbar.offsetWidth / 2, window.innerWidth - toolbar.offsetWidth - 8))}px`;
+            toolbar.style.left = `${Math.max(8, Math.min(event.detail?.paragraphRect ? rect.left : event.clientX - toolbar.offsetWidth / 2, window.innerWidth - toolbar.offsetWidth - 8))}px`;
             toolbar.style.top = `${Math.max(8, rect.top - toolbar.offsetHeight - 8)}px`;
         };
         root.addEventListener('pointermove', (event) => {
             if (event.pointerType !== 'touch') show(event);
         });
         root.addEventListener('click', show);
+        root.addEventListener('esc-show', show);
         let hideTimer;
         root.addEventListener('pointerleave', () => {
             hideTimer = setTimeout(() => {
@@ -158,11 +136,19 @@ export function escDecorations(actions) {
             for (const effect of transaction.effects)
                 if (effect.is(setEscDrafts))
                     value = Decoration.set(
-                        effect.value.map((row) =>
+                        effect.value.flatMap((row) => [
+                            ...(row.ranges || [])
+                                .filter((range) => range.to > range.from)
+                                .map((range) =>
+                                    Decoration.mark({
+                                        class: 'cm-esc-draft',
+                                        attributes: { 'data-stream-id': row.streamId },
+                                    }).range(range.from, range.to),
+                                ),
                             Decoration.widget({ widget: new DraftWidget(row, actions), side: 1 }).range(
                                 Math.max(0, Math.min(row.displayPosition, transaction.state.doc.length)),
                             ),
-                        ),
+                        ]),
                         true,
                     );
             return value;
@@ -268,4 +254,39 @@ export function draftPreviewPlugin({ ranges = [] } = {}) {
         };
         visit(tree);
     };
+}
+
+export const escHover = ViewPlugin.define(
+    (view) => ({
+        update() {},
+    }),
+    {
+        eventHandlers: {
+            mousemove(event, view) {
+                return showParagraphActions(event, view);
+            },
+            click(event, view) {
+                return showParagraphActions(event, view);
+            },
+        },
+    },
+);
+function showParagraphActions(event, view) {
+    const mark = event.target.closest?.('.cm-esc-draft[data-stream-id]');
+    if (!mark || mark.querySelector('.cm-esc-actions')) return false;
+    const widget = [...view.dom.querySelectorAll('.cm-esc-actions')]
+        .map((node) => node.parentElement)
+        .find((node) => node.dataset.streamId === mark.dataset.streamId);
+    if (!widget) return false;
+    const position = view.posAtCoords({ x: event.clientX, y: event.clientY });
+    if (position == null) return false;
+    const prefix = view.state.doc.sliceString(0, position);
+    const boundary = prefix.lastIndexOf('\n\n');
+    const paragraphStart = boundary < 0 ? 0 : boundary + 2;
+    const rect = view.coordsAtPos(Math.max(0, paragraphStart));
+    if (!rect) return false;
+    widget.dispatchEvent(new CustomEvent('esc-show', { detail: { paragraphRect: rect } }));
+    const toolbar = widget.querySelector('.cm-esc-actions');
+    toolbar.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - toolbar.offsetWidth - 8))}px`;
+    return false;
 }

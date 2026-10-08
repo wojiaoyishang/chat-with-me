@@ -1,5 +1,5 @@
 import useEscDrafts from './useEscDrafts.js';
-import { escDecorations, escTheme, setEscDrafts, draftPreviewPlugin } from './escDecorations.js';
+import { escDecorations, escHover, escTheme, setEscDrafts, draftPreviewPlugin } from './escDecorations.js';
 import { copyTextToClipboard } from '@/lib/tools.jsx';
 import LocalMarkdownEditor from './LocalMarkdownEditor.jsx';
 import { useTaskStore } from '@/features/tasks/useTaskStore.js';
@@ -103,38 +103,52 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
         editorRef.current?.focus();
     };
     const escAnchors = useRef(new Map());
+    const knownDrafts = useRef(new Map());
     const inlineDrafts = useMemo(() => {
         if (!resource) return [];
-        return streams.map((row) => {
+        for (const row of streams) knownDrafts.current.set(`${documentId}:${row.streamId}`, row);
+        const active = new Map(streams.map(row => [row.streamId, row]));
+        for (const part of resource.text.toDelta()) {
+            const id = part.attributes?.esc;
+            if (id && !active.has(id)) {
+                const previous = knownDrafts.current.get(`${documentId}:${id}`);
+                if (previous) active.set(id, {...previous, status: 'awaiting_confirmation'});
+            }
+        }
+        return [...active.values()].map((row) => {
             const key = `${documentId}:${row.streamId}`;
             if (!escAnchors.current.has(key)) {
                 const index = Array.from(resource.text.toString()).slice(0, row.position).join('').length;
                 escAnchors.current.set(key, Y.createRelativePositionFromTypeIndex(resource.text, index));
             }
             const position = Y.createAbsolutePositionFromRelativePosition(escAnchors.current.get(key), resource.doc);
+            let offset = 0;
+            const ranges = [];
+            for (const part of resource.text.toDelta()) {
+                const length = typeof part.insert === 'string' ? part.insert.length : 0;
+                if (part.attributes?.esc === row.streamId) ranges.push({ from: offset, to: offset + length });
+                offset += length;
+            }
             return {
                 ...row,
-                displayPosition: position?.index ?? content.length,
+                displayPosition: row.inline
+                    ? (ranges.at(-1)?.to ?? position?.index ?? content.length)
+                    : (position?.index ?? content.length),
+                ranges,
                 owned: Number(resource.metadata.viewerUserId) === Number(row.userId),
                 busy: escBusy === row.streamId,
             };
         });
     }, [resource, streams, content, documentId, escBusy]);
-    const mergedPreview = useMemo(() => {
-        let value = content;
-        const ranges = [];
-        for (const row of [...inlineDrafts].sort((a, b) => b.displayPosition - a.displayPosition)) {
-            const position = Math.min(row.displayPosition, value.length);
-            const length = (row.text || '').length;
-            for (const range of ranges) {
-                range.from += length;
-                range.to += length;
-            }
-            ranges.push({ from: position, to: position + length, modelName: row.modelName, status: row.status });
-            value = value.slice(0, position) + (row.text || '') + value.slice(position);
-        }
-        return { value, ranges };
-    }, [content, inlineDrafts]);
+    const mergedPreview = useMemo(
+        () => ({
+            value: content,
+            ranges: inlineDrafts.flatMap((row) =>
+                (row.ranges || []).map((range) => ({ ...range, modelName: row.modelName })),
+            ),
+        }),
+        [content, inlineDrafts],
+    );
     const previewData = useDeferredValue(mergedPreview);
     const preview = previewData.value;
     const draftPlugins = useMemo(() => [[draftPreviewPlugin, { ranges: previewData.ranges }]], [previewData]);
@@ -281,8 +295,28 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
     useEffect(() => {
         if (!resource || !host.current) return;
         const { text } = resource;
-        const undoManager = new Y.UndoManager(text, { trackedOrigins: new Set([null, 'esc-accept', 'document-edit']) });
+        const undoManager = new Y.UndoManager(text, {
+            trackedOrigins: new Set([null, 'esc-accept', 'document-edit', 'clear-user-marks']),
+        });
         resource.undoManager = undoManager;
+        const clearUserMarks = (event, transaction) => {
+            if (!transaction.local || transaction.origin === undoManager || transaction.origin === 'clear-user-marks')
+                return;
+            let offset = 0;
+            const inserted = [];
+            for (const change of event.delta) {
+                if (change.retain) offset += change.retain;
+                if (typeof change.insert === 'string') {
+                    inserted.push([offset, change.insert.length]);
+                    offset += change.insert.length;
+                }
+            }
+            if (inserted.length)
+                resource.doc.transact(() => {
+                    for (const [from, length] of inserted) text.format(from, length, { esc: null });
+                }, 'clear-user-marks');
+        };
+        text.observe(clearUserMarks);
         undoManager.on('stack-item-added', ({ origin }) => {
             if (origin === 'esc-accept' || origin === 'document-edit') undoManager.stopCapturing();
         });
@@ -319,6 +353,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                     }),
                     escDecorations((row, action, payload) => escActions.current?.(row, action, payload)),
                     escTheme,
+                    escHover,
                     lineNumbers(),
                     highlightActiveLine(),
                     drawSelection(),
@@ -383,6 +418,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
             undoRef.current = null;
             resource.awareness.off('update', syncLocalColor);
             editor.destroy();
+            text.unobserve(clearUserMarks);
             resource.undoManager = null;
             undoManager.destroy();
             text.unobserve(update);
