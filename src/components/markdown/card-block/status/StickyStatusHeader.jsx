@@ -34,6 +34,12 @@ export default function StickyStatusHeader({ children, expanded }) {
         <>
             <div ref={markerRef} aria-hidden="true" className="pointer-events-none h-px -mb-px" />
             <div className="sticky top-3 z-10 rounded-xl bg-background">
+                {isSticky && (
+                    <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -inset-x-2 -top-3 h-3 bg-white"
+                    />
+                )}
                 <div
                     aria-hidden="true"
                     className={`pointer-events-none absolute -inset-x-2 -inset-y-1.5 rounded-xl border border-slate-200/60 bg-white shadow-[0_4px_16px_rgba(15,23,42,0.10),0_1px_3px_rgba(15,23,42,0.04)] transition-opacity duration-200 ease-out ${isSticky ? 'opacity-100' : 'opacity-0'}`}
