@@ -35,16 +35,17 @@ class DraftWidget extends WidgetType {
         root.append(cursor);
         const label = document.createElement('span');
         label.className = 'cm-esc-label';
-        label.textContent = `${this.row.modelName || 'AI'} · ${this.row.status === 'streaming' ? '撰写中 · 暂存' : this.row.status === 'conflict' ? '版本冲突 · 暂存' : '已中断 · 暂存'}`;
+        label.textContent = `${this.row.modelName || 'AI'} · ${this.row.status === 'streaming' ? '撰写中 · 暂存' : this.row.status === 'awaiting_confirmation' ? '等待确认 · 暂存' : this.row.status === 'conflict' ? '版本冲突 · 暂存' : '已中断 · 暂存'}`;
         root.append(label);
         if (this.row.error) root.title = this.row.error;
         if (this.row.owned)
             for (const [title, action] of [
                 ['复制', 'copy'],
-                ['提交', 'commit'],
+                ['确认', 'commit'],
                 ['丢弃', 'discard'],
             ]) {
-                if (action === 'commit' && this.row.status !== 'interrupted') continue;
+                if (action === 'commit' && !['interrupted', 'awaiting_confirmation'].includes(this.row.status))
+                    continue;
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.textContent = title;

@@ -94,13 +94,13 @@ src/features/documents/escDecorations 模块
 
       **主要协作调用**：``JSON.stringify``。
 
-   .. CWM-AST-FUNCTION src/features/documents/escDecorations.js:514:2559:FUNCTION
+   .. CWM-AST-FUNCTION src/features/documents/escDecorations.js:514:2673:FUNCTION
 
    .. js:method:: toDOM()
 
       实现 ``toDOM`` 对应的前端处理。
 
-      **性质**：同步函数；局部实现；源码第 ``16``—``60`` 行。
+      **性质**：同步函数；局部实现；源码第 ``16``—``61`` 行。
 
       **参数**
 
@@ -115,17 +115,17 @@ src/features/documents/escDecorations 模块
       * 注册事件、DOM 或运行时订阅。
       * 读取或修改浏览器全局对象、页面或历史状态。
 
-      **主要协作调用**：``document.createElement``、``root.setAttribute``、``root.append``、``button.addEventListener``。
+      **主要协作调用**：``document.createElement``、``root.setAttribute``、``root.append``、``['interrupted', 'awaiting_confirmation'].includes``、``button.addEventListener``。
 
       **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-   .. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2559:2606:FUNCTION
+   .. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2673:2720:FUNCTION
 
    .. js:method:: ignoreEvent()
 
       实现 ``ignoreEvent`` 对应的前端处理。
 
-      **性质**：同步函数；局部实现；源码第 ``61``—``63`` 行。
+      **性质**：同步函数；局部实现；源码第 ``62``—``64`` 行。
 
       **参数**
 
@@ -138,13 +138,13 @@ src/features/documents/escDecorations 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2608:3435:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2722:3549:FUNCTION
 
 .. js:function:: escDecorations(actions)
 
    实现 ``escDecorations`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``65``—``84`` 行。
+   **性质**：同步函数；导出 API；源码第 ``66``—``85`` 行。
 
    **参数**
 
@@ -159,13 +159,13 @@ src/features/documents/escDecorations 模块
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4422:6652:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4536:6766:FUNCTION
 
 .. js:function:: draftPreviewPlugin({ ranges = [] })
 
    实现 ``draftPreviewPlugin`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``115``—``158`` 行。
+   **性质**：同步函数；导出 API；源码第 ``116``—``159`` 行。
 
    **参数**
 
@@ -183,17 +183,17 @@ src/features/documents/escDecorations 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2307:2479:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2421:2593:FUNCTION
 
-.. rubric:: ``button.addEventListener callback @ 52``
+.. rubric:: ``button.addEventListener callback @ 53``
 
 .. code-block:: javascript
 
-   button.addEventListener callback @ 52(event)
+   button.addEventListener callback @ 53(event)
 
 处理 ``button.addEventListener callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``52``—``56`` 行；所属函数 ``toDOM``。
+**性质**：同步局部函数；源码第 ``53``—``57`` 行；所属函数 ``toDOM``。
 
 **参数**
 
@@ -206,7 +206,7 @@ src/features/documents/escDecorations 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``this.actions``。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2697:2719:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2811:2833:FUNCTION
 
 .. rubric:: ``create``
 
@@ -216,7 +216,7 @@ src/features/documents/escDecorations 模块
 
 创建与 ``create`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``67``—``67`` 行；所属函数 ``escDecorations``。
+**性质**：同步局部函数；源码第 ``68``—``68`` 行；所属函数 ``escDecorations``。
 
 **参数**
 
@@ -226,7 +226,7 @@ src/features/documents/escDecorations 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2720:3360:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2834:3474:FUNCTION
 
 .. rubric:: ``update``
 
@@ -236,7 +236,7 @@ src/features/documents/escDecorations 模块
 
 更新与 ``update`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``68``—``81`` 行；所属函数 ``escDecorations``。
+**性质**：同步局部函数；源码第 ``69``—``82`` 行；所属函数 ``escDecorations``。
 
 **参数**
 
@@ -254,17 +254,17 @@ src/features/documents/escDecorations 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:2994:3243:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:3108:3357:FUNCTION
 
-.. rubric:: ``effect.value.map callback @ 73``
+.. rubric:: ``effect.value.map callback @ 74``
 
 .. code-block:: javascript
 
-   effect.value.map callback @ 73(row)
+   effect.value.map callback @ 74(row)
 
 作为 ``effect.value.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``73``—``76`` 行；所属函数 ``update``。
+**性质**：同步局部函数；源码第 ``74``—``77`` 行；所属函数 ``update``。
 
 **参数**
 
@@ -277,7 +277,7 @@ src/features/documents/escDecorations 模块
 
 **主要协作调用**：``Decoration.widget({ widget: new DraftWidget(row, actions), side: 1 }).range``、``Decoration.widget``、``Math.max``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:3378:3424:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:3492:3538:FUNCTION
 
 .. rubric:: ``provide``
 
@@ -287,7 +287,7 @@ src/features/documents/escDecorations 模块
 
 实现 ``provide`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``82``—``82`` 行；所属函数 ``escDecorations``。
+**性质**：同步局部函数；源码第 ``83``—``83`` 行；所属函数 ``escDecorations``。
 
 **参数**
 
@@ -300,17 +300,17 @@ src/features/documents/escDecorations 模块
 
 **主要协作调用**：``EditorView.decorations.from``。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4569:6649:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4683:6763:FUNCTION
 
-.. rubric:: ``returned callback @ 116``
+.. rubric:: ``returned callback @ 117``
 
 .. code-block:: javascript
 
-   returned callback @ 116(tree)
+   returned callback @ 117(tree)
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``116``—``157`` 行；所属函数 ``draftPreviewPlugin``。
+**性质**：同步局部函数；源码第 ``117``—``158`` 行；所属函数 ``draftPreviewPlugin``。
 
 **参数**
 
@@ -325,7 +325,7 @@ src/features/documents/escDecorations 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4603:6621:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4717:6735:FUNCTION
 
 .. rubric:: ``visit``
 
@@ -335,7 +335,7 @@ src/features/documents/escDecorations 模块
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``117``—``155`` 行；所属函数 ``returned callback @ 116``。
+**性质**：同步局部函数；源码第 ``118``—``156`` 行；所属函数 ``returned callback @ 117``。
 
 **参数**
 
@@ -350,17 +350,17 @@ src/features/documents/escDecorations 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4714:6609:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:4828:6723:FUNCTION
 
-.. rubric:: ``parent.children.flatMap callback @ 119``
+.. rubric:: ``parent.children.flatMap callback @ 120``
 
 .. code-block:: javascript
 
-   parent.children.flatMap callback @ 119(node)
+   parent.children.flatMap callback @ 120(node)
 
 实现 ``parent.children.flatMap`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``119``—``154`` 行；所属函数 ``visit``。
+**性质**：同步局部函数；源码第 ``120``—``155`` 行；所属函数 ``visit``。
 
 **参数**
 
@@ -375,17 +375,17 @@ src/features/documents/escDecorations 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:5055:5102:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:5169:5216:FUNCTION
 
-.. rubric:: ``ranges.filter callback @ 126``
+.. rubric:: ``ranges.filter callback @ 127``
 
 .. code-block:: javascript
 
-   ranges.filter callback @ 126(range)
+   ranges.filter callback @ 127(range)
 
 作为 ``ranges.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``126``—``126`` 行；所属函数 ``parent.children.flatMap callback @ 119``。
+**性质**：同步局部函数；源码第 ``127``—``127`` 行；所属函数 ``parent.children.flatMap callback @ 120``。
 
 **参数**
 
@@ -396,17 +396,17 @@ src/features/documents/escDecorations 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:5275:5300:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/escDecorations.js:5389:5414:FUNCTION
 
-.. rubric:: ``matching.sort callback @ 130``
+.. rubric:: ``matching.sort callback @ 131``
 
 .. code-block:: javascript
 
-   matching.sort callback @ 130(a, b)
+   matching.sort callback @ 131(a, b)
 
 作为 ``matching.sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``130``—``130`` 行；所属函数 ``parent.children.flatMap callback @ 119``。
+**性质**：同步局部函数；源码第 ``131``—``131`` 行；所属函数 ``parent.children.flatMap callback @ 120``。
 
 **参数**
 
