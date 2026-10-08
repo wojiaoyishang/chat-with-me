@@ -10,7 +10,10 @@ export default function StickyStatusHeader({ children, expanded }) {
         const marker = markerRef.current;
         if (!marker) return undefined;
 
-        // Observe the same scroll surface used by CSS sticky, including task panels.
+        const header = headerRef.current;
+        if (!header) return undefined;
+
+        // Use the same scroll surface as sticky, including the padded task panel.
         let root = marker.parentElement;
         while (root && root !== document.documentElement) {
             if (/^(auto|scroll|hidden|overlay)$/.test(getComputedStyle(root).overflowY)) break;
@@ -18,17 +21,34 @@ export default function StickyStatusHeader({ children, expanded }) {
         }
         if (root === document.documentElement) root = null;
 
-        // Sticky is inset from the scroll surface's padded content edge.
-        // Cover that padding too, so task-window text cannot peek above the card.
-        const topInset = 8 + (root ? parseFloat(getComputedStyle(root).paddingTop) || 0 : 0);
-        headerRef.current?.style.setProperty('--sticky-top-mask', `${topInset}px`);
-
-        const observer = new IntersectionObserver(([entry]) => {
-            const stuck = !entry.isIntersecting && entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0);
-            setStickyMarker(stuck ? marker : null);
-        }, { root, rootMargin: `-${topInset}px 0px 0px 0px`, threshold: 0 });
-        observer.observe(marker);
-        return () => observer.disconnect();
+        let frame = null;
+        const measure = () => {
+            frame = null;
+            const padding = root ? parseFloat(getComputedStyle(root).paddingTop) || 0 : 0;
+            header.style.setProperty('--sticky-offset', `${8 - padding}px`);
+            const headerTop = header.getBoundingClientRect().top;
+            const rootTop = root ? root.getBoundingClientRect().top + root.clientTop : 0;
+            header.style.setProperty('--sticky-top-mask', `${Math.max(0, headerTop - rootTop)}px`);
+            // Clipped sentinels can look visible to IntersectionObserver; compare
+            // actual positions so both transcript and task cards get the same style.
+            setStickyMarker(headerTop > marker.getBoundingClientRect().top + 1 ? marker : null);
+        };
+        const schedule = () => {
+            if (frame === null) frame = requestAnimationFrame(measure);
+        };
+        window.addEventListener('scroll', schedule, true);
+        window.addEventListener('resize', schedule);
+        const observer = new ResizeObserver(schedule);
+        observer.observe(header);
+        observer.observe(marker.parentElement);
+        if (root) observer.observe(root);
+        schedule();
+        return () => {
+            window.removeEventListener('scroll', schedule, true);
+            window.removeEventListener('resize', schedule);
+            observer.disconnect();
+            if (frame !== null) cancelAnimationFrame(frame);
+        };
     }, [expanded]);
 
     // Collapsed cards have no body to scroll through: no sticky styling or transition.
@@ -39,7 +59,7 @@ export default function StickyStatusHeader({ children, expanded }) {
     return (
         <>
             <div ref={markerRef} aria-hidden="true" className="pointer-events-none h-px -mb-px" />
-            <div ref={headerRef} className="sticky top-2 z-10 rounded-xl bg-background">
+            <div ref={headerRef} className="sticky z-10 rounded-xl bg-background" style={{ top: 'var(--sticky-offset, 8px)' }}>
                 {isSticky && (
                     <div
                         aria-hidden="true"
