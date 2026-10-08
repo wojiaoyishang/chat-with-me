@@ -25,7 +25,8 @@ export default function StickyStatusHeader({ children, expanded }) {
         const measure = () => {
             frame = null;
             const padding = root ? parseFloat(getComputedStyle(root).paddingTop) || 0 : 0;
-            header.style.setProperty('--sticky-offset', `${8 - padding}px`);
+            const gap = parseFloat(getComputedStyle(header).getPropertyValue('--status-sticky-gap'));
+            header.style.setProperty('--sticky-offset', `${(Number.isFinite(gap) ? gap : 8) - padding}px`);
             const headerTop = header.getBoundingClientRect().top;
             const rootTop = root ? root.getBoundingClientRect().top + root.clientTop : 0;
             header.style.setProperty('--sticky-top-mask', `${Math.max(0, headerTop - rootTop)}px`);

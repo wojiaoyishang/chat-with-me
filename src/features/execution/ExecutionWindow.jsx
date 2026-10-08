@@ -323,7 +323,7 @@ const ExecutionWindow = memo(
                 <div
                     ref={scrollRef}
                     onScroll={handleTimelineScroll}
-                    className="h-full overflow-y-auto px-5 py-4 pretty-scrollbar"
+                    className="h-full overflow-y-auto px-5 py-4 pretty-scrollbar [--status-sticky-gap:6px]"
                 >
                     <div ref={contentRef}>
                         {(taskMode?.objective || taskMode?.enteredBy) && (
