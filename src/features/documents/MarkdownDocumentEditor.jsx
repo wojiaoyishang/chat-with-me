@@ -1,6 +1,3 @@
-import useEscDrafts from './useEscDrafts.js';
-import { escDecorations, escHover, escTheme, setEscDrafts, draftPreviewPlugin } from './escDecorations.js';
-import { copyTextToClipboard } from '@/lib/tools.jsx';
 import LocalMarkdownEditor from './LocalMarkdownEditor.jsx';
 import { useTaskStore } from '@/features/tasks/useTaskStore.js';
 import { Download, Loader2 } from 'lucide-react';
@@ -90,111 +87,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
     const [pane, setPane] = useState('split');
     const isMobile = useIsMobile();
     const activePane = isMobile && pane === 'split' ? 'edit' : pane;
-    const { streams, busy: escBusy, act: actEsc } = useEscDrafts(documentId);
-    const escActions = useRef(null);
-    escActions.current = async (row, action, payload) => {
-        if (action === 'copy') return copyTextToClipboard(row.text || '');
-        if (action === 'commit') {
-            undoRef.current?.stopCapturing();
-            resource?.escAccepts.add(row.streamId);
-        }
-        await actEsc(row, action, payload);
-        undoRef.current?.stopCapturing();
-        editorRef.current?.focus();
-    };
-    const escAnchors = useRef(new Map());
-    const knownDrafts = useRef(new Map());
-    const inlineDrafts = useMemo(() => {
-        if (!resource) return [];
-        for (const row of streams) knownDrafts.current.set(`${documentId}:${row.streamId}`, row);
-        const active = new Map(streams.map(row => [row.streamId, row]));
-        for (const part of resource.text.toDelta()) {
-            const id = part.attributes?.esc;
-            if (id && !active.has(id)) {
-                const previous = knownDrafts.current.get(`${documentId}:${id}`);
-                if (previous) active.set(id, {...previous, status: 'awaiting_confirmation'});
-            }
-        }
-        return [...active.values()].map((row) => {
-            const key = `${documentId}:${row.streamId}`;
-            if (!escAnchors.current.has(key)) {
-                const index = Array.from(resource.text.toString()).slice(0, row.position).join('').length;
-                escAnchors.current.set(key, Y.createRelativePositionFromTypeIndex(resource.text, index));
-            }
-            const position = Y.createAbsolutePositionFromRelativePosition(escAnchors.current.get(key), resource.doc);
-            let offset = 0;
-            const ranges = [];
-            for (const part of resource.text.toDelta()) {
-                const length = typeof part.insert === 'string' ? part.insert.length : 0;
-                if (part.attributes?.esc === row.streamId) ranges.push({ from: offset, to: offset + length });
-                offset += length;
-            }
-            return {
-                ...row,
-                displayPosition: row.inline
-                    ? (ranges.at(-1)?.to ?? position?.index ?? content.length)
-                    : (position?.index ?? content.length),
-                ranges,
-                owned: Number(resource.metadata.viewerUserId) === Number(row.userId),
-                busy: escBusy === row.streamId,
-            };
-        });
-    }, [resource, streams, content, documentId, escBusy]);
-    const mergedPreview = useMemo(
-        () => ({
-            value: content,
-            ranges: inlineDrafts.flatMap((row) =>
-                (row.ranges || []).map((range) => ({ ...range, modelName: row.modelName })),
-            ),
-        }),
-        [content, inlineDrafts],
-    );
-    const previewData = useDeferredValue(mergedPreview);
-    const preview = previewData.value;
-    const draftPlugins = useMemo(() => [[draftPreviewPlugin, { ranges: previewData.ranges }]], [previewData]);
-    const latestDrafts = useRef(inlineDrafts);
-    latestDrafts.current = inlineDrafts;
-    const escFollow = useRef(true);
-    const escSeen = useRef(new Set());
-    useEffect(() => {
-        const editor = editorRef.current;
-        if (!editor) return;
-        const writing = inlineDrafts.filter((row) => row.status === 'streaming');
-        const fresh = writing.some((row) => !escSeen.current.has(row.streamId));
-        for (const row of writing) escSeen.current.add(row.streamId);
-        if (fresh) escFollow.current = true;
-        const target = writing.at(-1);
-        const effects = [setEscDrafts.of(inlineDrafts)];
-        const visibleWidget =
-            target &&
-            [...editor.dom.querySelectorAll('.cm-esc-draft')].some((node) => node.dataset.streamId === target.streamId);
-        if (target && escFollow.current && (fresh || !visibleWidget))
-            effects.push(EditorView.scrollIntoView(target.displayPosition, { y: 'nearest' }));
-        editor.dispatch({ effects });
-        const frame = requestAnimationFrame(() => {
-            if (editorRef.current !== editor || !target || !escFollow.current) return;
-            editor.requestMeasure({
-                read: () => {
-                    const widget = [...editor.dom.querySelectorAll('.cm-esc-draft')].find(
-                        (node) => node.dataset.streamId === target.streamId,
-                    );
-                    const cursor = widget?.querySelector('.cm-esc-cursor');
-                    if (!cursor) return 0;
-                    const rect = cursor.getBoundingClientRect();
-                    const viewport = editor.scrollDOM.getBoundingClientRect();
-                    return rect.bottom > viewport.bottom - 28
-                        ? rect.bottom - viewport.bottom + 28
-                        : rect.top < viewport.top + 20
-                          ? rect.top - viewport.top - 20
-                          : 0;
-                },
-                write: (delta) => {
-                    if (delta) editor.scrollDOM.scrollTop += delta;
-                },
-            });
-        });
-        return () => cancelAnimationFrame(frame);
-    }, [inlineDrafts]);
+    const preview = useDeferredValue(content);
     const uploadImages = async (files, directory = 'assets') => {
         const text = resource?.text;
         const editor = editorRef.current;
@@ -296,29 +189,11 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
         if (!resource || !host.current) return;
         const { text } = resource;
         const undoManager = new Y.UndoManager(text, {
-            trackedOrigins: new Set([null, 'esc-accept', 'document-edit', 'clear-user-marks']),
+            trackedOrigins: new Set([null, 'document-edit']),
         });
         resource.undoManager = undoManager;
-        const clearUserMarks = (event, transaction) => {
-            if (!transaction.local || transaction.origin === undoManager || transaction.origin === 'clear-user-marks')
-                return;
-            let offset = 0;
-            const inserted = [];
-            for (const change of event.delta) {
-                if (change.retain) offset += change.retain;
-                if (typeof change.insert === 'string') {
-                    inserted.push([offset, change.insert.length]);
-                    offset += change.insert.length;
-                }
-            }
-            if (inserted.length)
-                resource.doc.transact(() => {
-                    for (const [from, length] of inserted) text.format(from, length, { esc: null });
-                }, 'clear-user-marks');
-        };
-        text.observe(clearUserMarks);
         undoManager.on('stack-item-added', ({ origin }) => {
-            if (origin === 'esc-accept' || origin === 'document-edit') undoManager.stopCapturing();
+            if (origin === 'document-edit') undoManager.stopCapturing();
         });
         const update = () => setContent(text.toString());
         text.observe(update);
@@ -329,18 +204,6 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                 doc: text.toString(),
                 extensions: [
                     EditorView.domEventHandlers({
-                        wheel(event) {
-                            if (event.deltaY < 0) escFollow.current = false;
-                            return false;
-                        },
-                        touchstart() {
-                            escFollow.current = false;
-                            return false;
-                        },
-                        pointerdown(event) {
-                            if (!event.target.closest('.cm-esc-draft')) escFollow.current = false;
-                            return false;
-                        },
                         paste(event) {
                             const files = [...(event.clipboardData?.files || [])].filter((file) =>
                                 file.type.startsWith('image/'),
@@ -351,9 +214,6 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                             return true;
                         },
                     }),
-                    escDecorations((row, action, payload) => escActions.current?.(row, action, payload)),
-                    escTheme,
-                    escHover,
                     lineNumbers(),
                     highlightActiveLine(),
                     drawSelection(),
@@ -411,14 +271,12 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
         syncLocalColor();
         resource.awareness.on('update', syncLocalColor);
         editorRef.current = editor;
-        editor.dispatch({ effects: setEscDrafts.of(latestDrafts.current) });
         undoRef.current = undoManager;
         return () => {
             editorRef.current = null;
             undoRef.current = null;
             resource.awareness.off('update', syncLocalColor);
             editor.destroy();
-            text.unobserve(clearUserMarks);
             resource.undoManager = null;
             undoManager.destroy();
             text.unobserve(update);
@@ -841,7 +699,6 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                             <MarkdownRenderer
                                 resourceBaseUrl={`/api/document/${documentId}/assets/`}
                                 content={preview}
-                                extraRehypePlugins={draftPlugins}
                                 contextId={`document:${documentId}`}
                             />
                         </div>

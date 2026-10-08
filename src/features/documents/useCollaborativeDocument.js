@@ -43,8 +43,7 @@ export default function useCollaborativeDocument(documentId, onStatus) {
             syncError = null;
         const doc = new Y.Doc();
         const text = doc.getText('content');
-        const escAccepts = new Set();
-        const shared = { doc, text, escAccepts, undoManager: null };
+        const shared = { doc, text, undoManager: null };
         const presence = createDocumentPresence(doc, documentId, (people) => {
             const roster = people
                 .map(
@@ -181,7 +180,7 @@ export default function useCollaborativeDocument(documentId, onStatus) {
             restore: (commit) => action('restore', { commit }),
         };
         const handleUpdate = (_update, origin) => {
-            if (origin === 'server' || origin === 'esc-accept' || origin === 'document-edit' || disposed) return;
+            if (origin === 'server' || origin === 'document-edit' || disposed) return;
             version += 1;
             setSyncStatus('正在同步');
             if (!timer)
@@ -195,8 +194,7 @@ export default function useCollaborativeDocument(documentId, onStatus) {
             ({ payload }) => {
                 if (disposed) return;
                 shared.undoManager?.stopCapturing();
-                const ownAccept = escAccepts.delete(payload.actor?.escStreamId);
-                Y.applyUpdate(doc, fromBase64(payload.update), ownAccept ? 'esc-accept' : 'document-edit');
+                Y.applyUpdate(doc, fromBase64(payload.update), 'document-edit');
                 serverRevision = Math.max(serverRevision, payload.revision);
                 setRevision((current) => Math.max(current, payload.revision));
                 setLastActor(payload.actor);

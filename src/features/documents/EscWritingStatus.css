@@ -1,0 +1,2 @@
+@keyframes esc-writing-rotate { to { transform: rotate(360deg); } }
+.esc-writing-spinner { animation: esc-writing-rotate 1s linear infinite; transform-origin: center; transform-box: fill-box; }
