@@ -29,7 +29,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:443:4965:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:435:4698:FUNCTION
 
 .. rubric:: ``memo callback @ 9``
 
@@ -39,7 +39,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``9``—``109`` 行。
+**性质**：同步局部函数；源码第 ``9``—``104`` 行。
 
 **参数**
 
@@ -58,7 +58,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:695:1430:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:681:1402:FUNCTION
 
 .. rubric:: ``useEffect callback @ 15``
 
@@ -86,7 +86,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:811:1284:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:794:1259:FUNCTION
 
 .. rubric:: ``wheel``
 
@@ -109,7 +109,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``Math.abs``、``Math.max``、``Math.min``、``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1372:1422:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1345:1395:FUNCTION
 
 .. rubric:: ``returned callback @ 28``
 
@@ -131,7 +131,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``element.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1460:2661:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1431:2508:FUNCTION
 
 .. rubric:: ``useEffect callback @ 30``
 
@@ -141,7 +141,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``30``—``60`` 行；所属函数 ``memo callback @ 9``。
+**性质**：同步局部函数；源码第 ``30``—``56`` 行；所属函数 ``memo callback @ 9``。
 
 **参数**
 
@@ -155,7 +155,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1852:2556:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1716:2406:FUNCTION
 
 .. rubric:: ``tick``
 
@@ -165,7 +165,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 实现 ``tick`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``43``—``57`` 行；所属函数 ``useEffect callback @ 30``。
+**性质**：同步局部函数；源码第 ``39``—``53`` 行；所属函数 ``useEffect callback @ 30``。
 
 **参数**
 
@@ -178,17 +178,17 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``Math.min``、``Math.max``、``requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:2619:2653:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:2467:2501:FUNCTION
 
-.. rubric:: ``returned callback @ 59``
+.. rubric:: ``returned callback @ 55``
 
 .. code-block:: javascript
 
-   returned callback @ 59()
+   returned callback @ 55()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``59``—``59`` 行；所属函数 ``useEffect callback @ 30``。
+**性质**：同步局部函数；源码第 ``55``—``55`` 行；所属函数 ``useEffect callback @ 30``。
 
 **参数**
 
@@ -200,17 +200,17 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3171:3233:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:2997:3057:FUNCTION
 
-.. rubric:: ``onMouseEnter callback @ 68``
+.. rubric:: ``onMouseEnter callback @ 64``
 
 .. code-block:: javascript
 
-   onMouseEnter callback @ 68()
+   onMouseEnter callback @ 64()
 
 处理 ``Mouse Enter`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``68``—``70`` 行；所属函数 ``memo callback @ 9``。
+**性质**：同步局部函数；源码第 ``64``—``66`` 行；所属函数 ``memo callback @ 9``。
 
 **参数**
 
@@ -220,17 +220,17 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3262:3325:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3085:3146:FUNCTION
 
-.. rubric:: ``onMouseLeave callback @ 71``
+.. rubric:: ``onMouseLeave callback @ 67``
 
 .. code-block:: javascript
 
-   onMouseLeave callback @ 71()
+   onMouseLeave callback @ 67()
 
 处理 ``Mouse Leave`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``71``—``73`` 行；所属函数 ``memo callback @ 9``。
+**性质**：同步局部函数；源码第 ``67``—``69`` 行；所属函数 ``memo callback @ 9``。
 
 **参数**
 
@@ -240,17 +240,17 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:4033:4103:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3839:3907:FUNCTION
 
-.. rubric:: ``onFocus callback @ 88``
+.. rubric:: ``onFocus callback @ 84``
 
 .. code-block:: javascript
 
-   onFocus callback @ 88()
+   onFocus callback @ 84()
 
 处理 ``Focus`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``88``—``90`` 行；所属函数 ``memo callback @ 9``。
+**性质**：同步局部函数；源码第 ``84``—``86`` 行；所属函数 ``memo callback @ 9``。
 
 **参数**
 
@@ -260,17 +260,17 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:4130:4201:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3933:4002:FUNCTION
 
-.. rubric:: ``onBlur callback @ 91``
+.. rubric:: ``onBlur callback @ 87``
 
 .. code-block:: javascript
 
-   onBlur callback @ 91()
+   onBlur callback @ 87()
 
 处理 ``Blur`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``91``—``93`` 行；所属函数 ``memo callback @ 9``。
+**性质**：同步局部函数；源码第 ``87``—``89`` 行；所属函数 ``memo callback @ 9``。
 
 **参数**
 

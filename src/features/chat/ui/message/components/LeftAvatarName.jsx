@@ -30,10 +30,6 @@ const LeftAvatarName = memo(({ msg, isLeaving, showDetails }) => {
     useEffect(() => {
         const element = viewport.current;
         if (!element) return;
-        if (!showDetails) {
-            element.scrollLeft = 0;
-            return;
-        }
         if (isMobile || reducedMotion) return;
         let frame;
         let last = 0;
@@ -57,7 +53,7 @@ const LeftAvatarName = memo(({ msg, isLeaving, showDetails }) => {
         };
         frame = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(frame);
-    }, [showDetails, isMobile, reducedMotion]);
+    }, [isMobile, reducedMotion]);
     const createdAt = msg?.createdAt || msg?.created_at;
     const indicators = msg?.extraInfo?.indicators || msg?.extra_info?.indicators || [];
     const createdLabel = formatLocalTimestamp(createdAt, { fallback: '时间不可用' });
@@ -93,15 +89,14 @@ const LeftAvatarName = memo(({ msg, isLeaving, showDetails }) => {
                 }}
             >
                 <div className="flex w-max min-w-full flex-nowrap items-center gap-2 whitespace-nowrap">
-                    <div
-                        className={`flex shrink-0 flex-nowrap items-center gap-2 transition-opacity duration-200 ${showDetails ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+                    <MessageIndicators indicators={indicators} />
+                    <time
+                        dateTime={createdAt}
                         aria-hidden={!showDetails}
+                        className={`shrink-0 overflow-hidden text-[11px] text-gray-400 tabular-nums transition-[opacity,max-width] duration-200 ${showDetails ? 'max-w-[16rem] opacity-100' : 'max-w-0 pointer-events-none opacity-0'}`}
                     >
-                        <MessageIndicators indicators={indicators} />
-                        <time dateTime={createdAt} className="shrink-0 text-[11px] text-gray-400 tabular-nums">
-                            {createdLabel}
-                        </time>
-                    </div>
+                        {createdLabel}
+                    </time>
                 </div>
             </div>
         </div>
