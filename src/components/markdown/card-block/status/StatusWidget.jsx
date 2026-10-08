@@ -17,6 +17,7 @@ import {
 } from '../utils.js';
 import StatusBody from './StatusBody.jsx';
 import StatusHeader from './StatusHeader.jsx';
+import StickyStatusHeader from './StickyStatusHeader.jsx';
 import IgnoredContextIndicator from '@/features/chat/ui/message/components/IgnoredContextIndicator.jsx';
 import CompactedContextIndicator from '@/features/chat/ui/message/components/CompactedContextIndicator.jsx';
 import {
@@ -348,7 +349,7 @@ const StatusWidget = memo(
         return (
             <div className="relative w-full py-1.5">
                 {/* Keep the controls within this card and its nearest scrolling surface. */}
-                <div className="sticky top-0 z-10 bg-background pb-2">
+                <StickyStatusHeader>
                     <StatusHeader
                         activeColor={activeColor}
                         currentColor={currentColor}
@@ -377,7 +378,7 @@ const StatusWidget = memo(
                         }
                         resumingLabel={t('tool_subagent_resuming_status', 'Sub-agent finished, resuming')}
                     />
-                    </div>
+                </StickyStatusHeader>
 
                 <StatusBody
                     cleanContent={cleanContent}
