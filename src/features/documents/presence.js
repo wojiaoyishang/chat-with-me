@@ -8,10 +8,10 @@ import { getRealtimeTransport } from '@/runtime/transport/channel.js';
 // The provider translates authenticated server membership into the standard Awareness protocol.
 // Relative positions belong to Yjs items, so remote cursors survive concurrent text edits.
 const aiCursorCache = new WeakMap();
-export function applyPresenceSnapshot(awareness, participants) {
+export function applyPresenceSnapshot(awareness, participants, revision = Infinity) {
     if (!aiCursorCache.has(awareness)) aiCursorCache.set(awareness, new Map());
     const cache = aiCursorCache.get(awareness);
-    participants = resolveAiCursors(awareness.doc, participants, cache);
+    participants = resolveAiCursors(awareness.doc, participants, cache, revision);
     const people = new Map(participants.map((person) => [person.clientId, person]));
     const local = people.get(awareness.clientID);
     const localUser = awareness.getLocalState()?.user;
@@ -35,8 +35,9 @@ export function applyPresenceSnapshot(awareness, participants) {
             JSON.stringify(
                 person
                     ? {
-                          user: { name: person.name, color: person.color, colorLight: `${person.color}26` },
-                          cursor: person.cursor,
+                          user: { name: person.name, color: person.color, colorLight: `${person.color}26`, kind: person.kind },
+                          cursor: person.kind === 'ai' ? null : person.cursor,
+                          aiCursor: person.kind === 'ai' ? person.cursor : null,
                       }
                     : null,
             ),
@@ -45,7 +46,7 @@ export function applyPresenceSnapshot(awareness, participants) {
     applyAwarenessUpdate(awareness, encoding.toUint8Array(encoder), 'server');
 }
 
-export function createDocumentPresence(doc, documentId, onParticipants) {
+export function createDocumentPresence(doc, documentId, onParticipants, getRevision = () => Infinity) {
     const awareness = new Awareness(doc);
     let joined = false,
         disposed = false,
@@ -53,13 +54,24 @@ export function createDocumentPresence(doc, documentId, onParticipants) {
         timer = null,
         version = 0,
         revision = -1;
+    let latestPeople = [], refreshQueued = false;
+    const refreshCursors = () => {
+        if (refreshQueued || disposed || !joined) return;
+        refreshQueued = true;
+        queueMicrotask(() => {
+            refreshQueued = false;
+            if (!disposed && joined) applyPresenceSnapshot(awareness, latestPeople, getRevision());
+        });
+    };
+    doc.on('update', refreshCursors);
     const payload = () => ({ clientId: doc.clientID, cursor: awareness.getLocalState()?.cursor || null });
     const accept = (data) => {
         if (disposed || !joined || !Number.isFinite(data?.presenceRevision) || data.presenceRevision <= revision)
             return;
         revision = data.presenceRevision;
         const people = data.participants || [];
-        applyPresenceSnapshot(awareness, people);
+        latestPeople = people;
+        applyPresenceSnapshot(awareness, people, getRevision());
         onParticipants(people);
     };
     const schedule = () => {
@@ -142,6 +154,7 @@ export function createDocumentPresence(doc, documentId, onParticipants) {
             changed();
             disconnected();
             window.removeEventListener('pagehide', leave);
+            doc.off('update', refreshCursors);
             awareness.off('update', update);
             awareness.destroy();
         },

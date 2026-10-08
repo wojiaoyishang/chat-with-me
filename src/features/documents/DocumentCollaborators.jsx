@@ -1,4 +1,4 @@
-import { openChatWindow } from '@/features/chat/page/openChatWindow.js';
+import { chatWindowPath, openChatWindow } from '@/features/chat/page/openChatWindow.js';
 import { formatLocalTimestamp } from '@/lib/clientText.js';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -44,20 +44,19 @@ export default function DocumentCollaborators({ participants, onLocate, onOpenCo
                 <div className="max-h-80 overflow-y-auto p-2">
                     {participants.length ? (
                         participants.map((person) => (
-                            <button
-                                type="button"
+                            <div
+                                role="button"
+                                tabIndex={0}
                                 key={person.participantId}
                                 className="flex w-full gap-3 rounded-md p-2 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                title={person.kind === 'ai' ? '查看来源会话' : t('documentCollaborators.locate')}
+                                title={t('documentCollaborators.locate')}
+                                onKeyDown={(event) => {
+                                    if (event.target !== event.currentTarget || !['Enter', ' '].includes(event.key)) return;
+                                    event.preventDefault();
+                                    if (onLocate?.(person)) setOpen(false);
+                                }}
                                 onClick={() => {
-                                    const handled =
-                                        person.kind === 'ai'
-                                            ? onOpenConversation
-                                                ? onOpenConversation(person.conversationId)
-                                                : person.conversationId
-                                                  ? openChatWindow({ conversationId: person.conversationId })
-                                                  : false
-                                            : onLocate?.(person);
+                                    const handled = onLocate?.(person);
                                     if (handled) setOpen(false);
                                 }}
                             >
@@ -94,7 +93,18 @@ export default function DocumentCollaborators({ participants, onLocate, onOpenCo
                                             className="break-all text-xs text-muted-foreground"
                                             title={person.conversationId}
                                         >
-                                            来源会话：<span className="font-mono">{person.conversationId}</span>
+                                            来源会话：<a
+                                                href={`${String(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}${chatWindowPath(person.conversationId)}`}
+                                                target="_blank" rel="noopener noreferrer"
+                                                className="font-mono text-primary underline underline-offset-2 hover:opacity-80"
+                                                onClick={(event) => {
+                                                    event.stopPropagation();
+                                                    const handled = onOpenConversation
+                                                        ? onOpenConversation(person.conversationId)
+                                                        : openChatWindow({conversationId: person.conversationId});
+                                                    if (handled) { event.preventDefault(); setOpen(false); }
+                                                }}
+                                            >{person.conversationId}</a>
                                         </div>
                                     )}
                                     {person.kind !== 'ai' && (
@@ -103,7 +113,7 @@ export default function DocumentCollaborators({ participants, onLocate, onOpenCo
                                         </div>
                                     )}
                                 </div>
-                            </button>
+                            </div>
                         ))
                     ) : (
                         <div className="p-3 text-sm text-muted-foreground">

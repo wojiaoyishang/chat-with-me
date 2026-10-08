@@ -1,3 +1,4 @@
+import { aiCursorDecorations } from './aiCursorDecorations.js';
 import LocalMarkdownEditor from './LocalMarkdownEditor.jsx';
 import { useTaskStore } from '@/features/tasks/useTaskStore.js';
 import { Download, Loader2 } from 'lucide-react';
@@ -222,6 +223,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                     EditorView.lineWrapping,
                     keymap.of([...yUndoManagerKeymap, ...defaultKeymap]),
                     yCollab(text, resource.awareness, { undoManager }),
+                    aiCursorDecorations(resource.awareness),
                     EditorView.theme({
                         '&': { height: '100%', background: 'transparent', color: 'inherit' },
                         '.cm-scroller': {

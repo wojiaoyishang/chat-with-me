@@ -82,7 +82,7 @@ export default function useCollaborativeDocument(documentId, onStatus) {
                 );
             // Cursor motion updates CodeMirror directly, never rerenders the Markdown preview.
             setParticipants((current) => (JSON.stringify(current) === JSON.stringify(roster) ? current : roster));
-        });
+        }, () => serverRevision);
         setResource(null);
         setError('');
         setStatus('正在连接');

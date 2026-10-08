@@ -17,3 +17,7 @@ EscWritingStatus渲染后端escStatus replacement，显示撰写、片段已上�
 
 
 ESC直接写入正式正文，无暂存标记、确认或弃用菜单。远端增量使用document-edit origin加入与用户编辑相同的Yjs撤销栈，AI在线光标保留。EscWritingStatus使用独立CSS旋转动画，状态包括writing/written/completed/interrupted。
+
+
+### AI光标和协作者定位
+aiCursorDecorations为AI提供在线持续显示的光标标签及选区，编辑器失焦不隐藏。presence以aiCursor传递AI位置；aiCursor.js按服务端/正文revision在同步完成后重新投影，之后相对位置跟随并发编辑。collaboratorPosition统一解析AI与用户位置。点击协作者行只定位编辑器；来源会话ID为独立链接，点击链接才打开或强调相应聊天窗口。
