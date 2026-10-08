@@ -346,35 +346,38 @@ const StatusWidget = memo(
         if (isFailed) currentColor = 'text-red-600';
 
         return (
-            <div className="w-full py-1.5">
-                <StatusHeader
-                    activeColor={activeColor}
-                    currentColor={currentColor}
-                    displayTitle={displayTitleWithBadges}
-                    Icon={Icon}
-                    expandedKey={expandedKey}
-                    actions={actions}
-                    canToggleExpansion
-                    contextId={contextId}
-                    isDone={isDone}
-                    isFailed={isFailed}
-                    isFinished={isFinished}
-                    isProcessing={isProcessing}
-                    isToolCalling={isToolCalling}
-                    isWaitingApproval={isWaitingToolState}
-                    isResumingTool={isResumingSubagent}
-                    conversationId={conversationId}
-                    progress={progress}
-                    truncatedLastLine={truncatedLastLine}
-                    titleAccessory={toolContextIndicator}
-                    rightAccessory={<FrontendFeedbackButtons items={feedbackItems} feedback={feedback} />}
-                    waitingApprovalLabel={
-                        isWaitingSubagent
-                            ? t('tool_subagent_waiting_status', 'Waiting for sub-agent')
-                            : t('tool_approval_waiting_status', 'Waiting for approval')
-                    }
-                    resumingLabel={t('tool_subagent_resuming_status', 'Sub-agent finished, resuming')}
-                />
+            <div className="relative w-full py-1.5">
+                {/* Keep the controls within this card and its nearest scrolling surface. */}
+                <div className="sticky top-0 z-10 rounded-md bg-background px-1 py-2 shadow-[0_1px_0_0_var(--border)]">
+                    <StatusHeader
+                        activeColor={activeColor}
+                        currentColor={currentColor}
+                        displayTitle={displayTitleWithBadges}
+                        Icon={Icon}
+                        expandedKey={expandedKey}
+                        actions={actions}
+                        canToggleExpansion
+                        contextId={contextId}
+                        isDone={isDone}
+                        isFailed={isFailed}
+                        isFinished={isFinished}
+                        isProcessing={isProcessing}
+                        isToolCalling={isToolCalling}
+                        isWaitingApproval={isWaitingToolState}
+                        isResumingTool={isResumingSubagent}
+                        conversationId={conversationId}
+                        progress={progress}
+                        truncatedLastLine={truncatedLastLine}
+                        titleAccessory={toolContextIndicator}
+                        rightAccessory={<FrontendFeedbackButtons items={feedbackItems} feedback={feedback} />}
+                        waitingApprovalLabel={
+                            isWaitingSubagent
+                                ? t('tool_subagent_waiting_status', 'Waiting for sub-agent')
+                                : t('tool_approval_waiting_status', 'Waiting for approval')
+                        }
+                        resumingLabel={t('tool_subagent_resuming_status', 'Sub-agent finished, resuming')}
+                    />
+                    </div>
 
                 <StatusBody
                     cleanContent={cleanContent}
