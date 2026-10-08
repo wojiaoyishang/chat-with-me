@@ -57,3 +57,14 @@ test('user undo follows one ordered stack for local and AI edits', () => {
     undo.redo(); undo.redo(); undo.redo(); assert.equal(text.toString(), 'base user AI last');
     undo.destroy(); doc.destroy(); remote.destroy();
 });
+
+import { escDraftData } from '../src/features/documents/escDraftData.js';
+test('HTTP draft responses drop circular transport metadata', () => {
+    const data = {streamId: 'one', text: 'remaining', status: 'streaming', updatedAt: '2026-10-08T00:00:00Z'};
+    data._response = {data: {data}};
+    const clean = escDraftData(data);
+    assert.equal(clean.text, 'remaining');
+    assert.equal(clean._response, undefined);
+    assert.doesNotThrow(() => JSON.stringify(clean));
+    assert.deepEqual(clean, escDraftData(clean));
+});

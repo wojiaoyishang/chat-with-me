@@ -1,3 +1,4 @@
+import { escDraftData } from './escDraftData.js';
 import { useEffect, useState, useRef } from 'react';
 import { onEvent } from '@/context/useEventStore.jsx';
 import apiClient from '@/lib/apiClient.js';
@@ -22,7 +23,7 @@ export default function useEscDrafts(documentId) {
                     !current[stream.streamId] ||
                     Date.parse(stream.updatedAt) >= Date.parse(current[stream.streamId].updatedAt)
                 )
-                    next[stream.streamId] = stream;
+                    next[stream.streamId] = escDraftData(stream);
                 return next;
             });
         };
@@ -37,7 +38,7 @@ export default function useEscDrafts(documentId) {
                             Object.fromEntries(
                                 (data.streams || [])
                                     .filter((item) => !terminal.current.has(item.streamId))
-                                    .map((item) => [item.streamId, item]),
+                                    .map((item) => [item.streamId, escDraftData(item)]),
                             ),
                         );
                     else for (const item of data.streams || []) apply(item);
@@ -78,7 +79,7 @@ export default function useEscDrafts(documentId) {
                         Date.parse(current[stream.streamId]?.updatedAt) > Date.parse(result.updatedAt)
                     )
                         return current;
-                    return { ...current, [stream.streamId]: result };
+                    return { ...current, [stream.streamId]: escDraftData(result) };
                 });
                 return;
             }

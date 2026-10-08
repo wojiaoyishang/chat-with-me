@@ -74,12 +74,18 @@ class DraftWidget extends WidgetType {
         toolbar.style.display = 'none';
         const show = (event) => {
             if (toolbar.contains(event.target)) return;
-            const range = document.createRange();
-            range.setStart(body.firstChild || body, 0);
-            range.collapse(true);
-            const rect = range.getBoundingClientRect();
+            let range = document.caretRangeFromPoint?.(event.clientX, event.clientY);
+            if (!range && document.caretPositionFromPoint) {
+                const caret = document.caretPositionFromPoint(event.clientX, event.clientY);
+                if (caret) {
+                    range = document.createRange();
+                    range.setStart(caret.offsetNode, caret.offset);
+                    range.collapse(true);
+                }
+            }
+            const rect = range?.getBoundingClientRect() || event.target.getBoundingClientRect();
             toolbar.style.display = 'flex';
-            toolbar.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - toolbar.offsetWidth - 8))}px`;
+            toolbar.style.left = `${Math.max(8, Math.min(event.clientX - toolbar.offsetWidth / 2, window.innerWidth - toolbar.offsetWidth - 8))}px`;
             toolbar.style.top = `${Math.max(8, rect.top - toolbar.offsetHeight - 8)}px`;
         };
         root.addEventListener('pointermove', (event) => {
