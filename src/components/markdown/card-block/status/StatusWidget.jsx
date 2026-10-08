@@ -348,7 +348,7 @@ const StatusWidget = memo(
         return (
             <div className="relative w-full py-1.5">
                 {/* Keep the controls within this card and its nearest scrolling surface. */}
-                <div className="sticky top-0 z-10 bg-background">
+                <div className="sticky top-0 z-10 bg-background pb-2">
                     <StatusHeader
                         activeColor={activeColor}
                         currentColor={currentColor}
