@@ -236,7 +236,7 @@ const StatusWidget = memo(
             isToolCalling && (!isSuccessfulToolCompletion || !autoCollapseCompletedToolCalls),
         );
 
-        useExpandedState(expandedKey, isToolCalling ? desiredToolExpanded : defaultExpanded);
+        const [isExpanded] = useExpandedState(expandedKey, isToolCalling ? desiredToolExpanded : defaultExpanded);
 
         useEffect(() => {
             if (!isToolCalling || hasExpandedUserOverride(expandedKey)) {
@@ -349,7 +349,7 @@ const StatusWidget = memo(
         return (
             <div className="relative w-full py-1.5">
                 {/* Keep the controls within this card and its nearest scrolling surface. */}
-                <StickyStatusHeader>
+                <StickyStatusHeader expanded={isExpanded}>
                     <StatusHeader
                         activeColor={activeColor}
                         currentColor={currentColor}
