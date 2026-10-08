@@ -1,3 +1,4 @@
+import { resolveAiCursors } from './aiCursor.js';
 import i18n from 'i18next';
 import { Awareness, applyAwarenessUpdate, removeAwarenessStates } from 'y-protocols/awareness';
 import * as encoding from 'lib0/encoding';
@@ -6,7 +7,11 @@ import { getRealtimeTransport } from '@/runtime/transport/channel.js';
 
 // The provider translates authenticated server membership into the standard Awareness protocol.
 // Relative positions belong to Yjs items, so remote cursors survive concurrent text edits.
+const aiCursorCache = new WeakMap();
 export function applyPresenceSnapshot(awareness, participants) {
+    if (!aiCursorCache.has(awareness)) aiCursorCache.set(awareness, new Map());
+    const cache = aiCursorCache.get(awareness);
+    participants = resolveAiCursors(awareness.doc, participants, cache);
     const people = new Map(participants.map((person) => [person.clientId, person]));
     const local = people.get(awareness.clientID);
     const localUser = awareness.getLocalState()?.user;
