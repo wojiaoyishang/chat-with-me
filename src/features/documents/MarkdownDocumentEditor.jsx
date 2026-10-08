@@ -92,13 +92,13 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
     const activePane = isMobile && pane === 'split' ? 'edit' : pane;
     const { streams, busy: escBusy, act: actEsc } = useEscDrafts(documentId);
     const escActions = useRef(null);
-    escActions.current = async (row, action) => {
+    escActions.current = async (row, action, payload) => {
         if (action === 'copy') return copyTextToClipboard(row.text || '');
         if (action === 'commit') {
             undoRef.current?.stopCapturing();
             resource?.escAccepts.add(row.streamId);
         }
-        await actEsc(row, action);
+        await actEsc(row, action, payload);
         undoRef.current?.stopCapturing();
         editorRef.current?.focus();
     };
@@ -317,7 +317,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                             return true;
                         },
                     }),
-                    escDecorations((row, action) => escActions.current?.(row, action)),
+                    escDecorations((row, action, payload) => escActions.current?.(row, action, payload)),
                     escTheme,
                     lineNumbers(),
                     highlightActiveLine(),

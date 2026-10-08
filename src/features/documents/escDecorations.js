@@ -23,6 +23,35 @@ class DraftWidget extends WidgetType {
         root.setAttribute('aria-label', 'AI 暂存正文');
         const body = document.createElement('span');
         body.textContent = this.row.text || '';
+        body.style.userSelect = 'text';
+        body.tabIndex = 0;
+        body.contentEditable = this.row.owned && !this.row.busy ? 'plaintext-only' : 'false';
+        const removeSelection = (event) => {
+            if (!this.row.owned || this.row.busy) return false;
+            const selection = window.getSelection();
+            if (!selection?.rangeCount || selection.isCollapsed) return false;
+            const range = selection.getRangeAt(0);
+            if (!body.contains(range.startContainer) || !body.contains(range.endContainer)) return false;
+            event.preventDefault();
+            event.stopPropagation();
+            const prefix = document.createRange();
+            prefix.selectNodeContents(body);
+            prefix.setEnd(range.startContainer, range.startOffset);
+            const start = Array.from(prefix.toString()).length;
+            const end = start + Array.from(range.toString()).length;
+            this.actions(this.row, 'delete_text', { start, end, expectedText: this.row.text || '' });
+            return true;
+        };
+        body.addEventListener('keydown', (event) => {
+            if (['Backspace', 'Delete'].includes(event.key)) {
+                if (!removeSelection(event)) event.preventDefault();
+            }
+        });
+        body.addEventListener('beforeinput', (event) => {
+            if (event.inputType.startsWith('delete')) removeSelection(event);
+            event.preventDefault();
+        });
+
         root.append(body);
         const cursor = document.createElement('span');
         cursor.className = `cm-esc-cursor ${this.row.status === 'streaming' ? 'is-writing' : ''}`;
