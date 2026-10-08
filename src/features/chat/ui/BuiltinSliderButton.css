@@ -36,11 +36,6 @@
     .thinking-gauge-bubble {
         display: none;
     }
-    .builtin-slider-particle {
-        animation: none;
-        left: var(--particle-resting-x);
-        opacity: var(--particle-opacity);
-    }
 }
 
 .thinking-gauge-bubble {

@@ -24,7 +24,6 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
             speed: 0.7 + Math.random() * 1.7,
             delay: -Math.random() * 8,
             drift: (Math.random() - 0.5) * 9,
-            restingX: Math.random() * 100,
         })),
     );
 
@@ -124,7 +123,6 @@ export default function BuiltinSliderButton({ tool, value, onChange, onCommit, c
                                             '--particle-duration': `${(3.6 - 2.8 * progress) * particle.speed}s`,
                                             '--particle-delay': `${particle.delay}s`,
                                             '--particle-drift': `${particle.drift}px`,
-                                            '--particle-resting-x': `${particle.restingX}%`,
                                         }}
                                     />
                                 ))}
