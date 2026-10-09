@@ -3,9 +3,8 @@ import apiClient from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
 
 const TAB_SECTION_QUERY = Object.freeze({
-    'model-request': 'model-calls',
+    'timeline': 'timeline',
     context: 'context',
-    'raw-messages': 'raw-messages',
     tools: 'tools',
 });
 
@@ -84,7 +83,7 @@ export default function useRuntimeInspector(conversationId, branchKey = '') {
     }, []);
 
     const requestSection = useCallback(
-        async ({ section, focusMessageId = null, modelCallId = null, silent = false }) => {
+        async ({ section, focusMessageId = null, modelCallId = null, eventId = null, query = '', silent = false }) => {
             if (!conversationId) return null;
 
             abortControllerRef.current?.abort();
@@ -96,11 +95,13 @@ export default function useRuntimeInspector(conversationId, branchKey = '') {
             setError('');
 
             try {
-                const data = await apiClient.get(apiEndpoint.CHAT_RUNTIME_INSPECTOR_ENDPOINT, {
+                const data = await apiClient.get(apiEndpoint.CHAT_RUNTIME_TIMELINE_ENDPOINT, {
                     signal: controller.signal,
                     params: {
                         conversationId,
-                        section,
+                        action: section,
+                        ...(eventId ? { eventId } : {}),
+                        ...(query ? { query } : {}),
                         ...(focusMessageId ? { focusMessageId } : {}),
                         ...(modelCallId ? { modelCallId } : {}),
                     },
@@ -152,13 +153,6 @@ export default function useRuntimeInspector(conversationId, branchKey = '') {
             if (normalizedTabId === 'brief') return null;
 
             const existingTab = (documentRef.current?.tabs || []).find((tab) => tab.id === normalizedTabId);
-            if (normalizedTabId === 'model-request') {
-                const backendTab = (documentRef.current?.tabs || []).find((tab) => tab.id === 'raw-messages');
-                if (force || backendTab?.section?.loaded !== true) {
-                    const backend = await requestSection({ section: 'raw-messages', focusMessageId, silent });
-                    if (backend?.section) updateDocument((current) => mergeTabSection(current, 'raw-messages', backend.section));
-                }
-            }
             if (!force && existingTab?.section?.loaded === true) return existingTab.section;
             const section = TAB_SECTION_QUERY[normalizedTabId];
             if (!section) return null;
@@ -176,15 +170,15 @@ export default function useRuntimeInspector(conversationId, branchKey = '') {
             const id = String(modelCallId || '').trim();
             if (!id) return null;
             const existing = (documentRef.current?.tabs || [])
-                .find((tab) => tab.id === 'model-request')
+                .find((tab) => tab.id === 'timeline')
                 ?.section?.modelCalls?.find((item) => item?.modelCallId === id);
             if (existing?.detailLoaded) return existing;
 
             setModelCallLoadingId(id);
-            const data = await requestSection({ section: 'model-call', modelCallId: id, silent });
+            const data = await requestSection({ section: 'call-detail', modelCallId: id, silent });
             if (data?.modelCall) {
                 updateDocument((current) => {
-                    let next = mergeModelCall(current, 'model-request', data.modelCall);
+                    let next = mergeModelCall(current, 'timeline', data.modelCall);
                     // A full Model Call already contains Tool state; reuse it if the Tool
                     // tab has been opened instead of issuing another diagnostic query.
                     next = mergeModelCall(next, 'tools', {
@@ -210,11 +204,11 @@ export default function useRuntimeInspector(conversationId, branchKey = '') {
             if (existing?.toolDetailLoaded || existing?.detailLoaded) return existing;
 
             setToolCallLoadingId(id);
-            const data = await requestSection({ section: 'tool-call', modelCallId: id, silent });
+            const data = await requestSection({ section: 'tool-detail', modelCallId: id, silent });
             if (data?.modelCall) {
                 updateDocument((current) => {
                     let next = mergeModelCall(current, 'tools', data.modelCall);
-                    next = mergeModelCall(next, 'model-request', data.modelCall);
+                    next = mergeModelCall(next, 'timeline', data.modelCall);
                     return next;
                 });
             }

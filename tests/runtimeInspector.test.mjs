@@ -70,10 +70,10 @@ test('switching branches discards inspector caches and loads the new branch', as
     const unchanged = (a, b) => a && b && a.length === b.length && a.every((value, index) => Object.is(value, b[index]));
     const sandbox = {
         AbortController, window: { setTimeout, clearTimeout },
-        apiEndpoint: { CHAT_RUNTIME_INSPECTOR_ENDPOINT: '/inspector' },
-        apiClient: { get: async (_, { params }) => params.section === 'overview'
-            ? { defaultTab: 'model-request', tabs: [{ id: 'model-request', section: { loaded: false } }] }
-            : { tabId: 'model-request', section: { loaded: true, modelCalls: [{ modelCallId: branchCall }] } } },
+        apiEndpoint: { CHAT_RUNTIME_TIMELINE_ENDPOINT: '/inspector' },
+        apiClient: { get: async (_, { params }) => params.action === 'overview'
+            ? { defaultTab: 'timeline', tabs: [{ id: 'timeline', section: { loaded: false } }] }
+            : { tabId: 'timeline', section: { loaded: true, modelCalls: [{ modelCallId: branchCall }] } } },
         useState: (initial) => {
             const index = cursor++;
             if (!slots[index]) slots[index] = { value: initial, setter: (next) => { slots[index].value = typeof next === 'function' ? next(slots[index].value) : next; } };
@@ -123,3 +123,4 @@ test('search expands matching replacement and its ancestors, leaving other nodes
     assert.equal((html.match(/<details open=""/g) || []).length, 2);
     assert.equal((html.match(/<mark /g) || []).length, 1);
 });
+

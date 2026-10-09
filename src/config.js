@@ -11,7 +11,7 @@ export const apiEndpoint = {
     CHAT_MESSAGE_MAP_SEARCH_ENDPOINT: '/chat/messages/map/search',
     CHAT_MESSAGE_MAP_DETAIL_ENDPOINT: '/chat/messages/map/detail',
     CHAT_MESSAGE_MAP_ACTIVATE_ENDPOINT: '/chat/messages/map/activate',
-    CHAT_RUNTIME_INSPECTOR_ENDPOINT: '/chat/runtime-inspector',
+    CHAT_RUNTIME_TIMELINE_ENDPOINT: '/chat/runtime-timeline',
     CHAT_MESSAGES_BATCH_ENDPOINT: '/chat/messages/batch',
     CHAT_CONTEXT_STATE_DETAIL_ENDPOINT: '/chat/context/state-detail',
     CHAT_CONTEXT_DEBUG_ENDPOINT: '/chat/context/debug',

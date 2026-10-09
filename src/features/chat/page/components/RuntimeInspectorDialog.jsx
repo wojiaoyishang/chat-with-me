@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/dialog';
 import MessageSummaryItem from './MessageSummaryItem.jsx';
 import InspectorHighlight from './InspectorHighlight.jsx';
-import InspectorCallTimeline from './InspectorCallTimeline.jsx';
+import InspectorEventTimeline from './InspectorEventTimeline.jsx';
 
 const formatNumber = (value) => (value == null ? '—' : Number(value || 0).toLocaleString());
 
@@ -123,7 +123,7 @@ const EmptyState = ({ children }) => (
     </div>
 );
 
-const ModelMessageCard = memo(({ message }) => {
+const ModelMessageCard = memo(({ message, query = '' }) => {
     const role = String(message?.role || 'unknown');
     const source = String(message?.source || 'runtime');
     const className = roleClasses[role] || 'border-border bg-muted/20';
@@ -170,7 +170,7 @@ const ModelMessageCard = memo(({ message }) => {
                 </div>
             </div>
             <pre className="pretty-scrollbar max-h-96 overflow-auto whitespace-pre-wrap break-words px-3 py-3 text-xs leading-relaxed font-mono text-foreground [scrollbar-gutter:stable]">
-                {String(message?.content || '') || '(empty)'}
+                <InspectorHighlight text={String(message?.content || '') || '(empty)'} query={query} />
             </pre>
             {message?.reasoningContent ? (
                 <LazyDetails className="border-t bg-background/55 px-3 py-2 text-xs">
@@ -178,7 +178,7 @@ const ModelMessageCard = memo(({ message }) => {
                         请求中携带的 reasoning 字段
                     </summary>
                     <pre className="pretty-scrollbar mt-2 max-h-60 overflow-auto whitespace-pre-wrap break-words font-mono leading-relaxed [scrollbar-gutter:stable]">
-                        {String(message.reasoningContent)}
+                        <InspectorHighlight text={String(message.reasoningContent)} query={query} />
                     </pre>
                 </LazyDetails>
             ) : null}
@@ -204,7 +204,7 @@ const ModelMessageCard = memo(({ message }) => {
                             tabIndex={0}
                         >
                             <pre className="min-w-full whitespace-pre-wrap break-words p-3 font-mono leading-relaxed text-slate-100">
-                                {providerPayloadText || '{}'}
+                                <InspectorHighlight text={providerPayloadText || '{}'} query={query} />
                             </pre>
                         </div>
                     )}
@@ -380,53 +380,13 @@ const PromptCompositionPanel = ({ composition }) => {
     );
 };
 
-const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId, onJump }) => {
-    const calls = useMemo(() => Array.isArray(section?.modelCalls) ? section.modelCalls : [], [section?.modelCalls]);
-    const [selectedId, setSelectedId] = useState(section?.selectedModelCallId || calls.at(-1)?.modelCallId || '');
+const ModelCallDetails = ({ section }) => {
+    const selected = section.modelCalls[0];
     const [messageQuery, setMessageQuery] = useState('');
-    useEffect(() => {
-        const next = section?.selectedModelCallId || calls.at(-1)?.modelCallId || '';
-        if (!calls.some((item) => item.modelCallId === selectedId)) setSelectedId(next);
-    }, [calls, section?.selectedModelCallId, selectedId]);
-    const selected = calls.find((item) => item.modelCallId === selectedId) || calls.at(-1);
-    const detailLoaded = selected?.detailLoaded === true;
-    useEffect(() => {
-        if (selected?.modelCallId && !detailLoaded) {
-            onLoadModelCall?.(selected.modelCallId);
-        }
-    }, [detailLoaded, onLoadModelCall, selected?.modelCallId]);
-
-    const handleSelect = (modelCallId) => {
-        setSelectedId(modelCallId);
-        const target = calls.find((item) => item.modelCallId === modelCallId);
-        if (target && target.detailLoaded !== true) onLoadModelCall?.(modelCallId);
-    };
-
-    if (!selected) {
-        return <div className="flex h-full min-h-0 flex-col lg:flex-row"><ModelCallSelector calls={calls} timeline={section?.timeline} onSelect={handleSelect} /><RawMessageBrowser section={section.backendMessages || { items: [], notice: '当前分支没有模型请求记录，可查看后端消息。' }} onJump={onJump} /></div>;
-    }
-
     const roleCounts = selected?.summary?.roleCounts || {};
     return (
-        <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row">
-            <ModelCallSelector calls={calls} timeline={section?.timeline} selectedId={selected?.modelCallId} onSelect={handleSelect} />
-            <div className="pretty-scrollbar min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable] sm:p-4 lg:p-5">
-                <InspectorCallTimeline calls={calls} selectedId={selected.modelCallId} onSelect={handleSelect} messageCount={section?.timeline?.length} />
-                <section className="h-[60vh] min-h-80 overflow-hidden rounded-xl border">
-                    <RawMessageBrowser section={section.backendMessages || { items: [], notice: '正在加载当前分支后端消息…' }} onJump={(messageId) => {
-                        const target = calls.find((call) => call.assistantMessageId === messageId);
-                        if (target) handleSelect(target.modelCallId);
-                        else onJump?.(messageId);
-                    }} />
-                </section>
-                {!detailLoaded ? (
-                    <div className="flex min-h-56 items-center justify-center gap-2 rounded-xl border border-dashed text-sm text-muted-foreground">
-                        <Loader2
-                            className={`size-4 ${loadingModelCallId === selected.modelCallId ? 'animate-spin' : ''}`}
-                        />
-                        正在加载上下文与请求记录…
-                    </div>
-                ) : (
+        <div className="min-w-0">
+            <div className="min-h-0 min-w-0 flex-1 space-y-5">
                     <>
                         <section className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                             <div className="rounded-xl border p-3">
@@ -589,8 +549,9 @@ const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId, onJump
                             <p className="text-xs leading-relaxed text-muted-foreground">
                                 这里展示 CWM 在本次 Model Call 中维护的完整模型可见上下文。Responses API 使用 Provider
                                 Linked continuation 时，Provider 已持有的历史不会再次出现在实际 HTTP input 中。
-                                标记为“按当前消息重建”的旧记录未保存不可变输入，不能保证与当时完全一致。
+                                输入未捕获的旧记录不再按当前消息重建。
                             </p>
+                            {!selected.messages?.length && <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">本次请求没有可用的输入捕获记录。</p>}
                             <input value={messageQuery} onChange={(event) => setMessageQuery(event.target.value)} placeholder="筛查本次输入：角色、正文、来源、ID或协议字段" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none" />
                             <Virtuoso
                                 key={selected.modelCallId}
@@ -599,7 +560,7 @@ const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId, onJump
                                 increaseViewportBy={200}
                                 itemContent={(_index, message) => (
                                     <div className="pb-2">
-                                        <ModelMessageCard message={message} />
+                                        <ModelMessageCard message={message} query={messageQuery} />
                                     </div>
                                 )}
                             />
@@ -643,7 +604,6 @@ const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId, onJump
                             </div>
                         </LazyDetails>
                     </>
-                )}
             </div>
         </div>
     );
@@ -757,84 +717,7 @@ const ContextBrowser = ({ section, onJump }) => {
     );
 };
 
-const RawMessageBrowser = ({ section, onJump }) => {
-    const items = useMemo(() => Array.isArray(section?.items) ? section.items : [], [section?.items]);
-    const [query, setQuery] = useState('');
-    const filtered = useMemo(() => {
-        const normalized = query.trim().toLowerCase();
-        if (!normalized) return items;
-        return items.filter((item) => JSON.stringify(item).toLowerCase().includes(normalized));
-    }, [items, query]);
-
-    return (
-        <div className="flex h-full min-h-0 flex-1 flex-col">
-            <div className="border-b p-3 sm:p-4">
-                <p className="mb-2 text-xs text-muted-foreground">{section.notice}</p>
-                <label className="flex items-center gap-2 rounded-lg border bg-background px-3 py-2">
-                    <Search className="size-4 text-muted-foreground" />
-                    <input
-                        value={query}
-                        onChange={(event) => setQuery(event.target.value)}
-                        placeholder="搜索角色、正文或 messageId"
-                        className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-                    />
-                </label>
-            </div>
-            <Virtuoso
-                data={filtered}
-                className="pretty-scrollbar min-h-0 flex-1"
-                increaseViewportBy={200}
-                computeItemKey={(_index, item) => item.partId || item.messageId}
-                itemContent={(_index, item) => {
-                    const compacted = (item?.contextState?.compactions || []).length > 0;
-                    const forgotten = item?.contextState?.forgotten;
-                    return (
-                        <article className="mx-3 my-2 rounded-xl border bg-card p-3 sm:mx-4">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="outline"><InspectorHighlight text={item.role} query={query} /></Badge>
-                                <Badge variant="secondary">{item.source === 'context-injection' ? '上下文注入' : '会话消息'}</Badge>
-                                <span className="font-mono text-xs text-muted-foreground">
-                                    #{Number(item.orderIndex ?? -1) + 1}
-                                </span>
-                                {compacted && <Badge variant="secondary">已压缩</Badge>}
-                                {forgotten && <Badge variant="secondary">已忽略</Badge>}
-                                {item.runId && (
-                                    <span className="truncate font-mono text-[10px] text-muted-foreground">
-                                        run:{item.runId}
-                                    </span>
-                                )}
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="ml-auto h-7 gap-1 px-2"
-                                    onClick={() => onJump?.(item.messageId)}
-                                    disabled={item.source === 'context-injection'}
-                                >
-                                    <LocateFixed className="size-3.5" />
-                                    定位
-                                </Button>
-                            </div>
-                            <pre className="pretty-scrollbar mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words text-xs leading-relaxed font-mono [scrollbar-gutter:stable]">
-                                <InspectorHighlight text={String(item.content || '') || '(empty)'} query={query} />
-                            </pre>
-                            <LazyDetails open={Boolean(query.trim() && JSON.stringify(item.extraInfo || {}).toLowerCase().includes(query.trim().toLowerCase()))} className="mt-2 text-xs">
-                                <summary className="cursor-pointer select-none text-muted-foreground">
-                                    消息元数据
-                                </summary>
-                                <JsonBlock value={item.extraInfo || {}} title="消息元数据" maxHeight="max-h-52" query={query} />
-                            </LazyDetails>
-                            {item.providerPayload && <LazyDetails open={Boolean(query.trim() && JSON.stringify(item.providerPayload).toLowerCase().includes(query.trim().toLowerCase()))} className="mt-2 text-xs"><summary className="cursor-pointer text-muted-foreground">后端协议字段</summary><JsonBlock value={item.providerPayload} title="后端协议字段" maxHeight="max-h-64" query={query} /></LazyDetails>}
-                            <ReplacementTree nodes={item.replacements || []} query={query} />
-                        </article>
-                    );
-                }}
-            />
-        </div>
-    );
-};
-
-const ReplacementTree = ({ nodes, query = '' }) => nodes.length ? <div className="mt-2 space-y-1 border-l pl-3">{nodes.map((node, index) => <LazyDetails key={`${node.id}-${index}`} open={Boolean(query.trim() && JSON.stringify(node).toLowerCase().includes(query.trim().toLowerCase()))} className="text-xs"><summary className="cursor-pointer font-mono text-muted-foreground">replacement: <InspectorHighlight text={`${node.id}${node.diagnostic ? ` · ${node.diagnostic}` : ''}`} query={query} /></summary><pre className="pretty-scrollbar my-2 max-h-52 overflow-auto whitespace-pre-wrap break-words"><InspectorHighlight text={node.content || node.diagnostic || '(empty)'} query={query} /></pre><ReplacementTree nodes={node.children || []} query={query} /></LazyDetails>)}</div> : null;
+const ReplacementTree = ({ nodes, query = '' }) => nodes.length ? <div className="mt-2 space-y-1 border-l pl-3">{nodes.map((node, index) => <LazyDetails key={`${node.id}-${index}-${query.trim()}`} open={Boolean(query.trim() && JSON.stringify(node).toLowerCase().includes(query.trim().toLowerCase()))} className="text-xs"><summary className="cursor-pointer font-mono text-muted-foreground">replacement: <InspectorHighlight text={`${node.id}${node.diagnostic ? ` · ${node.diagnostic}` : ''}`} query={query} /></summary><pre className="pretty-scrollbar my-2 max-h-52 overflow-auto whitespace-pre-wrap break-words"><InspectorHighlight text={node.content || node.diagnostic || '(empty)'} query={query} /></pre><ReplacementTree nodes={node.children || []} query={query} /></LazyDetails>)}</div> : null;
 
 const ToolBrowser = ({ section, onLoadToolCall, loadingToolCallId }) => {
     const calls = Array.isArray(section?.modelCalls) ? section.modelCalls : [];
@@ -1100,9 +983,8 @@ const BriefBrowser = ({ section, activeMessageId, onJump }) => {
 };
 
 const sectionRenderers = {
-    'model-call-browser': ModelCallBrowser,
+    'event-timeline': ({ section, onJump }) => <InspectorEventTimeline key={section.conversationId} section={section} onJump={onJump} renderCall={(call) => <ModelCallDetails key={call.modelCallId} section={{ modelCalls: [call] }} />} renderReplacements={(nodes, query) => <ReplacementTree nodes={nodes} query={query} />} />,
     'context-browser': ContextBrowser,
-    'raw-message-browser': RawMessageBrowser,
     'tool-browser': ToolBrowser,
     'message-summary-browser': BriefBrowser,
 };
@@ -1159,7 +1041,7 @@ const RuntimeInspectorDialog = memo(
         onLoadModelCall,
         onLoadToolCall,
     }) => {
-        const tabs = (Array.isArray(document?.tabs) ? document.tabs : []).filter((tab) => tab.id !== 'raw-messages');
+        const tabs = (Array.isArray(document?.tabs) ? document.tabs : []);
         const currentTab = tabs.find((tab) => tab.id === activeTab) || tabs[0];
         const currentSection =
             currentTab?.id === 'brief'
@@ -1170,8 +1052,8 @@ const RuntimeInspectorDialog = memo(
                       items: briefItems,
                       focusMessageId: activeMessageId,
                   }
-                : currentTab?.id === 'model-request'
-                  ? { ...currentTab.section, backendMessages: document?.tabs?.find((tab) => tab.id === 'raw-messages')?.section }
+                : currentTab?.id === 'timeline'
+                  ? { ...currentTab.section, conversationId: document?.conversationId }
                   : currentTab?.section;
 
         const handleJump = (messageId) => {
@@ -1261,7 +1143,7 @@ const RuntimeInspectorDialog = memo(
                                 {tabs.map((tab) => {
                                     const active = tab.id === currentTab?.id;
                                     const icon =
-                                        tab.id === 'model-request'
+                                        tab.id === 'timeline'
                                             ? Cpu
                                             : tab.id === 'context'
                                               ? Layers3
