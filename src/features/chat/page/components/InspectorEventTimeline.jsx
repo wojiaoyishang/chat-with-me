@@ -5,6 +5,7 @@ import { apiEndpoint } from '@/config.js';
 import { attachHorizontalWheel } from '@/lib/horizontalWheel.js';
 import { formatLocalTimestamp } from '@/lib/clientText.js';
 import InspectorHighlight from './InspectorHighlight.jsx';
+import { buildTimelineLanes, callOverlapCounts } from './inspectorTimelineLayout.js';
 
 const labels = { system: '系统', user: '用户', assistant: '助手', model_call: '模型请求', tool_call: '工具调用', tool_result: '工具结果' };
 const colors = { system: 'bg-slate-400', user: 'bg-blue-500', assistant: 'bg-violet-500', model_call: 'bg-purple-500', tool_call: 'bg-amber-500', tool_result: 'bg-emerald-500' };
@@ -15,6 +16,15 @@ const centerSelectedNode = (viewport, eventId = '', behavior = 'smooth') => {
         ? Array.from(viewport?.querySelectorAll('[data-event-id]') || []).find((item) => item.dataset.eventId === eventId)
         : viewport?.querySelector('[aria-current="step"]');
     if (node) viewport.scrollTo({ left: Math.max(0, node.offsetLeft - (viewport.clientWidth - node.offsetWidth) / 2), behavior });
+    return node;
+};
+const alignExpandedCard = (viewport, pane, eventId = '', behavior = 'smooth') => {
+    const node = centerSelectedNode(viewport, eventId, behavior);
+    if (!node || !pane?.clientHeight) return;
+    const card = node.getBoundingClientRect();
+    const container = pane.getBoundingClientRect();
+    if (card.bottom > container.bottom) pane.scrollTop += card.bottom - container.bottom + 8;
+    else if (card.top < container.top) pane.scrollTop = Math.max(0, pane.scrollTop + card.top - container.top - 8);
 };
 
 export default function InspectorEventTimeline({ section, renderCall, renderReplacements, onJump }) {
@@ -32,11 +42,17 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
     const [mobileDetail, setMobileDetail] = useState(false);
     const track = useRef(null);
     const compactTrack = useRef(null);
+    const popupScroll = useRef(null);
     const detailViewport = useRef(null);
     const keyword = query.trim();
     const visible = useMemo(() => events.filter((event) =>
         (kind === 'all' || event.kind === kind) && (!keyword || matches?.some((match) => match.eventId === event.eventId))), [events, kind, keyword, matches]);
     const selected = events.find((event) => event.eventId === selectedId);
+    const activeEvent = events.find((event) => event.eventId === hoveredId) || selected;
+    const associatedCalls = useMemo(() => new Set([activeEvent?.modelCallId, ...(activeEvent?.usedByCallIds || [])].filter(Boolean)), [activeEvent]);
+    const lanes = useMemo(() => buildTimelineLanes(visible), [visible]);
+    const overlaps = useMemo(() => callOverlapCounts(section.modelCalls || []), [section.modelCalls]);
+    const related = (event) => associatedCalls.has(event.modelCallId) || (event.usedByCallIds || []).some((id) => associatedCalls.has(id));
     useEffect(() => {
         const detachExpanded = attachHorizontalWheel(track.current);
         const detachCompact = attachHorizontalWheel(compactTrack.current);
@@ -74,12 +90,11 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         return () => controller.abort();
     }, [selectedId, section.conversationId]);
     useEffect(() => {
-        for (const viewport of [track.current, compactTrack.current]) {
-            centerSelectedNode(viewport);
-        }
+        alignExpandedCard(track.current, popupScroll.current);
+        centerSelectedNode(compactTrack.current);
     }, [selectedId, visible]);
     useEffect(() => {
-        if (expanded) centerSelectedNode(track.current, hoveredId, hoveredId ? 'instant' : 'smooth');
+        if (expanded) alignExpandedCard(track.current, popupScroll.current, hoveredId, hoveredId ? 'instant' : 'smooth');
     }, [expanded, hoveredId]);
     useEffect(() => {
         detailViewport.current?.scrollTo({ top: 0 });
@@ -94,7 +109,7 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         if (pointer.pointerType !== 'mouse') return;
         setHoveredId(eventId);
         setExpanded(true);
-        centerSelectedNode(track.current, eventId, 'instant');
+        alignExpandedCard(track.current, popupScroll.current, eventId, 'instant');
     };
     const filters = <div className="flex items-center gap-2">
         <label className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border px-3 py-2">
@@ -107,28 +122,35 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         </select>
     </div>;
     const count = `当前分支 · ${events.length} 个事件${keyword ? ` · ${visible.length} 个命中` : ''}`;
-    const eventButton = (event, vertical = false) => <button key={event.eventId} data-event-id={event.eventId} data-preview={!vertical && hoveredId === event.eventId ? 'true' : undefined} type="button" aria-current={selectedId === event.eventId ? 'step' : undefined} onClick={(click) => choose(event.eventId, click)} title={event.eventId} className={`relative rounded-lg p-2 text-xs transition-colors duration-75 ${vertical ? 'ml-5 block w-[calc(100%-1.25rem)] text-left' : 'flex w-40 shrink-0 flex-col items-center'} ${selectedId === event.eventId || (!vertical && hoveredId === event.eventId) ? 'bg-primary/5 ring-1 ring-inset ring-primary/30' : 'hover:bg-muted/60'}`}>
+    const eventButton = (event, vertical = false, axisIndex) => <button key={event.eventId} data-event-id={event.eventId} data-axis-index={axisIndex} data-related={related(event) ? 'true' : undefined} data-preview={!vertical && hoveredId === event.eventId ? 'true' : undefined} type="button" aria-current={selectedId === event.eventId ? 'step' : undefined} onClick={(click) => choose(event.eventId, click)} title={event.eventId} className={`relative rounded-lg p-2 text-xs transition-colors duration-75 ${vertical ? 'ml-5 block w-[calc(100%-1.25rem)] text-left' : 'flex w-40 shrink-0 flex-col items-center justify-self-center'} ${selectedId === event.eventId || (!vertical && hoveredId === event.eventId) ? 'bg-primary/5 ring-1 ring-inset ring-primary/30' : related(event) ? 'bg-primary/[0.025]' : 'hover:bg-muted/60'}`}>
         <span className={`${vertical ? 'absolute -left-[1.125rem] top-3' : 'mb-2'} size-3 shrink-0 rounded-full ring-4 ring-background ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
         <span className="block font-medium">#{event.order} · {labels[event.kind] || event.kind}{event.status ? ` · ${statuses[event.status] || event.status}` : ''}</span>
         <span className="mt-1 block w-full truncate"><InspectorHighlight text={event.title} query={query} /></span>
         <span className="mt-1 block w-full truncate text-muted-foreground">{event.model || '—'} · Call #{event.callSequence}</span>
+        {event.kind === 'model_call' && overlaps.has(event.modelCallId) && <span className="mt-1 text-[10px] text-amber-600" title={`记录时间与另外 ${overlaps.get(event.modelCallId)} 次请求重叠`}>时间重叠 · {overlaps.get(event.modelCallId)}</span>}
         {vertical && <span className="mt-1 block text-muted-foreground">{event.createdAt ? formatLocalTimestamp(event.createdAt) : '时间未捕获'}</span>}
     </button>;
+    const laneLabels = (compact) => <div aria-hidden="true" className={`grid shrink-0 grid-rows-2 text-[10px] text-muted-foreground ${compact ? 'h-10 w-7' : 'w-8 gap-2'}`}>{lanes.map((lane) => <span key={lane.id} className="flex items-center justify-center">{lane.label}</span>)}</div>;
+    const renderLanes = (compact) => <div className={`w-max min-w-full ${compact ? '' : 'space-y-2'}`}>
+        {lanes.map((lane) => <div key={lane.id} data-lane={lane.id} aria-label={lane.id === 'messages' ? '消息与工具事件轨道' : 'Model Call 轨道'} className={`relative grid items-start ${compact ? '' : 'min-h-24 gap-x-2'}`} style={{ gridTemplateColumns: `repeat(${Math.max(1, visible.length)}, minmax(${compact ? '1.75rem' : '10rem'}, 1fr))` }}>
+            {lane.slots.map((event, index) => !event ? <div key={`empty-${index}`} data-axis-index={index} aria-hidden="true" className={compact ? 'flex h-5 items-center' : 'h-24'}>{compact && <span className="h-2 w-full bg-muted/50" />}</div> : compact ? <button key={event.eventId} data-event-id={event.eventId} data-axis-index={index} data-related={related(event) ? 'true' : undefined} type="button" aria-label={`#${event.order} · ${labels[event.kind] || event.kind} · ${event.title}`} aria-current={selectedId === event.eventId ? 'step' : undefined} title={`#${event.order} · ${event.title}${event.kind === 'model_call' && overlaps.has(event.modelCallId) ? ' · 时间重叠' : ''}`} onPointerEnter={(pointer) => preview(event.eventId, pointer)} onClick={(click) => choose(event.eventId, click)} className="group relative flex h-5 min-w-7 items-center justify-center rounded-none p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                <span aria-hidden="true" className={`h-2 w-full rounded-none transition-opacity duration-75 motion-reduce:transition-none ${selectedId === event.eventId ? 'opacity-100 ring-1 ring-inset ring-primary' : hoveredId === event.eventId ? 'opacity-100' : related(event) ? 'opacity-90 ring-1 ring-inset ring-primary/20' : 'opacity-60 group-hover:opacity-100'} ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
+                {event.kind === 'model_call' && overlaps.has(event.modelCallId) && <span aria-hidden="true" className="absolute bottom-0 h-px w-full bg-amber-500" />}
+            </button> : eventButton(event, false, index))}
+        </div>)}
+        {!visible.length && <span className="px-2 text-muted-foreground">{searching ? '正在搜索…' : '没有事件'}</span>}
+    </div>;
     return <div className="flex h-full min-h-0 flex-col">
-        <div className="relative z-20 mx-3 my-1 hidden h-9 shrink-0 rounded-full bg-background shadow-sm ring-1 ring-border/40 sm:block"
+        <div className="relative z-20 mx-3 my-1 hidden h-12 shrink-0 rounded-lg bg-background shadow-sm ring-1 ring-border/40 sm:block"
             onPointerEnter={(event) => { if (event.pointerType === 'mouse') setExpanded(true); }}
             onPointerLeave={(event) => { if (event.pointerType === 'mouse' && !event.currentTarget.querySelector(':focus-visible')) { setExpanded(false); setHoveredId(''); } }}
             onFocusCapture={(event) => { if (event.target.matches(':focus-visible')) setExpanded(true); }}
-            onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setExpanded(false); }}>
+            onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) { setExpanded(false); setHoveredId(''); } }}>
             <div className="flex h-full items-center gap-2 px-2 text-xs">
                 <span className="sr-only">{count}</span>
+                {laneLabels(true)}
                 <nav ref={compactTrack} aria-label="简洁事件时间线" className="relative min-w-0 flex-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="relative flex w-max min-w-full items-center">
-                        {visible.map((event) => <button key={event.eventId} type="button" aria-label={`#${event.order} · ${labels[event.kind] || event.kind} · ${event.title}`} aria-current={selectedId === event.eventId ? 'step' : undefined} title={`#${event.order} · ${event.title}`} onPointerEnter={(pointer) => preview(event.eventId, pointer)} onClick={(click) => choose(event.eventId, click)} className="group relative flex h-7 min-w-7 flex-1 items-center justify-center rounded-none p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                            <span aria-hidden="true" className={`h-2 w-full rounded-none transition-opacity duration-75 motion-reduce:transition-none ${selectedId === event.eventId ? 'opacity-100 ring-1 ring-inset ring-primary' : hoveredId === event.eventId ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'} ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
-                        </button>)}
-                        {!visible.length && <span className="px-2 text-muted-foreground">{searching ? '正在搜索…' : '没有事件'}</span>}
-                    </div>
+                    {renderLanes(true)}
                 </nav>
                 <div className="flex shrink-0 gap-1">{[-1, 1].map((direction) => {
                     const index = visible.findIndex((event) => event.eventId === selectedId);
@@ -139,15 +161,13 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
             </div>
             <div id="runtime-event-navigation" aria-hidden={!expanded} inert={!expanded} className={`absolute inset-x-0 top-full grid rounded-b-xl border-b bg-background shadow-lg transition-[grid-template-rows,opacity,visibility] duration-100 motion-reduce:transition-none ${expanded ? 'visible grid-rows-[1fr] opacity-100' : 'invisible grid-rows-[0fr] opacity-0'}`}>
                 <div className="min-h-0 overflow-hidden">
-                    <div className="max-h-[min(48vh,18rem)] space-y-2 overflow-y-auto p-3">
+                    <div ref={popupScroll} className="max-h-[min(60vh,24rem)] space-y-2 overflow-y-auto p-3">
                         <p className="text-xs text-muted-foreground">{count}</p>
                         {filters}
                         {searchError && <p className="text-xs text-destructive">{searchError}</p>}
                         <div className="flex justify-end gap-1">{[-1, 1].map((direction) => <button key={direction} type="button" aria-label={direction < 0 ? '向前滚动时间线' : '向后滚动时间线'} className="rounded p-1 hover:bg-muted" onClick={() => track.current?.scrollBy({ left: direction * track.current.clientWidth * 0.75, behavior: 'smooth' })}>{direction < 0 ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}</button>)}</div>
-                        <nav ref={track} aria-label="详细事件时间线" className="pretty-scrollbar relative overflow-x-auto overscroll-x-contain pb-2">
-                            <div className="relative flex w-max min-w-full gap-2"><div className="absolute inset-x-6 top-3 h-px bg-border" />{visible.map((event) => eventButton(event))}</div>
-                        </nav>
-                        <p className="text-[11px] text-muted-foreground">{section.notice}</p>
+                        <div className="flex gap-2">{laneLabels(false)}<nav ref={track} aria-label="详细事件时间线" className="pretty-scrollbar relative min-w-0 flex-1 overflow-x-auto overscroll-x-contain pb-2">{renderLanes(false)}</nav></div>
+                        <p title={section.notice} className="truncate text-[11px] text-muted-foreground">{section.notice}</p>
                     </div>
                 </div>
             </div>

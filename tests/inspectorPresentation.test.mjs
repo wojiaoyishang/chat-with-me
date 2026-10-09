@@ -9,9 +9,11 @@ import { transformSync } from 'esbuild';
 
 const root = '../src/features/chat/page/components/';
 const highlight = fs.readFileSync(new URL(`${root}InspectorHighlight.jsx`, import.meta.url), 'utf8').replace('export default function', 'function');
+const layout = fs.readFileSync(new URL(`${root}inspectorTimelineLayout.js`, import.meta.url), 'utf8').replace(/export function/g, 'function');
 const timeline = fs.readFileSync(new URL(`${root}InspectorEventTimeline.jsx`, import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('export default function', 'function');
 const code = transformSync(`const {useRef,useEffect,useMemo,useState} = require('react'); const attachHorizontalWheel=()=>{}; const ArrowLeft=()=>null; const ChevronDown=()=>null; const ChevronLeft=()=>null; const ChevronRight=()=>null; const Loader2=()=>null; const Search=()=>null; const formatLocalTimestamp=value=>value;
 ${highlight}
+${layout}
 ${timeline}
 exports.Highlight=InspectorHighlight; exports.Timeline=InspectorEventTimeline;`, { loader: 'jsx', jsx: 'automatic', format: 'cjs' }).code;
 const context = { require: createRequire(import.meta.url), exports: {} };
@@ -58,7 +60,7 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
         ArrowLeft: () => null, ChevronDown: () => null, ChevronLeft: () => null, ChevronRight: () => null,
         Search: () => null, Loader2: () => null, formatLocalTimestamp: (value) => value,
     };
-    vm.runInNewContext(transformSync(`${highlight}\n${timeline}\nexports.Timeline=InspectorEventTimeline;`, { loader: 'jsx', jsx: 'automatic', format: 'cjs' }).code, sandbox);
+    vm.runInNewContext(transformSync(`${highlight}\n${layout}\n${timeline}\nexports.Timeline=InspectorEventTimeline;`, { loader: 'jsx', jsx: 'automatic', format: 'cjs' }).code, sandbox);
     const props = { section: { events: [{ eventId: 'user-1', kind: 'user', title: 'Question', order: 1 }, { eventId: 'user-2', kind: 'user', title: 'Next', order: 2 }] }, renderCall: () => null, renderReplacements: () => null };
     const render = () => { cursor = 0; return sandbox.exports.Timeline(props); };
     let tree = render();
@@ -88,20 +90,23 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
     const scrolls = [];
     expandedTrack.props.ref.current = {
         clientWidth: 180,
-        querySelectorAll: () => [{ dataset: { eventId: 'user-1' }, offsetLeft: 168, offsetWidth: 160 }],
+        querySelectorAll: () => [{ dataset: { eventId: 'user-1' }, offsetLeft: 168, offsetWidth: 160, getBoundingClientRect: () => ({ top: 160, bottom: 256 }) }],
         scrollTo: (options) => scrolls.push(options),
     };
+    const popupPane = find(desktop(), (node) => node.props?.ref && node.props.className?.includes('max-h-'));
+    popupPane.props.ref.current = { clientHeight: 120, scrollTop: 0, getBoundingClientRect: () => ({ top: 0, bottom: 120 }) };
     const compactBeforePreview = find(desktop(), (node) => node.type === 'nav' && node.props['aria-label'] === '简洁事件时间线');
-    const firstSegment = compactBeforePreview.props.children.props.children[0][0];
-    assert.match(firstSegment.props.children.props.className, /w-full rounded-none/);
+    const firstSegment = compactBeforePreview.props.children.props.children[0][0].props.children[0];
+    assert.match(firstSegment.props.children[0].props.className, /w-full rounded-none/);
     firstSegment.props.onPointerEnter({ pointerType: 'touch' });
     assert.equal(scrolls.length, 0);
     firstSegment.props.onPointerEnter({ pointerType: 'mouse' });
     tree = render();
     assert.equal(scrolls[0].left, 158);
     assert.equal(scrolls[0].behavior, 'instant');
+    assert.equal(popupPane.props.ref.current.scrollTop, 144);
     assert.equal(panel().props.inert, false);
-    assert.equal(find(desktop(), (node) => node.props?.['data-event-id'] === 'user-1').props['data-preview'], 'true');
+    assert.equal(find(desktop(), (node) => node.props?.['data-event-id'] === 'user-1' && node.props.title === 'user-1').props['data-preview'], 'true');
     assert.equal(find(desktop(), (node) => node.type === 'button' && node.props['aria-label']?.includes('#2')).props['aria-current'], 'step');
     desktop().props.onPointerLeave({ pointerType: 'mouse', currentTarget: { querySelector: () => null } });
     tree = render();
@@ -114,11 +119,27 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
     assert.match(tree.props.children[1].props.className, /^flex/);
     assert.match(tree.props.children[2].props.className, /^hidden/);
     const compact = find(desktop(), (node) => node.type === 'nav' && node.props['aria-label'] === '简洁事件时间线');
-    const dots = compact.props.children.props.children[0];
+    const dots = compact.props.children.props.children[0][0].props.children;
     assert.equal(dots.length, 2);
     dots[1].props.onClick({ detail: 1 });
     tree = render();
     const selectedDot = find(desktop(), (node) => node.type === 'button' && node.props['aria-label']?.includes('#2'));
     assert.equal(selectedDot.props['aria-current'], 'step');
     assert.equal(panel().props.inert, true);
+});
+
+test('two shared-axis lanes preserve separate calls and highlight reused input associations', () => {
+    const events = [
+        { eventId: 'sys', kind: 'system', modelCallId: 'a', usedByCallIds: ['a', 'b'], order: 1 },
+        { eventId: 'call:a', kind: 'model_call', modelCallId: 'a', order: 2 },
+        { eventId: 'call:b', kind: 'model_call', modelCallId: 'b', order: 3 },
+    ];
+    const modelCalls = ['a', 'b'].map((modelCallId) => ({ modelCallId, createdAt: '2026-10-09T00:00:00Z', completedAt: '2026-10-09T00:00:02Z' }));
+    const html = renderToStaticMarkup(React.createElement(context.exports.Timeline, { section: { events, modelCalls, conversationId: 'c' }, renderCall: () => null, renderReplacements: () => null }));
+    assert.match(html, /data-lane="messages"/);
+    assert.match(html, /data-lane="model_calls"/);
+    assert.match(html, /data-event-id="call:a"[^>]*data-axis-index="1"/);
+    assert.match(html, /data-event-id="call:b"[^>]*data-axis-index="2"/);
+    assert.match(html, /data-event-id="sys"[^>]*data-related="true"/);
+    assert.match(html, /时间重叠/);
 });
