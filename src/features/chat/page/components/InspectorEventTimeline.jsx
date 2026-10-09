@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
 import apiClient from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
 import { attachHorizontalWheel } from '@/lib/horizontalWheel.js';
@@ -21,7 +21,10 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
     const [error, setError] = useState('');
     const [searchError, setSearchError] = useState('');
     const [searching, setSearching] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+    const [mobileDetail, setMobileDetail] = useState(false);
     const track = useRef(null);
+    const detailViewport = useRef(null);
     const keyword = query.trim();
     const visible = useMemo(() => events.filter((event) =>
         (kind === 'all' || event.kind === kind) && (!keyword || matches?.some((match) => match.eventId === event.eventId))), [events, kind, keyword, matches]);
@@ -62,40 +65,72 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         const viewport = track.current;
         const node = viewport?.querySelector('[aria-current="step"]');
         if (node) viewport.scrollTo({ left: Math.max(0, node.offsetLeft - (viewport.clientWidth - node.offsetWidth) / 2), behavior: 'smooth' });
-    }, [selectedId, visible]);
+    }, [selectedId, visible, expanded]);
+    useEffect(() => {
+        detailViewport.current?.scrollTo({ top: 0 });
+    }, [selectedId]);
+    const choose = (eventId, event) => {
+        setSelectedId(eventId);
+        setMobileDetail(true);
+        if (event?.detail !== 0) setExpanded(false);
+    };
+    const filters = <div className="flex items-center gap-2">
+        <label className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border px-3 py-2">
+            <Search className="size-4 shrink-0 text-muted-foreground" />
+            <input aria-label="搜索全部事件" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索消息、工具参数、结果或 ID" className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
+            {searching && <Loader2 className="size-4 animate-spin" />}
+        </label>
+        <select aria-label="事件类型" value={kind} onChange={(event) => setKind(event.target.value)} className="max-w-28 rounded-lg border bg-background px-2 py-2 text-sm">
+            <option value="all">全部类型</option>{Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+    </div>;
+    const count = `当前分支 · ${events.length} 个事件${keyword ? ` · ${visible.length} 个命中` : ''}`;
+    const eventButton = (event, vertical = false) => <button key={event.eventId} type="button" aria-current={selectedId === event.eventId ? 'step' : undefined} onClick={(click) => choose(event.eventId, click)} title={event.eventId} className={`relative rounded-lg p-2 text-xs transition-colors ${vertical ? 'ml-5 block w-[calc(100%-1.25rem)] text-left' : 'flex w-40 shrink-0 flex-col items-center'} ${selectedId === event.eventId ? 'bg-primary/5 ring-1 ring-inset ring-primary/30' : 'hover:bg-muted/60'}`}>
+        <span className={`${vertical ? 'absolute -left-[1.125rem] top-3' : 'mb-2'} size-3 shrink-0 rounded-full ring-4 ring-background ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
+        <span className="block font-medium">#{event.order} · {labels[event.kind] || event.kind}{event.status ? ` · ${statuses[event.status] || event.status}` : ''}</span>
+        <span className="mt-1 block w-full truncate"><InspectorHighlight text={event.title} query={query} /></span>
+        <span className="mt-1 block w-full truncate text-muted-foreground">{event.model || '—'} · Call #{event.callSequence}</span>
+        {vertical && <span className="mt-1 block text-muted-foreground">{event.createdAt ? formatLocalTimestamp(event.createdAt) : '时间未捕获'}</span>}
+    </button>;
     return <div className="flex h-full min-h-0 flex-col">
-        <div className="shrink-0 space-y-2 border-b bg-background p-3">
-            <div className="flex items-center gap-2">
-                <label className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border px-3 py-2">
-                    <Search className="size-4 shrink-0 text-muted-foreground" />
-                    <input aria-label="搜索全部事件" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索全部消息、工具参数、结果或 ID" className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
-                    {searching && <Loader2 className="size-4 animate-spin" />}
-                </label>
-                <select aria-label="事件类型" value={kind} onChange={(event) => setKind(event.target.value)} className="max-w-28 rounded-lg border bg-background px-2 py-2 text-sm">
-                    <option value="all">全部类型</option>{Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                </select>
+        <div className="relative z-20 hidden h-11 shrink-0 border-b bg-background sm:block"
+            onPointerEnter={(event) => { if (event.pointerType === 'mouse') setExpanded(true); }}
+            onPointerLeave={(event) => { if (event.pointerType === 'mouse' && !event.currentTarget.querySelector(':focus-visible')) setExpanded(false); }}
+            onFocusCapture={(event) => { if (event.target.matches(':focus-visible')) setExpanded(true); }}
+            onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setExpanded(false); }}>
+            <div className="flex h-full items-center gap-3 px-3 text-xs">
+                <button type="button" aria-expanded={expanded} aria-controls="runtime-event-navigation" onClick={() => setExpanded(!expanded)} className="flex shrink-0 items-center gap-1 rounded px-1 py-1 text-muted-foreground hover:bg-muted"><ChevronDown className={`size-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} />时间线 / 搜索</button>
+                <span className="shrink-0 text-muted-foreground">{count}</span>
+                <span className="min-w-0 flex-1 truncate">{selected ? `#${selected.order} · ${selected.title}` : '请选择事件'}</span>
+                <div className="flex shrink-0 gap-1">{[-1, 1].map((direction) => {
+                    const index = visible.findIndex((event) => event.eventId === selectedId);
+                    const target = visible[index + direction];
+                    return <button key={direction} type="button" aria-label={direction < 0 ? '上一个事件' : '下一个事件'} disabled={!target} className="rounded p-1 hover:bg-muted disabled:opacity-30" onClick={(event) => choose(target.eventId, event)}>{direction < 0 ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}</button>;
+                })}</div>
             </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>当前分支 · {events.length} 个事件{keyword ? ` · ${visible.length} 个命中` : ''}</span>
-                <div className="flex gap-1">{[-1, 1].map((direction) => <button key={direction} aria-label={direction < 0 ? '向前滚动时间线' : '向后滚动时间线'} className="rounded p-1 hover:bg-muted" onClick={() => track.current?.scrollBy({ left: direction * track.current.clientWidth * 0.75, behavior: 'smooth' })}>{direction < 0 ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}</button>)}</div>
-            </div>
-            {searchError && <p className="text-xs text-destructive">{searchError}</p>}
-            <div ref={track} className="pretty-scrollbar relative overflow-x-auto overscroll-x-contain pb-2">
-                <div className="relative flex w-max min-w-full gap-2">
-                    <div className="absolute inset-x-6 top-3 h-px bg-border" />
-                    {visible.map((event) => <button key={event.eventId} aria-current={selectedId === event.eventId ? 'step' : undefined} onClick={() => setSelectedId(event.eventId)} title={event.eventId} className={`relative flex w-44 shrink-0 flex-col items-center rounded-lg p-2 text-xs ${selectedId === event.eventId ? 'bg-primary/5 ring-1 ring-inset ring-primary/30' : 'hover:bg-muted/60'}`}>
-                        <span className={`mb-2 size-3 shrink-0 rounded-full ring-4 ring-background ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
-                        <span className="font-medium">#{event.order} · {labels[event.kind] || event.kind}</span>
-                        <span className="mt-1 w-full truncate"><InspectorHighlight text={event.title} query={query} /></span>
-                        <span className="mt-1 w-full truncate text-muted-foreground">{event.model || '—'} · Call #{event.callSequence}</span>
-                        <span className="mt-1 text-muted-foreground">{event.createdAt ? formatLocalTimestamp(event.createdAt) : '时间未捕获'}</span>
-                        {event.status && <span className="mt-1 text-muted-foreground">{statuses[event.status] || event.status}</span>}
-                    </button>)}
+            <div id="runtime-event-navigation" aria-hidden={!expanded} inert={!expanded} className={`absolute inset-x-0 top-full grid rounded-b-xl border-b bg-background shadow-lg transition-[grid-template-rows,opacity,visibility] duration-200 motion-reduce:transition-none ${expanded ? 'visible grid-rows-[1fr] opacity-100' : 'invisible grid-rows-[0fr] opacity-0'}`}>
+                <div className="min-h-0 overflow-hidden">
+                    <div className="max-h-[min(48vh,18rem)] space-y-2 overflow-y-auto p-3">
+                        {filters}
+                        {searchError && <p className="text-xs text-destructive">{searchError}</p>}
+                        <div className="flex justify-end gap-1">{[-1, 1].map((direction) => <button key={direction} type="button" aria-label={direction < 0 ? '向前滚动时间线' : '向后滚动时间线'} className="rounded p-1 hover:bg-muted" onClick={() => track.current?.scrollBy({ left: direction * track.current.clientWidth * 0.75, behavior: 'smooth' })}>{direction < 0 ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}</button>)}</div>
+                        <div ref={track} className="pretty-scrollbar relative overflow-x-auto overscroll-x-contain pb-2">
+                            <div className="relative flex w-max min-w-full gap-2"><div className="absolute inset-x-6 top-3 h-px bg-border" />{visible.map((event) => eventButton(event))}</div>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">{section.notice}</p>
+                    </div>
                 </div>
             </div>
-            <p className="text-[11px] text-muted-foreground">{section.notice}</p>
         </div>
-        <div className="pretty-scrollbar min-h-0 flex-1 overflow-y-auto p-3 sm:p-5">
+        <div className={`${mobileDetail ? 'hidden' : 'flex'} min-h-0 flex-1 flex-col sm:hidden`}>
+            <div className="shrink-0 space-y-2 border-b p-3">{filters}<p className="text-xs text-muted-foreground">{count}</p>{searchError && <p className="text-xs text-destructive">{searchError}</p>}</div>
+            <div className="pretty-scrollbar min-h-0 flex-1 overflow-y-auto p-3">
+                <div className="relative space-y-2"><div className="absolute bottom-3 left-[7px] top-3 w-px bg-border" />{visible.map((event) => eventButton(event, true))}</div>
+                {!visible.length && <p className="text-sm text-muted-foreground">{searching ? '正在搜索…' : '没有可查看的事件。'}</p>}
+            </div>
+        </div>
+        <div ref={detailViewport} className={`${mobileDetail ? 'block' : 'hidden'} pretty-scrollbar min-h-0 flex-1 overflow-y-auto p-3 sm:block sm:p-5`}>
+            <button type="button" className="mb-3 flex items-center gap-1 text-sm text-primary sm:hidden" onClick={() => setMobileDetail(false)}><ArrowLeft className="size-4" />返回时间线</button>
             {!visible.length ? <p className="text-sm text-muted-foreground">{searching ? '正在搜索…' : keyword ? '没有匹配事件。' : '没有可查看的事件，旧会话数据不重建。'}</p> : error ? <p className="text-destructive">{error}</p> : !detail ? <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />正在加载事件…</div> : <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                     <strong>{selected?.title}</strong><span className="text-muted-foreground">{selected?.stage} · {selected?.status || ''}</span>

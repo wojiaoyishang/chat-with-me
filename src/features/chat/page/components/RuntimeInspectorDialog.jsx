@@ -144,7 +144,6 @@ const ModelMessageCard = memo(({ message, query = '' }) => {
                         {role}
                     </Badge>
                     <Badge variant="secondary">{sourceLabels[source] || source}</Badge>
-                    {message?.providerPayloadMode === 'reconstructed' && <Badge variant="outline">旧记录 · 按当前消息重建</Badge>}
                     {message?.apiProtocol && (
                         <Badge variant="outline" className="font-mono">
                             {message.apiProtocol}
@@ -1147,9 +1146,7 @@ const RuntimeInspectorDialog = memo(
                                             ? Cpu
                                             : tab.id === 'context'
                                               ? Layers3
-                                              : tab.id === 'raw-messages'
-                                                ? Database
-                                                : tab.id === 'tools'
+                                              : tab.id === 'tools'
                                                   ? Wrench
                                                   : tab.id === 'brief'
                                                     ? MessageSquareText
@@ -1174,7 +1171,7 @@ const RuntimeInspectorDialog = memo(
                                         {error}
                                     </div>
                                 ) : null}
-                                {currentTab?.description && (
+                                {currentTab?.description && currentTab.id !== 'timeline' && (
                                     <div className="shrink-0 border-b bg-muted/10 px-3 py-2 text-xs text-muted-foreground sm:px-4">
                                         {currentTab.description}
                                     </div>
