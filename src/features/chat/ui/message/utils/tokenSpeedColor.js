@@ -9,3 +9,12 @@ export function tokenSpeedColor(value) {
         backgroundColor: `hsl(${hue} ${40 + 25 * intensity}% ${97 - 4 * intensity}%)`,
     };
 }
+
+export function settledTokenSpeedColor(relativeSpeed) {
+    const ratio = Math.max(0, Math.min(1, Number(relativeSpeed) || 0));
+    const hue = 6 + 129 * ratio;
+    return {
+        color: `hsl(${hue} 65% 35%)`,
+        backgroundColor: `hsl(${hue} 55% 95%)`,
+    };
+}

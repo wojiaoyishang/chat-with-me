@@ -1,6 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Layers3, Wrench } from 'lucide-react';
-import { tokenSpeedColor } from '../utils/tokenSpeedColor.js';
+import { settledTokenSpeedColor, tokenSpeedColor } from '../utils/tokenSpeedColor.js';
 
 /** Display backend descriptors; visibility, measurements and peaks remain server owned. */
 export default function MessageIndicators({ indicators }) {
@@ -16,7 +16,11 @@ export default function MessageIndicators({ indicators }) {
                     typeof item.value === 'number'
                         ? item.value.toLocaleString(undefined, { maximumFractionDigits: 1 })
                         : String(item.value ?? '');
-                const appearance = speed ? tokenSpeedColor(item.speedTrend) : {};
+                const appearance = speed
+                    ? item.active === false
+                        ? settledTokenSpeedColor(item.relativeSpeed)
+                        : tokenSpeedColor(item.speedTrend)
+                    : {};
                 const title = `${item.label || ''} ${value}${item.unit ? ` ${item.unit}` : ''}${item.approximate ? '（估算）' : ''}${item.description ? ` · ${item.description}` : ''}`;
                 return (
                     <motion.span
