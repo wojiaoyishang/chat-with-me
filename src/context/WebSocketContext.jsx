@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
 import FatalErrorPopoverElement from '@/context/FatalErrorPopover.jsx';
+import WebSocketReconnectPrompt from '@/context/WebSocketReconnectPrompt.jsx';
 import globalMessageCallback from '@/hooks/messageCallback.jsx';
 import { dispatchIncomingEvent, emitEvent } from '@/context/useEventStore.jsx';
 import { WEBSOCKET_URL } from '@/config.js';
@@ -35,6 +36,8 @@ export const WebSocketProvider = ({ children }) => {
     const retryingRef = useRef(false);
     const initialConnectionRef = useRef(true);
     const mountedRef = useRef(true);
+    const reconnectPromptRef = useRef(false);
+    const [showReconnectPrompt, setShowReconnectPrompt] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [connectionId, setConnectionId] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -45,6 +48,8 @@ export const WebSocketProvider = ({ children }) => {
             transportRef.current = globalTransport;
             setRealtimeTransport(globalTransport);
             setIsConnected(true);
+            reconnectPromptRef.current = false;
+            setShowReconnectPrompt(false);
             return globalTransport;
         }
         if (isRetry) retryingRef.current = true;
@@ -58,6 +63,8 @@ export const WebSocketProvider = ({ children }) => {
                 transportRef.current = transport;
                 setRealtimeTransport(transport);
                 if (mountedRef.current) setIsConnected(true);
+                reconnectPromptRef.current = false;
+                if (mountedRef.current) setShowReconnectPrompt(false);
                 flushRealtimeEvents();
             },
             onEvent: (envelope) => {
@@ -127,11 +134,17 @@ export const WebSocketProvider = ({ children }) => {
                     }, 1000);
                     return;
                 }
+                if (reconnectPromptRef.current) return;
                 FatalErrorPopoverElement.show({
                     title: t('websocket.popover_title'),
                     message: t('websocket.popover_content'),
                     showCloseButton: true,
                     showCancelButton: false,
+                    onClose: () => {
+                        if (!mountedRef.current || transportRef.current?.isOpen) return;
+                        reconnectPromptRef.current = true;
+                        setShowReconnectPrompt(true);
+                    },
                     onRetry: () =>
                         toast.promise(createConnection(true), {
                             loading: t('websocket.connecting'),
@@ -216,6 +229,7 @@ export const WebSocketProvider = ({ children }) => {
             }}
         >
             {children}
+            <WebSocketReconnectPrompt open={showReconnectPrompt} onRetry={() => createConnection(true)} />
         </WebSocketContext.Provider>
     );
 };
