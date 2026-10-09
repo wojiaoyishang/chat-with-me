@@ -129,7 +129,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                                 });
                             },
                         });
-                        update({ percent: 100, status: 'done' });
+                        update({ percent: 100, status: 'done', completedAt: Date.now() });
                         return data;
                     } catch (cause) {
                         update({ status: 'error' });
@@ -450,6 +450,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
             showTitle={!isMobile}
             uploadPolicy={DOCUMENT_IMAGE_UPLOAD_POLICY}
             uploads={uploads}
+            onDismissUpload={(id) => setUploads((previous) => previous.filter((item) => item.id !== id))}
             headerAction={
                 !isMobile && (
                     <Button
@@ -675,7 +676,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
             )}
             {!filesOpen && uploads.length > 0 && (
                 <div className="shrink-0 border-b px-3 py-2">
-                    <FileUploadProgress uploads={uploads} />
+                    <FileUploadProgress uploads={uploads} onDismiss={(id) => setUploads((previous) => previous.filter((item) => item.id !== id))} />
                 </div>
             )}
             <DocumentHistory

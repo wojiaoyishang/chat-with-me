@@ -38,6 +38,7 @@ export default function FileManager({
     uploadPolicy = {},
     refreshToken = 0,
     uploads = [],
+    onDismissUpload,
     showTitle = true,
     headerAction,
 }) {
@@ -183,7 +184,7 @@ export default function FileManager({
                     {headerAction}
                 </div>
             </div>
-            <FileUploadProgress uploads={uploads} />
+            <FileUploadProgress uploads={uploads} onDismiss={onDismissUpload} />
             <nav
                 className="flex items-center gap-1 overflow-x-auto rounded-lg border bg-muted/30 p-1"
                 aria-label={t('file_manager_path')}
