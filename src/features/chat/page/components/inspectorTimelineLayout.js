@@ -20,9 +20,20 @@ export function inputRelationships(events, active) {
 export function buildCallCoverage(events, relationships) {
     const ranges = [];
     for (const [mode, ids] of [['sent', relationships.sent], ['inherited', relationships.inherited]]) {
+        const nextCovered = new Array(events.length).fill(false);
+        let upcoming = false;
+        for (let index = events.length - 1; index >= 0; index--) {
+            nextCovered[index] = upcoming;
+            if (events[index].kind !== 'model_call') upcoming = ids.has(events[index].eventId);
+        }
         let start = null;
         for (let index = 0; index <= events.length; index++) {
-            if (index < events.length && ids.has(events[index].eventId)) {
+            // Calls are axis markers, not omitted messages. Bridge them only
+            // between covered inputs; never bridge an actual unsent message.
+            const covered = index < events.length && ids.has(events[index].eventId);
+            const bridge = start !== null && events[index]?.kind === 'model_call'
+                && nextCovered[index];
+            if (covered || bridge) {
                 if (start === null) start = index;
             } else if (start !== null) {
                 ranges.push({ mode, start, end: index });

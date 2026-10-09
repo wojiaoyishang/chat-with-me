@@ -131,7 +131,7 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         <span className="mt-1 block w-full truncate"><InspectorHighlight text={event.title} query={query} /></span>
         <span className="mt-1 block w-full truncate text-muted-foreground">{event.model || '—'} · Call #{event.callSequence}</span>
         {event.kind === 'model_call' && overlaps.has(event.modelCallId) && <span className="mt-1 text-[10px] text-amber-600" title={`记录时间与另外 ${overlaps.get(event.modelCallId)} 次请求重叠`}>时间重叠 · {overlaps.get(event.modelCallId)}</span>}
-        {event.kind === 'model_call' && <span className="mt-1 text-[10px] text-muted-foreground">{event.inputCaptureAvailable ? `发送 ${event.sentItemCount} 项${event.inheritedItemCount ? ` · 继承 ${event.inheritedItemCount} 项` : ''}${event.requestAttempts?.length > 1 ? ' · 最后一次尝试' : ''}` : '实际发送范围未捕获'}</span>}
+        {event.kind === 'model_call' && <span className="mt-1 text-[10px] text-muted-foreground">{event.inputCaptureAvailable ? `${event.inputMode === 'incremental' ? '增量' : '全量'} · 发送 ${event.sentItemCount} 项${event.inheritedItemCount ? ` · 继承 ${event.inheritedItemCount} 项` : ''}${event.requestAttempts?.length > 1 ? ' · 最后一次尝试' : ''}` : '实际发送范围未捕获'}</span>}
         {vertical && <span className="mt-1 block text-muted-foreground">{event.createdAt ? formatLocalTimestamp(event.createdAt) : '时间未捕获'}</span>}
     </button>;
     const laneLabels = (compact) => <div aria-hidden="true" className={`grid shrink-0 grid-rows-2 text-[10px] text-muted-foreground ${compact ? 'h-10 w-7' : 'w-8 gap-2'}`}>{lanes.map((lane) => <span key={lane.id} className="flex items-center justify-center">{lane.label}</span>)}</div>;

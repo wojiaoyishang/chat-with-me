@@ -541,8 +541,9 @@ const ModelCallDetails = ({ section }) => {
                             <h3 className="text-sm font-semibold">本次实际发送的消息</h3>
                             {!selected.sentInputCaptured && <p className="text-xs text-muted-foreground">该记录没有实际发送清单，不按逻辑上下文推测。</p>}
                             {(selected.sentRequests || []).map((request) => <LazyDetails key={`${selected.modelCallId}-${request.attempt}`} open={request.attempt === selected.sentRequests.length} className="rounded-xl border p-3">
-                                <summary className="cursor-pointer text-sm">请求尝试 {request.attempt} · 发送 {request.messages.length} 项{request.previousResponseId ? ' · Responses 续接' : ''}</summary>
+                                <summary className="cursor-pointer text-sm">请求尝试 {request.attempt} · {request.inputMode === 'incremental' ? '增量输入' : '全量输入'} · 发送 {request.messages.length} 项{request.previousResponseId ? ' · Responses 续接' : ''}</summary>
                                 <div className="mt-3 space-y-2">
+                                    <p className="text-xs text-muted-foreground">{request.inputMode === 'incremental' ? '这里只列出本次新增发送的内容；继承历史单独列出。' : '本次发送完整的当前模型上下文，包括仍保留的历史消息、助手回复、工具调用和结果。已压缩或过滤的内容以实际请求为准。'}</p>
                                     {request.messages.length ? <Virtuoso data={request.messages} className="h-[45vh] pretty-scrollbar" increaseViewportBy={200} itemContent={(_index, message) => <div className="pb-2"><ModelMessageCard message={message} query={messageQuery} /></div>} /> : <p className="text-xs text-muted-foreground">没有新增消息项。</p>}
                                     {request.previousResponseId && <LazyDetails className="rounded-lg border border-dashed p-3"><summary className="cursor-pointer text-xs">继承的逻辑历史 · 未重发 · {request.inheritedMessages.length} 项</summary>
                                         {!request.inheritedCaptureComplete && <p className="mt-2 text-xs text-muted-foreground">继承历史记录不完整。</p>}

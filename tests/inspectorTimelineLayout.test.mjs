@@ -47,3 +47,16 @@ test('coverage follows actual input, excludes owned output, and separates inheri
     assert.equal(inputRelationships(events, events[1]).calls.size, 0);
     assert.equal(inputRelationships(events, { kind: 'model_call', modelCallId: 'old' }).sent.size, 0);
 });
+
+
+test('full history coverage bridges prior Call markers but preserves unsent message gaps', () => {
+    const events = [
+        { eventId: 'sys', kind: 'system' }, { eventId: 'user', kind: 'user' },
+        { eventId: 'call:1', kind: 'model_call' }, { eventId: 'reply', kind: 'assistant' },
+        { eventId: 'call:2', kind: 'model_call' }, { eventId: 'filtered', kind: 'system' },
+        { eventId: 'result', kind: 'tool_result' },
+    ];
+    assert.deepEqual(buildCallCoverage(events, { sent: new Set(['sys', 'user', 'reply', 'result']), inherited: new Set() }), [
+        { mode: 'sent', start: 0, end: 4 }, { mode: 'sent', start: 6, end: 7 },
+    ]);
+});
