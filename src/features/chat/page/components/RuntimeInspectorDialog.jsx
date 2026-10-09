@@ -29,6 +29,7 @@ import {
 import MessageSummaryItem from './MessageSummaryItem.jsx';
 import InspectorHighlight from './InspectorHighlight.jsx';
 import InspectorEventTimeline from './InspectorEventTimeline.jsx';
+import InspectorBackendMessages from './InspectorBackendMessages.jsx';
 
 const formatNumber = (value) => (value == null ? '—' : Number(value || 0).toLocaleString());
 
@@ -1000,6 +1001,7 @@ const BriefBrowser = ({ section, activeMessageId, onJump }) => {
 };
 
 const sectionRenderers = {
+    'backend-message-browser': ({ section, onJump }) => <InspectorBackendMessages section={section} onJump={onJump} renderReplacements={(nodes, query) => <ReplacementTree nodes={nodes} query={query} />} />,
     'event-timeline': ({ section, onJump }) => <InspectorEventTimeline key={section.conversationId} section={section} onJump={onJump} renderCall={(call) => <ModelCallDetails key={call.modelCallId} section={{ modelCalls: [call] }} />} renderReplacements={(nodes, query) => <ReplacementTree nodes={nodes} query={query} />} />,
     'context-browser': ContextBrowser,
     'tool-browser': ToolBrowser,
@@ -1164,6 +1166,8 @@ const RuntimeInspectorDialog = memo(
                                             ? Cpu
                                             : tab.id === 'context'
                                               ? Layers3
+                                              : tab.id === 'backend-messages'
+                                                ? Database
                                               : tab.id === 'tools'
                                                   ? Wrench
                                                   : tab.id === 'brief'

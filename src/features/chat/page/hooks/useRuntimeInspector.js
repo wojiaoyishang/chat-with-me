@@ -4,6 +4,7 @@ import { apiEndpoint } from '@/config.js';
 
 const TAB_SECTION_QUERY = Object.freeze({
     'timeline': 'timeline',
+    'backend-messages': 'backend-messages',
     context: 'context',
     tools: 'tools',
 });
