@@ -38,6 +38,8 @@ test('event timeline includes every event kind and scroll controls above details
     assert.match(html, /aria-expanded="false"/);
     assert.match(html, /aria-hidden="true" inert=""/);
     assert.match(html, /返回时间线/);
+    assert.match(html, /aria-label="简洁事件时间线"/);
+    assert.ok(!html.includes('时间线 / 搜索'));
     assert.ok(html.indexOf('event 0') < html.indexOf('正在加载事件'));
 });
 
@@ -57,7 +59,7 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
         Search: () => null, Loader2: () => null, formatLocalTimestamp: (value) => value,
     };
     vm.runInNewContext(transformSync(`${highlight}\n${timeline}\nexports.Timeline=InspectorEventTimeline;`, { loader: 'jsx', jsx: 'automatic', format: 'cjs' }).code, sandbox);
-    const props = { section: { events: [{ eventId: 'user-1', kind: 'user', title: 'Question', order: 1 }] }, renderCall: () => null, renderReplacements: () => null };
+    const props = { section: { events: [{ eventId: 'user-1', kind: 'user', title: 'Question', order: 1 }, { eventId: 'user-2', kind: 'user', title: 'Next', order: 2 }] }, renderCall: () => null, renderReplacements: () => null };
     const render = () => { cursor = 0; return sandbox.exports.Timeline(props); };
     let tree = render();
     const desktop = () => tree.props.children[0];
@@ -90,4 +92,12 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
     tree = render();
     assert.match(tree.props.children[1].props.className, /^flex/);
     assert.match(tree.props.children[2].props.className, /^hidden/);
+    const compact = find(desktop(), (node) => node.type === 'nav' && node.props['aria-label'] === '简洁事件时间线');
+    const dots = compact.props.children.props.children[0];
+    assert.equal(dots.length, 2);
+    dots[1].props.onClick({ detail: 1 });
+    tree = render();
+    const selectedDot = find(desktop(), (node) => node.type === 'button' && node.props['aria-label']?.includes('#2'));
+    assert.equal(selectedDot.props['aria-current'], 'step');
+    assert.equal(panel().props.inert, true);
 });

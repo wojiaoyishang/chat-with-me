@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
 import apiClient from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
 import { attachHorizontalWheel } from '@/lib/horizontalWheel.js';
@@ -10,6 +10,10 @@ const labels = { system: '系统', user: '用户', assistant: '助手', model_ca
 const colors = { system: 'bg-slate-400', user: 'bg-blue-500', assistant: 'bg-violet-500', model_call: 'bg-purple-500', tool_call: 'bg-amber-500', tool_result: 'bg-emerald-500' };
 const statuses = { running: '执行中', completed: '已完成', success: '成功', failure: '失败', failed: '失败', error: '错误', cancelled: '已取消', captured: '已捕获', unknown: '状态未知' };
 const text = (value) => typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+const centerSelectedNode = (viewport) => {
+    const node = viewport?.querySelector('[aria-current="step"]');
+    if (node) viewport.scrollTo({ left: Math.max(0, node.offsetLeft - (viewport.clientWidth - node.offsetWidth) / 2), behavior: 'smooth' });
+};
 
 export default function InspectorEventTimeline({ section, renderCall, renderReplacements, onJump }) {
     const events = useMemo(() => section.events || [], [section.events]);
@@ -24,12 +28,17 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
     const [expanded, setExpanded] = useState(false);
     const [mobileDetail, setMobileDetail] = useState(false);
     const track = useRef(null);
+    const compactTrack = useRef(null);
     const detailViewport = useRef(null);
     const keyword = query.trim();
     const visible = useMemo(() => events.filter((event) =>
         (kind === 'all' || event.kind === kind) && (!keyword || matches?.some((match) => match.eventId === event.eventId))), [events, kind, keyword, matches]);
     const selected = events.find((event) => event.eventId === selectedId);
-    useEffect(() => attachHorizontalWheel(track.current), []);
+    useEffect(() => {
+        const detachExpanded = attachHorizontalWheel(track.current);
+        const detachCompact = attachHorizontalWheel(compactTrack.current);
+        return () => { detachExpanded(); detachCompact(); };
+    }, []);
     useEffect(() => {
         const controller = new AbortController();
         setMatches(null);
@@ -62,10 +71,13 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         return () => controller.abort();
     }, [selectedId, section.conversationId]);
     useEffect(() => {
-        const viewport = track.current;
-        const node = viewport?.querySelector('[aria-current="step"]');
-        if (node) viewport.scrollTo({ left: Math.max(0, node.offsetLeft - (viewport.clientWidth - node.offsetWidth) / 2), behavior: 'smooth' });
-    }, [selectedId, visible, expanded]);
+        for (const viewport of [track.current, compactTrack.current]) {
+            centerSelectedNode(viewport);
+        }
+    }, [selectedId, visible]);
+    useEffect(() => {
+        if (expanded) centerSelectedNode(track.current);
+    }, [expanded]);
     useEffect(() => {
         detailViewport.current?.scrollTo({ top: 0 });
     }, [selectedId]);
@@ -93,24 +105,33 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         {vertical && <span className="mt-1 block text-muted-foreground">{event.createdAt ? formatLocalTimestamp(event.createdAt) : '时间未捕获'}</span>}
     </button>;
     return <div className="flex h-full min-h-0 flex-col">
-        <div className="relative z-20 hidden h-11 shrink-0 border-b bg-background sm:block"
+        <div className="relative z-20 mx-3 my-1 hidden h-9 shrink-0 rounded-full bg-background shadow-sm ring-1 ring-border/40 sm:block"
             onPointerEnter={(event) => { if (event.pointerType === 'mouse') setExpanded(true); }}
             onPointerLeave={(event) => { if (event.pointerType === 'mouse' && !event.currentTarget.querySelector(':focus-visible')) setExpanded(false); }}
             onFocusCapture={(event) => { if (event.target.matches(':focus-visible')) setExpanded(true); }}
             onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setExpanded(false); }}>
-            <div className="flex h-full items-center gap-3 px-3 text-xs">
-                <button type="button" aria-expanded={expanded} aria-controls="runtime-event-navigation" onClick={() => setExpanded(!expanded)} className="flex shrink-0 items-center gap-1 rounded px-1 py-1 text-muted-foreground hover:bg-muted"><ChevronDown className={`size-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} />时间线 / 搜索</button>
-                <span className="shrink-0 text-muted-foreground">{count}</span>
-                <span className="min-w-0 flex-1 truncate">{selected ? `#${selected.order} · ${selected.title}` : '请选择事件'}</span>
+            <div className="flex h-full items-center gap-2 px-2 text-xs">
+                <span className="sr-only">{count}</span>
+                <nav ref={compactTrack} aria-label="简洁事件时间线" className="relative min-w-0 flex-1 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="relative flex w-max min-w-full items-center">
+                        {visible.map((event, index) => <button key={event.eventId} type="button" aria-label={`#${event.order} · ${labels[event.kind] || event.kind} · ${event.title}`} aria-current={selectedId === event.eventId ? 'step' : undefined} title={`#${event.order} · ${event.title}`} onClick={(click) => choose(event.eventId, click)} className="relative flex h-7 min-w-7 flex-1 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                            {visible.length > 1 && <span aria-hidden="true" className={`absolute top-1/2 h-px bg-border ${index === 0 ? 'left-1/2 right-0' : index === visible.length - 1 ? 'left-0 right-1/2' : 'inset-x-0'}`} />}
+                            <span aria-hidden="true" className={`relative rounded-full ring-background transition-[width,height,box-shadow] duration-200 motion-reduce:transition-none ${selectedId === event.eventId ? 'size-2.5 shadow-[0_0_0_3px_var(--background),0_0_0_4px_var(--primary)]' : 'size-2 ring-2'} ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
+                        </button>)}
+                        {!visible.length && <span className="px-2 text-muted-foreground">{searching ? '正在搜索…' : '没有事件'}</span>}
+                    </div>
+                </nav>
                 <div className="flex shrink-0 gap-1">{[-1, 1].map((direction) => {
                     const index = visible.findIndex((event) => event.eventId === selectedId);
                     const target = visible[index + direction];
                     return <button key={direction} type="button" aria-label={direction < 0 ? '上一个事件' : '下一个事件'} disabled={!target} className="rounded p-1 hover:bg-muted disabled:opacity-30" onClick={(event) => choose(target.eventId, event)}>{direction < 0 ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}</button>;
                 })}</div>
+                <button type="button" aria-label="展开时间线与搜索" aria-expanded={expanded} aria-controls="runtime-event-navigation" onClick={() => setExpanded(!expanded)} className="shrink-0 rounded-full p-1.5 text-muted-foreground hover:bg-muted"><Search className="size-3.5" /></button>
             </div>
             <div id="runtime-event-navigation" aria-hidden={!expanded} inert={!expanded} className={`absolute inset-x-0 top-full grid rounded-b-xl border-b bg-background shadow-lg transition-[grid-template-rows,opacity,visibility] duration-200 motion-reduce:transition-none ${expanded ? 'visible grid-rows-[1fr] opacity-100' : 'invisible grid-rows-[0fr] opacity-0'}`}>
                 <div className="min-h-0 overflow-hidden">
                     <div className="max-h-[min(48vh,18rem)] space-y-2 overflow-y-auto p-3">
+                        <p className="text-xs text-muted-foreground">{count}</p>
                         {filters}
                         {searchError && <p className="text-xs text-destructive">{searchError}</p>}
                         <div className="flex justify-end gap-1">{[-1, 1].map((direction) => <button key={direction} type="button" aria-label={direction < 0 ? '向前滚动时间线' : '向后滚动时间线'} className="rounded p-1 hover:bg-muted" onClick={() => track.current?.scrollBy({ left: direction * track.current.clientWidth * 0.75, behavior: 'smooth' })}>{direction < 0 ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}</button>)}</div>
