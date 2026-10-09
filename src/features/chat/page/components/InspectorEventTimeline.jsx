@@ -172,7 +172,7 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
                         {searchError && <p className="text-xs text-destructive">{searchError}</p>}
                         <div className="flex justify-end gap-1">{[-1, 1].map((direction) => <button key={direction} type="button" aria-label={direction < 0 ? '向前滚动时间线' : '向后滚动时间线'} className="rounded p-1 hover:bg-muted" onClick={() => track.current?.scrollBy({ left: direction * track.current.clientWidth * 0.75, behavior: 'smooth' })}>{direction < 0 ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}</button>)}</div>
                         <div className="flex gap-2">{laneLabels(false)}<nav ref={track} aria-label="详细事件时间线" className="pretty-scrollbar relative min-w-0 flex-1 overflow-x-auto overscroll-x-contain pb-2">{renderLanes(false)}</nav></div>
-                        <p title={section.notice} className="truncate text-[11px] text-muted-foreground">实线：实际发送 · 虚线：继承历史（未重发） · 悬停 Call 查看输入范围。{section.notice}</p>
+                        <p title={section.notice} className="truncate text-[11px] text-muted-foreground">实线：发送跨度 · 虚线：继承跨度（未重发） · 连续线延伸至 Call，上方高亮表示实际输入。{section.notice}</p>
                     </div>
                 </div>
             </div>

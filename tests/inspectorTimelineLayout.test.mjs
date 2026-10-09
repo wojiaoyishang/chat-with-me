@@ -42,21 +42,25 @@ test('coverage follows actual input, excludes owned output, and separates inheri
     const relation = inputRelationships(events, events[4]);
     assert.equal(relation.sent.has('gap'), false);
     assert.deepEqual(buildCallCoverage(events, relation), [
-        { mode: 'sent', start: 2, end: 3 }, { mode: 'inherited', start: 0, end: 1 },
+        { mode: 'inherited', start: 0, end: 5 }, { mode: 'sent', start: 2, end: 5 },
     ]);
     assert.equal(inputRelationships(events, events[1]).calls.size, 0);
     assert.equal(inputRelationships(events, { kind: 'model_call', modelCallId: 'old' }).sent.size, 0);
 });
 
 
-test('full history coverage bridges prior Call markers but preserves unsent message gaps', () => {
+test('request span reaches its Call continuously across unsent messages and prior Calls', () => {
     const events = [
         { eventId: 'sys', kind: 'system' }, { eventId: 'user', kind: 'user' },
-        { eventId: 'call:1', kind: 'model_call' }, { eventId: 'reply', kind: 'assistant' },
-        { eventId: 'call:2', kind: 'model_call' }, { eventId: 'filtered', kind: 'system' },
-        { eventId: 'result', kind: 'tool_result' },
+        { eventId: 'call:1', kind: 'model_call', modelCallId: 'a', sentEventIds: ['sys', 'user'] },
+        { eventId: 'filtered', kind: 'system' }, { eventId: 'result', kind: 'tool_result' },
+        { eventId: 'call:2', kind: 'model_call', modelCallId: 'b', sentEventIds: ['sys', 'result'] },
+        { eventId: 'later', kind: 'assistant' },
     ];
-    assert.deepEqual(buildCallCoverage(events, { sent: new Set(['sys', 'user', 'reply', 'result']), inherited: new Set() }), [
-        { mode: 'sent', start: 0, end: 4 }, { mode: 'sent', start: 6, end: 7 },
-    ]);
+    const relation = inputRelationships(events, events[5]);
+    assert.deepEqual(buildCallCoverage(events, relation), [{ mode: 'sent', start: 0, end: 6 }]);
+    assert.equal(relation.sent.has('filtered'), false);
+    assert.equal(relation.sent.has('later'), false);
+    assert.deepEqual(buildCallCoverage(events, inputRelationships(events, events[2])), [{ mode: 'sent', start: 0, end: 3 }]);
+    assert.deepEqual(buildCallCoverage(events.filter((event) => event.kind === 'model_call'), relation), []);
 });

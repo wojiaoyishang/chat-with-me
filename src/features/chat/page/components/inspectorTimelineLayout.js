@@ -19,26 +19,18 @@ export function inputRelationships(events, active) {
 
 export function buildCallCoverage(events, relationships) {
     const ranges = [];
-    for (const [mode, ids] of [['sent', relationships.sent], ['inherited', relationships.inherited]]) {
-        const nextCovered = new Array(events.length).fill(false);
-        let upcoming = false;
-        for (let index = events.length - 1; index >= 0; index--) {
-            nextCovered[index] = upcoming;
-            if (events[index].kind !== 'model_call') upcoming = ids.has(events[index].eventId);
-        }
-        let start = null;
-        for (let index = 0; index <= events.length; index++) {
-            // Calls are axis markers, not omitted messages. Bridge them only
-            // between covered inputs; never bridge an actual unsent message.
-            const covered = index < events.length && ids.has(events[index].eventId);
-            const bridge = start !== null && events[index]?.kind === 'model_call'
-                && nextCovered[index];
-            if (covered || bridge) {
-                if (start === null) start = index;
-            } else if (start !== null) {
-                ranges.push({ mode, start, end: index });
-                start = null;
+    const positions = new Map(events.map((event, index) => [event.eventId, index]));
+    for (const [callIndex, event] of events.entries()) {
+        if (event.kind !== 'model_call' || !relationships.calls.has(event.modelCallId)) continue;
+        for (const [mode, ids] of [['inherited', event.inheritedEventIds], ['sent', event.sentEventIds]]) {
+            let start = callIndex;
+            for (const id of ids || []) {
+                const position = positions.get(id);
+                if (position !== undefined && position < start) start = position;
             }
+            // This line shows the request span, not membership. Exact input
+            // membership remains in the message highlights above it.
+            if (start < callIndex) ranges.push({ mode, start, end: callIndex + 1 });
         }
     }
     return ranges;
