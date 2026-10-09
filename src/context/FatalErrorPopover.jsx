@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import {useTranslation} from "react-i18next";
 
 // 全局状态
@@ -43,14 +43,15 @@ function FatalErrorPopoverElement() {
         }
     };
 
-    return createPortal(
-        <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-[9999] transition-opacity duration-300"
-            onClick={config.showCancelButton ? handleClose : undefined}
-        >
-            <div
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 w-full max-w-md relative animate-fade-in transform transition-transform duration-200"
-                onClick={(e) => e.stopPropagation()}
+    return (
+        <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) handleClose(); }}>
+            <DialogContent
+                showCloseButton={false}
+                overlayClassName="z-[12000] bg-black/40 backdrop-blur-sm"
+                className="z-[12010] block w-[calc(100%-2rem)] max-w-md sm:max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800 pointer-events-auto"
+                onPointerDownOutside={(event) => { if (!config.showCancelButton) event.preventDefault(); }}
+                onInteractOutside={(event) => { if (!config.showCancelButton) event.preventDefault(); }}
+                onEscapeKeyDown={(event) => { if (!config.showCloseButton && !config.showCancelButton) event.preventDefault(); }}
             >
                 {/* 右上角关闭按钮 */}
                 {config.showCloseButton && (
@@ -84,14 +85,14 @@ function FatalErrorPopoverElement() {
                 </div>
 
                 {/* 标题 */}
-                <h2 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100 mb-2">
+                <DialogTitle className="text-xl font-bold text-center text-gray-800 dark:text-gray-100 mb-2">
                     {config.title}
-                </h2>
+                </DialogTitle>
 
                 {/* 消息 */}
-                <p className="text-center text-gray-600 dark:text-gray-300 mb-6 px-2 leading-relaxed">
+                <DialogDescription className="text-center text-gray-600 dark:text-gray-300 mb-6 px-2 leading-relaxed">
                     {config.message}
-                </p>
+                </DialogDescription>
 
                 {/* 按钮 */}
                 <div className="flex flex-col sm:flex-row gap-3 cursor-pointer">
@@ -114,9 +115,8 @@ function FatalErrorPopoverElement() {
                         {t("retry")}
                     </button>
                 </div>
-            </div>
-        </div>,
-        document.body
+            </DialogContent>
+        </Dialog>
     );
 }
 
