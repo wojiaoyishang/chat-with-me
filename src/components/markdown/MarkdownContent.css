@@ -22,6 +22,10 @@
     background: var(--background);
 }
 
+.cwm-md-table-scroll.pretty-scrollbar {
+    scrollbar-gutter: auto;
+}
+
 .cwm-md-table-scroll:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
@@ -74,6 +78,25 @@
     border-radius: 0 8px 8px 0;
     background: color-mix(in srgb, var(--muted) 25%, transparent);
     color: var(--muted-foreground);
+}
+
+img.cwm-md-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-block: 0.75rem;
+}
+
+.cwm-md-rule {
+    height: 1px;
+    margin-block: 1.25rem;
+    border: 0;
+    background: linear-gradient(to right, transparent, color-mix(in srgb, var(--border) 60%, transparent) 15%, color-mix(in srgb, var(--border) 60%, transparent) 85%, transparent);
+}
+
+/* Consecutive Markdown separators carry no additional content. */
+.cwm-md-rule + .cwm-md-rule {
+    display: none;
 }
 
 @media (max-width: 640px) {

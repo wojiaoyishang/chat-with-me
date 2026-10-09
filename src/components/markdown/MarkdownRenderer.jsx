@@ -363,14 +363,14 @@ const createComponents = ({
         li: ({ children }) => <li className="my-1">{children}</li>,
 
         h1: ({ children }) => (
-            <h1 className="text-2xl font-bold mt-8 mb-4 pb-2 border-b border-border/60 text-foreground">{children}</h1>
+            <h1 className="text-2xl font-bold mt-8 mb-4 text-foreground">{children}</h1>
         ),
 
         h2: ({ children }) => <h2 className="text-xl font-semibold mt-6 mb-3 text-foreground">{children}</h2>,
 
         h3: ({ children }) => <h3 className="text-lg font-medium mt-5 mb-2 text-foreground">{children}</h3>,
 
-        hr: () => <hr className="my-6 border-t border-border/70" />,
+        hr: () => <hr className="cwm-md-rule" />,
 
         blockquote: ({ children }) => (
             <blockquote className="cwm-md-quote">{children}</blockquote>
@@ -430,8 +430,8 @@ const createComponents = ({
         th: ({ children, style }) => <th style={style}>{children}</th>,
         td: ({ children, style }) => <td style={style}>{children}</td>,
 
-        img: ({ src, alt, ...props }) => {
-            return <ResourceImage key={src} src={src} alt={alt} {...props} />;
+        img: ({ src, alt, className, ...props }) => {
+            return <ResourceImage key={src} src={src} alt={alt} className={`cwm-md-image ${className || ''}`} {...props} />;
         },
 
         'card-replace': ({ id, type, node }) => {

@@ -41,7 +41,8 @@
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.01em;
-    line-height: 1;
+    padding-block: 2px;
+    line-height: 1.5;
     text-overflow: ellipsis;
     text-transform: lowercase;
     white-space: nowrap;
@@ -120,7 +121,7 @@
     font: inherit;
     line-height: var(--code-line-height);
     tab-size: 4;
-    scrollbar-gutter: stable;
+    scrollbar-gutter: auto;
 }
 
 .code-container .code-preview code {
