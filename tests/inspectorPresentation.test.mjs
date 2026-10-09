@@ -93,7 +93,7 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
     };
     const compactBeforePreview = find(desktop(), (node) => node.type === 'nav' && node.props['aria-label'] === '简洁事件时间线');
     const firstSegment = compactBeforePreview.props.children.props.children[0][0];
-    assert.match(firstSegment.props.children.props.className, /w-full rounded-sm/);
+    assert.match(firstSegment.props.children.props.className, /w-full rounded-none/);
     firstSegment.props.onPointerEnter({ pointerType: 'touch' });
     assert.equal(scrolls.length, 0);
     firstSegment.props.onPointerEnter({ pointerType: 'mouse' });
