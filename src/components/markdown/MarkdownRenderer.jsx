@@ -7,6 +7,7 @@ import rehypeKatex from 'rehype-katex';
 import { rehypeInlineCodeProperty, remarkCardReplace } from './remarkDirectiveToComponent.js';
 
 import CodeBlock from './CodeBlock.jsx';
+import './MarkdownContent.css';
 import CardBlock from './card-block/CardBlock.jsx';
 import { parseAgentContent } from './card-block/agent/agentContent.js';
 import ReplacementContextBadge from '@/features/chat/ui/message/components/ReplacementContextBadge.jsx';
@@ -362,17 +363,17 @@ const createComponents = ({
         li: ({ children }) => <li className="my-1">{children}</li>,
 
         h1: ({ children }) => (
-            <h1 className="text-2xl font-bold mt-8 mb-4 pb-2 border-b border-gray-100 text-gray-900">{children}</h1>
+            <h1 className="text-2xl font-bold mt-8 mb-4 pb-2 border-b border-border/60 text-foreground">{children}</h1>
         ),
 
-        h2: ({ children }) => <h2 className="text-xl font-semibold mt-6 mb-3 text-gray-800">{children}</h2>,
+        h2: ({ children }) => <h2 className="text-xl font-semibold mt-6 mb-3 text-foreground">{children}</h2>,
 
-        h3: ({ children }) => <h3 className="text-lg font-medium mt-5 mb-2 text-gray-800">{children}</h3>,
+        h3: ({ children }) => <h3 className="text-lg font-medium mt-5 mb-2 text-foreground">{children}</h3>,
 
-        hr: () => <hr className="my-4 border-t border-gray-300" />,
+        hr: () => <hr className="my-6 border-t border-border/70" />,
 
         blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-gray-300 pl-4 italic my-2 text-gray-600">{children}</blockquote>
+            <blockquote className="cwm-md-quote">{children}</blockquote>
         ),
 
         a: ({ href, children }) => {
@@ -382,7 +383,7 @@ const createComponents = ({
                     href={href}
                     target={modalLink ? undefined : '_blank'}
                     rel={modalLink ? undefined : 'noopener noreferrer'}
-                    className="text-blue-600 hover:underline"
+                    className="text-primary underline-offset-4 hover:underline"
                     onClick={
                         modalLink
                             ? (event) => {
@@ -409,7 +410,7 @@ const createComponents = ({
 
             if (!isCodeBlock) {
                 return (
-                    <code className="bg-gray-100 px-1 py-0.5 rounded-md text-xs font-mono text-gray-800" {...props}>
+                    <code className="cwm-md-inline-code" {...props}>
                         {children}
                     </code>
                 );
@@ -419,26 +420,15 @@ const createComponents = ({
         },
 
         table: ({ children }) => (
-            <div className="my-4 w-full overflow-x-auto rounded-xl border border-gray-200 pretty-scrollbar">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">{children}</table>
+            <div className="cwm-md-table-scroll pretty-scrollbar" role="region" aria-label="Table" tabIndex={0}>
+                <table className="cwm-md-table">{children}</table>
             </div>
         ),
-
-        thead: ({ children }) => <thead className="bg-gray-50">{children}</thead>,
-
-        tbody: ({ children }) => <tbody className="divide-y divide-gray-200 bg-white">{children}</tbody>,
-
-        tr: ({ children }) => <tr className="transition-colors hover:bg-gray-50/50">{children}</tr>,
-
-        th: ({ children }) => (
-            <th className="px-4 py-3 text-left font-bold text-gray-900 border-r border-gray-200 last:border-r-0 whitespace-nowrap">
-                {children}
-            </th>
-        ),
-
-        td: ({ children }) => (
-            <td className="px-4 py-3 text-gray-700 border-r border-gray-200 last:border-r-0">{children}</td>
-        ),
+        thead: ({ children }) => <thead>{children}</thead>,
+        tbody: ({ children }) => <tbody>{children}</tbody>,
+        tr: ({ children }) => <tr>{children}</tr>,
+        th: ({ children, style }) => <th style={style}>{children}</th>,
+        td: ({ children, style }) => <td style={style}>{children}</td>,
 
         img: ({ src, alt, ...props }) => {
             return <ResourceImage key={src} src={src} alt={alt} {...props} />;

@@ -1,0 +1,84 @@
+.cwm-md-inline-code {
+    padding: 0.12em 0.4em;
+    border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--muted) 55%, transparent);
+    color: var(--foreground);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.875em;
+    overflow-wrap: anywhere;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+.cwm-md-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    margin: 1rem 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--background);
+}
+
+.cwm-md-table-scroll:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+}
+
+.cwm-md-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: var(--foreground);
+}
+
+.cwm-md-table thead {
+    background: color-mix(in srgb, var(--muted) 50%, var(--background));
+}
+
+.cwm-md-table th,
+.cwm-md-table td {
+    min-width: 6rem;
+    padding: 11px 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+    vertical-align: top;
+    text-align: left;
+    overflow-wrap: break-word;
+}
+
+.cwm-md-table th {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cwm-md-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.cwm-md-table tbody tr:hover {
+    background: color-mix(in srgb, var(--muted) 25%, transparent);
+}
+
+.cwm-md-table :is(p, ul, ol) {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.cwm-md-quote {
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    border-left: 2px solid var(--border);
+    border-radius: 0 8px 8px 0;
+    background: color-mix(in srgb, var(--muted) 25%, transparent);
+    color: var(--muted-foreground);
+}
+
+@media (max-width: 640px) {
+    .cwm-md-table th,
+    .cwm-md-table td {
+        padding: 9px 12px;
+    }
+}

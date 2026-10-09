@@ -151,7 +151,7 @@ const CodeBlock = memo(({codeString = '', language}) => {
                 </button>
             </header>
 
-            <div className="code-area">
+            <div className={`code-area ${showLineNumbers ? '' : 'without-line-numbers'}`}>
                 {showLineNumbers && (
                     <div className="line-numbers" aria-hidden="true">
                         {lineNumbersText}
