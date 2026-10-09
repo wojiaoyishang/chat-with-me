@@ -18,7 +18,7 @@ const { useState } = React;
 const Badge = ({ children }) => <span>{children}</span>;
 const Cpu = () => <span />;
 const Search = () => <span />;
-const LazyDetails = ({ children }) => <details>{children}</details>;
+const LazyDetails = ({ children, open }) => <details open={open}>{children}</details>;
 ${highlight}
 ${selector}
 ${tree}
@@ -111,4 +111,15 @@ test('switching branches discards inspector caches and loads the new branch', as
     hook = render('u|b');
     assert.equal(hook.document.tabs[0].section.modelCalls[0].modelCallId, 'call-b');
     hook.closeInspector();
+});
+
+test('search expands matching replacement and its ancestors, leaving other nodes collapsed', () => {
+    const html = renderToStaticMarkup(React.createElement(context.exports.Tree, {
+        query: 'needle', nodes: [
+            { id: 'parent', content: 'other', children: [{ id: 'child', content: 'Needle here' }] },
+            { id: 'unrelated', content: 'no match' },
+        ],
+    }));
+    assert.equal((html.match(/<details open=""/g) || []).length, 2);
+    assert.equal((html.match(/<mark /g) || []).length, 1);
 });

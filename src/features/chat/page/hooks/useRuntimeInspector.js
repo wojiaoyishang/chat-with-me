@@ -152,6 +152,13 @@ export default function useRuntimeInspector(conversationId, branchKey = '') {
             if (normalizedTabId === 'brief') return null;
 
             const existingTab = (documentRef.current?.tabs || []).find((tab) => tab.id === normalizedTabId);
+            if (normalizedTabId === 'model-request') {
+                const backendTab = (documentRef.current?.tabs || []).find((tab) => tab.id === 'raw-messages');
+                if (force || backendTab?.section?.loaded !== true) {
+                    const backend = await requestSection({ section: 'raw-messages', focusMessageId, silent });
+                    if (backend?.section) updateDocument((current) => mergeTabSection(current, 'raw-messages', backend.section));
+                }
+            }
             if (!force && existingTab?.section?.loaded === true) return existingTab.section;
             const section = TAB_SECTION_QUERY[normalizedTabId];
             if (!section) return null;

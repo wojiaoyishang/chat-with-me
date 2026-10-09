@@ -86,6 +86,7 @@ const sourceLabels = {
 // Closed diagnostic sections should not mount or serialize their payloads.
 const LazyDetails = ({ children, open = false, ...props }) => {
     const [expanded, setExpanded] = useState(open);
+    useEffect(() => setExpanded(open), [open]);
     const nodes = React.Children.toArray(children);
     return (
         <details
@@ -379,7 +380,7 @@ const PromptCompositionPanel = ({ composition }) => {
     );
 };
 
-const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId }) => {
+const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId, onJump }) => {
     const calls = useMemo(() => Array.isArray(section?.modelCalls) ? section.modelCalls : [], [section?.modelCalls]);
     const [selectedId, setSelectedId] = useState(section?.selectedModelCallId || calls.at(-1)?.modelCallId || '');
     const [messageQuery, setMessageQuery] = useState('');
@@ -402,7 +403,7 @@ const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId }) => {
     };
 
     if (!selected) {
-        return <div className="flex h-full min-h-0 flex-col lg:flex-row"><ModelCallSelector calls={calls} timeline={section?.timeline} onSelect={handleSelect} /><div className="flex-1"><EmptyState>当前分支没有可查看的模型请求记录。</EmptyState></div></div>;
+        return <div className="flex h-full min-h-0 flex-col lg:flex-row"><ModelCallSelector calls={calls} timeline={section?.timeline} onSelect={handleSelect} /><RawMessageBrowser section={section.backendMessages || { items: [], notice: '当前分支没有模型请求记录，可查看后端消息。' }} onJump={onJump} /></div>;
     }
 
     const roleCounts = selected?.summary?.roleCounts || {};
@@ -411,6 +412,13 @@ const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId }) => {
             <ModelCallSelector calls={calls} timeline={section?.timeline} selectedId={selected?.modelCallId} onSelect={handleSelect} />
             <div className="pretty-scrollbar min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable] sm:p-4 lg:p-5">
                 <InspectorCallTimeline calls={calls} selectedId={selected.modelCallId} onSelect={handleSelect} messageCount={section?.timeline?.length} />
+                <section className="h-[60vh] min-h-80 overflow-hidden rounded-xl border">
+                    <RawMessageBrowser section={section.backendMessages || { items: [], notice: '正在加载当前分支后端消息…' }} onJump={(messageId) => {
+                        const target = calls.find((call) => call.assistantMessageId === messageId);
+                        if (target) handleSelect(target.modelCallId);
+                        else onJump?.(messageId);
+                    }} />
+                </section>
                 {!detailLoaded ? (
                     <div className="flex min-h-56 items-center justify-center gap-2 rounded-xl border border-dashed text-sm text-muted-foreground">
                         <Loader2
@@ -810,13 +818,13 @@ const RawMessageBrowser = ({ section, onJump }) => {
                             <pre className="pretty-scrollbar mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words text-xs leading-relaxed font-mono [scrollbar-gutter:stable]">
                                 <InspectorHighlight text={String(item.content || '') || '(empty)'} query={query} />
                             </pre>
-                            <LazyDetails className="mt-2 text-xs">
+                            <LazyDetails open={Boolean(query.trim() && JSON.stringify(item.extraInfo || {}).toLowerCase().includes(query.trim().toLowerCase()))} className="mt-2 text-xs">
                                 <summary className="cursor-pointer select-none text-muted-foreground">
                                     消息元数据
                                 </summary>
                                 <JsonBlock value={item.extraInfo || {}} title="消息元数据" maxHeight="max-h-52" query={query} />
                             </LazyDetails>
-                            {item.providerPayload && <LazyDetails className="mt-2 text-xs"><summary className="cursor-pointer text-muted-foreground">后端协议字段</summary><JsonBlock value={item.providerPayload} title="后端协议字段" maxHeight="max-h-64" query={query} /></LazyDetails>}
+                            {item.providerPayload && <LazyDetails open={Boolean(query.trim() && JSON.stringify(item.providerPayload).toLowerCase().includes(query.trim().toLowerCase()))} className="mt-2 text-xs"><summary className="cursor-pointer text-muted-foreground">后端协议字段</summary><JsonBlock value={item.providerPayload} title="后端协议字段" maxHeight="max-h-64" query={query} /></LazyDetails>}
                             <ReplacementTree nodes={item.replacements || []} query={query} />
                         </article>
                     );
@@ -826,7 +834,7 @@ const RawMessageBrowser = ({ section, onJump }) => {
     );
 };
 
-const ReplacementTree = ({ nodes, query = '' }) => nodes.length ? <div className="mt-2 space-y-1 border-l pl-3">{nodes.map((node, index) => <LazyDetails key={`${node.id}-${index}`} className="text-xs"><summary className="cursor-pointer font-mono text-muted-foreground">replacement: <InspectorHighlight text={`${node.id}${node.diagnostic ? ` · ${node.diagnostic}` : ''}`} query={query} /></summary><pre className="pretty-scrollbar my-2 max-h-52 overflow-auto whitespace-pre-wrap break-words"><InspectorHighlight text={node.content || node.diagnostic || '(empty)'} query={query} /></pre><ReplacementTree nodes={node.children || []} query={query} /></LazyDetails>)}</div> : null;
+const ReplacementTree = ({ nodes, query = '' }) => nodes.length ? <div className="mt-2 space-y-1 border-l pl-3">{nodes.map((node, index) => <LazyDetails key={`${node.id}-${index}`} open={Boolean(query.trim() && JSON.stringify(node).toLowerCase().includes(query.trim().toLowerCase()))} className="text-xs"><summary className="cursor-pointer font-mono text-muted-foreground">replacement: <InspectorHighlight text={`${node.id}${node.diagnostic ? ` · ${node.diagnostic}` : ''}`} query={query} /></summary><pre className="pretty-scrollbar my-2 max-h-52 overflow-auto whitespace-pre-wrap break-words"><InspectorHighlight text={node.content || node.diagnostic || '(empty)'} query={query} /></pre><ReplacementTree nodes={node.children || []} query={query} /></LazyDetails>)}</div> : null;
 
 const ToolBrowser = ({ section, onLoadToolCall, loadingToolCallId }) => {
     const calls = Array.isArray(section?.modelCalls) ? section.modelCalls : [];
@@ -1151,7 +1159,7 @@ const RuntimeInspectorDialog = memo(
         onLoadModelCall,
         onLoadToolCall,
     }) => {
-        const tabs = Array.isArray(document?.tabs) ? document.tabs : [];
+        const tabs = (Array.isArray(document?.tabs) ? document.tabs : []).filter((tab) => tab.id !== 'raw-messages');
         const currentTab = tabs.find((tab) => tab.id === activeTab) || tabs[0];
         const currentSection =
             currentTab?.id === 'brief'
@@ -1162,7 +1170,9 @@ const RuntimeInspectorDialog = memo(
                       items: briefItems,
                       focusMessageId: activeMessageId,
                   }
-                : currentTab?.section;
+                : currentTab?.id === 'model-request'
+                  ? { ...currentTab.section, backendMessages: document?.tabs?.find((tab) => tab.id === 'raw-messages')?.section }
+                  : currentTab?.section;
 
         const handleJump = (messageId) => {
             onClose?.();
