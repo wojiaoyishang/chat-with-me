@@ -123,4 +123,3 @@ test('search expands matching replacement and its ancestors, leaving other nodes
     assert.equal((html.match(/<details open=""/g) || []).length, 2);
     assert.equal((html.match(/<mark /g) || []).length, 1);
 });
-
