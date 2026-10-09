@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buildTimelineLanes, callOverlapCounts } from '../src/features/chat/page/components/inspectorTimelineLayout.js';
+import { buildTimelineLanes, callOverlapCounts, inputRelationships, buildCallCoverage } from '../src/features/chat/page/components/inspectorTimelineLayout.js';
 
 test('messages and calls occupy distinct rows on the same event-order axis', () => {
     const events = ['system', 'user', 'assistant', 'model_call', 'tool_result', 'model_call']
@@ -28,4 +28,22 @@ test('actual time overlap is marked, while touching boundaries and missing dates
     const pending = callOverlapCounts([{ ...call('a', 0, 1), completedAt: null, status: 'running' }, call('b', 2, 3)]);
     assert.equal(pending.get('a'), 1);
     assert.equal(pending.get('b'), 1);
+});
+
+
+test('coverage follows actual input, excludes owned output, and separates inherited history', () => {
+    const events = [
+        { eventId: 'sys', kind: 'system' },
+        { eventId: 'gap', kind: 'assistant', modelCallId: 'a' },
+        { eventId: 'result', kind: 'tool_result', modelCallId: 'a' },
+        { eventId: 'call:a', kind: 'model_call', modelCallId: 'a', sentEventIds: ['sys'] },
+        { eventId: 'call:b', kind: 'model_call', modelCallId: 'b', sentEventIds: ['result'], inheritedEventIds: ['sys'] },
+    ];
+    const relation = inputRelationships(events, events[4]);
+    assert.equal(relation.sent.has('gap'), false);
+    assert.deepEqual(buildCallCoverage(events, relation), [
+        { mode: 'sent', start: 2, end: 3 }, { mode: 'inherited', start: 0, end: 1 },
+    ]);
+    assert.equal(inputRelationships(events, events[1]).calls.size, 0);
+    assert.equal(inputRelationships(events, { kind: 'model_call', modelCallId: 'old' }).sent.size, 0);
 });

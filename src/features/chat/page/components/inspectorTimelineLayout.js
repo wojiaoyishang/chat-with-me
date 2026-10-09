@@ -5,6 +5,34 @@ export function buildTimelineLanes(events) {
     ];
 }
 
+export function inputRelationships(events, active) {
+    const calls = new Set(active?.kind === 'model_call' ? [active.modelCallId]
+        : [...(active?.sentByCallIds || []), ...(active?.inheritedByCallIds || [])]);
+    const sent = new Set();
+    const inherited = new Set();
+    for (const event of events) if (event.kind === 'model_call' && calls.has(event.modelCallId)) {
+        for (const id of event.sentEventIds || []) sent.add(id);
+        for (const id of event.inheritedEventIds || []) inherited.add(id);
+    }
+    return { calls, sent, inherited };
+}
+
+export function buildCallCoverage(events, relationships) {
+    const ranges = [];
+    for (const [mode, ids] of [['sent', relationships.sent], ['inherited', relationships.inherited]]) {
+        let start = null;
+        for (let index = 0; index <= events.length; index++) {
+            if (index < events.length && ids.has(events[index].eventId)) {
+                if (start === null) start = index;
+            } else if (start !== null) {
+                ranges.push({ mode, start, end: index });
+                start = null;
+            }
+        }
+    }
+    return ranges;
+}
+
 // Show recorded time overlap without inferring duration from reused input messages.
 export function callOverlapCounts(calls) {
     const intervals = calls.map((call) => {

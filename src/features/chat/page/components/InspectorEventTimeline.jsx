@@ -5,7 +5,7 @@ import { apiEndpoint } from '@/config.js';
 import { attachHorizontalWheel } from '@/lib/horizontalWheel.js';
 import { formatLocalTimestamp } from '@/lib/clientText.js';
 import InspectorHighlight from './InspectorHighlight.jsx';
-import { buildTimelineLanes, callOverlapCounts } from './inspectorTimelineLayout.js';
+import { buildTimelineLanes, callOverlapCounts, inputRelationships, buildCallCoverage } from './inspectorTimelineLayout.js';
 
 const labels = { system: '系统', user: '用户', assistant: '助手', model_call: '模型请求', tool_call: '工具调用', tool_result: '工具结果' };
 const colors = { system: 'bg-slate-400', user: 'bg-blue-500', assistant: 'bg-violet-500', model_call: 'bg-purple-500', tool_call: 'bg-amber-500', tool_result: 'bg-emerald-500' };
@@ -49,10 +49,13 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         (kind === 'all' || event.kind === kind) && (!keyword || matches?.some((match) => match.eventId === event.eventId))), [events, kind, keyword, matches]);
     const selected = events.find((event) => event.eventId === selectedId);
     const activeEvent = events.find((event) => event.eventId === hoveredId) || selected;
-    const associatedCalls = useMemo(() => new Set([activeEvent?.modelCallId, ...(activeEvent?.usedByCallIds || [])].filter(Boolean)), [activeEvent]);
+    const relationships = useMemo(() => inputRelationships(events, activeEvent), [events, activeEvent]);
+    const coverage = useMemo(() => buildCallCoverage(visible, relationships), [visible, relationships]);
+    const allCoverage = useMemo(() => buildCallCoverage(visible, inputRelationships(events, { sentByCallIds: events.filter((event) => event.kind === 'model_call').map((event) => event.modelCallId) })), [visible, events]);
     const lanes = useMemo(() => buildTimelineLanes(visible), [visible]);
     const overlaps = useMemo(() => callOverlapCounts(section.modelCalls || []), [section.modelCalls]);
-    const related = (event) => associatedCalls.has(event.modelCallId) || (event.usedByCallIds || []).some((id) => associatedCalls.has(id));
+    const related = (event) => event.kind === 'model_call' ? relationships.calls.has(event.modelCallId)
+        : relationships.sent.has(event.eventId) || relationships.inherited.has(event.eventId);
     useEffect(() => {
         const detachExpanded = attachHorizontalWheel(track.current);
         const detachCompact = attachHorizontalWheel(compactTrack.current);
@@ -122,21 +125,23 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         </select>
     </div>;
     const count = `当前分支 · ${events.length} 个事件${keyword ? ` · ${visible.length} 个命中` : ''}`;
-    const eventButton = (event, vertical = false, axisIndex) => <button key={event.eventId} data-event-id={event.eventId} data-axis-index={axisIndex} data-related={related(event) ? 'true' : undefined} data-preview={!vertical && hoveredId === event.eventId ? 'true' : undefined} type="button" aria-current={selectedId === event.eventId ? 'step' : undefined} onClick={(click) => choose(event.eventId, click)} title={event.eventId} className={`relative rounded-lg p-2 text-xs transition-colors duration-75 ${vertical ? 'ml-5 block w-[calc(100%-1.25rem)] text-left' : 'flex w-40 shrink-0 flex-col items-center justify-self-center'} ${selectedId === event.eventId || (!vertical && hoveredId === event.eventId) ? 'bg-primary/5 ring-1 ring-inset ring-primary/30' : related(event) ? 'bg-primary/[0.025]' : 'hover:bg-muted/60'}`}>
+    const eventButton = (event, vertical = false, axisIndex) => <button key={event.eventId} data-event-id={event.eventId} data-axis-index={axisIndex} data-related={related(event) ? 'true' : undefined} data-preview={!vertical && hoveredId === event.eventId ? 'true' : undefined} type="button" aria-current={selectedId === event.eventId ? 'step' : undefined} onClick={(click) => choose(event.eventId, click)} onPointerEnter={(pointer) => { if (!vertical && pointer.pointerType === 'mouse') setHoveredId(event.eventId); }} title={event.eventId} className={`relative rounded-lg p-2 text-xs transition-colors duration-75 ${vertical ? 'ml-5 block w-[calc(100%-1.25rem)] text-left' : 'flex w-40 shrink-0 flex-col items-center justify-self-center'} ${event.kind === 'model_call' && !related(event) ? 'opacity-35' : ''} ${selectedId === event.eventId || (!vertical && hoveredId === event.eventId) ? 'bg-primary/5 ring-1 ring-inset ring-primary/30' : related(event) ? 'bg-primary/[0.025]' : 'hover:bg-muted/60'}`}>
         <span className={`${vertical ? 'absolute -left-[1.125rem] top-3' : 'mb-2'} size-3 shrink-0 rounded-full ring-4 ring-background ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
         <span className="block font-medium">#{event.order} · {labels[event.kind] || event.kind}{event.status ? ` · ${statuses[event.status] || event.status}` : ''}</span>
         <span className="mt-1 block w-full truncate"><InspectorHighlight text={event.title} query={query} /></span>
         <span className="mt-1 block w-full truncate text-muted-foreground">{event.model || '—'} · Call #{event.callSequence}</span>
         {event.kind === 'model_call' && overlaps.has(event.modelCallId) && <span className="mt-1 text-[10px] text-amber-600" title={`记录时间与另外 ${overlaps.get(event.modelCallId)} 次请求重叠`}>时间重叠 · {overlaps.get(event.modelCallId)}</span>}
+        {event.kind === 'model_call' && <span className="mt-1 text-[10px] text-muted-foreground">{event.inputCaptureAvailable ? `发送 ${event.sentItemCount} 项${event.inheritedItemCount ? ` · 继承 ${event.inheritedItemCount} 项` : ''}${event.requestAttempts?.length > 1 ? ' · 最后一次尝试' : ''}` : '实际发送范围未捕获'}</span>}
         {vertical && <span className="mt-1 block text-muted-foreground">{event.createdAt ? formatLocalTimestamp(event.createdAt) : '时间未捕获'}</span>}
     </button>;
     const laneLabels = (compact) => <div aria-hidden="true" className={`grid shrink-0 grid-rows-2 text-[10px] text-muted-foreground ${compact ? 'h-10 w-7' : 'w-8 gap-2'}`}>{lanes.map((lane) => <span key={lane.id} className="flex items-center justify-center">{lane.label}</span>)}</div>;
     const renderLanes = (compact) => <div className={`w-max min-w-full ${compact ? '' : 'space-y-2'}`}>
         {lanes.map((lane) => <div key={lane.id} data-lane={lane.id} aria-label={lane.id === 'messages' ? '消息与工具事件轨道' : 'Model Call 轨道'} className={`relative grid items-start ${compact ? '' : 'min-h-24 gap-x-2'}`} style={{ gridTemplateColumns: `repeat(${Math.max(1, visible.length)}, minmax(${compact ? '1.75rem' : '10rem'}, 1fr))` }}>
             {lane.slots.map((event, index) => !event ? <div key={`empty-${index}`} data-axis-index={index} aria-hidden="true" className={compact ? 'flex h-5 items-center' : 'h-24'}>{compact && <span className="h-2 w-full bg-muted/50" />}</div> : compact ? <button key={event.eventId} data-event-id={event.eventId} data-axis-index={index} data-related={related(event) ? 'true' : undefined} type="button" aria-label={`#${event.order} · ${labels[event.kind] || event.kind} · ${event.title}`} aria-current={selectedId === event.eventId ? 'step' : undefined} title={`#${event.order} · ${event.title}${event.kind === 'model_call' && overlaps.has(event.modelCallId) ? ' · 时间重叠' : ''}`} onPointerEnter={(pointer) => preview(event.eventId, pointer)} onClick={(click) => choose(event.eventId, click)} className="group relative flex h-5 min-w-7 items-center justify-center rounded-none p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                <span aria-hidden="true" className={`h-2 w-full rounded-none transition-opacity duration-75 motion-reduce:transition-none ${selectedId === event.eventId ? 'opacity-100 ring-1 ring-inset ring-primary' : hoveredId === event.eventId ? 'opacity-100' : related(event) ? 'opacity-90 ring-1 ring-inset ring-primary/20' : 'opacity-60 group-hover:opacity-100'} ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
+                <span aria-hidden="true" className={`h-2 w-full rounded-none transition-opacity duration-75 motion-reduce:transition-none ${selectedId === event.eventId ? 'opacity-100 ring-1 ring-inset ring-primary' : hoveredId === event.eventId ? 'opacity-100' : related(event) ? 'opacity-90 ring-1 ring-inset ring-primary/20' : event.kind === 'model_call' ? 'opacity-20 group-hover:opacity-100' : 'opacity-60 group-hover:opacity-100'} ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
                 {event.kind === 'model_call' && overlaps.has(event.modelCallId) && <span aria-hidden="true" className="absolute bottom-0 h-px w-full bg-amber-500" />}
             </button> : eventButton(event, false, index))}
+            {lane.id === 'model_calls' && [...allCoverage.map((range) => ({ ...range, muted: true })), ...coverage].map((range, coverageIndex) => <span key={coverageIndex} data-input-coverage={range.mode} aria-hidden="true" className={`pointer-events-none absolute inset-x-0 top-0 grid ${compact ? 'h-5 items-center' : 'h-1 gap-x-2'}`} style={{ gridTemplateColumns: `repeat(${Math.max(1, visible.length)}, minmax(0, 1fr))` }}><span className={range.muted ? 'h-1 bg-slate-200' : range.mode === 'sent' ? 'h-1 bg-purple-500' : 'h-1 border-t-2 border-dashed border-purple-300'} style={{ gridColumn: `${range.start + 1} / ${range.end + 1}` }} /></span>)}
         </div>)}
         {!visible.length && <span className="px-2 text-muted-foreground">{searching ? '正在搜索…' : '没有事件'}</span>}
     </div>;
@@ -167,7 +172,7 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
                         {searchError && <p className="text-xs text-destructive">{searchError}</p>}
                         <div className="flex justify-end gap-1">{[-1, 1].map((direction) => <button key={direction} type="button" aria-label={direction < 0 ? '向前滚动时间线' : '向后滚动时间线'} className="rounded p-1 hover:bg-muted" onClick={() => track.current?.scrollBy({ left: direction * track.current.clientWidth * 0.75, behavior: 'smooth' })}>{direction < 0 ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}</button>)}</div>
                         <div className="flex gap-2">{laneLabels(false)}<nav ref={track} aria-label="详细事件时间线" className="pretty-scrollbar relative min-w-0 flex-1 overflow-x-auto overscroll-x-contain pb-2">{renderLanes(false)}</nav></div>
-                        <p title={section.notice} className="truncate text-[11px] text-muted-foreground">{section.notice}</p>
+                        <p title={section.notice} className="truncate text-[11px] text-muted-foreground">实线：实际发送 · 虚线：继承历史（未重发） · 悬停 Call 查看输入范围。{section.notice}</p>
                     </div>
                 </div>
             </div>
@@ -195,7 +200,7 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
                         {detail.sourcePayload && <details key={`source-${selectedId}-${keyword}`} open={Boolean(keyword)} className="rounded-xl border p-3"><summary className="cursor-pointer text-sm">解析前的消息与 replacement 记录</summary><pre className="mt-3 whitespace-pre-wrap break-words font-mono text-xs leading-relaxed"><InspectorHighlight text={text(detail.sourcePayload)} query={query} /></pre></details>}
                         <details key={`${selectedId}-${keyword}`} open={Boolean(keyword)} className="rounded-xl border p-3"><summary className="cursor-pointer text-sm">完整后端数据与协议字段</summary><pre className="mt-3 whitespace-pre-wrap break-words font-mono text-xs leading-relaxed"><InspectorHighlight text={text(detail.payload)} query={query} /></pre></details>
                     </>}
-                    <div className="flex flex-wrap gap-2 text-xs">关联请求：{(selected?.usedByCallIds || [selected?.modelCallId]).filter(Boolean).map((id) => <button key={id} className="rounded border px-2 py-1 text-primary" onClick={() => { setQuery(''); setKind('all'); setSelectedId(`call:${id}`); }}>Call {id.slice(0, 8)}</button>)}</div>
+                    <div className="flex flex-wrap gap-2 text-xs">关联请求：{[...new Set([...(selected?.sentByCallIds || []), ...(selected?.inheritedByCallIds || []), ...(selected?.usedByCallIds || []), selected?.modelCallId].filter(Boolean))].map((id) => <button key={id} className="rounded border px-2 py-1 text-primary" onClick={() => { setQuery(''); setKind('all'); setSelectedId(`call:${id}`); }}>Call {id.slice(0, 8)}</button>)}</div>
                 </>}
             </div>}
         </div>

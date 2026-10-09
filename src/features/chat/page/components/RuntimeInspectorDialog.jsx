@@ -73,6 +73,8 @@ const roleClasses = {
 };
 
 const sourceLabels = {
+    'provider-sent': '实际发送',
+    'provider-inherited': '继承历史（未重发）',
     'system-prompt': 'System Prompt',
     conversation: '原始对话',
     compaction: '上下文压缩',
@@ -534,6 +536,21 @@ const ModelCallDetails = ({ section }) => {
 
                         <ResponsesContinuationPanel continuation={selected?.responsesContinuation} />
                         <PromptCompositionPanel composition={selected?.promptComposition} />
+
+                        <section className="space-y-3">
+                            <h3 className="text-sm font-semibold">本次实际发送的消息</h3>
+                            {!selected.sentInputCaptured && <p className="text-xs text-muted-foreground">该记录没有实际发送清单，不按逻辑上下文推测。</p>}
+                            {(selected.sentRequests || []).map((request) => <LazyDetails key={`${selected.modelCallId}-${request.attempt}`} open={request.attempt === selected.sentRequests.length} className="rounded-xl border p-3">
+                                <summary className="cursor-pointer text-sm">请求尝试 {request.attempt} · 发送 {request.messages.length} 项{request.previousResponseId ? ' · Responses 续接' : ''}</summary>
+                                <div className="mt-3 space-y-2">
+                                    {request.messages.length ? <Virtuoso data={request.messages} className="h-[45vh] pretty-scrollbar" increaseViewportBy={200} itemContent={(_index, message) => <div className="pb-2"><ModelMessageCard message={message} query={messageQuery} /></div>} /> : <p className="text-xs text-muted-foreground">没有新增消息项。</p>}
+                                    {request.previousResponseId && <LazyDetails className="rounded-lg border border-dashed p-3"><summary className="cursor-pointer text-xs">继承的逻辑历史 · 未重发 · {request.inheritedMessages.length} 项</summary>
+                                        {!request.inheritedCaptureComplete && <p className="mt-2 text-xs text-muted-foreground">继承历史记录不完整。</p>}
+                                        <Virtuoso data={request.inheritedMessages} className="mt-2 h-[45vh] pretty-scrollbar" increaseViewportBy={200} itemContent={(_index, message) => <div className="pb-2"><ModelMessageCard message={message} query={messageQuery} /></div>} />
+                                    </LazyDetails>}
+                                </div>
+                            </LazyDetails>)}
+                        </section>
 
                         <section className="space-y-2">
                             <div className="flex items-center justify-between gap-3">

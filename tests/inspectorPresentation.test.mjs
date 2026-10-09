@@ -96,7 +96,7 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
     const popupPane = find(desktop(), (node) => node.props?.ref && node.props.className?.includes('max-h-'));
     popupPane.props.ref.current = { clientHeight: 120, scrollTop: 0, getBoundingClientRect: () => ({ top: 0, bottom: 120 }) };
     const compactBeforePreview = find(desktop(), (node) => node.type === 'nav' && node.props['aria-label'] === '简洁事件时间线');
-    const firstSegment = compactBeforePreview.props.children.props.children[0][0].props.children[0];
+    const firstSegment = find(compactBeforePreview, (node) => node.type === 'button' && node.props['data-event-id'] === 'user-1');
     assert.match(firstSegment.props.children[0].props.className, /w-full rounded-none/);
     firstSegment.props.onPointerEnter({ pointerType: 'touch' });
     assert.equal(scrolls.length, 0);
@@ -119,7 +119,7 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
     assert.match(tree.props.children[1].props.className, /^flex/);
     assert.match(tree.props.children[2].props.className, /^hidden/);
     const compact = find(desktop(), (node) => node.type === 'nav' && node.props['aria-label'] === '简洁事件时间线');
-    const dots = compact.props.children.props.children[0][0].props.children;
+    const dots = find(compact, (node) => node.props?.['data-lane'] === 'messages').props.children[0];
     assert.equal(dots.length, 2);
     dots[1].props.onClick({ detail: 1 });
     tree = render();
@@ -130,9 +130,9 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
 
 test('two shared-axis lanes preserve separate calls and highlight reused input associations', () => {
     const events = [
-        { eventId: 'sys', kind: 'system', modelCallId: 'a', usedByCallIds: ['a', 'b'], order: 1 },
-        { eventId: 'call:a', kind: 'model_call', modelCallId: 'a', order: 2 },
-        { eventId: 'call:b', kind: 'model_call', modelCallId: 'b', order: 3 },
+        { eventId: 'sys', kind: 'system', modelCallId: 'a', sentByCallIds: ['a', 'b'], order: 1 },
+        { eventId: 'call:a', kind: 'model_call', modelCallId: 'a', sentEventIds: ['sys'], order: 2 },
+        { eventId: 'call:b', kind: 'model_call', modelCallId: 'b', sentEventIds: ['sys'], order: 3 },
     ];
     const modelCalls = ['a', 'b'].map((modelCallId) => ({ modelCallId, createdAt: '2026-10-09T00:00:00Z', completedAt: '2026-10-09T00:00:02Z' }));
     const html = renderToStaticMarkup(React.createElement(context.exports.Timeline, { section: { events, modelCalls, conversationId: 'c' }, renderCall: () => null, renderReplacements: () => null }));
