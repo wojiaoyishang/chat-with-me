@@ -44,6 +44,8 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
     const compactTrack = useRef(null);
     const popupScroll = useRef(null);
     const detailViewport = useRef(null);
+    const manualNavigation = useRef(false);
+    const pendingPreview = useRef('');
     const keyword = query.trim();
     const visible = useMemo(() => events.filter((event) =>
         (kind === 'all' || event.kind === kind) && (!keyword || matches?.some((match) => match.eventId === event.eventId))), [events, kind, keyword, matches]);
@@ -95,10 +97,13 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
     useEffect(() => {
         alignExpandedCard(track.current, popupScroll.current);
         centerSelectedNode(compactTrack.current);
-    }, [selectedId, visible]);
+    }, [selectedId]);
     useEffect(() => {
-        if (expanded) alignExpandedCard(track.current, popupScroll.current, hoveredId, hoveredId ? 'instant' : 'smooth');
-    }, [expanded, hoveredId]);
+        if (expanded && pendingPreview.current && !manualNavigation.current) {
+            alignExpandedCard(track.current, popupScroll.current, pendingPreview.current, 'instant');
+            pendingPreview.current = '';
+        }
+    }, [expanded]);
     useEffect(() => {
         detailViewport.current?.scrollTo({ top: 0 });
     }, [selectedId]);
@@ -109,10 +114,15 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         if (event?.detail !== 0) setExpanded(false);
     };
     const preview = (eventId, pointer) => {
-        if (pointer.pointerType !== 'mouse') return;
+        if (pointer.pointerType !== 'mouse' || pointer.buttons || manualNavigation.current) return;
         setHoveredId(eventId);
+        pendingPreview.current = expanded ? '' : eventId;
         setExpanded(true);
         alignExpandedCard(track.current, popupScroll.current, eventId, 'instant');
+    };
+    const beginManualNavigation = () => {
+        manualNavigation.current = true;
+        pendingPreview.current = '';
     };
     const filters = <div className="flex items-center gap-2">
         <label className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border px-3 py-2">
@@ -147,6 +157,10 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
     </div>;
     return <div className="flex h-full min-h-0 flex-col">
         <div className="relative z-20 mx-3 my-1 hidden h-12 shrink-0 rounded-lg bg-background shadow-sm ring-1 ring-border/40 sm:block"
+            onWheelCapture={beginManualNavigation}
+            onPointerDownCapture={beginManualNavigation}
+            onTouchStartCapture={beginManualNavigation}
+            onPointerMoveCapture={(event) => { if (event.pointerType === 'mouse' && !event.buttons && (event.movementX || event.movementY)) manualNavigation.current = false; }}
             onPointerEnter={(event) => { if (event.pointerType === 'mouse') setExpanded(true); }}
             onPointerLeave={(event) => { if (event.pointerType === 'mouse' && !event.currentTarget.querySelector(':focus-visible')) { setExpanded(false); setHoveredId(''); } }}
             onFocusCapture={(event) => { if (event.target.matches(':focus-visible')) setExpanded(true); }}
@@ -170,7 +184,7 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
                         <p className="text-xs text-muted-foreground">{count}</p>
                         {filters}
                         {searchError && <p className="text-xs text-destructive">{searchError}</p>}
-                        <div className="flex justify-end gap-1">{[-1, 1].map((direction) => <button key={direction} type="button" aria-label={direction < 0 ? '向前滚动时间线' : '向后滚动时间线'} className="rounded p-1 hover:bg-muted" onClick={() => track.current?.scrollBy({ left: direction * track.current.clientWidth * 0.75, behavior: 'smooth' })}>{direction < 0 ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}</button>)}</div>
+                        <div className="flex justify-end gap-1">{[-1, 1].map((direction) => <button key={direction} type="button" aria-label={direction < 0 ? '向前滚动时间线' : '向后滚动时间线'} className="rounded p-1 hover:bg-muted" onClick={() => { beginManualNavigation(); track.current?.scrollBy({ left: direction * track.current.clientWidth * 0.75, behavior: 'smooth' }); }}>{direction < 0 ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}</button>)}</div>
                         <div className="flex gap-2">{laneLabels(false)}<nav ref={track} aria-label="详细事件时间线" className="pretty-scrollbar relative min-w-0 flex-1 overflow-x-auto overscroll-x-contain pb-2">{renderLanes(false)}</nav></div>
                         <p title={section.notice} className="truncate text-[11px] text-muted-foreground">实线：发送跨度 · 虚线：继承跨度（未重发） · 连续线延伸至 Call，上方高亮表示实际输入。{section.notice}</p>
                     </div>
