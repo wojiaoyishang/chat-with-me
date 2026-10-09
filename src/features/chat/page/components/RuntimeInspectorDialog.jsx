@@ -27,6 +27,8 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import MessageSummaryItem from './MessageSummaryItem.jsx';
+import InspectorHighlight from './InspectorHighlight.jsx';
+import InspectorCallTimeline from './InspectorCallTimeline.jsx';
 
 const formatNumber = (value) => (value == null ? '—' : Number(value || 0).toLocaleString());
 
@@ -99,7 +101,7 @@ const LazyDetails = ({ children, open = false, ...props }) => {
     );
 };
 
-const JsonBlock = memo(({ value, title = 'JSON', maxHeight = 'max-h-[54vh]' }) => (
+const JsonBlock = memo(({ value, title = 'JSON', maxHeight = 'max-h-[54vh]', query = '' }) => (
     <section className="space-y-2">
         <div className="flex items-center gap-2 text-sm font-medium">
             <FileJson2 className="size-4 text-muted-foreground" />
@@ -108,7 +110,7 @@ const JsonBlock = memo(({ value, title = 'JSON', maxHeight = 'max-h-[54vh]' }) =
         <pre
             className={`pretty-scrollbar ${maxHeight} overflow-auto rounded-xl border bg-slate-950 p-3 text-[11px] leading-relaxed text-slate-100 [scrollbar-gutter:stable] sm:text-xs`}
         >
-            {JSON.stringify(value ?? null, null, 2)}
+            <InspectorHighlight text={JSON.stringify(value ?? null, null, 2)} query={query} />
         </pre>
     </section>
 ));
@@ -408,12 +410,7 @@ const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId }) => {
         <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row">
             <ModelCallSelector calls={calls} timeline={section?.timeline} selectedId={selected?.modelCallId} onSelect={handleSelect} />
             <div className="pretty-scrollbar min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable] sm:p-4 lg:p-5">
-                <nav aria-label="当前分支调用概览" className="rounded-xl border p-3">
-                    <div className="mb-2 text-xs text-muted-foreground">当前分支 · {section?.timeline?.length || '—'} 条消息 · {calls.length} 次模型调用</div>
-                    <div className="pretty-scrollbar flex gap-1 overflow-x-auto pb-1">
-                        {calls.map((call) => <button key={call.modelCallId} type="button" onClick={() => handleSelect(call.modelCallId)} title={`消息 #${call.messageOrder || '—'} · Call #${call.sequence} · ${call.model?.name} · ${call.status}`} aria-label={`定位 ${call.modelCallId}`} className={`h-5 w-8 shrink-0 rounded transition ${call.modelCallId === selected.modelCallId ? 'ring-2 ring-primary ring-offset-2' : ''} ${['failed', 'error', 'cancelled'].includes(call.status) ? 'bg-red-400' : call.status === 'running' ? 'bg-amber-400' : 'bg-violet-400'}`} />)}
-                    </div>
-                </nav>
+                <InspectorCallTimeline calls={calls} selectedId={selected.modelCallId} onSelect={handleSelect} messageCount={section?.timeline?.length} />
                 {!detailLoaded ? (
                     <div className="flex min-h-56 items-center justify-center gap-2 rounded-xl border border-dashed text-sm text-muted-foreground">
                         <Loader2
@@ -786,7 +783,7 @@ const RawMessageBrowser = ({ section, onJump }) => {
                     return (
                         <article className="mx-3 my-2 rounded-xl border bg-card p-3 sm:mx-4">
                             <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="outline">{item.role}</Badge>
+                                <Badge variant="outline"><InspectorHighlight text={item.role} query={query} /></Badge>
                                 <Badge variant="secondary">{item.source === 'context-injection' ? '上下文注入' : '会话消息'}</Badge>
                                 <span className="font-mono text-xs text-muted-foreground">
                                     #{Number(item.orderIndex ?? -1) + 1}
@@ -811,16 +808,16 @@ const RawMessageBrowser = ({ section, onJump }) => {
                                 </Button>
                             </div>
                             <pre className="pretty-scrollbar mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words text-xs leading-relaxed font-mono [scrollbar-gutter:stable]">
-                                {String(item.content || '') || '(empty)'}
+                                <InspectorHighlight text={String(item.content || '') || '(empty)'} query={query} />
                             </pre>
                             <LazyDetails className="mt-2 text-xs">
                                 <summary className="cursor-pointer select-none text-muted-foreground">
                                     消息元数据
                                 </summary>
-                                <JsonBlock value={item.extraInfo || {}} title="消息元数据" maxHeight="max-h-52" />
+                                <JsonBlock value={item.extraInfo || {}} title="消息元数据" maxHeight="max-h-52" query={query} />
                             </LazyDetails>
-                            {item.providerPayload && <LazyDetails className="mt-2 text-xs"><summary className="cursor-pointer text-muted-foreground">后端协议字段</summary><JsonBlock value={item.providerPayload} title="后端协议字段" maxHeight="max-h-64" /></LazyDetails>}
-                            <ReplacementTree nodes={item.replacements || []} />
+                            {item.providerPayload && <LazyDetails className="mt-2 text-xs"><summary className="cursor-pointer text-muted-foreground">后端协议字段</summary><JsonBlock value={item.providerPayload} title="后端协议字段" maxHeight="max-h-64" query={query} /></LazyDetails>}
+                            <ReplacementTree nodes={item.replacements || []} query={query} />
                         </article>
                     );
                 }}
@@ -829,7 +826,7 @@ const RawMessageBrowser = ({ section, onJump }) => {
     );
 };
 
-const ReplacementTree = ({ nodes }) => nodes.length ? <div className="mt-2 space-y-1 border-l pl-3">{nodes.map((node, index) => <LazyDetails key={`${node.id}-${index}`} className="text-xs"><summary className="cursor-pointer font-mono text-muted-foreground">replacement: {node.id}{node.diagnostic ? ` · ${node.diagnostic}` : ''}</summary><pre className="pretty-scrollbar my-2 max-h-52 overflow-auto whitespace-pre-wrap break-words">{node.content || node.diagnostic || '(empty)'}</pre><ReplacementTree nodes={node.children || []} /></LazyDetails>)}</div> : null;
+const ReplacementTree = ({ nodes, query = '' }) => nodes.length ? <div className="mt-2 space-y-1 border-l pl-3">{nodes.map((node, index) => <LazyDetails key={`${node.id}-${index}`} className="text-xs"><summary className="cursor-pointer font-mono text-muted-foreground">replacement: <InspectorHighlight text={`${node.id}${node.diagnostic ? ` · ${node.diagnostic}` : ''}`} query={query} /></summary><pre className="pretty-scrollbar my-2 max-h-52 overflow-auto whitespace-pre-wrap break-words"><InspectorHighlight text={node.content || node.diagnostic || '(empty)'} query={query} /></pre><ReplacementTree nodes={node.children || []} query={query} /></LazyDetails>)}</div> : null;
 
 const ToolBrowser = ({ section, onLoadToolCall, loadingToolCallId }) => {
     const calls = Array.isArray(section?.modelCalls) ? section.modelCalls : [];

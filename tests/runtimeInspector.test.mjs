@@ -11,6 +11,7 @@ const source = fs.readFileSync(new URL('../src/features/chat/page/components/Run
 const selector = source.slice(source.indexOf('const ModelCallSelector ='), source.indexOf('const ResponsesContinuationPanel ='));
 const treeStart = source.indexOf('const ReplacementTree =');
 const tree = source.slice(treeStart, source.indexOf('\n', treeStart));
+const highlight = fs.readFileSync(new URL('../src/features/chat/page/components/InspectorHighlight.jsx', import.meta.url), 'utf8').replace('export default function', 'function');
 const script = transformSync(`
 const React = require('react');
 const { useState } = React;
@@ -18,6 +19,7 @@ const Badge = ({ children }) => <span>{children}</span>;
 const Cpu = () => <span />;
 const Search = () => <span />;
 const LazyDetails = ({ children }) => <details>{children}</details>;
+${highlight}
 ${selector}
 ${tree}
 exports.Selector = ModelCallSelector;
