@@ -213,7 +213,7 @@ function ChatPage({
         refresh: refreshRuntimeInspector,
         loadModelCall: loadRuntimeInspectorModelCall,
         loadToolCall: loadRuntimeInspectorToolCall,
-    } = useRuntimeInspector(conversationId);
+    } = useRuntimeInspector(conversationId, messagesOrder.join('|'));
     const [activeVisibleMessageId, setActiveVisibleMessageId] = useState(null);
     const [highlightedMessageId, setHighlightedMessageId] = useState(null);
     const messageDeepLinkHandledRef = useRef('');

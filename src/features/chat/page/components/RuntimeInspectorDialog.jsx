@@ -141,6 +141,7 @@ const ModelMessageCard = memo(({ message }) => {
                         {role}
                     </Badge>
                     <Badge variant="secondary">{sourceLabels[source] || source}</Badge>
+                    {message?.providerPayloadMode === 'reconstructed' && <Badge variant="outline">旧记录 · 按当前消息重建</Badge>}
                     {message?.apiProtocol && (
                         <Badge variant="outline" className="font-mono">
                             {message.apiProtocol}
@@ -211,35 +212,36 @@ const ModelMessageCard = memo(({ message }) => {
 });
 ModelMessageCard.displayName = 'ModelMessageCard';
 
-const ModelCallSelector = ({ calls, selectedId, onSelect }) => (
-    <div className="pretty-scrollbar flex shrink-0 gap-2 overflow-x-auto border-b bg-muted/15 p-2 [scrollbar-gutter:stable] lg:h-full lg:w-64 lg:flex-col lg:space-y-1 lg:overflow-y-auto lg:border-b-0 lg:border-r">
-        {calls.map((call, index) => {
-            const active = call.modelCallId === selectedId;
-            return (
-                <button
-                    key={call.modelCallId || index}
-                    type="button"
-                    onClick={() => onSelect(call.modelCallId)}
-                    className={`min-w-[190px] rounded-lg border px-3 py-2 text-left transition lg:min-w-0 lg:w-full ${
-                        active
-                            ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                            : 'bg-background hover:bg-accent/50'
-                    }`}
-                >
-                    <div className="flex items-center gap-2">
-                        <Cpu className="size-4 shrink-0" />
-                        <span className="font-medium">Model Call #{call.sequence || index + 1}</span>
-                    </div>
-                    <div className="mt-1 truncate text-xs text-muted-foreground">
-                        {call?.model?.name || call?.model?.modelId || '模型'} ·{' '}
-                        {call?.summary?.messageCount == null ? '—' : formatNumber(call.summary.messageCount)} msgs
-                    </div>
-                    <div className="mt-1 truncate font-mono text-[10px] text-muted-foreground">{call.modelCallId}</div>
-                </button>
-            );
-        })}
-    </div>
-);
+const ModelCallSelector = ({ calls, selectedId, onSelect, timeline }) => {
+    const [query, setQuery] = useState('');
+    const nodes = timeline || calls.map((call) => ({ messageId: call.assistantMessageId, order: call.messageOrder, role: 'assistant', callIds: [call.modelCallId] }));
+    const search = query.trim().toLowerCase();
+    return <div className="flex min-h-0 shrink-0 flex-col border-b bg-muted/15 lg:h-full lg:w-80 lg:border-b-0 lg:border-r">
+        <label className="m-2 flex items-center gap-2 rounded-lg border bg-background px-2 py-1.5">
+            <Search className="size-4 shrink-0 text-muted-foreground" />
+            <input className="min-w-0 flex-1 bg-transparent text-xs outline-none" placeholder="搜索消息、模型、状态或 Call ID" value={query} onChange={(event) => setQuery(event.target.value)} />
+        </label>
+        <div className="pretty-scrollbar min-h-0 max-h-64 flex-1 overflow-y-auto p-3 lg:max-h-none">
+        {nodes.filter((node) => JSON.stringify([node, calls.filter((call) => node.callIds.includes(call.modelCallId))]).toLowerCase().includes(search)).map((node, nodeIndex) => (
+            <section key={`${node.messageId}-${nodeIndex}`} className="relative ml-1 border-l border-border pb-4 pl-4">
+                <span className="absolute -left-1 top-1 size-2 rounded-full bg-muted-foreground/50" />
+                <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground"><Badge variant="outline">{node.role}</Badge>消息 #{node.order || nodeIndex + 1}</div>
+                {node.preview && <div className="mb-2 line-clamp-2 break-words text-xs text-muted-foreground" title={node.messageId}>{node.preview}</div>}
+                <div className="space-y-2">
+                {calls.filter((call) => node.callIds.includes(call.modelCallId)).map((call, index) => {
+                    const active = call.modelCallId === selectedId;
+                    return <button key={call.modelCallId} type="button" onClick={() => onSelect(call.modelCallId)} className={`w-full rounded-lg border px-3 py-2 text-left transition ${active ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'bg-background hover:bg-accent/50'}`}>
+                        <div className="flex items-center gap-2 text-sm"><Cpu className="size-3.5 shrink-0" />Call #{call.sequence || index + 1}<span className="ml-auto text-[10px] text-muted-foreground">{call.status}</span></div>
+                        <div className="mt-1 truncate text-xs text-muted-foreground">{call.model?.name || '模型'} · {call.createdAt ? new Date(call.createdAt).toLocaleTimeString() : '—'}</div>
+                        <div className="mt-1 truncate font-mono text-[10px] text-muted-foreground">{call.modelCallId}</div>
+                    </button>;
+                })}
+                </div>
+            </section>
+        ))}
+        </div>
+    </div>;
+};
 
 const ResponsesContinuationPanel = ({ continuation }) => {
     if (!continuation) return null;
@@ -376,8 +378,9 @@ const PromptCompositionPanel = ({ composition }) => {
 };
 
 const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId }) => {
-    const calls = Array.isArray(section?.modelCalls) ? section.modelCalls : [];
+    const calls = useMemo(() => Array.isArray(section?.modelCalls) ? section.modelCalls : [], [section?.modelCalls]);
     const [selectedId, setSelectedId] = useState(section?.selectedModelCallId || calls.at(-1)?.modelCallId || '');
+    const [messageQuery, setMessageQuery] = useState('');
     useEffect(() => {
         const next = section?.selectedModelCallId || calls.at(-1)?.modelCallId || '';
         if (!calls.some((item) => item.modelCallId === selectedId)) setSelectedId(next);
@@ -397,14 +400,20 @@ const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId }) => {
     };
 
     if (!selected) {
-        return <EmptyState>这条消息没有可查看的模型请求记录。</EmptyState>;
+        return <div className="flex h-full min-h-0 flex-col lg:flex-row"><ModelCallSelector calls={calls} timeline={section?.timeline} onSelect={handleSelect} /><div className="flex-1"><EmptyState>当前分支没有可查看的模型请求记录。</EmptyState></div></div>;
     }
 
     const roleCounts = selected?.summary?.roleCounts || {};
     return (
         <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row">
-            <ModelCallSelector calls={calls} selectedId={selected?.modelCallId} onSelect={handleSelect} />
+            <ModelCallSelector calls={calls} timeline={section?.timeline} selectedId={selected?.modelCallId} onSelect={handleSelect} />
             <div className="pretty-scrollbar min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable] sm:p-4 lg:p-5">
+                <nav aria-label="当前分支调用概览" className="rounded-xl border p-3">
+                    <div className="mb-2 text-xs text-muted-foreground">当前分支 · {section?.timeline?.length || '—'} 条消息 · {calls.length} 次模型调用</div>
+                    <div className="pretty-scrollbar flex gap-1 overflow-x-auto pb-1">
+                        {calls.map((call) => <button key={call.modelCallId} type="button" onClick={() => handleSelect(call.modelCallId)} title={`消息 #${call.messageOrder || '—'} · Call #${call.sequence} · ${call.model?.name} · ${call.status}`} aria-label={`定位 ${call.modelCallId}`} className={`h-5 w-8 shrink-0 rounded transition ${call.modelCallId === selected.modelCallId ? 'ring-2 ring-primary ring-offset-2' : ''} ${['failed', 'error', 'cancelled'].includes(call.status) ? 'bg-red-400' : call.status === 'running' ? 'bg-amber-400' : 'bg-violet-400'}`} />)}
+                    </div>
+                </nav>
                 {!detailLoaded ? (
                     <div className="flex min-h-56 items-center justify-center gap-2 rounded-xl border border-dashed text-sm text-muted-foreground">
                         <Loader2
@@ -575,10 +584,12 @@ const ModelCallBrowser = ({ section, onLoadModelCall, loadingModelCallId }) => {
                             <p className="text-xs leading-relaxed text-muted-foreground">
                                 这里展示 CWM 在本次 Model Call 中维护的完整模型可见上下文。Responses API 使用 Provider
                                 Linked continuation 时，Provider 已持有的历史不会再次出现在实际 HTTP input 中。
+                                标记为“按当前消息重建”的旧记录未保存不可变输入，不能保证与当时完全一致。
                             </p>
+                            <input value={messageQuery} onChange={(event) => setMessageQuery(event.target.value)} placeholder="筛查本次输入：角色、正文、来源、ID或协议字段" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none" />
                             <Virtuoso
                                 key={selected.modelCallId}
-                                data={selected.messages || []}
+                                data={(selected.messages || []).filter((message) => JSON.stringify(message).toLowerCase().includes(messageQuery.trim().toLowerCase()))}
                                 className="h-[60vh] pretty-scrollbar"
                                 increaseViewportBy={200}
                                 itemContent={(_index, message) => (
@@ -742,31 +753,18 @@ const ContextBrowser = ({ section, onJump }) => {
 };
 
 const RawMessageBrowser = ({ section, onJump }) => {
-    const items = Array.isArray(section?.items) ? section.items : [];
+    const items = useMemo(() => Array.isArray(section?.items) ? section.items : [], [section?.items]);
     const [query, setQuery] = useState('');
     const filtered = useMemo(() => {
         const normalized = query.trim().toLowerCase();
         if (!normalized) return items;
-        return items.filter(
-            (item) =>
-                String(item.role || '')
-                    .toLowerCase()
-                    .includes(normalized) ||
-                String(item.name || '')
-                    .toLowerCase()
-                    .includes(normalized) ||
-                String(item.content || '')
-                    .toLowerCase()
-                    .includes(normalized) ||
-                String(item.messageId || '')
-                    .toLowerCase()
-                    .includes(normalized),
-        );
+        return items.filter((item) => JSON.stringify(item).toLowerCase().includes(normalized));
     }, [items, query]);
 
     return (
         <div className="flex h-full min-h-0 flex-1 flex-col">
             <div className="border-b p-3 sm:p-4">
+                <p className="mb-2 text-xs text-muted-foreground">{section.notice}</p>
                 <label className="flex items-center gap-2 rounded-lg border bg-background px-3 py-2">
                     <Search className="size-4 text-muted-foreground" />
                     <input
@@ -781,7 +779,7 @@ const RawMessageBrowser = ({ section, onJump }) => {
                 data={filtered}
                 className="pretty-scrollbar min-h-0 flex-1"
                 increaseViewportBy={200}
-                computeItemKey={(_index, item) => item.messageId}
+                computeItemKey={(_index, item) => item.partId || item.messageId}
                 itemContent={(_index, item) => {
                     const compacted = (item?.contextState?.compactions || []).length > 0;
                     const forgotten = item?.contextState?.forgotten;
@@ -789,6 +787,7 @@ const RawMessageBrowser = ({ section, onJump }) => {
                         <article className="mx-3 my-2 rounded-xl border bg-card p-3 sm:mx-4">
                             <div className="flex flex-wrap items-center gap-2">
                                 <Badge variant="outline">{item.role}</Badge>
+                                <Badge variant="secondary">{item.source === 'context-injection' ? '上下文注入' : '会话消息'}</Badge>
                                 <span className="font-mono text-xs text-muted-foreground">
                                     #{Number(item.orderIndex ?? -1) + 1}
                                 </span>
@@ -805,6 +804,7 @@ const RawMessageBrowser = ({ section, onJump }) => {
                                     size="sm"
                                     className="ml-auto h-7 gap-1 px-2"
                                     onClick={() => onJump?.(item.messageId)}
+                                    disabled={item.source === 'context-injection'}
                                 >
                                     <LocateFixed className="size-3.5" />
                                     定位
@@ -819,6 +819,8 @@ const RawMessageBrowser = ({ section, onJump }) => {
                                 </summary>
                                 <JsonBlock value={item.extraInfo || {}} title="消息元数据" maxHeight="max-h-52" />
                             </LazyDetails>
+                            {item.providerPayload && <LazyDetails className="mt-2 text-xs"><summary className="cursor-pointer text-muted-foreground">后端协议字段</summary><JsonBlock value={item.providerPayload} title="后端协议字段" maxHeight="max-h-64" /></LazyDetails>}
+                            <ReplacementTree nodes={item.replacements || []} />
                         </article>
                     );
                 }}
@@ -826,6 +828,8 @@ const RawMessageBrowser = ({ section, onJump }) => {
         </div>
     );
 };
+
+const ReplacementTree = ({ nodes }) => nodes.length ? <div className="mt-2 space-y-1 border-l pl-3">{nodes.map((node, index) => <LazyDetails key={`${node.id}-${index}`} className="text-xs"><summary className="cursor-pointer font-mono text-muted-foreground">replacement: {node.id}{node.diagnostic ? ` · ${node.diagnostic}` : ''}</summary><pre className="pretty-scrollbar my-2 max-h-52 overflow-auto whitespace-pre-wrap break-words">{node.content || node.diagnostic || '(empty)'}</pre><ReplacementTree nodes={node.children || []} /></LazyDetails>)}</div> : null;
 
 const ToolBrowser = ({ section, onLoadToolCall, loadingToolCallId }) => {
     const calls = Array.isArray(section?.modelCalls) ? section.modelCalls : [];
@@ -1217,15 +1221,16 @@ const RuntimeInspectorDialog = memo(
                             <div className="pretty-scrollbar flex gap-1.5 overflow-x-auto pb-0.5 text-xs">
                                 <Badge variant="secondary">{formatNumber(document.stats.messageCount)} msgs</Badge>
                                 <Badge variant="secondary">
-                                    {formatNumber(document.stats.modelCallCount)} model calls
+                                    {formatNumber(document.stats.modelCallCount)} 当前分支 calls
                                 </Badge>
+                                <Badge variant="outline">{formatNumber(document.stats.conversationModelCallCount)} 全会话 calls</Badge>
                                 <Badge variant="secondary">
                                     {formatNumber(document.stats.activeCompactionCount)} compactions
                                 </Badge>
                                 <Badge variant="outline">context rev {document.stats.contextRevision ?? 0}</Badge>
                                 {(document.stats.toolExecution?.total || 0) > 0 && (
                                     <Badge variant="outline">
-                                        tools {formatNumber(document.stats.toolExecution.total)} · ✓
+                                        全会话 tools {formatNumber(document.stats.toolExecution.total)} · ✓
                                         {formatNumber(document.stats.toolExecution.success)} / ×
                                         {formatNumber(document.stats.toolExecution.failure)}
                                     </Badge>

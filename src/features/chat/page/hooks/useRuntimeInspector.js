@@ -50,7 +50,7 @@ const mergeModelCall = (document, tabId, modelCall) => {
  * opening or closing the dialog can never unsubscribe that listener or invalidate
  * already queued message delta callbacks.
  */
-export default function useRuntimeInspector(conversationId) {
+export default function useRuntimeInspector(conversationId, branchKey = '') {
     const [open, setOpen] = useState(false);
     const [document, setDocument] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -278,6 +278,17 @@ export default function useRuntimeInspector(conversationId) {
         setActiveTab('brief');
         abortRequest();
     }, [conversationId, abortRequest]);
+
+    const previousBranchRef = useRef(branchKey);
+    useEffect(() => {
+        if (previousBranchRef.current === branchKey) return undefined;
+        previousBranchRef.current = branchKey;
+        abortRequest();
+        updateDocument(null);
+        if (!isOpenRef.current) return undefined;
+        const timer = window.setTimeout(() => { void refresh(); }, 150);
+        return () => window.clearTimeout(timer);
+    }, [branchKey, abortRequest, updateDocument, refresh]);
 
     useEffect(
         () => () => {
