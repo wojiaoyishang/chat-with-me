@@ -84,6 +84,27 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
         }
         return null;
     };
+    const expandedTrack = find(desktop(), (node) => node.type === 'nav' && node.props['aria-label'] === '详细事件时间线');
+    const scrolls = [];
+    expandedTrack.props.ref.current = {
+        clientWidth: 180,
+        querySelectorAll: () => [{ dataset: { eventId: 'user-1' }, offsetLeft: 168, offsetWidth: 160 }],
+        scrollTo: (options) => scrolls.push(options),
+    };
+    const compactBeforePreview = find(desktop(), (node) => node.type === 'nav' && node.props['aria-label'] === '简洁事件时间线');
+    const firstSegment = compactBeforePreview.props.children.props.children[0][0];
+    assert.match(firstSegment.props.children.props.className, /w-full rounded-sm/);
+    firstSegment.props.onPointerEnter({ pointerType: 'touch' });
+    assert.equal(scrolls.length, 0);
+    firstSegment.props.onPointerEnter({ pointerType: 'mouse' });
+    tree = render();
+    assert.equal(scrolls[0].left, 158);
+    assert.equal(scrolls[0].behavior, 'instant');
+    assert.equal(panel().props.inert, false);
+    assert.equal(find(desktop(), (node) => node.props?.['data-event-id'] === 'user-1').props['data-preview'], 'true');
+    assert.equal(find(desktop(), (node) => node.type === 'button' && node.props['aria-label']?.includes('#2')).props['aria-current'], 'step');
+    desktop().props.onPointerLeave({ pointerType: 'mouse', currentTarget: { querySelector: () => null } });
+    tree = render();
     find(tree.props.children[1], (node) => node.type === 'button' && node.props.title === 'user-1').props.onClick({ detail: 1 });
     tree = render();
     assert.match(tree.props.children[1].props.className, /^hidden/);
