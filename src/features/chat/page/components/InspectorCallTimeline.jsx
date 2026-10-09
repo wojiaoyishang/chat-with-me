@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { attachHorizontalWheel } from '@/lib/horizontalWheel.js';
 
 export default function InspectorCallTimeline({ calls, selectedId, onSelect, messageCount }) {
     const trackRef = useRef(null);
+    useEffect(() => attachHorizontalWheel(trackRef.current), []);
     useEffect(() => {
         const track = trackRef.current;
         const selected = track?.querySelector('[aria-current="step"]');

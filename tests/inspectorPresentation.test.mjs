@@ -10,7 +10,7 @@ import { transformSync } from 'esbuild';
 const root = '../src/features/chat/page/components/';
 const highlight = fs.readFileSync(new URL(`${root}InspectorHighlight.jsx`, import.meta.url), 'utf8').replace('export default function', 'function');
 const timeline = fs.readFileSync(new URL(`${root}InspectorCallTimeline.jsx`, import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('export default function', 'function');
-const code = transformSync(`const {useRef,useEffect} = require('react'); const ChevronLeft=()=>null; const ChevronRight=()=>null;
+const code = transformSync(`const {useRef,useEffect} = require('react'); const attachHorizontalWheel=()=>{}; const ChevronLeft=()=>null; const ChevronRight=()=>null;
 ${highlight}
 ${timeline}
 exports.Highlight=InspectorHighlight; exports.Timeline=InspectorCallTimeline;`, { loader: 'jsx', jsx: 'automatic', format: 'cjs' }).code;

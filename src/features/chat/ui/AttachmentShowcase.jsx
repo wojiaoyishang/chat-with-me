@@ -3,6 +3,7 @@ import { Transition } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, X, ImageOff } from 'lucide-react';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
+import { attachHorizontalWheel } from '@/lib/horizontalWheel.js';
 import { isAttachmentVisionEnabled, isImageAttachment, normalizeAttachmentList } from '../attachmentVision.js';
 
 // 将格式化文件大小的函数移到组件外部，避免每次渲染都重新创建
@@ -326,6 +327,8 @@ const AttachmentShowcase = memo(
             const container = scrollContainerRef.current;
             if (!container) return undefined;
 
+            const detachWheel = attachHorizontalWheel(container);
+
             let frameId = window.requestAnimationFrame(checkScrollShadows);
             const scheduleCheck = () => {
                 window.cancelAnimationFrame(frameId);
@@ -340,6 +343,7 @@ const AttachmentShowcase = memo(
             if (container.parentElement) resizeObserver?.observe(container.parentElement);
 
             return () => {
+                detachWheel();
                 window.cancelAnimationFrame(frameId);
                 container.removeEventListener('scroll', scheduleCheck);
                 window.removeEventListener('resize', scheduleCheck);
