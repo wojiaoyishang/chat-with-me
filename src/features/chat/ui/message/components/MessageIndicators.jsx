@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Layers3, Wrench } from 'lucide-react';
+import { tokenSpeedColor } from '../utils/tokenSpeedColor.js';
 
 /** Display backend descriptors; visibility, measurements and peaks remain server owned. */
 export default function MessageIndicators({ indicators }) {
@@ -15,16 +16,14 @@ export default function MessageIndicators({ indicators }) {
                     typeof item.value === 'number'
                         ? item.value.toLocaleString(undefined, { maximumFractionDigits: 1 })
                         : String(item.value ?? '');
-                const ratio = Math.max(0, Math.min(1, Number(item.relativeSpeed) || 0));
-                const color = speed ? `hsl(158 ${20 + 65 * ratio}% ${43 - 12 * ratio}%)` : undefined;
-                const backgroundColor = speed ? `hsl(158 ${20 + 65 * ratio}% ${97 - 6 * ratio}%)` : undefined;
+                const appearance = speed ? tokenSpeedColor(item.speedTrend) : {};
                 const title = `${item.label || ''} ${value}${item.unit ? ` ${item.unit}` : ''}${item.approximate ? '（估算）' : ''}${item.description ? ` · ${item.description}` : ''}`;
                 return (
                     <motion.span
                         key={item.id}
                         layout="position"
                         initial={{ opacity: 0, scale: 0.9, y: -4 }}
-                        animate={{ opacity: 1, scale: 1, y: 0, ...(speed ? { color, backgroundColor } : {}) }}
+                        animate={{ opacity: 1, scale: 1, y: 0, ...appearance }}
                         exit={{ opacity: 0, scale: 0.9, y: -4 }}
                         transition={
                             reduceMotion
