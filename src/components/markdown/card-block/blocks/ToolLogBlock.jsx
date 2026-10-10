@@ -6,6 +6,7 @@ import { toSafeString } from '../utils.js';
 import OutputToolbar from './OutputToolbar.jsx';
 import useFollowOutputScroll from './useFollowOutputScroll.js';
 import ImageGallery from '@/features/images/ImageGallery.jsx';
+import { imageSlides } from '@/features/images/useImageViewer.js';
 
 const TOOL_LOG_TITLE_RE = /^\s*\[TITLE:([^\]]+)]\s*$/i;
 const TOOL_LOG_PROTOCOL_BOUNDARY_RE =
@@ -388,7 +389,25 @@ const ToolLogBlock = memo(
                 return parseToolLogContent(content);
             }, [content]);
 
-        const hasBody = bodySegments.length > 0;
+        const { visibleSegments, imageSummary, hasGallery } = useMemo(() => {
+            const hasGallery = status === 'done' && imageSlides(images).length > 0;
+            if (!hasGallery) return { visibleSegments: bodySegments, hasGallery };
+            let imageSummary;
+            const visibleSegments = bodySegments.flatMap((segment) => {
+                if (segment.type !== 'text') return [segment];
+                const lines = segment.content.split('\n').filter((line) => {
+                    if (!imageSummary && /^AI 已按需读取 \d+ 张图片。?$/.test(line.trim())) {
+                        imageSummary = line.trim().replace(/。$/, '');
+                        return false;
+                    }
+                    return true;
+                });
+                const content = lines.join('\n');
+                return content.trim() ? [{ ...segment, content }] : [];
+            });
+            return { visibleSegments, imageSummary, hasGallery };
+        }, [bodySegments, images, status]);
+        const hasBody = visibleSegments.length > 0;
         const hasCodeProcess = useMemo(() => {
             return bodySegments.some((segment) => segment.type === 'terminal');
         }, [bodySegments]);
@@ -482,7 +501,7 @@ const ToolLogBlock = memo(
                         )}
                     </div>
                 ) : (
-                    hasBody && (
+                    (hasBody || hasGallery) && (
                         <div className={`mt-1.5 -mx-2.5 overflow-hidden border-t ${tone.bodyWrap}`}>
                             {hasCodeProcess && (
                                 <OutputToolbar
@@ -493,7 +512,7 @@ const ToolLogBlock = memo(
                                 />
                             )}
 
-                            <div
+                            {hasBody && <div
                                 ref={scrollContainerRef}
                                 onScroll={handleScroll}
                                 onTouchMove={handleTouchMove}
@@ -501,7 +520,7 @@ const ToolLogBlock = memo(
                                 className="pretty-scrollbar max-h-[300px] overflow-auto px-2.5 py-1.5 [scrollbar-gutter:stable]"
                             >
                                 <div className="space-y-1.5">
-                                    {bodySegments.map((segment, index) => {
+                                    {visibleSegments.map((segment, index) => {
                                         return (
                                             <ToolLogBodySegment
                                                 key={`${segment.type}-${index}`}
@@ -511,11 +530,11 @@ const ToolLogBlock = memo(
                                         );
                                     })}
                                 </div>
-                            </div>
+                            </div>}
+                            {hasGallery && <ImageGallery images={images} label={imageSummary} className="px-2.5 py-1.5" />}
                         </div>
                     )
                 )}
-                {isDone && !showAudit && <ImageGallery images={images} />}
             </div>
         );
     },

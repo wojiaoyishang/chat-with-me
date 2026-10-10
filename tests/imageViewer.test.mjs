@@ -128,7 +128,7 @@ test("viewed-image feedback expands into a gallery with zoom, navigation and clo
               images,
             }),
           }),
-          React.createElement(Log, {id:'view-images', content:`[TITLE:调用工具 vision_inspect_files]\nAI 已按需读取 2 张图片。\n[IMAGES:${JSON.stringify(images)}]\n[DONE]`}),
+          React.createElement(Log, {id:'view-images', content:`[TITLE:调用工具 vision_inspect_files]\nAI 已按需读取 2 张图片。\nthird.png：资源不可用\n[IMAGES:${JSON.stringify(images)}]\n[DONE]`}),
           React.createElement(Viewer),
         ),
       ),
@@ -136,12 +136,17 @@ test("viewed-image feedback expands into a gallery with zoom, navigation and clo
     assert.equal(document.querySelectorAll("img[data-image-viewer]").length, 0);
     assert.equal(document.querySelector('[data-execution-status-id] [aria-expanded]'), null);
     assert.ok(!document.body.textContent.includes('[IMAGES:'));
+    const card = document.querySelector('[data-card-block-id="view-images"]');
+    assert.equal(card.textContent.match(/AI 已按需读取 2 张图片/g)?.length, 1);
+    assert.equal(card.querySelector('[aria-expanded]').textContent, 'AI 已按需读取 2 张图片');
+    assert.ok(card.textContent.includes('third.png：资源不可用'));
     await act(async () => document.querySelector("[aria-expanded]").click());
     assert.equal(document.querySelectorAll("img[data-image-viewer]").length, 2);
     assert.equal(
       document.querySelector("[aria-expanded]").getAttribute("aria-expanded"),
       "true",
     );
+    assert.equal(card.querySelector('[aria-expanded]').textContent, 'AI 已按需读取 2 张图片');
     await act(async () => {
       document.querySelectorAll("img[data-image-viewer]")[1].click();
       await new Promise((resolve) => setTimeout(resolve, 50));
