@@ -20,6 +20,7 @@ const CollaboraOnlineEditor = forwardRef(({
     const [iframeLoaded, setIframeLoaded] = useState(false);
     const { t } = useTranslation();
     const iframeRef = useRef(null);
+    const spellcheckInitialized = useRef(false);
 
     // 使用 useMemo 让 targetOrigin 稳定，避免不必要的重新创建
     const targetOrigin = useMemo(() => {
@@ -33,6 +34,7 @@ const CollaboraOnlineEditor = forwardRef(({
 
     // 处理 iframe 加载成功
     const handleIframeLoad = () => {
+        spellcheckInitialized.current = false;
         setIframeLoaded(true);
         setStatus('success');
     };
@@ -77,14 +79,20 @@ const CollaboraOnlineEditor = forwardRef(({
         if (!postmessageReady || !iframeLoaded || !iframeRef.current) return;
 
         const handleMessage = (event) => {
-            if (event.origin !== targetOrigin) return;
+            if (event.origin !== targetOrigin || event.source !== iframeRef.current?.contentWindow) return;
 
             try {
-                const msg = JSON.parse(event.data);
+                const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
 
                 if (msg.MessageId === 'App_LoadingStatus' &&
                     msg.Values?.Status === 'Document_Loaded') {
                     post({ MessageId: 'Host_PostmessageReady' });
+                    if (!spellcheckInitialized.current) {
+                        post({ MessageId: 'Send_UNO_Command', Values: {
+                            Command: '.uno:SpellOnline', Args: { SpellOnline: { type: 'boolean', value: false } },
+                        } });
+                        spellcheckInitialized.current = true;
+                    }
                 }
 
                 if (onMessageReceived) onMessageReceived(msg);
@@ -98,7 +106,7 @@ const CollaboraOnlineEditor = forwardRef(({
         return () => {
             window.removeEventListener('message', handleMessage);
         };
-    }, [postmessageReady, iframeLoaded, targetOrigin, postMessage, onMessageReceived]);
+    }, [postmessageReady, iframeLoaded, targetOrigin, post, onMessageReceived]);
 
     const LoadingScreen = () => (
         <UnifiedLoadingScreen
