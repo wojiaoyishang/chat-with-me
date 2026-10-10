@@ -1,4 +1,5 @@
 import SpeechVolumeControl from '@/features/chat/speech/SpeechVolumeControl.jsx';
+import { useWindowLayer, useWindowPopoverLayer, WindowLayerContext } from '@/lib/windowLayers.js';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
@@ -43,7 +44,6 @@ const DESKTOP_MAX_WIDTH = 880;
 const MOBILE_BREAKPOINT = 640;
 const COMPACT_PANEL_WIDTH = 680;
 const VERY_COMPACT_PANEL_WIDTH = 430;
-const PLAYER_Z_INDEX = 2147483600;
 const SIDE_SNAP_DISTANCE = 28;
 const MOBILE_SIDE_SNAP_DISTANCE = 56;
 const EDGE_MARGIN = 8;
@@ -228,6 +228,7 @@ const BrowserVoiceOptionsPortal = ({
     t,
 }) => {
     const [position, setPosition] = useState(null);
+    const playerZIndex = useWindowPopoverLayer().zIndex;
 
     useEffect(() => {
         onOpenChange?.(Boolean(open));
@@ -332,7 +333,7 @@ const BrowserVoiceOptionsPortal = ({
                 left: `${position.left}px`,
                 width: `${position.width}px`,
                 maxHeight: `${position.maxHeight}px`,
-                zIndex: PLAYER_Z_INDEX + 2,
+                zIndex: playerZIndex + 2,
                 transformOrigin: position.placement === 'top' ? 'bottom left' : 'top left',
             }}
             onPointerDown={(event) => event.stopPropagation()}
@@ -426,6 +427,7 @@ const SubtitleSettingsMenuPortal = ({
     t,
 }) => {
     const [menuPosition, setMenuPosition] = useState(null);
+    const playerZIndex = useWindowPopoverLayer().zIndex;
 
     useEffect(() => {
         if (!open || typeof window === 'undefined') return undefined;
@@ -495,7 +497,7 @@ const SubtitleSettingsMenuPortal = ({
                 left: menuPosition.left,
                 width: menuPosition.width,
                 maxHeight: menuPosition.maxHeight,
-                zIndex: PLAYER_Z_INDEX + 3,
+                zIndex: playerZIndex + 3,
                 transformOrigin: menuPosition.openAbove ? 'bottom center' : 'top center',
             }}
             onPointerDown={(event) => event.stopPropagation()}
@@ -634,6 +636,8 @@ const SpeechPlayer = memo(
         t,
     }) => {
         const isVisible = ACTIVE_STATUSES.has(speechState?.status);
+        const layer = useWindowLayer(isVisible);
+        const playerZIndex = layer.zIndex;
         const panelRef = useRef(null);
         const speedButtonRef = useRef(null);
         const subtitlePositionButtonRef = useRef(null);
@@ -1382,7 +1386,7 @@ const SpeechPlayer = memo(
                     top: speedMenuPosition.top,
                     left: speedMenuPosition.left,
                     width: 152,
-                    zIndex: PLAYER_Z_INDEX + 2,
+                    zIndex: playerZIndex + 20,
                 }}
                 onPointerDown={(event) => event.stopPropagation()}
                 onMouseEnter={clearCollapseTimer}
@@ -1449,7 +1453,7 @@ const SpeechPlayer = memo(
             const tabStyle = {
                 top: `${floatingState.y}px`,
                 [dockedSide]: 0,
-                zIndex: PLAYER_Z_INDEX,
+                zIndex: playerZIndex,
             };
             const tabSideClass = dockedSide === 'left' ? 'rounded-r-2xl border-l-0' : 'rounded-l-2xl border-r-0';
 
@@ -1459,6 +1463,8 @@ const SpeechPlayer = memo(
                 <div
                     data-immersive-interactive="true"
                     ref={panelRef}
+                    data-window-layer={layer.id}
+                    onPointerDownCapture={layer.activate}
                     className="fixed pointer-events-auto touch-none"
                     style={tabStyle}
                 >
@@ -1483,7 +1489,7 @@ const SpeechPlayer = memo(
                 </div>
             );
 
-            return typeof document !== 'undefined' ? createPortal(collapsedPlayer, document.body) : collapsedPlayer;
+            return typeof document !== 'undefined' ? createPortal(<WindowLayerContext.Provider value={layer}>{collapsedPlayer}</WindowLayerContext.Provider>, document.body) : collapsedPlayer;
         }
 
         const panelStyle = {
@@ -1492,13 +1498,15 @@ const SpeechPlayer = memo(
             width: `${floatingState.width}px`,
             maxWidth: 'calc(100vw - 16px)',
             maxHeight: 'calc(100dvh - max(24px, env(safe-area-inset-bottom)))',
-            zIndex: PLAYER_Z_INDEX,
+            zIndex: playerZIndex,
         };
 
         const speechPlayerContent = (
             <>
                 <div
                     ref={panelRef}
+                    data-window-layer={layer.id}
+                    onPointerDownCapture={layer.activate}
                     data-immersive-interactive="true"
                     className="fixed pointer-events-auto"
                     style={panelStyle}
@@ -1578,7 +1586,7 @@ const SpeechPlayer = memo(
                                                 open={volumeMenuOpen}
                                                 onOpenChange={setVolumeMenuOpen}
                                                 contentRef={volumeMenuRef}
-                                                popoverZIndex={PLAYER_Z_INDEX + 2}
+                                                popoverZIndex={playerZIndex + 20}
                                                 triggerClassName="h-8 w-8 border border-gray-200/80 bg-white/80 text-gray-700 shadow-sm"
                                             />
                                             {canSelectBrowserVoice && (
@@ -1794,7 +1802,7 @@ const SpeechPlayer = memo(
             </>
         );
 
-        return typeof document !== 'undefined' ? createPortal(speechPlayerContent, document.body) : speechPlayerContent;
+        return typeof document !== 'undefined' ? createPortal(<WindowLayerContext.Provider value={layer}>{speechPlayerContent}</WindowLayerContext.Provider>, document.body) : speechPlayerContent;
     },
 );
 

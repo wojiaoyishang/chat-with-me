@@ -1,5 +1,6 @@
 import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
+import {useWindowLayer} from '@/lib/windowLayers.js';
 import {
     DEFAULT_SUBTITLE_POSITION,
     readSubtitlePosition,
@@ -13,8 +14,6 @@ import {
     normalizeSubtitleStyle,
 } from '@/features/chat/speech/subtitleSettings.js';
 
-const OVERLAY_Z_INDEX = 2147483610;
-const MENU_Z_INDEX = 2147483620;
 const MENU_MARGIN = 8;
 
 const fallbackText = (t, key, fallback) => {
@@ -118,6 +117,7 @@ const SpeechSubtitleOverlay = memo(({speechState, enabled = true, t}) => {
     const actualText = String(currentSegment?.text || '').trim();
     const displayText = previewVisible ? testText : (actualText || (isDragging ? testText : ''));
     const visible = Boolean((enabled && isActive && actualText) || previewVisible || isDragging);
+    const layer = useWindowLayer(visible);
 
     const persistPosition = useCallback((nextPosition) => {
         const normalized = saveSubtitlePosition(nextPosition);
@@ -257,7 +257,9 @@ const SpeechSubtitleOverlay = memo(({speechState, enabled = true, t}) => {
             <div
                 data-tts-overlay="true"
                 className="pointer-events-none fixed inset-0"
-                style={{zIndex: OVERLAY_Z_INDEX}}
+                data-window-layer={layer.id}
+                onPointerDownCapture={layer.activate}
+                style={{zIndex: layer.zIndex}}
                 aria-live="polite"
             >
                 <div
@@ -303,7 +305,8 @@ const SpeechSubtitleOverlay = memo(({speechState, enabled = true, t}) => {
             {contextMenu && (
                 <div
                     className="fixed rounded-2xl border border-white/70 bg-slate-950/90 p-3 text-white shadow-2xl backdrop-blur-xl"
-                    style={{left: contextMenu.left, top: contextMenu.top, width: contextMenu.width, zIndex: MENU_Z_INDEX}}
+                    data-window-layer={layer.id}
+                    style={{left: contextMenu.left, top: contextMenu.top, width: contextMenu.width, zIndex: layer.zIndex + 20}}
                     onPointerDown={(event) => event.stopPropagation()}
                     onContextMenu={(event) => event.preventDefault()}
                     role="menu"

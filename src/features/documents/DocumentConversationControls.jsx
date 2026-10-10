@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from 'react';
 import { MessagesSquare, Plus, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogPortal } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
 import ConversationsList from '@/components/sidebar/ConversationsList.jsx';
 import { onEvent } from '@/context/useEventStore.jsx';
 
@@ -55,7 +55,7 @@ export default function DocumentConversationControls({ conversationId, onSelect,
             <Dialog open={open} onOpenChange={setOpen} modal={false}>
                 <DialogPortal>
                     {/* Keep document content covered without disabling the toolbar or task panel. */}
-                    <div aria-hidden="true" className="fixed inset-x-0 bottom-0 top-14 z-40 bg-black/50" onClick={() => setOpen(false)} />
+                    <DialogOverlay className="top-14" style={{pointerEvents: 'auto'}} onClick={() => setOpen(false)} />
                 </DialogPortal>
                 <DialogContent className="flex h-[min(720px,85dvh)] max-w-[calc(100vw-2rem)] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-2xl">
                     <DialogHeader className="shrink-0 border-b px-6 py-5 text-left">

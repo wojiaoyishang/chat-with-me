@@ -3,11 +3,12 @@ import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { useWindowPopoverLayer } from '@/lib/windowLayers.js'
 
 function DropdownMenu({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
-  return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />
+  return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" modal={false} {...props} />
 }
 
 function DropdownMenuPortal({
@@ -31,9 +32,11 @@ function DropdownMenuTrigger({
 
 function DropdownMenuContent({
   className,
+  style,
   sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
+  const layer = useWindowPopoverLayer()
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
@@ -44,6 +47,8 @@ function DropdownMenuContent({
           className
         )}
         {...props}
+        data-window-layer={layer['data-window-layer']}
+        style={{...style, zIndex: layer.zIndex}}
       />
     </DropdownMenuPrimitive.Portal>
   )
@@ -222,8 +227,10 @@ function DropdownMenuSubTrigger({
 
 function DropdownMenuSubContent({
   className,
+  style,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.SubContent>) {
+  const layer = useWindowPopoverLayer()
   return (
     <DropdownMenuPrimitive.SubContent
       data-slot="dropdown-menu-sub-content"
@@ -232,6 +239,8 @@ function DropdownMenuSubContent({
         className
       )}
       {...props}
+      data-window-layer={layer['data-window-layer']}
+      style={{...style, zIndex: layer.zIndex + 1}}
     />
   )
 }

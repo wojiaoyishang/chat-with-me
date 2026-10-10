@@ -2,6 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from '
 import { createPortal } from 'react-dom';
 import { GripHorizontal, PanelRightClose, PanelRightOpen, X } from 'lucide-react';
 import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
+import { useWindowLayer, WindowLayerContext } from '@/lib/windowLayers.js';
 
 const EDGE = 10;
 const MIN_WIDTH = 360;
@@ -79,7 +80,7 @@ const FloatingDockWindow = memo(
         compactMobile = false,
         mobileFullscreen = false,
         defaultLayout = null,
-        zIndex = 2147483200,
+        zIndex = 90,
     }) => {
         const normalizeLayout = useCallback((value) => normalizeFloating(value, portalTarget), [portalTarget]);
         const [layout, setLayout] = useState(() => normalizeLayout({ ...defaultLayout, ...readLayout(storageKey) }));
@@ -291,15 +292,18 @@ const FloatingDockWindow = memo(
             };
         }, [docked, isMobile, layout, expanded, compactMobile, mobileFullscreen, portalTarget, zIndex]);
 
+        const layer = useWindowLayer(open && !docked && !portalTarget);
         if (!open || typeof document === 'undefined') return null;
 
         const panel = (
             <section
                 role="dialog"
                 aria-modal="false"
+                data-window-layer={layer.active ? layer.id : undefined}
+                onPointerDownCapture={layer.activate}
                 aria-label={typeof title === 'string' ? title : 'Execution'}
                 className={`flex min-h-0 flex-col overflow-hidden border border-gray-200 bg-white shadow-2xl ${isMobilePage ? 'rounded-none border-0' : docked || expanded ? 'rounded-none border-y-0 border-r-0' : 'rounded-2xl'} ${className}`}
-                style={panelStyle}
+                style={{ ...panelStyle, pointerEvents: 'auto', ...(layer.active ? { zIndex: layer.zIndex } : {}) }}
             >
                 {docked && !isMobile && (
                     <div
@@ -367,7 +371,8 @@ const FloatingDockWindow = memo(
             </section>
         );
 
-        return createPortal(panel, docked && dockMount ? dockMount : portalTarget || document.body);
+        return createPortal(<WindowLayerContext.Provider value={layer}>{panel}</WindowLayerContext.Provider>,
+            docked && dockMount ? dockMount : portalTarget || document.body);
     },
 );
 

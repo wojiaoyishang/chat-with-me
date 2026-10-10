@@ -5,7 +5,7 @@ import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 
-export default function ImageLightbox({ slides, index, close }) {
+export default function ImageLightbox({ slides, index, close, zIndex }) {
   return (
     <Lightbox
       open
@@ -13,7 +13,7 @@ export default function ImageLightbox({ slides, index, close }) {
       index={index}
       close={close}
       plugins={[Zoom, Fullscreen, Thumbnails]}
-      styles={{ root: { zIndex: 11900 } }}
+      styles={{ root: { zIndex } }}
       thumbnails={{ hidden: slides.length < 2, showToggle: slides.length > 1 }}
       carousel={{ finite: slides.length < 2 }}
       controller={{ closeOnBackdropClick: true }}

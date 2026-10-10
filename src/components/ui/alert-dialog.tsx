@@ -4,6 +4,7 @@ import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useBrowserBackLayer } from "@/lib/browserHistoryLayers.js"
+import { useWindowLayer, WindowLayerContext } from '@/lib/windowLayers.js'
 
 function AlertDialog({
   open,
@@ -14,6 +15,7 @@ function AlertDialog({
   const controlled = open !== undefined
   const [internalOpen, setInternalOpen] = React.useState(Boolean(defaultOpen))
   const actualOpen = controlled ? Boolean(open) : internalOpen
+  const layer = useWindowLayer(actualOpen)
 
   const handleOpenChange = React.useCallback((nextOpen: boolean) => {
     if (!controlled) setInternalOpen(nextOpen)
@@ -26,12 +28,14 @@ function AlertDialog({
   }, {kind: "alert-dialog"})
 
   return (
+    <WindowLayerContext.Provider value={layer}>
     <AlertDialogPrimitive.Root
       data-slot="alert-dialog"
       open={actualOpen}
       onOpenChange={handleOpenChange}
       {...props}
     />
+    </WindowLayerContext.Provider>
   )
 }
 
@@ -53,8 +57,10 @@ function AlertDialogPortal({
 
 function AlertDialogOverlay({
   className,
+  style,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Overlay>) {
+  const layer = React.useContext(WindowLayerContext)
   return (
     <AlertDialogPrimitive.Overlay
       data-slot="alert-dialog-overlay"
@@ -63,17 +69,22 @@ function AlertDialogOverlay({
         className
       )}
       {...props}
+      data-window-layer={layer?.id}
+      style={{...style, zIndex: layer ? layer.zIndex - 1 : undefined}}
     />
   )
 }
 
 function AlertDialogContent({
   className,
+  style,
+  onPointerDownCapture,
   size = "default",
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Content> & {
   size?: "default" | "sm"
 }) {
+  const layer = React.useContext(WindowLayerContext)
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
@@ -85,6 +96,9 @@ function AlertDialogContent({
           className
         )}
         {...props}
+        data-window-layer={layer?.id}
+        style={{...style, zIndex: layer?.zIndex}}
+        onPointerDownCapture={(event) => {layer?.activate(); onPointerDownCapture?.(event)}}
       />
     </AlertDialogPortal>
   )

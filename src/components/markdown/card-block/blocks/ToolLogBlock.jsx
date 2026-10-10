@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { toSafeString } from '../utils.js';
 import OutputToolbar from './OutputToolbar.jsx';
 import useFollowOutputScroll from './useFollowOutputScroll.js';
+import ImageGallery from '@/features/images/ImageGallery.jsx';
 
 const TOOL_LOG_TITLE_RE = /^\s*\[TITLE:([^\]]+)]\s*$/i;
 const TOOL_LOG_PROTOCOL_BOUNDARY_RE =
@@ -126,10 +127,15 @@ const parseToolLogContent = (content) => {
     let isInsideTerminal = false;
     let auditStatus = '';
     let auditDetails = null;
+    let images = [];
 
     const contentLines = [];
 
     for (const line of lines) {
+        if (!isInsideTerminal && line.startsWith('[IMAGES:') && line.endsWith(']')) {
+            try { images = JSON.parse(line.slice('[IMAGES:'.length, -1)); } catch { /* Partial metadata is not log text. */ }
+            continue;
+        }
         if (!isInsideTerminal && line.startsWith('[TOOL_AUDIT_DETAIL:') && line.endsWith(']')) {
             try {
                 const detail = JSON.parse(line.slice('[TOOL_AUDIT_DETAIL:'.length, -1));
@@ -205,6 +211,7 @@ const parseToolLogContent = (content) => {
             title: titleText || 'Tool Log',
             auditStatus,
             auditDetails,
+            images,
             bodySegments: parseToolLogBodySegments(contentWithoutStatus.trimStart()),
             status,
             startTimeMs,
@@ -221,6 +228,7 @@ const parseToolLogContent = (content) => {
         title,
         auditStatus,
         auditDetails,
+        images,
         bodySegments: parseToolLogBodySegments(body),
         status,
         startTimeMs,
@@ -375,7 +383,7 @@ const ToolLogBlock = memo(
     ({ content = '', id }) => {
         const { t } = useTranslation();
         const [showAudit, setShowAudit] = useState(false);
-        const { title, auditStatus, auditDetails, bodySegments, status, startTimeMs, doneTimeMs, failedTimeMs } =
+        const { title, auditStatus, auditDetails, images, bodySegments, status, startTimeMs, doneTimeMs, failedTimeMs } =
             useMemo(() => {
                 return parseToolLogContent(content);
             }, [content]);
@@ -507,6 +515,7 @@ const ToolLogBlock = memo(
                         </div>
                     )
                 )}
+                {isDone && !showAudit && <ImageGallery images={images} />}
             </div>
         );
     },

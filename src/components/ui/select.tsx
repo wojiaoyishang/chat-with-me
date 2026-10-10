@@ -3,6 +3,7 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 import { Select as SelectPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
+import { useWindowPopoverLayer } from '@/lib/windowLayers.js'
 
 function Select({
   ...props
@@ -50,11 +51,13 @@ function SelectTrigger({
 
 function SelectContent({
   className,
+  style,
   children,
   position = "popper",
   align = "start",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  const layer = useWindowPopoverLayer()
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
@@ -68,6 +71,8 @@ function SelectContent({
         position={position}
         align={align}
         {...props}
+        data-window-layer={layer['data-window-layer']}
+        style={{...style, zIndex: layer.zIndex}}
       >
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport

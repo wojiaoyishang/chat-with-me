@@ -40,6 +40,7 @@ test("viewed-image feedback expands into a gallery with zoom, navigation and clo
   await build({
     stdin: {
       contents: `export {default as Status} from './src/features/execution/ExecutionStatus.jsx';
+        export {default as Log} from './src/components/markdown/card-block/blocks/ToolLogBlock.jsx';
         export {default as Viewer} from './src/features/images/ImageViewer.jsx';
         export {useImageViewer, closeImageViewer, imageSlides} from './src/features/images/useImageViewer.js';`,
       resolveDir: process.cwd(),
@@ -54,6 +55,7 @@ test("viewed-image feedback expands into a gallery with zoom, navigation and clo
       {
         name: "image-ui",
         setup(builder) {
+          builder.onResolve({filter:/^\.\/OutputToolbar/},()=>({path:'bubble',namespace:'mock'}));
           builder.onResolve({ filter: /^react-i18next$/ }, () => ({
             path: "i18n",
             namespace: "mock",
@@ -91,7 +93,7 @@ test("viewed-image feedback expands into a gallery with zoom, navigation and clo
       },
     ],
   });
-  const { Status, Viewer, useImageViewer, closeImageViewer, imageSlides } =
+  const { Status, Log, Viewer, useImageViewer, closeImageViewer, imageSlides } =
     await import("../temp/image-viewer-test.mjs");
   assert.deepEqual(
     imageSlides([
@@ -126,11 +128,14 @@ test("viewed-image feedback expands into a gallery with zoom, navigation and clo
               images,
             }),
           }),
+          React.createElement(Log, {id:'view-images', content:`[TITLE:调用工具 vision_inspect_files]\nAI 已按需读取 2 张图片。\n[IMAGES:${JSON.stringify(images)}]\n[DONE]`}),
           React.createElement(Viewer),
         ),
       ),
     );
     assert.equal(document.querySelectorAll("img[data-image-viewer]").length, 0);
+    assert.equal(document.querySelector('[data-execution-status-id] [aria-expanded]'), null);
+    assert.ok(!document.body.textContent.includes('[IMAGES:'));
     await act(async () => document.querySelector("[aria-expanded]").click());
     assert.equal(document.querySelectorAll("img[data-image-viewer]").length, 2);
     assert.equal(

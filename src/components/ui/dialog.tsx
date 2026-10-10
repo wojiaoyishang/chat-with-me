@@ -5,16 +5,20 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useBrowserBackLayer } from "@/lib/browserHistoryLayers.js"
+import { useWindowLayer, WindowLayerContext, isTopWindowLayer, isOtherWindowTarget } from "@/lib/windowLayers.js"
 
 function Dialog({
   open,
   defaultOpen,
   onOpenChange,
+  modal = true,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   const controlled = open !== undefined
   const [internalOpen, setInternalOpen] = React.useState(Boolean(defaultOpen))
   const actualOpen = controlled ? Boolean(open) : internalOpen
+  const layer = useWindowLayer(actualOpen)
+  const windowContext = React.useMemo(() => ({...layer, backdrop: modal}), [layer, modal])
 
   const handleOpenChange = React.useCallback((nextOpen: boolean) => {
     if (!controlled) setInternalOpen(nextOpen)
@@ -27,12 +31,15 @@ function Dialog({
   }, {kind: "dialog"})
 
   return (
+    <WindowLayerContext.Provider value={windowContext}>
     <DialogPrimitive.Root
       data-slot="dialog"
       open={actualOpen}
       onOpenChange={handleOpenChange}
       {...props}
+      modal={false}
     />
+    </WindowLayerContext.Provider>
   )
 }
 
@@ -56,16 +63,23 @@ function DialogClose({
 
 function DialogOverlay({
   className,
+  style,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+  const layer = React.useContext(WindowLayerContext)
+  if (!layer?.active) return null
   return (
-    <DialogPrimitive.Overlay
+    <div
+      {...props}
+      aria-hidden="true"
+      data-state="open"
+      data-window-layer={layer.id}
       data-slot="dialog-overlay"
       className={cn(
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
         className
       )}
-      {...props}
+      style={{...style, zIndex: layer.zIndex - 1, pointerEvents: style?.pointerEvents || 'none'}}
     />
   )
 }
@@ -75,14 +89,19 @@ function DialogContent({
   children,
   showCloseButton = true,
   overlayClassName,
+  style,
+  onPointerDownCapture,
+  onInteractOutside,
+  onEscapeKeyDown,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
   overlayClassName?: string
 }) {
+  const layer = React.useContext(WindowLayerContext)
   return (
     <DialogPortal data-slot="dialog-portal">
-      <DialogOverlay className={overlayClassName} />
+      {layer?.backdrop && <DialogOverlay className={overlayClassName} />}
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
@@ -90,6 +109,20 @@ function DialogContent({
           className
         )}
         {...props}
+        data-window-layer={layer?.id}
+        style={{...style, zIndex: layer?.zIndex, pointerEvents: layer?.active ? 'auto' : 'none'}}
+        onPointerDownCapture={(event) => {
+          layer?.activate()
+          onPointerDownCapture?.(event)
+        }}
+        onInteractOutside={(event) => {
+          onInteractOutside?.(event)
+          if (layer && (!isTopWindowLayer(layer.id) || isOtherWindowTarget(event, layer.id))) event.preventDefault()
+        }}
+        onEscapeKeyDown={(event) => {
+          onEscapeKeyDown?.(event)
+          if (layer && !isTopWindowLayer(layer.id)) event.preventDefault()
+        }}
       >
         {children}
         {showCloseButton && (

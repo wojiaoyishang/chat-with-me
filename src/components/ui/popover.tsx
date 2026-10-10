@@ -2,6 +2,7 @@ import * as React from "react"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 
 import { cn } from "@/lib/utils"
+import { useWindowPopoverLayer } from '@/lib/windowLayers.js'
 
 function Popover({
   ...props
@@ -17,10 +18,12 @@ function PopoverTrigger({
 
 function PopoverContent({
   className,
+  style,
   align = "center",
   sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+  const layer = useWindowPopoverLayer()
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content
@@ -32,6 +35,8 @@ function PopoverContent({
           className
         )}
         {...props}
+        data-window-layer={layer['data-window-layer']}
+        style={{...style, zIndex: layer.zIndex}}
       />
     </PopoverPrimitive.Portal>
   )
