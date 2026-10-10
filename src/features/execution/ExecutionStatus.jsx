@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { memo, useEffect, useMemo } from 'react';
-import { Check, CircleAlert, CircleX, Loader2, LoaderCircle, RotateCcw, Pause } from 'lucide-react';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { Check, CircleAlert, CircleX, Loader2, LoaderCircle, RotateCcw, Pause, ChevronDown } from 'lucide-react';
+import ResourceImage from '@/components/markdown/ResourceImage.jsx';
+import { imageSlides } from '@/features/images/useImageViewer.js';
 
 import ExecutionGuidanceBubble from './ExecutionGuidanceBubble.jsx';
 import { openExecution, upsertExecution, useExecutionStore } from './useExecutionStore.js';
@@ -33,6 +35,8 @@ const parseExecution = (content, conversationId) => {
 const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
     const { t } = useTranslation();
     const execution = useMemo(() => parseExecution(content, conversationId), [content, conversationId]);
+    const [imagesExpanded, setImagesExpanded] = useState(false);
+    const images = useMemo(() => imageSlides(execution?.images || []), [execution?.images]);
     const liveExecution = useExecutionStore((state) => {
         const cid = String(execution?.conversationId || conversationId || '').trim();
         const executionId = String(execution?.executionId || '').trim();
@@ -138,6 +142,19 @@ const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
                     )}
                 </span>
             </button>
+            {completed && images.length > 0 && (
+                <div className="mt-0.5 px-1.5">
+                    <button type="button" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                        aria-expanded={imagesExpanded} onClick={() => setImagesExpanded((value) => !value)}>
+                        <ChevronDown className={`size-3.5 transition-transform ${imagesExpanded ? 'rotate-180' : ''}`} />
+                        {imagesExpanded ? '收起图片' : `展开查看的 ${images.length} 张图片`}
+                    </button>
+                    {imagesExpanded && <div className="cwm-image-gallery mt-2 flex flex-wrap gap-2">
+                        {images.map((image, index) => <ResourceImage key={`${image.src}:${index}`} src={image.src} alt={image.alt}
+                            className="h-24 w-32 rounded-lg border object-contain bg-muted/20" />)}
+                    </div>}
+                </div>
+            )}
             {guidanceActivities.map((activity) => (
                 <ExecutionGuidanceBubble key={activity.id} activity={activity} execution={liveExecution || execution} />
             ))}

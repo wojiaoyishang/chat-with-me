@@ -431,7 +431,7 @@ const createComponents = ({
         td: ({ children, style }) => <td style={style}>{children}</td>,
 
         img: ({ src, alt, className, ...props }) => {
-            return <ResourceImage key={src} src={src} alt={alt} className={`cwm-md-image ${className || ''}`} {...props} />;
+            return <ResourceImage key={src} src={src} alt={alt} galleryId={contextId} className={`cwm-md-image ${className || ''}`} {...props} />;
         },
 
         'card-replace': ({ id, type, node }) => {

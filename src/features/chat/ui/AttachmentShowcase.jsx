@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, X, ImageOff } from 'lucide-react';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import { attachHorizontalWheel } from '@/lib/horizontalWheel.js';
+import { openImageViewer } from '@/features/images/useImageViewer.js';
 import { isAttachmentVisionEnabled, isImageAttachment, normalizeAttachmentList } from '../attachmentVision.js';
 
 // 将格式化文件大小的函数移到组件外部，避免每次渲染都重新创建
@@ -30,7 +31,7 @@ const isDefaultFileIcon = (attachment) => {
  * 使用memo包裹，避免不必要的重新渲染
  */
 const AttachmentItem = memo(
-    ({ attachment, index, onRemove, onVisionToggle, visionSupported, msgMode, t }) => {
+    ({ attachment, index, onRemove, onVisionToggle, onPreviewImage, visionSupported, msgMode, t }) => {
         const resolvedPreviewUrl =
             attachment.previewType === 'svg' ? attachment.preview : resolveResourceUrl(attachment.preview);
         const resolvedDownloadUrl = resolveResourceUrl(attachment.downloadUrl);
@@ -49,10 +50,12 @@ const AttachmentItem = memo(
         );
 
         const handleClick = useCallback(() => {
-            if (resolvedDownloadUrl) {
+            if (imageAttachment && !unavailable) {
+                onPreviewImage(attachment);
+            } else if (resolvedDownloadUrl) {
                 window.open(resolvedDownloadUrl, '_blank', 'noopener,noreferrer');
             }
-        }, [resolvedDownloadUrl]);
+        }, [resolvedDownloadUrl, imageAttachment, unavailable, onPreviewImage, attachment]);
 
         const handleVisionToggle = useCallback(
             (event) => {
@@ -82,6 +85,14 @@ const AttachmentItem = memo(
                         resolvedDownloadUrl ? 'cursor-pointer transition-shadow hover:shadow-sm' : ''
                     }`}
                     onClick={handleClick}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                        if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+                            event.preventDefault();
+                            handleClick();
+                        }
+                    }}
                 >
                     <div
                         className={`w-10 h-10 flex-shrink-0 flex items-center justify-center overflow-hidden ${
@@ -176,6 +187,7 @@ const AttachmentItem = memo(
             prevProps.msgMode === nextProps.msgMode &&
             prevProps.onRemove === nextProps.onRemove &&
             prevProps.onVisionToggle === nextProps.onVisionToggle &&
+            prevProps.onPreviewImage === nextProps.onPreviewImage &&
             prevProps.visionSupported === nextProps.visionSupported &&
             prevProps.t === nextProps.t
         );
@@ -271,6 +283,11 @@ const AttachmentShowcase = memo(
         const [showLeftShadow, setShowLeftShadow] = useState(false);
         const [showRightShadow, setShowRightShadow] = useState(false);
         const normalizedAttachments = useMemo(() => normalizeAttachmentList(attachmentsMeta), [attachmentsMeta]);
+        const previewImage = useCallback((selected) => {
+            const images = normalizedAttachments.filter((item) => isImageAttachment(item) && item.artifactStatus !== 'unavailable');
+            openImageViewer(images.map((item) => ({ src: item.downloadUrl || item.preview, alt: item.name })),
+                Math.max(0, images.indexOf(selected)));
+        }, [normalizedAttachments]);
 
         // 使用useCallback缓存函数，避免每次渲染都创建新函数
         const checkScrollShadows = useCallback(() => {
@@ -316,12 +333,13 @@ const AttachmentShowcase = memo(
                     index={index}
                     onRemove={onRemove}
                     onVisionToggle={onVisionToggle}
+                    onPreviewImage={previewImage}
                     visionSupported={visionSupported}
                     msgMode={msgMode}
                     t={t}
                 />
             ));
-        }, [normalizedAttachments, onRemove, onVisionToggle, visionSupported, msgMode, t]);
+        }, [normalizedAttachments, onRemove, onVisionToggle, previewImage, visionSupported, msgMode, t]);
 
         useLayoutEffect(() => {
             const container = scrollContainerRef.current;

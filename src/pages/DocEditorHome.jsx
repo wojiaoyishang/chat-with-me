@@ -446,6 +446,8 @@ const DocEditorHome = ({
     const { t } = useTranslation();
 
     // 所有状态和 refs 放在顶部
+    const onNewDocumentIdRef = useRef(onNewDocumentId);
+    onNewDocumentIdRef.current = onNewDocumentId;
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const previewUpdatesRef = useRef(new Map());
@@ -610,8 +612,8 @@ const DocEditorHome = ({
         setIsOpenDocEditorOpen(false);
         setEditorType(null);
         setDocEditorUrl('');
-        onNewDocumentId(null);
-    }, [onNewDocumentId]);
+        onNewDocumentIdRef.current(null);
+    }, []);
 
     const handleCloseDocEditor = useCallback(() => {
         if (docModifiedStatusRef.current === 'Modified') {
@@ -719,10 +721,12 @@ const DocEditorHome = ({
                 setIsOpenDocEditorOpen(true);
             })
             .catch((error) => {
-                if (!controller.signal.aborted) toast.error(error.message);
+                if (controller.signal.aborted) return;
+                toast.error(error.message);
+                handleCloseDocEditorConfirm();
             });
         return () => controller.abort();
-    }, [documentId]);
+    }, [documentId, handleCloseDocEditorConfirm]);
 
     // 渲染元素
     const uploadingFileCards = uploadFiles.map((file) => (

@@ -15,6 +15,7 @@ import LoginPage from './pages/LoginPage.jsx';
 import MessageHistoryMapPage from '@/features/message-map/MessageHistoryMapPage.jsx';
 import UniversalModalHost from '@/components/modal/UniversalModalHost.jsx';
 import { subscribeBrowserRoutePop } from '@/lib/browserHistoryLayers.js';
+import ImageViewer from '@/features/images/ImageViewer.jsx';
 
 const router = createBrowserRouter([
     { path: '/chat-window/:conversationId?', element: <DashboardPage standaloneChat /> },
@@ -32,15 +33,9 @@ const router = createBrowserRouter([
         element: <LoginPage />,
     },
     {
-        path: '/doc',
-        element: <DashboardPage type={'doc'} />,
-    },
-    {
-        path: '/doc/:documentId/:conversationId',
-        element: <DashboardPage type={'doc'} />,
-    },
-    {
-        path: '/doc/:documentId',
+        // Keep one route identity so history-layer POPs and chat selection do not
+        // remount the live document iframe when only its conversation changes.
+        path: '/doc/:documentId?/:conversationId?',
         element: <DashboardPage type={'doc'} />,
     },
 ]);
@@ -79,6 +74,7 @@ ReactDOM.createRoot(root).render(
         <MyToaster /> {/* 跨页面的吐司组件 */}
         <FatalErrorPopoverElement /> {/* 错误提示 */}
         <UniversalModalHost /> {/* 后端驱动的通用弹窗 */}
+        <ImageViewer />
         <WebSocketProvider>
             <HistorySynchronizedRouter />
         </WebSocketProvider>

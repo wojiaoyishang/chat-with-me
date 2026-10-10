@@ -29,13 +29,15 @@ function DocumentThumbnail({ documentId, content }) {
             className="pointer-events-none absolute inset-0 overflow-hidden bg-white select-none"
         >
             {visible && content?.trim() ? (
-                <div className="absolute left-4 top-3 w-[200%] origin-top-left scale-50 overflow-hidden text-slate-600 [&_h1]:text-3xl [&_h2]:text-2xl [&_p]:text-base [&_img]:max-h-40 [&_img]:object-cover">
-                    <MarkdownRenderer
-                        content={content}
-                        resourceBaseUrl={`${BASE_BACKEND_URL}${apiEndpoint.DOCUMENT_ENDPOINT}/${encodeURIComponent(documentId)}/assets/`}
-                        contextId={`document-thumbnail:${documentId}`}
-                        renderSurface="document-preview"
-                    />
+                <div className="absolute inset-x-4 top-3 bottom-0 overflow-hidden">
+                    <div className="w-[200%] origin-top-left scale-50 overflow-hidden text-slate-600 [&_h1]:text-3xl [&_h2]:text-2xl [&_p]:text-base [&_img]:max-h-40 [&_img]:object-cover">
+                        <MarkdownRenderer
+                            content={content}
+                            resourceBaseUrl={`${BASE_BACKEND_URL}${apiEndpoint.DOCUMENT_ENDPOINT}/${encodeURIComponent(documentId)}/assets/`}
+                            contextId={`document-thumbnail:${documentId}`}
+                            renderSurface="document-preview"
+                        />
+                    </div>
                 </div>
             ) : (
                 <div className="space-y-2.5 px-5 py-5">
