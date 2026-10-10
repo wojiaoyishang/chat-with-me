@@ -22,6 +22,7 @@ import { FloatingDockWindow } from '@/components/window';
 import { Button } from '@/components/ui/button.tsx';
 import { upsertExecution } from './useExecutionStore.js';
 import WorkspaceTransferCard from '@/features/workspace/components/WorkspaceTransferCard.jsx';
+import useExecutionNavigation from './useExecutionNavigation.js';
 
 const realtimeActionErrorMessage = (response, fallback = '操作失败') =>
     response?.value || response?.message || (response?.code ? String(response.code) : '') || fallback;
@@ -84,9 +85,10 @@ const timelineTimestamp = (item) => {
 };
 
 const ExecutionWindow = memo(
-    ({ execution, open, onOpenChange, dockTarget = null, dockMount = null, messages = {} }) => {
+    ({ execution, open, onOpenChange, dockTarget = null, dockMount = null, messages = {}, navigationRequest = null,
+        onNavigationHandled }) => {
         const [actionPending, setActionPending] = useState(false);
-        const [autoFollow, setAutoFollow] = useState(true);
+        const [autoFollow, setAutoFollow] = useState(!navigationRequest);
         const scrollRef = useRef(null);
         const contentRef = useRef(null);
         const status = String(execution?.status || '');
@@ -144,6 +146,8 @@ const ExecutionWindow = memo(
             });
             return items;
         }, [activities, toolCards]);
+        const highlightedKey = useExecutionNavigation({ request: navigationRequest, open, execution, timelineItems,
+            ownerMessageId, ownerReplacement, scrollRef, setAutoFollow, onHandled: onNavigationHandled });
 
         const scrollToBottom = useCallback((behavior = 'auto') => {
             const node = scrollRef.current;
@@ -180,13 +184,13 @@ const ExecutionWindow = memo(
         }, [autoFollow]);
 
         useEffect(() => {
-            if (!open || !autoFollow) return undefined;
+            if (!open || !autoFollow || navigationRequest) return undefined;
             const frame = requestAnimationFrame(() => scrollToBottom('auto'));
             return () => cancelAnimationFrame(frame);
-        }, [autoFollow, execution?.updatedAt, execution?.executionId, open, scrollToBottom, timelineItems.length]);
+        }, [autoFollow, execution?.updatedAt, execution?.executionId, navigationRequest, open, scrollToBottom, timelineItems.length]);
 
         useEffect(() => {
-            if (!open || !autoFollow || !contentRef.current || typeof ResizeObserver === 'undefined') return undefined;
+            if (!open || !autoFollow || navigationRequest || !contentRef.current || typeof ResizeObserver === 'undefined') return undefined;
             let frame = 0;
             const observer = new ResizeObserver(() => {
                 cancelAnimationFrame(frame);
@@ -197,7 +201,7 @@ const ExecutionWindow = memo(
                 cancelAnimationFrame(frame);
                 observer.disconnect();
             };
-        }, [autoFollow, open, scrollToBottom]);
+        }, [autoFollow, navigationRequest, open, scrollToBottom]);
 
         const requestAction = async (event) => {
             if (actionPending) return;
@@ -379,7 +383,8 @@ const ExecutionWindow = memo(
                                             return (
                                                 <div
                                                     key={item.key}
-                                                    className="rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm"
+                                                    className={`rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm transition-shadow ${highlightedKey === item.key ? 'ring-2 ring-blue-200' : ''}`}
+                                                    data-execution-navigation-active={highlightedKey === item.key || undefined}
                                                     data-execution-timeline-kind="tool_card"
                                                     data-task-tool-call-id={card.toolCallId || undefined}
                                                     data-task-tool-surface={card.surface || undefined}
@@ -460,8 +465,10 @@ const ExecutionWindow = memo(
                                         return (
                                             <div
                                                 key={item.key || `${activity.time}-${index}`}
-                                                className={`flex gap-3 rounded-lg px-2 py-2 transition hover:bg-gray-50 ${activity.state === 'withdrawn' ? 'border border-gray-200 bg-gray-100/60' : userGuidance ? 'border border-blue-100 bg-blue-50/50' : ''}`}
+                                                className={`flex gap-3 rounded-lg px-2 py-2 transition hover:bg-gray-50 ${highlightedKey === item.key ? 'ring-2 ring-blue-200' : ''} ${activity.state === 'withdrawn' ? 'border border-gray-200 bg-gray-100/60' : userGuidance ? 'border border-blue-100 bg-blue-50/50' : ''}`}
                                                 data-execution-timeline-kind="activity"
+                                                data-task-activity-id={activity.id || undefined}
+                                                data-execution-navigation-active={highlightedKey === item.key || undefined}
                                                 data-execution-activity-kind={activity?.kind || undefined}
                                                 data-execution-activity-source={activity?.source || undefined}
                                             >

@@ -23,6 +23,10 @@ V41 exposes a new **Task Mode workspace** backed by the existing durable
   only for an active durable Execution and is projected immediately as a user-message
   variant; backend snapshots own the waiting/consumed/responded lifecycle.
 - `useExecutionStore` is a frontend projection only; server snapshots remain authoritative.
+- Inline nodes retain their own `navigationTarget` (toolCallId/replacementId or activityId).
+  Opening one issues a separate browser-local navigation request, preserving the latest server snapshot.
+  Task Window expands the target tool, waits for its result replacement, scrolls only its own container,
+  and briefly highlights the matching row. This disables automatic bottom following until explicitly resumed.
 
 ## Task completion enforcement
 

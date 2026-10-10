@@ -119,12 +119,17 @@ const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
         null;
     const guidancePromptLabel = String(guidancePrompt?.label || '').trim();
     const openTarget = liveExecution || execution;
+    const openAtNode = () => openExecution(openTarget, {
+        ...execution.navigationTarget,
+        statusId: nodeStatusId,
+        toolCallId: execution.navigationTarget?.toolCallId || execution.toolCallId || null,
+    });
 
     return (
         <div className="my-2 w-full" data-execution-status-id={nodeStatusId || undefined}>
             <button
                 type="button"
-                onClick={() => openExecution(openTarget)}
+                onClick={openAtNode}
                 className="group flex max-w-full flex-col items-start rounded-lg px-1.5 py-1 text-left text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
                 title="查看执行过程"
             >
@@ -144,7 +149,7 @@ const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
             {guidancePromptLabel && (
                 <button
                     type="button"
-                    onClick={() => openExecution(openTarget)}
+                    onClick={openAtNode}
                     className="group mt-0.5 flex max-w-full items-center gap-1.5 rounded-md px-1.5 py-0.5 text-left text-xs leading-5 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
                     title="查看执行过程"
                     data-execution-guidance-prompt="true"

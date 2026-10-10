@@ -1,8 +1,8 @@
-import {memo, useEffect, useMemo, useRef, useState} from 'react';
+import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {onEvent} from '@/context/useEventStore.jsx';
 import ExecutionWindow from './ExecutionWindow.jsx';
-import {closeExecution, upsertExecution, useExecutionStore} from './useExecutionStore.js';
+import {closeExecution, consumeExecutionNavigation, upsertExecution, useExecutionStore} from './useExecutionStore.js';
 
 const ExecutionHost = memo(({conversationId, messageOrder = [], messages = {}}) => {
     const normalized = String(conversationId || '').trim();
@@ -17,6 +17,7 @@ const ExecutionHost = memo(({conversationId, messageOrder = [], messages = {}}) 
             : []
     ), [messageOrder]);
     const visibleMessageIdSet = useMemo(() => new Set(visibleMessageIds), [visibleMessageIds]);
+    const handleNavigation = useCallback((requestId) => consumeExecutionNavigation(normalized, requestId), [normalized]);
 
 
     useEffect(() => {
@@ -83,6 +84,8 @@ const ExecutionHost = memo(({conversationId, messageOrder = [], messages = {}}) 
             dockTarget={dockTarget}
             dockMount={dockMount}
             messages={messages}
+            navigationRequest={session.navigationRequest}
+            onNavigationHandled={handleNavigation}
             onOpenChange={(open) => {
                 if (!open) closeExecution(normalized);
             }}

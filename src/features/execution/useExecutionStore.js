@@ -5,6 +5,7 @@ const normalizeId = (value) => String(value || '').trim();
 const emptySession = () => ({
     isOpen: false,
     activeExecutionId: null,
+    navigationRequest: null,
     executions: {},
 });
 
@@ -74,7 +75,7 @@ export const useExecutionStore = create((set) => ({
             };
         }),
 
-    openExecution: (incoming) =>
+    openExecution: (incoming, target = null) =>
         set((state) => {
             const execution = normalizeExecution(incoming);
             if (!execution?.executionId || !execution?.conversationId) return state;
@@ -88,6 +89,8 @@ export const useExecutionStore = create((set) => ({
                         ...session,
                         isOpen: true,
                         activeExecutionId: execution.executionId,
+                        navigationRequest: target ? { ...target, requestId: (session.navigationSequence || 0) + 1 } : null,
+                        navigationSequence: (session.navigationSequence || 0) + 1,
                         executions: {
                             ...session.executions,
                             [execution.executionId]: mergeExecution(previous, execution),
@@ -110,9 +113,18 @@ export const useExecutionStore = create((set) => ({
                         ...session,
                         isOpen: true,
                         activeExecutionId: executionId,
+                        navigationRequest: null,
                     },
                 },
             };
+        }),
+
+    consumeNavigation: (conversationIdValue, requestId) =>
+        set((state) => {
+            const conversationId = normalizeId(conversationIdValue);
+            const session = state.sessions[conversationId];
+            if (session?.navigationRequest?.requestId !== requestId) return state;
+            return { sessions: { ...state.sessions, [conversationId]: { ...session, navigationRequest: null } } };
         }),
 
     upsertActivity: (executionRef = {}, activity = {}) =>
@@ -172,7 +184,7 @@ export const useExecutionStore = create((set) => ({
             return {
                 sessions: {
                     ...state.sessions,
-                    [conversationId]: { ...session, isOpen: false },
+                    [conversationId]: { ...session, isOpen: false, navigationRequest: null },
                 },
             };
         }),
@@ -188,7 +200,9 @@ export const useExecutionStore = create((set) => ({
 }));
 
 export const upsertExecution = (execution) => useExecutionStore.getState().upsertExecution(execution);
-export const openExecution = (execution) => useExecutionStore.getState().openExecution(execution);
+export const openExecution = (execution, target) => useExecutionStore.getState().openExecution(execution, target);
+export const consumeExecutionNavigation = (conversationId, requestId) =>
+    useExecutionStore.getState().consumeNavigation(conversationId, requestId);
 export const openExecutionById = (conversationId, executionId) =>
     useExecutionStore.getState().openById(conversationId, executionId);
 export const upsertExecutionActivity = (execution, activity) =>
