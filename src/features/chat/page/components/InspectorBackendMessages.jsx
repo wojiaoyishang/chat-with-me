@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import InspectorHighlight from './InspectorHighlight.jsx';
+import InspectorMediaBadges from './InspectorMediaBadges.jsx';
+import InspectorAttachments from './InspectorAttachments.jsx';
 
 export default function InspectorBackendMessages({ section, onJump, renderReplacements }) {
     const [query, setQuery] = useState('');
@@ -22,9 +24,11 @@ export default function InspectorBackendMessages({ section, onJump, renderReplac
                 <Badge variant="outline"><InspectorHighlight text={item.role} query={query} /></Badge>
                 <Badge variant="secondary">{item.source === 'conversation' ? '会话消息' : '上下文注入'}</Badge>
                 <span className="text-muted-foreground">#{item.orderIndex + 1}</span>
+                <InspectorMediaBadges media={item.media} />
                 {item.messageId && <Button variant="ghost" size="sm" className="ml-auto" onClick={() => onJump?.(item.messageId)}>定位消息</Button>}
             </div>
             {item.messageId && <p className="break-all font-mono text-xs text-muted-foreground"><InspectorHighlight text={item.messageId} query={query} /></p>}
+            <InspectorAttachments attachments={item.attachments || []} />
             <pre className="pretty-scrollbar max-h-[60vh] overflow-auto whitespace-pre-wrap break-words font-mono text-xs leading-relaxed"><InspectorHighlight text={item.content || '(empty)'} query={query} /></pre>
             {item.reasoningContent && <details key={`reasoning-${keyword}`} open={Boolean(keyword && item.reasoningContent.toLowerCase().includes(keyword))}><summary className="cursor-pointer text-xs text-muted-foreground">携带的思考内容</summary><pre className="mt-2 whitespace-pre-wrap break-words font-mono text-xs"><InspectorHighlight text={item.reasoningContent} query={query} /></pre></details>}
             {renderReplacements(item.replacements || [], query)}

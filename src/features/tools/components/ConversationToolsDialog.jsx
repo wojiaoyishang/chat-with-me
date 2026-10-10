@@ -239,7 +239,7 @@ const ConversationToolsDialog = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="flex max-h-[min(84vh,760px)] w-[min(96vw,860px)] max-w-none flex-col gap-0 overflow-hidden p-0">
+            <DialogContent onPointerDownOutside={(event) => event.preventDefault()} className="flex max-h-[min(84vh,760px)] w-[min(96vw,860px)] max-w-none flex-col gap-0 overflow-hidden p-0">
                 <DialogHeader className="shrink-0 border-b border-gray-100 px-5 py-4 text-left">
                     <div className="flex items-center justify-between gap-3">
                         <DialogTitle className="flex items-center gap-2">

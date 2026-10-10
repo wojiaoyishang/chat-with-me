@@ -30,6 +30,8 @@ import MessageSummaryItem from './MessageSummaryItem.jsx';
 import InspectorHighlight from './InspectorHighlight.jsx';
 import InspectorEventTimeline from './InspectorEventTimeline.jsx';
 import InspectorBackendMessages from './InspectorBackendMessages.jsx';
+import InspectorMediaBadges from './InspectorMediaBadges.jsx';
+import InspectorAttachments from './InspectorAttachments.jsx';
 
 const formatNumber = (value) => (value == null ? '—' : Number(value || 0).toLocaleString());
 
@@ -147,6 +149,7 @@ const ModelMessageCard = memo(({ message, query = '' }) => {
                         {role}
                     </Badge>
                     <Badge variant="secondary">{sourceLabels[source] || source}</Badge>
+                    <InspectorMediaBadges media={message.media} />
                     {message?.apiProtocol && (
                         <Badge variant="outline" className="font-mono">
                             {message.apiProtocol}
@@ -174,6 +177,7 @@ const ModelMessageCard = memo(({ message, query = '' }) => {
             <pre className="pretty-scrollbar max-h-96 overflow-auto whitespace-pre-wrap break-words px-3 py-3 text-xs leading-relaxed font-mono text-foreground [scrollbar-gutter:stable]">
                 <InspectorHighlight text={String(message?.content || '') || '(empty)'} query={query} />
             </pre>
+            {message?.attachments?.length > 0 && <div className="px-3 pb-3"><InspectorAttachments attachments={message.attachments} /></div>}
             {message?.reasoningContent ? (
                 <LazyDetails className="border-t bg-background/55 px-3 py-2 text-xs">
                     <summary className="cursor-pointer select-none text-muted-foreground">

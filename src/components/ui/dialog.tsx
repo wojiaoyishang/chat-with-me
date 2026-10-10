@@ -92,6 +92,7 @@ function DialogContent({
   style,
   onPointerDownCapture,
   onInteractOutside,
+  onFocusOutside,
   onEscapeKeyDown,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
@@ -118,6 +119,12 @@ function DialogContent({
         onInteractOutside={(event) => {
           onInteractOutside?.(event)
           if (layer && (!isTopWindowLayer(layer.id) || isOtherWindowTarget(event, layer.id))) event.preventDefault()
+        }}
+        onFocusOutside={(event) => {
+          // Realtime updates can remove/refocus controls in another window. Focus
+          // movement alone must never dismiss an independently opened window.
+          event.preventDefault()
+          onFocusOutside?.(event)
         }}
         onEscapeKeyDown={(event) => {
           onEscapeKeyDown?.(event)

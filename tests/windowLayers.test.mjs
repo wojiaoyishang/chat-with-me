@@ -20,13 +20,14 @@ test('later windows cover earlier windows; focusing and dragging an earlier wind
     await build({stdin:{contents:`export {default as Floating} from './src/components/window/FloatingDockWindow.jsx';
         export {Dialog,DialogContent,DialogTitle} from './src/components/ui/dialog.tsx';
         export {Popover,PopoverContent,PopoverTrigger} from './src/components/ui/popover.tsx';
+        export {default as Tools} from './src/features/tools/components/ConversationToolsDialog.jsx';
         export {useWindowLayers} from './src/lib/windowLayers.js';`,resolveDir:process.cwd()},
         bundle:true,packages:'external',jsx:'automatic',platform:'node',format:'esm',outfile:'temp/window-layers-test.mjs',
         plugins:[{name:'alias',setup(builder){builder.onResolve({filter:/^@\//},({path:modulePath})=>{
             const target=path.resolve('src',modulePath.slice(2));
             return {path:[target,`${target}.tsx`,`${target}.ts`,`${target}.jsx`,`${target}.js`].find(existsSync)};
         });}}]});
-    const {Floating,Dialog,DialogContent,DialogTitle,Popover,PopoverContent,PopoverTrigger,useWindowLayers}=await import('../temp/window-layers-test.mjs');
+    const {Floating,Dialog,DialogContent,DialogTitle,Popover,PopoverContent,PopoverTrigger,useWindowLayers,Tools}=await import('../temp/window-layers-test.mjs');
     function Fixture(){
         const [open,setOpen]=useState(false);
         return React.createElement(React.Fragment,null,
@@ -37,6 +38,13 @@ test('later windows cover earlier windows; focusing and dragging an earlier wind
             React.createElement(Dialog,{open,onOpenChange:setOpen},
                 React.createElement(DialogContent,{'aria-describedby':undefined},
                     React.createElement(DialogTitle,null,'本轮工具'),React.createElement('input',{defaultValue:'保留设置'}))));
+    }
+    function LiveFixture({revision}) {
+        const [open,setOpen]=useState(true);
+        return React.createElement(React.Fragment,null,
+            React.createElement('input',{id:'page-focus',defaultValue:String(revision)}),
+            React.createElement(Floating,{open:true,title:'实时任务',storageKey:'test:updates'},String(revision)),
+            React.createElement(Tools,{open,onOpenChange:setOpen,t:(key,fallback)=>typeof fallback==='string'?fallback:key, toolsConfig:[]}));
     }
     const root=createRoot(document.getElementById('root'));
     const pointer=(target,type,x=20,y=20)=>target.dispatchEvent(new window.MouseEvent(type,{bubbles:true,button:0,clientX:x,clientY:y}));
@@ -66,6 +74,16 @@ test('later windows cover earlier windows; focusing and dragging an earlier wind
         assert.ok(Number(menu.style.zIndex)>Number(task.style.zIndex));
         assert.equal(menu.dataset.windowLayer,task.dataset.windowLayer);
         assert.ok(document.querySelector('[data-slot="dialog-content"]'));
+        await act(async()=>root.render(React.createElement(LiveFixture,{revision:1})));
+        const settings=document.querySelector('[data-slot="dialog-content"]');
+        const search=settings.querySelector('input');
+        const setValue=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set;
+        await act(async()=>{setValue.call(search,'document_read');search.dispatchEvent(new window.Event('input',{bubbles:true}));});
+        await act(async()=>root.render(React.createElement(LiveFixture,{revision:2})));
+        await act(async()=>document.getElementById('page-focus').focus());
+        await act(async()=>pointer(document.getElementById('page-focus'),'pointerdown'));
+        assert.equal(document.querySelector('[data-slot="dialog-content"]'),settings);
+        assert.equal(settings.querySelector('input').value,'document_read');
     }finally{
         await act(async()=>root.unmount());
         assert.deepEqual(useWindowLayers.getState().windows,[]);

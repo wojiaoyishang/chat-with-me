@@ -5,6 +5,8 @@ import { apiEndpoint } from '@/config.js';
 import { attachHorizontalWheel } from '@/lib/horizontalWheel.js';
 import { formatLocalTimestamp } from '@/lib/clientText.js';
 import InspectorHighlight from './InspectorHighlight.jsx';
+import InspectorMediaBadges from './InspectorMediaBadges.jsx';
+import InspectorAttachments from './InspectorAttachments.jsx';
 import { buildTimelineLanes, callOverlapCounts, inputRelationships, buildCallCoverage } from './inspectorTimelineLayout.js';
 
 const labels = { system: '系统', user: '用户', assistant: '助手', model_call: '模型请求', tool_call: '工具调用', tool_result: '工具结果' };
@@ -139,6 +141,7 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         <span className={`${vertical ? 'absolute -left-[1.125rem] top-3' : 'mb-2'} size-3 shrink-0 rounded-full ring-4 ring-background ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
         <span className="block font-medium">#{event.order} · {labels[event.kind] || event.kind}{event.status ? ` · ${statuses[event.status] || event.status}` : ''}</span>
         <span className="mt-1 block w-full truncate"><InspectorHighlight text={event.title} query={query} /></span>
+        <InspectorMediaBadges media={event.media} />
         <span className="mt-1 block w-full truncate text-muted-foreground">{event.model || '—'} · Call #{event.callSequence}</span>
         {event.kind === 'model_call' && overlaps.has(event.modelCallId) && <span className="mt-1 text-[10px] text-amber-600" title={`记录时间与另外 ${overlaps.get(event.modelCallId)} 次请求重叠`}>时间重叠 · {overlaps.get(event.modelCallId)}</span>}
         {event.kind === 'model_call' && <span className="mt-1 text-[10px] text-muted-foreground">{event.inputCaptureAvailable ? `${event.inputMode === 'incremental' ? '增量' : '全量'} · 发送 ${event.sentItemCount} 项${event.inheritedItemCount ? ` · 继承 ${event.inheritedItemCount} 项` : ''}${event.requestAttempts?.length > 1 ? ' · 最后一次尝试' : ''}` : '实际发送范围未捕获'}</span>}
@@ -203,12 +206,14 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
             {!visible.length ? <p className="text-sm text-muted-foreground">{searching ? '正在搜索…' : keyword ? '没有匹配事件。' : '没有可查看的事件，旧会话数据不重建。'}</p> : error ? <p className="text-destructive">{error}</p> : !detail ? <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />正在加载事件…</div> : <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                     <strong>{selected?.title}</strong><span className="text-muted-foreground">{selected?.stage} · {selected?.status || ''}</span>
+                    <InspectorMediaBadges media={selected?.media} />
                     {selected?.messageId && <button className="ml-auto text-primary" onClick={() => onJump?.(selected.messageId)}>定位会话消息</button>}
                 </div>
                 <div className="break-all font-mono text-xs text-muted-foreground"><InspectorHighlight text={selected?.eventId} query={query} /></div>
                 {detail.notice && <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">{detail.notice}</p>}
                 {detail.modelCall ? renderCall(detail.modelCall) : <>
                     {detail.payload && <>
+                        <InspectorAttachments attachments={detail.payload.attachments || []} />
                         {['content', 'reasoningContent', 'escContent'].filter((field) => detail.payload[field]).map((field) => <section key={field} className="space-y-2"><h3 className="text-xs text-muted-foreground">{field === 'content' ? '正文' : field === 'reasoningContent' ? '思考内容' : '文档上屏内容'}</h3><pre className="whitespace-pre-wrap break-words rounded-xl border p-3 font-mono text-xs leading-relaxed"><InspectorHighlight text={text(detail.payload[field])} query={query} /></pre></section>)}
                         {renderReplacements(detail.replacements || [], query)}
                         {detail.sourcePayload && <details key={`source-${selectedId}-${keyword}`} open={Boolean(keyword)} className="rounded-xl border p-3"><summary className="cursor-pointer text-sm">解析前的消息与 replacement 记录</summary><pre className="mt-3 whitespace-pre-wrap break-words font-mono text-xs leading-relaxed"><InspectorHighlight text={text(detail.sourcePayload)} query={query} /></pre></details>}

@@ -2038,7 +2038,7 @@ function ChatBox({
         runtimeToolPermissionRunIdRef.current = null;
         setRuntimeToolPermissions({});
         setConversationToolDefaults({});
-        setConversationToolsDialogOpen(false);
+        if (!isNewConversationAssigned) setConversationToolsDialogOpen(false);
         activeExecutionRef.current = null;
         latestExecutionStateRef.current = null;
         setActiveExecution(null);
