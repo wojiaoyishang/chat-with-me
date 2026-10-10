@@ -224,7 +224,7 @@ const CardBlock = memo(({
             );
 
         case 'escStatus':
-            return <EscWritingStatus content={content} />;
+            return String(renderSurface).toLowerCase() === 'task_window' ? null : <EscWritingStatus content={content} />;
 
 
         case 'workspaceTransfer':

@@ -64,7 +64,12 @@ const DocumentCard = memo(({ onSettingsClick, onCardClick, item }) => {
     const { t } = useTranslation();
 
     const title = item.title;
-    const previewImage = resolveResourceUrl(item.preview);
+    const previewBase = resolveResourceUrl(item.preview || (item.format !== 'markdown' && item.documentId
+        ? `cwm://document/${item.documentId}/preview` : ''));
+    const previewImage = previewBase && item.updateDate
+        ? `${previewBase}${previewBase.includes('?') ? '&' : '?'}v=${encodeURIComponent(item.updateDate)}` : previewBase;
+    const [previewFailed, setPreviewFailed] = useState(false);
+    useEffect(() => setPreviewFailed(false), [previewImage]);
 
     const handleSettingsClick = (e) => {
         e.stopPropagation();
@@ -83,9 +88,11 @@ const DocumentCard = memo(({ onSettingsClick, onCardClick, item }) => {
             <div className="h-32 bg-gray-50 border-b border-gray-100 p-3 flex flex-col gap-2 relative">
                 {item.format === 'markdown' ? (
                     <DocumentThumbnail documentId={item.documentId} content={item.previewMarkdown} />
-                ) : previewImage ? (
+                ) : previewImage && !previewFailed ? (
                     <img
                         src={previewImage}
+                        loading="lazy"
+                        onError={() => setPreviewFailed(true)}
                         alt={`${title} Preview`}
                         style={{ objectPosition: 'top' }}
                         className="w-full h-full object-cover absolute inset-0"
