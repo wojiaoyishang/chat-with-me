@@ -1,3 +1,4 @@
+/* global DEBUG_MODE */
 import { apiEndpoint } from '@/config.js';
 import apiClient from '@/lib/apiClient';
 import { useEffect, useState } from 'react';
@@ -226,7 +227,7 @@ export function setLocalSetting(key, value) {
             );
         }
 
-        console.log(`Setting ${key} saved successfully`);
+        if (typeof DEBUG_MODE !== 'undefined' && DEBUG_MODE) console.log(`Setting ${key} saved successfully`);
     } catch (error) {
         console.error('Error saving setting:', error);
         throw error;

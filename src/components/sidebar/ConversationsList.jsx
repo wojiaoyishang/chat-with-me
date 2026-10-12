@@ -105,13 +105,6 @@ const countAgentDescendants = (nodes) => (
     ), 0)
 );
 
-const agentTreeContains = (nodes, normalizedQuery) => (
-    (nodes || []).some((node) => {
-        const title = String(node.name || node.title || '').toLocaleLowerCase();
-        return title.includes(normalizedQuery) || agentTreeContains(node.children, normalizedQuery);
-    })
-);
-
 const mergeConversationPages = (previous, incoming, reset) => {
     if (reset) return incoming;
     const merged = new Map(previous.map((item) => [item.conversationId, item]));
@@ -457,41 +450,102 @@ const AgentSessionRow = ({
 const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationId}, ref) => {
     const {t, i18n} = useTranslation();
     const listRef = useRef(null);
+    const searchInputRef = useRef(null);
     const [conversations, setConversations] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
     const [offset, setOffset] = useState(0);
     const [limit] = useState(20);
-    const [total, setTotal] = useState(0);
     const [hasMore, setHasMore] = useState(false);
     const [expandedNodes, setExpandedNodes] = useState({});
     const [query, setQuery] = useState('');
+    const [searchState, setSearchState] = useState({
+        items: [], total: 0, offset: 0, hasMore: false, loading: false, error: false,
+    });
+    const searchStateRef = useRef(searchState);
+    searchStateRef.current = searchState;
+    const queryRef = useRef('');
+    const normalRequest = useRef({generation: 0, controller: null});
+    const searchRequest = useRef({generation: 0, controller: null});
+    const normalizedQuery = query.trim();
     const [compact] = useLocalSetting(CONVERSATION_LIST_COMPACT_SETTING_KEY, false);
     const [showTimestamps] = useLocalSetting(CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY, true);
 
     const loadConversations = useCallback(async (reset = false) => {
+        const generation = ++normalRequest.current.generation;
+        normalRequest.current.controller?.abort();
+        const controller = new AbortController();
+        normalRequest.current.controller = controller;
         try {
             setIsLoading(true);
             setIsLoadingError(false);
             const currentOffset = reset ? 0 : offset;
             const response = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT, {
                 params: {offset: currentOffset, limit},
+                signal: controller.signal,
             });
+            if (controller.signal.aborted || generation !== normalRequest.current.generation) return;
             const newData = (response.data || []).map(toConversation);
             setConversations((previous) => mergeConversationPages(previous, newData, reset));
             setOffset(reset ? limit : currentOffset + limit);
-            setTotal(response.total || 0);
             setHasMore(newData.length === limit && (response.total || 0) > currentOffset + limit);
         } catch (error) {
+            if (controller.signal.aborted || generation !== normalRequest.current.generation) return;
             console.error(error);
             setIsLoadingError(true);
         } finally {
-            setIsLoading(false);
+            if (generation === normalRequest.current.generation) setIsLoading(false);
         }
     }, [limit, offset]);
 
+    const loadSearch = useCallback(async (reset = true) => {
+        const value = queryRef.current;
+        if (!value || (!reset && searchStateRef.current.loading)) return;
+        const generation = ++searchRequest.current.generation;
+        searchRequest.current.controller?.abort();
+        const controller = new AbortController();
+        searchRequest.current.controller = controller;
+        const currentOffset = reset ? 0 : searchStateRef.current.offset;
+        setSearchState((previous) => ({...previous, loading: true, error: false}));
+        try {
+            const response = await apiClient.get(`${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/search`, {
+                params: {q: value, offset: currentOffset, limit},
+                signal: controller.signal,
+            });
+            if (controller.signal.aborted || generation !== searchRequest.current.generation || queryRef.current !== value) return;
+            const incoming = (response.data || []).map(toConversation);
+            setSearchState((previous) => ({
+                items: mergeConversationPages(previous.items, incoming, reset),
+                total: response.total || 0,
+                offset: currentOffset + incoming.length,
+                hasMore: response.hasMore ?? (currentOffset + incoming.length < (response.total || 0)),
+                loading: false,
+                error: false,
+            }));
+        } catch {
+            if (controller.signal.aborted || generation !== searchRequest.current.generation || queryRef.current !== value) return;
+            setSearchState((previous) => ({...previous, loading: false, error: true}));
+        }
+    }, [limit]);
+
+    const changeQuery = useCallback((value) => {
+        const next = value.slice(0, 200).trim();
+        if (queryRef.current !== next) {
+            queryRef.current = next;
+            searchRequest.current.generation += 1;
+            searchRequest.current.controller?.abort();
+            setSearchState({items: [], total: 0, offset: 0, hasMore: false, loading: Boolean(next), error: false});
+        }
+        setQuery(value.slice(0, 200));
+    }, []);
+
+    const displayedConversations = normalizedQuery ? searchState.items : conversations;
+    const displayedLoading = normalizedQuery ? searchState.loading : isLoading;
+    const displayedError = normalizedQuery ? searchState.error : isLoadingError;
+    const displayedHasMore = normalizedQuery ? searchState.hasMore : hasMore;
+
     const handleConversationChange = useCallback((conversationId, patch) => {
-        setConversations((previous) => previous.map((conversation) => {
+        const update = (previous) => previous.map((conversation) => {
             if (conversation.conversationId === conversationId) {
                 return {...conversation, ...patch};
             }
@@ -501,28 +555,44 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                     child.conversationId === conversationId ? {...child, ...patch} : child
                 )),
             };
-        }));
+        });
+        setConversations(update);
+        setSearchState((previous) => ({...previous, items: update(previous.items)}));
     }, []);
 
     useImperativeHandle(ref, () => ({
-        reload: () => loadConversations(true),
+        reload: () => Promise.all([loadConversations(true), queryRef.current ? loadSearch(true) : null]),
         updateDate: (conversationId, newDate) => {
             handleConversationChange(conversationId, {updateDate: newDate || new Date()});
         },
         updateTitle: (conversationId, newTitle) => {
             handleConversationChange(conversationId, {title: newTitle, name: newTitle});
         },
-    }), [handleConversationChange, loadConversations]);
+    }), [handleConversationChange, loadConversations, loadSearch]);
 
     useEffect(() => {
         loadConversations(true);
+        const normal = normalRequest.current;
+        const search = searchRequest.current;
+        return () => {
+            normal.generation += 1;
+            normal.controller?.abort();
+            search.generation += 1;
+            search.controller?.abort();
+        };
         // 初始请求只运行一次；后续由 reload 明确触发。
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
+        if (!normalizedQuery) return;
+        const timer = setTimeout(() => void loadSearch(true), 250);
+        return () => clearTimeout(timer);
+    }, [normalizedQuery, loadSearch]);
+
+    useEffect(() => {
         if (!selectedConversationId) return;
-        for (const conversation of conversations) {
+        for (const conversation of displayedConversations) {
             const path = findAgentPath(conversation.children, selectedConversationId);
             if (!path) continue;
             const toExpand = [conversation.conversationId, ...path.slice(0, -1)];
@@ -535,16 +605,9 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
             });
             break;
         }
-    }, [selectedConversationId, conversations]);
+    }, [selectedConversationId, displayedConversations]);
 
-    const normalizedQuery = query.trim().toLocaleLowerCase();
-    const filteredConversations = useMemo(() => {
-        if (!normalizedQuery) return conversations;
-        return conversations.filter((conversation) => (
-            String(conversation.title || '').toLocaleLowerCase().includes(normalizedQuery)
-            || agentTreeContains(conversation.children, normalizedQuery)
-        ));
-    }, [conversations, normalizedQuery]);
+    const filteredConversations = displayedConversations;
 
     const pinnedConversations = useMemo(() => (
         filteredConversations
@@ -576,17 +639,18 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
     }, [filteredConversations]);
 
     const handleDeleteConversation = (deletedConversationId) => {
-        const deletedRoot = conversations.some((conversation) => conversation.conversationId === deletedConversationId);
         setConversations((previous) => previous
             .filter((conversation) => conversation.conversationId !== deletedConversationId)
             .map((conversation) => ({
                 ...conversation,
                 children: removeAgentNode(conversation.children, deletedConversationId),
             })));
-        if (deletedRoot) {
-            setTotal((previous) => Math.max(0, previous - 1));
-        }
+        setSearchState((previous) => ({...previous,
+            items: previous.items.filter((conversation) => conversation.conversationId !== deletedConversationId)
+                .map((conversation) => ({...conversation, children: removeAgentNode(conversation.children, deletedConversationId)})),
+        }));
         onDelete?.(deletedConversationId);
+        if (queryRef.current) void loadSearch(true);
     };
 
     const renderConversation = (conversation) => {
@@ -641,7 +705,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                         )}
                         <ConversationMenu
                             conversation={conversation}
-                            canPin
+                            canPin={conversation.conversationKind !== 'agent_session'}
                             onDelete={handleDeleteConversation}
                             onChange={handleConversationChange}
                             className={`${isSelected ? 'opacity-100' : 'pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100'} transition-opacity`}
@@ -672,20 +736,6 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
         );
     };
 
-    if (isLoadingError) {
-        return (
-            <UnifiedErrorScreen
-                title={t('load_history_error')}
-                subtitle={t('retry_after_network')}
-                retryText={t('retry')}
-                onRetry={() => loadConversations(true)}
-            />
-        );
-    }
-    if (isLoading && conversations.length === 0) {
-        return <UnifiedLoadingScreen text={t('loading_history')}/>;
-    }
-
     const visibleCount = filteredConversations.length;
 
     return (
@@ -694,18 +744,25 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                 <div className="relative">
                     <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
                     <Input
+                        ref={searchInputRef}
+                        type="search"
                         value={query}
-                        onChange={(event) => setQuery(event.target.value)}
+                        onChange={(event) => changeQuery(event.target.value)}
+                        maxLength={200}
+                        aria-label={t('search_conversations')}
                         placeholder={t('search_conversations')}
-                        className="h-9 bg-muted/40 pl-8 pr-8 shadow-none"
+                        className="h-9 border-border/60 bg-muted/30 pl-8 pr-8 shadow-none transition-colors focus-visible:border-primary/40 focus-visible:ring-0 focus-visible:outline-none focus-visible:shadow-none [&::-webkit-search-cancel-button]:appearance-none"
                     />
                     {query && (
                         <Button
                             type="button"
                             variant="ghost"
                             size="icon-sm"
-                            onClick={() => setQuery('')}
-                            className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
+                            onClick={() => {
+                                changeQuery('');
+                                searchInputRef.current?.focus();
+                            }}
+                            className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground focus-visible:ring-0 focus-visible:outline-none"
                             aria-label={t('clear_search')}
                         >
                             <X className="h-3.5 w-3.5"/>
@@ -714,13 +771,24 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                 </div>
                 {normalizedQuery && (
                     <div className="mt-1.5 flex items-center justify-between px-1 text-[11px] text-muted-foreground">
-                        <span>{t('conversation_search_results', {count: visibleCount})}</span>
-                        <span>{t('loaded_conversation_count', {count: conversations.length})}</span>
+                        <span>{searchState.loading && !visibleCount ? t('searching_conversations') : t('conversation_search_results', {count: searchState.total})}</span>
+                        <span>{t('conversation_search_scope')}</span>
                     </div>
                 )}
             </div>
 
             <div className="pt-3">
+            {displayedError && (
+                <UnifiedErrorScreen
+                    title={t('load_history_error')}
+                    subtitle={t('retry_after_network')}
+                    retryText={t('retry')}
+                    onRetry={() => normalizedQuery ? loadSearch(true) : loadConversations(true)}
+                />
+            )}
+            {displayedLoading && visibleCount === 0 && (
+                <UnifiedLoadingScreen text={t(normalizedQuery ? 'searching_conversations' : 'loading_history')}/>
+            )}
             {pinnedConversations.length > 0 && (
                 <section className="mb-4">
                     <div className="mb-1.5 flex items-center gap-2 px-1">
@@ -749,16 +817,16 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                 )
             ))}
 
-            {hasMore && !normalizedQuery && (
+            {displayedHasMore && (
                 <div className="mt-2 flex justify-center">
                     <Button
-                        onClick={() => loadConversations(false)}
+                        onClick={() => normalizedQuery ? loadSearch(false) : loadConversations(false)}
                         variant="outline"
                         size="sm"
-                        disabled={isLoading}
+                        disabled={displayedLoading}
                         className="min-w-32 rounded-full"
                     >
-                        {isLoading ? (
+                        {displayedLoading ? (
                             <><Loader2 className="animate-spin"/>{t('loading')}</>
                         ) : (
                             <>{t('load_more')}<ChevronDown/></>
@@ -767,18 +835,13 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                 </div>
             )}
 
-            {visibleCount === 0 && !isLoading && (
+            {visibleCount === 0 && !displayedLoading && !displayedError && (
                 <div className="flex flex-col items-center gap-2 py-10 text-center text-muted-foreground">
                     {normalizedQuery ? <Search className="h-5 w-5 opacity-50"/> : <Clock3 className="h-5 w-5 opacity-50"/>}
                     <span className="text-sm">{t(normalizedQuery ? 'no_conversation_search_results' : 'no_conversations')}</span>
                 </div>
             )}
 
-            {total > conversations.length && normalizedQuery && (
-                <p className="mt-3 px-2 pb-3 text-center text-[11px] text-muted-foreground">
-                    {t('conversation_search_loaded_only')}
-                </p>
-            )}
             </div>
         </div>
     );

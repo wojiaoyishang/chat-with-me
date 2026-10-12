@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { History, Search, RotateCcw } from 'lucide-react';
 import DocumentDiff from './DocumentDiff.jsx';
 
-export default function DocumentHistory({ documentId, open, onOpenChange, restore, saving, currentContent }) {
+export default function DocumentHistory({ documentId, open, onOpenChange, restore, saving, currentContent, initialCommit }) {
     const { t, i18n } = useTranslation();
     const [versions, setVersions] = useState([]);
     const [selected, setSelected] = useState(null);
@@ -34,7 +34,7 @@ export default function DocumentHistory({ documentId, open, onOpenChange, restor
                 const data = await apiClient.get(`/document/${documentId}/history`);
                 if (active && current === request) {
                     setVersions(data);
-                    setSelected((value) => value || data[0]?.commit || null);
+                    setSelected((value) => value || initialCommit || data[0]?.commit || null);
                 }
             } catch (cause) {
                 if (active && current === request) setError(cause.message);
@@ -48,7 +48,7 @@ export default function DocumentHistory({ documentId, open, onOpenChange, restor
             active = false;
             unsubscribe();
         };
-    }, [documentId, open]);
+    }, [documentId, open, initialCommit]);
     useEffect(() => {
         if (!open || !selected) return;
         let active = true;

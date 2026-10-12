@@ -1,337 +1,133 @@
-import React, {memo, useEffect, useRef, useState} from 'react';
-import {BarChart3} from 'lucide-react';
-import {InteractiveNvlWrapper} from '@neo4j-nvl/react';
-import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Network, Minus, Plus, ExternalLink } from 'lucide-react';
 import LazyVisibility from '@/context/LazyVisibility.jsx';
+import { knowledgeGraphPresentation } from './knowledgeGraphPresentation.js';
+import { createChatKnowledgeGraph } from './chatKnowledgeGraphRenderer.js';
+import apiClient from '@/lib/apiClient.js';
+import { mergeNetworkData } from '../../../page/utils/networkMerge.js';
+import { useLocalSetting } from '@/lib/tools.jsx';
+import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION } from '@/features/knowledge/graphSettings.js';
+import './KnowledgeGraphViewer.css';
 
-const getColorForLabel = (label) => {
-    if (!label) return '#666666';
-
-    const colorMap = {
-        Person: '#fae08e',
-        Event: '#67bdff',
-        Emotion: '#ff6b6b',
-        Thing: '#4ecdc4',
-        Chunk: '#a78bfa',
-    };
-
-    if (colorMap[label]) return colorMap[label];
-
-    let hash = 0;
-    for (let i = 0; i < label.length; i++) {
-        hash = label.charCodeAt(i) + ((hash << 5) - hash);
-    }
-
-    const hue = Math.abs(hash) % 360;
-    return `hsl(${hue}, 88%, 58%)`;
-};
-
-const GraphContent = React.memo(({nvlRef, nodes, rels, loadingLayer, onLoadingComplete}) => {
-    const [isLoading, setIsLoading] = useState(true);
+const GraphContent = memo(function GraphContent({ model, msg, onExpand }) {
+    const svgRef = useRef(null), controller = useRef(null), appliedFocus = useRef(null);
+    const expandCallback = useRef(onExpand);
+    useEffect(() => { expandCallback.current = onExpand; }, [onExpand]);
+    const [ready, setReady] = useState(false), [error, setError] = useState(''), [retry, setRetry] = useState(0);
+    const [physics, setPhysics] = useState(() => !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+    const [edgeAnimation] = useLocalSetting(KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION);
+    const edgeAnimationRef = useRef(edgeAnimation);
+    const markerId = `chat-graph-arrow-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+    const labels = useMemo(() => [...new Map(model.nodes.map(node => [node.label, node.color]))], [model]);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-            onLoadingComplete?.();
-        }, 700);
+        edgeAnimationRef.current = edgeAnimation === true;
+        controller.current?.setEdgeAnimation(edgeAnimation === true);
+    }, [edgeAnimation, retry]);
 
-        return () => clearTimeout(timer);
-    }, [onLoadingComplete]);
-
-    return (
-        <div className="relative" style={{height: '200px'}}>
-            <InteractiveNvlWrapper
-                ref={nvlRef}
-                nodes={nodes}
-                rels={rels}
-                nvlOptions={{
-                    layout: 'd3Force',
-                    renderer: 'canvas',
-                    nodeColorScheme: 'neo4j',
-                    relationshipColorScheme: 'neo4j',
-                    nodeSize: 75,
-                    fontSize: 12,
-                    initialZoom: 1.8,
-                    minZoom: 0.2,
-                    maxZoom: 12,
-                }}
-                mouseEventCallbacks={{
-                    onPan: true,
-                    onPanStart: true,
-                    onPanEnd: true,
-                    onZoom: true,
-                    onZoomStart: true,
-                    onZoomEnd: true,
-                    onDragStart: true,
-                    onDrag: true,
-                    onDragEnd: true,
-                    onHover: true,
-                }}
-                style={{width: '100%', height: '200px', minHeight: '200px'}}
-            />
-            {isLoading && loadingLayer}
-        </div>
-    );
-});
-
-GraphContent.displayName = 'GraphContent';
-
-const KnowledgeGraphViewer = memo(({msg, className = 'w-full'}) => {
-    const nvlRef = useRef(null);
-    const initializedRef = useRef(false);
-    const latestMsgRef = useRef(msg);
-    const [isGraphLoading, setIsGraphLoading] = useState(true);
-    const network = msg?.network;
-
-    // 流式更新会不断生成新的 msg 对象。
-    // 这里仅保存最新引用，避免 effect cleanup 因 msg 引用变化而销毁 NVL 实例。
     useEffect(() => {
-        latestMsgRef.current = msg;
-    }, [msg]);
+        let graph;
+        try {
+            graph = createChatKnowledgeGraph(svgRef.current, {
+                markerId,
+                edgeAnimation: edgeAnimationRef.current,
+                onReady: () => setReady(true),
+                onError: cause => setError(cause.message || '图谱暂时无法显示'),
+                onExpand: id => expandCallback.current?.(id, controller.current),
+            });
+            controller.current = graph;
+        } catch (cause) { setError(cause.message || '图谱暂时无法显示'); }
+        return () => { graph?.destroy(); if (controller.current === graph) controller.current = null; };
+    }, [markerId, retry]);
 
-    // 只在组件真正卸载时销毁 NVL，避免流式更新时“刚渲染又被 destroy”。
+    useEffect(() => { controller.current?.setData(model); }, [model, retry]);
+    useEffect(() => { controller.current?.setPhysics(physics); }, [physics, retry]);
     useEffect(() => {
+        const graph = controller.current;
+        if (!ready || !graph) return;
+        // Preserve the existing chat protocol while using the same SVG/D3 design as the knowledge page.
+        msg.registerComponent?.('nvlInstance', graph);
+        const pending = msg.getComponent?.('focusNode'), focus = pending || msg.networkFocus;
+        const key = focus == null ? null : JSON.stringify(focus);
+        if (key && (pending || key !== appliedFocus.current) && graph.focusNetwork(focus)) {
+            appliedFocus.current = key;
+            if (pending) msg.unregisterComponent?.('focusNode');
+        }
         return () => {
-            if (nvlRef.current) {
-                nvlRef.current.destroy?.();
-                nvlRef.current = null;
-            }
-
-            initializedRef.current = false;
-            latestMsgRef.current?.unregisterComponent?.('nvlInstance');
+            if (!msg.getComponent || msg.getComponent('nvlInstance') === graph) msg.unregisterComponent?.('nvlInstance');
         };
-    }, []);
+    }, [msg, model, ready, retry]);
 
-    if (!network?.nodes || !Array.isArray(network.nodes) || network.nodes.length === 0) {
-        return null;
-    }
-
-    const nvlNodes = network.nodes.map((node) => ({
-        id: String(node.id ?? node.name),
-        captions: [{value: node.name || String(node.id)}],
-        color: getColorForLabel(node.label || 'Node'),
-    }));
-
-    const nodeIdSet = new Set(nvlNodes.map(n => n.id));
-
-    const nvlRels = (network.relationships || network.relationship || [])
-        .map((rel, index) => {
-            const from = String(rel.from ?? rel.source);
-            const to = String(rel.to ?? rel.target);
-
-            return {
-                id: String(rel.id ?? `rel-${index}`),
-                from,
-                to,
-                captions: (rel.type || rel.label) ? [{value: rel.type || rel.label}] : undefined,
-            };
-        })
-        .filter(r => nodeIdSet.has(r.from) && nodeIdSet.has(r.to) && r.from !== r.to);
-
-    const loadingLayer = (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/85 rounded-b-lg">
-            <div className="flex flex-col items-center">
-                <ThreeDotLoading size={10} color="#6366f1"/>
-                <span className="mt-3 text-sm text-gray-500 font-medium">正在渲染知识图谱...</span>
+    return <div className="chat-knowledge-canvas-wrap">
+        <svg ref={svgRef} className="chat-knowledge-canvas" role="application" tabIndex={0}
+            aria-label="知识图谱。Ctrl 点击追加或取消选择，Ctrl 拖动框选，Esc 清除选择。拖动节点调整位置，中键移动画布，滚轮或双指缩放。" aria-busy={!ready}>
+            <defs><marker id={markerId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3.5 L0,7" fill="#a3afc4" /></marker></defs>
+            <g data-graph-camera=""><g data-graph-edges="" /><g data-graph-nodes="" /></g>
+        </svg>
+        {!ready && !error && <div className="chat-knowledge-loading" role="status">正在绘制图谱…</div>}
+        {error && <div className="chat-knowledge-loading" role="alert"><span>{error}</span><button type="button" onClick={() => { setError(''); setReady(false); appliedFocus.current = null; setRetry(value => value + 1); }}>重新加载</button></div>}
+        <div className="chat-knowledge-controls-row" data-graph-controls="">
+            <div className="chat-knowledge-legend" aria-label="图谱类型图例">{labels.map(([label, color]) => <span key={label}><i style={{ background: color }} />{label}</span>)}</div>
+            <div className="chat-knowledge-toolbar" role="group" aria-label="图谱控制">
+            <button type="button" title="放大" aria-label="放大" onClick={() => controller.current?.zoom(1.25)}><Plus size={13} /></button>
+            <button type="button" title="缩小" aria-label="缩小" onClick={() => controller.current?.zoom(0.8)}><Minus size={13} /></button>
+            <button type="button" onClick={() => controller.current?.fit()}>适应画布</button>
+            <button type="button" aria-pressed={physics} onClick={() => setPhysics(value => !value)}>{physics ? '暂停动画' : '恢复动画'}</button>
+            <button type="button" onClick={() => controller.current?.relayout()}>重新排布</button>
             </div>
         </div>
-    );
-
-    return (
-        <div className={`mt-1 mb-4 border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm ${className}`}>
-            <div
-                className="px-4 py-2.5 text-sm font-medium text-gray-600 border-b bg-gray-50 flex items-center justify-between w-full"
-            >
-                <span className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-gray-500"/>
-                    知识图谱记忆
-                </span>
-                {isGraphLoading ? (
-                    <div className="flex items-center gap-1.5">
-                        <ThreeDotLoading size={6} color="#9ca3af"/>
-                        <span className="text-xs text-gray-400">正在渲染...</span>
-                    </div>
-                ) : (
-                    <span className="text-xs text-gray-400">
-                        {nvlNodes.length} 个节点 · {nvlRels.length} 条关系
-                    </span>
-                )}
-            </div>
-            <LazyVisibility
-                placeholder={loadingLayer}
-                rootMargin="150px"
-                className="w-full min-h-[200px]"
-                fade={false}
-                hideOnExit={false}
-            >
-                <GraphContent
-                    nvlRef={nvlRef}
-                    nodes={nvlNodes}
-                    rels={nvlRels}
-                    loadingLayer={loadingLayer}
-                    onLoadingComplete={() => {
-                        setIsGraphLoading(false);
-
-                        if (!initializedRef.current && msg && nvlRef.current) {
-                            nvlRef.current.focusNetwork = (focusIds) => {
-                                const ids = Array.isArray(focusIds)
-                                    ? focusIds.map(String)
-                                    : focusIds
-                                        ? [String(focusIds)]
-                                        : [];
-
-                                if (ids.length === 0 || !nvlRef.current) return;
-
-                                const isSingleFocus = ids.length === 1;
-
-                                const safeFit = () => {
-                                    requestAnimationFrame(() => {
-                                        requestAnimationFrame(() => {
-                                            nvlRef.current?.fit?.(ids, {
-                                                maxZoom: isSingleFocus ? 1.8 : 1.6,
-                                                minZoom: isSingleFocus ? 1.8 : 0.6,
-                                            });
-                                        });
-                                    });
-                                };
-
-                                if (isSingleFocus) {
-                                    safeFit();
-                                    return;
-                                }
-
-                                const focusSet = new Set(ids);
-
-                                const relatedRels = nvlRels.filter(rel =>
-                                    focusSet.has(String(rel.from)) &&
-                                    focusSet.has(String(rel.to))
-                                );
-
-                                const getOrderedIds = () => {
-                                    if (relatedRels.length === 0) return ids;
-
-                                    const graph = new Map();
-                                    const degree = new Map();
-
-                                    ids.forEach(id => {
-                                        graph.set(id, []);
-                                        degree.set(id, 0);
-                                    });
-
-                                    relatedRels.forEach(rel => {
-                                        const from = String(rel.from);
-                                        const to = String(rel.to);
-
-                                        graph.get(from)?.push(to);
-                                        graph.get(to)?.push(from);
-
-                                        degree.set(from, (degree.get(from) || 0) + 1);
-                                        degree.set(to, (degree.get(to) || 0) + 1);
-                                    });
-
-                                    const start =
-                                        ids.find(id => degree.get(id) === 1) ||
-                                        ids.find(id => (degree.get(id) || 0) > 0) ||
-                                        ids[0];
-
-                                    const visited = new Set();
-                                    const result = [];
-
-                                    const walk = (id) => {
-                                        visited.add(id);
-                                        result.push(id);
-
-                                        const nextNodes = graph.get(id) || [];
-
-                                        nextNodes
-                                            .filter(nextId => !visited.has(nextId))
-                                            .sort((a, b) => (degree.get(a) || 0) - (degree.get(b) || 0))
-                                            .forEach(walk);
-                                    };
-
-                                    walk(start);
-
-                                    ids.forEach(id => {
-                                        if (!visited.has(id)) result.push(id);
-                                    });
-
-                                    return result;
-                                };
-
-                                const orderedIds = getOrderedIds();
-                                const spacing = 240;
-                                const startX = -((orderedIds.length - 1) * spacing) / 2;
-
-                                const buildHorizontalNodes = () => {
-                                    return nvlNodes.map(node => {
-                                        const index = orderedIds.indexOf(String(node.id));
-
-                                        if (index === -1) return node;
-
-                                        return {
-                                            ...node,
-                                            x: startX + index * spacing,
-                                            y: 0,
-                                            fixed: true,
-                                            isFixed: true,
-                                            fx: startX + index * spacing,
-                                            fy: 0,
-                                        };
-                                    });
-                                };
-
-                                const applyHorizontalLayout = () => {
-                                    const horizontalNodes = buildHorizontalNodes();
-
-                                    if (typeof nvlRef.current.updateElementsInGraph === 'function') {
-                                        nvlRef.current.updateElementsInGraph(horizontalNodes, nvlRels);
-                                    } else if (typeof nvlRef.current.setData === 'function') {
-                                        nvlRef.current.setData(horizontalNodes, nvlRels);
-                                    } else if (typeof nvlRef.current.setNodes === 'function') {
-                                        nvlRef.current.setNodes(horizontalNodes);
-                                    }
-                                };
-
-                                try {
-                                    applyHorizontalLayout();
-
-                                    setTimeout(() => {
-                                        applyHorizontalLayout();
-
-                                        requestAnimationFrame(() => {
-                                            requestAnimationFrame(() => {
-                                                nvlRef.current?.fit?.(ids, {
-                                                    maxZoom: 2.8,
-                                                    minZoom: 1.4
-                                                });
-                                            });
-                                        });
-                                    }, 80);
-                                } catch (error) {
-                                    console.warn('Failed to apply horizontal NVL layout:', error);
-                                }
-
-                                safeFit();
-                            };
-
-                            msg.registerComponent('nvlInstance', nvlRef.current);
-
-                            if (msg.networkFocus) nvlRef.current.focusNetwork(msg.networkFocus);
-
-                            const focusNode = msg.getComponent('focusNode');
-                            if (focusNode) nvlRef.current.focusNetwork(focusNode);
-
-                            initializedRef.current = true;
-                        }
-                    }}
-                />
-            </LazyVisibility>
-        </div>
-    );
-}, (prev, next) => {
-    return prev.msg.network === next.msg.network && prev.className === next.className;
+    </div>;
 });
 
-KnowledgeGraphViewer.displayName = 'KnowledgeGraphViewer';
+const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversationId = '', className = 'w-full' }) {
+    const scope = `${conversationId}|${msg?.id ?? msg?.messageId ?? ''}`;
+    const [extra, setExtra] = useState(null), [feedback, setFeedback] = useState(null);
+    const requests = useRef(new Map()), generation = useRef(0);
+    const network = useMemo(() => extra?.scope === scope ? mergeNetworkData(msg?.network, extra.network) : msg?.network, [msg?.network, extra, scope]);
+    const model = useMemo(() => knowledgeGraphPresentation(network), [network]);
+    useEffect(() => () => {
+        generation.current++;
+        for (const request of requests.current.values()) request.abort();
+        requests.current.clear();
+    }, [scope]);
+    const expand = useCallback(async (id, graph) => {
+        if (requests.current.has(id)) return;
+        const epoch = generation.current, request = new AbortController();
+        requests.current.set(id, request); graph?.expanding(id, true);
+        setFeedback({ scope, message: '正在读取关联节点…', error: false });
+        try {
+            const data = await apiClient.get(`/knowledge/nodes/${encodeURIComponent(id)}/graph`, { signal: request.signal, timeout: 20000, params: { conversationId, depth: 1, limit: 80 } });
+            if (request.signal.aborted || generation.current !== epoch || !graph?.getNodes().some(node => node.id === id)) return;
+            if (!Array.isArray(data?.nodes) || !Array.isArray(data?.relationships)) throw new Error('关联查询未返回有效的图谱数据。');
+            if (new Set([...graph.getNodes().map(node => node.id), ...data.nodes.map(node => String(node.id))]).size > 400) throw new Error('画布最多显示 400 个节点，请在知识库中继续探索。');
+            const added = data.nodes.filter(node => !graph.getNodes().some(existing => existing.id === String(node.id))).length;
+            setExtra(previous => ({ scope, network: mergeNetworkData(previous?.scope === scope ? previous.network : undefined, data) }));
+            setFeedback({ scope, error: false, message: added ? `已展开 ${added} 个关联节点。${data.hasMore || data.truncated ? '当前显示部分关联。' : ''}` : '当前关联已在图谱中显示。' });
+        } catch (cause) {
+            if (!request.signal.aborted && generation.current === epoch) setFeedback({ scope, message: cause.message || '无法读取关联节点，请稍后重试。', error: true });
+        } finally {
+            if (requests.current.get(id) === request) requests.current.delete(id);
+            graph?.expanding(id, false);
+        }
+    }, [conversationId, scope]);
+    if (!model.nodes.length) return null;
+    return <section className={`chat-knowledge-graph ${className}`} aria-label="知识图谱记忆">
+        <header className="chat-knowledge-heading">
+            <span><Network size={14} aria-hidden="true" />知识图谱记忆</span>
+            <div className="chat-knowledge-header-actions"><small>{model.nodes.length} 个节点 · {model.relationships.length} 条关系</small>
+                <button type="button" className="chat-knowledge-open" title="在知识库中打开" aria-label="在知识库中打开"
+                    onClick={() => window.dispatchEvent(new window.CustomEvent('cwm.open-knowledge', { detail: {
+                        id: window.crypto?.randomUUID?.() || `graph-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, conversationId,
+                        nodeIds: model.nodes.map(node => node.id), edgeIds: model.relationships.map(edge => edge.id).filter(Boolean),
+                    } }))}><ExternalLink size={15} aria-hidden="true" /></button>
+            </div>
+        </header>
+        <LazyVisibility rootMargin="150px" className="chat-knowledge-lazy" fade={false} hideOnExit={false}
+            placeholder={<div className="chat-knowledge-loading" role="status">正在加载图谱…</div>}>
+            <GraphContent key={scope} model={model} msg={msg} onExpand={expand} />
+        </LazyVisibility>
+        {feedback?.scope === scope && <p className={`chat-knowledge-feedback${feedback.error ? ' error' : ''}`} role={feedback.error ? 'alert' : 'status'}>{feedback.message}</p>}
+    </section>;
+});
 
 export default KnowledgeGraphViewer;

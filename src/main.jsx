@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import './assets/js/i18n.js';
 import './assets/css/index.css';
 
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
@@ -18,11 +18,29 @@ import { subscribeBrowserRoutePop } from '@/lib/browserHistoryLayers.js';
 import ImageViewer from '@/features/images/ImageViewer.jsx';
 
 const router = createBrowserRouter([
-    { path: '/chat-window/:conversationId?', element: <DashboardPage standaloneChat /> },
     {
-        path: '/chat/:conversationId?',
+        path: '/chat-window/:conversationId?',
+        element: <DashboardPage standaloneChat />,
+    },
+    {
+        // Keep the dashboard alive when opening a management workspace. Its
+        // sidebar, live conversation and document iframe retain their state.
+        id: 'workspace',
         element: <DashboardPage />,
-        children: [{ path: 'message-map', element: <MessageHistoryMapPage /> }],
+        children: [
+            { path: '/tasks', element: <React.Fragment /> },
+            { path: '/knowledge', element: <React.Fragment /> },
+            { path: '/attachments', element: <React.Fragment /> },
+            {
+                path: '/chat/:conversationId?',
+                element: <Outlet />,
+                children: [{ path: 'message-map', element: <MessageHistoryMapPage /> }],
+            },
+            {
+                path: '/doc/:documentId?/:conversationId?',
+                element: <React.Fragment />,
+            },
+        ],
     },
     {
         path: '/',
@@ -31,12 +49,6 @@ const router = createBrowserRouter([
     {
         path: '/login',
         element: <LoginPage />,
-    },
-    {
-        // Keep one route identity so history-layer POPs and chat selection do not
-        // remount the live document iframe when only its conversation changes.
-        path: '/doc/:documentId?/:conversationId?',
-        element: <DashboardPage type={'doc'} />,
     },
 ]);
 

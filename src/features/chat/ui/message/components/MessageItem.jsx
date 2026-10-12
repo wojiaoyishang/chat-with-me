@@ -243,7 +243,7 @@ const MessageItem = memo(
                             className={`relative bg-gray-50/40 border border-gray-100 rounded-2xl transition-all duration-300 ${isActionActive ? 'shadow-sm' : ''}`}
                         >
                             <div className="flex flex-col items-start w-full px-4 py-4 sm:px-5 sm:py-5">
-                                <KnowledgeGraphViewer key={msgId} msg={msg} className="w-full" />
+                                <KnowledgeGraphViewer key={msgId} msg={msg} conversationId={conversationId} className="w-full" />
 
                                 <div
                                     ref={midBodyRef}
@@ -314,7 +314,7 @@ const MessageItem = memo(
                             <WidgetResponseMessage response={widgetResponsePayload} />
                             {renderRightAvatar('h-10 w-10 flex-shrink-0 mt-0.5')}
                         </div>
-                        <KnowledgeGraphViewer key={msgId} msg={msg} />
+                        <KnowledgeGraphViewer key={msgId} msg={msg} conversationId={conversationId} />
                     </>
                 );
             }
@@ -337,7 +337,7 @@ const MessageItem = memo(
                             </div>
                         )}
 
-                        <KnowledgeGraphViewer key={msgId} msg={msg} />
+                        <KnowledgeGraphViewer key={msgId} msg={msg} conversationId={conversationId} />
                     </>
                 );
             }
@@ -389,7 +389,7 @@ const MessageItem = memo(
                             <div className="pl-7 min-h-[1.25rem]" />
                         </div>
                     )}
-                    <KnowledgeGraphViewer key={msgId} msg={msg} />
+                    <KnowledgeGraphViewer key={msgId} msg={msg} conversationId={conversationId} />
                 </>
             );
         };

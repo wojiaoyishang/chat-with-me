@@ -168,7 +168,7 @@ test("document routes retain the same identity when conversation or history-laye
             loader: "js",
             contents:
               path === "router"
-                ? 'import {createMemoryRouter} from "react-router";export {RouterProvider,Navigate} from "react-router";export const createBrowserRouter=(routes)=>globalThis.documentRoutes=createMemoryRouter(routes,{initialEntries:["/doc/doc/chat-1"]});'
+                ? 'import {createMemoryRouter} from "react-router";export {RouterProvider,Navigate,Outlet} from "react-router";export const createBrowserRouter=(routes)=>globalThis.documentRoutes=createMemoryRouter(routes,{initialEntries:["/doc/doc/chat-1"]});'
                 : path === "root"
                   ? "export default {createRoot:()=>({render:()=>{}})};"
                   : "export default ()=>null;export const WebSocketProvider=()=>null;export const subscribeBrowserRoutePop=()=>()=>{};",

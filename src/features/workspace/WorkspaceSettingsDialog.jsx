@@ -1,5 +1,7 @@
-import WorkspaceCommandEditor, { commandRows, commandProfileFromRows } from './components/WorkspaceCommandEditor.jsx';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import WorkspaceCommandEditor from './components/WorkspaceCommandEditor.jsx';
+import { commandRows, commandProfileFromRows } from './components/commandProfile.js';
+import { validateJsonEditors } from '@/components/setting/jsonEditorValidation.js';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Folder,
     Loader2,
@@ -155,6 +157,7 @@ const WorkspaceSettingsDialog = ({
     const [visibilityPolicy, setVisibilityPolicy] = useState({ version: 1, ignoredRules: [] });
     const [commandProfile, setCommandProfile] = useState({});
     const [customRows, setCustomRows] = useState([]);
+    const jsonCommandScopeRef = useRef(null);
     const [configuredCommands, setConfiguredCommands] = useState([]);
     const [allowedCommands, setAllowedCommands] = useState([]);
     const availableCommandIds = [
@@ -422,6 +425,7 @@ const WorkspaceSettingsDialog = ({
     };
 
     const save = async () => {
+        if (saving) return;
         const editingRemote = editingId !== 'new' && String(editingId || '').startsWith('remote:');
         if (!editingRemote && (!name.trim() || mounts.length === 0)) {
             toast.error(t('workspace_name_mount_required', '请填写名称并至少添加一个目录'));
@@ -434,6 +438,7 @@ const WorkspaceSettingsDialog = ({
         if (!validateAccessRules()) return;
         setSaving(true);
         try {
+            if (jsonCommandScopeRef.current) validateJsonEditors(jsonCommandScopeRef.current);
             const accessPolicy = {
                 version: 2,
                 defaultEffect: accessDefaultEffect,
@@ -1061,7 +1066,7 @@ const WorkspaceSettingsDialog = ({
                                             <Switch checked={shellAllowed} onCheckedChange={setShellAllowed} />
                                         </div>
                                     }
-                                    <WorkspaceCommandEditor rows={customRows} onChange={setCustomRows} />
+                                    <WorkspaceCommandEditor rows={customRows} onChange={setCustomRows} validationRef={jsonCommandScopeRef} onSave={save} />
                                     <div className="divide-y rounded-md border">
                                         {availableCommandIds.length === 0 ? (
                                             <div className="px-3 py-5 text-center text-xs text-muted-foreground">

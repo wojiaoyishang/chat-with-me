@@ -15,7 +15,7 @@ const TextOnlyMessageContent = memo(({ msg, msgId, conversationId, isLeaving, sp
     if (isRight) {
         return (
             <>
-                <KnowledgeGraphViewer key={msgId} msg={msg} className="w-[80%] mr-13" align="right" />
+                <KnowledgeGraphViewer key={msgId} msg={msg} conversationId={conversationId} className="w-[80%] mr-13" align="right" />
                 <div className="flex justify-end items-center gap-3 max-w-[80%] ml-auto">
                     <div
                         ref={contentRef}
@@ -46,7 +46,7 @@ const TextOnlyMessageContent = memo(({ msg, msgId, conversationId, isLeaving, sp
     return (
         <div className="w-full pl-2 pr-2 lg:pl-10 lg:pr-10">
             <div className="text-gray-800 break-words max-w-none">
-                <KnowledgeGraphViewer key={msgId} msg={msg} />
+                <KnowledgeGraphViewer key={msgId} msg={msg} conversationId={conversationId} />
                 <div
                     ref={contentRef}
                     data-tts-message-id={msgId}

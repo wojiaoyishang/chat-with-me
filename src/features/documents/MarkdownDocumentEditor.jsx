@@ -1,5 +1,6 @@
 import { aiCursorDecorations } from './aiCursorDecorations.js';
 import LocalMarkdownEditor from './LocalMarkdownEditor.jsx';
+import DocumentExtractButton from './DocumentExtractButton.jsx';
 import { useTaskStore } from '@/features/tasks/useTaskStore.js';
 import { Download, Loader2 } from 'lucide-react';
 import {
@@ -65,7 +66,7 @@ export default function MarkdownDocumentEditor(props) {
     return props.mode === 'simple' ? <LocalMarkdownEditor {...props} /> : <CollaborativeMarkdownEditor {...props} />;
 }
 
-function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, onOpenCollaboratorConversation }) {
+function CollaborativeMarkdownEditor({ documentId, conversationId, onStatus, headerContainer, onOpenCollaboratorConversation }) {
     const { t } = useTranslation();
     const [filesOpen, setFilesOpen] = useState(false);
     const [filesRevision, setFilesRevision] = useState(0);
@@ -77,6 +78,11 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
     const editorRef = useRef(null);
     const undoRef = useRef(null);
     const [historyOpen, setHistoryOpen] = useState(false);
+    const requestedSourceCommit = new URLSearchParams(window.location.search).get('sourceCommit');
+    const sourceCommit = /^[0-9a-f]{40}$/i.test(requestedSourceCommit || '') ? requestedSourceCommit : null;
+    useEffect(() => {
+        if (sourceCommit) setHistoryOpen(true);
+    }, [documentId, sourceCommit]);
     const [linkOpen, setLinkOpen] = useState(false);
     const [linkUrl, setLinkUrl] = useState('');
     const [imageLink, setImageLink] = useState(false);
@@ -571,6 +577,9 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
                 <div className="ml-auto flex max-w-full items-center gap-2 overflow-x-auto">
                     {documentControls}
 
+                    <DocumentExtractButton documentId={documentId} conversationId={conversationId}
+                        disabled={!resource || saving} onBeforeSubmit={() => save('知识提取快照')} />
+
                     <Button
                         variant="ghost"
                         size="icon"
@@ -681,6 +690,7 @@ function CollaborativeMarkdownEditor({ documentId, onStatus, headerContainer, on
             )}
             <DocumentHistory
                 documentId={documentId}
+                initialCommit={sourceCommit}
                 open={historyOpen}
                 onOpenChange={setHistoryOpen}
                 restore={restore}

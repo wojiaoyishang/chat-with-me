@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
-import { ChevronRight, X, Plus, BookOpen, MoreHorizontal, Settings, LogOut, MessageSquare } from 'lucide-react';
-import { getLocalSetting, setLocalSetting, updateURL } from '@/lib/tools.jsx';
+import {
+    ChevronRight,
+    X,
+    Plus,
+    BookOpen,
+    MoreHorizontal,
+    Settings,
+    LogOut,
+    MessageSquare,
+    ListTodo,
+    BrainCircuit,
+    Paperclip,
+} from 'lucide-react';
+import { getLocalSetting, setLocalSetting } from '@/lib/tools.jsx';
 import { Transition } from '@headlessui/react';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '@/lib/tools.jsx';
@@ -20,7 +32,7 @@ import {
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import SettingPage from '@/pages/SettingPage.jsx';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { setOnChange } from './sidebarRegistry';
 import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
 
@@ -34,6 +46,7 @@ const Sidebar = ({
     settings,
     onConversationIdSelect,
     onSettingsRefresh,
+    onOpenPage,
     forceClosed = false,
 }) => {
     const { t } = useTranslation();
@@ -121,7 +134,7 @@ const Sidebar = ({
         if (conversationId === deletedConversationId) {
             setConversationId(null);
             setPageType('chat');
-            updateURL('/chat');
+            navigate('/chat');
         }
     };
 
@@ -160,7 +173,10 @@ const Sidebar = ({
             >
                 <div
                     className="h-full w-[16rem] flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out"
-                    style={{ opacity: isOpen ? 1 : 0, transform: isOpen ? 'translateX(0)' : 'translateX(-40px)' }}
+                    style={{
+                        opacity: isOpen ? 1 : 0,
+                        transform: isOpen ? 'translateX(0)' : 'translateX(-40px)',
+                    }}
                 >
                     {/* LOGO */}
                     <div className="flex items-center justify-between p-4 border-b">
@@ -189,7 +205,7 @@ const Sidebar = ({
 
                             <AnimatePresence mode="popLayout" initial={false}>
                                 {registeredButtons.map(({ id, component }) => (
-                                    <motion.div
+                                    <Motion.div
                                         key={id}
                                         className="w-full"
                                         initial={{ opacity: 0, y: -12, scale: 0.96 }}
@@ -208,7 +224,7 @@ const Sidebar = ({
                                         }}
                                     >
                                         <div className="w-full">{component}</div>
-                                    </motion.div>
+                                    </Motion.div>
                                 ))}
                             </AnimatePresence>
                         </div>
@@ -218,10 +234,15 @@ const Sidebar = ({
 
                         {/* 第二组：智能体对话 + 文档编辑器 —— 同样用 gap */}
                         <div className="flex flex-col gap-2">
-                            <motion.button
+                            <Motion.button
                                 onClick={() => {
+                                    if (onOpenPage) {
+                                        onOpenPage('chat');
+                                        if (isMobile) handleSetIsOpen(false);
+                                        return;
+                                    }
                                     setConversationId(null);
-                                    updateURL('/chat');
+                                    navigate('/chat');
                                     setPageType('chat');
                                 }}
                                 className={`flex items-center p-2 rounded-lg transition-colors cursor-pointer w-full justify-start ${
@@ -234,10 +255,15 @@ const Sidebar = ({
                             >
                                 <MessageSquare className="w-5 h-5 mr-2" />
                                 {t('agent_chat')}
-                            </motion.button>
-                            <motion.button
+                            </Motion.button>
+                            <Motion.button
                                 onClick={() => {
-                                    updateURL('/doc');
+                                    if (onOpenPage) {
+                                        onOpenPage('doc');
+                                        if (isMobile) handleSetIsOpen(false);
+                                        return;
+                                    }
+                                    navigate('/doc');
                                     setPageType('doc');
                                     setConversationId(null);
                                 }}
@@ -249,7 +275,34 @@ const Sidebar = ({
                             >
                                 <BookOpen className="w-5 h-5 mr-2" />
                                 {t('doc_copilot')}
-                            </motion.button>
+                            </Motion.button>
+                            <button
+                                onClick={() => {
+                                    (onOpenPage || (() => navigate('/tasks')))('tasks');
+                                    if (isMobile) handleSetIsOpen(false);
+                                }}
+                                aria-current={pageType === 'tasks' ? 'page' : undefined}
+                                className={`flex w-full items-center rounded-lg p-2 transition-colors ${pageType === 'tasks' ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                            >
+                                <ListTodo className="mr-2 size-5" />
+                                任务管理
+                            </button>
+                            <button
+                                onClick={() => {
+                                    (onOpenPage || (() => navigate('/knowledge')))('knowledge');
+                                    if (isMobile) handleSetIsOpen(false);
+                                }}
+                                aria-current={pageType === 'knowledge' ? 'page' : undefined}
+                                className={`flex w-full items-center rounded-lg p-2 transition-colors ${pageType === 'knowledge' ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                            >
+                                <BrainCircuit className="mr-2 size-5" />
+                                知识库
+                            </button>
+                            <button onClick={() => { (onOpenPage || (() => navigate('/attachments')))('attachments'); if (isMobile) handleSetIsOpen(false); }}
+                                aria-current={pageType === 'attachments' ? 'page' : undefined}
+                                className={`flex w-full items-center rounded-lg p-2 transition-colors ${pageType === 'attachments' ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}>
+                                <Paperclip className="mr-2 size-5" />附件
+                            </button>
                         </div>
                     </div>
 

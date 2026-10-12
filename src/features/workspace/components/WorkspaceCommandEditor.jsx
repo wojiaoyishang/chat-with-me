@@ -2,38 +2,10 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import JsonConfigEditor from '@/components/setting/JsonConfigEditor.jsx';
+import { ARGV_SCHEMA, ARGV_UI, validateArgv } from './commandProfile.js';
 
-export function commandRows(profile) {
-    return Object.entries(profile?.commands || {}).map(([id, spec]) => ({
-        key: crypto.randomUUID(),
-        id,
-        argv: JSON.stringify(spec.argv || []),
-        cwd: spec.cwd || '.',
-        timeout: spec.timeoutSeconds || 300,
-        extra: !!spec.allowExtraArgs,
-    }));
-}
-export function commandProfileFromRows(rows, profile = {}, invalidMessage = 'Invalid command configuration') {
-    const commands = {};
-    for (const row of rows) {
-        const id = row.id.trim();
-        if (!id || Object.hasOwn(commands, id)) throw new Error(invalidMessage);
-        let argv;
-        try {
-            argv = JSON.parse(row.argv);
-        } catch {
-            throw new Error(invalidMessage);
-        }
-        commands[id] = {
-            argv,
-            cwd: row.cwd.trim() || '.',
-            timeoutSeconds: Number(row.timeout),
-            allowExtraArgs: row.extra,
-        };
-    }
-    return { ...profile, commands };
-}
-export default function WorkspaceCommandEditor({ rows, onChange }) {
+export default function WorkspaceCommandEditor({ rows, onChange, validationRef, onSave }) {
     const { t } = useTranslation();
     const change = (index, patch) => onChange(rows.map((row, i) => (i === index ? { ...row, ...patch } : row)));
     const add = () => {
@@ -52,7 +24,7 @@ export default function WorkspaceCommandEditor({ rows, onChange }) {
         ]);
     };
     return (
-        <section className="space-y-3">
+        <section ref={validationRef} className="space-y-3">
             <div className="flex items-center justify-between gap-2">
                 <h4 className="text-sm font-medium">{t('workspace_custom_commands')}</h4>
                 <Button type="button" variant="outline" size="sm" disabled={rows.length >= 100} onClick={add}>
@@ -83,10 +55,15 @@ export default function WorkspaceCommandEditor({ rows, onChange }) {
                     </div>
                     <label className="block space-y-1 text-xs">
                         <span>{t('workspace_command_argv')}</span>
-                        <textarea
-                            className="min-h-16 w-full rounded-md border bg-transparent p-2 font-mono text-sm"
+                        <JsonConfigEditor
                             value={row.argv}
-                            onChange={(event) => change(index, { argv: event.target.value })}
+                            onChange={(argv) => change(index, { argv })}
+                            schema={ARGV_SCHEMA}
+                            uiSchema={ARGV_UI}
+                            storage="json-string"
+                            label={t('workspace_command_argv')}
+                            validate={validateArgv}
+                            onSave={onSave}
                         />
                     </label>
                     <div className="grid grid-cols-2 gap-2">

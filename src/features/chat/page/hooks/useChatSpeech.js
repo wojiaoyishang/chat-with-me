@@ -1,3 +1,4 @@
+/* global DEBUG_MODE */
 import { createSpeechFeedbackDispatcher } from '../../speech/frontendFeedback.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -326,6 +327,7 @@ const logSpeechPlayError = (phase, details = {}) => {
 };
 
 const logSpeechCache = (event, details = {}) => {
+    if (typeof DEBUG_MODE === 'undefined' || !DEBUG_MODE) return;
     if (typeof console === 'undefined' || typeof console.info !== 'function') return;
     console.info('[ChatSpeech][TTS Cache]', event, details);
 };

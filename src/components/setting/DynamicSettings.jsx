@@ -1,5 +1,7 @@
 import { formatLocalTimestamp } from '@/lib/clientText.js';
 import OrderedOptionsEditor from './OrderedOptionsEditor.jsx';
+import JsonConfigEditor from './JsonConfigEditor.jsx';
+import MultilineEditor from '@/components/ui/MultilineEditor.jsx';
 import React, { useState, useCallback, useEffect, useRef, useMemo, createContext, useContext, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react';
@@ -1082,6 +1084,10 @@ function TextInputItem({ item, path }) {
     const val = isNull ? null : (rawVal ?? item.default ?? '');
     const [dialogOpen, setDialogOpen] = useState(false);
     const [draft, setDraft] = useState(val ?? '');
+    const changeDialogOpen = (open) => {
+        if (open) setDraft(val ?? '');
+        setDialogOpen(open);
+    };
 
     useEffect(() => {
         setIsNull(rawVal === null);
@@ -1120,7 +1126,7 @@ function TextInputItem({ item, path }) {
                             {t('ds.default')}
                         </motion.button>
                     ) : (
-                        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                        <Dialog open={dialogOpen} onOpenChange={changeDialogOpen}>
                             <DialogTrigger asChild>
                                 <button className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors">
                                     <svg
@@ -1142,8 +1148,8 @@ function TextInputItem({ item, path }) {
                                 <DialogHeader>
                                     <DialogTitle className="text-base font-semibold mb-4">{item.text}</DialogTitle>
                                 </DialogHeader>
-                                <textarea
-                                    className="w-full min-h-[200px] p-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none resize-y leading-relaxed focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
+                                <MultilineEditor
+                                    label={item.text}
                                     value={draft}
                                     onChange={(e) => setDraft(e.target.value)}
                                     rows={8}
@@ -1260,6 +1266,8 @@ function CheckboxItem({ item, path }) {
 function RadioItem({ item, path, groupPath }) {
     const { t } = useTranslation();
     const { values, update } = useSettings();
+    const rawVal = deepGet(values, path.slice(0, -1));
+    const [isNull, setIsNull] = useState(rawVal === null);
 
     if (groupPath) {
         return (
@@ -1275,9 +1283,7 @@ function RadioItem({ item, path, groupPath }) {
         );
     }
 
-    const rawVal = deepGet(values, path.slice(0, -1));
     const nullable = !!item.nullable;
-    const [isNull, setIsNull] = useState(rawVal === null);
     const myName = path[path.length - 1];
     const val = isNull ? null : rawVal;
     const isSelected = val === myName;
@@ -1622,613 +1628,33 @@ function SelectItem({ item, path }) {
     );
 }
 
-// ─── Recursive JSON Key/Value Item ─────────────────────────────────
-const JSON_VALUE_TYPE_OPTIONS = [
-    { value: 'string', label: '字符串' },
-    { value: 'number', label: '数字' },
-    { value: 'boolean', label: '布尔值' },
-    { value: 'null', label: 'Null' },
-    { value: 'object', label: '对象 (dict)' },
-    { value: 'array', label: '数组 (list)' },
-];
-
-function inferJsonValueType(value) {
-    if (value === null) return 'null';
-    if (Array.isArray(value)) return 'array';
-    if (typeof value === 'object') return 'object';
-    if (typeof value === 'boolean') return 'boolean';
-    if (typeof value === 'number') return 'number';
-    return 'string';
-}
-
-function defaultJsonValueForType(type) {
-    if (type === 'number') return 0;
-    if (type === 'boolean') return true;
-    if (type === 'null') return null;
-    if (type === 'object') return {};
-    if (type === 'array') return [];
-    return '';
-}
-
-function jsonCompositeSize(value, type) {
-    if (type === 'array') return Array.isArray(value) ? value.length : 0;
-    if (type === 'object' && value && typeof value === 'object' && !Array.isArray(value)) {
-        return Object.keys(value).length;
-    }
-    return 0;
-}
-
-function JsonValueTypeSelect({ value, onChange, className = '' }) {
-    return (
-        <select
-            className={`h-8 min-w-0 rounded-md border border-black/15 bg-white px-2 text-sm text-black outline-none transition-colors focus:border-black dark:border-white/20 dark:bg-black dark:text-white dark:focus:border-white ${className}`}
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-        >
-            {JSON_VALUE_TYPE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                    {option.label}
-                </option>
-            ))}
-        </select>
-    );
-}
-
-function JsonScalarValueEditor({ value, valueType, onChange }) {
-    const normalizedDraft = valueType === 'number' ? String(value ?? 0) : String(value ?? '');
-    const [draft, setDraft] = useState(normalizedDraft);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        setDraft(valueType === 'number' ? String(value ?? 0) : String(value ?? ''));
-        setError('');
-    }, [value, valueType]);
-
-    if (valueType === 'boolean') {
-        return (
-            <select
-                className="h-8 min-w-0 rounded-md border border-black/15 bg-white px-2.5 text-sm text-black outline-none transition-colors focus:border-black dark:border-white/20 dark:bg-black dark:text-white dark:focus:border-white"
-                value={value ? 'true' : 'false'}
-                onChange={(event) => onChange(event.target.value === 'true')}
-            >
-                <option value="true">true</option>
-                <option value="false">false</option>
-            </select>
-        );
-    }
-
-    if (valueType === 'null') {
-        return (
-            <div className="flex h-8 min-w-0 items-center rounded-md border border-dashed border-black/20 px-2.5 font-mono text-sm text-black/60 dark:border-white/25 dark:text-white/60">
-                null
-            </div>
-        );
-    }
-
-    if (valueType === 'string') {
-        return (
-            <input
-                className="h-8 min-w-0 rounded-md border border-black/15 bg-white px-2.5 text-sm text-black outline-none transition-colors focus:border-black dark:border-white/20 dark:bg-black dark:text-white dark:focus:border-white"
-                value={String(value ?? '')}
-                onChange={(event) => onChange(event.target.value)}
-                placeholder="值"
-            />
-        );
-    }
-
-    const commitNumber = () => {
-        const trimmed = draft.trim();
-        if (!trimmed) {
-            setError('请输入数字');
-            setDraft(String(value ?? 0));
-            return;
-        }
-        const parsed = Number(trimmed);
-        if (!Number.isFinite(parsed)) {
-            setError('数字格式错误');
-            setDraft(String(value ?? 0));
-            return;
-        }
-        setError('');
-        onChange(parsed);
-    };
-
-    return (
-        <div className="min-w-0">
-            <input
-                className={`h-8 w-full min-w-0 rounded-md border bg-white px-2.5 text-sm text-black outline-none transition-colors dark:bg-black dark:text-white ${error ? 'border-red-400 dark:border-red-500' : 'border-black/15 focus:border-black dark:border-white/20 dark:focus:border-white'}`}
-                value={draft}
-                inputMode="decimal"
-                onChange={(event) => {
-                    setDraft(event.target.value);
-                    if (error) setError('');
-                }}
-                onBlur={commitNumber}
-                onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        event.currentTarget.blur();
-                    }
-                }}
-                placeholder="0"
-            />
-            {error && <div className="mt-1 text-[11px] text-red-600 dark:text-red-300">{error}</div>}
-        </div>
-    );
-}
-
-function JsonNestedValueEditor({ value, valueType, onChange, label }) {
-    const [open, setOpen] = useState(false);
-    const size = jsonCompositeSize(value, valueType);
-    const normalizedValue =
-        valueType === 'array'
-            ? Array.isArray(value)
-                ? value
-                : []
-            : value && typeof value === 'object' && !Array.isArray(value)
-              ? value
-              : {};
-    const typeLabel = valueType === 'array' ? '数组 (list)' : '对象 (dict)';
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <button
-                    type="button"
-                    className="flex h-8 min-w-0 w-full items-center justify-between gap-2 rounded-md border border-black/15 bg-white px-2.5 text-left text-sm text-black transition-colors hover:border-black hover:bg-black/[0.025] dark:border-white/20 dark:bg-black dark:text-white dark:hover:border-white dark:hover:bg-white/[0.06]"
-                >
-                    <span className="min-w-0 truncate">编辑{valueType === 'array' ? '数组' : '对象'}</span>
-                    <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-black px-1.5 text-[11px] font-semibold text-white dark:bg-white dark:text-black">
-                        {size}
-                    </span>
-                </button>
-            </DialogTrigger>
-            <DialogContent className="z-[1100] w-[min(94vw,860px)] max-w-none overflow-hidden rounded-2xl border-black/15 bg-white p-0 text-black shadow-[0_20px_60px_rgba(0,0,0,0.28)] dark:border-white/20 dark:bg-black dark:text-white">
-                <DialogHeader className="border-b border-black/10 bg-black/[0.025] px-4 py-3 pr-12 text-left dark:border-white/15 dark:bg-white/[0.06]">
-                    <DialogTitle className="flex min-w-0 items-center gap-2 text-base font-semibold">
-                        <span className="min-w-0 flex-1 truncate" title={label}>
-                            {label || '复合 JSON 值'}
-                        </span>
-                        <span className="shrink-0 rounded-md border border-black/10 bg-white px-2 py-0.5 text-xs font-medium text-black/60 dark:border-white/15 dark:bg-black dark:text-white/60">
-                            {typeLabel}
-                        </span>
-                    </DialogTitle>
-                </DialogHeader>
-                <div className="pretty-scrollbar max-h-[min(76vh,760px)] overflow-y-auto overscroll-contain p-3 sm:p-4">
-                    <JsonCompositeEditor value={normalizedValue} kind={valueType} onChange={onChange} />
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-function JsonTypedValueEditor({ value, valueType, onChange, label }) {
-    if (valueType === 'object' || valueType === 'array') {
-        return <JsonNestedValueEditor value={value} valueType={valueType} onChange={onChange} label={label} />;
-    }
-    return <JsonScalarValueEditor value={value} valueType={valueType} onChange={onChange} />;
-}
-
-function JsonObjectEntryRow({ entryKey, value, objectValue, onChangeObject }) {
-    const { t } = useTranslation();
-    const [draftKey, setDraftKey] = useState(entryKey);
-    const valueType = inferJsonValueType(value);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        setDraftKey(entryKey);
-        setError('');
-    }, [entryKey]);
-
-    const commitKey = () => {
-        const nextKey = draftKey.trim();
-        if (!nextKey) {
-            setError('键名不能为空');
-            setDraftKey(entryKey);
-            return;
-        }
-        if (nextKey !== entryKey && Object.prototype.hasOwnProperty.call(objectValue, nextKey)) {
-            setError('键名已存在');
-            setDraftKey(entryKey);
-            return;
-        }
-        if (nextKey === entryKey) return;
-
-        const next = {};
-        Object.entries(objectValue).forEach(([key, currentValue]) => {
-            next[key === entryKey ? nextKey : key] = currentValue;
-        });
-        setError('');
-        onChangeObject(next);
-    };
-
-    const updateValue = (nextValue) => {
-        onChangeObject({ ...objectValue, [entryKey]: nextValue });
-    };
-
-    const changeType = (nextType) => {
-        updateValue(defaultJsonValueForType(nextType));
-    };
-
-    const removeEntry = () => {
-        const next = { ...objectValue };
-        delete next[entryKey];
-        onChangeObject(next);
-    };
-
-    return (
-        <div className="rounded-lg border border-black/10 bg-white p-1.5 dark:border-white/15 dark:bg-black">
-            <div className="grid grid-cols-1 gap-1.5 md:grid-cols-[minmax(110px,0.8fr)_118px_minmax(150px,1.5fr)_30px] md:items-start">
-                <div className="min-w-0">
-                    <input
-                        className={`h-8 w-full min-w-0 rounded-md border bg-white px-2.5 text-sm font-medium text-black outline-none transition-colors dark:bg-black dark:text-white ${error ? 'border-red-400 dark:border-red-500' : 'border-black/15 focus:border-black dark:border-white/20 dark:focus:border-white'}`}
-                        value={draftKey}
-                        placeholder={t('ds.key') || '键名'}
-                        onChange={(event) => {
-                            setDraftKey(event.target.value);
-                            if (error) setError('');
-                        }}
-                        onBlur={commitKey}
-                        onKeyDown={(event) => {
-                            if (event.key === 'Enter') {
-                                event.preventDefault();
-                                event.currentTarget.blur();
-                            }
-                        }}
-                    />
-                    {error && <div className="mt-1 text-[11px] text-red-600 dark:text-red-300">{error}</div>}
-                </div>
-
-                <JsonValueTypeSelect value={valueType} onChange={changeType} />
-
-                <JsonTypedValueEditor value={value} valueType={valueType} onChange={updateValue} label={entryKey} />
-
-                <button
-                    type="button"
-                    className="flex h-8 w-full items-center justify-center rounded-md text-black/65 transition-colors hover:bg-black/5 hover:text-black dark:text-white/65 dark:hover:bg-white/10 dark:hover:text-white md:w-8"
-                    onClick={removeEntry}
-                    aria-label={`${t('ds.delete') || '删除'} ${entryKey}`}
-                >
-                    <X size={16} />
-                </button>
-            </div>
-        </div>
-    );
-}
-
-function JsonArrayEntryRow({ index, value, arrayValue, onChangeArray }) {
-    const valueType = inferJsonValueType(value);
-
-    const updateValue = (nextValue) => {
-        const next = [...arrayValue];
-        next[index] = nextValue;
-        onChangeArray(next);
-    };
-
-    const removeEntry = () => {
-        const next = [...arrayValue];
-        next.splice(index, 1);
-        onChangeArray(next);
-    };
-
-    const moveEntry = (direction) => {
-        const target = index + direction;
-        if (target < 0 || target >= arrayValue.length) return;
-        const next = [...arrayValue];
-        [next[index], next[target]] = [next[target], next[index]];
-        onChangeArray(next);
-    };
-
-    return (
-        <div className="rounded-lg border border-black/10 bg-white p-1.5 dark:border-white/15 dark:bg-black">
-            <div className="grid grid-cols-1 gap-1.5 md:grid-cols-[56px_118px_minmax(150px,1fr)_68px] md:items-start">
-                <div className="flex h-8 items-center rounded-md border border-dashed border-black/15 px-2.5 font-mono text-xs text-black/50 dark:border-white/20 dark:text-white/50">
-                    #{index + 1}
-                </div>
-
-                <JsonValueTypeSelect
-                    value={valueType}
-                    onChange={(nextType) => updateValue(defaultJsonValueForType(nextType))}
-                />
-
-                <JsonTypedValueEditor
-                    value={value}
-                    valueType={valueType}
-                    onChange={updateValue}
-                    label={`数组项 #${index + 1}`}
-                />
-
-                <div className="flex h-8 items-center justify-end gap-0.5">
-                    <button
-                        type="button"
-                        className="flex h-8 w-7 items-center justify-center rounded-md text-black/55 transition-colors hover:bg-black/5 hover:text-black disabled:cursor-not-allowed disabled:opacity-25 dark:text-white/55 dark:hover:bg-white/10 dark:hover:text-white"
-                        onClick={() => moveEntry(-1)}
-                        disabled={index === 0}
-                        aria-label="向上移动"
-                    >
-                        <ArrowUp size={14} />
-                    </button>
-                    <button
-                        type="button"
-                        className="flex h-8 w-7 items-center justify-center rounded-md text-black/55 transition-colors hover:bg-black/5 hover:text-black disabled:cursor-not-allowed disabled:opacity-25 dark:text-white/55 dark:hover:bg-white/10 dark:hover:text-white"
-                        onClick={() => moveEntry(1)}
-                        disabled={index === arrayValue.length - 1}
-                        aria-label="向下移动"
-                    >
-                        <ArrowDown size={14} />
-                    </button>
-                    <button
-                        type="button"
-                        className="flex h-8 w-7 items-center justify-center rounded-md text-black/65 transition-colors hover:bg-red-500/10 hover:text-red-600 dark:text-white/65 dark:hover:bg-red-500/15 dark:hover:text-red-300"
-                        onClick={removeEntry}
-                        aria-label="删除数组项"
-                    >
-                        <X size={15} />
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function JsonCompositeEditor({ value, kind, onChange }) {
-    const { t } = useTranslation();
-    const [newKey, setNewKey] = useState('');
-    const [newType, setNewType] = useState('string');
-    const [addError, setAddError] = useState('');
-
-    const isArray = kind === 'array';
-    const objectValue = !isArray && value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-    const arrayValue = isArray && Array.isArray(value) ? value : [];
-    const size = isArray ? arrayValue.length : Object.keys(objectValue).length;
-
-    const addEntry = () => {
-        if (isArray) {
-            onChange([...arrayValue, defaultJsonValueForType(newType)]);
-            return;
-        }
-
-        const key = newKey.trim();
-        if (!key) {
-            setAddError('键名不能为空');
-            return;
-        }
-        if (Object.prototype.hasOwnProperty.call(objectValue, key)) {
-            setAddError('键名已存在');
-            return;
-        }
-        setAddError('');
-        onChange({ ...objectValue, [key]: defaultJsonValueForType(newType) });
-        setNewKey('');
-    };
-
-    return (
-        <div className="min-w-0">
-            {size > 0 ? (
-                <div className="mb-2 grid gap-1.5">
-                    {isArray
-                        ? arrayValue.map((entryValue, index) => (
-                              <JsonArrayEntryRow
-                                  key={index}
-                                  index={index}
-                                  value={entryValue}
-                                  arrayValue={arrayValue}
-                                  onChangeArray={onChange}
-                              />
-                          ))
-                        : Object.entries(objectValue).map(([key, entryValue]) => (
-                              <JsonObjectEntryRow
-                                  key={key}
-                                  entryKey={key}
-                                  value={entryValue}
-                                  objectValue={objectValue}
-                                  onChangeObject={onChange}
-                              />
-                          ))}
-                </div>
-            ) : (
-                <div className="mb-2 rounded-lg border border-dashed border-black/15 bg-black/[0.02] py-4 text-center text-xs text-black/45 dark:border-white/20 dark:bg-white/[0.04] dark:text-white/45">
-                    {isArray ? '数组为空' : t('ds.noData') || '暂无数据'}
-                </div>
-            )}
-
-            <div
-                className={`grid grid-cols-1 gap-1.5 ${isArray ? 'sm:grid-cols-[118px_auto]' : 'sm:grid-cols-[minmax(0,1fr)_118px_auto]'}`}
-            >
-                {!isArray && (
-                    <input
-                        className={`h-8 min-w-0 rounded-md border bg-white px-2.5 text-sm text-black outline-none transition-colors dark:bg-black dark:text-white ${addError ? 'border-red-400 dark:border-red-500' : 'border-black/15 focus:border-black dark:border-white/20 dark:focus:border-white'}`}
-                        placeholder={t('ds.key') || '键名'}
-                        value={newKey}
-                        onChange={(event) => {
-                            setNewKey(event.target.value);
-                            if (addError) setAddError('');
-                        }}
-                        onKeyDown={(event) => {
-                            if (event.key === 'Enter') {
-                                event.preventDefault();
-                                addEntry();
-                            }
-                        }}
-                    />
-                )}
-                <JsonValueTypeSelect value={newType} onChange={setNewType} />
-                <button
-                    type="button"
-                    className="h-8 w-full whitespace-nowrap rounded-md bg-black px-3 text-sm font-medium text-white transition-colors hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 sm:w-auto"
-                    onClick={addEntry}
-                >
-                    {isArray ? '添加项' : t('ds.addParam') || '添加'}
-                </button>
-            </div>
-            <div
-                className={`mt-1 text-[11px] ${addError ? 'text-red-600 dark:text-red-300' : 'text-black/50 dark:text-white/50'}`}
-            >
-                {addError || '值类型会按 JSON 原生类型保存；对象和数组可继续递归编辑。'}
-            </div>
-        </div>
-    );
-}
-
-function useNarrowSettingsContainer(threshold = 620) {
-    const containerRef = useRef(null);
-    const [isNarrow, setIsNarrow] = useState(
-        () => typeof window !== 'undefined' && window.innerWidth < threshold + 120,
-    );
-
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container) return undefined;
-
-        const updateWidthState = () => {
-            const nextIsNarrow = container.getBoundingClientRect().width < threshold;
-            setIsNarrow((current) => (current === nextIsNarrow ? current : nextIsNarrow));
-        };
-
-        updateWidthState();
-
-        const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateWidthState) : null;
-        resizeObserver?.observe(container);
-        window.addEventListener('resize', updateWidthState);
-
-        return () => {
-            resizeObserver?.disconnect();
-            window.removeEventListener('resize', updateWidthState);
-        };
-    }, [threshold]);
-
-    return [containerRef, isNarrow];
-}
-
+// ─── Shared visual / JSON editor ──────────────────────────────────
+const DEFAULT_OBJECT_JSON_SCHEMA = { type: 'object' };
 function JsonItem({ item, path }) {
-    const { t } = useTranslation();
-    const { values, update } = useSettings();
-    const rawValue = deepGet(values, path);
-    const nullable = !!item.nullable;
-    const [isNull, setIsNull] = useState(rawValue === null);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [containerRef, isNarrow] = useNarrowSettingsContainer();
-    const objectValue = isNull
-        ? {}
-        : rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)
-          ? rawValue
-          : (item.default ?? {});
-    const entries = Object.entries(objectValue);
-
-    useEffect(() => {
-        setIsNull(rawValue === null);
-    }, [rawValue]);
-
-    useEffect(() => {
-        if (!isNarrow) setDialogOpen(false);
-    }, [isNarrow]);
-
-    const commitObject = useCallback(
-        (next) => {
-            update(path, next);
-        },
-        [path, update],
-    );
-
-    const toggleNull = () => {
-        setIsNull((current) => {
-            const nextIsNull = !current;
-            update(path, nextIsNull ? null : (item.default ?? {}));
-            if (nextIsNull) setDialogOpen(false);
-            return nextIsNull;
-        });
-    };
-
-    const defaultButton = (
-        <button
-            type="button"
-            className="h-8 whitespace-nowrap rounded-md border border-black/15 bg-white px-3 text-sm font-medium text-black transition-colors hover:bg-black/5 dark:border-white/20 dark:bg-black dark:text-white dark:hover:bg-white/10"
-            onClick={toggleNull}
-        >
-            {t('ds.default')}
-        </button>
-    );
-
-    const editorContent = (
-        <div className="p-2.5 sm:p-3">
-            <JsonCompositeEditor value={objectValue} kind="object" onChange={commitObject} />
-        </div>
-    );
-
-    const titleContent = (
-        <div className="flex min-w-0 max-w-full items-center gap-1.5">
-            <TipWrapper tips={item.tips} nullable={nullable} isNull={isNull} onToggleNull={toggleNull}>
-                <AutoScrollText className="min-w-0 flex-1 text-sm font-semibold" title={item.text}>
-                    {item.text}
-                    {item.required && <span className="ml-0.5 text-base leading-none text-red-500">*</span>}
-                </AutoScrollText>
-            </TipWrapper>
-        </div>
-    );
-
+    const { values, update, onSave } = useSettings();
+    const value = deepGet(values, path);
+    const usesDefault = item.nullable && value === null;
     return (
-        <div ref={containerRef} className="w-full">
-            {isNarrow ? (
-                <SettingRow
-                    text={item.text}
-                    tips={item.tips}
-                    nullable={nullable}
-                    isNull={isNull}
-                    onToggleNull={toggleNull}
-                    required={item.required}
-                    controlCompact
-                    className="border-b border-black/10 dark:border-white/15"
-                >
-                    {isNull ? (
-                        defaultButton
-                    ) : (
-                        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                            <DialogTrigger asChild>
-                                <button
-                                    type="button"
-                                    className="inline-flex h-8 shrink-0 items-center gap-2 whitespace-nowrap rounded-md border border-black/15 bg-white px-3 text-sm font-medium text-black transition-colors hover:bg-black/5 dark:border-white/20 dark:bg-black dark:text-white dark:hover:bg-white/10"
-                                >
-                                    <span>{entries.length > 0 ? '编辑参数' : '添加参数'}</span>
-                                    <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1.5 text-[11px] font-semibold text-white dark:bg-white dark:text-black">
-                                        {entries.length}
-                                    </span>
-                                </button>
-                            </DialogTrigger>
-                            <DialogContent className="z-[999] w-[min(94vw,760px)] max-w-none overflow-hidden rounded-2xl border-black/15 bg-white p-0 text-black shadow-[0_20px_60px_rgba(0,0,0,0.28)] dark:border-white/20 dark:bg-black dark:text-white">
-                                <DialogHeader className="border-b border-black/10 bg-black/[0.025] px-4 py-3 pr-12 text-left dark:border-white/15 dark:bg-white/[0.06]">
-                                    <DialogTitle className="flex min-w-0 items-center gap-2 text-base font-semibold">
-                                        <AutoScrollText className="min-w-0 flex-1" title={item.text}>
-                                            {item.text}
-                                        </AutoScrollText>
-                                        <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-black px-1.5 text-[11px] font-semibold text-white dark:bg-white dark:text-black">
-                                            {entries.length}
-                                        </span>
-                                    </DialogTitle>
-                                </DialogHeader>
-                                <div className="pretty-scrollbar max-h-[min(72vh,680px)] overflow-y-auto overscroll-contain">
-                                    {editorContent}
-                                </div>
-                            </DialogContent>
-                        </Dialog>
-                    )}
-                </SettingRow>
-            ) : (
-                <SettingRow fullWidth className="border-b border-black/10 last:border-b-0 dark:border-white/15">
-                    <div className="w-full overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm dark:border-white/15 dark:bg-black">
-                        <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-black/10 bg-black/[0.025] px-2.5 py-2 dark:border-white/15 dark:bg-white/[0.06] sm:px-3">
-                            {titleContent}
-                            {!isNull && (
-                                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1.5 text-[11px] font-semibold text-white dark:bg-white dark:text-black">
-                                    {entries.length}
-                                </span>
-                            )}
-                        </div>
-
-                        {isNull ? <div className="p-2.5 sm:p-3">{defaultButton}</div> : editorContent}
-                    </div>
-                </SettingRow>
+        <SettingRow fullWidth className="space-y-2 border-b border-black/10 dark:border-white/15">
+            <div className="flex items-center gap-2 text-sm font-medium">
+                <span>{item.text}</span>
+                <TipWrapper tips={item.tips} />
+                {item.nullable && <button type="button" className="ml-auto text-xs text-muted-foreground" onClick={() => update(path, usesDefault ? (item.default ?? {}) : null)}>{usesDefault ? '自定义' : '使用默认'}</button>}
+            </div>
+            {usesDefault ? <div className="text-xs text-muted-foreground">使用默认值</div> : (
+                <JsonConfigEditor
+                    value={value === undefined ? (item.default ?? {}) : value}
+                    schema={item.schema || (item.storage === 'json-string' ? undefined : DEFAULT_OBJECT_JSON_SCHEMA)}
+                    uiSchema={item.uiSchema}
+                    storage={item.storage || 'value'}
+                    defaultMode={item.editorMode || 'form'}
+                    label={item.text}
+                    resetKey={item}
+                    onChange={(next) => update(path, next)}
+                    onSave={onSave}
+                />
             )}
-        </div>
+        </SettingRow>
     );
 }
 
@@ -3993,12 +3419,22 @@ function SettingItemRenderer({ item, path }) {
 }
 
 // ─── Main Component ────────────────────────────────────────────────
-export default function DynamicSettings({ config, onChange, initialValues, className, onImageUpload, runtimeContext }) {
+export default function DynamicSettings({ config, onChange, initialValues, className, onImageUpload, runtimeContext, validationRef, onSave }) {
     const [values, setValues] = useState(() => buildDefaults(config, initialValues));
     const valuesRef = useRef(values);
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
     const previousConfigRef = useRef(config);
+    const editorScope = useRef(null);
+    useEffect(() => {
+        const host = editorScope.current;
+        const changed = (event) => {
+            if (validationRef && event.detail.userChanged && (!event.detail.valid || event.detail.pendingKeys?.length))
+                onChangeRef.current?.(valuesRef.current);
+        };
+        host?.addEventListener('cwm-json-editor-state', changed);
+        return () => host?.removeEventListener('cwm-json-editor-state', changed);
+    }, [validationRef]);
 
     const update = useCallback((path, value) => {
         // onChange 只能由真实的控件交互触发。不要把副作用放进 React 的
@@ -4021,13 +3457,14 @@ export default function DynamicSettings({ config, onChange, initialValues, class
     }, [config, initialValues]);
 
     const ctx = useMemo(
-        () => ({ values, update, onImageUpload, runtimeContext }),
-        [values, update, onImageUpload, runtimeContext],
+        () => ({ values, update, onImageUpload, runtimeContext, onSave }),
+        [values, update, onImageUpload, runtimeContext, onSave],
     );
 
     return (
         <SettingsContext.Provider value={ctx}>
             <div
+                ref={(node) => { editorScope.current = node; if (node) node._cwmSettingsValues = valuesRef; if (validationRef) validationRef.current = node; }}
                 className={`w-full min-w-0 font-sans text-[#1a1d21] dark:text-[#e4e7eb] rounded-lg overflow-hidden ${className || ''}`}
             >
                 {config.map((item, i) => {

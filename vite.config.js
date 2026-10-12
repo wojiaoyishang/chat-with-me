@@ -6,6 +6,7 @@ import tailwindcss from "@tailwindcss/vite"
 export default defineConfig({
     plugins: [react(), tailwindcss()],
     optimizeDeps: {
+        entries: ['index.html'],
         exclude: ['@neo4j-nvl/layout-workers'],
         include: [
             '@neo4j-nvl/layout-workers > cytoscape',
@@ -45,6 +46,7 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: (id) => {
+                    if (id.includes('json-config-editor')) return 'json-config-editor';
                     // React 核心
                     if (id.includes('node_modules/react-dom')) {
                         return 'react-dom';

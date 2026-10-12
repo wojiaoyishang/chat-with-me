@@ -21,6 +21,7 @@ const CollaboraOnlineEditor = forwardRef(({
     const { t } = useTranslation();
     const iframeRef = useRef(null);
     const spellcheckInitialized = useRef(false);
+    const pendingSave = useRef(null);
 
     // 使用 useMemo 让 targetOrigin 稳定，避免不必要的重新创建
     const targetOrigin = useMemo(() => {
@@ -70,9 +71,33 @@ const CollaboraOnlineEditor = forwardRef(({
         }
     }, [targetOrigin]);
 
-    useImperativeHandle(ref, () => ({
-        post,
-    }), [post]);
+    const save = useCallback(() => {
+        if (pendingSave.current) return pendingSave.current.promise;
+        if (!iframeLoaded || status !== 'success') return Promise.reject(new Error('文档编辑器尚未就绪。'));
+        let resolve, reject;
+        const promise = new Promise((done, fail) => { resolve = done; reject = fail; });
+        const timer = setTimeout(() => {
+            pendingSave.current = null;
+            reject(new Error('等待文档保存超时，请确认保存后重试。'));
+        }, 20000);
+        pendingSave.current = { promise, resolve, reject, timer };
+        if (!post({ MessageId: 'Action_Save', Values: { DontTerminateEdit: false, DontSaveIfUnmodified: false, Notify: true } })) {
+            clearTimeout(timer);
+            pendingSave.current = null;
+            reject(new Error('无法请求文档保存。'));
+        }
+        return promise;
+    }, [iframeLoaded, status, post]);
+
+    useEffect(() => () => {
+        if (pendingSave.current) {
+            clearTimeout(pendingSave.current.timer);
+            pendingSave.current.reject(new Error('文档编辑器已关闭。'));
+            pendingSave.current = null;
+        }
+    }, [iframeUrl]);
+
+    useImperativeHandle(ref, () => ({ post, save }), [post, save]);
 
     // 消息监听（只在需要时启用）
     useEffect(() => {
@@ -83,6 +108,14 @@ const CollaboraOnlineEditor = forwardRef(({
 
             try {
                 const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+
+                if (msg.MessageId === 'Action_Save_Resp' && pendingSave.current) {
+                    const operation = pendingSave.current;
+                    clearTimeout(operation.timer);
+                    pendingSave.current = null;
+                    if (msg.Values?.success === true) operation.resolve();
+                    else operation.reject(new Error(msg.Values?.errorMsg || '文档保存失败。'));
+                }
 
                 if (msg.MessageId === 'App_LoadingStatus' &&
                     msg.Values?.Status === 'Document_Loaded') {

@@ -2,7 +2,7 @@ import useIndependentChatWindow from '@/features/chat/page/hooks/useIndependentC
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
 import ChatPage from '@/pages/ChatPage.jsx';
-import { UnifiedErrorScreen, UnifiedLoadingScreen, updateURL } from '@/lib/tools.jsx';
+import { UnifiedErrorScreen, UnifiedLoadingScreen } from '@/lib/tools.jsx';
 import apiClient, { isAuthRedirectError } from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
 import { useTranslation } from 'react-i18next';
@@ -10,11 +10,12 @@ import DocEditorHome from '@/pages/DocEditorHome.jsx';
 import { emitEvent } from '@/context/useEventStore.jsx';
 import { toast } from 'sonner';
 import { useUserStore } from '@/context/userContext.jsx';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation, useOutlet, useParams } from 'react-router-dom';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { useLocation, useNavigate, useOutlet, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import NotificationHost from '@/features/notification/NotificationHost.jsx';
+import BackendManagementPage from '@/features/tasks/BackendManagementPage.jsx';
 
 const readDashboardLocation = () => {
     if (typeof window === 'undefined') return null;
@@ -56,14 +57,26 @@ const readDashboardLocation = () => {
 const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
     const urlParams = useParams();
     const location = useLocation();
-    const outlet = useOutlet();
+    const navigate = useNavigate();
+    const routeOutlet = useOutlet();
+    const outlet = location.pathname.endsWith('/message-map') ? routeOutlet : null;
+    const managementKind = /^\/(tasks|knowledge|attachments)\/?$/.exec(location.pathname)?.[1] || null;
+    const workspaceReturnPath = useRef(
+        readDashboardLocation()
+            ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+            : '/chat',
+    );
 
     const previousConversationIdRef = useRef('');
     const previousDocumentIdRef = useRef('');
 
-    const [conversationId, setConversationId] = useState(urlParams.conversationId || null);
+    const [conversationId, setConversationId] = useState(
+        urlParams.conversationId || readDashboardLocation()?.conversationId || null,
+    );
     const [documentId, setDocumentId] = useState(
-        urlParams.documentId || (standaloneChat ? new URLSearchParams(location.search).get('documentId') : null),
+        urlParams.documentId ||
+            readDashboardLocation()?.documentId ||
+            (standaloneChat ? new URLSearchParams(location.search).get('documentId') : null),
     );
 
     const [isLoading, setIsLoading] = useState(true);
@@ -72,22 +85,42 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
     const [sidebarSettings, setSidebarSettings] = useState({});
     const [settingsRefreshVersions, setSettingsRefreshVersions] = useState({});
 
-    const [pageType, setPageType] = useState(type);
+    const [pageType, setPageType] = useState(readDashboardLocation()?.pageType || type);
     const detached = useIndependentChatWindow(conversationId, documentId);
 
     const { setUser } = useUserStore();
 
     const { t } = useTranslation();
 
-    // Child routes share this Dashboard and its live ChatPage. Read the actual
-    // URL because legacy selection still updates native history directly.
+    useEffect(() => {
+        const open = (event) => {
+            const payload = event.detail;
+            if (!payload || !Array.isArray(payload.nodeIds) || !Array.isArray(payload.edgeIds)) return;
+            const query = payload.conversationId ? `?conversationId=${encodeURIComponent(payload.conversationId)}` : '';
+            navigate('/knowledge' + query, { state: { knowledgeImport: payload } });
+        };
+        window.addEventListener('cwm.open-knowledge', open);
+        return () => window.removeEventListener('cwm.open-knowledge', open);
+    }, [navigate]);
+
+    // Child routes share this Dashboard and its live ChatPage. Reconcile every
+    // route entry, including reopening the same pathname after a history update.
     useEffect(() => {
         const next = readDashboardLocation();
         if (!next) return;
         setPageType(next.pageType);
         setConversationId(next.conversationId);
         setDocumentId(next.documentId);
-    }, [location.pathname]);
+        if (!location.pathname.endsWith('/message-map')) {
+            workspaceReturnPath.current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        }
+    }, [location.pathname, location.key]);
+
+    useEffect(() => {
+        if (!managementKind && !outlet && readDashboardLocation()) {
+            workspaceReturnPath.current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        }
+    }, [conversationId, documentId, location.pathname, location.search, managementKind, outlet, pageType]);
 
     useEffect(() => {
         const syncFromBrowserHistory = () => {
@@ -200,16 +233,20 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
             setConversationId(newConversationId);
             setDocumentId(newDocumentId);
 
-            if (standaloneChat) {
+            if (managementKind) {
+                setPageType('chat');
+                setDocumentId(null);
+                navigate(`/chat${urlNewConversationId}`);
+            } else if (standaloneChat) {
                 const query = newDocumentId ? `?documentId=${encodeURIComponent(newDocumentId)}` : '';
-                updateURL(`/chat-window${urlNewConversationId}${query}`);
+                navigate(`/chat-window${urlNewConversationId}${query}`);
             } else if (pageType === 'chat') {
-                updateURL(`/chat${urlNewConversationId}`);
+                navigate(`/chat${urlNewConversationId}`);
             } else if (pageType === 'doc') {
-                updateURL(`/doc${urlNewDocumentId}${urlNewConversationId}`);
+                navigate(`/doc${urlNewDocumentId}${urlNewConversationId}`);
             }
         },
-        [pageType, standaloneChat],
+        [managementKind, navigate, pageType, standaloneChat],
     );
 
     return (
@@ -218,15 +255,16 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                 {!isLoading && !isLoadingError && !isAuthRedirecting && (
                     <NotificationHost
                         currentConversationId={conversationId}
-                        isConversationVisible={!outlet && (pageType === 'chat' || Boolean(documentId))}
+                        isConversationVisible={
+                            !outlet && !managementKind && (pageType === 'chat' || Boolean(documentId))
+                        }
                         onOpenConversation={(conversationId, notification) => {
                             setPageType('chat');
                             setConversationId(conversationId);
                             setDocumentId(null);
                             const messageId = notification?.source?.messageId;
-                            updateURL(
-                                `/chat/${conversationId}${messageId ? `?focusMessage=${encodeURIComponent(messageId)}` : ''}`,
-                            );
+                            const target = `/chat/${conversationId}${messageId ? `?focusMessage=${encodeURIComponent(messageId)}` : ''}`;
+                            navigate(target);
                         }}
                     />
                 )}
@@ -236,15 +274,24 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                     <LoadingScreen />
                 ) : (
                     <>
-                        {pageType === 'chat' && !standaloneChat && (
+                        {(pageType === 'chat' || managementKind) && !standaloneChat && (
                             <Sidebar
-                                forceClosed={detached}
+                                forceClosed={detached && !managementKind}
                                 conversationId={conversationId}
                                 setConversationId={setConversationId}
                                 settings={sidebarSettings}
-                                pageType={pageType}
+                                pageType={managementKind || pageType}
                                 setPageType={setPageType}
                                 onSettingsRefresh={handleSettingsRefresh}
+                                onOpenPage={(target) => {
+                                    if (target === 'tasks' || target === 'knowledge' || target === 'attachments') {
+                                        navigate(`/${target}`);
+                                    } else if (managementKind && target === pageType) {
+                                        navigate(workspaceReturnPath.current);
+                                    } else {
+                                        navigate(target === 'doc' ? '/doc' : '/chat');
+                                    }
+                                }}
                                 onConversationIdSelect={(newConversationId) => {
                                     handleConversationIdSelect({
                                         newConversationId: newConversationId,
@@ -254,16 +301,19 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                             />
                         )}
 
-                        <main className="flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
+                        <main className="min-w-0 flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
                             <AnimatePresence mode="wait">
                                 {pageType === 'chat' && (
-                                    <motion.div
+                                    <Motion.div
                                         key="chat"
                                         initial={{ opacity: 0, x: 50 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -50 }}
                                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                                         className="absolute inset-0"
+                                        style={{ visibility: managementKind ? 'hidden' : 'visible' }}
+                                        inert={managementKind ? true : undefined}
+                                        aria-hidden={managementKind ? true : undefined}
                                     >
                                         <ChatPage
                                             conversationId={conversationId}
@@ -279,16 +329,19 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                                             pageType={standaloneChat && documentId ? 'doc' : 'chat'}
                                             settingsRefreshVersions={settingsRefreshVersions}
                                         />
-                                    </motion.div>
+                                    </Motion.div>
                                 )}
                                 {pageType === 'doc' && (
-                                    <motion.div
+                                    <Motion.div
                                         key="doc"
                                         initial={{ opacity: 0, x: 50 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -50 }}
                                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                                         className="absolute inset-0"
+                                        style={{ visibility: managementKind ? 'hidden' : 'visible' }}
+                                        inert={managementKind ? true : undefined}
+                                        aria-hidden={managementKind ? true : undefined}
                                     >
                                         <div className="flex h-full min-h-0 flex-col">
                                             {!documentId && (
@@ -300,7 +353,7 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                                                             setPageType('chat');
                                                             setConversationId(null);
                                                             setDocumentId(null);
-                                                            updateURL('/chat');
+                                                            navigate('/chat');
                                                         }}
                                                     >
                                                         <ArrowLeft className="size-4" />
@@ -316,7 +369,7 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                                                     onChatMode={() => {
                                                         setPageType('chat');
                                                         setDocumentId(null);
-                                                        updateURL(conversationId ? `/chat/${conversationId}` : '/chat');
+                                                        navigate(conversationId ? `/chat/${conversationId}` : '/chat');
                                                     }}
                                                     documentId={documentId}
                                                     conversationId={conversationId}
@@ -336,9 +389,23 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                                                 />
                                             </div>
                                         </div>
-                                    </motion.div>
+                                    </Motion.div>
                                 )}
                             </AnimatePresence>
+                            {managementKind && (
+                                <div
+                                    className="absolute inset-0"
+                                    role="region"
+                                    aria-label={managementKind === 'tasks' ? '任务管理' : managementKind === 'attachments' ? '附件' : '知识库'}
+                                >
+                                    <BackendManagementPage
+                                        kind={managementKind}
+                                        sidebarMode
+                                        onReturn={() => navigate(workspaceReturnPath.current)}
+                                        returnLabel={pageType === 'doc' ? '返回文档' : '返回对话'}
+                                    />
+                                </div>
+                            )}
                         </main>
                     </>
                 )}

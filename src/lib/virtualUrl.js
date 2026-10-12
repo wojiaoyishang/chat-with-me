@@ -74,6 +74,9 @@ export const resolveCwmUrl = (value, { download = false } = {}) => {
         const id = encodeURIComponent(segments[0]);
         return segments[1] === 'preview' ? `${base}/upload/preview/${id}` : `${base}/upload/${id}`;
     }
+    if (authority === 'document' && IDENTIFIER_RE.test(segments[0] || '') && segments.length === 4 && segments[1] === 'revisions' && /^[0-9a-f]{40}$/.test(segments[2]) && segments[3] === 'content') {
+        return `${base}/document/${encodeURIComponent(segments[0])}/revisions/${segments[2]}/content`;
+    }
     if (authority === 'public' && segments.length > 0) {
         return `${base}/public/${encodeSegments(segments)}`;
     }

@@ -24,6 +24,7 @@ import { onEvent } from '@/context/useEventStore.jsx';
 import { useTranslation } from 'react-i18next';
 import { UserProfileCard } from '@/components/setting/UserProfileCard.jsx';
 import DynamicSettings from '@/components/setting/DynamicSettings.jsx';
+import { validateJsonEditors } from '@/components/setting/jsonEditorValidation.js';
 import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
 import NotificationSettings from '@/features/notification/NotificationSettings.jsx';
 import apiClient from '@/lib/apiClient.js';
@@ -41,6 +42,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ROBOT_DEBUG_SETTING_KEY } from '@/features/avatar-scene/settings.js';
+import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION } from '@/features/knowledge/graphSettings.js';
 import { artifactPreviewVirtualUrl, resolveResourceUrl } from '@/lib/virtualUrl.js';
 
 // ==================== 界面设置通用项 ====================
@@ -125,6 +127,10 @@ function loadSettingsWindowSize() {
 const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
     const isMobile = useIsMobile();
     const [robotDebugEnabled, setRobotDebugEnabled] = useLocalSetting(ROBOT_DEBUG_SETTING_KEY, false);
+    const [knowledgeGraphEdgeAnimation, setKnowledgeGraphEdgeAnimation] = useLocalSetting(
+        KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY,
+        DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION,
+    );
     const [showQuickUserMessageNavigator, setShowQuickUserMessageNavigator] = useLocalSetting(
         MESSAGE_NAVIGATOR_SETTING_KEY,
         true,
@@ -168,6 +174,7 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
     const abortControllerRef = useRef(null);
     const latestDynamicConfigRequestRef = useRef(0);
     const isSavingDynamicConfigRef = useRef(false);
+    const jsonEditorScopeRef = useRef(null);
     const pendingRefreshScopesRef = useRef(new Set());
     const tabsLoadedRef = useRef(false);
     const tabsLoadingRef = useRef(false);
@@ -416,11 +423,26 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
 
     // ==================== 保存 ====================
     const handleSave = useCallback(async () => {
-        if (!isDynamicTab) return;
+        if (!isDynamicTab || isSavingDynamicConfigRef.current) return;
         isSavingDynamicConfigRef.current = true;
         try {
-            const response = await apiClient.post(`${apiEndpoint.SETTING_TABS_ENDPOINT}/${activeTab}`, dynamicValues);
-            const savedValues = cloneData(response?.defaultOptions || response?.values || dynamicValues);
+            const scope = jsonEditorScopeRef.current;
+            if (scope) validateJsonEditors(scope);
+            const valuesToSave = cloneData(scope?._cwmSettingsValues?.current || dynamicValues);
+            const drafts = [...(scope?.querySelectorAll('.cwm-json-editor') || [])].map((host) => [host, JSON.stringify(host._cwmJsonEditor?.getState())]);
+            const response = await apiClient.post(`${apiEndpoint.SETTING_TABS_ENDPOINT}/${activeTab}`, valuesToSave);
+            if (scope !== jsonEditorScopeRef.current) { markTabRefreshOnClose(activeTab); return; }
+            const editedDuringSave = JSON.stringify(scope?._cwmSettingsValues?.current || dynamicValues) !== JSON.stringify(valuesToSave)
+                || drafts.some(([host, state]) => JSON.stringify(host._cwmJsonEditor?.getState()) !== state);
+            if (editedDuringSave) {
+                toast.success(t('save_success'));
+                setOriginalDynamicValues(cloneData(response?.defaultOptions || response?.values || valuesToSave));
+                setIsConfigPristine(false);
+                markTabRefreshOnClose(activeTab);
+                return;
+            }
+            jsonEditorScopeRef.current?.querySelectorAll('.cwm-json-editor').forEach((host) => host._cwmJsonEditor?.markSaved());
+            const savedValues = cloneData(response?.defaultOptions || response?.values || valuesToSave);
             toast.success(t('save_success'));
 
             setDynamicValues(savedValues);
@@ -777,6 +799,13 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
                             />
                             <Separator />
                             <InterfaceSettingItem
+                                title="知识图谱关系动画"
+                                description="在聊天和知识库图谱的连线上显示柔和的流动效果，帮助辨认关联方向。关闭后保留节点的物理动画。"
+                                checked={knowledgeGraphEdgeAnimation}
+                                onCheckedChange={setKnowledgeGraphEdgeAnimation}
+                            />
+                            <Separator />
+                            <InterfaceSettingItem
                                 title="机器人调试"
                                 description="在 3D 场景中显示动作与表情测试按钮。"
                                 checked={robotDebugEnabled}
@@ -828,6 +857,8 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
                     initialValues={dynamicValues}
                     onChange={handleDynamicValuesChange}
                     onImageUpload={handleImageUpload}
+                    validationRef={jsonEditorScopeRef}
+                    onSave={handleSave}
                 />
             </motion.div>
         );

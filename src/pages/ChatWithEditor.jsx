@@ -11,6 +11,7 @@ import MarkdownDocumentEditor from '@/features/documents/MarkdownDocumentEditor.
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Bot } from 'lucide-react';
 import DocumentConversationControls from '@/features/documents/DocumentConversationControls.jsx';
+import DocumentExtractButton from '@/features/documents/DocumentExtractButton.jsx';
 import { useIsMobile } from '@/lib/tools.jsx';
 
 const ChatWithEditor = ({
@@ -25,6 +26,7 @@ const ChatWithEditor = ({
     settingsRefreshVersions,
 }) => {
     const { t } = useTranslation();
+    const sourceRevision = new URLSearchParams(window.location.search).get('sourceRevision');
     const [headerContainer, setHeaderContainer] = useState(null);
     const [mobilePanel, setMobilePanel] = useState('document');
     const isMobile = useIsMobile();
@@ -236,7 +238,9 @@ const ChatWithEditor = ({
                 </Button>
                 <div ref={setHeaderContainer} className="min-w-0 flex-1">
                     {editorType !== 'markdown' && (
-                        <span className="px-4 text-sm font-medium">{t('documents_document_editor')}</span>
+                        <span className="px-4 text-sm font-medium">{t('documents_document_editor')}
+                            {sourceRevision !== null && /^\d+$/.test(sourceRevision) && <span className="ml-2 text-xs font-normal text-muted-foreground">知识来源版本 {sourceRevision} · 当前为最新文档</span>}
+                        </span>
                     )}
                 </div>
                 <Button
@@ -268,6 +272,11 @@ const ChatWithEditor = ({
                 </Button>
                 <NotificationCenterTrigger />
                 <TaskCenterTrigger />
+                {editorType !== 'markdown' && <DocumentExtractButton documentId={documentId} conversationId={conversationId}
+                    onBeforeSubmit={() => {
+                        if (!editorRef.current?.save) throw new Error('文档编辑器尚未就绪。');
+                        return editorRef.current.save();
+                    }} />}
                 <DocumentConversationControls
                     conversationId={conversationId}
                     onSelect={onNewConversationId}
@@ -308,6 +317,7 @@ const ChatWithEditor = ({
                                 onOpenCollaboratorConversation={openCollaboratorConversation}
                                 key={documentId}
                                 documentId={documentId}
+                                conversationId={conversationId}
                                 onStatus={setDocModifiedStatus}
                             />
                         ) : (
