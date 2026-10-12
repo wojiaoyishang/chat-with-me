@@ -36,6 +36,22 @@ export const workflowApi = {
       `/tasks/${encodeURIComponent(id)}/details`,
       { signal },
     );
-    return { ...result, task: normalizeWorkflowTask(result.task || result) };
+    return {
+      ...result,
+      task: normalizeWorkflowTask({
+        ...result,
+        ...(result.task || {}),
+        runtime: result.runtime || result.task?.runtime,
+        stages: result.stages || result.task?.stages,
+        usage: result.usage || result.task?.usage,
+      }),
+    };
   },
+  nodeOutput: (taskId, nodeId, offset = 0, signal) =>
+    apiClient.get(
+      `${base}/tasks/${encodeURIComponent(taskId)}/nodes/${encodeURIComponent(nodeId)}/output?offset=${offset}&limit=20`,
+      { signal },
+    ),
+  taskAction: (taskId, action) =>
+    apiClient.post(`/tasks/${encodeURIComponent(taskId)}/${action}`),
 };

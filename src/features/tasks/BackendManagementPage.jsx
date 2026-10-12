@@ -26,6 +26,9 @@ import {
 const WorkflowEditor = lazy(
   () => import("@/features/workflows/WorkflowEditor.jsx"),
 );
+const QuickTemplateRunDialog = lazy(
+  () => import("@/features/workflows/QuickTemplateRunDialog.jsx"),
+);
 
 /** The backend owns the task definitions, forms, dashboard, and knowledge interface. */
 export default function BackendManagementPage({
@@ -93,6 +96,13 @@ export default function BackendManagementPage({
         setWorkflowRequest(
           (current) =>
             current || {
+              mode: ["template-editor", "quick-run", "monitor"].includes(
+                message.mode,
+              )
+                ? message.mode
+                : message.taskId
+                  ? "monitor"
+                  : "template-editor",
               ...(typeof message.taskId === "string" && message.taskId
                 ? { taskId: message.taskId }
                 : {}),
@@ -156,6 +166,15 @@ export default function BackendManagementPage({
     sendGraphPreferences,
   ]);
 
+  const workflowChanged = useCallback((message) => {
+    frame.current?.contentWindow?.postMessage(
+      { ...message, type: "cwm.workflow-changed" },
+      window.location.origin,
+    );
+    if (message.monitor && typeof message.taskId === "string" && message.taskId)
+      setWorkflowRequest({ mode: "monitor", taskId: message.taskId });
+  }, []);
+
   return (
     <div className="flex h-full min-h-0 min-w-0 flex-col bg-background">
       {!sidebarMode && (
@@ -212,16 +231,19 @@ export default function BackendManagementPage({
             </div>
           }
         >
-          <WorkflowEditor
-            request={workflowRequest}
-            onClose={() => setWorkflowRequest(null)}
-            onChanged={(message) =>
-              frame.current?.contentWindow?.postMessage(
-                { ...message, type: "cwm.workflow-changed" },
-                window.location.origin,
-              )
-            }
-          />
+          {workflowRequest.mode === "quick-run" ? (
+            <QuickTemplateRunDialog
+              request={workflowRequest}
+              onClose={() => setWorkflowRequest(null)}
+              onChanged={workflowChanged}
+            />
+          ) : (
+            <WorkflowEditor
+              request={workflowRequest}
+              onClose={() => setWorkflowRequest(null)}
+              onChanged={workflowChanged}
+            />
+          )}
         </Suspense>
       )}
     </div>

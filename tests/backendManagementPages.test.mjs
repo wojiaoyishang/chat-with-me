@@ -135,7 +135,7 @@ test('collection grant editor uses account search and independent permission con
   assert.deepEqual(body.grants, [{ userId: 2, conversationId: '', read: false, write: true, manage: false }]);
 });
 
-test("backend task descriptor renders form, stage statistics, and correct pause action", async (t) => {
+test("backend task descriptor renders stage statistics and routes task creation through templates", async (t) => {
   const definition = {
     kind: "knowledge.extract",
     name: "知识提取",
@@ -197,17 +197,6 @@ test("backend task descriptor renders form, stage statistics, and correct pause 
       assert.equal(JSON.parse(options.body).afterStage, "extract");
       return {};
     }
-    if (url === "/api/tasks" && options.method === "POST") {
-      assert.deepEqual(JSON.parse(options.body), {
-        kind: "knowledge.extract",
-        parameters: {
-          sourceType: "document",
-          documentId: "doc-1",
-          revision: 3,
-        },
-      });
-      return { taskId: "task-1" };
-    }
     throw new Error(`Unexpected API ${url}`);
   });
   t.after(() => dom.window.close());
@@ -219,22 +208,11 @@ test("backend task descriptor renders form, stage statistics, and correct pause 
   await settle();
   assert.ok(calls.some((call) => call.url.endsWith("/pause")));
   document.querySelector("#create").click();
-  document.querySelector("[name=sourceType]").value = "document";
-  document
-    .querySelector("[name=sourceType]")
-    .dispatchEvent(new dom.window.Event("change"));
-  assert.equal(document.querySelector("[name=text]").disabled, true);
-  assert.equal(document.querySelector("[name=documentId]").disabled, false);
-  document.querySelector("[name=documentId]").value = "doc-1";
-  document.querySelector("[name=revision]").value = "3";
-  document
-    .querySelector("#create-form")
-    .dispatchEvent(new dom.window.Event("submit", { cancelable: true }));
-  await settle();
-  assert.ok(
-    calls.some((call) => call.url === "/api/tasks" && call.method === "POST"),
-  );
+  assert.equal(document.querySelector("#create").getAttribute("aria-expanded"), "true");
+  assert.equal(document.querySelectorAll("#task-create-menu [role=menuitem]").length, 1);
+  assert.equal(document.querySelector("#quick-template-run").textContent, "快速模板新建");
   assert.equal(document.querySelector("#create-dialog").open, false);
+  assert.equal(calls.some((call) => call.url === "/api/tasks" && call.method === "POST"), false);
 });
 
 test("knowledge conversation context reaches read, image, and edit APIs", async (t) => {
@@ -412,56 +390,23 @@ test("administrator health section renders only server-provided indexes and cons
   assert.equal(document.querySelector("[data-admin-health]").open, false);
 });
 
-test("mixed integer/string revision form preserves Office hashes and parses safe nonnegative revisions", async (t) => {
-  const revisions = [];
-  const definition = {
-    kind: "knowledge.extract",
-    name: "知识提取",
-    parameterSchema: {
-      properties: {
-        sourceType: { type: "string", enum: ["document"], default: "document" },
-        documentId: { type: "string" },
-        revision: { type: ["integer", "string", "null"] },
-      },
-    },
-  };
-  const { dom, document } = await page("tasks", (url, options) => {
-    if (url === "/api/tasks/definitions") return { definitions: [definition] };
+test("task creation menu closes on Escape and outside click", async (t) => {
+  const { dom, document } = await page("tasks", (url) => {
+    if (url === "/api/tasks/definitions") return { definitions: [] };
     if (url === "/api/tasks?limit=200") return { tasks: [] };
-    if (url === "/api/tasks" && options.method === "POST") {
-      revisions.push(JSON.parse(options.body).parameters.revision);
-      return { taskId: "task-1" };
-    }
-    return { taskId: "task-1", status: "queued", definition };
+    return { task: {}, stages: [], calls: [], usage: {} };
   });
   t.after(() => dom.window.close());
-  const samples = [
-    "0",
-    "3",
-    "a".repeat(64),
-    "1".repeat(64),
-    "0".repeat(64),
-    "-1",
-  ];
-  for (const value of samples) {
-    document.querySelector("#create").click();
-    const input = document.querySelector('[name="revision"]');
-    assert.equal(input.type, "text");
-    document.querySelector('[name="documentId"]').value = "doc-1";
-    input.value = value;
-    document
-      .querySelector("#create-form")
-      .dispatchEvent(new dom.window.Event("submit", { cancelable: true }));
-    await settle();
-  }
-  assert.deepEqual(revisions, [
-    0,
-    3,
-    "a".repeat(64),
-    "1".repeat(64),
-    "0".repeat(64),
-    "-1",
-  ]);
+  const trigger = document.querySelector("#create");
+  const menu = document.querySelector("#task-create-menu");
+  trigger.click();
+  assert.equal(menu.hidden, false);
+  document.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  assert.equal(menu.hidden, true);
+  assert.equal(document.activeElement, trigger);
+  trigger.click();
+  document.body.dispatchEvent(new dom.window.PointerEvent("pointerdown", { bubbles: true }));
+  assert.equal(menu.hidden, true);
 });
 
 test("knowledge body is lazy folded plain text and only same-origin images can open", async (t) => {
@@ -680,7 +625,7 @@ test("task detail refresh preserves the focused stage pause action instead of ta
   assert.deepEqual(JSON.parse(pauseRequest.body), { afterStage: "persist" });
 });
 
-test("reduced motion preserves immediate task rendering and dialogs without starting web animations", async (t) => {
+test("reduced motion preserves immediate task rendering and creation menu without animations", async (t) => {
   const task = {
     taskId: "reduced-task",
     title: "减少动态任务",
@@ -707,9 +652,9 @@ test("reduced motion preserves immediate task rendering and dialogs without star
   t.after(() => dom.window.close());
   assert.match(document.querySelector("#detail").textContent, /减少动态任务/);
   document.querySelector("#create").click();
-  assert.equal(document.querySelector("#create-dialog").open, true);
-  document.querySelector("#create-dialog [data-close]").click();
-  assert.equal(document.querySelector("#create-dialog").open, false);
+  assert.equal(document.querySelector("#task-create-menu").hidden, false);
+  document.querySelector("#create").click();
+  assert.equal(document.querySelector("#task-create-menu").hidden, true);
   assert.deepEqual(animations, []);
 });
 
@@ -774,110 +719,17 @@ async function sharingPage(override = () => undefined) {
   });
 }
 
-test("extraction permissions use an owner picker and natural member roles rather than JSON, and write-only owners cannot configure sharing", async (t) => {
-  const descriptor = {
-      policyEndpoint: "/knowledge/extraction-permissions",
-      userSearchEndpoint: "/knowledge/share-users",
-      policyField: "policyId",
-      membersField: "sharingMembers",
-      includeSourcesField: "includeSources",
-    },
-    definition = {
-      kind: "knowledge.extract",
-      name: "知识提取",
-      creationForm: { permissions: descriptor },
-      parameterSchema: {
-        properties: {
-          sourceType: { type: "string", enum: ["text"], default: "text" },
-          text: { type: "string" },
-          policyId: { type: "string" },
-          sharingMembers: { type: "array" },
-          includeSources: { type: "boolean" },
-        },
-      },
-    };
-  const { dom, document, calls } = await page("tasks", (url, options) => {
-    const parsed = new URL(url, "http://localhost");
-    if (parsed.pathname === "/api/tasks/definitions")
-      return { definitions: [definition] };
-    if (parsed.pathname === "/api/tasks" && options.method !== "POST")
-      return { tasks: [] };
-    if (parsed.pathname === "/api/tasks" && options.method === "POST")
-      return { taskId: "created" };
-    if (parsed.pathname === "/api/tasks/created/details")
-      return {
-        task: { taskId: "created", title: "已创建", status: "queued" },
-        definition,
-        stages: [],
-        calls: [],
-      };
-    if (parsed.pathname === "/api/knowledge/extraction-permissions")
-      return {
-        policies: [
-          {
-            id: "owned",
-            title: "当前账户",
-            owner: { userId: 1, username: "owner" },
-            canShare: true,
-            default: true,
-          },
-          {
-            id: "write-only",
-            title: "可写项目",
-            owner: { userId: 3, username: "project" },
-            canShare: false,
-          },
-        ],
-      };
-    if (parsed.pathname === "/api/knowledge/share-users")
-      return { users: [{ userId: 2, username: "reader", nickname: "协作者" }] };
-    throw new Error(`unexpected ${url}`);
+test("task page sends users to the workflow dialog for template creation", async (t) => {
+  const { dom, document, calls } = await page("tasks", (url) => {
+    if (url === "/api/tasks/definitions") return { definitions: [] };
+    if (url === "/api/tasks?limit=200") return { tasks: [] };
+    throw new Error(`Unexpected API ${url}`);
   });
   t.after(() => dom.window.close());
-  document.querySelector("#create").click();
-  await settle();
-  assert.ok(document.querySelector(".extraction-permissions"));
-  assert.equal(document.querySelector('[name="sharingMembers"]'), null);
-  const policy = document.querySelector("#extraction-policy"),
-    enable = document.querySelector("#extraction-share-enabled");
-  policy.value = "write-only";
-  policy.dispatchEvent(new dom.window.Event("change"));
-  assert.equal(enable.disabled, true);
-  policy.value = "owned";
-  policy.dispatchEvent(new dom.window.Event("change"));
-  enable.click();
-  const search = document.querySelector("#extraction-sharing-search");
-  search.value = "reader";
-  search.dispatchEvent(new dom.window.Event("input"));
-  await new Promise((resolve) => setTimeout(resolve, 290));
-  document
-    .querySelector('#extraction-sharing-results [data-user-id="2"]')
-    .click();
-  const row = document.querySelector(
-    '.extraction-permissions .sharing-member[data-user-id="2"]',
-  );
-  assert.equal(row.querySelector("select").value, "viewer");
-  row.querySelector("select").value = "editor";
-  row.querySelector("input").value = "specific-conversation";
-  document.querySelector("#extraction-include-sources").checked = true;
-  document.querySelector('[name="text"]').value = "待提取内容";
-  document
-    .querySelector("#create-form")
-    .dispatchEvent(new dom.window.Event("submit", { cancelable: true }));
-  await settle();
-  const body = JSON.parse(
-    calls.find((call) => call.url === "/api/tasks" && call.method === "POST")
-      .body,
-  );
-  assert.deepEqual(body.parameters, {
-    sourceType: "text",
-    text: "待提取内容",
-    policyId: "owned",
-    sharingMembers: [
-      { userId: 2, role: "editor", conversationId: "specific-conversation" },
-    ],
-    includeSources: true,
-  });
+  document.querySelector("#create-template").click();
+  assert.match(document.querySelector("#notice").textContent, /CWM 应用/);
+  assert.equal(document.querySelector("#create-dialog").open, false);
+  assert.equal(calls.some((call) => call.method === "POST"), false);
 });
 
 async function openSharing(dom, document) {

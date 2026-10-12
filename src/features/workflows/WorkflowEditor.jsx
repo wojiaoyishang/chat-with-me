@@ -3,8 +3,7 @@ import {
   ReactFlowProvider,
   Background,
   Controls,
-  Handle,
-  Position,
+  MarkerType,
   useReactFlow,
 } from "@xyflow/react";
 import {
@@ -12,8 +11,10 @@ import {
   Copy,
   GitBranch,
   Loader2,
+  Maximize2,
   Play,
   Plus,
+  Redo2,
   Save,
   Search,
   Settings2,
@@ -29,150 +30,61 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import JsonConfigEditor from "@/components/setting/JsonConfigEditor.jsx";
 import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import apiClient from "@/lib/apiClient.js";
 import { workflowApi } from "./workflowApi.js";
 import {
+  bindWorkflowInput,
   catalogNode,
   clone,
   connectWorkflow,
+  copyWorkflowSelection,
   createWorkflowNode,
   initializeGraph,
+  isWorkflowTextEditing,
+  nodeCategory,
   normalizeGraph,
+  normalizeWorkflowSchema,
+  pasteWorkflowSelection,
   removeWorkflowNodes,
+  setWorkflowPortMode,
+  sourceValueConfig,
   updateWorkflowNodePositions,
 } from "./workflowModel.js";
+import {
+  commonConfigSchema,
+  permissionsSchema,
+  templateSharingSchema,
+} from "./workflowForms.js";
 import WorkflowCanvas from "./WorkflowCanvas.jsx";
+import WorkflowContextMenu from "./WorkflowContextMenu.jsx";
+import WorkflowNode from "./WorkflowNode.jsx";
 import WorkflowNodePanel from "./WorkflowNodePanel.jsx";
+import WorkflowMonitorPanel from "./WorkflowMonitorPanel.jsx";
+import useWorkflowTask from "./useWorkflowTask.js";
 import { WorkflowSelect } from "./WorkflowSourcePicker.jsx";
 import "@xyflow/react/dist/style.css";
 import "./workflow.css";
 
-function WorkflowNode({ data, selected }) {
-  const { definition, status } = data;
-  return (
-    <div
-      className={`workflow-node ${selected ? "is-selected" : ""} ${status ? `status-${status}` : ""}`}
-    >
-      <div className="workflow-node-title">
-        <GitBranch className="size-4 text-primary" />
-        <strong>{definition?.title || data.kind}</strong>
-        {status === "running" && <Loader2 className="size-3 animate-spin" />}
-        {["completed", "succeeded"].includes(status) && (
-          <Check className="size-3 text-emerald-600" />
-        )}
-      </div>
-      <p className="workflow-node-id">{data.id}</p>
-      <div className="workflow-node-ports">
-        <div>
-          {(definition?.inputs || []).map((port, index) => (
-            <div className="workflow-port" key={port.name}>
-              <Handle
-                type="target"
-                position={Position.Left}
-                id={port.name}
-                style={{ top: 66 + index * 23 }}
-              />
-              <span>{port.title || port.name}</span>
-            </div>
-          ))}
-        </div>
-        <div>
-          {(definition?.outputs || []).map((port, index) => (
-            <div className="workflow-port workflow-port-output" key={port.name}>
-              <span>{port.title || port.name}</span>
-              <Handle
-                type="source"
-                position={Position.Right}
-                id={port.name}
-                style={{ top: 66 + index * 23 }}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-      {status && (
-        <span className="workflow-node-state">
-          {{
-            pending: "等待",
-            running: "运行中",
-            completed: "完成",
-            succeeded: "完成",
-            failed: "失败",
-            cancelled: "取消",
-            paused: "暂停",
-          }[status] || status}
-        </span>
-      )}
-    </div>
-  );
-}
 const nodeTypes = { workflow: WorkflowNode };
-const permissionsSchema = {
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    conversationId: {
-      type: "string",
-      title: "限制到会话（可选）",
-      description: "留空时当前账户的所有会话可访问。",
-    },
-    sharingMembers: {
-      type: "array",
-      title: "共享成员",
-      default: [],
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["userId", "role"],
-        properties: {
-          userId: {
-            type: "integer",
-            title: "账户 ID",
-            minimum: 1,
-            maximum: 2147483647,
-          },
-          conversationId: {
-            type: "string",
-            title: "限制到成员会话（可选）",
-            maxLength: 36,
-          },
-          role: {
-            type: "string",
-            title: "权限",
-            enum: ["viewer", "editor", "manager"],
-            enumNames: ["只读", "读写", "管理"],
-            default: "viewer",
-          },
-        },
-      },
-    },
-    includeSources: {
-      type: "boolean",
-      title: "同时共享来源片段",
-      default: true,
-    },
-  },
-};
-const templateSharingSchema = {
-  type: "array",
-  items: {
-    type: "object",
-    additionalProperties: false,
-    required: ["userId", "role"],
-    properties: {
-      userId: { type: "integer", minimum: 1, title: "账户 ID" },
-      role: {
-        type: "string",
-        title: "模板权限",
-        enum: ["viewer", "editor"],
-        enumNames: ["读取与调用", "修改与调用"],
-        default: "viewer",
-      },
-    },
-  },
-};
+let applicationClipboard = null;
+const newDraft = () => ({
+  graph: normalizeGraph(),
+  title: "知识提取工作流",
+  description: "",
+  templateSharing: [],
+  permissions: { sharingMembers: [], includeSources: true },
+});
+const snapshot = (draft) => JSON.stringify(draft);
 
 export default function WorkflowEditor(props) {
   return (
@@ -184,42 +96,52 @@ export default function WorkflowEditor(props) {
 
 function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const flow = useReactFlow();
+  const [draft, setDraft] = useState(newDraft);
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  const { graph, title, description, templateSharing, permissions } = draft;
+  const [baseline, setBaseline] = useState(snapshot(draft));
+  const dirty = snapshot(draft) !== baseline;
   const [loading, setLoading] = useState(true);
-  const [loadGeneration, setLoadGeneration] = useState(0);
+  const [reload, setReload] = useState(0);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [catalog, setCatalog] = useState({ nodes: [] });
-  const [graph, setGraph] = useState(normalizeGraph());
-  const graphRef = useRef(graph);
-  graphRef.current = graph;
+  const globalConfigSchema = useMemo(
+    () =>
+      normalizeWorkflowSchema(catalog.commonConfigSchema || commonConfigSchema),
+    [catalog.commonConfigSchema],
+  );
   const [templates, setTemplates] = useState([]);
   const [template, setTemplate] = useState(null);
-  const [templateSharing, setTemplateSharing] = useState([]);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [models, setModels] = useState([]);
+  const [viewMode, setViewMode] = useState(
+    request.mode === "monitor" || request.taskId
+      ? "monitor"
+      : "template-editor",
+  );
+  const readOnly = viewMode === "monitor";
+  const [initialTask, setInitialTask] = useState(null);
+  const { task, error: refreshError } = useWorkflowTask(initialTask);
   const [selected, setSelected] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
-  const [canvasSelection, setCanvasSelection] = useState({ ids: [] });
   const [selectedEdges, setSelectedEdges] = useState([]);
-  const [search, setSearch] = useState("");
-  const [title, setTitle] = useState("知识提取工作流");
-  const [description, setDescription] = useState("");
-  const [models, setModels] = useState([]);
+  const [selectionRequest, setSelectionRequest] = useState({ ids: [] });
+  const [fitRequest, setFitRequest] = useState(0);
   const [panel, setPanel] = useState("node");
   const [mobilePane, setMobilePane] = useState("canvas");
-  const [dirty, setDirty] = useState(false);
-  const [confirmClose, setConfirmClose] = useState(false);
-  const [confirmTemplate, setConfirmTemplate] = useState(null);
-  const [task, setTask] = useState(null);
-  const [inputValues, setInputValues] = useState({});
-  const [permissions, setPermissions] = useState({
-    sharingMembers: [],
-    includeSources: true,
-  });
+  const [search, setSearch] = useState("");
+  const [menu, setMenu] = useState(null);
+  const [hasClipboard, setHasClipboard] = useState(
+    Boolean(applicationClipboard?.nodes?.length),
+  );
+  const [confirmation, setConfirmation] = useState(null);
   const [invalid, setInvalid] = useState({});
-  const history = useRef([]);
+  const history = useRef({ past: [], future: [] });
   const alive = useRef(true);
-  const activeLoad = useRef(null);
+  const dialogRef = useRef(null);
+  const pointer = useRef(null);
   const validity = useCallback(
     (key, valid) =>
       setInvalid((current) =>
@@ -234,18 +156,33 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     };
   }, []);
 
+  const installDraft = useCallback((next) => {
+    draftRef.current = next;
+    setDraft(next);
+    setBaseline(snapshot(next));
+    history.current = { past: [], future: [] };
+    setInvalid({});
+    setSelected(next.graph.nodes[0]?.id || "");
+    setSelectedIds([]);
+    setSelectedEdges([]);
+    setSelectionRequest({
+      ids: next.graph.nodes[0] ? [next.graph.nodes[0].id] : [],
+    });
+    setFitRequest((current) => current + 1);
+    setMenu(null);
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
-    activeLoad.current = controller;
     setLoading(true);
     setError("");
     Promise.all([
       workflowApi.catalog(controller.signal),
       workflowApi.templates(controller.signal),
-      request.templateId
-        ? workflowApi.template(request.templateId, controller.signal)
-        : request.taskId
-          ? workflowApi.task(request.taskId, controller.signal)
+      request.taskId
+        ? workflowApi.task(request.taskId, controller.signal)
+        : request.templateId
+          ? workflowApi.template(request.templateId, controller.signal)
           : Promise.resolve(null),
     ])
       .then(([definitions, saved, detail]) => {
@@ -254,32 +191,28 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         setTemplates(saved.templates || []);
         const loadedTemplate = detail?.template;
         const loadedTask = request.taskId ? detail?.task || detail : null;
-        const next = initializeGraph(
-          loadedTemplate?.graph ||
+        installDraft({
+          graph: initializeGraph(
             loadedTask?.parameters?.graph ||
-            definitions.standardGraph,
-          definitions.nodes,
-        );
-        setGraph(next);
-        setSelected(next.nodes[0]?.id || "");
-        setCanvasSelection({ ids: next.nodes[0] ? [next.nodes[0].id] : [] });
-        setTemplate(loadedTemplate || null);
-        setTemplateSharing(loadedTemplate?.sharingMembers || []);
-        setTask(loadedTask);
-        setTitle(
-          loadedTemplate?.title || loadedTask?.title || "知识提取工作流",
-        );
-        setDescription(loadedTemplate?.description || "");
-        setInputValues({});
-        setPermissions(
-          loadedTask?.parameters?.permissions || {
+              loadedTemplate?.graph ||
+              definitions.standardGraph,
+            definitions.nodes,
+          ),
+          title: loadedTask?.title || loadedTemplate?.title || "知识提取工作流",
+          description: loadedTemplate?.description || "",
+          templateSharing: loadedTemplate?.sharingMembers || [],
+          permissions: loadedTask?.parameters?.permissions || {
             sharingMembers: [],
             includeSources: true,
           },
+        });
+        setTemplate(loadedTemplate || null);
+        setInitialTask(loadedTask);
+        setViewMode(
+          loadedTask || request.mode === "monitor"
+            ? "monitor"
+            : "template-editor",
         );
-        setDirty(false);
-        history.current = [];
-        setInvalid({});
       })
       .catch((cause) => {
         if (!controller.signal.aborted) setError(cause.message);
@@ -295,60 +228,74 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       })
       .catch(() => {});
     return () => controller.abort();
-  }, [request.templateId, request.taskId, loadGeneration]);
+  }, [request.templateId, request.taskId, request.mode, reload, installDraft]);
 
-  useEffect(() => {
-    if (
-      !task?.id ||
-      ["completed", "succeeded", "failed", "cancelled"].includes(task.status)
-    )
-      return;
-    const controller = new AbortController();
-    const timer = setInterval(
-      () =>
-        workflowApi
-          .task(task.id, controller.signal)
-          .then((detail) => {
-            if (!controller.signal.aborted) setTask(detail.task || detail);
-          })
-          .catch(() => {}),
-      3000,
-    );
-    return () => {
-      clearInterval(timer);
-      controller.abort();
-    };
-  }, [task?.id, task?.status]);
-
-  const changeGraph = useCallback((next) => {
-    const current = graphRef.current;
-    const updated = typeof next === "function" ? next(current) : next;
-    if (updated === current) return;
-    history.current.push(clone(current));
-    if (history.current.length > 50) history.current.shift();
-    graphRef.current = updated;
-    setGraph(updated);
-    setDirty(true);
+  const changeDraft = useCallback((update) => {
+    const current = draftRef.current;
+    const next = typeof update === "function" ? update(current) : update;
+    if (next === current || snapshot(next) === snapshot(current)) return;
+    history.current.past.push(clone(current));
+    if (history.current.past.length > 100) history.current.past.shift();
+    history.current.future = [];
+    draftRef.current = next;
+    setDraft(next);
     setNotice("");
-    setConfirmClose(false);
   }, []);
-  const commitNodePositions = useCallback(
-    (moved) =>
-      changeGraph((current) => updateWorkflowNodePositions(current, moved)),
-    [changeGraph],
+  const changeGraph = useCallback(
+    (update) =>
+      changeDraft((current) => {
+        const next =
+          typeof update === "function" ? update(current.graph) : update;
+        return next === current.graph ? current : { ...current, graph: next };
+      }),
+    [changeDraft],
   );
-  const edit = (callback) => {
-    callback();
-    setDirty(true);
-    setConfirmClose(false);
-    setNotice("");
-  };
-  const close = () => {
-    if (busy) return;
-    if (dirty) setConfirmClose(true);
-    else onClose();
-  };
-  const selectedNode = graph.nodes.find((node) => node.id === selected);
+  const commitPositions = useCallback(
+    (moved) => {
+      if (!readOnly)
+        changeGraph((current) => updateWorkflowNodePositions(current, moved));
+    },
+    [changeGraph, readOnly],
+  );
+  const undo = useCallback(() => {
+    const previous = history.current.past.pop();
+    if (previous) {
+      history.current.future.push(clone(draftRef.current));
+      draftRef.current = previous;
+      setDraft(previous);
+      setNotice("");
+    }
+  }, []);
+  const redo = useCallback(() => {
+    const next = history.current.future.pop();
+    if (next) {
+      history.current.past.push(clone(draftRef.current));
+      draftRef.current = next;
+      setDraft(next);
+      setNotice("");
+    }
+  }, []);
+  const select = useCallback((ids) => {
+    setSelected(ids[0] || "");
+    setSelectedIds(ids);
+    setSelectedEdges([]);
+    setSelectionRequest({ ids });
+  }, []);
+  const selectionChanged = useCallback(
+    ({ nodes: chosen, edges: connected }) => {
+      const ids = chosen.map((node) => node.id),
+        edges = connected.map((edge) => edge.id);
+      setSelectedIds((current) =>
+        current.join("|") === ids.join("|") ? current : ids,
+      );
+      setSelectedEdges((current) =>
+        current.join("|") === edges.join("|") ? current : edges,
+      );
+      if (ids.length === 1) setSelected(ids[0]);
+      else if (!ids.length) setSelected("");
+    },
+    [],
+  );
   const runtimeNodes = useMemo(
     () =>
       task?.workflowNodes ||
@@ -358,27 +305,52 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       {},
     [task],
   );
-  const runtimeStages = useMemo(
-    () =>
-      Array.isArray(task?.stages || task?.runtime?.stages)
-        ? task.stages || task.runtime.stages
-        : Object.values(task?.runtime?.stages || {}),
-    [task],
+  const runtimeStages = useMemo(() => {
+    const stages = task?.stages || task?.runtime?.stages || {};
+    return Array.isArray(stages) ? stages : Object.values(stages);
+  }, [task]);
+  const openMenu = useCallback((event, details) => {
+    event.preventDefault();
+    setMenu({ x: event.clientX, y: event.clientY, ...details });
+  }, []);
+  const closeMenu = useCallback(() => {
+    setMenu(null);
+    requestAnimationFrame(() => {
+      const active = document.activeElement;
+      if (
+        active === document.body ||
+        active?.hasAttribute("data-radix-focus-guard")
+      )
+        dialogRef.current?.querySelector(".workflow-canvas")?.focus();
+    });
+  }, []);
+  const onValue = useCallback(
+    (id, value) =>
+      changeGraph((current) => ({
+        ...current,
+        nodes: current.nodes.map((node) =>
+          node.id === id
+            ? {
+                ...node,
+                config: sourceValueConfig(node.kind, value, node.config),
+              }
+            : node,
+        ),
+      })),
+    [changeGraph],
   );
-  const selectionChanged = useCallback(
-    ({ nodes: chosen, edges: connected }) => {
-      const nodeIds = chosen.map((node) => node.id),
-        edgeIds = connected.map((edge) => edge.id);
-      setSelectedIds((current) =>
-        current.join("|") === nodeIds.join("|") ? current : nodeIds,
-      );
-      setSelectedEdges((current) =>
-        current.join("|") === edgeIds.join("|") ? current : edgeIds,
-      );
-      if (nodeIds.length === 1) setSelected(nodeIds[0]);
-      else if (!nodeIds.length) setSelected("");
-    },
-    [],
+  const onBinding = useCallback(
+    (id, port, binding) =>
+      changeGraph((current) => bindWorkflowInput(current, id, port, binding)),
+    [changeGraph],
+  );
+  const onBusy = useCallback(
+    (id, busy) => validity(`upload:${id}`, !busy),
+    [validity],
+  );
+  const onPortMenu = useCallback(
+    (event, nodeId, port) => openMenu(event, { nodeId, port }),
+    [openMenu],
   );
   const nodes = useMemo(
     () =>
@@ -389,13 +361,31 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         data: {
           id: node.id,
           kind: node.kind,
+          node,
           definition: catalogNode(catalog.nodes, node),
           status:
             runtimeNodes[node.id]?.status ||
-            runtimeStages.find?.((stage) => stage.key === node.id)?.status,
+            runtimeStages.find((stage) => stage.key === node.id)?.status,
+          runtime: runtimeNodes[node.id] || {},
+          readOnly: readOnly || Boolean(busy),
+          onValue,
+          onBinding,
+          onBusy,
+          onPortMenu,
         },
       })),
-    [graph.nodes, catalog.nodes, runtimeNodes, runtimeStages],
+    [
+      graph.nodes,
+      catalog.nodes,
+      runtimeNodes,
+      runtimeStages,
+      readOnly,
+      busy,
+      onValue,
+      onBinding,
+      onBusy,
+      onPortMenu,
+    ],
   );
   const edges = useMemo(
     () =>
@@ -403,177 +393,272 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         ...edge,
         sourceHandle: edge.sourcePort,
         targetHandle: edge.targetPort,
-        type: "smoothstep",
+        type: "default",
+        markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
         selected: selectedEdges.includes(edge.id),
-        animated: runtimeNodes[edge.source]?.status === "running",
+        animated: !readOnly || runtimeNodes[edge.source]?.status === "running",
+        className: `workflow-data-edge ${runtimeNodes[edge.source]?.status === "running" ? "is-active" : ""}`,
       })),
-    [graph.edges, selectedEdges, runtimeNodes],
+    [graph.edges, selectedEdges, readOnly, runtimeNodes],
   );
+
+  const selectedNode = graph.nodes.find((node) => node.id === selected);
+  const chosenIds = () =>
+    menu?.nodeId && !selectedIds.includes(menu.nodeId)
+      ? [menu.nodeId]
+      : selectedIds.length
+        ? selectedIds
+        : selected
+          ? [selected]
+          : [];
+  const copy = () => {
+    applicationClipboard = copyWorkflowSelection(
+      draftRef.current.graph,
+      chosenIds(),
+    );
+    setHasClipboard(Boolean(applicationClipboard.nodes.length));
+    setMenu(null);
+  };
+  const paste = (clipboard = applicationClipboard, location) => {
+    const pasted = pasteWorkflowSelection(
+      draftRef.current.graph,
+      clipboard,
+      location ||
+        (menu
+          ? flow.screenToFlowPosition({ x: menu.x, y: menu.y })
+          : pointer.current
+            ? flow.screenToFlowPosition(pointer.current)
+            : undefined),
+    );
+    if (pasted.ids.length) {
+      changeGraph(pasted.graph);
+      select(pasted.ids);
+    }
+    setMenu(null);
+  };
+  const duplicate = () =>
+    paste(
+      copyWorkflowSelection(draftRef.current.graph, chosenIds()),
+      undefined,
+    );
+  const deleteSelected = () => {
+    const ids = menu?.edgeId ? [] : chosenIds();
+    changeGraph((current) => ({
+      ...removeWorkflowNodes(current, ids),
+      edges: current.edges.filter(
+        (edge) =>
+          !ids.includes(edge.source) &&
+          !ids.includes(edge.target) &&
+          !(menu?.edgeId ? [menu.edgeId] : selectedEdges).includes(edge.id),
+      ),
+    }));
+    select([]);
+    setMenu(null);
+  };
   const addNode = (definition, position) => {
-    const node = createWorkflowNode(definition, graph, position);
-    changeGraph({ ...graph, nodes: [...graph.nodes, node] });
-    setSelected(node.id);
-    setSelectedIds([node.id]);
-    setCanvasSelection({ ids: [node.id] });
+    const current = draftRef.current.graph;
+    const node = createWorkflowNode(definition, current, position);
+    changeGraph({ ...current, nodes: [...current.nodes, node] });
+    select([node.id]);
+    setPanel("node");
+    setMobilePane("canvas");
+  };
+  const rename = () => {
+    if (menu?.nodeId) select([menu.nodeId]);
+    setMenu(null);
     setPanel("node");
     setMobilePane("config");
+    requestAnimationFrame(() =>
+      dialogRef.current?.querySelector('[aria-label="节点名称"]')?.focus(),
+    );
   };
-  const deleteSelected = () => {
-    const ids = selectedIds.length ? selectedIds : selected ? [selected] : [];
-    const next = removeWorkflowNodes(graph, ids);
-    next.edges = next.edges.filter((edge) => !selectedEdges.includes(edge.id));
-    changeGraph(next);
-    setSelected("");
-    setSelectedIds([]);
-    setCanvasSelection({ ids: [] });
-    setSelectedEdges([]);
+  const close = () => {
+    if (!busy)
+      dirty && !readOnly ? setConfirmation({ kind: "close" }) : onClose();
   };
-  const undo = () => {
-    const previous = history.current.pop();
-    if (previous) {
-      setGraph(previous);
-      setDirty(true);
-    }
-  };
-  const graphPayload = () => {
-    if (
-      Object.entries(invalid).some(
-        ([key, value]) =>
-          value &&
-          (key === "variables" ||
-            key === "permissions" ||
-            key === "run-values" ||
-            key === "template-sharing" ||
-            graph.nodes.some((node) => key.includes(`:${node.id}`))),
-      )
-    )
-      throw new Error("存在未完成或无效的配置，请先修正编辑器中的提示。");
-    return { graph, inputValues };
-  };
-  const action = async (kind) => {
-    if (busy) return;
+  const hasInvalid = () =>
+    Object.entries(invalid).some(
+      ([key, value]) =>
+        value &&
+        (["permissions", "template-sharing", "global"].includes(key) ||
+          graph.nodes.some((node) => key.includes(`:${node.id}`))),
+    );
+  const action = async (kind, closeAfter = false) => {
+    if (busy || readOnly) return false;
     setBusy(kind);
     setError("");
     setNotice("");
     try {
-      const payload = graphPayload();
-      await workflowApi.validate({
-        ...payload,
-        runnable: kind === "validate" || kind === "run",
+      if (hasInvalid())
+        throw new Error("存在未完成或无效的配置，请先修正编辑器中的提示。");
+      const current = draftRef.current;
+      const result = await workflowApi.validate({
+        graph: current.graph,
+        runnable: kind === "run",
       });
-      if (!alive.current) return;
+      if (!alive.current) return false;
       if (kind === "validate")
-        setNotice("流程配置校验通过；启动时会检查来源权限与可用模型。");
-      else if (kind === "save" || kind === "clone") {
-        if (!title.trim()) throw new Error("请填写模板名称。");
+        setNotice(
+          `流程配置校验通过${result.inputFields?.length ? ` · ${result.inputFields.length} 个模板输入` : ""}。`,
+        );
+      else if (["save", "clone"].includes(kind)) {
+        if (!current.title.trim()) throw new Error("请填写模板名称。");
         const id =
           kind === "save" && template?.canEdit !== false ? template?.id : null;
-        const result = await workflowApi.saveTemplate(
+        const response = await workflowApi.saveTemplate(
           {
-            title: title.trim(),
-            description,
-            graph,
+            title: current.title.trim(),
+            description: current.description,
+            graph: current.graph,
             ...(!id || template?.canManage !== false
               ? {
                   sharingMembers:
-                    !id && template?.canManage === false ? [] : templateSharing,
+                    !id && template?.canManage === false
+                      ? []
+                      : current.templateSharing,
                 }
               : {}),
             ...(id ? { revision: template.revision } : {}),
           },
           id,
         );
-        if (!alive.current) return;
-        const saved = result.template;
+        if (!alive.current) return false;
+        const saved = response.template;
         setTemplate(saved);
-        setTemplateSharing(saved.sharingMembers || []);
-        setTemplates((current) => [
-          ...current.filter((item) => item.id !== saved.id),
+        setTemplates((items) => [
+          ...items.filter((item) => item.id !== saved.id),
           saved,
         ]);
-        setDirty(false);
-        setNotice(`已保存模板 · 第 ${saved.revision} 版`);
+        const next = {
+          ...current,
+          graph: initializeGraph(saved.graph || current.graph, catalog.nodes),
+          templateSharing: saved.sharingMembers || current.templateSharing,
+        };
+        draftRef.current = next;
+        setDraft(next);
+        setBaseline(snapshot(next));
+        setNotice(`已保存模板预设 · 第 ${saved.revision} 版`);
         onChanged?.({ templateId: saved.id });
+        if (closeAfter) onClose();
       } else {
-        const result = await workflowApi.run({
-          ...payload,
-          title: title.trim(),
-          permissions,
+        const response = await workflowApi.run({
+          graph: current.graph,
+          title: current.title.trim(),
+          permissions: current.permissions,
           ...(template && !dirty
             ? { templateId: template.id, templateRevision: template.revision }
             : {}),
         });
-        if (!alive.current) return;
-        const running = result.task || result;
-        setTask(running);
-        setNotice("任务已启动，当前图是本次执行的独立快照。");
+        if (!alive.current) return false;
+        const running = response.task || response;
+        if (running.parameters?.graph)
+          installDraft({
+            ...current,
+            graph: initializeGraph(running.parameters.graph, catalog.nodes),
+          });
+        else setBaseline(snapshot(current));
+        setInitialTask(running);
+        setViewMode("monitor");
+        setPanel("node");
+        setNotice("任务已启动，可实时查看各节点的处理进度和输出。");
         onChanged?.({ taskId: running.id });
       }
+      return true;
     } catch (cause) {
       if (alive.current) setError(cause.message);
+      return false;
     } finally {
       if (alive.current) setBusy("");
     }
   };
-
   const loadTemplate = async (id, discard = false) => {
     if (dirty && !discard) {
-      setConfirmTemplate(id);
+      setConfirmation({ kind: "template", id });
       return;
     }
     setBusy("template");
     setError("");
     try {
-      const next = id ? (await workflowApi.template(id)).template : null;
+      const loaded = id ? (await workflowApi.template(id)).template : null;
       if (!alive.current) return;
-      const nextGraph = initializeGraph(
-        next?.graph || catalog.standardGraph,
-        catalog.nodes,
-      );
-      setGraph(nextGraph);
-      setTemplate(next);
-      setTemplateSharing(next?.sharingMembers || []);
-      setConfirmDelete(false);
-      setSelected(nextGraph.nodes[0]?.id || "");
-      setCanvasSelection({
-        ids: nextGraph.nodes[0] ? [nextGraph.nodes[0].id] : [],
+      installDraft({
+        ...newDraft(),
+        graph: initializeGraph(
+          loaded?.graph || catalog.standardGraph,
+          catalog.nodes,
+        ),
+        title: loaded?.title || "知识提取工作流",
+        description: loaded?.description || "",
+        templateSharing: loaded?.sharingMembers || [],
       });
-      setSelectedIds([]);
-      setTask(null);
-      setDirty(false);
-      setInputValues({});
-      setInvalid({});
-      history.current = [];
-      setTitle(next?.title || "知识提取工作流");
-      setDescription(next?.description || "");
-      setConfirmTemplate(null);
+      setTemplate(loaded);
+      setInitialTask(null);
+      setConfirmation(null);
       setNotice("");
-      requestAnimationFrame(() =>
-        flow.fitView({ padding: 0.18, duration: 250 }),
-      );
     } catch (cause) {
       if (alive.current) setError(cause.message);
     } finally {
       if (alive.current) setBusy("");
     }
   };
-
   const deleteTemplate = async () => {
-    if (!template || busy) return;
     setBusy("delete");
     setError("");
     try {
       await workflowApi.deleteTemplate(template.id, template.revision);
       if (!alive.current) return;
-      setTemplates((current) =>
-        current.filter((item) => item.id !== template.id),
-      );
+      setTemplates((items) => items.filter((item) => item.id !== template.id));
       setTemplate(null);
-      setTemplateSharing([]);
-      setConfirmDelete(false);
-      setDirty(true);
-      setNotice("模板已删除，当前流程草稿仍然保留。");
+      setConfirmation(null);
+      setBaseline("");
+      setNotice("模板已删除，当前草稿仍然保留。");
       onChanged?.({});
+    } catch (cause) {
+      if (alive.current) setError(cause.message);
+    } finally {
+      if (alive.current) setBusy("");
+    }
+  };
+  const keyboard = (event) => {
+    if (event.isComposing || busy || readOnly || confirmation || menu) return;
+    const control = event.ctrlKey || event.metaKey;
+    const key = event.key.toLowerCase();
+    if (control && key === "s") {
+      event.preventDefault();
+      void action("save");
+      return;
+    }
+    if (isWorkflowTextEditing(event.target)) return;
+    if (control && key === "z") {
+      event.preventDefault();
+      event.shiftKey ? redo() : undo();
+    } else if (control && key === "y") {
+      event.preventDefault();
+      redo();
+    } else if (control && key === "c") {
+      event.preventDefault();
+      copy();
+    } else if (control && key === "v") {
+      event.preventDefault();
+      paste();
+    } else if (control && key === "d") {
+      event.preventDefault();
+      duplicate();
+    } else if (["delete", "backspace"].includes(key)) {
+      event.preventDefault();
+      deleteSelected();
+    }
+  };
+  const runtimeAction = async (kind) => {
+    setBusy(kind);
+    setError("");
+    try {
+      await workflowApi.taskAction(task.id, kind);
+      const detail = await workflowApi.task(task.id);
+      if (alive.current) {
+        setInitialTask(detail.task);
+        onChanged?.({ taskId: task.id });
+      }
     } catch (cause) {
       if (alive.current) setError(cause.message);
     } finally {
@@ -589,12 +674,14 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       }}
     >
       <DialogContent
+        ref={dialogRef}
         className="workflow-dialog"
         showCloseButton={false}
+        onKeyDown={keyboard}
         onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => {
           event.preventDefault();
-          close();
+          if (!confirmation && !menu) close();
         }}
       >
         <header className="workflow-header">
@@ -603,11 +690,15 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               <GitBranch className="size-5 text-primary" />
             </div>
             <div className="min-w-0">
-              <DialogTitle>知识提取工作流</DialogTitle>
+              <DialogTitle>
+                {readOnly ? "工作流任务监控" : "创建任务模板"}
+              </DialogTitle>
               <DialogDescription className="mt-1 truncate">
-                连接处理节点，分别配置初始化参数和 invoke 变量。
+                {readOnly
+                  ? "查看本次任务的执行快照、进度与节点输出。"
+                  : "通过具名端口连接数据与处理节点，配置可复用模板。"}
                 {template && ` 模板 v${template.revision}`}
-                {dirty && " · 有未保存修改"}
+                {dirty && !readOnly && " · 有未保存修改"}
               </DialogDescription>
             </div>
           </div>
@@ -626,9 +717,9 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           aria-label="工作流编辑区域"
         >
           {[
-            ["palette", "节点库"],
+            ...(!readOnly ? [["palette", "节点库"]] : []),
             ["canvas", "流程画布"],
-            ["config", "配置"],
+            ["config", readOnly ? "执行详情" : "节点信息"],
           ].map(([key, label]) => (
             <button
               type="button"
@@ -650,115 +741,153 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             <p role="alert">{error || "没有可用的节点定义。"}</p>
             <Button
               variant="outline"
-              onClick={() => setLoadGeneration((number) => number + 1)}
+              onClick={() => setReload((value) => value + 1)}
             >
               重新加载
             </Button>
           </div>
         ) : (
-          <div className={`workflow-workspace mobile-${mobilePane}`}>
-            <aside className="workflow-palette pretty-scrollbar">
-              <label className="workflow-label">工作流模板</label>
-              <WorkflowSelect
-                label="选择工作流模板"
-                value={template?.id || ""}
-                disabled={Boolean(busy)}
-                onChange={(id) => loadTemplate(id)}
-                options={[
-                  { value: "", label: "标准提取流程" },
-                  ...templates.map((item) => ({
-                    value: item.id,
-                    label: `${item.title} · v${item.revision}`,
-                  })),
-                ]}
-              />
-              {template?.canManage !== false && template && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-1 text-destructive"
+          <div
+            className={`workflow-workspace mobile-${mobilePane} ${readOnly ? "is-monitor" : ""}`}
+          >
+            {!readOnly && (
+              <aside className="workflow-palette pretty-scrollbar">
+                <label className="workflow-label">工作流模板</label>
+                <WorkflowSelect
+                  label="选择工作流模板"
+                  value={template?.id || ""}
                   disabled={Boolean(busy)}
-                  onClick={() => setConfirmDelete(true)}
-                >
-                  <Trash2 className="size-3" />
-                  删除模板
-                </Button>
-              )}
-              <div className="my-4 space-y-2">
-                <label className="workflow-label">模板 / 任务名称</label>
-                <Input
-                  aria-label="工作流名称"
-                  value={title}
-                  disabled={Boolean(busy)}
-                  onChange={(event) => edit(() => setTitle(event.target.value))}
+                  onChange={(id) => void loadTemplate(id)}
+                  options={[
+                    { value: "", label: "标准提取流程" },
+                    ...templates.map((item) => ({
+                      value: item.id,
+                      label: `${item.title} · v${item.revision}`,
+                    })),
+                  ]}
                 />
-                <MultilineEditor
-                  label="模板说明"
-                  value={description}
-                  rows={3}
-                  disabled={Boolean(busy)}
-                  onChange={(event) =>
-                    edit(() => setDescription(event.target.value))
-                  }
-                />
-              </div>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-                <Input
-                  className="pl-9"
-                  aria-label="搜索工作流节点"
-                  placeholder="搜索处理节点"
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                />
-              </div>
-              <div className="mt-3 space-y-2">
-                {catalog.nodes
-                  .filter((definition) =>
-                    `${definition.title} ${definition.kind} ${definition.description}`
-                      .toLowerCase()
-                      .includes(search.toLowerCase()),
-                  )
-                  .map((definition) => (
-                    <button
-                      key={`${definition.kind}:${definition.version}`}
-                      type="button"
-                      className="workflow-palette-node"
+                {template && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       disabled={Boolean(busy)}
-                      draggable={!busy}
-                      onDragStart={(event) => {
-                        event.dataTransfer.setData(
-                          "application/cwm-workflow-node",
-                          definition.kind,
-                        );
-                        event.dataTransfer.effectAllowed = "copy";
-                      }}
-                      onClick={() => addNode(definition)}
+                      onClick={() => void action("clone")}
                     >
-                      <div className="flex items-center gap-2">
-                        <Plus className="size-4 shrink-0 text-primary" />
-                        <strong>{definition.title}</strong>
-                      </div>
-                      <p>{definition.description}</p>
-                    </button>
-                  ))}
-              </div>
-            </aside>
-            <main className="workflow-canvas" aria-label="工作流画布">
+                      <Copy className="size-3" />
+                      另存模板
+                    </Button>
+                    {template.canManage !== false && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive"
+                        disabled={Boolean(busy)}
+                        onClick={() => setConfirmation({ kind: "delete" })}
+                      >
+                        <Trash2 className="size-3" />
+                        删除模板
+                      </Button>
+                    )}
+                  </div>
+                )}
+                <div className="my-4 space-y-2">
+                  <label className="workflow-label">模板 / 任务名称</label>
+                  <Input
+                    aria-label="工作流名称"
+                    value={title}
+                    disabled={Boolean(busy)}
+                    onChange={(event) =>
+                      changeDraft({ ...draft, title: event.target.value })
+                    }
+                  />
+                  <MultilineEditor
+                    label="模板说明"
+                    value={description}
+                    rows={3}
+                    disabled={Boolean(busy)}
+                    onChange={(event) =>
+                      changeDraft({ ...draft, description: event.target.value })
+                    }
+                  />
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                  <Input
+                    className="pl-9"
+                    aria-label="搜索工作流节点"
+                    placeholder="搜索数据或处理节点"
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                  />
+                </div>
+                {[
+                  ["source", "输入数据"],
+                  ["process", "处理节点"],
+                  ["sink", "输出节点"],
+                ].map(([category, label]) => (
+                  <section className="mt-4 space-y-2" key={category}>
+                    <h3 className="text-xs font-semibold text-muted-foreground">
+                      {label}
+                    </h3>
+                    {catalog.nodes
+                      .filter(
+                        (definition) =>
+                          !definition.hidden &&
+                          nodeCategory(definition) === category &&
+                          `${definition.title} ${definition.kind} ${definition.description}`
+                            .toLowerCase()
+                            .includes(search.toLowerCase()),
+                      )
+                      .map((definition) => (
+                        <button
+                          key={`${definition.kind}:${definition.version}`}
+                          type="button"
+                          className="workflow-palette-node"
+                          disabled={Boolean(busy)}
+                          draggable={!busy}
+                          onDragStart={(event) => {
+                            event.dataTransfer.setData(
+                              "application/cwm-workflow-node",
+                              definition.kind,
+                            );
+                            event.dataTransfer.effectAllowed = "copy";
+                          }}
+                          onClick={() => addNode(definition)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Plus className="size-4 shrink-0 text-primary" />
+                            <strong>{definition.title}</strong>
+                          </div>
+                          <p>{definition.description}</p>
+                        </button>
+                      ))}
+                  </section>
+                ))}
+              </aside>
+            )}
+            <main
+              className="workflow-canvas"
+              aria-label="工作流画布"
+              tabIndex={0}
+              onPointerMove={(event) => {
+                pointer.current = { x: event.clientX, y: event.clientY };
+              }}
+            >
               <WorkflowCanvas
                 nodes={nodes}
-                selectionRequest={canvasSelection}
+                selectionRequest={selectionRequest}
+                fitRequest={fitRequest}
                 edges={edges}
                 nodeTypes={nodeTypes}
-                fitView
                 minZoom={0.15}
                 maxZoom={2}
-                fitViewOptions={{ padding: 0.18 }}
                 deleteKeyCode={null}
-                multiSelectionKeyCode="Control"
-                nodesDraggable={!busy}
-                nodesConnectable={!busy}
-                onPositionsCommit={commitNodePositions}
+                multiSelectionKeyCode={["Control", "Meta"]}
+                nodesDraggable={!readOnly && !busy}
+                nodesConnectable={!readOnly && !busy}
+                edgesReconnectable={false}
+                onPositionsCommit={commitPositions}
                 onNodeClick={(event, node) => {
                   setSelected(node.id);
                   if (!event.ctrlKey && !event.metaKey) {
@@ -773,30 +902,43 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   setMobilePane("config");
                 }}
                 onSelectionChange={selectionChanged}
-                onEdgesChange={(changes) => {
-                  const selections = changes.filter(
-                    (change) => change.type === "select",
-                  );
-                  if (selections.length) {
-                    setSelectedEdges((current) => {
-                      const ids = new Set(current);
-                      for (const change of selections) {
-                        if (change.selected) ids.add(change.id);
-                        else ids.delete(change.id);
-                      }
-                      return [...ids];
-                    });
-                  }
-                }}
                 onPaneClick={() => {
                   setSelected("");
                   setSelectedIds([]);
                   setSelectedEdges([]);
+                  setMenu(null);
+                }}
+                onNodeContextMenu={(event, node) => {
+                  if (!readOnly && !busy) {
+                    if (!selectedIds.includes(node.id)) select([node.id]);
+                    openMenu(event, { nodeId: node.id });
+                  }
+                }}
+                onPaneContextMenu={(event) => {
+                  if (!readOnly && !busy) openMenu(event, {});
+                }}
+                onEdgeContextMenu={(event, edge) => {
+                  if (!readOnly && !busy) openMenu(event, { edgeId: edge.id });
+                }}
+                onEdgesChange={(changes) => {
+                  const selections = changes.filter(
+                    (change) => change.type === "select",
+                  );
+                  if (selections.length)
+                    setSelectedEdges((current) => {
+                      const ids = new Set(current);
+                      for (const change of selections)
+                        change.selected
+                          ? ids.add(change.id)
+                          : ids.delete(change.id);
+                      return [...ids];
+                    });
                 }}
                 onConnect={(connection) => {
+                  if (readOnly || busy) return;
                   try {
-                    changeGraph(
-                      connectWorkflow(graph, connection, catalog.nodes),
+                    changeGraph((current) =>
+                      connectWorkflow(current, connection, catalog.nodes),
                     );
                     setError("");
                   } catch (cause) {
@@ -809,7 +951,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 }}
                 onDrop={(event) => {
                   event.preventDefault();
-                  if (busy) return;
+                  if (busy || readOnly) return;
                   const definition = catalog.nodes.find(
                     (node) =>
                       node.kind ===
@@ -834,226 +976,275 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 <Button
                   variant="outline"
                   size="icon"
-                  title="撤销配置修改"
-                  aria-label="撤销工作流修改"
-                  disabled={Boolean(busy) || !history.current.length}
-                  onClick={undo}
-                >
-                  <Undo2 className="size-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="删除选中节点或连接"
-                  disabled={
-                    Boolean(busy) ||
-                    !(selected || selectedIds.length || selectedEdges.length)
+                  title="适应画布 · 查看全部节点"
+                  aria-label="适应画布"
+                  onClick={() =>
+                    void flow.fitView({
+                      padding: 0.18,
+                      duration: 250,
+                      maxZoom: 1,
+                    })
                   }
-                  onClick={deleteSelected}
                 >
-                  <Trash2 className="size-4" />
+                  <Maximize2 className="size-4" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="工作流全局设置"
-                  onClick={() => {
-                    setPanel("settings");
-                    setMobilePane("config");
-                  }}
-                >
-                  <Settings2 className="size-4" />
-                </Button>
+                {!readOnly && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      title="撤销 · Ctrl Z"
+                      aria-label="撤销工作流修改"
+                      disabled={Boolean(busy) || !history.current.past.length}
+                      onClick={undo}
+                    >
+                      <Undo2 className="size-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      title="重做 · Ctrl Shift Z"
+                      aria-label="重做工作流修改"
+                      disabled={Boolean(busy) || !history.current.future.length}
+                      onClick={redo}
+                    >
+                      <Redo2 className="size-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      aria-label="删除选中节点或连接"
+                      disabled={
+                        Boolean(busy) ||
+                        !(selectedIds.length || selectedEdges.length)
+                      }
+                      onClick={deleteSelected}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      aria-label="工作流全局设置"
+                      onClick={() => {
+                        setPanel("settings");
+                        setMobilePane("config");
+                      }}
+                    >
+                      <Settings2 className="size-4" />
+                    </Button>
+                  </>
+                )}
               </div>
               {!graph.nodes.length && (
                 <div className="workflow-canvas-empty">
-                  从左侧添加节点，或拖入画布。
+                  从左侧添加数据、处理和输出节点。
                 </div>
+              )}
+              {!readOnly && (
+                <WorkflowContextMenu
+                  menu={menu}
+                  hasClipboard={hasClipboard}
+                  onClose={closeMenu}
+                  onCopy={copy}
+                  onPaste={() => paste()}
+                  onDuplicate={duplicate}
+                  onDelete={deleteSelected}
+                  onRename={rename}
+                  onPortMode={(mode) => {
+                    if (menu?.port)
+                      changeGraph((current) =>
+                        setWorkflowPortMode(
+                          current,
+                          menu.nodeId,
+                          menu.port.name,
+                          mode,
+                          menu.port.schema ||
+                            catalogNode(
+                              catalog.nodes,
+                              current.nodes.find(
+                                (node) => node.id === menu.nodeId,
+                              ),
+                            )?.inputSchema?.properties?.[menu.port.name],
+                        ),
+                      );
+                    setMenu(null);
+                  }}
+                />
               )}
             </main>
             <aside className="workflow-inspector pretty-scrollbar">
-              <div className="workflow-tabs mb-4" role="tablist">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={panel === "node"}
-                  onClick={() => setPanel("node")}
-                >
-                  节点配置
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={panel === "settings"}
-                  onClick={() => setPanel("settings")}
-                >
-                  全局与运行
-                </button>
-              </div>
-              {panel === "node" ? (
-                selectedNode ? (
-                  <WorkflowNodePanel
-                    key={selectedNode.id}
-                    graph={graph}
-                    node={selectedNode}
-                    definitions={catalog.nodes}
-                    models={models}
-                    onGraphChange={changeGraph}
-                    onError={setError}
-                    onValidity={validity}
-                    disabled={Boolean(busy)}
-                    onDelete={() => {
-                      changeGraph(
-                        removeWorkflowNodes(graph, [selectedNode.id]),
-                      );
-                      setSelected("");
-                      setSelectedIds([]);
-                      setCanvasSelection({ ids: [] });
-                    }}
-                    onDuplicate={() => {
-                      const duplicated = createWorkflowNode(
-                        catalogNode(catalog.nodes, selectedNode),
-                        graph,
-                        {
-                          x: (selectedNode.position?.x || 0) + 45,
-                          y: (selectedNode.position?.y || 0) + 65,
-                        },
-                      );
-                      duplicated.config = clone(selectedNode.config);
-                      duplicated.inputs = clone(selectedNode.inputs || {});
-                      changeGraph({
-                        ...graph,
-                        nodes: [...graph.nodes, duplicated],
-                      });
-                      setSelected(duplicated.id);
-                      setSelectedIds([duplicated.id]);
-                      setCanvasSelection({ ids: [duplicated.id] });
-                    }}
-                  />
-                ) : (
-                  <p className="py-10 text-center text-sm text-muted-foreground">
-                    选择节点查看参数，选择连线后可删除连接。
-                  </p>
-                )
+              {readOnly ? (
+                <WorkflowMonitorPanel
+                  task={task}
+                  node={selectedNode}
+                  definition={
+                    selectedNode && catalogNode(catalog.nodes, selectedNode)
+                  }
+                  runtime={runtimeNodes[selected] || {}}
+                  stages={runtimeStages}
+                />
               ) : (
-                <div className="space-y-5">
-                  <section className="space-y-2">
-                    <label className="workflow-label">同时运行的节点数</label>
-                    <Input
-                      type="number"
-                      min="1"
-                      max="16"
-                      aria-label="工作流并发数"
-                      value={graph.settings.maxConcurrency}
-                      disabled={Boolean(busy)}
-                      onChange={(event) =>
-                        changeGraph({
-                          ...graph,
-                          settings: {
-                            ...graph.settings,
-                            maxConcurrency: Number(event.target.value),
-                          },
-                        })
-                      }
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      节点内部的 max_concurrency 在各节点中配置。服务器 Worker
-                      数量由部署决定。
-                    </p>
-                  </section>
-                  <JsonConfigEditor
-                    label="工作流变量默认值"
-                    schema={{
-                      type: "object",
-                      maxProperties: 100,
-                      propertyNames: { pattern: "^[A-Za-z0-9_-]{1,64}$" },
-                    }}
-                    value={graph.variables}
-                    readOnly={Boolean(busy)}
-                    onStateChange={(state) =>
-                      validity("variables", state.valid !== false)
-                    }
-                    onChange={(variables) =>
-                      changeGraph({ ...graph, variables })
-                    }
-                  />
-                  <JsonConfigEditor
-                    label="本次运行变量覆盖"
-                    schema={{
-                      type: "object",
-                      maxProperties: 100,
-                      propertyNames: { pattern: "^[A-Za-z0-9_-]{1,64}$" },
-                      properties: Object.fromEntries(
-                        Object.keys(graph.variables).map((name) => [
-                          name,
-                          { title: name },
-                        ]),
-                      ),
-                    }}
-                    value={inputValues}
-                    readOnly={Boolean(busy)}
-                    onStateChange={(state) =>
-                      validity("run-values", state.valid !== false)
-                    }
-                    onChange={(values) => edit(() => setInputValues(values))}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    运行变量覆盖与生成知识权限只用于本次任务；模板保存节点参数和变量默认值。
-                  </p>
-                  <JsonConfigEditor
-                    label="生成知识的归属与共享"
-                    schema={permissionsSchema}
-                    value={permissions}
-                    readOnly={Boolean(busy)}
-                    onStateChange={(state) =>
-                      validity("permissions", state.valid !== false)
-                    }
-                    onChange={(values) => edit(() => setPermissions(values))}
-                  />
-                  <JsonConfigEditor
-                    label="模板共享成员"
-                    schema={templateSharingSchema}
-                    value={templateSharing}
-                    readOnly={Boolean(busy) || template?.canManage === false}
-                    onStateChange={(state) =>
-                      validity("template-sharing", state.valid !== false)
-                    }
-                    onChange={(members) =>
-                      edit(() => setTemplateSharing(members))
-                    }
-                  />
-                </div>
-              )}
-              {task && (
-                <section className="mt-5 rounded-lg border bg-muted/30 p-3">
-                  <h4 className="text-sm font-medium">本次执行</h4>
-                  <p className="mt-1 break-all text-xs text-muted-foreground">
-                    {task.id}
-                  </p>
-                  <p className="mt-2 text-sm">
-                    状态：{task.status || "已提交"}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    修改流程后再次启动会创建新任务。
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => onChanged?.({ taskId: task.id })}
-                  >
-                    定位到任务
-                  </Button>
-                </section>
+                <>
+                  <div className="workflow-tabs mb-4" role="tablist">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={panel === "node"}
+                      onClick={() => setPanel("node")}
+                    >
+                      节点信息
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={panel === "settings"}
+                      onClick={() => setPanel("settings")}
+                    >
+                      全局设置
+                    </button>
+                  </div>
+                  {panel === "node" ? (
+                    selectedNode ? (
+                      <WorkflowNodePanel
+                        key={selectedNode.id}
+                        graph={graph}
+                        node={selectedNode}
+                        definitions={catalog.nodes}
+                        models={models}
+                        onGraphChange={changeGraph}
+                        onValidity={validity}
+                        disabled={Boolean(busy)}
+                      />
+                    ) : (
+                      <p className="py-10 text-center text-sm text-muted-foreground">
+                        选择节点查看说明与类初始化设置。
+                      </p>
+                    )
+                  ) : (
+                    <div className="space-y-5">
+                      <section className="space-y-2">
+                        <label className="workflow-label">
+                          同时运行的节点数
+                        </label>
+                        <Input
+                          aria-label="工作流并发数"
+                          type="number"
+                          min="1"
+                          max="16"
+                          value={graph.settings.maxConcurrency}
+                          disabled={Boolean(busy)}
+                          onChange={(event) =>
+                            changeGraph({
+                              ...graph,
+                              settings: {
+                                ...graph.settings,
+                                maxConcurrency: Number(event.target.value),
+                              },
+                            })
+                          }
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          调度器并发与节点内部处理并发分别设置。
+                        </p>
+                      </section>
+                      <JsonConfigEditor
+                        label="FlowInvoker 全局初始化设置"
+                        schema={{
+                          ...globalConfigSchema,
+                          properties: Object.fromEntries(
+                            Object.entries(
+                              globalConfigSchema.properties || {},
+                            ).filter(([key]) => key !== "modelId"),
+                          ),
+                          required: (globalConfigSchema.required || []).filter(
+                            (key) => key !== "modelId",
+                          ),
+                        }}
+                        value={Object.fromEntries(
+                          Object.entries(
+                            graph.settings.commonConfig || {},
+                          ).filter(([key]) => key !== "modelId"),
+                        )}
+                        readOnly={Boolean(busy)}
+                        onStateChange={(state) =>
+                          validity("global", state.valid !== false)
+                        }
+                        onChange={(values) =>
+                          changeGraph({
+                            ...graph,
+                            settings: {
+                              ...graph.settings,
+                              commonConfig: {
+                                ...graph.settings.commonConfig,
+                                ...values,
+                              },
+                            },
+                          })
+                        }
+                      />
+                      <WorkflowSelect
+                        label="全局模型"
+                        value={graph.settings.commonConfig?.modelId || ""}
+                        disabled={Boolean(busy)}
+                        options={[
+                          { value: "", label: "自动选择可用模型" },
+                          ...models.map((model) => ({
+                            value: model.id,
+                            label: model.name || model.title || model.id,
+                          })),
+                        ]}
+                        onChange={(modelId) =>
+                          changeGraph({
+                            ...graph,
+                            settings: {
+                              ...graph.settings,
+                              commonConfig: {
+                                ...graph.settings.commonConfig,
+                                modelId,
+                              },
+                            },
+                          })
+                        }
+                      />
+                      <JsonConfigEditor
+                        label="生成知识的归属与共享"
+                        schema={permissionsSchema}
+                        value={permissions}
+                        readOnly={Boolean(busy)}
+                        onStateChange={(state) =>
+                          validity("permissions", state.valid !== false)
+                        }
+                        onChange={(values) =>
+                          changeDraft({ ...draft, permissions: values })
+                        }
+                      />
+                      <JsonConfigEditor
+                        label="模板共享成员"
+                        schema={templateSharingSchema}
+                        value={templateSharing}
+                        readOnly={
+                          Boolean(busy) || template?.canManage === false
+                        }
+                        onStateChange={(state) =>
+                          validity("template-sharing", state.valid !== false)
+                        }
+                        onChange={(members) =>
+                          changeDraft({ ...draft, templateSharing: members })
+                        }
+                      />
+                    </div>
+                  )}
+                </>
               )}
             </aside>
           </div>
         )}
         <footer className="workflow-footer">
           <div className="min-w-0 flex-1" aria-live="polite">
-            {error && !loading && (
+            {(error || refreshError) && !loading && (
               <p role="alert" className="text-sm text-destructive">
-                {error}
+                {error || refreshError}
               </p>
             )}
             {notice && (
@@ -1064,98 +1255,164 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             {!error && !notice && (
               <p className="text-xs text-muted-foreground">
                 {graph.nodes.length} 个节点 · {graph.edges.length} 条连接
-                {task ? " · 修改后启动为新任务" : ""}
+                {readOnly ? " · 执行快照" : ""}
               </p>
             )}
           </div>
-          {confirmClose ? (
+          {readOnly ? (
             <>
-              <span className="text-sm">关闭会丢弃未保存的修改。</span>
-              <Button variant="outline" onClick={() => setConfirmClose(false)}>
-                继续编辑
-              </Button>
-              <Button variant="destructive" onClick={onClose}>
-                丢弃并关闭
-              </Button>
-            </>
-          ) : confirmTemplate !== null ? (
-            <>
-              <span className="text-sm">切换模板会丢弃当前修改。</span>
+              {task &&
+                ["running", "queued", "pending"].includes(task.status) && (
+                  <Button
+                    variant="outline"
+                    disabled={Boolean(busy)}
+                    onClick={() => void runtimeAction("pause")}
+                  >
+                    阶段结束后暂停
+                  </Button>
+                )}
+              {task?.status === "paused" && (
+                <Button
+                  disabled={Boolean(busy)}
+                  onClick={() => void runtimeAction("resume")}
+                >
+                  继续执行
+                </Button>
+              )}
+              {task &&
+                !["completed", "succeeded", "failed", "cancelled"].includes(
+                  task.status,
+                ) && (
+                  <Button
+                    variant="outline"
+                    disabled={Boolean(busy)}
+                    onClick={() => setConfirmation({ kind: "cancel" })}
+                  >
+                    取消任务
+                  </Button>
+                )}
               <Button
                 variant="outline"
-                onClick={() => setConfirmTemplate(null)}
+                onClick={() => onChanged?.({ taskId: task?.id })}
               >
-                取消
+                定位到任务
               </Button>
-              <Button
-                disabled={Boolean(busy)}
-                onClick={() => loadTemplate(confirmTemplate, true)}
-              >
-                切换模板
-              </Button>
-            </>
-          ) : confirmDelete ? (
-            <>
-              <span className="text-sm">
-                删除模板？已有任务的执行快照会保留。
-              </span>
-              <Button
-                variant="outline"
-                disabled={Boolean(busy)}
-                onClick={() => setConfirmDelete(false)}
-              >
-                取消
-              </Button>
-              <Button
-                variant="destructive"
-                disabled={Boolean(busy)}
-                onClick={deleteTemplate}
-              >
-                删除模板
-              </Button>
+              <Button onClick={onClose}>关闭监控</Button>
             </>
           ) : (
             <>
               <Button
                 variant="outline"
                 disabled={loading || Boolean(busy) || !catalog.nodes.length}
-                onClick={() => action("validate")}
+                onClick={() => void action("validate")}
               >
                 <Check className="size-4" />
                 校验
               </Button>
-              {template && (
-                <Button
-                  variant="outline"
-                  disabled={loading || Boolean(busy)}
-                  onClick={() => action("clone")}
-                >
-                  <Copy className="size-4" />
-                  另存
-                </Button>
-              )}
               <Button
                 variant="outline"
                 disabled={loading || Boolean(busy) || !catalog.nodes.length}
-                onClick={() => action("save")}
+                onClick={() => void action("save")}
               >
                 <Save className="size-4" />
-                保存模板
+                保存模板预设
               </Button>
               <Button
                 disabled={loading || Boolean(busy) || !catalog.nodes.length}
-                onClick={() => action("run")}
+                onClick={() => void action("run")}
               >
                 {busy ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
                   <Play className="size-4" />
                 )}
-                开始任务
+                直接开始任务
               </Button>
             </>
           )}
         </footer>
+        <AlertDialog
+          open={Boolean(confirmation)}
+          onOpenChange={(open) => {
+            if (!open && !busy) setConfirmation(null);
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {confirmation?.kind === "close"
+                  ? "保存修改后关闭？"
+                  : confirmation?.kind === "template"
+                    ? "切换工作流模板？"
+                    : confirmation?.kind === "cancel"
+                      ? "取消当前任务？"
+                      : "删除模板？"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {confirmation?.kind === "close"
+                  ? "当前工作流有未保存的修改。可以保存模板后关闭，或继续编辑。"
+                  : confirmation?.kind === "template"
+                    ? "切换模板会丢弃当前未保存的修改。"
+                    : "已完成的执行快照与入库内容会保留。"}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            {error && (
+              <p role="alert" className="text-sm text-destructive">
+                {error}
+              </p>
+            )}
+            <AlertDialogFooter>
+              <Button
+                variant="outline"
+                disabled={Boolean(busy)}
+                onClick={() => setConfirmation(null)}
+              >
+                {confirmation?.kind === "close" ? "继续编辑" : "取消"}
+              </Button>
+              {confirmation?.kind === "close" ? (
+                <>
+                  <Button
+                    variant="destructive"
+                    disabled={Boolean(busy)}
+                    onClick={onClose}
+                  >
+                    丢弃并关闭
+                  </Button>
+                  <Button
+                    disabled={Boolean(busy)}
+                    onClick={() => void action("save", true)}
+                  >
+                    {busy && <Loader2 className="size-4 animate-spin" />}
+                    保存后关闭
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant={
+                    confirmation?.kind === "template"
+                      ? "default"
+                      : "destructive"
+                  }
+                  disabled={Boolean(busy)}
+                  onClick={() => {
+                    if (confirmation.kind === "template")
+                      void loadTemplate(confirmation.id, true);
+                    else if (confirmation.kind === "cancel") {
+                      setConfirmation(null);
+                      void runtimeAction("cancel");
+                    } else void deleteTemplate();
+                  }}
+                >
+                  {confirmation?.kind === "template"
+                    ? "丢弃并切换"
+                    : confirmation?.kind === "cancel"
+                      ? "取消任务"
+                      : "删除模板"}
+                </Button>
+              )}
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );

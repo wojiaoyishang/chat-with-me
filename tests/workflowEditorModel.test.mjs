@@ -5,8 +5,11 @@ import {
   connectWorkflow,
   createWorkflowNode,
   isWorkflowEditorMessage,
+  isWorkflowTextEditing,
+  normalizeWorkflowSchema,
   normalizeGraph,
   removeWorkflowNodes,
+  scalarSchema,
 } from "../src/features/workflows/workflowModel.js";
 
 const definitions = [
@@ -55,6 +58,42 @@ const graph = normalizeGraph({
     { id: "images-1", kind: "images", version: 1, config: {}, inputs: {} },
   ],
   variables: { source: { sourceType: "text", text: "hello" } },
+});
+
+test("native editors retain their own undo shortcuts", () => {
+  assert.equal(isWorkflowTextEditing({ closest: () => ({}) }), true);
+  assert.equal(isWorkflowTextEditing({ closest: () => null }), false);
+});
+
+test("annotated catalog ranges become standard form constraints without mutation", () => {
+  const source = {
+    type: "object",
+    properties: {
+      retry_delay: {
+        anyOf: [{ type: "number" }, { type: "integer" }],
+        ge: 0,
+        le: 120,
+      },
+    },
+  };
+  const schema = normalizeWorkflowSchema(source);
+  assert.equal(schema.properties.retry_delay.minimum, 0);
+  assert.equal(schema.properties.retry_delay.maximum, 120);
+  assert.equal(source.properties.retry_delay.minimum, undefined);
+  assert.deepEqual(
+    scalarSchema({
+      anyOf: [
+        {
+          anyOf: [{ type: "number" }, { type: "integer" }],
+          minimum: 0,
+          maximum: 120,
+        },
+        { type: "null" },
+      ],
+      default: null,
+    }),
+    { type: "number", minimum: 0, maximum: 120, default: null },
+  );
 });
 
 test("constructor defaults and invoke bindings remain separate when nodes are created or connected", () => {

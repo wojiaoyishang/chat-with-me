@@ -22,6 +22,147 @@
   display: grid;
   grid-template-columns: 250px minmax(200px, 1fr) 345px;
 }
+.workflow-workspace.is-monitor {
+  grid-template-columns: minmax(200px, 1fr) 365px;
+}
+.workflow-node.category-source {
+  min-width: 280px;
+  max-width: 350px;
+}
+.workflow-source-value {
+  margin: 12px 0;
+  max-width: 320px;
+  font-size: 12px;
+}
+.workflow-source-value .workflow-resource-list {
+  max-height: 130px;
+}
+.workflow-source-value .workflow-resource {
+  padding: 7px;
+}
+.workflow-source-value .workflow-source > p {
+  font-size: 10px;
+}
+.workflow-port {
+  position: relative;
+  min-height: 30px;
+  height: auto;
+  padding: 4px 0;
+}
+.workflow-port > .react-flow__handle-left {
+  left: -18px;
+  top: 14px;
+  transform: translate(-50%, -50%);
+}
+.workflow-port > .react-flow__handle-right {
+  right: -18px;
+  top: 14px;
+  transform: translate(50%, -50%);
+}
+.workflow-port small {
+  display: block;
+  font-size: 9px;
+  opacity: 0.65;
+}
+.workflow-port.is-inline {
+  max-width: 220px;
+  padding-bottom: 9px;
+}
+.workflow-port.is-inline .mle-root {
+  margin-top: 4px;
+}
+.workflow-node-state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: space-between;
+}
+.workflow-node-state progress {
+  width: 100%;
+  height: 4px;
+  accent-color: var(--primary);
+}
+.workflow-node.status-completed,
+.workflow-node.status-succeeded {
+  border-color: color-mix(in srgb, #10b981 45%, var(--border));
+}
+.workflow-node.status-paused {
+  border-color: #d7a147;
+}
+.workflow-node.status-cancelled {
+  opacity: 0.65;
+}
+.workflow-output-summary {
+  margin-top: 8px;
+  max-width: 300px;
+  font-size: 10px;
+  color: var(--muted-foreground);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.workflow-data-edge .react-flow__edge-path {
+  stroke: color-mix(in srgb, var(--primary) 50%, var(--border));
+  stroke-width: 1.6;
+}
+.workflow-data-edge.animated .react-flow__edge-path {
+  animation-duration: 3s;
+  stroke-dasharray: 6 10;
+}
+.workflow-data-edge.is-active .react-flow__edge-path {
+  stroke: var(--primary);
+  stroke-width: 2;
+  animation-duration: 1.2s;
+}
+.workflow-context-anchor {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.workflow-runtime-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.workflow-runtime-stats > div {
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.workflow-runtime-stats small {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.workflow-runtime-stats strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+}
+.workflow-quick-dialog[data-slot="dialog-content"] {
+  width: min(780px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  gap: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.workflow-quick-body {
+  padding: 20px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.workflow-quick-field {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
 .workflow-palette,
 .workflow-inspector {
   min-height: 0;
@@ -74,6 +215,20 @@
 .workflow-canvas .react-flow__node {
   outline: none;
 }
+.workflow-canvas .react-flow__node-workflow.selected,
+.workflow-canvas .react-flow__node-workflow:focus,
+.workflow-canvas .react-flow__node-workflow:focus-visible {
+  outline: none;
+  border: 0;
+  box-shadow: none;
+}
+.workflow-source-trigger {
+  font-size: 11px;
+  font-weight: 500;
+}
+.workflow-source-popover .workflow-resource-list {
+  max-height: 245px;
+}
 .workflow-node {
   background: var(--background);
   border: 1px solid var(--border);
@@ -115,7 +270,7 @@
   gap: 20px;
 }
 .workflow-port {
-  height: 23px;
+  min-height: 30px;
   font-size: 10px;
   color: var(--muted-foreground);
 }
@@ -129,7 +284,7 @@
   background: var(--primary);
 }
 .workflow-node-state {
-  display: block;
+  display: flex;
   margin-top: 6px;
   font-size: 10px;
   color: var(--muted-foreground);

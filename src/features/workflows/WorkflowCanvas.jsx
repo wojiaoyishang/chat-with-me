@@ -1,5 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import { applyNodeChanges, ReactFlow } from "@xyflow/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  applyNodeChanges,
+  ReactFlow,
+  useNodesInitialized,
+  useReactFlow,
+} from "@xyflow/react";
 import {
   reconcileCanvasNodes,
   selectCanvasNodes,
@@ -9,12 +14,47 @@ import {
 export default function WorkflowCanvas({
   nodes,
   selectionRequest,
+  fitRequest,
   onPositionsCommit,
   ...props
 }) {
+  const flow = useReactFlow();
+  const measured = useNodesInitialized();
+  const fitted = useRef(-1);
   const [canvasNodes, setCanvasNodes] = useState(() =>
     selectCanvasNodes(nodes, selectionRequest?.ids || []),
   );
+  useEffect(() => {
+    if (!measured || !nodes.length || fitted.current === fitRequest) return;
+    fitted.current = fitRequest;
+    // React Flow may report initialized before the final node dimensions land.
+    // Fit after paint and only for a freshly installed graph, never during drag.
+    let canceled = false;
+    let nextFrame = 0;
+    const frame = requestAnimationFrame(() => {
+      nextFrame = requestAnimationFrame(async () => {
+        await flow.fitView({ padding: 0.18, duration: 0, maxZoom: 1 });
+        if (canceled) return;
+        if (flow.getViewport().zoom < 0.65 && nodes.length > 3) {
+          const visibleStart = flow
+            .getNodes()
+            .slice(0, window.innerWidth <= 760 ? 2 : 3);
+          await flow.fitView({
+            nodes: visibleStart,
+            padding: 0.16,
+            minZoom: 0.65,
+            maxZoom: 0.8,
+            duration: 220,
+          });
+        }
+      });
+    });
+    return () => {
+      canceled = true;
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(nextFrame);
+    };
+  }, [fitRequest, flow, measured, nodes.length]);
   useEffect(() => {
     setCanvasNodes((current) => reconcileCanvasNodes(current, nodes));
   }, [nodes]);

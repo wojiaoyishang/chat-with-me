@@ -54,6 +54,9 @@ test("task editor authenticates iframe messages and refreshes task data without 
             else if (path.endsWith("WorkflowEditor.jsx"))
               contents =
                 'export default function Editor(props){globalThis.workflowBridgeTest.editor=props;return <div data-workflow-editor><button onClick={()=>props.onChanged({taskId:"created-task"})}>运行完成</button></div>;}';
+            else if (path.endsWith("QuickTemplateRunDialog.jsx"))
+              contents =
+                'export default function QuickRun(props){globalThis.workflowBridgeTest.quick=props;return <div data-quick-template-run><button onClick={()=>props.onChanged({taskId:"quick-task",monitor:true})}>开始任务</button></div>;}';
             return { loader: "jsx", contents };
           });
         },
@@ -74,13 +77,17 @@ test("task editor authenticates iframe messages and refreshes task data without 
     });
     const frame = document.querySelector("iframe"),
       frameWindow = frame.contentWindow;
-    const send = async (origin, source) =>
+    const send = async (
+      origin,
+      source,
+      payload = { templateId: "template-1" },
+    ) =>
       act(async () => {
         window.dispatchEvent(
           new dom.window.MessageEvent("message", {
             origin,
             source,
-            data: { type: "cwm.workflow-editor", templateId: "template-1" },
+            data: { type: "cwm.workflow-editor", ...payload },
           }),
         );
         await new Promise((resolve) => setTimeout(resolve, 0));
@@ -91,6 +98,7 @@ test("task editor authenticates iframe messages and refreshes task data without 
     await send("http://localhost", frameWindow);
     assert.ok(document.querySelector("[data-workflow-editor]"));
     assert.deepEqual(globalThis.workflowBridgeTest.editor.request, {
+      mode: "template-editor",
       templateId: "template-1",
     });
     const posted = [];
@@ -107,6 +115,30 @@ test("task editor authenticates iframe messages and refreshes task data without 
     assert.equal(document.querySelector("iframe"), frame);
     assert.equal(frame.contentWindow, frameWindow);
     assert.equal(frame.getAttribute("src"), "/api/tasks/page");
+    await act(() => globalThis.workflowBridgeTest.editor.onClose());
+    await send("http://localhost", frameWindow, { mode: "quick-run" });
+    assert.ok(document.querySelector("[data-quick-template-run]"));
+    assert.equal(document.querySelector("[data-workflow-editor]"), null);
+    await act(() =>
+      document.querySelector("[data-quick-template-run] button").click(),
+    );
+    assert.equal(document.querySelector("[data-quick-template-run]"), null);
+    assert.ok(document.querySelector("[data-workflow-editor]"));
+    assert.deepEqual(globalThis.workflowBridgeTest.editor.request, {
+      mode: "monitor",
+      taskId: "quick-task",
+    });
+    assert.equal(document.querySelector("iframe"), frame);
+    assert.equal(frame.contentWindow, frameWindow);
+    await act(() => globalThis.workflowBridgeTest.editor.onClose());
+    await send("http://localhost", frameWindow, {
+      mode: "untrusted-mode",
+      taskId: "existing-task",
+    });
+    assert.deepEqual(globalThis.workflowBridgeTest.editor.request, {
+      mode: "monitor",
+      taskId: "existing-task",
+    });
   } finally {
     if (root) await act(() => root.unmount());
     dom.window.close();

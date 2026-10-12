@@ -17,13 +17,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import apiClient from "@/lib/apiClient.js";
 
 export function WorkflowSelect({ value, onChange, options, label, disabled }) {
+  const selected = value == null || value === "" ? "_none" : String(value);
   return (
     <Select
-      value={String(value || "_none")}
+      value={selected}
       onValueChange={(next) => onChange(next === "_none" ? "" : next)}
       disabled={disabled}
     >
@@ -33,8 +39,16 @@ export function WorkflowSelect({ value, onChange, options, label, disabled }) {
       <SelectContent>
         {options.map((option) => (
           <SelectItem
-            key={option.value || "_none"}
-            value={String(option.value || "_none")}
+            key={
+              option.value == null || option.value === ""
+                ? "_none"
+                : String(option.value)
+            }
+            value={
+              option.value == null || option.value === ""
+                ? "_none"
+                : String(option.value)
+            }
           >
             {option.label}
           </SelectItem>
@@ -44,14 +58,56 @@ export function WorkflowSelect({ value, onChange, options, label, disabled }) {
   );
 }
 
+/** Keep the canvas node size stable while the account-scoped picker loads. */
+export default function WorkflowSourcePicker({ compact = false, ...props }) {
+  if (!compact || !props.fixedType)
+    return <FullWorkflowSourcePicker {...props} compact={compact} />;
+
+  const count =
+    props.fixedType === "document"
+      ? Number(Boolean(props.value?.documentId))
+      : props.value?.resources?.length || 0;
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className="workflow-source-trigger nodrag w-full justify-between"
+          disabled={props.disabled}
+          aria-label={
+            props.fixedType === "document" ? "选择文档输入" : "选择附件输入"
+          }
+        >
+          <span className="truncate">
+            {props.fixedType === "document" ? "文档" : "附件"} · 已选择 {count}{" "}
+            项
+          </span>
+          <Search className="size-4 shrink-0" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={8}
+        className="workflow-source-popover pretty-scrollbar max-h-[min(540px,72vh)] w-[min(420px,calc(100vw-32px))] overflow-y-auto"
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        <FullWorkflowSourcePicker {...props} compact={false} />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 /** Uses the same account-scoped, paginated resources as the attachment page. */
-export default function WorkflowSourcePicker({
+function FullWorkflowSourcePicker({
   value,
   onChange,
   disabled,
   onBusyChange,
+  fixedType,
+  compact = false,
 }) {
-  const sourceType = value.sourceType || "file";
+  const sourceType = fixedType || value.sourceType || "file";
   const [query, setQuery] = useState("");
   const [offset, setOffset] = useState(0);
   const [items, setItems] = useState([]);
@@ -185,24 +241,30 @@ export default function WorkflowSourcePicker({
   };
 
   return (
-    <section className="workflow-source space-y-3">
-      <label className="workflow-label">初始化来源</label>
-      <WorkflowSelect
-        label="初始化来源"
-        value={sourceType}
-        disabled={disabled || uploading}
-        onChange={(next) => {
-          setOffset(0);
-          setQuery("");
-          onChange({ ...value, sourceType: next });
-        }}
-        options={[
-          { value: "file", label: "上传或选择附件" },
-          { value: "document", label: "选择整个文档" },
-          { value: "image", label: "图片附件" },
-          { value: "text", label: "文本内容" },
-        ]}
-      />
+    <section
+      className={`workflow-source space-y-3 ${compact ? "is-compact" : ""}`}
+    >
+      {!fixedType && (
+        <>
+          <label className="workflow-label">初始化来源</label>
+          <WorkflowSelect
+            label="初始化来源"
+            value={sourceType}
+            disabled={disabled || uploading}
+            onChange={(next) => {
+              setOffset(0);
+              setQuery("");
+              onChange({ ...value, sourceType: next });
+            }}
+            options={[
+              { value: "file", label: "上传或选择附件" },
+              { value: "document", label: "选择整个文档" },
+              { value: "image", label: "图片附件" },
+              { value: "text", label: "文本内容" },
+            ]}
+          />
+        </>
+      )}
       {sourceType === "text" ? (
         <MultilineEditor
           label="初始化文本"

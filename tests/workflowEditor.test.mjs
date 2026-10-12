@@ -76,7 +76,7 @@ const catalog = {
   },
 };
 
-async function environment(request = {}) {
+async function environment(request = {}, options = {}) {
   const dom = new JSDOM('<div id="root"></div>', {
     url: "http://localhost/tasks",
     pretendToBeVisual: true,
@@ -115,8 +115,29 @@ async function environment(request = {}) {
   const api = {
     get: async (url) => {
       calls.push({ method: "get", url });
-      if (url.endsWith("/catalog")) return structuredClone(catalog);
-      if (url === "/tasks/workflows/templates") return { templates: [] };
+      if (url.endsWith("/catalog")) {
+        const definitions = structuredClone(catalog);
+        if (options.graph)
+          definitions.standardGraph = structuredClone(options.graph);
+        return definitions;
+      }
+      if (url === "/tasks/workflows/templates")
+        return {
+          templates: options.template
+            ? [
+                {
+                  id: options.template.id,
+                  title: options.template.title,
+                  revision: options.template.revision,
+                },
+              ]
+            : [],
+        };
+      if (url === `/tasks/workflows/templates/${options.template?.id}`)
+        return {
+          template: structuredClone(options.template),
+          inputFields: structuredClone(options.template.inputFields),
+        };
       if (url === "/chat/models") return [{ id: "model-1", name: "测试模型" }];
       if (url === "/schemas/templates")
         return {
@@ -189,7 +210,9 @@ async function environment(request = {}) {
   };
   globalThis.workflowUITest = { api, fail: "", changes: [], closed: false };
   await build({
-    entryPoints: ["src/features/workflows/WorkflowEditor.jsx"],
+    entryPoints: [
+      options.component || "src/features/workflows/WorkflowEditor.jsx",
+    ],
     outfile: "temp/workflow-editor-test.mjs",
     bundle: true,
     format: "esm",
@@ -217,7 +240,7 @@ async function environment(request = {}) {
           }));
           builder.onResolve({ filter: /^@\// }, ({ path: requested }) => {
             if (
-              requested === "@/lib/apiClient.js" ||
+              requested.startsWith("@/lib/apiClient") ||
               (requested.startsWith("@/components/ui/") &&
                 !requested.endsWith("MultilineEditor.jsx"))
             )
@@ -229,8 +252,8 @@ async function environment(request = {}) {
             ({ path: requested }) => {
               let contents = "";
               if (requested === "flow")
-                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:()=>{},screenToFlowPosition:x=>x});export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;return <section data-canvas>{props.nodes.map(node=><button key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}>{node.data.definition.title}</button>)}{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
-              else if (requested === "@/lib/apiClient.js")
+                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:()=>{},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>x});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section data-canvas>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
+              else if (requested.startsWith("@/lib/apiClient"))
                 contents = "export default globalThis.workflowUITest.api;";
               else if (requested.endsWith("/button"))
                 contents =
@@ -242,6 +265,21 @@ async function environment(request = {}) {
                   'export const Dialog=({children})=>children;export const DialogContent=({showCloseButton,onInteractOutside,onEscapeKeyDown,...props})=><div role="dialog" {...props}/>;export const DialogTitle=props=><h2 {...props}/>;export const DialogDescription=props=><p {...props}/>;';
               else if (requested.endsWith("/select"))
                 contents = `import {createContext,useContext} from 'react';const Context=createContext({});export const Select=({value,onValueChange,disabled,children})=><Context.Provider value={{value,onValueChange,disabled}}>{children}</Context.Provider>;export const SelectTrigger=props=>{const context=useContext(Context);return <span {...props} data-select-label={props['aria-label']}/>};export const SelectValue=()=>null;export const SelectContent=({children})=>{const context=useContext(Context);return <select value={context.value} disabled={context.disabled} onChange={event=>context.onValueChange(event.target.value)}>{children}</select>};export const SelectItem=({children,value})=><option value={value}>{children}</option>;`;
+              else if (requested.endsWith("/popover"))
+                contents =
+                  "export const Popover=({children})=>children;export const PopoverTrigger=({asChild,children})=>children;export const PopoverContent=({children,...props})=><div {...props}>{children}</div>;";
+              else if (requested.endsWith("/switch"))
+                contents =
+                  "export const Switch=({checked,onCheckedChange,...props})=><input type='checkbox' checked={checked} onChange={event=>onCheckedChange(event.target.checked)} {...props}/>;";
+              else if (requested.endsWith("/checkbox"))
+                contents =
+                  "export const Checkbox=({checked,onCheckedChange,...props})=><input type='checkbox' checked={checked} onChange={event=>onCheckedChange(event.target.checked)} {...props}/>;";
+              else if (requested.endsWith("/alert-dialog"))
+                contents =
+                  "export const AlertDialog=({open,children})=>open?children:null;export const AlertDialogContent=({children,...props})=><section {...props}>{children}</section>;export const AlertDialogDescription=({children})=><p>{children}</p>;export const AlertDialogFooter=({children})=><footer>{children}</footer>;export const AlertDialogHeader=({children})=><header>{children}</header>;export const AlertDialogTitle=({children})=><h3>{children}</h3>;";
+              else if (requested.endsWith("/dropdown-menu"))
+                contents =
+                  "export const DropdownMenu=({open,children})=>open?children:null;export const DropdownMenuTrigger=({children})=>children;export const DropdownMenuContent=({children})=><div>{children}</div>;export const DropdownMenuItem=({children,onSelect,...props})=><button onClick={onSelect} {...props}>{children}</button>;export const DropdownMenuLabel=({children})=><div>{children}</div>;export const DropdownMenuSeparator=()=>null;export const DropdownMenuShortcut=({children})=><small>{children}</small>;";
               return { loader: "jsx", contents };
             },
           );
@@ -328,7 +366,7 @@ test("workflow UI keeps constructor config separate, retains failed drafts, and 
       app.dom,
     );
     globalThis.workflowUITest.fail = "/tasks/workflows/validate";
-    await click(button("保存模板"), app.dom);
+    await click(button("保存模板预设"), app.dom);
     assert.match(
       document.querySelector('[role="alert"]').textContent,
       /草稿已保留/,
@@ -338,7 +376,7 @@ test("workflow UI keeps constructor config separate, retains failed drafts, and 
       "entity Person { name: string, age: int }",
     );
     globalThis.workflowUITest.fail = "";
-    await click(button("保存模板"), app.dom);
+    await click(button("保存模板预设"), app.dom);
     const saved = app.calls.find(
       (call) =>
         call.url === "/tasks/workflows/templates" && call.method === "post",
@@ -351,7 +389,7 @@ test("workflow UI keeps constructor config separate, retains failed drafts, and 
     );
     assert.equal(saved.nodes[1].config.schemaId, undefined);
     assert.deepEqual(saved.nodes[1].inputs, {});
-    await click(button("开始任务"), app.dom);
+    await click(button("直接开始任务"), app.dom);
     assert.equal(
       app.calls.find((call) => call.url === "/tasks/workflows/run").payload
         .templateRevision,
@@ -365,40 +403,22 @@ test("workflow UI keeps constructor config separate, retains failed drafts, and 
   }
 });
 
-test("resource initialization selects full document and invoke literal independently overrides input config", async () => {
+test("resource initialization selects the full document at its revision", async () => {
   const app = await environment();
   try {
     const typeSelect = [...document.querySelectorAll("select")].find((node) =>
       [...node.options].some((option) => option.value === "document"),
     );
     await input(typeSelect, "document", app.dom, "change");
-    await act(() => new Promise((resolve) => setTimeout(resolve, 220)));
-    await click(button("整个文档"), app.dom);
-    await click(button("调用变量"), app.dom);
-    const bindingSelect = [...document.querySelectorAll("select")].find(
-      (node) => [...node.options].some((option) => option.value === "literal"),
-    );
-    await input(bindingSelect, "literal", app.dom, "change");
-    const literalType = [...document.querySelectorAll("select")].find((node) =>
-      [...node.options].some((option) => option.value === "text"),
-    );
-    await input(literalType, "text", app.dom, "change");
-    await input(
-      document.querySelector('[aria-label="初始化文本"]'),
-      "invoke 覆盖内容",
-      app.dom,
-    );
+    await act(() => new Promise((resolve) => setTimeout(resolve, 280)));
+    await click(document.querySelector(".workflow-resource"), app.dom);
     await click(button("校验"), app.dom);
     const payload = app.calls
       .filter((call) => call.url === "/tasks/workflows/validate")
       .at(-1).payload;
     assert.equal(payload.graph.nodes[0].config.documentId, "doc-1");
     assert.equal(payload.graph.nodes[0].config.revision, 4);
-    assert.equal(
-      payload.graph.nodes[0].inputs.value.value.text,
-      "invoke 覆盖内容",
-    );
-    assert.equal(payload.graph.nodes[0].inputs.value.type, "literal");
+    assert.deepEqual(payload.graph.nodes[0].inputs, {});
   } finally {
     await app.close();
   }
@@ -555,7 +575,7 @@ test("drag updates preserve canvas measurements and JSON drafts, then commit one
       true,
     );
     assert.equal(editor.getState().draft, "{unfinished");
-    await click(button("保存模板"), app.dom);
+    await click(button("保存模板预设"), app.dom);
     assert.match(
       document.querySelector('[role="alert"]').textContent,
       /无效的配置/,
@@ -605,7 +625,7 @@ test("keyboard moves and group drag positions save without transient canvas fiel
         },
       ]),
     );
-    await click(button("保存模板"), app.dom);
+    await click(button("保存模板预设"), app.dom);
     const saved = app.calls.find(
       (call) =>
         call.url === "/tasks/workflows/templates" && call.method === "post",
@@ -685,8 +705,207 @@ test("selection reports do not overwrite a live Ctrl multiselection", async () =
     );
     assert.match(
       document.querySelector(".workflow-inspector").textContent,
-      /选择节点查看参数/,
+      /选择节点查看说明与类初始化设置/,
     );
+  } finally {
+    await app.close();
+  }
+});
+
+test("quick template form preserves document revision and knowledge permissions", async () => {
+  const template = {
+    id: "quick-template",
+    title: "文档提取模板",
+    description: "根据文档提取知识",
+    revision: 3,
+    graph: { version: 2, nodes: [], edges: [], settings: {} },
+    inputFields: [
+      {
+        key: "document",
+        title: "待提取文档",
+        kind: "document",
+        required: true,
+        default: { documentId: "", revision: null },
+      },
+      {
+        key: "note",
+        title: "补充说明",
+        kind: "text",
+        required: false,
+        default: "保留上下文",
+      },
+    ],
+  };
+  const app = await environment(
+    { templateId: template.id },
+    {
+      template,
+      component: "src/features/workflows/QuickTemplateRunDialog.jsx",
+    },
+  );
+  try {
+    await act(() => new Promise((resolve) => setTimeout(resolve, 280)));
+    assert.match(
+      document.querySelector("[role=dialog]").textContent,
+      /待提取文档/,
+    );
+    await click(document.querySelector(".workflow-resource"), app.dom);
+    assert.equal(
+      document.querySelector('[aria-label="快速任务名称"]').value,
+      "文档提取模板",
+    );
+    const permissionEditor = document.querySelector(
+      "details .cwm-json-editor",
+    )._cwmJsonEditor;
+    await act(() => {
+      permissionEditor.switchMode("json");
+      permissionEditor.setDraft(
+        JSON.stringify({
+          sharingMembers: [{ userId: 2, role: "viewer" }],
+          includeSources: false,
+        }),
+      );
+    });
+    await click(button("创建并开始"), app.dom);
+    const payload = app.calls.find(
+      (call) => call.url === "/tasks/workflows/run" && call.method === "post",
+    ).payload;
+    assert.equal(payload.templateId, template.id);
+    assert.equal(payload.templateRevision, 3);
+    assert.equal(payload.title, "文档提取模板");
+    assert.deepEqual(payload.inputValues.document, {
+      documentId: "doc-1",
+      revision: 4,
+    });
+    assert.equal(payload.inputValues.note, "保留上下文");
+    assert.deepEqual(payload.permissions, {
+      sharingMembers: [{ userId: 2, role: "viewer" }],
+      includeSources: false,
+    });
+    assert.deepEqual(globalThis.workflowUITest.changes.at(-1), {
+      taskId: "task-1",
+      monitor: true,
+    });
+  } finally {
+    await app.close();
+  }
+});
+
+test("closing a changed template uses a blocking save confirmation", async () => {
+  const app = await environment();
+  try {
+    await input(
+      document.querySelector('[aria-label="初始化文本"]'),
+      "未保存的输入",
+      app.dom,
+    );
+    await click(document.querySelector('[aria-label="关闭工作流"]'), app.dom);
+    assert.equal(globalThis.workflowUITest.closed, false);
+    assert.match(
+      document.querySelector(".workflow-dialog").textContent,
+      /保存修改后关闭/,
+    );
+    await click(button("继续编辑"), app.dom);
+    assert.equal(globalThis.workflowUITest.closed, false);
+    await click(document.querySelector('[aria-label="关闭工作流"]'), app.dom);
+    globalThis.workflowUITest.fail = "/tasks/workflows/validate";
+    await click(button("保存后关闭"), app.dom);
+    assert.equal(globalThis.workflowUITest.closed, false);
+    assert.match(
+      document.querySelector(".workflow-dialog").textContent,
+      /草稿已保留/,
+    );
+    globalThis.workflowUITest.fail = "";
+    await click(button("保存后关闭"), app.dom);
+    assert.equal(globalThis.workflowUITest.closed, true);
+    assert.equal(
+      app.calls.find(
+        (call) =>
+          call.url === "/tasks/workflows/templates" && call.method === "post",
+      ).payload.graph.nodes[0].config.text,
+      "未保存的输入",
+    );
+  } finally {
+    await app.close();
+  }
+});
+
+test("canvas keyboard copy, paste, undo, redo and save preserve native text editing", async () => {
+  const app = await environment();
+  const shortcut = async (key, { shift = false, target } = {}) => {
+    await act(async () => {
+      (target || document.querySelector(".workflow-dialog")).dispatchEvent(
+        new app.dom.window.KeyboardEvent("keydown", {
+          bubbles: true,
+          key,
+          ctrlKey: true,
+          shiftKey: shift,
+        }),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  };
+  try {
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    await shortcut("c");
+    await shortcut("v");
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 3);
+    await shortcut("z");
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    await shortcut("z", { shift: true });
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 3);
+    await shortcut("s");
+    const saved = app.calls.find(
+      (call) =>
+        call.url === "/tasks/workflows/templates" && call.method === "post",
+    ).payload.graph;
+    assert.equal(saved.nodes.length, 3);
+    assert.equal(
+      new Set(saved.nodes.map((node) => node.id)).size,
+      saved.nodes.length,
+    );
+  } finally {
+    await app.close();
+  }
+});
+
+test("deleting a right-clicked edge preserves an unrelated selected node", async () => {
+  const graph = structuredClone(catalog.standardGraph);
+  graph.nodes.push({
+    ...structuredClone(graph.nodes[0]),
+    id: "input-2",
+    position: { x: 20, y: 220 },
+  });
+  graph.edges.push({
+    id: "edge-2",
+    source: "input-2",
+    sourcePort: "source",
+    target: "extract-1",
+    targetPort: "bundle",
+  });
+  const app = await environment({}, { graph });
+  try {
+    await click(document.querySelector('[data-node="input-1"]'), app.dom);
+    await act(async () => {
+      globalThis.workflowUITest.flow.onEdgeContextMenu(
+        new app.dom.window.MouseEvent("contextmenu", {
+          bubbles: true,
+          clientX: 200,
+          clientY: 200,
+        }),
+        { id: "edge-2" },
+      );
+    });
+    await click(button("删除Delete"), app.dom);
+    await click(button("校验"), app.dom);
+    const saved = app.calls
+      .filter((call) => call.url === "/tasks/workflows/validate")
+      .at(-1).payload.graph;
+    assert.deepEqual(
+      saved.nodes.map((node) => node.id),
+      ["input-1", "extract-1", "input-2"],
+    );
+    assert.deepEqual(saved.edges, []);
   } finally {
     await app.close();
   }

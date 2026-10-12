@@ -1,5 +1,37 @@
 /** Serializable workflow helpers shared by the canvas, forms, and tests. */
-export const clone = (value) => JSON.parse(JSON.stringify(value));
+export const clone = (value) =>
+  value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+
+/** Catalog annotations may use Pydantic range names; forms use JSON Schema. */
+export function normalizeWorkflowSchema(value) {
+  if (Array.isArray(value)) return value.map(normalizeWorkflowSchema);
+  if (!value || typeof value !== "object") return value;
+  const schema = Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [
+      key,
+      normalizeWorkflowSchema(item),
+    ]),
+  );
+  for (const [source, target] of [
+    ["ge", "minimum"],
+    ["gt", "exclusiveMinimum"],
+    ["le", "maximum"],
+    ["lt", "exclusiveMaximum"],
+  ]) {
+    if (schema[source] != null && schema[target] == null)
+      schema[target] = schema[source];
+    delete schema[source];
+  }
+  return schema;
+}
+
+export function scalarSchema(schema = {}) {
+  const { anyOf, oneOf, ...base } = schema;
+  const variant = (anyOf || oneOf || []).find(
+    (item) => item.type !== "null" && (item.type || item.anyOf || item.oneOf),
+  );
+  return variant ? scalarSchema({ ...base, ...variant }) : schema;
+}
 
 export function schemaDefaults(schema = {}) {
   if (Object.hasOwn(schema, "default")) return clone(schema.default);
@@ -15,10 +47,20 @@ export function schemaDefaults(schema = {}) {
 
 export function normalizeGraph(graph) {
   return {
-    version: 1,
+    version: graph?.version || 2,
     nodes: clone(graph?.nodes || []),
     edges: clone(graph?.edges || []),
-    settings: { maxConcurrency: 2, ...graph?.settings },
+    settings: {
+      maxConcurrency: 4,
+      ...graph?.settings,
+      commonConfig: {
+        try_times: 3,
+        retry_delay: 1,
+        max_concurrency: 2,
+        modelId: "",
+        ...graph?.settings?.commonConfig,
+      },
+    },
     variables: clone(graph?.variables || {}),
   };
 }
@@ -59,6 +101,60 @@ export function initializeGraph(graph, definitions) {
   return next;
 }
 
+export function nodeCategory(definition, node) {
+  if (definition?.category) return definition.category;
+  if (
+    ["input", "text", "number", "boolean", "attachments", "document"].includes(
+      node?.kind || definition?.kind,
+    )
+  )
+    return "source";
+  return ["ingest", "result"].includes(node?.kind || definition?.kind)
+    ? "sink"
+    : "process";
+}
+
+export function workflowInputFields(graph, definitions = []) {
+  return graph.nodes
+    .filter(
+      (node) => nodeCategory(catalogNode(definitions, node), node) === "source",
+    )
+    .map((node) => {
+      const definition = catalogNode(definitions, node);
+      const schema = definition?.configSchema?.properties || {};
+      return {
+        key: node.inputKey || node.id,
+        nodeId: node.id,
+        title: node.name || definition?.title || node.id,
+        kind: node.kind,
+        required: true,
+        schema: schema.value || {},
+        default: sourceNodeValue(node),
+      };
+    });
+}
+
+export function sourceNodeValue(node) {
+  if (node.kind === "attachments") return node.config?.resources || [];
+  if (node.kind === "document")
+    return {
+      documentId: node.config?.documentId || "",
+      revision: node.config?.revision ?? null,
+    };
+  if (node.kind === "input") return clone(node.config || {});
+  return (
+    node.config?.value ??
+    (node.kind === "number" ? 0 : node.kind === "boolean" ? false : "")
+  );
+}
+
+export function sourceValueConfig(kind, value, current = {}) {
+  if (kind === "attachments") return { ...current, resources: value || [] };
+  if (kind === "document") return { ...current, ...value };
+  if (kind === "input") return { ...current, ...value };
+  return { ...current, value };
+}
+
 export function createWorkflowNode(definition, graph, position) {
   const used = new Set(graph.nodes.map((node) => node.id));
   let index = 1;
@@ -66,6 +162,10 @@ export function createWorkflowNode(definition, graph, position) {
   return {
     id: `${definition.kind}-${index}`,
     kind: definition.kind,
+    name: definition.title || definition.kind,
+    ...(nodeCategory(definition) === "source"
+      ? { inputKey: `${definition.kind}-${index}` }
+      : {}),
     version: definition.version,
     config: schemaDefaults(definition.configSchema) || {},
     inputs: {},
@@ -74,6 +174,107 @@ export function createWorkflowNode(definition, graph, position) {
       y: 100 + graph.nodes.length * 25,
     },
   };
+}
+
+export function copyWorkflowSelection(graph, ids) {
+  const selected = new Set(ids);
+  return clone({
+    nodes: graph.nodes.filter((node) => selected.has(node.id)),
+    edges: graph.edges.filter(
+      (edge) => selected.has(edge.source) && selected.has(edge.target),
+    ),
+  });
+}
+
+export function pasteWorkflowSelection(graph, clipboard, position) {
+  if (!clipboard?.nodes?.length) return { graph, ids: [] };
+  const used = new Set(graph.nodes.map((node) => node.id));
+  const usedKeys = new Set(
+    graph.nodes.map((node) => node.inputKey).filter(Boolean),
+  );
+  const mapping = new Map();
+  const minX = Math.min(
+    ...clipboard.nodes.map((node) => node.position?.x || 0),
+  );
+  const minY = Math.min(
+    ...clipboard.nodes.map((node) => node.position?.y || 0),
+  );
+  const base = position || { x: minX + 45, y: minY + 65 };
+  const nodes = clipboard.nodes.map((original) => {
+    let index = 1;
+    while (used.has(`${original.kind}-${index}`)) index += 1;
+    const id = `${original.kind}-${index}`;
+    used.add(id);
+    mapping.set(original.id, id);
+    const node = clone(original);
+    node.id = id;
+    node.position = {
+      x: base.x + (original.position?.x || 0) - minX,
+      y: base.y + (original.position?.y || 0) - minY,
+    };
+    if (original.inputKey) {
+      let suffix = 1,
+        key = id;
+      while (usedKeys.has(key)) key = `${id}-${suffix++}`;
+      node.inputKey = key;
+      usedKeys.add(key);
+    }
+    return node;
+  });
+  const edgeIds = new Set(graph.edges.map((edge) => edge.id));
+  const edges = (clipboard.edges || [])
+    .filter((edge) => mapping.has(edge.source) && mapping.has(edge.target))
+    .map((original) => {
+      let index = 1;
+      while (edgeIds.has(`edge-${index}`)) index += 1;
+      const id = `edge-${index}`;
+      edgeIds.add(id);
+      return {
+        ...clone(original),
+        id,
+        source: mapping.get(original.source),
+        target: mapping.get(original.target),
+      };
+    });
+  return {
+    graph: {
+      ...graph,
+      nodes: [...graph.nodes, ...nodes],
+      edges: [...graph.edges, ...edges],
+    },
+    ids: nodes.map((node) => node.id),
+  };
+}
+
+export function setWorkflowPortMode(graph, nodeId, port, mode, schema = {}) {
+  const node = graph.nodes.find((item) => item.id === nodeId);
+  if (!node) return graph;
+  return bindWorkflowInput(
+    graph,
+    nodeId,
+    port,
+    mode === "inline"
+      ? {
+          type: "literal",
+          value:
+            node.inputs?.[port]?.value ??
+            schema.default ??
+            (schema.type === "boolean"
+              ? false
+              : ["number", "integer"].includes(schema.type)
+                ? 0
+                : ""),
+        }
+      : null,
+  );
+}
+
+export function isWorkflowTextEditing(target) {
+  return Boolean(
+    target?.closest?.(
+      'input,textarea,select,[contenteditable="true"],.cm-editor,[role="combobox"],[role="textbox"]',
+    ),
+  );
 }
 
 export function connectWorkflow(graph, connection, definitions) {
