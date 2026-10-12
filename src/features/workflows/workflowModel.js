@@ -23,6 +23,30 @@ export function normalizeGraph(graph) {
   };
 }
 
+export function updateWorkflowNodePositions(graph, moved = []) {
+  const positions = new Map(
+    moved
+      .filter(
+        (node) =>
+          Number.isFinite(node.position?.x) &&
+          Number.isFinite(node.position?.y),
+      )
+      .map((node) => [node.id, node.position]),
+  );
+  let changed = false;
+  const nodes = graph.nodes.map((node) => {
+    const position = positions.get(node.id);
+    if (
+      !position ||
+      (node.position?.x === position.x && node.position?.y === position.y)
+    )
+      return node;
+    changed = true;
+    return { ...node, position: { x: position.x, y: position.y } };
+  });
+  return changed ? { ...graph, nodes } : graph;
+}
+
 export function initializeGraph(graph, definitions) {
   const next = normalizeGraph(graph);
   next.nodes = next.nodes.map((node) => ({

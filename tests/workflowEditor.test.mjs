@@ -83,7 +83,9 @@ async function environment(request = {}) {
   });
   for (const name of [
     "window",
+    "Window",
     "document",
+    "Document",
     "MutationObserver",
     "HTMLElement",
     "Element",
@@ -93,6 +95,15 @@ async function environment(request = {}) {
     "File",
   ])
     globalThis[name] = dom.window[name];
+  dom.window.Range.prototype.getClientRects = () => [];
+  dom.window.Range.prototype.getBoundingClientRect = () => ({
+    left: 0,
+    top: 0,
+    right: 1,
+    bottom: 1,
+    width: 1,
+    height: 1,
+  });
   globalThis.requestAnimationFrame = dom.window.requestAnimationFrame.bind(
     dom.window,
   );
@@ -201,6 +212,9 @@ async function environment(request = {}) {
             path: "flow",
             namespace: "mock",
           }));
+          builder.onResolve({ filter: /^test:flow-changes$/ }, () => ({
+            path: path.resolve("node_modules/@xyflow/react/dist/esm/index.mjs"),
+          }));
           builder.onResolve({ filter: /^@\// }, ({ path: requested }) => {
             if (
               requested === "@/lib/apiClient.js" ||
@@ -215,7 +229,7 @@ async function environment(request = {}) {
             ({ path: requested }) => {
               let contents = "";
               if (requested === "flow")
-                contents = `export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:()=>{},screenToFlowPosition:x=>x});export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;return <section data-canvas>{props.nodes.map(node=><button key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}>{node.data.definition.title}</button>)}{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
+                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:()=>{},screenToFlowPosition:x=>x});export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;return <section data-canvas>{props.nodes.map(node=><button key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}>{node.data.definition.title}</button>)}{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
               else if (requested === "@/lib/apiClient.js")
                 contents = "export default globalThis.workflowUITest.api;";
               else if (requested.endsWith("/button"))
@@ -460,6 +474,219 @@ test("opening an existing task uses its immutable graph and real taskId runtime 
     assert.deepEqual(globalThis.workflowUITest.changes.at(-1), {
       taskId: "existing-task",
     });
+  } finally {
+    await app.close();
+  }
+});
+
+test("drag updates preserve canvas measurements and JSON drafts, then commit one undo action", async () => {
+  const app = await environment();
+  try {
+    await click(document.querySelector('[data-node="extract-1"]'), app.dom);
+    const host = document.querySelector(".workflow-inspector .cwm-json-editor");
+    const editor = host._cwmJsonEditor;
+    await act(() => {
+      editor.switchMode("json");
+      editor.setDraft("{unfinished");
+    });
+    await act(() =>
+      globalThis.workflowUITest.flow.onNodesChange([
+        {
+          id: "extract-1",
+          type: "dimensions",
+          dimensions: { width: 220, height: 100 },
+        },
+        {
+          id: "extract-1",
+          type: "position",
+          position: { x: 350, y: 40 },
+          dragging: true,
+        },
+      ]),
+    );
+    assert.deepEqual(
+      globalThis.workflowUITest.flow.nodes.find(
+        (node) => node.id === "extract-1",
+      ).measured,
+      { width: 220, height: 100 },
+    );
+    assert.equal(
+      document.querySelector(".workflow-inspector .cwm-json-editor"),
+      host,
+    );
+    assert.equal(editor.getState().draft, "{unfinished");
+    assert.doesNotMatch(
+      document.querySelector(".workflow-header").textContent,
+      /有未保存修改/,
+    );
+    await act(() => {
+      globalThis.workflowUITest.flow.onNodesChange([
+        {
+          id: "extract-1",
+          type: "position",
+          position: { x: 350, y: 40 },
+          dragging: false,
+        },
+      ]);
+      globalThis.workflowUITest.flow.onNodeDragStop(
+        {},
+        {
+          id: "extract-1",
+          position: { x: 350, y: 40 },
+        },
+      );
+    });
+    assert.match(
+      document.querySelector(".workflow-header").textContent,
+      /有未保存修改/,
+    );
+    assert.equal(editor.getState().draft, "{unfinished");
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    const restored = globalThis.workflowUITest.flow.nodes.find(
+      (node) => node.id === "extract-1",
+    );
+    assert.deepEqual(restored.position, { x: 300, y: 20 });
+    assert.deepEqual(restored.measured, { width: 220, height: 100 });
+    assert.equal(
+      document.querySelector('[aria-label="撤销工作流修改"]').disabled,
+      true,
+    );
+    assert.equal(editor.getState().draft, "{unfinished");
+    await click(button("保存模板"), app.dom);
+    assert.match(
+      document.querySelector('[role="alert"]').textContent,
+      /无效的配置/,
+    );
+    assert.equal(
+      app.calls.some(
+        (call) =>
+          call.url === "/tasks/workflows/templates" && call.method === "post",
+      ),
+      false,
+    );
+  } finally {
+    await app.close();
+  }
+});
+
+test("keyboard moves and group drag positions save without transient canvas fields", async () => {
+  const app = await environment();
+  try {
+    await act(() =>
+      globalThis.workflowUITest.flow.onNodesChange([
+        {
+          id: "input-1",
+          type: "position",
+          position: { x: 30, y: 20 },
+          dragging: false,
+        },
+      ]),
+    );
+    assert.match(
+      document.querySelector(".workflow-header").textContent,
+      /有未保存修改/,
+    );
+    await act(() =>
+      globalThis.workflowUITest.flow.onSelectionDragStop({}, [
+        {
+          id: "input-1",
+          position: { x: 60, y: 50 },
+          measured: { width: 220 },
+          dragging: false,
+        },
+        {
+          id: "extract-1",
+          position: { x: 330, y: 50 },
+          measured: { width: 220 },
+          dragging: false,
+        },
+      ]),
+    );
+    await click(button("保存模板"), app.dom);
+    const saved = app.calls.find(
+      (call) =>
+        call.url === "/tasks/workflows/templates" && call.method === "post",
+    ).payload.graph;
+    assert.deepEqual(
+      saved.nodes.map((node) => node.position),
+      [
+        { x: 60, y: 50 },
+        { x: 330, y: 50 },
+      ],
+    );
+    assert(
+      saved.nodes.every(
+        (node) =>
+          !Object.hasOwn(node, "measured") && !Object.hasOwn(node, "dragging"),
+      ),
+    );
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    assert.deepEqual(
+      globalThis.workflowUITest.flow.nodes.map((node) => node.position),
+      [
+        { x: 30, y: 20 },
+        { x: 300, y: 20 },
+      ],
+    );
+  } finally {
+    await app.close();
+  }
+});
+
+test("selection reports do not overwrite a live Ctrl multiselection", async () => {
+  const app = await environment();
+  try {
+    await act(() => {
+      globalThis.workflowUITest.flow.onNodesChange([
+        { id: "extract-1", type: "select", selected: true },
+      ]);
+      globalThis.workflowUITest.flow.onNodeClick(
+        { ctrlKey: true },
+        globalThis.workflowUITest.flow.nodes.find(
+          (node) => node.id === "extract-1",
+        ),
+      );
+    });
+    await act(() =>
+      globalThis.workflowUITest.flow.onSelectionChange({
+        nodes: globalThis.workflowUITest.flow.nodes.filter(
+          (node) => node.selected,
+        ),
+        edges: [],
+      }),
+    );
+    assert.deepEqual(
+      globalThis.workflowUITest.flow.nodes
+        .filter((node) => node.selected)
+        .map((node) => node.id),
+      ["input-1", "extract-1"],
+    );
+    await act(() =>
+      globalThis.workflowUITest.flow.onNodesChange([
+        { id: "input-1", type: "select", selected: false },
+        { id: "extract-1", type: "select", selected: false },
+      ]),
+    );
+    await act(() =>
+      globalThis.workflowUITest.flow.onSelectionChange({
+        nodes: [],
+        edges: [],
+      }),
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes.some((node) => node.selected),
+      false,
+    );
+    assert.match(
+      document.querySelector(".workflow-inspector").textContent,
+      /选择节点查看参数/,
+    );
   } finally {
     await app.close();
   }

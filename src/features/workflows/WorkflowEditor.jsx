@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ReactFlow,
   ReactFlowProvider,
   Background,
   Controls,
@@ -42,7 +41,9 @@ import {
   initializeGraph,
   normalizeGraph,
   removeWorkflowNodes,
+  updateWorkflowNodePositions,
 } from "./workflowModel.js";
+import WorkflowCanvas from "./WorkflowCanvas.jsx";
 import WorkflowNodePanel from "./WorkflowNodePanel.jsx";
 import { WorkflowSelect } from "./WorkflowSourcePicker.jsx";
 import "@xyflow/react/dist/style.css";
@@ -190,12 +191,15 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [notice, setNotice] = useState("");
   const [catalog, setCatalog] = useState({ nodes: [] });
   const [graph, setGraph] = useState(normalizeGraph());
+  const graphRef = useRef(graph);
+  graphRef.current = graph;
   const [templates, setTemplates] = useState([]);
   const [template, setTemplate] = useState(null);
   const [templateSharing, setTemplateSharing] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [selected, setSelected] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
+  const [canvasSelection, setCanvasSelection] = useState({ ids: [] });
   const [selectedEdges, setSelectedEdges] = useState([]);
   const [search, setSearch] = useState("");
   const [title, setTitle] = useState("知识提取工作流");
@@ -258,6 +262,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         );
         setGraph(next);
         setSelected(next.nodes[0]?.id || "");
+        setCanvasSelection({ ids: next.nodes[0] ? [next.nodes[0].id] : [] });
         setTemplate(loadedTemplate || null);
         setTemplateSharing(loadedTemplate?.sharingMembers || []);
         setTask(loadedTask);
@@ -316,15 +321,22 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   }, [task?.id, task?.status]);
 
   const changeGraph = useCallback((next) => {
-    setGraph((current) => {
-      history.current.push(clone(current));
-      if (history.current.length > 50) history.current.shift();
-      return next;
-    });
+    const current = graphRef.current;
+    const updated = typeof next === "function" ? next(current) : next;
+    if (updated === current) return;
+    history.current.push(clone(current));
+    if (history.current.length > 50) history.current.shift();
+    graphRef.current = updated;
+    setGraph(updated);
     setDirty(true);
     setNotice("");
     setConfirmClose(false);
   }, []);
+  const commitNodePositions = useCallback(
+    (moved) =>
+      changeGraph((current) => updateWorkflowNodePositions(current, moved)),
+    [changeGraph],
+  );
   const edit = (callback) => {
     callback();
     setDirty(true);
@@ -364,6 +376,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         current.join("|") === edgeIds.join("|") ? current : edgeIds,
       );
       if (nodeIds.length === 1) setSelected(nodeIds[0]);
+      else if (!nodeIds.length) setSelected("");
     },
     [],
   );
@@ -373,9 +386,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         id: node.id,
         type: "workflow",
         position: node.position || { x: 0, y: 0 },
-        selected: selectedIds.length
-          ? selectedIds.includes(node.id)
-          : selected === node.id,
         data: {
           id: node.id,
           kind: node.kind,
@@ -385,14 +395,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             runtimeStages.find?.((stage) => stage.key === node.id)?.status,
         },
       })),
-    [
-      graph.nodes,
-      catalog.nodes,
-      selected,
-      selectedIds,
-      runtimeNodes,
-      runtimeStages,
-    ],
+    [graph.nodes, catalog.nodes, runtimeNodes, runtimeStages],
   );
   const edges = useMemo(
     () =>
@@ -411,6 +414,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     changeGraph({ ...graph, nodes: [...graph.nodes, node] });
     setSelected(node.id);
     setSelectedIds([node.id]);
+    setCanvasSelection({ ids: [node.id] });
     setPanel("node");
     setMobilePane("config");
   };
@@ -421,6 +425,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     changeGraph(next);
     setSelected("");
     setSelectedIds([]);
+    setCanvasSelection({ ids: [] });
     setSelectedEdges([]);
   };
   const undo = () => {
@@ -428,7 +433,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     if (previous) {
       setGraph(previous);
       setDirty(true);
-      setInvalid({});
     }
   };
   const graphPayload = () => {
@@ -531,6 +535,9 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       setTemplateSharing(next?.sharingMembers || []);
       setConfirmDelete(false);
       setSelected(nextGraph.nodes[0]?.id || "");
+      setCanvasSelection({
+        ids: nextGraph.nodes[0] ? [nextGraph.nodes[0].id] : [],
+      });
       setSelectedIds([]);
       setTask(null);
       setDirty(false);
@@ -738,8 +745,9 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               </div>
             </aside>
             <main className="workflow-canvas" aria-label="工作流画布">
-              <ReactFlow
+              <WorkflowCanvas
                 nodes={nodes}
+                selectionRequest={canvasSelection}
                 edges={edges}
                 nodeTypes={nodeTypes}
                 fitView
@@ -750,40 +758,13 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 multiSelectionKeyCode="Control"
                 nodesDraggable={!busy}
                 nodesConnectable={!busy}
-                onNodesChange={(changes) => {
-                  const selections = changes.filter(
-                    (change) => change.type === "select",
-                  );
-                  if (selections.length)
-                    setSelectedIds((current) => {
-                      const ids = new Set(current);
-                      for (const change of selections) {
-                        if (change.selected) ids.add(change.id);
-                        else ids.delete(change.id);
-                      }
-                      return [...ids];
-                    });
-                  const positions = changes.filter(
-                    (change) => change.type === "position" && change.position,
-                  );
-                  if (positions.length) {
-                    setGraph((current) => ({
-                      ...current,
-                      nodes: current.nodes.map((node) => {
-                        const position = positions.find(
-                          (change) => change.id === node.id,
-                        )?.position;
-                        return position ? { ...node, position } : node;
-                      }),
-                    }));
-                    setDirty(true);
-                  }
-                }}
+                onPositionsCommit={commitNodePositions}
                 onNodeClick={(event, node) => {
                   setSelected(node.id);
-                  if (!event.ctrlKey && !event.metaKey)
+                  if (!event.ctrlKey && !event.metaKey) {
                     setSelectedIds([node.id]);
-                  setSelectedEdges([]);
+                    setSelectedEdges([]);
+                  }
                   setPanel("node");
                 }}
                 onNodeDoubleClick={(_event, node) => {
@@ -805,8 +786,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       }
                       return [...ids];
                     });
-                    setSelected("");
-                    setSelectedIds([]);
                   }
                 }}
                 onPaneClick={() => {
@@ -850,7 +829,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               >
                 <Background gap={22} size={1} />
                 <Controls showInteractive={false} />
-              </ReactFlow>
+              </WorkflowCanvas>
               <div className="workflow-canvas-tools">
                 <Button
                   variant="outline"
@@ -929,6 +908,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       );
                       setSelected("");
                       setSelectedIds([]);
+                      setCanvasSelection({ ids: [] });
                     }}
                     onDuplicate={() => {
                       const duplicated = createWorkflowNode(
@@ -947,6 +927,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       });
                       setSelected(duplicated.id);
                       setSelectedIds([duplicated.id]);
+                      setCanvasSelection({ ids: [duplicated.id] });
                     }}
                   />
                 ) : (
