@@ -210,9 +210,17 @@ test("typed ports reject malformed and cyclic connections and permit valid branc
 });
 
 test("annotated port types stay distinct and accept only declared legacy-compatible values", () => {
+  assert.equal(workflowPortTypeLabel({ type: "content-bundle" }), "结构化内容");
   assert.equal(
     workflowPortTypeLabel({ type: "image-enriched-bundle" }),
-    "图片概括结果",
+    "图片理解阶段输出",
+  );
+  assert.equal(
+    workflowPortTypeLabel({
+      type: "content-bundle",
+      typeLabel: "后端指定名称",
+    }),
+    "后端指定名称",
   );
   assert.equal(
     workflowPortTypeLabel({ type: "custom-distribution" }),
@@ -223,9 +231,10 @@ test("annotated port types stay distinct and accept only declared legacy-compati
       name: "bundle",
       type: "content-bundle",
       accepts: ["bundle"],
+      typeDescription: "已解析的文本、图片和来源信息",
       pythonAnnotation: "ContentBundle",
     }),
-    /还接受：旧版内容集合.*Python: ContentBundle/s,
+    /还接受：旧版内容集合.*类型：已解析的文本、图片和来源信息.*Python: ContentBundle/s,
   );
   const source = { type: "content-bundle" };
   assert.equal(

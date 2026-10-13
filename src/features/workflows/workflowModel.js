@@ -127,8 +127,8 @@ const workflowPortLabels = {
   "text-chunks": "文本块列表",
   network: "知识网络",
   "source-snapshot": "来源快照",
-  "content-bundle": "内容与图片",
-  "image-enriched-bundle": "图片概括结果",
+  "content-bundle": "结构化内容",
+  "image-enriched-bundle": "图片理解阶段输出",
   "extracted-knowledge": "知识提取结果",
   // Old saved graphs retain these port types until explicitly migrated.
   source: "旧版来源",
@@ -153,7 +153,7 @@ export function workflowPortDescription(port) {
   const compatibility = accepted.length
     ? `\n还接受：${accepted.join("、")}`
     : "";
-  return `${port?.title || port?.name || "端口"} · ${type} (${port?.type || "?"})${compatibility}${port?.description ? `\n${port.description}` : ""}${port?.pythonAnnotation ? `\nPython: ${port.pythonAnnotation}` : ""}`;
+  return `${port?.title || port?.name || "端口"} · ${type} (${port?.type || "?"})${compatibility}${port?.typeDescription ? `\n类型：${port.typeDescription}` : ""}${port?.description ? `\n${port.description}` : ""}${port?.pythonAnnotation ? `\nPython: ${port.pythonAnnotation}` : ""}`;
 }
 
 export function workflowPortsCompatible(output, input) {
