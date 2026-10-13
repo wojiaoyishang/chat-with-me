@@ -33,10 +33,10 @@ export default function WorkflowEdge({
     targetPosition,
   });
   const screenZoom = Math.max(zoom || 1, 0.2);
-  const screenDistance =
-    Math.hypot(targetX - sourceX, targetY - sourceY) * screenZoom;
-  const orbCount = screenDistance >= ORB_COUNT_THRESHOLD ? 2 : 1;
-  const duration = Math.max(2.8, Math.min(5.6, screenDistance / 90));
+  // Keep the SMIL timeline stable while zoom changes; only orb size follows zoom.
+  const edgeDistance = Math.hypot(targetX - sourceX, targetY - sourceY);
+  const orbCount = edgeDistance >= ORB_COUNT_THRESHOLD ? 2 : 1;
+  const duration = Math.max(2.8, Math.min(5.6, edgeDistance / 90));
   const phase = edgePhase(id);
 
   return (

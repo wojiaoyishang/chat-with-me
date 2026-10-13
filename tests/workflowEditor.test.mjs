@@ -550,6 +550,30 @@ test("workflow edge animation follows the saved setting without remounting the c
       document.querySelector(".react-flow__edge-path")?.getAttribute("d"),
     );
     const originalCanvas = document.querySelector("[data-canvas]");
+    const motion = document.querySelector(".workflow-edge-orb animateMotion");
+    const duration = motion.getAttribute("dur");
+    const begin = motion.getAttribute("begin");
+    const originalRadius = Number(
+      document.querySelector(".workflow-edge-orb-core").getAttribute("r"),
+    );
+    globalThis.workflowUITest.zoom = 2;
+    await input(
+      document.querySelector('[aria-label="工作流名称"]'),
+      "缩放时保持动画进度",
+      app.dom,
+    );
+    assert.equal(
+      document.querySelector(".workflow-edge-orb animateMotion"),
+      motion,
+    );
+    assert.equal(motion.getAttribute("dur"), duration);
+    assert.equal(motion.getAttribute("begin"), begin);
+    assert.equal(
+      Number(
+        document.querySelector(".workflow-edge-orb-core").getAttribute("r"),
+      ),
+      originalRadius / 2,
+    );
 
     await act(async () => {
       localStorage.setItem(
