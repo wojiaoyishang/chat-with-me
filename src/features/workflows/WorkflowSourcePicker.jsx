@@ -27,7 +27,21 @@ import {
 } from "@/components/ui/popover";
 import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import apiClient from "@/lib/apiClient.js";
+import { resolveResourceUrl } from "@/lib/virtualUrl.js";
 import WorkflowResourcePreview from "./WorkflowResourcePreview.jsx";
+
+function ResourceThumbnail({ item, sourceType }) {
+  const url = item.preview ? resolveResourceUrl(item.preview) : "";
+  const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => { setFailed(false); setLoaded(false); }, [url]);
+  return (
+    <span className={`workflow-resource-icon ${loaded && !failed ? "has-thumbnail" : ""}`} aria-hidden="true">
+      {sourceType === "document" ? <FileText className="size-5" /> : <Paperclip className="size-5" />}
+      {url && !failed && <img src={url} alt="" loading="lazy" decoding="async" onLoad={() => setLoaded(true)} onError={() => setFailed(true)} />}
+    </span>
+  );
+}
 
 export function WorkflowSelect({ value, onChange, options, label, disabled }) {
   const selected = value == null || value === "" ? "_none" : String(value);
@@ -444,13 +458,7 @@ function FullWorkflowSourcePicker({
                       disabled={disabled || uploading || loading}
                       onClick={() => pick(item)}
                     >
-                      <span className="workflow-resource-icon" aria-hidden="true">
-                      {sourceType === "document" ? (
-                        <FileText className="size-5" />
-                      ) : (
-                        <Paperclip className="size-5" />
-                      )}
-                      </span>
+                      <ResourceThumbnail item={item} sourceType={sourceType} />
                       <span className="workflow-resource-name" title={item.title || item.name || item.id}>
                         {item.title || item.name || item.id}
                       </span>
