@@ -110,46 +110,37 @@
   stroke: color-mix(in srgb, var(--primary) 50%, var(--border));
   stroke-width: 1.6;
   stroke-dasharray: 6 9;
-}
-.workflow-data-edge.is-flowing .react-flow__edge-path {
-  animation: workflow-edge-flow 2.8s linear infinite;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
 }
 .workflow-data-edge.is-active .react-flow__edge-path {
   stroke: var(--primary);
   stroke-width: 2;
 }
-.workflow-data-edge.is-active.is-flowing .react-flow__edge-path {
-  animation-duration: 1.9s;
-}
-.workflow-flow-pulse {
-  --workflow-pulse-color: #4f70f5;
-  pointer-events: none;
-}
-.dark .workflow-flow-pulse {
-  --workflow-pulse-color: #83a1ff;
-}
-.workflow-flow-halo {
-  fill: var(--workflow-pulse-color);
-  opacity: 0.22;
-  filter: drop-shadow(0 0 6px var(--workflow-pulse-color));
-}
-.workflow-flow-core {
-  fill: var(--workflow-pulse-color);
-  stroke: var(--background);
+.workflow-edge-flow {
+  fill: none;
+  stroke: color-mix(in srgb, var(--primary) 60%, var(--border));
   stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 6 54;
   vector-effect: non-scaling-stroke;
+  opacity: 0.38;
+  pointer-events: none;
+  animation: workflow-edge-flow 5.6s linear infinite;
+}
+.workflow-data-edge.is-active .workflow-edge-flow {
+  stroke: var(--primary);
+  opacity: 0.72;
 }
 @keyframes workflow-edge-flow {
   to {
-    stroke-dashoffset: -15;
+    stroke-dashoffset: -60;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .workflow-data-edge.is-flowing .react-flow__edge-path {
-    animation: none;
-  }
-  .workflow-flow-pulse {
+  .workflow-edge-flow {
     display: none;
+    animation: none;
   }
 }
 .workflow-context-anchor {

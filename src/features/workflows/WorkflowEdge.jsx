@@ -1,4 +1,4 @@
-import { BaseEdge, getBezierPath, useViewport } from "@xyflow/react";
+import { BaseEdge, getBezierPath } from "@xyflow/react";
 
 /** Keep the same curve and hit area as React Flow's default edge. */
 export default function WorkflowEdge({
@@ -13,8 +13,6 @@ export default function WorkflowEdge({
   style,
   data,
 }) {
-  const { zoom } = useViewport();
-  const visibleZoom = Math.max(zoom, 0.15);
   const [path] = getBezierPath({
     sourceX,
     sourceY,
@@ -23,7 +21,7 @@ export default function WorkflowEdge({
     targetY,
     targetPosition,
   });
-  const duration = data?.active ? 1.9 : 2.8;
+  const duration = data?.active ? 4.2 : 5.6;
   const phaseSeed = [...String(id)].reduce(
     (hash, character) => Math.imul(hash ^ character.charCodeAt(0), 16777619),
     2166136261,
@@ -34,16 +32,15 @@ export default function WorkflowEdge({
     <>
       <BaseEdge id={id} path={path} markerEnd={markerEnd} style={style} />
       {data?.flowing && (
-        <g className="workflow-flow-pulse" aria-hidden="true">
-          <circle className="workflow-flow-halo" r={12 / visibleZoom} />
-          <circle className="workflow-flow-core" r={5 / visibleZoom} />
-          <animateMotion
-            path={path}
-            begin={`-${phase.toFixed(2)}s`}
-            dur={`${duration}s`}
-            repeatCount="indefinite"
-          />
-        </g>
+        <path
+          className="workflow-edge-flow"
+          d={path}
+          aria-hidden="true"
+          style={{
+            animationDelay: `-${phase.toFixed(2)}s`,
+            animationDuration: `${duration}s`,
+          }}
+        />
       )}
     </>
   );

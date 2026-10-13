@@ -531,9 +531,9 @@ test("workflow edge animation follows the saved setting without remounting the c
     );
     assert.ok(flow().edges.every((edge) => edge.type === "workflow"));
     assert.ok(flow().edges.every((edge) => edge.data.flowing));
-    assert.equal(document.querySelectorAll("animateMotion").length, 1);
+    assert.equal(document.querySelectorAll(".workflow-edge-flow").length, 1);
     assert.match(
-      document.querySelector("animateMotion").getAttribute("path"),
+      document.querySelector(".workflow-edge-flow").getAttribute("d"),
       /^M 0 0 C/,
     );
     const originalCanvas = document.querySelector("[data-canvas]");
@@ -553,7 +553,7 @@ test("workflow edge animation follows the saved setting without remounting the c
       flow().edges.every((edge) => edge.className === "workflow-data-edge"),
     );
     assert.ok(flow().edges.every((edge) => !edge.data.flowing));
-    assert.equal(document.querySelectorAll("animateMotion").length, 0);
+    assert.equal(document.querySelectorAll(".workflow-edge-flow").length, 0);
     assert.equal(document.querySelector("[data-canvas]"), originalCanvas);
 
     await act(async () => {
@@ -570,7 +570,7 @@ test("workflow edge animation follows the saved setting without remounting the c
     assert.ok(
       flow().edges.every((edge) => edge.className.includes("is-flowing")),
     );
-    assert.equal(document.querySelectorAll("animateMotion").length, 1);
+    assert.equal(document.querySelectorAll(".workflow-edge-flow").length, 1);
   } finally {
     await app.close();
   }
