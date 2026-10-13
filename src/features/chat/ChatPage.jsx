@@ -1,6 +1,7 @@
 import { openChatWindow } from './page/openChatWindow.js';
 import { Mic, MicOff, Minimize2, PhoneOff } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { motion as Motion } from 'framer-motion';
 import { useImmer } from 'use-immer';
 import { produce } from 'immer';
 import {
@@ -3392,7 +3393,7 @@ function ChatPage({
     return (
         <WidgetPresentationProvider chatBoxHostElement={widgetChatBoxHostElement}>
             <>
-                <motion.div
+                <Motion.div
                     ref={windowRef}
                     data-chat-layout-root="true"
                     data-cwm-conversation-id={conversationId || ''}
@@ -3822,7 +3823,7 @@ function ChatPage({
                             onResizeTouchStart={handleResizeTouchStart}
                         />
                     )}
-                </motion.div>
+                </Motion.div>
 
                 {isWindowMode && (isDragging || isResizing) && (
                     <div
