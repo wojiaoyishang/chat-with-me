@@ -5,6 +5,7 @@ import {
   Controls,
   MarkerType,
   useReactFlow,
+  useViewport,
 } from "@xyflow/react";
 import {
   Check,
@@ -99,6 +100,7 @@ export default function WorkflowEditor(props) {
 
 function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const flow = useReactFlow();
+  const { zoom } = useViewport();
   const [edgeAnimationEnabled] = useLocalSetting(
     WORKFLOW_EDGE_ANIMATION_SETTING_KEY,
     DEFAULT_WORKFLOW_EDGE_ANIMATION,
@@ -137,6 +139,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [search, setSearch] = useState("");
   const [menu, setMenu] = useState(null);
   const [picker, setPicker] = useState(null);
+  const [pendingPlacement, setPendingPlacement] = useState(null);
   const connectionStart = useRef(null);
   const [hasClipboard, setHasClipboard] = useState(
     Boolean(applicationClipboard?.nodes?.length),
@@ -176,6 +179,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     setFitRequest((current) => current + 1);
     setMenu(null);
     setPicker(null);
+    setPendingPlacement(null);
   }, []);
 
   useEffect(() => {
@@ -271,10 +275,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   );
   const commitPositions = useCallback(
     (moved) => {
-      if (!readOnly)
+      if (!readOnly && !pendingPlacement)
         changeGraph((current) => updateWorkflowNodePositions(current, moved));
     },
-    [changeGraph, readOnly],
+    [changeGraph, readOnly, pendingPlacement],
   );
   const undo = useCallback(() => {
     const previous = history.current.past.pop();
@@ -391,7 +395,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             runtimeNodes[node.id]?.status ||
             runtimeStages.find((stage) => stage.key === node.id)?.status,
           runtime: runtimeNodes[node.id] || {},
-          readOnly: readOnly || Boolean(busy),
+          readOnly: readOnly || Boolean(busy || pendingPlacement),
           onValue,
           onBinding,
           onBusy,
@@ -405,6 +409,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       runtimeStages,
       readOnly,
       busy,
+      pendingPlacement,
       onValue,
       onBinding,
       onBusy,
@@ -483,6 +488,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     setMenu(null);
   };
   const addNode = (definition, position) => {
+    if (pendingPlacement) return;
     const current = draftRef.current.graph;
     const node = createWorkflowNode(definition, current, position);
     changeGraph({ ...current, nodes: [...current.nodes, node] });
@@ -491,7 +497,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     setMobilePane("canvas");
   };
   const openPicker = (point, connection) => {
-    if (readOnly || busy) return;
+    if (readOnly || busy || pendingPlacement) return;
     setMenu(null);
     setPicker({
       ...point,
@@ -507,6 +513,17 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   };
   const chooseNode = ({ definition, port }) => {
     if (readOnly || busy || !picker) return;
+    if (picker.connection) {
+      setPendingPlacement({
+        definition,
+        port,
+        connection: picker.connection,
+        point: { x: picker.x, y: picker.y },
+      });
+      setError("");
+      closePicker();
+      return;
+    }
     try {
       const result = addWorkflowNodeWithConnection(
         draftRef.current.graph,
@@ -522,6 +539,27 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       setMobilePane("canvas");
       setError("");
       closePicker();
+    } catch (cause) {
+      setError(cause.message);
+    }
+  };
+  const placePendingNode = (point) => {
+    if (!pendingPlacement) return;
+    try {
+      const result = addWorkflowNodeWithConnection(
+        draftRef.current.graph,
+        pendingPlacement.definition,
+        flow.screenToFlowPosition(point),
+        pendingPlacement.connection,
+        pendingPlacement.port,
+        catalog.nodes,
+      );
+      changeGraph(result.graph);
+      select([result.node.id]);
+      setPanel("node");
+      setMobilePane("canvas");
+      setError("");
+      setPendingPlacement(null);
     } catch (cause) {
       setError(cause.message);
     }
@@ -732,6 +770,13 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     }
   };
   const keyboard = (event) => {
+    if (pendingPlacement) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setPendingPlacement(null);
+      }
+      return;
+    }
     if (event.isComposing || busy || readOnly || confirmation || menu || picker)
       return;
     const control = event.ctrlKey || event.metaKey;
@@ -794,7 +839,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => {
           event.preventDefault();
-          if (!confirmation && !menu && !picker) close();
+          if (pendingPlacement) setPendingPlacement(null);
+          else if (!confirmation && !menu && !picker) close();
         }}
       >
         <header className="workflow-header">
@@ -870,14 +916,14 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 search={search}
                 onSearch={setSearch}
                 onAdd={addNode}
-                disabled={Boolean(busy)}
+                disabled={Boolean(busy || pendingPlacement)}
                 controls={
                   <>
                     <label className="workflow-label">工作流模板</label>
                     <WorkflowSelect
                       label="选择工作流模板"
                       value={builtinTemplateId || template?.id || ""}
-                      disabled={Boolean(busy)}
+                      disabled={Boolean(busy || pendingPlacement)}
                       onChange={(id) => void loadTemplate(id)}
                       options={[
                         { value: "", label: "标准提取流程" },
@@ -896,7 +942,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          disabled={Boolean(busy)}
+                          disabled={Boolean(busy || pendingPlacement)}
                           onClick={() => void action("clone")}
                         >
                           <Copy className="size-3" />
@@ -907,7 +953,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                             variant="ghost"
                             size="sm"
                             className="text-destructive"
-                            disabled={Boolean(busy)}
+                            disabled={Boolean(busy || pendingPlacement)}
                             onClick={() => setConfirmation({ kind: "delete" })}
                           >
                             <Trash2 className="size-3" />
@@ -921,7 +967,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       <Input
                         aria-label="工作流名称"
                         value={title}
-                        disabled={Boolean(busy)}
+                        disabled={Boolean(busy || pendingPlacement)}
                         onChange={(event) =>
                           changeDraft({ ...draft, title: event.target.value })
                         }
@@ -930,7 +976,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         label="模板说明"
                         value={description}
                         rows={3}
-                        disabled={Boolean(busy)}
+                        disabled={Boolean(busy || pendingPlacement)}
                         onChange={(event) =>
                           changeDraft({
                             ...draft,
@@ -949,8 +995,37 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               tabIndex={0}
               onPointerMove={(event) => {
                 pointer.current = { x: event.clientX, y: event.clientY };
+                if (pendingPlacement && event.target.closest(".react-flow"))
+                  setPendingPlacement((current) =>
+                    current
+                      ? {
+                          ...current,
+                          point: { x: event.clientX, y: event.clientY },
+                        }
+                      : current,
+                  );
+              }}
+              onClickCapture={(event) => {
+                if (
+                  !pendingPlacement ||
+                  event.button !== 0 ||
+                  !event.target.closest(".react-flow") ||
+                  event.target.closest(".react-flow__controls")
+                )
+                  return;
+                event.preventDefault();
+                event.stopPropagation();
+                placePendingNode({ x: event.clientX, y: event.clientY });
+              }}
+              onContextMenuCapture={(event) => {
+                if (!pendingPlacement || !event.target.closest(".react-flow"))
+                  return;
+                event.preventDefault();
+                event.stopPropagation();
+                setPendingPlacement(null);
               }}
               onDoubleClick={(event) => {
+                if (pendingPlacement) return;
                 if (isWorkflowCanvasBlankTarget(event.target)) {
                   event.preventDefault();
                   openPicker({ x: event.clientX, y: event.clientY });
@@ -968,8 +1043,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 maxZoom={2}
                 deleteKeyCode={null}
                 multiSelectionKeyCode={["Control", "Meta"]}
-                nodesDraggable={!readOnly && !busy}
-                nodesConnectable={!readOnly && !busy}
+                nodesDraggable={!readOnly && !busy && !pendingPlacement}
+                nodesConnectable={!readOnly && !busy && !pendingPlacement}
                 zoomOnDoubleClick={readOnly}
                 edgesReconnectable={false}
                 onPositionsCommit={commitPositions}
@@ -988,6 +1063,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 }}
                 onSelectionChange={selectionChanged}
                 onPaneClick={() => {
+                  if (pendingPlacement) return;
                   setSelected("");
                   setSelectedIds([]);
                   setSelectedEdges([]);
@@ -1000,6 +1076,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   }
                 }}
                 onPaneContextMenu={(event) => {
+                  if (pendingPlacement) return;
                   if (!readOnly && !busy) openMenu(event, {});
                 }}
                 onEdgeContextMenu={(event, edge) => {
@@ -1020,7 +1097,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     });
                 }}
                 onConnect={(connection) => {
-                  if (readOnly || busy) return;
+                  if (readOnly || busy || pendingPlacement) return;
                   if (connectionStart.current)
                     connectionStart.current.connected = true;
                   try {
@@ -1033,7 +1110,13 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   }
                 }}
                 onConnectStart={(event, params) => {
-                  if (readOnly || busy || !params.nodeId || !params.handleId)
+                  if (
+                    readOnly ||
+                    busy ||
+                    pendingPlacement ||
+                    !params.nodeId ||
+                    !params.handleId
+                  )
                     return;
                   const point = event.touches?.[0] || event;
                   setPicker(null);
@@ -1052,7 +1135,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 }}
                 onDrop={(event) => {
                   event.preventDefault();
-                  if (busy || readOnly) return;
+                  if (busy || readOnly || pendingPlacement) return;
                   const definition = catalog.nodes.find(
                     (node) =>
                       node.kind ===
@@ -1073,6 +1156,62 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 <Background gap={22} size={1} />
                 <Controls showInteractive={false} />
               </WorkflowCanvas>
+              {pendingPlacement && (
+                <div
+                  aria-label="待放置节点"
+                  className="workflow-node pointer-events-none absolute z-20 opacity-80 shadow-lg"
+                  style={{
+                    left:
+                      pendingPlacement.point.x -
+                      (dialogRef.current
+                        ?.querySelector(".workflow-canvas")
+                        ?.getBoundingClientRect().left || 0),
+                    top:
+                      pendingPlacement.point.y -
+                      (dialogRef.current
+                        ?.querySelector(".workflow-canvas")
+                        ?.getBoundingClientRect().top || 0),
+                    transform: `scale(${zoom})`,
+                    transformOrigin: "top left",
+                  }}
+                >
+                  <div className="workflow-node-title">
+                    <GitBranch className="size-4 text-primary" />
+                    <strong>
+                      {pendingPlacement.definition.display?.title}
+                    </strong>
+                  </div>
+                  <p className="workflow-node-id">
+                    {pendingPlacement.definition.display?.subtitle}
+                  </p>
+                  <div className="workflow-node-ports">
+                    <div>
+                      {(pendingPlacement.definition.inputs || []).map(
+                        (port) => (
+                          <div className="workflow-port" key={port.name}>
+                            {port.display?.title}
+                          </div>
+                        ),
+                      )}
+                    </div>
+                    <div>
+                      {(pendingPlacement.definition.outputs || []).map(
+                        (port) => (
+                          <div
+                            className="workflow-port workflow-port-output"
+                            key={port.name}
+                          >
+                            {port.display?.title}
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[10px] text-muted-foreground">
+                    左键放置 · 右键取消
+                  </p>
+                </div>
+              )}
               <div className="workflow-canvas-tools">
                 <Button
                   variant="outline"
@@ -1096,7 +1235,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       size="icon"
                       title="撤销 · Ctrl Z"
                       aria-label="撤销工作流修改"
-                      disabled={Boolean(busy) || !history.current.past.length}
+                      disabled={
+                        Boolean(busy || pendingPlacement) ||
+                        !history.current.past.length
+                      }
                       onClick={undo}
                     >
                       <Undo2 className="size-4" />
@@ -1106,7 +1248,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       size="icon"
                       title="重做 · Ctrl Shift Z"
                       aria-label="重做工作流修改"
-                      disabled={Boolean(busy) || !history.current.future.length}
+                      disabled={
+                        Boolean(busy || pendingPlacement) ||
+                        !history.current.future.length
+                      }
                       onClick={redo}
                     >
                       <Redo2 className="size-4" />
@@ -1116,7 +1261,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       size="icon"
                       aria-label="删除选中节点或连接"
                       disabled={
-                        Boolean(busy) ||
+                        Boolean(busy || pendingPlacement) ||
                         !(selectedIds.length || selectedEdges.length)
                       }
                       onClick={deleteSelected}
@@ -1225,7 +1370,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         models={models}
                         onGraphChange={changeGraph}
                         onValidity={validity}
-                        disabled={Boolean(busy)}
+                        disabled={Boolean(busy || pendingPlacement)}
                       />
                     ) : (
                       <p className="py-10 text-center text-sm text-muted-foreground">
@@ -1238,7 +1383,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         schema={catalog.settingsSchema}
                         value={graph.settings}
                         models={models}
-                        disabled={Boolean(busy)}
+                        disabled={Boolean(busy || pendingPlacement)}
                         onValidity={(valid) => validity("global", valid)}
                         onChange={(settings) =>
                           changeGraph({ ...graph, settings })
@@ -1248,7 +1393,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         label="生成知识的归属与共享"
                         schema={catalog.permissionsSchema || {}}
                         value={permissions}
-                        readOnly={Boolean(busy)}
+                        readOnly={Boolean(busy || pendingPlacement)}
                         onStateChange={(state) =>
                           validity("permissions", state.valid !== false)
                         }
@@ -1261,7 +1406,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         schema={catalog.templateSharingSchema || {}}
                         value={templateSharing}
                         readOnly={
-                          Boolean(busy) || template?.canManage === false
+                          Boolean(busy || pendingPlacement) ||
+                          template?.canManage === false
                         }
                         onStateChange={(state) =>
                           validity("template-sharing", state.valid !== false)
@@ -1340,7 +1486,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             <>
               <Button
                 variant="outline"
-                disabled={loading || Boolean(busy) || !catalog.nodes.length}
+                disabled={
+                  loading ||
+                  Boolean(busy || pendingPlacement) ||
+                  !catalog.nodes.length
+                }
                 onClick={() => void action("validate")}
               >
                 <Check className="size-4" />
@@ -1348,7 +1498,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               </Button>
               <Button
                 variant="outline"
-                disabled={loading || Boolean(busy) || !catalog.nodes.length}
+                disabled={
+                  loading ||
+                  Boolean(busy || pendingPlacement) ||
+                  !catalog.nodes.length
+                }
                 onClick={() => void action("run")}
               >
                 {busy ? (
@@ -1359,7 +1513,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 直接开始任务
               </Button>
               <Button
-                disabled={loading || Boolean(busy) || !catalog.nodes.length}
+                disabled={
+                  loading ||
+                  Boolean(busy || pendingPlacement) ||
+                  !catalog.nodes.length
+                }
                 onClick={() => void action("save")}
               >
                 <Save className="size-4" />

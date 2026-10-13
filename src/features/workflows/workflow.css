@@ -117,31 +117,18 @@
   stroke: var(--primary);
   stroke-width: 2;
 }
-.workflow-edge-flow {
-  fill: none;
-  stroke: color-mix(in srgb, var(--primary) 60%, var(--border));
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-dasharray: 6 54;
-  vector-effect: non-scaling-stroke;
-  opacity: 0.38;
+.workflow-edge-orb {
   pointer-events: none;
-  animation: workflow-edge-flow 5.6s linear infinite;
 }
-.workflow-data-edge.is-active .workflow-edge-flow {
-  stroke: var(--primary);
-  opacity: 0.72;
+.workflow-edge-orb-glow {
+  fill: color-mix(in srgb, var(--primary) 45%, #a9c2f4);
+  opacity: 0.3;
+  filter: blur(2px);
 }
-@keyframes workflow-edge-flow {
-  to {
-    stroke-dashoffset: -60;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .workflow-edge-flow {
-    display: none;
-    animation: none;
-  }
+.workflow-edge-orb-core {
+  fill: color-mix(in srgb, var(--primary) 55%, #bfd2ff);
+  stroke: var(--background);
+  filter: drop-shadow(0 0 2px color-mix(in srgb, var(--primary) 45%, #a9c2f4));
 }
 .workflow-context-anchor {
   position: fixed;

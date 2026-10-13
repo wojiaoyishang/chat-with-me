@@ -376,7 +376,13 @@ async function environment(request = {}, options = {}) {
       return { template: { id: "saved-1", ...payload, revision: 2 } };
     },
   };
-  globalThis.workflowUITest = { api, fail: "", changes: [], closed: false };
+  globalThis.workflowUITest = {
+    api,
+    fail: "",
+    changes: [],
+    closed: false,
+    zoom: options.zoom || 1,
+  };
   await build({
     entryPoints: [
       options.component || "src/features/workflows/WorkflowEditor.jsx",
@@ -420,7 +426,7 @@ async function environment(request = {}, options = {}) {
             ({ path: requested }) => {
               let contents = "";
               if (requested === "flow")
-                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:()=>{},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
+                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:()=>{},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section className="react-flow" data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
               else if (requested.startsWith("@/lib/apiClient"))
                 contents = "export default globalThis.workflowUITest.api;";
               else if (requested.endsWith("/button"))
@@ -531,10 +537,17 @@ test("workflow edge animation follows the saved setting without remounting the c
     );
     assert.ok(flow().edges.every((edge) => edge.type === "workflow"));
     assert.ok(flow().edges.every((edge) => edge.data.flowing));
-    assert.equal(document.querySelectorAll(".workflow-edge-flow").length, 1);
+    assert.equal(document.querySelectorAll(".react-flow__edge-path").length, 1);
+    assert.equal(document.querySelectorAll(".workflow-edge-orb").length, 1);
     assert.match(
-      document.querySelector(".workflow-edge-flow").getAttribute("d"),
+      document.querySelector(".react-flow__edge-path").getAttribute("d"),
       /^M 0 0 C/,
+    );
+    assert.equal(
+      document
+        .querySelector(".workflow-edge-orb animateMotion")
+        ?.getAttribute("path"),
+      document.querySelector(".react-flow__edge-path")?.getAttribute("d"),
     );
     const originalCanvas = document.querySelector("[data-canvas]");
 
@@ -553,7 +566,8 @@ test("workflow edge animation follows the saved setting without remounting the c
       flow().edges.every((edge) => edge.className === "workflow-data-edge"),
     );
     assert.ok(flow().edges.every((edge) => !edge.data.flowing));
-    assert.equal(document.querySelectorAll(".workflow-edge-flow").length, 0);
+    assert.equal(document.querySelectorAll(".react-flow__edge-path").length, 1);
+    assert.equal(document.querySelectorAll(".workflow-edge-orb").length, 0);
     assert.equal(document.querySelector("[data-canvas]"), originalCanvas);
 
     await act(async () => {
@@ -570,7 +584,8 @@ test("workflow edge animation follows the saved setting without remounting the c
     assert.ok(
       flow().edges.every((edge) => edge.className.includes("is-flowing")),
     );
-    assert.equal(document.querySelectorAll(".workflow-edge-flow").length, 1);
+    assert.equal(document.querySelectorAll(".react-flow__edge-path").length, 1);
+    assert.equal(document.querySelectorAll(".workflow-edge-orb").length, 1);
   } finally {
     await app.close();
   }
@@ -1452,7 +1467,7 @@ test("blank canvas context action and double click open pinned searchable node p
   }
 });
 
-test("dragging a connection to blank canvas filters and chooses exact ports in both directions with one undo", async () => {
+test("dragging a connection to blank canvas previews before placing exact ports with one undo", async () => {
   const custom = structuredClone(catalog);
   custom.nodes.push(
     {
@@ -1494,8 +1509,12 @@ test("dragging a connection to blank canvas filters and chooses exact ports in b
       ],
     },
   );
-  const app = await environment({}, { catalog: custom });
+  const app = await environment({}, { catalog: custom, zoom: 0.5 });
   const blank = document.querySelector("[data-blank-canvas]");
+  globalThis.workflowUITest.screenToFlowPosition = ({ x, y }) => ({
+    x: x - 100,
+    y: y - 50,
+  });
   const start = (params) =>
     globalThis.workflowUITest.flow.onConnectStart(
       new app.dom.window.MouseEvent("mousedown", { clientX: 30, clientY: 30 }),
@@ -1534,6 +1553,45 @@ test("dragging a connection to blank canvas filters and chooses exact ports in b
       document.querySelector(".workflow-node-picker-option"),
       app.dom,
     );
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    assert.equal(globalThis.workflowUITest.flow.edges.length, 0);
+    assert.equal(document.querySelector(".workflow-node-picker"), null);
+    assert.match(
+      document.querySelector('[aria-label="待放置节点"]').textContent,
+      /资料处理/,
+    );
+    assert.equal(
+      document.querySelector('[aria-label="待放置节点"]').style.transform,
+      "scale(0.5)",
+    );
+    await act(() =>
+      blank.dispatchEvent(
+        new app.dom.window.MouseEvent("pointermove", {
+          bubbles: true,
+          clientX: 510,
+          clientY: 290,
+        }),
+      ),
+    );
+    assert.equal(
+      document.querySelector('[aria-label="待放置节点"]').style.left,
+      "510px",
+    );
+    await act(() =>
+      blank.dispatchEvent(
+        new app.dom.window.MouseEvent("click", {
+          bubbles: true,
+          button: 0,
+          clientX: 510,
+          clientY: 290,
+        }),
+      ),
+    );
+    assert.equal(document.querySelector('[aria-label="待放置节点"]'), null);
+    assert.deepEqual(globalThis.workflowUITest.flow.nodes.at(-1).position, {
+      x: 410,
+      y: 240,
+    });
     await click(button("校验"), app.dom);
     let saved = app.calls
       .filter((call) => call.url === "/tasks/workflows/validate")
@@ -1563,6 +1621,17 @@ test("dragging a connection to blank canvas filters and chooses exact ports in b
       document.querySelector(".workflow-node-picker-option"),
       app.dom,
     );
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    await act(() =>
+      blank.dispatchEvent(
+        new app.dom.window.MouseEvent("click", {
+          bubbles: true,
+          button: 0,
+          clientX: 560,
+          clientY: 360,
+        }),
+      ),
+    );
     await click(button("校验"), app.dom);
     saved = app.calls
       .filter((call) => call.url === "/tasks/workflows/validate")
@@ -1570,6 +1639,111 @@ test("dragging a connection to blank canvas filters and chooses exact ports in b
     assert.equal(saved.edges[0].source, "bundle-source-1");
     assert.equal(saved.edges[0].target, "extract-1");
     assert.equal(saved.edges[0].sourcePort, "content");
+  } finally {
+    await app.close();
+  }
+});
+
+test("right click cancels a chosen connection node without changing graph history", async () => {
+  const custom = structuredClone(catalog);
+  custom.nodes.push({
+    kind: "bundle-source",
+    version: 1,
+    category: "source",
+    display: { title: "内容来源", subtitle: "BundleInput" },
+    configSchema: { type: "object", properties: {} },
+    inputs: [],
+    outputs: [
+      {
+        name: "content",
+        type: "bundle",
+        display: { title: "结构化内容", subtitle: "content · ContentBundle" },
+      },
+    ],
+  });
+  const app = await environment({}, { catalog: custom });
+  const blank = document.querySelector("[data-blank-canvas]");
+  try {
+    await act(() =>
+      globalThis.workflowUITest.flow.onNodeDragStop(null, null, [
+        { id: "input-1", position: { x: 70, y: 20 } },
+      ]),
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes.find((node) => node.id === "input-1")
+        .position.x,
+      70,
+    );
+    await act(() => {
+      globalThis.workflowUITest.flow.onConnectStart(
+        { clientX: 30, clientY: 30 },
+        { nodeId: "extract-1", handleId: "bundle", handleType: "target" },
+      );
+      globalThis.workflowUITest.flow.onConnectEnd(
+        { clientX: 450, clientY: 220, target: blank },
+        { isValid: false },
+      );
+    });
+    await click(
+      document.querySelector(".workflow-node-picker-option"),
+      app.dom,
+    );
+    assert.ok(document.querySelector('[aria-label="待放置节点"]'));
+    assert.equal(
+      document.querySelector('[aria-label="撤销工作流修改"]').disabled,
+      true,
+    );
+    await act(() => {
+      globalThis.workflowUITest.flow.onNodeDragStop(null, null, [
+        { id: "input-1", position: { x: 90, y: 20 } },
+      ]);
+      globalThis.workflowUITest.flow.onDrop({
+        preventDefault() {},
+        dataTransfer: { getData: () => "bundle-source" },
+        clientX: 100,
+        clientY: 100,
+      });
+      globalThis.workflowUITest.flow.onConnect({
+        source: "input-1",
+        sourceHandle: "source",
+        target: "extract-1",
+        targetHandle: "bundle",
+      });
+    });
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes.find((node) => node.id === "input-1")
+        .position.x,
+      70,
+    );
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    assert.equal(globalThis.workflowUITest.flow.edges.length, 0);
+    await act(() =>
+      blank.dispatchEvent(
+        new app.dom.window.MouseEvent("contextmenu", {
+          bubbles: true,
+          button: 2,
+          clientX: 480,
+          clientY: 250,
+        }),
+      ),
+    );
+    assert.equal(document.querySelector('[aria-label="待放置节点"]'), null);
+    assert.equal(document.querySelector(".workflow-node-picker"), null);
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    assert.equal(globalThis.workflowUITest.flow.edges.length, 0);
+    assert.equal(
+      document.querySelector('[aria-label="撤销工作流修改"]').disabled,
+      false,
+    );
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes.find((node) => node.id === "input-1")
+        .position.x,
+      20,
+    );
   } finally {
     await app.close();
   }
