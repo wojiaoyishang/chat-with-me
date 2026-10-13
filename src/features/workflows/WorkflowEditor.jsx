@@ -23,7 +23,6 @@ import {
   Play,
   Redo2,
   Save,
-  Settings2,
   Trash2,
   Undo2,
   X,
@@ -1418,17 +1417,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       onClick={deleteSelected}
                     >
                       <Trash2 className="size-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      aria-label="工作流全局设置"
-                      onClick={() => {
-                        setPanel("settings");
-                        setMobilePane("config");
-                      }}
-                    >
-                      <Settings2 className="size-4" />
                     </Button>
                   </>
                 )}

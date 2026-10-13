@@ -35,7 +35,7 @@
   font-size: 12px;
 }
 .workflow-source-value .workflow-resource-list {
-  max-height: 130px;
+  height: 130px;
 }
 .workflow-source-value .workflow-resource {
   padding: 7px;
@@ -288,7 +288,7 @@
   font-weight: 500;
 }
 .workflow-source-popover .workflow-resource-list {
-  max-height: 245px;
+  height: 245px;
 }
 .workflow-node {
   background: var(--background);
@@ -469,10 +469,55 @@
   font-size: 13px;
 }
 .workflow-resource-list {
-  max-height: 235px;
+  height: 235px;
   overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: 8px;
+}
+.workflow-resource-loading {
+  background: color-mix(in srgb, var(--background) 82%, transparent);
+  backdrop-filter: blur(2px);
+  animation: workflow-resource-loading-enter 180ms ease both;
+}
+@keyframes workflow-resource-loading-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.workflow-resource-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 8px;
+  padding: 8px;
+}
+.workflow-resource-grid > div {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.workflow-resource-grid .workflow-resource {
+  min-height: 100px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 12px 40px 12px 12px;
+  gap: 8px;
+}
+.workflow-resource-grid .workflow-resource span {
+  flex: none;
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.workflow-resource-grid .workflow-resource .lucide-check {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
 }
 .workflow-resource {
   display: flex;
@@ -486,6 +531,13 @@
 }
 .workflow-resource.workflow-resource-with-preview {
   padding-right: 54px;
+}
+.workflow-resource-grid .workflow-resource.workflow-resource-with-preview {
+  padding-right: 40px;
+}
+.workflow-resource-grid > div > button[aria-label^="查看"] {
+  top: 6px;
+  transform: none;
 }
 .workflow-resource + .workflow-resource {
   border-top: 1px solid var(--border);

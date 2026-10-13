@@ -3,6 +3,8 @@ import {
   Check,
   Eye,
   FileText,
+  LayoutGrid,
+  List,
   Loader2,
   Paperclip,
   Search,
@@ -174,6 +176,7 @@ function FullWorkflowSourcePicker({
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [view, setView] = useState("list");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [refresh, setRefresh] = useState(0);
@@ -199,9 +202,9 @@ function FullWorkflowSourcePicker({
   useEffect(() => {
     if (sourceType === "text") return;
     const controller = new AbortController();
+    setLoading(true);
+    setError("");
     const timer = setTimeout(async () => {
-      setLoading(true);
-      setError("");
       try {
         const params = new URLSearchParams({
           q: query,
@@ -400,19 +403,19 @@ function FullWorkflowSourcePicker({
               }}
             />
           </div>
-          <p className="text-xs text-muted-foreground">
-            {sourceType === "document"
-              ? "选择文档全部内容；任务启动时固定内容版本。"
-              : "附件会在任务启动时固定版本。"}{" "}
-            共 {total} 项
-          </p>
-          {loading ? (
-            <div className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" />
-              正在加载资源…
+          <div className="flex items-center justify-between gap-2">
+            <p className="min-w-0 text-xs text-muted-foreground">
+              {sourceType === "document"
+                ? "选择文档全部内容；任务启动时固定内容版本。"
+                : "附件会在任务启动时固定版本。"}{" "}
+              共 {total} 项
+            </p>
+            <div className="workflow-resource-view-switch flex shrink-0 items-center rounded-md border bg-muted/40 p-0.5" role="group" aria-label="资源视图">
+              <Button type="button" size="icon" variant={view === "list" ? "secondary" : "ghost"} className="size-7" aria-label="列表视图" aria-pressed={view === "list"} onClick={() => setView("list")}><List className="size-4" /></Button>
+              <Button type="button" size="icon" variant={view === "grid" ? "secondary" : "ghost"} className="size-7" aria-label="网格视图" aria-pressed={view === "grid"} onClick={() => setView("grid")}><LayoutGrid className="size-4" /></Button>
             </div>
-          ) : (
-            <div className="workflow-resource-list">
+          </div>
+          <div className={`workflow-resource-list relative ${view === "grid" ? "workflow-resource-grid" : ""}`} aria-busy={loading}>
               {items.map((item) => {
                 const uri =
                   item.uri || `cwm://artifact/${item.artifactId || item.id}`;
@@ -464,13 +467,13 @@ function FullWorkflowSourcePicker({
                   </div>
                 );
               })}
-              {!items.length && (
+              {!items.length && !loading && (
                 <p className="p-3 text-sm text-muted-foreground">
                   没有找到资源。
                 </p>
               )}
-            </div>
-          )}
+            {loading && <div className="workflow-resource-loading absolute inset-0 z-10 flex items-center justify-center gap-2 text-sm text-muted-foreground" role="status"><Loader2 className="size-4 animate-spin" />正在加载资源…</div>}
+          </div>
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
