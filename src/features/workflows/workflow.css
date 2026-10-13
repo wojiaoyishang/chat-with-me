@@ -109,11 +109,27 @@
 .workflow-data-edge .react-flow__edge-path {
   stroke: color-mix(in srgb, var(--primary) 50%, var(--border));
   stroke-width: 1.6;
-  stroke-dasharray: none;
+  stroke-dasharray: 6 9;
+}
+.workflow-data-edge.is-flowing .react-flow__edge-path {
+  animation: workflow-edge-flow 2.8s linear infinite;
 }
 .workflow-data-edge.is-active .react-flow__edge-path {
   stroke: var(--primary);
   stroke-width: 2;
+}
+.workflow-data-edge.is-active.is-flowing .react-flow__edge-path {
+  animation-duration: 1.9s;
+}
+@keyframes workflow-edge-flow {
+  to {
+    stroke-dashoffset: -15;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workflow-data-edge.is-flowing .react-flow__edge-path {
+    animation: none;
+  }
 }
 .workflow-context-anchor {
   position: fixed;

@@ -7,6 +7,10 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY as key } from '../src/features/knowledge/graphSettings.js';
+import {
+    WORKFLOW_EDGE_ANIMATION_SETTING_KEY as workflowKey,
+    DEFAULT_WORKFLOW_EDGE_ANIMATION,
+} from '../src/features/workflows/workflowSettings.js';
 
 await build({
     stdin: { contents: `export {default as Settings} from './src/pages/SettingPage.jsx';
@@ -15,7 +19,7 @@ await build({
         export {setLocalSetting,getLocalSetting} from './src/lib/tools.jsx';`, resolveDir: process.cwd() },
     outfile: 'temp/graph-animation-settings-test.mjs', bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', loader: { '.css': 'empty' },
     plugins: [{ name: 'preferences-integration', setup(builder) {
-        const real = new Set(['@/lib/tools.jsx', '@/features/knowledge/graphSettings.js', '@/features/avatar-scene/settings.js']);
+        const real = new Set(['@/lib/tools.jsx', '@/features/knowledge/graphSettings.js', '@/features/workflows/workflowSettings.js', '@/features/avatar-scene/settings.js']);
         builder.onResolve({ filter: /^react(?:\/|$)/ }, ({ path: name }) => ({ path: name, external: true }));
         builder.onResolve({ filter: /^@\// }, ({ path: name }) => real.has(name)
             ? { path: path.resolve('src', name.slice(2)) } : { path: name, namespace: 'fixture' });
@@ -98,4 +102,19 @@ test('cross-tab preference changes update chat and knowledge controls without re
     await act(async()=>{localStorage.setItem('LocalSetting',JSON.stringify({[key]:'false'}));window.dispatchEvent(new ui.dom.window.StorageEvent('storage',{key:'LocalSetting',newValue:localStorage.getItem('LocalSetting')}));});
     assert.equal(instance.preferences.at(-1),false);assert.equal(ui.instances.length,1);assert.equal(document.querySelector('iframe'),ui.frame);
     assert.deepEqual(ui.sent.at(-1).data,{type:'cwm.graph-preferences',edgeAnimation:false});
+});
+
+test('workflow connection animation is enabled by default and its interface toggle persists',async t=>{
+    const ui=await workspace(t);
+    assert.equal(DEFAULT_WORKFLOW_EDGE_ANIMATION,true);
+    await act(async()=>[...document.querySelectorAll('button')].find(button=>button.textContent==='Settings.Interface').click());
+    const toggle=document.querySelector('[role="switch"][aria-label="工作流连线动画"]');
+    assert.equal(toggle.getAttribute('aria-checked'),'true');
+    await act(async()=>toggle.click());
+    assert.equal(getLocalSetting(workflowKey),false);
+    assert.equal(toggle.getAttribute('aria-checked'),'false');
+    await ui.render(false);
+    await ui.render();
+    await act(async()=>[...document.querySelectorAll('button')].find(button=>button.textContent==='Settings.Interface').click());
+    assert.equal(document.querySelector('[role="switch"][aria-label="工作流连线动画"]').getAttribute('aria-checked'),'false');
 });

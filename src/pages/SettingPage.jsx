@@ -43,6 +43,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ROBOT_DEBUG_SETTING_KEY } from '@/features/avatar-scene/settings.js';
 import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION } from '@/features/knowledge/graphSettings.js';
+import { WORKFLOW_EDGE_ANIMATION_SETTING_KEY, DEFAULT_WORKFLOW_EDGE_ANIMATION } from '@/features/workflows/workflowSettings.js';
 import { artifactPreviewVirtualUrl, resolveResourceUrl } from '@/lib/virtualUrl.js';
 
 // ==================== 界面设置通用项 ====================
@@ -130,6 +131,10 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
     const [knowledgeGraphEdgeAnimation, setKnowledgeGraphEdgeAnimation] = useLocalSetting(
         KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY,
         DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION,
+    );
+    const [workflowEdgeAnimation, setWorkflowEdgeAnimation] = useLocalSetting(
+        WORKFLOW_EDGE_ANIMATION_SETTING_KEY,
+        DEFAULT_WORKFLOW_EDGE_ANIMATION,
     );
     const [showQuickUserMessageNavigator, setShowQuickUserMessageNavigator] = useLocalSetting(
         MESSAGE_NAVIGATOR_SETTING_KEY,
@@ -803,6 +808,13 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
                                 description="在聊天和知识库图谱的连线上显示柔和的流动效果，帮助辨认关联方向。关闭后保留节点的物理动画。"
                                 checked={knowledgeGraphEdgeAnimation}
                                 onCheckedChange={setKnowledgeGraphEdgeAnimation}
+                            />
+                            <Separator />
+                            <InterfaceSettingItem
+                                title="工作流连线动画"
+                                description="在工作流的虚线连线上显示流动方向。关闭后仍显示虚线。"
+                                checked={workflowEdgeAnimation}
+                                onCheckedChange={setWorkflowEdgeAnimation}
                             />
                             <Separator />
                             <InterfaceSettingItem

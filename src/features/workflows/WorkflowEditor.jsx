@@ -39,7 +39,12 @@ import {
 import JsonConfigEditor from "@/components/setting/JsonConfigEditor.jsx";
 import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import apiClient from "@/lib/apiClient.js";
+import { useLocalSetting } from "@/lib/tools.jsx";
 import { workflowApi } from "./workflowApi.js";
+import {
+  DEFAULT_WORKFLOW_EDGE_ANIMATION,
+  WORKFLOW_EDGE_ANIMATION_SETTING_KEY,
+} from "./workflowSettings.js";
 import {
   addWorkflowNodeWithConnection,
   bindWorkflowInput,
@@ -92,6 +97,10 @@ export default function WorkflowEditor(props) {
 
 function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const flow = useReactFlow();
+  const [edgeAnimationEnabled] = useLocalSetting(
+    WORKFLOW_EDGE_ANIMATION_SETTING_KEY,
+    DEFAULT_WORKFLOW_EDGE_ANIMATION,
+  );
   const [draft, setDraft] = useState(newDraft);
   const draftRef = useRef(draft);
   draftRef.current = draft;
@@ -409,9 +418,9 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         type: "default",
         markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
         selected: selectedEdges.includes(edge.id),
-        className: `workflow-data-edge ${runtimeNodes[edge.source]?.status === "running" ? "is-active" : ""}`,
+        className: `workflow-data-edge${edgeAnimationEnabled ? " is-flowing" : ""}${runtimeNodes[edge.source]?.status === "running" ? " is-active" : ""}`,
       })),
-    [graph.edges, selectedEdges, runtimeNodes],
+    [edgeAnimationEnabled, graph.edges, selectedEdges, runtimeNodes],
   );
 
   const selectedNode = graph.nodes.find((node) => node.id === selected);

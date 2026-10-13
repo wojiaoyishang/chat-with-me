@@ -254,6 +254,7 @@ async function environment(request = {}, options = {}) {
     "Element",
     "Node",
     "CustomEvent",
+    "localStorage",
     "FormData",
     "File",
   ])
@@ -511,6 +512,59 @@ async function input(node, value, dom, event = "input") {
     node.dispatchEvent(new dom.window.Event(event, { bubbles: true }));
   });
 }
+
+test("workflow edge animation follows the saved setting without remounting the canvas", async () => {
+  const graph = structuredClone(catalog.standardGraph);
+  graph.edges.push({
+    id: "edge-1",
+    source: "input-1",
+    sourcePort: "source",
+    target: "extract-1",
+    targetPort: "bundle",
+  });
+  const app = await environment({}, { graph });
+  try {
+    const flow = () => globalThis.workflowUITest.flow;
+    assert.ok(flow().edges.length > 0);
+    assert.ok(
+      flow().edges.every((edge) => edge.className.includes("is-flowing")),
+    );
+    const originalCanvas = document.querySelector("[data-canvas]");
+
+    await act(async () => {
+      localStorage.setItem(
+        "LocalSetting",
+        JSON.stringify({ WorkflowEdgeAnimation: "false" }),
+      );
+      window.dispatchEvent(
+        new app.dom.window.CustomEvent("chat-local-setting-change", {
+          detail: { key: "WorkflowEdgeAnimation", value: false },
+        }),
+      );
+    });
+    assert.ok(
+      flow().edges.every((edge) => edge.className === "workflow-data-edge"),
+    );
+    assert.equal(document.querySelector("[data-canvas]"), originalCanvas);
+
+    await act(async () => {
+      localStorage.setItem(
+        "LocalSetting",
+        JSON.stringify({ WorkflowEdgeAnimation: "true" }),
+      );
+      window.dispatchEvent(
+        new app.dom.window.CustomEvent("chat-local-setting-change", {
+          detail: { key: "WorkflowEdgeAnimation", value: true },
+        }),
+      );
+    });
+    assert.ok(
+      flow().edges.every((edge) => edge.className.includes("is-flowing")),
+    );
+  } finally {
+    await app.close();
+  }
+});
 
 test("workflow UI keeps constructor config separate, retains failed drafts, and saves/run explicit source + schema", async () => {
   const app = await environment();
