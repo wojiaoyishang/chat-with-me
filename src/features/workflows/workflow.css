@@ -121,6 +121,24 @@
 .workflow-data-edge.is-active.is-flowing .react-flow__edge-path {
   animation-duration: 1.9s;
 }
+.workflow-flow-pulse {
+  --workflow-pulse-color: #4f70f5;
+  pointer-events: none;
+}
+.dark .workflow-flow-pulse {
+  --workflow-pulse-color: #83a1ff;
+}
+.workflow-flow-halo {
+  fill: var(--workflow-pulse-color);
+  opacity: 0.22;
+  filter: drop-shadow(0 0 6px var(--workflow-pulse-color));
+}
+.workflow-flow-core {
+  fill: var(--workflow-pulse-color);
+  stroke: var(--background);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
 @keyframes workflow-edge-flow {
   to {
     stroke-dashoffset: -15;
@@ -129,6 +147,9 @@
 @media (prefers-reduced-motion: reduce) {
   .workflow-data-edge.is-flowing .react-flow__edge-path {
     animation: none;
+  }
+  .workflow-flow-pulse {
+    display: none;
   }
 }
 .workflow-context-anchor {

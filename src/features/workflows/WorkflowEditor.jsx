@@ -65,6 +65,7 @@ import {
 } from "./workflowModel.js";
 import WorkflowSettingsFields from "./WorkflowSettingsFields.jsx";
 import WorkflowCanvas from "./WorkflowCanvas.jsx";
+import WorkflowEdge from "./WorkflowEdge.jsx";
 import WorkflowContextMenu from "./WorkflowContextMenu.jsx";
 import WorkflowNodePicker from "./WorkflowNodePicker.jsx";
 import WorkflowPalette from "./WorkflowPalette.jsx";
@@ -77,6 +78,7 @@ import "@xyflow/react/dist/style.css";
 import "./workflow.css";
 
 const nodeTypes = { workflow: WorkflowNode };
+const edgeTypes = { workflow: WorkflowEdge };
 let applicationClipboard = null;
 const newDraft = () => ({
   graph: normalizeGraph(),
@@ -415,10 +417,14 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         ...edge,
         sourceHandle: edge.sourcePort,
         targetHandle: edge.targetPort,
-        type: "default",
+        type: "workflow",
         markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
         selected: selectedEdges.includes(edge.id),
         className: `workflow-data-edge${edgeAnimationEnabled ? " is-flowing" : ""}${runtimeNodes[edge.source]?.status === "running" ? " is-active" : ""}`,
+        data: {
+          flowing: edgeAnimationEnabled,
+          active: runtimeNodes[edge.source]?.status === "running",
+        },
       })),
     [edgeAnimationEnabled, graph.edges, selectedEdges, runtimeNodes],
   );
@@ -957,6 +963,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 fitRequest={fitRequest}
                 edges={edges}
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 minZoom={0.15}
                 maxZoom={2}
                 deleteKeyCode={null}

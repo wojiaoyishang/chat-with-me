@@ -420,7 +420,7 @@ async function environment(request = {}, options = {}) {
             ({ path: requested }) => {
               let contents = "";
               if (requested === "flow")
-                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:()=>{},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
+                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:()=>{},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
               else if (requested.startsWith("@/lib/apiClient"))
                 contents = "export default globalThis.workflowUITest.api;";
               else if (requested.endsWith("/button"))
@@ -529,6 +529,13 @@ test("workflow edge animation follows the saved setting without remounting the c
     assert.ok(
       flow().edges.every((edge) => edge.className.includes("is-flowing")),
     );
+    assert.ok(flow().edges.every((edge) => edge.type === "workflow"));
+    assert.ok(flow().edges.every((edge) => edge.data.flowing));
+    assert.equal(document.querySelectorAll("animateMotion").length, 1);
+    assert.match(
+      document.querySelector("animateMotion").getAttribute("path"),
+      /^M 0 0 C/,
+    );
     const originalCanvas = document.querySelector("[data-canvas]");
 
     await act(async () => {
@@ -545,6 +552,8 @@ test("workflow edge animation follows the saved setting without remounting the c
     assert.ok(
       flow().edges.every((edge) => edge.className === "workflow-data-edge"),
     );
+    assert.ok(flow().edges.every((edge) => !edge.data.flowing));
+    assert.equal(document.querySelectorAll("animateMotion").length, 0);
     assert.equal(document.querySelector("[data-canvas]"), originalCanvas);
 
     await act(async () => {
@@ -561,6 +570,7 @@ test("workflow edge animation follows the saved setting without remounting the c
     assert.ok(
       flow().edges.every((edge) => edge.className.includes("is-flowing")),
     );
+    assert.equal(document.querySelectorAll("animateMotion").length, 1);
   } finally {
     await app.close();
   }
