@@ -79,8 +79,9 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand }) {
     </div>;
 });
 
-const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversationId = '', className = 'w-full' }) {
-    const scope = `${conversationId}|${msg?.id ?? msg?.messageId ?? ''}`;
+const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversationId = '', databaseId: requestedDatabaseId, className = 'w-full' }) {
+    const databaseId = requestedDatabaseId || msg?.network?.databaseId || msg?.network?.database?.databaseId || msg?.network?.database?.id || msg?.knowledgeDatabaseId || 'default';
+    const scope = `${databaseId}|${conversationId}|${msg?.id ?? msg?.messageId ?? ''}`;
     const [extra, setExtra] = useState(null), [feedback, setFeedback] = useState(null);
     const requests = useRef(new Map()), generation = useRef(0);
     const network = useMemo(() => extra?.scope === scope ? mergeNetworkData(msg?.network, extra.network) : msg?.network, [msg?.network, extra, scope]);
@@ -96,7 +97,7 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
         requests.current.set(id, request); graph?.expanding(id, true);
         setFeedback({ scope, message: '正在读取关联节点…', error: false });
         try {
-            const data = await apiClient.get(`/knowledge/nodes/${encodeURIComponent(id)}/graph`, { signal: request.signal, timeout: 20000, params: { conversationId, depth: 1, limit: 80 } });
+            const data = await apiClient.get(`/knowledge/nodes/${encodeURIComponent(id)}/graph`, { signal: request.signal, timeout: 20000, params: { databaseId, conversationId, depth: 1, limit: 80 } });
             if (request.signal.aborted || generation.current !== epoch || !graph?.getNodes().some(node => node.id === id)) return;
             if (!Array.isArray(data?.nodes) || !Array.isArray(data?.relationships)) throw new Error('关联查询未返回有效的图谱数据。');
             if (new Set([...graph.getNodes().map(node => node.id), ...data.nodes.map(node => String(node.id))]).size > 400) throw new Error('画布最多显示 400 个节点，请在知识库中继续探索。');
@@ -109,7 +110,7 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
             if (requests.current.get(id) === request) requests.current.delete(id);
             graph?.expanding(id, false);
         }
-    }, [conversationId, scope]);
+    }, [databaseId, conversationId, scope]);
     if (!model.nodes.length) return null;
     return <section className={`chat-knowledge-graph ${className}`} aria-label="知识图谱记忆">
         <header className="chat-knowledge-heading">
@@ -117,7 +118,7 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
             <div className="chat-knowledge-header-actions"><small>{model.nodes.length} 个节点 · {model.relationships.length} 条关系</small>
                 <button type="button" className="chat-knowledge-open" title="在知识库中打开" aria-label="在知识库中打开"
                     onClick={() => window.dispatchEvent(new window.CustomEvent('cwm.open-knowledge', { detail: {
-                        id: window.crypto?.randomUUID?.() || `graph-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, conversationId,
+                        id: window.crypto?.randomUUID?.() || `graph-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, databaseId, conversationId,
                         nodeIds: model.nodes.map(node => node.id), edgeIds: model.relationships.map(edge => edge.id).filter(Boolean),
                     } }))}><ExternalLink size={15} aria-hidden="true" /></button>
             </div>

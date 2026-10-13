@@ -96,8 +96,10 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
         const open = (event) => {
             const payload = event.detail;
             if (!payload || !Array.isArray(payload.nodeIds) || !Array.isArray(payload.edgeIds)) return;
-            const query = payload.conversationId ? `?conversationId=${encodeURIComponent(payload.conversationId)}` : '';
-            navigate('/knowledge' + query, { state: { knowledgeImport: payload } });
+            const query = new URLSearchParams();
+            if (payload.conversationId) query.set('conversationId', payload.conversationId);
+            if (payload.databaseId) query.set('databaseId', payload.databaseId);
+            navigate('/knowledge' + (query.size ? `?${query}` : ''), { state: { knowledgeImport: payload } });
         };
         window.addEventListener('cwm.open-knowledge', open);
         return () => window.removeEventListener('cwm.open-knowledge', open);

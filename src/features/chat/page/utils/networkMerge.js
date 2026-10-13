@@ -66,9 +66,20 @@ export const normalizeNetworkData = (network) => {
     return normalized;
 };
 
+export const hasNetworkDatabaseConflict = (network, update) => Boolean(
+    update?.databaseId && update.databaseId !== (network?.databaseId || 'default')
+);
+
 export const mergeNetworkData = (oldNetwork, incomingNetwork) => {
     const normalizedOld = normalizeNetworkData(oldNetwork);
     const normalizedIncoming = normalizeNetworkData(incomingNetwork);
+
+    // A message can receive knowledge updates from another database after the
+    // user switches scope. Node and relationship IDs are only unique per DB.
+    if (hasNetworkDatabaseConflict(normalizedOld, normalizedIncoming)) {
+        return normalizedIncoming;
+    }
+
     const merged = {...normalizedOld, ...normalizedIncoming};
 
     if (hasOwn(normalizedIncoming, 'nodes')) {
@@ -88,6 +99,30 @@ export const mergeNetworkData = (oldNetwork, incomingNetwork) => {
     }
 
     return merged;
+};
+
+export const removeNetworkData = (network, removal) => {
+    if (!network || !removal || typeof removal !== 'object') return network;
+    if (hasNetworkDatabaseConflict(network, removal)) return network;
+
+    const normalizedRemoval = normalizeNetworkData(removal);
+    const result = {...network};
+
+    if (normalizedRemoval.nodes !== undefined) {
+        const keys = toDeleteKeySet(normalizedRemoval.nodes, getNodeMergeKey);
+        if (Array.isArray(result.nodes) && keys.size > 0) {
+            result.nodes = result.nodes.filter(node => !keys.has(getNodeMergeKey(node)));
+        }
+    }
+
+    if (normalizedRemoval.relationships !== undefined) {
+        const keys = toDeleteKeySet(normalizedRemoval.relationships, getRelationshipMergeKey);
+        if (Array.isArray(result.relationships) && keys.size > 0) {
+            result.relationships = result.relationships.filter(rel => !keys.has(getRelationshipMergeKey(rel)));
+        }
+    }
+
+    return result;
 };
 
 export const toDeleteKeySet = (items, getObjectKey) => {

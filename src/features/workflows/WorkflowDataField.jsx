@@ -3,12 +3,17 @@ import { Switch } from "@/components/ui/switch";
 import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import JsonConfigEditor from "@/components/setting/JsonConfigEditor.jsx";
 import WorkflowSchemaInput from "./WorkflowSchemaInput.jsx";
+import WorkflowModelQueue from "./WorkflowModelQueue.jsx";
+import WorkflowKnowledgeChunkPicker, {
+  WorkflowGraphDatabasePicker,
+} from "./WorkflowKnowledgePicker.jsx";
 import WorkflowSourcePicker, {
   WorkflowSelect,
 } from "./WorkflowSourcePicker.jsx";
 import {
   clone,
   normalizeWorkflowSchema,
+  resolveWorkflowSchema,
   scalarSchema,
 } from "./workflowModel.js";
 
@@ -19,13 +24,48 @@ export default function WorkflowDataField({
   disabled,
   label = "输入内容",
   schema = {},
+  rootSchema = schema,
   compact = false,
   onBusyChange,
   onValidity,
   models = [],
 }) {
-  schema = scalarSchema(normalizeWorkflowSchema(schema));
+  schema = scalarSchema(
+    resolveWorkflowSchema(normalizeWorkflowSchema(schema), rootSchema),
+  );
   const widget = schema.ui?.widget;
+  if (widget === "graph-database-picker")
+    return (
+      <WorkflowGraphDatabasePicker
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        label={label}
+        schema={schema}
+      />
+    );
+  if (widget === "knowledge-chunk-picker")
+    return (
+      <WorkflowKnowledgeChunkPicker
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        label={label}
+        schema={schema}
+        compact={compact}
+      />
+    );
+  if (["model-queue", "model-list-picker"].includes(widget))
+    return (
+      <WorkflowModelQueue
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        label={label}
+        schema={schema}
+        models={models}
+      />
+    );
   if (widget === "workflow-schema")
     return (
       <WorkflowSchemaInput

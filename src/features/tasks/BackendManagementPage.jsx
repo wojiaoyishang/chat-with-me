@@ -52,10 +52,13 @@ export default function BackendManagementPage({
   const incoming = location.state?.knowledgeImport;
   const scopeConversation =
     query.get("conversationId") || incoming?.conversationId;
+  const scopeDatabase = query.get("databaseId") || incoming?.databaseId;
   const sourceQuery = new URLSearchParams();
   if (taskId) sourceQuery.set("taskId", taskId);
   if (kind === "knowledge" && scopeConversation)
     sourceQuery.set("conversationId", scopeConversation);
+  if (kind === "knowledge" && scopeDatabase)
+    sourceQuery.set("databaseId", scopeDatabase);
   const src = `${BASE_BACKEND_URL}/${kind}/page${sourceQuery.size ? `?${sourceQuery}` : ""}`;
   const PageIcon =
     kind === "tasks" ? ListTodo : kind === "attachments" ? Paperclip : BookOpen;

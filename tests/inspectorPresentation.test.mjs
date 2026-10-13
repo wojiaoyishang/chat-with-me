@@ -11,7 +11,7 @@ const root = '../src/features/chat/page/components/';
 const highlight = fs.readFileSync(new URL(`${root}InspectorHighlight.jsx`, import.meta.url), 'utf8').replace('export default function', 'function');
 const layout = fs.readFileSync(new URL(`${root}inspectorTimelineLayout.js`, import.meta.url), 'utf8').replace(/export function/g, 'function');
 const timeline = fs.readFileSync(new URL(`${root}InspectorEventTimeline.jsx`, import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('export default function', 'function');
-const code = transformSync(`const {useRef,useEffect,useMemo,useState} = require('react'); const attachHorizontalWheel=()=>{}; const ArrowLeft=()=>null; const ChevronDown=()=>null; const ChevronLeft=()=>null; const ChevronRight=()=>null; const Loader2=()=>null; const Search=()=>null; const formatLocalTimestamp=value=>value;
+const code = transformSync(`const {useRef,useEffect,useMemo,useState} = require('react'); const attachHorizontalWheel=()=>{}; const ArrowLeft=()=>null; const ChevronDown=()=>null; const ChevronLeft=()=>null; const ChevronRight=()=>null; const Loader2=()=>null; const Search=()=>null; const formatLocalTimestamp=value=>value; const InspectorMediaBadges=()=>null; const InspectorAttachments=()=>null;
 ${highlight}
 ${layout}
 ${timeline}
@@ -59,6 +59,7 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
         useMemo: (factory) => factory(), useEffect: () => {},
         ArrowLeft: () => null, ChevronDown: () => null, ChevronLeft: () => null, ChevronRight: () => null,
         Search: () => null, Loader2: () => null, formatLocalTimestamp: (value) => value,
+        InspectorMediaBadges: () => null, InspectorAttachments: () => null,
     };
     vm.runInNewContext(transformSync(`${highlight}\n${layout}\n${timeline}\nexports.Timeline=InspectorEventTimeline;`, { loader: 'jsx', jsx: 'automatic', format: 'cjs' }).code, sandbox);
     const props = { section: { events: [{ eventId: 'user-1', kind: 'user', title: 'Question', order: 1 }, { eventId: 'user-2', kind: 'user', title: 'Next', order: 2 }] }, renderCall: () => null, renderReplacements: () => null };

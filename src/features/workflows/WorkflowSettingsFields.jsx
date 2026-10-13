@@ -16,39 +16,44 @@ export default function WorkflowSettingsFields({
   onValidity,
 }) {
   const normalized = normalizeWorkflowSchema(schema);
+  const current = value || {};
   return (
     <div className="space-y-4">
       {Object.entries(normalized.properties || {}).map(([key, raw]) => {
         const property = scalarSchema(resolveWorkflowSchema(raw, rootSchema));
+        if (property.ui?.hidden) return null;
         return (
           <section className="space-y-2" key={key}>
-            <label className="workflow-label">{property.title || key}</label>
+            <label className="workflow-label">
+              {property.display?.title || property.title || key}
+            </label>
             {property.type === "object" &&
             property.properties &&
             !property.ui?.widget ? (
               <WorkflowSettingsFields
                 schema={property}
                 rootSchema={rootSchema}
-                value={value[key] || {}}
+                value={current[key] || {}}
                 disabled={disabled}
                 models={models}
                 onValidity={onValidity}
-                onChange={(next) => onChange({ ...value, [key]: next })}
+                onChange={(next) => onChange({ ...current, [key]: next })}
               />
             ) : (
               <WorkflowDataField
                 schema={property}
-                label={property.title || key}
-                value={value[key]}
+                rootSchema={rootSchema}
+                label={property.display?.title || property.title || key}
+                value={current[key]}
                 disabled={disabled}
                 models={models}
                 onValidity={onValidity}
-                onChange={(next) => onChange({ ...value, [key]: next })}
+                onChange={(next) => onChange({ ...current, [key]: next })}
               />
             )}
-            {property.description && (
+            {(property.display?.description || property.description) && (
               <p className="text-xs text-muted-foreground">
-                {property.description}
+                {property.display?.description || property.description}
               </p>
             )}
           </section>

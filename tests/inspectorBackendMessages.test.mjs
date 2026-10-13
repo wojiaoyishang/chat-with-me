@@ -16,6 +16,8 @@ const Search = () => <span />;
 const Input = (props) => <input {...props} />;
 const Button = ({children, ...props}) => <button {...props}>{children}</button>;
 const Badge = ({children}) => <span>{children}</span>;
+const InspectorMediaBadges = () => null;
+const InspectorAttachments = () => null;
 const Virtuoso = ({data, itemContent}) => <div>{data.map((item,index) => <div key={index}>{itemContent(index,item)}</div>)}</div>;
 ${highlight}
 ${source}

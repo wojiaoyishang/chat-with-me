@@ -84,7 +84,19 @@ async function page(html, kind) {
         const parsed = new URL(url, window.location.origin);
         calls.push(parsed.pathname);
         let data;
-        if (parsed.pathname === "/api/knowledge/overview")
+        if (parsed.pathname === "/api/knowledge/databases")
+          data = {
+            databases: [
+              {
+                id: "db-default",
+                name: "primary",
+                title: "默认知识库",
+                enabled: true,
+                legacyDefault: true,
+              },
+            ],
+          };
+        else if (parsed.pathname === "/api/knowledge/overview")
           data = {
             nodes: 2,
             relationships: 1,
@@ -147,7 +159,7 @@ async function page(html, kind) {
       };
     },
   });
-  await new Promise((resolve) => setTimeout(resolve, 60));
+  await new Promise((resolve) => setTimeout(resolve, 140));
   return { dom, document: dom.window.document, calls, errors };
 }
 

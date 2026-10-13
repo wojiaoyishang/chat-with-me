@@ -71,6 +71,9 @@ async function mount() {
                   "import {cloneElement} from 'react';export const Button=({children,variant,size,asChild,...props})=>asChild?cloneElement(children,props):<button {...props}>{children}</button>;";
               else if (requested.endsWith("/input"))
                 contents = "export const Input=props=><input {...props}/>;";
+              else if (requested.endsWith("/checkbox"))
+                contents =
+                  "export const Checkbox=({checked,onCheckedChange,...props})=><input type='checkbox' checked={checked} onChange={event=>onCheckedChange(event.target.checked)} {...props}/>;";
               else if (requested.endsWith("/dialog"))
                 contents = `export const Dialog=({open,onOpenChange,children})=>open?<div data-testid="resource-preview">{children}<button aria-label="关闭资源预览" onClick={()=>onOpenChange(false)}>关闭</button></div>:null;export const DialogContent=({children,...props})=><div {...props}>{children}</div>;export const DialogHeader=({children,...props})=><div {...props}>{children}</div>;export const DialogTitle=({children,...props})=><h2 {...props}>{children}</h2>;export const DialogDescription=({children,...props})=><p {...props}>{children}</p>;`;
               else if (requested.endsWith("virtualUrl.js"))
@@ -125,7 +128,7 @@ test("attachment picker confirms staged selection and discards unconfirmed chang
   try {
     const trigger = document.querySelector('[aria-label="选择附件输入"]');
     await click(trigger, 230);
-    await click(document.querySelector(".workflow-resource"));
+    await click(document.querySelector('[aria-label="选择 示例附件.png"]'));
     assert.deepEqual(ui.state.value.resources, []);
     assert.match(document.querySelector("section").textContent, /已选择 1 项/);
     await click(
@@ -135,7 +138,7 @@ test("attachment picker confirms staged selection and discards unconfirmed chang
     );
     assert.deepEqual(ui.state.value.resources, ["cwm://artifact/file-1"]);
     await click(trigger, 230);
-    await click(document.querySelector(".workflow-resource"));
+    await click(document.querySelector('[aria-label="选择 示例附件.png"]'));
     assert.deepEqual(ui.state.value.resources, ["cwm://artifact/file-1"]);
     await click(trigger);
     assert.deepEqual(ui.state.value.resources, ["cwm://artifact/file-1"]);

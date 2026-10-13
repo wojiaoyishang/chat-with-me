@@ -67,6 +67,7 @@ export function WorkflowSelect({ value, onChange, options, label, disabled }) {
                 ? "_none"
                 : String(option.value)
             }
+            disabled={option.disabled}
           >
             {option.label}
           </SelectItem>

@@ -52,6 +52,7 @@ async function page(
     fullGraph = false,
     seedStorage = {},
     conversationId = "",
+    databaseId = "",
     localSettings,
     iframeParent,
   } = {},
@@ -62,7 +63,7 @@ async function page(
     .replace("{{ stylesheet | safe }}", "")
     .replace("{{ script | safe }}", "");
   const dom = new JSDOM(html, {
-    url: `http://localhost/api/knowledge/page${conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : ""}`,
+    url: `http://localhost/api/knowledge/page${conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : ""}${databaseId ? `${conversationId ? "&" : "?"}databaseId=${encodeURIComponent(databaseId)}` : ""}`,
     runScripts: "outside-only",
     pretendToBeVisual: true,
   });
@@ -98,7 +99,9 @@ async function page(
     let data = await responder(parsed, options);
     if (data instanceof Response) return data;
     if (data === undefined) {
-      if (parsed.pathname === "/api/knowledge/overview")
+      if (parsed.pathname === "/api/knowledge/databases")
+        data = { databases: [{ id: "db-default", name: "primary", title: "默认知识库", enabled: true, legacyDefault: true }] };
+      else if (parsed.pathname === "/api/knowledge/overview")
         data = {
           nodes: 3,
           relationships: 2,
@@ -315,8 +318,8 @@ const graphFixture = (fixtureNodes, fixtureRelationships) => (url) => {
     };
 };
 
-const canvasKey = (conversationId = "") =>
-  `cwm.knowledge.canvas.v1:${encodeURIComponent(`/api|${conversationId}`)}`;
+const canvasKey = (conversationId = "", databaseId = "db-default") =>
+  `cwm.knowledge.canvas.v1:${encodeURIComponent(`/api|${databaseId}|${conversationId}`)}`;
 const visibleContextMenu = (document) => {
   const menu = document.querySelector(".graph-context-menu");
   return menu && !menu.hidden && menu.style.display !== "none" ? menu : null;
@@ -1420,7 +1423,7 @@ test("cancelled pointer drags release the node, settle again, and never refit th
   }
 });
 
-test("reduced motion starts with a static graph but lets the user enable physics explicitly", async (t) => {
+test("reduced motion keeps the graph animation setting enabled and lets the user pause it", async (t) => {
   const { dom, document, runFrames, pendingFrames } = await page(undefined, {
     controlledAnimation: true,
     fullGraph: true,
@@ -1429,19 +1432,19 @@ test("reduced motion starts with a static graph but lets the user enable physics
   t.after(() => dom.window.close());
   const control = document.querySelector("#graph-physics"),
     original = positionsOf(document);
-  assert.equal(control.getAttribute("aria-pressed"), "false");
-  // The stopped engine may finish its one-off timer bookkeeping on the first frame.
-  runFrames(120);
-  assert.deepEqual(positionsOf(document), original);
-  assert.equal(pendingFrames(), 0);
-  control.click();
   assert.equal(control.getAttribute("aria-pressed"), "true");
-  runFrames(30);
+  runFrames(20);
   assert.ok(
     positionsOf(document).some(
       (point, index) => distance(point, original[index]) > 1,
     ),
   );
+  control.click();
+  assert.equal(control.getAttribute("aria-pressed"), "false");
+  const paused = positionsOf(document);
+  runFrames(120);
+  assert.deepEqual(positionsOf(document), paused);
+  assert.equal(pendingFrames(), 0);
 });
 
 test("a settled graph stays still across refresh but reheats when new neighbors are added", async (t) => {
@@ -3906,4 +3909,122 @@ test('management selects use styled listboxes, update native values and release 
   const styled=source.closest('.cwm-select-control');assert.ok(styled);styled.querySelector('button').click();assert.ok(document.querySelector('[role="listbox"]'));
   document.querySelector('#create-dialog').close();document.querySelector('#create-fields').replaceChildren();await settle();
   assert.equal(document.querySelector('[role="listbox"]'),null);
+});
+
+const libraryRegistry = { databases: [
+  { id: "db-one", name: "renamed-library", title: "工作知识", enabled: true, legacyDefault: true },
+  { id: "db-two", name: "reference-library", title: "参考知识", enabled: true, readOnly: true },
+  { id: "db-disabled", name: "disabled", title: "已停用库", enabled: false },
+] };
+async function switchDatabase(dom, document, databaseId) {
+  const selector = document.querySelector("#knowledge-database");
+  selector.value = databaseId;
+  selector.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+  await settle(160);
+}
+
+test("knowledge database selection resolves the registry first and scopes every graph request by stable ID", async t => {
+  const ui = await page(url => url.pathname === "/api/knowledge/databases" ? libraryRegistry : undefined, { controlledAnimation: true, databaseId: "default", conversationId: "conversation-one" });
+  t.after(() => ui.dom.window.close());
+  const selector = ui.document.querySelector("#knowledge-database");
+  assert.equal(selector.value, "db-one");
+  assert.match(selector.closest(".cwm-select-control").textContent, /工作知识/);
+  assert.equal(selector.querySelector('[value="db-disabled"]').disabled, true);
+  assert.equal(new URL(ui.dom.window.location.href).searchParams.get("databaseId"), "db-one");
+  const registry = ui.calls.find(call => call.parsed.pathname === "/api/knowledge/databases");
+  assert.equal(registry.parsed.searchParams.get("databaseId"), null);
+  assert.equal(registry.parsed.searchParams.get("conversationId"), null);
+  const graphCalls = ui.calls.filter(call => call.parsed.pathname.startsWith("/api/knowledge/") && call !== registry);
+  assert.ok(graphCalls.length >= 3);
+  assert.ok(graphCalls.every(call => call.parsed.searchParams.get("databaseId") === "db-one"));
+  await switchDatabase(ui.dom, ui.document, "db-two");
+  const last = ui.calls.filter(call => call.parsed.pathname === "/api/knowledge/search").at(-1);
+  assert.equal(last.parsed.searchParams.get("databaseId"), "db-two");
+  assert.equal(last.parsed.searchParams.get("conversationId"), "conversation-one");
+});
+
+test("knowledge database canvases persist independently and switching restores an intentionally empty library", async t => {
+  const ui = await page(url => url.pathname === "/api/knowledge/databases" ? libraryRegistry : undefined, { controlledAnimation: true, conversationId: "same-conversation" });
+  t.after(() => ui.dom.window.close());
+  ui.document.querySelector("#graph-clear").click();
+  assert.equal(ui.document.querySelectorAll(".knowledge-node").length, 0);
+  await switchDatabase(ui.dom, ui.document, "db-two");
+  assert.equal(ui.document.querySelectorAll(".knowledge-node").length, 1);
+  assert.ok(ui.dom.window.sessionStorage.getItem(canvasKey("same-conversation", "db-one")));
+  assert.ok(ui.dom.window.sessionStorage.getItem(canvasKey("same-conversation", "db-two")));
+  await switchDatabase(ui.dom, ui.document, "db-one");
+  assert.equal(ui.document.querySelectorAll(".knowledge-node").length, 0);
+  assert.equal(ui.document.querySelector("#graph-empty").hidden, false);
+  assert.equal(JSON.parse(ui.dom.window.sessionStorage.getItem(canvasKey("same-conversation", "db-one"))).nodes.length, 0);
+  assert.equal(JSON.parse(ui.dom.window.sessionStorage.getItem(canvasKey("same-conversation", "db-two"))).nodes.length, 1);
+});
+
+test("database switching aborts expansion and searches and ignores late results from the old library", async t => {
+  let releaseSearch, releaseExpansion;
+  const ui = await page(url => {
+    if (url.pathname === "/api/knowledge/databases") return libraryRegistry;
+    if (url.searchParams.get("databaseId") !== "db-one") return;
+    if (url.pathname === "/api/knowledge/search" && url.searchParams.get("q") === "held") return new Promise(resolve => { releaseSearch = resolve; });
+    if (url.pathname === "/api/knowledge/nodes/node-1/graph") return new Promise(resolve => { releaseExpansion = resolve; });
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  ui.document.querySelector('[data-node-id="node-1"]').dispatchEvent(new ui.dom.window.MouseEvent("dblclick", { bubbles: true }));
+  ui.document.querySelector("#search").value = "held";
+  ui.document.querySelector("#search").dispatchEvent(new ui.dom.window.Event("input", { bubbles: true }));
+  await settle(300);
+  assert.equal(typeof releaseSearch, "function"); assert.equal(typeof releaseExpansion, "function");
+  const oldCalls = ui.calls.filter(call => call.parsed.searchParams.get("databaseId") === "db-one" && (call.parsed.searchParams.get("q") === "held" || call.parsed.pathname.endsWith("node-1/graph")));
+  await switchDatabase(ui.dom, ui.document, "db-two");
+  assert.ok(oldCalls.every(call => call.signal.aborted));
+  releaseSearch({ nodes: [{ id: "old-search", name: "旧库搜索结果" }], total: 1 });
+  releaseExpansion({ nodes: [{ id: "old-expansion", name: "旧库关联内容" }], relationships: [] });
+  await settle();
+  assert.doesNotMatch(ui.document.body.textContent, /旧库搜索结果|旧库关联内容/);
+  assert.equal(ui.document.querySelector('[data-node-id="old-expansion"]'), null);
+  assert.equal(ui.document.querySelector("#search").value, "");
+  assert.equal(ui.document.querySelector("#knowledge-database").value, "db-two");
+});
+
+test("late overview results cannot replace the statistics or types of the newly selected database", async t => {
+  let releaseOverview;
+  const ui = await page(url => {
+    if (url.pathname === "/api/knowledge/databases") return libraryRegistry;
+    if (url.pathname === "/api/knowledge/overview" && url.searchParams.get("databaseId") === "db-one") return new Promise(resolve => { releaseOverview = resolve; });
+    if (url.pathname === "/api/knowledge/overview" && url.searchParams.get("databaseId") === "db-two") return { nodes: 22, relationships: 2, chunks: 3, images: 4, labels: ["新库类型"] };
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  assert.equal(typeof releaseOverview, "function");
+  await switchDatabase(ui.dom, ui.document, "db-two");
+  releaseOverview({ nodes: 999, relationships: 999, chunks: 999, images: 999, labels: ["旧库类型"] }); await settle();
+  assert.match(ui.document.querySelector("#overview").textContent, /22/);
+  assert.doesNotMatch(ui.document.querySelector("#overview").textContent, /999/);
+  assert.match(ui.document.querySelector("#filter").textContent, /新库类型/);
+  assert.doesNotMatch(ui.document.querySelector("#filter").textContent, /旧库类型/);
+});
+
+test("an unconfigured database registry provides settings guidance and refresh can activate a new connection", async t => {
+  let configured = false;
+  const ui = await page(url => url.pathname === "/api/knowledge/databases" ? configured ? libraryRegistry : { databases: [] } : undefined, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  assert.equal(ui.document.querySelector("#search").disabled, true);
+  assert.equal(ui.document.querySelector("#graph-empty").hidden, false);
+  assert.match(ui.document.querySelector("#graph-empty").textContent, /设置 → 图数据库/);
+  assert.equal(ui.calls.filter(call => call.parsed.pathname !== "/api/knowledge/databases").length, 0);
+  configured = true; ui.document.querySelector("#refresh").click(); await settle(180);
+  assert.equal(ui.document.querySelector("#knowledge-database").value, "db-one");
+  assert.equal(ui.document.querySelector("#search").disabled, false);
+  assert.equal(ui.document.querySelectorAll(".knowledge-node").length, 1);
+});
+
+test("chat imports select their authorized database and send graph identities only to that library", async t => {
+  const messages = [], trustedParent = { postMessage(message) { messages.push(message); } };
+  const ui = await page(url => url.pathname === "/api/knowledge/databases" ? libraryRegistry : undefined, { controlledAnimation: true, iframeParent: trustedParent });
+  t.after(() => ui.dom.window.close());
+  ui.dom.window.dispatchEvent(new ui.dom.window.MessageEvent("message", { source: trustedParent, origin: "http://localhost", data: { type: "cwm.knowledge-import", id: "two-library-import", databaseId: "db-two", nodeIds: ["node-2"], edgeIds: [] } }));
+  await settle(180);
+  const imported = ui.calls.find(call => call.parsed.pathname === "/api/knowledge/canvas/import");
+  assert.ok(imported); assert.equal(imported.parsed.searchParams.get("databaseId"), "db-two");
+  assert.equal(ui.document.querySelector("#knowledge-database").value, "db-two");
+  assert.ok(messages.some(message => message.type === "cwm.knowledge-imported" && message.databaseId === "db-two"));
+  assert.ok(ui.dom.window.sessionStorage.getItem(canvasKey("", "db-two")));
 });

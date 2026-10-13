@@ -18,7 +18,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 20));
 async function page(
   kind,
   responder,
-  { mobile = false, reducedMotion = false, animate = false, quickTimeout = false } = {},
+  { mobile = false, reducedMotion = false, animate = false, quickTimeout = false, databases } = {},
 ) {
   const html = template
     .replace("{{ config | tojson }}", JSON.stringify({ kind, apiBase: "/api" }))
@@ -62,9 +62,16 @@ async function page(
     this.open = false;
   };
   dom.window.fetch = async (url, options = {}) => {
-    calls.push({ url, ...options });
-    let value = await responder(url, options);
-    if (new URL(url,'http://localhost').pathname.endsWith('/actions') && value?.node) value={nodeId:value.node.id,canWrite:value.node.canWrite===true,canManage:value.node.canManage===true,canDelete:value.node.canDelete===true};
+    const actualUrl = String(url);
+    const request = new URL(actualUrl, "http://localhost");
+    const fixtureUrl = new URL(request);
+    fixtureUrl.searchParams.delete("databaseId");
+    const normalizedUrl = `${fixtureUrl.pathname}${fixtureUrl.search}`;
+    calls.push({ url: normalizedUrl, actualUrl, ...options });
+    let value = request.pathname === "/api/knowledge/databases"
+      ? { databases: databases ?? [{ id: "default-db", name: "default", title: "默认知识库", enabled: true, readOnly: false, legacyDefault: true, revision: 1 }] }
+      : await responder(normalizedUrl, options);
+    if (request.pathname.endsWith('/actions') && value?.node) value={nodeId:value.node.id,canWrite:value.node.canWrite===true,canManage:value.node.canManage===true,canDelete:value.node.canDelete===true};
     if (value instanceof Response) return value;
     return {
       ok: true,
@@ -90,6 +97,45 @@ async function openNodeAction(dom, document, id, actionName) {
   assert.ok(action && !action.hidden && !action.disabled, `${actionName} must be available`);
   action.click(); await settle();
 }
+
+test("knowledge page stays usable before any graph database is configured", async (t) => {
+  const { dom, document, calls } = await page(
+    "knowledge",
+    (url) => { throw new Error(`Unexpected graph request ${url}`); },
+    { databases: [] },
+  );
+  t.after(() => dom.window.close());
+  assert.equal(document.querySelector("#knowledge-database").disabled, true);
+  assert.equal(document.querySelector("#search").disabled, true);
+  assert.equal(document.querySelector("#graph-empty").hidden, false);
+  assert.match(document.querySelector("#graph-empty").textContent, /暂无可用图数据库/);
+  assert.deepEqual(calls.map((call) => call.actualUrl), ["/api/knowledge/databases"]);
+});
+
+test("switching graph databases scopes requests and clears the previous canvas", async (t) => {
+  let active = "first";
+  const databases = [
+    { id: "db-first", name: "first", title: "第一库", enabled: true, legacyDefault: true, revision: 1 },
+    { id: "db-second", name: "second", title: "第二库", enabled: true, revision: 1 },
+  ];
+  const { dom, document, calls } = await page("knowledge", (url) => {
+    if (url.includes("/overview")) return { nodes: 1, relationships: 0, labels: [] };
+    return { nodes: [{ id: `node-${active}`, name: active, label: "Fact" }], relationships: [], total: 1 };
+  }, { databases });
+  t.after(() => dom.window.close());
+  assert.ok(document.querySelector('[data-node-id="node-first"]'));
+  const select = document.querySelector("#knowledge-database");
+  active = "second";
+  select.value = "db-second";
+  select.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+  for (let index = 0; index < 5; index += 1) await settle();
+  assert.equal(select.value, "db-second");
+  assert.equal(document.querySelector('[data-node-id="node-first"]'), null);
+  assert.ok(document.querySelector('[data-node-id="node-second"]'));
+  assert.equal(new URL(dom.window.location.href).searchParams.get("databaseId"), "db-second");
+  assert.ok(calls.some((call) => call.actualUrl.includes("/knowledge/overview?databaseId=db-first")));
+  assert.ok(calls.some((call) => call.actualUrl.includes("/knowledge/overview?databaseId=db-second")));
+});
 
 test('knowledge property editor preserves unknown values and blocks invalid or reserved JSON before PUT', async (t) => {
   const node = { id: 'editable', name: '知识', canWrite: true, canManagePolicy: false, properties: { name: '知识', custom: false, count: 0, nested: { note: '保留' }, obsolete: 'remove', owner_user_id: 1 } };
@@ -283,11 +329,10 @@ test("knowledge conversation context reaches read, image, and edit APIs", async 
   await settle();
   document.querySelector('#detail details[data-key="images:node-1"]').open = true;
   await settle();
-  assert.ok(
-    document
-      .querySelector(".image-card img")
-      .src.endsWith("/content?conversationId=conversation-1"),
-  );
+  const imageUrl = new URL(document.querySelector(".image-card img").src);
+  assert.equal(imageUrl.pathname, "/api/knowledge/images/image-1/content");
+  assert.equal(imageUrl.searchParams.get("conversationId"), "conversation-1");
+  assert.equal(imageUrl.searchParams.get("databaseId"), "default-db");
   await openNodeAction(dom, document, 'node-1', 'node-edit');
   await settle();
   document
@@ -1224,7 +1269,8 @@ test("hiding source chunks removes only local related fragments and their parent
   for(const id of ['root','other','unrelated'])assert.ok(document.querySelector(`.knowledge-node[data-node-id="${id}"]`));
   for(const id of ['child','parent'])assert.equal(document.querySelector(`.knowledge-node[data-node-id="${id}"]`),null);
   assert.equal(calls.some(c=>c.method==='DELETE'||c.method==='PUT'||c.url.includes('/sources')),false);
-  const saved=JSON.parse(dom.window.sessionStorage.getItem('cwm.knowledge.canvas.v1:%2Fapi%7C'));
+  const canvasScope = "/api|default-db|";
+  const saved=JSON.parse(dom.window.sessionStorage.getItem(`cwm.knowledge.canvas.v1:${encodeURIComponent(canvasScope)}`));
   assert.deepEqual(saved.hiddenIds.sort(),['child','parent']);
 });
 

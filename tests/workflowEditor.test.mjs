@@ -928,7 +928,7 @@ test("resource initialization selects the full document at its revision", async 
     );
     await input(typeSelect, "document", app.dom, "change");
     await act(() => new Promise((resolve) => setTimeout(resolve, 280)));
-    await click(document.querySelector(".workflow-resource"), app.dom);
+    await click(document.querySelector('[aria-label="选择 整个文档"]'), app.dom);
     await click(button("校验"), app.dom);
     const payload = app.calls
       .filter((call) => call.url === "/tasks/workflows/validate")
@@ -1034,9 +1034,11 @@ test("opening an existing task uses its immutable graph and real taskId runtime 
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 40));
     });
-    assert.deepEqual(globalThis.workflowUITest.fitViewCalls.at(-1).nodes, [
-      { id: "extract-1" },
-    ]);
+    assert.deepEqual(
+      globalThis.workflowUITest.fitViewCalls.findLast((call) => call?.nodes)
+        ?.nodes,
+      [{ id: "extract-1" }],
+    );
     assert.deepEqual(globalThis.workflowUITest.changes, []);
   } finally {
     await app.close();
@@ -1079,11 +1081,17 @@ test("monitor log page uses the full workspace and returns to centered task", as
     await click(button("定位到任务"), app.dom);
     assert.ok(document.querySelector(".workflow-workspace.is-monitor"));
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 40));
+      for (let attempt = 0; attempt < 12; attempt += 1) {
+        if (globalThis.workflowUITest.fitViewCalls.some((call) => call?.nodes))
+          break;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      }
     });
-    assert.deepEqual(globalThis.workflowUITest.fitViewCalls.at(-1).nodes, [
-      { id: "extract-1" },
-    ]);
+    assert.deepEqual(
+      globalThis.workflowUITest.fitViewCalls.findLast((call) => call?.nodes)
+        ?.nodes,
+      [{ id: "extract-1" }],
+    );
   } finally {
     await app.close();
   }
@@ -1396,7 +1404,7 @@ test("quick template form preserves document revision and knowledge permissions"
       document.querySelector("[role=dialog]").textContent,
       /待提取文档/,
     );
-    await click(document.querySelector(".workflow-resource"), app.dom);
+    await click(document.querySelector('[aria-label="选择 整个文档"]'), app.dom);
     assert.equal(
       document.querySelector('[aria-label="快速任务名称"]').value,
       "文档提取模板",

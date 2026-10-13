@@ -7,9 +7,12 @@ import WorkflowSchemaEditor from "./WorkflowSchemaEditor.jsx";
 import {
   catalogNode,
   normalizeWorkflowSchema,
+  resolveWorkflowSchema,
   scalarSchema,
 } from "./workflowModel.js";
 import WorkflowDataField from "./WorkflowDataField.jsx";
+import WorkflowSettingsFields from "./WorkflowSettingsFields.jsx";
+import { workflowModelQueueSummary } from "./workflowFieldModel.js";
 
 function objectSchema(schema, names) {
   return {
@@ -76,16 +79,32 @@ export default function WorkflowNodePanel({
   const widgetKeys = widgets
     .filter((widget) => widget.widget === "knowledge-schema")
     .flatMap((widget) => widget.fields || []);
-  const modelKeys = Object.keys(schema.properties || {}).filter(
-    (key) => scalarSchema(schema.properties[key]).ui?.widget === "model-picker",
+  const modelKeys = Object.keys(schema.properties || {}).filter((key) =>
+    ["model-picker", "model-queue", "model-list-picker"].includes(
+      scalarSchema(resolveWorkflowSchema(schema.properties[key], schema)).ui
+        ?.widget,
+    ),
+  );
+  const hiddenKeys = Object.keys(schema.properties || {}).filter(
+    (key) =>
+      scalarSchema(resolveWorkflowSchema(schema.properties[key], schema)).ui
+        ?.hidden,
   );
   const regularKeys = Object.keys(schema.properties || {}).filter(
     (key) =>
       !common.includes(key) &&
       !modelKeys.includes(key) &&
       !widgetKeys.includes(key) &&
+      !hiddenKeys.includes(key) &&
       !externalFields.has(key),
   );
+  const dynamicKeys = regularKeys.filter((key) =>
+    Boolean(
+      scalarSchema(resolveWorkflowSchema(schema.properties[key], schema)).ui
+        ?.widget,
+    ),
+  );
+  const jsonKeys = regularKeys.filter((key) => !dynamicKeys.includes(key));
   const update = (patch) =>
     onGraphChange({
       ...graph,
@@ -143,67 +162,81 @@ export default function WorkflowNodePanel({
               的输入节点。
             </p>
           ))}
-          {common.map((key) => {
-            const property = scalarSchema(schema.properties?.[key] || {});
-            const inherited = node.config?.[key] == null;
-            const effective =
-              graph.settings?.commonConfig?.[key] ?? property.default;
-            return (
-              <section className="space-y-2 rounded-lg border p-3" key={key}>
-                <div className="flex items-center justify-between gap-2">
-                  <label className="workflow-label m-0">
-                    {property.display?.title}
-                  </label>
-                  <label className="flex cursor-pointer items-center gap-2 text-xs">
-                    <Checkbox
-                      aria-label={`${property.display?.title || ""} 遵循全局设置`}
-                      checked={inherited}
+          {common
+            .filter((key) => !hiddenKeys.includes(key))
+            .map((key) => {
+              const property = scalarSchema(
+                resolveWorkflowSchema(schema.properties?.[key] || {}, schema),
+              );
+              const fieldLabel =
+                property.display?.title || property.title || key;
+              const inherited = node.config?.[key] == null;
+              const effective =
+                graph.settings?.commonConfig?.[key] ?? property.default;
+              return (
+                <section className="space-y-2 rounded-lg border p-3" key={key}>
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="workflow-label m-0">{fieldLabel}</label>
+                    <label className="flex cursor-pointer items-center gap-2 text-xs">
+                      <Checkbox
+                        aria-label={`${fieldLabel} 遵循全局设置`}
+                        checked={inherited}
+                        disabled={disabled}
+                        onCheckedChange={(value) =>
+                          updateConfig({
+                            ...node.config,
+                            [key]: value ? null : effective,
+                          })
+                        }
+                      />
+                      遵循全局设置
+                    </label>
+                  </div>
+                  {property.display?.subtitle && (
+                    <p className="text-xs text-muted-foreground">
+                      {property.display.subtitle}
+                    </p>
+                  )}
+                  {inherited ? (
+                    <p className="text-xs text-muted-foreground">
+                      全局值：
+                      {["model-queue", "model-list-picker"].includes(
+                        property.ui?.widget,
+                      )
+                        ? workflowModelQueueSummary(
+                            effective,
+                            models,
+                            property.ui?.emptyLabel,
+                          )
+                        : property.ui?.widget === "model-picker"
+                          ? models.find((model) => model.id === effective)
+                              ?.name ||
+                            effective ||
+                            "自动选择模型"
+                          : String(effective ?? "默认")}
+                    </p>
+                  ) : (
+                    <WorkflowDataField
+                      label={fieldLabel}
+                      schema={property}
+                      rootSchema={schema}
+                      value={node.config?.[key]}
                       disabled={disabled}
-                      onCheckedChange={(value) =>
-                        updateConfig({
-                          ...node.config,
-                          [key]: value ? null : effective,
-                        })
+                      compact
+                      models={models}
+                      onChange={(value) =>
+                        updateConfig({ ...node.config, [key]: value })
                       }
                     />
-                    遵循全局设置
-                  </label>
-                </div>
-                {property.display?.subtitle && (
-                  <p className="text-xs text-muted-foreground">
-                    {property.display.subtitle}
-                  </p>
-                )}
-                {inherited ? (
-                  <p className="text-xs text-muted-foreground">
-                    全局值：
-                    {property.ui?.widget === "model-picker"
-                      ? models.find((model) => model.id === effective)?.name ||
-                        effective ||
-                        "自动选择模型"
-                      : String(effective ?? "默认")}
-                  </p>
-                ) : (
-                  <WorkflowDataField
-                    label={property.display?.title}
-                    schema={property}
-                    value={node.config?.[key]}
-                    disabled={disabled}
-                    compact
-                    models={models}
-                    onChange={(value) =>
-                      updateConfig({ ...node.config, [key]: value })
-                    }
-                  />
-                )}
-                {property.display?.description && (
-                  <p className="text-xs text-muted-foreground">
-                    {property.display.description}
-                  </p>
-                )}
-              </section>
-            );
-          })}
+                  )}
+                  {property.display?.description && (
+                    <p className="text-xs text-muted-foreground">
+                      {property.display.description}
+                    </p>
+                  )}
+                </section>
+              );
+            })}
           {widgets
             .filter((widget) => widget.widget === "knowledge-schema")
             .map((widget, index) => (
@@ -217,17 +250,24 @@ export default function WorkflowNodePanel({
               />
             ))}
           {modelKeys
-            .filter((key) => !common.includes(key))
+            .filter((key) => !common.includes(key) && !hiddenKeys.includes(key))
             .map((key) => (
               <div className="space-y-2" key={key}>
                 <label className="workflow-label">
-                  {schema.properties[key].display?.title}
+                  {schema.properties[key].display?.title ||
+                    schema.properties[key].title ||
+                    key}
                 </label>
                 <WorkflowDataField
-                  label={schema.properties[key].display?.title}
+                  label={
+                    schema.properties[key].display?.title ||
+                    schema.properties[key].title ||
+                    key
+                  }
                   value={node.config?.[key]}
                   disabled={disabled}
                   schema={schema.properties[key]}
+                  rootSchema={schema}
                   models={models}
                   onChange={(value) =>
                     updateConfig({ ...node.config, [key]: value })
@@ -240,12 +280,36 @@ export default function WorkflowNodePanel({
                 )}
               </div>
             ))}
-          {regularKeys.length > 0 && (
+          {dynamicKeys.length > 0 && (
+            <WorkflowSettingsFields
+              schema={objectSchema(schema, dynamicKeys)}
+              rootSchema={schema}
+              value={Object.fromEntries(
+                dynamicKeys
+                  .filter((key) => Object.hasOwn(node.config || {}, key))
+                  .map((key) => [key, node.config[key]]),
+              )}
+              disabled={disabled}
+              models={models}
+              onValidity={(valid) => onValidity(`config:${node.id}`, valid)}
+              onChange={(next) =>
+                updateConfig({
+                  ...Object.fromEntries(
+                    Object.entries(node.config || {}).filter(
+                      ([key]) => !dynamicKeys.includes(key),
+                    ),
+                  ),
+                  ...next,
+                })
+              }
+            />
+          )}
+          {jsonKeys.length > 0 && (
             <JsonConfigEditor
               label="节点初始化参数"
-              schema={objectSchema(schema, regularKeys)}
+              schema={objectSchema(schema, jsonKeys)}
               value={Object.fromEntries(
-                regularKeys
+                jsonKeys
                   .filter((key) => Object.hasOwn(node.config || {}, key))
                   .map((key) => [key, node.config[key]]),
               )}
@@ -258,7 +322,7 @@ export default function WorkflowNodePanel({
                 updateConfig({
                   ...Object.fromEntries(
                     Object.entries(node.config || {}).filter(
-                      ([key]) => !regularKeys.includes(key),
+                      ([key]) => !jsonKeys.includes(key),
                     ),
                   ),
                   ...next,

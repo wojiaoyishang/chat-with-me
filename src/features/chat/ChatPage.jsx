@@ -11,7 +11,6 @@ import {
     useLocalSetting,
 } from '@/lib/tools.jsx';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
 import { emitEvent, onEvent } from '@/context/useEventStore.jsx';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
@@ -53,11 +52,9 @@ import {
     ScrollToBottomButton,
     SpeechPlayer,
     SpeechSubtitleOverlay,
-    getNodeMergeKey,
-    getRelationshipMergeKey,
+    hasNetworkDatabaseConflict,
     mergeNetworkData,
-    normalizeNetworkData,
-    toDeleteKeySet,
+    removeNetworkData,
     useChatScroll,
     useChatWindowMode,
     useFileUpload,
@@ -372,7 +369,6 @@ function ChatPage({
     const {
         showScrollToBottomButton,
         setShowScrollToBottomButton,
-        chatBoxHeight,
         isAutoScrollEnabledRef,
         pendingScrollRef,
         checkScrollPosition,
@@ -2933,9 +2929,10 @@ function ChatPage({
                         const newMessages = produce(messagesRef.current, (draft) => {
                             for (const [msgId, newNodes] of Object.entries(payload.value)) {
                                 if (draft[msgId]) {
-                                    draft[msgId].network = mergeNetworkData(draft[msgId].network, {
-                                        nodes: Array.isArray(newNodes) ? newNodes : [],
-                                    });
+                                    const update = Array.isArray(newNodes) ? { nodes: newNodes } : newNodes;
+                                    if (update && typeof update === 'object') {
+                                        draft[msgId].network = mergeNetworkData(draft[msgId].network, update);
+                                    }
                                 }
                             }
                         });
@@ -2976,35 +2973,7 @@ function ChatPage({
                         const newMessages = produce(messagesRef.current, (draft) => {
                             for (const [msgId, networkDelete] of Object.entries(payload.value)) {
                                 if (draft[msgId] && networkDelete && typeof networkDelete === 'object') {
-                                    const network = draft[msgId].network;
-
-                                    if (!network) {
-                                        continue;
-                                    }
-
-                                    if (networkDelete.nodes !== undefined) {
-                                        const deleteNodeKeys = toDeleteKeySet(networkDelete.nodes, getNodeMergeKey);
-
-                                        if (Array.isArray(network.nodes) && deleteNodeKeys.size > 0) {
-                                            network.nodes = network.nodes.filter(
-                                                (node) => !deleteNodeKeys.has(getNodeMergeKey(node)),
-                                            );
-                                        }
-                                    }
-
-                                    const normalizedNetworkDelete = normalizeNetworkData(networkDelete);
-                                    if (normalizedNetworkDelete.relationships !== undefined) {
-                                        const deleteRelKeys = toDeleteKeySet(
-                                            normalizedNetworkDelete.relationships,
-                                            getRelationshipMergeKey,
-                                        );
-
-                                        if (Array.isArray(network.relationships) && deleteRelKeys.size > 0) {
-                                            network.relationships = network.relationships.filter(
-                                                (rel) => !deleteRelKeys.has(getRelationshipMergeKey(rel)),
-                                            );
-                                        }
-                                    }
+                                    draft[msgId].network = removeNetworkData(draft[msgId].network, networkDelete);
                                 }
                             }
                         });
@@ -3021,10 +2990,11 @@ function ChatPage({
                     break;
                 case 'message.knowledge.focused':
                     if (payload.value && typeof payload.value === 'object') {
-                        for (const [msgId, nodeIds] of Object.entries(payload.value)) {
+                        for (const [msgId, focusUpdate] of Object.entries(payload.value)) {
                             const msg = messagesRef.current[msgId];
+                            const nodeIds = Array.isArray(focusUpdate) ? focusUpdate : focusUpdate?.nodeIds;
 
-                            if (msg && nodeIds) {
+                            if (msg && nodeIds && (!msg.network || !hasNetworkDatabaseConflict(msg.network, focusUpdate))) {
                                 const nvlInstance = msg.getComponent('nvlInstance');
 
                                 // 将需要聚焦的节点挂载到 msg 中
