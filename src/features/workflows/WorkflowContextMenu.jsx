@@ -50,9 +50,7 @@ export default function WorkflowContextMenu({
       >
         {menu.port ? (
           <>
-            <DropdownMenuLabel>
-              {menu.port.title || menu.port.name}
-            </DropdownMenuLabel>
+            <DropdownMenuLabel>{menu.port.display?.title}</DropdownMenuLabel>
             <DropdownMenuItem onSelect={() => onPortMode("external")}>
               <Plug />
               外接数据节点

@@ -52,6 +52,11 @@ const catalog = {
       version: 1,
       title: "输入来源",
       description: "初始化输入",
+      display: {
+        title: "输入来源",
+        subtitle: "SourceInput",
+        description: "初始化输入",
+      },
       category: "source",
       source: {
         configField: null,
@@ -80,14 +85,39 @@ const catalog = {
           documentId: { type: "string" },
         },
       },
-      inputs: [{ name: "value", type: "source-config", title: "输入覆盖" }],
-      outputs: [{ name: "source", type: "source" }],
+      inputs: [
+        {
+          name: "value",
+          type: "source-config",
+          display: {
+            title: "输入覆盖",
+            subtitle: "value · SourceConfig",
+            description: "替代来源配置",
+          },
+        },
+      ],
+      outputs: [
+        {
+          name: "source",
+          type: "source",
+          display: {
+            title: "输入来源",
+            subtitle: "source · SourceSnapshot",
+            description: "固定的来源内容",
+          },
+        },
+      ],
     },
     {
       kind: "extract",
       version: 1,
       title: "知识提取",
       description: "提取知识",
+      display: {
+        title: "知识提取",
+        subtitle: "KnowledgeExtractor",
+        description: "提取知识",
+      },
       category: "process",
       configurationWidgets: [
         {
@@ -100,23 +130,64 @@ const catalog = {
         additionalProperties: false,
         properties: {
           schemaId: { type: "string" },
-          schemaText: { type: "string" },
+          schemaText: {
+            type: "string",
+            display: {
+              title: "本次知识 Schema",
+              subtitle: "schema_text · str",
+              description: "用于本次提取的 Schema",
+            },
+          },
           max_concurrency: {
             type: "integer",
             title: "内部并发",
+            display: {
+              title: "内部并发",
+              subtitle: "max_concurrency · int",
+              description: "模型请求的并发数",
+            },
             default: 2,
             minimum: 1,
           },
-          modelId: { type: "string", ui: { widget: "model-picker" } },
+          modelId: {
+            type: "string",
+            display: { title: "提取模型", subtitle: "modelId · str" },
+            ui: { widget: "model-picker" },
+          },
         },
       },
-      inputs: [{ name: "bundle", type: "bundle" }],
-      outputs: [{ name: "extracted", type: "extracted" }],
+      inputs: [
+        {
+          name: "bundle",
+          type: "bundle",
+          display: {
+            title: "待提取内容",
+            subtitle: "bundle · ContentBundle",
+            description: "用于提取的内容",
+          },
+        },
+      ],
+      outputs: [
+        {
+          name: "extracted",
+          type: "extracted",
+          display: {
+            title: "提取结果",
+            subtitle: "extracted · ExtractedKnowledge",
+            description: "提取的知识结果",
+          },
+        },
+      ],
     },
     {
       kind: "text",
       version: 1,
       title: "文本数据",
+      display: {
+        title: "文本数据",
+        subtitle: "TextInput",
+        description: "提供文本输入",
+      },
       category: "source",
       configSchema: {
         type: "object",
@@ -128,7 +199,17 @@ const catalog = {
         default: "",
         required: true,
       },
-      outputs: [{ name: "value", type: "str", typeLabel: "文本" }],
+      outputs: [
+        {
+          name: "value",
+          type: "str",
+          display: {
+            title: "文本",
+            subtitle: "value · str",
+            description: "文本输入值",
+          },
+        },
+      ],
       inputs: [],
     },
   ],
@@ -436,6 +517,11 @@ test("workflow UI keeps constructor config separate, retains failed drafts, and 
       app.dom,
     );
     await click(document.querySelector('[data-node="extract-1"]'), app.dom);
+    assert.equal(
+      document.querySelector('[data-pointer="/max_concurrency"] .cje-subtitle')
+        .textContent,
+      "max_concurrency · int",
+    );
     await input(
       document.querySelector('.cje-form input[aria-label="内部并发"]') ||
         document.querySelector('input[aria-label="内部并发"]'),
@@ -447,7 +533,7 @@ test("workflow UI keeps constructor config separate, retains failed drafts, and 
     );
     await input(schemaSelect, "template:reference", app.dom, "change");
     await input(
-      document.querySelector('[aria-label="Schema 定义"]'),
+      document.querySelector('[aria-label="本次知识 Schema"]'),
       "entity Person { name: string, age: int }",
       app.dom,
     );
@@ -458,7 +544,7 @@ test("workflow UI keeps constructor config separate, retains failed drafts, and 
       /草稿已保留/,
     );
     assert.equal(
-      document.querySelector('[aria-label="Schema 定义"]').value,
+      document.querySelector('[aria-label="本次知识 Schema"]').value,
       "entity Person { name: string, age: int }",
     );
     globalThis.workflowUITest.fail = "";
@@ -505,8 +591,14 @@ test("unknown workflow nodes and settings render from catalog metadata without k
       {
         kind: "future-clock-input",
         version: 4,
-        title: "预约时间",
-        className: "ClockSource",
+        title: "过时节点标题不应显示",
+        className: "HiddenImplementation",
+        description: "过时节点描述不应显示",
+        display: {
+          title: "预约时间",
+          subtitle: "ClockSource",
+          description: "后端声明的节点说明",
+        },
         category: "custom-inputs",
         configSchema: {
           type: "object",
@@ -519,7 +611,17 @@ test("unknown workflow nodes and settings render from catalog metadata without k
         },
         inputs: [],
         outputs: [
-          { name: "instant", type: "epoch-seconds", typeLabel: "时间戳" },
+          {
+            name: "instant",
+            type: "epoch-seconds",
+            title: "过时端口标题",
+            typeLabel: "过时类型标签",
+            display: {
+              title: "时间戳",
+              subtitle: "instant · int",
+              description: "后端声明的端口说明",
+            },
+          },
         ],
       },
     ],
@@ -549,6 +651,34 @@ test("unknown workflow nodes and settings render from catalog metadata without k
       document.querySelector('[data-node="clock-1"]').textContent,
       /时间戳/,
     );
+    const rendered = document.querySelector('[data-node="clock-1"]');
+    assert.equal(
+      rendered.querySelector(".workflow-node-title strong").textContent,
+      "预约时间",
+    );
+    assert.equal(
+      rendered.querySelector(".workflow-node-id").textContent,
+      "ClockSource",
+    );
+    assert.equal(
+      rendered.querySelector(".workflow-port strong").textContent,
+      "时间戳",
+    );
+    assert.equal(
+      rendered.querySelector(".workflow-port small").textContent,
+      "instant · int",
+    );
+    assert.equal(
+      rendered.querySelector(".workflow-port span").title,
+      "后端声明的端口说明",
+    );
+    assert.doesNotMatch(
+      rendered.textContent,
+      /过时|HiddenImplementation|epoch-seconds/,
+    );
+    const palette = document.querySelector(".workflow-palette-node");
+    assert.match(palette.textContent, /后端声明的节点说明/);
+    assert.doesNotMatch(palette.textContent, /过时|HiddenImplementation/);
     assert.equal(document.querySelector('[aria-label="预约时间"]').value, "42");
     await input(
       document.querySelector('[aria-label="预约时间"]'),
@@ -587,6 +717,29 @@ test("resource initialization selects the full document at its revision", async 
     assert.equal(payload.graph.nodes[0].config.documentId, "doc-1");
     assert.equal(payload.graph.nodes[0].config.revision, 4);
     assert.deepEqual(payload.graph.nodes[0].inputs, {});
+  } finally {
+    await app.close();
+  }
+});
+
+test("omitted display subtitles stay absent and instance names override only the title", async () => {
+  const custom = structuredClone(catalog);
+  const inputDefinition = custom.nodes[0];
+  delete inputDefinition.display.subtitle;
+  inputDefinition.className = "ShouldNotBeInferred";
+  delete inputDefinition.outputs[0].display.subtitle;
+  inputDefinition.outputs[0].typeLabel = "ShouldNotBeInferredType";
+  custom.standardGraph.nodes[0].name = "用户输入名";
+  const app = await environment({}, { catalog: custom });
+  try {
+    const rendered = document.querySelector('[data-node="input-1"]');
+    assert.equal(
+      rendered.querySelector(".workflow-node-title strong").textContent,
+      "用户输入名",
+    );
+    assert.equal(rendered.querySelector(".workflow-node-id"), null);
+    assert.equal(rendered.querySelector(".workflow-port-output small"), null);
+    assert.doesNotMatch(rendered.textContent, /ShouldNotBeInferred/);
   } finally {
     await app.close();
   }

@@ -12,12 +12,7 @@ import {
   Hash,
   ToggleLeft,
 } from "lucide-react";
-import {
-  nodeCategory,
-  sourceNodeValue,
-  workflowPortDescription,
-  workflowPortTypeLabel,
-} from "./workflowModel.js";
+import { nodeCategory, sourceNodeValue } from "./workflowModel.js";
 import WorkflowDataField from "./WorkflowDataField.jsx";
 import { workflowStatusLabels } from "./workflowStatus.js";
 
@@ -48,8 +43,8 @@ export default function WorkflowNode({ data, selected }) {
     >
       <div className="workflow-node-title">
         <Icon className="size-4 text-primary" />
-        <strong title={node.name || definition?.title}>
-          {node.name || definition?.title || node.kind}
+        <strong title={node.name || definition?.display?.title}>
+          {node.name || definition?.display?.title}
         </strong>
         {status === "running" && <Loader2 className="size-3 animate-spin" />}
         {["completed", "succeeded"].includes(status) && (
@@ -57,10 +52,9 @@ export default function WorkflowNode({ data, selected }) {
         )}
         {status === "failed" && <XCircle className="size-3 text-destructive" />}
       </div>
-      <p className="workflow-node-id">
-        {definition?.className || definition?.implementation?.name || node.kind}
-        {node.inputKey && ` · ${node.inputKey}`}
-      </p>
+      {definition?.display?.subtitle && (
+        <p className="workflow-node-id">{definition.display.subtitle}</p>
+      )}
       {definition?.source && (
         <div
           className="workflow-source-value nodrag nowheel"
@@ -69,7 +63,7 @@ export default function WorkflowNode({ data, selected }) {
           <WorkflowDataField
             value={sourceNodeValue(node, definition)}
             schema={definition.source.valueSchema}
-            label={node.name || definition?.title || "输入内容"}
+            label={node.name || definition?.display?.title}
             compact
             disabled={readOnly}
             onChange={(value) => data.onValue(node.id, value)}
@@ -104,9 +98,11 @@ export default function WorkflowNode({ data, selected }) {
                     id={port.name}
                   />
                 )}
-                <span title={workflowPortDescription(port)}>
-                  {port.title || port.name}
-                  <small>{workflowPortTypeLabel(port)}</small>
+                <span title={port.display?.description}>
+                  <strong>{port.display?.title}</strong>
+                  {port.display?.subtitle && (
+                    <small>{port.display.subtitle}</small>
+                  )}
                 </span>
                 {inline && (
                   <div
@@ -114,7 +110,7 @@ export default function WorkflowNode({ data, selected }) {
                     onPointerDown={(event) => event.stopPropagation()}
                   >
                     <WorkflowDataField
-                      label={port.title || port.name}
+                      label={port.display?.title}
                       schema={schema}
                       compact
                       value={node.inputs[port.name].value}
@@ -135,9 +131,11 @@ export default function WorkflowNode({ data, selected }) {
         <div>
           {(definition?.outputs || []).map((port) => (
             <div className="workflow-port workflow-port-output" key={port.name}>
-              <span title={workflowPortDescription(port)}>
-                {port.title || port.name}
-                <small>{workflowPortTypeLabel(port)}</small>
+              <span title={port.display?.description}>
+                <strong>{port.display?.title}</strong>
+                {port.display?.subtitle && (
+                  <small>{port.display.subtitle}</small>
+                )}
               </span>
               <Handle type="source" position={Position.Right} id={port.name} />
             </div>

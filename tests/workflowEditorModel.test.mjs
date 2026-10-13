@@ -10,8 +10,6 @@ import {
   normalizeGraph,
   removeWorkflowNodes,
   scalarSchema,
-  workflowPortDescription,
-  workflowPortTypeLabel,
   workflowPortsCompatible,
   workflowInputFields,
   sourceNodeValue,
@@ -81,7 +79,12 @@ test("unseen node kinds use catalog source bindings, categories and type names",
     kind: "future-clock-input",
     version: 7,
     category: "custom-inputs",
-    title: "预约时间",
+    title: "过时标题",
+    display: {
+      title: "预约时间",
+      subtitle: "ClockSource",
+      description: "预约时间输入",
+    },
     source: {
       configField: "timestamp",
       required: false,
@@ -112,11 +115,7 @@ test("unseen node kinds use catalog source bindings, categories and type names",
       default: 42,
     },
   ]);
-  assert.equal(workflowPortTypeLabel({ type: "str" }), "str");
-  assert.equal(
-    workflowPortTypeLabel({ type: "str", typeLabel: "后端文本名称" }),
-    "后端文本名称",
-  );
+  assert.equal(created.name, "预约时间");
   const settings = normalizeGraph(
     { settings: { commonConfig: { retries: 2 } } },
     { maxConcurrency: 12, commonConfig: { retries: 5, timeout: 80 } },
@@ -302,36 +301,6 @@ test("typed ports reject malformed and cyclic connections and permit valid branc
 });
 
 test("annotated port types stay distinct and accept only declared legacy-compatible values", () => {
-  assert.equal(
-    workflowPortTypeLabel({ type: "content-bundle" }),
-    "content-bundle",
-  );
-  assert.equal(
-    workflowPortTypeLabel({ type: "image-enriched-bundle" }),
-    "image-enriched-bundle",
-  );
-  assert.equal(
-    workflowPortTypeLabel({
-      type: "content-bundle",
-      typeLabel: "后端指定名称",
-    }),
-    "后端指定名称",
-  );
-  assert.equal(
-    workflowPortTypeLabel({ type: "custom-distribution" }),
-    "custom-distribution",
-  );
-  assert.match(
-    workflowPortDescription({
-      name: "bundle",
-      type: "content-bundle",
-      accepts: ["bundle"],
-      acceptsLabels: ["旧版内容集合"],
-      typeDescription: "已解析的文本、图片和来源信息",
-      pythonAnnotation: "ContentBundle",
-    }),
-    /还接受：旧版内容集合.*类型：已解析的文本、图片和来源信息.*Python: ContentBundle/s,
-  );
   const source = { type: "content-bundle" };
   assert.equal(
     workflowPortsCompatible(source, { type: "image-enriched-bundle" }),

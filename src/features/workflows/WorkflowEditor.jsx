@@ -866,7 +866,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                           (definition) =>
                             !definition.hidden &&
                             definition.category === category &&
-                            `${definition.title} ${definition.className} ${definition.kind} ${definition.description}`
+                            `${definition.display?.title || ""} ${definition.display?.subtitle || ""} ${definition.display?.description || ""}`
                               .toLowerCase()
                               .includes(search.toLowerCase()),
                         )
@@ -888,9 +888,14 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                           >
                             <div className="flex items-center gap-2">
                               <Plus className="size-4 shrink-0 text-primary" />
-                              <strong>{definition.title}</strong>
+                              <strong>{definition.display?.title}</strong>
                             </div>
-                            <p>{definition.description}</p>
+                            {definition.display?.subtitle && (
+                              <p>{definition.display.subtitle}</p>
+                            )}
+                            {definition.display?.description && (
+                              <p>{definition.display.description}</p>
+                            )}
                           </button>
                         ))}
                     </section>

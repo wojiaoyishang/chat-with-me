@@ -87,12 +87,10 @@ export default function WorkflowMonitorPanel({
         <>
           <section className="space-y-3 border-t pt-4">
             <h3 className="font-semibold">
-              {node.name || definition?.title || node.id}
+              {node.name || definition?.display?.title}
             </h3>
             <p className="text-xs text-muted-foreground">
-              {definition?.className ||
-                definition?.implementationName ||
-                node.kind}
+              {definition?.display?.subtitle}
             </p>
             <div className="workflow-runtime-stats">
               <div>

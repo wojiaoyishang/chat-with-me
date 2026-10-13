@@ -8,8 +8,6 @@ import {
   catalogNode,
   normalizeWorkflowSchema,
   scalarSchema,
-  workflowPortDescription,
-  workflowPortTypeLabel,
 } from "./workflowModel.js";
 import WorkflowDataField from "./WorkflowDataField.jsx";
 
@@ -77,15 +75,14 @@ export default function WorkflowNodePanel({
   return (
     <div className="space-y-5">
       <section className="space-y-2">
-        <h3 className="font-semibold">{definition.title}</h3>
+        <h3 className="font-semibold">{definition.display?.title}</h3>
         <p className="text-xs text-muted-foreground">
-          {definition.className || definition.implementation?.name || node.kind}{" "}
-          · v{node.version}
+          {definition.display?.subtitle}
         </p>
         <label className="workflow-label">节点名称</label>
         <Input
           aria-label="节点名称"
-          value={node.name || definition.title}
+          value={node.name || definition.display?.title || ""}
           disabled={disabled}
           onChange={(event) => update({ name: event.target.value })}
         />
@@ -95,7 +92,7 @@ export default function WorkflowNodePanel({
           </p>
         )}
         <p className="text-sm text-muted-foreground">
-          {definition.description}
+          {definition.display?.description}
         </p>
       </section>
       {definition.source ? (
@@ -114,11 +111,11 @@ export default function WorkflowNodePanel({
               <section className="space-y-2 rounded-lg border p-3" key={key}>
                 <div className="flex items-center justify-between gap-2">
                   <label className="workflow-label m-0">
-                    {property.title || key}
+                    {property.display?.title}
                   </label>
                   <label className="flex cursor-pointer items-center gap-2 text-xs">
                     <Checkbox
-                      aria-label={`${property.title || key} 遵循全局设置`}
+                      aria-label={`${property.display?.title || ""} 遵循全局设置`}
                       checked={inherited}
                       disabled={disabled}
                       onCheckedChange={(value) =>
@@ -131,6 +128,11 @@ export default function WorkflowNodePanel({
                     遵循全局设置
                   </label>
                 </div>
+                {property.display?.subtitle && (
+                  <p className="text-xs text-muted-foreground">
+                    {property.display.subtitle}
+                  </p>
+                )}
                 {inherited ? (
                   <p className="text-xs text-muted-foreground">
                     全局值：
@@ -142,7 +144,7 @@ export default function WorkflowNodePanel({
                   </p>
                 ) : (
                   <WorkflowDataField
-                    label={property.title || key}
+                    label={property.display?.title}
                     schema={property}
                     value={node.config?.[key]}
                     disabled={disabled}
@@ -153,9 +155,9 @@ export default function WorkflowNodePanel({
                     }
                   />
                 )}
-                {property.description && (
+                {property.display?.description && (
                   <p className="text-xs text-muted-foreground">
-                    {property.description}
+                    {property.display.description}
                   </p>
                 )}
               </section>
@@ -166,6 +168,7 @@ export default function WorkflowNodePanel({
             .map((widget, index) => (
               <WorkflowSchemaEditor
                 key={`${widget.widget}:${index}`}
+                display={schema.properties?.schemaText?.display}
                 value={node.config || {}}
                 onChange={updateConfig}
                 disabled={disabled}
@@ -177,10 +180,10 @@ export default function WorkflowNodePanel({
             .map((key) => (
               <div className="space-y-2" key={key}>
                 <label className="workflow-label">
-                  {schema.properties[key].title || key}
+                  {schema.properties[key].display?.title}
                 </label>
                 <WorkflowDataField
-                  label={schema.properties[key].title || key}
+                  label={schema.properties[key].display?.title}
                   value={node.config?.[key]}
                   disabled={disabled}
                   schema={schema.properties[key]}
@@ -189,6 +192,11 @@ export default function WorkflowNodePanel({
                     updateConfig({ ...node.config, [key]: value })
                   }
                 />
+                {schema.properties[key].display?.subtitle && (
+                  <p className="text-xs text-muted-foreground">
+                    {schema.properties[key].display.subtitle}
+                  </p>
+                )}
               </div>
             ))}
           {regularKeys.length > 0 && (
@@ -240,27 +248,18 @@ export default function WorkflowNodePanel({
             <div
               className="text-xs"
               key={`${port.name}:${index}`}
-              title={workflowPortDescription(port)}
+              title={port.display?.description}
             >
-              <strong>{port.title || port.name}</strong>
-              <span className="ml-2 text-muted-foreground">
-                {port.name} · {workflowPortTypeLabel(port)} ({port.type})
-              </span>
-              {port.accepts?.length > 0 && (
+              <strong>{port.display?.title}</strong>
+              {port.display?.subtitle && (
                 <p className="mt-1 text-muted-foreground">
-                  兼容输入：
-                  {port.accepts
-                    .map((type, index) => port.acceptsLabels?.[index] || type)
-                    .join("、")}
+                  {port.display.subtitle}
                 </p>
               )}
-              {port.pythonAnnotation && (
-                <p className="mt-1 break-all font-mono text-muted-foreground">
-                  {port.pythonAnnotation}
+              {port.display?.description && (
+                <p className="mt-1 text-muted-foreground">
+                  {port.display.description}
                 </p>
-              )}
-              {port.description && (
-                <p className="mt-1 text-muted-foreground">{port.description}</p>
               )}
             </div>
           ),

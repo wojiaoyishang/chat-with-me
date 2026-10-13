@@ -12,6 +12,7 @@ export default function WorkflowSchemaEditor({
   onChange,
   disabled,
   onBusyChange,
+  display,
 }) {
   const [templates, setTemplates] = useState([]);
   const [saved, setSaved] = useState([]);
@@ -140,7 +141,13 @@ export default function WorkflowSchemaEditor({
   };
   return (
     <section className="space-y-3" aria-label="动态知识 Schema">
-      <label className="workflow-label">知识 Schema</label>
+      <label className="workflow-label">{display?.title}</label>
+      {display?.subtitle && (
+        <p className="text-xs text-muted-foreground">{display.subtitle}</p>
+      )}
+      {display?.description && (
+        <p className="text-xs text-muted-foreground">{display.description}</p>
+      )}
       {loading ? (
         <p className="text-sm text-muted-foreground">正在加载参考模板…</p>
       ) : (
@@ -166,7 +173,7 @@ export default function WorkflowSchemaEditor({
         选择参考模板后可以直接修改；修改内容随工作流保存，参考文件不会被覆盖。
       </p>
       <MultilineEditor
-        label="Schema 定义"
+        label={display?.title}
         rows={12}
         value={text}
         disabled={disabled || busy}

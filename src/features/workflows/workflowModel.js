@@ -122,24 +122,6 @@ export function nodeCategory(definition) {
   return definition?.category || "";
 }
 
-export function workflowPortTypeLabel(port) {
-  return port?.typeLabel || port?.type || "未知类型";
-}
-
-export function workflowPortDescription(port) {
-  const type = workflowPortTypeLabel(port);
-  const accepted = (port?.accepts || [])
-    .filter((item) => item !== port.type)
-    .map(
-      (item) =>
-        port.acceptsLabels?.[(port.accepts || []).indexOf(item)] || item,
-    );
-  const compatibility = accepted.length
-    ? `\n还接受：${accepted.join("、")}`
-    : "";
-  return `${port?.title || port?.name || "端口"} · ${type} (${port?.type || "?"})${compatibility}${port?.typeDescription ? `\n类型：${port.typeDescription}` : ""}${port?.description ? `\n${port.description}` : ""}${port?.pythonAnnotation ? `\nPython: ${port.pythonAnnotation}` : ""}`;
-}
-
 export function workflowPortsCompatible(output, input) {
   return (
     input?.acceptsAny === true ||
@@ -156,7 +138,7 @@ export function workflowInputFields(graph, definitions = []) {
       return {
         key: node.inputKey || node.id,
         nodeId: node.id,
-        title: node.name || definition?.title || node.id,
+        title: node.name || definition?.display?.title,
         required: definition.source.required !== false,
         schema: definition.source.valueSchema || {},
         default: sourceNodeValue(node, definition),
@@ -201,7 +183,7 @@ export function createWorkflowNode(definition, graph, position) {
   return {
     id: `${definition.kind}-${index}`,
     kind: definition.kind,
-    name: definition.title || definition.kind,
+    name: definition.display?.title || "",
     ...(definition.source ? { inputKey: `${definition.kind}-${index}` } : {}),
     version: definition.version,
     config: schemaDefaults(definition.configSchema) || {},
@@ -324,7 +306,7 @@ export function connectWorkflow(graph, connection, definitions) {
     throw new Error("节点端口不存在，请重新加载节点定义。");
   if (!workflowPortsCompatible(output, input))
     throw new Error(
-      `端口类型不兼容：${workflowPortTypeLabel(output)} (${output.type}) → ${workflowPortTypeLabel(input)} (${input.type})`,
+      `端口类型不兼容：${output.display?.subtitle || ""} → ${input.display?.subtitle || ""}`,
     );
   const reachable = new Set([target.id]);
   for (let round = 0; round < graph.nodes.length; round += 1) {
