@@ -105,9 +105,10 @@ function FullWorkflowSourcePicker({
   disabled,
   onBusyChange,
   fixedType,
+  sourceOptions = [],
   compact = false,
 }) {
-  const sourceType = fixedType || value.sourceType || "file";
+  const sourceType = fixedType || value.sourceType || sourceOptions[0]?.value;
   const [query, setQuery] = useState("");
   const [offset, setOffset] = useState(0);
   const [items, setItems] = useState([]);
@@ -256,12 +257,7 @@ function FullWorkflowSourcePicker({
               setQuery("");
               onChange({ ...value, sourceType: next });
             }}
-            options={[
-              { value: "file", label: "上传或选择附件" },
-              { value: "document", label: "选择整个文档" },
-              { value: "image", label: "图片附件" },
-              { value: "text", label: "文本内容" },
-            ]}
+            options={sourceOptions}
           />
         </>
       )}

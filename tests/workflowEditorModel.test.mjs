@@ -13,12 +13,20 @@ import {
   workflowPortDescription,
   workflowPortTypeLabel,
   workflowPortsCompatible,
+  workflowInputFields,
+  sourceNodeValue,
+  sourceValueConfig,
+  nodeCategory,
+  resolveWorkflowSchema,
+  workflowValueMissing,
 } from "../src/features/workflows/workflowModel.js";
 
 const definitions = [
   {
     kind: "input",
     version: 1,
+    category: "source",
+    source: { configField: null, valueSchema: { type: "object" }, default: {} },
     configSchema: {
       type: "object",
       properties: {
@@ -66,6 +74,90 @@ const graph = normalizeGraph({
 test("native editors retain their own undo shortcuts", () => {
   assert.equal(isWorkflowTextEditing({ closest: () => ({}) }), true);
   assert.equal(isWorkflowTextEditing({ closest: () => null }), false);
+});
+
+test("unseen node kinds use catalog source bindings, categories and type names", () => {
+  const definition = {
+    kind: "future-clock-input",
+    version: 7,
+    category: "custom-inputs",
+    title: "预约时间",
+    source: {
+      configField: "timestamp",
+      required: false,
+      valueSchema: { type: "integer", default: 42 },
+      default: 42,
+    },
+    configSchema: {
+      type: "object",
+      properties: { timestamp: { type: "integer", default: 42 } },
+    },
+  };
+  const created = createWorkflowNode(definition, normalizeGraph());
+  assert.equal(created.inputKey, "future-clock-input-1");
+  assert.equal(nodeCategory(definition), "custom-inputs");
+  assert.equal(nodeCategory({ kind: "text" }), "");
+  assert.equal(sourceNodeValue(created, definition), 42);
+  assert.deepEqual(sourceValueConfig(definition, 108, { timezone: "UTC" }), {
+    timezone: "UTC",
+    timestamp: 108,
+  });
+  assert.deepEqual(workflowInputFields({ nodes: [created] }, [definition]), [
+    {
+      key: created.inputKey,
+      nodeId: created.id,
+      title: "预约时间",
+      required: false,
+      schema: { type: "integer", default: 42 },
+      default: 42,
+    },
+  ]);
+  assert.equal(workflowPortTypeLabel({ type: "str" }), "str");
+  assert.equal(
+    workflowPortTypeLabel({ type: "str", typeLabel: "后端文本名称" }),
+    "后端文本名称",
+  );
+  const settings = normalizeGraph(
+    { settings: { commonConfig: { retries: 2 } } },
+    { maxConcurrency: 12, commonConfig: { retries: 5, timeout: 80 } },
+  ).settings;
+  assert.deepEqual(settings, {
+    maxConcurrency: 12,
+    commonConfig: { retries: 2, timeout: 80 },
+  });
+  assert.deepEqual(normalizeGraph().settings, {});
+});
+
+test("backend schema controls required compound sources and referenced configuration", () => {
+  const root = {
+    $defs: {
+      Shared: {
+        type: "object",
+        properties: { concurrency: { type: "integer" } },
+      },
+    },
+  };
+  assert.equal(
+    resolveWorkflowSchema({ $ref: "#/$defs/Shared", title: "共享参数" }, root)
+      .type,
+    "object",
+  );
+  assert.equal(
+    resolveWorkflowSchema({ $ref: "#/$defs/Shared", title: "共享参数" }, root)
+      .title,
+    "共享参数",
+  );
+  assert.equal(
+    workflowValueMissing({ documentId: "" }, { required: ["documentId"] }),
+    true,
+  );
+  assert.equal(
+    workflowValueMissing({ documentId: "doc-1" }, { required: ["documentId"] }),
+    false,
+  );
+  assert.equal(workflowValueMissing([], { type: "array", minItems: 1 }), true);
+  assert.equal(workflowValueMissing([], { type: "array" }), false);
+  assert.equal(workflowValueMissing(false, { type: "boolean" }), false);
 });
 
 test("annotated catalog ranges become standard form constraints without mutation", () => {
@@ -210,10 +302,13 @@ test("typed ports reject malformed and cyclic connections and permit valid branc
 });
 
 test("annotated port types stay distinct and accept only declared legacy-compatible values", () => {
-  assert.equal(workflowPortTypeLabel({ type: "content-bundle" }), "结构化内容");
+  assert.equal(
+    workflowPortTypeLabel({ type: "content-bundle" }),
+    "content-bundle",
+  );
   assert.equal(
     workflowPortTypeLabel({ type: "image-enriched-bundle" }),
-    "图片理解阶段输出",
+    "image-enriched-bundle",
   );
   assert.equal(
     workflowPortTypeLabel({
@@ -231,6 +326,7 @@ test("annotated port types stay distinct and accept only declared legacy-compati
       name: "bundle",
       type: "content-bundle",
       accepts: ["bundle"],
+      acceptsLabels: ["旧版内容集合"],
       typeDescription: "已解析的文本、图片和来源信息",
       pythonAnnotation: "ContentBundle",
     }),
@@ -248,7 +344,11 @@ test("annotated port types stay distinct and accept only declared legacy-compati
     }),
     true,
   );
-  assert.equal(workflowPortsCompatible(source, { type: "any" }), true);
+  assert.equal(
+    workflowPortsCompatible(source, { type: "any", acceptsAny: true }),
+    true,
+  );
+  assert.equal(workflowPortsCompatible(source, { type: "any" }), false);
   const annotated = [
     {
       kind: "source-bundle",

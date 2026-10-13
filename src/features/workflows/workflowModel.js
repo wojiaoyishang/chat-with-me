@@ -33,6 +33,22 @@ export function scalarSchema(schema = {}) {
   return variant ? scalarSchema({ ...base, ...variant }) : schema;
 }
 
+export function resolveWorkflowSchema(schema = {}, root = schema) {
+  if (!schema.$ref?.startsWith("#/")) return schema;
+  const target = schema.$ref
+    .slice(2)
+    .split("/")
+    .reduce(
+      (value, token) =>
+        value?.[token.replaceAll("~1", "/").replaceAll("~0", "~")],
+      root,
+    );
+  if (!target) return schema;
+  const rest = { ...schema };
+  delete rest.$ref;
+  return { ...target, ...rest, ...(root.$defs ? { $defs: root.$defs } : {}) };
+}
+
 export function schemaDefaults(schema = {}) {
   if (Object.hasOwn(schema, "default")) return clone(schema.default);
   if (schema.type === "object" || schema.properties) {
@@ -45,21 +61,22 @@ export function schemaDefaults(schema = {}) {
   return undefined;
 }
 
-export function normalizeGraph(graph) {
+export function normalizeGraph(graph, settingsDefaults = {}) {
   return {
     version: graph?.version || 2,
     nodes: clone(graph?.nodes || []),
     edges: clone(graph?.edges || []),
     settings: {
-      maxConcurrency: 4,
+      ...clone(settingsDefaults),
       ...graph?.settings,
-      commonConfig: {
-        try_times: 3,
-        retry_delay: 1,
-        max_concurrency: 2,
-        modelId: "",
-        ...graph?.settings?.commonConfig,
-      },
+      ...(settingsDefaults.commonConfig || graph?.settings?.commonConfig
+        ? {
+            commonConfig: {
+              ...clone(settingsDefaults.commonConfig || {}),
+              ...graph?.settings?.commonConfig,
+            },
+          }
+        : {}),
     },
     variables: clone(graph?.variables || {}),
   };
@@ -89,8 +106,8 @@ export function updateWorkflowNodePositions(graph, moved = []) {
   return changed ? { ...graph, nodes } : graph;
 }
 
-export function initializeGraph(graph, definitions) {
-  const next = normalizeGraph(graph);
+export function initializeGraph(graph, definitions, settingsDefaults) {
+  const next = normalizeGraph(graph, settingsDefaults);
   next.nodes = next.nodes.map((node) => ({
     ...node,
     config: {
@@ -101,55 +118,22 @@ export function initializeGraph(graph, definitions) {
   return next;
 }
 
-export function nodeCategory(definition, node) {
-  if (definition?.category) return definition.category;
-  if (
-    ["input", "text", "number", "boolean", "attachments", "document"].includes(
-      node?.kind || definition?.kind,
-    )
-  )
-    return "source";
-  return ["ingest", "result"].includes(node?.kind || definition?.kind)
-    ? "sink"
-    : "process";
+export function nodeCategory(definition) {
+  return definition?.category || "";
 }
 
-const workflowPortLabels = {
-  any: "任意结果",
-  str: "文本",
-  string: "文本",
-  number: "数字",
-  int: "整数",
-  integer: "整数",
-  float: "小数",
-  bool: "布尔值",
-  boolean: "布尔值",
-  "text-chunks": "文本块列表",
-  network: "知识网络",
-  "source-snapshot": "来源快照",
-  "content-bundle": "结构化内容",
-  "image-enriched-bundle": "图片理解阶段输出",
-  "extracted-knowledge": "知识提取结果",
-  // Old saved graphs retain these port types until explicitly migrated.
-  source: "旧版来源",
-  bundle: "旧版内容集合",
-  extracted: "旧版提取结果",
-};
-
 export function workflowPortTypeLabel(port) {
-  return (
-    port?.typeLabel ||
-    workflowPortLabels[port?.type] ||
-    port?.type ||
-    "未知类型"
-  );
+  return port?.typeLabel || port?.type || "未知类型";
 }
 
 export function workflowPortDescription(port) {
   const type = workflowPortTypeLabel(port);
   const accepted = (port?.accepts || [])
     .filter((item) => item !== port.type)
-    .map((item) => workflowPortTypeLabel({ type: item }));
+    .map(
+      (item) =>
+        port.acceptsLabels?.[(port.accepts || []).indexOf(item)] || item,
+    );
   const compatibility = accepted.length
     ? `\n还接受：${accepted.join("、")}`
     : "";
@@ -158,7 +142,7 @@ export function workflowPortDescription(port) {
 
 export function workflowPortsCompatible(output, input) {
   return (
-    input?.type === "any" ||
+    input?.acceptsAny === true ||
     output?.type === input?.type ||
     (input?.accepts || []).includes(output?.type)
   );
@@ -166,43 +150,48 @@ export function workflowPortsCompatible(output, input) {
 
 export function workflowInputFields(graph, definitions = []) {
   return graph.nodes
-    .filter(
-      (node) => nodeCategory(catalogNode(definitions, node), node) === "source",
-    )
+    .filter((node) => Boolean(catalogNode(definitions, node)?.source))
     .map((node) => {
       const definition = catalogNode(definitions, node);
-      const schema = definition?.configSchema?.properties || {};
       return {
         key: node.inputKey || node.id,
         nodeId: node.id,
         title: node.name || definition?.title || node.id,
-        kind: node.kind,
-        required: true,
-        schema: schema.value || {},
-        default: sourceNodeValue(node),
+        required: definition.source.required !== false,
+        schema: definition.source.valueSchema || {},
+        default: sourceNodeValue(node, definition),
       };
     });
 }
 
-export function sourceNodeValue(node) {
-  if (node.kind === "attachments") return node.config?.resources || [];
-  if (node.kind === "document")
-    return {
-      documentId: node.config?.documentId || "",
-      revision: node.config?.revision ?? null,
-    };
-  if (node.kind === "input") return clone(node.config || {});
-  return (
-    node.config?.value ??
-    (node.kind === "number" ? 0 : node.kind === "boolean" ? false : "")
-  );
+export function sourceNodeValue(node, definition) {
+  const source = definition?.source;
+  if (!source) return undefined;
+  const value =
+    source.configField == null
+      ? node.config
+      : node.config?.[source.configField];
+  return clone(value ?? source.default ?? schemaDefaults(source.valueSchema));
 }
 
-export function sourceValueConfig(kind, value, current = {}) {
-  if (kind === "attachments") return { ...current, resources: value || [] };
-  if (kind === "document") return { ...current, ...value };
-  if (kind === "input") return { ...current, ...value };
-  return { ...current, value };
+export function sourceValueConfig(definition, value, current = {}) {
+  const source = definition?.source;
+  if (!source) return current;
+  return source.configField == null
+    ? { ...current, ...value }
+    : { ...current, [source.configField]: value };
+}
+
+/** Required inputs follow the supplied schema, including compound sources. */
+export function workflowValueMissing(value, schema = {}) {
+  if (value == null || value === "") return true;
+  schema = scalarSchema(resolveWorkflowSchema(schema));
+  if (Array.isArray(value)) return value.length < (schema.minItems || 0);
+  if (typeof value === "object")
+    return (schema.required || []).some((key) =>
+      workflowValueMissing(value[key], schema.properties?.[key]),
+    );
+  return false;
 }
 
 export function createWorkflowNode(definition, graph, position) {
@@ -213,9 +202,7 @@ export function createWorkflowNode(definition, graph, position) {
     id: `${definition.kind}-${index}`,
     kind: definition.kind,
     name: definition.title || definition.kind,
-    ...(nodeCategory(definition) === "source"
-      ? { inputKey: `${definition.kind}-${index}` }
-      : {}),
+    ...(definition.source ? { inputKey: `${definition.kind}-${index}` } : {}),
     version: definition.version,
     config: schemaDefaults(definition.configSchema) || {},
     inputs: {},
@@ -306,14 +293,7 @@ export function setWorkflowPortMode(graph, nodeId, port, mode, schema = {}) {
     mode === "inline"
       ? {
           type: "literal",
-          value:
-            node.inputs?.[port]?.value ??
-            schema.default ??
-            (schema.type === "boolean"
-              ? false
-              : ["number", "integer"].includes(schema.type)
-                ? 0
-                : ""),
+          value: node.inputs?.[port]?.value ?? schemaDefaults(schema),
         }
       : null,
   );

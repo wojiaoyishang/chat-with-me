@@ -12,8 +12,11 @@ import JsonConfigEditor from "@/components/setting/JsonConfigEditor.jsx";
 import WorkflowDataField from "./WorkflowDataField.jsx";
 import { WorkflowSelect } from "./WorkflowSourcePicker.jsx";
 import { workflowApi } from "./workflowApi.js";
-import { clone, workflowInputFields } from "./workflowModel.js";
-import { permissionsSchema } from "./workflowForms.js";
+import {
+  clone,
+  workflowInputFields,
+  workflowValueMissing,
+} from "./workflowModel.js";
 import "./workflow.css";
 
 /** Templates expose source nodes as a form; quick runs never open a builder. */
@@ -30,10 +33,8 @@ export default function QuickTemplateRunDialog({
   const [fields, setFields] = useState([]);
   const [values, setValues] = useState({});
   const [title, setTitle] = useState("");
-  const [permissions, setPermissions] = useState({
-    sharingMembers: [],
-    includeSources: true,
-  });
+  const [permissions, setPermissions] = useState({});
+  const [permissionsSchema, setPermissionsSchema] = useState({});
   const [invalid, setInvalid] = useState(false);
   const [uploading, setUploading] = useState({});
   const [loading, setLoading] = useState(true);
@@ -58,6 +59,8 @@ export default function QuickTemplateRunDialog({
           setTemplates(saved.templates || []);
           setBuiltinTemplates(catalog.builtinTemplates || []);
           setDefinitions(catalog.nodes || []);
+          setPermissionsSchema(catalog.permissionsSchema || {});
+          setPermissions(clone(catalog.permissionsDefaults || {}));
         }
       })
       .catch((cause) => {
@@ -129,10 +132,7 @@ export default function QuickTemplateRunDialog({
         const value = values[field.key];
         if (
           field.required !== false &&
-          (value == null ||
-            value === "" ||
-            (field.kind === "attachments" && !value.length) ||
-            (field.kind === "document" && !value.documentId))
+          workflowValueMissing(value, field.schema)
         )
           throw new Error(`请填写“${field.title || field.key}”。`);
       }
@@ -241,7 +241,6 @@ export default function QuickTemplateRunDialog({
                             </p>
                           )}
                           <WorkflowDataField
-                            kind={field.kind}
                             schema={field.schema}
                             label={field.title || field.key}
                             value={values[field.key]}

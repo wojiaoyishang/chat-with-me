@@ -2,12 +2,15 @@ import { useEffect } from "react";
 import { Handle, Position, useUpdateNodeInternals } from "@xyflow/react";
 import {
   Check,
-  FileOutput,
+  Database,
+  File,
   GitBranch,
   Loader2,
   Paperclip,
   Type,
   XCircle,
+  Hash,
+  ToggleLeft,
 } from "lucide-react";
 import {
   nodeCategory,
@@ -21,7 +24,7 @@ import { workflowStatusLabels } from "./workflowStatus.js";
 export default function WorkflowNode({ data, selected }) {
   const { node, definition, runtime = {}, readOnly } = data;
   const status = data.status;
-  const category = nodeCategory(definition, node);
+  const category = nodeCategory(definition);
   const refresh = useUpdateNodeInternals();
   const inlineSignature = Object.keys(node.inputs || {})
     .filter((key) => node.inputs[key]?.type === "literal")
@@ -30,13 +33,15 @@ export default function WorkflowNode({ data, selected }) {
     refresh(node.id);
   }, [refresh, node.id, inlineSignature]);
   const Icon =
-    category === "sink"
-      ? FileOutput
-      : category === "source"
-        ? node.kind === "attachments"
-          ? Paperclip
-          : Type
-        : GitBranch;
+    {
+      file: File,
+      database: Database,
+      workflow: GitBranch,
+      attachment: Paperclip,
+      text: Type,
+      number: Hash,
+      boolean: ToggleLeft,
+    }[definition?.presentation?.icon] || GitBranch;
   return (
     <div
       className={`workflow-node category-${category} ${selected ? "is-selected" : ""} ${status ? `status-${status}` : ""}`}
@@ -53,17 +58,17 @@ export default function WorkflowNode({ data, selected }) {
         {status === "failed" && <XCircle className="size-3 text-destructive" />}
       </div>
       <p className="workflow-node-id">
-        {definition?.title || node.kind}
+        {definition?.className || definition?.implementation?.name || node.kind}
         {node.inputKey && ` · ${node.inputKey}`}
       </p>
-      {category === "source" && (
+      {definition?.source && (
         <div
           className="workflow-source-value nodrag nowheel"
           onPointerDown={(event) => event.stopPropagation()}
         >
           <WorkflowDataField
-            kind={node.kind}
-            value={sourceNodeValue(node)}
+            value={sourceNodeValue(node, definition)}
+            schema={definition.source.valueSchema}
             label={node.name || definition?.title || "输入内容"}
             compact
             disabled={readOnly}
@@ -74,92 +79,69 @@ export default function WorkflowNode({ data, selected }) {
       )}
       <div className="workflow-node-ports">
         <div>
-          {category !== "source" &&
-            (definition?.inputs || []).map((port) => {
-              const inline = node.inputs?.[port.name]?.type === "literal";
-              const schema =
-                port.schema ||
-                definition.inputSchema?.properties?.[port.name] ||
-                {};
-              return (
-                <div
-                  className={`workflow-port ${inline ? "is-inline" : ""}`}
-                  key={port.name}
-                  onContextMenu={(event) => {
-                    if (
-                      !readOnly &&
-                      (port.inlineAllowed ||
-                        [
-                          "str",
-                          "string",
-                          "number",
-                          "int",
-                          "float",
-                          "integer",
-                          "boolean",
-                          "bool",
-                        ].includes(port.type))
-                    ) {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      data.onPortMenu(event, node.id, port);
-                    }
-                  }}
-                >
-                  {!inline && (
-                    <Handle
-                      type="target"
-                      position={Position.Left}
-                      id={port.name}
-                    />
-                  )}
-                  <span title={workflowPortDescription(port)}>
-                    {port.title || port.name}
-                    <small>{workflowPortTypeLabel(port)}</small>
-                  </span>
-                  {inline && (
-                    <div
-                      className="nodrag nowheel"
-                      onPointerDown={(event) => event.stopPropagation()}
-                    >
-                      <WorkflowDataField
-                        kind={schema.type || port.type}
-                        label={port.title || port.name}
-                        schema={schema}
-                        compact
-                        value={node.inputs[port.name].value}
-                        disabled={readOnly}
-                        onChange={(value) =>
-                          data.onBinding(node.id, port.name, {
-                            type: "literal",
-                            value,
-                          })
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-        </div>
-        <div>
-          {category !== "sink" &&
-            (definition?.outputs || []).map((port) => (
+          {(definition?.inputs || []).map((port) => {
+            const inline = node.inputs?.[port.name]?.type === "literal";
+            const schema =
+              port.schema ||
+              definition.inputSchema?.properties?.[port.name] ||
+              {};
+            return (
               <div
-                className="workflow-port workflow-port-output"
+                className={`workflow-port ${inline ? "is-inline" : ""}`}
                 key={port.name}
+                onContextMenu={(event) => {
+                  if (!readOnly && port.inlineAllowed) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    data.onPortMenu(event, node.id, port);
+                  }
+                }}
               >
+                {!inline && (
+                  <Handle
+                    type="target"
+                    position={Position.Left}
+                    id={port.name}
+                  />
+                )}
                 <span title={workflowPortDescription(port)}>
                   {port.title || port.name}
                   <small>{workflowPortTypeLabel(port)}</small>
                 </span>
-                <Handle
-                  type="source"
-                  position={Position.Right}
-                  id={port.name}
-                />
+                {inline && (
+                  <div
+                    className="nodrag nowheel"
+                    onPointerDown={(event) => event.stopPropagation()}
+                  >
+                    <WorkflowDataField
+                      label={port.title || port.name}
+                      schema={schema}
+                      compact
+                      value={node.inputs[port.name].value}
+                      disabled={readOnly}
+                      onChange={(value) =>
+                        data.onBinding(node.id, port.name, {
+                          type: "literal",
+                          value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
               </div>
-            ))}
+            );
+          })}
+        </div>
+        <div>
+          {(definition?.outputs || []).map((port) => (
+            <div className="workflow-port workflow-port-output" key={port.name}>
+              <span title={workflowPortDescription(port)}>
+                {port.title || port.name}
+                <small>{workflowPortTypeLabel(port)}</small>
+              </span>
+              <Handle type="source" position={Position.Right} id={port.name} />
+            </div>
+          ))}
         </div>
       </div>
       {status && (

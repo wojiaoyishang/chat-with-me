@@ -7,12 +7,69 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 
 const catalog = {
+  defaultTitle: "知识提取工作流",
+  categories: [
+    { id: "source", title: "输入数据" },
+    { id: "process", title: "处理节点" },
+    { id: "sink", title: "输出节点" },
+  ],
+  settingsDefaults: { maxConcurrency: 4, commonConfig: { modelId: "" } },
+  settingsSchema: {
+    type: "object",
+    properties: {
+      maxConcurrency: {
+        type: "integer",
+        title: "同时运行的节点数",
+        minimum: 1,
+        maximum: 16,
+      },
+      commonConfig: {
+        type: "object",
+        properties: {
+          modelId: { type: "string", ui: { widget: "model-picker" } },
+        },
+      },
+    },
+  },
+  permissionsDefaults: { sharingMembers: [], includeSources: true },
+  permissionsSchema: {
+    type: "object",
+    properties: {
+      sharingMembers: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: { userId: { type: "integer" }, role: { type: "string" } },
+        },
+      },
+      includeSources: { type: "boolean" },
+    },
+  },
+  templateSharingSchema: { type: "array", items: { type: "object" } },
   nodes: [
     {
       kind: "input",
       version: 1,
       title: "输入来源",
       description: "初始化输入",
+      category: "source",
+      source: {
+        configField: null,
+        required: true,
+        default: { sourceType: "text", text: "" },
+        valueSchema: {
+          type: "object",
+          ui: {
+            widget: "source-picker",
+            sources: [
+              { value: "file", label: "上传或选择附件" },
+              { value: "document", label: "选择整个文档" },
+              { value: "image", label: "图片附件" },
+              { value: "text", label: "文本内容" },
+            ],
+          },
+        },
+      },
       configSchema: {
         type: "object",
         additionalProperties: false,
@@ -31,6 +88,13 @@ const catalog = {
       version: 1,
       title: "知识提取",
       description: "提取知识",
+      category: "process",
+      configurationWidgets: [
+        {
+          widget: "knowledge-schema",
+          fields: ["schemaId", "schemaRevision", "schemaText"],
+        },
+      ],
       configSchema: {
         type: "object",
         additionalProperties: false,
@@ -43,11 +107,29 @@ const catalog = {
             default: 2,
             minimum: 1,
           },
-          modelId: { type: "string" },
+          modelId: { type: "string", ui: { widget: "model-picker" } },
         },
       },
       inputs: [{ name: "bundle", type: "bundle" }],
       outputs: [{ name: "extracted", type: "extracted" }],
+    },
+    {
+      kind: "text",
+      version: 1,
+      title: "文本数据",
+      category: "source",
+      configSchema: {
+        type: "object",
+        properties: { value: { type: "string", default: "" } },
+      },
+      source: {
+        configField: "value",
+        valueSchema: { type: "string" },
+        default: "",
+        required: true,
+      },
+      outputs: [{ name: "value", type: "str", typeLabel: "文本" }],
+      inputs: [],
     },
   ],
   standardGraph: {
@@ -116,7 +198,7 @@ async function environment(request = {}, options = {}) {
     get: async (url) => {
       calls.push({ method: "get", url });
       if (url.endsWith("/catalog")) {
-        const definitions = structuredClone(catalog);
+        const definitions = structuredClone(options.catalog || catalog);
         if (options.graph)
           definitions.standardGraph = structuredClone(options.graph);
         if (options.builtinTemplates)
@@ -402,6 +484,88 @@ test("workflow UI keeps constructor config separate, retains failed drafts, and 
     assert.deepEqual(globalThis.workflowUITest.changes.at(-1), {
       taskId: "task-1",
     });
+  } finally {
+    await app.close();
+  }
+});
+
+test("unknown workflow nodes and settings render from catalog metadata without kind switches", async () => {
+  const custom = {
+    ...structuredClone(catalog),
+    defaultTitle: "后端定义流程",
+    categories: [{ id: "custom-inputs", title: "自定义输入" }],
+    settingsDefaults: { parallelism: 9 },
+    settingsSchema: {
+      type: "object",
+      properties: {
+        parallelism: { type: "integer", title: "自定义并行数", minimum: 1 },
+      },
+    },
+    nodes: [
+      {
+        kind: "future-clock-input",
+        version: 4,
+        title: "预约时间",
+        className: "ClockSource",
+        category: "custom-inputs",
+        configSchema: {
+          type: "object",
+          properties: { timestamp: { type: "integer", default: 42 } },
+        },
+        source: {
+          configField: "timestamp",
+          default: 42,
+          valueSchema: { type: "integer" },
+        },
+        inputs: [],
+        outputs: [
+          { name: "instant", type: "epoch-seconds", typeLabel: "时间戳" },
+        ],
+      },
+    ],
+    standardGraph: {
+      version: 2,
+      nodes: [
+        {
+          id: "clock-1",
+          kind: "future-clock-input",
+          version: 4,
+          config: {},
+          inputs: {},
+          position: { x: 20, y: 20 },
+        },
+      ],
+      edges: [],
+      settings: {},
+    },
+  };
+  const app = await environment({}, { catalog: custom });
+  try {
+    assert.match(
+      document.querySelector(".workflow-palette").textContent,
+      /自定义输入/,
+    );
+    assert.match(
+      document.querySelector('[data-node="clock-1"]').textContent,
+      /时间戳/,
+    );
+    assert.equal(document.querySelector('[aria-label="预约时间"]').value, "42");
+    await input(
+      document.querySelector('[aria-label="预约时间"]'),
+      "108",
+      app.dom,
+    );
+    await click(button("全局设置"), app.dom);
+    assert.equal(
+      document.querySelector('[aria-label="自定义并行数"]').value,
+      "9",
+    );
+    await click(button("校验"), app.dom);
+    const payload = app.calls
+      .filter((call) => call.url === "/tasks/workflows/validate")
+      .at(-1).payload;
+    assert.deepEqual(payload.graph.nodes[0].config, { timestamp: 108 });
+    assert.deepEqual(payload.graph.settings, { parallelism: 9 });
   } finally {
     await app.close();
   }
@@ -728,6 +892,12 @@ test("quick template form preserves document revision and knowledge permissions"
         key: "document",
         title: "待提取文档",
         kind: "document",
+        schema: {
+          type: "object",
+          required: ["documentId"],
+          properties: { documentId: { type: "string" } },
+          ui: { widget: "document-source-picker" },
+        },
         required: true,
         default: { documentId: "", revision: null },
       },
@@ -735,6 +905,7 @@ test("quick template form preserves document revision and knowledge permissions"
         key: "note",
         title: "补充说明",
         kind: "text",
+        schema: { type: "string" },
         required: false,
         default: "保留上下文",
       },

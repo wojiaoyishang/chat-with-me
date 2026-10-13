@@ -3,11 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import JsonConfigEditor from "@/components/setting/JsonConfigEditor.jsx";
 import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
-import { WorkflowSelect } from "./WorkflowSourcePicker.jsx";
 import WorkflowSchemaEditor from "./WorkflowSchemaEditor.jsx";
 import {
   catalogNode,
-  nodeCategory,
   normalizeWorkflowSchema,
   scalarSchema,
   workflowPortDescription,
@@ -38,7 +36,6 @@ export default function WorkflowNodePanel({
   disabled,
 }) {
   const definition = catalogNode(definitions, node);
-  const category = nodeCategory(definition, node);
   const schema = normalizeWorkflowSchema(
     definition?.constructorSchema ||
       definition?.configSchema || { type: "object", properties: {} },
@@ -50,17 +47,18 @@ export default function WorkflowNodePanel({
       ),
     [definition],
   );
-  const modelKeys = Object.keys(schema.properties || {}).filter((key) =>
-    /modelId$/i.test(key),
+  const widgets = definition?.configurationWidgets || [];
+  const widgetKeys = widgets
+    .filter((widget) => widget.widget === "knowledge-schema")
+    .flatMap((widget) => widget.fields || []);
+  const modelKeys = Object.keys(schema.properties || {}).filter(
+    (key) => scalarSchema(schema.properties[key]).ui?.widget === "model-picker",
   );
   const regularKeys = Object.keys(schema.properties || {}).filter(
     (key) =>
       !common.includes(key) &&
       !modelKeys.includes(key) &&
-      !(
-        node.kind === "extract" &&
-        ["schemaId", "schemaRevision", "schemaText"].includes(key)
-      ),
+      !widgetKeys.includes(key),
   );
   const update = (patch) =>
     onGraphChange({
@@ -81,7 +79,8 @@ export default function WorkflowNodePanel({
       <section className="space-y-2">
         <h3 className="font-semibold">{definition.title}</h3>
         <p className="text-xs text-muted-foreground">
-          {definition.className || node.kind} · v{node.version}
+          {definition.className || definition.implementation?.name || node.kind}{" "}
+          · v{node.version}
         </p>
         <label className="workflow-label">节点名称</label>
         <Input
@@ -99,7 +98,7 @@ export default function WorkflowNodePanel({
           {definition.description}
         </p>
       </section>
-      {category === "source" ? (
+      {definition.source ? (
         <p className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
           输入值在画布节点内配置。快速创建任务时会根据这些输入节点生成填写表单。
         </p>
@@ -125,9 +124,7 @@ export default function WorkflowNodePanel({
                       onCheckedChange={(value) =>
                         updateConfig({
                           ...node.config,
-                          [key]: value
-                            ? null
-                            : (effective ?? (key === "modelId" ? "" : 1)),
+                          [key]: value ? null : effective,
                         })
                       }
                     />
@@ -137,38 +134,20 @@ export default function WorkflowNodePanel({
                 {inherited ? (
                   <p className="text-xs text-muted-foreground">
                     全局值：
-                    {key === "modelId"
+                    {property.ui?.widget === "model-picker"
                       ? models.find((model) => model.id === effective)?.name ||
                         effective ||
                         "自动选择模型"
                       : String(effective ?? "默认")}
                   </p>
-                ) : key === "modelId" ? (
-                  <WorkflowSelect
-                    label={property.title || key}
-                    value={node.config?.[key] || ""}
-                    disabled={disabled}
-                    options={[
-                      { value: "", label: "自动选择可用模型" },
-                      ...models.map((model) => ({
-                        value: model.id,
-                        label: model.name || model.title || model.id,
-                      })),
-                    ]}
-                    onChange={(value) =>
-                      updateConfig({ ...node.config, [key]: value })
-                    }
-                  />
                 ) : (
                   <WorkflowDataField
-                    kind={
-                      property.type === "integer" ? "number" : property.type
-                    }
                     label={property.title || key}
                     schema={property}
                     value={node.config?.[key]}
                     disabled={disabled}
                     compact
+                    models={models}
                     onChange={(value) =>
                       updateConfig({ ...node.config, [key]: value })
                     }
@@ -182,14 +161,17 @@ export default function WorkflowNodePanel({
               </section>
             );
           })}
-          {node.kind === "extract" && (
-            <WorkflowSchemaEditor
-              value={node.config || {}}
-              onChange={updateConfig}
-              disabled={disabled}
-              onBusyChange={(busy) => onValidity(`schema:${node.id}`, !busy)}
-            />
-          )}
+          {widgets
+            .filter((widget) => widget.widget === "knowledge-schema")
+            .map((widget, index) => (
+              <WorkflowSchemaEditor
+                key={`${widget.widget}:${index}`}
+                value={node.config || {}}
+                onChange={updateConfig}
+                disabled={disabled}
+                onBusyChange={(busy) => onValidity(`schema:${node.id}`, !busy)}
+              />
+            ))}
           {modelKeys
             .filter((key) => !common.includes(key))
             .map((key) => (
@@ -197,17 +179,12 @@ export default function WorkflowNodePanel({
                 <label className="workflow-label">
                   {schema.properties[key].title || key}
                 </label>
-                <WorkflowSelect
+                <WorkflowDataField
                   label={schema.properties[key].title || key}
-                  value={node.config?.[key] || ""}
+                  value={node.config?.[key]}
                   disabled={disabled}
-                  options={[
-                    { value: "", label: "自动选择可用模型" },
-                    ...models.map((model) => ({
-                      value: model.id,
-                      label: model.name || model.title || model.id,
-                    })),
-                  ]}
+                  schema={schema.properties[key]}
+                  models={models}
                   onChange={(value) =>
                     updateConfig({ ...node.config, [key]: value })
                   }
@@ -273,7 +250,7 @@ export default function WorkflowNodePanel({
                 <p className="mt-1 text-muted-foreground">
                   兼容输入：
                   {port.accepts
-                    .map((type) => workflowPortTypeLabel({ type }))
+                    .map((type, index) => port.acceptsLabels?.[index] || type)
                     .join("、")}
                 </p>
               )}

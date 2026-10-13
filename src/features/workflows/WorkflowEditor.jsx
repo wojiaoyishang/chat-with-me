@@ -51,20 +51,14 @@ import {
   createWorkflowNode,
   initializeGraph,
   isWorkflowTextEditing,
-  nodeCategory,
   normalizeGraph,
-  normalizeWorkflowSchema,
   pasteWorkflowSelection,
   removeWorkflowNodes,
   setWorkflowPortMode,
   sourceValueConfig,
   updateWorkflowNodePositions,
 } from "./workflowModel.js";
-import {
-  commonConfigSchema,
-  permissionsSchema,
-  templateSharingSchema,
-} from "./workflowForms.js";
+import WorkflowSettingsFields from "./WorkflowSettingsFields.jsx";
 import WorkflowCanvas from "./WorkflowCanvas.jsx";
 import WorkflowContextMenu from "./WorkflowContextMenu.jsx";
 import WorkflowNode from "./WorkflowNode.jsx";
@@ -79,10 +73,10 @@ const nodeTypes = { workflow: WorkflowNode };
 let applicationClipboard = null;
 const newDraft = () => ({
   graph: normalizeGraph(),
-  title: "知识提取工作流",
+  title: "工作流",
   description: "",
   templateSharing: [],
-  permissions: { sharingMembers: [], includeSources: true },
+  permissions: {},
 });
 const snapshot = (draft) => JSON.stringify(draft);
 
@@ -108,11 +102,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [catalog, setCatalog] = useState({ nodes: [] });
-  const globalConfigSchema = useMemo(
-    () =>
-      normalizeWorkflowSchema(catalog.commonConfigSchema || commonConfigSchema),
-    [catalog.commonConfigSchema],
-  );
   const [templates, setTemplates] = useState([]);
   const [template, setTemplate] = useState(null);
   const [builtinTemplateId, setBuiltinTemplateId] = useState("");
@@ -200,21 +189,24 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             loadedTask?.parameters?.graph ||
               builtinTemplate?.graph ||
               loadedTemplate?.graph ||
+              definitions.defaultGraph ||
               definitions.standardGraph,
             definitions.nodes,
+            definitions.settingsDefaults,
           ),
           title:
             loadedTask?.title ||
             builtinTemplate?.title ||
             loadedTemplate?.title ||
-            "知识提取工作流",
+            definitions.defaultTitle ||
+            "工作流",
           description:
             builtinTemplate?.description || loadedTemplate?.description || "",
           templateSharing: loadedTemplate?.sharingMembers || [],
-          permissions: loadedTask?.parameters?.permissions || {
-            sharingMembers: [],
-            includeSources: true,
-          },
+          permissions:
+            loadedTask?.parameters?.permissions ||
+            definitions.permissionsDefaults ||
+            {},
         });
         setTemplate(loadedTemplate || null);
         setBuiltinTemplateId(builtinTemplate?.id || "");
@@ -343,12 +335,16 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           node.id === id
             ? {
                 ...node,
-                config: sourceValueConfig(node.kind, value, node.config),
+                config: sourceValueConfig(
+                  catalogNode(catalog.nodes, node),
+                  value,
+                  node.config,
+                ),
               }
             : node,
         ),
       })),
-    [changeGraph],
+    [changeGraph, catalog.nodes],
   );
   const onBinding = useCallback(
     (id, port, binding) =>
@@ -543,7 +539,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         ]);
         const next = {
           ...current,
-          graph: initializeGraph(saved.graph || current.graph, catalog.nodes),
+          graph: initializeGraph(
+            saved.graph || current.graph,
+            catalog.nodes,
+            catalog.settingsDefaults,
+          ),
           templateSharing: saved.sharingMembers || current.templateSharing,
         };
         draftRef.current = next;
@@ -566,7 +566,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         if (running.parameters?.graph)
           installDraft({
             ...current,
-            graph: initializeGraph(running.parameters.graph, catalog.nodes),
+            graph: initializeGraph(
+              running.parameters.graph,
+              catalog.nodes,
+              catalog.settingsDefaults,
+            ),
           });
         else setBaseline(snapshot(current));
         setInitialTask(running);
@@ -603,12 +607,18 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       installDraft({
         ...newDraft(),
         graph: initializeGraph(
-          builtin?.graph || loaded?.graph || catalog.standardGraph,
+          builtin?.graph ||
+            loaded?.graph ||
+            catalog.defaultGraph ||
+            catalog.standardGraph,
           catalog.nodes,
+          catalog.settingsDefaults,
         ),
-        title: builtin?.title || loaded?.title || "知识提取工作流",
+        title:
+          builtin?.title || loaded?.title || catalog.defaultTitle || "工作流",
         description: builtin?.description || loaded?.description || "",
         templateSharing: loaded?.sharingMembers || [],
+        permissions: clone(catalog.permissionsDefaults || {}),
       });
       setTemplate(loaded);
       setBuiltinTemplateId(builtin?.id || "");
@@ -845,49 +855,47 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     onChange={(event) => setSearch(event.target.value)}
                   />
                 </div>
-                {[
-                  ["source", "输入数据"],
-                  ["process", "处理节点"],
-                  ["sink", "输出节点"],
-                ].map(([category, label]) => (
-                  <section className="mt-4 space-y-2" key={category}>
-                    <h3 className="text-xs font-semibold text-muted-foreground">
-                      {label}
-                    </h3>
-                    {catalog.nodes
-                      .filter(
-                        (definition) =>
-                          !definition.hidden &&
-                          nodeCategory(definition) === category &&
-                          `${definition.title} ${definition.kind} ${definition.description}`
-                            .toLowerCase()
-                            .includes(search.toLowerCase()),
-                      )
-                      .map((definition) => (
-                        <button
-                          key={`${definition.kind}:${definition.version}`}
-                          type="button"
-                          className="workflow-palette-node"
-                          disabled={Boolean(busy)}
-                          draggable={!busy}
-                          onDragStart={(event) => {
-                            event.dataTransfer.setData(
-                              "application/cwm-workflow-node",
-                              definition.kind,
-                            );
-                            event.dataTransfer.effectAllowed = "copy";
-                          }}
-                          onClick={() => addNode(definition)}
-                        >
-                          <div className="flex items-center gap-2">
-                            <Plus className="size-4 shrink-0 text-primary" />
-                            <strong>{definition.title}</strong>
-                          </div>
-                          <p>{definition.description}</p>
-                        </button>
-                      ))}
-                  </section>
-                ))}
+                {(catalog.categories || []).map(
+                  ({ id: category, title: label }) => (
+                    <section className="mt-4 space-y-2" key={category}>
+                      <h3 className="text-xs font-semibold text-muted-foreground">
+                        {label}
+                      </h3>
+                      {catalog.nodes
+                        .filter(
+                          (definition) =>
+                            !definition.hidden &&
+                            definition.category === category &&
+                            `${definition.title} ${definition.className} ${definition.kind} ${definition.description}`
+                              .toLowerCase()
+                              .includes(search.toLowerCase()),
+                        )
+                        .map((definition) => (
+                          <button
+                            key={`${definition.kind}:${definition.version}`}
+                            type="button"
+                            className="workflow-palette-node"
+                            disabled={Boolean(busy)}
+                            draggable={!busy}
+                            onDragStart={(event) => {
+                              event.dataTransfer.setData(
+                                "application/cwm-workflow-node",
+                                definition.kind,
+                              );
+                              event.dataTransfer.effectAllowed = "copy";
+                            }}
+                            onClick={() => addNode(definition)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <Plus className="size-4 shrink-0 text-primary" />
+                              <strong>{definition.title}</strong>
+                            </div>
+                            <p>{definition.description}</p>
+                          </button>
+                        ))}
+                    </section>
+                  ),
+                )}
               </aside>
             )}
             <main
@@ -1147,93 +1155,19 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     )
                   ) : (
                     <div className="space-y-5">
-                      <section className="space-y-2">
-                        <label className="workflow-label">
-                          同时运行的节点数
-                        </label>
-                        <Input
-                          aria-label="工作流并发数"
-                          type="number"
-                          min="1"
-                          max="16"
-                          value={graph.settings.maxConcurrency}
-                          disabled={Boolean(busy)}
-                          onChange={(event) =>
-                            changeGraph({
-                              ...graph,
-                              settings: {
-                                ...graph.settings,
-                                maxConcurrency: Number(event.target.value),
-                              },
-                            })
-                          }
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          调度器并发与节点内部处理并发分别设置。
-                        </p>
-                      </section>
-                      <JsonConfigEditor
-                        label="FlowInvoker 全局初始化设置"
-                        schema={{
-                          ...globalConfigSchema,
-                          properties: Object.fromEntries(
-                            Object.entries(
-                              globalConfigSchema.properties || {},
-                            ).filter(([key]) => key !== "modelId"),
-                          ),
-                          required: (globalConfigSchema.required || []).filter(
-                            (key) => key !== "modelId",
-                          ),
-                        }}
-                        value={Object.fromEntries(
-                          Object.entries(
-                            graph.settings.commonConfig || {},
-                          ).filter(([key]) => key !== "modelId"),
-                        )}
-                        readOnly={Boolean(busy)}
-                        onStateChange={(state) =>
-                          validity("global", state.valid !== false)
-                        }
-                        onChange={(values) =>
-                          changeGraph({
-                            ...graph,
-                            settings: {
-                              ...graph.settings,
-                              commonConfig: {
-                                ...graph.settings.commonConfig,
-                                ...values,
-                              },
-                            },
-                          })
-                        }
-                      />
-                      <WorkflowSelect
-                        label="全局模型"
-                        value={graph.settings.commonConfig?.modelId || ""}
+                      <WorkflowSettingsFields
+                        schema={catalog.settingsSchema}
+                        value={graph.settings}
+                        models={models}
                         disabled={Boolean(busy)}
-                        options={[
-                          { value: "", label: "自动选择可用模型" },
-                          ...models.map((model) => ({
-                            value: model.id,
-                            label: model.name || model.title || model.id,
-                          })),
-                        ]}
-                        onChange={(modelId) =>
-                          changeGraph({
-                            ...graph,
-                            settings: {
-                              ...graph.settings,
-                              commonConfig: {
-                                ...graph.settings.commonConfig,
-                                modelId,
-                              },
-                            },
-                          })
+                        onValidity={(valid) => validity("global", valid)}
+                        onChange={(settings) =>
+                          changeGraph({ ...graph, settings })
                         }
                       />
                       <JsonConfigEditor
                         label="生成知识的归属与共享"
-                        schema={permissionsSchema}
+                        schema={catalog.permissionsSchema || {}}
                         value={permissions}
                         readOnly={Boolean(busy)}
                         onStateChange={(state) =>
@@ -1245,7 +1179,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       />
                       <JsonConfigEditor
                         label="模板共享成员"
-                        schema={templateSharingSchema}
+                        schema={catalog.templateSharingSchema || {}}
                         value={templateSharing}
                         readOnly={
                           Boolean(busy) || template?.canManage === false

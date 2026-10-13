@@ -1,14 +1,18 @@
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
+import JsonConfigEditor from "@/components/setting/JsonConfigEditor.jsx";
 import WorkflowSourcePicker, {
   WorkflowSelect,
 } from "./WorkflowSourcePicker.jsx";
-import { normalizeWorkflowSchema, scalarSchema } from "./workflowModel.js";
+import {
+  clone,
+  normalizeWorkflowSchema,
+  scalarSchema,
+} from "./workflowModel.js";
 
 /** The same source values are edited on nodes and in quick template forms. */
 export default function WorkflowDataField({
-  kind,
   value,
   onChange,
   disabled,
@@ -16,39 +20,63 @@ export default function WorkflowDataField({
   schema = {},
   compact = false,
   onBusyChange,
+  onValidity,
+  models = [],
 }) {
   schema = scalarSchema(normalizeWorkflowSchema(schema));
-  if (kind === "attachments" || kind === "document" || kind === "input") {
+  const widget = schema.ui?.widget;
+  if (
+    [
+      "resource-source-picker",
+      "document-source-picker",
+      "source-picker",
+    ].includes(widget)
+  ) {
+    const resourceField = schema.ui?.valueField || "resources";
     const config =
-      kind === "attachments" ? { resources: value || [] } : value || {};
+      widget === "resource-source-picker"
+        ? { [resourceField]: value || [] }
+        : value || {};
     return (
       <WorkflowSourcePicker
         value={config}
         fixedType={
-          kind === "attachments"
+          widget === "resource-source-picker"
             ? "file"
-            : kind === "document"
+            : widget === "document-source-picker"
               ? "document"
               : undefined
         }
         compact={compact}
         disabled={disabled}
         onBusyChange={onBusyChange}
+        sourceOptions={schema.ui?.sources || []}
         onChange={(next) =>
           onChange(
-            kind === "attachments"
-              ? next.resources || []
-              : kind === "document"
-                ? {
-                    documentId: next.documentId || "",
-                    revision: next.revision ?? null,
-                  }
-                : next,
+            widget === "resource-source-picker"
+              ? next[resourceField] || []
+              : clone(next),
           )
         }
       />
     );
   }
+  if (widget === "model-picker")
+    return (
+      <WorkflowSelect
+        label={label}
+        value={value ?? ""}
+        disabled={disabled}
+        options={[
+          { value: "", label: schema.ui?.emptyLabel || "自动选择可用模型" },
+          ...models.map((model) => ({
+            value: model.id,
+            label: model.name || model.title || model.id,
+          })),
+        ]}
+        onChange={onChange}
+      />
+    );
   if (schema.enum)
     return (
       <WorkflowSelect
@@ -64,7 +92,7 @@ export default function WorkflowDataField({
         }))}
       />
     );
-  if (["boolean", "bool"].includes(kind) || schema.type === "boolean")
+  if (schema.type === "boolean")
     return (
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs">{label}</span>
@@ -76,10 +104,7 @@ export default function WorkflowDataField({
         />
       </div>
     );
-  if (
-    ["number", "int", "float", "integer"].includes(kind) ||
-    ["number", "integer"].includes(schema.type)
-  )
+  if (["number", "integer"].includes(schema.type))
     return (
       <Input
         aria-label={label}
@@ -89,18 +114,29 @@ export default function WorkflowDataField({
         min={schema.minimum}
         max={schema.maximum}
         step={schema.type === "integer" ? 1 : "any"}
-        onChange={(event) =>
+        onInput={(event) =>
           onChange(event.target.value === "" ? "" : Number(event.target.value))
         }
       />
     );
+  if (schema.type === "string")
+    return (
+      <MultilineEditor
+        label={label}
+        value={value ?? ""}
+        rows={compact ? 3 : 6}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    );
   return (
-    <MultilineEditor
+    <JsonConfigEditor
       label={label}
-      value={value ?? ""}
-      rows={compact ? 3 : 6}
-      disabled={disabled}
-      onChange={(event) => onChange(event.target.value)}
+      schema={schema}
+      value={value}
+      readOnly={disabled}
+      onChange={onChange}
+      onStateChange={(state) => onValidity?.(state.valid !== false)}
     />
   );
 }
