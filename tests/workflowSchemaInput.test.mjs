@@ -86,6 +86,11 @@ async function mount({ compact = false, disabled = false, value = {} } = {}) {
                   "export const Button=({children,variant,size,...props})=><button {...props}>{children}</button>;";
               else if (requested.endsWith("/input"))
                 contents = "export const Input=props=><input {...props}/>;";
+              else if (requested.endsWith("/dialog"))
+                contents =
+                  "export const Dialog=({children})=>children;export const DialogContent=({children})=><div>{children}</div>;export const DialogHeader=({children})=><header>{children}</header>;export const DialogTitle=({children})=><h2>{children}</h2>;export const DialogDescription=({children})=><p>{children}</p>;";
+              else if (requested.endsWith("virtualUrl.js"))
+                contents = "export const resolveResourceUrl=value=>value;";
               else if (requested.endsWith("/switch"))
                 contents = "export const Switch=()=>null;";
               else if (requested.endsWith("MultilineEditor.jsx"))

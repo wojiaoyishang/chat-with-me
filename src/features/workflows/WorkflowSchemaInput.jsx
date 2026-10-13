@@ -111,7 +111,7 @@ export default function WorkflowSchemaInput({
       <PopoverContent
         align="start"
         side="right"
-        className="workflow-schema-popover nodrag nowheel pretty-scrollbar"
+        className="workflow-schema-popover nodrag nowheel"
         onPointerDown={(event) => event.stopPropagation()}
         onWheel={(event) => event.stopPropagation()}
         onInteractOutside={(event) => {

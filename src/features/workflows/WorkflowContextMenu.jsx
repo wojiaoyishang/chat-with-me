@@ -45,11 +45,7 @@ export default function WorkflowContextMenu({
           style={{ left: menu.x, top: menu.y }}
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        sideOffset={0}
-        className="pretty-scrollbar"
-      >
+      <DropdownMenuContent align="start" sideOffset={0}>
         {menu.port ? (
           <>
             <DropdownMenuLabel>{menu.port.display?.title}</DropdownMenuLabel>

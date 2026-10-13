@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Check,
+  Eye,
   FileText,
   Loader2,
   Paperclip,
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/popover";
 import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import apiClient from "@/lib/apiClient.js";
+import WorkflowResourcePreview from "./WorkflowResourcePreview.jsx";
 
 export function WorkflowSelect({ value, onChange, options, label, disabled }) {
   const selected = value == null || value === "" ? "_none" : String(value);
@@ -70,6 +72,7 @@ function CompactWorkflowSourcePicker(props) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(props.value || {});
   const [busy, setBusy] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const count =
     props.fixedType === "document"
@@ -79,7 +82,7 @@ function CompactWorkflowSourcePicker(props) {
     <Popover
       open={open}
       onOpenChange={(next) => {
-        if (busy) return;
+        if (busy || previewOpen) return;
         if (next) setDraft(props.value || {});
         setOpen(next);
       }}
@@ -107,13 +110,16 @@ function CompactWorkflowSourcePicker(props) {
         className="workflow-source-popover flex max-h-[min(540px,72vh)] w-[min(390px,calc(100vw-32px))] flex-col overflow-hidden p-0"
         onPointerDown={(event) => event.stopPropagation()}
         onInteractOutside={(event) => {
-          if (busy) event.preventDefault();
+          if (busy || previewOpen) event.preventDefault();
+        }}
+        onFocusOutside={(event) => {
+          if (previewOpen) event.preventDefault();
         }}
         onEscapeKeyDown={(event) => {
-          if (busy) event.preventDefault();
+          if (busy || previewOpen) event.preventDefault();
         }}
       >
-        <div className="pretty-scrollbar min-h-0 overflow-y-auto p-3">
+        <div className="min-h-0 overflow-y-auto p-3">
           <FullWorkflowSourcePicker
             {...props}
             value={draft}
@@ -122,6 +128,7 @@ function CompactWorkflowSourcePicker(props) {
               setBusy(next);
               props.onBusyChange?.(next);
             }}
+            onPreviewOpenChange={setPreviewOpen}
             compact={false}
           />
         </div>
@@ -156,6 +163,7 @@ function FullWorkflowSourcePicker({
   onChange,
   disabled,
   onBusyChange,
+  onPreviewOpenChange,
   fixedType,
   sourceOptions = [],
   compact = false,
@@ -170,6 +178,7 @@ function FullWorkflowSourcePicker({
   const [error, setError] = useState("");
   const [refresh, setRefresh] = useState(0);
   const [resourceNames, setResourceNames] = useState({});
+  const [previewItem, setPreviewItem] = useState(null);
   const upload = useRef(null);
   const activeUpload = useRef(null);
   const latest = useRef({ value, onChange });
@@ -403,7 +412,7 @@ function FullWorkflowSourcePicker({
               正在加载资源…
             </div>
           ) : (
-            <div className="workflow-resource-list pretty-scrollbar">
+            <div className="workflow-resource-list">
               {items.map((item) => {
                 const uri =
                   item.uri || `cwm://artifact/${item.artifactId || item.id}`;
@@ -412,24 +421,47 @@ function FullWorkflowSourcePicker({
                     ? value.documentId === item.id
                     : (value.resources || []).includes(uri);
                 return (
-                  <button
+                  <div
                     key={item.id}
-                    type="button"
-                    className={`workflow-resource ${selected ? "is-selected" : ""}`}
-                    aria-pressed={selected}
-                    disabled={disabled || uploading}
-                    onClick={() => pick(item)}
+                    className="relative border-b last:border-b-0"
                   >
-                    {sourceType === "document" ? (
-                      <FileText className="size-4 shrink-0" />
-                    ) : (
-                      <Paperclip className="size-4 shrink-0" />
-                    )}
-                    <span className="min-w-0 flex-1 truncate">
-                      {item.title || item.name || item.id}
-                    </span>
-                    {selected && <Check className="size-4 shrink-0" />}
-                  </button>
+                    <button
+                      type="button"
+                      className={`workflow-resource pr-11 ${selected ? "is-selected" : ""}`}
+                      aria-pressed={selected}
+                      disabled={disabled || uploading}
+                      onClick={() => pick(item)}
+                    >
+                      {sourceType === "document" ? (
+                        <FileText className="size-4 shrink-0" />
+                      ) : (
+                        <Paperclip className="size-4 shrink-0" />
+                      )}
+                      <span className="min-w-0 flex-1 truncate">
+                        {item.title || item.name || item.id}
+                      </span>
+                      {selected && <Check className="size-4 shrink-0" />}
+                    </button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1/2 size-8 -translate-y-1/2"
+                      aria-label={`查看 ${item.title || item.name || item.id}`}
+                      title={
+                        sourceType === "document"
+                          ? "查看文档内容"
+                          : "查看附件内容"
+                      }
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onPreviewOpenChange?.(true);
+                        setPreviewItem(item);
+                      }}
+                    >
+                      <Eye className="size-4" />
+                    </Button>
+                  </div>
                 );
               })}
               {!items.length && (
@@ -498,6 +530,17 @@ function FullWorkflowSourcePicker({
         <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
+      )}
+      {previewItem && (
+        <WorkflowResourcePreview
+          key={`${sourceType}:${previewItem.id}`}
+          item={previewItem}
+          sourceKind={sourceType === "document" ? "document" : "attachment"}
+          onClose={() => {
+            setPreviewItem(null);
+            onPreviewOpenChange?.(false);
+          }}
+        />
       )}
     </section>
   );

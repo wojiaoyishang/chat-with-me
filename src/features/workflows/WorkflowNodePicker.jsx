@@ -119,7 +119,7 @@ export default function WorkflowNodePicker({
           id="workflow-add-node-options"
           role="listbox"
           aria-label="可添加节点"
-          className="workflow-node-picker-list pretty-scrollbar"
+          className="workflow-node-picker-list"
         >
           {candidates.length ? (
             candidates.map((candidate, index) => (

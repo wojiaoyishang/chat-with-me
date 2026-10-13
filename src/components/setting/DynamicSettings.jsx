@@ -1466,7 +1466,7 @@ function SelectOptionsPortal({ open, anchorRef, options, selectedValue }) {
                         maxHeight: `${optionsPosition.maxHeight}px`,
                         transformOrigin: optionsPosition.placement === 'top' ? 'bottom left' : 'top left',
                     }}
-                    className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] overflow-auto overscroll-contain outline-none pretty-scrollbar"
+                    className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] overflow-auto overscroll-contain outline-none"
                 >
                     {options.map((opt) => (
                         <ListboxOption

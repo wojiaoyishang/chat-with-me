@@ -450,7 +450,7 @@ async function environment(request = {}, options = {}) {
                   "export const Input=({autoFocus,onChange,...props})=><input onChange={onChange} onInput={onChange} {...props}/>;";
               else if (requested.endsWith("/dialog"))
                 contents =
-                  'export const Dialog=({children})=>children;export const DialogContent=({showCloseButton,onInteractOutside,onEscapeKeyDown,...props})=><div role="dialog" {...props}/>;export const DialogTitle=props=><h2 {...props}/>;export const DialogDescription=props=><p {...props}/>;';
+                  'export const Dialog=({children})=>children;export const DialogContent=({showCloseButton,onInteractOutside,onEscapeKeyDown,...props})=><div role="dialog" {...props}/>;export const DialogHeader=props=><header {...props}/>;export const DialogTitle=props=><h2 {...props}/>;export const DialogDescription=props=><p {...props}/>;';
               else if (requested.endsWith("/select"))
                 contents = `import {createContext,useContext} from 'react';const Context=createContext({});export const Select=({value,onValueChange,disabled,children})=><Context.Provider value={{value,onValueChange,disabled}}>{children}</Context.Provider>;export const SelectTrigger=props=>{const context=useContext(Context);return <span {...props} data-select-label={props['aria-label']}/>};export const SelectValue=()=>null;export const SelectContent=({children})=>{const context=useContext(Context);return <select value={context.value} disabled={context.disabled} onChange={event=>context.onValueChange(event.target.value)}>{children}</select>};export const SelectItem=({children,value})=><option value={value}>{children}</option>;`;
               else if (requested.endsWith("/popover"))

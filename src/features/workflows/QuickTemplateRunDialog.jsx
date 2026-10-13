@@ -174,7 +174,7 @@ export default function QuickTemplateRunDialog({
             </DialogDescription>
           </div>
         </header>
-        <div className="workflow-quick-body pretty-scrollbar">
+        <div className="workflow-quick-body">
           {loading ? (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin" />
