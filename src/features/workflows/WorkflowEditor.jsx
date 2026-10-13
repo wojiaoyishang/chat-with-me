@@ -1306,13 +1306,15 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                           menu.nodeId,
                           menu.port.name,
                           mode,
-                          menu.port.schema ||
-                            catalogNode(
+                          {
+                            ...(menu.port.schema || {}),
+                            ...(catalogNode(
                               catalog.nodes,
                               current.nodes.find(
                                 (node) => node.id === menu.nodeId,
                               ),
-                            )?.inputSchema?.properties?.[menu.port.name],
+                            )?.inputSchema?.properties?.[menu.port.name] || {}),
+                          },
                         ),
                       );
                     setMenu(null);

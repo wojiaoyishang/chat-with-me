@@ -139,6 +139,8 @@ export default function WorkflowDataField({
         value={value ?? ""}
         rows={compact ? 3 : 6}
         disabled={disabled}
+        maxLength={schema.maxLength}
+        minLength={schema.minLength}
         onChange={(event) => onChange(event.target.value)}
       />
     );

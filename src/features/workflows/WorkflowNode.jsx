@@ -75,10 +75,10 @@ export default function WorkflowNode({ data, selected }) {
         <div>
           {(definition?.inputs || []).map((port) => {
             const inline = node.inputs?.[port.name]?.type === "literal";
-            const schema =
-              port.schema ||
-              definition.inputSchema?.properties?.[port.name] ||
-              {};
+            const schema = {
+              ...(port.schema || {}),
+              ...(definition.inputSchema?.properties?.[port.name] || {}),
+            };
             return (
               <div
                 className={`workflow-port ${inline ? "is-inline" : ""}`}

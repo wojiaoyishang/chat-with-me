@@ -682,6 +682,105 @@ test("workflow UI keeps constructor config separate, retains failed drafts, and 
   }
 });
 
+test("optional knowledge prompt connects from a text node instead of appearing in constructor settings", async () => {
+  const custom = structuredClone(catalog);
+  const extractor = custom.nodes.find((node) => node.kind === "extract");
+  extractor.inputSchema = {
+    type: "object",
+    properties: {
+      prompt_prefix: {
+        anyOf: [{ type: "string", maxLength: 20000 }, { type: "null" }],
+        default: null,
+      },
+    },
+  };
+  extractor.inputs.push({
+    name: "prompt_prefix",
+    type: "str",
+    required: false,
+    inlineAllowed: true,
+    schema: { type: "string" },
+    display: {
+      title: "前置提示词",
+      subtitle: "prompt_prefix · str",
+    },
+  });
+  const graph = structuredClone(custom.standardGraph);
+  graph.nodes.push({
+    id: "text-1",
+    kind: "text",
+    version: 1,
+    config: { value: "请优先提取人物关系" },
+    inputs: {},
+    position: { x: 20, y: 220 },
+  });
+  const app = await environment({}, { catalog: custom, graph });
+  try {
+    await click(document.querySelector('[data-node="extract-1"]'), app.dom);
+    assert.match(
+      document.querySelector('[data-node="extract-1"]').textContent,
+      /前置提示词/,
+    );
+    assert.equal(
+      document.querySelector('[data-pointer="/prompt_prefix"]'),
+      null,
+    );
+    assert.equal(
+      document.querySelector('textarea[aria-label="前置提示词"]'),
+      null,
+    );
+    await act(() =>
+      globalThis.workflowUITest.flow.onConnect({
+        source: "text-1",
+        sourceHandle: "value",
+        target: "extract-1",
+        targetHandle: "prompt_prefix",
+      }),
+    );
+    assert.ok(
+      globalThis.workflowUITest.flow.edges.some(
+        (edge) =>
+          edge.source === "text-1" &&
+          edge.sourceHandle === "value" &&
+          edge.target === "extract-1" &&
+          edge.targetHandle === "prompt_prefix",
+      ),
+    );
+    const promptPort = [
+      ...document.querySelectorAll('[data-node="extract-1"] .workflow-port'),
+    ].find((port) => port.textContent.includes("前置提示词"));
+    await act(() =>
+      promptPort.dispatchEvent(
+        new app.dom.window.MouseEvent("contextmenu", {
+          bubbles: true,
+          button: 2,
+          clientX: 450,
+          clientY: 180,
+        }),
+      ),
+    );
+    await click(button("在节点内填写"), app.dom);
+    const inlinePrompt = document.querySelector(
+      'textarea[aria-label="前置提示词"]',
+    );
+    assert.equal(inlinePrompt.maxLength, 20000);
+    assert.equal(globalThis.workflowUITest.flow.edges.length, 0);
+    await input(inlinePrompt, "请保留原文名称", app.dom);
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes.find(
+        (node) => node.id === "extract-1",
+      ).data.node.inputs.prompt_prefix.value,
+      "请保留原文名称",
+    );
+    assert.equal(
+      document.querySelector('[data-pointer="/prompt_prefix"]'),
+      null,
+    );
+  } finally {
+    await app.close();
+  }
+});
+
 test("unknown workflow nodes and settings render from catalog metadata without kind switches", async () => {
   const custom = {
     ...structuredClone(catalog),
