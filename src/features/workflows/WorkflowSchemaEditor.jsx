@@ -13,6 +13,7 @@ export default function WorkflowSchemaEditor({
   disabled,
   onBusyChange,
   display,
+  rows = 12,
 }) {
   const [templates, setTemplates] = useState([]);
   const [saved, setSaved] = useState([]);
@@ -174,7 +175,7 @@ export default function WorkflowSchemaEditor({
       </p>
       <MultilineEditor
         label={display?.title}
-        rows={12}
+        rows={rows}
         value={text}
         disabled={disabled || busy}
         placeholder="请选择参考模板或填写 Schema"

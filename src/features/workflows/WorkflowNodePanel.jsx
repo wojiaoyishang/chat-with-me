@@ -34,6 +34,30 @@ export default function WorkflowNodePanel({
   disabled,
 }) {
   const definition = catalogNode(definitions, node);
+  const connectedConstructorInput = (input) =>
+    graph.edges.some(
+      (edge) => edge.target === node.id && edge.targetPort === input.name,
+    );
+  const configuredConstructorInput = (input) =>
+    (input.configFields || []).some((field) => {
+      const value = node.config?.[field];
+      return value != null && value !== "";
+    });
+  const pendingConstructorInputs = (definition?.constructorInputs || []).filter(
+    (input) =>
+      input.preferExternal &&
+      !connectedConstructorInput(input) &&
+      !configuredConstructorInput(input),
+  );
+  const externalFields = new Set(
+    (definition?.constructorInputs || [])
+      .filter(
+        (input) =>
+          connectedConstructorInput(input) ||
+          (input.preferExternal && !configuredConstructorInput(input)),
+      )
+      .flatMap((input) => input.configFields || []),
+  );
   const schema = normalizeWorkflowSchema(
     definition?.constructorSchema ||
       definition?.configSchema || { type: "object", properties: {} },
@@ -45,7 +69,10 @@ export default function WorkflowNodePanel({
       ),
     [definition],
   );
-  const widgets = definition?.configurationWidgets || [];
+  const widgets = (definition?.configurationWidgets || []).filter(
+    (widget) =>
+      !(widget.fields || []).some((field) => externalFields.has(field)),
+  );
   const widgetKeys = widgets
     .filter((widget) => widget.widget === "knowledge-schema")
     .flatMap((widget) => widget.fields || []);
@@ -56,7 +83,8 @@ export default function WorkflowNodePanel({
     (key) =>
       !common.includes(key) &&
       !modelKeys.includes(key) &&
-      !widgetKeys.includes(key),
+      !widgetKeys.includes(key) &&
+      !externalFields.has(key),
   );
   const update = (patch) =>
     onGraphChange({
@@ -102,6 +130,19 @@ export default function WorkflowNodePanel({
       ) : (
         <>
           <h4 className="text-sm font-semibold">类初始化设置</h4>
+          {pendingConstructorInputs.map((input) => (
+            <p
+              key={input.name}
+              className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground"
+            >
+              在画布上连接
+              {
+                definition.inputs.find((port) => port.name === input.name)
+                  ?.display?.title
+              }
+              的输入节点。
+            </p>
+          ))}
           {common.map((key) => {
             const property = scalarSchema(schema.properties?.[key] || {});
             const inherited = node.config?.[key] == null;

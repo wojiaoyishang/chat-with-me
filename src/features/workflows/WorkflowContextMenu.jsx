@@ -5,6 +5,7 @@ import {
   Pencil,
   Unplug,
   Plug,
+  Plus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,6 +25,7 @@ export default function WorkflowContextMenu({
   onDuplicate,
   onDelete,
   onRename,
+  onAdd,
   onPortMode,
   hasClipboard,
 }) {
@@ -62,6 +64,12 @@ export default function WorkflowContextMenu({
           </>
         ) : (
           <>
+            {!menu.nodeId && !menu.edgeId && (
+              <DropdownMenuItem onSelect={onAdd}>
+                <Plus />
+                添加节点
+              </DropdownMenuItem>
+            )}
             {menu.nodeId && (
               <>
                 <DropdownMenuItem onSelect={onRename}>

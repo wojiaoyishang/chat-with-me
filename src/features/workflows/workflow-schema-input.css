@@ -1,0 +1,10 @@
+.workflow-schema-trigger {
+  font-size: 11px;
+  font-weight: 500;
+}
+.workflow-schema-popover {
+  width: min(610px, calc(100vw - 48px));
+  max-height: min(760px, calc(100dvh - 72px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

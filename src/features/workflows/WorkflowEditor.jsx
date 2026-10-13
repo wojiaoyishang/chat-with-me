@@ -13,10 +13,8 @@ import {
   Loader2,
   Maximize2,
   Play,
-  Plus,
   Redo2,
   Save,
-  Search,
   Settings2,
   Trash2,
   Undo2,
@@ -43,6 +41,7 @@ import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import apiClient from "@/lib/apiClient.js";
 import { workflowApi } from "./workflowApi.js";
 import {
+  addWorkflowNodeWithConnection,
   bindWorkflowInput,
   catalogNode,
   clone,
@@ -50,6 +49,7 @@ import {
   copyWorkflowSelection,
   createWorkflowNode,
   initializeGraph,
+  isWorkflowCanvasBlankTarget,
   isWorkflowTextEditing,
   normalizeGraph,
   pasteWorkflowSelection,
@@ -61,6 +61,8 @@ import {
 import WorkflowSettingsFields from "./WorkflowSettingsFields.jsx";
 import WorkflowCanvas from "./WorkflowCanvas.jsx";
 import WorkflowContextMenu from "./WorkflowContextMenu.jsx";
+import WorkflowNodePicker from "./WorkflowNodePicker.jsx";
+import WorkflowPalette from "./WorkflowPalette.jsx";
 import WorkflowNode from "./WorkflowNode.jsx";
 import WorkflowNodePanel from "./WorkflowNodePanel.jsx";
 import WorkflowMonitorPanel from "./WorkflowMonitorPanel.jsx";
@@ -123,6 +125,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [mobilePane, setMobilePane] = useState("canvas");
   const [search, setSearch] = useState("");
   const [menu, setMenu] = useState(null);
+  const [picker, setPicker] = useState(null);
+  const connectionStart = useRef(null);
   const [hasClipboard, setHasClipboard] = useState(
     Boolean(applicationClipboard?.nodes?.length),
   );
@@ -160,6 +164,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     });
     setFitRequest((current) => current + 1);
     setMenu(null);
+    setPicker(null);
   }, []);
 
   useEffect(() => {
@@ -314,6 +319,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   }, [task]);
   const openMenu = useCallback((event, details) => {
     event.preventDefault();
+    setPicker(null);
     setMenu({ x: event.clientX, y: event.clientY, ...details });
   }, []);
   const closeMenu = useCallback(() => {
@@ -469,6 +475,68 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     select([node.id]);
     setPanel("node");
     setMobilePane("canvas");
+  };
+  const openPicker = (point, connection) => {
+    if (readOnly || busy) return;
+    setMenu(null);
+    setPicker({
+      ...point,
+      position: flow.screenToFlowPosition(point),
+      connection,
+    });
+  };
+  const closePicker = () => {
+    setPicker(null);
+    requestAnimationFrame(() =>
+      dialogRef.current?.querySelector(".workflow-canvas")?.focus(),
+    );
+  };
+  const chooseNode = ({ definition, port }) => {
+    if (readOnly || busy || !picker) return;
+    try {
+      const result = addWorkflowNodeWithConnection(
+        draftRef.current.graph,
+        definition,
+        picker.position,
+        picker.connection,
+        port,
+        catalog.nodes,
+      );
+      changeGraph(result.graph);
+      select([result.node.id]);
+      setPanel("node");
+      setMobilePane("canvas");
+      setError("");
+      closePicker();
+    } catch (cause) {
+      setError(cause.message);
+    }
+  };
+  const finishConnection = (event, state) => {
+    const start = connectionStart.current;
+    connectionStart.current = null;
+    if (
+      !start ||
+      start.connected ||
+      state?.isValid ||
+      state?.toNode ||
+      state?.toHandle
+    )
+      return;
+    const point = event.changedTouches?.[0] || event;
+    if (Math.hypot(point.clientX - start.x, point.clientY - start.y) < 4)
+      return;
+    const target =
+      document.elementFromPoint?.(point.clientX, point.clientY) || event.target;
+    if (!isWorkflowCanvasBlankTarget(target)) return;
+    openPicker(
+      { x: point.clientX, y: point.clientY },
+      {
+        nodeId: start.nodeId,
+        handleId: start.handleId,
+        handleType: start.handleType,
+      },
+    );
   };
   const rename = () => {
     if (menu?.nodeId) select([menu.nodeId]);
@@ -650,7 +718,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     }
   };
   const keyboard = (event) => {
-    if (event.isComposing || busy || readOnly || confirmation || menu) return;
+    if (event.isComposing || busy || readOnly || confirmation || menu || picker)
+      return;
     const control = event.ctrlKey || event.metaKey;
     const key = event.key.toLowerCase();
     if (control && key === "s") {
@@ -711,7 +780,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => {
           event.preventDefault();
-          if (!confirmation && !menu) close();
+          if (!confirmation && !menu && !picker) close();
         }}
       >
         <header className="workflow-header">
@@ -781,127 +850,84 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             className={`workflow-workspace mobile-${mobilePane} ${readOnly ? "is-monitor" : ""}`}
           >
             {!readOnly && (
-              <aside className="workflow-palette pretty-scrollbar">
-                <label className="workflow-label">工作流模板</label>
-                <WorkflowSelect
-                  label="选择工作流模板"
-                  value={builtinTemplateId || template?.id || ""}
-                  disabled={Boolean(busy)}
-                  onChange={(id) => void loadTemplate(id)}
-                  options={[
-                    { value: "", label: "标准提取流程" },
-                    ...(catalog.builtinTemplates || []).map((item) => ({
-                      value: item.id,
-                      label: item.title,
-                    })),
-                    ...templates.map((item) => ({
-                      value: item.id,
-                      label: `${item.title} · v${item.revision}`,
-                    })),
-                  ]}
-                />
-                {template && (
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
+              <WorkflowPalette
+                categories={catalog.categories}
+                nodes={catalog.nodes}
+                search={search}
+                onSearch={setSearch}
+                onAdd={addNode}
+                disabled={Boolean(busy)}
+                controls={
+                  <>
+                    <label className="workflow-label">工作流模板</label>
+                    <WorkflowSelect
+                      label="选择工作流模板"
+                      value={builtinTemplateId || template?.id || ""}
                       disabled={Boolean(busy)}
-                      onClick={() => void action("clone")}
-                    >
-                      <Copy className="size-3" />
-                      另存模板
-                    </Button>
-                    {template.canManage !== false && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive"
-                        disabled={Boolean(busy)}
-                        onClick={() => setConfirmation({ kind: "delete" })}
-                      >
-                        <Trash2 className="size-3" />
-                        删除模板
-                      </Button>
-                    )}
-                  </div>
-                )}
-                <div className="my-4 space-y-2">
-                  <label className="workflow-label">模板 / 任务名称</label>
-                  <Input
-                    aria-label="工作流名称"
-                    value={title}
-                    disabled={Boolean(busy)}
-                    onChange={(event) =>
-                      changeDraft({ ...draft, title: event.target.value })
-                    }
-                  />
-                  <MultilineEditor
-                    label="模板说明"
-                    value={description}
-                    rows={3}
-                    disabled={Boolean(busy)}
-                    onChange={(event) =>
-                      changeDraft({ ...draft, description: event.target.value })
-                    }
-                  />
-                </div>
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-                  <Input
-                    className="pl-9"
-                    aria-label="搜索工作流节点"
-                    placeholder="搜索数据或处理节点"
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                  />
-                </div>
-                {(catalog.categories || []).map(
-                  ({ id: category, title: label }) => (
-                    <section className="mt-4 space-y-2" key={category}>
-                      <h3 className="text-xs font-semibold text-muted-foreground">
-                        {label}
-                      </h3>
-                      {catalog.nodes
-                        .filter(
-                          (definition) =>
-                            !definition.hidden &&
-                            definition.category === category &&
-                            `${definition.display?.title || ""} ${definition.display?.subtitle || ""} ${definition.display?.description || ""}`
-                              .toLowerCase()
-                              .includes(search.toLowerCase()),
-                        )
-                        .map((definition) => (
-                          <button
-                            key={`${definition.kind}:${definition.version}`}
-                            type="button"
-                            className="workflow-palette-node"
+                      onChange={(id) => void loadTemplate(id)}
+                      options={[
+                        { value: "", label: "标准提取流程" },
+                        ...(catalog.builtinTemplates || []).map((item) => ({
+                          value: item.id,
+                          label: item.title,
+                        })),
+                        ...templates.map((item) => ({
+                          value: item.id,
+                          label: `${item.title} · v${item.revision}`,
+                        })),
+                      ]}
+                    />
+                    {template && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={Boolean(busy)}
+                          onClick={() => void action("clone")}
+                        >
+                          <Copy className="size-3" />
+                          另存模板
+                        </Button>
+                        {template.canManage !== false && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive"
                             disabled={Boolean(busy)}
-                            draggable={!busy}
-                            onDragStart={(event) => {
-                              event.dataTransfer.setData(
-                                "application/cwm-workflow-node",
-                                definition.kind,
-                              );
-                              event.dataTransfer.effectAllowed = "copy";
-                            }}
-                            onClick={() => addNode(definition)}
+                            onClick={() => setConfirmation({ kind: "delete" })}
                           >
-                            <div className="flex items-center gap-2">
-                              <Plus className="size-4 shrink-0 text-primary" />
-                              <strong>{definition.display?.title}</strong>
-                            </div>
-                            {definition.display?.subtitle && (
-                              <p>{definition.display.subtitle}</p>
-                            )}
-                            {definition.display?.description && (
-                              <p>{definition.display.description}</p>
-                            )}
-                          </button>
-                        ))}
-                    </section>
-                  ),
-                )}
-              </aside>
+                            <Trash2 className="size-3" />
+                            删除模板
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                    <div className="my-4 space-y-2">
+                      <label className="workflow-label">模板 / 任务名称</label>
+                      <Input
+                        aria-label="工作流名称"
+                        value={title}
+                        disabled={Boolean(busy)}
+                        onChange={(event) =>
+                          changeDraft({ ...draft, title: event.target.value })
+                        }
+                      />
+                      <MultilineEditor
+                        label="模板说明"
+                        value={description}
+                        rows={3}
+                        disabled={Boolean(busy)}
+                        onChange={(event) =>
+                          changeDraft({
+                            ...draft,
+                            description: event.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </>
+                }
+              />
             )}
             <main
               className="workflow-canvas"
@@ -909,6 +935,12 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               tabIndex={0}
               onPointerMove={(event) => {
                 pointer.current = { x: event.clientX, y: event.clientY };
+              }}
+              onDoubleClick={(event) => {
+                if (isWorkflowCanvasBlankTarget(event.target)) {
+                  event.preventDefault();
+                  openPicker({ x: event.clientX, y: event.clientY });
+                }
               }}
             >
               <WorkflowCanvas
@@ -923,6 +955,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 multiSelectionKeyCode={["Control", "Meta"]}
                 nodesDraggable={!readOnly && !busy}
                 nodesConnectable={!readOnly && !busy}
+                zoomOnDoubleClick={readOnly}
                 edgesReconnectable={false}
                 onPositionsCommit={commitPositions}
                 onNodeClick={(event, node) => {
@@ -973,6 +1006,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 }}
                 onConnect={(connection) => {
                   if (readOnly || busy) return;
+                  if (connectionStart.current)
+                    connectionStart.current.connected = true;
                   try {
                     changeGraph((current) =>
                       connectWorkflow(current, connection, catalog.nodes),
@@ -982,6 +1017,20 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     setError(cause.message);
                   }
                 }}
+                onConnectStart={(event, params) => {
+                  if (readOnly || busy || !params.nodeId || !params.handleId)
+                    return;
+                  const point = event.touches?.[0] || event;
+                  setPicker(null);
+                  setMenu(null);
+                  connectionStart.current = {
+                    ...params,
+                    x: point.clientX,
+                    y: point.clientY,
+                    connected: false,
+                  };
+                }}
+                onConnectEnd={finishConnection}
                 onDragOver={(event) => {
                   event.preventDefault();
                   event.dataTransfer.dropEffect = "copy";
@@ -1088,6 +1137,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   onDuplicate={duplicate}
                   onDelete={deleteSelected}
                   onRename={rename}
+                  onAdd={() => openPicker({ x: menu.x, y: menu.y })}
                   onPortMode={(mode) => {
                     if (menu?.port)
                       changeGraph((current) =>
@@ -1107,6 +1157,15 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       );
                     setMenu(null);
                   }}
+                />
+              )}
+              {!readOnly && (
+                <WorkflowNodePicker
+                  picker={picker}
+                  definitions={catalog.nodes}
+                  graph={graph}
+                  onClose={closePicker}
+                  onChoose={chooseNode}
                 />
               )}
             </main>
@@ -1275,13 +1334,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               <Button
                 variant="outline"
                 disabled={loading || Boolean(busy) || !catalog.nodes.length}
-                onClick={() => void action("save")}
-              >
-                <Save className="size-4" />
-                保存模板预设
-              </Button>
-              <Button
-                disabled={loading || Boolean(busy) || !catalog.nodes.length}
                 onClick={() => void action("run")}
               >
                 {busy ? (
@@ -1290,6 +1342,13 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   <Play className="size-4" />
                 )}
                 直接开始任务
+              </Button>
+              <Button
+                disabled={loading || Boolean(busy) || !catalog.nodes.length}
+                onClick={() => void action("save")}
+              >
+                <Save className="size-4" />
+                保存模板预设
               </Button>
             </>
           )}

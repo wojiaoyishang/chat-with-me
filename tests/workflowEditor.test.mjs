@@ -419,14 +419,15 @@ async function environment(request = {}, options = {}) {
             ({ path: requested }) => {
               let contents = "";
               if (requested === "flow")
-                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:()=>{},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>x});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section data-canvas>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
+                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:()=>{},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
               else if (requested.startsWith("@/lib/apiClient"))
                 contents = "export default globalThis.workflowUITest.api;";
               else if (requested.endsWith("/button"))
                 contents =
                   "export const Button=({variant,size,...props})=><button {...props}/>;";
               else if (requested.endsWith("/input"))
-                contents = "export const Input=props=><input {...props}/>;";
+                contents =
+                  "export const Input=({autoFocus,onChange,...props})=><input onChange={onChange} onInput={onChange} {...props}/>;";
               else if (requested.endsWith("/dialog"))
                 contents =
                   'export const Dialog=({children})=>children;export const DialogContent=({showCloseButton,onInteractOutside,onEscapeKeyDown,...props})=><div role="dialog" {...props}/>;export const DialogTitle=props=><h2 {...props}/>;export const DialogDescription=props=><p {...props}/>;';
@@ -434,7 +435,10 @@ async function environment(request = {}, options = {}) {
                 contents = `import {createContext,useContext} from 'react';const Context=createContext({});export const Select=({value,onValueChange,disabled,children})=><Context.Provider value={{value,onValueChange,disabled}}>{children}</Context.Provider>;export const SelectTrigger=props=>{const context=useContext(Context);return <span {...props} data-select-label={props['aria-label']}/>};export const SelectValue=()=>null;export const SelectContent=({children})=>{const context=useContext(Context);return <select value={context.value} disabled={context.disabled} onChange={event=>context.onValueChange(event.target.value)}>{children}</select>};export const SelectItem=({children,value})=><option value={value}>{children}</option>;`;
               else if (requested.endsWith("/popover"))
                 contents =
-                  "export const Popover=({children})=>children;export const PopoverTrigger=({asChild,children})=>children;export const PopoverContent=({children,...props})=><div {...props}>{children}</div>;";
+                  "export const Popover=({children})=>children;export const PopoverTrigger=({asChild,children})=>children;export const PopoverContent=({children,sideOffset,align,onOpenAutoFocus,onCloseAutoFocus,onEscapeKeyDown,...props})=><div {...props}>{children}</div>;";
+              else if (requested.endsWith("/accordion"))
+                contents =
+                  "export const Accordion=({children})=>children;export const AccordionItem=({children})=><section>{children}</section>;export const AccordionTrigger=({children,...props})=><button {...props}>{children}</button>;export const AccordionContent=({children,...props})=><div {...props}>{children}</div>;";
               else if (requested.endsWith("/switch"))
                 contents =
                   "export const Switch=({checked,onCheckedChange,...props})=><input type='checkbox' checked={checked} onChange={event=>onCheckedChange(event.target.checked)} {...props}/>;";
@@ -1313,5 +1317,248 @@ test("deleting a right-clicked edge preserves an unrelated selected node", async
     assert.deepEqual(saved.edges, []);
   } finally {
     await app.close();
+  }
+});
+
+test("blank canvas context action and double click open pinned searchable node picker", async () => {
+  const app = await environment();
+  const blank = document.querySelector("[data-blank-canvas]");
+  globalThis.workflowUITest.screenToFlowPosition = ({ x, y }) => ({
+    x: x - 100,
+    y: y - 50,
+  });
+  try {
+    await act(() =>
+      globalThis.workflowUITest.flow.onPaneContextMenu(
+        new app.dom.window.MouseEvent("contextmenu", {
+          clientX: 350,
+          clientY: 260,
+        }),
+      ),
+    );
+    await click(button("添加节点"), app.dom);
+    await input(
+      document.querySelector('[aria-label="搜索可添加节点"]'),
+      "TextInput",
+      app.dom,
+    );
+    assert.equal(
+      document.querySelectorAll(".workflow-node-picker-option").length,
+      1,
+    );
+    await click(
+      document.querySelector(".workflow-node-picker-option"),
+      app.dom,
+    );
+    assert.deepEqual(globalThis.workflowUITest.flow.nodes.at(-1).position, {
+      x: 250,
+      y: 210,
+    });
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    await act(() =>
+      blank.dispatchEvent(
+        new app.dom.window.MouseEvent("dblclick", {
+          bubbles: true,
+          clientX: 380,
+          clientY: 300,
+        }),
+      ),
+    );
+    assert.ok(document.querySelector(".workflow-node-picker"));
+    await input(
+      document.querySelector('[aria-label="搜索可添加节点"]'),
+      "文本数据",
+      app.dom,
+    );
+    await click(
+      document.querySelector(".workflow-node-picker-option"),
+      app.dom,
+    );
+    assert.deepEqual(globalThis.workflowUITest.flow.nodes.at(-1).position, {
+      x: 280,
+      y: 250,
+    });
+    assert.equal(globalThis.workflowUITest.flow.zoomOnDoubleClick, false);
+  } finally {
+    await app.close();
+  }
+});
+
+test("dragging a connection to blank canvas filters and chooses exact ports in both directions with one undo", async () => {
+  const custom = structuredClone(catalog);
+  custom.nodes.push(
+    {
+      kind: "source-consumer",
+      version: 1,
+      category: "process",
+      display: { title: "资料处理", subtitle: "SourceConsumer" },
+      configSchema: { type: "object", properties: {} },
+      inputs: [
+        {
+          name: "primary",
+          type: "source",
+          display: { title: "主要资料", subtitle: "primary · SourceSnapshot" },
+        },
+        {
+          name: "secondary",
+          type: "source",
+          display: {
+            title: "备用资料",
+            subtitle: "secondary · SourceSnapshot",
+          },
+        },
+      ],
+      outputs: [],
+    },
+    {
+      kind: "bundle-source",
+      version: 1,
+      category: "source",
+      display: { title: "内容来源", subtitle: "BundleInput" },
+      configSchema: { type: "object", properties: {} },
+      inputs: [],
+      outputs: [
+        {
+          name: "content",
+          type: "bundle",
+          display: { title: "结构化内容", subtitle: "content · ContentBundle" },
+        },
+      ],
+    },
+  );
+  const app = await environment({}, { catalog: custom });
+  const blank = document.querySelector("[data-blank-canvas]");
+  const start = (params) =>
+    globalThis.workflowUITest.flow.onConnectStart(
+      new app.dom.window.MouseEvent("mousedown", { clientX: 30, clientY: 30 }),
+      params,
+    );
+  const finish = (state = {}) => {
+    const event = new app.dom.window.MouseEvent("mouseup", {
+      clientX: 450,
+      clientY: 220,
+    });
+    Object.defineProperty(event, "target", { value: blank });
+    globalThis.workflowUITest.flow.onConnectEnd(event, {
+      isValid: false,
+      ...state,
+    });
+  };
+  try {
+    await act(() => {
+      start({ nodeId: "input-1", handleId: "source", handleType: "source" });
+      finish();
+    });
+    assert.equal(
+      document.querySelectorAll(".workflow-node-picker-option").length,
+      2,
+    );
+    assert.doesNotMatch(
+      document.querySelector(".workflow-node-picker-list").textContent,
+      /文本数据|知识提取/,
+    );
+    await input(
+      document.querySelector('[aria-label="搜索可添加节点"]'),
+      "备用资料",
+      app.dom,
+    );
+    await click(
+      document.querySelector(".workflow-node-picker-option"),
+      app.dom,
+    );
+    await click(button("校验"), app.dom);
+    let saved = app.calls
+      .filter((call) => call.url === "/tasks/workflows/validate")
+      .at(-1).payload.graph;
+    assert.equal(saved.nodes.length, 3);
+    assert.equal(saved.edges[0].targetPort, "secondary");
+    assert.equal(saved.edges[0].source, "input-1");
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    assert.equal(globalThis.workflowUITest.flow.edges.length, 0);
+    assert.equal(
+      document.querySelector('[aria-label="撤销工作流修改"]').disabled,
+      true,
+    );
+    await act(() => {
+      start({ nodeId: "extract-1", handleId: "bundle", handleType: "target" });
+      finish();
+    });
+    assert.match(
+      document.querySelector(".workflow-node-picker-hint").textContent,
+      /新节点输出/,
+    );
+    await click(
+      document.querySelector(".workflow-node-picker-option"),
+      app.dom,
+    );
+    await click(button("校验"), app.dom);
+    saved = app.calls
+      .filter((call) => call.url === "/tasks/workflows/validate")
+      .at(-1).payload.graph;
+    assert.equal(saved.edges[0].source, "bundle-source-1");
+    assert.equal(saved.edges[0].target, "extract-1");
+    assert.equal(saved.edges[0].sourcePort, "content");
+  } finally {
+    await app.close();
+  }
+});
+
+test("valid connections and drops on existing nodes do not open picker; monitor disallows quick add", async () => {
+  const app = await environment();
+  try {
+    const nodeTarget = document.querySelector('[data-node="extract-1"]');
+    await act(() => {
+      globalThis.workflowUITest.flow.onConnectStart(
+        { clientX: 0, clientY: 0 },
+        { nodeId: "input-1", handleId: "source", handleType: "source" },
+      );
+      globalThis.workflowUITest.flow.onConnectEnd(
+        { clientX: 250, clientY: 100, target: nodeTarget },
+        { isValid: false, toNode: { id: "extract-1" } },
+      );
+    });
+    assert.equal(document.querySelector(".workflow-node-picker"), null);
+    await act(() => {
+      globalThis.workflowUITest.flow.onConnectStart(
+        { clientX: 0, clientY: 0 },
+        { nodeId: "input-1", handleId: "source", handleType: "source" },
+      );
+      globalThis.workflowUITest.flow.onConnectEnd(
+        {
+          clientX: 250,
+          clientY: 100,
+          target: document.querySelector("[data-blank-canvas]"),
+        },
+        { isValid: true },
+      );
+    });
+    assert.equal(document.querySelector(".workflow-node-picker"), null);
+  } finally {
+    await app.close();
+  }
+  const monitor = await environment({ taskId: "existing-task" });
+  try {
+    await act(() =>
+      document.querySelector("[data-blank-canvas]").dispatchEvent(
+        new monitor.dom.window.MouseEvent("dblclick", {
+          bubbles: true,
+          clientX: 200,
+          clientY: 200,
+        }),
+      ),
+    );
+    assert.equal(document.querySelector(".workflow-node-picker"), null);
+    assert.equal(globalThis.workflowUITest.flow.nodesConnectable, false);
+    assert.equal(globalThis.workflowUITest.flow.zoomOnDoubleClick, true);
+  } finally {
+    await monitor.close();
   }
 });

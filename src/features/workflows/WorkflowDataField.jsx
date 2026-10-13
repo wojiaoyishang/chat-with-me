@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import JsonConfigEditor from "@/components/setting/JsonConfigEditor.jsx";
+import WorkflowSchemaInput from "./WorkflowSchemaInput.jsx";
 import WorkflowSourcePicker, {
   WorkflowSelect,
 } from "./WorkflowSourcePicker.jsx";
@@ -25,6 +26,18 @@ export default function WorkflowDataField({
 }) {
   schema = scalarSchema(normalizeWorkflowSchema(schema));
   const widget = schema.ui?.widget;
+  if (widget === "workflow-schema")
+    return (
+      <WorkflowSchemaInput
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        label={label}
+        schema={schema}
+        compact={compact}
+        onBusyChange={onBusyChange}
+      />
+    );
   if (
     [
       "resource-source-picker",

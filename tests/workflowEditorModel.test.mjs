@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   bindWorkflowInput,
+  addWorkflowNodeWithConnection,
   connectWorkflow,
   createWorkflowNode,
   isWorkflowEditorMessage,
@@ -11,6 +12,8 @@ import {
   removeWorkflowNodes,
   scalarSchema,
   workflowPortsCompatible,
+  workflowAddCandidates,
+  isWorkflowCanvasBlankTarget,
   workflowInputFields,
   sourceNodeValue,
   sourceValueConfig,
@@ -67,6 +70,125 @@ const graph = normalizeGraph({
     { id: "images-1", kind: "images", version: 1, config: {}, inputs: {} },
   ],
   variables: { source: { sourceType: "text", text: "hello" } },
+});
+
+test("node picker searches declared displays and keeps only compatible ports in either direction", () => {
+  const available = [
+    ...definitions,
+    {
+      kind: "many-inputs",
+      version: 1,
+      display: { title: "合并片段", subtitle: "MergeChunks" },
+      inputs: [
+        { name: "first", type: "bundle", display: { title: "第一内容" } },
+        { name: "second", type: "bundle", display: { title: "第二内容" } },
+        { name: "text", type: "str", display: { title: "说明文字" } },
+      ],
+      outputs: [],
+    },
+    {
+      kind: "hidden-reader",
+      hidden: true,
+      inputs: [{ name: "source", type: "bundle" }],
+      outputs: [{ name: "data", type: "bundle" }],
+    },
+  ];
+  const candidates = workflowAddCandidates(available, graph, {
+    nodeId: "parse-1",
+    handleId: "bundle",
+    handleType: "source",
+  });
+  assert.deepEqual(
+    candidates.map(({ definition, port }) => [definition.kind, port.name]),
+    [
+      ["images", "bundle"],
+      ["many-inputs", "first"],
+      ["many-inputs", "second"],
+    ],
+  );
+  assert.deepEqual(
+    workflowAddCandidates(
+      available,
+      graph,
+      { nodeId: "parse-1", handleId: "bundle", handleType: "source" },
+      "第二",
+    ).map(({ port }) => port.name),
+    ["second"],
+  );
+  assert.deepEqual(
+    workflowAddCandidates(available, graph, {
+      nodeId: "parse-1",
+      handleId: "source",
+      handleType: "target",
+    }).map(({ definition, port }) => [definition.kind, port.name]),
+    [["input", "source"]],
+  );
+  assert.deepEqual(
+    workflowAddCandidates(available, graph, {
+      nodeId: "missing",
+      handleId: "source",
+      handleType: "target",
+    }),
+    [],
+  );
+});
+
+test("quick add links one chosen port atomically, supports reverse links, and retains source graph on failure", () => {
+  const before = structuredClone(graph);
+  const forward = addWorkflowNodeWithConnection(
+    graph,
+    definitions[2],
+    { x: 480, y: -120 },
+    { nodeId: "parse-1", handleId: "bundle", handleType: "source" },
+    definitions[2].inputs[0],
+    definitions,
+  );
+  assert.deepEqual(forward.node.position, { x: 480, y: -120 });
+  assert.equal(forward.graph.nodes.length, graph.nodes.length + 1);
+  assert.deepEqual(forward.graph.edges.at(-1), {
+    id: "edge-1",
+    source: "parse-1",
+    sourcePort: "bundle",
+    target: forward.node.id,
+    targetPort: "bundle",
+  });
+  const reverse = addWorkflowNodeWithConnection(
+    graph,
+    definitions[0],
+    { x: -120, y: 30 },
+    { nodeId: "parse-1", handleId: "source", handleType: "target" },
+    definitions[0].outputs[0],
+    definitions,
+  );
+  assert.equal(reverse.graph.edges.at(-1).source, reverse.node.id);
+  assert.equal(reverse.graph.edges.at(-1).target, "parse-1");
+  assert.equal(
+    reverse.graph.nodes.find((node) => node.id === "parse-1").inputs.source,
+    undefined,
+  );
+  assert.throws(
+    () =>
+      addWorkflowNodeWithConnection(
+        graph,
+        definitions[0],
+        { x: 0, y: 0 },
+        { nodeId: "parse-1", handleId: "bundle", handleType: "source" },
+        definitions[0].inputs[0],
+        definitions,
+      ),
+    /不兼容/,
+  );
+  assert.deepEqual(graph, before);
+});
+
+test("quick add never treats an existing node or control as empty canvas", () => {
+  const target = (blocked) => ({
+    closest: (selector) =>
+      selector === ".react-flow__pane" ? {} : blocked ? {} : null,
+  });
+  assert.equal(isWorkflowCanvasBlankTarget(target(false)), true);
+  assert.equal(isWorkflowCanvasBlankTarget(target(true)), false);
+  assert.equal(isWorkflowCanvasBlankTarget(null), false);
 });
 
 test("native editors retain their own undo shortcuts", () => {

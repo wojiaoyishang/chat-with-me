@@ -1,0 +1,96 @@
+.workflow-node-picker {
+  width: min(390px, calc(100vw - 24px));
+  padding: 12px;
+}
+.workflow-node-picker-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 2px 12px;
+  font-size: 14px;
+}
+.workflow-node-picker-heading svg {
+  width: 16px;
+  height: 16px;
+  color: var(--primary);
+}
+.workflow-node-picker-heading > span {
+  margin-left: auto;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.workflow-node-picker-search {
+  position: relative;
+}
+.workflow-node-picker-search > svg {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+}
+.workflow-node-picker-search input {
+  padding-left: 34px;
+  width: 100%;
+}
+.workflow-node-picker-hint {
+  margin: 9px 3px 0;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.workflow-node-picker-list {
+  height: min(330px, 42dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-top: 9px;
+}
+.workflow-node-picker-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  border: 0;
+  border-radius: 7px;
+  padding: 10px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+}
+.workflow-node-picker-option:hover,
+.workflow-node-picker-option:focus-visible,
+.workflow-node-picker-option[aria-selected="true"] {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.workflow-node-picker-option > strong {
+  font-size: 14px;
+}
+.workflow-node-picker-option > span,
+.workflow-node-picker-option > p,
+.workflow-node-picker-port small {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.workflow-node-picker-option > p {
+  margin: 0;
+}
+.workflow-node-picker-port {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+}
+.workflow-node-picker-port svg {
+  width: 13px;
+  height: 13px;
+  color: var(--primary);
+}
+.workflow-node-picker-empty {
+  margin: 40px 8px;
+  color: var(--muted-foreground);
+  text-align: center;
+  font-size: 13px;
+}

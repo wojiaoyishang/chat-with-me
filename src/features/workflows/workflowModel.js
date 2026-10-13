@@ -195,6 +195,92 @@ export function createWorkflowNode(definition, graph, position) {
   };
 }
 
+/** Picker candidates obey the same backend-declared port rules as manual links. */
+export function workflowAddCandidates(
+  definitions,
+  graph,
+  connection,
+  query = "",
+) {
+  let origin;
+  if (connection) {
+    const node = graph.nodes.find((item) => item.id === connection.nodeId);
+    const definition = node && catalogNode(definitions, node);
+    origin = definition?.[
+      connection.handleType === "source" ? "outputs" : "inputs"
+    ]?.find((port) => port.name === connection.handleId);
+    if (!origin) return [];
+  }
+  const term = query.trim().toLocaleLowerCase();
+  return definitions
+    .filter((definition) => !definition.hidden)
+    .flatMap((definition) => {
+      const ports = connection
+        ? (
+            definition[
+              connection.handleType === "source" ? "inputs" : "outputs"
+            ] || []
+          ).filter((port) =>
+            connection.handleType === "source"
+              ? workflowPortsCompatible(origin, port)
+              : workflowPortsCompatible(port, origin),
+          )
+        : [null];
+      return ports
+        .filter((port) =>
+          [definition.display, port?.display].some((display) =>
+            Object.values(display || {})
+              .join(" ")
+              .toLocaleLowerCase()
+              .includes(term),
+          ),
+        )
+        .map((port) => ({ definition, port }));
+    });
+}
+
+/** Adding and linking is one immutable update, so one undo removes both. */
+export function addWorkflowNodeWithConnection(
+  graph,
+  definition,
+  position,
+  connection,
+  port,
+  definitions,
+) {
+  const node = createWorkflowNode(definition, graph, position);
+  let next = { ...graph, nodes: [...graph.nodes, node] };
+  if (connection) {
+    if (!port) throw new Error("请选择新节点的连接端口。");
+    const link =
+      connection.handleType === "source"
+        ? {
+            source: connection.nodeId,
+            sourcePort: connection.handleId,
+            target: node.id,
+            targetPort: port.name,
+          }
+        : {
+            source: node.id,
+            sourcePort: port.name,
+            target: connection.nodeId,
+            targetPort: connection.handleId,
+          };
+    next = connectWorkflow(next, link, definitions);
+  }
+  return { graph: next, node };
+}
+
+/** Node controls, edges and canvas controls never count as empty canvas. */
+export function isWorkflowCanvasBlankTarget(target) {
+  return Boolean(
+    target?.closest?.(".react-flow__pane") &&
+    !target.closest(
+      ".react-flow__node,.react-flow__edge,.react-flow__handle,.react-flow__controls,button,input,textarea,select,[role=dialog] [data-slot=popover-content]",
+    ),
+  );
+}
+
 export function copyWorkflowSelection(graph, ids) {
   const selected = new Set(ids);
   return clone({
