@@ -81,6 +81,7 @@ import "./workflow.css";
 
 const nodeTypes = { workflow: WorkflowNode };
 const edgeTypes = { workflow: WorkflowEdge };
+const PENDING_NODE_ANCHOR = { x: 72, y: 24 };
 let applicationClipboard = null;
 const newDraft = () => ({
   graph: normalizeGraph(),
@@ -588,10 +589,14 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const placePendingNode = (point) => {
     if (!pendingPlacement) return;
     try {
+      const cursor = flow.screenToFlowPosition(point);
       const result = addWorkflowNodeWithConnection(
         draftRef.current.graph,
         pendingPlacement.definition,
-        flow.screenToFlowPosition(point),
+        {
+          x: cursor.x - PENDING_NODE_ANCHOR.x,
+          y: cursor.y - PENDING_NODE_ANCHOR.y,
+        },
         pendingPlacement.connection,
         pendingPlacement.port,
         catalog.nodes,
@@ -1248,11 +1253,13 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   style={{
                     left:
                       pendingPlacement.point.x -
+                      PENDING_NODE_ANCHOR.x * zoom -
                       (dialogRef.current
                         ?.querySelector(".workflow-canvas")
                         ?.getBoundingClientRect().left || 0),
                     top:
                       pendingPlacement.point.y -
+                      PENDING_NODE_ANCHOR.y * zoom -
                       (dialogRef.current
                         ?.querySelector(".workflow-canvas")
                         ?.getBoundingClientRect().top || 0),

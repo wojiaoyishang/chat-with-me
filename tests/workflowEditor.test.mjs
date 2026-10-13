@@ -1811,7 +1811,11 @@ test("dragging a connection to blank canvas previews before placing exact ports 
     );
     assert.equal(
       document.querySelector('[aria-label="待放置节点"]').style.left,
-      "510px",
+      "474px",
+    );
+    assert.equal(
+      document.querySelector('[aria-label="待放置节点"]').style.top,
+      "278px",
     );
     await act(() =>
       blank.dispatchEvent(
@@ -1825,8 +1829,8 @@ test("dragging a connection to blank canvas previews before placing exact ports 
     );
     assert.equal(document.querySelector('[aria-label="待放置节点"]'), null);
     assert.deepEqual(globalThis.workflowUITest.flow.nodes.at(-1).position, {
-      x: 410,
-      y: 240,
+      x: 338,
+      y: 216,
     });
     await click(button("校验"), app.dom);
     let saved = app.calls

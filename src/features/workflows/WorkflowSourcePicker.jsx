@@ -427,7 +427,7 @@ function FullWorkflowSourcePicker({
                   >
                     <button
                       type="button"
-                      className={`workflow-resource pr-11 ${selected ? "is-selected" : ""}`}
+                      className={`workflow-resource workflow-resource-with-preview ${selected ? "is-selected" : ""}`}
                       aria-pressed={selected}
                       disabled={disabled || uploading}
                       onClick={() => pick(item)}

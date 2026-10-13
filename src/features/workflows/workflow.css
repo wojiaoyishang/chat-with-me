@@ -450,6 +450,9 @@
   font-size: 12px;
   transition: background 150ms;
 }
+.workflow-resource.workflow-resource-with-preview {
+  padding-right: 54px;
+}
 .workflow-resource + .workflow-resource {
   border-top: 1px solid var(--border);
 }
