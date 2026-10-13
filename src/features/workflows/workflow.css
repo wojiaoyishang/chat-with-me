@@ -487,18 +487,19 @@
 .workflow-resource-choice { transition: background-color 150ms ease, border-color 150ms ease; }
 .workflow-resource-choice:hover, .workflow-resource-choice:focus-within { background: var(--accent); }
 .workflow-resource-choice.is-selected:hover, .workflow-resource-choice.is-selected:focus-within { background: color-mix(in srgb, var(--primary) 11%, var(--background)); }
-.workflow-resource-choice .workflow-resource-pick:hover { background: transparent; }
-.workflow-resource-choice .workflow-resource-pick { width: 100%; min-width: 0; height: auto; min-height: 38px; justify-content: flex-start; padding: 4px; white-space: normal; }
+.workflow-resource-choice .workflow-resource-pick:hover { background: transparent; color: var(--foreground); }
+.workflow-resource-choice .workflow-resource-pick { display: block; width: 100%; min-width: 0; height: auto; min-height: 38px; padding: 4px; white-space: normal; color: var(--foreground); }
+.workflow-resource-content { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: center; gap: 8px; min-width: 0; width: 100%; }
 .workflow-resource-icon { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; flex: 0 0 40px; width: 40px; height: 40px; border-radius: 8px; background: var(--muted); color: var(--muted-foreground); }
 .workflow-resource-icon img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 150ms ease; }
 .workflow-resource-icon.has-thumbnail img { opacity: 1; }
 .workflow-resource-icon.has-thumbnail > svg { visibility: hidden; }
-.workflow-resource-name { min-width: 0; text-align: left; overflow-wrap: anywhere; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.5; }
-.workflow-resource-results.is-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(132px, auto); align-content: start; gap: 10px; padding: 10px; }
-.workflow-resource-results.is-grid .workflow-resource-choice { display: block; padding: 34px 10px 10px; border: 1px solid var(--border); border-radius: 10px; }
+.workflow-resource-name { display: block; min-width: 0; max-height: 42px; text-align: left; overflow-wrap: anywhere; overflow: hidden; font-size: 14px; line-height: 21px; color: var(--foreground); }
+.workflow-resource-results.is-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 200px; align-content: start; gap: 10px; padding: 10px; }
+.workflow-resource-results.is-grid .workflow-resource-choice { display: block; overflow: hidden; padding: 34px 10px 10px; border: 1px solid var(--border); border-radius: 10px; }
 .workflow-resource-results.is-grid .workflow-resource-check { position: absolute; top: 12px; left: 12px; }
 .workflow-resource-results.is-grid .workflow-resource-preview { position: absolute; top: 4px; right: 4px; }
-.workflow-resource-results.is-grid .workflow-resource-pick { flex-direction: column; align-items: flex-start; gap: 10px; }
+.workflow-resource-results.is-grid .workflow-resource-content { grid-template-columns: minmax(0, 1fr); grid-template-rows: 90px 42px; align-items: start; gap: 8px; }
 .workflow-resource-results.is-grid .workflow-resource-icon { flex-basis: auto; width: 100%; height: 90px; }
 .workflow-resource-results.is-grid .workflow-resource-name { width: 100%; }
 .workflow-dialog .cje-root {

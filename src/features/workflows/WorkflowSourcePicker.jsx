@@ -458,9 +458,11 @@ function FullWorkflowSourcePicker({
                       disabled={disabled || uploading || loading}
                       onClick={() => pick(item)}
                     >
+                      <span className="workflow-resource-content">
                       <ResourceThumbnail item={item} sourceType={sourceType} />
                       <span className="workflow-resource-name" title={item.title || item.name || item.id}>
                         {item.title || item.name || item.id}
+                      </span>
                       </span>
                     </Button>
                     <Button
