@@ -1179,7 +1179,7 @@ function TextInputItem({ item, path }) {
         );
     }
 
-    const inputType = item.masked === true ? 'password' : 'text';
+    const inputType = item.inputType === 'password' || item.masked === true ? 'password' : 'text';
 
     return (
         <SettingRow
@@ -1206,6 +1206,7 @@ function TextInputItem({ item, path }) {
                     <input
                         className="h-8 px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none w-full sm:w-[220px] transition-colors focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
                         type={inputType}
+                        autoComplete={item.autoComplete || (inputType === 'password' ? 'new-password' : 'off')}
                         value={val}
                         onChange={(e) => update(path, e.target.value)}
                         placeholder={item.placeholder || ''}
@@ -3246,13 +3247,20 @@ function MultiSelectItem({ item, path }) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const value = deepGet(values, path);
-    const unrestricted = value == null;
+    const emptyMeansAll = item.emptyMeansAll === true || item.name === 'allowedUserIds';
+    const unrestricted = emptyMeansAll ? !Array.isArray(value) || value.length === 0 : value == null;
     const selected = Array.isArray(value) ? value : [];
     const options = item.options || [];
     const filtered = options.filter((option) =>
         `${option.label} ${option.value}`.toLowerCase().includes(search.trim().toLowerCase()),
     );
-    const label = unrestricted ? '不限模型' : selected.length ? `已选择 ${selected.length} 个模型` : '未选择模型';
+    const unrestrictedLabel = item.unrestrictedLabel || (emptyMeansAll ? '所有用户' : '不限模型');
+    const selectionLabel = item.selectionLabel || (emptyMeansAll ? '已选择 {count} 个用户' : '已选择 {count} 个模型');
+    const label = unrestricted
+        ? unrestrictedLabel
+        : selected.length
+          ? selectionLabel.replace('{count}', String(selected.length))
+          : item.emptyLabel || '未选择模型';
     return (
         <SettingRow text={item.text} tips={item.tips} required={item.required} controlFillAvailable>
             <Popover
@@ -3283,34 +3291,32 @@ function MultiSelectItem({ item, path }) {
                         <Input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="搜索模型"
+                            placeholder={item.searchPlaceholder || (emptyMeansAll ? '搜索用户' : '搜索模型')}
                             className="border-0 shadow-none focus-visible:ring-0"
                         />
                     </div>
                     <label className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-gray-50">
                         <Checkbox
                             checked={unrestricted}
-                            onCheckedChange={(checked) =>
-                                update(path, checked ? null : options.map((option) => option.value))
-                            }
+                            onCheckedChange={(checked) => update(
+                                path,
+                                checked ? (emptyMeansAll ? [] : null) : options.map((option) => option.value),
+                            )}
                         />
-                        不限模型
+                        {unrestrictedLabel}
                     </label>
                     <div className="my-1 flex justify-between border-y px-2 py-1 text-xs text-gray-500">
                         <button
                             type="button"
                             className="cursor-pointer py-1"
                             onClick={() =>
-                                update(
-                                    path,
-                                    options.map((option) => option.value),
-                                )
+                                update(path, options.map((option) => option.value))
                             }
                         >
-                            选择全部
+                            {item.selectAllLabel || '选择全部'}
                         </button>
                         <button type="button" className="cursor-pointer py-1" onClick={() => update(path, [])}>
-                            清空
+                            {item.clearLabel || '清空'}
                         </button>
                     </div>
                     <div className="pretty-scrollbar max-h-64 overflow-y-auto">
@@ -3320,10 +3326,10 @@ function MultiSelectItem({ item, path }) {
                                 className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-gray-50"
                             >
                                 <Checkbox
-                                    checked={unrestricted || selected.includes(option.value)}
+                                    checked={(!emptyMeansAll && unrestricted) || selected.includes(option.value)}
                                     onCheckedChange={(checked) => {
                                         const previous = unrestricted
-                                            ? options.map((option) => option.value)
+                                            ? (emptyMeansAll ? [] : options.map((option) => option.value))
                                             : selected;
                                         update(
                                             path,
@@ -3337,7 +3343,9 @@ function MultiSelectItem({ item, path }) {
                             </label>
                         ))}
                         {filtered.length === 0 && (
-                            <p className="p-3 text-center text-xs text-gray-400">没有匹配的模型</p>
+                            <p className="p-3 text-center text-xs text-gray-400">
+                                {item.noMatchesLabel || (emptyMeansAll ? '没有匹配的用户' : '没有匹配的模型')}
+                            </p>
                         )}
                     </div>
                 </PopoverContent>

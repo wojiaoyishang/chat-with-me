@@ -1,7 +1,7 @@
 import AccountSecurity from '@/components/setting/AccountSecurity.jsx';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Maximize2, Minimize2, ChevronLeft, User, Layout, Save, Settings, Upload, Bell } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import {
     CONVERSATION_LIST_COMPACT_SETTING_KEY,
@@ -24,6 +24,7 @@ import { onEvent } from '@/context/useEventStore.jsx';
 import { useTranslation } from 'react-i18next';
 import { UserProfileCard } from '@/components/setting/UserProfileCard.jsx';
 import DynamicSettings from '@/components/setting/DynamicSettings.jsx';
+import KnowledgeDatabaseSettings from '@/components/setting/KnowledgeDatabaseSettings.jsx';
 import { validateJsonEditors } from '@/components/setting/jsonEditorValidation.js';
 import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
 import NotificationSettings from '@/features/notification/NotificationSettings.jsx';
@@ -241,7 +242,7 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
     const toggleFullscreen = useCallback(() => setIsFullscreen((prev) => !prev), []);
 
     const isDynamicTab = !['account', 'interface', 'notifications'].includes(activeTab);
-    const hasUnsavedChanges = isDynamicTab && !isConfigPristine;
+    const hasUnsavedChanges = isDynamicTab && dynamicConfig?.component !== 'knowledge-databases' && !isConfigPristine;
 
     // ==================== 加载动态 Tabs 列表 ====================
     const loadDynamicTabs = useCallback(
@@ -730,20 +731,20 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
     const renderContent = () => {
         if (activeTab === 'account') {
             return (
-                <motion.div
+                <Motion.div
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     className="max-w-3xl mx-auto"
                 >
                     <UserProfileCard handleLogout={handleLogout} />
                     <AccountSecurity />
-                </motion.div>
+                </Motion.div>
             );
         }
 
         if (activeTab === 'interface') {
             return (
-                <motion.div
+                <Motion.div
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     className="mx-auto max-w-3xl space-y-6"
@@ -825,15 +826,15 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
                             />
                         </CardContent>
                     </Card>
-                </motion.div>
+                </Motion.div>
             );
         }
 
         if (activeTab === 'notifications') {
             return (
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
+                <Motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
                     <NotificationSettings />
-                </motion.div>
+                </Motion.div>
             );
         }
 
@@ -861,8 +862,16 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
 
         if (!dynamicConfig) return null;
 
+        if (dynamicConfig.component === 'knowledge-databases') {
+            return (
+                <Motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="w-full min-w-0">
+                    <KnowledgeDatabaseSettings config={dynamicConfig} />
+                </Motion.div>
+            );
+        }
+
         return (
-            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="w-full min-w-0">
+            <Motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="w-full min-w-0">
                 <DynamicSettings
                     key={activeTab}
                     config={dynamicConfig.options || []}
@@ -872,7 +881,7 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
                     validationRef={jsonEditorScopeRef}
                     onSave={handleSave}
                 />
-            </motion.div>
+            </Motion.div>
         );
     };
 
@@ -880,7 +889,7 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
         <AnimatePresence>
             {open && (
                 <div className="fixed inset-0 z-[50] flex items-center justify-center overflow-hidden pretty-scrollbar">
-                    <motion.div
+                    <Motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -890,7 +899,7 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
                         style={{ willChange: 'opacity' }}
                     />
 
-                    <motion.div
+                    <Motion.div
                         initial={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ scale: 1, y: 0, opacity: 1 }}
                         exit={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 20 }}
@@ -980,7 +989,7 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
                                 {renderContent()}
                             </div>
                         </div>
-                    </motion.div>
+                    </Motion.div>
 
                     {/* 未保存修改确认 Dialog */}
                     <Dialog open={showUnsavedDialog} onOpenChange={handleUnsavedDialogOpenChange}>

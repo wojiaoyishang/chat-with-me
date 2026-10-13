@@ -4008,7 +4008,7 @@ test("an unconfigured database registry provides settings guidance and refresh c
   t.after(() => ui.dom.window.close());
   assert.equal(ui.document.querySelector("#search").disabled, true);
   assert.equal(ui.document.querySelector("#graph-empty").hidden, false);
-  assert.match(ui.document.querySelector("#graph-empty").textContent, /设置 → 图数据库/);
+  assert.match(ui.document.querySelector("#graph-empty").textContent, /设置 → 知识库连接/);
   assert.equal(ui.calls.filter(call => call.parsed.pathname !== "/api/knowledge/databases").length, 0);
   configured = true; ui.document.querySelector("#refresh").click(); await settle(180);
   assert.equal(ui.document.querySelector("#knowledge-database").value, "db-one");
