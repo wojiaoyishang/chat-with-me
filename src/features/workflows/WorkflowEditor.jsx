@@ -73,6 +73,7 @@ import WorkflowPalette from "./WorkflowPalette.jsx";
 import WorkflowNode from "./WorkflowNode.jsx";
 import WorkflowNodePanel from "./WorkflowNodePanel.jsx";
 import WorkflowMonitorPanel from "./WorkflowMonitorPanel.jsx";
+import WorkflowLogViewer from "./WorkflowLogViewer.jsx";
 import useWorkflowTask from "./useWorkflowTask.js";
 import { WorkflowSelect } from "./WorkflowSourcePicker.jsx";
 import "@xyflow/react/dist/style.css";
@@ -134,7 +135,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [selectedEdges, setSelectedEdges] = useState([]);
   const [selectionRequest, setSelectionRequest] = useState({ ids: [] });
   const [fitRequest, setFitRequest] = useState(0);
+  const [focusRequest, setFocusRequest] = useState(null);
+  const [monitorPositions, setMonitorPositions] = useState({});
+  const [submissionStep, setSubmissionStep] = useState("");
   const [panel, setPanel] = useState("node");
+  const [monitorView, setMonitorView] = useState("overview");
   const [mobilePane, setMobilePane] = useState("canvas");
   const [search, setSearch] = useState("");
   const [menu, setMenu] = useState(null);
@@ -177,6 +182,9 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       ids: next.graph.nodes[0] ? [next.graph.nodes[0].id] : [],
     });
     setFitRequest((current) => current + 1);
+    setFocusRequest(null);
+    setMonitorPositions({});
+    setMonitorView("overview");
     setMenu(null);
     setPicker(null);
     setPendingPlacement(null);
@@ -275,8 +283,18 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   );
   const commitPositions = useCallback(
     (moved) => {
-      if (!readOnly && !pendingPlacement)
+      if (pendingPlacement || !moved?.length) return;
+      if (readOnly) {
+        setMonitorPositions((current) => {
+          const next = { ...current };
+          for (const item of moved) {
+            if (item.position) next[item.id] = item.position;
+          }
+          return next;
+        });
+      } else {
         changeGraph((current) => updateWorkflowNodePositions(current, moved));
+      }
     },
     [changeGraph, readOnly, pendingPlacement],
   );
@@ -385,7 +403,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       graph.nodes.map((node) => ({
         id: node.id,
         type: "workflow",
-        position: node.position || { x: 0, y: 0 },
+        position: (readOnly && monitorPositions[node.id]) ||
+          node.position || { x: 0, y: 0 },
         data: {
           id: node.id,
           kind: node.kind,
@@ -404,6 +423,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       })),
     [
       graph.nodes,
+      monitorPositions,
       catalog.nodes,
       runtimeNodes,
       runtimeStages,
@@ -435,6 +455,28 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   );
 
   const selectedNode = graph.nodes.find((node) => node.id === selected);
+  const locateTask = () => {
+    const stageStatus = new Map(
+      runtimeStages.map((stage) => [stage.key, stage.status]),
+    );
+    const status = (node) =>
+      runtimeNodes[node.id]?.status || stageStatus.get(node.id);
+    const target =
+      graph.nodes.find((node) => status(node) === "running") ||
+      graph.nodes.find((node) => status(node) === "failed") ||
+      graph.nodes.find((node) =>
+        ["queued", "pending", "paused"].includes(status(node)),
+      ) ||
+      [...graph.nodes]
+        .reverse()
+        .find((node) => ["completed", "succeeded"].includes(status(node))) ||
+      graph.nodes[0];
+    if (!target) return;
+    setMobilePane("canvas");
+    select([target.id]);
+    setMonitorView("overview");
+    setFocusRequest({ id: target.id });
+  };
   const chosenIds = () =>
     menu?.nodeId && !selectedIds.includes(menu.nodeId)
       ? [menu.nodeId]
@@ -613,6 +655,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const action = async (kind, closeAfter = false) => {
     if (busy || readOnly) return false;
     setBusy(kind);
+    if (kind === "run") setSubmissionStep("validate");
     setError("");
     setNotice("");
     try {
@@ -673,6 +716,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         onChanged?.({ templateId: saved.id });
         if (closeAfter) onClose();
       } else {
+        setSubmissionStep("start");
         const response = await workflowApi.run({
           graph: current.graph,
           title: current.title.trim(),
@@ -696,6 +740,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         setInitialTask(running);
         setViewMode("monitor");
         setPanel("node");
+        setMonitorView("overview");
         setNotice("任务已启动，可实时查看各节点的处理进度和输出。");
         onChanged?.({ taskId: running.id });
       }
@@ -704,7 +749,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       if (alive.current) setError(cause.message);
       return false;
     } finally {
-      if (alive.current) setBusy("");
+      if (alive.current) {
+        setBusy("");
+        setSubmissionStep("");
+      }
     }
   };
   const loadTemplate = async (id, discard = false) => {
@@ -871,25 +919,51 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             <X className="size-5" />
           </Button>
         </header>
-        <nav
-          className="workflow-mobile-tabs workflow-tabs"
-          aria-label="工作流编辑区域"
-        >
-          {[
-            ...(!readOnly ? [["palette", "节点库"]] : []),
-            ["canvas", "流程画布"],
-            ["config", readOnly ? "执行详情" : "节点信息"],
-          ].map(([key, label]) => (
+        {readOnly && (
+          <nav
+            className="workflow-monitor-tabs workflow-tabs"
+            role="tablist"
+            aria-label="任务监控页面"
+          >
             <button
               type="button"
-              key={key}
-              aria-current={mobilePane === key ? "page" : undefined}
-              onClick={() => setMobilePane(key)}
+              role="tab"
+              aria-selected={monitorView === "overview"}
+              onClick={() => setMonitorView("overview")}
             >
-              {label}
+              总览
             </button>
-          ))}
-        </nav>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={monitorView === "logs"}
+              onClick={() => setMonitorView("logs")}
+            >
+              日志
+            </button>
+          </nav>
+        )}
+        {(!readOnly || monitorView === "overview") && (
+          <nav
+            className="workflow-mobile-tabs workflow-tabs"
+            aria-label="工作流编辑区域"
+          >
+            {[
+              ...(!readOnly ? [["palette", "节点库"]] : []),
+              ["canvas", "流程画布"],
+              ["config", readOnly ? "执行详情" : "节点信息"],
+            ].map(([key, label]) => (
+              <button
+                type="button"
+                key={key}
+                aria-current={mobilePane === key ? "page" : undefined}
+                onClick={() => setMobilePane(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+        )}
         {loading ? (
           <div className="workflow-loading">
             <Loader2 className="size-5 animate-spin" />
@@ -905,6 +979,13 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               重新加载
             </Button>
           </div>
+        ) : readOnly && monitorView === "logs" ? (
+          <main className="workflow-log-page pretty-scrollbar">
+            <WorkflowLogViewer
+              taskId={task?.id}
+              live={["running", "queued", "pending"].includes(task?.status)}
+            />
+          </main>
         ) : (
           <div
             className={`workflow-workspace mobile-${mobilePane} ${readOnly ? "is-monitor" : ""}`}
@@ -1036,6 +1117,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 nodes={nodes}
                 selectionRequest={selectionRequest}
                 fitRequest={fitRequest}
+                focusRequest={focusRequest}
                 edges={edges}
                 nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}
@@ -1043,7 +1125,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 maxZoom={2}
                 deleteKeyCode={null}
                 multiSelectionKeyCode={["Control", "Meta"]}
-                nodesDraggable={!readOnly && !busy && !pendingPlacement}
+                nodesDraggable={!busy && !pendingPlacement}
                 nodesConnectable={!readOnly && !busy && !pendingPlacement}
                 zoomOnDoubleClick={readOnly}
                 edgesReconnectable={false}
@@ -1055,10 +1137,12 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     setSelectedEdges([]);
                   }
                   setPanel("node");
+                  if (readOnly) setMonitorView("overview");
                 }}
                 onNodeDoubleClick={(_event, node) => {
                   setSelected(node.id);
                   setPanel("node");
+                  if (readOnly) setMonitorView("overview");
                   setMobilePane("config");
                 }}
                 onSelectionChange={selectionChanged}
@@ -1068,6 +1152,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   setSelectedIds([]);
                   setSelectedEdges([]);
                   setMenu(null);
+                  if (readOnly) setMonitorView("overview");
                 }}
                 onNodeContextMenu={(event, node) => {
                   if (!readOnly && !busy) {
@@ -1341,6 +1426,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   }
                   runtime={runtimeNodes[selected] || {}}
                   stages={runtimeStages}
+                  onOpenLogs={() => setMonitorView("logs")}
                 />
               ) : (
                 <>
@@ -1476,10 +1562,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     取消任务
                   </Button>
                 )}
-              <Button
-                variant="outline"
-                onClick={() => onChanged?.({ taskId: task?.id })}
-              >
+              <Button variant="outline" onClick={locateTask}>
                 定位到任务
               </Button>
               <Button onClick={onClose}>关闭监控</Button>
@@ -1528,6 +1611,19 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             </>
           )}
         </footer>
+        {busy === "run" && (
+          <div className="workflow-submitting" role="status" aria-live="polite">
+            <div className="workflow-submitting-card">
+              <Loader2 className="size-8 animate-spin text-primary" />
+              <strong>
+                {submissionStep === "start"
+                  ? "正在提交并启动任务"
+                  : "正在校验工作流"}
+              </strong>
+              <p>请稍候，任务启动后会自动打开执行监控。</p>
+            </div>
+          </div>
+        )}
         <AlertDialog
           open={Boolean(confirmation)}
           onOpenChange={(open) => {

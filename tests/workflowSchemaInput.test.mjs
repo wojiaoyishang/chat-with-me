@@ -158,8 +158,38 @@ test("compact schema node stays small and opens the declared editor on demand", 
       "规则定义",
     );
     await choose("template:ref");
-    assert.equal(ui.state.value.schemaId, "template:ref");
+    assert.deepEqual(ui.state.value, {});
     assert.equal(document.querySelector("textarea").value, "Ref: Entity");
+    await click(
+      [...document.querySelectorAll("button")].find(
+        (button) => button.textContent === "确认选择",
+      ),
+    );
+    assert.equal(ui.state.value.schemaId, "template:ref");
+    assert.match(
+      document.querySelector('[aria-label="配置规则输入"]').textContent,
+      /参考定义/,
+    );
+    await click(document.querySelector('[aria-label="配置规则输入"]'));
+    await choose("mine");
+    await click(document.querySelector('[aria-label="配置规则输入"]'));
+    assert.equal(ui.state.value.schemaId, "template:ref");
+  } finally {
+    await ui.close();
+  }
+});
+
+test("saved schema reference displays its fetched title before opening the editor", async () => {
+  const ui = await mount({
+    compact: true,
+    value: { schemaId: "mine", schemaRevision: 4 },
+  });
+  try {
+    assert.match(
+      document.querySelector('[aria-label="配置规则输入"]').textContent,
+      /个人规则/,
+    );
+    assert.deepEqual(ui.state.value, { schemaId: "mine", schemaRevision: 4 });
   } finally {
     await ui.close();
   }

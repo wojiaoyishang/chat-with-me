@@ -348,6 +348,25 @@
   background: var(--background);
   box-shadow: 0 1px 4px #0000000d;
 }
+.workflow-monitor-tabs {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  min-width: 220px;
+  margin: 10px 18px;
+}
+.workflow-log-page {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px;
+}
+.workflow-log-page .workflow-log-viewer {
+  height: 100%;
+}
+.workflow-log-page .workflow-log-list {
+  flex: 1 1 0;
+  max-height: none;
+}
 .workflow-footer {
   display: flex;
   flex-wrap: wrap;
@@ -372,6 +391,36 @@
   justify-content: center;
   align-items: center;
   gap: 12px;
+}
+.workflow-submitting {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--background) 86%, transparent);
+  backdrop-filter: blur(5px);
+}
+.workflow-submitting-card {
+  display: flex;
+  width: min(380px, 100%);
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--background);
+  box-shadow: 0 16px 48px #00000018;
+  text-align: center;
+}
+.workflow-submitting-card strong {
+  font-size: 16px;
+}
+.workflow-submitting-card p {
+  color: var(--muted-foreground);
+  font-size: 13px;
 }
 .workflow-resource-list {
   max-height: 235px;

@@ -1,0 +1,169 @@
+.workflow-log-viewer {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workflow-log-heading,
+.workflow-log-heading > div,
+.workflow-log-meta,
+.workflow-log-pagination {
+  display: flex;
+  align-items: center;
+}
+
+.workflow-log-heading,
+.workflow-log-pagination {
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.workflow-log-heading > div {
+  min-width: 0;
+  gap: 8px;
+}
+
+.workflow-log-heading h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.workflow-log-heading span,
+.workflow-log-meta,
+.workflow-log-pagination span {
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+
+.workflow-log-filters {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.workflow-log-filters button {
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 5px 9px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
+}
+
+.workflow-log-filters button:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.workflow-log-filters button[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--primary) 24%, var(--border));
+  background: color-mix(in srgb, var(--primary) 9%, var(--background));
+  color: var(--primary);
+}
+
+.workflow-log-list {
+  display: flex;
+  max-height: min(54dvh, 680px);
+  min-height: 0;
+  flex-direction: column;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--muted) 22%, var(--background));
+}
+
+.workflow-log-viewer.is-compact .workflow-log-list {
+  max-height: 320px;
+}
+
+.workflow-log-entry {
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
+}
+
+.workflow-log-entry:last-child {
+  border-bottom: 0;
+}
+
+.workflow-log-entry.level-info {
+  border-left-color: #5b87c7;
+}
+
+.workflow-log-entry.level-warning {
+  border-left-color: #d9a441;
+}
+
+.workflow-log-entry.level-error {
+  border-left-color: #d66c6c;
+}
+
+.workflow-log-entry.level-debug {
+  border-left-color: #9299a7;
+}
+
+.workflow-log-meta {
+  flex-wrap: wrap;
+  gap: 5px 9px;
+  margin-bottom: 4px;
+}
+
+.workflow-log-severity {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.workflow-log-entry.level-info .workflow-log-severity {
+  color: #4d79ba;
+}
+
+.workflow-log-entry.level-warning .workflow-log-severity {
+  color: #ae7924;
+}
+
+.workflow-log-entry.level-error .workflow-log-severity {
+  color: #c34b4b;
+}
+
+.workflow-log-entry.level-debug .workflow-log-severity {
+  color: #798392;
+}
+
+.workflow-log-node {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow-log-entry p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.workflow-log-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 96px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  text-align: center;
+}
+
+.workflow-log-pagination span {
+  white-space: nowrap;
+}

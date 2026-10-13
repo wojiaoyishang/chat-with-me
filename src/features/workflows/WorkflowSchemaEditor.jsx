@@ -12,6 +12,7 @@ export default function WorkflowSchemaEditor({
   onChange,
   disabled,
   onBusyChange,
+  onSelectionTitleChange,
   display,
   rows = 12,
 }) {
@@ -80,6 +81,7 @@ export default function WorkflowSchemaEditor({
     setText(item?.text || "");
     if (item) setTitle(item.title);
     setEditing(item && !id.startsWith("template:") ? item : null);
+    onSelectionTitleChange?.(id, item?.title || "");
     const next = { ...value };
     delete next.schemaText;
     delete next.schemaRevision;
@@ -133,6 +135,7 @@ export default function WorkflowSchemaEditor({
       delete next.schemaText;
       next.schemaRevision = item.revision;
       latest.current.onChange(next);
+      onSelectionTitleChange?.(item.id, item.title);
       setNotice("已保存为个人 Schema，可在其他工作流中复用。");
     } catch (cause) {
       if (alive.current) setError(cause.message);
@@ -184,6 +187,7 @@ export default function WorkflowSchemaEditor({
           delete next.schemaId;
           delete next.schemaRevision;
           setText(event.target.value);
+          onSelectionTitleChange?.("", "");
           onChange(next);
           setNotice("");
         }}

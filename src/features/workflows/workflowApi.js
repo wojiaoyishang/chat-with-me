@@ -52,6 +52,21 @@ export const workflowApi = {
       `${base}/tasks/${encodeURIComponent(taskId)}/nodes/${encodeURIComponent(nodeId)}/output?offset=${offset}&limit=20`,
       { signal },
     ),
+  logs: (
+    taskId,
+    { offset = 0, limit = 50, level = "all", nodeId, signal } = {},
+  ) => {
+    const query = new URLSearchParams({
+      offset: String(offset),
+      limit: String(limit),
+      level,
+    });
+    if (nodeId) query.set("nodeId", nodeId);
+    return apiClient.get(
+      `${base}/tasks/${encodeURIComponent(taskId)}/logs?${query}`,
+      { signal },
+    );
+  },
   taskAction: (taskId, action) =>
     apiClient.post(`/tasks/${encodeURIComponent(taskId)}/${action}`),
 };

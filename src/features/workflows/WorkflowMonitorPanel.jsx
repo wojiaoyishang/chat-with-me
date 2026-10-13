@@ -5,6 +5,7 @@ import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import { workflowApi } from "./workflowApi.js";
 import { workflowStatusLabels } from "./workflowStatus.js";
 import { workflowElapsedSeconds, workflowTokens } from "./workflowMetrics.js";
+import WorkflowLogViewer from "./WorkflowLogViewer.jsx";
 
 const printable = (value) =>
   typeof value === "string" ? value : JSON.stringify(value, null, 2);
@@ -14,12 +15,14 @@ export default function WorkflowMonitorPanel({
   definition,
   runtime = {},
   stages = [],
+  onOpenLogs,
 }) {
   const [output, setOutput] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [offset, setOffset] = useState(0);
   const [opened, setOpened] = useState(false);
+  const [refresh, setRefresh] = useState(0);
   const taskId = task?.id;
   const nodeId = node?.id;
   const preview = runtime.outputPreview;
@@ -28,28 +31,42 @@ export default function WorkflowMonitorPanel({
     setOutput(null);
     setOffset(0);
     setOpened(false);
+    setLoading(false);
     setError("");
   }, [taskId, nodeId]);
   useEffect(() => {
     if (!opened || !taskId || !nodeId) return;
     const controller = new AbortController();
+    let active = true;
+    const timeout = window.setTimeout(() => {
+      if (!active) return;
+      active = false;
+      controller.abort();
+      setError("读取节点输出超时，请重试。");
+      setLoading(false);
+    }, 30000);
     setLoading(true);
     workflowApi
       .nodeOutput(taskId, nodeId, offset, controller.signal)
       .then((value) => {
-        if (!controller.signal.aborted) {
+        if (active) {
           setOutput(value);
           setError("");
         }
       })
       .catch((cause) => {
-        if (!controller.signal.aborted) setError(cause.message);
+        if (active) setError(cause.message);
       })
       .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
+        window.clearTimeout(timeout);
+        if (active) setLoading(false);
       });
-    return () => controller.abort();
-  }, [taskId, nodeId, opened, offset, runtime.status, preview?.summary]);
+    return () => {
+      active = false;
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [taskId, nodeId, opened, offset, refresh]);
   const completed = Object.values(
     task?.workflowNodes || task?.runtime?.checkpoint?.data?.workflowNodes || {},
   ).filter((item) => ["completed", "succeeded"].includes(item.status)).length;
@@ -83,6 +100,12 @@ export default function WorkflowMonitorPanel({
           </div>
         </div>
       </section>
+      <WorkflowLogViewer
+        taskId={taskId}
+        compact
+        live={["running", "queued", "pending"].includes(task?.status)}
+        onExpand={onOpenLogs}
+      />
       {node ? (
         <>
           <section className="space-y-3 border-t pt-4">
@@ -156,6 +179,7 @@ export default function WorkflowMonitorPanel({
               onClick={() => {
                 setOpened(true);
                 setOffset(0);
+                setRefresh((value) => value + 1);
               }}
             >
               {loading && <Loader2 className="size-4 animate-spin" />}

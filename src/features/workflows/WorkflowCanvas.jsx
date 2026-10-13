@@ -15,6 +15,7 @@ export default function WorkflowCanvas({
   nodes,
   selectionRequest,
   fitRequest,
+  focusRequest,
   onPositionsCommit,
   ...props
 }) {
@@ -55,6 +56,25 @@ export default function WorkflowCanvas({
       cancelAnimationFrame(nextFrame);
     };
   }, [fitRequest, flow, measured, nodes.length]);
+  useEffect(() => {
+    if (!measured || !focusRequest?.id) return;
+    let nextFrame = 0;
+    const frame = requestAnimationFrame(() => {
+      nextFrame = requestAnimationFrame(() => {
+        void flow.fitView({
+          nodes: [{ id: focusRequest.id }],
+          padding: 0.65,
+          duration: 350,
+          minZoom: 0.5,
+          maxZoom: 1,
+        });
+      });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(nextFrame);
+    };
+  }, [flow, measured, focusRequest]);
   useEffect(() => {
     setCanvasNodes((current) => reconcileCanvasNodes(current, nodes));
   }, [nodes]);

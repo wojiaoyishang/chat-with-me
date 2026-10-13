@@ -326,6 +326,13 @@ async function environment(request = {}, options = {}) {
           workflowNodes: { "input-1": { status: "completed" } },
           stages: [{ key: "extract-1", status: "failed" }],
         };
+      if (url.includes("/nodes/") && url.includes("/output?")) {
+        if (options.outputDeferred?.[url])
+          return new Promise((resolve) => {
+            options.outputDeferred[url].resolve = resolve;
+          });
+        return { output: [], total: 0, hasMore: false };
+      }
       if (url.startsWith("/attachments"))
         return {
           items: [
@@ -362,10 +369,15 @@ async function environment(request = {}, options = {}) {
             canEdit: true,
           },
         };
-      if (url === "/tasks/workflows/run")
+      if (url === "/tasks/workflows/run") {
+        if (options.runDeferred)
+          await new Promise((resolve) => {
+            options.runDeferred.resolve = resolve;
+          });
         return {
           task: { taskId: "task-1", jobId: "task-1", status: "completed" },
         };
+      }
       if (url === "/upload/") return { artifactId: "uploaded-1" };
       if (url === "/schemas")
         return { id: "schema-1", ...payload, revision: 1 };
@@ -382,6 +394,7 @@ async function environment(request = {}, options = {}) {
     changes: [],
     closed: false,
     zoom: options.zoom || 1,
+    fitViewCalls: [],
   };
   await build({
     entryPoints: [
@@ -426,7 +439,7 @@ async function environment(request = {}, options = {}) {
             ({ path: requested }) => {
               let contents = "";
               if (requested === "flow")
-                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:()=>{},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section className="react-flow" data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
+                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:options=>{globalThis.workflowUITest.fitViewCalls.push(options);return Promise.resolve(true)},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section className="react-flow" data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
               else if (requested.startsWith("@/lib/apiClient"))
                 contents = "export default globalThis.workflowUITest.api;";
               else if (requested.endsWith("/button"))
@@ -1018,9 +1031,109 @@ test("opening an existing task uses its immutable graph and real taskId runtime 
       "failed",
     );
     await click(button("定位到任务"), app.dom);
-    assert.deepEqual(globalThis.workflowUITest.changes.at(-1), {
-      taskId: "existing-task",
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 40));
     });
+    assert.deepEqual(globalThis.workflowUITest.fitViewCalls.at(-1).nodes, [
+      { id: "extract-1" },
+    ]);
+    assert.deepEqual(globalThis.workflowUITest.changes, []);
+  } finally {
+    await app.close();
+  }
+});
+
+test("task submission covers the editor until the run starts", async () => {
+  const runDeferred = {};
+  const app = await environment({}, { runDeferred });
+  try {
+    await click(button("直接开始任务"), app.dom);
+    assert.match(
+      document.querySelector(".workflow-submitting")?.textContent || "",
+      /正在提交并启动任务/,
+    );
+    assert.equal(button("直接开始任务").disabled, true);
+    await act(async () => {
+      runDeferred.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    assert.equal(document.querySelector(".workflow-submitting"), null);
+    assert.match(
+      document.querySelector(".workflow-header").textContent,
+      /监控/,
+    );
+  } finally {
+    await app.close();
+  }
+});
+
+test("monitor log page uses the full workspace and returns to centered task", async () => {
+  const app = await environment({ taskId: "existing-task" });
+  try {
+    assert.ok(document.querySelector(".workflow-inspector .is-compact"));
+    await click(button("查看全部日志"), app.dom);
+    assert.ok(
+      document.querySelector(".workflow-log-page .workflow-log-viewer"),
+    );
+    assert.equal(document.querySelector(".workflow-workspace"), null);
+    await click(button("定位到任务"), app.dom);
+    assert.ok(document.querySelector(".workflow-workspace.is-monitor"));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 40));
+    });
+    assert.deepEqual(globalThis.workflowUITest.fitViewCalls.at(-1).nodes, [
+      { id: "extract-1" },
+    ]);
+  } finally {
+    await app.close();
+  }
+});
+
+test("monitor drag is local-only and switching nodes clears a pending output load", async () => {
+  const outputUrl =
+    "/tasks/workflows/tasks/existing-task/nodes/extract-1/output?offset=0&limit=20";
+  const deferred = {};
+  const app = await environment(
+    { taskId: "existing-task" },
+    { outputDeferred: { [outputUrl]: deferred } },
+  );
+  try {
+    assert.equal(globalThis.workflowUITest.flow.nodesDraggable, true);
+    assert.equal(globalThis.workflowUITest.flow.nodesConnectable, false);
+    await act(() => {
+      globalThis.workflowUITest.flow.onNodesChange([
+        {
+          id: "extract-1",
+          type: "position",
+          position: { x: 410, y: 210 },
+          dragging: false,
+        },
+      ]);
+    });
+    assert.deepEqual(
+      globalThis.workflowUITest.flow.nodes.find(
+        (item) => item.id === "extract-1",
+      ).position,
+      { x: 410, y: 210 },
+    );
+    assert.doesNotMatch(
+      document.querySelector(".workflow-header").textContent,
+      /有未保存修改/,
+    );
+
+    await click(document.querySelector('[data-node="extract-1"]'), app.dom);
+    await click(button("查看节点完整输出"), app.dom);
+    assert.equal(button("查看节点完整输出").disabled, true);
+    await click(document.querySelector('[data-node="input-1"]'), app.dom);
+    assert.equal(button("查看节点完整输出").disabled, false);
+    await act(async () => {
+      deferred.resolve({ output: ["旧节点结果"], total: 1 });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    assert.doesNotMatch(
+      document.querySelector(".workflow-inspector").textContent,
+      /旧节点结果/,
+    );
   } finally {
     await app.close();
   }

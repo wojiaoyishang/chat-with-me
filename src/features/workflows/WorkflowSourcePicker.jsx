@@ -63,12 +63,27 @@ export default function WorkflowSourcePicker({ compact = false, ...props }) {
   if (!compact || !props.fixedType)
     return <FullWorkflowSourcePicker {...props} compact={compact} />;
 
+  return <CompactWorkflowSourcePicker {...props} />;
+}
+
+function CompactWorkflowSourcePicker(props) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(props.value || {});
+  const [busy, setBusy] = useState(false);
+
   const count =
     props.fixedType === "document"
       ? Number(Boolean(props.value?.documentId))
       : props.value?.resources?.length || 0;
   return (
-    <Popover>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        if (busy) return;
+        if (next) setDraft(props.value || {});
+        setOpen(next);
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           type="button"
@@ -89,10 +104,47 @@ export default function WorkflowSourcePicker({ compact = false, ...props }) {
       <PopoverContent
         align="start"
         sideOffset={8}
-        className="workflow-source-popover pretty-scrollbar max-h-[min(540px,72vh)] w-[min(420px,calc(100vw-32px))] overflow-y-auto"
+        className="workflow-source-popover flex max-h-[min(540px,72vh)] w-[min(390px,calc(100vw-32px))] flex-col overflow-hidden p-0"
         onPointerDown={(event) => event.stopPropagation()}
+        onInteractOutside={(event) => {
+          if (busy) event.preventDefault();
+        }}
+        onEscapeKeyDown={(event) => {
+          if (busy) event.preventDefault();
+        }}
       >
-        <FullWorkflowSourcePicker {...props} compact={false} />
+        <div className="pretty-scrollbar min-h-0 overflow-y-auto p-3">
+          <FullWorkflowSourcePicker
+            {...props}
+            value={draft}
+            onChange={setDraft}
+            onBusyChange={(next) => {
+              setBusy(next);
+              props.onBusyChange?.(next);
+            }}
+            compact={false}
+          />
+        </div>
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t px-3 py-2.5">
+          <span className="text-xs text-muted-foreground">
+            {props.fixedType === "document"
+              ? draft.documentId
+                ? "已选择 1 项"
+                : "尚未选择"
+              : `已选择 ${draft.resources?.length || 0} 项`}
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            disabled={busy}
+            onClick={() => {
+              if (!props.disabled) props.onChange(draft);
+              setOpen(false);
+            }}
+          >
+            {props.disabled ? "关闭" : "确认选择"}
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );
@@ -271,12 +323,12 @@ function FullWorkflowSourcePicker({
         />
       ) : (
         <>
-          <div className="flex gap-2">
+          <div className="flex min-w-0 gap-2">
             <div className="relative min-w-0 flex-1">
               <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
               <Input
                 aria-label="搜索输入资源"
-                className="pl-9"
+                className={sourceType === "document" ? "pl-9" : "pl-9 pr-11"}
                 value={query}
                 placeholder={
                   sourceType === "document" ? "搜索文档名称" : "搜索附件名称"
@@ -286,6 +338,23 @@ function FullWorkflowSourcePicker({
                   setOffset(0);
                 }}
               />
+              {sourceType !== "document" && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1 size-7"
+                  disabled={disabled || uploading}
+                  onClick={() => upload.current?.click()}
+                  aria-label="上传文件"
+                >
+                  {uploading ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Upload className="size-4" />
+                  )}
+                </Button>
+              )}
             </div>
             {sourceType === "document" && value.documentId && (
               <div className="flex items-center gap-2 rounded-md bg-primary/5 px-2 py-2 text-xs">
@@ -309,21 +378,6 @@ function FullWorkflowSourcePicker({
                   <X className="size-3" />
                 </Button>
               </div>
-            )}
-            {sourceType !== "document" && (
-              <Button
-                variant="outline"
-                size="icon"
-                disabled={disabled || uploading}
-                onClick={() => upload.current?.click()}
-                aria-label="上传文件"
-              >
-                {uploading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Upload className="size-4" />
-                )}
-              </Button>
             )}
             <input
               ref={upload}
