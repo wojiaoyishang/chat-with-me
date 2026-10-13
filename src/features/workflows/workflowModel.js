@@ -114,6 +114,56 @@ export function nodeCategory(definition, node) {
     : "process";
 }
 
+const workflowPortLabels = {
+  any: "任意结果",
+  str: "文本",
+  string: "文本",
+  number: "数字",
+  int: "整数",
+  integer: "整数",
+  float: "小数",
+  bool: "布尔值",
+  boolean: "布尔值",
+  "text-chunks": "文本块列表",
+  network: "知识网络",
+  "source-snapshot": "来源快照",
+  "content-bundle": "内容与图片",
+  "image-enriched-bundle": "图片概括结果",
+  "extracted-knowledge": "知识提取结果",
+  // Old saved graphs retain these port types until explicitly migrated.
+  source: "旧版来源",
+  bundle: "旧版内容集合",
+  extracted: "旧版提取结果",
+};
+
+export function workflowPortTypeLabel(port) {
+  return (
+    port?.typeLabel ||
+    workflowPortLabels[port?.type] ||
+    port?.type ||
+    "未知类型"
+  );
+}
+
+export function workflowPortDescription(port) {
+  const type = workflowPortTypeLabel(port);
+  const accepted = (port?.accepts || [])
+    .filter((item) => item !== port.type)
+    .map((item) => workflowPortTypeLabel({ type: item }));
+  const compatibility = accepted.length
+    ? `\n还接受：${accepted.join("、")}`
+    : "";
+  return `${port?.title || port?.name || "端口"} · ${type} (${port?.type || "?"})${compatibility}${port?.description ? `\n${port.description}` : ""}${port?.pythonAnnotation ? `\nPython: ${port.pythonAnnotation}` : ""}`;
+}
+
+export function workflowPortsCompatible(output, input) {
+  return (
+    input?.type === "any" ||
+    output?.type === input?.type ||
+    (input?.accepts || []).includes(output?.type)
+  );
+}
+
 export function workflowInputFields(graph, definitions = []) {
   return graph.nodes
     .filter(
@@ -292,8 +342,10 @@ export function connectWorkflow(graph, connection, definitions) {
     ?.inputs?.find((port) => port.name === targetPort);
   if (!output || !input)
     throw new Error("节点端口不存在，请重新加载节点定义。");
-  if (output.type !== input.type && input.type !== "any")
-    throw new Error(`端口类型不兼容：${output.type} → ${input.type}`);
+  if (!workflowPortsCompatible(output, input))
+    throw new Error(
+      `端口类型不兼容：${workflowPortTypeLabel(output)} (${output.type}) → ${workflowPortTypeLabel(input)} (${input.type})`,
+    );
   const reachable = new Set([target.id]);
   for (let round = 0; round < graph.nodes.length; round += 1) {
     for (const edge of graph.edges)

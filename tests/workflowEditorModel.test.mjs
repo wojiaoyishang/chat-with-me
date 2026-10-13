@@ -10,6 +10,9 @@ import {
   normalizeGraph,
   removeWorkflowNodes,
   scalarSchema,
+  workflowPortDescription,
+  workflowPortTypeLabel,
+  workflowPortsCompatible,
 } from "../src/features/workflows/workflowModel.js";
 
 const definitions = [
@@ -204,6 +207,73 @@ test("typed ports reject malformed and cyclic connections and permit valid branc
     definitions,
   );
   assert.equal(fork.edges.length, 2);
+});
+
+test("annotated port types stay distinct and accept only declared legacy-compatible values", () => {
+  assert.equal(
+    workflowPortTypeLabel({ type: "image-enriched-bundle" }),
+    "图片概括结果",
+  );
+  assert.equal(
+    workflowPortTypeLabel({ type: "custom-distribution" }),
+    "custom-distribution",
+  );
+  assert.match(
+    workflowPortDescription({
+      name: "bundle",
+      type: "content-bundle",
+      accepts: ["bundle"],
+      pythonAnnotation: "ContentBundle",
+    }),
+    /还接受：旧版内容集合.*Python: ContentBundle/s,
+  );
+  const source = { type: "content-bundle" };
+  assert.equal(
+    workflowPortsCompatible(source, { type: "image-enriched-bundle" }),
+    false,
+  );
+  assert.equal(
+    workflowPortsCompatible(source, {
+      type: "image-enriched-bundle",
+      accepts: ["content-bundle"],
+    }),
+    true,
+  );
+  assert.equal(workflowPortsCompatible(source, { type: "any" }), true);
+  const annotated = [
+    {
+      kind: "source-bundle",
+      outputs: [{ name: "value", type: "content-bundle" }],
+    },
+    {
+      kind: "consume-images",
+      inputs: [
+        {
+          name: "value",
+          type: "image-enriched-bundle",
+          accepts: ["content-bundle"],
+        },
+      ],
+    },
+  ];
+  const empty = normalizeGraph({
+    nodes: [
+      { id: "source", kind: "source-bundle", inputs: {} },
+      { id: "target", kind: "consume-images", inputs: {} },
+    ],
+    edges: [],
+  });
+  const linked = connectWorkflow(
+    empty,
+    {
+      source: "source",
+      sourcePort: "value",
+      target: "target",
+      targetPort: "value",
+    },
+    annotated,
+  );
+  assert.equal(linked.edges.length, 1);
 });
 
 test("a literal/variable replaces its incoming edge and deleting nodes removes incident edges only", () => {

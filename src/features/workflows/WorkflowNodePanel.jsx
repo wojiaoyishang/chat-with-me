@@ -10,6 +10,8 @@ import {
   nodeCategory,
   normalizeWorkflowSchema,
   scalarSchema,
+  workflowPortDescription,
+  workflowPortTypeLabel,
 } from "./workflowModel.js";
 import WorkflowDataField from "./WorkflowDataField.jsx";
 
@@ -258,11 +260,28 @@ export default function WorkflowNodePanel({
         )}
         {[...(definition.inputs || []), ...(definition.outputs || [])].map(
           (port, index) => (
-            <div className="text-xs" key={`${port.name}:${index}`}>
+            <div
+              className="text-xs"
+              key={`${port.name}:${index}`}
+              title={workflowPortDescription(port)}
+            >
               <strong>{port.title || port.name}</strong>
               <span className="ml-2 text-muted-foreground">
-                {port.name} · {port.type}
+                {port.name} · {workflowPortTypeLabel(port)} ({port.type})
               </span>
+              {port.accepts?.length > 0 && (
+                <p className="mt-1 text-muted-foreground">
+                  兼容输入：
+                  {port.accepts
+                    .map((type) => workflowPortTypeLabel({ type }))
+                    .join("、")}
+                </p>
+              )}
+              {port.pythonAnnotation && (
+                <p className="mt-1 break-all font-mono text-muted-foreground">
+                  {port.pythonAnnotation}
+                </p>
+              )}
               {port.description && (
                 <p className="mt-1 text-muted-foreground">{port.description}</p>
               )}

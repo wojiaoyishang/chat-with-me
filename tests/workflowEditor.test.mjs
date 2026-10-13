@@ -119,6 +119,10 @@ async function environment(request = {}, options = {}) {
         const definitions = structuredClone(catalog);
         if (options.graph)
           definitions.standardGraph = structuredClone(options.graph);
+        if (options.builtinTemplates)
+          definitions.builtinTemplates = structuredClone(
+            options.builtinTemplates,
+          );
         return definitions;
       }
       if (url === "/tasks/workflows/templates")
@@ -788,6 +792,83 @@ test("quick template form preserves document revision and knowledge permissions"
     });
   } finally {
     await app.close();
+  }
+});
+
+test("built-in workflow stays selected in the editor and quick runs submit its graph", async () => {
+  const builtin = {
+    id: "built-in:full-text-extraction",
+    title: "完整文本知识提取",
+    description: "完整处理文本后写入图数据库",
+    graph: {
+      version: 2,
+      nodes: [
+        {
+          id: "text-1",
+          kind: "text",
+          name: "待提取文本",
+          inputKey: "text",
+          version: 1,
+          config: { value: "默认内容" },
+          inputs: {},
+          position: { x: 20, y: 20 },
+        },
+      ],
+      edges: [],
+      settings: {},
+    },
+  };
+  const editor = await environment({}, { builtinTemplates: [builtin] });
+  try {
+    const selector = [...document.querySelectorAll("select")].find((node) =>
+      [...node.options].some((option) => option.value === builtin.id),
+    );
+    assert.ok(selector);
+    await input(selector, builtin.id, editor.dom, "change");
+    assert.equal(selector.value, builtin.id);
+    assert.equal(
+      document.querySelector('[aria-label="工作流名称"]').value,
+      builtin.title,
+    );
+    assert.ok(document.querySelector('[data-node="text-1"]'));
+    await click(button("保存模板预设"), editor.dom);
+    assert.equal(
+      editor.calls.find(
+        (call) =>
+          call.method === "post" && call.url === "/tasks/workflows/templates",
+      ).payload.title,
+      builtin.title,
+    );
+  } finally {
+    await editor.close();
+  }
+  const quick = await environment(
+    { templateId: builtin.id },
+    {
+      builtinTemplates: [builtin],
+      component: "src/features/workflows/QuickTemplateRunDialog.jsx",
+    },
+  );
+  try {
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+    assert.equal(
+      document.querySelector('[aria-label="快速任务名称"]').value,
+      builtin.title,
+    );
+    await click(button("创建并开始"), quick.dom);
+    const payload = quick.calls.find(
+      (call) => call.method === "post" && call.url === "/tasks/workflows/run",
+    ).payload;
+    assert.deepEqual(payload.graph, builtin.graph);
+    assert.equal(payload.templateId, undefined);
+    assert.equal(payload.inputValues.text, "默认内容");
+    assert.equal(payload.title, builtin.title);
+    assert.deepEqual(payload.permissions, {
+      sharingMembers: [],
+      includeSources: true,
+    });
+  } finally {
+    await quick.close();
   }
 });
 

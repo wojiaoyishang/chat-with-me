@@ -9,7 +9,12 @@ import {
   Type,
   XCircle,
 } from "lucide-react";
-import { nodeCategory, sourceNodeValue } from "./workflowModel.js";
+import {
+  nodeCategory,
+  sourceNodeValue,
+  workflowPortDescription,
+  workflowPortTypeLabel,
+} from "./workflowModel.js";
 import WorkflowDataField from "./WorkflowDataField.jsx";
 import { workflowStatusLabels } from "./workflowStatus.js";
 
@@ -108,11 +113,9 @@ export default function WorkflowNode({ data, selected }) {
                       id={port.name}
                     />
                   )}
-                  <span
-                    title={`${port.name} · ${port.type}${port.description ? `\n${port.description}` : ""}`}
-                  >
+                  <span title={workflowPortDescription(port)}>
                     {port.title || port.name}
-                    <small>{port.type}</small>
+                    <small>{workflowPortTypeLabel(port)}</small>
                   </span>
                   {inline && (
                     <div
@@ -146,9 +149,9 @@ export default function WorkflowNode({ data, selected }) {
                 className="workflow-port workflow-port-output"
                 key={port.name}
               >
-                <span title={`${port.name} · ${port.type}`}>
+                <span title={workflowPortDescription(port)}>
                   {port.title || port.name}
-                  <small>{port.type}</small>
+                  <small>{workflowPortTypeLabel(port)}</small>
                 </span>
                 <Handle
                   type="source"

@@ -115,6 +115,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   );
   const [templates, setTemplates] = useState([]);
   const [template, setTemplate] = useState(null);
+  const [builtinTemplateId, setBuiltinTemplateId] = useState("");
   const [models, setModels] = useState([]);
   const [viewMode, setViewMode] = useState(
     request.mode === "monitor" || request.taskId
@@ -181,7 +182,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       workflowApi.templates(controller.signal),
       request.taskId
         ? workflowApi.task(request.taskId, controller.signal)
-        : request.templateId
+        : request.templateId && !request.templateId.startsWith("built-in:")
           ? workflowApi.template(request.templateId, controller.signal)
           : Promise.resolve(null),
     ])
@@ -190,16 +191,25 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         setCatalog(definitions);
         setTemplates(saved.templates || []);
         const loadedTemplate = detail?.template;
+        const builtinTemplate = (definitions.builtinTemplates || []).find(
+          (item) => item.id === request.templateId,
+        );
         const loadedTask = request.taskId ? detail?.task || detail : null;
         installDraft({
           graph: initializeGraph(
             loadedTask?.parameters?.graph ||
+              builtinTemplate?.graph ||
               loadedTemplate?.graph ||
               definitions.standardGraph,
             definitions.nodes,
           ),
-          title: loadedTask?.title || loadedTemplate?.title || "知识提取工作流",
-          description: loadedTemplate?.description || "",
+          title:
+            loadedTask?.title ||
+            builtinTemplate?.title ||
+            loadedTemplate?.title ||
+            "知识提取工作流",
+          description:
+            builtinTemplate?.description || loadedTemplate?.description || "",
           templateSharing: loadedTemplate?.sharingMembers || [],
           permissions: loadedTask?.parameters?.permissions || {
             sharingMembers: [],
@@ -207,6 +217,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           },
         });
         setTemplate(loadedTemplate || null);
+        setBuiltinTemplateId(builtinTemplate?.id || "");
         setInitialTask(loadedTask);
         setViewMode(
           loadedTask || request.mode === "monitor"
@@ -525,6 +536,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         if (!alive.current) return false;
         const saved = response.template;
         setTemplate(saved);
+        setBuiltinTemplateId("");
         setTemplates((items) => [
           ...items.filter((item) => item.id !== saved.id),
           saved,
@@ -579,19 +591,27 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     setBusy("template");
     setError("");
     try {
-      const loaded = id ? (await workflowApi.template(id)).template : null;
+      const builtin = (catalog.builtinTemplates || []).find(
+        (item) => item.id === id,
+      );
+      const loaded = builtin
+        ? null
+        : id
+          ? (await workflowApi.template(id)).template
+          : null;
       if (!alive.current) return;
       installDraft({
         ...newDraft(),
         graph: initializeGraph(
-          loaded?.graph || catalog.standardGraph,
+          builtin?.graph || loaded?.graph || catalog.standardGraph,
           catalog.nodes,
         ),
-        title: loaded?.title || "知识提取工作流",
-        description: loaded?.description || "",
+        title: builtin?.title || loaded?.title || "知识提取工作流",
+        description: builtin?.description || loaded?.description || "",
         templateSharing: loaded?.sharingMembers || [],
       });
       setTemplate(loaded);
+      setBuiltinTemplateId(builtin?.id || "");
       setInitialTask(null);
       setConfirmation(null);
       setNotice("");
@@ -755,11 +775,15 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 <label className="workflow-label">工作流模板</label>
                 <WorkflowSelect
                   label="选择工作流模板"
-                  value={template?.id || ""}
+                  value={builtinTemplateId || template?.id || ""}
                   disabled={Boolean(busy)}
                   onChange={(id) => void loadTemplate(id)}
                   options={[
                     { value: "", label: "标准提取流程" },
+                    ...(catalog.builtinTemplates || []).map((item) => ({
+                      value: item.id,
+                      label: item.title,
+                    })),
                     ...templates.map((item) => ({
                       value: item.id,
                       label: `${item.title} · v${item.revision}`,
@@ -1337,81 +1361,83 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             if (!open && !busy) setConfirmation(null);
           }}
         >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {confirmation?.kind === "close"
-                  ? "保存修改后关闭？"
-                  : confirmation?.kind === "template"
-                    ? "切换工作流模板？"
-                    : confirmation?.kind === "cancel"
-                      ? "取消当前任务？"
-                      : "删除模板？"}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {confirmation?.kind === "close"
-                  ? "当前工作流有未保存的修改。可以保存模板后关闭，或继续编辑。"
-                  : confirmation?.kind === "template"
-                    ? "切换模板会丢弃当前未保存的修改。"
-                    : "已完成的执行快照与入库内容会保留。"}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            {error && (
-              <p role="alert" className="text-sm text-destructive">
-                {error}
-              </p>
-            )}
-            <AlertDialogFooter>
-              <Button
-                variant="outline"
-                disabled={Boolean(busy)}
-                onClick={() => setConfirmation(null)}
-              >
-                {confirmation?.kind === "close" ? "继续编辑" : "取消"}
-              </Button>
-              {confirmation?.kind === "close" ? (
-                <>
-                  <Button
-                    variant="destructive"
-                    disabled={Boolean(busy)}
-                    onClick={onClose}
-                  >
-                    丢弃并关闭
-                  </Button>
-                  <Button
-                    disabled={Boolean(busy)}
-                    onClick={() => void action("save", true)}
-                  >
-                    {busy && <Loader2 className="size-4 animate-spin" />}
-                    保存后关闭
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant={
-                    confirmation?.kind === "template"
-                      ? "default"
-                      : "destructive"
-                  }
-                  disabled={Boolean(busy)}
-                  onClick={() => {
-                    if (confirmation.kind === "template")
-                      void loadTemplate(confirmation.id, true);
-                    else if (confirmation.kind === "cancel") {
-                      setConfirmation(null);
-                      void runtimeAction("cancel");
-                    } else void deleteTemplate();
-                  }}
-                >
-                  {confirmation?.kind === "template"
-                    ? "丢弃并切换"
-                    : confirmation?.kind === "cancel"
-                      ? "取消任务"
-                      : "删除模板"}
-                </Button>
+          {confirmation && (
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {confirmation?.kind === "close"
+                    ? "保存修改后关闭？"
+                    : confirmation?.kind === "template"
+                      ? "切换工作流模板？"
+                      : confirmation?.kind === "cancel"
+                        ? "取消当前任务？"
+                        : "删除模板？"}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {confirmation?.kind === "close"
+                    ? "当前工作流有未保存的修改。可以保存模板后关闭，或继续编辑。"
+                    : confirmation?.kind === "template"
+                      ? "切换模板会丢弃当前未保存的修改。"
+                      : "已完成的执行快照与入库内容会保留。"}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              {error && (
+                <p role="alert" className="text-sm text-destructive">
+                  {error}
+                </p>
               )}
-            </AlertDialogFooter>
-          </AlertDialogContent>
+              <AlertDialogFooter>
+                <Button
+                  variant="outline"
+                  disabled={Boolean(busy)}
+                  onClick={() => setConfirmation(null)}
+                >
+                  {confirmation?.kind === "close" ? "继续编辑" : "取消"}
+                </Button>
+                {confirmation?.kind === "close" ? (
+                  <>
+                    <Button
+                      variant="destructive"
+                      disabled={Boolean(busy)}
+                      onClick={onClose}
+                    >
+                      丢弃并关闭
+                    </Button>
+                    <Button
+                      disabled={Boolean(busy)}
+                      onClick={() => void action("save", true)}
+                    >
+                      {busy && <Loader2 className="size-4 animate-spin" />}
+                      保存后关闭
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant={
+                      confirmation?.kind === "template"
+                        ? "default"
+                        : "destructive"
+                    }
+                    disabled={Boolean(busy)}
+                    onClick={() => {
+                      if (confirmation.kind === "template")
+                        void loadTemplate(confirmation.id, true);
+                      else if (confirmation.kind === "cancel") {
+                        setConfirmation(null);
+                        void runtimeAction("cancel");
+                      } else void deleteTemplate();
+                    }}
+                  >
+                    {confirmation?.kind === "template"
+                      ? "丢弃并切换"
+                      : confirmation?.kind === "cancel"
+                        ? "取消任务"
+                        : "删除模板"}
+                  </Button>
+                )}
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          )}
         </AlertDialog>
       </DialogContent>
     </Dialog>

@@ -23,6 +23,7 @@ export default function QuickTemplateRunDialog({
   onChanged,
 }) {
   const [templates, setTemplates] = useState([]);
+  const [builtinTemplates, setBuiltinTemplates] = useState([]);
   const [definitions, setDefinitions] = useState([]);
   const [templateId, setTemplateId] = useState(request.templateId || "");
   const [template, setTemplate] = useState(null);
@@ -55,6 +56,7 @@ export default function QuickTemplateRunDialog({
       .then(([saved, catalog]) => {
         if (!controller.signal.aborted) {
           setTemplates(saved.templates || []);
+          setBuiltinTemplates(catalog.builtinTemplates || []);
           setDefinitions(catalog.nodes || []);
         }
       })
@@ -73,10 +75,21 @@ export default function QuickTemplateRunDialog({
       return;
     }
     const controller = new AbortController();
+    const builtin = builtinTemplates.find((item) => item.id === templateId);
+    if (templateId.startsWith("built-in:") && !builtin) {
+      if (!loading) {
+        setTemplate(null);
+        setFields([]);
+        setError("内置模板不可用，请重新加载页面。");
+      }
+      return;
+    }
     setLoadingTemplate(true);
     setError("");
-    workflowApi
-      .template(templateId, controller.signal)
+    (builtin
+      ? Promise.resolve({ template: { ...builtin, builtin: true } })
+      : workflowApi.template(templateId, controller.signal)
+    )
       .then((result) => {
         if (controller.signal.aborted) return;
         const current = result.template;
@@ -105,7 +118,7 @@ export default function QuickTemplateRunDialog({
         if (!controller.signal.aborted) setLoadingTemplate(false);
       });
     return () => controller.abort();
-  }, [templateId, definitions]);
+  }, [templateId, definitions, builtinTemplates, loading]);
   const submit = async () => {
     if (busy || !template || invalid || Object.values(uploading).some(Boolean))
       return;
@@ -124,8 +137,9 @@ export default function QuickTemplateRunDialog({
           throw new Error(`请填写“${field.title || field.key}”。`);
       }
       const result = await workflowApi.run({
-        templateId: template.id,
-        templateRevision: template.revision,
+        ...(template.builtin
+          ? { graph: template.graph }
+          : { templateId: template.id, templateRevision: template.revision }),
         inputValues: values,
         title: title.trim() || template.title,
         permissions,
@@ -175,14 +189,18 @@ export default function QuickTemplateRunDialog({
                 onChange={setTemplateId}
                 disabled={busy}
                 options={[
-                  { value: "", label: "请选择已保存的任务模板" },
+                  { value: "", label: "请选择任务模板" },
+                  ...builtinTemplates.map((item) => ({
+                    value: item.id,
+                    label: item.title,
+                  })),
                   ...templates.map((item) => ({
                     value: item.id,
                     label: `${item.title} · v${item.revision}`,
                   })),
                 ]}
               />
-              {!templates.length && (
+              {!templates.length && !builtinTemplates.length && (
                 <p className="mt-3 text-sm text-muted-foreground">
                   尚无模板。请先通过“创建任务模板”保存一个工作流。
                 </p>
