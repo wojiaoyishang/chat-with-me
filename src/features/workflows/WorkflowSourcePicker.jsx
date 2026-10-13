@@ -36,7 +36,7 @@ export function WorkflowSelect({ value, onChange, options, label, disabled }) {
       <SelectTrigger className="w-full" aria-label={label}>
         <SelectValue placeholder={label} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="workflow-select-content">
         {options.map((option) => (
           <SelectItem
             key={

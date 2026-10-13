@@ -196,6 +196,18 @@
   font-weight: 600;
   margin-bottom: 6px;
 }
+[data-slot="select-content"].workflow-select-content {
+  box-sizing: border-box;
+  width: var(--radix-select-trigger-width);
+  min-width: var(--radix-select-trigger-width);
+  max-width: calc(100vw - 32px);
+}
+[data-slot="select-content"].workflow-select-content
+  [data-slot="select-viewport"] {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
 .workflow-palette-node {
   width: 100%;
   border: 1px solid var(--border);
