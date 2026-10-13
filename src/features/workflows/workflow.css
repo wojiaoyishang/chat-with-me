@@ -565,6 +565,9 @@
   .workflow-dialog *,
   .workflow-dialog *::before {
     transition: none !important;
+  }
+  .workflow-dialog *:not(.animate-spin),
+  .workflow-dialog *::before {
     animation: none !important;
   }
 }
