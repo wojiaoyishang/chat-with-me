@@ -409,10 +409,9 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         type: "default",
         markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16 },
         selected: selectedEdges.includes(edge.id),
-        animated: !readOnly || runtimeNodes[edge.source]?.status === "running",
         className: `workflow-data-edge ${runtimeNodes[edge.source]?.status === "running" ? "is-active" : ""}`,
       })),
-    [graph.edges, selectedEdges, readOnly, runtimeNodes],
+    [graph.edges, selectedEdges, runtimeNodes],
   );
 
   const selectedNode = graph.nodes.find((node) => node.id === selected);

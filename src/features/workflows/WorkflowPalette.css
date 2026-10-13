@@ -47,6 +47,8 @@
 .workflow-node-palette .workflow-palette-group {
   display: grid;
   gap: 8px;
+  /* Keep the first card's border visible when its hover state moves it up. */
+  padding-top: 3px;
   padding-bottom: 12px;
 }
 .workflow-node-palette [data-slot="accordion-content"][data-state="open"] {
