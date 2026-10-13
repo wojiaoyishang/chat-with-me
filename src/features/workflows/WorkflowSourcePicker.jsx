@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  Check,
   Eye,
   FileText,
   LayoutGrid,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -415,7 +415,8 @@ function FullWorkflowSourcePicker({
               <Button type="button" size="icon" variant={view === "grid" ? "secondary" : "ghost"} className="size-7" aria-label="网格视图" aria-pressed={view === "grid"} onClick={() => setView("grid")}><LayoutGrid className="size-4" /></Button>
             </div>
           </div>
-          <div className={`workflow-resource-list relative ${view === "grid" ? "workflow-resource-grid" : ""}`} aria-busy={loading}>
+          <div className="workflow-resource-list relative" aria-busy={loading}>
+            <div className={`workflow-resource-results ${view === "grid" ? "is-grid" : "is-list"}`}>
               {items.map((item) => {
                 const uri =
                   item.uri || `cwm://artifact/${item.artifactId || item.id}`;
@@ -426,30 +427,39 @@ function FullWorkflowSourcePicker({
                 return (
                   <div
                     key={item.id}
-                    className="relative border-b last:border-b-0"
+                    className={`workflow-resource-choice ${selected ? "is-selected" : ""}`}
                   >
-                    <button
+                    <Checkbox
+                      className="workflow-resource-check"
+                      checked={selected}
+                      disabled={disabled || uploading || loading}
+                      aria-label={`选择 ${item.title || item.name || item.id}`}
+                      onCheckedChange={() => pick(item)}
+                    />
+                    <Button
                       type="button"
-                      className={`workflow-resource workflow-resource-with-preview ${selected ? "is-selected" : ""}`}
+                      variant="ghost"
+                      className="workflow-resource-pick"
                       aria-pressed={selected}
-                      disabled={disabled || uploading}
+                      disabled={disabled || uploading || loading}
                       onClick={() => pick(item)}
                     >
+                      <span className="workflow-resource-icon" aria-hidden="true">
                       {sourceType === "document" ? (
-                        <FileText className="size-4 shrink-0" />
+                        <FileText className="size-5" />
                       ) : (
-                        <Paperclip className="size-4 shrink-0" />
+                        <Paperclip className="size-5" />
                       )}
-                      <span className="min-w-0 flex-1 truncate">
+                      </span>
+                      <span className="workflow-resource-name" title={item.title || item.name || item.id}>
                         {item.title || item.name || item.id}
                       </span>
-                      {selected && <Check className="size-4 shrink-0" />}
-                    </button>
+                    </Button>
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute right-1 top-1/2 size-8 -translate-y-1/2"
+                      className="workflow-resource-preview size-8"
                       aria-label={`查看 ${item.title || item.name || item.id}`}
                       title={
                         sourceType === "document"
@@ -472,6 +482,7 @@ function FullWorkflowSourcePicker({
                   没有找到资源。
                 </p>
               )}
+            </div>
             {loading && <div className="workflow-resource-loading absolute inset-0 z-10 flex items-center justify-center gap-2 text-sm text-muted-foreground" role="status"><Loader2 className="size-4 animate-spin" />正在加载资源…</div>}
           </div>
           <div className="flex items-center justify-between">
