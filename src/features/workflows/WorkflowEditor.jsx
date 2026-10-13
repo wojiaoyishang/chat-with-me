@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ReactFlowProvider,
   Background,
@@ -74,6 +81,7 @@ import WorkflowNode from "./WorkflowNode.jsx";
 import WorkflowNodePanel from "./WorkflowNodePanel.jsx";
 import WorkflowMonitorPanel from "./WorkflowMonitorPanel.jsx";
 import WorkflowLogViewer from "./WorkflowLogViewer.jsx";
+import { pendingWorkflowConnectionPath } from "./workflowPendingConnection.js";
 import useWorkflowTask from "./useWorkflowTask.js";
 import { WorkflowSelect } from "./WorkflowSourcePicker.jsx";
 import "@xyflow/react/dist/style.css";
@@ -102,7 +110,7 @@ export default function WorkflowEditor(props) {
 
 function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const flow = useReactFlow();
-  const { zoom } = useViewport();
+  const { x: viewportX, y: viewportY, zoom } = useViewport();
   const [edgeAnimationEnabled] = useLocalSetting(
     WORKFLOW_EDGE_ANIMATION_SETTING_KEY,
     DEFAULT_WORKFLOW_EDGE_ANIMATION,
@@ -146,6 +154,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [menu, setMenu] = useState(null);
   const [picker, setPicker] = useState(null);
   const [pendingPlacement, setPendingPlacement] = useState(null);
+  const [pendingLink, setPendingLink] = useState(null);
   const connectionStart = useRef(null);
   const [hasClipboard, setHasClipboard] = useState(
     Boolean(applicationClipboard?.nodes?.length),
@@ -155,7 +164,36 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const history = useRef({ past: [], future: [] });
   const alive = useRef(true);
   const dialogRef = useRef(null);
+  const canvasRef = useRef(null);
+  const pendingNodeRef = useRef(null);
   const pointer = useRef(null);
+  const pickerOpen = Boolean(picker);
+  const placingNode = Boolean(pendingPlacement);
+  useEffect(() => {
+    if (!pickerOpen && !placingNode) return;
+    const trackPointer = (event) => {
+      pointer.current = { x: event.clientX, y: event.clientY };
+      if (placingNode)
+        setPendingPlacement((current) =>
+          current ? { ...current, point: pointer.current } : current,
+        );
+    };
+    window.addEventListener("pointermove", trackPointer, { passive: true });
+    return () => window.removeEventListener("pointermove", trackPointer);
+  }, [pickerOpen, placingNode]);
+  useLayoutEffect(() => {
+    if (!pendingPlacement) {
+      setPendingLink(null);
+      return;
+    }
+    setPendingLink(
+      pendingWorkflowConnectionPath(
+        canvasRef.current,
+        pendingNodeRef.current,
+        pendingPlacement.connection,
+      ),
+    );
+  }, [pendingPlacement, viewportX, viewportY, zoom]);
   const validity = useCallback(
     (key, valid) =>
       setInvalid((current) =>
@@ -554,14 +592,18 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       dialogRef.current?.querySelector(".workflow-canvas")?.focus(),
     );
   };
-  const chooseNode = ({ definition, port }) => {
+  const chooseNode = ({ definition, port }, clickPoint) => {
     if (readOnly || busy || !picker) return;
     if (picker.connection) {
+      const point =
+        clickPoint?.x || clickPoint?.y
+          ? clickPoint
+          : pointer.current || { x: picker.x, y: picker.y };
       setPendingPlacement({
         definition,
         port,
         connection: picker.connection,
-        point: { x: picker.x, y: picker.y },
+        point,
       });
       setError("");
       closePicker();
@@ -1076,20 +1118,12 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               />
             )}
             <main
+              ref={canvasRef}
               className="workflow-canvas"
               aria-label="工作流画布"
               tabIndex={0}
               onPointerMove={(event) => {
                 pointer.current = { x: event.clientX, y: event.clientY };
-                if (pendingPlacement && event.target.closest(".react-flow"))
-                  setPendingPlacement((current) =>
-                    current
-                      ? {
-                          ...current,
-                          point: { x: event.clientX, y: event.clientY },
-                        }
-                      : current,
-                  );
               }}
               onClickCapture={(event) => {
                 if (
@@ -1246,8 +1280,17 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 <Background gap={22} size={1} />
                 <Controls showInteractive={false} />
               </WorkflowCanvas>
+              {pendingLink && (
+                <svg
+                  aria-label="待放置节点连接预览"
+                  className="workflow-pending-link"
+                >
+                  <path d={pendingLink} />
+                </svg>
+              )}
               {pendingPlacement && (
                 <div
+                  ref={pendingNodeRef}
                   aria-label="待放置节点"
                   className="workflow-node pointer-events-none absolute z-20 opacity-80 shadow-lg"
                   style={{
@@ -1282,6 +1325,14 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         (port) => (
                           <div className="workflow-port" key={port.name}>
                             {port.display?.title}
+                            {pendingPlacement.connection.handleType ===
+                              "source" &&
+                              pendingPlacement.port?.name === port.name && (
+                                <span
+                                  data-pending-handle
+                                  className="workflow-pending-handle is-input"
+                                />
+                              )}
                           </div>
                         ),
                       )}
@@ -1294,6 +1345,14 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                             key={port.name}
                           >
                             {port.display?.title}
+                            {pendingPlacement.connection.handleType ===
+                              "target" &&
+                              pendingPlacement.port?.name === port.name && (
+                                <span
+                                  data-pending-handle
+                                  className="workflow-pending-handle is-output"
+                                />
+                              )}
                           </div>
                         ),
                       )}

@@ -37,7 +37,9 @@ export default function WorkflowNodePicker({
   if (!picker) return null;
   const connected = Boolean(picker.connection);
   const reverse = picker.connection?.handleType === "target";
-  const pick = (candidate) => candidate && onChoose(candidate);
+  const pick = (candidate, event) =>
+    candidate &&
+    onChoose(candidate, event && { x: event.clientX, y: event.clientY });
   return (
     <Popover
       open
@@ -131,7 +133,7 @@ export default function WorkflowNodePicker({
                 aria-selected={active === index}
                 className="workflow-node-picker-option"
                 onMouseEnter={() => setActive(index)}
-                onClick={() => pick(candidate)}
+                onClick={(event) => pick(candidate, event)}
               >
                 <strong>{candidate.definition.display?.title}</strong>
                 {candidate.definition.display?.subtitle && (

@@ -1785,9 +1785,14 @@ test("dragging a connection to blank canvas previews before placing exact ports 
       "备用资料",
       app.dom,
     );
-    await click(
-      document.querySelector(".workflow-node-picker-option"),
-      app.dom,
+    await act(() =>
+      document.querySelector(".workflow-node-picker-option").dispatchEvent(
+        new app.dom.window.MouseEvent("click", {
+          bubbles: true,
+          clientX: 620,
+          clientY: 350,
+        }),
+      ),
     );
     assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
     assert.equal(globalThis.workflowUITest.flow.edges.length, 0);
@@ -1799,6 +1804,14 @@ test("dragging a connection to blank canvas previews before placing exact ports 
     assert.equal(
       document.querySelector('[aria-label="待放置节点"]').style.transform,
       "scale(0.5)",
+    );
+    assert.equal(
+      document.querySelector('[aria-label="待放置节点"]').style.left,
+      "584px",
+    );
+    assert.equal(
+      document.querySelector('[aria-label="待放置节点"]').style.top,
+      "338px",
     );
     await act(() =>
       blank.dispatchEvent(
