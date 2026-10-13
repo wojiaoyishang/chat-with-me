@@ -14,7 +14,7 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand }) {
     const expandCallback = useRef(onExpand);
     useEffect(() => { expandCallback.current = onExpand; }, [onExpand]);
     const [ready, setReady] = useState(false), [error, setError] = useState(''), [retry, setRetry] = useState(0);
-    const [physics, setPhysics] = useState(() => !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+    const [physics, setPhysics] = useState(true);
     const [edgeAnimation] = useLocalSetting(KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION);
     const edgeAnimationRef = useRef(edgeAnimation);
     const markerId = `chat-graph-arrow-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;

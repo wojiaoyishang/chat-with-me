@@ -63,5 +63,4 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .chat-knowledge-graph *, .chat-knowledge-graph *::before { transition: none !important; }
-    .chat-knowledge-canvas[data-edge-animation="true"] .knowledge-edge-flow { display: none; animation: none; }
 }
