@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {setLocalSetting} from '@/lib/tools.jsx';
+import {getToolPermissionKey, normalizeToolPermissionMode, readToolPermission} from '@/features/tools/toolPermissions.js';
 
 import {
     collectTogglePaths,
@@ -228,14 +229,13 @@ export const useExtraToolsMenuItems = ({
 
             if (item.type === 'tool') {
                 const isDisabled = item.disabled;
-                const currentPath = [...parentPath, item.name];
-                const rawMode = getNestedValue(toolsStatus.extra_tools, currentPath);
-                const persistedMode = typeof rawMode === 'boolean'
-                    ? (rawMode ? 'allow' : 'deny')
-                    : (['allow', 'deny', 'ask'].includes(rawMode) ? rawMode : 'ask');
-                const lockedMode = item.locked ? (['allow', 'ask', 'deny'].includes(item.default) ? item.default : 'ask') : null;
-                const currentMode = lockedMode || runtimeToolPermissions[item.name] || persistedMode;
-                const isPending = !item.locked && (pendingToolPermissionNames?.has?.(item.name) || false);
+                const permissionKey = getToolPermissionKey(item);
+                const currentPath = [...parentPath, permissionKey];
+                const rawMode = readToolPermission(item, getNestedValue(toolsStatus.extra_tools, parentPath) || toolsStatus.extra_tools);
+                const persistedMode = normalizeToolPermissionMode(rawMode ?? item.default);
+                const lockedMode = item.locked ? normalizeToolPermissionMode(item.default) : null;
+                const currentMode = lockedMode || readToolPermission(item, runtimeToolPermissions) || persistedMode;
+                const isPending = !item.locked && (pendingToolPermissionNames?.has?.(permissionKey) || false);
                 const allowedModes = Array.isArray(item.allowedModes) && item.allowedModes.length > 0
                     ? item.allowedModes.filter(value => ['allow', 'ask', 'deny'].includes(value))
                     : ['allow', 'ask', 'deny'];
@@ -252,12 +252,12 @@ export const useExtraToolsMenuItems = ({
                         ...prev,
                         extra_tools: setNestedValue({...prev.extra_tools}, currentPath, mode),
                     }));
-                    onToolPermissionChange?.(item.name, mode);
+                    onToolPermissionChange?.(permissionKey, mode);
                 };
 
                 return (
                     <div
-                        key={`tool-${item.name}`}
+                        key={`tool-${permissionKey}`}
                         aria-busy={isPending}
                         className={`${isMobileMenu ? 'rounded-lg px-2.5 py-2' : 'px-2 py-1.5'} ${
                             isDisabled ? 'pointer-events-none opacity-60' : ''

@@ -384,7 +384,7 @@
     "tool_approval_group_description": "Approve or deny each tool independently. Denied tools are skipped while the remaining approved tools continue.",
     "tool_approval_command_summary": "Call summary",
     "conversation_tools": "Conversation tools",
-    "conversation_tools_description": "Only affects this conversation. Running calls are not interrupted; changes apply to subsequent tool calls.",
+    "conversation_tools_description": "Only affects this conversation. Changes apply to subsequent tool calls and operation checks in background tasks.",
     "conversation_tools_scroll_hint": "The tool list scrolls inside this region",
     "manage_conversation_tools": "Manage conversation tools",
     "search_tools": "Search tools, toolsets, or descriptions",

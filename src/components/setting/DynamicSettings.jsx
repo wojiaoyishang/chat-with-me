@@ -1,4 +1,5 @@
 import { formatLocalTimestamp } from '@/lib/clientText.js';
+import {deduplicateToolPermissionGroups, getToolPermissionKey, normalizeToolPermissionMode, readToolPermission} from '@/features/tools/toolPermissions.js';
 import OrderedOptionsEditor from './OrderedOptionsEditor.jsx';
 import JsonConfigEditor from './JsonConfigEditor.jsx';
 import MultilineEditor from '@/components/ui/MultilineEditor.jsx';
@@ -2988,7 +2989,7 @@ function ToolPermissionMatrixItem({ item, path }) {
     const value = deepGet(values, path) || {};
     const permissions = value.permissions || {};
     const fallbackMode = value.fallbackMode || 'ask';
-    const groups = Array.isArray(item.groups) ? item.groups : [];
+    const groups = useMemo(() => deduplicateToolPermissionGroups(Array.isArray(item.groups) ? item.groups : []), [item.groups]);
     const modes =
         Array.isArray(item.modes) && item.modes.length
             ? item.modes
@@ -3004,8 +3005,8 @@ function ToolPermissionMatrixItem({ item, path }) {
     const resolveMode = useCallback(
         (tool) => {
             if (tool.locked && ['allow', 'ask', 'deny'].includes(tool.default)) return tool.default;
-            const explicit = permissions[tool.name];
-            if (['allow', 'ask', 'deny'].includes(explicit)) return explicit;
+            const explicit = readToolPermission(tool, permissions);
+            if (explicit !== undefined) return normalizeToolPermissionMode(explicit, fallbackMode);
             if (['allow', 'ask', 'deny'].includes(tool.default)) return tool.default;
             return fallbackMode;
         },
@@ -3017,7 +3018,7 @@ function ToolPermissionMatrixItem({ item, path }) {
             if (tool.locked || !(tool.allowedModes || ['allow', 'ask', 'deny']).includes(mode)) return;
             update(path, {
                 ...value,
-                permissions: { ...permissions, [tool.name]: mode },
+                permissions: { ...permissions, [getToolPermissionKey(tool)]: mode },
             });
         },
         [path, permissions, update, value],
@@ -3028,7 +3029,7 @@ function ToolPermissionMatrixItem({ item, path }) {
             const nextPermissions = { ...permissions };
             for (const tool of group.sourceTools || group.tools || []) {
                 const allowedModes = tool.allowedModes || ['allow', 'ask', 'deny'];
-                if (!tool.locked && allowedModes.includes(mode)) nextPermissions[tool.name] = mode;
+                if (!tool.locked && allowedModes.includes(mode)) nextPermissions[getToolPermissionKey(tool)] = mode;
             }
             update(path, { ...value, permissions: nextPermissions });
         },
@@ -3060,7 +3061,7 @@ function ToolPermissionMatrixItem({ item, path }) {
                     !normalizedQuery || groupMatches
                         ? sourceTools
                         : sourceTools.filter((tool) =>
-                              [tool.name, tool.text, tool.description]
+                              [getToolPermissionKey(tool), tool.name, tool.text, tool.description]
                                   .filter(Boolean)
                                   .some((text) => String(text).toLowerCase().includes(normalizedQuery)),
                           ),
@@ -3158,13 +3159,14 @@ function ToolPermissionMatrixItem({ item, path }) {
                                     </div>
                                 )}
                             </header>
+                            {group.description && <div className="border-t border-[#eaeef2] px-3 py-2 text-xs leading-5 text-[#656d76] dark:border-[#30363d] dark:text-[#8b949e]">{group.description}</div>}
                             {isExpanded && (
                                 <div className="divide-y divide-[#eaeef2] border-t border-[#d8dee4] dark:divide-[#21262d] dark:border-[#30363d]">
                                     {(group.tools || []).map((tool) => {
                                         const selectedMode = resolveMode(tool);
                                         return (
                                             <div
-                                                key={tool.name}
+                                                key={getToolPermissionKey(tool)}
                                                 className="flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
                                             >
                                                 <div className="min-w-0 flex-1">
@@ -3175,7 +3177,7 @@ function ToolPermissionMatrixItem({ item, path }) {
                                                         )}
                                                     </div>
                                                     <div className="mt-0.5 break-all font-mono text-[11px] text-[#8c959f]">
-                                                        {tool.name}
+                                                        {getToolPermissionKey(tool)}
                                                     </div>
                                                     {tool.description && (
                                                         <div className="mt-1 text-xs leading-5 text-[#656d76] dark:text-[#8b949e]">

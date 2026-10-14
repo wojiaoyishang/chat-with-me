@@ -1,4 +1,5 @@
 import { normalizeBuiltinToolValue } from './builtinToolValue.js';
+import {applyToolPermissionsToStatus, collectToolPermissionGroups, collectToolPermissions, getToolPermissionAliases, getToolPermissionKey} from '@/features/tools/toolPermissions.js';
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -119,40 +120,6 @@ const applyLocalSettingBackedExtraToolStatus = (status, toolsConfig = []) => {
     return result;
 };
 
-const collectToolPermissions = (toolsConfig = [], status = {}) => {
-    const permissions = {};
-
-    const visit = (items = [], currentStatus = {}) => {
-        items.forEach((item) => {
-            if (!item) return;
-            if (item.type === 'tool-region') {
-                visit(item.children || [], currentStatus);
-                return;
-            }
-            if (!item.name) return;
-
-            const value = currentStatus?.[item.name];
-            if (item.type === 'tool') {
-                const mode =
-                    typeof value === 'boolean'
-                        ? value
-                            ? 'allow'
-                            : 'deny'
-                        : String(value || item.default || 'ask').toLowerCase();
-                permissions[item.name] = ['allow', 'deny', 'ask'].includes(mode) ? mode : 'ask';
-                return;
-            }
-
-            if (item.type === 'group' && item.children) {
-                visit(item.children, value && typeof value === 'object' ? value : {});
-            }
-        });
-    };
-
-    visit(toolsConfig, status);
-    return permissions;
-};
-
 const extractLocalOnlyExtraToolStatus = (toolsConfig = [], status = {}) => {
     const visit = (items = [], currentStatus = {}) => {
         const result = {};
@@ -178,33 +145,6 @@ const extractLocalOnlyExtraToolStatus = (toolsConfig = [], status = {}) => {
     return visit(toolsConfig, status);
 };
 
-const applyToolPermissionsToStatus = (toolsConfig = [], status = {}, permissions = {}) => {
-    let result = { ...(status || {}) };
-
-    const visit = (items = [], parentPath = []) => {
-        items.forEach((item) => {
-            if (!item) return;
-            if (item.type === 'tool-region') {
-                visit(item.children || [], parentPath);
-                return;
-            }
-            if (!item.name) return;
-            const currentPath = [...parentPath, item.name];
-
-            if (item.type === 'tool' && Object.prototype.hasOwnProperty.call(permissions, item.name)) {
-                result = setNestedValue(result, currentPath, permissions[item.name]);
-                return;
-            }
-
-            if (item.type === 'group' && item.children) {
-                visit(item.children, currentPath);
-            }
-        });
-    };
-
-    visit(toolsConfig);
-    return result;
-};
 
 // ========== 主组件 ==========
 
@@ -718,10 +658,14 @@ function ChatBox({
 
     const syncToolPermission = useCallback(
         (toolName, mode) => {
+            const permissionItem = collectToolPermissionGroups(extraTools)
+                .flatMap(group => group.tools)
+                .find(tool => getToolPermissionKey(tool) === toolName);
+            const runtimeKeys = [toolName, ...getToolPermissionAliases(permissionItem)];
             setRuntimeToolPermissions((prev) => {
-                if (!Object.prototype.hasOwnProperty.call(prev, toolName)) return prev;
+                if (!runtimeKeys.some(key => Object.prototype.hasOwnProperty.call(prev, key))) return prev;
                 const next = { ...prev };
-                delete next[toolName];
+                runtimeKeys.forEach(key => delete next[key]);
                 return next;
             });
 
@@ -763,6 +707,7 @@ function ChatBox({
             applyConversationToolPermissions,
             conversationId,
             enqueueConversationToolSync,
+            extraTools,
             restoreAuthoritativeToolPermissions,
             t,
         ],
@@ -1540,7 +1485,7 @@ function ChatBox({
                                 ? 'allow'
                                 : 'deny'
                             : String(item.default || 'ask').toLowerCase();
-                    status[item.name] = ['allow', 'deny', 'ask'].includes(defaultMode) ? defaultMode : 'ask';
+                    status[getToolPermissionKey(item)] = ['allow', 'deny', 'ask'].includes(defaultMode) ? defaultMode : 'ask';
                 } else if (item.type === 'radio' && item.children?.length > 0) {
                     let defaultValue;
                     if (item.default) {

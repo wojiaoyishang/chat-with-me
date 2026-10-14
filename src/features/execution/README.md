@@ -94,6 +94,14 @@ Allow/Ask/Deny controls.  The frontend is only a projection: server Tool Approva
 reapplies locked defaults before execution, so hiding the controls is not the security
 boundary.
 
+Business actions may provide a stable `permissionKey` separate from the callable
+`name`. Settings, conversation controls and composer permissions save that key and
+deduplicate aliases; legacy callable-name maps still display correctly through
+`permissionAliases`. The catalog retains callable names. Backend-defined
+`permissionOnly` items describe operations within a background task and participate
+in the same permission controls without becoming enabled callable tools. Group and
+operation descriptions come from the backend.
+
 ## Tool Call Repair cards (V56)
 
 A repaired native invocation reuses the original Tool Calling host rather than creating a

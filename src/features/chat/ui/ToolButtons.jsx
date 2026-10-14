@@ -1,3 +1,4 @@
+import {deduplicateToolPermissionItems} from '@/features/tools/toolPermissions.js';
 import BuiltinSliderButton from './BuiltinSliderButton.jsx';
 import ToolAuditModeSwitch from './ToolAuditModeSwitch.jsx';
 import React, { useState, useMemo, useCallback, useRef, useLayoutEffect, memo } from 'react';
@@ -262,7 +263,10 @@ const ToolButtons = memo(
         const menuCollisionPadding = isMobileMenu ? 8 : 12;
         const toolRegion = useMemo(() => extraTools.find((item) => item?.type === 'tool-region') || null, [extraTools]);
         const auditControl = extraTools.find((item) => item?.name === 'tool_audit_mode');
-        const toolRegionItems = toolRegion?.children || extraTools.filter((item) => item !== auditControl);
+        const toolRegionItems = useMemo(
+            () => deduplicateToolPermissionItems(toolRegion?.children || extraTools.filter((item) => item !== auditControl)),
+            [toolRegion, extraTools, auditControl],
+        );
         const nonRegionExtraTools = toolRegion
             ? extraTools.filter((item) => item !== toolRegion && item !== auditControl)
             : [];

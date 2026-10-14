@@ -37,8 +37,10 @@ const normalizeApprovalItems = (data) => {
     if (source.length > 0) {
         return source.map((item, index) => ({
             itemId: item?.itemId || `t${index}`,
-            toolName: item?.toolName || data?.approvalToolNames?.[index] || data?.toolNames?.[index] || 'Tool',
-            callPreview: item?.callPreview || item?.toolName || '',
+            toolName: item?.toolName || item?.tool_name || data?.approvalToolNames?.[index] || data?.toolNames?.[index] || 'Tool',
+            displayName: item?.display_name || item?.displayName || item?.actionLabel || item?.toolName || item?.tool_name
+                || data?.approvalToolNames?.[index] || data?.toolNames?.[index] || 'Tool',
+            callPreview: item?.callPreview || item?.toolName || item?.tool_name || '',
             callIndex: Number.isFinite(Number(item?.callIndex)) ? Number(item.callIndex) : index,
             status: item?.status || 'pending',
             decision: item?.decision || null,
@@ -51,6 +53,7 @@ const normalizeApprovalItems = (data) => {
     return [{
         itemId: '',
         toolName: fallbackNames.join('、') || 'Tool',
+        displayName: (data?.approvalDisplayNames || data?.displayNames || fallbackNames).join('、') || 'Tool',
         callPreview: data?.toolCallContent || '',
         callIndex: 0,
         status: 'pending',
@@ -213,7 +216,7 @@ const ToolApprovalInteraction = ({interaction, onDismiss}) => {
                         <div className="mt-1 text-xs leading-5 text-muted-foreground">
                             {isGroup
                                 ? t('tool_approval_group_description')
-                                : interaction.description || t('tool_approval_description_named', {tools: singleItem?.toolName || ''})}
+                                : interaction.description || t('tool_approval_description_named', {tools: singleItem?.displayName || ''})}
                         </div>
                     </div>
                 </div>
@@ -221,7 +224,7 @@ const ToolApprovalInteraction = ({interaction, onDismiss}) => {
                 {!hasMultipleItems && singleItem ? (
                     <div className="mt-3 border-t border-border/70 pt-3">
                         <div className="flex min-w-0 items-center gap-2">
-                            <span className="truncate text-sm font-medium text-foreground">{singleItem.toolName}</span>
+                            <span className="truncate text-sm font-medium text-foreground">{singleItem.displayName}</span>
                             <ApprovalStatusBadge item={singleItem} t={t}/>
                         </div>
                         <CallSummary value={singleItem.callPreview}/>
@@ -256,7 +259,7 @@ const ToolApprovalInteraction = ({interaction, onDismiss}) => {
                                 >
                                     <CardContent className="p-3">
                                         <div className="flex min-w-0 items-center gap-2">
-                                            <span className="truncate text-sm font-medium text-foreground">{item.toolName}</span>
+                                            <span className="truncate text-sm font-medium text-foreground">{item.displayName}</span>
                                             <Badge variant="outline" className="h-5 shrink-0 px-1.5 text-[10px] text-muted-foreground">
                                                 {index + 1}/{items.length}
                                             </Badge>

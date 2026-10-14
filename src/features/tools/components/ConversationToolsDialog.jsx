@@ -9,10 +9,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import {Button} from '@/components/ui/button';
-const normalizeMode = (value, fallback = 'ask') => {
-    const mode = String(value || '').toLowerCase();
-    return ['allow', 'ask', 'deny'].includes(mode) ? mode : fallback;
-};
+import {collectToolPermissionGroups, getToolPermissionKey, normalizeToolPermissionMode as normalizeMode, readToolPermission} from '../toolPermissions.js';
 
 const toolAllowedModes = (tool) => Array.isArray(tool?.allowedModes) && tool.allowedModes.length > 0
     ? tool.allowedModes.filter(mode => ['allow', 'ask', 'deny'].includes(String(mode || '').toLowerCase())).map(mode => String(mode).toLowerCase())
@@ -21,43 +18,6 @@ const toolAllowedModes = (tool) => Array.isArray(tool?.allowedModes) && tool.all
 const toolDefaultMode = (tool) => normalizeMode(tool?.default, 'ask');
 const isToolMutable = (tool) => !tool?.disabled && !tool?.locked;
 const canSetToolMode = (tool, mode) => isToolMutable(tool) && toolAllowedModes(tool).includes(normalizeMode(mode, 'ask'));
-
-const unwrapToolRegion = (items = []) => {
-    const region = items.find(item => item?.type === 'tool-region');
-    return region?.children || items;
-};
-
-const collectTools = (items = [], group = null, result = []) => {
-    items.forEach((item) => {
-        if (!item) return;
-        if (item.type === 'tool-region') {
-            collectTools(item.children || [], group, result);
-            return;
-        }
-        if (item.type === 'group') {
-            const nextGroup = group || {
-                id: item.name || item.text || `group-${result.length}`,
-                name: item.text || item.name || 'tools',
-                tools: [],
-            };
-            if (!group) result.push(nextGroup);
-            collectTools(item.children || [], nextGroup, result);
-            return;
-        }
-        if (item.type === 'tool' && item.name) {
-            const target = group || (() => {
-                let fallbackGroup = result.find(entry => entry.id === '__other__');
-                if (!fallbackGroup) {
-                    fallbackGroup = {id: '__other__', name: 'other_tools', tools: []};
-                    result.push(fallbackGroup);
-                }
-                return fallbackGroup;
-            })();
-            target.tools.push(item);
-        }
-    });
-    return result;
-};
 
 const ConversationToolsDialog = ({
     open,
@@ -77,7 +37,7 @@ const ConversationToolsDialog = ({
     const [saving, setSaving] = useState(false);
     const initializedForOpen = useRef(false);
 
-    const groups = useMemo(() => collectTools(unwrapToolRegion(toolsConfig)), [toolsConfig]);
+    const groups = useMemo(() => collectToolPermissionGroups(toolsConfig), [toolsConfig]);
     const allTools = useMemo(() => groups.flatMap(group => group.tools), [groups]);
 
     useEffect(() => {
@@ -90,8 +50,8 @@ const ConversationToolsDialog = ({
         allTools.forEach((tool) => {
             const mode = tool.locked
                 ? toolDefaultMode(tool)
-                : normalizeMode(currentPermissions[tool.name] ?? defaultPermissions[tool.name] ?? tool.default, 'ask');
-            next[tool.name] = mode;
+                : normalizeMode(readToolPermission(tool, currentPermissions, defaultPermissions) ?? tool.default, 'ask');
+            next[getToolPermissionKey(tool)] = mode;
         });
         setDraft(next);
         setInitial(next);
@@ -110,26 +70,26 @@ const ConversationToolsDialog = ({
             sourceTools,
             tools: groupMatches
                 ? sourceTools
-                : sourceTools.filter((tool) => [tool.name, t(tool.text || tool.name), tool.description]
+                : sourceTools.filter((tool) => [getToolPermissionKey(tool), tool.name, t(tool.text || tool.name), tool.description]
                     .filter(Boolean)
                     .some(value => String(value).toLowerCase().includes(normalizedQuery))),
         };
     }).filter(group => group.tools.length > 0), [groups, normalizedQuery, t]);
 
     const permissionCounts = allTools.reduce((counts, tool) => {
-        const mode = normalizeMode(draft[tool.name], 'ask');
+        const mode = normalizeMode(draft[getToolPermissionKey(tool)], 'ask');
         counts[mode] += 1;
         return counts;
     }, {allow: 0, ask: 0, deny: 0});
     const changed = allTools.some(tool => isToolMutable(tool)
-        && normalizeMode(draft[tool.name]) !== normalizeMode(initial[tool.name]));
+        && normalizeMode(draft[getToolPermissionKey(tool)]) !== normalizeMode(initial[getToolPermissionKey(tool)]));
     const mutableTools = useMemo(() => allTools.filter(isToolMutable), [allTools]);
     const batchableTools = (tools, mode) => (tools || []).filter(tool => canSetToolMode(tool, mode));
     const isMutablePermissionCommitted = (mode) => {
         const batch = batchableTools(mutableTools, mode);
         return batch.length > 0
-            && batch.every(tool => normalizeMode(draft[tool.name], 'ask') === mode)
-            && batch.every(tool => normalizeMode(initial[tool.name], 'ask') === mode);
+            && batch.every(tool => normalizeMode(draft[getToolPermissionKey(tool)], 'ask') === mode)
+            && batch.every(tool => normalizeMode(initial[getToolPermissionKey(tool)], 'ask') === mode);
     };
     const allMutableAllowed = isMutablePermissionCommitted('allow');
     const allMutableAsked = isMutablePermissionCommitted('ask');
@@ -156,13 +116,13 @@ const ConversationToolsDialog = ({
         const previous = draft;
         const next = {...previous};
         mutableBatchTools.forEach((tool) => {
-            next[tool.name] = normalizedTarget;
+            next[getToolPermissionKey(tool)] = normalizedTarget;
         });
 
         const updates = {};
         mutableBatchTools.forEach((tool) => {
-            const nextMode = normalizeMode(next[tool.name], 'ask');
-            if (nextMode !== normalizeMode(initial[tool.name], 'ask')) updates[tool.name] = nextMode;
+            const nextMode = normalizeMode(next[getToolPermissionKey(tool)], 'ask');
+            if (nextMode !== normalizeMode(initial[getToolPermissionKey(tool)], 'ask')) updates[getToolPermissionKey(tool)] = nextMode;
         });
 
         setDraft(next);
@@ -179,7 +139,7 @@ const ConversationToolsDialog = ({
             setInitial((previousInitial) => {
                 const nextInitial = {...previousInitial};
                 mutableBatchTools.forEach((tool) => {
-                    nextInitial[tool.name] = normalizedTarget;
+                    nextInitial[getToolPermissionKey(tool)] = normalizedTarget;
                 });
                 return nextInitial;
             });
@@ -206,15 +166,15 @@ const ConversationToolsDialog = ({
     const setToolPermission = (tool, mode) => {
         const normalized = normalizeMode(mode, 'ask');
         if (!canSetToolMode(tool, normalized)) return;
-        setDraft(previous => ({...previous, [tool.name]: normalized}));
+        setDraft(previous => ({...previous, [getToolPermissionKey(tool)]: normalized}));
     };
 
     const restoreDefaults = () => {
         const next = {};
         allTools.forEach((tool) => {
-            next[tool.name] = tool.locked
+            next[getToolPermissionKey(tool)] = tool.locked
                 ? toolDefaultMode(tool)
-                : normalizeMode(defaultPermissions[tool.name] ?? tool.default, 'ask');
+                : normalizeMode(readToolPermission(tool, defaultPermissions) ?? tool.default, 'ask');
         });
         setDraft(next);
     };
@@ -224,9 +184,9 @@ const ConversationToolsDialog = ({
         const updates = {};
         allTools.forEach((tool) => {
             if (!isToolMutable(tool)) return;
-            const nextMode = normalizeMode(draft[tool.name], 'ask');
+            const nextMode = normalizeMode(draft[getToolPermissionKey(tool)], 'ask');
             if (!toolAllowedModes(tool).includes(nextMode)) return;
-            if (nextMode !== normalizeMode(initial[tool.name], 'ask')) updates[tool.name] = nextMode;
+            if (nextMode !== normalizeMode(initial[getToolPermissionKey(tool)], 'ask')) updates[getToolPermissionKey(tool)] = nextMode;
         });
         setSaving(true);
         try {
@@ -254,7 +214,7 @@ const ConversationToolsDialog = ({
                         )}
                     </div>
                     <DialogDescription>
-                        {t('conversation_tools_description', '只影响当前对话；正在执行的工具不会被中断，新权限从后续工具调用开始生效。')}
+                        {t('conversation_tools_description', '只影响当前对话；权限变更从后续工具调用和后台任务的操作检查开始生效。')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -327,8 +287,8 @@ const ConversationToolsDialog = ({
                             const groupPermissionCommitted = (mode) => {
                                 const batch = batchableTools(mutableSourceTools, mode);
                                 return batch.length > 0
-                                    && batch.every(tool => normalizeMode(draft[tool.name], 'ask') === mode)
-                                    && batch.every(tool => normalizeMode(initial[tool.name], 'ask') === mode);
+                                    && batch.every(tool => normalizeMode(draft[getToolPermissionKey(tool)], 'ask') === mode)
+                                    && batch.every(tool => normalizeMode(initial[getToolPermissionKey(tool)], 'ask') === mode);
                             };
                             const allAllowed = groupPermissionCommitted('allow');
                             const allAsked = groupPermissionCommitted('ask');
@@ -381,18 +341,19 @@ const ConversationToolsDialog = ({
                                             </button>
                                         </div>
                                     </div>
+                                    {group.description && <div className="border-t border-gray-100 px-3 py-2 text-xs leading-5 text-gray-500">{t(group.description)}</div>}
                                     {isExpanded && (
                                         <div className="divide-y divide-gray-100">
                                             {group.tools.map((tool) => {
-                                                const mode = normalizeMode(draft[tool.name], 'ask');
+                                                const mode = normalizeMode(draft[getToolPermissionKey(tool)], 'ask');
                                                 return (
-                                                    <div key={tool.name} className="flex gap-3 px-3 py-3">
+                                                    <div key={getToolPermissionKey(tool)} className="flex gap-3 px-3 py-3">
                                                         <div className="min-w-0 flex-1">
                                                             <div className="flex items-center gap-1.5 text-sm font-medium text-gray-800">
                                                                 <span className="truncate">{t(tool.text || tool.name)}</span>
                                                                 {tool.locked && <LockKeyhole className="h-3.5 w-3.5 shrink-0 text-gray-400"/>}
                                                             </div>
-                                                            <div className="mt-0.5 truncate font-mono text-[11px] text-gray-400">{tool.name}</div>
+                                                            <div className="mt-0.5 truncate font-mono text-[11px] text-gray-400">{getToolPermissionKey(tool)}</div>
                                                             {tool.description && <div className="mt-1 text-xs leading-5 text-gray-500">{t(tool.description)}</div>}
                                                         </div>
                                                         {tool.locked ? (
