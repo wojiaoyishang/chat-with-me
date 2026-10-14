@@ -66,39 +66,56 @@ export const normalizeNetworkData = (network) => {
     return normalized;
 };
 
+export const networkDatabaseId = network => String(network?.databaseId || network?.database?.databaseId || network?.database?.id || 'default');
+
 export const hasNetworkDatabaseConflict = (network, update) => Boolean(
-    update?.databaseId && update.databaseId !== (network?.databaseId || 'default')
+    (update?.databaseId || update?.database?.databaseId || update?.database?.id) && networkDatabaseId(update) !== networkDatabaseId(network)
 );
+
+const mergeScope = (oldNetwork, incomingNetwork) => {
+    const old = normalizeNetworkData(oldNetwork), incoming = normalizeNetworkData(incomingNetwork);
+    const merged = { ...old, ...incoming };
+    delete merged.databaseViews;
+    if (hasOwn(incoming, 'nodes')) merged.nodes = upsertArrayByKey(old.nodes, incoming.nodes, getNodeMergeKey);
+    if (hasOwn(incoming, 'relationships')) merged.relationships = upsertArrayByKey(old.relationships, incoming.relationships, getRelationshipMergeKey);
+    return merged;
+};
+
+// The top-level graph follows the AI. Each retained view belongs to one database;
+// neither matching IDs nor the user's manual view selection may cross that boundary.
+export const networkDatabaseViews = network => {
+    const result = new Map();
+    for (const [id, view] of Object.entries(network?.databaseViews || {})) {
+        if (!view || typeof view !== 'object' || Array.isArray(view)) continue;
+        result.set(id, { ...mergeScope(undefined, view), databaseId: id });
+    }
+    if (network && (hasOwn(network, 'nodes') || hasOwn(network, 'relationships') || hasOwn(network, 'relationship'))) {
+        const id = networkDatabaseId(network);
+        // The top level is already a full current graph. Its arrays replace any
+        // older archived copies, including an intentionally empty graph.
+        result.set(id, { ...result.get(id), ...mergeScope(undefined, network), databaseId: id });
+    }
+    return Object.fromEntries(result);
+};
 
 export const mergeNetworkData = (oldNetwork, incomingNetwork) => {
     const normalizedOld = normalizeNetworkData(oldNetwork);
     const normalizedIncoming = normalizeNetworkData(incomingNetwork);
+    if (oldNetwork && !normalizedIncoming.databaseId && !normalizedIncoming.database) normalizedIncoming.databaseId = networkDatabaseId(normalizedOld);
 
-    // A message can receive knowledge updates from another database after the
-    // user switches scope. Node and relationship IDs are only unique per DB.
-    if (hasNetworkDatabaseConflict(normalizedOld, normalizedIncoming)) {
-        return normalizedIncoming;
+    const databaseViews = new Map(Object.entries(networkDatabaseViews(normalizedOld)));
+    // Saved databaseViews are complete snapshots, while top-level WebSocket
+    // patches are incremental. Replacing snapshots prevents deleted nodes from
+    // reappearing when an archived database is refreshed.
+    const incomingViews = networkDatabaseViews({ databaseViews: normalizedIncoming.databaseViews });
+    for (const [id, view] of Object.entries(incomingViews)) {
+        databaseViews.set(id, view);
     }
-
-    const merged = {...normalizedOld, ...normalizedIncoming};
-
-    if (hasOwn(normalizedIncoming, 'nodes')) {
-        merged.nodes = upsertArrayByKey(
-            normalizedOld.nodes || [],
-            normalizedIncoming.nodes || [],
-            getNodeMergeKey
-        );
-    }
-
-    if (hasOwn(normalizedIncoming, 'relationships')) {
-        merged.relationships = upsertArrayByKey(
-            normalizedOld.relationships || [],
-            normalizedIncoming.relationships || [],
-            getRelationshipMergeKey
-        );
-    }
-
-    return merged;
+    const id = hasNetworkDatabaseConflict(normalizedOld, normalizedIncoming) ? networkDatabaseId(normalizedIncoming) : networkDatabaseId({ ...normalizedOld, ...normalizedIncoming });
+    const base = hasOwn(incomingViews, id) || hasNetworkDatabaseConflict(normalizedOld, normalizedIncoming) ? databaseViews.get(id) : normalizedOld;
+    const merged = mergeScope(base, normalizedIncoming);
+    if (hasOwn(merged, 'nodes') || hasOwn(merged, 'relationships')) databaseViews.set(id, { ...mergeScope(undefined, merged), databaseId: id });
+    return databaseViews.size ? { ...merged, databaseViews: Object.fromEntries(databaseViews) } : merged;
 };
 
 export const removeNetworkData = (network, removal) => {
@@ -122,6 +139,10 @@ export const removeNetworkData = (network, removal) => {
         }
     }
 
+    if (network.databaseViews) {
+        const id = networkDatabaseId(network);
+        result.databaseViews = { ...network.databaseViews, [id]: { ...mergeScope(undefined, result), databaseId: id } };
+    }
     return result;
 };
 

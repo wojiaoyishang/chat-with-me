@@ -24,20 +24,29 @@ export default function QuickTemplateRunDialog({
   request = {},
   onClose,
   onChanged,
+  onSubmit,
 }) {
-  const [templates, setTemplates] = useState([]);
-  const [builtinTemplates, setBuiltinTemplates] = useState([]);
-  const [definitions, setDefinitions] = useState([]);
+  const [templates, setTemplates] = useState(
+    request.template && !request.template.builtin ? [request.template] : [],
+  );
+  const [builtinTemplates, setBuiltinTemplates] = useState(
+    request.catalog?.builtinTemplates || [],
+  );
+  const [definitions, setDefinitions] = useState(request.catalog?.nodes || []);
   const [templateId, setTemplateId] = useState(request.templateId || "");
   const [template, setTemplate] = useState(null);
   const [fields, setFields] = useState([]);
   const [values, setValues] = useState({});
   const [title, setTitle] = useState("");
-  const [permissions, setPermissions] = useState({});
-  const [permissionsSchema, setPermissionsSchema] = useState({});
+  const [permissions, setPermissions] = useState(
+    clone(request.permissions || request.catalog?.permissionsDefaults || {}),
+  );
+  const [permissionsSchema, setPermissionsSchema] = useState(
+    request.catalog?.permissionsSchema || {},
+  );
   const [invalid, setInvalid] = useState(false);
   const [uploading, setUploading] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!request.catalog);
   const [loadingTemplate, setLoadingTemplate] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -49,6 +58,7 @@ export default function QuickTemplateRunDialog({
     };
   }, []);
   useEffect(() => {
+    if (request.catalog) return;
     const controller = new AbortController();
     Promise.all([
       workflowApi.templates(controller.signal),
@@ -78,6 +88,8 @@ export default function QuickTemplateRunDialog({
       return;
     }
     const controller = new AbortController();
+    const supplied =
+      request.template?.id === templateId ? request.template : null;
     const builtin = builtinTemplates.find((item) => item.id === templateId);
     if (templateId.startsWith("built-in:") && !builtin) {
       if (!loading) {
@@ -89,9 +101,11 @@ export default function QuickTemplateRunDialog({
     }
     setLoadingTemplate(true);
     setError("");
-    (builtin
-      ? Promise.resolve({ template: { ...builtin, builtin: true } })
-      : workflowApi.template(templateId, controller.signal)
+    (supplied
+      ? Promise.resolve({ template: supplied })
+      : builtin
+        ? Promise.resolve({ template: { ...builtin, builtin: true } })
+        : workflowApi.template(templateId, controller.signal)
     )
       .then((result) => {
         if (controller.signal.aborted) return;
@@ -104,7 +118,14 @@ export default function QuickTemplateRunDialog({
         setFields(inputFields);
         setValues(
           Object.fromEntries(
-            inputFields.map((field) => [field.key, clone(field.default)]),
+            inputFields.map((field) => [
+              field.key,
+              clone(
+                Object.hasOwn(request.inputValues || {}, field.key)
+                  ? request.inputValues[field.key]
+                  : field.default,
+              ),
+            ]),
           ),
         );
         setTitle(current.title || "");
@@ -136,15 +157,22 @@ export default function QuickTemplateRunDialog({
         )
           throw new Error(`请填写“${field.title || field.key}”。`);
       }
-      const result = await workflowApi.run({
+      const payload = {
         ...(template.builtin
           ? { graph: template.graph }
           : { templateId: template.id, templateRevision: template.revision }),
         inputValues: values,
         title: title.trim() || template.title,
         permissions,
-      });
-      if (alive.current) onChanged?.({ taskId: result.task.id, monitor: true });
+      };
+      const result = await (onSubmit
+        ? onSubmit(payload)
+        : workflowApi.run(payload));
+      if (alive.current)
+        onChanged?.({
+          taskId: result.task.id || result.task.taskId,
+          monitor: true,
+        });
     } catch (cause) {
       if (alive.current) setError(cause.message);
     } finally {
@@ -168,9 +196,13 @@ export default function QuickTemplateRunDialog({
             <FileInput className="size-5 text-primary" />
           </div>
           <div>
-            <DialogTitle>快速模板新建</DialogTitle>
+            <DialogTitle>
+              {request.documentId ? "发送文档至知识提取" : "快速模板新建"}
+            </DialogTitle>
             <DialogDescription className="mt-1">
-              选择任务模板，填写输入值后开始执行。
+              {request.documentId
+                ? "当前文档已填入指定输入节点，请确认并补齐其他参数。"
+                : "选择任务模板，填写输入值后开始执行。"}
             </DialogDescription>
           </div>
         </header>
@@ -187,7 +219,7 @@ export default function QuickTemplateRunDialog({
                 label="任务模板"
                 value={templateId}
                 onChange={setTemplateId}
-                disabled={busy}
+                disabled={busy || request.lockTemplate}
                 options={[
                   { value: "", label: "请选择任务模板" },
                   ...builtinTemplates.map((item) => ({
@@ -240,24 +272,35 @@ export default function QuickTemplateRunDialog({
                               {field.description}
                             </p>
                           )}
-                          <WorkflowDataField
-                            schema={field.schema}
-                            label={field.title || field.key}
-                            value={values[field.key]}
-                            disabled={busy}
-                            onChange={(value) =>
-                              setValues((current) => ({
-                                ...current,
-                                [field.key]: value,
-                              }))
-                            }
-                            onBusyChange={(value) =>
-                              setUploading((current) => ({
-                                ...current,
-                                [field.key]: value,
-                              }))
-                            }
-                          />
+                          {request.lockedInputKeys?.includes(field.key) ? (
+                            <div className="rounded-lg border bg-muted/40 px-3 py-3 text-sm">
+                              <p className="font-medium">
+                                当前文档 · {request.documentId}
+                              </p>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                提交前先保存文档，并固定保存后的版本。其他文档输入保持各自配置。
+                              </p>
+                            </div>
+                          ) : (
+                            <WorkflowDataField
+                              schema={field.schema}
+                              label={field.title || field.key}
+                              value={values[field.key]}
+                              disabled={busy}
+                              onChange={(value) =>
+                                setValues((current) => ({
+                                  ...current,
+                                  [field.key]: value,
+                                }))
+                              }
+                              onBusyChange={(value) =>
+                                setUploading((current) => ({
+                                  ...current,
+                                  [field.key]: value,
+                                }))
+                              }
+                            />
+                          )}
                         </section>
                       ))}
                       {!fields.length && (

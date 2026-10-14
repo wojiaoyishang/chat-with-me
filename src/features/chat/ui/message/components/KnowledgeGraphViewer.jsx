@@ -1,20 +1,24 @@
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Network, Minus, Plus, ExternalLink } from 'lucide-react';
+import { Database, Network, Minus, Plus, ExternalLink } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LazyVisibility from '@/context/LazyVisibility.jsx';
 import { knowledgeGraphPresentation } from './knowledgeGraphPresentation.js';
 import { createChatKnowledgeGraph } from './chatKnowledgeGraphRenderer.js';
 import apiClient from '@/lib/apiClient.js';
-import { mergeNetworkData } from '../../../page/utils/networkMerge.js';
+import { mergeNetworkData, networkDatabaseId, networkDatabaseViews } from '../../../page/utils/networkMerge.js';
 import { useLocalSetting } from '@/lib/tools.jsx';
 import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION } from '@/features/knowledge/graphSettings.js';
 import './KnowledgeGraphViewer.css';
 
-const GraphContent = memo(function GraphContent({ model, msg, onExpand }) {
+const GraphContent = memo(function GraphContent({ model, msg, onExpand, databaseId, activeDatabaseId, canonicalDatabaseId, viewStates, visibleController, scope }) {
     const svgRef = useRef(null), controller = useRef(null), appliedFocus = useRef(null);
+    const restored = useRef(false);
     const expandCallback = useRef(onExpand);
     useEffect(() => { expandCallback.current = onExpand; }, [onExpand]);
     const [ready, setReady] = useState(false), [error, setError] = useState(''), [retry, setRetry] = useState(0);
-    const [physics, setPhysics] = useState(true);
+    const [physics, setPhysics] = useState(viewStates.current.get(scope)?.physics ?? true);
+    const physicsRef = useRef(physics);
+    physicsRef.current = physics;
     const [edgeAnimation] = useLocalSetting(KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION);
     const edgeAnimationRef = useRef(edgeAnimation);
     const markerId = `chat-graph-arrow-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -35,28 +39,46 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand }) {
                 onError: cause => setError(cause.message || '图谱暂时无法显示'),
                 onExpand: id => expandCallback.current?.(id, controller.current),
             });
+            graph.databaseId = databaseId;
             controller.current = graph;
+            visibleController.current = graph;
+            restored.current = false;
+            appliedFocus.current = viewStates.current.get(scope)?.appliedFocus ?? null;
         } catch (cause) { setError(cause.message || '图谱暂时无法显示'); }
-        return () => { graph?.destroy(); if (controller.current === graph) controller.current = null; };
-    }, [markerId, retry]);
+        return () => {
+            if (graph) viewStates.current.set(scope, { ...graph.getViewState?.(), physics: physicsRef.current, appliedFocus: appliedFocus.current });
+            if (visibleController.current === graph) visibleController.current = null;
+            graph?.destroy(); if (controller.current === graph) controller.current = null;
+        };
+    }, [markerId, retry, scope, databaseId, viewStates, visibleController]);
 
-    useEffect(() => { controller.current?.setData(model); }, [model, retry]);
+    useEffect(() => {
+        controller.current?.setData(model);
+        if (!restored.current && controller.current) {
+            controller.current.restoreViewState?.(viewStates.current.get(scope));
+            restored.current = true;
+        }
+    }, [model, retry, scope, viewStates]);
     useEffect(() => { controller.current?.setPhysics(physics); }, [physics, retry]);
     useEffect(() => {
         const graph = controller.current;
-        if (!ready || !graph) return;
+        if (!ready || !graph || databaseId !== activeDatabaseId) return;
+        graph.databaseAliases = canonicalDatabaseId('default') === databaseId ? [databaseId, 'default'] : [databaseId];
         // Preserve the existing chat protocol while using the same SVG/D3 design as the knowledge page.
         msg.registerComponent?.('nvlInstance', graph);
-        const pending = msg.getComponent?.('focusNode'), focus = pending || msg.networkFocus;
+        const unregister = () => {
+            if (!msg.getComponent || msg.getComponent('nvlInstance') === graph) msg.unregisterComponent?.('nvlInstance');
+        };
+        const pending = msg.getComponent?.('focusNode'), update = pending || msg.networkFocus;
+        const focus = Array.isArray(update) ? update : update?.nodeIds ?? update;
+        if (update?.databaseId && canonicalDatabaseId(update.databaseId) !== databaseId) return unregister;
         const key = focus == null ? null : JSON.stringify(focus);
         if (key && (pending || key !== appliedFocus.current) && graph.focusNetwork(focus)) {
             appliedFocus.current = key;
             if (pending) msg.unregisterComponent?.('focusNode');
         }
-        return () => {
-            if (!msg.getComponent || msg.getComponent('nvlInstance') === graph) msg.unregisterComponent?.('nvlInstance');
-        };
-    }, [msg, model, ready, retry]);
+        return unregister;
+    }, [msg, model, ready, retry, databaseId, activeDatabaseId, canonicalDatabaseId]);
 
     return <div className="chat-knowledge-canvas-wrap">
         <svg ref={svgRef} className="chat-knowledge-canvas" role="application" tabIndex={0}
@@ -80,16 +102,61 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand }) {
 });
 
 const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversationId = '', databaseId: requestedDatabaseId, className = 'w-full' }) {
-    const databaseId = requestedDatabaseId || msg?.network?.databaseId || msg?.network?.database?.databaseId || msg?.network?.database?.id || msg?.knowledgeDatabaseId || 'default';
-    const scope = `${databaseId}|${conversationId}|${msg?.id ?? msg?.messageId ?? ''}`;
-    const [extra, setExtra] = useState(null), [feedback, setFeedback] = useState(null);
+    const [databases, setDatabases] = useState([]), [registryError, setRegistryError] = useState('');
+    const canonicalDatabaseId = useCallback(id => id === 'default' ? databases.find(item => item.legacyDefault)?.id || id : id, [databases]);
+    const aiDatabaseId = requestedDatabaseId || (msg?.network ? networkDatabaseId(msg.network) : msg?.knowledgeDatabaseId || 'default');
+    const activeDatabaseId = canonicalDatabaseId(aiDatabaseId);
+    const messageScope = `${conversationId}|${msg?.id ?? msg?.messageId ?? ''}`;
+    const [selection, setSelection] = useState({ messageScope, databaseId: aiDatabaseId });
+    const followedAiScope = useRef({ messageScope, databaseId: aiDatabaseId });
+    const databaseId = selection.messageScope === messageScope ? canonicalDatabaseId(selection.databaseId) : activeDatabaseId;
+    const scope = `${messageScope}|${databaseId}`;
+    const [extras, setExtras] = useState({}), [feedback, setFeedback] = useState(null);
+    const viewStates = useRef(new Map());
+    const visibleController = useRef(null);
     const requests = useRef(new Map()), generation = useRef(0);
-    const network = useMemo(() => extra?.scope === scope ? mergeNetworkData(msg?.network, extra.network) : msg?.network, [msg?.network, extra, scope]);
+    const hasGraph = Boolean(msg?.network && (msg.network.databaseId || msg.network.nodes?.length || Object.keys(msg.network.databaseViews || {}).length));
+    useEffect(() => {
+        if (!hasGraph) return;
+        const request = new AbortController();
+        apiClient.get('/knowledge/databases', { signal: request.signal, timeout: 15000 }).then(data => {
+            if (!request.signal.aborted) { setDatabases(Array.isArray(data) ? data : data?.databases || []); setRegistryError(''); }
+        }).catch(cause => { if (!request.signal.aborted) setRegistryError(cause.message || '无法读取知识库连接'); });
+        return () => request.abort();
+    }, [conversationId, hasGraph]);
+    // A database change reported by the AI follows its new scope. Ordinary
+    // updates in the same scope leave a manually selected view untouched.
+    useEffect(() => {
+        const previous = followedAiScope.current;
+        if (previous.messageScope !== messageScope || (previous.databaseId !== aiDatabaseId && canonicalDatabaseId(previous.databaseId) !== activeDatabaseId)) {
+            setSelection({ messageScope, databaseId: aiDatabaseId });
+        }
+        followedAiScope.current = { messageScope, databaseId: aiDatabaseId };
+    }, [messageScope, aiDatabaseId, activeDatabaseId, canonicalDatabaseId]);
+    const networks = useMemo(() => {
+        const result = new Map();
+        const views = networkDatabaseViews(msg?.network), currentId = networkDatabaseId(msg?.network);
+        for (const [id, view] of Object.entries(views)) {
+            const canonical = canonicalDatabaseId(id);
+            if (!result.has(canonical) || id === canonical) result.set(canonical, { ...view, databaseId: canonical });
+        }
+        if (Object.hasOwn(views, currentId)) result.set(canonicalDatabaseId(currentId), { ...views[currentId], databaseId: canonicalDatabaseId(currentId) });
+        return Object.fromEntries(result);
+    }, [msg?.network, canonicalDatabaseId]);
+    const network = useMemo(() => extras[scope] ? mergeNetworkData(networks[databaseId], extras[scope]) : networks[databaseId], [networks, extras, scope, databaseId]);
     const model = useMemo(() => knowledgeGraphPresentation(network), [network]);
-    useEffect(() => () => {
-        generation.current++;
-        for (const request of requests.current.values()) request.abort();
-        requests.current.clear();
+    const choices = useMemo(() => {
+        const result = new Map(databases.map(item => [item.id, item]));
+        for (const id of new Set([...Object.keys(networks), databaseId])) if (!result.has(id)) result.set(id, { id, title: id === 'default' ? '默认知识库' : id });
+        return [...result.values()];
+    }, [databases, networks, databaseId]);
+    useEffect(() => {
+        setFeedback(null);
+        return () => {
+            generation.current++;
+            for (const request of requests.current.values()) request.abort();
+            requests.current.clear();
+        };
     }, [scope]);
     const expand = useCallback(async (id, graph) => {
         if (requests.current.has(id)) return;
@@ -102,7 +169,14 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
             if (!Array.isArray(data?.nodes) || !Array.isArray(data?.relationships)) throw new Error('关联查询未返回有效的图谱数据。');
             if (new Set([...graph.getNodes().map(node => node.id), ...data.nodes.map(node => String(node.id))]).size > 400) throw new Error('画布最多显示 400 个节点，请在知识库中继续探索。');
             const added = data.nodes.filter(node => !graph.getNodes().some(existing => existing.id === String(node.id))).length;
-            setExtra(previous => ({ scope, network: mergeNetworkData(previous?.scope === scope ? previous.network : undefined, data) }));
+            if (data.databaseId && canonicalDatabaseId(data.databaseId) !== databaseId) throw new Error('关联查询返回了其他知识库的数据，请重试。');
+            setExtras(previous => {
+                const localView = mergeNetworkData(previous[scope], { ...data, databaseId });
+                // Manual expansion is a delta for this view, not a complete AI
+                // history snapshot that could replace newly streamed results.
+                delete localView.databaseViews;
+                return { ...previous, [scope]: localView };
+            });
             setFeedback({ scope, error: false, message: added ? `已展开 ${added} 个关联节点。${data.hasMore || data.truncated ? '当前显示部分关联。' : ''}` : '当前关联已在图谱中显示。' });
         } catch (cause) {
             if (!request.signal.aborted && generation.current === epoch) setFeedback({ scope, message: cause.message || '无法读取关联节点，请稍后重试。', error: true });
@@ -110,8 +184,8 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
             if (requests.current.get(id) === request) requests.current.delete(id);
             graph?.expanding(id, false);
         }
-    }, [databaseId, conversationId, scope]);
-    if (!model.nodes.length) return null;
+    }, [databaseId, conversationId, scope, canonicalDatabaseId]);
+    if (!Object.keys(networks).length && !msg?.network?.databaseId) return null;
     return <section className={`chat-knowledge-graph ${className}`} aria-label="知识图谱记忆">
         <header className="chat-knowledge-heading">
             <span><Network size={14} aria-hidden="true" />知识图谱记忆</span>
@@ -120,13 +194,22 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
                     onClick={() => window.dispatchEvent(new window.CustomEvent('cwm.open-knowledge', { detail: {
                         id: window.crypto?.randomUUID?.() || `graph-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, databaseId, conversationId,
                         nodeIds: model.nodes.map(node => node.id), edgeIds: model.relationships.map(edge => edge.id).filter(Boolean),
+                        viewState: visibleController.current?.getViewState?.() || viewStates.current.get(scope),
                     } }))}><ExternalLink size={15} aria-hidden="true" /></button>
             </div>
         </header>
-        <LazyVisibility rootMargin="150px" className="chat-knowledge-lazy" fade={false} hideOnExit={false}
-            placeholder={<div className="chat-knowledge-loading" role="status">正在加载图谱…</div>}>
-            <GraphContent key={scope} model={model} msg={msg} onExpand={expand} />
-        </LazyVisibility>
+        <div className="chat-knowledge-body">
+            <div className="chat-knowledge-database" title={registryError || '切换当前图谱视图，不影响 AI 查询'}>
+                <Select value={databaseId} onValueChange={id => setSelection({ messageScope, databaseId: id })}>
+                    <SelectTrigger size="sm" className="chat-knowledge-database-trigger" aria-label="图谱预览知识库"><Database size={13} aria-hidden="true" /><SelectValue /></SelectTrigger>
+                    <SelectContent>{choices.map(item => <SelectItem key={item.id} value={item.id}>{item.title || item.name || item.id}{item.enabled === false ? '（已停用）' : ''}</SelectItem>)}</SelectContent>
+                </Select>
+            </div>
+            {model.nodes.length ? <LazyVisibility rootMargin="150px" className="chat-knowledge-lazy" fade={false} hideOnExit={false}
+                placeholder={<div className="chat-knowledge-loading" role="status">正在加载图谱…</div>}>
+                <GraphContent key={scope} model={model} msg={msg} onExpand={expand} databaseId={databaseId} activeDatabaseId={activeDatabaseId} canonicalDatabaseId={canonicalDatabaseId} viewStates={viewStates} visibleController={visibleController} scope={scope} />
+            </LazyVisibility> : <div className="chat-knowledge-empty" role="status"><Database size={24} aria-hidden="true" /><span>当前知识库尚无本条消息的图谱结果</span><small>可在知识库页面浏览；切换视图不会改变 AI 查询。</small></div>}
+        </div>
         {feedback?.scope === scope && <p className={`chat-knowledge-feedback${feedback.error ? ' error' : ''}`} role={feedback.error ? 'alert' : 'status'}>{feedback.message}</p>}
     </section>;
 });

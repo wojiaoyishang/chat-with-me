@@ -48,6 +48,7 @@ await build({
             else if (name === '@/components/ui/button') contents = 'export const Button=({variant,size,...props})=><button {...props}/>;';
             else if (name === '@/components/ui/card') contents = 'export const Card=({children,...props})=><div {...props}>{children}</div>;export const CardContent=Card,CardDescription=Card,CardHeader=Card,CardTitle=Card;';
             else if (name === '@/components/ui/dialog') contents = 'export const Dialog=({open,children})=>open?<div>{children}</div>:null;export const DialogContent=({children,...props})=><div {...props}>{children}</div>;export const DialogDescription=DialogContent,DialogFooter=DialogContent,DialogHeader=DialogContent,DialogTitle=DialogContent;';
+            else if (name === '@/components/ui/select') contents = 'export const Select=({children})=>children;export const SelectTrigger=({children,...props})=><span {...props}>{children}</span>;export const SelectValue=()=>null;export const SelectContent=({children})=><div>{children}</div>;export const SelectItem=({children})=><span>{children}</span>;';
             return { loader: 'jsx', contents };
         });
     } }],

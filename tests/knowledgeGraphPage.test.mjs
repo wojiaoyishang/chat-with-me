@@ -4028,3 +4028,137 @@ test("chat imports select their authorized database and send graph identities on
   assert.ok(messages.some(message => message.type === "cwm.knowledge-imported" && message.databaseId === "db-two"));
   assert.ok(ui.dom.window.sessionStorage.getItem(canvasKey("", "db-two")));
 });
+
+test("chat imports restore the target database and conversation canvas before adding identities", async t => {
+  const messages = [], trustedParent = { postMessage(message) { messages.push(message); } };
+  const targetScope = canvasKey("conversation-new", "db-two");
+  const targetSnapshot = { version: 1, initialized: true, nodes: [{ id: "node-2", x: 25, y: -38 }], edgeIds: [], camera: { x: 390, y: 220, scale: 1.6 }, selected: null, hiddenIds: [] };
+  let beforeImport;
+  const ui = await page((url) => {
+    if (url.pathname === "/api/knowledge/databases") return libraryRegistry;
+    if (url.pathname === "/api/knowledge/canvas/import") beforeImport = {
+      ids: [...ui.document.querySelectorAll(".knowledge-node")].map(node => node.dataset.nodeId),
+      position: positionOf(ui.document.querySelector('[data-node-id="node-2"]')),
+      camera: cameraOf(ui.document),
+    };
+  }, { controlledAnimation: true, iframeParent: trustedParent, conversationId: "conversation-old", seedStorage: { [targetScope]: JSON.stringify(targetSnapshot) } });
+  t.after(() => ui.dom.window.close());
+  ui.dom.window.dispatchEvent(new ui.dom.window.MessageEvent("message", { source: trustedParent, origin: "http://localhost", data: { type: "cwm.knowledge-import", id: "conversation-library-import", databaseId: "db-two", conversationId: "conversation-new", nodeIds: ["node-3"], edgeIds: [] } }));
+  await settle(220);
+  assert.deepEqual(beforeImport, { ids: ["node-2"], position: [25, -38], camera: [390, 220, 1.6] });
+  const imported = ui.calls.find(call => call.parsed.pathname === "/api/knowledge/canvas/import");
+  assert.equal(imported.parsed.searchParams.get("databaseId"), "db-two");
+  assert.equal(JSON.parse(imported.body).conversationId, "conversation-new");
+  assert.deepEqual([...ui.document.querySelectorAll(".knowledge-node")].map(node => node.dataset.nodeId).sort(), ["node-2", "node-3"]);
+  const savedOriginal = JSON.parse(ui.dumpStorage()[canvasKey("conversation-old", "db-one")]);
+  assert.deepEqual(savedOriginal.nodes.map(node => node.id), ["node-1"]);
+  assert.deepEqual(JSON.parse(ui.dumpStorage()[targetScope]).nodes.map(node => node.id).sort(), ["node-2", "node-3"]);
+  assert.ok(messages.some(message => message.type === "cwm.knowledge-imported" && message.databaseId === "db-two"));
+});
+
+test("clearing a canvas invalidates an in-flight chat import without repopulating the empty view", async t => {
+  const messages = [], trustedParent = { postMessage(message) { messages.push(message); } };
+  let releaseImport;
+  const ui = await page(url => {
+    if (url.pathname === "/api/knowledge/databases") return libraryRegistry;
+    if (url.pathname === "/api/knowledge/canvas/import") return new Promise(resolve => { releaseImport = resolve; });
+  }, { controlledAnimation: true, iframeParent: trustedParent });
+  t.after(() => ui.dom.window.close());
+  ui.dom.window.dispatchEvent(new ui.dom.window.MessageEvent("message", { source: trustedParent, origin: "http://localhost", data: { type: "cwm.knowledge-import", id: "cleared-import", databaseId: "db-one", nodeIds: ["node-2"], edgeIds: [] } }));
+  await settle();
+  assert.equal(typeof releaseImport, "function");
+  ui.document.querySelector("#graph-clear").click();
+  releaseImport({ nodes: [nodes[1]], relationships: [] });
+  await settle();
+  assert.equal(ui.document.querySelectorAll(".knowledge-node").length, 0);
+  assert.deepEqual(JSON.parse(ui.dumpStorage()[canvasKey("", "db-one")]).nodes, []);
+  assert.ok(messages.some(message => message.type === "cwm.knowledge-import-failed" && message.id === "cleared-import"));
+});
+
+test("imports reject other frames and origins and normalize the default alias to the real database", async t => {
+  const trustedParent = { postMessage() {} };
+  const ui = await page(url => url.pathname === "/api/knowledge/databases" ? libraryRegistry : undefined, { controlledAnimation: true, iframeParent: trustedParent, databaseId: "db-two" });
+  t.after(() => ui.dom.window.close());
+  const data = { type: "cwm.knowledge-import", id: "default-import", databaseId: "default", conversationId: "", nodeIds: ["node-2"], edgeIds: [] };
+  for (const props of [{ source: {}, origin: "http://localhost" }, { source: trustedParent, origin: "http://elsewhere" }]) ui.dom.window.dispatchEvent(new ui.dom.window.MessageEvent("message", { ...props, data }));
+  await settle();
+  assert.equal(ui.calls.some(call => call.parsed.pathname === "/api/knowledge/canvas/import"), false);
+  ui.dom.window.dispatchEvent(new ui.dom.window.MessageEvent("message", { source: trustedParent, origin: "http://localhost", data }));
+  await settle(180);
+  const imported = ui.calls.find(call => call.parsed.pathname === "/api/knowledge/canvas/import");
+  assert.equal(imported.parsed.searchParams.get("databaseId"), "db-one");
+  assert.equal(new URL(ui.dom.window.location.href).searchParams.get("databaseId"), "db-one");
+  assert.equal(ui.document.querySelector("#knowledge-database").value, "db-one");
+});
+
+test("a database switch during import restoration cannot issue the old payload against the new library", async t => {
+  const messages = [], trustedParent = { postMessage(message) { messages.push(message); } };
+  let releaseRestore;
+  const targetScope = canvasKey("", "db-two");
+  const snapshot = { version: 1, initialized: true, nodes: [{ id: "node-2", x: 18, y: 29 }], edgeIds: [], camera: { x: 410, y: 230, scale: 1.2 }, selected: null, hiddenIds: [] };
+  const ui = await page(url => {
+    if (url.pathname === "/api/knowledge/databases") return libraryRegistry;
+    if (url.pathname === "/api/knowledge/canvas" && url.searchParams.get("databaseId") === "db-two") return new Promise(resolve => { releaseRestore = resolve; });
+  }, { controlledAnimation: true, iframeParent: trustedParent, seedStorage: { [targetScope]: JSON.stringify(snapshot) } });
+  t.after(() => ui.dom.window.close());
+  ui.dom.window.dispatchEvent(new ui.dom.window.MessageEvent("message", { source: trustedParent, origin: "http://localhost", data: { type: "cwm.knowledge-import", id: "switched-import", databaseId: "db-two", nodeIds: ["node-3"], edgeIds: [] } }));
+  await settle();
+  assert.equal(typeof releaseRestore, "function");
+  await switchDatabase(ui.dom, ui.document, "db-one");
+  releaseRestore({ nodes: [nodes[1]], relationships: [] });
+  await settle();
+  assert.equal(ui.calls.some(call => call.parsed.pathname === "/api/knowledge/canvas/import"), false);
+  assert.equal(ui.document.querySelector("#knowledge-database").value, "db-one");
+  assert.deepEqual([...ui.document.querySelectorAll(".knowledge-node")].map(node => node.dataset.nodeId), ["node-1"]);
+  assert.deepEqual(JSON.parse(ui.dumpStorage()[targetScope]).nodes, snapshot.nodes);
+  assert.ok(messages.some(message => message.type === "cwm.knowledge-import-failed" && message.id === "switched-import"));
+});
+
+test("import transport announces readiness while discovery is pending and resolves the payload database afterward", async t => {
+  const messages = [], trustedParent = { postMessage(message) { messages.push(message); } };
+  let releaseDatabases;
+  const ui = await page(url => {
+    if (url.pathname === "/api/knowledge/databases") return new Promise(resolve => { releaseDatabases = resolve; });
+  }, { controlledAnimation: true, iframeParent: trustedParent });
+  t.after(() => ui.dom.window.close());
+  assert.ok(messages.some(message => message.type === "cwm.knowledge-ready"));
+  ui.dom.window.dispatchEvent(new ui.dom.window.MessageEvent("message", { source: trustedParent, origin: "http://localhost", data: { type: "cwm.knowledge-import", id: "early-import", databaseId: "db-two", nodeIds: ["node-2"], edgeIds: [] } }));
+  await settle();
+  assert.equal(ui.calls.some(call => call.parsed.pathname === "/api/knowledge/canvas/import"), false);
+  releaseDatabases(libraryRegistry);
+  await settle(220);
+  const imported = ui.calls.find(call => call.parsed.pathname === "/api/knowledge/canvas/import");
+  assert.ok(imported);
+  assert.equal(imported.parsed.searchParams.get("databaseId"), "db-two");
+  assert.ok(messages.some(message => message.type === "cwm.knowledge-imported" && message.id === "early-import"));
+});
+
+test("opening an empty preview selects the database and restores its canvas without importing or changing its camera", async t => {
+  const messages = [], trustedParent = { postMessage(message) { messages.push(message); } };
+  const targetScope = canvasKey("conversation-two", "db-two");
+  const snapshot = { version: 1, initialized: true, nodes: [{ id: "node-2", x: -21, y: 36 }], edgeIds: [], camera: { x: 385, y: 205, scale: 1.5 }, selected: null, hiddenIds: [] };
+  const ui = await page(url => url.pathname === "/api/knowledge/databases" ? libraryRegistry : undefined, { controlledAnimation: true, iframeParent: trustedParent, seedStorage: { [targetScope]: JSON.stringify(snapshot) } });
+  t.after(() => ui.dom.window.close());
+  await settle(100);
+  ui.dom.window.dispatchEvent(new ui.dom.window.MessageEvent("message", { source: trustedParent, origin: "http://localhost", data: { type: "cwm.knowledge-import", id: "empty-preview", databaseId: "db-two", conversationId: "conversation-two", nodeIds: [], edgeIds: [] } }));
+  await settle(220);
+  assert.equal(ui.document.querySelector("#knowledge-database").value, "db-two");
+  assert.equal(ui.calls.some(call => call.parsed.pathname === "/api/knowledge/canvas/import"), false);
+  assert.deepEqual([...ui.document.querySelectorAll(".knowledge-node")].map(node => node.dataset.nodeId), ["node-2"]);
+  assert.deepEqual(positionOf(ui.document.querySelector('[data-node-id="node-2"]')), [-21, 36]);
+  assert.deepEqual(cameraOf(ui.document), [385, 205, 1.5]);
+  assert.deepEqual(JSON.parse(ui.dumpStorage()[canvasKey("", "db-one")]).nodes.map(node => node.id), ["node-1"]);
+  assert.match(ui.document.querySelector("#notice").textContent, /已打开该知识库/);
+  assert.ok(messages.some(message => message.type === "cwm.knowledge-imported" && message.id === "empty-preview" && message.databaseId === "db-two"));
+});
+
+test("an import containing edges without nodes still validates instead of opening a view-only canvas", async t => {
+  const messages = [], trustedParent = { postMessage(message) { messages.push(message); } };
+  const ui = await page(url => url.pathname === "/api/knowledge/databases" ? libraryRegistry : undefined, { controlledAnimation: true, iframeParent: trustedParent });
+  t.after(() => ui.dom.window.close());
+  ui.dom.window.dispatchEvent(new ui.dom.window.MessageEvent("message", { source: trustedParent, origin: "http://localhost", data: { type: "cwm.knowledge-import", id: "edges-only", databaseId: "db-one", nodeIds: [], edgeIds: ["r-1"] } }));
+  await settle();
+  assert.equal(ui.calls.some(call => call.parsed.pathname === "/api/knowledge/canvas/import"), true);
+  assert.match(ui.document.querySelector("#notice").textContent, /节点不存在或当前无权访问/);
+  assert.ok(messages.some(message => message.type === "cwm.knowledge-import-failed" && message.id === "edges-only"));
+});

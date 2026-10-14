@@ -2493,8 +2493,8 @@ function ChatPage({
                                     // network 必须做增量合并，避免message.created 的短快照覆盖 message.knowledge.network_added 已追加的数据。
                                     if (oldMessage.network || incomingValue.network) {
                                         mergedMessage.network = mergeNetworkData(
-                                            oldMessage.network,
                                             incomingValue.network,
+                                            oldMessage.network,
                                         );
                                     }
 
@@ -2999,13 +2999,13 @@ function ChatPage({
                                 const nvlInstance = msg.getComponent('nvlInstance');
 
                                 // 将需要聚焦的节点挂载到 msg 中
-                                msg.registerComponent('focusNode', nodeIds);
+                                const scopedFocus = { databaseId: focusUpdate?.databaseId || msg.network?.databaseId || 'default', nodeIds };
+                                msg.registerComponent('focusNode', scopedFocus);
 
                                 if (nvlInstance) {
-                                    if (typeof nvlInstance.focusNetwork === 'function') {
-                                        nvlInstance.focusNetwork(nodeIds);
-                                        // 如果成功了，就取消挂载
-                                        msg.unregisterComponent('focusNode');
+                                    if (typeof nvlInstance.focusNetwork === 'function' && (!hasNetworkDatabaseConflict(nvlInstance, scopedFocus) || nvlInstance.databaseAliases?.includes(scopedFocus.databaseId))) {
+                                        // Keep a pending request until every focused node is present.
+                                        if (nvlInstance.focusNetwork(nodeIds)) msg.unregisterComponent('focusNode');
                                     }
                                 } else {
                                     reply({ success: false });

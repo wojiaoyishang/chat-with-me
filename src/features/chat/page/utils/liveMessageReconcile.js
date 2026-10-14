@@ -1,3 +1,5 @@
+import { mergeNetworkData } from './networkMerge.js';
+
 const HISTORY_SENTINEL = '<PREV_MORE>';
 
 const asOrder = (value) => Array.isArray(value) ? value.filter(Boolean) : [];
@@ -36,6 +38,11 @@ export const mergeLiveMessageWithSnapshot = (snapshotMessage, liveMessage) => {
     if (!liveMessage || typeof liveMessage !== 'object') return snapshotMessage;
 
     const merged = {...liveMessage, ...snapshotMessage};
+    if (snapshotMessage.network || liveMessage.network) {
+        // A durable snapshot can lag an AI database switch already seen by the
+        // browser. Retain both scopes and keep the live scope as the active one.
+        merged.network = mergeNetworkData(snapshotMessage.network, liveMessage.network);
+    }
     const snapshotContent = typeof snapshotMessage.content === 'string' ? snapshotMessage.content : null;
     const liveContent = typeof liveMessage.content === 'string' ? liveMessage.content : null;
 

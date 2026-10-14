@@ -375,6 +375,24 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
     observer?.observe(svg); if (controlsLayer) observer?.observe(controlsLayer); listen(win, 'resize', resize); resize();
     return {
         setData, focusNetwork, fit, zoom,
+        getViewState: () => ({
+            camera: { ...camera }, width, height, physics: enabled,
+            positions: [...nodes.values()].map(({ id, x, y, fx, fy }) => ({ id, x, y, fx: fx ?? null, fy: fy ?? null })),
+            selected: [...pickedIds()],
+        }),
+        restoreViewState(state) {
+            if (destroyed || !state || !state.camera) return false;
+            for (const point of state.positions || []) {
+                const node = nodes.get(String(point.id));
+                if (node && Number.isFinite(point.x) && Number.isFinite(point.y)) Object.assign(node, { x: point.x, y: point.y, fx: point.fx ?? null, fy: point.fy ?? null, vx: 0, vy: 0 });
+            }
+            if (['x', 'y', 'scale'].every(key => Number.isFinite(state.camera[key])) && state.camera.scale > 0) {
+                camera = { ...state.camera, x: state.camera.x + (width - (state.width || width)) / 2, y: state.camera.y + (height - (state.height || height)) / 2 };
+            }
+            cancelAutoFit();
+            selected = null; focused.clear(); multiSelected = new Set((state.selected || []).filter(id => nodes.has(id)));
+            focusStyles(); draw(); return true;
+        },
         expanding(id, value) { nodes.get(String(id))?.element.classList.toggle('expanding', Boolean(value)); },
         getNodes: () => [...nodes.values()].map(({ id, name, label }) => ({ id, name, label })),
         getNodePositions: () => [...nodes.values()].map(({ id, x, y }) => ({ id, x, y })),
