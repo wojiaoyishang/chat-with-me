@@ -532,6 +532,211 @@ async function input(node, value, dom, event = "input") {
   });
 }
 
+function attachmentExpansionFixture() {
+  const custom = structuredClone(catalog);
+  const boolean = {
+    kind: "boolean",
+    version: 1,
+    category: "source",
+    presentation: { icon: "boolean" },
+    display: { title: "布尔值", subtitle: "bool" },
+    configSchema: {
+      type: "object",
+      properties: { value: { type: "boolean", default: false } },
+    },
+    source: {
+      configField: "value",
+      valueSchema: { type: "boolean", default: false },
+      default: false,
+      required: true,
+    },
+    inputs: [],
+    outputs: [
+      {
+        name: "boolean",
+        type: "boolean",
+        display: { title: "布尔值", subtitle: "boolean · bool" },
+      },
+    ],
+  };
+  const convert = {
+    kind: "content_to_text_chunks",
+    version: 1,
+    category: "process",
+    display: { title: "内容转文本块", subtitle: "ContentToTextChunks" },
+    configSchema: { type: "object", properties: {} },
+    inputSchema: {
+      type: "object",
+      properties: {
+        expand_attachment_content: { type: "boolean", default: false },
+      },
+    },
+    inputs: [
+      {
+        name: "expand_attachment_content",
+        type: "boolean",
+        required: false,
+        inlineAllowed: true,
+        schema: { type: "boolean" },
+        display: {
+          title: "将附件解析结果写入正文",
+          subtitle: "expand_attachment_content · bool",
+        },
+      },
+    ],
+    outputs: [],
+  };
+  custom.nodes = [boolean, convert];
+  custom.standardGraph = {
+    version: 2,
+    nodes: [
+      {
+        id: "attachment-content",
+        kind: "boolean",
+        version: 1,
+        name: "将附件解析结果写入正文",
+        inputKey: "expandAttachmentContent",
+        config: { value: false },
+        inputs: {},
+        position: { x: 20, y: 20 },
+      },
+      {
+        id: "convert",
+        kind: "content_to_text_chunks",
+        version: 1,
+        config: {},
+        inputs: {},
+        position: { x: 300, y: 20 },
+      },
+    ],
+    edges: [],
+    settings: { maxConcurrency: 2 },
+    variables: {},
+  };
+  return custom;
+}
+
+test("attachment expansion boolean source can be edited, connected and replaced with an inline value", async () => {
+  const custom = attachmentExpansionFixture();
+  const app = await environment({}, { catalog: custom });
+  const sourceSwitch = () =>
+    document.querySelector(
+      '[data-node="attachment-content"] input[type="checkbox"]',
+    );
+  const convertSwitch = () =>
+    document.querySelector('[data-node="convert"] input[type="checkbox"]');
+  const connect = () =>
+    globalThis.workflowUITest.flow.onConnect({
+      source: "attachment-content",
+      sourceHandle: "boolean",
+      target: "convert",
+      targetHandle: "expand_attachment_content",
+    });
+  const openPortMenu = async () => {
+    const port = document.querySelector('[data-node="convert"] .workflow-port');
+    await act(() =>
+      port.dispatchEvent(
+        new app.dom.window.MouseEvent("contextmenu", {
+          bubbles: true,
+          button: 2,
+          clientX: 450,
+          clientY: 180,
+        }),
+      ),
+    );
+  };
+  try {
+    assert.equal(sourceSwitch().checked, false);
+    assert.equal(convertSwitch(), null);
+    await click(sourceSwitch(), app.dom);
+    assert.equal(sourceSwitch().checked, true);
+    await act(connect);
+    await click(button("校验"), app.dom);
+    const first = app.calls
+      .filter((call) => call.url === "/tasks/workflows/validate")
+      .at(-1).payload.graph;
+    assert.equal(first.nodes[0].config.value, true);
+    assert.equal(first.edges[0].targetPort, "expand_attachment_content");
+    assert.equal(first.edges[0].sourcePort, "boolean");
+    assert.equal(convertSwitch(), null);
+
+    await openPortMenu();
+    await click(button("在节点内填写"), app.dom);
+    assert.equal(convertSwitch().checked, false);
+    assert.equal(globalThis.workflowUITest.flow.edges.length, 0);
+    await click(convertSwitch(), app.dom);
+    await click(button("校验"), app.dom);
+    const inline = app.calls
+      .filter((call) => call.url === "/tasks/workflows/validate")
+      .at(-1).payload.graph;
+    assert.deepEqual(inline.nodes[1].inputs.expand_attachment_content, {
+      type: "literal",
+      value: true,
+    });
+    assert.equal(
+      document.querySelector('[data-pointer="/expand_attachment_content"]'),
+      null,
+    );
+
+    await act(connect);
+    assert.equal(convertSwitch(), null);
+    await click(sourceSwitch(), app.dom);
+    await click(button("校验"), app.dom);
+    const external = app.calls
+      .filter((call) => call.url === "/tasks/workflows/validate")
+      .at(-1).payload.graph;
+    assert.equal(external.nodes[0].config.value, false);
+    assert.deepEqual(external.nodes[1].inputs, {});
+    assert.equal(external.edges.length, 1);
+  } finally {
+    await app.close();
+  }
+});
+
+test("attachment expansion quick form submits false as a valid required input and preserves boolean changes", async () => {
+  const custom = attachmentExpansionFixture();
+  const builtin = {
+    id: "built-in:attachment-expansion",
+    title: "附件解析提取",
+    description: "可选择是否将附件解析结果写入正文",
+    graph: custom.standardGraph,
+  };
+  const app = await environment(
+    { templateId: builtin.id },
+    {
+      catalog: custom,
+      builtinTemplates: [builtin],
+      component: "src/features/workflows/QuickTemplateRunDialog.jsx",
+    },
+  );
+  try {
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+    const field = document.querySelector(
+      'input[aria-label="将附件解析结果写入正文"]',
+    );
+    assert.equal(field.checked, false);
+    await click(button("创建并开始"), app.dom);
+    assert.equal(document.querySelector('[role="alert"]'), null);
+    assert.equal(
+      app.calls.filter((call) => call.url === "/tasks/workflows/run").at(-1)
+        .payload.inputValues.expandAttachmentContent,
+      false,
+    );
+
+    await click(field, app.dom);
+    assert.equal(field.checked, true);
+    await click(button("创建并开始"), app.dom);
+    const enabled = app.calls
+      .filter((call) => call.url === "/tasks/workflows/run")
+      .at(-1).payload;
+    assert.equal(enabled.inputValues.expandAttachmentContent, true);
+    assert.equal(typeof enabled.inputValues.expandAttachmentContent, "boolean");
+    assert.equal(enabled.graph.nodes[0].config.value, false);
+  } finally {
+    await app.close();
+  }
+});
+
 test("workflow edge animation follows the saved setting without remounting the canvas", async () => {
   const graph = structuredClone(catalog.standardGraph);
   graph.edges.push({
