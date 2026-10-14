@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Popover,
   PopoverContent,
@@ -427,6 +428,20 @@ function FullWorkflowKnowledgeChunkPicker({
               key={item.id}
               className={`workflow-resource-choice ${item.id === value.chunkId ? "is-selected" : ""}`}
             >
+              <Checkbox
+                className="workflow-resource-check"
+                checked={item.id === value.chunkId}
+                disabled={disabled || loading}
+                aria-label={`勾选知识块 ${item.name || item.id}`}
+                onCheckedChange={(checked) =>
+                  onChange({
+                    ...value,
+                    databaseId,
+                    chunkId: checked ? item.id : "",
+                    scope: "self",
+                  })
+                }
+              />
               <Button
                 type="button"
                 variant="ghost"

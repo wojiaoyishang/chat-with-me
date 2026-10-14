@@ -482,6 +482,9 @@
 }
 .workflow-resource-results { height: 100%; overflow-y: auto; overscroll-behavior: contain; }
 .workflow-resource-choice { min-width: 0; position: relative; display: grid; grid-template-columns: 16px minmax(0, 1fr) 32px; align-items: center; gap: 8px; padding: 8px 10px; }
+.workflow-resource-choice .workflow-resource-check { grid-column: 1; }
+.workflow-resource-choice .workflow-resource-pick { grid-column: 2; }
+.workflow-resource-choice .workflow-resource-preview { grid-column: 3; justify-self: end; }
 .workflow-resource-choice + .workflow-resource-choice { border-top: 1px solid var(--border); }
 .workflow-resource-choice.is-selected { background: color-mix(in srgb, var(--primary) 7%, var(--background)); }
 .workflow-resource-choice { transition: background-color 150ms ease, border-color 150ms ease; }

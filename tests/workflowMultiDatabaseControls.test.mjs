@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { build } from "esbuild";
 import { JSDOM } from "jsdom";
 import React, { act } from "react";
@@ -80,6 +81,45 @@ test("chunk selection is staged, preview preserves selection, and DB change clea
     await click(document.querySelector('[aria-label="选择知识片段"]'));await flush();await select(document.querySelector("select"),"db-two");await flush();
     assert.equal(document.querySelector('[aria-label="查看已选知识块"]'),null);await click(document.querySelector('[aria-label="选择知识块 db-two-标题"]'));await click([...document.querySelectorAll("button")].find(button=>button.textContent==="确认选择"));assert.deepEqual(ui.state.value,{databaseId:"db-two",chunkId:"db-two-chunk",scope:"self"});
     const searches=ui.state.calls.filter(([url])=>url==="/knowledge/chunks/search");assert.equal(searches.at(-1)[1].params.databaseId,"db-two");assert.equal(searches.at(-1)[1].params.limit,20);
+  }finally{await ui.close();}
+});
+
+test("chunk rows display their title beside the selection control and keep preview independent",async()=>{
+  const initialValue={databaseId:"db-one",chunkId:"",scope:"self"};
+  const ui=await mount(Field,{compact:true,label:"知识片段",schema:{type:"object",ui:{widget:"knowledge-chunk-picker"}}},initialValue);
+  try{
+    const style=document.createElement("style");
+    style.textContent=readFileSync(new URL("../src/features/workflows/workflow.css",import.meta.url),"utf8");
+    document.head.appendChild(style);
+    await click(document.querySelector('[aria-label="选择知识片段"]'));await flush();
+    const row=document.querySelector(".workflow-resource-choice");
+    const checkbox=row.querySelector('[aria-label="勾选知识块 db-one-标题"]');
+    const pick=row.querySelector('[aria-label="选择知识块 db-one-标题"]');
+    const preview=row.querySelector('[aria-label="查看知识块 db-one-标题"]');
+    assert.equal(row.querySelector(".workflow-resource-name").textContent,"db-one-标题");
+    assert.equal(window.getComputedStyle(row).display,"grid");
+    assert.equal(window.getComputedStyle(checkbox).gridColumn,"1");
+    assert.equal(window.getComputedStyle(pick).gridColumn,"2");
+    assert.equal(window.getComputedStyle(preview).gridColumn,"3");
+    assert.equal(checkbox.checked,false);
+
+    await click(checkbox);
+    assert.equal(checkbox.checked,true);
+    assert.ok(row.classList.contains("is-selected"));
+    assert.deepEqual(ui.state.value,initialValue);
+    await click(preview);
+    assert.equal(document.querySelector('[aria-label="知识块原文"]').value,"原文内容");
+    assert.match(document.querySelector('[role="dialog"]').textContent,/db-one-标题/);
+    assert.equal(checkbox.checked,true);
+    assert.deepEqual(ui.state.value,initialValue);
+    await click(document.querySelector('[aria-label="关闭预览"]'));
+    await click(checkbox);
+    assert.equal(checkbox.checked,false);
+    assert.equal(row.classList.contains("is-selected"),false);
+    assert.equal(document.querySelector('[aria-label="查看已选知识块"]'),null);
+    await click(checkbox);
+    await click([...document.querySelectorAll("button")].find(button=>button.textContent==="确认选择"));
+    assert.deepEqual(ui.state.value,{databaseId:"db-one",chunkId:"db-one-chunk",scope:"self"});
   }finally{await ui.close();}
 });
 
