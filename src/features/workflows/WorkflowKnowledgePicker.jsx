@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ChevronDown,
   Database,
@@ -32,6 +32,33 @@ import {
 } from "./workflowFieldModel.js";
 
 const PAGE_SIZE = 20;
+
+const chunkMetadataKey = (databaseId, chunkId) =>
+  JSON.stringify([databaseId, chunkId]);
+
+function chunkCount(item, field) {
+  const count = item?.[field];
+  return Number.isInteger(count) && count >= 0 ? count : null;
+}
+
+function chunkUpdateSummary(item) {
+  const descendants = chunkCount(item, "descendantCount");
+  if (descendants === 0) return "仅更新当前知识块；没有子知识块。";
+  if (descendants !== null)
+    return `当前知识块及全部 ${descendants} 个子知识块（含递归）会一同更新。`;
+  return "当前知识块及其全部递归子知识块会一同更新。";
+}
+
+function ChunkChildrenSummary({ item }) {
+  const children = chunkCount(item, "childCount");
+  const descendants = chunkCount(item, "descendantCount");
+  if (children === null && descendants === null) return null;
+  return (
+    <span className="block text-xs text-muted-foreground">
+      直接子块 {children ?? "—"} 个 · 递归子块 {descendants ?? "—"} 个
+    </span>
+  );
+}
 
 /** The registry is authoritative; a saved unknown selection stays visible. */
 export function WorkflowGraphDatabasePicker({
@@ -144,7 +171,7 @@ export function WorkflowGraphDatabasePicker({
   );
 }
 
-function WorkflowChunkPreview({ item, databaseId, onClose }) {
+function WorkflowChunkPreview({ item, databaseId, onClose, onChunksRead }) {
   const [result, setResult] = useState({
     loading: true,
     snapshot: null,
@@ -160,8 +187,17 @@ function WorkflowChunkPreview({ item, databaseId, onClose }) {
         { params: { databaseId }, signal: controller.signal, timeout: 20000 },
       )
       .then((snapshot) => {
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
           setResult({ loading: false, snapshot, error: "" });
+          onChunksRead?.(databaseId, [
+            {
+              ...item,
+              name: snapshot.name || item.name,
+              childCount: snapshot.childCount ?? item.childCount,
+              descendantCount: snapshot.descendantCount ?? item.descendantCount,
+            },
+          ]);
+        }
       })
       .catch((cause) => {
         if (!controller.signal.aborted)
@@ -172,7 +208,7 @@ function WorkflowChunkPreview({ item, databaseId, onClose }) {
           });
       });
     return () => controller.abort();
-  }, [item.id, databaseId, retry]);
+  }, [item, databaseId, retry, onChunksRead]);
   const snapshot = result.snapshot;
   return (
     <Dialog
@@ -187,7 +223,7 @@ function WorkflowChunkPreview({ item, databaseId, onClose }) {
             {item.name || item.title || "知识块"}
           </DialogTitle>
           <DialogDescription>
-            查看当前知识块及其抽取结果；任务启动时固定内容与抽取版本。
+            查看当前知识块与更新范围；任务启动时固定当前块及全部递归子块的内容与抽取版本。
           </DialogDescription>
         </DialogHeader>
         <div
@@ -220,6 +256,13 @@ function WorkflowChunkPreview({ item, databaseId, onClose }) {
           )}
           {snapshot && (
             <>
+              <section className="space-y-1.5 rounded-md border border-primary/15 bg-primary/5 px-3 py-2.5">
+                <h4 className="text-sm font-medium">更新范围</h4>
+                <ChunkChildrenSummary item={{ ...item, ...snapshot }} />
+                <p className="text-xs leading-relaxed">
+                  {chunkUpdateSummary({ ...item, ...snapshot })}
+                </p>
+              </section>
               <MultilineEditor
                 label="知识块原文"
                 value={snapshot.content ?? snapshot.text ?? ""}
@@ -263,7 +306,7 @@ function WorkflowChunkPreview({ item, databaseId, onClose }) {
                 )}
               </section>
               <p className="text-xs text-muted-foreground">
-                仅选择当前知识块，不包含父级或子级。抽取版本：
+                当前知识块抽取版本：
                 {snapshot.extractionRevision ??
                   snapshot.revision?.extractionRevision ??
                   "—"}
@@ -282,6 +325,8 @@ function FullWorkflowKnowledgeChunkPicker({
   disabled,
   schema = {},
   onPreviewOpenChange,
+  knownChunks = {},
+  onChunksRead,
 }) {
   const [query, setQuery] = useState("");
   const [offset, setOffset] = useState(0);
@@ -318,17 +363,20 @@ function FullWorkflowKnowledgeChunkPicker({
           timeout: 20000,
         })
         .then((response) => {
-          if (!controller.signal.aborted)
+          if (!controller.signal.aborted) {
+            const chunks = response.items || response.chunks || [];
+            onChunksRead?.(databaseId, chunks);
             setResult({
               databaseId,
               query,
               offset,
-              items: response.items || response.chunks || [],
+              items: chunks,
               total: response.total || 0,
               loading: false,
               error: "",
               hasMore: response.hasMore,
             });
+          }
         })
         .catch((cause) => {
           if (!controller.signal.aborted)
@@ -347,7 +395,7 @@ function FullWorkflowKnowledgeChunkPicker({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [databaseId, query, offset, retry, schema.ui?.searchEndpoint]);
+  }, [databaseId, query, offset, retry, schema.ui?.searchEndpoint, onChunksRead]);
   const current =
     result.databaseId === databaseId &&
     result.query === query &&
@@ -355,6 +403,9 @@ function FullWorkflowKnowledgeChunkPicker({
   const items = current ? result.items : [];
   const total = current ? result.total : 0;
   const loading = Boolean(databaseId) && (!current || result.loading);
+  const selectedItem =
+    knownChunks[chunkMetadataKey(databaseId, value.chunkId)] ||
+    items.find((item) => item.id === value.chunkId);
   return (
     <section className="workflow-knowledge-chunk-picker space-y-3">
       <WorkflowGraphDatabasePicker
@@ -365,7 +416,7 @@ function FullWorkflowKnowledgeChunkPicker({
         onChange={(next) => {
           setOffset(0);
           setQuery("");
-          onChange({ ...value, databaseId: next, chunkId: "", scope: "self" });
+          onChange({ ...value, databaseId: next, chunkId: "", scope: "subtree" });
         }}
       />
       <div className="relative">
@@ -375,7 +426,7 @@ function FullWorkflowKnowledgeChunkPicker({
           aria-label="搜索知识块"
           value={query}
           disabled={!databaseId}
-          placeholder="搜索知识块名称或原文"
+          placeholder="搜索知识块名称或摘要"
           onChange={(event) => {
             setQuery(event.target.value);
             setOffset(0);
@@ -385,9 +436,13 @@ function FullWorkflowKnowledgeChunkPicker({
       {value.chunkId && (
         <div className="flex min-w-0 items-center gap-2 rounded-md bg-primary/5 px-2 py-1.5 text-xs">
           <FileText className="size-4 shrink-0 text-primary" />
-          <span className="min-w-0 flex-1 truncate">
-            {items.find((item) => item.id === value.chunkId)?.name ||
-              "已选择知识块"}
+          <span className="min-w-0 flex-1">
+            <span className="block truncate">
+              {selectedItem?.name || "已选择知识块"}
+            </span>
+            <span className="mt-1 block leading-relaxed text-muted-foreground">
+              {chunkUpdateSummary(selectedItem)}
+            </span>
           </span>
           <Button
             type="button"
@@ -398,8 +453,8 @@ function FullWorkflowKnowledgeChunkPicker({
             onClick={() => {
               onPreviewOpenChange?.(true);
               setPreview({
+                ...selectedItem,
                 id: value.chunkId,
-                name: items.find((item) => item.id === value.chunkId)?.name,
               });
             }}
           >
@@ -412,7 +467,7 @@ function FullWorkflowKnowledgeChunkPicker({
             className="size-7"
             disabled={disabled}
             aria-label="清除知识块选择"
-            onClick={() => onChange({ ...value, chunkId: "", scope: "self" })}
+            onClick={() => onChange({ ...value, chunkId: "", scope: "subtree" })}
           >
             <X className="size-3.5" />
           </Button>
@@ -438,7 +493,7 @@ function FullWorkflowKnowledgeChunkPicker({
                     ...value,
                     databaseId,
                     chunkId: checked ? item.id : "",
-                    scope: "self",
+                    scope: "subtree",
                   })
                 }
               />
@@ -454,7 +509,7 @@ function FullWorkflowKnowledgeChunkPicker({
                     ...value,
                     databaseId,
                     chunkId: item.id,
-                    scope: "self",
+                    scope: "subtree",
                   })
                 }
               >
@@ -471,6 +526,7 @@ function FullWorkflowKnowledgeChunkPicker({
                         {item.properties.summary}
                       </span>
                     )}
+                    <ChunkChildrenSummary item={item} />
                   </span>
                 </span>
               </Button>
@@ -552,13 +608,14 @@ function FullWorkflowKnowledgeChunkPicker({
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">
-        仅处理所选知识块；任务启动时固定原文和已有抽取结果。
+        处理所选知识块及全部递归子知识块；任务启动时固定原文和已有抽取结果。
       </p>
       {preview && (
         <WorkflowChunkPreview
           key={`${databaseId}:${preview.id}`}
           item={preview}
           databaseId={databaseId}
+          onChunksRead={onChunksRead}
           onClose={() => {
             setPreview(null);
             onPreviewOpenChange?.(false);
@@ -578,13 +635,38 @@ export default function WorkflowKnowledgeChunkPicker({
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(props.value || {});
   const [previewOpen, setPreviewOpen] = useState(false);
-  if (!compact) return <FullWorkflowKnowledgeChunkPicker {...props} />;
+  const [knownChunks, setKnownChunks] = useState({});
+  const onChunksRead = useCallback((databaseId, items) => {
+    setKnownChunks((current) => {
+      const next = { ...current };
+      for (const item of items)
+        next[chunkMetadataKey(databaseId, item.id)] = {
+          id: item.id,
+          name: item.name || item.title,
+          childCount: item.childCount,
+          descendantCount: item.descendantCount,
+        };
+      return next;
+    });
+  }, []);
+  if (!compact)
+    return (
+      <FullWorkflowKnowledgeChunkPicker
+        {...props}
+        knownChunks={knownChunks}
+        onChunksRead={onChunksRead}
+      />
+    );
+  const draftDatabaseId =
+    draft.databaseId || props.schema?.properties?.databaseId?.default || "";
+  const selectedItem =
+    knownChunks[chunkMetadataKey(draftDatabaseId, draft.chunkId)];
   return (
     <Popover
       open={open}
       onOpenChange={(next) => {
         if (previewOpen) return;
-        if (next) setDraft(props.value || {});
+        if (next) setDraft({ ...(props.value || {}), scope: "subtree" });
         setOpen(next);
       }}
     >
@@ -624,17 +706,19 @@ export default function WorkflowKnowledgeChunkPicker({
             value={draft}
             onChange={setDraft}
             onPreviewOpenChange={setPreviewOpen}
+            knownChunks={knownChunks}
+            onChunksRead={onChunksRead}
           />
         </div>
         <div className="flex shrink-0 items-center justify-between border-t px-3 py-2.5">
-          <span className="text-xs text-muted-foreground">
-            {draft.chunkId ? "已选择 1 项" : "尚未选择"}
+          <span className="mr-3 min-w-0 flex-1 text-xs leading-relaxed text-muted-foreground">
+            {draft.chunkId ? chunkUpdateSummary(selectedItem) : "尚未选择"}
           </span>
           <Button
             type="button"
             size="sm"
             onClick={() => {
-              if (!props.disabled) props.onChange(draft);
+              if (!props.disabled) props.onChange({ ...draft, scope: "subtree" });
               setOpen(false);
             }}
           >

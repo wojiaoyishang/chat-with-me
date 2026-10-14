@@ -44,7 +44,7 @@ async function mount(Component,props,initialValue) {
   for(const key of ["window","document","HTMLElement","Node","Event"]) globalThis[key]=dom.window[key];
   globalThis.IS_REACT_ACT_ENVIRONMENT=true;
   const state={value:initialValue,calls:[]};
-  globalThis.controlTest={api:{get:async(url,options)=>{state.calls.push([url,options]);if(url==="/knowledge/databases")return{databases:[{id:"db-one",name:"renamed",title:"库一",enabled:true,legacyDefault:true},{id:"db-two",title:"库二",enabled:true},{id:"db-disabled",title:"停用库",enabled:false}]};if(url.endsWith("/extraction-snapshot"))return{content:"原文内容",extractionRevision:3,relationships:[{source:"a",target:"b",type:"关联"}],nodes:[{id:"a",name:"甲"},{id:"b",name:"乙"}]};if(url==="/knowledge/chunks/search")return{items:[{id:options.params.databaseId+"-chunk",name:options.params.databaseId+"-标题",properties:{summary:"摘要"}}],total:1,hasMore:false};return{nodes:[{id:"node-more",name:"更多"}],relationships:[]};}}};
+  globalThis.controlTest={api:{get:async(url,options)=>{state.calls.push([url,options]);if(url==="/knowledge/databases")return{databases:[{id:"db-one",name:"renamed",title:"库一",enabled:true,legacyDefault:true},{id:"db-two",title:"库二",enabled:true},{id:"db-disabled",title:"停用库",enabled:false}]};const counts=options?.params?.databaseId==="db-one"?{childCount:2,descendantCount:5}:{childCount:0,descendantCount:0};if(url.endsWith("/extraction-snapshot"))return{...counts,content:"原文内容",extractionRevision:3,relationships:[{source:"a",target:"b",type:"关联"}],nodes:[{id:"a",name:"甲"},{id:"b",name:"乙"}]};if(url==="/knowledge/chunks/search")return{items:[{id:options.params.databaseId+"-chunk",name:options.params.databaseId+"-标题",...counts,properties:{summary:"摘要"}}],total:1,hasMore:false};return{nodes:[{id:"node-more",name:"更多"}],relationships:[]};}}};
   function Form(){const[value,setValue]=React.useState(initialValue);state.value=value;return React.createElement(Component,{...props,value,onChange:setValue});}
   const root=createRoot(document.getElementById("root"));
   await act(async()=>root.render(React.createElement(Form)));
@@ -75,11 +75,13 @@ test("chunk selection is staged, preview preserves selection, and DB change clea
   try{
     await click(document.querySelector('[aria-label="选择知识片段"]'));await flush();
     await click(document.querySelector('[aria-label="查看知识块 db-one-标题"]'));assert.equal(ui.state.value.chunkId,"");assert.equal(document.querySelector('[aria-label="知识块原文"]').value,"原文内容");assert.match(document.querySelector('[role="dialog"]').textContent,/甲 → 关联 → 乙/);
-    const snapshotCall=ui.state.calls.find(([url])=>url.endsWith("/extraction-snapshot"));assert.equal(snapshotCall[1].params.databaseId,"db-one");
+    const snapshotCall=ui.state.calls.find(([url])=>url.endsWith("/extraction-snapshot"));assert.equal(snapshotCall[1].params.databaseId,"db-one");assert.equal(snapshotCall[1].params.scope,undefined);
+    assert.match(document.querySelector('[role="dialog"]').textContent,/直接子块 2 个 · 递归子块 5 个/);
+    assert.match(document.querySelector('[role="dialog"]').textContent,/全部 5 个子知识块（含递归）会一同更新/);
     await click(document.querySelector('[aria-label="关闭预览"]'));await click(document.querySelector('[aria-label="选择知识块 db-one-标题"]'));assert.equal(ui.state.value.chunkId,"");
-    await click([...document.querySelectorAll("button")].find(button=>button.textContent==="确认选择"));assert.deepEqual(ui.state.value,{databaseId:"db-one",chunkId:"db-one-chunk",scope:"self"});
+    await click([...document.querySelectorAll("button")].find(button=>button.textContent==="确认选择"));assert.deepEqual(ui.state.value,{databaseId:"db-one",chunkId:"db-one-chunk",scope:"subtree"});
     await click(document.querySelector('[aria-label="选择知识片段"]'));await flush();await select(document.querySelector("select"),"db-two");await flush();
-    assert.equal(document.querySelector('[aria-label="查看已选知识块"]'),null);await click(document.querySelector('[aria-label="选择知识块 db-two-标题"]'));await click([...document.querySelectorAll("button")].find(button=>button.textContent==="确认选择"));assert.deepEqual(ui.state.value,{databaseId:"db-two",chunkId:"db-two-chunk",scope:"self"});
+    assert.equal(document.querySelector('[aria-label="查看已选知识块"]'),null);await click(document.querySelector('[aria-label="选择知识块 db-two-标题"]'));assert.match(document.body.textContent,/仅更新当前知识块；没有子知识块/);await click([...document.querySelectorAll("button")].find(button=>button.textContent==="确认选择"));assert.deepEqual(ui.state.value,{databaseId:"db-two",chunkId:"db-two-chunk",scope:"subtree"});
     const searches=ui.state.calls.filter(([url])=>url==="/knowledge/chunks/search");assert.equal(searches.at(-1)[1].params.databaseId,"db-two");assert.equal(searches.at(-1)[1].params.limit,20);
   }finally{await ui.close();}
 });
@@ -119,7 +121,38 @@ test("chunk rows display their title beside the selection control and keep previ
     assert.equal(document.querySelector('[aria-label="查看已选知识块"]'),null);
     await click(checkbox);
     await click([...document.querySelectorAll("button")].find(button=>button.textContent==="确认选择"));
-    assert.deepEqual(ui.state.value,{databaseId:"db-one",chunkId:"db-one-chunk",scope:"self"});
+    assert.deepEqual(ui.state.value,{databaseId:"db-one",chunkId:"db-one-chunk",scope:"subtree"});
+  }finally{await ui.close();}
+});
+
+test("parent chunk range survives paging and legacy self selection upgrades only on confirmation",async()=>{
+  const initialValue={databaseId:"db-one",chunkId:"db-one-chunk",scope:"self"};
+  const ui=await mount(Field,{compact:true,label:"知识片段",schema:{type:"object",ui:{widget:"knowledge-chunk-picker"}}},initialValue);
+  try{
+    const normal=globalThis.controlTest.api.get;
+    globalThis.controlTest.api.get=async(url,options)=>{
+      if(url!=="/knowledge/chunks/search")return normal(url,options);
+      ui.state.calls.push([url,options]);
+      return options.params.offset===0
+        ?{items:[{id:"db-one-chunk",name:"父知识块",childCount:2,descendantCount:5}],total:21,hasMore:true}
+        :{items:[{id:"leaf",name:"末页子块",childCount:0,descendantCount:0}],total:21,hasMore:false};
+    };
+    await click(document.querySelector('[aria-label="选择知识片段"]'));await flush();
+    assert.match(document.body.textContent,/直接子块 2 个 · 递归子块 5 个/);
+    await click([...document.querySelectorAll("button")].find(button=>button.textContent==="下一页"));await flush();
+    assert.equal(document.querySelector('[aria-label="选择知识块 父知识块"]'),null);
+    assert.match(document.body.textContent,/父知识块/);
+    assert.match(document.body.textContent,/当前知识块及全部 5 个子知识块（含递归）会一同更新/);
+    await click(document.querySelector('[aria-label="查看已选知识块"]'));
+    assert.match(document.querySelector('[role="dialog"]').textContent,/父知识块/);
+    assert.match(document.querySelector('[role="dialog"]').textContent,/递归子块 5 个/);
+    await click(document.querySelector('[aria-label="关闭预览"]'));
+    await click(document.querySelector('[aria-label="选择知识片段"]'));
+    assert.deepEqual(ui.state.value,initialValue);
+    await click(document.querySelector('[aria-label="选择知识片段"]'));await flush();
+    await click([...document.querySelectorAll("button")].find(button=>button.textContent==="确认选择"));
+    assert.deepEqual(ui.state.value,{databaseId:"db-one",chunkId:"db-one-chunk",scope:"subtree"});
+    assert.deepEqual(Object.keys(ui.state.value).sort(),["chunkId","databaseId","scope"]);
   }finally{await ui.close();}
 });
 
