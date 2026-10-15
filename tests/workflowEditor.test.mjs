@@ -319,13 +319,27 @@ async function environment(request = {}, options = {}) {
         };
       if (url === "/schemas") return { schemas: [] };
       if (url === "/tasks/existing-task/details")
-        return {
-          taskId: "existing-task",
-          status: "completed",
-          parameters: { graph: structuredClone(catalog.standardGraph) },
-          workflowNodes: { "input-1": { status: "completed" } },
-          stages: [{ key: "extract-1", status: "failed" }],
-        };
+        return structuredClone(
+          options.taskDetails || {
+            taskId: "existing-task",
+            status: "completed",
+            parameters: { graph: structuredClone(catalog.standardGraph) },
+            workflowNodes: { "input-1": { status: "completed" } },
+            stages: [{ key: "extract-1", status: "failed" }],
+          },
+        );
+      if (url === "/tasks/task-1/details")
+        return structuredClone(
+          options.taskDetails || {
+            taskId: "task-1",
+            status: "completed",
+            parameters: {
+              graph: calls.findLast(
+                (call) => call.url === "/tasks/workflows/run",
+              )?.payload.graph,
+            },
+          },
+        );
       if (url.includes("/nodes/") && url.includes("/output?")) {
         if (options.outputDeferred?.[url])
           return new Promise((resolve) => {
@@ -375,9 +389,25 @@ async function environment(request = {}, options = {}) {
             options.runDeferred.resolve = resolve;
           });
         return {
-          task: { taskId: "task-1", jobId: "task-1", status: "completed" },
+          task: structuredClone(
+            options.runTask || {
+              taskId: "task-1",
+              jobId: "task-1",
+              status: "completed",
+            },
+          ),
         };
       }
+      if (url === "/attachments/resolve")
+        return {
+          items: payload.uris.map((uri) => ({
+            uri,
+            id: uri.split("/").at(-1),
+            type: "text",
+            name: uri.endsWith("uploaded-1") ? "上传文档.md" : "附件一",
+          })),
+          unavailable: [],
+        };
       if (url === "/upload/") return { artifactId: "uploaded-1" };
       if (url === "/schemas")
         return { id: "schema-1", ...payload, revision: 1 };
@@ -1360,7 +1390,11 @@ test("opening an existing task uses its immutable graph and real taskId runtime 
     );
     await click(button("定位到任务"), app.dom);
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 40));
+      for (let attempt = 0; attempt < 12; attempt += 1) {
+        if (globalThis.workflowUITest.fitViewCalls.some((call) => call?.nodes))
+          break;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      }
     });
     assert.deepEqual(
       globalThis.workflowUITest.fitViewCalls.findLast((call) => call?.nodes)
@@ -1392,6 +1426,173 @@ test("task submission covers the editor until the run starts", async () => {
       document.querySelector(".workflow-header").textContent,
       /监控/,
     );
+  } finally {
+    await app.close();
+  }
+});
+
+test("run monitors the execution graph and returns to the original editable draft with history", async () => {
+  const executionGraph = structuredClone(catalog.standardGraph);
+  executionGraph.nodes[0].config.text = "服务端固定正文";
+  const scrubbedGraph = structuredClone(executionGraph);
+  scrubbedGraph.nodes[0].config.text = "";
+  const app = await environment(
+    {},
+    {
+      runTask: {
+        taskId: "task-1",
+        status: "running",
+        parameters: { graph: scrubbedGraph },
+      },
+      taskDetails: {
+        taskId: "task-1",
+        status: "running",
+        parameters: { graph: executionGraph },
+        workflowNodes: { "input-1": { status: "completed" } },
+      },
+    },
+  );
+  try {
+    await input(
+      document.querySelector('[aria-label="初始化文本"]'),
+      "提交前的编辑正文",
+      app.dom,
+    );
+    const originalPosition = structuredClone(
+      globalThis.workflowUITest.flow.nodes.find((node) => node.id === "input-1")
+        .position,
+    );
+    await click(button("直接开始任务"), app.dom);
+    assert.ok(document.querySelector(".workflow-workspace.is-monitor"));
+    assert.equal(
+      document.querySelector('[aria-label="初始化文本"]').value,
+      "服务端固定正文",
+    );
+    assert.ok(document.querySelector('[aria-label="初始化文本"]').disabled);
+    assert.ok(app.calls.some((call) => call.url === "/tasks/task-1/details"));
+    await act(() =>
+      globalThis.workflowUITest.flow.onNodesChange([
+        {
+          id: "input-1",
+          type: "position",
+          position: { x: 999, y: 888 },
+          dragging: false,
+        },
+      ]),
+    );
+    await click(button("再次编辑"), app.dom);
+    assert.equal(
+      document.querySelector(".workflow-workspace.is-monitor"),
+      null,
+    );
+    assert.match(
+      document.querySelector(".workflow-header").textContent,
+      /编辑工作流.*有未保存修改/,
+    );
+    assert.equal(
+      document.querySelector('[aria-label="初始化文本"]').value,
+      "提交前的编辑正文",
+    );
+    assert.equal(
+      document.querySelector('[aria-label="初始化文本"]').disabled,
+      false,
+    );
+    assert.deepEqual(
+      globalThis.workflowUITest.flow.nodes.find((node) => node.id === "input-1")
+        .position,
+      originalPosition,
+    );
+    assert.ok(
+      globalThis.workflowUITest.flow.nodes.every((node) => !node.data.status),
+    );
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    assert.equal(
+      document.querySelector('[aria-label="初始化文本"]').value,
+      "原内容",
+    );
+    await click(
+      document.querySelector('[aria-label="重做工作流修改"]'),
+      app.dom,
+    );
+    await click(button("直接开始任务"), app.dom);
+    const runs = app.calls.filter(
+      (call) => call.url === "/tasks/workflows/run",
+    );
+    assert.equal(runs.length, 2);
+    assert.equal(
+      runs[1].payload.graph.nodes[0].config.text,
+      "提交前的编辑正文",
+    );
+    assert.equal(runs[1].payload.taskId, undefined);
+    assert.equal(executionGraph.nodes[0].config.text, "服务端固定正文");
+  } finally {
+    await app.close();
+  }
+});
+
+test("reediting an existing task creates an editable copy from its authorized inputs", async () => {
+  const app = await environment({ taskId: "existing-task" });
+  try {
+    await click(button("再次编辑"), app.dom);
+    assert.equal(
+      document.querySelector('[aria-label="初始化文本"]').value,
+      "原内容",
+    );
+    await input(
+      document.querySelector('[aria-label="初始化文本"]'),
+      "下一次任务的正文",
+      app.dom,
+    );
+    await click(button("直接开始任务"), app.dom);
+    const payload = app.calls.find(
+      (call) => call.url === "/tasks/workflows/run",
+    ).payload;
+    assert.equal(payload.graph.nodes[0].config.text, "下一次任务的正文");
+    assert.equal(payload.taskId, undefined);
+    assert.equal(payload.templateId, undefined);
+    assert.equal(
+      app.calls.some((call) =>
+        /existing-task\/(pause|resume|cancel)/.test(call.url),
+      ),
+      false,
+    );
+  } finally {
+    await app.close();
+  }
+});
+
+test("reediting after a run preserves the saved template revision and unsaved changes", async () => {
+  const template = {
+    id: "saved-edit",
+    revision: 7,
+    title: "可编辑模板",
+    graph: structuredClone(catalog.standardGraph),
+    canEdit: true,
+  };
+  const app = await environment({ templateId: template.id }, { template });
+  try {
+    await input(
+      document.querySelector('[aria-label="初始化文本"]'),
+      "修改后的模板正文",
+      app.dom,
+    );
+    await click(button("直接开始任务"), app.dom);
+    await click(button("再次编辑"), app.dom);
+    assert.match(
+      document.querySelector(".workflow-header").textContent,
+      /模板 v7.*有未保存修改/,
+    );
+    await click(button("保存模板预设"), app.dom);
+    const saved = app.calls.find(
+      (call) =>
+        call.method === "put" &&
+        call.url === "/tasks/workflows/templates/saved-edit",
+    );
+    assert.equal(saved.payload.revision, 7);
+    assert.equal(saved.payload.graph.nodes[0].config.text, "修改后的模板正文");
   } finally {
     await app.close();
   }

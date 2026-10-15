@@ -29,16 +29,36 @@ import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import apiClient from "@/lib/apiClient.js";
 import { resolveResourceUrl } from "@/lib/virtualUrl.js";
 import WorkflowResourcePreview from "./WorkflowResourcePreview.jsx";
+import WorkflowSelectedAttachments from "./WorkflowSelectedAttachments.jsx";
 
 function ResourceThumbnail({ item, sourceType }) {
   const url = item.preview ? resolveResourceUrl(item.preview) : "";
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  useEffect(() => { setFailed(false); setLoaded(false); }, [url]);
+  useEffect(() => {
+    setFailed(false);
+    setLoaded(false);
+  }, [url]);
   return (
-    <span className={`workflow-resource-icon ${loaded && !failed ? "has-thumbnail" : ""}`} aria-hidden="true">
-      {sourceType === "document" ? <FileText className="size-5" /> : <Paperclip className="size-5" />}
-      {url && !failed && <img src={url} alt="" loading="lazy" decoding="async" onLoad={() => setLoaded(true)} onError={() => setFailed(true)} />}
+    <span
+      className={`workflow-resource-icon ${loaded && !failed ? "has-thumbnail" : ""}`}
+      aria-hidden="true"
+    >
+      {sourceType === "document" ? (
+        <FileText className="size-5" />
+      ) : (
+        <Paperclip className="size-5" />
+      )}
+      {url && !failed && (
+        <img
+          src={url}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
+        />
+      )}
     </span>
   );
 }
@@ -90,87 +110,110 @@ function CompactWorkflowSourcePicker(props) {
   const [draft, setDraft] = useState(props.value || {});
   const [busy, setBusy] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [knownItems, setKnownItems] = useState({});
 
   const count =
     props.fixedType === "document"
       ? Number(Boolean(props.value?.documentId))
       : props.value?.resources?.length || 0;
   return (
-    <Popover
-      open={open}
-      onOpenChange={(next) => {
-        if (busy || previewOpen) return;
-        if (next) setDraft(props.value || {});
-        setOpen(next);
-      }}
-    >
-      <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          className="workflow-source-trigger nodrag w-full justify-between"
-          disabled={props.disabled}
-          aria-label={
-            props.fixedType === "document" ? "选择文档输入" : "选择附件输入"
-          }
-        >
-          <span className="truncate">
-            {props.fixedType === "document" ? "文档" : "附件"} · 已选择 {count}{" "}
-            项
-          </span>
-          <Search className="size-4 shrink-0" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        sideOffset={8}
-        className="workflow-source-popover flex max-h-[min(540px,72vh)] w-[min(390px,calc(100vw-32px))] flex-col overflow-hidden p-0"
-        onPointerDown={(event) => event.stopPropagation()}
-        onInteractOutside={(event) => {
-          if (busy || previewOpen) event.preventDefault();
-        }}
-        onFocusOutside={(event) => {
-          if (previewOpen) event.preventDefault();
-        }}
-        onEscapeKeyDown={(event) => {
-          if (busy || previewOpen) event.preventDefault();
+    <div className="workflow-compact-source">
+      <Popover
+        open={open}
+        onOpenChange={(next) => {
+          if (busy || previewOpen) return;
+          if (next) setDraft(props.value || {});
+          setOpen(next);
         }}
       >
-        <div className="min-h-0 overflow-y-auto p-3">
-          <FullWorkflowSourcePicker
-            {...props}
-            value={draft}
-            onChange={setDraft}
-            onBusyChange={(next) => {
-              setBusy(next);
-              props.onBusyChange?.(next);
-            }}
-            onPreviewOpenChange={setPreviewOpen}
-            compact={false}
-          />
-        </div>
-        <div className="flex shrink-0 items-center justify-between gap-3 border-t px-3 py-2.5">
-          <span className="text-xs text-muted-foreground">
-            {props.fixedType === "document"
-              ? draft.documentId
-                ? "已选择 1 项"
-                : "尚未选择"
-              : `已选择 ${draft.resources?.length || 0} 项`}
-          </span>
+        <PopoverTrigger asChild>
           <Button
             type="button"
-            size="sm"
-            disabled={busy}
-            onClick={() => {
-              if (!props.disabled) props.onChange(draft);
-              setOpen(false);
-            }}
+            variant="outline"
+            className="workflow-source-trigger nodrag w-full justify-between"
+            disabled={props.disabled}
+            aria-label={
+              props.fixedType === "document" ? "选择文档输入" : "选择附件输入"
+            }
           >
-            {props.disabled ? "关闭" : "确认选择"}
+            <span className="truncate">
+              {props.fixedType === "document" ? "文档" : "附件"} · 已选择{" "}
+              {count} 项
+            </span>
+            <Search className="size-4 shrink-0" />
           </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          sideOffset={8}
+          className="workflow-source-popover flex max-h-[min(540px,72vh)] w-[min(390px,calc(100vw-32px))] flex-col overflow-hidden p-0"
+          onPointerDown={(event) => event.stopPropagation()}
+          onInteractOutside={(event) => {
+            if (busy || previewOpen) event.preventDefault();
+          }}
+          onFocusOutside={(event) => {
+            if (previewOpen) event.preventDefault();
+          }}
+          onEscapeKeyDown={(event) => {
+            if (busy || previewOpen) event.preventDefault();
+          }}
+        >
+          <div className="min-h-0 overflow-y-auto p-3">
+            <FullWorkflowSourcePicker
+              {...props}
+              value={draft}
+              onChange={setDraft}
+              onBusyChange={(next) => {
+                setBusy(next);
+                props.onBusyChange?.(next);
+              }}
+              onPreviewOpenChange={setPreviewOpen}
+              onItemsLoaded={(items) =>
+                setKnownItems((current) => ({
+                  ...current,
+                  ...Object.fromEntries(
+                    items.map((item) => [
+                      item.uri ||
+                        `cwm://artifact/${item.artifactId || item.id}`,
+                      item,
+                    ]),
+                  ),
+                }))
+              }
+              compact={false}
+            />
+          </div>
+          <div className="flex shrink-0 items-center justify-between gap-3 border-t px-3 py-2.5">
+            <span className="text-xs text-muted-foreground">
+              {props.fixedType === "document"
+                ? draft.documentId
+                  ? "已选择 1 项"
+                  : "尚未选择"
+                : `已选择 ${draft.resources?.length || 0} 项`}
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              disabled={busy}
+              onClick={() => {
+                if (!props.disabled) props.onChange(draft);
+                setOpen(false);
+              }}
+            >
+              {props.disabled ? "关闭" : "确认选择"}
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+      {props.fixedType !== "document" && (
+        <WorkflowSelectedAttachments
+          resources={props.value?.resources || []}
+          knownItems={knownItems}
+          disabled={props.disabled}
+          onPreviewOpenChange={setPreviewOpen}
+        />
+      )}
+    </div>
   );
 }
 
@@ -181,6 +224,7 @@ function FullWorkflowSourcePicker({
   disabled,
   onBusyChange,
   onPreviewOpenChange,
+  onItemsLoaded,
   fixedType,
   sourceOptions = [],
   compact = false,
@@ -196,11 +240,14 @@ function FullWorkflowSourcePicker({
   const [error, setError] = useState("");
   const [refresh, setRefresh] = useState(0);
   const [resourceNames, setResourceNames] = useState({});
+  const [resourceItems, setResourceItems] = useState({});
   const [previewItem, setPreviewItem] = useState(null);
   const upload = useRef(null);
   const activeUpload = useRef(null);
   const latest = useRef({ value, onChange });
   latest.current = { value, onChange };
+  const itemsLoaded = useRef(onItemsLoaded);
+  itemsLoaded.current = onItemsLoaded;
   const busyChanged = useRef(onBusyChange);
   busyChanged.current = onBusyChange;
   useEffect(() => {
@@ -235,6 +282,17 @@ function FullWorkflowSourcePicker({
         if (!controller.signal.aborted) {
           setItems(result.items || []);
           setTotal(result.total || 0);
+          const loadedItems = result.items || [];
+          setResourceItems((current) => ({
+            ...current,
+            ...Object.fromEntries(
+              loadedItems.map((item) => [
+                item.uri || `cwm://artifact/${item.artifactId || item.id}`,
+                item,
+              ]),
+            ),
+          }));
+          itemsLoaded.current?.(loadedItems);
           setResourceNames((current) => ({
             ...current,
             ...Object.fromEntries(
@@ -425,13 +483,39 @@ function FullWorkflowSourcePicker({
                 : "附件会在任务启动时固定版本。"}{" "}
               共 {total} 项
             </p>
-            <div className="workflow-resource-view-switch flex shrink-0 items-center rounded-md border bg-muted/40 p-0.5" role="group" aria-label="资源视图">
-              <Button type="button" size="icon" variant={view === "list" ? "secondary" : "ghost"} className="size-7" aria-label="列表视图" aria-pressed={view === "list"} onClick={() => setView("list")}><List className="size-4" /></Button>
-              <Button type="button" size="icon" variant={view === "grid" ? "secondary" : "ghost"} className="size-7" aria-label="网格视图" aria-pressed={view === "grid"} onClick={() => setView("grid")}><LayoutGrid className="size-4" /></Button>
+            <div
+              className="workflow-resource-view-switch flex shrink-0 items-center rounded-md border bg-muted/40 p-0.5"
+              role="group"
+              aria-label="资源视图"
+            >
+              <Button
+                type="button"
+                size="icon"
+                variant={view === "list" ? "secondary" : "ghost"}
+                className="size-7"
+                aria-label="列表视图"
+                aria-pressed={view === "list"}
+                onClick={() => setView("list")}
+              >
+                <List className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant={view === "grid" ? "secondary" : "ghost"}
+                className="size-7"
+                aria-label="网格视图"
+                aria-pressed={view === "grid"}
+                onClick={() => setView("grid")}
+              >
+                <LayoutGrid className="size-4" />
+              </Button>
             </div>
           </div>
           <div className="workflow-resource-list relative" aria-busy={loading}>
-            <div className={`workflow-resource-results ${view === "grid" ? "is-grid" : "is-list"}`}>
+            <div
+              className={`workflow-resource-results ${view === "grid" ? "is-grid" : "is-list"}`}
+            >
               {items.map((item) => {
                 const uri =
                   item.uri || `cwm://artifact/${item.artifactId || item.id}`;
@@ -460,10 +544,16 @@ function FullWorkflowSourcePicker({
                       onClick={() => pick(item)}
                     >
                       <span className="workflow-resource-content">
-                      <ResourceThumbnail item={item} sourceType={sourceType} />
-                      <span className="workflow-resource-name" title={item.title || item.name || item.id}>
-                        {item.title || item.name || item.id}
-                      </span>
+                        <ResourceThumbnail
+                          item={item}
+                          sourceType={sourceType}
+                        />
+                        <span
+                          className="workflow-resource-name"
+                          title={item.title || item.name || item.id}
+                        >
+                          {item.title || item.name || item.id}
+                        </span>
                       </span>
                     </Button>
                     <Button
@@ -494,7 +584,15 @@ function FullWorkflowSourcePicker({
                 </p>
               )}
             </div>
-            {loading && <div className="workflow-resource-loading absolute inset-0 z-10 flex items-center justify-center gap-2 text-sm text-muted-foreground" role="status"><Loader2 className="size-4 animate-spin" />正在加载资源…</div>}
+            {loading && (
+              <div
+                className="workflow-resource-loading absolute inset-0 z-10 flex items-center justify-center gap-2 text-sm text-muted-foreground"
+                role="status"
+              >
+                <Loader2 className="size-4 animate-spin" />
+                正在加载资源…
+              </div>
+            )}
           </div>
           <div className="flex items-center justify-between">
             <Button
@@ -519,35 +617,20 @@ function FullWorkflowSourcePicker({
             </Button>
           </div>
           {sourceType !== "document" && (
-            <div className="space-y-1">
-              {(value.resources || []).map((uri, index) => (
-                <div
-                  className="flex items-center gap-2 rounded-md bg-muted/60 px-2 py-1 text-xs"
-                  key={uri}
-                >
-                  <span className="min-w-0 flex-1 truncate" title={uri}>
-                    {resourceNames[uri] || `已选择附件 ${index + 1}`}
-                  </span>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="size-6"
-                    disabled={disabled || uploading}
-                    aria-label={`移除 ${uri}`}
-                    onClick={() =>
-                      onChange({
-                        ...value,
-                        resources: value.resources.filter(
-                          (resource) => resource !== uri,
-                        ),
-                      })
-                    }
-                  >
-                    <X className="size-3" />
-                  </Button>
-                </div>
-              ))}
-            </div>
+            <WorkflowSelectedAttachments
+              resources={value.resources || []}
+              knownItems={resourceItems}
+              disabled={disabled || uploading}
+              onPreviewOpenChange={onPreviewOpenChange}
+              onRemove={(uri) =>
+                onChange({
+                  ...value,
+                  resources: value.resources.filter(
+                    (resource) => resource !== uri,
+                  ),
+                })
+              }
+            />
           )}
         </>
       )}

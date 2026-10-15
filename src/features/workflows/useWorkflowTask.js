@@ -10,6 +10,7 @@ export default function useWorkflowTask(initialTask) {
   const generation = useRef(0);
   useEffect(() => {
     setTask(initialTask);
+    setError("");
   }, [initialTask]);
   useEffect(() => {
     if (!taskId) return;
@@ -40,6 +41,7 @@ export default function useWorkflowTask(initialTask) {
     const reconnect = onEvent({ event: "transport.connected" }).then(
       () => void refresh(),
     );
+    void refresh();
     const timer = setInterval(() => {
       if (!document.hidden) void refresh();
     }, 3000);

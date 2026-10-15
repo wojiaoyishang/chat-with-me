@@ -5,7 +5,10 @@ import { JSDOM } from "jsdom";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 
-async function mount() {
+async function mount({
+  initialValue = { resources: [] },
+  disabled = false,
+} = {}) {
   const dom = new JSDOM('<div id="root"></div>', {
     url: "http://localhost/",
     pretendToBeVisual: true,
@@ -31,12 +34,31 @@ async function mount() {
       ],
       total: 2,
     }),
-    post: async () => ({
-      source: { contentHash: "revision-1" },
-      blocks: [{ id: "block-1", text: "可预览的正文" }],
-      total: 1,
-      hasMore: false,
-    }),
+    post: async (url, body) =>
+      url === "/attachments/resolve"
+        ? {
+            items: [
+              {
+                id: "file-1",
+                name: "示例附件.png",
+                type: "image",
+                uri: "cwm://artifact/file-1",
+              },
+              {
+                id: "file-2",
+                name: "阅读材料.md",
+                type: "text",
+                uri: "cwm://artifact/file-2",
+              },
+            ].filter((item) => body.uris.includes(item.uri)),
+            unavailable: [],
+          }
+        : {
+            source: { contentHash: "revision-1" },
+            blocks: [{ id: "block-1", text: "可预览的正文" }],
+            total: 1,
+            hasMore: false,
+          },
   };
   await build({
     entryPoints: ["src/features/workflows/WorkflowSourcePicker.jsx"],
@@ -94,15 +116,16 @@ async function mount() {
   const { default: Picker } = await import(
     `../temp/workflow-source-picker-test.mjs?v=${Date.now()}`
   );
-  const state = { value: { resources: [] } };
+  const state = { value: initialValue };
   function Form() {
-    const [value, onChange] = React.useState({ resources: [] });
+    const [value, onChange] = React.useState(initialValue);
     state.value = value;
     return React.createElement(Picker, {
       compact: true,
       fixedType: "file",
       value,
       onChange,
+      disabled,
     });
   }
   const root = createRoot(document.getElementById("root"));
@@ -130,6 +153,13 @@ test("attachment picker confirms staged selection and discards unconfirmed chang
     await click(trigger, 230);
     await click(document.querySelector('[aria-label="选择 示例附件.png"]'));
     assert.deepEqual(ui.state.value.resources, []);
+    assert.equal(
+      document.querySelector(
+        ".workflow-compact-source > .workflow-selected-attachments",
+      ),
+      null,
+      "node only previews confirmed resources",
+    );
     assert.match(document.querySelector("section").textContent, /已选择 1 项/);
     await click(
       [...document.querySelectorAll("button")].find(
@@ -137,11 +167,47 @@ test("attachment picker confirms staged selection and discards unconfirmed chang
       ),
     );
     assert.deepEqual(ui.state.value.resources, ["cwm://artifact/file-1"]);
+    assert.equal(
+      document.querySelector(
+        ".workflow-compact-source > .workflow-selected-attachments img",
+      )?.alt,
+      "示例附件.png",
+    );
     await click(trigger, 230);
     await click(document.querySelector('[aria-label="选择 示例附件.png"]'));
     assert.deepEqual(ui.state.value.resources, ["cwm://artifact/file-1"]);
     await click(trigger);
     assert.deepEqual(ui.state.value.resources, ["cwm://artifact/file-1"]);
+  } finally {
+    await ui.close();
+  }
+});
+
+test("compact read-only attachment input keeps names and preview available below its disabled picker", async () => {
+  const ui = await mount({
+    initialValue: {
+      resources: ["cwm://artifact/file-1", "cwm://artifact/file-2"],
+    },
+    disabled: true,
+  });
+  try {
+    assert.equal(
+      document.querySelector('[aria-label="选择附件输入"]').disabled,
+      true,
+    );
+    const selected = document.querySelector(
+      ".workflow-compact-source > .workflow-selected-attachments",
+    );
+    assert.match(selected.textContent, /示例附件.png/);
+    assert.match(selected.textContent, /阅读材料.md/);
+    const view = selected.querySelector('[aria-label="查看 示例附件.png"]');
+    assert.equal(view.disabled, false);
+    await click(view);
+    assert.ok(document.querySelector('[data-testid="resource-preview"] img'));
+    assert.deepEqual(ui.state.value.resources, [
+      "cwm://artifact/file-1",
+      "cwm://artifact/file-2",
+    ]);
   } finally {
     await ui.close();
   }

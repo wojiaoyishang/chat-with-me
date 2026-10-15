@@ -20,6 +20,7 @@ import {
   GitBranch,
   Loader2,
   Maximize2,
+  Pencil,
   Play,
   Redo2,
   Save,
@@ -118,7 +119,13 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [draft, setDraft] = useState(newDraft);
   const draftRef = useRef(draft);
   draftRef.current = draft;
-  const { graph, title, description, templateSharing, permissions } = draft;
+  const {
+    graph: editableGraph,
+    title,
+    description,
+    templateSharing,
+    permissions,
+  } = draft;
   const [baseline, setBaseline] = useState(snapshot(draft));
   const dirty = snapshot(draft) !== baseline;
   const [loading, setLoading] = useState(true);
@@ -138,7 +145,27 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   );
   const readOnly = viewMode === "monitor";
   const [initialTask, setInitialTask] = useState(null);
-  const { task, error: refreshError } = useWorkflowTask(initialTask);
+  const { task: refreshedTask, error: refreshError } = useWorkflowTask(
+    readOnly ? initialTask : null,
+  );
+  const task = readOnly ? refreshedTask || initialTask : null;
+  const graph = useMemo(
+    () =>
+      readOnly && task?.parameters?.graph
+        ? initializeGraph(
+            task.parameters.graph,
+            catalog.nodes,
+            catalog.settingsDefaults,
+          )
+        : editableGraph,
+    [
+      readOnly,
+      task?.parameters?.graph,
+      editableGraph,
+      catalog.nodes,
+      catalog.settingsDefaults,
+    ],
+  );
   const [selected, setSelected] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedEdges, setSelectedEdges] = useState([]);
@@ -777,20 +804,19 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         });
         if (!alive.current) return false;
         const running = response.task || response;
-        if (running.parameters?.graph)
-          installDraft({
-            ...current,
-            graph: initializeGraph(
-              running.parameters.graph,
-              catalog.nodes,
-              catalog.settingsDefaults,
-            ),
-          });
-        else setBaseline(snapshot(current));
-        setInitialTask(running);
+        // Keep the editable draft and its save/undo history separate from the
+        // immutable execution view. The detail refresh supplies its frozen inputs.
+        setInitialTask({
+          ...running,
+          parameters: { ...running.parameters, graph: clone(current.graph) },
+        });
         setViewMode("monitor");
+        setFitRequest((current) => current + 1);
+        setFocusRequest(null);
+        setMonitorPositions({});
         setPanel("node");
         setMonitorView("overview");
+        setMobilePane("canvas");
         setNotice("任务已启动，可实时查看各节点的处理进度和输出。");
         onChanged?.({ taskId: running.id });
       }
@@ -922,6 +948,28 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     }
   };
 
+  const editAgain = () => {
+    if (busy || loading) return;
+    setViewMode("task-editor");
+    setInitialTask(null);
+    setMonitorView("overview");
+    setMonitorPositions({});
+    setFitRequest((current) => current + 1);
+    setFocusRequest(null);
+    setPanel("node");
+    setMobilePane("canvas");
+    setMenu(null);
+    setError("");
+    setNotice("可继续编辑工作流，再次开始会创建新的任务。");
+    select(
+      [
+        editableGraph.nodes.some((node) => node.id === selected)
+          ? selected
+          : editableGraph.nodes[0]?.id,
+      ].filter(Boolean),
+    );
+  };
+
   return (
     <Dialog
       open
@@ -948,7 +996,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             </div>
             <div className="min-w-0">
               <DialogTitle>
-                {readOnly ? "工作流任务监控" : "创建任务模板"}
+                {readOnly
+                  ? "工作流任务监控"
+                  : viewMode === "task-editor"
+                    ? "编辑工作流"
+                    : "创建任务模板"}
               </DialogTitle>
               <DialogDescription className="mt-1 truncate">
                 {readOnly
@@ -1575,9 +1627,9 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         )}
         <footer className="workflow-footer">
           <div className="min-w-0 flex-1" aria-live="polite">
-            {(error || refreshError) && !loading && (
+            {(error || (readOnly && refreshError)) && !loading && (
               <p role="alert" className="text-sm text-destructive">
-                {error || refreshError}
+                {error || (readOnly && refreshError)}
               </p>
             )}
             {notice && (
@@ -1626,6 +1678,14 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 )}
               <Button variant="outline" onClick={locateTask}>
                 定位到任务
+              </Button>
+              <Button
+                variant="outline"
+                disabled={loading || Boolean(busy)}
+                onClick={editAgain}
+              >
+                <Pencil className="size-4" />
+                再次编辑
               </Button>
               <Button onClick={onClose}>关闭监控</Button>
             </>

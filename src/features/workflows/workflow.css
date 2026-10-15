@@ -583,3 +583,17 @@
 .workflow-ordered-grip:not(:disabled):active { cursor: grabbing; }
 .workflow-ordered-item { min-width: 0; }
 .workflow-ordered-inputs [data-slot="select-value"] { overflow: hidden; text-overflow: ellipsis; }
+.workflow-compact-source { display: grid; gap: 10px; min-width: 0; }
+.workflow-selected-attachments { min-width: 0; }
+.workflow-selected-image { margin: 0; min-width: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: var(--background); }
+.workflow-selected-image-open[data-slot="button"] { display: block; position: relative; width: 100%; height: 180px; padding: 8px; border-radius: 0; background: color-mix(in srgb, var(--muted) 35%, var(--background)); overflow: hidden; }
+.workflow-selected-image-open img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 4px; }
+.workflow-selected-image-eye { position: absolute; right: 8px; bottom: 8px; display: flex; align-items: center; justify-content: center; width: 25px; height: 25px; border-radius: 7px; background: color-mix(in srgb, var(--background) 88%, transparent); box-shadow: 0 1px 3px #0001; }
+.workflow-selected-image-fallback { display: flex; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: var(--muted-foreground); }
+.workflow-selected-image figcaption { display: flex; align-items: center; gap: 5px; min-width: 0; padding: 8px 10px; font-size: 11px; }
+.workflow-selected-image figcaption > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.workflow-selected-attachment-list { display: grid; gap: 5px; max-height: 160px; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 0; list-style: none; }
+.workflow-selected-attachment-list li { display: flex; align-items: center; gap: 6px; min-width: 0; padding: 7px 8px; background: color-mix(in srgb, var(--muted) 45%, var(--background)); border-radius: 7px; font-size: 11px; }
+.workflow-selected-attachment-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.workflow-selected-attachment-name small { display: block; margin-top: 2px; color: var(--muted-foreground); font-size: 10px; }
+.workflow-selected-attachment-status { display: flex; align-items: center; gap: 5px; margin: 6px 0 0; font-size: 10px; color: var(--muted-foreground); }
