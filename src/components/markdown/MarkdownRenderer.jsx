@@ -5,6 +5,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
 import { rehypeInlineCodeProperty, remarkCardReplace } from './remarkDirectiveToComponent.js';
+import remarkCwmLinks from './remarkCwmLinks.js';
 
 import CodeBlock from './CodeBlock.jsx';
 import './MarkdownContent.css';
@@ -681,7 +682,7 @@ function MarkdownRendererInner({
 
     return (
         <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath, remarkCardReplace, rehypeInlineCodeProperty]}
+            remarkPlugins={[remarkGfm, remarkMath, remarkCardReplace, remarkCwmLinks, rehypeInlineCodeProperty]}
             rehypePlugins={[rehypeKatex, ...extraRehypePlugins]}
             components={components}
             urlTransform={(uri, key, node) => {
