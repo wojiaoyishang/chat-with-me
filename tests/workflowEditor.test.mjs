@@ -510,6 +510,126 @@ const button = (text) =>
   [...document.querySelectorAll("button")].find(
     (node) => node.textContent.trim() === text,
   );
+
+test("ordered content ports update the canvas, preserve links during reorder, and undo removal", async () => {
+  const custom = structuredClone(catalog);
+  const items = [
+    { id: "before", kind: "text", title: "段落 A" },
+    { id: "after", kind: "text", title: "段落 B" },
+  ];
+  custom.nodes.push({
+    kind: "ordered_assemble",
+    version: 1,
+    category: "process",
+    display: { title: "顺序内容编排" },
+    configSchema: {
+      type: "object",
+      properties: { items: { type: "array", default: items } },
+    },
+    inputs: [],
+    outputs: [{ name: "bundle", type: "content-bundle" }],
+    repeatedInputs: {
+      parameter: "items",
+      configField: "items",
+      prefix: "item_",
+      maxItems: 32,
+      kinds: [
+        {
+          kind: "text",
+          type: "str",
+          title: "文本",
+          port: {
+            type: "str",
+            inlineAllowed: true,
+            schema: { type: "string" },
+          },
+        },
+      ],
+    },
+  });
+  const graph = {
+    nodes: [
+      {
+        id: "text-1",
+        kind: "text",
+        version: 1,
+        config: { value: "输入段落" },
+        inputs: {},
+        position: { x: 0, y: 0 },
+      },
+      {
+        id: "ordered",
+        kind: "ordered_assemble",
+        version: 1,
+        config: { items },
+        inputs: { item_after: { type: "literal", value: "尾段内容" } },
+        position: { x: 300, y: 0 },
+      },
+    ],
+    edges: [
+      {
+        id: "link",
+        source: "text-1",
+        sourcePort: "value",
+        target: "ordered",
+        targetPort: "item_before",
+      },
+    ],
+  };
+  const app = await environment({}, { catalog: custom, graph });
+  try {
+    await click(document.querySelector('[data-node="ordered"]'), app.dom);
+    const inspector = document.querySelector(".workflow-inspector");
+    assert.ok(inspector.querySelector(".workflow-ordered-inputs"));
+    assert.equal(
+      inspector.querySelector('[aria-label="节点初始化参数"]'),
+      null,
+    );
+    await click(document.querySelector('[aria-label="上移 段落 B"]'), app.dom);
+    let node = globalThis.workflowUITest.flow.nodes.find(
+      (entry) => entry.id === "ordered",
+    );
+    assert.deepEqual(
+      node.data.definition.inputs.map((port) => port.name),
+      ["item_after", "item_before"],
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.edges[0].targetHandle,
+      "item_before",
+    );
+    const add = [...inspector.querySelectorAll("button")].find(
+      (entry) => entry.textContent.trim() === "文本",
+    );
+    await click(add, app.dom);
+    node = globalThis.workflowUITest.flow.nodes.find(
+      (entry) => entry.id === "ordered",
+    );
+    assert.equal(node.data.definition.inputs.at(-1).name, "item_slot-1");
+    assert.equal(node.data.node.inputs["item_slot-1"].type, "literal");
+    await click(document.querySelector('[aria-label="删除 段落 A"]'), app.dom);
+    assert.equal(globalThis.workflowUITest.flow.edges.length, 0);
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.edges[0].targetHandle,
+      "item_before",
+    );
+    await click(button("校验"), app.dom);
+    const saved = app.calls
+      .filter((call) => call.url === "/tasks/workflows/validate")
+      .at(-1).payload.graph;
+    assert.deepEqual(
+      saved.nodes[1].config.items.map((item) => item.id),
+      ["after", "before", "slot-1"],
+    );
+    assert.equal(saved.edges[0].targetPort, "item_before");
+    assert.equal(saved.nodes[1].inputs.item_after.value, "尾段内容");
+  } finally {
+    await app.close();
+  }
+});
 async function click(node, dom) {
   assert.ok(node);
   await act(async () => {
@@ -1133,7 +1253,10 @@ test("resource initialization selects the full document at its revision", async 
     );
     await input(typeSelect, "document", app.dom, "change");
     await act(() => new Promise((resolve) => setTimeout(resolve, 280)));
-    await click(document.querySelector('[aria-label="选择 整个文档"]'), app.dom);
+    await click(
+      document.querySelector('[aria-label="选择 整个文档"]'),
+      app.dom,
+    );
     await click(button("校验"), app.dom);
     const payload = app.calls
       .filter((call) => call.url === "/tasks/workflows/validate")
@@ -1609,7 +1732,10 @@ test("quick template form preserves document revision and knowledge permissions"
       document.querySelector("[role=dialog]").textContent,
       /待提取文档/,
     );
-    await click(document.querySelector('[aria-label="选择 整个文档"]'), app.dom);
+    await click(
+      document.querySelector('[aria-label="选择 整个文档"]'),
+      app.dom,
+    );
     assert.equal(
       document.querySelector('[aria-label="快速任务名称"]').value,
       "文档提取模板",

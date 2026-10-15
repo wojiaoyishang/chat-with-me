@@ -579,3 +579,7 @@
     animation: none !important;
   }
 }
+.workflow-ordered-grip:not(:disabled) { cursor: grab; }
+.workflow-ordered-grip:not(:disabled):active { cursor: grabbing; }
+.workflow-ordered-item { min-width: 0; }
+.workflow-ordered-inputs [data-slot="select-value"] { overflow: hidden; text-overflow: ellipsis; }

@@ -4,7 +4,10 @@ import {
   reconcileCanvasNodes,
   selectCanvasNodes,
 } from "../src/features/workflows/workflowCanvasModel.js";
-import { updateWorkflowNodePositions } from "../src/features/workflows/workflowModel.js";
+import {
+  effectiveWorkflowDefinition,
+  updateWorkflowNodePositions,
+} from "../src/features/workflows/workflowModel.js";
 
 const definition = { kind: "parse" };
 const incomingNode = {
@@ -80,6 +83,70 @@ test("replacing a node type resets its obsolete geometry and removes deleted nod
   };
   assert.equal(reconcileCanvasNodes([measured], [replacement])[0], replacement);
   assert.deepEqual(reconcileCanvasNodes([measured], []), []);
+});
+
+test("reordered dynamic ports preserve selection, geometry and dragging for the same catalog definition", () => {
+  const definition = {
+    kind: "ordered_assemble",
+    repeatedInputs: {
+      configField: "items",
+      prefix: "item_",
+      kinds: [{ kind: "text", type: "str", title: "文本" }],
+    },
+    inputs: [],
+  };
+  const before = {
+    config: {
+      items: [
+        { id: "a", kind: "text" },
+        { id: "b", kind: "text" },
+      ],
+    },
+  };
+  const after = {
+    config: {
+      items: [
+        { id: "b", kind: "text" },
+        { id: "a", kind: "text" },
+        { id: "c", kind: "text" },
+      ],
+    },
+  };
+  const current = {
+    ...incomingNode,
+    selected: true,
+    dragging: true,
+    position: { x: 80, y: 100 },
+    measured: { width: 350, height: 280 },
+    data: {
+      kind: definition.kind,
+      definition: effectiveWorkflowDefinition(before, definition),
+    },
+  };
+  const updated = {
+    ...incomingNode,
+    data: {
+      kind: definition.kind,
+      definition: effectiveWorkflowDefinition(after, definition),
+    },
+  };
+  const result = reconcileCanvasNodes([current], [updated])[0];
+  assert.equal(result.selected, true);
+  assert.equal(result.dragging, true);
+  assert.equal(result.measured, current.measured);
+  assert.equal(result.position, current.position);
+  assert.deepEqual(
+    result.data.definition.inputs.map((port) => port.name),
+    ["item_b", "item_a", "item_c"],
+  );
+  const replacement = {
+    ...updated,
+    data: {
+      ...updated.data,
+      definition: effectiveWorkflowDefinition(after, { ...definition }),
+    },
+  };
+  assert.equal(reconcileCanvasNodes([current], [replacement])[0], replacement);
 });
 
 test("a group move updates positions once, preserves configuration, and strips canvas-only state", () => {

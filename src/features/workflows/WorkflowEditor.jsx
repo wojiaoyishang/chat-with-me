@@ -60,6 +60,7 @@ import {
   connectWorkflow,
   copyWorkflowSelection,
   createWorkflowNode,
+  effectiveWorkflowDefinition,
   initializeGraph,
   isWorkflowCanvasBlankTarget,
   isWorkflowTextEditing,
@@ -447,7 +448,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           id: node.id,
           kind: node.kind,
           node,
-          definition: catalogNode(catalog.nodes, node),
+          definition: effectiveWorkflowDefinition(
+            node,
+            catalogNode(catalog.nodes, node),
+          ),
           status:
             runtimeNodes[node.id]?.status ||
             runtimeStages.find((stage) => stage.key === node.id)?.status,
@@ -1476,7 +1480,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   task={task}
                   node={selectedNode}
                   definition={
-                    selectedNode && catalogNode(catalog.nodes, selectedNode)
+                    selectedNode &&
+                    effectiveWorkflowDefinition(
+                      selectedNode,
+                      catalogNode(catalog.nodes, selectedNode),
+                    )
                   }
                   runtime={runtimeNodes[selected] || {}}
                   stages={runtimeStages}

@@ -6,6 +6,7 @@ import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import WorkflowSchemaEditor from "./WorkflowSchemaEditor.jsx";
 import {
   catalogNode,
+  effectiveWorkflowDefinition,
   normalizeWorkflowSchema,
   resolveWorkflowSchema,
   scalarSchema,
@@ -13,6 +14,7 @@ import {
 import WorkflowDataField from "./WorkflowDataField.jsx";
 import WorkflowSettingsFields from "./WorkflowSettingsFields.jsx";
 import { workflowModelQueueSummary } from "./workflowFieldModel.js";
+import WorkflowOrderedInputs from "./WorkflowOrderedInputs.jsx";
 
 function objectSchema(schema, names) {
   return {
@@ -36,7 +38,10 @@ export default function WorkflowNodePanel({
   onValidity,
   disabled,
 }) {
-  const definition = catalogNode(definitions, node);
+  const definition = useMemo(
+    () => effectiveWorkflowDefinition(node, catalogNode(definitions, node)),
+    [definitions, node],
+  );
   const connectedConstructorInput = (input) =>
     graph.edges.some(
       (edge) => edge.target === node.id && edge.targetPort === input.name,
@@ -96,6 +101,7 @@ export default function WorkflowNodePanel({
       !modelKeys.includes(key) &&
       !widgetKeys.includes(key) &&
       !hiddenKeys.includes(key) &&
+      key !== definition?.repeatedInputs?.configField &&
       !externalFields.has(key),
   );
   const dynamicKeys = regularKeys.filter((key) =>
@@ -148,7 +154,22 @@ export default function WorkflowNodePanel({
         </p>
       ) : (
         <>
-          <h4 className="text-sm font-semibold">类初始化设置</h4>
+          {definition.repeatedInputs && (
+            <WorkflowOrderedInputs
+              node={node}
+              graph={graph}
+              definition={definition}
+              onGraphChange={onGraphChange}
+              disabled={disabled}
+            />
+          )}
+          {(common.length > 0 ||
+            widgets.length > 0 ||
+            regularKeys.length > 0 ||
+            modelKeys.length > 0 ||
+            pendingConstructorInputs.length > 0) && (
+            <h4 className="text-sm font-semibold">类初始化设置</h4>
+          )}
           {pendingConstructorInputs.map((input) => (
             <p
               key={input.name}

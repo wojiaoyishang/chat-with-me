@@ -19,7 +19,9 @@ export function reconcileCanvasNodes(current, incoming) {
       !previous ||
       previous.type !== node.type ||
       previous.data?.kind !== node.data?.kind ||
-      previous.data?.definition !== node.data?.definition
+      (previous.data?.definition?.baseDefinition ||
+        previous.data?.definition) !==
+        (node.data?.definition?.baseDefinition || node.data?.definition)
     )
       return node;
     const position =

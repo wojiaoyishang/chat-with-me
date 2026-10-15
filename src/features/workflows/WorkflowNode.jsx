@@ -6,6 +6,7 @@ import {
   File,
   GitBranch,
   Loader2,
+  ListOrdered,
   Paperclip,
   Type,
   XCircle,
@@ -24,9 +25,12 @@ export default function WorkflowNode({ data, selected }) {
   const inlineSignature = Object.keys(node.inputs || {})
     .filter((key) => node.inputs[key]?.type === "literal")
     .join("|");
+  const portSignature = (definition?.inputs || [])
+    .map((port) => `${port.name}:${port.display?.title}`)
+    .join("|");
   useEffect(() => {
     refresh(node.id);
-  }, [refresh, node.id, inlineSignature]);
+  }, [refresh, node.id, inlineSignature, portSignature]);
   const Icon =
     {
       file: File,
@@ -36,6 +40,7 @@ export default function WorkflowNode({ data, selected }) {
       text: Type,
       number: Hash,
       boolean: ToggleLeft,
+      "list-ordered": ListOrdered,
     }[definition?.presentation?.icon] || GitBranch;
   return (
     <div

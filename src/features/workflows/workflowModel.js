@@ -122,6 +122,131 @@ export function nodeCategory(definition) {
   return definition?.category || "";
 }
 
+/** Repeated ports use stable item IDs; their order belongs to configuration. */
+export function workflowRepeatedItems(node, definition) {
+  const repeated = definition?.repeatedInputs;
+  if (!repeated) return [];
+  const value = node?.config?.[repeated.configField];
+  return Array.isArray(value)
+    ? value
+    : schemaDefaults(definition.configSchema)?.[repeated.configField] || [];
+}
+
+export function effectiveWorkflowDefinition(node, definition) {
+  const repeated = definition?.repeatedInputs;
+  if (!repeated) return definition;
+  const prefix = repeated.prefix || "item_";
+  const inputs = (definition.inputs || []).filter(
+    (port) => !port.name.startsWith(prefix),
+  );
+  const properties = Object.fromEntries(
+    Object.entries(definition.inputSchema?.properties || {}).filter(
+      ([name]) => !name.startsWith(prefix),
+    ),
+  );
+  const required = (definition.inputSchema?.required || []).filter(
+    (name) => !name.startsWith(prefix),
+  );
+  workflowRepeatedItems(node, definition).forEach((item, index) => {
+    const kind = repeated.kinds?.find((entry) => entry.kind === item.kind);
+    if (!kind || !/^[A-Za-z0-9_-]{1,48}$/.test(item.id)) return;
+    const template = kind.port || {};
+    const name = `${prefix}${item.id}`;
+    const title = item.title?.trim() || `${kind.title} ${index + 1}`;
+    const display = Object.fromEntries(
+      Object.entries(template.display || {}).map(([key, value]) => [
+        key,
+        template.name && typeof value === "string"
+          ? value.replaceAll(template.name, name)
+          : value,
+      ]),
+    );
+    const port = {
+      ...template,
+      name,
+      title,
+      type: template.type || kind.type,
+      inlineAllowed: template.inlineAllowed ?? item.kind === "text",
+      display: {
+        ...display,
+        title,
+      },
+    };
+    inputs.push(port);
+    properties[name] = port.schema || {};
+    if (port.required) required.push(name);
+  });
+  return {
+    ...definition,
+    baseDefinition: definition.baseDefinition || definition,
+    inputs,
+    inputSchema: { ...definition.inputSchema, properties, required },
+  };
+}
+
+/** One graph update preserves links during reorder and removes obsolete ports. */
+export function setWorkflowRepeatedItems(graph, nodeId, definition, items) {
+  const repeated = definition?.repeatedInputs;
+  const node = graph.nodes.find((item) => item.id === nodeId);
+  if (!node || !repeated) return graph;
+  const max = repeated.maxItems || 32;
+  const min = repeated.minItems || 1;
+  if (items.length < min || items.length > max)
+    throw new Error(`请保留 ${min} 至 ${max} 个内容输入。`);
+  const ids = new Set();
+  for (const item of items) {
+    if (!/^[A-Za-z0-9_-]{1,48}$/.test(item.id) || ids.has(item.id))
+      throw new Error("内容输入的标识无效或重复。");
+    if (!repeated.kinds?.some((kind) => kind.kind === item.kind))
+      throw new Error("内容输入的类型不可用。");
+    ids.add(item.id);
+  }
+  const prefix = repeated.prefix || "item_";
+  const previous = new Map(
+    workflowRepeatedItems(node, definition).map((item) => [item.id, item.kind]),
+  );
+  const retained = new Set(
+    items
+      .filter((item) => previous.get(item.id) === item.kind)
+      .map((item) => `${prefix}${item.id}`),
+  );
+  const inputs = Object.fromEntries(
+    Object.entries(node.inputs || {}).filter(
+      ([name]) => !name.startsWith(prefix) || retained.has(name),
+    ),
+  );
+  for (const item of items) {
+    const name = `${prefix}${item.id}`;
+    if (item.kind === "text" && !retained.has(name))
+      inputs[name] = { type: "literal", value: "" };
+  }
+  return {
+    ...graph,
+    nodes: graph.nodes.map((entry) =>
+      entry.id === nodeId
+        ? {
+            ...entry,
+            config: { ...entry.config, [repeated.configField]: clone(items) },
+            inputs,
+          }
+        : entry,
+    ),
+    edges: graph.edges.filter(
+      (edge) =>
+        edge.target !== nodeId ||
+        !edge.targetPort.startsWith(prefix) ||
+        retained.has(edge.targetPort),
+    ),
+  };
+}
+
+export function nextWorkflowRepeatedItemId(items) {
+  const ids = new Set(items.map((item) => item.id));
+  let index = 1;
+  while (ids.has(`slot-${index}`)) index += 1;
+  return `slot-${index}`;
+}
+
 export function workflowPortsCompatible(output, input) {
   return (
     input?.acceptsAny === true ||
@@ -180,14 +305,23 @@ export function createWorkflowNode(definition, graph, position) {
   const used = new Set(graph.nodes.map((node) => node.id));
   let index = 1;
   while (used.has(`${definition.kind}-${index}`)) index += 1;
+  const config = schemaDefaults(definition.configSchema) || {};
+  const inputs = {};
+  for (const item of workflowRepeatedItems({ config }, definition)) {
+    if (item.kind === "text")
+      inputs[`${definition.repeatedInputs.prefix || "item_"}${item.id}`] = {
+        type: "literal",
+        value: "",
+      };
+  }
   return {
     id: `${definition.kind}-${index}`,
     kind: definition.kind,
     name: definition.display?.title || "",
     ...(definition.source ? { inputKey: `${definition.kind}-${index}` } : {}),
     version: definition.version,
-    config: schemaDefaults(definition.configSchema) || {},
-    inputs: {},
+    config,
+    inputs,
     position: position || {
       x: 80 + graph.nodes.length * 35,
       y: 100 + graph.nodes.length * 25,
@@ -205,7 +339,8 @@ export function workflowAddCandidates(
   let origin;
   if (connection) {
     const node = graph.nodes.find((item) => item.id === connection.nodeId);
-    const definition = node && catalogNode(definitions, node);
+    const definition =
+      node && effectiveWorkflowDefinition(node, catalogNode(definitions, node));
     origin = definition?.[
       connection.handleType === "source" ? "outputs" : "inputs"
     ]?.find((port) => port.name === connection.handleId);
@@ -215,6 +350,7 @@ export function workflowAddCandidates(
   return definitions
     .filter((definition) => !definition.hidden)
     .flatMap((definition) => {
+      definition = effectiveWorkflowDefinition(null, definition);
       const ports = connection
         ? (
             definition[
@@ -382,12 +518,14 @@ export function connectWorkflow(graph, connection, definitions) {
     throw new Error("请选择不同节点的输入和输出端口。");
   const sourcePort = connection.sourcePort || connection.sourceHandle;
   const targetPort = connection.targetPort || connection.targetHandle;
-  const output = definitions
-    .find((item) => item.kind === source.kind)
-    ?.outputs?.find((port) => port.name === sourcePort);
-  const input = definitions
-    .find((item) => item.kind === target.kind)
-    ?.inputs?.find((port) => port.name === targetPort);
+  const output = effectiveWorkflowDefinition(
+    source,
+    catalogNode(definitions, source),
+  )?.outputs?.find((port) => port.name === sourcePort);
+  const input = effectiveWorkflowDefinition(
+    target,
+    catalogNode(definitions, target),
+  )?.inputs?.find((port) => port.name === targetPort);
   if (!output || !input)
     throw new Error("节点端口不存在，请重新加载节点定义。");
   if (!workflowPortsCompatible(output, input))
