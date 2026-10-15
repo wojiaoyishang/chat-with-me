@@ -257,6 +257,7 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                 {!isLoading && !isLoadingError && !isAuthRedirecting && (
                     <NotificationHost
                         currentConversationId={conversationId}
+                        isTaskPageVisible={!outlet && managementKind === 'tasks'}
                         isConversationVisible={
                             !outlet && !managementKind && (pageType === 'chat' || Boolean(documentId))
                         }

@@ -8,6 +8,7 @@ import {
 } from './systemNotifications.js';
 import NotificationCenter from './NotificationCenter.jsx';
 import TaskCenter from '@/features/tasks/TaskCenter.jsx';
+import { useTaskStore } from '@/features/tasks/useTaskStore.js';
 import { emitEvent } from '@/context/useEventStore.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -36,7 +37,8 @@ const notificationTimestamp = (notification) =>
             0,
     );
 
-const NotificationHost = ({ currentConversationId, isConversationVisible = true, onOpenConversation }) => {
+const NotificationHost = ({ currentConversationId, isConversationVisible = true, isTaskPageVisible = false, onOpenConversation }) => {
+    const taskCenterOpen = useTaskStore((state) => state.open);
     const types = useNotificationStore((state) => state.types);
     const notificationsMap = useNotificationStore((state) => state.notifications);
     const subscriptions = useNotificationStore((state) => state.subscriptions);
@@ -326,6 +328,19 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
                 continue;
             }
 
+            if (
+                notification.typeId === 'task.finished' &&
+                notification.level !== 'error' &&
+                (isTaskPageVisible || taskCenterOpen) &&
+                visibilityState === 'visible'
+            ) {
+                // The result is already visible in the task view. Keep the
+                // record, but do not replay this revision after navigating away.
+                hiddenRevisionRef.current.set(notification.id, revision);
+                hideToast(notification.id);
+                continue;
+            }
+
             if (notification.typeId === 'widget.available') {
                 const channel = widgetNotificationChannel({
                     visible: visibilityState === 'visible',
@@ -397,6 +412,8 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
         markRead,
         hideToast,
         isConversationVisible,
+        isTaskPageVisible,
+        taskCenterOpen,
         isMobile,
         isToastEnabled,
         notifications,
