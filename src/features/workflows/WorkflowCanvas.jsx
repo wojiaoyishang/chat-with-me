@@ -27,15 +27,26 @@ export default function WorkflowCanvas({
   );
   useEffect(() => {
     if (!measured || !nodes.length || fitted.current === fitRequest) return;
-    fitted.current = fitRequest;
+    // A freshly installed graph reaches local canvas state one render later.
+    if (
+      canvasNodes.length !== nodes.length ||
+      canvasNodes.some((node, index) => node.id !== nodes[index].id)
+    )
+      return;
     // React Flow may report initialized before the final node dimensions land.
     // Fit after paint and only for a freshly installed graph, never during drag.
     let canceled = false;
     let nextFrame = 0;
     const frame = requestAnimationFrame(() => {
       nextFrame = requestAnimationFrame(async () => {
-        await flow.fitView({ padding: 0.18, duration: 0, maxZoom: 1 });
         if (canceled) return;
+        const success = await flow.fitView({
+          padding: 0.18,
+          duration: 0,
+          maxZoom: 1,
+        });
+        if (canceled || !success) return;
+        fitted.current = fitRequest;
         if (flow.getViewport().zoom < 0.65 && nodes.length > 3) {
           const visibleStart = flow
             .getNodes()
@@ -55,7 +66,7 @@ export default function WorkflowCanvas({
       cancelAnimationFrame(frame);
       cancelAnimationFrame(nextFrame);
     };
-  }, [fitRequest, flow, measured, nodes.length]);
+  }, [fitRequest, flow, measured, nodes, canvasNodes]);
   useEffect(() => {
     if (!measured || !focusRequest?.id) return;
     let nextFrame = 0;
