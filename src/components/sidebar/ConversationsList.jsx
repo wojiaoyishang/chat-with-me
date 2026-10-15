@@ -120,6 +120,12 @@ const formatConversationTime = (date, locale) => {
     return new Intl.DateTimeFormat(locale, {month: 'numeric', day: 'numeric'}).format(date);
 };
 
+const conversationDisplayTitle = (conversation, fallback) => {
+    const name = typeof conversation?.name === 'string' ? conversation.name.trim() : '';
+    const title = typeof conversation?.title === 'string' ? conversation.title.trim() : '';
+    return name || title || fallback;
+};
+
 const ConversationMenu = ({conversation, canPin = false, onDelete, onChange, className = ''}) => {
     const {t} = useTranslation();
     const [menuOpen, setMenuOpen] = useState(false);
@@ -213,7 +219,7 @@ const ConversationMenu = ({conversation, canPin = false, onDelete, onChange, cla
         void handlePin();
     };
 
-    const displayTitle = conversation.name || conversation.title || t('conversation_name_placeholder');
+    const displayTitle = conversationDisplayTitle(conversation, t('untitled_conversation'));
 
     return (
         <>
@@ -363,6 +369,7 @@ const AgentSessionRow = ({
     const status = STATUS_META[child.status] || STATUS_META.idle;
     const hasChildren = (child.children || []).length > 0;
     const isExpanded = forceExpanded || expandedNodes[child.conversationId] === true;
+    const displayTitle = conversationDisplayTitle(child, '复杂子智能体');
 
     return (
         <li data-conversation-id={child.conversationId}>
@@ -394,9 +401,9 @@ const AgentSessionRow = ({
                     <Bot className="h-4 w-4 text-indigo-500"/>
                     <span className={`absolute -right-0.5 -bottom-0.5 h-1.5 w-1.5 rounded-full ring-1 ring-background ${status.dot}`}/>
                 </div>
-                <button onClick={() => onSelect(child.conversationId)} className="min-w-0 flex-1 cursor-pointer text-left">
+                <button type="button" onClick={() => onSelect(child.conversationId)} className="min-w-0 flex-1 cursor-pointer text-left" aria-label={displayTitle}>
                     <span className={`block truncate font-medium ${compact ? 'text-xs' : 'text-sm'}`}>
-                        {child.name || child.title || '复杂子智能体'}
+                        {displayTitle}
                     </span>
                     {!compact && (
                         <span className="flex items-center gap-1.5 truncate text-[11px] text-muted-foreground">
@@ -658,6 +665,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
         const hasChildren = conversation.children.length > 0;
         const isExpanded = Boolean(normalizedQuery) || expandedNodes[conversation.conversationId] === true;
         const descendantCount = countAgentDescendants(conversation.children);
+        const displayTitle = conversationDisplayTitle(conversation, t('untitled_conversation'));
 
         return (
             <React.Fragment key={conversation.conversationId}>
@@ -686,11 +694,13 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                             <Pin className="mr-1 h-3.5 w-3.5 shrink-0 fill-primary/15 text-primary/70"/>
                         )}
                         <button
+                            type="button"
                             onClick={() => onSelect?.(conversation.conversationId)}
                             className="min-w-0 flex-1 cursor-pointer text-left"
+                            aria-label={displayTitle}
                         >
                             <span className={`block truncate font-medium ${compact ? 'text-sm' : 'text-[15px]'}`}>
-                                {conversation.title}
+                                {displayTitle}
                             </span>
                             {!compact && hasChildren && (
                                 <span className="block text-[11px] text-muted-foreground">

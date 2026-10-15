@@ -339,6 +339,7 @@
     "rename_conversation": "Rename conversation",
     "rename_conversation_tip": "Choose a recognizable name. Message content will not be changed.",
     "conversation_name_placeholder": "Conversation name",
+    "untitled_conversation": "Untitled conversation",
     "conversation_rename_success": "Conversation renamed",
     "conversation_rename_error": "Failed to rename conversation: {{message}}",
     "pin_conversation": "Pin conversation",

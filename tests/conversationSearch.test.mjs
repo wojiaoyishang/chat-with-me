@@ -323,3 +323,45 @@ test("search pages use their own cursor and the real input has a quiet focus bor
     await fixture.close();
   }
 });
+
+test("untitled conversations remain visible and selectable in normal and search results", async () => {
+  const rows = [
+    { ...row("empty-root", ""), name: "" },
+    { ...row("name-only", ""), name: "  来自名称  ", pinned: true },
+    {
+      ...row("blank-parent", "   ", [
+        { ...row("empty-child", "  "), name: " " },
+      ]),
+      name: " ",
+    },
+  ];
+  const fixture = await page((url) => url.endsWith("/search")
+    ? { data: [row("search-untitled", null)], total: 1, hasMore: false }
+    : { data: rows, total: rows.length });
+  try {
+    const main = fixture.document.querySelector('[data-conversation-id="empty-root"] button.min-w-0');
+    assert.equal(main.textContent.trim(), "untitled_conversation");
+    assert.equal(main.getAttribute("aria-label"), "untitled_conversation");
+    await click(main);
+
+    const named = fixture.document.querySelector('[data-conversation-id="name-only"] button.min-w-0');
+    assert.equal(named.textContent.trim(), "来自名称");
+    await click(named);
+
+    const parent = fixture.document.querySelector('[data-conversation-id="blank-parent"]');
+    assert.equal(parent.querySelector("button.min-w-0").textContent.trim().startsWith("untitled_conversation"), true);
+    await click(parent.querySelector('[aria-label="展开子智能体"]'));
+    const child = fixture.document.querySelector('[data-conversation-id="empty-child"] button.min-w-0');
+    assert.equal(child.getAttribute("aria-label"), "复杂子智能体");
+    await click(child);
+
+    await type(fixture, "search-untitled");
+    await wait();
+    const searchResult = fixture.document.querySelector('[data-conversation-id="search-untitled"] button.min-w-0');
+    assert.equal(searchResult.textContent.trim(), "untitled_conversation");
+    await click(searchResult);
+    assert.deepEqual(fixture.selections, ["empty-root", "name-only", "empty-child", "search-untitled"]);
+  } finally {
+    await fixture.close();
+  }
+});

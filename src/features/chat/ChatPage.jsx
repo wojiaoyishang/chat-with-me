@@ -178,7 +178,6 @@ function ChatPage({
     const [randomMark, setRandomMark] = useState(null);
     const errorToastsIds = useRef(new Map());
     const isMessageLoadedRef = useRef(false);
-    const isLoadingDataRef = useRef(false);
 
     const [messagesOrder, setMessagesOrder] = useState([]);
     const [messages, setMessages] = useImmer({});
@@ -302,6 +301,7 @@ function ChatPage({
     const [contextCompactionState, setContextCompactionState] = useState({});
     const contextCompactionClearTimerRef = useRef(null);
     const [stories, setStories] = useState([]);
+    const storiesLoadVersionRef = useRef(0);
     const [storyReaderOpen, setStoryReaderOpen] = useState(false);
     const [activeStory, setActiveStory] = useState(null);
 
@@ -1040,6 +1040,7 @@ function ChatPage({
     }, [messages, syncStreamingSpeech]);
 
     const loadStories = useCallback(async () => {
+        const requestVersion = ++storiesLoadVersionRef.current;
         if (!conversationId) {
             setStories([]);
             return [];
@@ -1048,11 +1049,14 @@ function ChatPage({
             const data = await apiClient.get(apiEndpoint.CHAT_STORIES_ENDPOINT, {
                 params: { conversationId: conversationId },
             });
+            if (activeConversationIdRef.current !== conversationId || requestVersion !== storiesLoadVersionRef.current)
+                return [];
             const values = Array.isArray(data?.stories) ? data.stories : [];
             setStories(values);
             return values;
         } catch (error) {
-            console.error('Load stories failed:', error);
+            if (activeConversationIdRef.current === conversationId && requestVersion === storiesLoadVersionRef.current)
+                console.error('Load stories failed:', error);
             return [];
         }
     }, [conversationId]);
@@ -1190,7 +1194,8 @@ function ChatPage({
     }, [cancelActiveSpeech]);
 
     useEffect(() => {
-        loadStories();
+        setStories([]);
+        void loadStories();
         setStoryReaderOpen(false);
         setActiveStory(null);
     }, [conversationId, loadStories]);
@@ -2000,8 +2005,9 @@ function ChatPage({
         [conversationId, loadMessageSummaries, loadSwitchMessage, t],
     );
 
-    const emitMessagesLoaded = () => {
+    const emitMessagesLoaded = (isCurrent = () => true) => {
         setTimeout(() => {
+            if (!isCurrent()) return;
             isMessageLoadedRef.current = true;
             emitEvent({
                 event: 'conversation.messages.loaded',
@@ -2014,9 +2020,10 @@ function ChatPage({
                 },
                 conversationId: conversationId,
                 onTimeout: () => {
-                    toast.warning(t('cannot_load_tasks'));
+                    if (isCurrent()) toast.warning(t('cannot_load_tasks'));
                 },
             }).then((payload) => {
+                if (!isCurrent()) return;
                 if (payload.success) {
                     messagesLoadedIdempotencyKeyRef.current = generateUUID();
                 } else {
@@ -3081,12 +3088,6 @@ function ChatPage({
             Boolean(previousConversationId) && previousConversationId !== conversationId;
         previousConversationIdRef.current = conversationId;
 
-        if (switchedAwayFromActiveConversation) {
-            liveStreamMessageIdsRef.current.clear();
-            liveStreamRunMessagesRef.current.clear();
-            lastHydratedConversationIdRef.current = null;
-        }
-
         // Voice startup in a brand-new chat intentionally performs null -> newId
         // and must survive that adoption.  Real navigation away from an existing
         // conversation is different: close the old media session explicitly now
@@ -3111,7 +3112,7 @@ function ChatPage({
         setConversationMeta(null);
         applyContextCompactionState({});
 
-        if (conversationId === null || conversationId === undefined) {
+        if (switchedAwayFromActiveConversation || conversationId === null || conversationId === undefined) {
             liveStreamMessageIdsRef.current.clear();
             liveStreamRunMessagesRef.current.clear();
             lastHydratedConversationIdRef.current = null;
@@ -3122,10 +3123,12 @@ function ChatPage({
             const emptyOrder = [];
             setMessagesOrder(emptyOrder);
             messagesOrderRef.current = emptyOrder;
+            isMessageLoadedRef.current = false;
             setIsLoadingError(false);
-            errorToastsIds.current.forEach((id) => {
+            errorToastsIds.current.forEach((_, id) => {
                 toast.dismiss(id);
             });
+            errorToastsIds.current.clear();
         }
     }, [conversationId, setMessages, applyContextCompactionState]);
 
@@ -3147,12 +3150,15 @@ function ChatPage({
     }, [conversationId]);
 
     const loadAvailableModels = useCallback(
-        async ({ preserveSelection = false, timeoutMs = null } = {}) => {
+        async ({ preserveSelection = false, timeoutMs = null, signal, isCurrent = () => true } = {}) => {
+            if (!isCurrent() || activeConversationIdRef.current !== conversationId) return [];
             try {
                 const modelsData = await apiClient.get(apiEndpoint.CHAT_MODELS_ENDPOINT, {
                     params: { conversationId: conversationId },
                     ...(Number.isFinite(timeoutMs) ? { timeout: timeoutMs } : {}),
+                    ...(signal ? { signal } : {}),
                 });
+                if (!isCurrent() || activeConversationIdRef.current !== conversationId) return [];
                 // Bind model capabilities to the remotely fetched model objects.
                 // ChatBox receives selectedModel directly from this list, so keeping
                 // support_vision here makes the eye toggle react to model refreshes
@@ -3178,7 +3184,9 @@ function ChatPage({
                 setAdvancedSettings(Array.isArray(nextModel?.options) ? nextModel.options : []);
                 return normalizedModels;
             } catch (error) {
-                toast.error(t('load_models_error', { message: error?.message || t('unknown_error') }));
+                if (isCurrent() && activeConversationIdRef.current === conversationId) {
+                    toast.error(t('load_models_error', { message: error?.message || t('unknown_error') }));
+                }
                 return [];
             }
         },
@@ -3210,14 +3218,19 @@ function ChatPage({
             setIsNewConversationId(false);
             return;
         }
+        const controller = new AbortController();
+        const isCurrent = () => !controller.signal.aborted && activeConversationIdRef.current === conversationId;
         let modelsData = [];
         const requestConversation = async () => {
+            if (!isCurrent()) return;
             loadingStageRef.current = 'conversation';
             setLoadingStage('conversation');
             try {
-                let data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + '/' + conversationId, {
+                const data = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT + '/' + conversationId, {
                     timeout: CHAT_BOOTSTRAP_TIMEOUT_MS,
+                    signal: controller.signal,
                 });
+                if (!isCurrent()) return;
                 setConversationMeta(data);
                 applyContextCompactionState(data?.contextCompactionState || {});
                 const foundModel = modelsData.find((item) => item.id === data.model);
@@ -3230,18 +3243,24 @@ function ChatPage({
                     setInitialSettingValues(data.defaultOptions);
                 }
             } catch (error) {
-                toast.error(t('load_conversation_error', { message: error?.message || t('unknown_error') }));
+                if (isCurrent()) {
+                    toast.error(t('load_conversation_error', { message: error?.message || t('unknown_error') }));
+                }
             }
         };
         const requestModels = async () => {
+            if (!isCurrent()) return;
             loadingStageRef.current = 'models';
             setLoadingStage('models');
             modelsData = await loadAvailableModels({
                 preserveSelection: false,
                 timeoutMs: CHAT_BOOTSTRAP_TIMEOUT_MS,
+                signal: controller.signal,
+                isCurrent,
             });
         };
         const requestMessages = async () => {
+            if (!isCurrent()) return;
             loadingStageRef.current = 'messages';
             setLoadingStage('messages');
             try {
@@ -3249,7 +3268,9 @@ function ChatPage({
                 const messagesData = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                     params: { conversationId: conversationId, limit: HISTORY_PAGE_SIZE },
                     timeout: CHAT_BOOTSTRAP_TIMEOUT_MS,
+                    signal: controller.signal,
                 });
+                if (!isCurrent()) return;
 
                 const snapshotMessages = decorateMessages(messagesData.messages || {});
                 let snapshotOrder = messagesData.messagesOrder;
@@ -3277,7 +3298,9 @@ function ChatPage({
                 historyNavigationLockedRef.current = false;
 
                 setTimeout(() => {
+                    if (!isCurrent()) return;
                     setTimeout(() => {
+                        if (!isCurrent()) return;
                         userAutoScrollUnlockUntilRef.current = 0;
                         isAutoScrollEnabledRef.current = true;
                         pendingScrollRef.current = true;
@@ -3292,8 +3315,9 @@ function ChatPage({
                         }
                     }, 50);
                 }, 100);
-                emitMessagesLoaded();
+                emitMessagesLoaded(isCurrent);
             } catch (error) {
+                if (!isCurrent()) return;
                 errorToastsIds.current.set(
                     toast(t('load_messages_error', { message: error?.message || t('unknown_error') }), {
                         action: {
@@ -3311,8 +3335,8 @@ function ChatPage({
                 );
                 setIsLoadingError(true);
             } finally {
-                setIsLoading(false);
                 setTimeout(() => {
+                    if (!isCurrent()) return;
                     if (messagesContainerRef.current) {
                         userAutoScrollUnlockUntilRef.current = 0;
                         isAutoScrollEnabledRef.current = true;
@@ -3327,14 +3351,17 @@ function ChatPage({
             }
         };
         const loadData = async () => {
-            isLoadingDataRef.current = true;
+            if (!isCurrent()) return;
             setIsLoading(true);
             const startedAt = performance.now();
             try {
                 await requestModels();
+                if (!isCurrent()) return;
                 await requestConversation();
+                if (!isCurrent()) return;
                 await requestMessages();
             } catch (error) {
+                if (!isCurrent()) return;
                 console.error('[Chat bootstrap] unexpected failure', {
                     conversationId,
                     stage: loadingStageRef.current,
@@ -3343,19 +3370,19 @@ function ChatPage({
                 });
                 setIsLoadingError(true);
             } finally {
-                isLoadingDataRef.current = false;
-                setIsLoading(false);
+                if (isCurrent()) setIsLoading(false);
             }
         };
-        if (conversationId && !isLoadingDataRef.current) {
+        if (conversationId) {
             setIsLoading(true);
-            loadData();
+            void loadData();
         } else {
             setIsLoading(false);
-            requestModels();
+            void requestModels();
         }
         setIsLoadingError(false);
         setIsFirstMessageSend(true);
+        return () => controller.abort();
     }, [
         conversationId,
         executePendingScroll,

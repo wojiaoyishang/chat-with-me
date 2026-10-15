@@ -339,6 +339,7 @@
     "rename_conversation": "重命名会话",
     "rename_conversation_tip": "输入一个便于识别的名称，不会改变消息内容。",
     "conversation_name_placeholder": "会话名称",
+    "untitled_conversation": "未命名会话",
     "conversation_rename_success": "会话名称已更新",
     "conversation_rename_error": "重命名失败：{{message}}",
     "pin_conversation": "置顶会话",
