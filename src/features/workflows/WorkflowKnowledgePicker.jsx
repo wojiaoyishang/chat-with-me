@@ -102,11 +102,12 @@ export function WorkflowGraphDatabasePicker({
   const field = schema.ui?.valueField || "databaseId";
   const isObject = schema.type === "object" || Boolean(schema.properties);
   const selectedId = String((isObject ? value?.[field] : value) || "");
-  const selected = registry.databases.find(
-    (database) =>
-      knowledgeDatabaseIdentity(database) === selectedId ||
-      (selectedId === "default" && database.legacyDefault),
-  );
+  const selected =
+    registry.databases.find((database) => knowledgeDatabaseIdentity(database) === selectedId) ||
+    registry.databases.find((database) => database.name === selectedId) ||
+    (selectedId === "default"
+      ? registry.databases.find((database) => database.legacyDefault)
+      : undefined);
   const selectValue = selected
     ? knowledgeDatabaseIdentity(selected)
     : selectedId;

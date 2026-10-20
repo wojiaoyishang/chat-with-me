@@ -103,7 +103,9 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand, database
 
 const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversationId = '', databaseId: requestedDatabaseId, className = 'w-full' }) {
     const [databases, setDatabases] = useState([]), [registryError, setRegistryError] = useState('');
-    const canonicalDatabaseId = useCallback(id => id === 'default' ? databases.find(item => item.legacyDefault)?.id || id : id, [databases]);
+    const canonicalDatabaseId = useCallback(id => id === 'default'
+        ? databases.find(item => item.id === id || item.name === id)?.id || databases.find(item => item.legacyDefault)?.id || id
+        : id, [databases]);
     const aiDatabaseId = requestedDatabaseId || (msg?.network ? networkDatabaseId(msg.network) : msg?.knowledgeDatabaseId || 'default');
     const activeDatabaseId = canonicalDatabaseId(aiDatabaseId);
     const messageScope = `${conversationId}|${msg?.id ?? msg?.messageId ?? ''}`;

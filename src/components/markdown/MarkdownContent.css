@@ -80,6 +80,23 @@
     color: var(--muted-foreground);
 }
 
+/* Interactive task lists are scoped to the collaborative document preview. */
+.cwm-document-todo-list.contains-task-list {
+    list-style: none;
+}
+
+.cwm-document-todo-item.task-list-item {
+    list-style: none;
+}
+
+.cwm-document-todo-item.task-list-item > input[type='checkbox'],
+.cwm-document-todo-item.task-list-item > p > input[type='checkbox'] {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.45rem;
+    vertical-align: -0.12em;
+}
+
 img.cwm-md-image {
     display: block;
     max-width: 100%;

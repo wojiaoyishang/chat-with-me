@@ -1,16 +1,23 @@
-import React, { memo, useEffect, useMemo, useRef } from 'react';
+import React, { memo, useEffect, useId, useMemo, useRef } from 'react';
 import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
+import remarkDirective from 'remark-directive';
 import rehypeKatex from 'rehype-katex';
 
 import { rehypeInlineCodeProperty, remarkCardReplace } from './remarkDirectiveToComponent.js';
+import { remarkCollapseExecutionStatuses } from './remarkCollapseExecutionStatuses.js';
 import remarkCwmLinks from './remarkCwmLinks.js';
 import remarkVideoDirective from './remarkVideoDirective.js';
+import remarkStudyDirectives from './remarkStudyDirectives.js';
+import rehypeDocumentTasks from './rehypeDocumentTasks.js';
+import { DocumentTaskInput, DocumentTaskListItem } from './DocumentTaskControls.jsx';
+import { StudyCard, StudyOutline, StudySection, StudySession } from './StudyVisuals.jsx';
 
 import CodeBlock from './CodeBlock.jsx';
 import './MarkdownContent.css';
 import CardBlock from './card-block/CardBlock.jsx';
+import ExecutionStatusGroup from '@/features/execution/ExecutionStatusGroup.jsx';
 import { parseAgentContent } from './card-block/agent/agentContent.js';
 import ReplacementContextBadge from '@/features/chat/ui/message/components/ReplacementContextBadge.jsx';
 import {
@@ -333,6 +340,8 @@ const createComponents = ({
     messageReadonly = false,
     messageIsLatest = true,
     renderSurface = 'conversation',
+    onTaskToggle = null,
+    sourceContent = '',
 }) => {
     const getCurrentReplacement = () => {
         return replacementRef?.current || {};
@@ -357,13 +366,28 @@ const createComponents = ({
     };
 
     return {
+        ...(renderSurface === 'document' || renderSurface === 'document-preview'
+            ? {
+                  'study-outline': StudyOutline,
+                  'study-session': StudySession,
+                  'study-section': StudySection,
+                  'study-card': StudyCard,
+              }
+            : {}),
         p: ({ children }) => <p className="my-2">{children}</p>,
 
-        ul: ({ children }) => <ul className="list-disc pl-5 my-2">{children}</ul>,
+        ul: ({ children, className }) => <ul className={`list-disc pl-5 my-2 ${renderSurface === 'document' && onTaskToggle ? `cwm-document-todo-list ${className || ''}` : ''}`}>{children}</ul>,
 
-        ol: ({ children }) => <ol className="list-decimal pl-5 my-2">{children}</ol>,
+        ol: ({ children, className }) => <ol className={`list-decimal pl-5 my-2 ${renderSurface === 'document' && onTaskToggle ? `cwm-document-todo-list ${className || ''}` : ''}`}>{children}</ol>,
 
-        li: ({ children }) => <li className="my-1">{children}</li>,
+        li: ({ children, className, node }) => {
+            if (renderSurface !== 'document' || !onTaskToggle)
+                return <li className="my-1">{children}</li>;
+            return <DocumentTaskListItem className={className} node={node}>{children}</DocumentTaskListItem>;
+        },
+        ...(renderSurface === 'document' && onTaskToggle
+            ? { input: (props) => <DocumentTaskInput {...props} onToggle={onTaskToggle} sourceContent={sourceContent} /> }
+            : {}),
 
         h1: ({ children }) => (
             <h1 className="text-2xl font-bold mt-8 mb-4 text-foreground">{children}</h1>
@@ -538,6 +562,21 @@ const createComponents = ({
             }
 
             const nextVisitedIds = [...visitedIds, finalId];
+            let groupedIds = [];
+            try {
+                const parsed = JSON.parse(String(node?.properties?.groupedIds || node?.properties?.['grouped-ids'] || '[]'));
+                if (Array.isArray(parsed)) groupedIds = parsed.filter((value) => typeof value === 'string');
+            } catch {
+                // An incomplete group attribute should fall back to the latest row.
+            }
+            const groupedEntries = normalized.type === 'executionStatus'
+                ? groupedIds.map((groupedId) => {
+                    const entry = normalizeReplacementEntry(currentReplacement, groupedId, '', isStreaming);
+                    return entry.exists && entry.type === 'executionStatus'
+                        ? {id: groupedId, content: entry.content}
+                        : null;
+                }).filter(Boolean)
+                : [];
 
             return (
                 <div
@@ -553,7 +592,9 @@ const createComponents = ({
                         status={normalized.contextStatus}
                         messageState={messageContextState}
                     />
-                    <CardBlock
+                    {groupedEntries.length > 1 ? (
+                        <ExecutionStatusGroup entries={groupedEntries} conversationId={conversationId} />
+                    ) : <CardBlock
                         id={finalId}
                         type={normalized.type}
                         content={normalized.content}
@@ -572,7 +613,7 @@ const createComponents = ({
                                 visitedIds: nextVisitedIds,
                             });
                         }}
-                    />
+                    />}
                 </div>
             );
         },
@@ -595,7 +636,9 @@ function MarkdownRendererInner({
     messageIsLatest: messageIsLatestProp = null,
     copyContentComponentName = MARKDOWN_COPY_CONTENT_COMPONENT_NAME,
     renderSurface = 'conversation',
+    onTaskToggle = null,
 }) {
+    const studyIdPrefix = useId();
     const replacementRef = useRef(replacement);
     replacementRef.current = replacement;
     const isStreaming = isStreamingProp ?? msg?.readonly === true;
@@ -623,6 +666,8 @@ function MarkdownRendererInner({
             messageReadonly,
             messageIsLatest,
             renderSurface,
+            onTaskToggle,
+            sourceContent: content,
         });
     }, [
         contextId,
@@ -636,6 +681,8 @@ function MarkdownRendererInner({
         messageReadonly,
         messageIsLatest,
         renderSurface,
+        onTaskToggle,
+        content,
     ]);
 
     const processedContent = useMemo(() => {
@@ -684,10 +731,24 @@ function MarkdownRendererInner({
         };
     }, [depth, msg, copyContentComponentName, copyContent]);
 
+    const studyDirectivesEnabled =
+        (renderSurface === 'document' || renderSurface === 'document-preview') &&
+        /(?:^|\n)\s*:{3,}study-(?:session|section|card)(?=[\s{])/.test(processedContent || '');
+    const documentRemarkPlugins = [
+        ...(studyDirectivesEnabled ? [remarkDirective] : []),
+        ...(studyDirectivesEnabled ? [[remarkStudyDirectives, { idPrefix: studyIdPrefix }]] : []),
+    ];
+
     return (
         <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath, remarkCardReplace, remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
-            rehypePlugins={[rehypeKatex, ...extraRehypePlugins]}
+            remarkPlugins={[remarkGfm, remarkMath, ...documentRemarkPlugins, remarkCardReplace, [remarkCollapseExecutionStatuses, {replacement}], remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
+            rehypePlugins={[
+                rehypeKatex,
+                ...extraRehypePlugins,
+                ...(renderSurface === 'document' && onTaskToggle
+                    ? [[rehypeDocumentTasks, { sourceContent: content, normalizeLine: preprocessContent }]]
+                    : []),
+            ]}
             components={components}
             urlTransform={(uri, key, node) => {
                 const safe = allowCustomScheme(uri, key, node);
@@ -730,6 +791,7 @@ const MarkdownRenderer = memo(MarkdownRendererInner, (prev, next) => {
         prev.messageIsLatest === next.messageIsLatest &&
         prev.copyContentComponentName === next.copyContentComponentName &&
         prev.renderSurface === next.renderSurface &&
+        prev.onTaskToggle === next.onTaskToggle &&
         areVisitedIdsEqual(prev.visitedIds, next.visitedIds)
     );
 });

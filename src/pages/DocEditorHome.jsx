@@ -322,16 +322,24 @@ const NewDocumentModal = memo(({ show, onClose, onCreate }) => {
 
     const [documentTitle, setDocumentTitle] = useState('');
     const [documentType, setDocumentType] = useState('markdown');
+    const [isCreating, setIsCreating] = useState(false);
 
-    const handleCreate = () => {
-        if (documentTitle) {
-            onCreate(documentTitle, documentType);
+    const handleCreate = async () => {
+        const title = documentTitle.trim();
+        if (!title || isCreating) return;
+        setIsCreating(true);
+        try {
+            const created = await onCreate(title, documentType);
+            if (created) setDocumentTitle('');
+        } finally {
+            setIsCreating(false);
         }
-        onClose();
     };
 
     return (
-        <Dialog open={show} onOpenChange={onClose}>
+        <Dialog open={show} onOpenChange={(open) => {
+            if (!open && !isCreating) onClose();
+        }}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
@@ -382,15 +390,15 @@ const NewDocumentModal = memo(({ show, onClose, onCreate }) => {
                 </Field>
 
                 <DialogFooter className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={onClose} className="cursor-pointer">
+                    <Button variant="outline" onClick={onClose} disabled={isCreating} className="cursor-pointer">
                         {t('cancel')}
                     </Button>
                     <Button
                         onClick={handleCreate}
-                        disabled={!documentTitle}
+                        disabled={!documentTitle.trim() || isCreating}
                         className="cursor-pointer flex items-center gap-1"
                     >
-                        <Save size={16} />
+                        {isCreating ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                         {t('create')}
                     </Button>
                 </DialogFooter>
@@ -547,13 +555,15 @@ const DocEditorHome = ({
             };
 
             // 更新本地状态
-            setDocumentCards((prev) => [...prev, newItem]); // 原 setMainTemplates
+            setDocumentCards((prev) => [newItem, ...prev.filter((item) => item.documentId !== newItem.documentId)]);
 
             toast.success(t('document_create_success'));
             setIsNewModalOpen(false);
+            return true;
         } catch (error) {
             console.error('Failed to create document:', error);
             toast.error(t('document_create_error', { message: error?.message || 'Failed to create document' }));
+            return false;
         }
     };
 

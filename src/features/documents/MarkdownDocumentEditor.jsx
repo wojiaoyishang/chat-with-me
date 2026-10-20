@@ -18,7 +18,7 @@ import FileManager from '@/components/files/FileManager.jsx';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { onEvent } from '@/context/useEventStore.jsx';
 import { useTranslation } from 'react-i18next';
-import { useDeferredValue, useEffect, useRef, useState, useMemo } from 'react';
+import { useCallback, useDeferredValue, useEffect, useRef, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { EditorState } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, drawSelection } from '@codemirror/view';
@@ -52,6 +52,8 @@ import {
     Redo2,
     Link,
     Image,
+    Blocks,
+    ListTodo,
 } from 'lucide-react';
 import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
@@ -59,7 +61,8 @@ import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import DocumentHistory from './DocumentHistory.jsx';
-import { wrapSelection, prefixLines } from './commands.js';
+import { wrapSelection, prefixLines, insertStudyBlock, insertTodoList } from './commands.js';
+import { applyDocumentTaskToggle } from '@/components/markdown/rehypeDocumentTasks.js';
 import useCollaborativeDocument from './useCollaborativeDocument.js';
 
 export default function MarkdownDocumentEditor(props) {
@@ -335,6 +338,16 @@ function CollaborativeMarkdownEditor({ documentId, conversationId, onStatus, hea
         callback(editorRef.current);
         undoRef.current.stopCapturing();
     };
+    const togglePreviewTask = useCallback(({ sourceContent, offset, expectedChecked }) => {
+        applyDocumentTaskToggle({
+            editor: editorRef.current,
+            text: resource?.text,
+            sourceContent,
+            offset,
+            expectedChecked,
+            undoManager: undoRef.current,
+        });
+    }, [resource]);
     const tools = [
         { label: t('documents_undo'), icon: <Undo2 />, run: () => undoRef.current.undo() },
         { label: t('documents_redo'), icon: <Redo2 />, run: () => undoRef.current.redo() },
@@ -524,6 +537,40 @@ function CollaborativeMarkdownEditor({ documentId, conversationId, onStatus, hea
                             <TooltipContent>{label}</TooltipContent>
                         </Tooltip>
                     ))}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="size-8 shrink-0 text-muted-foreground"
+                                aria-label={t('documents_study_blocks')}
+                                title={t('documents_study_blocks')}
+                                disabled={!resource}
+                                onMouseDown={(event) => event.preventDefault()}
+                            >
+                                <Blocks className="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                            {[
+                                ['session', 'documents_study_session'],
+                                ['section', 'documents_study_section'],
+                                ['card', 'documents_study_card'],
+                            ].map(([kind, label]) => (
+                                <DropdownMenuItem key={kind} onSelect={() => command((view) => insertStudyBlock(view, kind))}>
+                                    <span className="flex flex-col">
+                                        <span>{t(label)}</span>
+                                        {kind === 'session' && <span className="text-xs text-muted-foreground">{t('documents_study_session_hint')}</span>}
+                                    </span>
+                                </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuItem onSelect={() => command((view) => insertTodoList(view, t('documents_todo_placeholder')))}>
+                                <ListTodo className="mr-2 size-4" />
+                                {t('documents_todo_list')}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <Popover open={linkOpen} onOpenChange={setLinkOpen}>
                         <PopoverTrigger asChild>
                             <Button
@@ -713,6 +760,8 @@ function CollaborativeMarkdownEditor({ documentId, conversationId, onStatus, hea
                                 resourceBaseUrl={`/api/document/${documentId}/assets/`}
                                 content={preview}
                                 contextId={`document:${documentId}`}
+                                renderSurface="document"
+                                onTaskToggle={resource ? togglePreviewTask : null}
                             />
                         </div>
                     </div>

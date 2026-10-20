@@ -3745,7 +3745,7 @@ export default function useChatSpeech({
             // 朗读模式下，文本点击用于选择朗读进度；但不拦截真正的控件点击。
             if (
                 target.closest?.(
-                    'button, input, textarea, select, [role="button"], [data-message-avatar-trigger="true"], [data-radix-popper-content-wrapper]',
+                    'a, [role="link"], button, input, textarea, select, [role="button"], [data-message-avatar-trigger="true"], [data-radix-popper-content-wrapper]',
                 )
             ) {
                 return false;

@@ -425,6 +425,7 @@ async function environment(request = {}, options = {}) {
     closed: false,
     zoom: options.zoom || 1,
     fitViewCalls: [],
+    taskEventListeners: new Map(),
   };
   await build({
     entryPoints: [
@@ -455,6 +456,11 @@ async function environment(request = {}, options = {}) {
           builder.onResolve({ filter: /^test:flow-changes$/ }, () => ({
             path: path.resolve("node_modules/@xyflow/react/dist/esm/index.mjs"),
           }));
+          if (options.mockTaskEvents)
+            builder.onResolve(
+              { filter: /^@\/context\/useEventStore\.jsx$/ },
+              () => ({ path: "task-events", namespace: "mock" }),
+            );
           builder.onResolve({ filter: /^@\// }, ({ path: requested }) => {
             if (
               requested.startsWith("@/lib/apiClient") ||
@@ -470,6 +476,8 @@ async function environment(request = {}, options = {}) {
               let contents = "";
               if (requested === "flow")
                 contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:options=>{globalThis.workflowUITest.fitViewCalls.push(options);return Promise.resolve(true)},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section className="react-flow" data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
+              else if (requested === "task-events")
+                contents = "export const onEvent=({event})=>({then:callback=>{const listeners=globalThis.workflowUITest.taskEventListeners;listeners.set(event,callback);return ()=>listeners.delete(event)}});";
               else if (requested.startsWith("@/lib/apiClient"))
                 contents = "export default globalThis.workflowUITest.api;";
               else if (requested.endsWith("/button"))
@@ -666,6 +674,21 @@ async function click(node, dom) {
     node.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
     await new Promise((resolve) => setTimeout(resolve, 0));
   });
+}
+async function waitForFocusedNode(id) {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if (
+      globalThis.workflowUITest.fitViewCalls.findLast((call) => call?.nodes)
+        ?.nodes?.[0]?.id === id
+    )
+      return;
+    await act(() => new Promise((resolve) => setTimeout(resolve, 20)));
+  }
+  assert.equal(
+    globalThis.workflowUITest.fitViewCalls.findLast((call) => call?.nodes)
+      ?.nodes?.[0]?.id,
+    id,
+  );
 }
 async function input(node, value, dom, event = "input") {
   assert.ok(node);
@@ -1388,20 +1411,135 @@ test("opening an existing task uses its immutable graph and real taskId runtime 
       ).data.status,
       "failed",
     );
-    await click(button("定位到任务"), app.dom);
-    await act(async () => {
-      for (let attempt = 0; attempt < 12; attempt += 1) {
-        if (globalThis.workflowUITest.fitViewCalls.some((call) => call?.nodes))
-          break;
-        await new Promise((resolve) => setTimeout(resolve, 20));
-      }
-    });
+    assert.equal(button("定位到任务").getAttribute("aria-pressed"), "true");
+    await waitForFocusedNode("extract-1");
     assert.deepEqual(
       globalThis.workflowUITest.fitViewCalls.findLast((call) => call?.nodes)
         ?.nodes,
       [{ id: "extract-1" }],
     );
     assert.deepEqual(globalThis.workflowUITest.changes, []);
+  } finally {
+    await app.close();
+  }
+});
+
+test("monitor follows the running node by default and tracks runtime changes", async () => {
+  const taskDetails = {
+    taskId: "existing-task",
+    status: "running",
+    parameters: { graph: structuredClone(catalog.standardGraph) },
+    workflowNodes: {
+      "input-1": { status: "running" },
+      "extract-1": { status: "queued" },
+    },
+  };
+  const app = await environment(
+    { taskId: "existing-task" },
+    { taskDetails, mockTaskEvents: true },
+  );
+  try {
+    const locate = button("定位到任务");
+    assert.equal(locate?.getAttribute("aria-pressed"), "true");
+    await waitForFocusedNode("input-1");
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes.find((node) => node.id === "input-1")
+        ?.selected,
+      true,
+    );
+
+    taskDetails.workflowNodes = {
+      "input-1": { status: "completed" },
+      "extract-1": { status: "running" },
+    };
+    await act(async () => {
+      globalThis.workflowUITest.taskEventListeners.get("task.changed")?.({
+        payload: { taskId: "existing-task" },
+      });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    await waitForFocusedNode("extract-1");
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes.find((node) => node.id === "extract-1")
+        ?.selected,
+      true,
+    );
+  } finally {
+    await app.close();
+  }
+});
+
+test("monitor follow stops on canvas movement or node dragging and the locate button toggles it", async () => {
+  const taskDetails = {
+    taskId: "existing-task",
+    status: "running",
+    parameters: { graph: structuredClone(catalog.standardGraph) },
+    workflowNodes: {
+      "input-1": { status: "running" },
+      "extract-1": { status: "queued" },
+    },
+  };
+  const app = await environment(
+    { taskId: "existing-task" },
+    { taskDetails, mockTaskEvents: true },
+  );
+  try {
+    await waitForFocusedNode("input-1");
+    const locate = button("定位到任务");
+    const canvas = document.querySelector('[aria-label="工作流画布"]');
+    await act(() =>
+      canvas.dispatchEvent(
+        new app.dom.window.MouseEvent("pointermove", {
+          bubbles: true,
+          clientX: 80,
+          clientY: 50,
+        }),
+      ),
+    );
+    assert.equal(locate.getAttribute("aria-pressed"), "false");
+
+    taskDetails.workflowNodes = {
+      "input-1": { status: "completed" },
+      "extract-1": { status: "running" },
+    };
+    await act(async () => {
+      globalThis.workflowUITest.taskEventListeners.get("task.changed")?.({
+        payload: { taskId: "existing-task" },
+      });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    assert.equal(
+      globalThis.workflowUITest.fitViewCalls.findLast((call) => call?.nodes)
+        ?.nodes?.[0]?.id,
+      "input-1",
+    );
+
+    await click(locate, app.dom);
+    assert.equal(locate.getAttribute("aria-pressed"), "true");
+    await waitForFocusedNode("extract-1");
+    await act(() =>
+      globalThis.workflowUITest.flow.onNodeDragStart?.(
+        new app.dom.window.MouseEvent("mousedown", { bubbles: true }),
+        globalThis.workflowUITest.flow.nodes.find(
+          (node) => node.id === "extract-1",
+        ),
+      ),
+    );
+    assert.equal(locate.getAttribute("aria-pressed"), "false");
+
+    await click(locate, app.dom);
+    assert.equal(locate.getAttribute("aria-pressed"), "true");
+    await act(() =>
+      globalThis.workflowUITest.flow.onSelectionDragStart?.(
+        new app.dom.window.MouseEvent("mousedown", { bubbles: true }),
+        globalThis.workflowUITest.flow.nodes,
+      ),
+    );
+    assert.equal(locate.getAttribute("aria-pressed"), "false");
+    await click(locate, app.dom);
+    assert.equal(locate.getAttribute("aria-pressed"), "true");
+    await click(locate, app.dom);
+    assert.equal(locate.getAttribute("aria-pressed"), "false");
   } finally {
     await app.close();
   }
@@ -1607,15 +1745,13 @@ test("monitor log page uses the full workspace and returns to centered task", as
       document.querySelector(".workflow-log-page .workflow-log-viewer"),
     );
     assert.equal(document.querySelector(".workflow-workspace"), null);
+    // The first click turns the default follower off; the second resumes it
+    // and opens the canvas from the full-screen log view.
+    await click(button("定位到任务"), app.dom);
+    assert.equal(button("定位到任务").getAttribute("aria-pressed"), "false");
     await click(button("定位到任务"), app.dom);
     assert.ok(document.querySelector(".workflow-workspace.is-monitor"));
-    await act(async () => {
-      for (let attempt = 0; attempt < 12; attempt += 1) {
-        if (globalThis.workflowUITest.fitViewCalls.some((call) => call?.nodes))
-          break;
-        await new Promise((resolve) => setTimeout(resolve, 20));
-      }
-    });
+    await waitForFocusedNode("extract-1");
     assert.deepEqual(
       globalThis.workflowUITest.fitViewCalls.findLast((call) => call?.nodes)
         ?.nodes,

@@ -10,7 +10,7 @@ import DocEditorHome from '@/pages/DocEditorHome.jsx';
 import { emitEvent } from '@/context/useEventStore.jsx';
 import { toast } from 'sonner';
 import { useUserStore } from '@/context/userContext.jsx';
-import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { useLocation, useNavigate, useOutlet, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -305,13 +305,12 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                         )}
 
                         <main className="min-w-0 flex-1 overflow-hidden relative transition-all duration-300 ease-in-out">
-                            <AnimatePresence mode="wait">
+                            <React.Fragment>
                                 {pageType === 'chat' && (
                                     <Motion.div
                                         key="chat"
                                         initial={{ opacity: 0, x: 50 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -50 }}
                                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                                         className="absolute inset-0"
                                         style={{ visibility: managementKind ? 'hidden' : 'visible' }}
@@ -339,7 +338,6 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                                         key="doc"
                                         initial={{ opacity: 0, x: 50 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -50 }}
                                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                                         className="absolute inset-0"
                                         style={{ visibility: managementKind ? 'hidden' : 'visible' }}
@@ -394,7 +392,7 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                                         </div>
                                     </Motion.div>
                                 )}
-                            </AnimatePresence>
+                            </React.Fragment>
                             {managementKind && (
                                 <div
                                     className="absolute inset-0"

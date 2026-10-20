@@ -178,6 +178,16 @@ test('the legacy default alias resolves to its stable database without stealing 
     assert.equal(ui.container.querySelector('select').value, 'library-b', 'canonicalizing the same AI database is not a scope switch');
 });
 
+test('an explicit default slug takes precedence over the legacy default alias in graph previews', async t => {
+    const calls = [], ui = await setup(t, async (url, options) => { calls.push([url, options]); return { databaseId: 'library-new', nodes: [{ id: 'root', name: '新默认库节点', label: 'Event' }], relationships: [] }; }, [{ id: 'library-old', name: 'renamed', title: '旧默认库', enabled: true, legacyDefault: true }, { id: 'library-new', name: 'default', title: '新默认库', enabled: true }]);
+    ui.msg.network = { databaseId: 'default', nodes: [{ id: 'root', name: '新默认库节点', label: 'Event' }], relationships: [] };
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    assert.equal(ui.container.querySelector('select').value, 'library-new');
+    await act(async () => ui.container.querySelector('[data-node-id="root"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    assert.equal(calls[0][1].params.databaseId, 'library-new');
+    assert.equal(ui.container.querySelector('option[value="library-old"]').textContent, '旧默认库');
+});
+
 test('shared React multiline editor preserves cursor, copies current draft and applies read-only without losing content', async t => {
     const ui = await setup(t), copied = [], changes = [];
     Object.defineProperty(ui.dom.window.navigator, 'clipboard', { value: { writeText: async text => copied.push(text) } });

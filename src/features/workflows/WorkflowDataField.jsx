@@ -103,6 +103,9 @@ export default function WorkflowDataField({
         compact={compact}
         disabled={disabled}
         onBusyChange={onBusyChange}
+        maxItems={
+          widget === "resource-source-picker" ? schema.maxItems : undefined
+        }
         sourceOptions={schema.ui?.sources || []}
         onChange={(next) =>
           onChange(

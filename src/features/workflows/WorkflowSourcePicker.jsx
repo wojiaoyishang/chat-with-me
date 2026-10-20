@@ -230,6 +230,7 @@ function FullWorkflowSourcePicker({
   onPreviewOpenChange,
   onItemsLoaded,
   fixedType,
+  maxItems,
   sourceOptions = [],
   compact = false,
 }) {
@@ -337,7 +338,9 @@ function FullWorkflowSourcePicker({
         ...value,
         resources: current.includes(uri)
           ? current.filter((resource) => resource !== uri)
-          : [...current, uri],
+          : maxItems === 1
+            ? [uri]
+            : [...current, uri],
       });
     }
   };
@@ -350,7 +353,7 @@ function FullWorkflowSourcePicker({
     activeUpload.current = controller;
     const added = [];
     try {
-      for (const file of files) {
+      for (const file of maxItems === 1 ? files.slice(0, 1) : files) {
         const data = new FormData();
         data.append("file", file);
         const result = await apiClient.post("/upload/", data, {
@@ -372,9 +375,10 @@ function FullWorkflowSourcePicker({
         const current = latest.current;
         current.onChange({
           ...current.value,
-          resources: [
-            ...new Set([...(current.value.resources || []), ...added]),
-          ],
+          resources:
+            maxItems === 1 && added.length
+              ? [added.at(-1)]
+              : [...new Set([...(current.value.resources || []), ...added])],
         });
         setUploading(false);
         setRefresh((count) => count + 1);
@@ -496,7 +500,7 @@ function FullWorkflowSourcePicker({
               ref={upload}
               hidden
               type="file"
-              multiple
+              multiple={maxItems !== 1}
               accept={sourceType === "image" ? "image/*" : undefined}
               onChange={(event) => {
                 void uploadFiles([...event.target.files]);

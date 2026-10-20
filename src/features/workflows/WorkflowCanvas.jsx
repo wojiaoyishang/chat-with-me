@@ -16,6 +16,7 @@ export default function WorkflowCanvas({
   selectionRequest,
   fitRequest,
   focusRequest,
+  autoFollow = false,
   onPositionsCommit,
   ...props
 }) {
@@ -33,6 +34,12 @@ export default function WorkflowCanvas({
       canvasNodes.some((node, index) => node.id !== nodes[index].id)
     )
       return;
+    // A monitor that follows a task should focus its active node, not run the
+    // initial whole-graph fit after the focus animation has already begun.
+    if (autoFollow) {
+      fitted.current = fitRequest;
+      return;
+    }
     // React Flow may report initialized before the final node dimensions land.
     // Fit after paint and only for a freshly installed graph, never during drag.
     let canceled = false;
@@ -66,9 +73,12 @@ export default function WorkflowCanvas({
       cancelAnimationFrame(frame);
       cancelAnimationFrame(nextFrame);
     };
-  }, [fitRequest, flow, measured, nodes, canvasNodes]);
+  }, [fitRequest, flow, measured, nodes, canvasNodes, autoFollow]);
+  const focusNodeReady = Boolean(
+    focusRequest?.id && canvasNodes.some((node) => node.id === focusRequest.id),
+  );
   useEffect(() => {
-    if (!measured || !focusRequest?.id) return;
+    if (!measured || !focusNodeReady) return;
     let nextFrame = 0;
     const frame = requestAnimationFrame(() => {
       nextFrame = requestAnimationFrame(() => {
@@ -85,7 +95,7 @@ export default function WorkflowCanvas({
       cancelAnimationFrame(frame);
       cancelAnimationFrame(nextFrame);
     };
-  }, [flow, measured, focusRequest]);
+  }, [flow, measured, focusRequest, focusNodeReady]);
   useEffect(() => {
     setCanvasNodes((current) => reconcileCanvasNodes(current, nodes));
   }, [nodes]);

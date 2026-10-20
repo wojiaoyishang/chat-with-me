@@ -14,6 +14,7 @@ presence.js 独立管理 WebSocket 在线/掉线事件、y-protocols Awareness �
 
 ### 聊天正文中的ESC撰写提示
 EscWritingStatus渲染后端escStatus replacement，显示撰写、片段已上屏、完成或停止状态，监听对应文档的document.esc.changed以更新撰写状态。任务模式仍投影在正文，不自动打开任务窗口。复制逻辑忽略占位内部JSON。
+当前页面不是目标文档时，“正在撰写文档”正文提示内直接提供“打开文档”链接，并保留卡片所属会话；不另设悬浮入口。
 
 
 ESC直接写入正式正文，无暂存标记、确认或弃用菜单。远端增量使用document-edit origin加入与用户编辑相同的Yjs撤销栈，AI在线光标保留。EscWritingStatus使用独立CSS旋转动画，状态包括writing/written/completed/interrupted。

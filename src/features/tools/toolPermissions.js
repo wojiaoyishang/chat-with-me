@@ -2,6 +2,19 @@ const MODES = ['allow', 'ask', 'deny'];
 
 export const getToolPermissionKey = (tool) => tool?.permissionKey || tool?.name;
 
+export const applyBulkToolPermissionMode = (permissions = {}, tools = [], mode) => {
+    const next = {...permissions};
+    if (!MODES.includes(mode)) return next;
+    for (const tool of tools) {
+        const key = getToolPermissionKey(tool);
+        if (!key || tool.locked) continue;
+        const allowedModes = Array.isArray(tool.allowedModes) && tool.allowedModes.length
+            ? tool.allowedModes : MODES;
+        if (allowedModes.includes(mode)) next[key] = mode;
+    }
+    return next;
+};
+
 export const normalizeToolPermissionMode = (value, fallback = 'ask') => {
     if (typeof value === 'boolean') return value ? 'allow' : 'deny';
     const mode = String(value || '').toLowerCase();

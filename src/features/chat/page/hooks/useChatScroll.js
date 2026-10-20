@@ -7,7 +7,7 @@ const SETTLE_STABLE_FRAMES = 6;
 
 const getBottomScrollTop = (node) => Math.max(0, node.scrollHeight - node.clientHeight);
 
-const useChatScroll = (messagesContainerRef) => {
+const useChatScroll = (messagesContainerRef, active = true) => {
     const [showScrollToBottomButton, setShowScrollToBottomButton] = useState(false);
     const [chatBoxHeight, setChatBoxHeight] = useState(0);
 
@@ -21,6 +21,8 @@ const useChatScroll = (messagesContainerRef) => {
     const scrollAnimationFrameRef = useRef(null);
     const settleAnimationFrameRef = useRef(null);
     const programmaticBottomScrollRef = useRef(false);
+    const activeRef = useRef(active);
+    activeRef.current = active;
 
     const isStreamingRef = useRef(false);
     const streamingTimerRef = useRef(null);
@@ -48,7 +50,7 @@ const useChatScroll = (messagesContainerRef) => {
     }, []);
 
     const checkScrollPosition = useCallback((immediate = false) => {
-        if (!messagesContainerRef.current) return;
+        if (!activeRef.current || !messagesContainerRef.current) return;
         const {scrollTop, scrollHeight, clientHeight} = messagesContainerRef.current;
         const distanceToBottom = scrollHeight - scrollTop - clientHeight;
 
@@ -90,7 +92,7 @@ const useChatScroll = (messagesContainerRef) => {
 
         const settle = (now) => {
             const container = messagesContainerRef.current;
-            if (!container || !isAutoScrollEnabledRef.current) {
+            if (!activeRef.current || !container || !isAutoScrollEnabledRef.current) {
                 settleAnimationFrameRef.current = null;
                 programmaticBottomScrollRef.current = false;
                 return;
@@ -124,6 +126,7 @@ const useChatScroll = (messagesContainerRef) => {
     }, [cancelBottomSettle, checkScrollPosition, messagesContainerRef]);
 
     const smoothScrollToBottom = useCallback((isStreaming = false) => {
+        if (!activeRef.current) return;
         const container = messagesContainerRef.current;
         if (!container) return;
 
@@ -157,7 +160,7 @@ const useChatScroll = (messagesContainerRef) => {
 
         const animateScroll = (currentTime) => {
             const currentContainer = messagesContainerRef.current;
-            if (!currentContainer || !isAutoScrollEnabledRef.current) {
+            if (!activeRef.current || !currentContainer || !isAutoScrollEnabledRef.current) {
                 scrollAnimationFrameRef.current = null;
                 programmaticBottomScrollRef.current = false;
                 return;
@@ -186,19 +189,21 @@ const useChatScroll = (messagesContainerRef) => {
 
     const executePendingScroll = useCallback(() => {
         cancelPendingScrollTimer();
+        if (!activeRef.current) return;
         if (!pendingScrollRef.current || !isAutoScrollEnabledRef.current) return;
 
         pendingScrollRef.current = false;
         // 等 React 提交和浏览器布局完成后再读取最新 scrollHeight。
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                if (!isAutoScrollEnabledRef.current) return;
+                if (!activeRef.current || !isAutoScrollEnabledRef.current) return;
                 smoothScrollToBottom(isStreamingRef.current);
             });
         });
     }, [cancelPendingScrollTimer, smoothScrollToBottom]);
 
     const requestScrollToBottom = useCallback(() => {
+        if (!activeRef.current) return;
         if (!isAutoScrollEnabledRef.current) return;
 
         pendingScrollRef.current = true;
@@ -267,11 +272,19 @@ const useChatScroll = (messagesContainerRef) => {
     ]);
 
     useEffect(() => {
+        if (active) return;
+        cancelPendingScrollTimer();
+        cancelScrollAnimation();
+        cancelBottomSettle();
+        programmaticBottomScrollRef.current = false;
+    }, [active, cancelPendingScrollTimer, cancelScrollAnimation, cancelBottomSettle]);
+
+    useEffect(() => {
         executePendingScroll();
-        if (isAutoScrollEnabledRef.current) {
+        if (active && isAutoScrollEnabledRef.current) {
             requestScrollToBottom();
         }
-    }, [executePendingScroll, requestScrollToBottom]);
+    }, [active, executePendingScroll, requestScrollToBottom]);
 
     return {
         showScrollToBottomButton,

@@ -60,6 +60,8 @@ export default function KnowledgeDatabaseSettings({ config }) {
     const editorVersion = useRef(0);
     const editorRequest = useRef(0);
     const refreshEpoch = useRef(0);
+    const defaultDatabase = databases.find((record) => record.id === 'default' || record.name === 'default')
+        || databases.find((record) => record.legacyDefault);
 
     useEffect(() => {
         setDatabases(Array.isArray(config?.databases) ? config.databases : []);
@@ -247,7 +249,7 @@ export default function KnowledgeDatabaseSettings({ config }) {
                                 <div className="min-w-0">
                                     <CardTitle className="flex flex-wrap items-center gap-2 text-base">
                                         <span className="break-words">{record.title || record.name}</span>
-                                        {record.legacyDefault && <Badge variant="secondary">默认</Badge>}
+                                        {record.id === defaultDatabase?.id && <Badge variant="secondary">默认</Badge>}
                                         {!record.enabled && <Badge variant="outline">已停用</Badge>}
                                         {record.readOnly && <Badge variant="outline">只读</Badge>}
                                     </CardTitle>

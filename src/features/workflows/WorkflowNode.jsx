@@ -4,6 +4,7 @@ import {
   Check,
   Database,
   File,
+  FileText,
   GitBranch,
   Image,
   Loader2,
@@ -35,6 +36,7 @@ export default function WorkflowNode({ data, selected }) {
   const Icon =
     {
       file: File,
+      "file-text": FileText,
       database: Database,
       workflow: GitBranch,
       attachment: Paperclip,

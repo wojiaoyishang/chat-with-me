@@ -170,4 +170,15 @@ const MessageContainer = forwardRef(({
 
 MessageContainer.displayName = 'MessageContainer';
 
-export default memo(MessageContainer);
+// Keep the hidden chat mounted so drafts and scroll position survive workspace
+// navigation, but do not reparse its entire Markdown tree for each stream delta.
+const compareMessageContainerProps = (previous, next) => {
+    if (previous.conversationId !== next.conversationId) return false;
+    if (next.active === false) return true;
+    if (previous.active === false) return false;
+    const keys = Object.keys(next);
+    return keys.length === Object.keys(previous).length &&
+        keys.every((key) => Object.is(previous[key], next[key]));
+};
+
+export default memo(MessageContainer, compareMessageContainerProps);

@@ -17,6 +17,7 @@ import {
 import {
   Check,
   Copy,
+  Download,
   GitBranch,
   Loader2,
   Maximize2,
@@ -47,6 +48,7 @@ import {
 import JsonConfigEditor from "@/components/setting/JsonConfigEditor.jsx";
 import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import apiClient from "@/lib/apiClient.js";
+import { downloadAttachmentResource } from "@/lib/resourceDownload.js";
 import { useLocalSetting } from "@/lib/tools.jsx";
 import { workflowApi } from "./workflowApi.js";
 import {
@@ -131,6 +133,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [loading, setLoading] = useState(true);
   const [reload, setReload] = useState(0);
   const [busy, setBusy] = useState("");
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [catalog, setCatalog] = useState({ nodes: [] });
@@ -172,6 +175,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [selectionRequest, setSelectionRequest] = useState({ ids: [] });
   const [fitRequest, setFitRequest] = useState(0);
   const [focusRequest, setFocusRequest] = useState(null);
+  const [followTask, setFollowTask] = useState(true);
   const [monitorPositions, setMonitorPositions] = useState({});
   const [submissionStep, setSubmissionStep] = useState("");
   const [panel, setPanel] = useState("node");
@@ -234,6 +238,9 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       alive.current = false;
     };
   }, []);
+  useEffect(() => {
+    setFollowTask(true);
+  }, [request.taskId]);
 
   const installDraft = useCallback((next) => {
     draftRef.current = next;
@@ -524,7 +531,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   );
 
   const selectedNode = graph.nodes.find((node) => node.id === selected);
-  const locateTask = () => {
+  const taskTargetId = useMemo(() => {
+    if (!readOnly) return "";
     const stageStatus = new Map(
       runtimeStages.map((stage) => [stage.key, stage.status]),
     );
@@ -540,11 +548,27 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         .reverse()
         .find((node) => ["completed", "succeeded"].includes(status(node))) ||
       graph.nodes[0];
-    if (!target) return;
+    return target?.id || "";
+  }, [readOnly, graph.nodes, runtimeNodes, runtimeStages]);
+  useEffect(() => {
+    if (!readOnly || !followTask || !taskTargetId) return;
+    select([taskTargetId]);
+    setFocusRequest({ id: taskTargetId });
+  }, [readOnly, followTask, taskTargetId, task?.id, select]);
+  const stopFollowingTask = () => {
+    if (!readOnly || !followTask) return;
+    setFollowTask(false);
+    setFocusRequest(null);
+  };
+  const locateTask = () => {
+    if (followTask) {
+      stopFollowingTask();
+      return;
+    }
+    if (!taskTargetId) return;
     setMobilePane("canvas");
-    select([target.id]);
     setMonitorView("overview");
-    setFocusRequest({ id: target.id });
+    setFollowTask(true);
   };
   const chosenIds = () =>
     menu?.nodeId && !selectedIds.includes(menu.nodeId)
@@ -811,6 +835,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           parameters: { ...running.parameters, graph: clone(current.graph) },
         });
         setViewMode("monitor");
+        setFollowTask(true);
         setFitRequest((current) => current + 1);
         setFocusRequest(null);
         setMonitorPositions({});
@@ -945,6 +970,19 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       if (alive.current) setError(cause.message);
     } finally {
       if (alive.current) setBusy("");
+    }
+  };
+
+  const downloadResult = async () => {
+    if (!task?.result?.url || downloading) return;
+    setDownloading(true);
+    setError("");
+    try {
+      await downloadAttachmentResource(task.result.url, task.result.filename);
+    } catch (cause) {
+      if (alive.current) setError(cause.message);
+    } finally {
+      if (alive.current) setDownloading(false);
     }
   };
 
@@ -1179,6 +1217,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               tabIndex={0}
               onPointerMove={(event) => {
                 pointer.current = { x: event.clientX, y: event.clientY };
+                if (readOnly && followTask) stopFollowingTask();
               }}
               onClickCapture={(event) => {
                 if (
@@ -1212,6 +1251,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 selectionRequest={selectionRequest}
                 fitRequest={fitRequest}
                 focusRequest={focusRequest}
+                autoFollow={readOnly && followTask}
                 edges={edges}
                 nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}
@@ -1224,6 +1264,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 zoomOnDoubleClick={readOnly}
                 edgesReconnectable={false}
                 onPositionsCommit={commitPositions}
+                onNodeDragStart={stopFollowingTask}
+                onSelectionDragStart={stopFollowingTask}
                 onNodeClick={(event, node) => {
                   setSelected(node.id);
                   if (!event.ctrlKey && !event.metaKey) {
@@ -1646,6 +1688,22 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           </div>
           {readOnly ? (
             <>
+              {/^cwm:\/\/artifact\/[A-Za-z0-9._-]+$/.test(
+                task?.result?.url || "",
+              ) && (
+                <Button
+                  variant="outline"
+                  disabled={downloading}
+                  onClick={() => void downloadResult()}
+                >
+                  {downloading ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Download className="size-4" />
+                  )}
+                  下载导出文件
+                </Button>
+              )}
               {task &&
                 ["running", "queued", "pending"].includes(task.status) && (
                   <Button
@@ -1676,7 +1734,12 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     取消任务
                   </Button>
                 )}
-              <Button variant="outline" onClick={locateTask}>
+              <Button
+                variant={followTask ? "secondary" : "outline"}
+                aria-pressed={followTask}
+                title={followTask ? "持续定位已开启，点击关闭" : "点击持续定位当前任务节点"}
+                onClick={locateTask}
+              >
                 定位到任务
               </Button>
               <Button

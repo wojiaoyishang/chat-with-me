@@ -13,7 +13,7 @@ const graphNodes = (count, prefix) =>
     data: { kind: "text", definition: null },
   }));
 
-async function mount(nodes) {
+async function mount(nodes, initial = {}) {
   const dom = new JSDOM('<div id="root"></div>', {
     url: "http://localhost",
     pretendToBeVisual: true,
@@ -74,7 +74,7 @@ async function mount(nodes) {
     `../temp/workflow-canvas-fit-test.mjs?${Date.now()}`
   );
   const root = createRoot(document.getElementById("root"));
-  let current = { nodes, fitRequest: 1, onPositionsCommit: () => {} };
+  let current = { nodes, fitRequest: 1, onPositionsCommit: () => {}, ...initial };
   const render = async (patch = {}) => {
     current = { ...current, ...patch };
     await act(() => root.render(React.createElement(Canvas, current)));
@@ -141,6 +141,32 @@ test("switching from a large template fits every node of a small template after 
     ]);
     assert.equal(app.calls[0].options.nodes, undefined);
     assert.equal(app.calls[0].options.maxZoom, 1);
+  } finally {
+    await app.close();
+  }
+});
+
+test("task following focuses the active node without a competing whole-graph fit", async () => {
+  const nodes = graphNodes(5, "stage");
+  const app = await mount(nodes, {
+    autoFollow: true,
+    focusRequest: { id: "stage-2" },
+  });
+  try {
+    await app.tick();
+    await app.tick();
+    assert.equal(app.calls.length, 1);
+    assert.deepEqual(app.calls[0].options.nodes, [{ id: "stage-2" }]);
+
+    await app.render({ nodes: graphNodes(5, "stage") });
+    await app.tick();
+    await app.tick();
+    assert.equal(app.calls.length, 1, "runtime refresh must not restart the focus animation");
+
+    await app.render({ autoFollow: false, focusRequest: null });
+    await app.tick();
+    await app.tick();
+    assert.equal(app.calls.length, 1, "stopping follow must not fit the entire graph");
   } finally {
     await app.close();
   }

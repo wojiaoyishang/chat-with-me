@@ -23,6 +23,7 @@ import StoryCard from '@/features/story/StoryCard.jsx';
 import WorkspaceTransferCard from '@/features/workspace/components/WorkspaceTransferCard.jsx';
 import WidgetHost from './widget/WidgetHost.jsx';
 import EscWritingStatus from '@/features/documents/EscWritingStatus.jsx';
+import WorkflowTaskStatus from '@/features/workflows/WorkflowTaskStatus.jsx';
 
 const CARD_TYPES_WITH_NESTED_MARKDOWN = new Set([
     'markdown',
@@ -224,8 +225,10 @@ const CardBlock = memo(({
             );
 
         case 'escStatus':
-            return String(renderSurface).toLowerCase() === 'task_window' ? null : <EscWritingStatus content={content} />;
+            return String(renderSurface).toLowerCase() === 'task_window' ? null : <EscWritingStatus content={content} conversationId={conversationId} />;
 
+        case 'workflowTaskStatus':
+            return String(renderSurface).toLowerCase() === 'task_window' ? null : <WorkflowTaskStatus content={content} />;
 
         case 'workspaceTransfer':
             return (

@@ -39,12 +39,12 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const click=async element=>{assert.ok(element);await act(async()=>element.click());};
 const select=async(element,value)=>{await act(async()=>{element.value=value;element.dispatchEvent(new window.Event("change",{bubbles:true}));});};
 const flush=async(ms=230)=>await act(async()=>delay(ms));
-async function mount(Component,props,initialValue) {
+async function mount(Component,props,initialValue,databaseRegistry) {
   const dom=new JSDOM('<div id="root"></div>',{url:"http://localhost",pretendToBeVisual:true});
   for(const key of ["window","document","HTMLElement","Node","Event"]) globalThis[key]=dom.window[key];
   globalThis.IS_REACT_ACT_ENVIRONMENT=true;
   const state={value:initialValue,calls:[]};
-  globalThis.controlTest={api:{get:async(url,options)=>{state.calls.push([url,options]);if(url==="/knowledge/databases")return{databases:[{id:"db-one",name:"renamed",title:"库一",enabled:true,legacyDefault:true},{id:"db-two",title:"库二",enabled:true},{id:"db-disabled",title:"停用库",enabled:false}]};const counts=options?.params?.databaseId==="db-one"?{childCount:2,descendantCount:5}:{childCount:0,descendantCount:0};if(url.endsWith("/extraction-snapshot"))return{...counts,content:"原文内容",extractionRevision:3,relationships:[{source:"a",target:"b",type:"关联"}],nodes:[{id:"a",name:"甲"},{id:"b",name:"乙"}]};if(url==="/knowledge/chunks/search")return{items:[{id:options.params.databaseId+"-chunk",name:options.params.databaseId+"-标题",...counts,properties:{summary:"摘要"}}],total:1,hasMore:false};return{nodes:[{id:"node-more",name:"更多"}],relationships:[]};}}};
+  globalThis.controlTest={api:{get:async(url,options)=>{state.calls.push([url,options]);if(url==="/knowledge/databases")return{databases:databaseRegistry || [{id:"db-one",name:"renamed",title:"库一",enabled:true,legacyDefault:true},{id:"db-two",title:"库二",enabled:true},{id:"db-disabled",title:"停用库",enabled:false}]};const counts=options?.params?.databaseId==="db-one"?{childCount:2,descendantCount:5}:{childCount:0,descendantCount:0};if(url.endsWith("/extraction-snapshot"))return{...counts,content:"原文内容",extractionRevision:3,relationships:[{source:"a",target:"b",type:"关联"}],nodes:[{id:"a",name:"甲"},{id:"b",name:"乙"}]};if(url==="/knowledge/chunks/search")return{items:[{id:options.params.databaseId+"-chunk",name:options.params.databaseId+"-标题",...counts,properties:{summary:"摘要"}}],total:1,hasMore:false};return{nodes:[{id:"node-more",name:"更多"}],relationships:[]};}}};
   function Form(){const[value,setValue]=React.useState(initialValue);state.value=value;return React.createElement(Component,{...props,value,onChange:setValue});}
   const root=createRoot(document.getElementById("root"));
   await act(async()=>root.render(React.createElement(Form)));
@@ -68,6 +68,12 @@ test("database selector stores stable IDs and retains a missing saved selection"
   try{await flush(0);assert.equal(document.querySelector("select").value,"db-one");assert.equal(ui.state.value,"default");assert.equal(document.querySelector('[value="db-disabled"]').disabled,true);await select(document.querySelector("select"),"db-two");assert.equal(ui.state.value,"db-two");}finally{await ui.close();}
   const missing=await mount(Field,{schema:{type:"string",ui:{widget:"graph-database-picker"}}},"missing");
   try{await flush(0);assert.equal(document.querySelector("select").value,"missing");assert.equal(missing.state.value,"missing");assert.match(document.body.textContent,/已选数据库不可用/);}finally{await missing.close();}
+});
+
+test("database selector prefers the explicit default slug over the legacy alias",async()=>{
+  const databases=[{id:"db-one",name:"renamed",title:"旧默认库",enabled:true,legacyDefault:true},{id:"db-new",name:"default",title:"新默认库",enabled:true}];
+  const ui=await mount(Field,{label:"数据库",schema:{type:"string",ui:{widget:"graph-database-picker"}}},"default",databases);
+  try{await flush(0);assert.equal(document.querySelector("select").value,"db-new");assert.equal(ui.state.value,"default");}finally{await ui.close();}
 });
 
 test("chunk selection is staged, preview preserves selection, and DB change clears old chunk",async()=>{

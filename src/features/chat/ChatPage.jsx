@@ -165,6 +165,14 @@ function ChatPage({
 }) {
     const { t, i18n } = useTranslation();
     const routeLocation = useLocation();
+    const isViewportActive = visible && (
+        /^\/chat-window(?:\/|$)/.test(routeLocation.pathname) ||
+        (pageType === 'doc'
+            ? /^\/doc(?:\/|$)/.test(routeLocation.pathname)
+            : /^\/chat(?:\/|$)/.test(routeLocation.pathname) && !routeLocation.pathname.endsWith('/message-map'))
+    );
+    const isViewportActiveRef = useRef(isViewportActive);
+    isViewportActiveRef.current = isViewportActive;
     const chatPageRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const currentTurnIdempotencyKeyRef = useRef(generateUUID());
@@ -379,7 +387,7 @@ function ChatPage({
         handleScrollToBottomClick,
         updateStreamingStatus,
         handleChatBoxHeightChange,
-    } = useChatScroll(messagesContainerRef);
+    } = useChatScroll(messagesContainerRef, isViewportActive);
 
     const openIndependentChat = useCallback(() => {
         if (standaloneWindow) return;
@@ -874,13 +882,31 @@ function ChatPage({
         checkScrollPosition(true);
     }, [checkScrollPosition, isAutoScrollEnabledRef, pendingScrollRef]);
 
-    // replace/content/network 等更新经常只改变消息内部高度，不会改变滚动容器自身高度。
-    // 因此需要在 React 提交 DOM 后再滚动，并额外监听内容区的 resize / mutation。
+    const afterRenderScrollRef = useRef({timer: null, firstFrame: null, secondFrame: null});
+    const cancelAfterRenderScroll = useCallback(() => {
+        const scheduled = afterRenderScrollRef.current;
+        if (scheduled.timer !== null) clearTimeout(scheduled.timer);
+        if (scheduled.firstFrame !== null) cancelAnimationFrame(scheduled.firstFrame);
+        if (scheduled.secondFrame !== null) cancelAnimationFrame(scheduled.secondFrame);
+        scheduled.timer = null;
+        scheduled.firstFrame = null;
+        scheduled.secondFrame = null;
+    }, []);
+
+    useEffect(() => {
+        if (!isViewportActive) cancelAfterRenderScroll();
+        return cancelAfterRenderScroll;
+    }, [isViewportActive, cancelAfterRenderScroll]);
+
+    // 流式增量可能在一帧内连续到达，只为最新内容安排一次滚动与布局读取。
     const scrollToBottomAfterRender = useCallback(
         (shouldAutoScroll = isAutoScrollEnabledRef.current, options = {}) => {
+            if (!isViewportActiveRef.current) return;
+            cancelAfterRenderScroll();
             const { streaming = false, delay = 0 } = options;
 
             const doScroll = () => {
+                if (!isViewportActiveRef.current) return;
                 const container = messagesContainerRef.current;
                 if (!container) return;
 
@@ -909,20 +935,27 @@ function ChatPage({
             };
 
             const runAfterPaint = () => {
-                requestAnimationFrame(() => {
+                const scheduled = afterRenderScrollRef.current;
+                scheduled.timer = null;
+                scheduled.firstFrame = requestAnimationFrame(() => {
+                    scheduled.firstFrame = null;
                     doScroll();
                     // 很多 replace 渲染链路里会有 Markdown / 高亮 / 图表等二次布局，再补一帧更稳。
-                    requestAnimationFrame(doScroll);
+                    scheduled.secondFrame = requestAnimationFrame(() => {
+                        scheduled.secondFrame = null;
+                        doScroll();
+                    });
                 });
             };
 
             if (delay > 0) {
-                setTimeout(runAfterPaint, delay);
+                afterRenderScrollRef.current.timer = setTimeout(runAfterPaint, delay);
             } else {
                 runAfterPaint();
             }
         },
         [
+            cancelAfterRenderScroll,
             checkScrollPosition,
             isAutoScrollEnabledRef,
             isUserAutoScrollUnlocked,
@@ -2041,6 +2074,7 @@ function ChatPage({
         const observedElements = new WeakSet();
 
         const scheduleCheck = () => {
+            if (!isViewportActiveRef.current) return;
             const userUnlocked = isUserAutoScrollUnlocked();
             const shouldAutoScroll = !userUnlocked && (isAutoScrollEnabledRef.current || pendingScrollRef.current);
 
@@ -2050,6 +2084,7 @@ function ChatPage({
 
             rafId = requestAnimationFrame(() => {
                 rafId = null;
+                if (!isViewportActiveRef.current) return;
 
                 if (shouldAutoScroll) {
                     isAutoScrollEnabledRef.current = true;
@@ -2084,8 +2119,6 @@ function ChatPage({
 
         mutationObserver.observe(container, {
             childList: true,
-            subtree: true,
-            characterData: true,
         });
 
         return () => {
@@ -3528,6 +3561,7 @@ function ChatPage({
                                 >
                                     <MessageContainer
                                         key={conversationId}
+                                        active={isViewportActive}
                                         messagesOrder={messagesOrder}
                                         messages={messages}
                                         onLoadMore={loadMoreHistory}

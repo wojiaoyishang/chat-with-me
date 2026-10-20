@@ -6,6 +6,7 @@ import {JSDOM} from 'jsdom';
 import React, {act} from 'react';
 import {createRoot} from 'react-dom/client';
 import {
+    applyBulkToolPermissionMode,
     applyToolPermissionsToStatus,
     collectToolPermissionGroups,
     collectToolPermissions,
@@ -14,6 +15,21 @@ import {
     getToolPermissionKey,
     readToolPermission,
 } from '../src/features/tools/toolPermissions.js';
+
+test('default permission bulk changes use stable keys and preserve restricted tools', () => {
+    const current = {'task.read': 'ask', 'knowledge.write': 'ask', 'system.fixed': 'allow'};
+    const tools = [
+        {name: 'background_job_get', permissionKey: 'task.read'},
+        {name: 'knowledge.write', allowedModes: ['allow', 'ask']},
+        {name: 'system.fixed', locked: true, default: 'allow'},
+    ];
+    const denied = applyBulkToolPermissionMode(current, tools, 'deny');
+    assert.deepEqual(denied, {'task.read': 'deny', 'knowledge.write': 'ask', 'system.fixed': 'allow'});
+    assert.equal(current['task.read'], 'ask');
+    assert.deepEqual(applyBulkToolPermissionMode(denied, tools, 'allow'), {
+        'task.read': 'allow', 'knowledge.write': 'allow', 'system.fixed': 'allow',
+    });
+});
 
 const readTools = ['background_job_get', 'background_job_wait', 'background_job_list'].map(name => ({
     type: 'tool', name, permissionKey: 'task.read', text: '查看任务', default: 'allow',

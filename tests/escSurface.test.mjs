@@ -2,11 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import {build} from 'esbuild';
-import React from 'react';
+import React, {act} from 'react';
+import {createRoot} from 'react-dom/client';
 import {renderToStaticMarkup} from 'react-dom/server';
+import {JSDOM} from 'jsdom';
+import {MemoryRouter, Route, Routes, useLocation} from 'react-router-dom';
 
-test('live ESC status remains in the conversation and is absent from task details', async () => {
-    await build({entryPoints:['src/components/markdown/card-block/CardBlock.jsx'], bundle:true,
+let cardPromise;
+const loadCard = () => {
+    cardPromise ??= (async () => {
+        await build({entryPoints:['src/components/markdown/card-block/CardBlock.jsx'], bundle:true,
         jsx:'automatic', platform:'node', format:'esm', outfile:'temp/esc-surface-regression.mjs',
         packages:'external', loader:{'.css':'empty'}, plugins:[{name:'isolate-card-context', setup(builder) {
             builder.onResolve({filter:/^@\/features\/documents\/EscWritingStatus/}, () => ({path:path.resolve('src/features/documents/EscWritingStatus.jsx')}));
@@ -17,10 +22,75 @@ test('live ESC status remains in the conversation and is absent from task detail
                 ? 'export const onEvent=()=>({then:()=>()=>{}});'
                 : 'export default ()=>null; export const defaultRenderMarkdown=()=>null; export const ExecutionStatus=()=>null;'}));
         }}]});
-    const {default:Card} = await import('../temp/esc-surface-regression.mjs');
-    const props = {type:'escStatus', content:JSON.stringify({streamId:'stream', documentId:'doc', status:'writing'})};
-    const body = renderToStaticMarkup(React.createElement(Card, {...props, renderSurface:'conversation'}));
+        return (await import('../temp/esc-surface-regression.mjs')).default;
+    })();
+    return cardPromise;
+};
+
+const renderCard = async ({route = '/chat/source', documentId = 'doc', conversationId = 'source', renderSurface = 'conversation'} = {}) => {
+    const Card = await loadCard();
+    const props = {type:'escStatus', conversationId, renderSurface,
+        content:JSON.stringify({streamId:'stream', documentId, status:'writing'})};
+    const element = React.createElement(Card, props);
+    return renderToStaticMarkup(React.createElement(MemoryRouter, {initialEntries:[route]},
+        React.createElement(Routes, null,
+            React.createElement(Route, {path:'/doc/:documentId?/:conversationId?', element}),
+            React.createElement(Route, {path:'*', element}))));
+};
+
+test('live ESC status remains in the conversation and is absent from task details', async () => {
+    const body = await renderCard();
     assert.ok(body.includes('正在撰写文档'));
     assert.ok(body.includes('esc-writing-spinner'));
-    assert.equal(renderToStaticMarkup(React.createElement(Card, {...props, renderSurface:'task_window'})), '');
+    assert.equal(await renderCard({renderSurface:'task_window'}), '');
+});
+
+test('writing status on the chat page links to the document and retains its conversation', async () => {
+    const body = await renderCard({route:'/chat/conversation-1', documentId:'doc-1', conversationId:'conversation-1'});
+    assert.match(body, /href="\/doc\/doc-1\/conversation-1"[^>]*>打开文档/);
+});
+
+test('writing status inside the target document does not offer a redundant link', async () => {
+    const body = await renderCard({route:'/doc/doc-1/conversation-1', documentId:'doc-1', conversationId:'conversation-1'});
+    assert.ok(body.includes('正在撰写文档'));
+    assert.doesNotMatch(body, /打开文档|href="\/doc\//);
+});
+
+test('writing status in another document links back to its target', async () => {
+    const body = await renderCard({route:'/doc/other-doc/conversation-1', documentId:'doc-1', conversationId:'conversation-1'});
+    assert.match(body, /href="\/doc\/doc-1\/conversation-1"[^>]*>打开文档/);
+});
+
+test('clicking the inline writing link opens the document route', async () => {
+    const Card = await loadCard();
+    const dom = new JSDOM('<div id="root"></div>', {url:'http://localhost/chat/conversation-1'});
+    const previous = ['window', 'document', 'Element', 'HTMLElement', 'IS_REACT_ACT_ENVIRONMENT']
+        .map((key) => [key, Object.getOwnPropertyDescriptor(globalThis, key)]);
+    Object.assign(globalThis, {
+        window:dom.window, document:dom.window.document, Element:dom.window.Element,
+        HTMLElement:dom.window.HTMLElement, IS_REACT_ACT_ENVIRONMENT:true,
+    });
+    const root = createRoot(document.getElementById('root'));
+    const Page = () => React.createElement(React.Fragment, null,
+        React.createElement(Card, {type:'escStatus', conversationId:'conversation-1',
+            content:JSON.stringify({streamId:'stream', documentId:'doc-1', status:'writing'})}),
+        React.createElement('output', {'data-route':true}, useLocation().pathname));
+    try {
+        await act(async () => root.render(React.createElement(MemoryRouter, {initialEntries:['/chat/conversation-1']},
+            React.createElement(Routes, null,
+                React.createElement(Route, {path:'/doc/:documentId?/:conversationId?', element:React.createElement(Page)}),
+                React.createElement(Route, {path:'*', element:React.createElement(Page)})))));
+        const link = document.querySelector('[data-esc-status] a');
+        assert.ok(link);
+        await act(async () => link.click());
+        assert.equal(document.querySelector('[data-route]').textContent, '/doc/doc-1/conversation-1');
+        assert.equal(document.querySelector('[data-esc-status] a'), null);
+    } finally {
+        await act(async () => root.unmount());
+        dom.window.close();
+        for (const [key, descriptor] of previous) {
+            if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+            else delete globalThis[key];
+        }
+    }
 });

@@ -1,5 +1,5 @@
 import { formatLocalTimestamp } from '@/lib/clientText.js';
-import {deduplicateToolPermissionGroups, getToolPermissionKey, normalizeToolPermissionMode, readToolPermission} from '@/features/tools/toolPermissions.js';
+import {applyBulkToolPermissionMode, deduplicateToolPermissionGroups, getToolPermissionKey, normalizeToolPermissionMode, readToolPermission} from '@/features/tools/toolPermissions.js';
 import OrderedOptionsEditor from './OrderedOptionsEditor.jsx';
 import JsonConfigEditor from './JsonConfigEditor.jsx';
 import MultilineEditor from '@/components/ui/MultilineEditor.jsx';
@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
     Info,
@@ -34,6 +35,7 @@ import {
     Wifi,
     WifiOff,
     Server,
+    TriangleAlert,
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -651,12 +653,22 @@ function ListItem({ item, path }) {
         const overrides = Object.fromEntries(
             (template.fields || []).map((field) => [
                 field.name,
-                templateInputs[field.name] ?? template.values?.[field.name] ?? '',
+                templateInputs[field.name] ?? template.values?.[field.name] ?? (field.type === 'switch' ? false : ''),
             ]),
         );
         addItem({ ...template, values: { ...template.values, ...overrides } });
         setAddDialogOpen(false);
     }, [addItem, addTemplates, selectedTemplateId, templateInputs]);
+
+    const updateTemplateSwitch = useCallback((name, checked) => {
+        setTemplateInputs((previous) => ({
+            ...previous,
+            [name]: checked,
+            // 图片识别任务必须能够把图片传给模型。
+            ...(name === 'as_image_recognize' && checked ? { support_vision: true } : {}),
+            ...(name === 'support_vision' && !checked ? { as_image_recognize: false } : {}),
+        }));
+    }, []);
 
     const removeItem = useCallback(
         (internalId) => {
@@ -773,7 +785,7 @@ function ListItem({ item, path }) {
                                     </div>
                                 </Listbox>
                             </div>
-                            {(selectedTemplate?.fields || []).map((field) => (
+                            {(selectedTemplate?.fields || []).filter((field) => field.type !== 'switch').map((field) => (
                                 <label key={field.name} className="block space-y-1.5 text-sm">
                                     <span>{t(field.text)}</span>
                                     <Input
@@ -791,6 +803,35 @@ function ListItem({ item, path }) {
                                     />
                                 </label>
                             ))}
+                            {(selectedTemplate?.fields || []).some((field) => field.type === 'switch') && (
+                                <div className="space-y-1.5">
+                                    <div className="text-sm font-medium text-[#1a1d21] dark:text-[#e4e7eb]">
+                                        模型能力与用途
+                                    </div>
+                                    <div className="rounded-xl border border-[#d0d7de] divide-y divide-[#e1e4e8] dark:border-[#3a3f45] dark:divide-[#3a3f45]">
+                                        {(selectedTemplate?.fields || []).filter((field) => field.type === 'switch').map((field) => (
+                                            <label key={field.name} className="flex items-center justify-between gap-4 px-3 py-3 cursor-pointer">
+                                                <span className="min-w-0">
+                                                    <span className="block text-sm font-medium text-[#1a1d21] dark:text-[#e4e7eb]">
+                                                        {t(field.text)}
+                                                    </span>
+                                                    {field.tips && (
+                                                        <span className="mt-0.5 block text-xs leading-relaxed text-[#656d76] dark:text-[#9ca3af]">
+                                                            {field.tips}
+                                                        </span>
+                                                    )}
+                                                </span>
+                                                <Switch
+                                                    className="shrink-0"
+                                                    checked={Boolean(templateInputs[field.name] ?? selectedTemplate.values?.[field.name] ?? false)}
+                                                    onCheckedChange={(checked) => updateTemplateSwitch(field.name, checked)}
+                                                    aria-label={t(field.text)}
+                                                />
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             {(() => {
                                 const selected =
                                     addTemplates.find((entry) => entry.id === selectedTemplateId) || addTemplates[0];
@@ -3033,6 +3074,7 @@ function ToolPermissionMatrixItem({ item, path }) {
               ];
     const [query, setQuery] = useState('');
     const [manualExpandedGroups, setManualExpandedGroups] = useState(() => new Set());
+    const [allowConfirmation, setAllowConfirmation] = useState(null);
     const normalizedQuery = query.trim().toLowerCase();
 
     const resolveMode = useCallback(
@@ -3059,17 +3101,38 @@ function ToolPermissionMatrixItem({ item, path }) {
 
     const setGroupMode = useCallback(
         (group, mode) => {
-            const nextPermissions = { ...permissions };
-            for (const tool of group.sourceTools || group.tools || []) {
-                const allowedModes = tool.allowedModes || ['allow', 'ask', 'deny'];
-                if (!tool.locked && allowedModes.includes(mode)) nextPermissions[getToolPermissionKey(tool)] = mode;
-            }
-            update(path, { ...value, permissions: nextPermissions });
+            update(path, {
+                ...value,
+                permissions: applyBulkToolPermissionMode(permissions, group.sourceTools || group.tools || [], mode),
+            });
         },
         [path, permissions, update, value],
     );
 
     const allTools = groups.flatMap((group) => group.tools || []);
+    const setAllMode = (mode) => {
+        update(path, {
+            ...value,
+            fallbackMode: mode,
+            permissions: applyBulkToolPermissionMode(permissions, allTools, mode),
+        });
+    };
+    const requestBulkMode = (mode, group = null) => {
+        if (mode === 'allow') {
+            setAllowConfirmation(group ? { groupId: group.id, groupName: group.name } : { all: true });
+            return;
+        }
+        if (group) setGroupMode(group, mode);
+        else setAllMode(mode);
+    };
+    const confirmAllow = () => {
+        if (allowConfirmation?.all) setAllMode('allow');
+        else {
+            const group = groups.find((entry) => entry.id === allowConfirmation?.groupId);
+            if (group) setGroupMode(group, 'allow');
+        }
+        setAllowConfirmation(null);
+    };
     const counts = allTools.reduce(
         (result, tool) => {
             const mode = resolveMode(tool);
@@ -3142,6 +3205,24 @@ function ToolPermissionMatrixItem({ item, path }) {
                         );
                     })}
                 </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[#eaeef2] pt-3 dark:border-[#30363d]">
+                    <span className="mr-auto text-xs text-[#656d76] dark:text-[#8b949e]">批量设置所有工具</span>
+                    {modes.map((mode) => {
+                        const Icon = TOOL_PERMISSION_ICONS[mode.name] || CircleHelp;
+                        return (
+                            <button
+                                type="button"
+                                key={mode.name}
+                                onClick={() => requestBulkMode(mode.name)}
+                                className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition hover:brightness-95 ${TOOL_PERMISSION_STYLES[mode.name] || ''}`}
+                            >
+                                <Icon className="h-3.5 w-3.5" />
+                                全部{mode.text}
+                            </button>
+                        );
+                    })}
+                </div>
+                <p className="mt-2 text-[11px] text-[#8c959f]">系统固定或不支持所选状态的工具保持原样。</p>
             </div>
 
             <div className="space-y-4">
@@ -3181,7 +3262,7 @@ function ToolPermissionMatrixItem({ item, path }) {
                                                 <button
                                                     type="button"
                                                     key={mode.name}
-                                                    onClick={() => setGroupMode(group, mode.name)}
+                                                    onClick={() => requestBulkMode(mode.name, group)}
                                                     className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition hover:brightness-95 ${TOOL_PERMISSION_STYLES[mode.name] || ''}`}
                                                 >
                                                     <Icon className="h-3.5 w-3.5" />
@@ -3273,6 +3354,25 @@ function ToolPermissionMatrixItem({ item, path }) {
                     </div>
                 )}
             </div>
+            <AlertDialog open={Boolean(allowConfirmation)} onOpenChange={(open) => { if (!open) setAllowConfirmation(null); }}>
+                <AlertDialogContent className="z-[300] sm:max-w-[440px]">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2">
+                            <TriangleAlert className="h-5 w-5 text-amber-600" />
+                            确认全部允许？
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="leading-relaxed">
+                            {allowConfirmation?.all ? '这会将所有可编辑工具' : `这会将“${allowConfirmation?.groupName || '此工具组'}”中可编辑的工具`}
+                            设为允许。AI 使用这些工具时将不再逐项询问，可能读取或修改数据、启动后台任务。
+                            系统固定或不支持“允许”的工具不会更改。确认后还需保存，仅影响之后新建的会话。
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setAllowConfirmation(null)}>取消</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmAllow}>确认全部允许</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
