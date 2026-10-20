@@ -6,6 +6,7 @@ import rehypeKatex from 'rehype-katex';
 
 import { rehypeInlineCodeProperty, remarkCardReplace } from './remarkDirectiveToComponent.js';
 import remarkCwmLinks from './remarkCwmLinks.js';
+import remarkVideoDirective from './remarkVideoDirective.js';
 
 import CodeBlock from './CodeBlock.jsx';
 import './MarkdownContent.css';
@@ -26,6 +27,7 @@ import 'katex/dist/katex.min.css';
 import { resolveCwmUrl } from '@/lib/virtualUrl.js';
 import { downloadDocumentResource, isDocumentDownloadUrl } from '@/lib/resourceDownload.js';
 import ResourceImage from './ResourceImage.jsx';
+import ResourceVideo from './ResourceVideo.jsx';
 import { toast } from 'sonner';
 import { isUniversalModalLink, openUniversalModalLink } from '@/components/modal/universalModal.js';
 
@@ -435,6 +437,8 @@ const createComponents = ({
             return <ResourceImage key={src} src={src} alt={alt} galleryId={contextId} className={`cwm-md-image ${className || ''}`} {...props} />;
         },
 
+        video: ({ src, title, poster }) => <ResourceVideo src={src} title={title} poster={poster} />,
+
         'card-replace': ({ id, type, node }) => {
             const finalId = String(id || node?.properties?.id || '');
             const tokenType = String(type || node?.properties?.type || '');
@@ -682,7 +686,7 @@ function MarkdownRendererInner({
 
     return (
         <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath, remarkCardReplace, remarkCwmLinks, rehypeInlineCodeProperty]}
+            remarkPlugins={[remarkGfm, remarkMath, remarkCardReplace, remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
             rehypePlugins={[rehypeKatex, ...extraRehypePlugins]}
             components={components}
             urlTransform={(uri, key, node) => {

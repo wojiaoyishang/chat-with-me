@@ -149,9 +149,37 @@ export default function WorkflowNodePanel({
         </p>
       </section>
       {definition.source ? (
-        <p className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
-          输入值在画布节点内配置。快速创建任务时会根据这些输入节点生成填写表单。
-        </p>
+        <div className="space-y-3">
+          <p className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
+            输入值在画布节点内配置。快速创建任务时会根据这些输入节点生成填写表单。
+          </p>
+          {definition.source.configField === "resources" &&
+            schema.properties?.preserveSelectionOrder && (
+              <section className="space-y-2 rounded-lg border p-3">
+                <WorkflowDataField
+                  label={
+                    schema.properties.preserveSelectionOrder.display?.title ||
+                    "按选择顺序解析附件"
+                  }
+                  schema={schema.properties.preserveSelectionOrder}
+                  rootSchema={schema}
+                  value={node.config?.preserveSelectionOrder ?? true}
+                  disabled={disabled}
+                  onChange={(value) =>
+                    updateConfig({
+                      ...node.config,
+                      preserveSelectionOrder: value,
+                    })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  {schema.properties.preserveSelectionOrder.display
+                    ?.description ||
+                    "开启后，任务会按下方已选附件的排列顺序解析内容。"}
+                </p>
+              </section>
+            )}
+        </div>
       ) : (
         <>
           {definition.repeatedInputs && (

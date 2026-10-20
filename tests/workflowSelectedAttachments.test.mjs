@@ -26,6 +26,7 @@ async function mount({
   disabled = false,
   knownItems = {},
   resolve,
+  reorderable = false,
 } = {}) {
   const dom = new JSDOM('<div id="root"></div>', {
     url: "http://localhost/",
@@ -101,12 +102,14 @@ async function mount({
   );
   const root = createRoot(document.getElementById("root"));
   const removed = [],
-    previews = [];
+    previews = [],
+    reordered = [];
   let props = {
     resources,
     disabled,
     knownItems,
     onRemove: (uri) => removed.push(uri),
+    onReorder: reorderable ? (next) => reordered.push(next) : undefined,
     onPreviewOpenChange: (value) => previews.push(value),
   };
   const render = async (patch = {}) => {
@@ -120,6 +123,7 @@ async function mount({
   return {
     calls,
     removed,
+    reordered,
     previews,
     render,
     close: async () => {
@@ -181,6 +185,112 @@ test("single authorized image shows a contained preview and remains viewable in 
   }
 });
 
+test("selected attachments can be reordered by drag or accessible move buttons without reloading metadata", async () => {
+  const app = await mount({
+    resources: [text.uri, image.uri],
+    reorderable: true,
+  });
+  try {
+    assert.equal(app.calls.length, 1);
+    await act(() =>
+      document.querySelector(`[aria-label="下移 ${text.name}"]`).click(),
+    );
+    assert.deepEqual(app.reordered.at(-1), [image.uri, text.uri]);
+    await app.render({ resources: [image.uri, text.uri] });
+    assert.equal(app.calls.length, 1, "reordering keeps resolved metadata");
+    assert.deepEqual(
+      [...document.querySelectorAll(".workflow-selected-attachment-name")].map(
+        (node) => node.textContent,
+      ),
+      [image.name, text.name],
+    );
+    const rows = document.querySelectorAll(".workflow-selected-attachment-list li");
+    for (const [index, row] of [...rows].entries()) {
+      const top = index * 50;
+      row.getBoundingClientRect = () => ({
+        x: 0,
+        y: top,
+        top,
+        left: 0,
+        right: 300,
+        bottom: top + 40,
+        width: 300,
+        height: 40,
+      });
+    }
+    const handle = document.querySelector(
+      `[aria-label="拖动 ${text.name} 调整顺序"]`,
+    );
+    assert.equal(handle.draggable, false);
+    const pointer = (type, y) =>
+      new window.PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        isPrimary: true,
+        pointerId: 1,
+        clientX: 10,
+        clientY: y,
+      });
+    await act(() => handle.dispatchEvent(pointer("pointerdown", 70)));
+    await act(async () => {
+      document.dispatchEvent(pointer("pointermove", 10));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    await act(async () => {
+      document.dispatchEvent(pointer("pointermove", 5));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    await act(() => document.dispatchEvent(pointer("pointerup", 10)));
+    assert.deepEqual(app.reordered.at(-1), [text.uri, image.uri]);
+
+    await app.render({ resources: [text.uri, image.uri] });
+    for (const [index, row] of [
+      ...document.querySelectorAll(".workflow-selected-attachment-list li"),
+    ].entries()) {
+      const top = index * 50;
+      row.getBoundingClientRect = () => ({
+        x: 0,
+        y: top,
+        top,
+        left: 0,
+        right: 300,
+        bottom: top + 40,
+        width: 300,
+        height: 40,
+      });
+    }
+    const name = [...document.querySelectorAll(".workflow-selected-attachment-name")]
+      .find((node) => node.textContent === image.name);
+    const nativeDrag = new window.Event("dragstart", {
+      bubbles: true,
+      cancelable: true,
+    });
+    assert.equal(name.dispatchEvent(nativeDrag), false);
+    await act(() => name.dispatchEvent(pointer("pointerdown", 70)));
+    await act(async () => {
+      document.dispatchEvent(pointer("pointermove", 10));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    await act(async () => {
+      document.dispatchEvent(pointer("pointermove", 5));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    await act(() => document.dispatchEvent(pointer("pointerup", 10)));
+    assert.deepEqual(app.reordered.at(-1), [image.uri, text.uri]);
+    const reorderCount = app.reordered.length;
+    const previewButton = document.querySelector(
+      `[aria-label="查看 ${text.name}"]`,
+    );
+    await act(() => previewButton.dispatchEvent(pointer("pointerdown", 20)));
+    await act(() => document.dispatchEvent(pointer("pointermove", 80)));
+    await act(() => document.dispatchEvent(pointer("pointerup", 80)));
+    assert.equal(app.reordered.length, reorderCount);
+  } finally {
+    await app.close();
+  }
+});
+
 test("image-looking filenames use authoritative text metadata and open the text preview", async () => {
   const app = await mount({ resources: [text.uri] });
   try {
@@ -207,7 +317,11 @@ test("image-looking filenames use authoritative text metadata and open the text 
 });
 
 test("multiple selections show names in their input order instead of a large picture", async () => {
-  const app = await mount({ resources: [text.uri, image.uri], disabled: true });
+  const app = await mount({
+    resources: [text.uri, image.uri],
+    disabled: true,
+    reorderable: true,
+  });
   try {
     assert.equal(document.querySelector(".workflow-selected-image"), null);
     assert.deepEqual(
@@ -221,6 +335,11 @@ test("multiple selections show names in their input order instead of a large pic
         .length,
       2,
     );
+    assert.equal(
+      document.querySelector(".workflow-selected-attachment-grip"),
+      null,
+    );
+    assert.equal(document.querySelector('[aria-label="上移 备注.png"]'), null);
   } finally {
     await app.close();
   }

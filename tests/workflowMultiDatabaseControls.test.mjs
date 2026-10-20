@@ -189,3 +189,18 @@ test("node model queue inherits the global order and preserves hidden legacy con
   }finally{await ui.close();}
 });
 
+test("attachment source exposes its default-on parse order setting in the node panel",async()=>{
+  const definition={kind:"attachments",version:2,display:{title:"提取附件"},source:{configField:"resources",valueSchema:{type:"array",ui:{widget:"resource-source-picker"}}},constructorSchema:{type:"object",properties:{resources:{type:"array"},preserveSelectionOrder:{type:"boolean",default:true,display:{title:"按选择顺序解析附件",description:"根据已选顺序解析。"}}}}};
+  const graph={nodes:[{id:"attachments-1",kind:"attachments",version:2,config:{resources:["cwm://artifact/a","cwm://artifact/b"]}}],edges:[],settings:{}};
+  function GraphPanel({value,onChange}){return React.createElement(Panel,{graph:value,node:value.nodes[0],definitions:[definition],models:[],onGraphChange:onChange,onValidity:()=>{}});}
+  const ui=await mount(GraphPanel,{},graph);
+  try{
+    const toggle=document.querySelector('[aria-label="按选择顺序解析附件"]');
+    assert.ok(toggle);
+    assert.equal(toggle.checked,true);
+    await click(toggle);
+    assert.equal(ui.state.value.nodes[0].config.preserveSelectionOrder,false);
+    assert.deepEqual(ui.state.value.nodes[0].config.resources,["cwm://artifact/a","cwm://artifact/b"]);
+  }finally{await ui.close();}
+});
+

@@ -594,6 +594,14 @@
 .workflow-selected-image figcaption > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .workflow-selected-attachment-list { display: grid; gap: 5px; max-height: 160px; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 0; list-style: none; }
 .workflow-selected-attachment-list li { display: flex; align-items: center; gap: 6px; min-width: 0; padding: 7px 8px; background: color-mix(in srgb, var(--muted) 45%, var(--background)); border-radius: 7px; font-size: 11px; }
+.workflow-selected-attachment-list li.is-sortable { cursor: grab; user-select: none; }
+.workflow-selected-attachment-list li.is-sortable:active { cursor: grabbing; }
+.workflow-selected-attachment-list li.is-dragging { position: relative; z-index: 1; opacity: .45; }
+.workflow-selected-order-hint { margin: 0 0 6px; font-size: 11px; color: var(--muted-foreground); }
+.workflow-selected-attachment-grip { display: inline-flex; flex: 0 0 20px; align-items: center; justify-content: center; align-self: stretch; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--muted-foreground); cursor: grab; touch-action: none; user-select: none; }
+.workflow-selected-attachment-grip:active { cursor: grabbing; }
+.workflow-selected-attachment-grip:hover, .workflow-selected-attachment-grip:focus-visible { background: var(--accent); color: var(--foreground); }
+.workflow-selected-attachment-index { min-width: 12px; text-align: center; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
 .workflow-selected-attachment-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .workflow-selected-attachment-name small { display: block; margin-top: 2px; color: var(--muted-foreground); font-size: 10px; }
 .workflow-selected-attachment-status { display: flex; align-items: center; gap: 5px; margin: 6px 0 0; font-size: 10px; color: var(--muted-foreground); }

@@ -1104,6 +1104,39 @@ function TextInputItem({ item, path }) {
         });
     };
 
+    if (item.multiline && item.inlineMultiline) {
+        const fieldId = `setting-${path.join('-')}`;
+        return (
+            <div className="w-full min-w-0 space-y-2 px-3 py-4 sm:px-4">
+                <div className="flex items-center justify-between gap-3">
+                    <label htmlFor={fieldId} className="text-sm font-medium">
+                        {item.text}
+                        {item.required && <span className="ml-0.5 text-red-500">*</span>}
+                    </label>
+                    {nullable && (
+                        <button type="button" onClick={toggleNull} className="text-xs text-muted-foreground hover:text-foreground">
+                            {isNull ? '自定义' : '使用默认'}
+                        </button>
+                    )}
+                </div>
+                {item.tips && <p className="text-xs leading-relaxed text-muted-foreground">{item.tips}</p>}
+                {!isNull && (
+                    <MultilineEditor
+                        id={fieldId}
+                        label={item.text}
+                        value={val}
+                        onChange={(event) => update(path, event.target.value)}
+                        placeholder={item.placeholder || ''}
+                        rows={item.rows || 12}
+                        required={item.required}
+                        maxLength={item.maxLength}
+                        className="w-full min-w-0"
+                    />
+                )}
+            </div>
+        );
+    }
+
     if (item.multiline) {
         return (
             <SettingRow

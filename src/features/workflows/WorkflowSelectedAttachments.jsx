@@ -1,5 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-import { Eye, ImageOff, Loader2, Paperclip, X } from "lucide-react";
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  ArrowDown,
+  ArrowUp,
+  Eye,
+  GripVertical,
+  ImageOff,
+  Loader2,
+  Paperclip,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import apiClient from "@/lib/apiClient.js";
 import { resolveResourceUrl } from "@/lib/virtualUrl.js";
@@ -8,18 +32,133 @@ import WorkflowResourcePreview from "./WorkflowResourcePreview.jsx";
 const artifactUri = (uri) =>
   typeof uri === "string" && /^cwm:\/\/artifact\/[A-Za-z0-9._-]+$/i.test(uri);
 
+function SortableAttachmentRow({
+  uri,
+  index,
+  count,
+  item,
+  unavailable,
+  name,
+  canReorder,
+  onMove,
+  onOpen,
+  onRemove,
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: uri, disabled: !canReorder });
+
+  return (
+    <li
+      ref={setNodeRef}
+      className={
+        canReorder
+          ? `nodrag is-sortable${isDragging ? " is-dragging" : ""}`
+          : undefined
+      }
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      {...listeners}
+    >
+      {canReorder && (
+        <button
+          type="button"
+          ref={setActivatorNodeRef}
+          className="workflow-selected-attachment-grip nodrag"
+          aria-label={`拖动 ${name} 调整顺序`}
+          title="拖动调整顺序"
+          draggable={false}
+          onDragStart={(event) => event.preventDefault()}
+          {...attributes}
+        >
+          <GripVertical className="size-3.5" />
+        </button>
+      )}
+      {canReorder && (
+        <span className="workflow-selected-attachment-index">{index + 1}</span>
+      )}
+      <Paperclip className="size-3.5 shrink-0 text-muted-foreground" />
+      <span className="workflow-selected-attachment-name" title={item?.name || uri}>
+        {name}
+        {unavailable && <small>附件不可用或无权查看</small>}
+      </span>
+      {item?.id && !unavailable && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-6 shrink-0"
+          aria-label={`查看 ${name}`}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={() => onOpen(item)}
+        >
+          <Eye className="size-3.5" />
+        </Button>
+      )}
+      {canReorder && (
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-6 shrink-0"
+            aria-label={`上移 ${name}`}
+            disabled={index === 0}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => onMove(uri, index - 1)}
+          >
+            <ArrowUp className="size-3" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-6 shrink-0"
+            aria-label={`下移 ${name}`}
+            disabled={index === count - 1}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => onMove(uri, index + 1)}
+          >
+            <ArrowDown className="size-3" />
+          </Button>
+        </>
+      )}
+      {onRemove && (
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="size-6 shrink-0"
+          aria-label={`移除 ${uri}`}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={() => onRemove(uri)}
+        >
+          <X className="size-3" />
+        </Button>
+      )}
+    </li>
+  );
+}
+
 /** Display confirmed resources even when their input is read-only. */
 export default function WorkflowSelectedAttachments({
   resources = [],
   knownItems = {},
   onRemove,
+  onReorder,
   disabled,
   onPreviewOpenChange,
 }) {
+  const selected = resources.filter((uri) => typeof uri === "string");
+  // Changing only the order must not reload metadata or interrupt a preview.
   const signature = JSON.stringify(
-    resources.filter((uri) => typeof uri === "string"),
+    [...new Set(selected.filter(artifactUri))].sort(),
   );
-  const selected = JSON.parse(signature);
   const [resolved, setResolved] = useState({
     signature: "",
     items: {},
@@ -29,11 +168,17 @@ export default function WorkflowSelectedAttachments({
   const [error, setError] = useState("");
   const [previewItem, setPreviewItem] = useState(null);
   const [imageFailed, setImageFailed] = useState(false);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
   const previewChanged = useRef(onPreviewOpenChange);
   previewChanged.current = onPreviewOpenChange;
 
   useEffect(() => {
-    const uris = [...new Set(JSON.parse(signature).filter(artifactUri))];
+    const uris = JSON.parse(signature);
     const controller = new AbortController();
     setError("");
     if (!uris.length) {
@@ -93,6 +238,22 @@ export default function WorkflowSelectedAttachments({
     previewChanged.current?.(true);
     setPreviewItem(item);
   };
+  const reorder = (uri, targetIndex) => {
+    const sourceIndex = selected.indexOf(uri);
+    if (
+      !onReorder ||
+      disabled ||
+      sourceIndex < 0 ||
+      targetIndex < 0 ||
+      targetIndex >= selected.length ||
+      sourceIndex === targetIndex
+    )
+      return;
+    const next = [...selected];
+    next.splice(targetIndex, 0, next.splice(sourceIndex, 1)[0]);
+    onReorder(next);
+  };
+  const canReorder = Boolean(onReorder) && !disabled && selected.length > 1;
   const single = selected.length === 1 && itemFor(selected[0]);
   const singleImage = single?.type === "image" && !isUnavailable(selected[0]);
   const singleUrl = singleImage
@@ -153,49 +314,50 @@ export default function WorkflowSelectedAttachments({
           </figcaption>
         </figure>
       ) : (
-        <ul className="workflow-selected-attachment-list pretty-scrollbar">
-          {selected.map((uri, index) => {
-            const item = itemFor(uri);
-            const unavailable = isUnavailable(uri);
-            const name = item?.name || item?.title || `附件 ${index + 1}`;
-            return (
-              <li key={uri}>
-                <Paperclip className="size-3.5 shrink-0 text-muted-foreground" />
-                <span
-                  className="workflow-selected-attachment-name"
-                  title={item?.name || uri}
-                >
-                  {name}
-                  {unavailable && <small>附件不可用或无权查看</small>}
-                </span>
-                {item?.id && !unavailable && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="size-6 shrink-0"
-                    aria-label={`查看 ${name}`}
-                    onClick={() => open(item)}
-                  >
-                    <Eye className="size-3.5" />
-                  </Button>
-                )}
-                {onRemove && !disabled && (
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    className="size-6 shrink-0"
-                    aria-label={`移除 ${uri}`}
-                    onClick={() => onRemove(uri)}
-                  >
-                    <X className="size-3" />
-                  </Button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <>
+          {canReorder && (
+            <p className="workflow-selected-order-hint">
+              已选附件 · 拖动附件行或使用上下按钮调整顺序
+            </p>
+          )}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={({ active, over }) => {
+              if (over && active.id !== over.id)
+                reorder(active.id, selected.indexOf(over.id));
+            }}
+          >
+            <SortableContext
+              items={selected}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul
+                className="workflow-selected-attachment-list pretty-scrollbar"
+                onDragStartCapture={(event) => event.preventDefault()}
+              >
+                {selected.map((uri, index) => {
+                  const item = itemFor(uri);
+                  return (
+                    <SortableAttachmentRow
+                      key={uri}
+                      uri={uri}
+                      index={index}
+                      count={selected.length}
+                      item={item}
+                      unavailable={isUnavailable(uri)}
+                      name={item?.name || item?.title || `附件 ${index + 1}`}
+                      canReorder={canReorder}
+                      onMove={reorder}
+                      onOpen={open}
+                      onRemove={onRemove && !disabled ? onRemove : undefined}
+                    />
+                  );
+                })}
+              </ul>
+            </SortableContext>
+          </DndContext>
+        </>
       )}
       {loading && !single && (
         <p className="workflow-selected-attachment-status">

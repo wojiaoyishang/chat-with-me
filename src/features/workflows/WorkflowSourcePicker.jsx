@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -211,6 +212,9 @@ function CompactWorkflowSourcePicker(props) {
           knownItems={knownItems}
           disabled={props.disabled}
           onPreviewOpenChange={setPreviewOpen}
+          onReorder={(resources) =>
+            props.onChange({ ...props.value, resources })
+          }
         />
       )}
     </div>
@@ -408,6 +412,30 @@ function FullWorkflowSourcePicker({
         />
       ) : (
         <>
+          {!fixedType && sourceType === "file" && (
+            <div className="flex items-start justify-between gap-3 rounded-lg border bg-muted/30 p-3">
+              <div className="min-w-0">
+                <label
+                  className="text-xs font-medium"
+                  htmlFor="workflow-source-order"
+                >
+                  按选择顺序解析附件
+                </label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  默认开启；可在下方拖动已选附件调整顺序。
+                </p>
+              </div>
+              <Switch
+                id="workflow-source-order"
+                aria-label="按选择顺序解析附件"
+                checked={value.preserveSelectionOrder !== false}
+                disabled={disabled || uploading}
+                onCheckedChange={(preserveSelectionOrder) =>
+                  onChange({ ...value, preserveSelectionOrder })
+                }
+              />
+            </div>
+          )}
           <div className="flex min-w-0 gap-2">
             <div className="relative min-w-0 flex-1">
               <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
@@ -622,6 +650,7 @@ function FullWorkflowSourcePicker({
               knownItems={resourceItems}
               disabled={disabled || uploading}
               onPreviewOpenChange={onPreviewOpenChange}
+              onReorder={(resources) => onChange({ ...value, resources })}
               onRemove={(uri) =>
                 onChange({
                   ...value,

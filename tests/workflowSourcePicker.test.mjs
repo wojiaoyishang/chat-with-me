@@ -8,6 +8,7 @@ import { createRoot } from "react-dom/client";
 async function mount({
   initialValue = { resources: [] },
   disabled = false,
+  compact = true,
 } = {}) {
   const dom = new JSDOM('<div id="root"></div>', {
     url: "http://localhost/",
@@ -96,6 +97,9 @@ async function mount({
               else if (requested.endsWith("/checkbox"))
                 contents =
                   "export const Checkbox=({checked,onCheckedChange,...props})=><input type='checkbox' checked={checked} onChange={event=>onCheckedChange(event.target.checked)} {...props}/>;";
+              else if (requested.endsWith("/switch"))
+                contents =
+                  "export const Switch=({checked,onCheckedChange,...props})=><input type='checkbox' checked={checked} onChange={event=>onCheckedChange(event.target.checked)} {...props}/>;";
               else if (requested.endsWith("/dialog"))
                 contents = `export const Dialog=({open,onOpenChange,children})=>open?<div data-testid="resource-preview">{children}<button aria-label="关闭资源预览" onClick={()=>onOpenChange(false)}>关闭</button></div>:null;export const DialogContent=({children,...props})=><div {...props}>{children}</div>;export const DialogHeader=({children,...props})=><div {...props}>{children}</div>;export const DialogTitle=({children,...props})=><h2 {...props}>{children}</h2>;export const DialogDescription=({children,...props})=><p {...props}>{children}</p>;`;
               else if (requested.endsWith("virtualUrl.js"))
@@ -121,7 +125,7 @@ async function mount({
     const [value, onChange] = React.useState(initialValue);
     state.value = value;
     return React.createElement(Picker, {
-      compact: true,
+      compact,
       fixedType: "file",
       value,
       onChange,
@@ -178,6 +182,53 @@ test("attachment picker confirms staged selection and discards unconfirmed chang
     assert.deepEqual(ui.state.value.resources, ["cwm://artifact/file-1"]);
     await click(trigger);
     assert.deepEqual(ui.state.value.resources, ["cwm://artifact/file-1"]);
+  } finally {
+    await ui.close();
+  }
+});
+
+test("full attachment picker keeps chosen order for quick-run input values", async () => {
+  const ui = await mount({ compact: false });
+  try {
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 230)));
+    await click(document.querySelector('[aria-label="选择 示例附件.png"]'));
+    await click(document.querySelector('[aria-label="选择 阅读材料.md"]'));
+    await click(document.querySelector('[aria-label="上移 阅读材料.md"]'));
+    assert.deepEqual(ui.state.value.resources, [
+      "cwm://artifact/file-2",
+      "cwm://artifact/file-1",
+    ]);
+  } finally {
+    await ui.close();
+  }
+});
+
+test("attachment picker confirms selected order and can reorder the confirmed list", async () => {
+  const ui = await mount();
+  try {
+    await click(document.querySelector('[aria-label="选择附件输入"]'), 230);
+    await click(document.querySelector('[aria-label="选择 示例附件.png"]'));
+    await click(document.querySelector('[aria-label="选择 阅读材料.md"]'));
+    await click(document.querySelector('[aria-label="上移 阅读材料.md"]'));
+    assert.deepEqual(
+      ui.state.value.resources,
+      [],
+      "ordering stays in the draft until confirmation",
+    );
+    await click(
+      [...document.querySelectorAll("button")].find(
+        (button) => button.textContent === "确认选择",
+      ),
+    );
+    assert.deepEqual(ui.state.value.resources, [
+      "cwm://artifact/file-2",
+      "cwm://artifact/file-1",
+    ]);
+    await click(document.querySelector('[aria-label="下移 阅读材料.md"]'));
+    assert.deepEqual(ui.state.value.resources, [
+      "cwm://artifact/file-1",
+      "cwm://artifact/file-2",
+    ]);
   } finally {
     await ui.close();
   }

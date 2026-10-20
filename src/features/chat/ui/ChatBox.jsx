@@ -12,6 +12,7 @@ import { emitEvent, onEvent } from '@/context/useEventStore.jsx';
 import ChatBoxHeader from './ChatBoxHeader';
 import ToolButtons, { BuiltinToolButton } from './ToolButtons';
 import AttachmentShowcase from './AttachmentShowcase';
+import ChatAttachmentLibraryDialog from './ChatAttachmentLibraryDialog';
 import FileUploadProgress from './FileUploadProgress';
 import DropFileLayer from './DropFileLayer.jsx';
 import MessageInput from './chatbox/components/MessageInput';
@@ -21,6 +22,7 @@ import VoiceInputButton from './chatbox/components/VoiceInputButton';
 import VoicePermissionDialog from './chatbox/components/VoicePermissionDialog';
 import ChatBoxInteractionHost from './chatbox/components/ChatBoxInteractionHost';
 import { getAttachmentId } from '../attachmentVision.js';
+import { appendLibraryAttachments } from '../attachmentLibrary.js';
 import {
     clearComposerDraft,
     moveComposerConversationDrafts,
@@ -225,6 +227,7 @@ function ChatBox({
     const [pendingToolPermissionNames, setPendingToolPermissionNames] = useState(() => new Set());
     const [conversationToolSyncCount, setConversationToolSyncCount] = useState(0);
     const [workspaceSettingsDialogOpen, setWorkspaceSettingsDialogOpen] = useState(false);
+    const [attachmentLibraryRequest, setAttachmentLibraryRequest] = useState(null);
     // Workspace selection is persisted through a dedicated HTTP endpoint. Keep the
     // mutation serialized and expose a completion barrier to message submission so a
     // freshly selected remote Workspace cannot lose a race against turn.start.
@@ -1536,6 +1539,15 @@ function ChatBox({
                           onClick: FilePickerCallback,
                           autoClose: true,
                       },
+                      {
+                          type: 'button',
+                          text: 'attachment_library_select',
+                          iconType: 'svg',
+                          iconData:
+                              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 13h8M8 17h5"/></svg>',
+                          onClick: () => setAttachmentLibraryRequest({ conversationId }),
+                          autoClose: true,
+                      },
                   ];
 
             if (data.ignoreAttachmentTools !== null && data.ignoreAttachmentTools !== undefined) {
@@ -2352,7 +2364,7 @@ function ChatBox({
         () => ({
             toolsLoadedStatus,
             extraTools,
-            attachmentTools,
+            attachmentTools: isReadOnly || activeExecution?.active || ignoreAttachmentTools ? [] : attachmentTools,
             tools: visibleBuiltinTools.filter((tool) => tool.name !== 'enable_thinking'),
             toolsStatus: activeToolsStatus,
             setToolsStatus,
@@ -2376,6 +2388,8 @@ function ChatBox({
             toolsLoadedStatus,
             extraTools,
             attachmentTools,
+            activeExecution?.active,
+            ignoreAttachmentTools,
             visibleBuiltinTools,
             activeToolsStatus,
             setToolsStatus,
@@ -2395,8 +2409,30 @@ function ChatBox({
 
     const rootMaxHeightStyle = attachmentHeight > 0 ? `calc(100% + ${attachmentHeight}px)` : '100%';
 
+    const attachmentLibraryVisible = Boolean(
+        attachmentLibraryRequest && attachmentLibraryRequest.conversationId === conversationId,
+    );
+
+    const handleLibraryAttachmentsSelected = (records) => {
+        if (attachmentLibraryVisible && !isReadOnly && !ignoreAttachmentTools && !activeExecution?.active) {
+            setAttachments((current) => appendLibraryAttachments(current, records));
+        }
+        setAttachmentLibraryRequest(null);
+    };
+
+    useEffect(() => {
+        setAttachmentLibraryRequest(null);
+    }, [conversationId]);
+
     return (
         <>
+            {attachmentLibraryVisible && (
+                <ChatAttachmentLibraryDialog
+                    attachments={attachmentsMeta}
+                    onClose={() => setAttachmentLibraryRequest(null)}
+                    onConfirm={handleLibraryAttachmentsSelected}
+                />
+            )}
             <ConversationToolsDialog
                 open={conversationToolsDialogOpen}
                 onOpenChange={setConversationToolsDialogOpen}
