@@ -329,6 +329,15 @@ export const createMarkdownCopyContentComponent = (copyContent) => {
     };
 };
 
+// Keep the code renderer identity stable while the message grows. Replacing a
+// renderer function remounts its whole subtree and can discard a pressed copy button.
+const MarkdownCode = ({ className, children, isCodeBlock, ...props }) => {
+    const match = /\blanguage-([^\s]+)/.exec(className || '');
+    const language = match ? match[1] : '';
+    if (!isCodeBlock) return <code className="cwm-md-inline-code" {...props}>{children}</code>;
+    return <CodeBlock codeString={String(children || '').replace(/\n$/, '')} language={language} />;
+};
+
 const createComponents = ({
     contextId = '',
     conversationId = null,
@@ -433,20 +442,7 @@ const createComponents = ({
             );
         },
 
-        code({ className, children, isCodeBlock, ...props }) {
-            const match = /\blanguage-([^\s]+)/.exec(className || '');
-            const language = match ? match[1] : '';
-
-            if (!isCodeBlock) {
-                return (
-                    <code className="cwm-md-inline-code" {...props}>
-                        {children}
-                    </code>
-                );
-            }
-
-            return <CodeBlock codeString={String(children || '').replace(/\n$/, '')} language={language} />;
-        },
+        code: MarkdownCode,
 
         table: ({ children }) => (
             <div className="cwm-md-table-scroll pretty-scrollbar" role="region" aria-label="Table" tabIndex={0}>
@@ -648,6 +644,9 @@ function MarkdownRendererInner({
     const isStreaming = isStreamingProp ?? msg?.readonly === true;
     const messageContextState = messageContextStateProp ?? msg?.contextState ?? null;
     const messageReadonly = msg?.readonly === true || Boolean(isStreamingProp);
+    // Only editable document checkboxes read the whole source. Ordinary message
+    // deltas must not recreate list/quote renderers around an existing code block.
+    const taskSourceContent = renderSurface === 'document' && onTaskToggle ? content : '';
     // Active-branch tail detection. After a page reload, an older active widget may
     // still be actionable, but it must not auto-open an immersive selector over the
     // latest conversation. Users can still reopen it explicitly from its inline launcher.
@@ -671,7 +670,7 @@ function MarkdownRendererInner({
             messageIsLatest,
             renderSurface,
             onTaskToggle,
-            sourceContent: content,
+            sourceContent: taskSourceContent,
             cardSpec,
         });
     }, [
@@ -687,7 +686,7 @@ function MarkdownRendererInner({
         messageIsLatest,
         renderSurface,
         onTaskToggle,
-        content,
+        taskSourceContent,
         cardSpec,
     ]);
 

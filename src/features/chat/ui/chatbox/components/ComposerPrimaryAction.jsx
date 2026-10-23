@@ -11,6 +11,7 @@ const ComposerPrimaryAction = memo(({
     executionActive = false,
     executionStatus = '',
     executionGuidancePending = false,
+    submissionPending = false,
     isEditMessage = false,
     isForkMode = false,
     isReadOnly = false,
@@ -26,6 +27,7 @@ const ComposerPrimaryAction = memo(({
     const realtimeVoiceAvailable = realtimeVoiceCapability?.available === true;
     const showRealtimeVoice = (
         status === 'normal'
+        && !submissionPending
         && !hasInput
         && !executionActive
         && !executionGuidancePending
@@ -57,6 +59,7 @@ const ComposerPrimaryAction = memo(({
             executionActive={executionActive}
             executionStatus={executionStatus}
             executionGuidancePending={executionGuidancePending}
+            submissionPending={submissionPending}
             t={t}
         />
     );

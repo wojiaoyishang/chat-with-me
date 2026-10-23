@@ -175,6 +175,7 @@ function ChatBox({
     onVoiceRecordingStart,
     onVoiceRecordingCancel,
     onRealtimeVoiceStart,
+    turnSubmissionPhase = '',
     selectedWorkspaceIds = [],
     onWorkspaceChange,
 }) {
@@ -265,6 +266,16 @@ function ChatBox({
 
     // 按钮
     const [sendButtonStatus, setSendButtonStatus] = useState('normal');
+    const [isTurnSubmitting, setIsTurnSubmitting] = useState(false);
+    const turnSubmissionRef = useRef(null);
+    const turnSubmissionPhaseRef = useRef(turnSubmissionPhase);
+    turnSubmissionPhaseRef.current = turnSubmissionPhase;
+    const submissionPending = isTurnSubmitting || ['pending', 'recovering'].includes(turnSubmissionPhase);
+    const effectiveSendButtonStatus = submissionPending
+        ? 'loading'
+        : turnSubmissionPhase === 'running' && sendButtonStatus === 'normal'
+          ? 'generating'
+          : sendButtonStatus;
     const [realtimeVoiceCapability, setRealtimeVoiceCapability] = useState({
         available: false,
         reason: 'not_loaded',
@@ -639,9 +650,13 @@ function ChatBox({
 
     const handleRealtimeVoiceStartWithWorkspaceSync = useCallback(
         async (payload) => {
+            const isBusy = () => Boolean(turnSubmissionRef.current || turnSubmissionPhaseRef.current || sendButtonStatusRef.current !== 'normal');
+            if (isBusy()) return;
+            const targetConversationId = draftConversationIdRef.current;
             await waitForWorkspaceSelectionSync();
+            if (isBusy() || targetConversationId !== draftConversationIdRef.current) return;
             if (typeof onRealtimeVoiceStart === 'function') {
-                return onRealtimeVoiceStart(payload);
+                return onRealtimeVoiceStart({ ...payload, composerStatus: sendButtonStatusRef.current });
             }
             return undefined;
         },
@@ -788,10 +803,14 @@ function ChatBox({
     );
 
     const handleSendMessage = useCallback(async () => {
+        if (turnSubmissionRef.current || ['pending', 'recovering'].includes(turnSubmissionPhaseRef.current)) return;
         const activeEditDraft = editDraftRef.current;
         const wasEditing = isEditMessageRef.current;
         const currentContent = messageContentRef.current;
         const execution = activeExecutionRef.current;
+        const initialSendButtonStatus = turnSubmissionPhaseRef.current === 'running' && sendButtonStatusRef.current === 'normal'
+            ? 'generating'
+            : sendButtonStatusRef.current;
         const executionStatus = String(execution?.status || '').toLowerCase();
         const executionAcceptsGuidance = Boolean(
             execution?.active && executionStatus !== 'cancelling' && executionStatus !== 'cancelled',
@@ -802,260 +821,277 @@ function ChatBox({
         // to `generating` used to misroute the supplement as a new Turn.
         const isExecutionGuidance = executionAcceptsGuidance && !wasEditing && Boolean(currentContent.trim());
 
-        // Conversation tool permissions are server-authoritative.  Do not race a
-        // new Turn ahead of a pending permission mutation; the UI remains optimistic
-        // while this short synchronization finishes in the background.
-        await waitForConversationToolSync();
-        // Workspace selection is also server-authoritative. A Workspace checkbox is
-        // optimistic in the UI, so never admit a Turn while its persistence request is
-        // still in flight; otherwise the Gateway can read the previous empty selection.
-        await waitForWorkspaceSelectionSync();
-
-        if (isExecutionGuidance) {
-            if (attachmentsMeta.length > 0) {
-                toast.warning(t('execution_guidance_no_attachments', '执行中的补充信息暂不支持附件，请先移除附件。'));
-                return;
-            }
-            if (executionGuidancePendingRef.current) return;
-            executionGuidancePendingRef.current = true;
-            setIsExecutionGuidancePending(true);
-            const guidanceId = createExecutionGuidanceId();
-            const guidanceActivity = {
-                id: guidanceId,
-                time: Date.now(),
-                kind: 'guidance',
-                source: 'user_guidance',
-                state: 'submitting',
-                label: currentContent.slice(0, 160),
-                content: currentContent,
-                anchorStatusId: execution.statusId || null,
-            };
-            // Show the supplement immediately in the transcript. The durable server
-            // snapshot will reconcile the same guidanceId to pending/consumed later.
-            upsertExecutionActivity(execution, guidanceActivity);
-            updateMessageContent('', { persist: false });
-            try {
-                const response = await emitEvent({
-                    event: 'execution.guidance.add',
-                    conversationId,
-                    runId: execution.runId || null,
-                    turnId: execution.turnId || null,
-                    payload: {
-                        executionId: execution.executionId,
-                        guidanceId,
-                        anchorStatusId: guidanceActivity.anchorStatusId,
-                        content: currentContent,
-                    },
-                });
-                if (response?.success === false) {
-                    patchExecutionActivity(conversationId, execution.executionId, guidanceId, { state: 'failed' });
-                    if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
-                    throw new Error(
-                        realtimeActionErrorMessage(response, t('execution_guidance_failed', '无法追加到当前执行。')),
-                    );
-                }
-                const acceptedGuidance = response?.value?.guidance;
-                const latestGuidance = useExecutionStore
-                    .getState()
-                    .sessions[conversationId]?.executions[execution.executionId]?.activities?.find(
-                        (item) => item.id === guidanceId,
-                    );
-                if (!latestGuidance || latestGuidance.state === 'submitting') {
-                    patchExecutionActivity(conversationId, execution.executionId, guidanceId, {
-                        state: 'pending',
-                        canToggle: true,
-                        anchorStatusId: acceptedGuidance?.anchorStatusId ?? guidanceActivity.anchorStatusId,
-                        waitingFor: acceptedGuidance?.waitingFor || guidanceActivity.waitingFor,
-                    });
-                }
-                const persistedDraft = readComposerDraft({
-                    conversationId: draftConversationIdRef.current,
-                    mode: 'normal',
-                });
-                if ((persistedDraft?.content || '') === currentContent && !messageContentRef.current.trim()) {
-                    clearComposerDraft({ conversationId: draftConversationIdRef.current, mode: 'normal' });
-                }
-                toast.success(t('execution_guidance_sent', '已加入当前执行。'));
-            } catch (error) {
-                console.error('Execution guidance failed:', error);
-                patchExecutionActivity(conversationId, execution.executionId, guidanceId, { state: 'failed' });
-                if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
-                toast.error(error?.message || t('execution_guidance_failed', '无法追加到当前执行。'));
-            } finally {
-                executionGuidancePendingRef.current = false;
-                setIsExecutionGuidancePending(false);
-                textareaRef.current?.focus();
-            }
-            return;
+        if (['disabled', 'loading'].includes(initialSendButtonStatus) && !isExecutionGuidance) return;
+        const submission = wasEditing || (!execution?.active && initialSendButtonStatus !== 'generating') ? {} : null;
+        if (submission && !currentContent.trim() && attachmentsMeta.length === 0) return;
+        const targetConversationId = draftConversationIdRef.current;
+        if (submission) {
+            turnSubmissionRef.current = submission;
+            setIsTurnSubmitting(true);
         }
+        try {
 
-        // An active Execution owns the Composer even if a transient status sync says
-        // `normal`. Empty-submit is the explicit stop action; text submit is handled
-        // above as guidance. Attachments are not silently converted into a new Turn.
-        if (execution?.active && !wasEditing) {
-            if (executionStatus === 'cancelling') {
-                toast.warning(t('execution_stopping', '当前执行正在停止，请稍候。'));
-                return;
-            }
-            if (attachmentsMeta.length > 0) {
-                toast.warning(t('execution_guidance_no_attachments', '执行中的补充信息暂不支持附件，请先移除附件。'));
-                return;
-            }
-            if (!currentContent.trim()) {
+            // Conversation tool permissions are server-authoritative.  Do not race a
+            // new Turn ahead of a pending permission mutation; the UI remains optimistic
+            // while this short synchronization finishes in the background.
+            await waitForConversationToolSync();
+            // Workspace selection is also server-authoritative. A Workspace checkbox is
+            // optimistic in the UI, so never admit a Turn while its persistence request is
+            // still in flight; otherwise the Gateway can read the previous empty selection.
+            await waitForWorkspaceSelectionSync();
+            if (draftConversationIdRef.current !== targetConversationId) return;
+
+            if (isExecutionGuidance) {
+                if (attachmentsMeta.length > 0) {
+                    toast.warning(t('execution_guidance_no_attachments', '执行中的补充信息暂不支持附件，请先移除附件。'));
+                    return;
+                }
+                if (executionGuidancePendingRef.current) return;
+                executionGuidancePendingRef.current = true;
+                setIsExecutionGuidancePending(true);
+                const guidanceId = createExecutionGuidanceId();
+                const guidanceActivity = {
+                    id: guidanceId,
+                    time: Date.now(),
+                    kind: 'guidance',
+                    source: 'user_guidance',
+                    state: 'submitting',
+                    label: currentContent.slice(0, 160),
+                    content: currentContent,
+                    anchorStatusId: execution.statusId || null,
+                };
+                // Show the supplement immediately in the transcript. The durable server
+                // snapshot will reconcile the same guidanceId to pending/consumed later.
+                upsertExecutionActivity(execution, guidanceActivity);
+                updateMessageContent('', { persist: false });
                 try {
                     const response = await emitEvent({
-                        event: 'execution.cancel',
+                        event: 'execution.guidance.add',
                         conversationId,
                         runId: execution.runId || null,
                         turnId: execution.turnId || null,
-                        payload: { executionId: execution.executionId },
+                        payload: {
+                            executionId: execution.executionId,
+                            guidanceId,
+                            anchorStatusId: guidanceActivity.anchorStatusId,
+                            content: currentContent,
+                        },
                     });
                     if (response?.success === false) {
+                        patchExecutionActivity(conversationId, execution.executionId, guidanceId, { state: 'failed' });
+                        if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
                         throw new Error(
-                            realtimeActionErrorMessage(response, t('execution_cancel_failed', '无法停止当前执行。')),
+                            realtimeActionErrorMessage(response, t('execution_guidance_failed', '无法追加到当前执行。')),
                         );
                     }
-                    upsertExecution({
-                        ...execution,
-                        active: true,
-                        status: 'cancelling',
-                        label: '正在停止执行',
-                        recoverable: false,
+                    const acceptedGuidance = response?.value?.guidance;
+                    const latestGuidance = useExecutionStore
+                        .getState()
+                        .sessions[conversationId]?.executions[execution.executionId]?.activities?.find(
+                            (item) => item.id === guidanceId,
+                        );
+                    if (!latestGuidance || latestGuidance.state === 'submitting') {
+                        patchExecutionActivity(conversationId, execution.executionId, guidanceId, {
+                            state: 'pending',
+                            canToggle: true,
+                            anchorStatusId: acceptedGuidance?.anchorStatusId ?? guidanceActivity.anchorStatusId,
+                            waitingFor: acceptedGuidance?.waitingFor || guidanceActivity.waitingFor,
+                        });
+                    }
+                    const persistedDraft = readComposerDraft({
+                        conversationId: draftConversationIdRef.current,
+                        mode: 'normal',
                     });
+                    if ((persistedDraft?.content || '') === currentContent && !messageContentRef.current.trim()) {
+                        clearComposerDraft({ conversationId: draftConversationIdRef.current, mode: 'normal' });
+                    }
+                    toast.success(t('execution_guidance_sent', '已加入当前执行。'));
                 } catch (error) {
-                    console.error('Execution cancel failed:', error);
-                    toast.error(error?.message || t('execution_cancel_failed', '无法停止当前执行。'));
+                    console.error('Execution guidance failed:', error);
+                    patchExecutionActivity(conversationId, execution.executionId, guidanceId, { state: 'failed' });
+                    if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
+                    toast.error(error?.message || t('execution_guidance_failed', '无法追加到当前执行。'));
+                } finally {
+                    executionGuidancePendingRef.current = false;
+                    setIsExecutionGuidancePending(false);
+                    textareaRef.current?.focus();
                 }
+                return;
+            }
+
+            // An active Execution owns the Composer even if a transient status sync says
+            // `normal`. Empty-submit is the explicit stop action; text submit is handled
+            // above as guidance. Attachments are not silently converted into a new Turn.
+            if (execution?.active && !wasEditing) {
+                if (executionStatus === 'cancelling') {
+                    toast.warning(t('execution_stopping', '当前执行正在停止，请稍候。'));
+                    return;
+                }
+                if (attachmentsMeta.length > 0) {
+                    toast.warning(t('execution_guidance_no_attachments', '执行中的补充信息暂不支持附件，请先移除附件。'));
+                    return;
+                }
+                if (!currentContent.trim()) {
+                    try {
+                        const response = await emitEvent({
+                            event: 'execution.cancel',
+                            conversationId,
+                            runId: execution.runId || null,
+                            turnId: execution.turnId || null,
+                            payload: { executionId: execution.executionId },
+                        });
+                        if (response?.success === false) {
+                            throw new Error(
+                                realtimeActionErrorMessage(response, t('execution_cancel_failed', '无法停止当前执行。')),
+                            );
+                        }
+                        upsertExecution({
+                            ...execution,
+                            active: true,
+                            status: 'cancelling',
+                            label: '正在停止执行',
+                            recoverable: false,
+                        });
+                    } catch (error) {
+                        console.error('Execution cancel failed:', error);
+                        toast.error(error?.message || t('execution_cancel_failed', '无法停止当前执行。'));
+                    }
+                    textareaRef.current?.focus();
+                    return;
+                }
+            }
+
+            // During an ordinary non-Execution generation the composer may keep a local
+            // draft, but it cannot supersede the active Turn.  The primary button remains
+            // a pure stop action; only an active durable Execution accepts guidance.
+            if (initialSendButtonStatus === 'generating') {
+                await Promise.resolve(
+                    onSendMessage({
+                        messageContent: '',
+                        toolsStatus: buildOutboundToolsStatus(),
+                        isEditMessage: false,
+                        editMessageId: null,
+                        attachments: [],
+                        sendButtonStatus: 'generating',
+                        admissionPolicy: 'auto',
+                        inputSource: 'chat',
+                        isRegenerate: false,
+                        role: currentRole?.name,
+                        isFork: false,
+                    }),
+                );
                 textareaRef.current?.focus();
                 return;
             }
-        }
 
-        // During an ordinary non-Execution generation the composer may keep a local
-        // draft, but it cannot supersede the active Turn.  The primary button remains
-        // a pure stop action; only an active durable Execution accepts guidance.
-        if (sendButtonStatusRef.current === 'generating') {
-            await Promise.resolve(
+            // All submit entry points must reject empty turns, independently of button state.
+            if (!currentContent.trim() && attachmentsMeta.length === 0) return;
+
+            runtimeToolPermissionRevisionRef.current = 0;
+            runtimeToolPermissionRunIdRef.current = null;
+            setRuntimeToolPermissions({});
+
+            let submittedEditCommit = null;
+            let submittedNormalCommit = null;
+
+            if (wasEditing && activeEditDraft) {
+                persistActiveDraft();
+                submittedEditCommit = {
+                    conversationId: draftConversationIdRef.current,
+                    messageId: activeEditDraft.messageId,
+                    mode: activeEditDraft.mode,
+                    message: activeEditDraft.message || null,
+                };
+                pendingEditCommitRef.current = submittedEditCommit;
+                pendingEditClearRef.current = true;
+            } else {
+                // Freeze the exact browser-local draft revision being submitted.  The
+                // user may start changing the composer again before protocol.reply /
+                // composer.clear arrives; those newer edits must never be committed by
+                // the older Turn.
+                persistActiveDraft();
+                const submittedDraft = readComposerDraft({
+                    conversationId: draftConversationIdRef.current,
+                    mode: 'normal',
+                });
+                submittedNormalCommit = {
+                    conversationId: draftConversationIdRef.current,
+                    content: currentContent,
+                    draftUpdatedAt: submittedDraft?.updatedAt || 0,
+                    serverAccepted: false,
+                };
+                pendingNormalCommitRef.current = submittedNormalCommit;
+            }
+
+            const sendPromise = Promise.resolve(
                 onSendMessage({
-                    messageContent: '',
+                    messageContent: currentContent,
                     toolsStatus: buildOutboundToolsStatus(),
-                    isEditMessage: false,
-                    editMessageId: null,
-                    attachments: [],
-                    sendButtonStatus: 'generating',
+                    isEditMessage: wasEditing,
+                    editMessageId: editMessageId,
+                    attachments: attachmentsMeta,
+                    sendButtonStatus: initialSendButtonStatus,
                     admissionPolicy: 'auto',
                     inputSource: 'chat',
                     isRegenerate: false,
                     role: currentRole?.name,
-                    isFork: false,
+                    isFork: isForkMode,
                 }),
             );
             textareaRef.current?.focus();
-            return;
-        }
 
-        // All submit entry points must reject empty turns, independently of button state.
-        if (!currentContent.trim() && attachmentsMeta.length === 0) return;
+            // Leave Edit/Fork immediately for a responsive composer, but do not delete
+            // its local draft until the authoritative composer.clear arrives.  Failed
+            // admissions therefore remain recoverable when the user edits the message again.
+            // Do this before awaiting protocol.reply: composer.clear can legally arrive very
+            // soon afterwards, and leaving later would accidentally persist the committed
+            // Edit draft again.
+            if (wasEditing) leaveEditMode();
 
-        runtimeToolPermissionRevisionRef.current = 0;
-        runtimeToolPermissionRunIdRef.current = null;
-        setRuntimeToolPermissions({});
-
-        let submittedEditCommit = null;
-        let submittedNormalCommit = null;
-
-        if (wasEditing && activeEditDraft) {
-            persistActiveDraft();
-            submittedEditCommit = {
-                conversationId: draftConversationIdRef.current,
-                messageId: activeEditDraft.messageId,
-                mode: activeEditDraft.mode,
-                message: activeEditDraft.message || null,
-            };
-            pendingEditCommitRef.current = submittedEditCommit;
-            pendingEditClearRef.current = true;
-        } else {
-            // Freeze the exact browser-local draft revision being submitted.  The
-            // user may start changing the composer again before protocol.reply /
-            // composer.clear arrives; those newer edits must never be committed by
-            // the older Turn.
-            persistActiveDraft();
-            const submittedDraft = readComposerDraft({
-                conversationId: draftConversationIdRef.current,
-                mode: 'normal',
-            });
-            submittedNormalCommit = {
-                conversationId: draftConversationIdRef.current,
-                content: currentContent,
-                draftUpdatedAt: submittedDraft?.updatedAt || 0,
-                serverAccepted: false,
-            };
-            pendingNormalCommitRef.current = submittedNormalCommit;
-        }
-
-        const sendPromise = Promise.resolve(
-            onSendMessage({
-                messageContent: currentContent,
-                toolsStatus: buildOutboundToolsStatus(),
-                isEditMessage: wasEditing,
-                editMessageId: editMessageId,
-                attachments: attachmentsMeta,
-                sendButtonStatus: sendButtonStatusRef.current,
-                admissionPolicy: 'auto',
-                inputSource: 'chat',
-                isRegenerate: false,
-                role: currentRole?.name,
-                isFork: isForkMode,
-            }),
-        );
-        textareaRef.current?.focus();
-
-        // Leave Edit/Fork immediately for a responsive composer, but do not delete
-        // its local draft until the authoritative composer.clear arrives.  Failed
-        // admissions therefore remain recoverable when the user edits the message again.
-        // Do this before awaiting protocol.reply: composer.clear can legally arrive very
-        // soon afterwards, and leaving later would accidentally persist the committed
-        // Edit draft again.
-        if (wasEditing) leaveEditMode();
-
-        try {
-            const sendResult = await sendPromise;
-            if (sendResult?.success === false) {
+            try {
+                const sendResult = await sendPromise;
+                if (sendResult?.success === false) {
+                    pendingEditClearRef.current = false;
+                    pendingEditCommitRef.current = null;
+                    pendingNormalCommitRef.current = null;
+                } else if (sendResult?.success === true) {
+                    // protocol.reply success is the durable admission/commit boundary.
+                    // Remove only the exact submitted browser draft here so switching
+                    // conversations before composer.clear cannot resurrect an already
+                    // sent message.  composer.clear remains responsible for the visible
+                    // input reset in the currently mounted ChatBox.
+                    if (wasEditing && submittedEditCommit) {
+                        clearComposerDraft(submittedEditCommit);
+                        clearMountedComposerDraft(submittedEditCommit.message, submittedEditCommit.mode);
+                    } else if (submittedNormalCommit) {
+                        // For the first Turn of a brand-new conversation, ChatBox was
+                        // submitted while its prop-level conversationId was still null.
+                        // ChatPage now returns the authoritative ID actually used for
+                        // turn.start, so commit the migrated draft against that ID instead
+                        // of mutating pending refs from a later React effect.
+                        const committedConversationId = sendResult?.conversationId ?? submittedNormalCommit.conversationId;
+                        const persistedDraft = readComposerDraft({
+                            conversationId: committedConversationId,
+                            mode: 'normal',
+                        });
+                        const sameDraftRevision = (persistedDraft?.updatedAt || 0) === submittedNormalCommit.draftUpdatedAt;
+                        if (sameDraftRevision) {
+                            clearComposerDraft({ conversationId: committedConversationId, mode: 'normal' });
+                            submittedNormalCommit.serverAccepted = true;
+                        }
+                    }
+                }
+            } catch (error) {
                 pendingEditClearRef.current = false;
                 pendingEditCommitRef.current = null;
                 pendingNormalCommitRef.current = null;
-            } else if (sendResult?.success === true) {
-                // protocol.reply success is the durable admission/commit boundary.
-                // Remove only the exact submitted browser draft here so switching
-                // conversations before composer.clear cannot resurrect an already
-                // sent message.  composer.clear remains responsible for the visible
-                // input reset in the currently mounted ChatBox.
-                if (wasEditing && submittedEditCommit) {
-                    clearComposerDraft(submittedEditCommit);
-                    clearMountedComposerDraft(submittedEditCommit.message, submittedEditCommit.mode);
-                } else if (submittedNormalCommit) {
-                    // For the first Turn of a brand-new conversation, ChatBox was
-                    // submitted while its prop-level conversationId was still null.
-                    // ChatPage now returns the authoritative ID actually used for
-                    // turn.start, so commit the migrated draft against that ID instead
-                    // of mutating pending refs from a later React effect.
-                    const committedConversationId = sendResult?.conversationId ?? submittedNormalCommit.conversationId;
-                    const persistedDraft = readComposerDraft({
-                        conversationId: committedConversationId,
-                        mode: 'normal',
-                    });
-                    const sameDraftRevision = (persistedDraft?.updatedAt || 0) === submittedNormalCommit.draftUpdatedAt;
-                    if (sameDraftRevision) {
-                        clearComposerDraft({ conversationId: committedConversationId, mode: 'normal' });
-                        submittedNormalCommit.serverAccepted = true;
-                    }
-                }
+                console.error('Send message admission failed:', error);
             }
-        } catch (error) {
-            pendingEditClearRef.current = false;
-            pendingEditCommitRef.current = null;
-            pendingNormalCommitRef.current = null;
-            console.error('Send message admission failed:', error);
+        } finally {
+            if (submission && turnSubmissionRef.current === submission) {
+                turnSubmissionRef.current = null;
+                setIsTurnSubmitting(false);
+            }
         }
     }, [
         onSendMessage,
@@ -1673,9 +1709,10 @@ function ChatBox({
     const handleEventBroadcast = useCallback(
         ({ event, payload, reply }) => {
             switch (event) {
-                case 'composer.status.changed':
+                case 'composer.status.changed': {
                     const validStates = ['disabled', 'normal', 'loading', 'generating'];
                     if (validStates.includes(payload.value)) {
+                        sendButtonStatusRef.current = payload.value;
                         setSendButtonStatus(payload.value);
                         if (payload.value === 'normal') {
                             runtimeToolPermissionRevisionRef.current = 0;
@@ -1690,6 +1727,7 @@ function ChatBox({
                         setIsReadOnly(Boolean(payload.readOnly));
                     }
                     break;
+                }
                 case 'execution.state.changed': {
                     const value = payload?.value && typeof payload.value === 'object' ? payload.value : payload;
                     if (shouldIgnoreExecutionUpdate(latestExecutionStateRef.current || {}, value)) break;
@@ -1725,6 +1763,10 @@ function ChatBox({
 
                 case 'composer.edit.set':
                     if (payload.immediate) {
+                        if (turnSubmissionRef.current || ['pending', 'recovering'].includes(turnSubmissionPhaseRef.current)) break;
+                        const currentStatus = turnSubmissionPhaseRef.current === 'running' && sendButtonStatusRef.current === 'normal'
+                            ? 'generating'
+                            : sendButtonStatusRef.current;
                         // 马上发送的逻辑
                         onSendMessage({
                             messageContent: payload.content,
@@ -1733,8 +1775,8 @@ function ChatBox({
                             editMessageId: payload.msgId,
                             attachments: payload.attachments,
                             sendButtonStatus:
-                                sendButtonStatusRef.current === 'generating' ? 'normal' : sendButtonStatusRef.current,
-                            admissionPolicy: sendButtonStatusRef.current === 'generating' ? 'interrupt' : 'auto',
+                                currentStatus === 'generating' ? 'normal' : currentStatus,
+                            admissionPolicy: currentStatus === 'generating' ? 'interrupt' : 'auto',
                             inputSource: 'chat',
                             isRegenerate: payload.isRegenerate,
                             isProgenerate: payload.isProgenerate,
@@ -1973,6 +2015,10 @@ function ChatBox({
     useEffect(() => {
         const previousConversationId = previousConversationIdRef.current;
         const isNewConversationAssigned = !previousConversationId && Boolean(conversationId);
+        if (!isNewConversationAssigned) {
+            turnSubmissionRef.current = null;
+            setIsTurnSubmitting(false);
+        }
         const pendingPermissions = pendingConversationToolPermissionsRef.current;
 
         toolPermissionRevisionRef.current = 0;
@@ -2617,7 +2663,8 @@ function ChatBox({
                                 }
                             >
                                 <ComposerPrimaryAction
-                                    status={sendButtonStatus}
+                                    status={effectiveSendButtonStatus}
+                                    submissionPending={submissionPending}
                                     messageContent={messageContent}
                                     attachmentsMeta={attachmentsMeta}
                                     onSend={handleSendMessage}
@@ -2632,7 +2679,7 @@ function ChatBox({
                                     onRealtimeVoiceStart={handleRealtimeVoiceStartWithWorkspaceSync}
                                     realtimeVoicePayload={{
                                         toolsStatus: activeToolsStatus,
-                                        composerStatus: sendButtonStatus,
+                                        composerStatus: effectiveSendButtonStatus,
                                     }}
                                     voiceInputBusy={
                                         isMobileVoiceMode ||
@@ -2698,6 +2745,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
     return (
         prevProps.readOnly === nextProps.readOnly &&
         prevProps.conversationId === nextProps.conversationId &&
+        prevProps.turnSubmissionPhase === nextProps.turnSubmissionPhase &&
         prevProps.uploadFiles === nextProps.uploadFiles &&
         prevProps.onSendMessage === nextProps.onSendMessage &&
         prevProps.FilePickerCallback === nextProps.FilePickerCallback &&

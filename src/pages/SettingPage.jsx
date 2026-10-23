@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { UserProfileCard } from '@/components/setting/UserProfileCard.jsx';
 import DynamicSettings from '@/components/setting/DynamicSettings.jsx';
 import KnowledgeDatabaseSettings from '@/components/setting/KnowledgeDatabaseSettings.jsx';
+import { useNavigate } from 'react-router-dom';
 import { validateJsonEditors } from '@/components/setting/jsonEditorValidation.js';
 import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
 import NotificationSettings from '@/features/notification/NotificationSettings.jsx';
@@ -46,6 +47,8 @@ import { ROBOT_DEBUG_SETTING_KEY } from '@/features/avatar-scene/settings.js';
 import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION } from '@/features/knowledge/graphSettings.js';
 import { WORKFLOW_EDGE_ANIMATION_SETTING_KEY, DEFAULT_WORKFLOW_EDGE_ANIMATION } from '@/features/workflows/workflowSettings.js';
 import { artifactPreviewVirtualUrl, resolveResourceUrl } from '@/lib/virtualUrl.js';
+
+const ComfyUISettings = React.lazy(() => import('@/components/setting/ComfyUISettings.jsx'));
 
 // ==================== 界面设置通用项 ====================
 const InterfaceSettingItem = ({ title, description, checked, onCheckedChange, badge }) => (
@@ -127,6 +130,7 @@ function loadSettingsWindowSize() {
 }
 
 const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
+    const navigate = useNavigate();
     const isMobile = useIsMobile();
     const [robotDebugEnabled, setRobotDebugEnabled] = useLocalSetting(ROBOT_DEBUG_SETTING_KEY, false);
     const [knowledgeGraphEdgeAnimation, setKnowledgeGraphEdgeAnimation] = useLocalSetting(
@@ -242,7 +246,7 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
     const toggleFullscreen = useCallback(() => setIsFullscreen((prev) => !prev), []);
 
     const isDynamicTab = !['account', 'interface', 'notifications'].includes(activeTab);
-    const hasUnsavedChanges = isDynamicTab && dynamicConfig?.component !== 'knowledge-databases' && !isConfigPristine;
+    const hasUnsavedChanges = isDynamicTab && !['knowledge-databases', 'comfyui'].includes(dynamicConfig?.component) && !isConfigPristine;
 
     // ==================== 加载动态 Tabs 列表 ====================
     const loadDynamicTabs = useCallback(
@@ -861,6 +865,13 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
         }
 
         if (!dynamicConfig) return null;
+
+        if (dynamicConfig.component === 'comfyui') {
+            return <React.Suspense fallback={<div className="py-8 text-center text-sm text-muted-foreground">正在加载 ComfyUI 设置…</div>}><ComfyUISettings config={dynamicConfig} onTask={(taskId) => {
+                closeSettings();
+                navigate(`/tasks?taskId=${encodeURIComponent(taskId)}`);
+            }} /></React.Suspense>;
+        }
 
         if (dynamicConfig.component === 'knowledge-databases') {
             return (

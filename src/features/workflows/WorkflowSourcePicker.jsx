@@ -279,7 +279,7 @@ function FullWorkflowSourcePicker({
           q: query,
           offset: String(offset),
           limit: "12",
-          kind: sourceType === "image" ? "image" : "",
+          kind: ["image", "video"].includes(sourceType) ? sourceType : "",
           sort: "newest",
         });
         const result = await apiClient.get(
@@ -503,7 +503,7 @@ function FullWorkflowSourcePicker({
               hidden
               type="file"
               multiple={maxItems !== 1}
-              accept={sourceType === "image" ? "image/*" : undefined}
+              accept={sourceType === "image" ? "image/*" : sourceType === "video" ? "video/*" : undefined}
               onChange={(event) => {
                 void uploadFiles([...event.target.files]);
                 event.target.value = "";

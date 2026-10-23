@@ -43,6 +43,8 @@ test("switching an existing conversation clears its visible messages while adopt
     const dismissed = [];
     const scope = {
       previousConversationIdRef: { current: previousId },
+      turnSubmissionRef: { current: null },
+      setTurnSubmission() {},
       conversationId: nextId,
       isNewConversationIdRef: { current: adopting },
       liveStreamMessageIdsRef: { current: new Set(["old"]) },

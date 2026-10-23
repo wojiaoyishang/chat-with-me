@@ -177,6 +177,8 @@ function ChatPage({
     const messagesContainerRef = useRef(null);
     const currentTurnIdempotencyKeyRef = useRef(generateUUID());
     const realtimeVoiceStartInFlightRef = useRef(false);
+    const turnSubmissionRef = useRef(null);
+    const [turnSubmission, setTurnSubmission] = useState(null);
     const messagesLoadedIdempotencyKeyRef = useRef(generateUUID());
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingError, setIsLoadingError] = useState(false);
@@ -1443,7 +1445,7 @@ function ChatPage({
                 }
                 const eventPayload = {
                     event: 'turn.start',
-                    turnId: generateUUID(),
+                    turnId: submission?.turnId || generateUUID(),
                     payload: {
                         content: messageContent,
                         toolsStatus: toolsStatus,
@@ -1472,7 +1474,9 @@ function ChatPage({
                 return emitEvent(eventPayload).then((payload) => {
                     if (payload.success) {
                         currentTurnIdempotencyKeyRef.current = generateUUID();
+                        if (!generatesReply || payload.value?.admissionAction === 'execution_guidance') releaseSubmission();
                     } else {
+                        releaseSubmission();
                         toast.error(t('send_message_error', { message: payload.value }));
                     }
                     // Always expose the authoritative conversation used for this Turn.
@@ -1483,42 +1487,70 @@ function ChatPage({
                         ...payload,
                         conversationId,
                     };
+                }).catch((error) => {
+                    releaseSubmission();
+                    throw error;
                 });
             };
-            if (!conversationId) {
-                return emitEvent({
-                    event: 'conversation.create',
-                    payload: {
-                        idempotencyKey: currentTurnIdempotencyKeyRef.current,
-                        toolsStatus,
-                    },
-                })
-                    .then((payload) => {
-                        if (payload.success) {
-                            // Mark this synchronously before the parent updates conversationId.
-                            // The conversationId effect uses it to preserve the pending Workspace
-                            // and advanced settings selected for the conversation being created.
-                            isNewConversationIdRef.current = true;
-                            setIsNewConversationId(true);
-                            onNewConversationId(payload.value);
-
-                            // A conversationless composer can already have Workspace
-                            // selections. Persist them before the first Turn because the
-                            // Gateway intentionally treats the server-side selection as
-                            // authoritative.
-                            return persistPendingWorkspaceSelection(payload.value).then(() =>
-                                sendMessage(payload.value),
-                            );
-                        } else {
-                            throw new Error(payload.value);
-                        }
+            // Keep the admission occupied across both the reply and the server's
+            // temporary composer.clear/normal events, until this Turn starts.
+            const generatesReply = !isFork && (isRegenerate || isProgenerate || (role || 'user') === 'user');
+            if (sendButtonStatus !== 'generating' && ['pending', 'recovering'].includes(turnSubmissionRef.current?.phase)) {
+                return Promise.resolve({ success: false, value: t('is_generating_try_later') });
+            }
+            const submission = sendButtonStatus === 'generating'
+                ? null
+                : { turnId: generateUUID(), phase: 'pending' };
+            const releaseSubmission = () => {
+                if (submission && turnSubmissionRef.current?.turnId === submission.turnId) {
+                    turnSubmissionRef.current = null;
+                    setTurnSubmission(null);
+                }
+            };
+            if (submission) {
+                turnSubmissionRef.current = submission;
+                setTurnSubmission(submission);
+            }
+            try {
+                if (!conversationId) {
+                    return emitEvent({
+                        event: 'conversation.create',
+                        payload: {
+                            idempotencyKey: currentTurnIdempotencyKeyRef.current,
+                            toolsStatus,
+                        },
                     })
-                    .catch((error) => {
-                        toast.error(t('get_conversation_id_error', { message: error?.message }));
-                        return { success: false, value: error?.message || String(error) };
-                    });
-            } else {
-                return sendMessage(conversationId);
+                        .then((payload) => {
+                            if (payload.success) {
+                                // Mark this synchronously before the parent updates conversationId.
+                                // The conversationId effect uses it to preserve the pending Workspace
+                                // and advanced settings selected for the conversation being created.
+                                isNewConversationIdRef.current = true;
+                                setIsNewConversationId(true);
+                                onNewConversationId(payload.value);
+
+                                // A conversationless composer can already have Workspace
+                                // selections. Persist them before the first Turn because the
+                                // Gateway intentionally treats the server-side selection as
+                                // authoritative.
+                                return persistPendingWorkspaceSelection(payload.value).then(() =>
+                                    sendMessage(payload.value),
+                                );
+                            } else {
+                                throw new Error(payload.value);
+                            }
+                        })
+                        .catch((error) => {
+                            releaseSubmission();
+                            toast.error(t('get_conversation_id_error', { message: error?.message }));
+                            return { success: false, value: error?.message || String(error) };
+                        });
+                } else {
+                    return sendMessage(conversationId);
+                }
+            } catch (error) {
+                releaseSubmission();
+                throw error;
             }
         },
         [
@@ -1552,7 +1584,7 @@ function ChatPage({
                     toast.error(t('file_upload_not_complete'));
                     return;
                 }
-                if (composerStatus === 'loading' || composerStatus === 'disabled') {
+                if (turnSubmissionRef.current || composerStatus !== 'normal') {
                     toast.error(
                         t('realtime_voice_composer_busy', {
                             defaultValue: '当前对话正在切换状态，暂时无法启动实时语音。',
@@ -2411,6 +2443,7 @@ function ChatPage({
                 'turn.completed',
                 'turn.cancelled',
                 'turn.failed',
+                'composer.status.changed',
                 'context.state.changed',
                 'context.compaction_state.changed',
                 'workspace.transfer.state_changed',
@@ -2426,8 +2459,16 @@ function ChatPage({
                 'speech.segment.seek',
             ],
             conversationId,
-        }).then(({ event, payload, reply, eventRunId }) => {
+        }).then(({ event, payload, reply, eventRunId, eventTurnId }) => {
             switch (event) {
+                case 'composer.status.changed':
+                    // Reconnection may have missed this Turn's terminal event.
+                    // Keep the loading guard until the server restores its state.
+                    if (turnSubmissionRef.current?.phase === 'recovering' && ['normal', 'generating', 'disabled'].includes(payload.value)) {
+                        turnSubmissionRef.current = null;
+                        setTurnSubmission(null);
+                    }
+                    break;
                 case 'speech.play.requested':
                     handleSpeakMessageRequest(payload, reply);
                     break;
@@ -2903,6 +2944,11 @@ function ChatPage({
                     break;
                 }
                 case 'turn.started':
+                    if (turnSubmissionRef.current?.turnId === eventTurnId) {
+                        const running = { ...turnSubmissionRef.current, phase: 'running' };
+                        turnSubmissionRef.current = running;
+                        setTurnSubmission(running);
+                    }
                     if (payload.resumed) {
                         // Resume creates a new Run. Reload its history snapshot so
                         // messages.loaded attaches a reader with matching cursors.
@@ -2915,6 +2961,10 @@ function ChatPage({
                 case 'turn.completed':
                 case 'turn.cancelled':
                 case 'turn.failed':
+                    if (turnSubmissionRef.current?.turnId === eventTurnId) {
+                        turnSubmissionRef.current = null;
+                        setTurnSubmission(null);
+                    }
                     // Control lane can arrive slightly ahead of the final queued stream
                     // frames. Keep the live-tail protection briefly so a terminal event
                     // cannot make an immediately-following final delta vulnerable to a
@@ -3063,6 +3113,11 @@ function ChatPage({
         const unsubscribe2 = onEvent({
             event: 'transport.connected',
         }).then(() => {
+            if (turnSubmissionRef.current) {
+                const recovering = { ...turnSubmissionRef.current, phase: 'recovering' };
+                turnSubmissionRef.current = recovering;
+                setTurnSubmission(recovering);
+            }
             if (isMessageLoadedRef.current) emitMessagesLoaded();
         });
         const unsubscribe3 = onEvent({
@@ -3137,6 +3192,8 @@ function ChatPage({
         // transition; they are the values sent with and persisted by the first
         // message. A real conversation switch still resets stale state first.
         if (!isCreatingConversation) {
+            turnSubmissionRef.current = null;
+            setTurnSubmission(null);
             setInitialSettingValues({});
             setAdvancedSettingsValues({});
         } else {
@@ -3690,6 +3747,7 @@ function ChatPage({
                                 <ChatBox
                                     immersive={avatarImmersive}
                                     onSendMessage={handleSendMessage}
+                                    turnSubmissionPhase={turnSubmission?.phase || ''}
                                     conversationId={conversationId}
                                     attachmentsMeta={attachments}
                                     setAttachments={setAttachments}
