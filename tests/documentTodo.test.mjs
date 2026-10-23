@@ -5,12 +5,14 @@ import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkDirective from 'remark-directive';
 import { build } from 'esbuild';
 import { JSDOM } from 'jsdom';
 import * as Y from 'yjs';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import rehypeDocumentTasks, { applyDocumentTaskToggle, documentTaskChange } from '../src/components/markdown/rehypeDocumentTasks.js';
+import remarkStudyDirectives from '../src/components/markdown/remarkStudyDirectives.js';
 import { insertTodoList } from '../src/features/documents/commands.js';
 
 test('document preview toggles the exact nested duplicate task through CodeMirror and Y.Text', async () => {
@@ -133,4 +135,30 @@ test('todo insertion keeps indentation and selects the new task label', async ()
     insertTodoList(view, '第一周');
     assert.equal(view.state.doc.toString(), '  - [ ] 第一周');
     assert.equal(view.state.sliceDoc(view.state.selection.main.from, view.state.selection.main.to), '第一周');
+});
+
+test('Todo inside nested study cards still targets its original source marker', () => {
+    const source = [
+        ':::::study-session{title="阅读"}',
+        '::::study-section{number="1" title="第一周"}',
+        ':::study-card{title="任务"}',
+        '- [ ] 第一周阅读',
+        ':::',
+        '::::',
+        ':::::',
+    ].join('\n');
+    const spec = { directives: [
+        { name: 'study-session', kind: 'session', defaultAttributes: { title: '时段', start: '', end: '' }, allowedAttributes: { title: { type: 'text', maxLength: 120 }, start: { type: 'time' }, end: { type: 'time' } } },
+        { name: 'study-section', kind: 'section', defaultAttributes: { title: '主题', number: '1' }, allowedAttributes: { title: { type: 'text', maxLength: 120 }, number: { type: 'text', maxLength: 16 } } },
+        { name: 'study-card', kind: 'card', defaultAttributes: { title: '提示', tone: 'info', icon: 'book' }, allowedAttributes: { title: { type: 'text', maxLength: 120 }, tone: { type: 'enum', values: ['info'] }, icon: { type: 'enum', values: ['book'] } } },
+    ] };
+    const html = renderToStaticMarkup(React.createElement(ReactMarkdown, {
+        remarkPlugins: [remarkGfm, remarkDirective, [remarkStudyDirectives, { spec }]],
+        rehypePlugins: [[rehypeDocumentTasks, { sourceContent: source }]],
+    }, source));
+    const offset = source.indexOf('- [ ] 第一周阅读') + 3;
+    assert.match(html, new RegExp(`data-document-task-offset="${offset}"`));
+    const change = documentTaskChange(source, source, offset, false);
+    assert.deepEqual(change, { from: offset, to: offset + 1, insert: 'x' });
+    assert.equal(source.slice(0, change.from) + change.insert + source.slice(change.to), source.replace('- [ ] 第一周阅读', '- [x] 第一周阅读'));
 });

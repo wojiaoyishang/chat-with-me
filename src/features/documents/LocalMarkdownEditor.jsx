@@ -126,7 +126,7 @@ export default function LocalMarkdownEditor({
                 <div ref={host} className="min-w-0 flex-1 overflow-hidden" />
                 {previewOpen && (
                     <div className="min-w-0 flex-1 overflow-auto border-l p-5">
-                        <MarkdownRenderer content={preview} />
+                        <MarkdownRenderer content={preview} renderSurface="document-preview" />
                     </div>
                 )}
             </div>

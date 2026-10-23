@@ -64,34 +64,15 @@ export function insertTodoList(view, placeholder = '第一周') {
     view.focus();
 }
 
-const STUDY_BLOCKS = {
-    session: {
-        // Time is optional until the author fills in a real schedule.
-        opening: ':::::study-session{start="" end="" title="学习时段"}',
-        closing: ':::::',
-        placeholder: '在这里写本时段的学习内容。',
-    },
-    section: {
-        opening: '::::study-section{number="1" title="学习主题"}',
-        closing: '::::',
-        placeholder: '- 在这里列出要点。',
-    },
-    card: {
-        opening: ':::study-card{title="重点提示" tone="info" icon="book"}',
-        closing: ':::',
-        placeholder: '在这里写重点内容。',
-    },
-};
-
-export function insertStudyBlock(view, kind) {
-    const block = STUDY_BLOCKS[kind];
-    if (!block) return;
+export function insertStudyBlock(view, directive) {
+    const block = directive?.insert;
+    if (!block?.opening || !block?.closing) return;
 
     const { from, to } = view.state.selection.main;
     const selected = view.state.sliceDoc(from, to);
     const before = from === 0 ? '' : view.state.sliceDoc(from - 1, from) === '\n' ? '\n' : '\n\n';
     const after = to === view.state.doc.length ? '\n' : view.state.sliceDoc(to, to + 1) === '\n' ? '\n' : '\n\n';
-    const body = selected || block.placeholder;
+    const body = selected || block.placeholder || '';
     const start = `${before}${block.opening}\n`;
     const insert = `${start}${body}\n${block.closing}${after}`;
 

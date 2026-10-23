@@ -175,6 +175,16 @@ export default function WorkflowDataField({
         }
       />
     );
+  if (schema.type === "string" && widget === "single-line")
+    return (
+      <Input
+        aria-label={label}
+        value={value ?? ""}
+        disabled={disabled}
+        maxLength={schema.maxLength}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    );
   if (schema.type === "string")
     return (
       <MultilineEditor

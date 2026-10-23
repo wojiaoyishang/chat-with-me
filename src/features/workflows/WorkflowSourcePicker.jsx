@@ -147,7 +147,9 @@ function CompactWorkflowSourcePicker(props) {
         <PopoverContent
           align="start"
           sideOffset={8}
-          className="workflow-source-popover flex max-h-[min(540px,72vh)] w-[min(390px,calc(100vw-32px))] flex-col overflow-hidden p-0"
+          collisionPadding={12}
+          sticky="always"
+          className="workflow-source-popover workflow-attachment-picker w-[min(390px,calc(100vw-32px))] p-0"
           onPointerDown={(event) => event.stopPropagation()}
           onInteractOutside={(event) => {
             if (busy || previewOpen) event.preventDefault();
@@ -159,7 +161,7 @@ function CompactWorkflowSourcePicker(props) {
             if (busy || previewOpen) event.preventDefault();
           }}
         >
-          <div className="min-h-0 overflow-y-auto p-3">
+          <div className="workflow-source-popover-body pretty-scrollbar nowheel p-3">
             <FullWorkflowSourcePicker
               {...props}
               value={draft}
@@ -184,7 +186,7 @@ function CompactWorkflowSourcePicker(props) {
               compact={false}
             />
           </div>
-          <div className="flex shrink-0 items-center justify-between gap-3 border-t px-3 py-2.5">
+          <div className="workflow-source-popover-footer flex items-center justify-between gap-3 border-t px-3 py-2.5">
             <span className="text-xs text-muted-foreground">
               {props.fixedType === "document"
                 ? draft.documentId

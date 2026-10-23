@@ -143,11 +143,22 @@ export default function WorkflowMonitorPanel({
               </div>
               {runtime.nodeProgress && (
                 <div>
-                  <small>处理数量</small>
+                  <small>
+                    已处理{runtime.nodeProgress.unit || "项目"}
+                  </small>
                   <strong>
-                    {runtime.nodeProgress.processed}/
-                    {runtime.nodeProgress.total}
+                    {runtime.nodeProgress.processed ?? 0}/
+                    {runtime.nodeProgress.total ?? 0}
                   </strong>
+                  {runtime.nodeProgress.total > 0 &&
+                    Number.isFinite(runtime.nodeProgress.percent) && (
+                      <progress
+                        className="mt-2 h-1 w-full accent-primary"
+                        max="100"
+                        value={runtime.nodeProgress.percent}
+                        aria-label={`已处理${runtime.nodeProgress.unit || "项目"}`}
+                      />
+                    )}
                 </div>
               )}
             </div>

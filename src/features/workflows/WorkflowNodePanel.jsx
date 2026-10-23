@@ -104,12 +104,16 @@ export default function WorkflowNodePanel({
       key !== definition?.repeatedInputs?.configField &&
       !externalFields.has(key),
   );
-  const dynamicKeys = regularKeys.filter((key) =>
-    Boolean(
-      scalarSchema(resolveWorkflowSchema(schema.properties[key], schema)).ui
-        ?.widget,
-    ),
-  );
+  const dynamicKeys = regularKeys.filter((key) => {
+    const property = scalarSchema(
+      resolveWorkflowSchema(schema.properties[key], schema),
+    );
+    return (
+      Boolean(property.ui?.widget) ||
+      (node.kind === "entity_alignment" &&
+        ["string", "integer", "number", "boolean"].includes(property.type))
+    );
+  });
   const jsonKeys = regularKeys.filter((key) => !dynamicKeys.includes(key));
   const update = (patch) =>
     onGraphChange({

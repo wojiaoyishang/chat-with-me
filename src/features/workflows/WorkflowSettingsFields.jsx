@@ -44,7 +44,7 @@ export default function WorkflowSettingsFields({
                 schema={property}
                 rootSchema={rootSchema}
                 label={property.display?.title || property.title || key}
-                value={current[key]}
+                value={current[key] ?? property.default}
                 disabled={disabled}
                 models={models}
                 onValidity={onValidity}

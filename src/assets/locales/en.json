@@ -813,6 +813,7 @@
         "format_md": "Markdown (.md)",
         "format_pdf": "PDF (.pdf)",
         "format_zip": "Markdown and images (.zip)",
+        "format_png-zip": "Page images ZIP (.zip)",
         "details": "Stage history",
         "submission": "Submission"
     },

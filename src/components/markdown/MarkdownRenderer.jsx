@@ -13,6 +13,7 @@ import remarkStudyDirectives from './remarkStudyDirectives.js';
 import rehypeDocumentTasks from './rehypeDocumentTasks.js';
 import { DocumentTaskInput, DocumentTaskListItem } from './DocumentTaskControls.jsx';
 import { StudyCard, StudyOutline, StudySection, StudySession } from './StudyVisuals.jsx';
+import { useDocumentCardSpec } from './documentCardSpec.js';
 
 import CodeBlock from './CodeBlock.jsx';
 import './MarkdownContent.css';
@@ -342,6 +343,7 @@ const createComponents = ({
     renderSurface = 'conversation',
     onTaskToggle = null,
     sourceContent = '',
+    cardSpec = null,
 }) => {
     const getCurrentReplacement = () => {
         return replacementRef?.current || {};
@@ -365,15 +367,15 @@ const createComponents = ({
         );
     };
 
+    const cardComponents = cardSpec ? Object.fromEntries(cardSpec.directives.map(({ name, kind }) => [
+        name,
+        kind === 'session' ? StudySession :
+            kind === 'section' ? StudySection :
+                (props) => <StudyCard {...props} kind={kind || name.slice('study-'.length)} iconSymbols={cardSpec.iconSymbols} />,
+    ])) : {};
+
     return {
-        ...(renderSurface === 'document' || renderSurface === 'document-preview'
-            ? {
-                  'study-outline': StudyOutline,
-                  'study-session': StudySession,
-                  'study-section': StudySection,
-                  'study-card': StudyCard,
-              }
-            : {}),
+        ...(cardSpec ? { 'study-outline': StudyOutline, ...cardComponents } : {}),
         p: ({ children }) => <p className="my-2">{children}</p>,
 
         ul: ({ children, className }) => <ul className={`list-disc pl-5 my-2 ${renderSurface === 'document' && onTaskToggle ? `cwm-document-todo-list ${className || ''}` : ''}`}>{children}</ul>,
@@ -639,6 +641,8 @@ function MarkdownRendererInner({
     onTaskToggle = null,
 }) {
     const studyIdPrefix = useId();
+    const documentSurface = renderSurface === 'document' || renderSurface === 'document-preview';
+    const { spec: cardSpec, loading: cardsLoading, error: cardsError } = useDocumentCardSpec(documentSurface);
     const replacementRef = useRef(replacement);
     replacementRef.current = replacement;
     const isStreaming = isStreamingProp ?? msg?.readonly === true;
@@ -668,6 +672,7 @@ function MarkdownRendererInner({
             renderSurface,
             onTaskToggle,
             sourceContent: content,
+            cardSpec,
         });
     }, [
         contextId,
@@ -683,6 +688,7 @@ function MarkdownRendererInner({
         renderSurface,
         onTaskToggle,
         content,
+        cardSpec,
     ]);
 
     const processedContent = useMemo(() => {
@@ -731,15 +737,18 @@ function MarkdownRendererInner({
         };
     }, [depth, msg, copyContentComponentName, copyContent]);
 
-    const studyDirectivesEnabled =
-        (renderSurface === 'document' || renderSurface === 'document-preview') &&
-        /(?:^|\n)\s*:{3,}study-(?:session|section|card)(?=[\s{])/.test(processedContent || '');
+    const hasCardSource = /(?:^|\n)\s*:{3,}study-[a-z-]+(?=[\s{])/.test(processedContent || '');
+    const studyDirectivesEnabled = documentSurface && cardSpec && hasCardSource;
     const documentRemarkPlugins = [
         ...(studyDirectivesEnabled ? [remarkDirective] : []),
-        ...(studyDirectivesEnabled ? [[remarkStudyDirectives, { idPrefix: studyIdPrefix }]] : []),
+        ...(studyDirectivesEnabled ? [[remarkStudyDirectives, { idPrefix: studyIdPrefix, spec: cardSpec }]] : []),
     ];
 
-    return (
+    if (documentSurface && cardsLoading && !cardSpec && hasCardSource) {
+        return <div className="cwm-document-card-surface" aria-busy="true">正在加载文档卡片…</div>;
+    }
+
+    const markdown = (
         <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath, ...documentRemarkPlugins, remarkCardReplace, [remarkCollapseExecutionStatuses, {replacement}], remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
             rehypePlugins={[
@@ -763,6 +772,12 @@ function MarkdownRendererInner({
             {processedContent}
         </ReactMarkdown>
     );
+    return documentSurface ? (
+        <div className="cwm-document-card-surface">
+            {cardsError && !cardSpec && hasCardSource && <p role="status">卡片样式暂不可用，以下显示 Markdown 原文。</p>}
+            {markdown}
+        </div>
+    ) : markdown;
 }
 
 const areVisitedIdsEqual = (prev = [], next = []) => {

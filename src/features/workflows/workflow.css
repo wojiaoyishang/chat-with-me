@@ -284,6 +284,22 @@
   font-size: 11px;
   font-weight: 500;
 }
+.workflow-attachment-picker {
+  display: flex;
+  flex-direction: column;
+  max-height: min(540px, calc(100dvh - 24px), var(--radix-popover-content-available-height, 100dvh));
+  overflow: hidden;
+}
+.workflow-source-popover-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.workflow-source-popover-footer {
+  flex: 0 0 auto;
+  background: var(--popover);
+}
 .workflow-source-popover .workflow-resource-list {
   height: 245px;
 }

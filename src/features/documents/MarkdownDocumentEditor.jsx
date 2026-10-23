@@ -57,11 +57,13 @@ import {
 } from 'lucide-react';
 import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
+import { useDocumentCardSpec } from '@/components/markdown/documentCardSpec.js';
 import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import DocumentHistory from './DocumentHistory.jsx';
 import { wrapSelection, prefixLines, insertStudyBlock, insertTodoList } from './commands.js';
+import { localizeCardDirective } from './cardMenu.js';
 import { applyDocumentTaskToggle } from '@/components/markdown/rehypeDocumentTasks.js';
 import useCollaborativeDocument from './useCollaborativeDocument.js';
 
@@ -70,7 +72,9 @@ export default function MarkdownDocumentEditor(props) {
 }
 
 function CollaborativeMarkdownEditor({ documentId, conversationId, onStatus, headerContainer, onOpenCollaboratorConversation }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const cardLanguage = (i18n.resolvedLanguage || i18n.language || 'zh').split('-')[0];
+    const { spec: cardSpec, loading: cardsLoading } = useDocumentCardSpec();
     const [filesOpen, setFilesOpen] = useState(false);
     const [filesRevision, setFilesRevision] = useState(0);
     const [uploads, setUploads] = useState([]);
@@ -553,18 +557,18 @@ function CollaborativeMarkdownEditor({ documentId, conversationId, onStatus, hea
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
-                            {[
-                                ['session', 'documents_study_session'],
-                                ['section', 'documents_study_section'],
-                                ['card', 'documents_study_card'],
-                            ].map(([kind, label]) => (
-                                <DropdownMenuItem key={kind} onSelect={() => command((view) => insertStudyBlock(view, kind))}>
-                                    <span className="flex flex-col">
-                                        <span>{t(label)}</span>
-                                        {kind === 'session' && <span className="text-xs text-muted-foreground">{t('documents_study_session_hint')}</span>}
-                                    </span>
-                                </DropdownMenuItem>
-                            ))}
+                            {(cardSpec?.directives || []).filter((directive) => directive.insert?.opening && directive.insert?.closing).map((directive) => {
+                                const localizedDirective = localizeCardDirective(directive, cardLanguage, t);
+                                return (
+                                    <DropdownMenuItem key={directive.name} onSelect={() => command((view) => insertStudyBlock(view, localizedDirective))}>
+                                        <span className="flex flex-col">
+                                            <span>{localizedDirective.label}</span>
+                                            {localizedDirective.description && <span className="text-xs text-muted-foreground">{localizedDirective.description}</span>}
+                                        </span>
+                                    </DropdownMenuItem>
+                                );
+                            })}
+                            {!cardSpec && <DropdownMenuItem disabled>{cardsLoading ? '正在加载卡片组件…' : '无法加载卡片组件'}</DropdownMenuItem>}
                             <DropdownMenuItem onSelect={() => command((view) => insertTodoList(view, t('documents_todo_placeholder')))}>
                                 <ListTodo className="mr-2 size-4" />
                                 {t('documents_todo_list')}
@@ -656,7 +660,7 @@ function CollaborativeMarkdownEditor({ documentId, conversationId, onStatus, hea
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            {['md', 'pdf', 'zip'].map((format) => (
+                            {['md', 'pdf', 'zip', 'png-zip'].map((format) => (
                                 <DropdownMenuItem key={format} onSelect={() => void exportDocument(format)}>
                                     {t(`taskCenter.format_${format}`)}
                                 </DropdownMenuItem>

@@ -804,6 +804,7 @@
         "format_md": "Markdown (.md)",
         "format_pdf": "PDF (.pdf)",
         "format_zip": "Markdown 与图片包 (.zip)",
+        "format_png-zip": "逐页图片 ZIP (.zip)",
         "details": "阶段记录",
         "submission": "提交信息"
     },

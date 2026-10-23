@@ -10,6 +10,7 @@ import {
   Loader2,
   ListOrdered,
   Paperclip,
+  ScanSearch,
   Type,
   XCircle,
   Hash,
@@ -45,6 +46,7 @@ export default function WorkflowNode({ data, selected }) {
       number: Hash,
       boolean: ToggleLeft,
       "list-ordered": ListOrdered,
+      "scan-search": ScanSearch,
     }[definition?.presentation?.icon] || GitBranch;
   return (
     <div
@@ -156,12 +158,18 @@ export default function WorkflowNode({ data, selected }) {
           <span>{workflowStatusLabels[status] || status}</span>
           {runtime.nodeProgress && (
             <span>
-              {runtime.nodeProgress.processed || 0}/
-              {runtime.nodeProgress.total || 0}
+              已处理{runtime.nodeProgress.unit || "项目"}：
+              {runtime.nodeProgress.processed ?? 0}/
+              {runtime.nodeProgress.total ?? 0}
             </span>
           )}
-          {Number.isFinite(runtime.nodeProgress?.percent) && (
-            <progress max="100" value={runtime.nodeProgress.percent} />
+          {runtime.nodeProgress?.total > 0 &&
+            Number.isFinite(runtime.nodeProgress.percent) && (
+            <progress
+              max="100"
+              value={runtime.nodeProgress.percent}
+              aria-label={`已处理${runtime.nodeProgress.unit || "项目"}`}
+            />
           )}
         </div>
       )}
