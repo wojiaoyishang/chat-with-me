@@ -81,7 +81,12 @@ group without inferring the task phase locally.
 ## Auto-follow
 
 The Task Window header owns an explicit auto-bottom control.  Auto-follow starts enabled
-and follows streamed Tool Card/log growth using a `ResizeObserver`.  Deliberately scrolling
+and follows streamed Tool Card/log growth using size and DOM observers. Both the content
+and viewport are observed; callback refs rebind them when docking replaces the portal DOM.
+Fast updates share a pending animation frame and are checked again after layout settles.
+Ordinary scroll events, browser anchoring and completed-card collapse never disable follow;
+only explicit upward wheel/touch/keyboard/scrollbar gestures or historical navigation do.
+Deliberately scrolling
 up pauses follow; it stays paused until the user clicks the header button, which re-enables
 follow and immediately scrolls to the newest timeline item.  The control is browser UI
 state only and never changes Execution Runtime state.
@@ -144,6 +149,24 @@ helpers routed into an already-active Task Mode use `<display name> · 执行中
 The backend also terminalizes a provisional Native Tool Card when the call aborts before
 `prepare`, so a repaired or following call appears as a new independent timeline item instead
 of sitting below a stale `running` card.
+
+## Action descriptions and grouped transcript hints
+
+`task_progress(action)` supplies a short, model-authored explanation for the next meaningful
+stage without creating a task or changing its lifecycle. Each concrete tool status freezes
+its own `action`; the Task Window shows that explanation alongside the corresponding call.
+Inline hints display the action together with Runtime-owned completion/failure state.
+
+Visually consecutive calls to the same tool in one execution/run share the first stable
+transcript host, even when their states or action text differ. Cleared continuation hosts,
+empty hidden-control Markdown and conversation-hidden `taskWindowTool` hosts do not interrupt
+the group. Visible prose, other tool families, unknown/unloaded hosts and different runs do.
+Saved knowledge-network batches with missing toolset metadata use a conservative legacy
+read/write classification, so different read methods sharing one task label can group
+without mixing them with graph mutations. Status type carried only by the Markdown token
+is preserved when resolving each grouped JSON replacement.
+The main row prioritizes guidance/running calls, counts failures explicitly, and opens the
+current call or the completed overview. Expanded history preserves every call's exact target.
 
 ## Workspace transfer cards
 

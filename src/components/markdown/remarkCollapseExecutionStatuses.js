@@ -1,31 +1,11 @@
 import {visit} from 'unist-util-visit';
 
 import {normalizeReplacementEntry} from './replacementProtocol.js';
+import {getExecutionStatusGroupKey, parseExecutionStatus} from '../../features/execution/executionStatusModel.js';
 
 const getCardId = (node) => String(node?.data?.hProperties?.id || '').trim();
 
-const getDisplayState = (execution) => {
-    const inlineState = String(execution.inlineState || '').toLowerCase();
-    const status = String(execution.status || '').toLowerCase();
-    const failed = inlineState === 'failed' || ['blocked', 'failed', 'recoverable_failed'].includes(status);
-    const cancelled = inlineState === 'cancelled' || status === 'cancelled';
-    const recovering = !inlineState && status === 'recovering';
-    const completed = inlineState === 'completed' || status === 'completed';
-    const historicalDone = Boolean(execution.done) && !failed && !cancelled && !completed;
-    const active = inlineState === 'running' || (
-        !inlineState && Boolean(execution.active) && !failed && !cancelled && !completed && !historicalDone
-    );
-
-    if (failed) return ['failed', status === 'blocked' ? '执行需要处理' : '执行失败'];
-    if (cancelled) return ['cancelled', '执行已停止'];
-    if (recovering) return ['recovering', '正在恢复执行'];
-    if (completed) return ['completed', '执行完成'];
-    if (historicalDone) return ['historicalDone', '阶段已完成'];
-    if (active) return [execution.thinking?.paused ? 'paused' : 'running', '正在执行'];
-    return null;
-};
-
-const getStatusSummary = (node, replacement) => {
+const getCard = (node, replacement) => {
     if (node?.type !== 'cardReplace') return null;
     const id = getCardId(node);
     if (!id) return null;
@@ -35,40 +15,15 @@ const getStatusSummary = (node, replacement) => {
         id,
         node.data?.hProperties?.type || '',
     );
-    if (!normalized.exists || normalized.type !== 'executionStatus' || normalized.contextStatus) return null;
-
-    try {
-        const execution = JSON.parse(normalized.content);
-        if (!execution || typeof execution !== 'object' || Array.isArray(execution)) return null;
-        const executionId = String(execution.executionId || '').trim();
-        const statusId = String(execution.statusId || '').trim();
-        const state = getDisplayState(execution);
-        if (!executionId || !statusId || !state) return null;
-
-        // These rows contain visible details beneath the status line and must keep
-        // their own place in the conversation rather than disappear into a group.
-        const hasGuidance = Boolean(
-            execution.guidancePrompt
-            || execution.guidancePrompts?.[statusId]
-            || execution.activities?.some?.((activity) =>
-                String(activity?.kind || '').toLowerCase() === 'guidance'
-                && String(activity?.anchorStatusId || '').trim() === statusId),
-        );
-        if (hasGuidance) return null;
-
-        const label = String(execution.label || '').trim() || state[1];
-        return {id, key: JSON.stringify([executionId, state[0], label])};
-    } catch {
-        return null;
-    }
+    return normalized.exists && !normalized.contextStatus ? normalized : null;
 };
 
 /**
- * Merge only adjacent, visually identical execution rows from the same run.
- * The replacement map and raw Markdown stay untouched; the last row remains
- * the primary navigation target, while groupedIds lets the UI expose older rows.
+ * Merge visually consecutive calls of the same tool in one execution. The first
+ * host stays mounted while new calls arrive; each original record remains in the
+ * replacement map and groupedIds preserves exact per-call navigation.
  */
-export function remarkCollapseExecutionStatuses({replacement = {}} = {}) {
+export function remarkCollapseExecutionStatuses({replacement = {}, renderSurface = 'conversation'} = {}) {
     return (tree) => {
         visit(tree, (node) => Array.isArray(node.children), (parent) => {
             const collapsed = [];
@@ -76,27 +31,40 @@ export function remarkCollapseExecutionStatuses({replacement = {}} = {}) {
 
             const flush = () => {
                 if (!group) return;
-                const latest = group.nodes[group.nodes.length - 1];
+                const anchor = group.nodes[0];
                 if (group.nodes.length > 1) {
-                    latest.data.hProperties.groupedIds = JSON.stringify(group.nodes.map(getCardId));
+                    anchor.data.hProperties.groupedIds = JSON.stringify(group.nodes.map(getCardId));
                 }
-                collapsed.push(latest);
+                collapsed.push(anchor, ...group.hidden);
                 group = null;
             };
 
             for (const child of parent.children) {
-                const summary = getStatusSummary(child, replacement);
-                if (!summary) {
+                const card = getCard(child, replacement);
+                // Cleared continuation rows and suppressed control tools (empty
+                // markdown replacements) render nothing on either surface;
+                // tool hosts only render in the Task Window. Preserve their AST
+                // hosts without splitting visually consecutive status records.
+                // Missing/unknown cards and visible context badges still break.
+                const invisible = (['executionStatus', 'markdown'].includes(card?.type) && !card.content.trim())
+                    || (card?.type === 'taskWindowTool' && String(renderSurface).toLowerCase() !== 'task_window');
+                if (invisible && group) {
+                    group.hidden.push(child);
+                    continue;
+                }
+                const key = card?.type === 'executionStatus'
+                    ? getExecutionStatusGroupKey(parseExecutionStatus(card.content)) : null;
+                if (!key) {
                     flush();
                     collapsed.push(child);
                     continue;
                 }
-                if (group?.key === summary.key) {
+                if (group?.key === key) {
                     group.nodes.push(child);
                     continue;
                 }
                 flush();
-                group = {key: summary.key, nodes: [child]};
+                group = {key, nodes: [child], hidden: []};
             }
             flush();
             parent.children = collapsed;

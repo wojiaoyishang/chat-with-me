@@ -2,7 +2,7 @@ import WidgetResponseDetails from './WidgetResponseDetails.jsx';
 import ExecutionPauseControl from './ExecutionPauseControl.jsx';
 import ExecutionThinkingControl from './ExecutionThinkingControl.jsx';
 import ExecutionGuidanceAction from './ExecutionGuidanceAction.jsx';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import {
     ArrowDownToLine,
     CheckCircle2,
@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button.tsx';
 import { upsertExecution } from './useExecutionStore.js';
 import WorkspaceTransferCard from '@/features/workspace/components/WorkspaceTransferCard.jsx';
 import useExecutionNavigation from './useExecutionNavigation.js';
+import useExecutionAutoFollow from './useExecutionAutoFollow.js';
 
 const realtimeActionErrorMessage = (response, fallback = '操作失败') =>
     response?.value || response?.message || (response?.code ? String(response.code) : '') || fallback;
@@ -88,9 +89,8 @@ const ExecutionWindow = memo(
     ({ execution, open, onOpenChange, dockTarget = null, dockMount = null, messages = {}, navigationRequest = null,
         onNavigationHandled }) => {
         const [actionPending, setActionPending] = useState(false);
-        const [autoFollow, setAutoFollow] = useState(!navigationRequest);
-        const scrollRef = useRef(null);
-        const contentRef = useRef(null);
+        const { autoFollow, setAutoFollow, toggleAutoFollow, scrollRef, attachScroll, attachContent } =
+            useExecutionAutoFollow({ open, executionId: execution?.executionId, navigationRequest });
         const status = String(execution?.status || '');
         const active = Boolean(execution?.active);
         const stopping = status === 'cancelling';
@@ -148,60 +148,6 @@ const ExecutionWindow = memo(
         }, [activities, toolCards]);
         const highlightedKey = useExecutionNavigation({ request: navigationRequest, open, execution, timelineItems,
             ownerMessageId, ownerReplacement, scrollRef, setAutoFollow, onHandled: onNavigationHandled });
-
-        const scrollToBottom = useCallback((behavior = 'auto') => {
-            const node = scrollRef.current;
-            if (!node) return;
-            const top = Math.max(0, node.scrollHeight - node.clientHeight);
-            try {
-                node.scrollTo({ top, behavior });
-            } catch {
-                node.scrollTop = top;
-            }
-        }, []);
-
-        const enableAutoFollow = useCallback(() => {
-            setAutoFollow(true);
-            requestAnimationFrame(() => scrollToBottom('smooth'));
-        }, [scrollToBottom]);
-
-        const toggleAutoFollow = useCallback(() => {
-            if (autoFollow) {
-                setAutoFollow(false);
-                return;
-            }
-            enableAutoFollow();
-        }, [autoFollow, enableAutoFollow]);
-
-        const handleTimelineScroll = useCallback(() => {
-            const node = scrollRef.current;
-            if (!node || !autoFollow) return;
-            const distanceFromBottom = node.scrollHeight - node.scrollTop - node.clientHeight;
-            // Treat a deliberate upward scroll as opting out. Reaching the bottom again
-            // does not silently re-enable follow; the header button is the explicit
-            // user control for resuming automatic bottom tracking.
-            if (distanceFromBottom > 72) setAutoFollow(false);
-        }, [autoFollow]);
-
-        useEffect(() => {
-            if (!open || !autoFollow || navigationRequest) return undefined;
-            const frame = requestAnimationFrame(() => scrollToBottom('auto'));
-            return () => cancelAnimationFrame(frame);
-        }, [autoFollow, execution?.updatedAt, execution?.executionId, navigationRequest, open, scrollToBottom, timelineItems.length]);
-
-        useEffect(() => {
-            if (!open || !autoFollow || navigationRequest || !contentRef.current || typeof ResizeObserver === 'undefined') return undefined;
-            let frame = 0;
-            const observer = new ResizeObserver(() => {
-                cancelAnimationFrame(frame);
-                frame = requestAnimationFrame(() => scrollToBottom('auto'));
-            });
-            observer.observe(contentRef.current);
-            return () => {
-                cancelAnimationFrame(frame);
-                observer.disconnect();
-            };
-        }, [autoFollow, navigationRequest, open, scrollToBottom]);
 
         const requestAction = async (event) => {
             if (actionPending) return;
@@ -325,11 +271,12 @@ const ExecutionWindow = memo(
                 footer={footer}
             >
                 <div
-                    ref={scrollRef}
-                    onScroll={handleTimelineScroll}
-                    className="h-full overflow-y-auto px-5 py-4 pretty-scrollbar [--status-sticky-gap:6px]"
+                    ref={attachScroll}
+                    tabIndex={0}
+                    aria-label="任务执行时间线"
+                    className="h-full overflow-y-auto overscroll-contain px-5 py-4 pretty-scrollbar [overflow-anchor:none] [scroll-behavior:auto] [--status-sticky-gap:6px]"
                 >
-                    <div ref={contentRef}>
+                    <div ref={attachContent} className="flow-root min-w-0">
                         {(taskMode?.objective || taskMode?.enteredBy) && (
                             <section className="mb-6 rounded-xl border border-blue-100 bg-blue-50/40 px-4 py-3">
                                 <div className="text-[11px] font-semibold uppercase tracking-wide text-blue-400">
@@ -380,6 +327,7 @@ const ExecutionWindow = memo(
                                                 replacementId &&
                                                 Object.prototype.hasOwnProperty.call(ownerReplacement, replacementId);
                                             const workspaceTransferDirection = workspaceTransferDirectionForCard(card);
+                                            const action = String(execution?.toolStatusNodes?.[card.toolCallId]?.action || '').trim();
                                             return (
                                                 <div
                                                     key={item.key}
@@ -405,6 +353,11 @@ const ExecutionWindow = memo(
                                                                   : 'Tool Calling'}
                                                         </span>
                                                     </div>
+                                                    {action && (
+                                                        <div className="mb-2 break-words text-xs leading-5 text-gray-500">
+                                                            {action.replace(/^正在\s*/, '')}
+                                                        </div>
+                                                    )}
                                                     {exists ? (
                                                         <MarkdownRenderer
                                                             contextId={ownerMessageId}

@@ -4,35 +4,11 @@ import { Check, CircleAlert, CircleX, Loader2, LoaderCircle, RotateCcw, Pause } 
 
 import ExecutionGuidanceBubble from './ExecutionGuidanceBubble.jsx';
 import { openExecution, upsertExecution, useExecutionStore } from './useExecutionStore.js';
+import {getExecutionDisplayState, parseExecutionStatus} from './executionStatusModel.js';
 
-const parseExecution = (content, conversationId) => {
-    const raw = String(content ?? '').trim();
-    // Empty replacements are the backend's canonical way to remove transient
-    // execution rows. They are not an empty Execution snapshot.
-    if (!raw) return null;
-
-    try {
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
-
-        const executionId = String(parsed.executionId || '').trim();
-        const statusId = String(parsed.statusId || '').trim();
-        if (!executionId || !statusId) return null;
-
-        return {
-            ...parsed,
-            executionId,
-            statusId,
-            conversationId: String(parsed.conversationId || conversationId || '').trim(),
-        };
-    } catch {
-        return null;
-    }
-};
-
-const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
+const ExecutionStatus = memo(({ content = '', conversationId = null, navigateOverview = false }) => {
     const { t } = useTranslation();
-    const execution = useMemo(() => parseExecution(content, conversationId), [content, conversationId]);
+    const execution = useMemo(() => parseExecutionStatus(content, conversationId), [content, conversationId]);
     const liveExecution = useExecutionStore((state) => {
         const cid = String(execution?.conversationId || conversationId || '').trim();
         const executionId = String(execution?.executionId || '').trim();
@@ -55,18 +31,15 @@ const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
 
     if (!execution) return null;
 
-    const inlineState = String(execution.inlineState || '').toLowerCase();
     const status = String(execution.status || '').toLowerCase();
     const explicitLabel = String(execution.label || '').trim();
-    const failed =
-        inlineState === 'failed' || status === 'blocked' || status === 'failed' || status === 'recoverable_failed';
-    const cancelled = inlineState === 'cancelled' || status === 'cancelled';
-    const recovering = !inlineState && status === 'recovering';
-    const completed = inlineState === 'completed' || status === 'completed';
-    const historicalDone = Boolean(execution.done) && !failed && !cancelled && !completed;
-    const active =
-        inlineState === 'running' ||
-        (!inlineState && Boolean(execution.active) && !failed && !cancelled && !completed && !historicalDone);
+    const state = getExecutionDisplayState(execution);
+    const failed = state === 'failed';
+    const cancelled = state === 'cancelled';
+    const recovering = state === 'recovering';
+    const completed = state === 'completed';
+    const historicalDone = state === 'historicalDone';
+    const active = state === 'running' || state === 'paused';
 
     // Do not turn an unknown/incomplete payload into a success state. A check mark
     // is reserved for an explicit completed state or a valid frozen historical row.
@@ -85,7 +58,10 @@ const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
               : active
                 ? Loader2
                 : Check;
+    const action = String(execution.action || '').trim();
+    const actionLabel = active || recovering ? action : action.replace(/^正在\s*/, '');
     const label =
+        actionLabel ||
         (paused ? t('executionPause.paused') : '') ||
         explicitLabel ||
         (completed
@@ -119,7 +95,7 @@ const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
         null;
     const guidancePromptLabel = String(guidancePrompt?.label || '').trim();
     const openTarget = liveExecution || execution;
-    const openAtNode = () => openExecution(openTarget, {
+    const openAtNode = () => openExecution(openTarget, navigateOverview ? null : {
         ...execution.navigationTarget,
         statusId: nodeStatusId,
         toolCallId: execution.navigationTarget?.toolCallId || execution.toolCallId || null,
@@ -136,6 +112,11 @@ const ExecutionStatus = memo(({ content = '', conversationId = null }) => {
                 <span className="flex max-w-full items-center gap-2 text-[15px] leading-6">
                     <Icon className={`h-4 w-4 shrink-0 ${active && !paused ? 'animate-spin' : ''}`} />
                     <span className="truncate">{label}</span>
+                    {action && (!active || paused) && (
+                        <span className={`shrink-0 text-xs ${failed ? 'text-red-500' : 'text-gray-400'}`} data-execution-action-state={state}>
+                            {paused ? t('executionPause.paused') : failed ? status === 'blocked' ? '需要处理' : '失败' : cancelled ? '已停止' : recovering ? '恢复中' : '已完成'}
+                        </span>
+                    )}
                     {execution.phase && (
                         <span className="hidden shrink-0 text-xs text-gray-300 group-hover:text-gray-400 sm:inline">
                             查看过程

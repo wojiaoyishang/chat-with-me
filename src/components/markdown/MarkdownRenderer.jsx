@@ -569,7 +569,10 @@ const createComponents = ({
             }
             const groupedEntries = normalized.type === 'executionStatus'
                 ? groupedIds.map((groupedId) => {
-                    const entry = normalizeReplacementEntry(currentReplacement, groupedId, '', isStreaming);
+                    // The grouping plugin already verified each token's status
+                    // type. Persisted replacements may contain plain JSON with
+                    // the type supplied only by that original Markdown token.
+                    const entry = normalizeReplacementEntry(currentReplacement, groupedId, 'executionStatus', isStreaming);
                     return entry.exists && entry.type === 'executionStatus'
                         ? {id: groupedId, content: entry.content}
                         : null;
@@ -749,7 +752,7 @@ function MarkdownRendererInner({
 
     const markdown = (
         <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath, ...documentRemarkPlugins, remarkCardReplace, [remarkCollapseExecutionStatuses, {replacement}], remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
+            remarkPlugins={[remarkGfm, remarkMath, ...documentRemarkPlugins, remarkCardReplace, [remarkCollapseExecutionStatuses, {replacement, renderSurface}], remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
             rehypePlugins={[
                 rehypeKatex,
                 ...extraRehypePlugins,
