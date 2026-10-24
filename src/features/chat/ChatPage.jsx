@@ -2085,14 +2085,14 @@ function ChatPage({
                 },
                 conversationId: conversationId,
                 onTimeout: () => {
-                    if (isCurrent()) toast.warning(t('cannot_load_tasks'));
+                    if (isCurrent()) toast.warning(t('cannot_load_execution'));
                 },
             }).then((payload) => {
                 if (!isCurrent()) return;
                 if (payload.success) {
                     messagesLoadedIdempotencyKeyRef.current = generateUUID();
                 } else {
-                    console.error('Cannot to load the tasks,', payload.value);
+                    console.error('Cannot load the execution,', payload.value);
                 }
             });
         }, 0);
@@ -2563,7 +2563,7 @@ function ChatPage({
                                     const mergedMessage = { ...oldMessage, ...incomingValue };
 
                                     // extraInfo 是增量协议的一部分。流式阶段可能只更新审计信息，
-                                    // 不能覆盖已经累积的 replacement/task/context 等字段。
+                                    // 不能覆盖已经累积的 replacement/execution/context 等字段。
                                     if (oldMessage.extraInfo || incomingValue.extraInfo) {
                                         mergedMessage.extraInfo = {
                                             ...(oldMessage.extraInfo || {}),
@@ -2746,7 +2746,7 @@ function ChatPage({
                     const transfer = payload.value;
                     if (transfer && typeof transfer === 'object' && transfer.transferId) {
                         // Transfer progress is a standalone Workspace domain state.
-                        // Conversation Replace Cards and Task Window consume the same
+                        // Conversation Replace Cards and Execution Window consume the same
                         // store; attachments remain immutable file entities.
                         upsertWorkspaceTransfer(transfer);
                         if (payload.reply) reply({ success: true });

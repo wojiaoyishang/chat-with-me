@@ -9,7 +9,7 @@ import { mergeNetworkData } from '../src/features/chat/page/utils/networkMerge.j
 
 await build({ entryPoints: ['src/features/chat/ui/message/components/KnowledgeGraphViewer.jsx'], outfile: 'temp/graph-expansion-react-test.mjs', bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', loader: { '.css': 'empty' }, plugins: [{ name: 'test-scene', setup(builder) {
     builder.onResolve({ filter: /^react(?:\/|$)/ }, ({ path: name }) => ({ path: name, external: true }));
-    builder.onResolve({ filter: /^@\// }, ({ path: name }) => name === '@/features/knowledge/graphSettings.js' ? { path: path.resolve('src/features/knowledge/graphSettings.js') } : { path: name, namespace: 'fixture' });
+    builder.onResolve({ filter: /^@\// }, ({ path: name }) => ['@/features/knowledge/graphSettings.js', '@/features/knowledge/graphHistory.js'].includes(name) ? { path: path.resolve('src', name.slice(2)) } : { path: name, namespace: 'fixture' });
     builder.onLoad({ filter: /.*/, namespace: 'fixture' }, ({ path: name }) => ({ loader: 'jsx', contents: name.endsWith('apiClient.js') ? 'export default {get:(...args)=>globalThis.__graphGet(...args)}' : name === '@/components/ui/select' ? `import{createContext,useContext}from'react';const C=createContext({});export const Select=({value,onValueChange,children})=><C.Provider value={{value,onValueChange}}>{children}</C.Provider>;export const SelectTrigger=props=><span {...props}/>;export const SelectValue=()=>null;export const SelectContent=({children})=>{const c=useContext(C);return <select aria-label="切换图谱知识库" value={c.value} onChange={e=>c.onValueChange(e.target.value)}>{children}</select>};export const SelectItem=props=><option {...props}/>;` : name === '@/lib/tools.jsx' ? 'export const useLocalSetting=(_key,defaultValue)=>[defaultValue];' : 'export default function Visibility({children}){return children}' }));
 } }] });
 await build({ entryPoints: ['src/components/ui/MultilineEditor.jsx'], outfile: 'temp/multiline-react-test.mjs', bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external' });
@@ -41,6 +41,130 @@ test('chat double-click queries the scoped backend, appends neighbors, and prese
     assert.ok(ui.container.querySelector('[data-node-id="neighbor"]')); assert.equal(ui.container.querySelector('[data-node-id="root"]'), original);
     assert.equal(ui.store.get('nvlInstance'), instance); assert.match(ui.container.querySelector('.chat-knowledge-heading small').textContent, /2 个节点/);
     assert.equal(ui.msg.network.nodes.length, 1, 'manual expansion must not rewrite conversation history');
+});
+
+test('a live graph publication opens a missing preview and follows later AI database scopes without reloading', async t => {
+    const ui = await setup(t, async () => { throw new Error('publishing a graph must not query node details'); });
+    const initialMessage = { ...ui.msg };
+    delete initialMessage.network;
+    ui.msg = initialMessage;
+    const renderMessage = () => ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' }));
+    await renderMessage(); await ui.settle();
+    assert.equal(ui.container.querySelector('[aria-label="知识图谱记忆"]'), null);
+    assert.equal(ui.store.has('nvlInstance'), false);
+
+    const publish = async network => {
+        ui.msg = { ...ui.msg, network: mergeNetworkData(ui.msg.network, network) };
+        await renderMessage(); await ui.settle();
+    };
+    await publish({ databaseId: 'library-a', nodes: [
+        { id: 'shared', name: '库 A 实时节点', label: 'Event' },
+        { id: 'only-a', name: '库 A 关联', label: 'Thing' },
+    ], relationships: [{ id: 'edge', from: 'shared', to: 'only-a', type: '支持' }] });
+    const preview = ui.container.querySelector('[aria-label="知识图谱记忆"]');
+    assert.ok(preview, 'the existing message must show a preview as soon as its graph arrives');
+    assert.equal(ui.container.querySelector('select').value, 'library-a');
+    assert.match(ui.container.querySelector('.chat-knowledge-heading small').textContent, /2 个节点 · 1 条关系/);
+    assert.match(ui.container.querySelector('[data-node-id="shared"] title').textContent, /库 A 实时节点/);
+    assert.ok(ui.container.querySelector('[data-edge-id="edge"]'));
+    assert.equal(ui.store.get('nvlInstance').databaseId, 'library-a');
+
+    await publish({ databaseId: 'library-b', nodes: [
+        { id: 'shared', name: '库 B 实时节点', label: 'Fact' },
+        { id: 'only-b', name: '库 B 关联', label: 'Thing' },
+    ], relationships: [{ id: 'edge', from: 'shared', to: 'only-b', type: '解释' }] });
+    assert.equal(ui.container.querySelector('[aria-label="知识图谱记忆"]'), preview, 'database events update the mounted preview');
+    assert.equal(ui.container.querySelector('select').value, 'library-b');
+    assert.match(ui.container.querySelector('[data-node-id="shared"] title').textContent, /库 B 实时节点/);
+    assert.equal(ui.container.querySelector('[data-node-id="only-a"]'), null);
+    assert.ok(ui.container.querySelector('[data-node-id="only-b"]'));
+    assert.match(ui.container.querySelector('[data-edge-id="edge"] title').textContent, /解释/);
+    assert.equal(ui.store.get('nvlInstance').databaseId, 'library-b');
+    assert.equal(ui.msg.id, initialMessage.id, 'a live publication does not need a new message or navigation');
+});
+
+test('chat expansion can be undone and redone with shortcuts without fetching or reverting newer AI results', async t => {
+    let calls = 0;
+    const ui = await setup(t, async () => { calls++; return { nodes: [{ id: 'root', label: 'Event' }, { id: 'manual', name: '手动关联', label: 'Thing' }], relationships: [{ id: 'manual-edge', source: 'root', target: 'manual', type: '关联' }] }; });
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+    await act(async () => ui.container.querySelector('[data-node-id="root"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    assert.ok(ui.container.querySelector('[data-node-id="manual"]'));
+    ui.msg = { ...ui.msg, network: mergeNetworkData(ui.msg.network, { nodes: [{ id: 'ai-new', name: '新 AI 结果', label: 'Event' }, { id: 'root', name: 'AI 更新的名称', label: 'Event' }], relationships: [] }) };
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' }));
+    assert.match(ui.container.querySelector('[data-node-id="root"] title').textContent, /AI 更新的名称/);
+    const shortcut = async shiftKey => act(async () => {
+        const event = new ui.dom.window.KeyboardEvent('keydown', { key: 'z', ctrlKey: true, shiftKey, bubbles: true, cancelable: true });
+        ui.container.querySelector('.chat-knowledge-canvas').dispatchEvent(event); assert.equal(event.defaultPrevented, true);
+    });
+    await shortcut(false);
+    assert.equal(ui.container.querySelector('[data-node-id="manual"]'), null);
+    assert.equal(ui.container.querySelector('[data-edge-id="manual-edge"]'), null);
+    assert.ok(ui.container.querySelector('[data-node-id="ai-new"]'), 'undo must retain new AI results');
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+    await shortcut(true);
+    assert.ok(ui.container.querySelector('[data-node-id="manual"]'));
+    assert.ok(ui.container.querySelector('[data-node-id="ai-new"]'));
+    assert.match(ui.container.querySelector('[data-node-id="root"] title').textContent, /AI 更新的名称/, 'redo must not restore stale AI node attributes');
+    assert.equal(calls, 1, 'redo restores local state without repeating the query');
+    const select = ui.container.querySelector('select');
+    const inputUndo = new ui.dom.window.KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true, cancelable: true });
+    select.dispatchEvent(inputUndo); assert.equal(inputUndo.defaultPrevented, false);
+    assert.ok(ui.container.querySelector('[data-node-id="manual"]'));
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(ui.container.querySelector('[data-node-id="manual"]'), null);
+});
+
+test('undo cancels a pending expansion and ignores its late response', async t => {
+    let resolveRequest, signal;
+    const ui = await setup(t, (_url, options) => { signal = options.signal; return new Promise(resolve => resolveRequest = resolve); });
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await act(async () => ui.container.querySelector('[data-node-id="root"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, false);
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(signal.aborted, true);
+    await act(async () => resolveRequest({ nodes: [{ id: 'late', label: 'Event' }], relationships: [] }));
+    assert.equal(ui.container.querySelector('[data-node-id="late"]'), null);
+    assert.ok(ui.container.querySelector('[data-node-id="root"]'));
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+    assert.equal(ui.container.querySelector('[aria-label="重做图谱操作"]').disabled, true);
+});
+
+test('concurrent expansion validates the combined canvas limit before committing history', async t => {
+    const replies = [];
+    const ui = await setup(t, () => new Promise(resolve => replies.push(resolve)));
+    ui.msg.network.nodes = Array.from({ length: 250 }, (_, id) => ({ id: `root-${id}`, name: `节点 ${id}`, label: 'Event' }));
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await act(async () => {
+        for (let id = 0; id < 2; id++) ui.container.querySelector(`[data-node-id="root-${id}"]`).dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true }));
+    });
+    await act(async () => {
+        replies.forEach((resolve, batch) => resolve({ nodes: Array.from({ length: 100 }, (_, id) => ({ id: `added-${batch}-${id}`, label: 'Thing' })), relationships: [] }));
+    });
+    assert.equal(ui.container.querySelectorAll('.knowledge-node').length, 350);
+    assert.match(ui.container.querySelector('[role="alert"]').textContent, /400/);
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(ui.container.querySelectorAll('.knowledge-node').length, 250);
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+});
+
+test('chat history remains isolated by database and no-op expansion does not add an undo step', async t => {
+    let calls = 0;
+    const ui = await setup(t, async (_url, options) => { calls++; return { databaseId: options.params.databaseId, nodes: [{ id: 'root', name: '根节点', label: 'Event' }, { id: 'manual', name: '手动关联', label: 'Thing' }], relationships: [] }; });
+    ui.msg.network.databaseId = 'library-a';
+    ui.msg.network.databaseViews = { 'library-b': { databaseId: 'library-b', nodes: [{ id: 'b-root', label: 'Event' }], relationships: [] } };
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await act(async () => ui.container.querySelector('[data-node-id="root"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    await act(async () => ui.container.querySelector('[data-node-id="root"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    assert.equal(calls, 2);
+    await switchDatabase(ui, 'library-b'); await ui.settle();
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+    assert.ok(ui.container.querySelector('[data-node-id="b-root"]'));
+    await switchDatabase(ui, 'library-a'); await ui.settle();
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, false);
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(ui.container.querySelector('[data-node-id="manual"]'), null);
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true, 'no-op query must not consume another history entry');
 });
 
 test('duplicate expansion is deduplicated and switching conversation aborts and ignores a late response', async t => {

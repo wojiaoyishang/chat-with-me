@@ -1,5 +1,6 @@
 const VIDEO_POSITIONS = new Set(['auto', 'top', 'bottom', 'left', 'right']);
 const VIDEO_TIMINGS = new Set(['before', 'alongside', 'after']);
+const ARTICLE_SIDE_BREAKPOINT = 1024;
 
 const clamp = (value, minimum, maximum) => Math.min(maximum, Math.max(minimum, value));
 const finitePositive = (value, fallback) => {
@@ -24,7 +25,7 @@ export const resolveImageAspectRatio = (part) => {
 export const resolveImageLayout = (part, fontScale, {viewportWidth, forceStacked = false, renderImage = true} = {}) => {
     if (!part?.imageUrl || !renderImage) return 'text_only';
     if (forceStacked) return 'image_top';
-    if (finitePositive(viewportWidth, 1024) < 768) return 'image_top';
+    if (finitePositive(viewportWidth, 1024) < ARTICLE_SIDE_BREAKPOINT) return 'image_top';
     if (fontScale >= 1.15) return 'image_top';
     if (part.layoutHint && part.layoutHint !== 'auto') return part.layoutHint;
     const ratio = resolveImageAspectRatio(part);
@@ -69,7 +70,11 @@ export const resolveStoryMediaLayout = ({part, fontScale = 1, viewportWidth = 10
         };
     }
 
-    const videoPosition = narrow ? 'top' : (explicitVideoPosition === 'auto' ? 'top' : explicitVideoPosition);
+    // Article/video columns use the same lg breakpoint as the reader. Below it,
+    // render a real stacked layout rather than retaining a desktop side layout.
+    const videoPosition = finitePositive(viewportWidth, 1024) < ARTICLE_SIDE_BREAKPOINT
+        ? (explicitVideoPosition === 'bottom' ? 'bottom' : 'top')
+        : (explicitVideoPosition === 'auto' ? 'top' : explicitVideoPosition);
     const sideVideo = videoPosition === 'left' || videoPosition === 'right';
     return {
         mode: sideVideo ? 'video_side' : 'video_stacked',

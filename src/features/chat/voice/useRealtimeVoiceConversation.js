@@ -360,8 +360,8 @@ export function useRealtimeVoiceConversation({
                     }
                     break;
                 case EventName.VOICE_TURN_COMMITTED:
-                    if (payload.admissionAction === 'task_interrupt') {
-                        // The transcript was injected into the already-running Task Mode
+                    if (['execution_interrupt', 'execution_guidance'].includes(payload.admissionAction)) {
+                        // The transcript was injected into the already-running Execution Mode
                         // rather than creating a second durable Turn.  Do not wait for a
                         // terminal event carrying this synthetic voice turn_id.
                         patchState({ status: voiceStateRef.current?.outputOnly ? 'text_input' : 'listening' });

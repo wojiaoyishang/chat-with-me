@@ -45,7 +45,7 @@ await build({
                 path: `${process.cwd()}/src/features/tools/toolPermissions.js`,
             }));
             builder.onResolve({ filter: /^@\// }, ({ path }) => ({ path, namespace: 'mock' }));
-            builder.onResolve({ filter: /^\.\/(OrderedOptionsEditor|JsonConfigEditor)\.jsx$/ }, ({ path }) => ({
+            builder.onResolve({ filter: /^\.\/(OrderedOptionsEditor|JsonConfigEditor|TempCacheCleanup)\.jsx$/ }, ({ path }) => ({
                 path, namespace: 'mock',
             }));
             builder.onLoad({ filter: /.*/, namespace: 'mock' }, ({ path }) => {

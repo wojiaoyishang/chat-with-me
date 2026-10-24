@@ -38,11 +38,11 @@ const renderCard = async ({route = '/chat/source', documentId = 'doc', conversat
             React.createElement(Route, {path:'*', element}))));
 };
 
-test('live ESC status remains in the conversation and is absent from task details', async () => {
+test('live ESC status remains in the conversation and is absent from execution details', async () => {
     const body = await renderCard();
     assert.ok(body.includes('正在撰写文档'));
     assert.ok(body.includes('esc-writing-spinner'));
-    assert.equal(await renderCard({renderSurface:'task_window'}), '');
+    assert.equal(await renderCard({renderSurface:'execution_window'}), '');
 });
 
 test('writing status on the chat page links to the document and retains its conversation', async () => {

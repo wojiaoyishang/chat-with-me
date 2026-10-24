@@ -86,6 +86,8 @@ async function workspace() {
               else if (requested === "@/pages/DocEditorHome.jsx")
                 contents =
                   "export default ({documentId,onChatMode,onNewDocumentId,onNewConversationId})=><section data-document-home><iframe data-document-frame src={`about:blank#${documentId}`}/><button data-open-document onClick={()=>onNewDocumentId('document-1')}>打开文档</button><button data-return-chat onClick={onChatMode}>返回对话</button><button data-document-chat onClick={()=>onNewConversationId('chat-2')}>切换文档会话</button></section>;";
+              else if (requested === "@/features/story/StoriesPage.jsx")
+                contents = 'export default ({conversationId,onReturn,returnLabel})=><section data-stories-page data-creative-conversation={conversationId}><button data-story-return onClick={onReturn}>{returnLabel}</button></section>;';
               else if (requested === "@/components/sidebar/Sidebar.jsx")
                 contents = `export default ({pageType,onOpenPage,onConversationIdSelect})=><aside aria-label="main navigation" data-active-page={pageType}><button onClick={()=>onOpenPage('tasks')}>任务管理</button><button onClick={()=>onOpenPage('knowledge')}>知识库</button><button data-page="doc" onClick={()=>onOpenPage('doc')}>文档</button><button data-page="chat" onClick={()=>onOpenPage('chat')}>对话</button><button onClick={()=>onConversationIdSelect('chat-2')}>另一个对话</button></aside>;`;
               else if (requested === "@/lib/apiClient.js")
@@ -283,5 +285,33 @@ test('document conversation changes synchronize routing while preserving the edi
     assert.ok(document.querySelector('[data-document-home]'));
   } finally {
     await act(async () => globalThis.workspaceTest.root.unmount()); router.dispose(); dom.window.close();
+  }
+});
+
+test('story library retains the live conversation and restores its draft on return', async () => {
+  const {dom, router, lifecycle} = await workspace();
+  try {
+    const chat = document.querySelector('[data-live-chat]');
+    const draft = chat.querySelector('input');
+    await act(async () => {
+      draft.value = '故事创作草稿';
+      draft.dispatchEvent(new dom.window.Event('input', {bubbles: true}));
+    });
+    const mounts = lifecycle.filter(value => value === 'mount').length;
+    await act(async () => router.navigate('/stories'));
+    assert.equal(document.querySelector('aside').dataset.activePage, 'stories');
+    assert.ok(document.querySelector('[role="region"][aria-label="故事"]'));
+    assert.equal(document.querySelector('[data-stories-page]').dataset.creativeConversation, 'chat-1');
+    assert.equal(document.querySelector('[data-live-chat]'), chat);
+    assert.equal(chat.closest('[aria-hidden]').getAttribute('aria-hidden'), 'true');
+    await act(async () => document.querySelector('[data-story-return]').click());
+    assert.equal(router.state.location.pathname, '/chat/chat-1');
+    assert.equal(document.querySelector('[data-stories-page]'), null);
+    assert.equal(document.querySelector('[data-live-chat]'), chat);
+    assert.equal(draft.value, '故事创作草稿');
+    assert.equal(lifecycle.filter(value => value === 'mount').length, mounts);
+  } finally {
+    await act(async () => globalThis.workspaceTest.root.unmount());
+    router.dispose(); dom.window.close();
   }
 });

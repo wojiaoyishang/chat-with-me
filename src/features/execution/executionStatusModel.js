@@ -31,13 +31,50 @@ export const getExecutionDisplayState = (execution = {}) => {
     return null;
 };
 
+const CALL_STATES = new Set(['running', 'completed', 'failed', 'cancelled']);
+const TERMINAL_CALL_STATES = new Set(['completed', 'failed', 'cancelled']);
+
+// Replacements and execution snapshots arrive independently. Reconcile only the
+// matching concrete call; the execution's overall result cannot finish every row.
+export const projectExecutionStatus = (execution, live = null) => {
+    if (!execution || !live || execution.executionId !== live.executionId
+        || (execution.conversationId && live.conversationId && execution.conversationId !== live.conversationId)
+        || (execution.runId && live.runId && execution.runId !== live.runId)
+        || Number(execution.updatedAt || 0) > Number(live.updatedAt || 0)) return execution;
+    const direct = live.toolStatusNodes?.[execution.toolCallId];
+    const node = direct?.statusId === execution.statusId ? direct
+        : Object.values(live.toolStatusNodes || {}).find((item) => item?.statusId === execution.statusId
+            && (!execution.toolCallId || !item?.toolCallId || item.toolCallId === execution.toolCallId));
+    if (!node || !CALL_STATES.has(node.state)) return execution;
+    // A snapshot hydrated from an older row may still contain a running copy of
+    // a call that has already published its terminal replacement.
+    if (TERMINAL_CALL_STATES.has(execution.inlineState) && node.state === 'running') return execution;
+    return {
+        ...execution,
+        inlineState: node.state,
+        done: TERMINAL_CALL_STATES.has(node.state),
+        label: node.label ?? execution.label,
+        action: node.action ?? execution.action,
+        actionSource: node.actionSource ?? execution.actionSource,
+        actionUpdatedAt: node.actionUpdatedAt ?? execution.actionUpdatedAt,
+        thinking: live.thinking || execution.thinking,
+    };
+};
+
+export const isWidgetExecutionGuidance = (activity) => activity?.source === 'widget_response'
+    || String(activity?.id || '').startsWith('widget-');
+
+export const isVisibleExecutionGuidance = (activity) => isWidgetExecutionGuidance(activity)
+    || (!['withdrawn', 'replaced'].includes(String(activity?.state || '').toLowerCase()) && !activity?.replacedByGuidanceId);
+
 export const getExecutionGuidance = (execution, live = null) => {
     const statusId = execution?.statusId;
-    const prompt = live?.guidancePrompts?.[statusId]
-        || execution?.guidancePrompt || execution?.guidancePrompts?.[statusId] || null;
+    const hasLiveMap = live && Object.prototype.hasOwnProperty.call(live, 'guidancePrompts');
+    const prompt = hasLiveMap ? live.guidancePrompts?.[statusId] || null
+        : execution?.guidancePrompt || execution?.guidancePrompts?.[statusId] || null;
     const activities = (live?.activities || execution?.activities || []).filter((activity) =>
         String(activity?.kind || '').toLowerCase() === 'guidance'
-        && String(activity?.anchorStatusId || '').trim() === statusId);
+        && String(activity?.anchorStatusId || '').trim() === statusId && isVisibleExecutionGuidance(activity));
     return {prompt, activities};
 };
 

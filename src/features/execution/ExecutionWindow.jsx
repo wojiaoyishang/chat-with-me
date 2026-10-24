@@ -24,6 +24,9 @@ import { upsertExecution } from './useExecutionStore.js';
 import WorkspaceTransferCard from '@/features/workspace/components/WorkspaceTransferCard.jsx';
 import useExecutionNavigation from './useExecutionNavigation.js';
 import useExecutionAutoFollow from './useExecutionAutoFollow.js';
+import ExecutionGuidanceEditor from './ExecutionGuidanceEditor.jsx';
+import ExecutionGuidanceRecord from './ExecutionGuidanceRecord.jsx';
+import {isWidgetExecutionGuidance} from './executionStatusModel.js';
 
 const realtimeActionErrorMessage = (response, fallback = '操作失败') =>
     response?.value || response?.message || (response?.code ? String(response.code) : '') || fallback;
@@ -95,12 +98,12 @@ const ExecutionWindow = memo(
         const active = Boolean(execution?.active);
         const stopping = status === 'cancelling';
         const recoverable = Boolean(execution?.recoverable) || status === 'recoverable_failed';
-        const taskMode = execution?.taskMode && typeof execution.taskMode === 'object' ? execution.taskMode : {};
+        const executionMode = execution?.executionMode && typeof execution.executionMode === 'object' ? execution.executionMode : {};
         const activities = useMemo(() => [...(execution?.activities || [])].slice(-120), [execution?.activities]);
         const toolCards = useMemo(
             () =>
                 [...(Array.isArray(execution?.toolCards) ? execution.toolCards : [])]
-                    .filter((item) => item && String(item.surface || 'task_window') !== 'inline')
+                    .filter((item) => item && String(item.surface || 'execution_window') !== 'inline')
                     .sort((left, right) => Number(left?.startedAt || 0) - Number(right?.startedAt || 0)),
             [execution?.toolCards],
         );
@@ -127,7 +130,7 @@ const ExecutionWindow = memo(
             activities.forEach((activity, index) => {
                 const kind = String(activity?.kind || '').toLowerCase();
                 const toolCallId = String(activity?.toolCallId || '').trim();
-                // A full Task Window Tool Calling Card is already the canonical visual
+                // A full Execution Window Tool Calling Card is already the canonical visual
                 // representation for that concrete tool call. Keep the rest of the
                 // Runtime/model/guidance log interleaved around it without duplicating
                 // a second generic "tool" row for the same call.
@@ -166,7 +169,7 @@ const ExecutionWindow = memo(
                         ...execution,
                         active: true,
                         status: 'cancelling',
-                        label: '正在停止任务',
+                        label: '正在停止执行',
                         recoverable: false,
                     });
                 }
@@ -178,9 +181,9 @@ const ExecutionWindow = memo(
         };
 
         const titleText =
-            String(taskMode?.title || '').trim() ||
+            String(executionMode?.title || '').trim() ||
             String(execution?.label || '').trim() ||
-            (stopping ? '正在停止任务' : active ? '任务模式' : '任务记录');
+            (stopping ? '正在停止执行' : active ? '执行模式' : '执行记录');
         const title = (
             <span className="flex min-w-0 items-center gap-2">
                 {active ? (
@@ -218,8 +221,8 @@ const ExecutionWindow = memo(
             <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0 text-xs leading-5 text-gray-400">
                     {active
-                        ? '追加要求请直接在聊天输入框发送；Runtime 会在安全边界纳入当前任务。'
-                        : '任务执行记录仍可查看；可恢复任务会创建新的实际 Run 继续执行。'}
+                        ? '追加要求请直接在聊天输入框发送；Runtime 会在安全边界纳入当前执行。'
+                        : '执行记录仍可查看；可恢复执行会创建新的实际 Run 继续执行。'}
                 </div>
                 <div className="flex shrink-0 gap-2">
                     {active && <ExecutionPauseControl execution={execution} />}
@@ -230,7 +233,7 @@ const ExecutionWindow = memo(
                             onClick={() => requestAction('execution.resume')}
                         >
                             <RotateCcw className="mr-1.5 h-4 w-4" />
-                            继续任务
+                            继续执行
                         </Button>
                     )}
                     {active && (
@@ -245,7 +248,7 @@ const ExecutionWindow = memo(
                             ) : (
                                 <Square className="mr-1.5 h-4 w-4" />
                             )}
-                            {stopping ? '正在停止' : '停止任务'}
+                            {stopping ? '正在停止' : '停止执行'}
                         </Button>
                     )}
                 </div>
@@ -259,9 +262,9 @@ const ExecutionWindow = memo(
                 onClose={() => onOpenChange?.(false)}
                 dockTarget={dockTarget}
                 dockMount={dockMount}
-                storageKey="cwm:task-mode-window:v1"
+                storageKey="cwm:execution-mode-window:v1"
                 title={title}
-                description="任务模式工作区：执行计划、完整 Tool Calling、用户补充、恢复与完成状态。这里不展示隐藏思维链。"
+                description="执行模式工作区：执行计划、完整 Tool Calling、用户补充、恢复与完成状态。这里不展示隐藏思维链。"
                 headerActions={
                     <div className="flex items-center gap-1">
                         <ExecutionThinkingControl execution={execution} />
@@ -273,18 +276,18 @@ const ExecutionWindow = memo(
                 <div
                     ref={attachScroll}
                     tabIndex={0}
-                    aria-label="任务执行时间线"
+                    aria-label="执行时间线"
                     className="h-full overflow-y-auto overscroll-contain px-5 py-4 pretty-scrollbar [overflow-anchor:none] [scroll-behavior:auto] [--status-sticky-gap:6px]"
                 >
                     <div ref={attachContent} className="flow-root min-w-0">
-                        {(taskMode?.objective || taskMode?.enteredBy) && (
+                        {(executionMode?.objective || executionMode?.enteredBy) && (
                             <section className="mb-6 rounded-xl border border-blue-100 bg-blue-50/40 px-4 py-3">
                                 <div className="text-[11px] font-semibold uppercase tracking-wide text-blue-400">
-                                    任务模式
+                                    执行模式
                                 </div>
-                                {taskMode?.objective && (
+                                {executionMode?.objective && (
                                     <div className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-gray-700">
-                                        {taskMode.objective}
+                                        {executionMode.objective}
                                     </div>
                                 )}
                             </section>
@@ -309,13 +312,15 @@ const ExecutionWindow = memo(
                             </section>
                         )}
 
+                        <ExecutionGuidanceEditor execution={execution} />
+
                         <section>
                             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
                                 执行时间线
                             </h3>
                             {timelineItems.length === 0 ? (
                                 <div className="rounded-xl border border-dashed border-gray-200 px-4 py-7 text-center text-sm text-gray-400">
-                                    等待第一条任务活动…
+                                    等待第一条执行活动…
                                 </div>
                             ) : (
                                 <div className="space-y-2">
@@ -334,8 +339,8 @@ const ExecutionWindow = memo(
                                                     className={`rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm transition-shadow ${highlightedKey === item.key ? 'ring-2 ring-blue-200' : ''}`}
                                                     data-execution-navigation-active={highlightedKey === item.key || undefined}
                                                     data-execution-timeline-kind="tool_card"
-                                                    data-task-tool-call-id={card.toolCallId || undefined}
-                                                    data-task-tool-surface={card.surface || undefined}
+                                                    data-execution-tool-call-id={card.toolCallId || undefined}
+                                                    data-execution-tool-surface={card.surface || undefined}
                                                 >
                                                     <div className="mb-1.5 flex items-center gap-2 text-xs text-gray-400">
                                                         <span className="w-[62px] shrink-0 tabular-nums text-gray-400">
@@ -365,7 +370,7 @@ const ExecutionWindow = memo(
                                                             content={`{{cardReplace id=${replacementId}}}`}
                                                             replacement={ownerReplacement}
                                                             msg={ownerMessage}
-                                                            renderSurface="task_window"
+                                                            renderSurface="execution_window"
                                                         />
                                                     ) : card?.toolCallRepair ? (
                                                         <div
@@ -415,12 +420,21 @@ const ExecutionWindow = memo(
                                         const userGuidance =
                                             String(activity?.kind || '').toLowerCase() === 'guidance' ||
                                             String(activity?.source || '').toLowerCase() === 'user_guidance';
+                                        if (userGuidance && !isWidgetExecutionGuidance(activity)) return (
+                                            <div key={item.key} data-execution-timeline-kind="activity"
+                                                data-execution-activity-id={activity.id || undefined}
+                                                data-execution-navigation-active={highlightedKey === item.key || undefined}
+                                                className={`flex gap-3 rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2 ${highlightedKey === item.key ? 'ring-2 ring-blue-200' : ''}`}>
+                                                <span className="w-[62px] shrink-0 pt-1 text-xs tabular-nums text-gray-400">{fmtTime(activity.time)}</span>
+                                                <ExecutionGuidanceRecord activity={activity} execution={execution} highlighted={highlightedKey === item.key} />
+                                            </div>
+                                        );
                                         return (
                                             <div
                                                 key={item.key || `${activity.time}-${index}`}
                                                 className={`flex gap-3 rounded-lg px-2 py-2 transition hover:bg-gray-50 ${highlightedKey === item.key ? 'ring-2 ring-blue-200' : ''} ${activity.state === 'withdrawn' ? 'border border-gray-200 bg-gray-100/60' : userGuidance ? 'border border-blue-100 bg-blue-50/50' : ''}`}
                                                 data-execution-timeline-kind="activity"
-                                                data-task-activity-id={activity.id || undefined}
+                                                data-execution-activity-id={activity.id || undefined}
                                                 data-execution-navigation-active={highlightedKey === item.key || undefined}
                                                 data-execution-activity-kind={activity?.kind || undefined}
                                                 data-execution-activity-source={activity?.source || undefined}
@@ -453,7 +467,7 @@ const ExecutionWindow = memo(
                                                                       : '用户补充'
                                                                 : activity.kind === 'model'
                                                                   ? '模型'
-                                                                  : '任务活动'}
+                                                                  : '执行活动'}
                                                         </span>
                                                     </div>
                                                     <div
@@ -469,7 +483,7 @@ const ExecutionWindow = memo(
                                                                 activity.content || activity.label || '执行补充'
                                                             )
                                                         ) : (
-                                                            activity.label || activity.kind || '任务活动'
+                                                            activity.label || activity.kind || '执行活动'
                                                         )}
                                                     </div>
                                                     {Array.isArray(activity.tools) && activity.tools.length > 0 && (

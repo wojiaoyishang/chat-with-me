@@ -1,11 +1,9 @@
 import WidgetResponseDetails from './WidgetResponseDetails.jsx';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Check, CircleAlert, LoaderCircle, MessageSquarePlus, ListChecks } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.tsx';
-import { useUserStore } from '@/context/userContext.jsx';
-import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import ExecutionGuidanceAction from './ExecutionGuidanceAction.jsx';
+import { isVisibleExecutionGuidance, isWidgetExecutionGuidance } from './executionStatusModel.js';
 
 const stateMeta = (state) => {
     const normalized = String(state || 'pending').toLowerCase();
@@ -24,19 +22,16 @@ const stateMeta = (state) => {
 };
 
 const ExecutionGuidanceBubble = memo(({ activity, execution }) => {
-    const user = useUserStore((state) => state.user);
+    const [expandedContent, setExpandedContent] = useState(null);
     const content = String(activity?.content || activity?.label || '').trim();
-    if (!content) return null;
+    if (!content || !isVisibleExecutionGuidance(activity)) return null;
 
     const state = String(activity?.state || 'pending').toLowerCase();
     const meta = stateMeta(state);
     const failed = state === 'failed';
-    const withdrawn = state === 'withdrawn';
     const Icon = meta.Icon;
-    const displayName = String(user?.nickname || user?.username || user?.name || 'U').trim() || 'U';
-    const avatar = user?.avatar ? resolveResourceUrl(user.avatar) : '';
 
-    const widgetResponse = activity?.source === 'widget_response' || String(activity?.id || '').startsWith('widget-');
+    const widgetResponse = isWidgetExecutionGuidance(activity);
     if (widgetResponse) {
         return (
             <div
@@ -60,36 +55,42 @@ const ExecutionGuidanceBubble = memo(({ activity, execution }) => {
         );
     }
 
+    const expansionKey = `${activity?.id || ''}:${content}`;
+    const expanded = expandedContent === expansionKey;
+    const collapsible = content.length > 150 || content.split('\n').length > 3;
     return (
         <div
-            className="my-3 flex w-full items-end justify-end gap-3"
+            className="my-3 w-full"
             data-execution-guidance-bubble="true"
             data-guidance-id={activity?.id || undefined}
         >
             <div
-                className={`max-w-[80%] rounded-2xl rounded-br-md border px-4 py-2.5 shadow-sm transition-colors ${
-                    withdrawn
-                        ? 'border-gray-200 bg-gray-100/70'
-                        : failed
-                          ? 'border-red-200 bg-red-50/80'
-                          : 'border-blue-200/80 bg-blue-50/55'
+                className={`rounded-r-lg border-l-2 px-3 py-2.5 transition-colors ${
+                    failed ? 'border-red-200 bg-red-50/50' : 'border-blue-200 bg-blue-50/35'
                 }`}
             >
-                <div className={`mb-1 flex items-center justify-end gap-1 text-[11px] font-medium ${meta.tone}`}>
+                <div className={`mb-1 flex flex-wrap items-center gap-1 text-[11px] font-medium ${meta.tone}`}>
                     <Icon className={`h-3.5 w-3.5 ${meta.spin ? 'animate-spin' : ''}`} aria-hidden="true" />
                     <span>{meta.label}</span>
-                    <ExecutionGuidanceAction activity={activity} execution={execution} />
+                    <ExecutionGuidanceAction activity={activity} execution={execution} surface="conversation" />
                 </div>
                 <div
-                    className={`whitespace-pre-wrap break-words text-right text-sm leading-6 ${withdrawn ? 'text-gray-400' : 'text-gray-800'}`}
+                    className={`whitespace-pre-wrap break-words text-left text-sm leading-6 text-gray-700 ${collapsible && !expanded ? 'line-clamp-3' : ''}`}
+                    data-guidance-content="true"
                 >
                     {content}
                 </div>
+                {collapsible && (
+                    <button
+                        type="button"
+                        className="mt-1 text-xs text-gray-500 hover:text-gray-800"
+                        aria-expanded={expanded}
+                        onClick={() => setExpandedContent(expanded ? null : expansionKey)}
+                    >
+                        {expanded ? '收起' : '展开全文'}
+                    </button>
+                )}
             </div>
-            <Avatar className="h-10 w-10 shrink-0 border border-blue-100 shadow-sm">
-                {avatar ? <AvatarImage src={avatar} alt={displayName} /> : null}
-                <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
-            </Avatar>
         </div>
     );
 });

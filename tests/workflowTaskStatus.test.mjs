@@ -94,7 +94,7 @@ test('workflow task card follows the live task and opens its own detail URL', as
     }
 });
 
-test('workflow task card ignores malformed content and stays out of task-window details', async () => {
+test('workflow task card ignores malformed content and stays out of execution-window details', async () => {
     const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/chat', pretendToBeVisual: true });
     globalThis.window = dom.window;
     globalThis.document = dom.window.document;
@@ -111,7 +111,7 @@ test('workflow task card ignores malformed content and stays out of task-window 
             React.createElement(CardBlock, {
                 type: 'workflowTaskStatus',
                 content: JSON.stringify({ taskId: 'task-1', status: 'running' }),
-                renderSurface: 'task_window',
+                renderSurface: 'execution_window',
             }),
         )));
         assert.equal(document.querySelector('[data-workflow-task-id]'), null);

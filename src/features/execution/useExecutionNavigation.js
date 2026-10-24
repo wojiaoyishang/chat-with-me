@@ -8,6 +8,19 @@ export default function useExecutionNavigation({ request, open, execution, timel
     useEffect(() => {
         if (!open || !request) return undefined;
         setAutoFollow(false);
+        if (request.guidanceEditor) {
+            const frame = requestAnimationFrame(() => {
+                const container = scrollRef.current;
+                const editor = container?.querySelector('[data-execution-guidance-editor]');
+                if (!container || !editor) return;
+                const top = Math.max(0, container.scrollTop + editor.getBoundingClientRect().top
+                    - container.getBoundingClientRect().top - 12);
+                container.scrollTo({top, behavior: 'smooth'});
+                editor.querySelector('textarea')?.focus({preventScroll: true});
+                onHandled?.(request.requestId);
+            });
+            return () => cancelAnimationFrame(frame);
+        }
         const toolId = request.toolCallId || Object.values(execution.toolStatusNodes || {})
             .find((node) => node.statusId === request.statusId)?.toolCallId
             || execution.activities?.find((activity) => activity.id === request.activityId && activity.kind === 'tool')?.toolCallId;
@@ -19,15 +32,15 @@ export default function useExecutionNavigation({ request, open, execution, timel
         if (!item) return undefined; // A realtime card can arrive after the inline node.
         if (item.type === 'tool_card') {
             const innerId = item.card.innerReplacementId || `${item.card.toolCallId}-toolCalling`;
-            setExpandedValue(getExpandedKey(ownerMessageId, innerId, 'toolCalling:task_window'), true, { isUserAction: true });
+            setExpandedValue(getExpandedKey(ownerMessageId, innerId, 'toolCalling:execution_window'), true, { isUserAction: true });
         }
         const frame = requestAnimationFrame(() => {
             const container = scrollRef.current;
             if (!container) return;
-            const rows = container.querySelectorAll('[data-task-tool-call-id], [data-task-activity-id]');
+            const rows = container.querySelectorAll('[data-execution-tool-call-id], [data-execution-activity-id]');
             const row = Array.from(rows).find((node) => item.type === 'tool_card'
-                ? node.getAttribute('data-task-tool-call-id') === item.card.toolCallId
-                : node.getAttribute('data-task-activity-id') === item.activity.id);
+                ? node.getAttribute('data-execution-tool-call-id') === item.card.toolCallId
+                : node.getAttribute('data-execution-activity-id') === item.activity.id);
             if (!row) return;
             const nested = request.replacementId && Array.from(row.querySelectorAll('[data-card-block-id]'))
                 .find((node) => node.getAttribute('data-card-block-id') === request.replacementId);
@@ -35,7 +48,7 @@ export default function useExecutionNavigation({ request, open, execution, timel
             const target = nested || row;
             const top = Math.max(0, container.scrollTop + target.getBoundingClientRect().top
                 - container.getBoundingClientRect().top - 12);
-            // Only move the task scroll area; scrollIntoView can move the document behind it.
+            // Only move the execution scroll area; scrollIntoView can move the document behind it.
             container.scrollTo({ top, behavior: 'smooth' });
             setHighlightedKey(item.key);
             onHandled?.(request.requestId);

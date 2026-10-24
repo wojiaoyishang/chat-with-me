@@ -4,6 +4,7 @@
 >
 > 本文件保存架构重构前的前端 README，主要用于追溯 Widget、Story、Context、Card Deck、Workspace 等既有设计思想。
 > 其中关于 `target + command + markId + isReply`、文本 WebSocket、旧 TTS 广播和旧事件名称的内容已经失效，不能作为 CWM Protocol v1 的实现依据。
+> 旧模式控制工具、清单卡片和旧 WebSocket 命令已移除，本文不提供这些接口的兼容用法。
 > 当前协议、标识和扩展规则请以 `../source/` 下的 Sphinx 文档以及项目根目录 `README.md` 为准。
 
 ---
@@ -164,7 +165,7 @@ content
 推荐始终传入 `id`：
 
 ```md
-{{cardReplace id=task-123 type=thinking}}
+{{cardReplace id=thinking-123 type=thinking}}
 ```
 
 如果提供了 `id` 但前端找不到对应 replacement，前端会在控制台输出 warning，并且不会渲染组件。
@@ -3926,188 +3927,10 @@ Content-Type: application/json
 
 设置页使用 shadcn `Card`、`Switch`、`Separator` 和 `Badge` 组织界面设置。侧边栏同时支持对当前已加载会话进行标题搜索、清空搜索、置顶分组、重命名和取消置顶。
 
-## 任务模式卡片与事件协议（2026-07-24）
+## 历史会话执行协议
 
-任务模式继续复用既有 `{{cardReplace ...}}` replacement 流，不新增第二套消息渲染或实时传输协议。
-
-### `taskMode` 卡片
-
-消息正文占位符：
-
-```markdown
-{{cardReplace id=task-mode-<taskRunId> type=taskMode}}
-```
-
-replacement 内容使用以下标记：
-
-```markdown
-[TASK_STATUS:running]
-[TITLE:正在分析项目结构...]
-[TASK_RUN_ID:<taskRunId>]
-[TASK_STARTED_AT:1784890000000]
-[TASK_ENDED_AT:1784890065000]
-[TASK_RECOVERABLE:true]
-[TASK_ERROR:最近一次错误摘要]
-{{cardReplace id=task-body-<taskRunId> type=markdown}}
-[TASK_SEGMENT_DONE:true]
-[DONE]
-```
-
-- `TASK_STATUS` 支持 `entering`、`running`、`retrying`、`recovering`、`recoverable_failed`、`completed`、`cancelled`。
-- `TITLE` 是折叠卡片标题；运行态自带动画。
-- `TASK_RUN_ID` 是插话、继续和终止操作的稳定目标 ID。
-- `TASK_STARTED_AT`、`TASK_ENDED_AT` 使用毫秒时间戳，前端显示“任务耗时”；运行中每秒刷新，完成、取消或历史分段后冻结。
-- `TASK_RECOVERABLE:true` 时显示“继续任务”。
-- `TASK_ERROR` 仅展示脱敏错误摘要。
-- `TASK_SEGMENT_DONE:true` 表示该卡片已封存为之前的任务历史，不再显示运行动画或操作按钮。
-- 内嵌 `task-body` replacement 继续使用普通 Markdown、thinking、toolCalling、agent 等已有卡片。
-- 卡片默认折叠，用户手动展开/折叠状态继续使用现有 `expandedStore`。
-- 任务卡外层使用独立的上下间距与轻量水平内边距，避免与前置 Markdown 反馈、用户补充气泡或后续清单紧贴。
-
-### `taskChecklist` 卡片
-
-消息正文占位符：
-
-```markdown
-{{cardReplace id=task-checklist-<taskRunId> type=taskChecklist}}
-```
-
-replacement 是原子更新的 JSON：
-
-```json
-{
-  "version": 1,
-  "taskRunId": "<taskRunId>",
-  "status": "running",
-  "items": [
-    {
-      "id": "task-abc123",
-      "text": "实现后端状态机",
-      "status": "in_progress",
-      "reason": ""
-    }
-  ]
-}
-```
-
-任务项状态支持：`pending`、`in_progress`、`completed`、`invalidated`。删除操作由后端从当前 JSON 中移除对应项。
-
-- `items` 为空时，前端不渲染任务清单卡；模型首次调用 `task_list_add` 后卡片自动出现。
-- 任务模式提示词要求模型进入模式后的第一件事就建立主要阶段清单，避免执行中途才首次出现清单。
-- 模型完成任一任务项后，必须在开始下一项或调用无关工具前立即标记 `complete`；执行中发现新任务时，必须先添加到清单再执行。
-- `task_done` 默认 `confirmed=false`，首次调用只进行完成前审查；只有清单全部为 `completed`/`invalidated` 且模型显式传入 `confirmed=true` 后才真正退出。
-
-### `taskUserMessage` 用户补充气泡
-
-用户在任务执行期间发送的附加要求被 Worker 在安全边界消费后，会显示在折叠任务卡之外的正文时间线中：
-
-```markdown
-{{cardReplace id=task-user-message-<requestId> type=taskUserMessage}}
-```
-
-replacement JSON：
-
-```json
-{
-  "version": 1,
-  "taskRunId": "<taskRunId>",
-  "requestId": "<requestId>",
-  "content": "优先复用现有组件。",
-  "createdAt": 1784890000,
-  "showDivider": true
-}
-```
-
-`showDivider` 只在同一个 Task Run 的第一条补充要求中为 `true`，后续气泡均为 `false`，因此用户连续或分次发送多条补充时都只显示一条“新的任务要求”分割线。旧 replacement 未提供该字段时按 `true` 兼容渲染。
-
-前端发送 `Task-Interrupt` 时会先按 `requestId` 乐观插入用户补充气泡，不等待 Worker 开始下一轮；请求失败时撤销气泡并在输入框仍为空时恢复原文。服务端正式 `taskUserMessage` replacement 到达后，前端使用同一 `requestId` 对账并移除本地预览，避免出现重复气泡。正式气泡出现表示该补充要求已经加入下一轮模型上下文。后端 replacement 保持为空，避免上下文同步时重复向模型注入同一条用户要求。恢复执行也不会重复显示同一气泡。
-
-收到补充要求时，同一个 Task Run 会切换到新的展示分段，但不会重新进入任务模式：
-
-```text
-之前的任务卡（封存为“之前的任务历史”）
-
-──────── 新的任务要求 ────────
-用户补充气泡
-
-AI 的 Markdown 确认反馈
-
-新的“正在执行任务...”折叠卡
-任务清单
-```
-
-模型在消费补充要求后的下一步必须调用 `task_feedback`，明确确认收到的要求和计划调整。在这次确认反馈完成前，后端会拒绝标题、清单和完成操作，确保用户气泡与 AI 反馈之间不会缺失确认说明。
-
-### 完成后的输出路由
-
-模型必须使用 `task_done(summary=完整最终结果)` 完成任务：
-
-1. `summary` 写入前置 `[markdown tts]` 反馈卡；
-2. 任务运行状态切换为 `completed`，任务模式退出；
-3. 工具后的下一轮模型输出恢复到进入任务模式前的普通正文目标；
-4. 普通正文只输出简洁收尾，不重复反馈卡中的完整结果。
-
-### 服务端广播事件
-
-目标：`type=widget`、`target=ChatBox`
-
-```json
-{
-  "command": "Task-Mode-State",
-  "value": {
-    "taskRunId": "<taskRunId>",
-    "messageId": "<messageId>",
-    "status": "running",
-    "title": "正在分析项目结构...",
-    "active": true,
-    "recoverable": false,
-    "lastError": "",
-    "startedAt": 1784890000,
-    "finishedAt": null
-  }
-}
-```
-
-该事件控制输入框是否把“生成中发送文本”解释为任务插话。页面重连时，活动 Stream 也会重新发送当前状态。
-
-### 客户端任务命令
-
-目标：`type=message`、`target=ChatPage`
-
-用户补充要求：
-
-```json
-{
-  "command": "Task-Interrupt",
-  "taskRunId": "<taskRunId>",
-  "content": "优先复用现有组件，不要新增数据库表。",
-  "requestId": "<uuid>"
-}
-```
-
-继续可恢复任务：
-
-```json
-{
-  "command": "Task-Resume",
-  "taskRunId": "<taskRunId>",
-  "requestId": "<uuid>"
-}
-```
-
-终止任务：
-
-```json
-{
-  "command": "Task-Cancel",
-  "taskRunId": "<taskRunId>",
-  "requestId": "<uuid>"
-}
-```
-
-任务运行期间，输入框有正文时发送按钮仍显示发送图标并发送 `Task-Interrupt`；输入框为空时保留原有停止生成按钮。补充要求在发送动作发生后立即显示本地预览，不需要等待一轮 AI 响应。任务补充当前不接受附件。
-
-当同一页面存在多个活动任务时，输入框会显示任务目标选择器；所有插话命令都携带明确的 `taskRunId`，避免主智能体、简单智能体和 Session 智能体之间串扰。
+旧版会话模式、清单卡片及会话 WebSocket 命令已移除，不再保留为兼容接口。
+当前会话执行协议请参见 `../source/architecture/execution_runtime.rst`。
 
 ## 故事模式（Story Mode）
 
@@ -4178,10 +4001,6 @@ AI 的 Markdown 确认反馈
 
 前端按模型 ID 暂存内建按钮状态：切换到不支持的模型时按钮消失且不会发送该状态；切回原模型时恢复该模型在当前页面中的选择。
 
-### 广播兼容性
-
-本次变更没有新增 WebSocket 广播命令。`go_thinking()` 与 `set_thinking(enable=...)` 作为普通 `interrupt` 工具调用参与现有工具调用流；思考状态仅存在于当前 TaskRun 的 Worker 运行时，不要求前端同步或持久化广播状态。
-
 ### 后台模型配置：思考切换方式
 
 模型设置只暴露一个 `thinking_control_mode` 下拉字段，默认值为 `none`：
@@ -4195,129 +4014,10 @@ AI 的 Markdown 确认反馈
 
 旧模型记录中的 `add_enable_thinking` 和 `enable_thinking_type` 会由后端兼容映射，但新前端只应读写 `thinking_control_mode`。
 
-### 任务模式思考控制工具
+### 会话执行控制
 
-仅当当前模型声明支持思考切换时，系统提示词和“模型调用设置”工具集才会提供：
-
-- `go_thinking()`：只让下一次成功的模型请求启用思考，完成后自动恢复。
-- `set_thinking(enable=True|False)`：在当前 TaskRun 内持续开启或关闭，任务结束后不写回模型或会话配置。
-
-两者必须使用现有 `interrupt` 工具流。模型不支持切换时，即使因历史上下文误调用，后端也只返回明确的“不支持切换”工具结果，不改变运行状态。
-
-`order(...)` 和 `batch(...)` 只能作为最外层分组，不能递归或相互嵌套。推荐对子调用使用显式参数名，参数名会作为结果标识；纯位置参数仅作兼容并自动命名为 `t0`、`t1`，位置参数与命名参数不能混用。
-
-## 任务模式 Skill 引导与自动关闭首轮思考（2026-07-25）
-
-### `/chatbox` 对话设置新增字段
-
-后端返回的 Conversation 设置目录在“任务模式设置”中新增：
-
-```json
-{
-  "type": "switch",
-  "name": "autoDisableTaskThinking",
-  "text": "自动关闭任务模式思考",
-  "default": true
-}
-```
-
-前端继续使用现有动态 Conversation 设置渲染机制，不需要为该字段新增专用组件。
-
-字段语义：
-
-- 默认值为 `true`；
-- 仅当用户发送本次请求时已经开启“深度思考”，并且 `task_start()` 成功创建新的 TaskRun 时生效；
-- 读取 `task-mode` Skill、查看工具集或调用普通工具不会触发自动关闭；
-- `task_start()` 成功所在的模型轮结束后，后端只关闭用户请求带入的持续思考一次；
-- 重复调用 `task_start()`、后续 `task_*` 工具调用和后续用户轮次都不会再次触发自动关闭；
-- 模型后续显式调用 `go_thinking()` 或 `set_thinking(...)` 仍然有效；
-- 同一轮显式请求的 `go_thinking()` 不会被自动关闭逻辑清除；
-- 用户发送请求时未开启思考，则该设置不做任何修改。
-
-该状态由后端 Worker 管理。前端只负责保存并提交 Conversation option，不需要监听额外的思考状态事件。
-
-### 任务模式提示词与 Skill
-
-主系统提示词只保留 Task Skill 引导：复杂任务在调用 `task_*` 工具或开始实际执行前，必须调用：
-
-```python
-skill_get_detail(skill_name="task-mode")
-```
-
-完整任务流程、任务清单维护、反馈、思考时机、`order` / `batch` 规则、失败恢复、两阶段完成和 One-Shot 示例均位于 `skills/task-mode/SKILL.md`。
-
-当本次请求开启思考时，主引导会额外要求模型在首次任务模式引导轮把计划写入可见正文，至少说明主要阶段和紧接着要执行的下一步，不能只把计划保留在隐藏思考中。
-
-Task Skill 使用 Jinja 渲染，当前 Conversation 会向模板统一提供安全的 `model_config` 字典，不直接暴露 API Key 或 Base URL：
-
-```json
-{
-  "model_config": {
-    "id": "模型配置 ID",
-    "model_id": "提供商模型 ID",
-    "name": "模型显示名称",
-    "provider": "openai 或 litellm",
-    "type": "llm 或 vlm",
-    "thinking": {
-      "control_supported": true,
-      "control_mode": "prompt | enable_thinking | thinking_type | none",
-      "request_enabled": true,
-      "auto_disable_task": true,
-      "auto_disable_task_armed": true
-    }
-  }
-}
-```
-
-Jinja 中通过 `model_config.thinking.request_enabled`、`model_config.thinking.control_supported` 等路径读取状态。
-
-不支持切换思考的模型不会获得 `go_thinking` / `set_thinking` 使用说明。
-
-### Workspace 非任务模式访问开关（2026-07-28）
-
-“任务模式设置”新增 Conversation option：
-
-```json
-{
-  "type": "switch",
-  "name": "workspaceTaskModeOnly",
-  "text": "Workspace 仅限任务模式",
-  "default": false
-}
-```
-
-字段语义：
-
-- 默认关闭限制，因此普通对话和任务模式都可以执行已启用的 Workspace 工具；
-- 开启后，工具说明仍可查看，但 `code_*`、`workspace_*` 与 `artifact_inspect` 的实际执行必须先成功进入 TaskRun；
-- 非任务模式使用当前 Conversation 的 `workspaceId`；已经进入任务模式时继续使用 `task_start()` 固定的 Workspace，不能在任务中静默切换；
-- 该字段复用现有 Conversation `options` 保存和 `Message-Send.payload.options` 下发链路，不新增数据库字段或广播协议。
-
-### 广播兼容性
-
-本次没有新增或修改 WebSocket 广播命令、`target` 或 payload 结构。`autoDisableTaskThinking` 只属于 `/chatbox` 返回的 Conversation 设置规范，并随现有 `Message-Send.payload.options` 提交；运行时仍复用原有模型调用和 `interrupt` 工具调用链。
-
-## 任务模式上下文与无效工具调用收尾（2026-07-25）
-
-### TaskRun 模型上下文
-
-TaskRun 的内部 `taskRunId` 继续用于前端任务卡、Redis 恢复和既有 Task Mode 广播；它不再出现在模型可见的 `task_start()` 工具结果中。模型只需要根据后端注入的权威状态确认自己已经处于同一个任务模式，不应保存、复用或比较内部 TaskRun ID。
-
-后端会在任务模式的每一轮模型调用前刷新一条权威运行状态，内容包括当前标题、最近反馈、任务清单及清单项状态。清单项 ID 仍会提供给模型，因为现有 `task_list_operate(task_id=...)` 工具需要该稳定引用。
-
-首次进入 TaskRun 时，上下文从当前助手消息的外层内容重建，以保留可见计划、`task-mode` Skill 内容、`task_start()` 调用及成功结果。Worker 从检查点恢复时，已有历史由 checkpoint 提供，只追加当前 Task Body 的未检查点增量，避免重复历史或遗漏恢复后的新工具结果。
-
-### 无效工具调用展示
-
-当模型已经打开工具调用块，但未使用正确结束标签（例如误写 `</tool_state>` 或流结束时缺少 `</tool_call>`）时：
-
-- 后端不会执行该工具；
-- 已创建的 Tool Calling 卡片通过现有 replacement 流标记为失败；
-- 卡片内显示“工具调用格式错误”日志；
-- 原始 `<tool_call>` 文本不会再次作为普通 Markdown 泄漏到卡片下方；
-- 下一轮模型会收到明确纠错指令，并被告知该工具没有执行。
-
-本次没有新增或修改 WebSocket 广播命令、`target` 或 payload 结构。失败展示继续复用既有消息文本流、`cardReplace` replacement 和 Tool Calling 卡片状态标记。
+旧版会话模式的思考控制、Skill 引导、Workspace 门控和上下文操作指南已移除。
+当前执行状态、控制工具和界面职责请参见 `../source/architecture/execution_runtime.rst`。
 
 ## Workspace Policy v2：访问列表与命令权限（2026-07-26）
 

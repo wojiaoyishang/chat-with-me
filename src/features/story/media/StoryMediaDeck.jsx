@@ -15,14 +15,16 @@ export default function StoryMediaDeck({part, layout, videoElement}) {
             data-story-media-video-fraction={videoGrow.toFixed(4)}
         >
             <figure
-                className="min-w-0 overflow-hidden rounded-3xl bg-amber-100 shadow-lg"
-                style={layout.stacked ? {aspectRatio: String(imageRatio)} : {flexGrow: imageGrow, flexBasis: 0, aspectRatio: String(imageRatio)}}
+                className="m-0 min-w-0 overflow-hidden rounded-3xl bg-amber-100 shadow-lg"
+                style={layout.stacked ? undefined : {flexGrow: imageGrow, flexBasis: 0}}
             >
-                <img
-                    src={resolveResourceUrl(part.imageUrl)}
-                    alt={part.imageAlt || ''}
-                    className="h-full max-h-[64vh] w-full object-contain"
-                />
+                <div className="relative w-full overflow-hidden" style={{aspectRatio: String(imageRatio), maxHeight: '64vh'}}>
+                    <img
+                        src={resolveResourceUrl(part.imageUrl)}
+                        alt={part.imageAlt || ''}
+                        className="absolute inset-0 block h-full w-full object-contain"
+                    />
+                </div>
             </figure>
             <div className="min-w-0" style={layout.stacked ? undefined : {flexGrow: videoGrow, flexBasis: 0}}>
                 {videoElement}

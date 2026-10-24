@@ -31,6 +31,7 @@ const router = createBrowserRouter([
             { path: '/tasks', element: <React.Fragment /> },
             { path: '/knowledge', element: <React.Fragment /> },
             { path: '/attachments', element: <React.Fragment /> },
+            { path: '/stories', element: <React.Fragment /> },
             {
                 path: '/chat/:conversationId?',
                 element: <Outlet />,

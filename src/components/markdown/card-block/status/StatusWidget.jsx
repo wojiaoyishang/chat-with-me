@@ -22,7 +22,7 @@ import IgnoredContextIndicator from '@/features/chat/ui/message/components/Ignor
 import CompactedContextIndicator from '@/features/chat/ui/message/components/CompactedContextIndicator.jsx';
 import {
     CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
-    TASK_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
+    EXECUTION_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
     useLocalSetting,
 } from '@/lib/tools.jsx';
 
@@ -91,8 +91,8 @@ const StatusWidget = memo(
     }) => {
         const { t } = useTranslation();
         const [autoCollapseChatToolCalls] = useLocalSetting(CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY, true);
-        const [autoCollapseTaskWindowToolCalls] = useLocalSetting(
-            TASK_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
+        const [autoCollapseExecutionWindowToolCalls] = useLocalSetting(
+            EXECUTION_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
             false,
         );
         const expandedKey = useMemo(() => {
@@ -221,12 +221,12 @@ const StatusWidget = memo(
 
         // Successful completion is the only state eligible for automatic collapse.
         // Failed/cancelled/approval-waiting calls stay expanded so the user can inspect
-        // why the task needs attention. Conversation and Task Window use independent
+        // why the execution needs attention. Conversation and Execution Window use independent
         // preferences and independent expansion keys. Manual user toggles always win.
         const normalizedSurface = String(renderSurface || 'conversation').toLowerCase();
         const autoCollapseCompletedToolCalls =
-            normalizedSurface === 'task_window'
-                ? autoCollapseTaskWindowToolCalls !== false
+            normalizedSurface === 'execution_window'
+                ? autoCollapseExecutionWindowToolCalls !== false
                 : autoCollapseChatToolCalls !== false;
         const isCancelled = toolStatus === 'cancelled' || toolStatus === 'canceled';
         const isSuccessfulToolCompletion = Boolean(

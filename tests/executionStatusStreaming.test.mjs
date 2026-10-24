@@ -1,0 +1,160 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import {build} from 'esbuild';
+import {JSDOM} from 'jsdom';
+import React, {act} from 'react';
+import {createRoot} from 'react-dom/client';
+
+const mocks = new Map([
+    ['tools.jsx', 'export const copyTextToClipboard=text=>navigator.clipboard.writeText(text);'],
+    ['react-i18next', 'export const useTranslation=()=>({t:(key,fallback)=>fallback||key});'],
+    ['documentCardSpec.js', 'export const useDocumentCardSpec=()=>({spec:null,loading:false,error:null});'],
+    ['CardBlock.jsx', `import Status from './src/features/execution/ExecutionStatus.jsx';
+        export default function Card({type,content,renderMarkdown,...props}) {
+            return type === 'markdown' ? renderMarkdown(content)
+                : type === 'executionStatus' ? <Status content={content} {...props}/> : null;
+        }`],
+    ['ReplacementContextBadge.jsx', 'export default ()=>null;'],
+    ['ExecutionGuidanceBubble.jsx', 'export default ()=>null;'],
+    ['universalModal.js', 'export const isUniversalModalLink=()=>false; export const openUniversalModalLink=()=>{};'],
+    ['useImageViewer.js', 'export const openImageViewer=()=>{};'],
+]);
+await build({
+    stdin: {contents: `export {default as Renderer} from './src/components/markdown/MarkdownRenderer.jsx';
+        export {useExecutionStore} from './src/features/execution/useExecutionStore.js';`, resolveDir: process.cwd()},
+    bundle: true, packages: 'external', platform: 'node', format: 'esm', jsx: 'automatic',
+    outfile: 'temp/execution-status-streaming-test.mjs', alias: {'@': path.resolve('src')},
+    loader: {'.css': 'empty', '.woff': 'empty', '.woff2': 'empty', '.ttf': 'empty'},
+    plugins: [{name: 'streaming-status-fixture', setup(builder) {
+        builder.onResolve({filter: /\.css$/}, () => ({path: 'css', namespace: 'style'}));
+        builder.onLoad({filter: /.*/, namespace: 'style'}, () => ({contents: '', loader: 'js'}));
+        builder.onResolve({filter: /.*/}, ({path: name}) => {
+            const key = [...mocks.keys()].find((item) => name === item || name.endsWith(`/${item}`));
+            return key ? {path: key, namespace: 'fixture'} : undefined;
+        });
+        builder.onLoad({filter: /.*/, namespace: 'fixture'}, ({path: name}) => ({contents: mocks.get(name), loader: 'jsx', resolveDir: process.cwd()}));
+    }}],
+});
+const {Renderer, useExecutionStore} = await import('../temp/execution-status-streaming-test.mjs');
+
+async function setup(t) {
+    const dom = new JSDOM('<div id="root"></div>', {url: 'http://localhost/chat', pretendToBeVisual: true});
+    const keys = ['window', 'document', 'navigator', 'Element', 'HTMLElement', 'Node', 'IS_REACT_ACT_ENVIRONMENT'];
+    const previous = new Map(keys.map((key) => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+    for (const key of keys.slice(0, -1)) Object.defineProperty(globalThis, key, {configurable: true, value: dom.window[key]});
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const copied = [];
+    Object.defineProperty(navigator, 'clipboard', {configurable: true, value: {writeText: async (text) => copied.push(text)}});
+    const host = document.getElementById('root');
+    const root = createRoot(host);
+    t.after(async () => {
+        await act(async () => root.unmount());
+        useExecutionStore.setState({sessions: {}});
+        dom.window.close();
+        for (const [key, descriptor] of previous) descriptor ? Object.defineProperty(globalThis, key, descriptor) : delete globalThis[key];
+    });
+    const render = (content, replacement, readonly = true) => act(async () => root.render(React.createElement(Renderer, {
+        contextId: 'message', conversationId: 'chat', content, replacement, msg: {readonly},
+    })));
+    return {dom, host, copied, render};
+}
+
+const token = (id, type = '') => `\n\n{{cardReplace id=${id}${type ? ` type=${type}` : ''}}}\n\n`;
+const status = (id, overrides = {}) => JSON.stringify({
+    executionId: 'execution', conversationId: 'chat', runId: 'run', statusId: id,
+    updatedAt: 10, status: 'running', phase: 'investigation', inlineState: 'completed',
+    inlineKind: 'tool', toolCallId: id, toolNames: ['knowledgeNetwork_get_related_graph'],
+    label: '处理知识图谱 · 已完成', ...overrides,
+});
+const continuation = (id, overrides = {}) => status(id, {
+    inlineKind: 'continuation', inlineState: 'running', toolCallId: null, toolNames: [],
+    label: '正在分析下一步', ...overrides,
+});
+const primaryId = (host) => host.querySelector('[data-execution-status-group] > div [data-execution-status-id]')?.dataset.executionStatusId;
+
+test('streamed calls, live-only state changes and continuations stay in one stable collapsed group until prose intervenes', async (t) => {
+    const ui = await setup(t);
+    let source = '```text\ncopy while executing\n```' + token('first', 'executionStatus');
+    let replacement = {first: status('first')};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 1);
+    const copyButton = ui.host.querySelector('.copy-button');
+
+    source += token('bridge-one', 'executionStatus');
+    replacement = {...replacement, 'bridge-one': continuation('bridge-one')};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelector('[data-execution-status-group]').dataset.executionStatusGroup, '1');
+    assert.equal(primaryId(ui.host), 'bridge-one');
+    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 1, 'the completed tool and current continuation share one headline');
+
+    source += token('second', 'executionStatus');
+    replacement = {...replacement, second: status('second', {inlineState: 'running', label: '正在处理知识图谱', action: '正在核对第二份来源'})};
+    // Even if a continuation's clear event arrives after the next tool, it must
+    // not leave a spinner between two calls belonging to the same group.
+    await ui.render(source, replacement);
+    const group = ui.host.querySelector('[data-execution-status-group]');
+    assert.equal(group.dataset.executionStatusGroup, '2');
+    assert.equal(primaryId(ui.host), 'second');
+    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 1);
+    await act(async () => useExecutionStore.getState().upsertExecution({
+        executionId: 'execution', conversationId: 'chat', runId: 'run', active: true, status: 'running', updatedAt: 20,
+        guidancePrompts: {}, toolStatusNodes: {second: {statusId: 'second', toolCallId: 'second', state: 'completed', action: '正在核对第二份来源'}},
+    }));
+    assert.equal(primaryId(ui.host), 'second');
+    assert.match(group.textContent, /2 次完成/);
+    assert.equal(group.querySelector('[data-execution-action-state]').textContent, '已完成');
+
+    source += token('bridge-two', 'executionStatus');
+    replacement = {...replacement, 'bridge-two': continuation('bridge-two', {updatedAt: 20})};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelector('[data-execution-status-group]'), group);
+    assert.equal(primaryId(ui.host), 'bridge-two');
+    await act(async () => group.querySelector('button[aria-expanded]').click());
+    assert.equal(group.querySelectorAll('[data-execution-status-group-history] [data-execution-status-id]').length, 2);
+    source += token('third', 'executionStatus');
+    replacement = {...replacement, third: status('third', {inlineState: 'running', updatedAt: 30, action: '正在核对最后一份来源'})};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelector('[data-execution-status-group]'), group);
+    assert.equal(primaryId(ui.host), 'third');
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true', 'new deltas retain the user expansion choice');
+    assert.equal(ui.host.querySelector('[data-execution-status-id="bridge-two"]'), null);
+    await act(async () => group.querySelector('button[aria-expanded]').click());
+
+    copyButton.dispatchEvent(new ui.dom.window.MouseEvent('mousedown', {bubbles: true}));
+    replacement = {...replacement, second: status('second', {updatedAt: 40}), third: status('third', {updatedAt: 40}), 'bridge-one': '', 'bridge-two': ''};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelector('.copy-button'), copyButton);
+    await act(async () => { copyButton.dispatchEvent(new ui.dom.window.MouseEvent('mouseup', {bubbles: true})); copyButton.click(); });
+    assert.deepEqual(ui.copied, ['copy while executing']);
+    assert.equal(primaryId(ui.host), 'third');
+    assert.match(group.textContent, /3 次完成/);
+    await ui.render(source, replacement, false);
+    assert.equal(primaryId(ui.host), 'third');
+    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 1);
+
+    source += '\n\n新的可见正文\n\n' + token('fourth', 'executionStatus');
+    replacement = {...replacement, fourth: status('fourth')};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 2, 'visible prose remains a group boundary');
+    assert.match(ui.host.textContent, /新的可见正文/);
+});
+
+test('replacement-only updates regroup without a final message snapshot and never swallow a placeholder that later becomes visible', async (t) => {
+    const ui = await setup(t);
+    const source = token('one', 'executionStatus') + token('waiting') + token('two', 'executionStatus');
+    let replacement = {one: status('one'), two: status('two')};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 2, 'unknown replacement conservatively breaks the group');
+    replacement = {...replacement, waiting: {frontend: '[markdown]\n'}};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 1);
+    replacement = {...replacement, waiting: {frontend: '[markdown]\n稍后到达的正文'}};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 2);
+    assert.match(ui.host.textContent, /稍后到达的正文/);
+    const [first, second] = ui.host.querySelectorAll('[data-execution-status-id]');
+    const paragraph = [...ui.host.querySelectorAll('p')].find((node) => node.textContent === '稍后到达的正文');
+    assert.ok(first.compareDocumentPosition(paragraph) & ui.dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+    assert.ok(paragraph.compareDocumentPosition(second) & ui.dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
+});

@@ -1,0 +1,9 @@
+# 故事库
+
+`StoriesPage` 是独立的故事管理页面，接收可选的 `conversationId`、`onNavigate`、`onReturn` 和 `returnLabel`。它提供标题/简介搜索、分页、列表/卡片视图、跨页多选、元信息编辑、删除与 HTML ZIP 导出。
+
+- 列表及详情使用 `/stories` 所有者 API。新建必须选择创作对话；有当前 `conversationId` 时默认选择它，没有时加载已有对话供选择，并支持后端搜索。仅所选对话获得创作权限；没有对话时引导用户前往对话页创建会话，不隐式新建或批量授权。
+- 正文始终由 AI 创作。页面只编辑标题、简介，复用 `StoryReader` 阅读且不传入素材编辑回调。
+- `story.changed` / `story.deleted` 同步故事列表和阅读中的内容；连续篇幅更新合并刷新。列表和详情请求取消旧请求，避免快速翻页或切换故事时显示旧响应。
+- 导出通过 `POST /stories/export` 传入 `storyIds`，使用原始 Blob 响应下载，文件名读取 `Content-Disposition`。后端负责将 HTML、图片、视频打包为可离线阅读的 ZIP。
+- 跨页与搜索保留已选项；“选择本页”只影响当前页，可显式取消全部选择。

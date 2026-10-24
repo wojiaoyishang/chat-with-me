@@ -30,7 +30,7 @@ const CARD_TYPES_WITH_NESTED_MARKDOWN = new Set([
     'processing',
     'thinking',
     'toolCalling',
-    'taskWindowTool',
+    'executionWindowTool',
     'coding',
     'doc',
     'agent',
@@ -170,12 +170,12 @@ const CardBlock = memo(({
                 />
             );
 
-        case 'taskWindowTool':
+        case 'executionWindowTool':
             // The canonical outer Tool replacement remains attached to the Assistant
             // message so every nested command/log/progress/result update has one data
-            // source.  Task Mode only changes the rendering surface: hide this host in
-            // the transcript and render its complete replacement tree in Task Window.
-            if (String(renderSurface || 'conversation').toLowerCase() !== 'task_window') {
+            // source.  Execution Mode only changes the rendering surface: hide this host in
+            // the transcript and render its complete replacement tree in Execution Window.
+            if (String(renderSurface || 'conversation').toLowerCase() !== 'execution_window') {
                 return null;
             }
             return (
@@ -225,17 +225,17 @@ const CardBlock = memo(({
             );
 
         case 'escStatus':
-            return String(renderSurface).toLowerCase() === 'task_window' ? null : <EscWritingStatus content={content} conversationId={conversationId} />;
+            return String(renderSurface).toLowerCase() === 'execution_window' ? null : <EscWritingStatus content={content} conversationId={conversationId} />;
 
         case 'workflowTaskStatus':
-            return String(renderSurface).toLowerCase() === 'task_window' ? null : <WorkflowTaskStatus content={content} />;
+            return String(renderSurface).toLowerCase() === 'execution_window' ? null : <WorkflowTaskStatus content={content} />;
 
         case 'workspaceTransfer':
             return (
                 <WorkspaceTransferCard
                     id={id}
                     content={content}
-                    variant={String(renderSurface || '').toLowerCase() === 'task_window' ? 'compact' : 'conversation'}
+                    variant={String(renderSurface || '').toLowerCase() === 'execution_window' ? 'compact' : 'conversation'}
                 />
             );
 

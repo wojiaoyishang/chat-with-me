@@ -146,7 +146,7 @@ const CompletedWidget = ({widget}) => {
     }
     const deliveryStatus = String(widget?.deliveryStatus || '');
     const deliveryHint = widget?.continuation === 'execution'
-        ? (deliveryStatus === 'pending' ? t('widget_task_result_pending') : deliveryStatus === 'delivered' ? t('widget_task_result_delivered') : '')
+        ? (deliveryStatus === 'pending' ? t('widget_execution_result_pending') : deliveryStatus === 'delivered' ? t('widget_execution_result_delivered') : '')
         : deliveryStatus === 'pending'
         ? '已提交，等待当前回复结束后发送'
         : (deliveryStatus === 'delivered' ? '已作为用户消息发送' : '');

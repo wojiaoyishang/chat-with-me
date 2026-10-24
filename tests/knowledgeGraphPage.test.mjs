@@ -1542,6 +1542,176 @@ test("parallel visual relationships do not multiply the force between the same t
   );
 });
 
+test("canvas undo restores an expansion with its exact camera, selection and layout", async (t) => {
+  const ui = await page(undefined, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { dom, document, calls } = ui;
+  const canvas = document.querySelector("#knowledge-canvas");
+  assert.equal(document.querySelector("#graph-undo").disabled, true);
+  document.querySelector('[data-node-id="node-1"]').dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+  await settle();
+  const beforeCamera = cameraOf(document), beforeLayout = positionsOf(document);
+  document.querySelector('[data-node-id="node-1"]').dispatchEvent(new dom.window.MouseEvent("dblclick", { bubbles: true }));
+  await settle();
+  assert.equal(document.querySelectorAll(".knowledge-node").length, 4);
+  assert.equal(document.querySelector("#graph-undo").disabled, false);
+  canvas.focus();
+  const undo = new dom.window.KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+  canvas.dispatchEvent(undo);
+  await settle();
+  assert.equal(undo.defaultPrevented, true);
+  assert.equal(document.querySelectorAll(".knowledge-node").length, 1);
+  assert.equal(document.querySelectorAll(".knowledge-edge").length, 0);
+  assert.deepEqual(cameraOf(document), beforeCamera);
+  assert.deepEqual(positionsOf(document), beforeLayout);
+  assert.ok(document.querySelector('[data-node-id="node-1"].selected'));
+  assert.match(document.querySelector("#detail").textContent, /设备 A/);
+  assert.equal(document.querySelector("#graph-undo").disabled, true);
+  assert.ok(!calls.some((call) => call.method === "DELETE" || call.method === "PUT"));
+});
+
+test("canvas undo cancels pending expansion and ignores its late response without consuming earlier history", async (t) => {
+  let release, hold = false;
+  const { dom, document } = await page(async (url) => {
+    if (hold && url.pathname.endsWith("/nodes/node-1/graph")) return await new Promise((resolve) => { release = resolve; });
+  });
+  t.after(() => dom.window.close());
+  const node = () => document.querySelector('[data-node-id="node-1"]');
+  node().dispatchEvent(new dom.window.MouseEvent("dblclick", { bubbles: true }));
+  await settle();
+  hold = true;
+  node().dispatchEvent(new dom.window.MouseEvent("dblclick", { bubbles: true }));
+  await settle();
+  assert.equal(typeof release, "function");
+  document.querySelector("#graph-undo").click();
+  release({ nodes: [{ id: "late", name: "迟到节点", label: "知识" }], relationships: [] });
+  await settle();
+  assert.equal(document.querySelector('[data-node-id="late"]'), null);
+  assert.equal(document.querySelectorAll(".knowledge-node").length, 4);
+  assert.equal(document.querySelectorAll(".knowledge-node.expanding").length, 0);
+  assert.equal(document.querySelector("#graph-undo").disabled, false);
+  document.querySelector("#graph-undo").click();
+  assert.equal(document.querySelectorAll(".knowledge-node").length, 1);
+  await settle();
+});
+
+test("canvas undo restores hidden nodes and clear, while duplicate expansions add no empty history entries", async (t) => {
+  const { dom, document } = await page(undefined, { controlledAnimation: true });
+  t.after(() => dom.window.close());
+  const expand = () => document.querySelector('[data-node-id="node-1"]').dispatchEvent(new dom.window.MouseEvent("dblclick", { bubbles: true }));
+  expand(); await settle();
+  expand(); await settle();
+  openNodeMenu(dom, document, "node-2").querySelector('[data-action="hide"]').click();
+  assert.equal(document.querySelector('[data-node-id="node-2"]'), null);
+  document.querySelector("#graph-undo").click();
+  assert.ok(document.querySelector('[data-node-id="node-2"]'));
+  assert.equal(document.querySelectorAll(".knowledge-edge").length, 3);
+  document.querySelector("#graph-clear").click();
+  assert.equal(document.querySelectorAll(".knowledge-node").length, 0);
+  document.querySelector("#graph-undo").click();
+  assert.equal(document.querySelectorAll(".knowledge-node").length, 4);
+  document.querySelector("#graph-undo").click();
+  assert.equal(document.querySelectorAll(".knowledge-node").length, 1);
+  assert.equal(document.querySelector("#graph-undo").disabled, true);
+  await settle();
+});
+
+test("canvas undo shortcuts preserve text editing and ignore unrelated page focus and open dialogs", async (t) => {
+  const { dom, document } = await page();
+  t.after(() => dom.window.close());
+  document.querySelector('[data-node-id="node-1"]').dispatchEvent(new dom.window.MouseEvent("dblclick", { bubbles: true }));
+  await settle();
+  const shortcut = (target) => {
+    const event = new dom.window.KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+    target.dispatchEvent(event); return event;
+  };
+  const search = document.querySelector("#search");
+  search.focus();
+  assert.equal(shortcut(search).defaultPrevented, false);
+  document.querySelector("#filter").focus();
+  assert.equal(shortcut(document.body).defaultPrevented, false);
+  const canvas = document.querySelector("#knowledge-canvas");
+  canvas.focus();
+  document.querySelector("#create-dialog").showModal();
+  assert.equal(shortcut(canvas).defaultPrevented, false);
+  document.querySelector("#create-dialog").close();
+  assert.equal(document.querySelectorAll(".knowledge-node").length, 4);
+  const undo = new dom.window.KeyboardEvent("keydown", { key: "z", metaKey: true, bubbles: true, cancelable: true });
+  canvas.dispatchEvent(undo);
+  assert.equal(undo.defaultPrevented, true);
+  assert.equal(document.querySelectorAll(".knowledge-node").length, 1);
+  await settle();
+});
+
+test("scope changes discard canvas undo instead of restoring knowledge from another authorization scope", async (t) => {
+  const { dom, document } = await page();
+  t.after(() => dom.window.close());
+  document.querySelector('[data-node-id="node-1"]').dispatchEvent(new dom.window.MouseEvent("dblclick", { bubbles: true }));
+  await settle();
+  assert.equal(document.querySelector("#graph-undo").disabled, false);
+  await switchScope(dom, document, "another-conversation");
+  assert.equal(document.querySelector("#graph-undo").disabled, true);
+  const canvas = document.querySelector("#knowledge-canvas"); canvas.focus();
+  const undo = new dom.window.KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true, cancelable: true });
+  canvas.dispatchEvent(undo);
+  assert.equal(undo.defaultPrevented, false);
+  assert.equal(document.querySelectorAll(".knowledge-node").length, 1);
+});
+
+test("successful database deletion clears undo so locally hidden history cannot revive deleted knowledge", async (t) => {
+  const { dom, document, calls } = await page((url, options) => {
+    if (url.pathname === "/api/knowledge/nodes/node-2" && options.method === "DELETE") return { deleted: true };
+  });
+  t.after(() => dom.window.close());
+  dom.window.confirm = () => true;
+  document.querySelector('[data-node-id="node-1"]').dispatchEvent(new dom.window.MouseEvent("dblclick", { bubbles: true }));
+  await settle();
+  openNodeMenu(dom, document, "node-2"); await settle();
+  document.querySelector('[data-action="node-delete"]').click(); await settle();
+  assert.ok(calls.some((call) => call.method === "DELETE"));
+  assert.equal(document.querySelector('[data-node-id="node-2"]'), null);
+  assert.equal(document.querySelector("#graph-undo").disabled, true);
+  document.querySelector("#graph-undo").click();
+  assert.equal(document.querySelector('[data-node-id="node-2"]'), null);
+});
+
+test("relayout undo restores exact node positions without replaying the force simulation", async (t) => {
+  const ui = await page(undefined, { controlledAnimation: true, fullGraph: true });
+  t.after(() => ui.dom.window.close());
+  ui.runFrames(40);
+  const before = positionsOf(ui.document), camera = cameraOf(ui.document);
+  ui.document.querySelector("#graph-layout").click();
+  ui.runFrames(12);
+  ui.document.querySelector("#graph-undo").click();
+  assert.deepEqual(positionsOf(ui.document), before);
+  assert.deepEqual(cameraOf(ui.document), camera);
+  ui.runFrames(20);
+  assert.deepEqual(positionsOf(ui.document), before);
+});
+
+test("drag undo restores the graph layout and camera as one gesture", async (t) => {
+  const ui = await page(undefined, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { dom, document } = ui;
+  const node = document.querySelector('[data-node-id="node-1"]'), canvas = document.querySelector("#knowledge-canvas");
+  const before = positionsOf(document), camera = cameraOf(document);
+  pointer(dom, node, "pointerdown", 400, 270);
+  pointer(dom, dom.window, "pointermove", 500, 320);
+  ui.runFrames(1);
+  pointer(dom, dom.window, "pointerup", 500, 320);
+  ui.runFrames(3);
+  assert.notDeepEqual(positionsOf(document), before);
+  document.querySelector("#graph-undo").click();
+  assert.deepEqual(positionsOf(document), before);
+  pointer(dom, canvas, "pointerdown", 500, 350, { button: 1 });
+  pointer(dom, dom.window, "pointermove", 550, 400, { button: 1 });
+  ui.runFrames(1);
+  pointer(dom, dom.window, "pointerup", 550, 400, { button: 1 });
+  assert.notDeepEqual(cameraOf(document), camera);
+  document.querySelector("#graph-undo").click();
+  assert.deepEqual(cameraOf(document), camera);
+});
+
 test("double click merges neighbors without duplicate nodes and keeps details available", async (t) => {
   const { dom, document, calls } = await page();
   t.after(() => dom.window.close());

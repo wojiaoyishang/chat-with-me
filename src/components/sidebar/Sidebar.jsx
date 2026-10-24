@@ -12,6 +12,7 @@ import {
     ListTodo,
     BrainCircuit,
     Paperclip,
+    BookOpenText,
 } from 'lucide-react';
 import { getLocalSetting, setLocalSetting } from '@/lib/tools.jsx';
 import { Transition } from '@headlessui/react';
@@ -302,6 +303,11 @@ const Sidebar = ({
                                 aria-current={pageType === 'attachments' ? 'page' : undefined}
                                 className={`flex w-full items-center rounded-lg p-2 transition-colors ${pageType === 'attachments' ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}>
                                 <Paperclip className="mr-2 size-5" />附件
+                            </button>
+                            <button onClick={() => { (onOpenPage || (() => navigate('/stories')))('stories'); if (isMobile) handleSetIsOpen(false); }}
+                                aria-current={pageType === 'stories' ? 'page' : undefined}
+                                className={`flex w-full items-center rounded-lg p-2 transition-colors ${pageType === 'stories' ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}>
+                                <BookOpenText className="mr-2 size-5" />故事
                             </button>
                         </div>
                     </div>

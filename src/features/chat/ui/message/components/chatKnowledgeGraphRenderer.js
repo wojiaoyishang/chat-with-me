@@ -11,6 +11,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
     let frame = 0, lastTime = null, elapsed = 0, ready = false, destroyed = false, initialFit = false, fittedView = null, movedAt = 0;
     let enabled = true, edgeAnimationEnabled = edgeAnimation !== false, inViewport = true;
     const step = 1000 / 60, listeners = [], pointers = new Map();
+    const reducedMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)');
     const link = forceLink([]).id(node => node.id).distance(180).strength(edge => 0.18 / Math.sqrt(Math.max(1, Math.min(edge.source.degree, edge.target.degree))));
     const simulation = forceSimulation([]).stop().alpha(0).alphaMin(0.003).alphaDecay(0.018).velocityDecay(0.32)
         .force('link', link).force('charge', forceManyBody().strength(-120).distanceMin(35))
@@ -23,13 +24,14 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
     // CSS moves the highlights after D3 settles; no permanent rendering loop is needed.
     function updateEdgeAnimation() {
         svg.dataset.edgeAnimation = String(edgeAnimationEnabled);
-        svg.dataset.edgeAnimationActive = String(!destroyed && enabled && inViewport && !doc.hidden);
+        svg.dataset.edgeAnimationActive = String(!destroyed && enabled && inViewport && !doc.hidden && !reducedMotion?.matches);
     }
     const visibilityObserver = typeof win.IntersectionObserver === 'function' ? new win.IntersectionObserver(entries => {
         inViewport = entries.some(entry => entry.isIntersecting);
         updateEdgeAnimation();
     }) : null;
     visibilityObserver?.observe(svg);
+    if (reducedMotion?.addEventListener) listen(reducedMotion, 'change', updateEdgeAnimation);
     updateEdgeAnimation();
     const element = (tag, attributes = {}) => {
         const result = doc.createElementNS('http://www.w3.org/2000/svg', tag);

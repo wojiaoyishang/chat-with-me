@@ -4,9 +4,10 @@ import { Check, CircleAlert, CircleX, Loader2, LoaderCircle, RotateCcw, Pause } 
 
 import ExecutionGuidanceBubble from './ExecutionGuidanceBubble.jsx';
 import { openExecution, upsertExecution, useExecutionStore } from './useExecutionStore.js';
-import {getExecutionDisplayState, parseExecutionStatus} from './executionStatusModel.js';
+import {getExecutionDisplayState, getExecutionGuidance, parseExecutionStatus, projectExecutionStatus} from './executionStatusModel.js';
 
-const ExecutionStatus = memo(({ content = '', conversationId = null, navigateOverview = false }) => {
+const ExecutionStatus = memo(({ content = '', conversationId = null, navigateOverview = false,
+    hideGuidance = false, guidanceActivitiesOverride = null, guidancePromptOverride = undefined }) => {
     const { t } = useTranslation();
     const execution = useMemo(() => parseExecutionStatus(content, conversationId), [content, conversationId]);
     const liveExecution = useExecutionStore((state) => {
@@ -31,9 +32,10 @@ const ExecutionStatus = memo(({ content = '', conversationId = null, navigateOve
 
     if (!execution) return null;
 
-    const status = String(execution.status || '').toLowerCase();
-    const explicitLabel = String(execution.label || '').trim();
-    const state = getExecutionDisplayState(execution);
+    const displayExecution = projectExecutionStatus(execution, liveExecution);
+    const status = String(displayExecution.status || '').toLowerCase();
+    const explicitLabel = String(displayExecution.label || '').trim();
+    const state = getExecutionDisplayState(displayExecution);
     const failed = state === 'failed';
     const cancelled = state === 'cancelled';
     const recovering = state === 'recovering';
@@ -58,7 +60,7 @@ const ExecutionStatus = memo(({ content = '', conversationId = null, navigateOve
               : active
                 ? Loader2
                 : Check;
-    const action = String(execution.action || '').trim();
+    const action = String(displayExecution.action || '').trim();
     const actionLabel = active || recovering ? action : action.replace(/^正在\s*/, '');
     const label =
         actionLabel ||
@@ -78,21 +80,10 @@ const ExecutionStatus = memo(({ content = '', conversationId = null, navigateOve
                     ? '正在执行'
                     : '阶段已完成');
     const nodeStatusId = String(execution.statusId || '').trim();
-    const activitySource = liveExecution?.activities || execution.activities || [];
-    const guidanceActivities = activitySource.filter(
-        (activity) =>
-            String(activity?.kind || '').toLowerCase() === 'guidance' &&
-            String(activity?.anchorStatusId || '').trim() === nodeStatusId,
-    );
-    const livePromptMap = liveExecution?.guidancePrompts;
-    const historicalPromptMap = execution?.guidancePrompts;
-    const guidancePrompt =
-        (nodeStatusId && livePromptMap && typeof livePromptMap === 'object' ? livePromptMap[nodeStatusId] : null) ||
-        execution?.guidancePrompt ||
-        (nodeStatusId && historicalPromptMap && typeof historicalPromptMap === 'object'
-            ? historicalPromptMap[nodeStatusId]
-            : null) ||
-        null;
+    const guidance = getExecutionGuidance(execution, liveExecution);
+    const guidanceActivities = hideGuidance ? [] : guidanceActivitiesOverride || guidance.activities;
+    const guidancePrompt = hideGuidance ? null
+        : guidancePromptOverride === undefined ? guidance.prompt : guidancePromptOverride;
     const guidancePromptLabel = String(guidancePrompt?.label || '').trim();
     const openTarget = liveExecution || execution;
     const openAtNode = () => openExecution(openTarget, navigateOverview ? null : {
@@ -102,14 +93,14 @@ const ExecutionStatus = memo(({ content = '', conversationId = null, navigateOve
     });
 
     return (
-        <div className="my-2 w-full" data-execution-status-id={nodeStatusId || undefined}>
+        <div className="my-1 w-full" data-execution-status-id={nodeStatusId || undefined}>
             <button
                 type="button"
                 onClick={openAtNode}
-                className="group flex max-w-full flex-col items-start rounded-lg px-1.5 py-1 text-left text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
+                className="group flex max-w-full flex-col items-start rounded-lg px-1.5 py-0.5 text-left text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
                 title="查看执行过程"
             >
-                <span className="flex max-w-full items-center gap-2 text-[15px] leading-6">
+                <span className="flex max-w-full items-center gap-2 text-[15px] leading-5">
                     <Icon className={`h-4 w-4 shrink-0 ${active && !paused ? 'animate-spin' : ''}`} />
                     <span className="truncate">{label}</span>
                     {action && (!active || paused) && (
@@ -124,9 +115,11 @@ const ExecutionStatus = memo(({ content = '', conversationId = null, navigateOve
                     )}
                 </span>
             </button>
-            {guidanceActivities.map((activity) => (
-                <ExecutionGuidanceBubble key={activity.id} activity={activity} execution={liveExecution || execution} />
-            ))}
+            {guidanceActivities.length > 0 && <div data-execution-guidance-section={nodeStatusId} className="space-y-2">
+                {guidanceActivities.map((activity) => (
+                    <ExecutionGuidanceBubble key={activity.id} activity={activity} execution={liveExecution || execution} />
+                ))}
+            </div>}
             {guidancePromptLabel && (
                 <button
                     type="button"

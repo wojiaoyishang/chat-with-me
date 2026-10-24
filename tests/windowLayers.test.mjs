@@ -31,9 +31,9 @@ test('later windows cover earlier windows; focusing and dragging an earlier wind
     function Fixture(){
         const [open,setOpen]=useState(false);
         return React.createElement(React.Fragment,null,
-            React.createElement(Floating,{open:true,title:'任务窗口',onClose:()=>{},storageKey:'test:layers'},
+            React.createElement(Floating,{open:true,title:'执行窗口',onClose:()=>{},storageKey:'test:layers'},
                 React.createElement('button',{onClick:()=>setOpen(true)},'打开本轮工具'),
-                React.createElement(Popover,null,React.createElement(PopoverTrigger,null,'任务菜单'),
+                React.createElement(Popover,null,React.createElement(PopoverTrigger,null,'执行菜单'),
                     React.createElement(PopoverContent,null,'菜单内容'))),
             React.createElement(Dialog,{open,onOpenChange:setOpen},
                 React.createElement(DialogContent,{'aria-describedby':undefined},
@@ -43,7 +43,7 @@ test('later windows cover earlier windows; focusing and dragging an earlier wind
         const [open,setOpen]=useState(true);
         return React.createElement(React.Fragment,null,
             React.createElement('input',{id:'page-focus',defaultValue:String(revision)}),
-            React.createElement(Floating,{open:true,title:'实时任务',storageKey:'test:updates'},String(revision)),
+            React.createElement(Floating,{open:true,title:'实时执行',storageKey:'test:updates'},String(revision)),
             React.createElement(Tools,{open,onOpenChange:setOpen,t:(key,fallback)=>typeof fallback==='string'?fallback:key, toolsConfig:[]}));
     }
     const root=createRoot(document.getElementById('root'));

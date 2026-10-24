@@ -2,6 +2,7 @@ import { formatLocalTimestamp } from '@/lib/clientText.js';
 import {applyBulkToolPermissionMode, deduplicateToolPermissionGroups, getToolPermissionKey, normalizeToolPermissionMode, readToolPermission} from '@/features/tools/toolPermissions.js';
 import OrderedOptionsEditor from './OrderedOptionsEditor.jsx';
 import JsonConfigEditor from './JsonConfigEditor.jsx';
+import TempCacheCleanup from './TempCacheCleanup.jsx';
 import MultilineEditor from '@/components/ui/MultilineEditor.jsx';
 import React, { useState, useCallback, useEffect, useRef, useMemo, createContext, useContext, memo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -3514,6 +3515,8 @@ function SettingItemRenderer({ item, path }) {
     }
 
     switch (item.type) {
+        case 'temp-cache-cleanup':
+            return <TempCacheCleanup item={item} />;
         case 'list':
             return <ListItem item={item} path={path} />;
         case 'image':
@@ -3624,7 +3627,7 @@ export default function DynamicSettings({ config, onChange, initialValues, class
 function buildDefaults(config, initialValues) {
     const result = {};
     for (const item of config) {
-        if (item.type === 'heading' || item.type === 'info') continue;
+        if (item.type === 'heading' || item.type === 'info' || item.type === 'temp-cache-cleanup') continue;
         if (item.type === 'list' && item.name) {
             const initList = initialValues?.[item.name];
             // 为每个列表项补充稳定的 internalId

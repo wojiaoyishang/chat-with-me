@@ -62,7 +62,8 @@
 .chat-knowledge-legend i { width: 7px; height: 7px; border-radius: 50%; }
 .chat-knowledge-toolbar { display: flex; flex: 0 1 auto; min-width: 0; max-width: 100%; flex-wrap: wrap; align-items: center; margin-left: auto; padding: 3px; border: 1px solid #e3e9f2; border-radius: 9px; background: #fffffff5; }
 .chat-knowledge-toolbar button { display: flex; align-items: center; justify-content: center; min-height: 25px; min-width: 25px; padding: 3px 6px; border-radius: 6px; font-size: 10px; white-space: nowrap; cursor: pointer; transition: color 0.15s, background 0.15s; }
-.chat-knowledge-toolbar button:hover, .chat-knowledge-toolbar button:focus-visible { background: #eef3ff; color: #274ba3; outline: none; }
+.chat-knowledge-toolbar button:not(:disabled):hover, .chat-knowledge-toolbar button:focus-visible { background: #eef3ff; color: #274ba3; outline: none; }
+.chat-knowledge-toolbar button:disabled { opacity: 0.4; cursor: not-allowed; }
 @media (max-width: 480px) {
     .chat-knowledge-heading { align-items: flex-start; gap: 5px; flex-direction: column; padding: 9px 12px; }
     .chat-knowledge-heading small { font-size: 10px; }

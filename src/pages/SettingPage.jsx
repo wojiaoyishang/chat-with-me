@@ -7,7 +7,7 @@ import {
     CONVERSATION_LIST_COMPACT_SETTING_KEY,
     CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY,
     CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
-    TASK_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
+    EXECUTION_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
     MESSAGE_NAVIGATOR_SETTING_KEY,
     UnifiedErrorScreen,
     UnifiedLoadingScreen,
@@ -157,8 +157,8 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
         CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
         true,
     );
-    const [autoCollapseTaskWindowToolCalls, setAutoCollapseTaskWindowToolCalls] = useLocalSetting(
-        TASK_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
+    const [autoCollapseExecutionWindowToolCalls, setAutoCollapseExecutionWindowToolCalls] = useLocalSetting(
+        EXECUTION_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
         false,
     );
     const { setUser } = useUserStore();
@@ -802,10 +802,10 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
                             />
                             <Separator />
                             <InterfaceSettingItem
-                                title={t('task_window_tool_call_auto_collapse_setting')}
-                                description={t('task_window_tool_call_auto_collapse_setting_tip')}
-                                checked={autoCollapseTaskWindowToolCalls}
-                                onCheckedChange={setAutoCollapseTaskWindowToolCalls}
+                                title={t('execution_window_tool_call_auto_collapse_setting')}
+                                description={t('execution_window_tool_call_auto_collapse_setting_tip')}
+                                checked={autoCollapseExecutionWindowToolCalls}
+                                onCheckedChange={setAutoCollapseExecutionWindowToolCalls}
                             />
                             <Separator />
                             <InterfaceSettingItem

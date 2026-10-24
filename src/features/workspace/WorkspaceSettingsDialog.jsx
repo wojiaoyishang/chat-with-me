@@ -1108,8 +1108,8 @@ const WorkspaceSettingsDialog = ({
                                             ? `该远程 Workspace 已注册到设备 ${selected?.agentName || ''}。${selected?.online ? '当前在线' : '当前离线'}；当前权限：${workspacePermissionLabel(selected?.permission)}。设备掉线不会解除当前对话绑定。`
                                             : `该远程 Workspace 已注册但资源策略尚未配置。只有管理权限用户可以编辑策略；设备掉线不会解除当前对话绑定。`
                                       : t(
-                                            'workspace_task_fixed_hint',
-                                            '任务开始后会冻结当前会话已挂载的全部 Workspace',
+                                            'workspace_execution_fixed_hint',
+                                            '执行开始后会冻结当前会话已挂载的全部 Workspace',
                                         )}
                             </div>
                         ) : null}

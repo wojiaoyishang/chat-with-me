@@ -19,7 +19,7 @@ await build({
         export {setLocalSetting,getLocalSetting} from './src/lib/tools.jsx';`, resolveDir: process.cwd() },
     outfile: 'temp/graph-animation-settings-test.mjs', bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', loader: { '.css': 'empty' },
     plugins: [{ name: 'preferences-integration', setup(builder) {
-        const real = new Set(['@/lib/tools.jsx', '@/features/knowledge/graphSettings.js', '@/features/workflows/workflowSettings.js', '@/features/avatar-scene/settings.js']);
+        const real = new Set(['@/lib/tools.jsx', '@/features/knowledge/graphSettings.js', '@/features/knowledge/graphHistory.js', '@/features/workflows/workflowSettings.js', '@/features/avatar-scene/settings.js']);
         builder.onResolve({ filter: /^react(?:\/|$)/ }, ({ path: name }) => ({ path: name, external: true }));
         builder.onResolve({ filter: /^@\// }, ({ path: name }) => real.has(name)
             ? { path: path.resolve('src', name.slice(2)) } : { path: name, namespace: 'fixture' });

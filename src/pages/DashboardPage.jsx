@@ -1,5 +1,5 @@
 import useIndependentChatWindow from '@/features/chat/page/hooks/useIndependentChatWindow.js';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { lazy, Suspense, useEffect, useState, useRef, useCallback } from 'react';
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
 import ChatPage from '@/pages/ChatPage.jsx';
 import { UnifiedErrorScreen, UnifiedLoadingScreen } from '@/lib/tools.jsx';
@@ -16,6 +16,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import NotificationHost from '@/features/notification/NotificationHost.jsx';
 import BackendManagementPage from '@/features/tasks/BackendManagementPage.jsx';
+
+const StoriesPage = lazy(() => import('@/features/story/StoriesPage.jsx'));
 
 const readDashboardLocation = () => {
     if (typeof window === 'undefined') return null;
@@ -60,7 +62,7 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
     const navigate = useNavigate();
     const routeOutlet = useOutlet();
     const outlet = location.pathname.endsWith('/message-map') ? routeOutlet : null;
-    const managementKind = /^\/(tasks|knowledge|attachments)\/?$/.exec(location.pathname)?.[1] || null;
+    const managementKind = /^\/(tasks|knowledge|attachments|stories)\/?$/.exec(location.pathname)?.[1] || null;
     const workspaceReturnPath = useRef(
         readDashboardLocation()
             ? `${window.location.pathname}${window.location.search}${window.location.hash}`
@@ -287,7 +289,7 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                                 setPageType={setPageType}
                                 onSettingsRefresh={handleSettingsRefresh}
                                 onOpenPage={(target) => {
-                                    if (target === 'tasks' || target === 'knowledge' || target === 'attachments') {
+                                    if (['tasks', 'knowledge', 'attachments', 'stories'].includes(target)) {
                                         navigate(`/${target}`);
                                     } else if (managementKind && target === pageType) {
                                         navigate(workspaceReturnPath.current);
@@ -397,14 +399,23 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                                 <div
                                     className="absolute inset-0"
                                     role="region"
-                                    aria-label={managementKind === 'tasks' ? '任务管理' : managementKind === 'attachments' ? '附件' : '知识库'}
+                                    aria-label={managementKind === 'tasks' ? '任务管理' : managementKind === 'attachments' ? '附件' : managementKind === 'stories' ? '故事' : '知识库'}
                                 >
-                                    <BackendManagementPage
+                                    {managementKind === 'stories' ? (
+                                        <Suspense fallback={<UnifiedLoadingScreen text="正在加载故事…" />}>
+                                            <StoriesPage
+                                                conversationId={conversationId}
+                                                onReturn={() => navigate(workspaceReturnPath.current)}
+                                                returnLabel={pageType === 'doc' ? '返回文档' : '返回对话'}
+                                                onNavigate={navigate}
+                                            />
+                                        </Suspense>
+                                    ) : <BackendManagementPage
                                         kind={managementKind}
                                         sidebarMode
                                         onReturn={() => navigate(workspaceReturnPath.current)}
                                         returnLabel={pageType === 'doc' ? '返回文档' : '返回对话'}
-                                    />
+                                    />}
                                 </div>
                             )}
                         </main>

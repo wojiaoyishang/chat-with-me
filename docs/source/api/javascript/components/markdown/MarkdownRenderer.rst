@@ -215,7 +215,7 @@ src/components/markdown/MarkdownRenderer 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``{ exists: false, id: normalizedId, content: '', }``、``{ exists: true, id: normalizedId, content: '', }``、``{ exists: true, id: normalizedId, content: String(explicitType || entry?.type || protocol.type || '').toLowerCase() === 'agent' ? parseAgentContent(stripCopyTypeMarker(rawCopyCont…``。
 
-   **主要协作调用**：``String``、``Object.prototype.hasOwnProperty.call``、``extractCopyTextFromReplacementValue``、``parseReplacementProtocol``、``['taskwindowtool', 'workspacetransfer', 'executionstatus'].includes``、``String(explicitType || entry?.type || protocol.type || '').toLowerCase``、``parseAgentContent``、``stripCopyTypeMarker``。
+   **主要协作调用**：``String``、``Object.prototype.hasOwnProperty.call``、``extractCopyTextFromReplacementValue``、``parseReplacementProtocol``、``['executionwindowtool', 'workspacetransfer', 'executionstatus'].includes``、``String(explicitType || entry?.type || protocol.type || '').toLowerCase``、``parseAgentContent``、``stripCopyTypeMarker``。
 
 .. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:6440:6675:FUNCTION
 

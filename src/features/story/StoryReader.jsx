@@ -57,7 +57,7 @@ export default function StoryReader({
     const [viewportWidth, setViewportWidth] = useState(() =>
         typeof window === 'undefined' ? 1024 : window.innerWidth,
     );
-    const [videoAspectRatio, setVideoAspectRatio] = useState(null);
+    const [videoMetadata, setVideoMetadata] = useState(null);
     const storyContentRef = useRef(null);
     const wasOpenRef = useRef(false);
     const activeStoryIdRef = useRef(null);
@@ -88,6 +88,9 @@ export default function StoryReader({
     currentPartRef.current = part;
     const speechMessageId = part ? `story:${story?.storyId}:part:${part.partId}` : '';
     const videoSrc = resolveResourceUrl(part?.videoUrl || '');
+    // Metadata belongs to a source: switching parts must not briefly reserve
+    // the previous video's dimensions, including when its metadata arrives late.
+    const videoAspectRatio = videoMetadata?.src === videoSrc ? videoMetadata.aspectRatio : null;
     const videoAutoplay = Boolean(part?.videoUrl) && part?.videoAutoplay !== false;
     const videoMuted = part?.videoMuted !== false;
     const videoLoop = part?.videoLoop === true;
@@ -100,17 +103,13 @@ export default function StoryReader({
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    useEffect(() => {
-        setVideoAspectRatio(null);
-    }, [videoSrc]);
-
     const pauseVideo = useCallback((reset = false) => {
         const video = videoRef.current;
         if (!video) return;
         try {
             video.pause();
             if (reset) video.currentTime = 0;
-        } catch (_) {
+        } catch {
             // The media element may already be detached while the Story surface closes.
         }
     }, []);
@@ -460,7 +459,9 @@ export default function StoryReader({
         const video = event?.currentTarget;
         const width = Number(video?.videoWidth || 0);
         const height = Number(video?.videoHeight || 0);
-        if (width > 0 && height > 0) setVideoAspectRatio(width / height);
+        if (width > 0 && height > 0) {
+            setVideoMetadata({src: video.getAttribute('src'), aspectRatio: width / height});
+        }
     };
 
     const videoElement = videoSrc ? (
@@ -477,7 +478,11 @@ export default function StoryReader({
 
     const storyArticle = part ? (
         <article
-            className={`grid min-w-0 gap-7 ${imageLayout === 'image_left' || imageLayout === 'image_right' ? 'items-center lg:grid-cols-[minmax(0,45%)_minmax(0,55%)]' : 'grid-cols-1'}`}
+            className={`grid min-w-0 gap-7 ${imageLayout === 'image_left'
+                ? 'items-center lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)]'
+                : imageLayout === 'image_right'
+                    ? 'items-center lg:grid-cols-[minmax(0,55fr)_minmax(0,45fr)]'
+                    : 'grid-cols-1'}`}
         >
             {part.imageUrl && mediaLayout.renderImageInArticle && (
                 <figure
@@ -642,8 +647,12 @@ export default function StoryReader({
             <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-10">
                 {!part ? (
                     <div className="flex h-full flex-col items-center justify-center gap-3 text-amber-700">
-                        <Loader2 className="h-7 w-7 animate-spin" />
-                        <span>{t('story_waiting_first_part', '正在创作第一个篇幅…')}</span>
+                        {story.status === 'generating'
+                            ? <Loader2 className="h-7 w-7 animate-spin" />
+                            : <BookOpen className="h-7 w-7" />}
+                        <span>{story.status === 'generating'
+                            ? t('story_waiting_first_part', '正在创作第一个篇幅…')
+                            : '故事还没有正文，请在关联的创作对话中让 AI 开始创作。'}</span>
                     </div>
                 ) : mediaLayout.mode === 'media_pair' ? (
                     <div className="mx-auto max-w-6xl space-y-8">
@@ -651,8 +660,10 @@ export default function StoryReader({
                         {storyArticle}
                     </div>
                 ) : sideVideo ? (
-                    <div className="mx-auto grid max-w-7xl items-start gap-7 lg:grid-cols-[minmax(0,42%)_minmax(0,58%)]">
-                        <div className={videoPosition === 'right' ? 'lg:order-2' : ''}>{videoElement}</div>
+                    <div className={`mx-auto grid max-w-7xl items-start gap-7 ${videoPosition === 'right'
+                        ? 'lg:grid-cols-[minmax(0,58fr)_minmax(0,42fr)]'
+                        : 'lg:grid-cols-[minmax(0,42fr)_minmax(0,58fr)]'}`}>
+                        <div className={`min-w-0 ${videoPosition === 'right' ? 'lg:order-2' : ''}`}>{videoElement}</div>
                         <div className={`min-w-0 ${videoPosition === 'right' ? 'lg:order-1' : ''}`}>{storyArticle}</div>
                     </div>
                 ) : (

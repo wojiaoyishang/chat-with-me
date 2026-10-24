@@ -4,7 +4,7 @@ Turn Admission 前端入口
 .. js:module:: src/features/chat/ui/ChatBox
    :no-index:
 
-``ChatBox`` 不维护 Task Mode 生命周期；它只消费后端 Execution/Task snapshot。普通生成期间，如果当前 Conversation 有活跃 ``ExecutionRun``，
+``ChatBox`` 不维护 Execution Mode 生命周期；它只消费后端 Execution snapshot。普通生成期间，如果当前 Conversation 有活跃 ``ExecutionRun``，
 用户输入的纯文本会通过 ``execution.guidance.add`` 追加到当前执行；没有 active Execution 时普通生成不允许 interrupt-and-send，输入保持本地草稿。附件、Edit/Fork/Regenerate 等结构性操作仍走标准 ``turn.start``。
 
 .. js:module:: src/features/chat/ChatPage
@@ -22,5 +22,5 @@ Realtime Voice 的最终 transcript 同样进入标准 Turn Admission。活跃 E
 停止与继续执行
 --------------------------------------------------------------------------------
 
-右侧 Task Window 发送 ``execution.cancel`` 停止当前任务。手动停止会保留可恢复 Execution checkpoint，窗口随后提供“继续任务”，
-通过 ``execution.resume`` 创建新的实际 Run 并继续同一 ``execution_id``；新版 Task Mode 只是该 Execution 的工作区，不存在第二个 TaskRun。
+右侧 Execution Window 发送 ``execution.cancel`` 停止当前执行。手动停止会保留可恢复 Execution checkpoint，窗口随后提供“继续执行”，
+通过 ``execution.resume`` 创建新的实际 Run 并继续同一 ``execution_id``；Execution Mode 直接投影该持久执行，不维护另一套生命周期。

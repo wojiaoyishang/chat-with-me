@@ -13,7 +13,7 @@ export default function StickyStatusHeader({ children, expanded }) {
         const header = headerRef.current;
         if (!header) return undefined;
 
-        // Use the same scroll surface as sticky, including the padded task panel.
+        // Use the same scroll surface as sticky, including the padded execution panel.
         let root = marker.parentElement;
         while (root && root !== document.documentElement) {
             if (/^(auto|scroll|hidden|overlay)$/.test(getComputedStyle(root).overflowY)) break;
@@ -31,7 +31,7 @@ export default function StickyStatusHeader({ children, expanded }) {
             const rootTop = root ? root.getBoundingClientRect().top + root.clientTop : 0;
             header.style.setProperty('--sticky-top-mask', `${Math.max(0, headerTop - rootTop)}px`);
             // Clipped sentinels can look visible to IntersectionObserver; compare
-            // actual positions so both transcript and task cards get the same style.
+            // actual positions so both transcript and execution cards get the same style.
             setStickyMarker(headerTop > marker.getBoundingClientRect().top + 1 ? marker : null);
         };
         const schedule = () => {

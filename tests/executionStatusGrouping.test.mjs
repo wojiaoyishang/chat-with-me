@@ -108,17 +108,17 @@ test('same tool groups across state and action changes without losing guidance r
     assert.equal(withContext.children.length, 2);
 });
 
-test('known invisible tool hosts do not split a transcript group but remain visible boundaries in the task window', () => {
+test('known invisible tool hosts do not split a transcript group but remain visible boundaries in the execution window', () => {
     const source = '{{cardReplace id=a}}\n\n{{cardReplace id=host}}\n\n{{cardReplace id=b}}';
     const replacement = {
         a: makeStatus('a', {toolNames: ['query']}), b: makeStatus('b', {toolNames: ['query'], inlineState: 'running'}),
-        host: {type: 'taskWindowTool', content: 'tool details'},
+        host: {type: 'executionWindowTool', content: 'tool details'},
     };
     const tree = parse(source, replacement);
     assert.equal(tree.children.length, 2);
     assert.deepEqual(JSON.parse(tree.children[0].data.hProperties.groupedIds), ['a', 'b']);
     assert.equal(tree.children[1].data.hProperties.id, 'host');
-    assert.equal(parse(source, replacement, 'task_window').children.length, 3);
+    assert.equal(parse(source, replacement, 'execution_window').children.length, 3);
     assert.equal(parse(source, {...replacement, host: {...replacement.host, contextStatus: {status: 'ignored'}}}).children.length, 3);
     assert.equal(parse(source, {...replacement, host: {type: 'markdown', content: 'visible details'}}).children.length, 3);
 });
@@ -129,7 +129,7 @@ test('cleared continuation statuses between fast calls retain their hosts withou
         a: makeStatus('a', {toolNames: ['query']}),
         continuation: {type: 'executionStatus', content: '  \n'},
         progress: {frontend: '[markdown]\n'},
-        host: {type: 'taskWindowTool', content: 'tool details'},
+        host: {type: 'executionWindowTool', content: 'tool details'},
         b: makeStatus('b', {toolNames: ['query'], inlineState: 'running', action: '补查关联内容'}),
     };
     const tree = parse(source, replacement);
@@ -139,7 +139,7 @@ test('cleared continuation statuses between fast calls retain their hosts withou
     // Empty continuation hosts are invisible on both rendering surfaces, while a
     // nonempty continuation, visible badge, or absent replacement is a boundary.
     const withoutToolHost = source.replace('{{cardReplace id=host}}', '');
-    assert.equal(parse(withoutToolHost, replacement, 'task_window').children.length, 3);
+    assert.equal(parse(withoutToolHost, replacement, 'execution_window').children.length, 3);
     const visibleContinuation = parse(source, {...replacement, continuation: makeStatus('continuation', {inlineState: 'running', label: '正在分析下一步'})});
     assert.deepEqual(visibleContinuation.children.map((node) => node.data.hProperties.id), ['a', 'continuation', 'progress', 'host', 'b']);
     assert.equal(visibleContinuation.children[0].data.hProperties.groupedIds, undefined);
@@ -155,6 +155,40 @@ test('finished per-call state is not overwritten by a later execution failure', 
     assert.equal(getExecutionDisplayState({inlineState: 'completed', status: 'failed'}), 'completed');
     assert.equal(getExecutionDisplayState({inlineState: 'failed', status: 'completed'}), 'failed');
     assert.equal(getExecutionDisplayState({status: 'recoverable_failed'}), 'failed');
+});
+
+test('live continuations update the current group without adding calls or splitting consecutive tools', () => {
+    const source = ['a', 'bridge', 'hidden', 'b', 'tail'].map((id) => `{{cardReplace id=${id}}}`).join('\n\n');
+    const replacement = {
+        a: makeStatus('a', {inlineKind: 'tool', toolNames: ['query']}),
+        b: makeStatus('b', {inlineKind: 'tool', toolNames: ['query'], inlineState: 'running'}),
+        hidden: {type: 'executionWindowTool', content: 'tool details'},
+        bridge: makeStatus('bridge', {inlineKind: 'continuation', inlineState: 'running', label: '调用工具中'}),
+        tail: makeStatus('tail', {inlineKind: 'continuation', inlineState: 'running', label: '正在分析结果'}),
+    };
+    const live = parse(source, replacement);
+    assert.deepEqual(live.children.map((node) => node.data.hProperties.id), ['a', 'hidden']);
+    assert.deepEqual(JSON.parse(live.children[0].data.hProperties.groupedIds), ['a', 'b']);
+    assert.equal(live.children[0].data.hProperties.continuationId, 'tail');
+
+    const onlyNewCall = parse(source, {...replacement, tail: {type: 'executionStatus', content: ''}});
+    assert.equal(onlyNewCall.children[0].data.hProperties.continuationId, undefined, 'new call supersedes the previous bridge even if its clear delta is delayed');
+    const replay = parse(source, {...replacement, bridge: {type: 'executionStatus', content: ''}, tail: {type: 'executionStatus', content: ''}});
+    assert.deepEqual(JSON.parse(replay.children[0].data.hProperties.groupedIds), ['a', 'b']);
+});
+
+test('continuations never cross prose, a different execution/run, visible badges or other operation families', () => {
+    const a = makeStatus('a', {inlineKind: 'tool', toolNames: ['query']});
+    const tail = makeStatus('tail', {inlineKind: 'continuation', inlineState: 'running'});
+    const pair = '{{cardReplace id=a}}\n\n{{cardReplace id=tail}}';
+    for (const overrides of [{executionId: 'other'}, {runId: 'other'}, {conversationId: 'other'}]) {
+        assert.equal(parse(pair, {a, tail: makeStatus('tail', {inlineKind: 'continuation', ...overrides})}).children.length, 2);
+    }
+    assert.equal(parse(pair.replace('\n\n', '\n\n可见正文\n\n'), {a, tail}).children.length, 3);
+    assert.equal(parse(pair, {a, tail: {...tail, contextStatus: {status: 'ignored'}}}).children.length, 2);
+    const differentTool = parse(`${pair}\n\n{{cardReplace id=b}}`, {a, tail, b: makeStatus('b', {inlineKind: 'tool', toolNames: ['write']})});
+    assert.equal(differentTool.children.length, 2);
+    assert.equal(differentTool.children[0].data.hProperties.continuationId, undefined, 'another concrete tool supersedes the pending bridge without merging unrelated tool families');
 });
 
 test('known knowledge operations share a family while writes, phases, and unknown namespaces stay separate', () => {
@@ -229,11 +263,12 @@ test('collapsed status group shows one row and can expand older process links', 
         assert.deepEqual([...document.querySelectorAll('[data-status-id]')].map((node) => node.dataset.statusId), ['first']);
         assert.equal(toggle.disabled, false);
 
-        // Two guidance anchors cannot be hidden by collapsing the call history.
+        // Multiple guidance anchors stay consolidated in the main section and no
+        // longer force unrelated historical tool rows open.
         globalThis.__groupSessions.chat.executions['run-1'].guidancePrompts.second = {label: '等待模型响应'};
         await act(async () => root.render(React.createElement(ExecutionStatusGroup, {entries: [...entries], conversationId: 'chat'})));
-        assert.equal(document.querySelectorAll('[data-status-id]').length, 3);
-        assert.equal(toggle.disabled, true);
+        assert.equal(document.querySelectorAll('[data-status-id]').length, 1);
+        assert.equal(toggle.disabled, false);
 
         delete globalThis.__groupSessions;
         const activeEntries = entries.map((entry, index) => ({...entry, content: makeStatus(entry.id, {
@@ -267,7 +302,8 @@ test('action summaries retain real completion/failure states and grouped links n
         plugins: [{name: 'action-fixture', setup(builder) {
             builder.onResolve({filter: /^(?:react-i18next)$|ExecutionGuidanceBubble\.jsx$/}, ({path}) => ({path, namespace: 'fixture'}));
             builder.onLoad({filter: /.*/, namespace: 'fixture'}, ({path}) => ({loader: 'jsx', resolveDir: process.cwd(), contents:
-                path === 'react-i18next' ? 'export const useTranslation=()=>({t:(key)=>key});' : 'export default ()=>null;'}));
+                path === 'react-i18next' ? 'export const useTranslation=()=>({t:(key)=>key});'
+                    : 'export default ({activity})=><div data-test-guidance={activity.id}>{activity.content}</div>;'}));
         }}],
     });
     const {Status, Group, useExecutionStore} = await import('../temp/execution-status-actions-test.mjs');
@@ -309,6 +345,37 @@ test('action summaries retain real completion/failure states and grouped links n
         assert.match(document.querySelector('[data-execution-status-group] > div').textContent, /正在查找补充证据/);
         await act(async () => document.querySelector('[data-execution-status-group] > div [data-execution-status-id] button').click());
         assert.equal(useExecutionStore.getState().sessions.chat.navigationRequest.toolCallId, 'call-first');
+
+        const guidanceActivities = [
+            {id: 'first-note', kind: 'guidance', state: 'pending', anchorStatusId: 'first', content: '先核对定义', time: 1},
+            {id: 'second-note', kind: 'guidance', state: 'consumed', anchorStatusId: 'second', content: '再比较来源', time: 2},
+            {id: 'withdrawn-note', kind: 'guidance', state: 'withdrawn', anchorStatusId: 'first', content: '已撤回旧要求', time: 3},
+            {id: 'replaced-note', kind: 'guidance', state: 'replaced', anchorStatusId: 'second', content: '已被替代旧要求', time: 4},
+            {id: 'widget-note', kind: 'guidance', source: 'widget_response', state: 'responded', anchorStatusId: 'second', content: '组件反馈', time: 5},
+        ];
+        const prompts = {first: {label: '等待工具调用完成'}, second: {label: '等待模型响应'}};
+        const frozenEntries = records.map((entry) => ({...entry, content: JSON.stringify({
+            ...JSON.parse(entry.content), activities: guidanceActivities, guidancePrompts: prompts,
+        })}));
+        await act(async () => useExecutionStore.getState().upsertExecution({
+            executionId: 'run-1', conversationId: 'chat', active: true, status: 'running', updatedAt: 100,
+            activities: guidanceActivities, guidancePrompts: prompts,
+        }));
+        await act(async () => root.render(React.createElement(Group, {key: 'guidance', entries: frozenEntries, conversationId: 'chat'})));
+        assert.deepEqual([...document.querySelectorAll('[data-test-guidance]')].map((node) => node.dataset.testGuidance), ['first-note', 'second-note', 'widget-note']);
+        assert.equal(document.querySelectorAll('[data-execution-guidance-prompt]').length, 1);
+        assert.match(document.querySelector('[data-execution-guidance-prompt]').textContent, /等待模型响应/);
+        await act(async () => document.querySelector('button[aria-expanded]').click());
+        assert.equal(document.querySelectorAll('[data-test-guidance]').length, 3, 'expanded call history must not repeat supplements');
+        assert.equal(document.querySelectorAll('[data-execution-guidance-prompt]').length, 1);
+
+        await act(async () => useExecutionStore.getState().upsertExecution({
+            executionId: 'run-1', conversationId: 'chat', active: true, status: 'running', updatedAt: 200,
+            activities: guidanceActivities.map((activity) => activity.id === 'widget-note' ? activity : {...activity, state: 'withdrawn'}),
+            guidancePrompts: {},
+        }));
+        assert.deepEqual([...document.querySelectorAll('[data-test-guidance]')].map((node) => node.dataset.testGuidance), ['widget-note']);
+        assert.equal(document.querySelectorAll('[data-execution-guidance-prompt]').length, 0, 'authoritative empty maps must suppress frozen waiting hints');
     } finally {
         await act(async () => root.unmount());
         useExecutionStore.setState({sessions: {}});
@@ -366,13 +433,13 @@ test('the full Markdown renderer groups token-typed plain JSON statuses into 4 a
             toolNames: names.map((name) => `knowledgeNetwork_${name}`),
             navigationTarget: {toolCallId: callId},
             toolStatusNodes: {[callId]: {phase: 'investigation', executionMeta: {
-                toolset: null, promote: true, surface: 'task_window', taskModeRouted: true, evidence: [],
+                toolset: null, promote: true, surface: 'execution_window', executionModeRouted: true, evidence: [],
             }}},
         }).content);
         // These entries intentionally have no type property/protocol marker.
         // The source token is the only place carrying executionStatus.
         replacement[statusId] = {frontend: JSON.stringify(status)};
-        replacement[callId] = {frontend: '[taskWindowTool]\n工具详情'};
+        replacement[callId] = {frontend: '[executionWindowTool]\n工具详情'};
         replacement[`tool-result-${callId}`] = {frontend: ''};
         replacement[`continuation-${callId}`] = {frontend: ''};
         replacement[`progress-${callId}`] = {frontend: '[markdown]\n'};

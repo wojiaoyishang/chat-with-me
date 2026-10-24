@@ -6,6 +6,8 @@ const emptySession = () => ({
     isOpen: false,
     activeExecutionId: null,
     navigationRequest: null,
+    guidanceDrafts: {},
+    guidanceEditor: null,
     executions: {},
 });
 
@@ -47,8 +49,24 @@ const normalizeExecution = (incoming = {}) => {
         plan: Array.isArray(incoming.plan) ? incoming.plan : [],
         activities: Array.isArray(incoming.activities) ? incoming.activities : [],
         toolCards: Array.isArray(incoming.toolCards) ? incoming.toolCards : [],
-        taskMode: incoming?.taskMode && typeof incoming.taskMode === 'object' ? incoming.taskMode : {},
+        executionMode: incoming?.executionMode && typeof incoming.executionMode === 'object' ? incoming.executionMode : {},
     };
+};
+
+const sessionWithExecution = (session, incoming) => {
+    const execution = mergeExecution(session.executions[incoming.executionId] || {}, incoming);
+    const drafts = {...session.guidanceDrafts};
+    let guidanceEditor = session.guidanceEditor || null;
+    for (const [key, draft] of Object.entries(drafts)) {
+        if (draft.executionId !== execution.executionId || !draft.submissionId || draft.state === 'sent') continue;
+        const received = execution.activities?.find((activity) => activity.id === draft.submissionId
+            && activity.kind === 'guidance' && activity.state !== 'submitting');
+        if (!received) continue;
+        drafts[key] = {...draft, state: 'sent', error: ''};
+        if (guidanceEditor?.draftKey === key) guidanceEditor = null;
+    }
+    return {...session, guidanceDrafts: drafts, guidanceEditor,
+        executions: {...session.executions, [execution.executionId]: execution}};
 };
 
 export const useExecutionStore = create((set) => ({
@@ -60,16 +78,11 @@ export const useExecutionStore = create((set) => ({
             if (!execution?.executionId || !execution?.conversationId) return state;
             const conversationId = execution.conversationId;
             const session = state.sessions[conversationId] || emptySession();
-            const previous = session.executions[execution.executionId] || {};
             return {
                 sessions: {
                     ...state.sessions,
                     [conversationId]: {
-                        ...session,
-                        executions: {
-                            ...session.executions,
-                            [execution.executionId]: mergeExecution(previous, execution),
-                        },
+                        ...sessionWithExecution(session, execution),
                     },
                 },
             };
@@ -81,20 +94,15 @@ export const useExecutionStore = create((set) => ({
             if (!execution?.executionId || !execution?.conversationId) return state;
             const conversationId = execution.conversationId;
             const session = state.sessions[conversationId] || emptySession();
-            const previous = session.executions[execution.executionId] || {};
             return {
                 sessions: {
                     ...state.sessions,
                     [conversationId]: {
-                        ...session,
+                        ...sessionWithExecution(session, execution),
                         isOpen: true,
                         activeExecutionId: execution.executionId,
                         navigationRequest: target ? { ...target, requestId: (session.navigationSequence || 0) + 1 } : null,
                         navigationSequence: (session.navigationSequence || 0) + 1,
-                        executions: {
-                            ...session.executions,
-                            [execution.executionId]: mergeExecution(previous, execution),
-                        },
                     },
                 },
             };
@@ -144,8 +152,7 @@ export const useExecutionStore = create((set) => ({
                 sessions: {
                     ...state.sessions,
                     [conversationId]: {
-                        ...session,
-                        executions: { ...session.executions, [executionId]: execution },
+                        ...sessionWithExecution(session, execution),
                     },
                 },
             };
@@ -159,9 +166,14 @@ export const useExecutionStore = create((set) => ({
             const session = state.sessions[conversationId];
             const execution = session?.executions?.[executionId];
             if (!conversationId || !executionId || !activityId || !execution) return state;
-            const activities = (execution.activities || []).map((item) =>
-                normalizeId(item?.id) === activityId ? { ...item, ...patch, id: activityId } : item,
-            );
+            const activities = (execution.activities || []).map((item) => {
+                if (normalizeId(item?.id) !== activityId) return item;
+                // A late optimistic composer acknowledgement/error cannot undo a
+                // server-owned receipt, withdrawal or version replacement.
+                if (item.kind === 'guidance' && item.state !== 'submitting'
+                    && ['pending', 'failed'].includes(patch.state)) return item;
+                return {...item, ...patch, id: activityId};
+            });
             return {
                 sessions: {
                     ...state.sessions,
@@ -197,6 +209,77 @@ export const useExecutionStore = create((set) => ({
             delete sessions[conversationId];
             return { sessions };
         }),
+
+    openGuidanceEditor: (incoming, {guidanceId, mode = 'rewrite'} = {}) => {
+        let opened = false;
+        set((state) => {
+        const execution = normalizeExecution(incoming);
+        if (!execution?.conversationId) return state;
+        const cid = execution.conversationId;
+        const existing = state.sessions[cid] || emptySession();
+        const session = sessionWithExecution(existing, execution);
+        const current = session.executions[execution.executionId];
+        const source = current.activities?.find((activity) => activity.id === guidanceId);
+        if (!current.active || current.status === 'cancelling' || !source || source.source === 'widget_response'
+            || source.replacedByGuidanceId || source.state === 'replaced') return state;
+        if (mode === 'rewrite' && (source.state !== 'withdrawn' || source.canRewrite !== true)) return state;
+        if (!['rewrite', 'correction'].includes(mode)) return state;
+        const draftKey = `${execution.executionId}:${mode}:${guidanceId}`;
+        const previous = session.guidanceDrafts[draftKey];
+        const draft = previous && previous.state !== 'sent' ? previous : {
+            executionId: execution.executionId, draftKey, sourceId: guidanceId, mode,
+            content: source.content || source.label || '', state: 'editing', submissionId: null,
+            submittedContent: null, replacesGuidanceId: mode === 'rewrite' ? guidanceId : null, error: '',
+        };
+        opened = true;
+        return {sessions: {...state.sessions, [cid]: {...session, isOpen: true,
+            activeExecutionId: execution.executionId,
+            guidanceDrafts: {...session.guidanceDrafts, [draftKey]: draft},
+            guidanceEditor: {executionId: execution.executionId, draftKey},
+            navigationSequence: (session.navigationSequence || 0) + 1,
+            navigationRequest: {guidanceEditor: true, requestId: (session.navigationSequence || 0) + 1},
+        }}};
+        });
+        return opened;
+    },
+
+    updateGuidanceDraft: (cid, draftKey, content) => set((state) => {
+        const session = state.sessions[cid];
+        const draft = session?.guidanceDrafts?.[draftKey];
+        if (!draft || ['submitting', 'uncertain', 'sent'].includes(draft.state)) return state;
+        return {sessions: {...state.sessions, [cid]: {...session, guidanceDrafts: {
+            ...session.guidanceDrafts, [draftKey]: {...draft, content, state: 'editing',
+                submissionId: null, submittedContent: null, error: ''},
+        }}}};
+    }),
+
+    patchGuidanceDraft: (cid, draftKey, patch, expectedSubmissionId = null) => set((state) => {
+        const session = state.sessions[cid];
+        const draft = session?.guidanceDrafts?.[draftKey];
+        if (!draft || (expectedSubmissionId && draft.submissionId !== expectedSubmissionId)
+            || (draft.state === 'sent' && patch.state !== 'sent')) return state;
+        return {sessions: {...state.sessions, [cid]: {...session, guidanceDrafts: {
+            ...session.guidanceDrafts, [draftKey]: {...draft, ...patch},
+        }, guidanceEditor: patch.state === 'sent' && session.guidanceEditor?.draftKey === draftKey
+            ? null : session.guidanceEditor}}};
+    }),
+
+    closeGuidanceEditor: (cid, executionId) => set((state) => {
+        const session = state.sessions[cid];
+        if (session?.guidanceEditor?.executionId !== executionId) return state;
+        return {sessions: {...state.sessions, [cid]: {...session, guidanceEditor: null}}};
+    }),
+
+    reopenGuidanceDraft: (cid, executionId, draftKey) => set((state) => {
+        const session = state.sessions[cid];
+        const draft = session?.guidanceDrafts?.[draftKey];
+        if (!session?.isOpen || session.activeExecutionId !== executionId
+            || draft?.executionId !== executionId || draft.state === 'sent') return state;
+        const requestId = (session.navigationSequence || 0) + 1;
+        return {sessions: {...state.sessions, [cid]: {...session,
+            guidanceEditor: {executionId, draftKey}, navigationSequence: requestId,
+            navigationRequest: {guidanceEditor: true, requestId}}}};
+    }),
 }));
 
 export const upsertExecution = (execution) => useExecutionStore.getState().upsertExecution(execution);
@@ -212,3 +295,4 @@ export const patchExecutionActivity = (conversationId, executionId, activityId, 
 export const closeExecution = (conversationId) => useExecutionStore.getState().close(conversationId);
 export const clearExecutionConversation = (conversationId) =>
     useExecutionStore.getState().clearConversation(conversationId);
+export const openGuidanceEditor = (execution, target) => useExecutionStore.getState().openGuidanceEditor(execution, target);

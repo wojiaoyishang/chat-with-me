@@ -22,12 +22,13 @@ Execution 事件
    后端权威执行快照。Inline Execution Status 与 Execution Window 都从这一状态投影。
 
 ``execution.guidance.add``
-   给当前 active ExecutionRun 追加用户信息，在安全 Agent 边界消费；不要求新建 Task segment。
+   给当前 active ExecutionRun 追加用户信息，在安全 Agent 边界消费；不要求新建执行分段。
 
 ``execution.cancel`` / ``execution.resume``
    停止当前执行，或从 recoverable checkpoint 创建新的 Run 继续同一执行目标。
 
-``task.*`` 只属于旧会话兼容，不再构成新的前端 Task Mode UI。
+旧会话模式事件已移除。后台工作流的 ``task.changed`` 等作业事件仍保留，
+不参与会话 Execution Mode 生命周期。
 
 命名规则
 --------------------------------------------------------------------------------

@@ -138,38 +138,38 @@ Conversation 后会把 ``__new__`` 草稿迁移到真实 ``conversationId``；�
 工具集，不会顺带提交其他工具集中尚未保存的 draft；成功后该组的新权限会成为新的 server-confirmed baseline。
 
 V42 起工具 Registry 还会提供 ``default / allowedModes / locked``。普通工具缺省 ``default=ask``；locked Tool 不渲染
-三态切换按钮，而只显示“系统固定 · 允许/询问/拒绝”徽标，并从所有批量操作中排除。Task Mode 的
-``task_mode_enter / task_finish / task_block`` 是后端 Runtime 控制协议，固定为 ``allow + locked``，用户无法在默认设置、
+三态切换按钮，而只显示“系统固定 · 允许/询问/拒绝”徽标，并从所有批量操作中排除。Execution Mode 的
+``execution_mode_enter / execution_finish / execution_block`` 是后端 Runtime 控制协议，固定为 ``allow + locked``，用户无法在默认设置、
 本对话窗口或快捷菜单中拒绝它们。真正的强制规则仍由后端 Approval Policy 执行。
 
 窗口保存或执行一键权限操作期间，标题区域显示“正在同步工具权限…”，因此保持 server-authoritative 的同步设计时
 不会表现为无反馈的忙等。
 
 
-Execution Runtime / 新 Task Mode 交互
+Execution Runtime / 新 Execution Mode 交互
 --------------------------------------------------------------------------------
 
-V41 的 Task Mode 是 ``ExecutionRuntime`` 的可见工作区，不再使用旧 Task Checklist/TaskRun UI。
-普通非 Execution Tool 仍在正文显示 Tool Calling Card；解析为 ``execution.promote=true`` 的 Tool 会自动进入 Task Mode，
-其完整 Tool Calling Card 默认移到右侧 Task Window，正文只保留轻量 ``executionStatus``、用户补充气泡和 AI 正文。
+Execution Mode 是 ``ExecutionRuntime`` 的可见工作区，直接消费统一的执行状态。
+普通非 Execution Tool 仍在正文显示 Tool Calling Card；解析为 ``execution.promote=true`` 的 Tool 会自动进入 Execution Mode，
+其完整 Tool Calling Card 默认移到右侧 Execution Window，正文只保留轻量 ``executionStatus``、用户补充气泡和 AI 正文。
 
-模型也可以在第一个 promoted Tool 之前调用 ``task_mode_enter`` 手动进入任务模式。完成/阻塞意图通过
-``task_finish`` / ``task_block`` Tool Calling 表达；前端不依赖模型正文 JSON 决定任务终态。
+模型也可以在第一个 promoted Tool 之前调用 ``execution_mode_enter`` 手动进入执行模式。完成/阻塞意图通过
+``execution_finish`` / ``execution_block`` Tool Calling 表达；前端不依赖模型正文 JSON 决定执行终态。
 
-当前后端还会兜底模型“忘记调用 ``task_finish``”的情况：当 ``taskMode.status=active`` 的模型请求以普通正文自然结束、
+当前后端还会兜底模型“忘记调用 ``execution_finish``”的情况：当 ``executionMode.status=active`` 的模型请求以普通正文自然结束、
 却没有生命周期 Tool Call 时，Execution Runtime 不会把这段正文当成最终答复发布，而是注入 hidden completion-control
-消息并发起专用 ``task_finish`` 提交轮。Hard Completion Barrier 仍然拥有最终决定权；拒绝后恢复正常工具执行，新的用户
+消息并发起专用 ``execution_finish`` 提交轮。Hard Completion Barrier 仍然拥有最终决定权；拒绝后恢复正常工具执行，新的用户
 guidance 若在强制提交前到达则优先处理。前端不实现这套判断，只继续投影后端 authoritative snapshot。
 
 只有 active Execution 的纯文本输入才作为 ``execution.guidance.add``；普通生成期间输入继续保留为本地 Draft，
 不得隐式抢占。补充消息立即以用户消息变体显示，后端 ``guidancePrompts`` 再把“等待工具调用完成 / 等待模型响应”
 投影在补充气泡组下方。
 
-Task Window 绑定当前 Execution 的 Assistant ``messageId``。该消息离开当前 ``messagesOrder``（Branch 切换、Retry/Regenerate、
+Execution Window 绑定当前 Execution 的 Assistant ``messageId``。该消息离开当前 ``messagesOrder``（Branch 切换、Retry/Regenerate、
 Edit/Fork 新路径、删除等）时窗口自动关闭。
 
-Task Window 的 Tool Calling 与任务日志在 V42 合并成一条按发生时间排序的执行时间线；用户补充、模型/Runtime 活动与
-完整 Tool Calling Card 可以自然穿插显示，不再维护“工具调用”和“任务日志”两个割裂区块。标题栏同时提供显式自动置底
+Execution Window 的 Tool Calling 与执行日志在 V42 合并成一条按发生时间排序的执行时间线；用户补充、模型/Runtime 活动与
+完整 Tool Calling Card 可以自然穿插显示，不再维护“工具调用”和“执行日志”两个割裂区块。标题栏同时提供显式自动置底
 按钮：默认跟随流式增长，用户向上滚动后暂停，点击按钮才恢复并跳到最新活动。
 
 Workspace 文件传输正文卡
@@ -182,7 +182,7 @@ Workspace 文件交换不再把进度状态挂在 ``AttachmentShowcase``。``wor
 
 卡片持久 payload 只保存稳定/最终快照，实时 ``progress / transferredBytes / totalBytes / stage`` 由
 ``workspace.transfer.state_changed`` 写入 ``useWorkspaceTransferStore``，组件通过 ``toolCallId`` 找到当前
-Transfer 并原地刷新。因此进度变化不会持续改写 Conversation Message。Task Window 复用同一个
+Transfer 并原地刷新。因此进度变化不会持续改写 Conversation Message。Execution Window 复用同一个
 ``WorkspaceTransferCard`` 的 compact variant，不维护第二份进度状态。
 
 ``AttachmentShowcase`` 现在只表示文件实体：名称、大小、预览/下载与图片视觉开关。Workspace ->

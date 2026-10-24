@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 import { JSDOM } from "jsdom";
 import React, { act } from "react";
@@ -12,7 +13,7 @@ await build({
     builder.onResolve({ filter: /^react(?:\/|$)/ }, ({path}) => ({path,external:true}));
     builder.onResolve({ filter: /\.css$/ }, () => ({path:"css",namespace:"mock"}));
     builder.onResolve({ filter: /chatKnowledgeGraphRenderer\.js$/ }, () => ({path:"renderer",namespace:"mock"}));
-    builder.onResolve({ filter: /^@\// }, ({path}) => ({path,namespace:"mock"}));
+    builder.onResolve({ filter: /^@\// }, ({path}) => path === '@/features/knowledge/graphHistory.js' ? {path:fileURLToPath(new URL('../src/features/knowledge/graphHistory.js', import.meta.url))} : {path,namespace:"mock"});
     builder.onLoad({filter:/.*/,namespace:"mock"}, ({path}) => {
       let contents = "";
       if(path.includes("apiClient")) contents="export default {get:(...args)=>globalThis.controlTest.api.get(...args)};";

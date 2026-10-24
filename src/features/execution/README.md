@@ -1,21 +1,26 @@
-# Task Mode / Execution UI
+# Execution Mode / Execution UI
 
-V41 exposes a new **Task Mode workspace** backed by the existing durable
-`ExecutionRuntime`. It is not the old TaskRun/checklist UI.
+**Execution Mode** is a workspace backed by the durable `ExecutionRuntime`.
 
-- `ExecutionStatus` renders small inline task/execution timeline nodes in Assistant output.
-- `ExecutionWindow` is the internal component that renders the product **Task Window**.
-  It shows Task objective/plan and one chronological execution timeline where full
+The current contract uses `executionMode` snapshots, `execution_window` render surfaces,
+`executionWindowTool` hosts, and `executionModeRouted` metadata. Lifecycle tools are
+`execution_mode_enter`, `execution_progress`, `execution_finish`, and `execution_block`.
+The UI consumes only this contract without alternate field or transport aliases. Background
+jobs and workflow tasks remain separate and retain their existing task APIs and identifiers.
+
+- `ExecutionStatus` renders small inline execution timeline nodes in Assistant output.
+- `ExecutionWindow` is the internal component that renders the product **Execution Window**.
+  It shows execution objective/plan and one chronological execution timeline where full
   Execution Tool Calling cards, Runtime/model activities and user-guidance logs are
   interleaved by their server timestamps, plus stop/resume controls.
-- While Task Mode is active, every non-hidden Tool Call is projected into the Task Window,
+- While Execution Mode is active, every non-hidden Tool Call is projected into the Execution Window,
   including ordinary non-promoted helper tools. V62 renders the tool's **outer canonical
   replacement host**, not only its nested `toolCalling` replacement, so command preview, live
   ToolLog/progress, final frontend result, custom Markdown/widgets and adapter-specific output
   all remain visible in one continuous card tree. The outer host uses the private
-  `taskWindowTool` transport type: it renders only on `renderSurface="task_window"` and is
+  `executionWindowTool` transport type: it renders only on `renderSurface="execution_window"` and is
   suppressed in the conversation transcript without deleting its replacement data. Outside
-  Task Mode, the configured tool surface still applies and ordinary non-Execution tools stay
+  Execution Mode, the configured tool surface still applies and ordinary non-Execution tools stay
   inline.
 - `FloatingDockWindow` supplies draggable/resizable/docked behavior. Dock state and
   geometry are browser-local.
@@ -25,21 +30,21 @@ V41 exposes a new **Task Mode workspace** backed by the existing durable
 - `useExecutionStore` is a frontend projection only; server snapshots remain authoritative.
 - Inline nodes retain their own `navigationTarget` (toolCallId/replacementId or activityId).
   Opening one issues a separate browser-local navigation request, preserving the latest server snapshot.
-  Task Window expands the target tool, waits for its result replacement, scrolls only its own container,
+  Execution Window expands the target tool, waits for its result replacement, scrolls only its own container,
   and briefly highlights the matching row. This disables automatic bottom following until explicitly resumed.
 
-## Task completion enforcement
+## Execution completion enforcement
 
-The frontend never treats ordinary Assistant prose as a Task Mode terminal signal. While the
-backend reports `taskMode.status="active"`, a model round that tries to stop without a lifecycle
+The frontend never treats ordinary Assistant prose as an Execution Mode terminal signal. While the
+backend reports `executionMode.status="active"`, a model round that tries to stop without a lifecycle
 Tool Call is intercepted by Execution Runtime. Its would-be final prose is not published as the
 user-facing final answer; Runtime injects a hidden completion-control message and forces a
-`task_finish` submission round. The existing completion barrier then decides whether the task may
+`execution_finish` submission round. The existing completion barrier then decides whether the execution may
 enter `final_response` or must continue working.
 
-This is intentionally backend-owned. The Task Window continues to consume only authoritative
-Execution/Task snapshots and hidden lifecycle Tool Calls remain absent from the visible Tool
-timeline. If `task_finish` is rejected, normal tools resume; if late user guidance arrives first,
+This is intentionally backend-owned. The Execution Window continues to consume only authoritative
+Execution snapshots and hidden lifecycle Tool Calls remain absent from the visible Tool
+timeline. If `execution_finish` is rejected, normal tools resume; if late user guidance arrives first,
 that guidance takes precedence over the forced finish request.
 
 ## Inline Execution status terminal semantics
@@ -51,17 +56,31 @@ that guidance takes precedence over the forced finish request.
 still render a check mark when they carry a valid `done=true` snapshot and their own concrete label.
 
 The backend keeps `continuationStatusId` separate from the durable `currentStatusId`. Continuation
-rows such as `正在继续执行任务` / `正在确认任务完成` are always transient tail hosts and never become
+rows such as `正在继续执行` / `正在确认执行完成` are always transient tail hosts and never become
 the terminal anchor. After the authorized `final_response` finishes, Runtime appends one fresh
 terminal `executionStatus` replacement at the current Assistant-message tail. This guarantees a
 single `✓ 执行完成` after the final answer instead of recycling an earlier continuation/tool row.
 
+Conversation rendering projects consecutive related tool calls into one stable group during
+streaming and history replay alike. A same-execution/run `inlineKind="continuation"` becomes
+that group's current headline, never another counted call or a boundary between calls. The next
+concrete call supersedes the bridge even if its clear replacement is delayed. Visible prose,
+context badges, other executions/runs and unrelated tool families remain boundaries. Every
+original replacement and per-call navigation target remains intact; grouping changes only the
+rendered view. Expanding history retains the user's choice as new calls arrive.
+
+`projectExecutionStatus` reconciles a frozen inline record only with its exact `toolStatusNodes`
+entry in the newer live execution projection. It does not infer individual success from the
+execution's global terminal state, or let an older running snapshot downgrade a finished call.
+Outstanding interactions and running work remain prominent; otherwise the latest call supplies
+the headline while earlier failures remain visible in the count and expandable history.
+
 ## Window ownership
 
-The Task Window belongs to the Assistant message that created the Execution.
+The Execution Window belongs to the Assistant message that created the Execution.
 `ExecutionHost` checks `execution.messageId` against the current `messagesOrder`; branch
 switches, regenerate/retry, Edit/Fork path changes, deletion or conversation changes close
-an orphaned Task Window automatically.
+an orphaned Execution Window automatically.
 
 ## Stop / resume
 
@@ -72,15 +91,39 @@ the same checkpoint rather than resurrecting a dead Worker.
 
 ## Guidance feedback
 
-Guidance activities use `source=user_guidance` and a separate visual marker in Task logs.
+Guidance activities use `source=user_guidance` and a separate visual marker in execution logs.
 `guidancePrompts[statusId]` is backend-owned and supplies `等待工具调用完成` /
 `等待模型响应`; the frontend places that feedback after the corresponding supplement bubble
-group without inferring the task phase locally.
+group without inferring the execution phase locally.
 
+
+## Guidance revisions and editing
+
+Ordinary user supplements use a compact left-aligned section in the transcript. Server-owned
+`withdrawn` / `replaced` records are hidden there, while widget responses keep their own rendering.
+Consecutive grouped status rows share one ordered supplement section and one authoritative wait hint.
+An explicitly empty live `guidancePrompts` map clears frozen hints instead of falling back to history.
+
+`canToggle` controls withdrawal/restoration. “Withdraw and edit” first waits for a successful withdrawal
+snapshot; `canRewrite` then controls editing an already-withdrawn source independently from its lock.
+A locked effective supplement can only create a new correction; it never claims to retract old context.
+The execution timeline keeps withdrawn/replaced versions collapsed, links known versions, and labels
+truncated-out versions as archived instead of creating a navigation request that cannot resolve.
+
+The separate editor stores drafts in browser memory by conversation, execution, source and operation.
+It does not read or overwrite ChatBox drafts. Closing/cancelling keeps the draft without restoring
+the withdrawn source; changing conversations/executions cannot submit it to a different target.
+Refreshing the browser clears these in-memory drafts; no supplemental content is added to local storage.
+
+Submission reuses `execution.guidance.add` with a new stable `guidanceId`, `content`, and optional
+`replacesGuidanceId` for an already-withdrawn source. A transport timeout freezes that ID and body until
+an explicit receipt retry or an authoritative activity confirms acceptance. Such retries preserve the
+exact payload; acknowledged receipts cannot be downgraded by a late timeout. Replacement links are
+`replacesGuidanceId` / `replacedByGuidanceId`; only the new effective version is visible in the transcript.
 
 ## Auto-follow
 
-The Task Window header owns an explicit auto-bottom control.  Auto-follow starts enabled
+The Execution Window header owns an explicit auto-bottom control.  Auto-follow starts enabled
 and follows streamed Tool Card/log growth using size and DOM observers. Both the content
 and viewport are observed; callback refs rebind them when docking replaces the portal DOM.
 Fast updates share a pending animation frame and are checked again after layout settles.
@@ -111,7 +154,7 @@ operation descriptions come from the backend.
 
 A repaired native invocation reuses the original Tool Calling host rather than creating a
 second copy of the retained target arguments. Backend prepare metadata projects the real
-target tool's Execution surface, so repaired promoted tools render in the Task Window and
+target tool's Execution surface, so repaired promoted tools render in the Execution Window and
 ordinary repaired tools remain inline. The `toolCalling` payload contains a private
 `[TOOL_CALL_REPAIR]` marker; `StatusWidget` strips that marker from visible content and
 uses `Tool Call Repair` / `Tool Call Repair Finished` / `Tool Call Repair Failed` for the
@@ -123,7 +166,7 @@ card lifecycle.
 Repair Tool Cards now carry `toolCallRepair=true`. The backend `prepare` path
 idempotently guarantees that the canonical `<toolCallingId>-toolCalling` replacement
 exists even when a compatible Provider coalesces or omits the ordinary visible start
-stream. If execution state reaches the browser before that replacement, Task Window
+stream. If execution state reaches the browser before that replacement, Execution Window
 renders a compact `Tool Call Repair` / `Tool Call Repair Finished` fallback immediately
 and swaps to the canonical CardBlock when replacement synchronization catches up.
 
@@ -132,19 +175,19 @@ and swaps to the canonical CardBlock when replacement synchronization catches up
 Two browser-local Interface settings control successful Tool Calling cards independently:
 
 - **Auto-collapse completed tool calls in chat**: defaults to enabled.
-- **Auto-collapse completed tool calls in Task Window**: defaults to disabled.
+- **Auto-collapse completed tool calls in Execution Window**: defaults to disabled.
 
 Only successfully completed calls are auto-collapsed. Running, failed, cancelled and
 approval-waiting calls remain expanded, and an explicit user expand/collapse action always
-overrides the automatic preference for that card. Conversation and Task Window expansion state
+overrides the automatic preference for that card. Conversation and Execution Window expansion state
 use separate keys so one surface cannot unexpectedly collapse the other.
 
 ## Consecutive Tool Call labels (V64)
 
-Task Window prefers backend `displayNames` for Tool Card headers and falls back to protocol
+Execution Window prefers backend `displayNames` for Tool Card headers and falls back to protocol
 `toolNames` only when a Registry display name is unavailable. This matches the backend V64
-status projection: promoted task tools keep their explicit execution labels, while ordinary
-helpers routed into an already-active Task Mode use `<display name> · 执行中/已完成`.
+status projection: promoted execution tools keep their explicit execution labels, while ordinary
+helpers routed into an already-active Execution Mode use `<display name> · 执行中/已完成`.
 
 The backend also terminalizes a provisional Native Tool Card when the call aborts before
 `prepare`, so a repaired or following call appears as a new independent timeline item instead
@@ -152,17 +195,17 @@ of sitting below a stale `running` card.
 
 ## Action descriptions and grouped transcript hints
 
-`task_progress(action)` supplies a short, model-authored explanation for the next meaningful
-stage without creating a task or changing its lifecycle. Each concrete tool status freezes
-its own `action`; the Task Window shows that explanation alongside the corresponding call.
+`execution_progress(action)` supplies a short, model-authored explanation for the next meaningful
+stage without creating a background job or changing execution lifecycle. Each concrete tool status freezes
+its own `action`; the Execution Window shows that explanation alongside the corresponding call.
 Inline hints display the action together with Runtime-owned completion/failure state.
 
 Visually consecutive calls to the same tool in one execution/run share the first stable
 transcript host, even when their states or action text differ. Cleared continuation hosts,
-empty hidden-control Markdown and conversation-hidden `taskWindowTool` hosts do not interrupt
+empty hidden-control Markdown and conversation-hidden `executionWindowTool` hosts do not interrupt
 the group. Visible prose, other tool families, unknown/unloaded hosts and different runs do.
 Saved knowledge-network batches with missing toolset metadata use a conservative legacy
-read/write classification, so different read methods sharing one task label can group
+read/write classification, so different read methods sharing one execution label can group
 without mixing them with graph mutations. Status type carried only by the Markdown token
 is preserved when resolving each grouped JSON replacement.
 The main row prioritizes guidance/running calls, counts failures explicitly, and opens the
@@ -188,4 +231,4 @@ reuse the existing Artifact instead of creating another transfer. This is a back
 
 ### Guidance withdrawal
 
-ExecutionGuidanceAction is shared by the inline guidance bubble and task timeline. Render it only for server-owned `canToggle=true` in an active execution. Withdrawn activities remain visible with gray styling and a restore action; first model output locks them on the server. Actions send only executionId/guidanceId, reuse the existing WebSocket reply and Execution store, and never mutate message content or create a branch. A late enqueue ACK cannot overwrite a newer response/withdrawal projection.
+ExecutionGuidanceAction is shared by the inline guidance bubble and execution timeline. Render it only for server-owned `canToggle=true` in an active execution. Withdrawn activities remain visible with gray styling and a restore action; first model output locks them on the server. Actions send only executionId/guidanceId, reuse the existing WebSocket reply and Execution store, and never mutate message content or create a branch. A late enqueue ACK cannot overwrite a newer response/withdrawal projection.

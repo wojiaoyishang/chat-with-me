@@ -188,12 +188,12 @@ const normalizeReplacementCopyEntry = (replacement, id, explicitType) => {
     const rawCopyContent = extractCopyTextFromReplacementValue(entry);
     const protocol = parseReplacementProtocol(rawCopyContent);
 
-    // Tool details routed exclusively to Task Window are deliberately absent from
+    // Tool details routed exclusively to Execution Window are deliberately absent from
     // the Assistant transcript. Keep message-level copy/TTS semantics aligned with
     // what the conversation surface actually shows instead of expanding hidden
     // command/log/result payloads back into the copied answer.
     if (
-        ['taskwindowtool', 'workspacetransfer', 'executionstatus', 'escstatus'].includes(
+        ['executionwindowtool', 'workspacetransfer', 'executionstatus', 'escstatus'].includes(
             String(explicitType || entry?.type || protocol.type || '').toLowerCase(),
         )
     ) {
@@ -578,6 +578,12 @@ const createComponents = ({
                         : null;
                 }).filter(Boolean)
                 : [];
+            const continuationId = String(node?.properties?.continuationId || node?.properties?.['continuation-id'] || '');
+            const continuationEntry = normalized.type === 'executionStatus' && continuationId
+                ? normalizeReplacementEntry(currentReplacement, continuationId, 'executionStatus', isStreaming)
+                : null;
+            const continuation = continuationEntry?.exists && continuationEntry.content.trim()
+                ? {id: continuationId, content: continuationEntry.content} : null;
 
             return (
                 <div
@@ -593,8 +599,8 @@ const createComponents = ({
                         status={normalized.contextStatus}
                         messageState={messageContextState}
                     />
-                    {groupedEntries.length > 1 ? (
-                        <ExecutionStatusGroup entries={groupedEntries} conversationId={conversationId} />
+                    {groupedEntries.length > 1 || (groupedEntries.length && continuation) ? (
+                        <ExecutionStatusGroup entries={groupedEntries} continuation={continuation} conversationId={conversationId} />
                     ) : <CardBlock
                         id={finalId}
                         type={normalized.type}
