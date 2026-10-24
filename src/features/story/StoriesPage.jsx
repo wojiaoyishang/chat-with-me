@@ -14,8 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { DeleteConfirmDialog } from '@/components/ui/DeleteConfirmDialog';
+import { useTaskStore } from '@/features/tasks/useTaskStore.js';
 import StoryReader from './StoryReader.jsx';
-import { flattenStoryConversations, normalizeStoryExportIds, STORY_EXPORT_LIMIT, storyExportFilename, storyKey, storyStatusLabel, toggleStorySelection } from './storyLibraryState.js';
+import { flattenStoryConversations, normalizeStoryExportIds, STORY_EXPORT_LIMIT, storyKey, storyStatusLabel, toggleStorySelection } from './storyLibraryState.js';
 
 const PAGE_SIZE = 12;
 const reportError = (error, fallback) => {
@@ -52,6 +53,7 @@ export default function StoriesPage({ conversationId = null, onNavigate, onRetur
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [deleting, setDeleting] = useState(false);
     const [exporting, setExporting] = useState(false);
+    const exportPending = useRef(false);
     const listVersion = useRef(0);
     const detailController = useRef(null);
     const detailVersion = useRef(0);
@@ -219,40 +221,24 @@ export default function StoriesPage({ conversationId = null, onNavigate, onRetur
     };
 
     const exportStories = async ids => {
-        if (!ids.length || exporting) return;
+        if (!ids.length || exportPending.current) return;
         let storyIds;
         try { storyIds = normalizeStoryExportIds(ids); }
         catch (error) { toast.error(error.message); return; }
+        exportPending.current = true;
         setExporting(true);
         try {
-            const response = await apiClient.post(`${apiEndpoint.STORIES_ENDPOINT}/export`, { storyIds }, {
-                responseType: 'blob', rawResponse: true,
+            const task = await apiClient.post(`${apiEndpoint.STORIES_ENDPOINT}/export`, { storyIds });
+            if (!task?.taskId || !Number.isInteger(task.revision)) {
+                throw new Error('未收到有效的导出任务，请查看任务中心确认提交状态。');
+            }
+            useTaskStore.getState().merge([task]);
+            useTaskStore.getState().show(task.taskId);
+            toast.success(`已提交 ${storyIds.length} 个故事的后台导出任务`, {
+                description: '可在任务中心查看进度，完成后下载 HTML 压缩包。',
             });
-            if (response.data?.type?.includes('application/json')) {
-                const error = JSON.parse(await response.data.text());
-                if (Number(error.code) === 401) {
-                    // Re-enter the normal client authentication flow for an expired session.
-                    await apiClient.get(apiEndpoint.STORIES_ENDPOINT);
-                }
-                throw new Error(error.msg || '导出失败');
-            }
-            const url = URL.createObjectURL(response.data);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = storyExportFilename(response.headers?.['content-disposition']);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
-            if (Number(response.headers?.['x-story-export-warnings']) > 0) {
-                toast.warning(`已导出 ${storyIds.length} 个故事，部分素材未能打包`, {
-                    description: '请查看压缩包中的导出清单，了解缺失素材的详情。',
-                });
-            } else {
-                toast.success(`已导出 ${storyIds.length} 个故事`);
-            }
         } catch (error) { reportError(error, '无法导出故事'); }
-        finally { setExporting(false); }
+        finally { exportPending.current = false; setExporting(false); }
     };
 
     const pageIds = items.map(storyKey);

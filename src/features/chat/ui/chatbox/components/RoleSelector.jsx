@@ -68,7 +68,7 @@ const RoleSelector = memo(({roles, currentRole, selectedModel, highZClass, onRol
             <DropdownMenuContent
                 side="top"
                 align="end"
-                className={`w-fit min-w-[140px] max-h-[50vh] overflow-y-auto pretty-scrollbar ${highZClass}`}
+                className={`w-max min-w-0 max-w-[min(18rem,calc(100vw-1rem))] max-h-[50vh] overflow-y-auto pretty-scrollbar ${highZClass || ''}`}
             >
                 {roles.map((role) => {
                     const {text} = resolveRoleDisplay(role, selectedModel);
@@ -78,13 +78,13 @@ const RoleSelector = memo(({roles, currentRole, selectedModel, highZClass, onRol
                         <DropdownMenuItem
                             key={role.name}
                             onClick={() => onRoleChange(role)}
-                            className="cursor-pointer flex items-center px-2 py-1.5 text-sm hover:bg-gray-100"
+                            className="w-full min-h-11 cursor-pointer gap-2 px-2 py-1.5 text-sm hover:bg-gray-100"
                         >
-                            <RoleAvatar role={role} selectedModel={selectedModel} className="h-11 w-11 mr-2"/>
-                            <span>{text}</span>
-                            <div className={isSelected ? '' : 'invisible'}>
-                                <Check className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0"/>
-                            </div>
+                            <RoleAvatar role={role} selectedModel={selectedModel} className="size-8 shrink-0"/>
+                            <span className="min-w-0 flex-1 truncate" title={text}>{text}</span>
+                            <span className="ml-auto flex size-4 shrink-0 items-center justify-center" aria-hidden="true">
+                                {isSelected && <Check className="size-4 text-blue-500"/>}
+                            </span>
                         </DropdownMenuItem>
                     );
                 })}

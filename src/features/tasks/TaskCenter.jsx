@@ -195,6 +195,14 @@ export default function TaskCenter() {
                                 <Button size="sm" variant="outline" onClick={() => openManagement(task.taskId)}>
                                     <ArrowUpRight className="mr-1 size-4" />查看任务详情
                                 </Button>
+                                {task.kind === 'conversation.fork' && task.status === 'completed' && task.result?.conversationId && (
+                                    <Button size="sm" onClick={() => {
+                                        setOpen(false);
+                                        navigate(`/chat/${encodeURIComponent(task.result.conversationId)}`);
+                                    }}>
+                                        <ArrowUpRight className="mr-1 size-4" />打开副本
+                                    </Button>
+                                )}
                                 {task.status === 'paused' && definitions[task.kind]?.capabilities?.resume && (
                                     <Button size="sm" variant="outline" disabled={busy === task.taskId} onClick={() => void action(task, 'resume')}>
                                         <Play className="mr-1 size-4" />继续

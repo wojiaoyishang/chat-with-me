@@ -18,6 +18,7 @@ import {
 import StatusBody from './StatusBody.jsx';
 import StatusHeader from './StatusHeader.jsx';
 import StickyStatusHeader from './StickyStatusHeader.jsx';
+import { deduplicateToolLogReferences } from './toolLogReferences.js';
 import IgnoredContextIndicator from '@/features/chat/ui/message/components/IgnoredContextIndicator.jsx';
 import CompactedContextIndicator from '@/features/chat/ui/message/components/CompactedContextIndicator.jsx';
 import {
@@ -180,7 +181,7 @@ const StatusWidget = memo(
                 const progress = type === 'toolCalling' ? getLatestProgressMarker(cleanContent) : null;
 
                 if (type === 'toolCalling') {
-                    cleanContent = stripProgressMarkers(cleanContent);
+                    cleanContent = deduplicateToolLogReferences(stripProgressMarkers(cleanContent), replacement);
                 }
 
                 const previewContent = stripCardReplaceTokensForPreview(cleanContent);
@@ -197,7 +198,7 @@ const StatusWidget = memo(
                     toolStatus,
                     isToolCallRepair,
                 };
-            }, [content, type, feedbackStatus]);
+            }, [content, type, feedbackStatus, replacement]);
 
         const truncatedLastLine = useMemo(() => {
             if (!lastLine) return '';
@@ -276,7 +277,6 @@ const StatusWidget = memo(
                     <span className="inline-flex shrink-0 flex-wrap items-center gap-1">
                         {badges.map((badge, index) => (
                             <span
-                                // eslint-disable-next-line react/no-array-index-key
                                 key={`${badge.name}-${badge.color}-${index}`}
                                 className="inline-flex min-h-[20px] items-center rounded-full px-2.5 py-1 text-[11px] font-semibold leading-none"
                                 style={{
@@ -338,7 +338,7 @@ const StatusWidget = memo(
             }
 
             return null;
-        }, [contextId, contextStatus, id, isFinished, isToolCalling, conversationId, messageContextState, replacement]);
+        }, [contextId, contextStatus, id, isFinished, isToolCalling, conversationId, messageContextState, replacement, t]);
 
         let currentColor = activeColor;
         if (isWaitingToolState) currentColor = 'text-gray-400';

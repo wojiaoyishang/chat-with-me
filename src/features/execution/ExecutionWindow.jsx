@@ -26,7 +26,7 @@ import useExecutionNavigation from './useExecutionNavigation.js';
 import useExecutionAutoFollow from './useExecutionAutoFollow.js';
 import ExecutionGuidanceEditor from './ExecutionGuidanceEditor.jsx';
 import ExecutionGuidanceRecord from './ExecutionGuidanceRecord.jsx';
-import {isWidgetExecutionGuidance} from './executionStatusModel.js';
+import {isQueuedExecutionGuidance, isWidgetExecutionGuidance} from './executionStatusModel.js';
 
 const realtimeActionErrorMessage = (response, fallback = '操作失败') =>
     response?.value || response?.message || (response?.code ? String(response.code) : '') || fallback;
@@ -129,6 +129,7 @@ const ExecutionWindow = memo(
             });
             activities.forEach((activity, index) => {
                 const kind = String(activity?.kind || '').toLowerCase();
+                if (kind === 'guidance' && isQueuedExecutionGuidance(activity)) return;
                 const toolCallId = String(activity?.toolCallId || '').trim();
                 // A full Execution Window Tool Calling Card is already the canonical visual
                 // representation for that concrete tool call. Keep the rest of the

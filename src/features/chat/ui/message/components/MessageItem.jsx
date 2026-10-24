@@ -64,8 +64,9 @@ const MessageItem = memo(
         );
 
         const [isHovered, setIsHovered] = useState(false);
-        const canRevealActions = !readonly && (isRight || isMid);
-        const isActionActive = !canRevealActions || isHovered || isMobileActive;
+        const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+        const canRevealActions = isRight || isMid;
+        const isActionActive = !canRevealActions || isHovered || isMobileActive || isSettingsOpen;
         const hoverHandlers = !isMobile
             ? {
                   onMouseEnter: () => setIsHovered(true),
@@ -93,6 +94,7 @@ const MessageItem = memo(
             isActionActive,
             readonly,
             speechState,
+            onSettingsOpenChange: setIsSettingsOpen,
             t,
         };
 

@@ -41,6 +41,11 @@ import {
     reconcileHistorySnapshotWithLiveState,
     restoreMissingStreamTail,
 } from '@/features/chat/page/utils/liveMessageReconcile.js';
+import {
+    applyMessageConfigUpdate,
+    mergeMessageConfig,
+    mergeMessageContextState,
+} from '@/features/chat/page/utils/messageConfigUpdates.js';
 
 import {
     ChatBox,
@@ -2535,6 +2540,13 @@ function ChatPage({
                         reply({ success: false });
                     }
                     break;
+                case 'message.updated': {
+                    const next = applyMessageConfigUpdate(messagesRef.current, payload);
+                    setMessages(next);
+                    messagesRef.current = next;
+                    if (payload.reply) reply({success: true});
+                    break;
+                }
                 case 'message.created':
                     if (payload.value && typeof payload.value === 'object') {
                         const messageIds = Object.keys(payload.value);
@@ -2561,6 +2573,9 @@ function ChatPage({
 
                                 if (oldMessage && typeof oldMessage === 'object') {
                                     const mergedMessage = { ...oldMessage, ...incomingValue };
+                                    if (oldMessage.messageConfig || incomingValue.messageConfig) {
+                                        mergedMessage.messageConfig = mergeMessageConfig(oldMessage.messageConfig, incomingValue.messageConfig);
+                                    }
 
                                     // extraInfo 是增量协议的一部分。流式阶段可能只更新审计信息，
                                     // 不能覆盖已经累积的 replacement/execution/context 等字段。
@@ -2911,7 +2926,7 @@ function ChatPage({
                     const newMessages = produce(messagesRef.current, (draft) => {
                         for (const [messageId, state] of Object.entries(messageStates)) {
                             if (!draft[messageId]) continue;
-                            draft[messageId].contextState = state && typeof state === 'object' ? state : {};
+                            draft[messageId] = mergeMessageContextState(draft[messageId], state, payload.contextRevision);
                         }
 
                         for (const [messageId, replacements] of Object.entries(replacementStates)) {

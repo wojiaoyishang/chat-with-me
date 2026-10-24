@@ -4,6 +4,7 @@ import { Check, CircleAlert, LoaderCircle, MessageSquarePlus, ListChecks } from 
 
 import ExecutionGuidanceAction from './ExecutionGuidanceAction.jsx';
 import { isVisibleExecutionGuidance, isWidgetExecutionGuidance } from './executionStatusModel.js';
+import ExecutionGuidanceAttachments from './ExecutionGuidanceAttachments.jsx';
 
 const stateMeta = (state) => {
     const normalized = String(state || 'pending').toLowerCase();
@@ -24,7 +25,7 @@ const stateMeta = (state) => {
 const ExecutionGuidanceBubble = memo(({ activity, execution }) => {
     const [expandedContent, setExpandedContent] = useState(null);
     const content = String(activity?.content || activity?.label || '').trim();
-    if (!content || !isVisibleExecutionGuidance(activity)) return null;
+    if ((!content && !activity?.attachments?.length) || !isVisibleExecutionGuidance(activity)) return null;
 
     const state = String(activity?.state || 'pending').toLowerCase();
     const meta = stateMeta(state);
@@ -80,6 +81,7 @@ const ExecutionGuidanceBubble = memo(({ activity, execution }) => {
                 >
                     {content}
                 </div>
+                <ExecutionGuidanceAttachments attachments={activity?.attachments} />
                 {collapsible && (
                     <button
                         type="button"

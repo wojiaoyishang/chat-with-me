@@ -60,6 +60,7 @@ const ComposerPrimaryAction = memo(({
             executionStatus={executionStatus}
             executionGuidancePending={executionGuidancePending}
             submissionPending={submissionPending}
+            uploadPending={uploadPending}
             t={t}
         />
     );

@@ -21,12 +21,24 @@ import ComposerPrimaryAction from './chatbox/components/ComposerPrimaryAction';
 import VoiceInputButton from './chatbox/components/VoiceInputButton';
 import VoicePermissionDialog from './chatbox/components/VoicePermissionDialog';
 import ChatBoxInteractionHost from './chatbox/components/ChatBoxInteractionHost';
-import { getAttachmentId } from '../attachmentVision.js';
+import PendingExecutionGuidanceQueue from './chatbox/components/PendingExecutionGuidanceQueue.jsx';
+import { getAttachmentId, getVisionAttachmentIds } from '../attachmentVision.js';
 import { appendLibraryAttachments } from '../attachmentLibrary.js';
 import {
+    acceptGuidanceSnapshot,
+    clearAcceptedGuidanceDraft,
+    collectPendingGuidance,
+    guidanceActionError,
+    guidanceDraftFingerprint,
+    mergePendingGuidanceDraft,
+} from '../composer/pendingGuidance.js';
+import {
     clearComposerDraft,
+    clearComposerGuidanceSubmission,
     moveComposerConversationDrafts,
     readComposerDraft,
+    readComposerGuidanceSubmission,
+    saveComposerGuidanceSubmission,
     saveComposerSnapshot,
 } from '../composer/draftStore.js';
 import {
@@ -41,11 +53,9 @@ import FullscreenEditorModal from './chatbox/components/FullscreenEditorModal';
 import { useExtraToolsMenuItems } from './chatbox/components/ExtraToolsMenuItems';
 import ConversationToolsDialog from '@/features/tools/components/ConversationToolsDialog';
 import {
-    patchExecutionActivity,
     useExecutionStore,
     shouldIgnoreExecutionUpdate,
     upsertExecution,
-    upsertExecutionActivity,
 } from '@/features/execution/useExecutionStore.js';
 import WorkspaceSettingsDialog from '@/features/workspace/WorkspaceSettingsDialog.jsx';
 import { deepMerge, setNestedValue } from './chatbox/utils/toolState';
@@ -283,6 +293,9 @@ function ChatBox({
     });
     const [activeExecution, setActiveExecution] = useState(null);
     const [isExecutionGuidancePending, setIsExecutionGuidancePending] = useState(false);
+    const [, refreshGuidanceSubmission] = useState(0);
+    const executionSession = useExecutionStore((state) => state.sessions[conversationId]);
+    const pendingGuidance = useMemo(() => collectPendingGuidance(executionSession?.executions), [executionSession?.executions]);
 
     // 语音输入相关
     const [isVoiceRecording, setIsVoiceRecording] = useState(false);
@@ -339,6 +352,13 @@ function ChatBox({
     const activeExecutionRef = useRef(activeExecution);
     const latestExecutionStateRef = useRef(null);
     const executionGuidancePendingRef = useRef(false);
+    const guidanceSubmissionRef = useRef(null);
+    const uncertainGuidanceRef = useRef(new Map());
+    const uncertainGuidance = uncertainGuidanceRef.current.get(conversationId);
+    // Read the render identity, rather than waiting for a passive draft effect,
+    // so an ACK arriving during navigation never clears the next conversation.
+    const renderedConversationIdRef = useRef(conversationId);
+    renderedConversationIdRef.current = conversationId;
 
     // 发送消息角色身份相关
     const [roles, setRoles] = useState([]);
@@ -434,6 +454,39 @@ function ChatBox({
         setCurrentRole(nextRole);
         updateMessageContent(draft.content || '', { persist: false });
     }, [resolveDraftRole, setAttachments, updateMessageContent]);
+
+    const restorePendingGuidanceDraft = useCallback((guidance, execution) => {
+        const sourceConversationId = execution.conversationId;
+        const isCurrentComposer = renderedConversationIdRef.current === sourceConversationId && !isEditMessageRef.current;
+        const current = isCurrentComposer
+            ? { content: messageContentRef.current, attachments: attachmentsMetaRef.current, roleName: currentRoleRef.current?.name }
+            : readComposerDraft({ conversationId: sourceConversationId, mode: 'normal' }) || {};
+        const merged = mergePendingGuidanceDraft(current, guidance);
+        saveComposerSnapshot({ conversationId: sourceConversationId, mode: 'normal', ...merged });
+        if (!isCurrentComposer) return;
+        attachmentsMetaRef.current = merged.attachments;
+        setAttachments(merged.attachments);
+        updateMessageContent(merged.content, { persist: false });
+        textareaRef.current?.focus();
+    }, [setAttachments, updateMessageContent]);
+
+    const commitAcceptedGuidanceDraft = useCallback((targetConversationId, submitted) => {
+        const isCurrentComposer = renderedConversationIdRef.current === targetConversationId && !isEditMessageRef.current;
+        const current = isCurrentComposer
+            ? { content: messageContentRef.current, attachments: attachmentsMetaRef.current, roleName: currentRoleRef.current?.name }
+            : readComposerDraft({ conversationId: targetConversationId, mode: 'normal' }) || {};
+        const remaining = clearAcceptedGuidanceDraft(current, submitted);
+        if (remaining.content.trim() || remaining.attachments.length) {
+            saveComposerSnapshot({ conversationId: targetConversationId, mode: 'normal', ...remaining });
+        } else {
+            clearComposerDraft({ conversationId: targetConversationId, mode: 'normal' });
+        }
+        if (isCurrentComposer) {
+            attachmentsMetaRef.current = remaining.attachments;
+            setAttachments(remaining.attachments);
+            updateMessageContent(remaining.content, { persist: false });
+        }
+    }, [setAttachments, updateMessageContent]);
 
     const leaveEditMode = useCallback(() => {
         // Archive/stash the current Edit/Fork draft in both browser-local layers
@@ -802,12 +855,16 @@ function ChatBox({
         [extraTools, toolsStatus.extra_tools],
     );
 
-    const handleSendMessage = useCallback(async () => {
+    const handleSendMessage = useCallback(async (options = {}) => {
         if (turnSubmissionRef.current || ['pending', 'recovering'].includes(turnSubmissionPhaseRef.current)) return;
         const activeEditDraft = editDraftRef.current;
         const wasEditing = isEditMessageRef.current;
-        const currentContent = messageContentRef.current;
-        const execution = activeExecutionRef.current;
+        const retry = options?.retryGuidance === true ? uncertainGuidanceRef.current.get(conversationId) : null;
+        const currentContent = retry?.submitted.content ?? messageContentRef.current;
+        const submittedAttachments = retry?.submitted.attachments ?? attachmentsMetaRef.current;
+        const execution = retry
+            ? useExecutionStore.getState().sessions[conversationId]?.executions[retry.execution.executionId] || retry.execution
+            : activeExecutionRef.current;
         const initialSendButtonStatus = turnSubmissionPhaseRef.current === 'running' && sendButtonStatusRef.current === 'normal'
             ? 'generating'
             : sendButtonStatusRef.current;
@@ -819,10 +876,11 @@ function ChatBox({
         // Composer's transient button status.  Stream bootstrap/reconciliation may
         // briefly report `normal` while the Execution is still active; tying steering
         // to `generating` used to misroute the supplement as a new Turn.
-        const isExecutionGuidance = executionAcceptsGuidance && !wasEditing && Boolean(currentContent.trim());
+        const isExecutionGuidance = (Boolean(retry) || executionAcceptsGuidance) && !wasEditing
+            && (Boolean(currentContent.trim()) || submittedAttachments.length > 0);
 
         if (['disabled', 'loading'].includes(initialSendButtonStatus) && !isExecutionGuidance) return;
-        const submission = wasEditing || (!execution?.active && initialSendButtonStatus !== 'generating') ? {} : null;
+        const submission = !retry && (wasEditing || (!execution?.active && initialSendButtonStatus !== 'generating')) ? {} : null;
         if (submission && !currentContent.trim() && attachmentsMeta.length === 0) return;
         const targetConversationId = draftConversationIdRef.current;
         if (submission) {
@@ -842,93 +900,90 @@ function ChatBox({
             if (draftConversationIdRef.current !== targetConversationId) return;
 
             if (isExecutionGuidance) {
-                if (attachmentsMeta.length > 0) {
-                    toast.warning(t('execution_guidance_no_attachments', '执行中的补充信息暂不支持附件，请先移除附件。'));
+                if (executionGuidancePendingRef.current || uploadFiles.length > 0) return;
+                const draftToSubmit = retry?.submitted || {
+                    content: currentContent,
+                    attachments: [...submittedAttachments],
+                    roleName: currentRoleRef.current?.name,
+                };
+                const persistedDraft = !retry ? persistActiveDraft(draftToSubmit) : null;
+                const draftSnapshot = retry?.submitted || persistedDraft || draftToSubmit;
+                const fingerprint = guidanceDraftFingerprint(draftSnapshot);
+                const previousRequest = uncertainGuidanceRef.current.get(targetConversationId);
+                if (previousRequest && (previousRequest.execution.executionId !== execution.executionId
+                    || previousRequest.fingerprint !== fingerprint)) {
+                    toast.warning(t('execution_guidance_confirm_previous', '上一条补充尚未确认，请先点击“重试确认”，当前草稿会保留。'));
                     return;
                 }
-                if (executionGuidancePendingRef.current) return;
+                const guidanceRequest = previousRequest || saveComposerGuidanceSubmission(targetConversationId, {
+                    conversationId: targetConversationId, execution, submitted: draftSnapshot,
+                    guidanceId: createExecutionGuidanceId(),
+                });
+                if (!guidanceRequest) throw new Error(t('execution_guidance_failed', '无法追加到当前执行。'));
+                guidanceRequest.fingerprint = guidanceDraftFingerprint(guidanceRequest.submitted);
+                const submitted = guidanceRequest.submitted;
+                const guidanceId = guidanceRequest.guidanceId;
+                uncertainGuidanceRef.current.set(targetConversationId, guidanceRequest);
+                guidanceSubmissionRef.current = guidanceRequest;
                 executionGuidancePendingRef.current = true;
                 setIsExecutionGuidancePending(true);
-                const guidanceId = createExecutionGuidanceId();
-                const guidanceActivity = {
-                    id: guidanceId,
-                    time: Date.now(),
-                    kind: 'guidance',
-                    source: 'user_guidance',
-                    state: 'submitting',
-                    label: currentContent.slice(0, 160),
-                    content: currentContent,
-                    anchorStatusId: execution.statusId || null,
-                };
-                // Show the supplement immediately in the transcript. The durable server
-                // snapshot will reconcile the same guidanceId to pending/consumed later.
-                upsertExecutionActivity(execution, guidanceActivity);
-                updateMessageContent('', { persist: false });
+                // Admission uncertainty freezes the ID and full attachment body. Retrying
+                // confirms this exact supplement instead of silently enqueueing a copy.
                 try {
                     const response = await emitEvent({
                         event: 'execution.guidance.add',
-                        conversationId,
+                        conversationId: targetConversationId,
                         runId: execution.runId || null,
                         turnId: execution.turnId || null,
                         payload: {
                             executionId: execution.executionId,
                             guidanceId,
-                            anchorStatusId: guidanceActivity.anchorStatusId,
-                            content: currentContent,
+                            anchorStatusId: guidanceRequest.execution.statusId || null,
+                            content: submitted.content,
+                            attachments: submitted.attachments,
+                            visionAttachmentIds: getVisionAttachmentIds(submitted.attachments),
                         },
                     });
+                    const snapshot = acceptGuidanceSnapshot(response, execution, upsertExecution);
                     if (response?.success === false) {
-                        patchExecutionActivity(conversationId, execution.executionId, guidanceId, { state: 'failed' });
-                        if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
-                        throw new Error(
-                            realtimeActionErrorMessage(response, t('execution_guidance_failed', '无法追加到当前执行。')),
-                        );
+                        if (uncertainGuidanceRef.current.get(targetConversationId) === guidanceRequest) uncertainGuidanceRef.current.delete(targetConversationId);
+                        clearComposerGuidanceSubmission(targetConversationId, guidanceId);
+                        throw new Error(guidanceActionError(response, t('execution_guidance_failed', '无法追加到当前执行。')));
                     }
-                    const acceptedGuidance = response?.value?.guidance;
-                    const latestGuidance = useExecutionStore
-                        .getState()
-                        .sessions[conversationId]?.executions[execution.executionId]?.activities?.find(
-                            (item) => item.id === guidanceId,
-                        );
-                    if (!latestGuidance || latestGuidance.state === 'submitting') {
-                        patchExecutionActivity(conversationId, execution.executionId, guidanceId, {
-                            state: 'pending',
-                            canToggle: true,
-                            anchorStatusId: acceptedGuidance?.anchorStatusId ?? guidanceActivity.anchorStatusId,
-                            waitingFor: acceptedGuidance?.waitingFor || guidanceActivity.waitingFor,
-                        });
+                    const receiptId = response?.value?.guidance?.id;
+                    if (response?.success !== true || (!snapshot && receiptId !== guidanceId)) {
+                        throw new Error(t('execution_guidance_unconfirmed', '未收到补充内容的确认，请重试确认。'));
                     }
-                    const persistedDraft = readComposerDraft({
-                        conversationId: draftConversationIdRef.current,
-                        mode: 'normal',
-                    });
-                    if ((persistedDraft?.content || '') === currentContent && !messageContentRef.current.trim()) {
-                        clearComposerDraft({ conversationId: draftConversationIdRef.current, mode: 'normal' });
+                    if (uncertainGuidanceRef.current.get(targetConversationId) === guidanceRequest) uncertainGuidanceRef.current.delete(targetConversationId);
+                    clearComposerGuidanceSubmission(targetConversationId, guidanceId);
+                    if (!guidanceRequest.committed) {
+                        guidanceRequest.committed = true;
+                        commitAcceptedGuidanceDraft(targetConversationId, submitted);
                     }
-                    toast.success(t('execution_guidance_sent', '已加入当前执行。'));
                 } catch (error) {
                     console.error('Execution guidance failed:', error);
-                    patchExecutionActivity(conversationId, execution.executionId, guidanceId, { state: 'failed' });
-                    if (!messageContentRef.current.trim()) updateMessageContent(currentContent);
-                    toast.error(error?.message || t('execution_guidance_failed', '无法追加到当前执行。'));
+                    if (!guidanceRequest.committed && renderedConversationIdRef.current === targetConversationId) {
+                        toast.error(error?.message || t('execution_guidance_failed', '无法追加到当前执行。'));
+                    }
                 } finally {
-                    executionGuidancePendingRef.current = false;
-                    setIsExecutionGuidancePending(false);
-                    textareaRef.current?.focus();
+                    if (renderedConversationIdRef.current === targetConversationId) refreshGuidanceSubmission((value) => value + 1);
+                    // An older conversation's ACK must not unlock a newer submission.
+                    if (guidanceSubmissionRef.current === guidanceRequest) {
+                        guidanceSubmissionRef.current = null;
+                        executionGuidancePendingRef.current = false;
+                        setIsExecutionGuidancePending(false);
+                        textareaRef.current?.focus();
+                    }
                 }
                 return;
             }
 
             // An active Execution owns the Composer even if a transient status sync says
             // `normal`. Empty-submit is the explicit stop action; text submit is handled
-            // above as guidance. Attachments are not silently converted into a new Turn.
+            // above as guidance, including attachment-only supplements.
             if (execution?.active && !wasEditing) {
                 if (executionStatus === 'cancelling') {
                     toast.warning(t('execution_stopping', '当前执行正在停止，请稍候。'));
-                    return;
-                }
-                if (attachmentsMeta.length > 0) {
-                    toast.warning(t('execution_guidance_no_attachments', '执行中的补充信息暂不支持附件，请先移除附件。'));
                     return;
                 }
                 if (!currentContent.trim()) {
@@ -1104,9 +1159,10 @@ function ChatBox({
         conversationId,
         persistActiveDraft,
         t,
-        updateMessageContent,
         waitForConversationToolSync,
         waitForWorkspaceSelectionSync,
+        commitAcceptedGuidanceDraft,
+        uploadFiles.length,
     ]);
 
     const handleKeyDown = useCallback(
@@ -1134,7 +1190,7 @@ function ChatBox({
             const canSteerExecution =
                 keyboardExecution?.active &&
                 keyboardExecutionStatus !== 'cancelling' &&
-                Boolean(messageContentRef.current.trim()) &&
+                (Boolean(messageContentRef.current.trim()) || attachmentsMetaRef.current.length > 0) &&
                 !executionGuidancePendingRef.current;
             if (sendButtonStatusRef.current !== 'normal' && !canSteerExecution) {
                 toast.warning(t('is_generating_try_later'));
@@ -2013,6 +2069,40 @@ function ChatBox({
     // ========== 副作用 ==========
 
     useEffect(() => {
+        renderedConversationIdRef.current = conversationId;
+        return () => {
+            if (renderedConversationIdRef.current === conversationId) renderedConversationIdRef.current = undefined;
+        };
+    }, [conversationId]);
+
+    useEffect(() => {
+        const saved = readComposerGuidanceSubmission(conversationId);
+        let request = uncertainGuidanceRef.current.get(conversationId);
+        if (!request && saved) {
+            request = { ...saved, fingerprint: guidanceDraftFingerprint(saved.submitted) };
+            uncertainGuidanceRef.current.set(conversationId, request);
+            refreshGuidanceSubmission((value) => value + 1);
+        }
+        if (!request) return;
+        const knownExecution = executionSession?.executions?.[request.execution.executionId];
+        const received = knownExecution?.pendingGuidance?.some((item) => item.id === request.guidanceId)
+            || knownExecution?.activities?.some((item) => item.kind === 'guidance' && item.id === request.guidanceId);
+        if (!received) return;
+        uncertainGuidanceRef.current.delete(conversationId);
+        clearComposerGuidanceSubmission(conversationId, request.guidanceId);
+        if (!request.committed) {
+            request.committed = true;
+            commitAcceptedGuidanceDraft(conversationId, request.submitted);
+        }
+        if (guidanceSubmissionRef.current === request) {
+            guidanceSubmissionRef.current = null;
+            executionGuidancePendingRef.current = false;
+            setIsExecutionGuidancePending(false);
+        }
+        refreshGuidanceSubmission((value) => value + 1);
+    }, [conversationId, executionSession, commitAcceptedGuidanceDraft]);
+
+    useEffect(() => {
         const previousConversationId = previousConversationIdRef.current;
         const isNewConversationAssigned = !previousConversationId && Boolean(conversationId);
         if (!isNewConversationAssigned) {
@@ -2045,6 +2135,7 @@ function ChatBox({
         activeExecutionRef.current = null;
         latestExecutionStateRef.current = null;
         setActiveExecution(null);
+        guidanceSubmissionRef.current = null;
         executionGuidancePendingRef.current = false;
         setIsExecutionGuidancePending(false);
     }, [conversationId]);
@@ -2410,7 +2501,7 @@ function ChatBox({
         () => ({
             toolsLoadedStatus,
             extraTools,
-            attachmentTools: isReadOnly || activeExecution?.active || ignoreAttachmentTools ? [] : attachmentTools,
+            attachmentTools: isReadOnly || ignoreAttachmentTools ? [] : attachmentTools,
             tools: visibleBuiltinTools.filter((tool) => tool.name !== 'enable_thinking'),
             toolsStatus: activeToolsStatus,
             setToolsStatus,
@@ -2434,7 +2525,6 @@ function ChatBox({
             toolsLoadedStatus,
             extraTools,
             attachmentTools,
-            activeExecution?.active,
             ignoreAttachmentTools,
             visibleBuiltinTools,
             activeToolsStatus,
@@ -2460,7 +2550,7 @@ function ChatBox({
     );
 
     const handleLibraryAttachmentsSelected = (records) => {
-        if (attachmentLibraryVisible && !isReadOnly && !ignoreAttachmentTools && !activeExecution?.active) {
+        if (attachmentLibraryVisible && !isReadOnly && !ignoreAttachmentTools) {
             setAttachments((current) => appendLibraryAttachments(current, records));
         }
         setAttachmentLibraryRequest(null);
@@ -2517,6 +2607,16 @@ function ChatBox({
                 style={{ maxHeight: rootMaxHeightStyle }}
             >
                 <ChatBoxHeader {...chatBoxHeaderProps} />
+                <PendingExecutionGuidanceQueue
+                    key={conversationId || 'new-conversation'}
+                    conversationId={conversationId}
+                    items={pendingGuidance}
+                    onEdit={restorePendingGuidanceDraft}
+                    disabled={isReadOnly || isEditMessage || isExecutionGuidancePending}
+                    submitting={isExecutionGuidancePending}
+                    uncertain={uncertainGuidance && !isExecutionGuidancePending}
+                    onRetry={() => handleSendMessage({ retryGuidance: true })}
+                />
                 <div className="border-1 relative flex min-h-0 flex-col overflow-hidden rounded-2xl bg-white transition-shadow duration-200 ease-in-out hover:shadow-lg focus-within:shadow-lg pointer-events-auto">
                     {/* 文件上传进度 */}
                     <div

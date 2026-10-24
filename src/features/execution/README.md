@@ -25,8 +25,9 @@ jobs and workflow tasks remain separate and retain their existing task APIs and 
 - `FloatingDockWindow` supplies draggable/resizable/docked behavior. Dock state and
   geometry are browser-local.
 - The normal ChatBox remains the only place to add requirements. Guidance is accepted
-  only for an active durable Execution and is projected immediately as a user-message
-  variant; backend snapshots own the waiting/consumed/responded lifecycle.
+  only for an active durable Execution and waits in a compact queue above the composer.
+  Received guidance is projected as a user-message variant; backend snapshots own
+  the waiting/consumed/responded lifecycle.
 - `useExecutionStore` is a frontend projection only; server snapshots remain authoritative.
 - Inline nodes retain their own `navigationTarget` (toolCallId/replacementId or activityId).
   Opening one issues a separate browser-local navigation request, preserving the latest server snapshot.
@@ -99,7 +100,32 @@ group without inferring the execution phase locally.
 
 ## Guidance revisions and editing
 
-Ordinary user supplements use a compact left-aligned section in the transcript. Server-owned
+Unconsumed ordinary supplements are displayed in the ChatBox's compact, bounded
+`PendingExecutionGuidanceQueue`. `execution.pendingGuidance` is the authoritative
+server queue and is restored on bootstrap; it is independent of the bounded activity
+history and can also retain unconsumed items after an execution ends. It supports
+attachments and image-vision consent, including attachment-only submissions.
+
+`execution.guidance.delete` removes an unconsumed item without a withdrawal entry.
+`execution.guidance.edit` atomically removes it and returns its text/attachments to
+the ordinary ChatBox draft. Existing draft text/files are preserved; resending uses
+a new submission ID. An already-consumed item returns a conflict plus the current
+snapshot. Neither action pretends to remove content the model has already received.
+
+Only a receipt for the exact ID clears a submitted draft. Unconfirmed submission
+identity and frozen body are kept with the browser's existing composer drafts;
+refresh/retry reuses that ID and body until the backend confirms the receipt. This
+is transport bookkeeping, never a second authoritative queue. Older partial inline
+projections cannot clear or resurrect a newer server queue.
+
+Taking an item back for editing also keeps a separate operation receipt until its
+server response has restored the draft. If the response is lost after removal, a
+“Retry retrieval” row survives refresh and repeats that exact operation; only the
+server's recovered text/files are restored. Concurrent late responses restore it
+once. A confirmed consumption conflict clears the recovery receipt without putting
+already-received content back into the draft.
+
+Received ordinary user supplements use a compact left-aligned section in the transcript. Server-owned
 `withdrawn` / `replaced` records are hidden there, while widget responses keep their own rendering.
 Consecutive grouped status rows share one ordered supplement section and one authoritative wait hint.
 An explicitly empty live `guidancePrompts` map clears frozen hints instead of falling back to history.
@@ -113,9 +139,11 @@ truncated-out versions as archived instead of creating a navigation request that
 The separate editor stores drafts in browser memory by conversation, execution, source and operation.
 It does not read or overwrite ChatBox drafts. Closing/cancelling keeps the draft without restoring
 the withdrawn source; changing conversations/executions cannot submit it to a different target.
-Refreshing the browser clears these in-memory drafts; no supplemental content is added to local storage.
+Refreshing the browser clears these separate in-memory editor drafts. The normal
+ChatBox's draft/uncertain-receipt persistence is independent of this window editor.
 
-Submission reuses `execution.guidance.add` with a new stable `guidanceId`, `content`, and optional
+Submission reuses `execution.guidance.add` with a new stable `guidanceId`, `content`,
+`attachments`, `visionAttachmentIds`, and optional
 `replacesGuidanceId` for an already-withdrawn source. A transport timeout freezes that ID and body until
 an explicit receipt retry or an authoritative activity confirms acceptance. Such retries preserve the
 exact payload; acknowledged receipts cannot be downgraded by a late timeout. Replacement links are

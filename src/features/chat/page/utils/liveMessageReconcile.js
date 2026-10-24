@@ -1,4 +1,12 @@
 import { mergeNetworkData } from './networkMerge.js';
+import {mergeMessageConfig, mergeMessageContextState} from './messageConfigUpdates.js';
+
+const preserveMessageSettings = (snapshot, current) => {
+    if (!snapshot?.messageConfig && !current?.messageConfig) return snapshot;
+    const merged = {...snapshot, messageConfig: mergeMessageConfig(current?.messageConfig, snapshot.messageConfig)};
+    const stateSource = (current?.contextStateRevision || 0) > (snapshot.contextStateRevision || 0) ? current : snapshot;
+    return mergeMessageContextState(merged, stateSource.contextState, stateSource.contextStateRevision);
+};
 
 const HISTORY_SENTINEL = '<PREV_MORE>';
 
@@ -37,7 +45,7 @@ export const mergeLiveMessageWithSnapshot = (snapshotMessage, liveMessage) => {
     if (!snapshotMessage || typeof snapshotMessage !== 'object') return liveMessage ?? snapshotMessage;
     if (!liveMessage || typeof liveMessage !== 'object') return snapshotMessage;
 
-    const merged = {...liveMessage, ...snapshotMessage};
+    const merged = {...liveMessage, ...preserveMessageSettings(snapshotMessage, liveMessage)};
     if (snapshotMessage.network || liveMessage.network) {
         // A durable snapshot can lag an AI database switch already seen by the
         // browser. Retain both scopes and keep the live scope as the active one.
@@ -162,6 +170,11 @@ export const reconcileHistorySnapshotWithLiveState = ({
     const protectedIds = new Set([...(liveMessageIds || []), ...liveTailIds]);
 
     const messages = {...currentMessages, ...snapshotMessages};
+    for (const [messageId, snapshotMessage] of Object.entries(snapshotMessages)) {
+        const current = currentMessages[messageId];
+        if (!current?.messageConfig || !snapshotMessage || typeof snapshotMessage !== 'object') continue;
+        messages[messageId] = preserveMessageSettings(snapshotMessage, current);
+    }
     protectedIds.forEach((messageId) => {
         if (snapshotMessages?.[messageId] && currentMessages?.[messageId]) {
             messages[messageId] = mergeLiveMessageWithSnapshot(snapshotMessages[messageId], currentMessages[messageId]);

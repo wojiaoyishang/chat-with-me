@@ -6,6 +6,7 @@ import {emitEvent} from '@/context/useEventStore.jsx';
 import {generateUUID} from '@/lib/tools.jsx';
 import {useExecutionStore} from './useExecutionStore.js';
 import {submitGuidanceDraft} from './guidanceEditorSubmission.js';
+import ExecutionGuidanceAttachments from './ExecutionGuidanceAttachments.jsx';
 
 export default function ExecutionGuidanceEditor({execution}) {
     const conversationId = execution.conversationId;
@@ -43,13 +44,14 @@ export default function ExecutionGuidanceEditor({execution}) {
             <Textarea ref={inputRef} rows={4} aria-label="补充内容" value={draft.content}
                 disabled={pending || uncertain} className="min-h-28 resize-y bg-white"
                 onChange={(event) => useExecutionStore.getState().updateGuidanceDraft(conversationId, draft.draftKey, event.target.value)} />
+            <ExecutionGuidanceAttachments attachments={draft.attachments} />
             {uncertain && <p role="status" className="mt-2 text-xs leading-5 text-amber-700">
                 提交结果尚未确认。内容已保留，请先重试确认；确认前不能修改，以免重复发送。
             </p>}
             {draft.error && <p role="alert" className="mt-2 break-words text-xs text-red-600">{draft.error}</p>}
             <div className="mt-3 flex items-center justify-end gap-2">
                 <Button type="button" variant="ghost" onClick={() => useExecutionStore.getState().closeGuidanceEditor(conversationId, executionId)}>取消</Button>
-                <Button type="button" disabled={disabled || !draft.content.trim()} onClick={() => void send()}>
+                <Button type="button" disabled={disabled || (!draft.content.trim() && !draft.attachments?.length)} onClick={() => void send()}>
                     {pending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Send className="mr-1.5 h-4 w-4" />}
                     {pending ? '正在发送' : uncertain ? '重试确认' : '发送补充'}
                 </Button>

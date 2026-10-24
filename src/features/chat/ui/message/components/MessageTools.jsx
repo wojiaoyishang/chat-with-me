@@ -8,11 +8,14 @@ import TooltipInfo from './TooltipInfo.jsx';
 import { openRemoteUniversalModal } from '@/components/modal/universalModal.js';
 import { apiEndpoint } from '@/config.js';
 import { useUserStore } from '@/context/userContext.jsx';
+import MessageSettingsMenu from './MessageSettingsMenu.jsx';
+import MessageBadges from './MessageBadges.jsx';
+import {messageHintsBeforeActions} from '../utils/messageBadgesModel.js';
 
 const isActiveSpeechStatus = (status) => ['loading', 'playing', 'paused'].includes(status);
 const toolButtonClassName = 'shrink-0 p-1.5 rounded-sm hover:bg-gray-200 transition-colors cursor-pointer';
 
-const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speechState }) => {
+const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speechState, onSettingsOpenChange }) => {
     const { t } = useTranslation();
     const showContextDebugButtons = useUserStore((state) => Boolean(state.user?.showContextDebugButtons));
     const actionContext = { msgId, conversationId };
@@ -27,9 +30,26 @@ const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speec
         backgroundTools.cancelling,
     );
     const isCancellingBackgroundTools = Boolean(backgroundTools.cancelling);
+    const hintsBeforeActions = messageHintsBeforeActions(msg);
+    const hints = (
+        <div data-message-hints="true" className="flex min-w-0 max-w-full flex-wrap items-center gap-1 empty:hidden">
+            <TooltipInfo
+                tip={msg.tip}
+                useTextFormat={msg.useTextFormat ?? msg.extraInfo?.useTextFormat}
+                contextState={msg?.contextState}
+                conversationId={conversationId}
+                messageId={msgId}
+                msg={msg}
+                t={t}
+            />
+            <MessageBadges badges={msg?.messageConfig?.badges}/>
+        </div>
+    );
 
     return (
-        <div className="flex min-w-max flex-nowrap items-center gap-1">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1">
+            {hintsBeforeActions && hints}
+            <div data-message-buttons="true" className="flex shrink-0 flex-wrap items-center gap-1 empty:hidden">
             {hasActiveBackgroundTools && (
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -190,15 +210,16 @@ const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speec
                 </Tooltip>
             )}
 
-            <TooltipInfo
-                tip={msg.tip}
-                useTextFormat={msg.useTextFormat ?? msg.extraInfo?.useTextFormat}
-                contextState={msg?.contextState}
-                conversationId={conversationId}
-                messageId={msgId}
+            <MessageSettingsMenu
+                key={`${conversationId}:${msgId}`}
                 msg={msg}
-                t={t}
+                msgId={msgId}
+                conversationId={conversationId}
+                readonly={readonly}
+                onOpenChange={onSettingsOpenChange}
             />
+            </div>
+            {!hintsBeforeActions && hints}
         </div>
     );
 });

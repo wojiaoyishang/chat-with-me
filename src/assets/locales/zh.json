@@ -868,5 +868,44 @@
     "thinking_disabled": "关闭思考",
     "thinking_enabled": "开启思考",
     "widget_execution_result_pending": "已提交，等待当前执行继续处理",
-    "widget_execution_result_delivered": "已纳入当前执行上下文"
+    "widget_execution_result_delivered": "已纳入当前执行上下文",
+    "messageConfig": {
+        "title": "消息配置",
+        "protected": "不可压缩",
+        "protectedHelp": "压缩上下文时保留此消息原文。",
+        "catalogError": "无法加载消息配置。",
+        "empty": "暂无可用设置。",
+        "invalidResponse": "未收到有效的消息配置，请稍后重试。",
+        "savedProtected": "已设置为不可压缩",
+        "savedCompressible": "已允许压缩此消息",
+        "nextTurnHint": "设置从下一轮请求生效；不会改变已经发出的模型请求。",
+        "restoredHint": "已恢复覆盖此消息的摘要原文。设置从下一轮请求生效。"
+    },
+    "conversationFork": {
+        "action": "复制会话",
+        "title": "正在复制会话",
+        "completed": "会话复制完成",
+        "failed": "会话复制失败",
+        "cancelled": "复制任务已取消。",
+        "result": "已创建独立副本，包含 {{count}} 条消息。原会话会保留。",
+        "progress": "会话复制进度",
+        "backgroundHint": "正在后台复制完整会话。关闭窗口后任务继续，可在任务中心追踪，刷新页面也不会丢失。",
+        "closeWhileRunning": "后台继续",
+        "viewTask": "查看后台任务",
+        "openCopy": "打开副本",
+        "existingTask": "正在复制另一个会话，请先查看当前复制进度。",
+        "confirmHint": "尚未确认提交结果。请重试确认；同一次请求不会重复创建副本。",
+        "retryConfirmation": "重试确认",
+        "reconnecting": "暂时无法更新进度，正在自动重连。",
+        "stages": {
+            "submitting": "正在提交复制任务",
+            "queued": "等待后台处理",
+            "pending": "等待后台处理",
+            "reading": "读取会话内容",
+            "validating": "检查会话与消息",
+            "copying": "复制消息和分支",
+            "registering": "保存会话副本",
+            "running": "正在复制会话"
+        }
+    }
 }

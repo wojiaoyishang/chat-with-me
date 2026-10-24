@@ -1,4 +1,4 @@
-import {upsertExecution, upsertExecutionActivity, useExecutionStore} from './useExecutionStore.js';
+import {upsertExecution, useExecutionStore} from './useExecutionStore.js';
 
 export async function submitGuidanceDraft({conversationId, executionId, draftKey, emitEvent, createId}) {
     const store = useExecutionStore.getState();
@@ -10,8 +10,10 @@ export async function submitGuidanceDraft({conversationId, executionId, draftKey
         || ['submitting', 'sent'].includes(draft.state)) return false;
     const retry = draft.state === 'uncertain';
     const content = retry ? draft.submittedContent : String(draft.content || '').trim();
+    const attachments = (retry ? draft.submittedAttachments : draft.attachments) || [];
+    const visionAttachmentIds = (retry ? draft.submittedVisionAttachmentIds : draft.visionAttachmentIds) || [];
     const source = execution?.activities?.find((activity) => activity.id === draft.sourceId);
-    if (!content) return false;
+    if (!content && !attachments.length) return false;
     if (!retry && (!execution?.active || execution.status === 'cancelling'
         || (draft.mode === 'rewrite' && source?.canRewrite !== true))) {
         store.patchGuidanceDraft(conversationId, draftKey, {state: 'rejected',
@@ -19,9 +21,10 @@ export async function submitGuidanceDraft({conversationId, executionId, draftKey
         return false;
     }
     const guidanceId = retry ? draft.submissionId : createId();
-    const identity = {state: 'submitting', submissionId: guidanceId, submittedContent: content, error: ''};
+    const identity = {state: 'submitting', submissionId: guidanceId, submittedContent: content,
+        submittedAttachments: attachments, submittedVisionAttachmentIds: visionAttachmentIds, error: ''};
     store.patchGuidanceDraft(conversationId, draftKey, identity);
-    const payload = {executionId, guidanceId, content};
+    const payload = {executionId, guidanceId, content, attachments, visionAttachmentIds};
     if (draft.replacesGuidanceId) payload.replacesGuidanceId = draft.replacesGuidanceId;
     try {
         const response = await emitEvent({event: 'execution.guidance.add', conversationId,
@@ -40,12 +43,16 @@ export async function submitGuidanceDraft({conversationId, executionId, draftKey
         else {
             const guidance = response.value?.guidance || {};
             const current = useExecutionStore.getState().sessions[conversationId]?.executions?.[executionId];
-            if (current && !current.activities?.some((activity) => activity.id === guidanceId)) {
-                upsertExecutionActivity(current, {id: guidanceId, kind: 'guidance', source: 'user_guidance',
-                    state: 'pending', content, label: content.slice(0, 160),
-                    time: Number(guidance.createdAt || 0) * 1000 || Date.now(),
+            if (current && guidance.state === 'pending' && !guidance.staged && !guidance.locked
+                && !current.activities?.some((activity) => activity.id === guidanceId)
+                && !current.pendingGuidance?.some((item) => item.id === guidanceId)) {
+                upsertExecution({...current, pendingGuidance: [...(current.pendingGuidance || []), {
+                    id: guidanceId, content, attachments: guidance.attachments || attachments,
+                    visionAttachmentIds: guidance.visionAttachmentIds || visionAttachmentIds,
+                    createdAt: Number(guidance.createdAt || 0) * 1000 || Date.now(),
                     anchorStatusId: guidance.anchorStatusId || current.statusId || null,
-                    waitingFor: guidance.waitingFor || 'model', replacesGuidanceId: draft.replacesGuidanceId || null});
+                    canDelete: true, canEdit: true,
+                }]});
             }
         }
         useExecutionStore.getState().patchGuidanceDraft(conversationId, draftKey,

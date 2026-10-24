@@ -128,7 +128,7 @@ test('first submission fixes a new guidance ID and replacement link, while dupli
     assert.equal(ui.state.events.length, 1);
     assert.equal(getDraft(key).state, 'submitting');
     assert.deepEqual(ui.state.events[0].payload, {executionId: eid, guidanceId: 'new-guidance-1',
-        content: source.content, replacesGuidanceId: source.id});
+        content: source.content, attachments: [], visionAttachmentIds: [], replacesGuidanceId: source.id});
     assert.equal(document.querySelector('textarea[aria-label="补充内容"]').disabled, true);
     assert.equal(ui.button('正在发送').disabled, true);
     await act(async () => response.resolve({success: true, value: {guidance: {}}}));

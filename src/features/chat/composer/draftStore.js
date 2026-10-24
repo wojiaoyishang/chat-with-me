@@ -28,7 +28,7 @@ const readRoot = () => {
                 ? parsed.conversations
                 : {},
         };
-    } catch (_) {
+    } catch {
         return emptyRoot();
     }
 };
@@ -37,7 +37,7 @@ const writeRoot = (root) => {
     if (typeof window === 'undefined') return;
     try {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(root));
-    } catch (_) {
+    } catch {
         // Draft persistence is best-effort and must never block chat input.
     }
 };
@@ -45,7 +45,7 @@ const writeRoot = (root) => {
 const cloneJsonSafe = (value) => {
     try {
         return JSON.parse(JSON.stringify(value));
-    } catch (_) {
+    } catch {
         return undefined;
     }
 };
@@ -108,7 +108,7 @@ const readLegacyNormalDraft = (conversationId) => {
         if (!content) return null;
         window.localStorage.removeItem(key);
         return {content, attachments: [], roleName: null, updatedAt: now()};
-    } catch (_) {
+    } catch {
         return null;
     }
 };
@@ -183,7 +183,88 @@ export const clearComposerDraft = ({conversationId, mode = 'normal', messageId =
     }
 
     const hasMessages = entry.messages && Object.keys(entry.messages).length > 0;
-    if (!entry.normal && !hasMessages) delete root.conversations[key];
+    if (!entry.normal && !hasMessages && !entry.guidanceSubmission && !Object.keys(entry.guidanceEdits || {}).length) delete root.conversations[key];
+    writeRoot(root);
+};
+
+/** A pending delivery receipt belongs to the draft, never to the server queue. */
+export const readComposerGuidanceSubmission = (conversationId) => {
+    const { entry } = getConversationEntry(readRoot(), conversationId);
+    const value = entry?.guidanceSubmission;
+    if (!value?.guidanceId || !value?.execution?.executionId
+        || String(value.execution.conversationId || '') !== String(conversationId || '')) return null;
+    const submitted = normalizeDraft(value.submitted);
+    if (!submitted) return null;
+    return { ...value, submitted };
+};
+
+export const saveComposerGuidanceSubmission = (conversationId, value) => {
+    if (!conversationId || !value?.guidanceId || !value?.execution?.executionId) return null;
+    const submitted = normalizeDraft(value.submitted);
+    if (!submitted) return null;
+    const root = readRoot();
+    const { entry } = getConversationEntry(root, conversationId, true);
+    const receipt = {
+        guidanceId: String(value.guidanceId), conversationId: String(conversationId),
+        execution: {
+            executionId: String(value.execution.executionId), conversationId: String(conversationId),
+            runId: value.execution.runId || null, turnId: value.execution.turnId || null,
+            statusId: value.execution.statusId || null,
+        },
+        submitted,
+    };
+    entry.guidanceSubmission = receipt;
+    writeRoot(root);
+    return receipt;
+};
+
+export const clearComposerGuidanceSubmission = (conversationId, guidanceId) => {
+    const root = readRoot();
+    const { key, entry } = getConversationEntry(root, conversationId);
+    if (!entry?.guidanceSubmission || entry.guidanceSubmission.guidanceId !== guidanceId) return;
+    delete entry.guidanceSubmission;
+    if (!entry.normal && !Object.keys(entry.messages || {}).length && !Object.keys(entry.guidanceEdits || {}).length) delete root.conversations[key];
+    writeRoot(root);
+};
+
+/** Unknown edit delivery keeps an operation receipt, never a local pending item. */
+export const readComposerGuidanceEdits = (conversationId) => {
+    const { entry } = getConversationEntry(readRoot(), conversationId);
+    return Object.values(entry?.guidanceEdits || {}).filter((value) => value?.guidanceId && value?.execution?.executionId
+        && String(value.execution.conversationId || '') === String(conversationId || ''));
+};
+
+export const saveComposerGuidanceEdit = (conversationId, execution, guidance) => {
+    if (!conversationId || !execution?.executionId || !guidance?.id
+        || String(execution.conversationId || '') !== String(conversationId)) return null;
+    const root = readRoot();
+    const { entry } = getConversationEntry(root, conversationId, true);
+    entry.guidanceEdits ||= {};
+    const key = `${execution.executionId}:${guidance.id}`;
+    if (entry.guidanceEdits[key]) return entry.guidanceEdits[key];
+    const receipt = {
+        guidanceId: String(guidance.id),
+        execution: {
+            executionId: String(execution.executionId), conversationId: String(conversationId),
+            runId: execution.runId || null, turnId: execution.turnId || null,
+        },
+        // This is a recovery label only. Actual editable text/attachments must come
+        // from the successful server edit receipt, even when the source row is gone.
+        guidance: { id: String(guidance.id), content: String(guidance.content || ''), attachments: sanitizeAttachments(guidance.attachments) },
+    };
+    entry.guidanceEdits[key] = receipt;
+    writeRoot(root);
+    return receipt;
+};
+
+export const clearComposerGuidanceEdit = (conversationId, executionId, guidanceId) => {
+    const root = readRoot();
+    const { key, entry } = getConversationEntry(root, conversationId);
+    const receiptKey = `${executionId}:${guidanceId}`;
+    if (!entry?.guidanceEdits?.[receiptKey]) return;
+    delete entry.guidanceEdits[receiptKey];
+    if (!Object.keys(entry.guidanceEdits).length) delete entry.guidanceEdits;
+    if (!entry.normal && !Object.keys(entry.messages || {}).length && !entry.guidanceSubmission && !entry.guidanceEdits) delete root.conversations[key];
     writeRoot(root);
 };
 

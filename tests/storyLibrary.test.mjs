@@ -4,7 +4,8 @@ import { build } from 'esbuild';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { normalizeStoryExportIds, storyExportFilename, toggleStorySelection } from '../src/features/story/storyLibraryState.js';
+import { normalizeStoryExportIds, toggleStorySelection } from '../src/features/story/storyLibraryState.js';
+import { useTaskStore } from '../src/features/tasks/useTaskStore.js';
 
 await build({
     entryPoints: ['src/features/story/StoriesPage.jsx'], outfile: 'temp/story-library-react-test.mjs',
@@ -22,6 +23,7 @@ await build({
             else if (name === 'sonner') contents = 'export const toast={success:(...args)=>globalThis.__storiesToasts.push(["success",...args]),warning:(...args)=>globalThis.__storiesToasts.push(["warning",...args]),error:(...args)=>globalThis.__storiesToasts.push(["error",...args])}';
             else if (name === 'react-i18next') contents = 'export const useTranslation=()=>({t:(_key,fallback)=>fallback})';
             else if (name === '@/context/useEventStore.jsx') contents = 'export const onEvent=()=>({then:cb=>{globalThis.__storiesEvent=cb;return()=>{globalThis.__storiesEvent=null}}})';
+            else if (name === '@/features/tasks/useTaskStore.js') contents = 'export const useTaskStore={getState:()=>globalThis.__storiesTaskStore.getState()}';
             else if (name === 'reader') contents = 'export default function Reader({story,open,onClose,onUpdatePartMedia}){return open?<section data-reader="true" data-editable={Boolean(onUpdatePartMedia)}>{story.title}<button onClick={onClose}>关闭阅读</button></section>:null}';
             else if (name.endsWith('/button')) contents = 'export const Button=({variant,size,asChild,...props})=><button {...props}/>';
             else if (name.endsWith('/input')) contents = 'export const Input=({onChange,autoFocus,...props})=><input {...props} onInput={onChange}/>';
@@ -49,6 +51,9 @@ async function setup(t, api = {}) {
     for (const key of keys) Object.defineProperty(globalThis, key, { configurable: true, value: dom.window[key] });
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     globalThis.__storiesToasts = [];
+    const previousTasks = useTaskStore.getState();
+    useTaskStore.setState({ tasks: {}, open: false, selectedId: null });
+    globalThis.__storiesTaskStore = useTaskStore;
     globalThis.__storiesApi = { get: async () => pageData(1), post: async () => ({}), patch: async () => ({}), delete: async () => ({}), ...api };
     const container = document.getElementById('root'), root = createRoot(container);
     const settle = (delay = 25) => act(async () => { await new Promise(resolve => setTimeout(resolve, delay)); });
@@ -57,7 +62,8 @@ async function setup(t, api = {}) {
     t.after(async () => {
         await act(async () => root.unmount()); dom.window.close();
         for (const [key, descriptor] of saved) descriptor ? Object.defineProperty(globalThis, key, descriptor) : delete globalThis[key];
-        for (const key of ['__storiesApi', '__storiesToasts', '__storiesEvent', 'IS_REACT_ACT_ENVIRONMENT']) delete globalThis[key];
+        useTaskStore.setState(previousTasks, true);
+        for (const key of ['__storiesApi', '__storiesToasts', '__storiesTaskStore', '__storiesEvent', 'IS_REACT_ACT_ENVIRONMENT']) delete globalThis[key];
     });
     const button = label => [...container.querySelectorAll('button')].find(item => item.textContent === label);
     return { dom, container, settle, click, render, button };
@@ -69,13 +75,6 @@ test('selection remains ordered and page toggles preserve selections from other 
     assert.deepEqual([...toggleStorySelection(selected, ['second', 'third'], false)], ['first']);
 });
 
-test('export filename supports Unicode and plain Content-Disposition values', () => {
-    assert.equal(storyExportFilename("attachment; filename*=UTF-8''%E6%95%85%E4%BA%8B.zip"), '故事.zip');
-    assert.equal(storyExportFilename('attachment; filename="story.zip"'), 'story.zip');
-    assert.equal(storyExportFilename('attachment; filename=backup.zip'), 'backup.zip');
-    assert.equal(storyExportFilename(), 'stories.zip');
-});
-
 test('export IDs meet the strict integer contract and oversized exports are never truncated', () => {
     assert.deepEqual(normalizeStoryExportIds(['1', 2, '2', '03']), [1, 2, 3]);
     for (const value of ['0', '-1', '1.2', 'invalid', true, '9007199254740992']) {
@@ -85,14 +84,15 @@ test('export IDs meet the strict integer contract and oversized exports are neve
     assert.throws(() => normalizeStoryExportIds(Array.from({ length: 101 }, (_, i) => String(i + 1))), /最多导出 100 个故事，请分批/);
 });
 
-test('batch export retains selections across pages and downloads the raw ZIP', async t => {
-    const requests = [], downloads = [], blob = new Blob(['zip'], { type: 'application/zip' });
+test('batch export retains selections across pages and opens the queued task without downloading a blob', async t => {
+    const requests = [], downloads = [], blobRequests = [];
+    const task = { taskId: 'story-export-1', kind: 'story.export', status: 'queued', revision: 1, title: '导出 2 个故事' };
     const ui = await setup(t, {
         get: async (_url, options) => pageData(options.params.page),
-        post: async (...args) => { requests.push(args); return { data: blob, headers: { 'content-disposition': 'attachment; filename="stories-backup.zip"', 'x-story-export-warnings': '2' } }; },
+        post: async (...args) => { requests.push(args); return task; },
     });
     const originalCreate = URL.createObjectURL, originalRevoke = URL.revokeObjectURL;
-    URL.createObjectURL = value => { assert.equal(value, blob); return 'blob:story-export'; };
+    URL.createObjectURL = value => { blobRequests.push(value); return 'blob:story-export'; };
     URL.revokeObjectURL = () => {};
     ui.dom.window.HTMLAnchorElement.prototype.click = function () { downloads.push({ href: this.href, filename: this.download }); };
     t.after(() => { URL.createObjectURL = originalCreate; URL.revokeObjectURL = originalRevoke; });
@@ -104,12 +104,63 @@ test('batch export retains selections across pages and downloads the raw ZIP', a
     await ui.click(ui.button('批量导出'));
     assert.equal(requests[0][0], '/stories/export');
     assert.deepEqual(requests[0][1], { storyIds: [1, 2] });
-    assert.deepEqual(requests[0][2], { responseType: 'blob', rawResponse: true });
-    assert.deepEqual(downloads, [{ href: 'blob:story-export', filename: 'stories-backup.zip' }]);
-    const warning = globalThis.__storiesToasts.find(item => item[0] === 'warning');
-    assert.match(warning[1], /部分素材未能打包/);
-    assert.match(warning[2].description, /压缩包中的导出清单/);
+    assert.equal(requests[0].length, 2, 'the API uses its normal JSON task response');
+    assert.deepEqual(downloads, []);
+    assert.deepEqual(blobRequests, []);
+    assert.deepEqual(useTaskStore.getState().tasks[task.taskId], task);
+    assert.equal(useTaskStore.getState().open, true);
+    assert.equal(useTaskStore.getState().selectedId, task.taskId);
+    const success = globalThis.__storiesToasts.find(item => item[0] === 'success');
+    assert.match(success[1], /已提交 2 个故事的后台导出任务/);
+    assert.match(success[2].description, /任务中心查看进度/);
+    assert.doesNotMatch(success[1], /已导出|已完成/);
+    assert.match(ui.container.textContent, /已选择 2 个故事/);
+    assert.equal(ui.button('批量导出').disabled, false, 'a queued task must not lock further submissions');
+});
+
+test('only the export submission is locked and a rapid double click submits once', async t => {
+    const pending = deferred(), requests = [];
+    const ui = await setup(t, { post: (...args) => { requests.push(args); return pending.promise; } });
+    await ui.render();
+    await ui.click(ui.container.querySelector('[aria-label="选择本页故事"]'));
+    const button = ui.button('批量导出');
+    await act(async () => { button.click(); button.click(); });
+    assert.equal(requests.length, 1);
+    assert.equal(ui.button('批量导出').disabled, true);
+    assert.deepEqual(globalThis.__storiesToasts, []);
+    await act(async () => { pending.resolve({ taskId: 'story-export-delayed', kind: 'story.export', status: 'running', revision: 2 }); });
+    assert.equal(ui.button('批量导出').disabled, false);
+    assert.equal(useTaskStore.getState().selectedId, 'story-export-delayed');
+});
+
+test('failed submission retains selected stories and can be retried', async t => {
+    let requests = 0;
+    const ui = await setup(t, { post: async () => {
+        requests++;
+        if (requests === 1) throw new Error('无法连接到后台');
+        return { taskId: 'story-export-retry', kind: 'story.export', status: 'queued', revision: 1 };
+    } });
+    await ui.render();
+    await ui.click(ui.container.querySelector('[aria-label="选择本页故事"]'));
+    await ui.click(ui.button('批量导出'));
+    assert.match(ui.container.textContent, /已选择 1 个故事/);
+    assert.equal(ui.button('批量导出').disabled, false);
+    assert.equal(useTaskStore.getState().open, false);
+    assert.deepEqual(useTaskStore.getState().tasks, {});
+    assert.deepEqual(globalThis.__storiesToasts[0], ['error', '无法导出故事', { description: '无法连接到后台' }]);
+    await ui.click(ui.button('批量导出'));
+    assert.equal(requests, 2);
+    assert.equal(useTaskStore.getState().selectedId, 'story-export-retry');
+});
+
+test('an invalid submission response does not claim that export succeeded', async t => {
+    const ui = await setup(t, { post: async () => ({}) });
+    await ui.render();
+    await ui.click(ui.button('导出 HTML 压缩包'));
+    assert.equal(useTaskStore.getState().open, false);
+    assert.deepEqual(useTaskStore.getState().tasks, {});
     assert.equal(globalThis.__storiesToasts.some(item => item[0] === 'success'), false);
+    assert.match(globalThis.__storiesToasts[0][2].description, /未收到有效的导出任务/);
 });
 
 test('selecting more than 100 stories disables bulk export with an explicit split hint', async t => {

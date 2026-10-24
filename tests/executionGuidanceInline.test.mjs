@@ -37,6 +37,23 @@ const execution = {executionId: 'execution-1', conversationId: 'conversation-1',
 const snapshot = (overrides = {}) => ({...execution, activities: [{...activity, state: 'withdrawn', ...overrides}]});
 const deferred = () => { let resolve; const promise = new Promise((done) => {resolve = done;}); return {promise, resolve}; };
 
+test('queued supplements have no inline bubble or withdrawal controls', async (t) => {
+    const ui = await mount(t, Bubble, {activity: {...activity, state: 'pending'}, execution});
+    assert.equal(document.querySelector('[data-execution-guidance-bubble]'), null);
+    await ui.render({activity: {...activity, state: 'removed'}, execution});
+    assert.equal(ui.button('撤回'), undefined);
+    assert.equal(ui.button('撤回并编辑'), undefined);
+});
+
+test('a received attachment-only supplement retains readable attachment links', async (t) => {
+    await mount(t, Bubble, {activity: {...activity, content: '', attachments: [{
+        serverId: 'attachment-1', name: '教材图片.png', fileType: 'image', downloadUrl: 'cwm://artifact/attachment-1',
+    }]}, execution});
+    const link = document.querySelector('[data-guidance-attachments] a');
+    assert.match(link.getAttribute('href'), /attachment-1/);
+    assert.match(link.textContent, /教材图片\.png/);
+});
+
 async function mount(t, Component, props) {
     const dom = new JSDOM('<div id="root"></div>', {url: 'http://localhost/chat', pretendToBeVisual: true});
     globalThis.window = dom.window;
@@ -197,7 +214,7 @@ test('editor refusal is visible instead of silently losing the rewrite request',
     assert.match(ui.state.errors[0], /无法打开这条补充的编辑区/);
 });
 
-test('pending guidance withdraws before editing and its actual store-backed bubble disappears after ACK', async (t) => {
+test('received guidance withdraws before editing and its actual store-backed bubble disappears after ACK', async (t) => {
     await build({
         stdin: {contents: `import Bubble from './src/features/execution/ExecutionGuidanceBubble.jsx';
             import {useExecutionStore} from './src/features/execution/useExecutionStore.js';
@@ -221,8 +238,8 @@ test('pending guidance withdraws before editing and its actual store-backed bubb
         }}],
     });
     const {default: StoreBubble, useExecutionStore} = await import('../temp/execution-guidance-real-store-test.mjs');
-    const pending = {...activity, state: 'pending', canRewrite: false};
-    useExecutionStore.getState().upsertExecution({...execution, updatedAt: 1, activities: [pending]});
+    const staged = {...activity, state: 'consumed', canRewrite: false};
+    useExecutionStore.getState().upsertExecution({...execution, updatedAt: 1, activities: [staged]});
     const ui = await mount(t, StoreBubble, {});
     const response = deferred();
     ui.state.reply = () => response.promise;

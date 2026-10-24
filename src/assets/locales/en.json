@@ -877,5 +877,44 @@
     "thinking_disabled": "Thinking off",
     "thinking_enabled": "Thinking on",
     "widget_execution_result_pending": "Submitted; waiting for the current execution to continue",
-    "widget_execution_result_delivered": "Added to the current execution context"
+    "widget_execution_result_delivered": "Added to the current execution context",
+    "messageConfig": {
+        "title": "Message settings",
+        "protected": "Keep uncompressed",
+        "protectedHelp": "Keep the original message when compressing context.",
+        "catalogError": "Could not load message settings.",
+        "empty": "No settings are available.",
+        "invalidResponse": "The message configuration response was invalid. Please retry.",
+        "savedProtected": "Message will be kept uncompressed",
+        "savedCompressible": "Message compression allowed",
+        "nextTurnHint": "Applies to the next request; requests already sent to the model are unchanged.",
+        "restoredHint": "Restored original messages from summaries covering this message. Applies to the next request."
+    },
+    "conversationFork": {
+        "action": "Duplicate conversation",
+        "title": "Duplicating conversation",
+        "completed": "Conversation duplicated",
+        "failed": "Could not duplicate conversation",
+        "cancelled": "The duplication task was cancelled.",
+        "result": "Created an independent copy containing {{count}} messages. The original conversation is kept.",
+        "progress": "Conversation duplication progress",
+        "backgroundHint": "Copying the complete conversation in the background. You may close this window and track the task in the task center, including after refreshing the page.",
+        "closeWhileRunning": "Continue in background",
+        "viewTask": "View background task",
+        "openCopy": "Open copy",
+        "existingTask": "Another conversation is being copied. Check its progress first.",
+        "confirmHint": "The submission result is not confirmed. Retry to confirm; the same request will not create another copy.",
+        "retryConfirmation": "Retry confirmation",
+        "reconnecting": "Progress is temporarily unavailable. Reconnecting automatically.",
+        "stages": {
+            "submitting": "Submitting duplication task",
+            "queued": "Waiting for background processing",
+            "pending": "Waiting for background processing",
+            "reading": "Reading conversation",
+            "validating": "Checking conversation and messages",
+            "copying": "Copying messages and branches",
+            "registering": "Saving conversation copy",
+            "running": "Duplicating conversation"
+        }
+    }
 }

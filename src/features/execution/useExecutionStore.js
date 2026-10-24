@@ -49,6 +49,11 @@ const normalizeExecution = (incoming = {}) => {
         plan: Array.isArray(incoming.plan) ? incoming.plan : [],
         activities: Array.isArray(incoming.activities) ? incoming.activities : [],
         toolCards: Array.isArray(incoming.toolCards) ? incoming.toolCards : [],
+        // Inline/history nodes are partial projections. Only an explicit server
+        // queue (including []) can replace the current pending supplements.
+        ...(Object.prototype.hasOwnProperty.call(incoming, 'pendingGuidance') ? {
+            pendingGuidance: Array.isArray(incoming.pendingGuidance) ? incoming.pendingGuidance : [],
+        } : {}),
         executionMode: incoming?.executionMode && typeof incoming.executionMode === 'object' ? incoming.executionMode : {},
     };
 };
@@ -59,8 +64,9 @@ const sessionWithExecution = (session, incoming) => {
     let guidanceEditor = session.guidanceEditor || null;
     for (const [key, draft] of Object.entries(drafts)) {
         if (draft.executionId !== execution.executionId || !draft.submissionId || draft.state === 'sent') continue;
-        const received = execution.activities?.find((activity) => activity.id === draft.submissionId
-            && activity.kind === 'guidance' && activity.state !== 'submitting');
+        const received = execution.pendingGuidance?.find((item) => item.id === draft.submissionId)
+            || execution.activities?.find((activity) => activity.id === draft.submissionId
+                && activity.kind === 'guidance' && activity.state !== 'submitting');
         if (!received) continue;
         drafts[key] = {...draft, state: 'sent', error: ''};
         if (guidanceEditor?.draftKey === key) guidanceEditor = null;
@@ -229,6 +235,8 @@ export const useExecutionStore = create((set) => ({
         const draft = previous && previous.state !== 'sent' ? previous : {
             executionId: execution.executionId, draftKey, sourceId: guidanceId, mode,
             content: source.content || source.label || '', state: 'editing', submissionId: null,
+            attachments: Array.isArray(source.attachments) ? source.attachments.map((item) => ({...item})) : [],
+            visionAttachmentIds: Array.isArray(source.visionAttachmentIds) ? [...source.visionAttachmentIds] : [],
             submittedContent: null, replacesGuidanceId: mode === 'rewrite' ? guidanceId : null, error: '',
         };
         opened = true;

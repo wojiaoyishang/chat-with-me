@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react';
 import {ChevronDown, MessageSquarePlus} from 'lucide-react';
 import ExecutionGuidanceAction from './ExecutionGuidanceAction.jsx';
 import {openExecution} from './useExecutionStore.js';
+import ExecutionGuidanceAttachments from './ExecutionGuidanceAttachments.jsx';
 
 export default function ExecutionGuidanceRecord({activity, execution, highlighted = false}) {
     const replaced = activity.state === 'replaced' || Boolean(activity.replacedByGuidanceId);
@@ -32,6 +33,7 @@ export default function ExecutionGuidanceRecord({activity, execution, highlighte
                     onClick={() => openExecution(execution, {activityId: activity.replacedByGuidanceId})}>查看新的有效版本</button>
                 : <p className="mb-1 text-xs text-gray-400">新版本记录已归档</p>)}
             {expanded && <div className={`whitespace-pre-wrap break-words text-sm leading-6 ${archived ? 'text-gray-400' : 'text-gray-700'}`}>{activity.content || activity.label}</div>}
+            {expanded && <ExecutionGuidanceAttachments attachments={activity.attachments} />}
         </div>
     );
 }

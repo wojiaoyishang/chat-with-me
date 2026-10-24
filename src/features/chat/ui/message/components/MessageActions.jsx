@@ -1,6 +1,7 @@
 import React, {memo} from 'react';
 import MessagePaginator from './MessagePaginator.jsx';
 import MessageTools from './MessageTools.jsx';
+import {normalizeMessageBadges} from '../utils/messageBadgesModel.js';
 
 const MessageActions = memo(({
                                  msg,
@@ -14,6 +15,7 @@ const MessageActions = memo(({
                                  isActionActive = true,
                                  readonly,
                                  speechState,
+                                 onSettingsOpenChange,
                                  t,
                                  leadingContent = null
                              }) => {
@@ -22,7 +24,7 @@ const MessageActions = memo(({
     const showPaginator = messages?.[msg?.prevMessage]?.messages?.length > 1;
     const readonlyCompactions = Array.isArray(msg?.contextState?.compactions) ? msg.contextState.compactions : [];
     const hasReadonlyContextSummary = readonly && (isRight || isMid) && readonlyCompactions.length > 0;
-    const shouldShowTools = !readonly || hasReadonlyContextSummary;
+    const shouldShowTools = !readonly || hasReadonlyContextSummary || normalizeMessageBadges(msg?.messageConfig?.badges).length > 0;
     const revealOnInteraction = isRight || isMid;
     const toolVisibilityClassName = revealOnInteraction
         ? (isActionActive ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none')
@@ -62,6 +64,7 @@ const MessageActions = memo(({
                     conversationId={conversationId}
                     readonly={readonly}
                     speechState={speechState}
+                    onSettingsOpenChange={onSettingsOpenChange}
                 />
             </div>
         );

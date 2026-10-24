@@ -47,16 +47,6 @@ export function toggleStorySelection(selected, ids, checked) {
     return next;
 }
 
-export function storyExportFilename(disposition = '') {
-    const encoded = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(disposition);
-    if (encoded) {
-        try { return decodeURIComponent(encoded[1].trim()); } catch { /* Use the plain fallback. */ }
-    }
-    return /filename\s*=\s*"([^"]+)"/i.exec(disposition)?.[1]
-        || /filename\s*=\s*([^;]+)/i.exec(disposition)?.[1]?.trim()
-        || 'stories.zip';
-}
-
 export function storyStatusLabel(status) {
     if (status === 'completed') return '已完成';
     if (status === 'generating') return '创作中';

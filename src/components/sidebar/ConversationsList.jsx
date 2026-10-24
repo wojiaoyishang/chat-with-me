@@ -13,6 +13,7 @@ import {
     ChevronDown,
     ChevronRight,
     Clock3,
+    Copy,
     Loader2,
     MoreHorizontal,
     Pencil,
@@ -27,6 +28,7 @@ import {
     CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY,
     UnifiedErrorScreen,
     UnifiedLoadingScreen,
+    generateUUID,
     useLocalSetting,
 } from '@/lib/tools.jsx';
 import {useTranslation} from 'react-i18next';
@@ -53,6 +55,7 @@ import {
 } from '@/components/ui/dialog';
 import {toast} from 'sonner';
 import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
+import ConversationForkDialog from './ConversationForkDialog.jsx';
 
 const normalizeAgentSession = (session) => ({
     ...session,
@@ -126,7 +129,7 @@ const conversationDisplayTitle = (conversation, fallback) => {
     return name || title || fallback;
 };
 
-const ConversationMenu = ({conversation, canPin = false, onDelete, onChange, className = ''}) => {
+const ConversationMenu = ({conversation, canPin = false, onDelete, onChange, onFork, className = ''}) => {
     const {t} = useTranslation();
     const [menuOpen, setMenuOpen] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -263,6 +266,13 @@ const ConversationMenu = ({conversation, canPin = false, onDelete, onChange, cla
                         <span className="flex-1">{t('rename_conversation')}</span>
                     </DropdownMenuItem>
 
+                    <DropdownMenuItem onSelect={() => { setMenuOpen(false); onFork?.(conversation); }} className="gap-2.5 rounded-lg px-2.5 py-2.5">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                            <Copy className="h-3.5 w-3.5"/>
+                        </span>
+                        <span className="flex-1">{t('conversationFork.action')}</span>
+                    </DropdownMenuItem>
+
                     {canPin && (
                         <DropdownMenuItem
                             disabled={isPinning}
@@ -358,6 +368,7 @@ const AgentSessionRow = ({
                              onSelect,
                              onDelete,
                              onChange,
+                             onFork,
                              expandedNodes,
                              setExpandedNodes,
                              forceExpanded = false,
@@ -427,6 +438,7 @@ const AgentSessionRow = ({
                     conversation={child}
                     onDelete={onDelete}
                     onChange={onChange}
+                    onFork={onFork}
                     className={`${isSelected ? 'opacity-100' : 'pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100'} transition-opacity`}
                 />
             </div>
@@ -440,6 +452,7 @@ const AgentSessionRow = ({
                             onSelect={onSelect}
                             onDelete={onDelete}
                             onChange={onChange}
+                            onFork={onFork}
                             expandedNodes={expandedNodes}
                             setExpandedNodes={setExpandedNodes}
                             forceExpanded={forceExpanded}
@@ -466,6 +479,9 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
     const [hasMore, setHasMore] = useState(false);
     const [expandedNodes, setExpandedNodes] = useState({});
     const [query, setQuery] = useState('');
+    const [forkOperation, setForkOperation] = useState(null);
+    const [forkOpen, setForkOpen] = useState(false);
+    const forkOperationRef = useRef(null);
     const [searchState, setSearchState] = useState({
         items: [], total: 0, offset: 0, hasMore: false, loading: false, error: false,
     });
@@ -566,6 +582,34 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
         setConversations(update);
         setSearchState((previous) => ({...previous, items: update(previous.items)}));
     }, []);
+
+    const handleFork = useCallback((conversation) => {
+        const previous = forkOperationRef.current;
+        if (previous && !previous.finished) {
+            setForkOpen(true);
+            if (previous.conversationId !== conversation.conversationId) toast.info(t('conversationFork.existingTask'));
+            return;
+        }
+        const operation = {
+            conversationId: conversation.conversationId,
+            title: conversationDisplayTitle(conversation, t('untitled_conversation')),
+            clientRequestId: generateUUID(),
+        };
+        forkOperationRef.current = operation;
+        setForkOperation(operation);
+        setForkOpen(true);
+    }, [t]);
+
+    const handleForkStatus = useCallback((status) => {
+        if (forkOperationRef.current && ['completed', 'finished'].includes(status)) {
+            forkOperationRef.current.finished = true;
+        }
+    }, []);
+
+    const handleForkComplete = useCallback(() => {
+        void loadConversations(true);
+        if (queryRef.current) void loadSearch(true);
+    }, [loadConversations, loadSearch]);
 
     useImperativeHandle(ref, () => ({
         reload: () => Promise.all([loadConversations(true), queryRef.current ? loadSearch(true) : null]),
@@ -718,6 +762,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                             canPin={conversation.conversationKind !== 'agent_session'}
                             onDelete={handleDeleteConversation}
                             onChange={handleConversationChange}
+                            onFork={handleFork}
                             className={`${isSelected ? 'opacity-100' : 'pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100'} transition-opacity`}
                         />
                     </div>
@@ -732,6 +777,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                                 onSelect={onSelect}
                                 onDelete={handleDeleteConversation}
                                 onChange={handleConversationChange}
+                                onFork={handleFork}
                                 expandedNodes={expandedNodes}
                                 setExpandedNodes={setExpandedNodes}
                                 forceExpanded={Boolean(normalizedQuery)}
@@ -853,6 +899,15 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
             )}
 
             </div>
+            {forkOperation && <ConversationForkDialog
+                key={forkOperation.clientRequestId}
+                operation={forkOperation}
+                open={forkOpen}
+                onOpenChange={setForkOpen}
+                onComplete={handleForkComplete}
+                onSelect={onSelect}
+                onStatusChange={handleForkStatus}
+            />}
         </div>
     );
 });

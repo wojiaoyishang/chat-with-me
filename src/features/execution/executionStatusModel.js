@@ -64,8 +64,12 @@ export const projectExecutionStatus = (execution, live = null) => {
 export const isWidgetExecutionGuidance = (activity) => activity?.source === 'widget_response'
     || String(activity?.id || '').startsWith('widget-');
 
+export const isQueuedExecutionGuidance = (activity) => !isWidgetExecutionGuidance(activity)
+    && ['pending', 'submitting', 'removed'].includes(String(activity?.state || '').toLowerCase());
+
 export const isVisibleExecutionGuidance = (activity) => isWidgetExecutionGuidance(activity)
-    || (!['withdrawn', 'replaced'].includes(String(activity?.state || '').toLowerCase()) && !activity?.replacedByGuidanceId);
+    || (!isQueuedExecutionGuidance(activity)
+        && !['withdrawn', 'replaced'].includes(String(activity?.state || '').toLowerCase()) && !activity?.replacedByGuidanceId);
 
 export const getExecutionGuidance = (execution, live = null) => {
     const statusId = execution?.statusId;

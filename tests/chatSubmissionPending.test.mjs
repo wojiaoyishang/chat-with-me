@@ -101,6 +101,7 @@ function turnLifecycle(scope) {
 
 function composerHarness(overrides = {}) {
     const state = { submitting: false, sends: [], content: 'message', cleared: [] };
+    const attachments = overrides.attachmentsMeta ?? [];
     const scope = {
         turnSubmissionRef: { current: null },
         turnSubmissionPhaseRef: { current: '' },
@@ -111,7 +112,8 @@ function composerHarness(overrides = {}) {
         sendButtonStatusRef: { current: 'normal' },
         draftConversationIdRef: { current: 'conversation' },
         setIsTurnSubmitting: (value) => { state.submitting = value; },
-        attachmentsMeta: [],
+        attachmentsMeta: attachments,
+        attachmentsMetaRef: { current: attachments },
         waitForConversationToolSync: async () => {},
         waitForWorkspaceSelectionSync: async () => {},
         runtimeToolPermissionRevisionRef: { current: 0 },

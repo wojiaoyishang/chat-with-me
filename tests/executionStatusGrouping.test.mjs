@@ -362,11 +362,11 @@ test('action summaries retain real completion/failure states and grouped links n
             activities: guidanceActivities, guidancePrompts: prompts,
         }));
         await act(async () => root.render(React.createElement(Group, {key: 'guidance', entries: frozenEntries, conversationId: 'chat'})));
-        assert.deepEqual([...document.querySelectorAll('[data-test-guidance]')].map((node) => node.dataset.testGuidance), ['first-note', 'second-note', 'widget-note']);
+        assert.deepEqual([...document.querySelectorAll('[data-test-guidance]')].map((node) => node.dataset.testGuidance), ['second-note', 'widget-note'], 'pending supplements stay in the composer queue rather than grouped transcript hints');
         assert.equal(document.querySelectorAll('[data-execution-guidance-prompt]').length, 1);
         assert.match(document.querySelector('[data-execution-guidance-prompt]').textContent, /等待模型响应/);
         await act(async () => document.querySelector('button[aria-expanded]').click());
-        assert.equal(document.querySelectorAll('[data-test-guidance]').length, 3, 'expanded call history must not repeat supplements');
+        assert.equal(document.querySelectorAll('[data-test-guidance]').length, 2, 'expanded call history must not repeat received supplements or reveal pending ones');
         assert.equal(document.querySelectorAll('[data-execution-guidance-prompt]').length, 1);
 
         await act(async () => useExecutionStore.getState().upsertExecution({

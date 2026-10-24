@@ -17,6 +17,7 @@ await build({
     {
       name: "conversation-search-isolation",
       setup(builder) {
+        builder.onResolve({filter: /ConversationForkDialog\.jsx$/}, () => ({path: 'fork-dialog', namespace: 'mock'}));
         builder.onResolve(
           { filter: /^react(?:\/|$)/ },
           ({ path: requested }) => ({ path: requested, external: true }),
@@ -35,7 +36,8 @@ await build({
           { filter: /.*/, namespace: "mock" },
           ({ path: requested }) => {
             let contents;
-            if (requested === "@/lib/apiClient.js")
+            if (requested === 'fork-dialog') contents = 'export default ()=>null;';
+            else if (requested === "@/lib/apiClient.js")
               contents =
                 "export default { get:(...args)=>globalThis.conversationSearchTest.get(...args) };";
             else if (requested === "@/config.js")
@@ -50,6 +52,7 @@ await build({
               contents = `
           import React from 'react';
           export const CONVERSATION_LIST_COMPACT_SETTING_KEY='compact';
+          export const generateUUID=()=>crypto.randomUUID();
           export const CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY='timestamps';
           export const useLocalSetting=(_,value)=>React.useState(value);
           export const UnifiedLoadingScreen=({text})=><div data-loading>{text}</div>;

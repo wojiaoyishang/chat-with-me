@@ -1,11 +1,11 @@
 import React, {memo, useMemo} from 'react';
 
-const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, executionActive = false, executionStatus = '', executionGuidancePending = false, submissionPending = false, t}) => {
+const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, executionActive = false, executionStatus = '', executionGuidancePending = false, submissionPending = false, uploadPending = false, t}) => {
     const sendButtonStyle = useMemo(() => {
         const hasInput = Boolean(messageContent.trim()) || attachmentsMeta.length > 0;
         const normalizedExecutionStatus = String(executionStatus || '').toLowerCase();
         const executionStopping = executionActive && normalizedExecutionStatus === 'cancelling';
-        const canSendExecutionGuidance = executionActive && !executionStopping && Boolean(messageContent.trim()) && attachmentsMeta.length === 0;
+        const canSendExecutionGuidance = executionActive && !executionStopping && hasInput;
         const isEmpty = !hasInput && status !== 'generating' && status !== 'loading' && !executionActive;
         const baseIcon = (
             <svg
@@ -26,7 +26,7 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, exec
             </svg>
         );
 
-        if (executionGuidancePending || submissionPending) {
+        if (executionGuidancePending || submissionPending || (uploadPending && hasInput)) {
             return {
                 state: 'loading',
                 className: 'text-white bg-blue-600 cursor-wait',
@@ -126,17 +126,17 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, exec
                     disabled: false,
                 };
         }
-    }, [status, messageContent, attachmentsMeta, executionActive, executionStatus, executionGuidancePending, submissionPending]);
+    }, [status, messageContent, attachmentsMeta, executionActive, executionStatus, executionGuidancePending, submissionPending, uploadPending]);
 
     return (
         <button
             type="button"
             onClick={onClick}
             disabled={sendButtonStyle.disabled}
-            aria-busy={submissionPending || status === 'loading' || executionGuidancePending}
+            aria-busy={submissionPending || status === 'loading' || executionGuidancePending || uploadPending}
             aria-label={
                 submissionPending ? t('sending_message', '正在发送消息') : executionActive
-                    ? (messageContent.trim()
+                    ? (messageContent.trim() || attachmentsMeta.length > 0
                         ? t('execution_guidance_send', '追加到当前执行')
                         : t('execution_stop', '停止执行'))
                     : (status === 'generating' ? t('stop_generation', '停止生成') : t('send_message'))
@@ -156,6 +156,7 @@ const SendButton = memo(({status, messageContent, attachmentsMeta, onClick, exec
         prevProps.executionStatus === nextProps.executionStatus &&
         prevProps.executionGuidancePending === nextProps.executionGuidancePending
         && prevProps.submissionPending === nextProps.submissionPending
+        && prevProps.uploadPending === nextProps.uploadPending
     );
 });
 

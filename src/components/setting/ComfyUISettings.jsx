@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Check,
+  Copy,
   FileJson,
   Loader2,
   Pencil,
@@ -57,6 +58,7 @@ import {
   workflowSourceKind,
 } from "@/features/comfyui/importModel.js";
 import { prepareBindingsForSave } from "@/features/comfyui/bindingModel.js";
+import ComfyUpdateReport from "@/features/comfyui/ComfyUpdateReport.jsx";
 import "@/features/comfyui/comfyui.css";
 
 const NEW_SERVER = {
@@ -251,7 +253,14 @@ function ServerEditor({ record, endpoint, onClose, onSaved }) {
   );
 }
 
-function WorkflowEditor({ record, endpoint, servers, onClose, onSaved }) {
+function WorkflowEditor({
+  record,
+  updating = false,
+  endpoint,
+  servers,
+  onClose,
+  onSaved,
+}) {
   const [inputBusy, setInputBusy] = useState(false);
   const [title, setTitle] = useState(record?.title || "");
   const [name, setName] = useState(record?.name || "");
@@ -274,7 +283,9 @@ function WorkflowEditor({ record, endpoint, servers, onClose, onSaved }) {
   const [selectedId, setSelectedId] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [showSource, setShowSource] = useState(!record);
+  const [showSource, setShowSource] = useState(!record || updating);
+  const [reconciliation, setReconciliation] = useState(null);
+  const [updateConfirmed, setUpdateConfirmed] = useState(true);
   const file = useRef(null);
   const canvasFile = useRef(null);
   const canvasOnly = workflowSourceKind(raw.trim() || canvasRaw) === "canvas";
@@ -327,30 +338,57 @@ function WorkflowEditor({ record, endpoint, servers, onClose, onSaved }) {
     }
   };
   const inspect = async () => {
+    if (busy || inputBusy) return;
     setBusy(true);
     setError("");
     try {
-      const parsed = await apiClient.post(`${endpoint}/inspect`, {
-        ...inspectWorkflowPayload(raw, canvasRaw, importServerId),
-      });
+      const source = inspectWorkflowPayload(raw, canvasRaw, importServerId);
+      const result = await apiClient.post(
+        record
+          ? `${endpoint}/workflows/${encodeURIComponent(record.id)}/reimport`
+          : `${endpoint}/inspect`,
+        {
+          ...source,
+          ...(record
+            ? {
+                revision: record.revision,
+                previousPrompt: graph?.prompt || record.prompt,
+                bindings: prepareBindingsForSave(bindings),
+                outputBindings: outputs,
+              }
+            : {}),
+        },
+      );
+      const parsed = record ? result.workflow : result;
+      if (!parsed?.prompt || !Array.isArray(parsed.nodes))
+        throw new Error("工作流解析结果不完整，请重新导入。");
       setGraph(parsed);
       setBindings(parsed.bindings || []);
       setOutputs(parsed.outputBindings || []);
       setSelectedId(null);
       setShowSource(false);
-      setGraphDialog({ focusNodeId: null });
+      setReconciliation(result.reconciliation || null);
+      setUpdateConfirmed(
+        !(
+          result.reconciliation?.removedInputs?.length ||
+          result.reconciliation?.removedOutputs?.length
+        ),
+      );
+      setGraphDialog(record ? null : { focusNodeId: null });
     } catch (cause) {
       setError(
         cause instanceof SyntaxError
           ? "JSON 格式不正确，请检查后重新导入。"
-          : cause.message,
+          : cause.code === 409
+            ? `${cause.message} 请关闭并重新打开最新模板。`
+            : cause.message,
       );
     } finally {
       setBusy(false);
     }
   };
   const save = async () => {
-    if (!graph || busy || inputBusy) return;
+    if (!graph || busy || inputBusy || !updateConfirmed) return;
     setBusy(true);
     setError("");
     try {
@@ -398,7 +436,11 @@ function WorkflowEditor({ record, endpoint, servers, onClose, onSaved }) {
       <DialogContent className="comfy-dialog sm:!max-w-[820px]">
         <DialogHeader className="comfy-dialog-header">
           <DialogTitle>
-            {record ? "配置 ComfyUI 工作流" : "导入 ComfyUI 工作流"}
+            {record
+              ? showSource
+                ? "更新 ComfyUI 工作流"
+                : "配置 ComfyUI 工作流"
+              : "导入 ComfyUI 工作流"}
           </DialogTitle>
           <DialogDescription>
             设置工作流说明、运行方式及开放参数，通过独立流程图窗口选择输入与输出。
@@ -483,11 +525,19 @@ function WorkflowEditor({ record, endpoint, servers, onClose, onSaved }) {
             <div className="space-y-3 rounded-xl border p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-sm font-medium">导入工作流 JSON</h3>
+                  <h3 className="text-sm font-medium">
+                    {record ? "上传新版工作流 JSON" : "导入工作流 JSON"}
+                  </h3>
                   <p className="mt-1 text-xs text-muted-foreground">
                     API
                     或普通画布任选一种即可，也可同时导入两份还原原始布局和子图。普通画布优先直接解析；遇到缺少定义的节点时，可选择连接补全。
                   </p>
+                  {record && (
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      节点
+                      ID、类型与字段兼容时保留开放参数、默认值和输出设置。先预览更新结果，点击保存后才会替换原模板；取消不会改动已有配置。
+                    </p>
+                  )}
                 </div>
                 <Button
                   variant="outline"
@@ -503,6 +553,8 @@ function WorkflowEditor({ record, endpoint, servers, onClose, onSaved }) {
                   accept=".json,application/json"
                   multiple
                   hidden
+                  aria-label={record ? "上传新版工作流文件" : "上传工作流文件"}
+                  disabled={busy || inputBusy}
                   onChange={loadFile}
                 />
               </div>
@@ -602,14 +654,16 @@ function WorkflowEditor({ record, endpoint, servers, onClose, onSaved }) {
                 )}
                 <Button
                   onClick={inspect}
-                  disabled={busy || (!raw.trim() && !canvasRaw.trim())}
+                  disabled={
+                    busy || inputBusy || (!raw.trim() && !canvasRaw.trim())
+                  }
                 >
                   {busy ? (
                     <Loader2 className="size-4 animate-spin" />
                   ) : (
                     <FileJson className="size-4" />
                   )}
-                  解析并配置流程图
+                  {record ? "预览工作流更新" : "解析并配置流程图"}
                 </Button>
               </div>
             </div>
@@ -629,26 +683,22 @@ function WorkflowEditor({ record, endpoint, servers, onClose, onSaved }) {
                   onClick={() => {
                     setCanvasRaw("");
                     setCanvasName("");
-                    setRaw(
-                      JSON.stringify(
-                        graph.uiWorkflow
-                          ? {
-                              prompt: graph.prompt,
-                              extra_data: {
-                                extra_pnginfo: { workflow: graph.uiWorkflow },
-                              },
-                            }
-                          : graph.prompt,
-                        null,
-                        2,
-                      ),
-                    );
+                    setRaw("");
                     setShowSource(true);
                   }}
                 >
-                  重新导入
+                  更新工作流
                 </Button>
               </div>
+              {reconciliation && (
+                <ComfyUpdateReport
+                  report={reconciliation}
+                  needsOutput={requireOutput && !outputs.length}
+                  confirmed={updateConfirmed}
+                  onConfirm={() => setUpdateConfirmed(true)}
+                  onConfigure={() => openGraph()}
+                />
+              )}
               {graph.warnings?.length > 0 && (
                 <div
                   className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground space-y-1"
@@ -724,6 +774,7 @@ function WorkflowEditor({ record, endpoint, servers, onClose, onSaved }) {
               inputBusy ||
               !graph ||
               showSource ||
+              !updateConfirmed ||
               (requireOutput && !outputs.length)
             }
             onClick={save}
@@ -804,9 +855,36 @@ export default function ComfyUISettings({ config, onTask }) {
         `${endpoint}/workflows/${encodeURIComponent(record.id)}`,
       );
       if (mode === "run") setRun(result.workflow || result);
-      else setWorkflowEditor({ record: result.workflow || result });
+      else
+        setWorkflowEditor({
+          record: result.workflow || result,
+          updating: mode === "update",
+        });
     } catch (cause) {
       setError(cause.message);
+    } finally {
+      setBusyId("");
+    }
+  };
+  const copyWorkflow = async (record) => {
+    if (busyId) return;
+    setBusyId(record.id);
+    setError("");
+    try {
+      const result = await apiClient.post(
+        `${endpoint}/workflows/${encodeURIComponent(record.id)}/copy`,
+        { revision: record.revision },
+      );
+      if (!result.workflow?.id)
+        throw new Error("复制结果缺少工作流信息，请刷新列表确认。");
+      await refresh();
+      setWorkflowEditor({ record: result.workflow });
+    } catch (cause) {
+      setError(
+        cause.code === 409
+          ? `${cause.message} 请刷新列表后重新复制。`
+          : cause.message,
+      );
     } finally {
       setBusyId("");
     }
@@ -1002,6 +1080,26 @@ export default function ComfyUISettings({ config, onTask }) {
                   <Button
                     size="sm"
                     variant="outline"
+                    aria-label={`更新工作流 ${workflow.title || workflow.name}`}
+                    disabled={Boolean(busyId)}
+                    onClick={() => openWorkflow(workflow, "update")}
+                  >
+                    <Upload className="size-3.5" />
+                    更新工作流
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label={`复制工作流 ${workflow.title || workflow.name}`}
+                    title="复制工作流"
+                    disabled={Boolean(busyId)}
+                    onClick={() => copyWorkflow(workflow)}
+                  >
+                    <Copy className="size-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
                     disabled={Boolean(busyId)}
                     onClick={() => openWorkflow(workflow, "run")}
                   >
@@ -1063,6 +1161,7 @@ export default function ComfyUISettings({ config, onTask }) {
       {workflowEditor && (
         <WorkflowEditor
           record={workflowEditor.record}
+          updating={workflowEditor.updating}
           endpoint={endpoint}
           servers={servers}
           onClose={() => setWorkflowEditor(null)}
