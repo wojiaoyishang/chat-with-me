@@ -702,31 +702,39 @@ export function catalogNode(
     return definition;
   visited.add(token);
   const resolveEdges = (sourceGraph, targetId, targetPort, ancestors) => {
-    const found = (sourceGraph?.edges || [])
-      .filter(
-        (entry) =>
-          entry.target === targetId &&
-          (!targetPort || entry.targetPort === targetPort),
-      )
-      .map((edge) => {
-        const upstream = sourceGraph.nodes.find(
-          (entry) => entry.id === edge.source,
-        );
-        return (
-          upstream &&
-          effectiveWorkflowDefinition(
-            upstream,
-            catalogNode(
-              definitions,
+    // Literal Any bindings cannot acquire a trusted contract from a sibling
+    // edge. Follow public bindings too, so nested joins use the same rule.
+    const boundNode = sourceGraph?.nodes.find((entry) => entry.id === targetId);
+    const found = Object.entries(boundNode?.inputs || {})
+      .filter(([name]) => !targetPort || name === targetPort)
+      .map(() => ({ type: "any" }));
+    found.push(
+      ...(sourceGraph?.edges || [])
+        .filter(
+          (entry) =>
+            entry.target === targetId &&
+            (!targetPort || entry.targetPort === targetPort),
+        )
+        .map((edge) => {
+          const upstream = sourceGraph.nodes.find(
+            (entry) => entry.id === edge.source,
+          );
+          return (
+            upstream &&
+            effectiveWorkflowDefinition(
               upstream,
-              sourceGraph,
-              new Set(visited),
-              ancestors,
-            ),
-          )?.outputs?.find((entry) => entry.name === edge.sourcePort)
-        );
-      })
-      .filter(Boolean);
+              catalogNode(
+                definitions,
+                upstream,
+                sourceGraph,
+                new Set(visited),
+                ancestors,
+              ),
+            )?.outputs?.find((entry) => entry.name === edge.sourcePort)
+          );
+        })
+        .filter(Boolean),
+    );
     const enclosing = ancestors.at(-1);
     if (enclosing)
       for (const input of enclosing.container.subgraph.interface?.inputs ||

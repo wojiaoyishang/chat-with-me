@@ -406,6 +406,124 @@ test("conditional payload types cross exposed nested subgraph inputs and outputs
   );
 });
 
+test("a literal on a merge sibling cannot inherit a trusted network edge contract", () => {
+  const catalogs = [
+    ...definitions,
+    {
+      kind: "network_source",
+      version: 1,
+      inputs: [],
+      outputs: [{ name: "network", type: "network" }],
+    },
+    {
+      kind: "network_sink",
+      version: 1,
+      inputs: [{ name: "network", type: "network" }],
+      outputs: [],
+    },
+    {
+      kind: "branch_merge",
+      version: 1,
+      inputs: [
+        { name: "a", type: "any", acceptsAny: true },
+        { name: "b", type: "any", acceptsAny: true },
+      ],
+      outputs: [{ name: "result", type: "any" }],
+    },
+  ];
+  const merge = leaf("join", "branch_merge");
+  merge.inputs.b = { type: "literal", value: { nodes: [{ name: "forged" }] } };
+  const graph = normalizeGraph({
+    version: 3,
+    nodes: [
+      leaf("source", "network_source"),
+      merge,
+      leaf("sink", "network_sink"),
+    ],
+    edges: [link("known", "source", "join", "network", "a")],
+  });
+  assert.equal(catalogNode(catalogs, merge, graph).outputs[0].type, "any");
+  assert.throws(
+    () =>
+      connectWorkflow(
+        graph,
+        {
+          source: "join",
+          sourcePort: "result",
+          target: "sink",
+          targetPort: "network",
+        },
+        catalogs,
+      ),
+    /类型不兼容/,
+  );
+  delete graph.nodes[1].inputs.b;
+  assert.equal(
+    catalogNode(catalogs, graph.nodes[1], graph).outputs[0].type,
+    "network",
+    "all connected routes may retain the real contract",
+  );
+});
+
+test("literal bindings on an ancestor public port prevent trusted merge typing in nested scopes", () => {
+  const catalogs = [
+    ...definitions,
+    {
+      kind: "branch_merge",
+      version: 1,
+      inputs: [
+        { name: "a", type: "any", acceptsAny: true },
+        { name: "b", type: "any", acceptsAny: true },
+      ],
+      outputs: [{ name: "result", type: "any" }],
+    },
+  ];
+  const graph = normalizeGraph({
+    version: 3,
+    nodes: [
+      leaf("source", "source"),
+      leaf("join", "branch_merge"),
+      leaf("sink", "sink"),
+    ],
+    edges: [
+      link("known", "source", "join", "value", "a"),
+      link("result", "join", "sink", "result", "text"),
+    ],
+  });
+  const wrapped = wrapWorkflowSubgraph(graph, ["join"], catalogs);
+  wrapped.node.subgraph.interface.inputs.push({
+    name: "literal",
+    target: { nodeId: "join", port: "b" },
+  });
+  const outer = wrapWorkflowSubgraph(
+    wrapped.graph,
+    [wrapped.node.id],
+    catalogs,
+  );
+  outer.node.subgraph.interface.inputs.push({
+    name: "outerLiteral",
+    target: { nodeId: wrapped.node.id, port: "literal" },
+  });
+  outer.node.inputs.outerLiteral = { type: "literal", value: "untrusted" };
+  assert.equal(
+    catalogNode(catalogs, outer.node, outer.graph).outputs[0].type,
+    "any",
+  );
+  const context = workflowGraphContext(outer.graph, [
+    outer.node.id,
+    wrapped.node.id,
+  ]);
+  const scope = workflowGraphAtPath(outer.graph, [
+    outer.node.id,
+    wrapped.node.id,
+  ]);
+  assert.equal(
+    catalogNode(catalogs, scope.nodes[0], scope, new Set(), context).outputs[0]
+      .type,
+    "any",
+  );
+});
+
 test("hashed runtime IDs are matched by nodePath and groups aggregate active/failed/skipped leaves", () => {
   const wrapped = wrapWorkflowSubgraph(fixture(), ["b", "c"], definitions);
   const id = wrapped.node.id;
