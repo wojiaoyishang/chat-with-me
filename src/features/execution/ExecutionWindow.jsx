@@ -1,3 +1,4 @@
+import {useConversationMutationGuard} from '@/features/chat/freeze/ConversationFreezeContext.jsx';
 import WidgetResponseDetails from './WidgetResponseDetails.jsx';
 import ExecutionPauseControl from './ExecutionPauseControl.jsx';
 import ExecutionThinkingControl from './ExecutionThinkingControl.jsx';
@@ -91,6 +92,7 @@ const timelineTimestamp = (item) => {
 const ExecutionWindow = memo(
     ({ execution, open, onOpenChange, dockTarget = null, dockMount = null, messages = {}, navigationRequest = null,
         onNavigationHandled }) => {
+        const freeze = useConversationMutationGuard(execution?.conversationId);
         const [actionPending, setActionPending] = useState(false);
         const { autoFollow, setAutoFollow, toggleAutoFollow, scrollRef, attachScroll, attachContent } =
             useExecutionAutoFollow({ open, executionId: execution?.executionId, navigationRequest });
@@ -154,6 +156,7 @@ const ExecutionWindow = memo(
             ownerMessageId, ownerReplacement, scrollRef, setAutoFollow, onHandled: onNavigationHandled });
 
         const requestAction = async (event) => {
+            if (!freeze.canMutate()) return;
             if (actionPending) return;
             setActionPending(true);
             try {
@@ -230,7 +233,7 @@ const ExecutionWindow = memo(
                     {recoverable && !active && (
                         <Button
                             variant="outline"
-                            disabled={actionPending}
+                            disabled={freeze.blocked || actionPending}
                             onClick={() => requestAction('execution.resume')}
                         >
                             <RotateCcw className="mr-1.5 h-4 w-4" />
@@ -240,7 +243,7 @@ const ExecutionWindow = memo(
                     {active && (
                         <Button
                             variant="outline"
-                            disabled={actionPending || stopping}
+                            disabled={freeze.blocked || actionPending || stopping}
                             onClick={() => requestAction('execution.cancel')}
                             className="text-red-600 hover:text-red-700"
                         >

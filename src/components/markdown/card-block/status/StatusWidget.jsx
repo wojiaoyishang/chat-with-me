@@ -88,6 +88,7 @@ const StatusWidget = memo(
         contextStatus = null,
         messageContextState = null,
         renderSurface = 'conversation',
+        snapshot = false,
         renderMarkdown = defaultRenderMarkdown,
     }) => {
         const { t } = useTranslation();
@@ -102,8 +103,8 @@ const StatusWidget = memo(
         }, [contextId, id, renderSurface, type]);
 
         const feedbackItems = useMemo(
-            () => (type === 'toolCalling' ? parseFrontendFeedback(content) : []),
-            [content, type],
+            () => (!snapshot && type === 'toolCalling' ? parseFrontendFeedback(content) : []),
+            [content, snapshot, type],
         );
         const feedback = useFrontendFeedback({ items: feedbackItems, conversationId, messageId: contextId });
         const feedbackStates = feedbackItems.map((item) => feedback.states[item.toolid]);
@@ -218,9 +219,10 @@ const StatusWidget = memo(
         const isResumingSubagent = toolStatus === 'resuming_subagent' && !isDone && !isFailed;
         const isWaitingToolState = isWaitingApproval || isWaitingSubagent;
         const isProgressComplete = isToolCalling && !feedbackStatus && progress?.isComplete === true;
-        const isFinished = isDone || isFailed || isProgressComplete;
+        const isFinished = snapshot || isDone || isFailed || isProgressComplete;
 
-        // Successful completion is the only state eligible for automatic collapse.
+        // Historical calls start collapsed; each saved call can be expanded on demand.
+        // Successful completion is the only live state eligible for automatic collapse.
         // Failed/cancelled/approval-waiting calls stay expanded so the user can inspect
         // why the execution needs attention. Conversation and Execution Window use independent
         // preferences and independent expansion keys. Manual user toggles always win.
@@ -234,7 +236,7 @@ const StatusWidget = memo(
             isToolCalling && !isFailed && !isCancelled && (isDone || isProgressComplete),
         );
         const desiredToolExpanded = Boolean(
-            isToolCalling && (!isSuccessfulToolCompletion || !autoCollapseCompletedToolCalls),
+            isToolCalling && !snapshot && (!isSuccessfulToolCompletion || !autoCollapseCompletedToolCalls),
         );
 
         const [isExpanded] = useExpandedState(expandedKey, isToolCalling ? desiredToolExpanded : defaultExpanded);
@@ -295,7 +297,7 @@ const StatusWidget = memo(
             );
 
         const toolContextIndicator = useMemo(() => {
-            if (!isToolCalling || !isFinished) return null;
+            if (snapshot || !isToolCalling || !isFinished) return null;
 
             const toolCallingSuffix = '-toolCalling';
             const rawId = String(id || '');
@@ -338,7 +340,7 @@ const StatusWidget = memo(
             }
 
             return null;
-        }, [contextId, contextStatus, id, isFinished, isToolCalling, conversationId, messageContextState, replacement, t]);
+        }, [contextId, contextStatus, id, isFinished, isToolCalling, conversationId, messageContextState, replacement, snapshot, t]);
 
         let currentColor = activeColor;
         if (isWaitingToolState) currentColor = 'text-gray-400';
@@ -356,18 +358,20 @@ const StatusWidget = memo(
                         displayTitle={displayTitleWithBadges}
                         Icon={Icon}
                         expandedKey={expandedKey}
-                        actions={actions}
+                        actions={snapshot ? [] : actions}
                         canToggleExpansion
                         contextId={contextId}
                         isDone={isDone}
                         isFailed={isFailed}
                         isFinished={isFinished}
-                        isProcessing={isProcessing}
+                        isProcessing={!snapshot && isProcessing}
+                        snapshot={snapshot}
+                        metaText={snapshot ? '历史快照' : ''}
                         isToolCalling={isToolCalling}
                         isWaitingApproval={isWaitingToolState}
                         isResumingTool={isResumingSubagent}
                         conversationId={conversationId}
-                        progress={progress}
+                        progress={snapshot ? null : progress}
                         truncatedLastLine={truncatedLastLine}
                         titleAccessory={toolContextIndicator}
                         rightAccessory={<FrontendFeedbackButtons items={feedbackItems} feedback={feedback} />}
@@ -433,6 +437,7 @@ const StatusWidget = memo(
             prev.replacement === next.replacement &&
             prev.contextStatus === next.contextStatus &&
             prev.messageContextState === next.messageContextState &&
+            prev.snapshot === next.snapshot &&
             prev.renderMarkdown === next.renderMarkdown
         );
     },

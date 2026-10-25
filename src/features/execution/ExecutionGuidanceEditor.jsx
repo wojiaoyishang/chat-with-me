@@ -1,3 +1,4 @@
+import {useConversationMutationGuard} from '@/features/chat/freeze/ConversationFreezeContext.jsx';
 import {useEffect, useRef} from 'react';
 import {Loader2, Send, X} from 'lucide-react';
 import {Button} from '@/components/ui/button';
@@ -10,6 +11,7 @@ import ExecutionGuidanceAttachments from './ExecutionGuidanceAttachments.jsx';
 
 export default function ExecutionGuidanceEditor({execution}) {
     const conversationId = execution.conversationId;
+    const freeze = useConversationMutationGuard(conversationId);
     const executionId = execution.executionId;
     const editor = useExecutionStore((state) => state.sessions[conversationId]?.guidanceEditor || null);
     const draft = useExecutionStore((state) => editor?.executionId === executionId
@@ -20,7 +22,7 @@ export default function ExecutionGuidanceEditor({execution}) {
     if (!draft) {
         const retained = Object.values(drafts || {}).filter((item) => item.executionId === executionId && item.state !== 'sent');
         return retained.length ? <div className="mb-4 flex flex-wrap gap-2" data-execution-guidance-drafts>
-            {retained.map((item, index) => <Button key={item.draftKey} type="button" variant="outline" size="sm"
+            {retained.map((item, index) => <Button key={item.draftKey} type="button" variant="outline" size="sm" disabled={freeze.blocked}
                 onClick={() => useExecutionStore.getState().reopenGuidanceDraft(conversationId, executionId, item.draftKey)}>
                 {item.state === 'uncertain' ? '确认未完成的提交' : '继续编辑补充'}{retained.length > 1 ? ` ${index + 1}` : ''}
             </Button>)}
@@ -28,8 +30,8 @@ export default function ExecutionGuidanceEditor({execution}) {
     }
     const uncertain = draft.state === 'uncertain';
     const pending = draft.state === 'submitting';
-    const disabled = pending || (!uncertain && (!execution.active || execution.status === 'cancelling'));
-    const send = () => submitGuidanceDraft({conversationId, executionId, draftKey: draft.draftKey,
+    const disabled = freeze.blocked || pending || (!uncertain && (!execution.active || execution.status === 'cancelling'));
+    const send = () => freeze.canMutate() && submitGuidanceDraft({conversationId, executionId, draftKey: draft.draftKey,
         emitEvent, createId: generateUUID});
     return (
         <section data-execution-guidance-editor className="mb-5 rounded-xl border border-blue-200 bg-blue-50/40 p-4">
@@ -42,7 +44,7 @@ export default function ExecutionGuidanceEditor({execution}) {
                 ? '原补充已撤回。重发会创建新版本，取消编辑不会恢复原文。'
                 : '原补充已进入模型上下文。此处会发送一条新的更正，不会撤回原文。'}</p>
             <Textarea ref={inputRef} rows={4} aria-label="补充内容" value={draft.content}
-                disabled={pending || uncertain} className="min-h-28 resize-y bg-white"
+                disabled={freeze.blocked || pending || uncertain} className="min-h-28 resize-y bg-white"
                 onChange={(event) => useExecutionStore.getState().updateGuidanceDraft(conversationId, draft.draftKey, event.target.value)} />
             <ExecutionGuidanceAttachments attachments={draft.attachments} />
             {uncertain && <p role="status" className="mt-2 text-xs leading-5 text-amber-700">

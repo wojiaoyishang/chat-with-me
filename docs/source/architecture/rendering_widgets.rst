@@ -13,6 +13,18 @@ Replacement
 现有消息使用 ``{{cardReplace ...}}`` 把正文占位与 Tool/Thinking/Widget 的前后端表示关联。它是
 兼容现有持久消息的协议，后续可逐步迁移为 Structured Message Parts。
 
+会话 Fork 使用只读历史快照。后端保留卡片类型和嵌套占位，并将 replacement 返回为
+``{type, frontend, snapshot: true}``；不能把它降成字符串，否则只读标志会丢失。
+``normalizeReplacementEntry`` 透传标志，``MarkdownRenderer`` 将它递归传给所有子卡。
+工具调用、命令、日志和思考沿用现有展开/折叠展示；``executionWindowTool`` 在副本中仅作为
+内部卡片的容器，不额外增加一个工具标题。历史工具默认独立折叠，失败或未结束的状态也不会继续动画。
+
+执行、文档、后台任务和交互组件的快照只展示保存的描述与状态，不挂载原运行组件、订阅运行状态、
+注册反馈、审批或恢复操作；执行状态采用紧凑行，空的 continuation 保持不可见。
+快照不参与实时执行状态分组，复制文本及语音路径也不得触发原 ``FRONTEND_FEEDBACK``。
+模型专用 backend 内容不会补入为空的 frontend，避免隐藏工具上下文出现在正文中。
+HTML 快照沿用文本块显示源码，不挂载原始 HTML 按钮或事件处理器。
+
 Widget
 --------------------------------------------------------------------------------
 

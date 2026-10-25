@@ -914,7 +914,19 @@
             "validating": "Checking conversation and messages",
             "copying": "Copying messages and branches",
             "registering": "Saving conversation copy",
-            "running": "Duplicating conversation"
-        }
+            "running": "Duplicating conversation",
+            "freezing": "Freezing source conversation",
+            "stopping": "Stopping generation"
+        },
+        "confirmTitle": "Confirm conversation copy",
+        "confirmDescription": "Confirmation stops any active generation, then copies completed messages and branches. Generating or unfinished replies are excluded.",
+        "freezeHint": "The source conversation is temporarily frozen on every device during copying: sending, editing and switching branches are disabled. It unlocks automatically afterward. You can switch to another conversation.",
+        "confirmAction": "Stop generation and copy",
+        "skippedResult": "Skipped {{count}} unfinished messages."
+    },
+    "conversationFreeze": {
+        "frozen": "This conversation is temporarily frozen. Sending, editing and switching branches resume automatically when the operation finishes.",
+        "checking": "Checking whether this conversation is available…",
+        "unavailable": "Unable to verify the conversation state. Retry before making changes."
     }
 }

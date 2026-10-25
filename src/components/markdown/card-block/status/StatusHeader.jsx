@@ -24,6 +24,7 @@ const StatusHeader = memo(({
                                isFailed,
                                isFinished,
                                isProcessing,
+                               snapshot = false,
                                isToolCalling,
                                isWaitingApproval = false,
                                isResumingTool = false,
@@ -119,6 +120,8 @@ const StatusHeader = memo(({
                 <div className={`${isResumingTool ? 'text-sky-600' : (isWaitingApproval ? 'text-gray-400' : (isToolCalling && !isFailed && !isFinished ? 'text-yellow-600' : currentColor))} flex-shrink-0`}>
                     {isFailed ? (
                         <X className="w-4 h-4 stroke-[3]"/>
+                    ) : snapshot && !isDone ? (
+                        <Icon className="w-4 h-4"/>
                     ) : isToolCalling && isFinished ? (
                         <Check className="w-4 h-4 stroke-[3]"/>
                     ) : isResumingTool ? (
@@ -240,6 +243,7 @@ const StatusHeader = memo(({
         prev.isFailed === next.isFailed &&
         prev.isFinished === next.isFinished &&
         prev.isProcessing === next.isProcessing &&
+        prev.snapshot === next.snapshot &&
         prev.isToolCalling === next.isToolCalling &&
         prev.isWaitingApproval === next.isWaitingApproval &&
         prev.isResumingTool === next.isResumingTool &&

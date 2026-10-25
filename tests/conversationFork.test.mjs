@@ -79,7 +79,7 @@ async function setup(t, api = {}, {strict = false} = {}) {
     const click = element => act(async () => { assert.ok(element, 'button exists'); element.click(); await new Promise(resolve => setTimeout(resolve, 5)); });
     const emit = task => act(async () => { currentTask = task; for (const callback of fixture.listeners.get('task.changed') || []) callback({payload: task}); });
     const openMenu = async (id = 'source') => click(button('更多', container.querySelector(`[data-conversation-id="${id}"]`)));
-    const start = async () => { await openMenu(); await click(button('复制会话')); };
+    const start = async ({confirm = true} = {}) => { await openMenu(); await click(button('复制会话')); if (confirm && button('停止生成并复制')) await click(button('停止生成并复制')); };
     const settle = (ms = 10) => act(async () => { await new Promise(resolve => setTimeout(resolve, ms)); });
     let unmounted = false;
     const unmount = async () => { if (!unmounted) { await act(async () => root.unmount()); unmounted = true; } };
@@ -105,6 +105,7 @@ test('conversation menu submits a fork, follows real progress, refreshes and ope
     await ui.start();
     assert.equal(ui.posts.length, 1);
     assert.equal(ui.posts[0][0], '/chat/conversations/source/fork');
+    assert.equal(ui.posts[0][1].confirmed, true);
     assert.match(ui.posts[0][1].clientRequestId, /^[a-f\d-]{36}$/i);
     assert.match(ui.container.querySelector('[role="dialog"]').textContent, /正在提交复制任务/);
     assert.equal(ui.container.querySelector('[role="progressbar"]').hasAttribute('aria-valuenow'), false);
@@ -132,6 +133,9 @@ test('rapid menu selection and StrictMode submit the same operation only once', 
     await ui.openMenu();
     const button = ui.button('复制会话');
     await act(async () => { button.click(); button.click(); });
+    assert.equal(ui.posts.length, 0);
+    const confirm = ui.button('停止生成并复制');
+    await act(async () => { confirm.click(); confirm.click(); });
     assert.equal(ui.posts.length, 1);
     await act(async () => pending.resolve(makeTask()));
     await ui.click(ui.button('后台继续'));
@@ -246,4 +250,21 @@ test('a late submission response after leaving the sidebar never navigates to th
     await act(async () => pending.resolve(makeTask({status: 'completed', result: {conversationId: 'copy', messageCount: 1}})));
     assert.deepEqual(ui.selections, []);
     assert.equal(useTaskStore.getState().tasks['fork-task'].status, 'completed', 'accepted background tasks remain available in the shared task center');
+});
+
+
+test('copy requires a second confirmation and cancelling never stops generation or posts', async t => {
+    const ui = await setup(t);
+    await ui.render();
+    await ui.start({confirm: false});
+    assert.equal(ui.posts.length, 0);
+    assert.match(ui.container.querySelector('[role="dialog"]').textContent, /停止此会话中仍在生成.*正在生成或未完成.*所有设备/);
+    await ui.click(ui.button('取消'));
+    assert.equal(ui.posts.length, 0);
+    assert.equal(ui.container.querySelector('[role="dialog"]'), null);
+    await ui.start();
+    assert.equal(ui.posts.length, 1);
+    assert.equal(ui.posts[0][1].confirmed, true);
+    await ui.emit(makeTask({revision: 2, status: 'completed', result: {conversationId: 'copy', messageCount: 8, skippedMessageCount: 2}}));
+    assert.match(ui.container.querySelector('[role="dialog"]').textContent, /8 条消息.*跳过 2 条未完成/);
 });

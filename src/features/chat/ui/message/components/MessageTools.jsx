@@ -10,6 +10,7 @@ import { apiEndpoint } from '@/config.js';
 import { useUserStore } from '@/context/userContext.jsx';
 import MessageSettingsMenu from './MessageSettingsMenu.jsx';
 import MessageBadges from './MessageBadges.jsx';
+import {useConversationMutationGuard} from '../../../freeze/ConversationFreezeContext.jsx';
 import {messageHintsBeforeActions} from '../utils/messageBadgesModel.js';
 
 const isActiveSpeechStatus = (status) => ['loading', 'playing', 'paused'].includes(status);
@@ -18,7 +19,9 @@ const toolButtonClassName = 'shrink-0 p-1.5 rounded-sm hover:bg-gray-200 transit
 const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speechState, onSettingsOpenChange }) => {
     const { t } = useTranslation();
     const showContextDebugButtons = useUserStore((state) => Boolean(state.user?.showContextDebugButtons));
+    const freeze = useConversationMutationGuard(conversationId);
     const actionContext = { msgId, conversationId };
+    const mutate = (action) => { if (freeze.canMutate()) handleMessageAction(action, msg, actionContext, t); };
     const canSpeak = !readonly && canSpeakMessage(msg);
     const isSpeakingThisMessage =
         canSpeak && speechState?.messageId === msgId && isActiveSpeechStatus(speechState?.status);
@@ -54,8 +57,8 @@ const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speec
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <button
-                            onClick={() => handleMessageAction('cancelBackgroundTools', msg, actionContext, t)}
-                            disabled={isCancellingBackgroundTools}
+                            onClick={() => mutate('cancelBackgroundTools')}
+                            disabled={freeze.blocked || isCancellingBackgroundTools}
                             className="shrink-0 cursor-pointer rounded-sm bg-orange-500/15 px-2 py-1 text-xs font-medium text-orange-700 transition-colors hover:bg-orange-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                             aria-label={t('cancel_background_tools')}
                         >
@@ -74,7 +77,8 @@ const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speec
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <button
-                            onClick={() => handleMessageAction('edit', msg, actionContext, t)}
+                            disabled={freeze.blocked}
+                            onClick={() => mutate('edit')}
                             className={toolButtonClassName}
                             aria-label={t('edit_message')}
                         >
@@ -89,7 +93,8 @@ const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speec
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <button
-                            onClick={() => handleMessageAction('fork', msg, actionContext, t)}
+                            disabled={freeze.blocked}
+                            onClick={() => mutate('fork')}
                             className={toolButtonClassName}
                             aria-label={t('fork_message')}
                         >
@@ -147,7 +152,8 @@ const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speec
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <button
-                            onClick={() => handleMessageAction('delete', msg, actionContext, t)}
+                            disabled={freeze.blocked}
+                            onClick={() => mutate('delete')}
                             className={`${toolButtonClassName} group hover:bg-red-200`}
                             aria-label={t('delete_message')}
                         >
@@ -162,7 +168,8 @@ const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speec
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <button
-                            onClick={() => handleMessageAction('progenerate', msg, actionContext, t)}
+                            disabled={freeze.blocked}
+                            onClick={() => mutate('progenerate')}
                             className={toolButtonClassName}
                             aria-label={t('progenerate_message')}
                         >
@@ -177,7 +184,8 @@ const MessageTools = memo(({ msg, msgId, conversationId, readonly = false, speec
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <button
-                            onClick={() => handleMessageAction('regenerate', msg, actionContext, t)}
+                            disabled={freeze.blocked}
+                            onClick={() => mutate('regenerate')}
                             className={toolButtonClassName}
                             aria-label={t('regenerate_message')}
                         >

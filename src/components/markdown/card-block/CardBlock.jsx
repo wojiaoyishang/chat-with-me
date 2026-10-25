@@ -24,6 +24,7 @@ import WorkspaceTransferCard from '@/features/workspace/components/WorkspaceTran
 import WidgetHost from './widget/WidgetHost.jsx';
 import EscWritingStatus from '@/features/documents/EscWritingStatus.jsx';
 import WorkflowTaskStatus from '@/features/workflows/WorkflowTaskStatus.jsx';
+import HistorySnapshotBlock from './blocks/HistorySnapshotBlock.jsx';
 
 const CARD_TYPES_WITH_NESTED_MARKDOWN = new Set([
     'markdown',
@@ -78,6 +79,7 @@ const CardBlock = memo(({
     messageReadonly = false,
     messageIsLatest = true,
     renderSurface = 'conversation',
+    snapshot = false,
     renderMarkdown = defaultRenderMarkdown,
 }) => {
     const commonProps = {
@@ -93,8 +95,13 @@ const CardBlock = memo(({
         messageReadonly,
         messageIsLatest,
         renderSurface,
+        snapshot,
         renderMarkdown,
     };
+
+    if (snapshot && ['executionStatus', 'escStatus', 'workflowTaskStatus', 'workspaceTransfer', 'story', 'widget', 'queuing'].includes(type)) {
+        return <HistorySnapshotBlock content={content} type={type} id={id} />;
+    }
 
     switch (type) {
         case 'markdown':
@@ -113,6 +120,11 @@ const CardBlock = memo(({
             );
 
         case 'html':
+            if (snapshot) {
+                // Saved HTML may contain inline event handlers that reference the
+                // original conversation. Display its source without creating DOM.
+                return <TextBlock id={id} content={content} />;
+            }
             return (
                 <HtmlBlock
                     id={id}
@@ -125,6 +137,7 @@ const CardBlock = memo(({
                 <ToolCommandBlock
                     id={id}
                     content={content}
+                    snapshot={snapshot}
                 />
             );
 
@@ -133,6 +146,7 @@ const CardBlock = memo(({
                 <ToolLogBlock
                     id={id}
                     content={content}
+                    snapshot={snapshot}
                 />
             );
 
@@ -171,6 +185,11 @@ const CardBlock = memo(({
             );
 
         case 'executionWindowTool':
+            if (snapshot) {
+                // This is a routing host, whose descendants already contain the
+                // individual tool-call headers and expansion controls.
+                return <MarkdownBlock {...commonProps} allowTts={false} />;
+            }
             // The canonical outer Tool replacement remains attached to the Assistant
             // message so every nested command/log/progress/result update has one data
             // source.  Execution Mode only changes the rendering surface: hide this host in
@@ -283,7 +302,8 @@ const CardBlock = memo(({
         prev.messageContextState !== next.messageContextState ||
         prev.messageReadonly !== next.messageReadonly ||
         prev.messageIsLatest !== next.messageIsLatest ||
-        prev.renderSurface !== next.renderSurface
+        prev.renderSurface !== next.renderSurface ||
+        prev.snapshot !== next.snapshot
     ) {
         return false;
     }

@@ -7,7 +7,7 @@ import React, {act, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 const translations = JSON.parse(fs.readFileSync('src/assets/locales/zh.json', 'utf8'));
-const realComponents = new Set(['MessageItem.jsx', 'MessageActions.jsx', 'MessageTools.jsx', 'MessageSettingsMenu.jsx', 'MessageBadges.jsx']);
+const realComponents = new Set(['MessageItem.jsx', 'MessageActions.jsx', 'MessageTools.jsx', 'MessageSettingsMenu.jsx', 'MessageBadges.jsx', 'ConversationFreezeContext.jsx']);
 await build({
     entryPoints: ['src/features/chat/ui/message/components/MessageItem.jsx'],
     outfile: 'temp/message-settings-react-test.mjs',

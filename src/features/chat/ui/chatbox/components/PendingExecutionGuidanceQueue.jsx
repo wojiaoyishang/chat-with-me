@@ -1,3 +1,4 @@
+import {useConversationMutationGuard} from '../../../freeze/ConversationFreezeContext.jsx';
 import React, { useRef, useState } from 'react';
 import { CornerDownRight, ListEnd, LoaderCircle, MoreHorizontal, Paperclip, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -13,7 +14,7 @@ import { clearComposerGuidanceEdit, readComposerGuidanceEdits, saveComposerGuida
 // server edit receipt. Restore that operation into a draft only once.
 const restoringEdits = new Map();
 
-export default function PendingExecutionGuidanceQueue({ conversationId, items = [], onEdit, disabled = false, submitting = false, uncertain = false, onRetry }) {
+export default function PendingExecutionGuidanceQueue({ conversationId, items = [], onEdit, disabled: parentDisabled = false, submitting = false, uncertain = false, onRetry }) {
     const sourceConversationId = conversationId || items[0]?.execution?.conversationId || '';
     const [busy, setBusy] = useState(() => new Set());
     const [editReceipts, setEditReceipts] = useState(() => readComposerGuidanceEdits(sourceConversationId));
@@ -33,7 +34,10 @@ export default function PendingExecutionGuidanceQueue({ conversationId, items = 
         setEditReceipts(saved);
     }, [sourceConversationId]);
 
+    const freeze = useConversationMutationGuard(conversationId);
+    const disabled = parentDisabled || freeze.blocked;
     const mutate = async (action, execution, guidance) => {
+        if (!freeze.canMutate()) return;
         const key = `${execution.executionId}:${guidance.id}`;
         if (pending.current.has(key) || disabled || execution.conversationId !== renderedConversation.current) return;
         let editReceipt = edits.current.get(key);

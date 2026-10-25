@@ -55,6 +55,7 @@ const AgentWidget = memo(
         defaultExpanded = false,
         contextId = '',
         type = 'agent',
+        snapshot = false,
         renderMarkdown = defaultRenderMarkdown,
     }) => {
         const expandedKey = useMemo(() => {
@@ -85,7 +86,7 @@ const AgentWidget = memo(
             };
         }, [content]);
 
-        const isFinished = isDone || isFailed;
+        const isFinished = snapshot || isDone || isFailed;
 
         const statusConfig = useMemo(() => {
             if (isFailed) {
@@ -113,9 +114,9 @@ const AgentWidget = memo(
                 border: 'border-zinc-200',
                 iconBg: 'bg-blue-50 text-blue-600',
                 dot: 'bg-blue-500',
-                label: 'Running',
+                label: snapshot ? '历史快照' : 'Running',
             };
-        }, [isDone, isFailed]);
+        }, [isDone, isFailed, snapshot]);
 
         return (
             <div
@@ -130,7 +131,7 @@ const AgentWidget = memo(
                     isDone={isDone}
                     isFailed={isFailed}
                     isFinished={isFinished}
-                    isProcessing={isProcessing}
+                    isProcessing={!snapshot && isProcessing}
                     lastLine={lastLine}
                     statusConfig={statusConfig}
                     title={title}
@@ -157,6 +158,7 @@ const AgentWidget = memo(
             prev.title === next.title &&
             prev.defaultExpanded === next.defaultExpanded &&
             prev.type === next.type &&
+            prev.snapshot === next.snapshot &&
             prev.renderMarkdown === next.renderMarkdown
         );
     },

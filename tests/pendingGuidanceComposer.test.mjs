@@ -101,6 +101,7 @@ function composerHarness({ content = guidance.content, attachments = [image, fil
     const contentRef = { current: content }; const attachmentsRef = { current: attachments };
     const currentConversation = { current: execution.conversationId };
     const scope = {
+        canMutateConversation: () => true,
         turnSubmissionRef: { current: null }, turnSubmissionPhaseRef: { current: 'running' }, editDraftRef: { current: null }, isEditMessageRef: { current: false },
         messageContentRef: contentRef, attachmentsMetaRef: attachmentsRef, activeExecutionRef: { current: execution }, sendButtonStatusRef: { current: 'generating' },
         attachmentsMeta: attachments, draftConversationIdRef: { current: execution.conversationId }, renderedConversationIdRef: currentConversation,

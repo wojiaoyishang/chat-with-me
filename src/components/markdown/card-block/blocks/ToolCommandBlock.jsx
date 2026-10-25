@@ -36,7 +36,7 @@ const parseToolCommandContent = (content) => {
     };
 };
 
-const ToolCommandBlock = memo(({content = '', id}) => {
+const ToolCommandBlock = memo(({content = '', id, snapshot = false}) => {
     const [highlightState, setHighlightState] = useState(() => ({
         source: '',
         language: '',
@@ -105,7 +105,7 @@ const ToolCommandBlock = memo(({content = '', id}) => {
 
     return (
         <div
-            className="card-tool-command-soft-breathe relative my-1.5 overflow-hidden rounded-lg border border-sky-200/80 bg-sky-50/90 text-slate-700 shadow-[0_8px_24px_rgba(14,165,233,0.08)]"
+            className={`${snapshot ? '' : 'card-tool-command-soft-breathe'} relative my-1.5 overflow-hidden rounded-lg border border-sky-200/80 bg-sky-50/90 text-slate-700 shadow-[0_8px_24px_rgba(14,165,233,0.08)]`}
             data-card-block-id={id}
         >
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/65 via-sky-50/20 to-sky-100/45"/>
@@ -153,6 +153,7 @@ const ToolCommandBlock = memo(({content = '', id}) => {
 }, (prev, next) => {
     return (
         prev.id === next.id &&
+        prev.snapshot === next.snapshot &&
         prev.content === next.content
     );
 });

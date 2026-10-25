@@ -239,6 +239,7 @@ const getReplacementEntryValue = (entry) => {
             entryType: '',
             allowTts: false,
             contextStatus: null,
+            snapshot: false,
         };
     }
 
@@ -248,6 +249,7 @@ const getReplacementEntryValue = (entry) => {
             entryType: entry.type || '',
             allowTts: entry.allowTts === true || entry.tts === true,
             contextStatus: entry.contextStatus ?? entry.context_status ?? null,
+            snapshot: entry.snapshot === true,
         };
     }
 
@@ -256,6 +258,7 @@ const getReplacementEntryValue = (entry) => {
         entryType: '',
         allowTts: false,
         contextStatus: null,
+        snapshot: false,
     };
 };
 
@@ -276,6 +279,7 @@ export const normalizeReplacementEntry = (
             flags: new Set(),
             allowTts: false,
             contextStatus: null,
+            snapshot: false,
             content: '',
             incompleteProtocol: false,
         };
@@ -290,6 +294,7 @@ export const normalizeReplacementEntry = (
             flags: new Set(),
             allowTts: false,
             contextStatus: null,
+            snapshot: false,
             content: '',
             incompleteProtocol: false,
         };
@@ -324,6 +329,7 @@ export const normalizeReplacementEntry = (
         flags: protocol.flags,
         allowTts,
         contextStatus: extracted.contextStatus,
+        snapshot: extracted.snapshot,
         content: shouldStripProtocol ? protocol.content : normalizedRawContent,
         inferredType: !hasExternalType && protocol.hadMarker,
         incompleteProtocol: protocol.incomplete,

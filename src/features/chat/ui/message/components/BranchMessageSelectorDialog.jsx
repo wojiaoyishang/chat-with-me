@@ -1,3 +1,4 @@
+import {useConversationMutationGuard} from '../../../freeze/ConversationFreezeContext.jsx';
 import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
 import {Loader2, RefreshCw} from 'lucide-react';
 import {toast} from 'sonner';
@@ -17,6 +18,7 @@ const BranchMessageSelectorDialog = memo(({
     onSelect,
     t,
 }) => {
+    const freeze = useConversationMutationGuard(conversationId);
     const [items, setItems] = useState([]);
     const [activeMessageId, setActiveMessageId] = useState(currentMessageId);
     const [orderFingerprint, setOrderFingerprint] = useState(null);
@@ -79,7 +81,7 @@ const BranchMessageSelectorDialog = memo(({
     }, [activeMessageId, items, open]);
 
     const handleSelect = useCallback(async (item) => {
-        if (!item?.messageId || switchingId) return;
+        if (!freeze.canMutate() || !item?.messageId || switchingId) return;
         if (item.messageId === activeMessageId) {
             onClose?.();
             return;
@@ -104,9 +106,9 @@ const BranchMessageSelectorDialog = memo(({
         } finally {
             setSwitchingId(null);
         }
-    }, [activeMessageId, loadItems, onClose, onSelect, orderFingerprint, switchingId, t]);
+    }, [activeMessageId, loadItems, onClose, onSelect, orderFingerprint, switchingId, t, freeze]);
 
-    if (!open) return null;
+    if (!open || freeze.blocked) return null;
 
     return (
         <PopoverContent

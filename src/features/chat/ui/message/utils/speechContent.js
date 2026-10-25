@@ -126,7 +126,9 @@ const resolveReplacementSpeechContent = (directiveName, rawAttributes, replaceme
         maxDepth,
         visitedIds: [...visitedIds, replacementId],
         includeOwnText,
-        feedback,
+        // A historical parent also disables feedback for legacy descendants
+        // whose replacement entries do not yet carry the snapshot marker.
+        feedback: feedback && !normalized.snapshot,
     });
 };
 

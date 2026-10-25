@@ -9,7 +9,7 @@ import useConversationFork from './useConversationFork.js';
 
 export default function ConversationForkDialog({operation, open, onOpenChange, onComplete, onSelect, onStatusChange}) {
     const {t} = useTranslation();
-    const {task, submitting, submitError, refreshError, retrySubmission, terminal} = useConversationFork({
+    const {task, confirmed, submitting, submitError, refreshError, confirmFork, retrySubmission, terminal} = useConversationFork({
         conversationId: operation.conversationId,
         clientRequestId: operation.clientRequestId,
         onComplete: (result) => { onStatusChange?.('completed'); onComplete?.(result); },
@@ -28,7 +28,7 @@ export default function ConversationForkDialog({operation, open, onOpenChange, o
         useTaskStore.getState().show(task.taskId);
     };
     const close = () => {
-        if (terminal) onStatusChange?.('finished');
+        if (terminal || !confirmed) onStatusChange?.('finished');
         onOpenChange(false);
     };
 
@@ -40,13 +40,18 @@ export default function ConversationForkDialog({operation, open, onOpenChange, o
                         {complete ? <CheckCircle2 className="h-5 w-5 text-emerald-600"/>
                             : failed || submitError ? <TriangleAlert className="h-5 w-5 text-destructive"/>
                                 : <Copy className="h-5 w-5"/>}
-                        {t(complete ? 'conversationFork.completed' : failed ? 'conversationFork.failed' : 'conversationFork.title')}
+                        {t(complete ? 'conversationFork.completed' : failed ? 'conversationFork.failed' : !confirmed ? 'conversationFork.confirmTitle' : 'conversationFork.title')}
                     </DialogTitle>
                     <DialogDescription className="break-words">{operation.title}</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-3" aria-live="polite" aria-busy={!terminal && !submitError}>
-                    {complete ? (
-                        <p className="text-sm">{t('conversationFork.result', {count: Number(task.result.messageCount || 0)})}</p>
+                <div className="space-y-3" aria-live="polite" aria-busy={confirmed && !terminal && !submitError}>
+                    {!confirmed ? (
+                        <div className="space-y-2 text-sm leading-relaxed">
+                            <p>{t('conversationFork.confirmDescription')}</p>
+                            <p className="text-muted-foreground">{t('conversationFork.freezeHint')}</p>
+                        </div>
+                    ) : complete ? (
+                        <div className="space-y-1 text-sm"><p>{t('conversationFork.result', {count: Number(task.result.messageCount || 0)})}</p>{Number(task.result.skippedMessageCount || 0) > 0 && <p className="text-muted-foreground">{t('conversationFork.skippedResult', {count: Number(task.result.skippedMessageCount)})}</p>}</div>
                     ) : submitError ? (
                         <div role="alert" className="space-y-2 text-sm">
                             <p className="text-destructive">{submitError}</p>
@@ -69,7 +74,8 @@ export default function ConversationForkDialog({operation, open, onOpenChange, o
                     {refreshError && !terminal && <p role="status" className="break-words text-xs text-amber-700 dark:text-amber-400">{t('conversationFork.reconnecting')} {refreshError}</p>}
                 </div>
                 <DialogFooter className="gap-2">
-                    <Button type="button" variant="outline" onClick={close}>{t(terminal || submitError ? 'close' : 'conversationFork.closeWhileRunning')}</Button>
+                    <Button type="button" variant="outline" onClick={close}>{t(!confirmed ? 'cancel' : terminal || submitError ? 'close' : 'conversationFork.closeWhileRunning')}</Button>
+                    {!confirmed && <Button type="button" disabled={submitting} onClick={() => void confirmFork()}>{t('conversationFork.confirmAction')}</Button>}
                     {submitError && <Button type="button" disabled={submitting} onClick={() => void retrySubmission()}>{t('conversationFork.retryConfirmation')}</Button>}
                     {task?.taskId && !complete && <Button type="button" variant="outline" onClick={showTask}>{t('conversationFork.viewTask')}</Button>}
                     {complete && <Button type="button" onClick={() => { onOpenChange(false); onSelect?.(task.result.conversationId); }}>{t('conversationFork.openCopy')}</Button>}

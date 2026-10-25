@@ -8,11 +8,11 @@ const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled']);
 
 export default function useConversationFork({conversationId, clientRequestId, onComplete}) {
     const [task, setTask] = useState(null);
-    const [submitting, setSubmitting] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [confirmed, setConfirmed] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [refreshError, setRefreshError] = useState('');
     const mounted = useRef(false);
-    const started = useRef(false);
     const inFlight = useRef(false);
     const currentTask = useRef(null);
     const completed = useRef(false);
@@ -39,11 +39,12 @@ export default function useConversationFork({conversationId, clientRequestId, on
     const submit = useCallback(async () => {
         if (inFlight.current || currentTask.current) return;
         inFlight.current = true;
+        setConfirmed(true);
         if (mounted.current) { setSubmitting(true); setSubmitError(''); }
         try {
             const next = await apiClient.post(
                 `${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/${encodeURIComponent(conversationId)}/fork`,
-                {clientRequestId},
+                {clientRequestId, confirmed: true},
             );
             if (!acceptTask(next)) throw new Error('Invalid fork task response');
         } catch (error) {
@@ -56,12 +57,8 @@ export default function useConversationFork({conversationId, clientRequestId, on
 
     useEffect(() => {
         mounted.current = true;
-        if (!started.current) {
-            started.current = true;
-            void submit();
-        }
         return () => { mounted.current = false; };
-    }, [submit]);
+    }, []);
 
     const taskId = task?.taskId;
     const terminal = TERMINAL_STATUSES.has(task?.status);
@@ -89,5 +86,5 @@ export default function useConversationFork({conversationId, clientRequestId, on
         return () => { controller.abort(); clearInterval(timer); changed(); reconnected(); };
     }, [taskId, terminal, acceptTask]);
 
-    return {task, submitting, submitError, refreshError, retrySubmission: submit, terminal};
+    return {task, confirmed, submitting, submitError, refreshError, confirmFork: submit, retrySubmission: submit, terminal};
 }

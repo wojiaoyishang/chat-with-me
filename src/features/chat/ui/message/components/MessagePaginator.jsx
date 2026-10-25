@@ -4,6 +4,7 @@ import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
 import {Popover, PopoverTrigger} from '@/components/ui/popover';
 import BranchMessageSelectorDialog from './BranchMessageSelectorDialog.jsx';
+import {useConversationMutationGuard} from '../../../freeze/ConversationFreezeContext.jsx';
 
 const MessagePaginator = memo(({
                                    msg,
@@ -18,6 +19,7 @@ const MessagePaginator = memo(({
                                    t
                                }) => {
     const [selectorOpen, setSelectorOpen] = useState(false);
+    const freeze = useConversationMutationGuard(conversationId);
     const prevMsgId = msg?.prevMessage;
     const msgPrev = messages?.[prevMsgId];
     const branchMessages = Array.isArray(msgPrev?.messages) ? msgPrev.messages : [];
@@ -31,6 +33,7 @@ const MessagePaginator = memo(({
     const disabledPrev = totalPages === 0 || msgIdIndex <= 0;
 
     const switchToMessage = useCallback(async (nextMessageId, options = {}) => {
+        if (!freeze.canMutate()) return false;
         if (!msgPrev || !prevMsgId || !onSwitchMessage || !nextMessageId || nextMessageId === activeMessageId) {
             return true;
         }
@@ -58,7 +61,7 @@ const MessagePaginator = memo(({
         } finally {
             setSwitchingMessageId(null);
         }
-    }, [activeMessageId, msgPrev, onSwitchMessage, prevMsgId, setFadeMessages, setSwitchingMessageId]);
+    }, [activeMessageId, msgPrev, onSwitchMessage, prevMsgId, setFadeMessages, setSwitchingMessageId, freeze]);
 
     const handleSwitch = useCallback(async (direction) => {
         const nextIndex = direction === 'next' ? msgIdIndex + 1 : msgIdIndex - 1;
@@ -81,7 +84,7 @@ const MessagePaginator = memo(({
                 variant="ghost"
                 size="icon-sm"
                 onClick={() => handleSwitch('prev')}
-                disabled={disabledPrev || switchingMessageId !== null}
+                disabled={freeze.blocked || disabledPrev || switchingMessageId !== null}
                 className="size-6 rounded-full"
                 aria-label={t('prev_page')}
             >
@@ -89,9 +92,9 @@ const MessagePaginator = memo(({
             </Button>
 
             <Popover
-                open={selectorOpen}
+                open={selectorOpen && !freeze.blocked}
                 onOpenChange={(nextOpen) => {
-                    if (switchingMessageId === null) setSelectorOpen(nextOpen);
+                    if (!nextOpen || (!freeze.blocked && switchingMessageId === null)) setSelectorOpen(nextOpen);
                 }}
             >
                 <PopoverTrigger asChild>
@@ -99,7 +102,7 @@ const MessagePaginator = memo(({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        disabled={switchingMessageId !== null}
+                        disabled={freeze.blocked || switchingMessageId !== null}
                         className="h-6 min-w-12 px-1.5 text-xs font-normal tabular-nums text-muted-foreground hover:text-foreground"
                         aria-label={t('open_message_branch_selector') || '打开消息分支选择器'}
                         title={t('open_message_branch_selector') || '打开消息分支选择器'}
@@ -109,7 +112,7 @@ const MessagePaginator = memo(({
                 </PopoverTrigger>
 
                 <BranchMessageSelectorDialog
-                    open={selectorOpen}
+                    open={selectorOpen && !freeze.blocked}
                     conversationId={conversationId}
                     parentMessageId={prevMsgId}
                     currentMessageId={activeMessageId}
@@ -124,7 +127,7 @@ const MessagePaginator = memo(({
                 variant="ghost"
                 size="icon-sm"
                 onClick={() => handleSwitch('next')}
-                disabled={disabledNext || switchingMessageId !== null}
+                disabled={freeze.blocked || disabledNext || switchingMessageId !== null}
                 className="size-6 rounded-full"
                 aria-label={t('next_page')}
             >

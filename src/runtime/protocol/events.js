@@ -50,6 +50,7 @@ export const EventName = Object.freeze({
     CONVERSATION_MESSAGES_LOADED: 'conversation.messages.loaded',
     CONVERSATION_BRANCH_SWITCH: 'conversation.branch.switch',
     CONVERSATION_TREE_CHANGED: 'conversation.tree.changed',
+    CONVERSATION_FREEZE_CHANGED: 'conversation.freeze.changed',
     CONVERSATION_DELETED: 'conversation.deleted',
     RUN_BACKGROUND_TOOLS_CANCEL: 'run.background_tools.cancel',
     RUN_BACKGROUND_TOOL_CANCEL: 'run.background_tool.cancel',

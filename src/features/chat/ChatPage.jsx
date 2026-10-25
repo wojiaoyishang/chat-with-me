@@ -22,6 +22,9 @@ import RuntimeInspectorDialog from '@/features/chat/page/components/RuntimeInspe
 import useRuntimeInspector from '@/features/chat/page/hooks/useRuntimeInspector.js';
 import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
 import StoryReader from '@/features/story/StoryReader.jsx';
+import useConversationFreeze from './freeze/useConversationFreeze.js';
+import ConversationFreezeNotice from './freeze/ConversationFreezeNotice.jsx';
+import {ConversationFreezeContext} from './freeze/ConversationFreezeContext.jsx';
 import { ExecutionHost } from '@/features/execution';
 import { clearWorkspaceTransfers, upsertWorkspaceTransfer } from '@/features/workspace/useWorkspaceTransferStore.js';
 import { getVisionAttachmentIds, normalizeAttachmentList } from './attachmentVision.js';
@@ -170,6 +173,8 @@ function ChatPage({
 }) {
     const { t, i18n } = useTranslation();
     const routeLocation = useLocation();
+    const conversationFreeze = useConversationFreeze(conversationId);
+    const canMutateConversation = conversationFreeze.canMutate;
     const isViewportActive = visible && (
         /^\/chat-window(?:\/|$)/.test(routeLocation.pathname) ||
         (pageType === 'doc'
@@ -1065,6 +1070,11 @@ function ChatPage({
     useEffect(() => {
         if (!realtimeVoice.state.open) closeAvatarScene();
     }, [realtimeVoice.state.open, closeAvatarScene]);
+    const freezeVoiceOpen = realtimeVoice.state.open;
+    const freezeVoiceStop = realtimeVoice.stop;
+    useEffect(() => {
+        if (conversationFreeze.frozen && freezeVoiceOpen) void freezeVoiceStop();
+    }, [conversationFreeze.frozen, freezeVoiceOpen, freezeVoiceStop]);
     const realtimeVoiceOpenRef = useRef(false);
     const realtimeVoiceStopRef = useRef(null);
     useEffect(() => {
@@ -1424,6 +1434,7 @@ function ChatPage({
             inputSource = 'chat',
             idempotencyKey = '',
         }) => {
+            if (!canMutateConversation()) return Promise.resolve({success: false, value: t('conversationFreeze.frozen')});
             if (uploadFiles.length !== 0) {
                 toast.error(t('file_upload_not_complete'));
                 return;
@@ -1569,11 +1580,13 @@ function ChatPage({
             uploadFiles,
             onNewConversationId,
             persistPendingWorkspaceSelection,
+            canMutateConversation,
         ],
     );
 
     const handleRealtimeVoiceStart = useCallback(
         async ({ toolsStatus = {}, composerStatus = 'normal' } = {}) => {
+            if (!canMutateConversation()) return;
             // conversation.create happens before the Voice Surface becomes active for a
             // conversationless chat.  Prevent a rapid double-click from starting two
             // independent create/start pipelines during that short window.
@@ -1656,6 +1669,7 @@ function ChatPage({
             selectedModel,
             t,
             uploadFiles.length,
+            canMutateConversation,
         ],
     );
 
@@ -2042,6 +2056,7 @@ function ChatPage({
 
     const switchMessage = useCallback(
         async (msg, msgId, targetMessageOrDelta, options = {}) => {
+            if (!canMutateConversation()) return false;
             const currentIndex = msg.messages.indexOf(msg.nextMessage);
             const newMsgId =
                 typeof targetMessageOrDelta === 'number'
@@ -2072,7 +2087,7 @@ function ChatPage({
             loadMessageSummaries({ silent: true });
             return true;
         },
-        [conversationId, loadMessageSummaries, loadSwitchMessage, t],
+        [conversationId, loadMessageSummaries, loadSwitchMessage, t, canMutateConversation],
     );
 
     const emitMessagesLoaded = (isCurrent = () => true) => {
@@ -3523,6 +3538,7 @@ function ChatPage({
     }, [conversationId, isLoading, messagesOrder.length, jumpToMessage]);
 
     return (
+        <ConversationFreezeContext.Provider value={conversationFreeze}>
         <WidgetPresentationProvider chatBoxHostElement={widgetChatBoxHostElement}>
             <>
                 <Motion.div
@@ -3618,6 +3634,7 @@ function ChatPage({
                             onDeleteStory={deleteStory}
                         />
 
+                        <ConversationFreezeNotice freeze={conversationFreeze}/>
                         <div className="flex-1 min-h-0 w-full relative overflow-hidden">
                             <ChatHistoryViewport
                                 open={avatarImmersive && avatarHistoryOpen}
@@ -3999,6 +4016,7 @@ function ChatPage({
                     cancelText={t('cancel')}
                     confirmText={t('confirm')}
                     onConfirm={() => {
+                        if (!canMutateConversation()) return;
                         if (!pendingDeleteMsgId) {
                             setShowDeleteConfirm(false);
                             return;
@@ -4024,6 +4042,7 @@ function ChatPage({
                 />
             </>
         </WidgetPresentationProvider>
+        </ConversationFreezeContext.Provider>
     );
 }
 

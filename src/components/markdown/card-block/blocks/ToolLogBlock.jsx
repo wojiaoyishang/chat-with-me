@@ -381,7 +381,7 @@ const getToolLogTone = (status) => {
 };
 
 const ToolLogBlock = memo(
-    ({ content = '', id }) => {
+    ({ content = '', id, snapshot = false }) => {
         const { t } = useTranslation();
         const [showAudit, setShowAudit] = useState(false);
         const { title, auditStatus, auditDetails, images, bodySegments, status, startTimeMs, doneTimeMs, failedTimeMs } =
@@ -421,7 +421,7 @@ const ToolLogBlock = memo(
         }, [bodySegments, title]);
         const isDone = status === 'done';
         const isFailed = status === 'failed';
-        const isRunning = status === 'running';
+        const isRunning = !snapshot && status === 'running';
 
         const {
             handleScroll,
@@ -464,7 +464,7 @@ const ToolLogBlock = memo(
                             {auditStatus === 'passed' ? (
                                 <ShieldCheck className="size-3" />
                             ) : auditStatus === 'reviewing' ? (
-                                <Shield className="size-3 animate-pulse" />
+                                <Shield className={`size-3 ${snapshot ? '' : 'animate-pulse'}`} />
                             ) : (
                                 <ShieldAlert className="size-3" />
                             )}
@@ -486,7 +486,7 @@ const ToolLogBlock = memo(
                 {showAudit && auditStatus ? (
                     <div className={`mt-1.5 -mx-2.5 border-t px-2.5 py-2 text-xs ${tone.bodyWrap}`}>
                         <div className="flex items-center gap-2 font-medium" role="status">
-                            {auditStatus === 'reviewing' && (
+                            {auditStatus === 'reviewing' && !snapshot && (
                                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                             )}
                             {t(`tool_review_${auditStatus}`)}
@@ -539,7 +539,7 @@ const ToolLogBlock = memo(
         );
     },
     (prev, next) => {
-        return prev.id === next.id && prev.content === next.content;
+        return prev.id === next.id && prev.content === next.content && prev.snapshot === next.snapshot;
     },
 );
 

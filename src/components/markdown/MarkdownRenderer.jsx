@@ -20,6 +20,7 @@ import './MarkdownContent.css';
 import CardBlock from './card-block/CardBlock.jsx';
 import ExecutionStatusGroup from '@/features/execution/ExecutionStatusGroup.jsx';
 import { parseAgentContent } from './card-block/agent/agentContent.js';
+import { stripFrontendFeedback } from '@/features/chat/speech/frontendFeedback.js';
 import ReplacementContextBadge from '@/features/chat/ui/message/components/ReplacementContextBadge.jsx';
 import {
     getCardReplaceIdFromAttributes,
@@ -165,7 +166,7 @@ const extractCopyTextFromReplacementValue = (value, seenObjects = new WeakSet())
     return '';
 };
 
-const normalizeReplacementCopyEntry = (replacement, id, explicitType) => {
+const normalizeReplacementCopyEntry = (replacement, id, explicitType, inheritedSnapshot = false) => {
     const normalizedId = String(id || '');
 
     if (!replacement || typeof replacement !== 'object') {
@@ -185,7 +186,9 @@ const normalizeReplacementCopyEntry = (replacement, id, explicitType) => {
     }
 
     const entry = replacement[normalizedId];
-    const rawCopyContent = extractCopyTextFromReplacementValue(entry);
+    const extractedCopyContent = extractCopyTextFromReplacementValue(entry);
+    const snapshot = inheritedSnapshot || entry?.snapshot === true;
+    const rawCopyContent = snapshot ? stripFrontendFeedback(extractedCopyContent) : extractedCopyContent;
     const protocol = parseReplacementProtocol(rawCopyContent);
 
     // Tool details routed exclusively to Execution Window are deliberately absent from
@@ -207,6 +210,7 @@ const normalizeReplacementCopyEntry = (replacement, id, explicitType) => {
     return {
         exists: true,
         id: normalizedId,
+        snapshot,
         content:
             String(explicitType || entry?.type || protocol.type || '').toLowerCase() === 'agent'
                 ? parseAgentContent(stripCopyTypeMarker(rawCopyContent)).cleanContent
@@ -227,7 +231,7 @@ const isReplaceDirective = (directiveName, attributes) => {
 };
 
 const replaceCopyDirectives = (source, directiveRegex, replacement, options) => {
-    const { depth, maxDepth, visitedIds } = options;
+    const { depth, maxDepth, visitedIds, snapshot } = options;
 
     directiveRegex.lastIndex = 0;
 
@@ -256,7 +260,7 @@ const replaceCopyDirectives = (source, directiveRegex, replacement, options) => 
             return '';
         }
 
-        const normalized = normalizeReplacementCopyEntry(replacement, finalId, attributes.type);
+        const normalized = normalizeReplacementCopyEntry(replacement, finalId, attributes.type, snapshot);
 
         if (!normalized.exists) {
             return '';
@@ -266,14 +270,15 @@ const replaceCopyDirectives = (source, directiveRegex, replacement, options) => 
             depth: depth + 1,
             maxDepth,
             visitedIds: [...visitedIds, finalId],
+            snapshot: normalized.snapshot,
         });
     });
 };
 
 export const resolveMarkdownCopyContent = (content, replacement = {}, options = {}) => {
-    const { depth = 0, maxDepth = 10, visitedIds = [] } = options;
+    const { depth = 0, maxDepth = 10, visitedIds = [], snapshot = false } = options;
 
-    const source = normalizeLineBreaks(content);
+    const source = normalizeLineBreaks(snapshot ? stripFrontendFeedback(content) : content);
 
     if (!source) {
         return '';
@@ -292,20 +297,21 @@ export const resolveMarkdownCopyContent = (content, replacement = {}, options = 
         depth,
         maxDepth,
         visitedIds,
+        snapshot,
     });
 
     const withoutSelfClosingDirectives = replaceCopyDirectives(
         withoutBlockDirectives,
         CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE,
         replacement,
-        { depth, maxDepth, visitedIds },
+        { depth, maxDepth, visitedIds, snapshot },
     );
 
     const withoutMustacheDirectives = replaceCopyDirectives(
         withoutSelfClosingDirectives,
         CARD_REPLACE_MUSTACHE_RE,
         replacement,
-        { depth, maxDepth, visitedIds },
+        { depth, maxDepth, visitedIds, snapshot },
     );
 
     return normalizeCopyText(withoutMustacheDirectives);
@@ -350,6 +356,7 @@ const createComponents = ({
     messageReadonly = false,
     messageIsLatest = true,
     renderSurface = 'conversation',
+    snapshot = false,
     onTaskToggle = null,
     sourceContent = '',
     cardSpec = null,
@@ -372,6 +379,7 @@ const createComponents = ({
                 messageContextState={messageContextState}
                 messageIsLatest={messageIsLatest}
                 renderSurface={renderSurface}
+                snapshot={snapshot || extra.snapshot === true}
             />
         );
     };
@@ -473,6 +481,7 @@ const createComponents = ({
                     <div className="block w-full clear-both" data-tts-ignore="true">
                         <CardBlock
                             id=""
+                            snapshot={snapshot}
                             type={tokenType}
                             content=""
                             contextId={contextId}
@@ -506,6 +515,7 @@ const createComponents = ({
                     <div className="block w-full clear-both" data-tts-ignore="true">
                         <CardBlock
                             id={finalId}
+                            snapshot={snapshot}
                             type="error"
                             content={`cardReplace 出现循环引用，id: ${finalId}`}
                             contextId={contextId}
@@ -533,6 +543,7 @@ const createComponents = ({
                     <div className="block w-full clear-both" data-tts-ignore="true">
                         <CardBlock
                             id={finalId}
+                            snapshot={snapshot}
                             type="error"
                             content={`cardReplace 嵌套过深，id: ${finalId}`}
                             contextId={contextId}
@@ -552,6 +563,7 @@ const createComponents = ({
             }
 
             const normalized = normalizeReplacementEntry(currentReplacement, finalId, tokenType, isStreaming);
+            const cardSnapshot = snapshot || normalized.snapshot;
 
             // 情况 5：有 id，但 replacement 找不到
             // 按你的要求：只 console.warn，不渲染组件
@@ -567,19 +579,19 @@ const createComponents = ({
             } catch {
                 // An incomplete group attribute should fall back to the latest row.
             }
-            const groupedEntries = normalized.type === 'executionStatus'
+            const groupedEntries = !cardSnapshot && normalized.type === 'executionStatus'
                 ? groupedIds.map((groupedId) => {
                     // The grouping plugin already verified each token's status
                     // type. Persisted replacements may contain plain JSON with
                     // the type supplied only by that original Markdown token.
                     const entry = normalizeReplacementEntry(currentReplacement, groupedId, 'executionStatus', isStreaming);
-                    return entry.exists && entry.type === 'executionStatus'
+                    return entry.exists && !entry.snapshot && entry.type === 'executionStatus'
                         ? {id: groupedId, content: entry.content}
                         : null;
                 }).filter(Boolean)
                 : [];
             const continuationId = String(node?.properties?.continuationId || node?.properties?.['continuation-id'] || '');
-            const continuationEntry = normalized.type === 'executionStatus' && continuationId
+            const continuationEntry = !cardSnapshot && normalized.type === 'executionStatus' && continuationId
                 ? normalizeReplacementEntry(currentReplacement, continuationId, 'executionStatus', isStreaming)
                 : null;
             const continuation = continuationEntry?.exists && continuationEntry.content.trim()
@@ -592,18 +604,19 @@ const createComponents = ({
                     data-tts-source-type="replacement"
                     data-tts-ignore={normalized.allowTts ? undefined : 'true'}
                 >
-                    <ReplacementContextBadge
+                    {!cardSnapshot && <ReplacementContextBadge
                         conversationId={conversationId}
                         messageId={contextId}
                         replacementId={finalId}
                         status={normalized.contextStatus}
                         messageState={messageContextState}
-                    />
+                    />}
                     {groupedEntries.length > 1 || (groupedEntries.length && continuation) ? (
                         <ExecutionStatusGroup entries={groupedEntries} continuation={continuation} conversationId={conversationId} />
                     ) : <CardBlock
                         id={finalId}
                         type={normalized.type}
+                        snapshot={cardSnapshot}
                         content={normalized.content}
                         allowTts={normalized.allowTts}
                         contextId={contextId}
@@ -618,6 +631,7 @@ const createComponents = ({
                             return renderNestedMarkdown(markdownContent, {
                                 depth: depth + 1,
                                 visitedIds: nextVisitedIds,
+                                snapshot: cardSnapshot,
                             });
                         }}
                     />}
@@ -643,6 +657,7 @@ function MarkdownRendererInner({
     messageIsLatest: messageIsLatestProp = null,
     copyContentComponentName = MARKDOWN_COPY_CONTENT_COMPONENT_NAME,
     renderSurface = 'conversation',
+    snapshot = false,
     onTaskToggle = null,
 }) {
     const studyIdPrefix = useId();
@@ -678,6 +693,7 @@ function MarkdownRendererInner({
             messageReadonly,
             messageIsLatest,
             renderSurface,
+            snapshot,
             onTaskToggle,
             sourceContent: taskSourceContent,
             cardSpec,
@@ -694,6 +710,7 @@ function MarkdownRendererInner({
         messageReadonly,
         messageIsLatest,
         renderSurface,
+        snapshot,
         onTaskToggle,
         taskSourceContent,
         cardSpec,
@@ -758,7 +775,7 @@ function MarkdownRendererInner({
 
     const markdown = (
         <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath, ...documentRemarkPlugins, remarkCardReplace, [remarkCollapseExecutionStatuses, {replacement, renderSurface}], remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
+            remarkPlugins={[remarkGfm, remarkMath, ...documentRemarkPlugins, remarkCardReplace, [remarkCollapseExecutionStatuses, {replacement, renderSurface, snapshot}], remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
             rehypePlugins={[
                 rehypeKatex,
                 ...extraRehypePlugins,
@@ -814,6 +831,7 @@ const MarkdownRenderer = memo(MarkdownRendererInner, (prev, next) => {
         prev.messageIsLatest === next.messageIsLatest &&
         prev.copyContentComponentName === next.copyContentComponentName &&
         prev.renderSurface === next.renderSurface &&
+        prev.snapshot === next.snapshot &&
         prev.onTaskToggle === next.onTaskToggle &&
         areVisitedIdsEqual(prev.visitedIds, next.visitedIds)
     );

@@ -10,6 +10,7 @@ import { getLocalSetting, setLocalSetting, useIsMobile } from '@/lib/tools.jsx';
 import { emitEvent, onEvent } from '@/context/useEventStore.jsx';
 
 import ChatBoxHeader from './ChatBoxHeader';
+import {useConversationMutationGuard} from '../freeze/ConversationFreezeContext.jsx';
 import ToolButtons, { BuiltinToolButton } from './ToolButtons';
 import AttachmentShowcase from './AttachmentShowcase';
 import ChatAttachmentLibraryDialog from './ChatAttachmentLibraryDialog';
@@ -248,7 +249,10 @@ function ChatBox({
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // 是否只读
-    const [isReadOnly, setIsReadOnly] = useState(readOnly);
+    const [serverReadOnly, setIsReadOnly] = useState(readOnly);
+    const conversationFreeze = useConversationMutationGuard(conversationId);
+    const canMutateConversation = conversationFreeze.canMutate;
+    const isReadOnly = serverReadOnly || conversationFreeze.blocked;
 
     // 提示相关
     const [showTipMessage, setShowTipMessage] = useState(true);
@@ -703,7 +707,7 @@ function ChatBox({
 
     const handleRealtimeVoiceStartWithWorkspaceSync = useCallback(
         async (payload) => {
-            const isBusy = () => Boolean(turnSubmissionRef.current || turnSubmissionPhaseRef.current || sendButtonStatusRef.current !== 'normal');
+            const isBusy = () => Boolean(!canMutateConversation() || turnSubmissionRef.current || turnSubmissionPhaseRef.current || sendButtonStatusRef.current !== 'normal');
             if (isBusy()) return;
             const targetConversationId = draftConversationIdRef.current;
             await waitForWorkspaceSelectionSync();
@@ -713,7 +717,7 @@ function ChatBox({
             }
             return undefined;
         },
-        [onRealtimeVoiceStart, waitForWorkspaceSelectionSync],
+        [onRealtimeVoiceStart, waitForWorkspaceSelectionSync, canMutateConversation],
     );
 
     const restoreAuthoritativeToolPermissions = useCallback(
@@ -856,6 +860,7 @@ function ChatBox({
     );
 
     const handleSendMessage = useCallback(async (options = {}) => {
+        if (!canMutateConversation()) return;
         if (turnSubmissionRef.current || ['pending', 'recovering'].includes(turnSubmissionPhaseRef.current)) return;
         const activeEditDraft = editDraftRef.current;
         const wasEditing = isEditMessageRef.current;
@@ -897,7 +902,7 @@ function ChatBox({
             // optimistic in the UI, so never admit a Turn while its persistence request is
             // still in flight; otherwise the Gateway can read the previous empty selection.
             await waitForWorkspaceSelectionSync();
-            if (draftConversationIdRef.current !== targetConversationId) return;
+            if (draftConversationIdRef.current !== targetConversationId || !canMutateConversation()) return;
 
             if (isExecutionGuidance) {
                 if (executionGuidancePendingRef.current || uploadFiles.length > 0) return;
@@ -1150,6 +1155,7 @@ function ChatBox({
         }
     }, [
         onSendMessage,
+        canMutateConversation,
         buildOutboundToolsStatus,
         editMessageId,
         attachmentsMeta,
@@ -1382,6 +1388,7 @@ function ChatBox({
     );
 
     const startVoiceRecording = useCallback(async () => {
+        if (!canMutateConversation()) return false;
         if (isReadOnly || voiceActionPending || isVoiceRecognizing || voiceRecorderRef.current) return false;
 
         setVoiceActionPending(true);
@@ -1389,10 +1396,12 @@ function ChatBox({
         try {
             setVoiceWaveformLevels(createSilentWaveformLevels(VOICE_WAVEFORM_BARS));
             const stream = await requestMicrophoneStream(getMicrophoneRequestOptions());
+            if (!canMutateConversation()) { stream.getTracks().forEach(track => track.stop()); return false; }
             const recorder = await createPcm16kRecorder(stream, {
                 waveformBars: VOICE_WAVEFORM_BARS,
                 onWaveform: setVoiceWaveformLevels,
             });
+            if (!canMutateConversation()) { await recorder.cancel(); return false; }
             voiceRecorderRef.current = recorder;
             setIsVoiceRecording(true);
 
@@ -1433,6 +1442,7 @@ function ChatBox({
         isReadOnly,
         isSmallScreen,
         isVoiceRecognizing,
+        canMutateConversation,
         conversationId,
         onVoiceRecordingStart,
         voiceActionPending,
@@ -1818,6 +1828,7 @@ function ChatBox({
                     break;
 
                 case 'composer.edit.set':
+                    if (!canMutateConversation()) break;
                     if (payload.immediate) {
                         if (turnSubmissionRef.current || ['pending', 'recovering'].includes(turnSubmissionPhaseRef.current)) break;
                         const currentStatus = turnSubmissionPhaseRef.current === 'running' && sendButtonStatusRef.current === 'normal'
@@ -2037,7 +2048,7 @@ function ChatBox({
                     break;
             }
         },
-        [
+        [canMutateConversation,
             attachmentsMeta,
             buildOutboundToolsStatus,
             chatboxSetup,
@@ -2591,6 +2602,7 @@ function ChatBox({
             />
             <DropFileLayer
                 onDropFiles={(files, items) => {
+                    if (!canMutateConversation()) return;
                     if (ignoreAttachmentTools) {
                         toast.error(t('upload_files_disable'));
                         return;
@@ -2603,6 +2615,8 @@ function ChatBox({
             <ChatBoxInteractionHost conversationId={conversationId} />
             <div
                 ref={rootRef}
+                inert={conversationFreeze.blocked ? true : undefined}
+                data-composer-frozen={conversationFreeze.blocked || undefined}
                 className={`pointer-events-none relative isolate mx-auto flex w-full max-w-225 flex-col overflow-hidden px-4 pb-4 ${immersive ? 'pt-4' : 'pt-0'}`}
                 style={{ maxHeight: rootMaxHeightStyle }}
             >

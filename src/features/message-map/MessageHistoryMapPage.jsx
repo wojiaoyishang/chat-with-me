@@ -22,6 +22,8 @@ import apiClient from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import useConversationFreeze from '@/features/chat/freeze/useConversationFreeze.js';
+import ConversationFreezeNotice from '@/features/chat/freeze/ConversationFreezeNotice.jsx';
 import MessageMapSearch from './MessageMapSearch.jsx';
 import MarkdownRenderer from '@/components/markdown/MarkdownRenderer.jsx';
 
@@ -63,6 +65,7 @@ const getPointerMidpoint = (first, second) => ({
 
 const MessageHistoryMapPage = () => {
     const { conversationId } = useParams();
+    const freeze = useConversationFreeze(conversationId);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const initialFocusId = String(searchParams.get('focus') || '');
@@ -705,7 +708,7 @@ const MessageHistoryMapPage = () => {
 
     const activateBranchAndLocate = useCallback(async () => {
         const targetId = String(selectedMessageId || '').trim();
-        if (!targetId || !conversationId || branchSwitching) return;
+        if (!targetId || !conversationId || branchSwitching || !freeze.canMutate()) return;
 
         if (detail?.isActivePath || nodeById.get(targetId)?.isActivePath) {
             openMessageInConversation(targetId);
@@ -733,6 +736,7 @@ const MessageHistoryMapPage = () => {
         }
     }, [
         branchSwitching,
+        freeze,
         conversationId,
         detail?.isActivePath,
         loadMap,
@@ -860,6 +864,7 @@ const MessageHistoryMapPage = () => {
 
     return (
         <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+            <ConversationFreezeNotice freeze={freeze}/>
             <header className="relative z-30 flex min-h-16 flex-wrap items-center gap-2 border-b bg-background/95 px-3 py-2 backdrop-blur sm:gap-3 sm:px-4">
                 <Button
                     type="button"
@@ -1235,7 +1240,7 @@ const MessageHistoryMapPage = () => {
                                 type="button"
                                 className="w-full"
                                 variant={detail?.isActivePath ? 'default' : 'outline'}
-                                disabled={detailLoading || branchSwitching || !message}
+                                disabled={freeze.blocked || detailLoading || branchSwitching || !message}
                                 onClick={activateBranchAndLocate}
                                 title={
                                     detail?.isActivePath

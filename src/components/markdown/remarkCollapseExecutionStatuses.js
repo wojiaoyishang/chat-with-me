@@ -19,7 +19,9 @@ const getCard = (node, replacement) => {
         id,
         node.data?.hProperties?.type || '',
     );
-    return normalized.exists && !normalized.contextStatus ? normalized : null;
+    // Historical cards have no live execution identity and must retain their own
+    // readonly hosts even when an older snapshot still carries runtime IDs.
+    return normalized.exists && !normalized.contextStatus && !normalized.snapshot ? normalized : null;
 };
 
 /**
@@ -28,8 +30,9 @@ const getCard = (node, replacement) => {
  * of the same stretch of work, not another tool call or a visual group boundary.
  * Original records stay in the replacement map for exact per-call navigation.
  */
-export function remarkCollapseExecutionStatuses({replacement = {}, renderSurface = 'conversation'} = {}) {
+export function remarkCollapseExecutionStatuses({replacement = {}, renderSurface = 'conversation', snapshot = false} = {}) {
     return (tree) => {
+        if (snapshot) return;
         visit(tree, (node) => Array.isArray(node.children), (parent) => {
             const collapsed = [];
             let group = null;

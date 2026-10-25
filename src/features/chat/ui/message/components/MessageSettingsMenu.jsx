@@ -6,10 +6,12 @@ import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
 import {emitEvent} from '@/context/useEventStore.jsx';
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+import {useConversationMutationGuard} from '../../../freeze/ConversationFreezeContext.jsx';
 import useMessageConfigCatalog from '../hooks/useMessageConfigCatalog.js';
 
 export default function MessageSettingsMenu({msg, msgId, conversationId, readonly = false, onOpenChange}) {
     const {t} = useTranslation();
+    const freeze = useConversationMutationGuard(conversationId);
     const [open, setOpen] = useState(false);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState('');
@@ -31,7 +33,7 @@ export default function MessageSettingsMenu({msg, msgId, conversationId, readonl
     };
     const configurable = Boolean(conversationId && msgId && !String(msgId).startsWith('<') && !readonly && msg?.readonly !== true && msg?.messageConfig?.canConfigure !== false);
     const save = async (definition) => {
-        if (!configurable || inFlight.current) return;
+        if (!freeze.canMutate() || !configurable || inFlight.current) return;
         const previous = typeof msg?.messageConfig?.[definition.key] === 'boolean' ? msg.messageConfig[definition.key] : definition.default !== false;
         const requestIdentity = identity;
         inFlight.current = true;
@@ -61,7 +63,7 @@ export default function MessageSettingsMenu({msg, msgId, conversationId, readonl
     return (
         <DropdownMenu open={open} onOpenChange={changeOpen}>
             <DropdownMenuTrigger asChild>
-                <button type="button" disabled={saving} className="shrink-0 cursor-pointer rounded-sm p-1.5 transition-colors hover:bg-gray-200 disabled:cursor-wait" aria-label={t('messageConfig.title')} title={t('messageConfig.title')} onClick={event => event.stopPropagation()}>
+                <button type="button" disabled={saving || freeze.blocked} className="shrink-0 cursor-pointer rounded-sm p-1.5 transition-colors hover:bg-gray-200 disabled:cursor-wait" aria-label={t('messageConfig.title')} title={t('messageConfig.title')} onClick={event => event.stopPropagation()}>
                     {saving ? <Loader2 size={16} className="animate-spin text-gray-600"/> : <MoreHorizontal size={16} className="text-gray-600 hover:text-gray-800"/>}
                 </button>
             </DropdownMenuTrigger>
@@ -76,7 +78,7 @@ export default function MessageSettingsMenu({msg, msgId, conversationId, readonl
                 {!loading && !error && items?.map((definition) => {
                     const enabled = typeof msg?.messageConfig?.[definition.key] === 'boolean' ? msg.messageConfig[definition.key] : definition.default !== false;
                     return (
-                        <DropdownMenuItem key={definition.key} disabled={saving} onSelect={event => { event.preventDefault(); void save(definition); }}>
+                        <DropdownMenuItem key={definition.key} disabled={saving || freeze.blocked} onSelect={event => { event.preventDefault(); void save(definition); }}>
                             {enabled ? <ShieldCheck className="h-4 w-4"/> : <ShieldOff className="h-4 w-4"/>}
                             <span>{enabled ? definition.disableLabel || definition.label : definition.enableLabel || definition.label}</span>
                         </DropdownMenuItem>

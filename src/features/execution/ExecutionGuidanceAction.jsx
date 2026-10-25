@@ -1,3 +1,4 @@
+import {useConversationMutationGuard} from '@/features/chat/freeze/ConversationFreezeContext.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { Loader2, MessageSquarePlus, Pencil, RotateCcw, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -7,6 +8,7 @@ import { openGuidanceEditor, upsertExecution } from './useExecutionStore.js';
 import { isQueuedExecutionGuidance, isWidgetExecutionGuidance } from './executionStatusModel.js';
 
 export default function ExecutionGuidanceAction({ activity, execution, surface = 'conversation' }) {
+    const freeze = useConversationMutationGuard(execution?.conversationId);
     const [pendingOperation, setPendingOperation] = useState(null);
     const operationRef = useRef(null);
     const identity = JSON.stringify([execution?.conversationId, execution?.executionId, activity?.id]);
@@ -28,6 +30,7 @@ export default function ExecutionGuidanceAction({ activity, execution, surface =
     if (withdrawn && surface !== 'execution_window') return null;
 
     const openEditor = (target, mode) => {
+        if (!freeze.canMutate()) return;
         try {
             if (openGuidanceEditor(target, {guidanceId: activity.id, mode}) === false)
                 throw new Error('无法打开这条补充的编辑区，请确认执行和补充消息仍然有效。');
@@ -36,6 +39,7 @@ export default function ExecutionGuidanceAction({ activity, execution, surface =
         }
     };
     const change = async (operation) => {
+        if (!freeze.canMutate()) return;
         // The ref also guards two clicks before React has painted the disabled state.
         if (operationRef.current?.identity === identity) return;
         const token = {identity};
@@ -93,7 +97,7 @@ export default function ExecutionGuidanceAction({ activity, execution, surface =
                     variant="ghost"
                     size="sm"
                     className="h-6 gap-1 px-1.5 text-[11px] font-normal text-gray-500 hover:text-gray-800"
-                    disabled={pending}
+                    disabled={freeze.blocked || pending}
                     title={action.label}
                     aria-label={action.label}
                     onClick={action.onClick}

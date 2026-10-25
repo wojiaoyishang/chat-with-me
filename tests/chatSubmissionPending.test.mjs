@@ -63,6 +63,7 @@ function pageHarness(overrides = {}) {
     const state = { submission: null, events: [], errors: [] };
     let sequence = 0;
     const scope = {
+        canMutateConversation: () => true,
         uploadFiles: [],
         toast: { error: (value) => state.errors.push(value) },
         t,
@@ -103,6 +104,7 @@ function composerHarness(overrides = {}) {
     const state = { submitting: false, sends: [], content: 'message', cleared: [] };
     const attachments = overrides.attachmentsMeta ?? [];
     const scope = {
+        canMutateConversation: () => true,
         turnSubmissionRef: { current: null },
         turnSubmissionPhaseRef: { current: '' },
         editDraftRef: { current: null },
@@ -263,6 +265,7 @@ test('reconnection keeps loading until an authoritative restored status replaces
     for (const restoredStatus of ['normal', 'generating', 'disabled']) {
         const state = { syncs: 0, submission: { turnId: 'old-turn', phase: 'running' } };
         const scope = {
+        canMutateConversation: () => true,
             turnSubmissionRef: { current: state.submission },
             setTurnSubmission: (value) => { state.submission = value; },
             isMessageLoadedRef: { current: true },
@@ -335,6 +338,7 @@ test('voice rechecks the current admission/status and conversation after workspa
         const workspace = deferred();
         const calls = [];
         const scope = {
+        canMutateConversation: () => true,
             turnSubmissionRef: { current: null },
             turnSubmissionPhaseRef: { current: '' },
             sendButtonStatusRef: { current: 'normal' },
@@ -415,4 +419,21 @@ test('cleared input remains a disabled spinner during admission and resumes voic
         await act(async () => root.unmount());
         dom.window.close();
     }
+});
+
+
+test('conversation freeze blocks composer send, parent admission and delayed synchronization', async () => {
+    const page = pageHarness({canMutateConversation: () => false});
+    assert.equal((await page.send({messageContent: 'hello'})).success, false);
+    assert.deepEqual(page.state.events, []);
+    const composer = composerHarness({canMutateConversation: () => false});
+    await composer.send();
+    assert.deepEqual(composer.state.sends, []);
+    const sync = deferred(); let available = true;
+    const delayed = composerHarness({canMutateConversation: () => available, waitForWorkspaceSelectionSync: () => sync.promise});
+    const send = delayed.send();
+    await tick(); available = false; sync.resolve(); await send;
+    assert.deepEqual(delayed.state.sends, []);
+    assert.equal(delayed.state.content, 'message', 'freezing preserves the unsent draft');
+    assert.equal(delayed.state.submitting, false);
 });
